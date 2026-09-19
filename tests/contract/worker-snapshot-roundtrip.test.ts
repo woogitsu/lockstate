@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { SimulationWorkerStateMachine, type MessagePortLike } from '../../src/simulation/worker/state-machine';
 import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
-import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../src/simulation/runtime/restore-session';
+import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION, captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 
 class MockPort implements MessagePortLike {
   public messages: any[] = [];
@@ -65,8 +66,10 @@ describe('worker snapshot protocol: the only way persisted state leaves the simu
 
     // The kernel alone is not a save -- world and construction are what make
     // a restored prison an actual prison, and since #70 `simulation` is what
-    // makes it a *populated* one.
-    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'identity', 'kernel', 'simulation', 'world']);
+    // makes it a *populated* one. `masterSeed` joined them in #412: it is what
+    // says *which run* this is, and since #415 it is also what a stream the
+    // bundle does not carry is re-seeded from.
+    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'identity', 'kernel', 'masterSeed', 'simulation', 'world']);
     expect(data.kernel.rngStates.length).toBeGreaterThan(0);
     expect(data.world.chunks.length).toBeGreaterThan(0);
     expect(data.construction).toHaveProperty('orders');
@@ -202,6 +205,99 @@ describe('worker snapshot protocol: the only way persisted state leaves the simu
     } as never);
 
     expect(port.ofKind('protocol/error')[0].payload.code).toBe('not-initialized');
+  });
+
+  /**
+   * The alerts log crosses the boundary, and says which side of the save it
+   * came from (the owner's decisions 3 and 4 of 2026-09-01 on
+   * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   * Driven through a real worker rather than through the log's own methods,
+   * because what these two decisions turn on is the *wire*: a restored record
+   * has to reach the main thread as a row without reaching the band as an
+   * announcement, and a dismissal has to be in the save the next worker starts
+   * from.
+   */
+  describe('the alerts log a save carries', () => {
+    /** A prison that has said two things, one of them twice. */
+    function prisonWithALog(): ReturnType<typeof captureSessionSnapshot> {
+      const runtime = createNewSimulationRuntime(0x0084);
+      // Recorded through the producers' own methods, at ticks of their own, so
+      // these are the records a session really writes rather than objects
+      // shaped like them.
+      runtime.events.recordIncidentsAllClear(40);
+      runtime.events.recordDischarge(2, 80);
+      runtime.events.recordIncidentsAllClear(120);
+      return captureSessionSnapshot(runtime);
+    }
+
+    function restore(bundle: unknown): ReturnType<typeof startWorker> {
+      return startWorker({
+        kind: 'snapshot',
+        snapshot: JSON.parse(JSON.stringify({
+          schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
+          schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
+          transport: 'structured-clone',
+          data: bundle,
+        })),
+      });
+    }
+
+    it('republishes what the save held, before a single tick has run, marked as restored', () => {
+      const { port } = restore(prisonWithALog());
+
+      const published = port.ofKind('simulation/event');
+      expect(published.map((message) => message.payload.event.sequence), 'every record the save carried, in the order it was recorded').toEqual([1, 2, 3]);
+      // The flag is what keeps the events band silent about a tick the player
+      // was not looking at, while the list is rebuilt from the same messages.
+      expect(published.every((message) => message.payload.restored === true)).toBe(true);
+      // A restored session arrives paused, so this had to be published without
+      // waiting for the player to press play -- the same reason the first
+      // counts readout goes out here.
+      expect(port.last().kind).toBe('simulation/event');
+    });
+
+    it('publishes nothing for a session that has said nothing', () => {
+      const { port } = startWorker();
+      expect(port.ofKind('simulation/event')).toEqual([]);
+    });
+
+    it('keeps a dismissed row dismissed across the reload that would otherwise bring it back', () => {
+      /*
+       * The interaction the owner's decisions 3 and 4 have with each other,
+       * end to end and through the wire: a row the player retired must not
+       * come back on the next load, or the two decisions undo one another.
+       *
+       * The two all-clears are one row on the player's screen -- the same
+       * sentence twice -- so the dismissal names the run that row stands for,
+       * ordinals 1 through 3. The discharge between them is a different row
+       * and is deliberately inside that range: what must survive is *it*,
+       * which is the half a range-only rule would get wrong.
+       */
+      const first = restore(prisonWithALog());
+      const tick = requestSnapshot(first.port, first.machine).data.kernel.tick;
+      first.machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'cmd-dismiss',
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: 'dismiss-1',
+          sequence: 0,
+          // Due now, so a paused worker dispatches it immediately (ADR 0051).
+          executeAtTick: tick,
+          command: packCommand({ type: 'DismissAlert', fromSequence: 1, throughSequence: 3 }),
+        },
+      } as never);
+
+      const saved = requestSnapshot(first.port, first.machine);
+      expect(saved.data.simulation.alerts.dismissed, 'the two all-clears, and not the discharge between them').toEqual([1, 3]);
+
+      const second = restore(saved.data);
+      expect(
+        second.port.ofKind('simulation/event').map((message) => message.payload.event.sequence),
+        'a row the player dismissed must not be handed back by the load',
+      ).toEqual([2]);
+    });
   });
 
   it('honours the master seed from the initialize message, so the same seed reproduces the same RNG state', () => {

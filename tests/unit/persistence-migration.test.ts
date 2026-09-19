@@ -127,6 +127,68 @@ describe('MigrationChain', () => {
     expect(result).toMatchObject({ ok: false, error: { code: 'migration-produced-invalid-output', atVersion: 1 } });
   });
 
+  /**
+   * The other way a step can fail, and the one that used to escape the
+   * dispatcher entirely: `step.migrate` was called unwrapped, so a throw left
+   * `migrate` as an exception rather than a verdict.
+   *
+   * That is not a cosmetic difference. `decodeSaveEnvelope` is a total
+   * function returning `{ok:false, error}`, and `PrisonSaveRepository`'s
+   * recovery walk calls it unguarded once per generation -- so an exception
+   * escaping here aborts the walk instead of failing one generation, and the
+   * older good generation is never reached. That end-to-end consequence is
+   * pinned in `tests/integration/save-migration-fault-recovery.test.ts`; this
+   * case pins the dispatcher's own contract.
+   *
+   * The code is its own, not `migration-produced-invalid-output`: a step that
+   * threw produced no output for a schema to reject, and the two say different
+   * things to whoever has to fix it.
+   */
+  it('reports a migration step that throws as a verdict at the version it started from, not as an exception', () => {
+    const chain = new MigrationChain(2);
+    chain.registerSchema(schema<WidgetV1>(1, (input): input is WidgetV1 => typeof input === 'object' && input !== null));
+    chain.registerSchema(schema<WidgetV2>(2, (input): input is WidgetV2 => typeof input === 'object' && input !== null));
+    chain.registerMigration({
+      fromVersion: 1,
+      toVersion: 2,
+      migrate: () => {
+        throw new RangeError('Array buffer allocation failed');
+      },
+    });
+
+    let result: ReturnType<typeof chain.migrate>;
+    expect(() => {
+      result = chain.migrate({ version: 1 }, 1);
+    }).not.toThrow();
+
+    expect(result!).toMatchObject({ ok: false, error: { code: 'migration-step-threw', atVersion: 1 } });
+    // The thrown value's own words survive into the message, because that is
+    // what the import panel splices into `{detail}` for the player.
+    expect(result!.ok).toBe(false);
+    if (result!.ok) return;
+    expect(result!.error.message).toContain('RangeError: Array buffer allocation failed');
+    expect(result!.error.message).toContain('1 -> 2');
+  });
+
+  it('reports a migration step that throws a non-Error value without losing it', () => {
+    const chain = new MigrationChain(2);
+    chain.registerSchema(schema<WidgetV1>(1, (input): input is WidgetV1 => typeof input === 'object' && input !== null));
+    chain.registerSchema(schema<WidgetV2>(2, (input): input is WidgetV2 => typeof input === 'object' && input !== null));
+    chain.registerMigration({
+      fromVersion: 1,
+      toVersion: 2,
+      migrate: () => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw 'not-an-error';
+      },
+    });
+
+    const result = chain.migrate({ version: 1 }, 1);
+    expect(result).toMatchObject({ ok: false, error: { code: 'migration-step-threw', atVersion: 1 } });
+    if (result.ok) return;
+    expect(result.error.message).toContain('not-an-error');
+  });
+
   it('rejects a non-integer or negative declared version outright', () => {
     const chain = buildWidgetChain();
     expect(chain.migrate({}, 1.5)).toMatchObject({ ok: false, error: { code: 'invalid-shape' } });

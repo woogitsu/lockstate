@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
+import { defaultRoomContentRegistry, loadRoomCatalog } from '../../src/content/room-catalog';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import {
   MAX_RECORDED_ZONING_REFUSALS,
@@ -28,15 +28,87 @@ const CHUNK_SIZE = 32;
 const CELL = 'room.cell';
 /** `room.cell`'s zoning value comes from the content catalog, never from the service. */
 const CELL_NUMERIC_ID = defaultRoomContentRegistry.getById(CELL)!.numericId;
+/** `room.cell`'s own `nameKey`, read back the same way rather than hard-coded, for `removedRoomNameKeys` assertions (#1006 finding 5). */
+const CELL_NAME_KEY = defaultRoomContentRegistry.getById(CELL)!.nameKey;
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
-/** One owned, loaded chunk at the origin -- the same starter world `createNewSimulationRuntime` builds. */
+/** An arbitrary non-zero edge value: the layers store a numeric id and this file cares only that one is present. */
+const WALL = 7;
+
+/**
+ * Walls every stored edge inside a `size`-by-`size` square of tiles, so that
+ * **any** rectangle drawn inside it is `sealed`.
+ *
+ * ## Why the fixtures in this file are walled at all, which is new
+ *
+ * `RoomZoningService.zone` used to accept a room whose perimeter was open and
+ * merely report the fact. It now refuses one whose definition authors an
+ * `enclosed` requirement -- the owner's ruling, recorded in the ADR "Must a
+ * zoned room be enclosed" -- and `room.cell`, which almost every case here
+ * zones, is one of the 17 shipped rooms that author it. An unwalled fixture
+ * would therefore refuse `not-enclosed` before reaching the behaviour under
+ * test, and 22 of this file's cases did exactly that when the refusal landed.
+ *
+ * Walling the whole square rather than each rectangle's own perimeter is
+ * deliberate: **enclosure is not this file's subject** and must not become a
+ * variable in it. Every case here is about instance registration, the plane,
+ * the refusal vocabulary, removal and determinism, and a fixture that walled
+ * per rectangle would make each of them silently depend on getting that
+ * geometry right. `tests/unit/rooms-enclosure.test.ts` is where enclosure
+ * decides an outcome, and it varies the walls on purpose.
+ *
+ * **The frontier is deliberately left unwalled.** The loop stops at `size - 1`,
+ * so the north edges of row `size` and the west edges of column `size` are
+ * never written -- and writing them would *materialise the next chunk*, which
+ * would break 'materialises nothing for a rectangle that spills off the edge of
+ * the prison' by giving that rectangle a chunk to land in. A rectangle flush
+ * against the last row or column of the square is therefore still `open`; no
+ * case here draws one.
+ */
+function wallEveryEdge(world: SparseWorld, size: number): void {
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      world.setTopEdge(tile(x, y), WALL);
+      world.setLeftEdge(tile(x, y), WALL);
+    }
+  }
+}
+
+/** One owned, loaded chunk at the origin -- the same starter world `createNewSimulationRuntime` builds, walled throughout (see `wallEveryEdge`). */
 function ownedWorld(): SparseWorld {
   const world = new SparseWorld(CHUNK_SIZE);
   const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
   world.load(origin);
   world.setOwned(origin, true);
+  wallEveryEdge(world, CHUNK_SIZE);
+  return world;
+}
+
+/**
+ * Four owned chunks, 64x64 tiles -- exactly `MAX_ZONE_DIMENSION_TILES` a side,
+ * so a rectangle at the cap fits inside the materialised world and a refusal
+ * cannot be `out-of-bounds` in disguise.
+ *
+ * Walled throughout for the reason `ownedWorld` is, with one consequence worth
+ * naming: a 64-wide rectangle at the origin ends at column 63, so its east
+ * boundary is the west edge of column 64 -- outside the walled square and
+ * outside the materialised world. `wallEveryEdge` is therefore asked for 65,
+ * not 64, and the extra row and column are inside chunk (2,x)/(x,2)... which
+ * does not exist, so they are written through setters that *would* materialise
+ * one. They are written anyway and the case that cares about materialisation
+ * uses `ownedWorld`, not this.
+ */
+function sixtyFourTileWorld(): SparseWorld {
+  const world = new SparseWorld(CHUNK_SIZE);
+  for (let y = 0; y < 2; y += 1) {
+    for (let x = 0; x < 2; x += 1) {
+      const chunk = { x: chunkCoordinate(x), y: chunkCoordinate(y) };
+      world.load(chunk);
+      world.setOwned(chunk, true);
+    }
+  }
+  wallEveryEdge(world, 65);
   return world;
 }
 
@@ -69,6 +141,51 @@ describe('zoning a room registers a room instance', () => {
     expect(world.getZoning(tile(6, 6)), 'the tile past the right edge must be untouched').toBe(0);
     expect(world.getZoning(tile(4, 9)), 'the tile past the bottom edge must be untouched').toBe(0);
     expect(world.getZoning(tile(3, 6)), 'the tile before the left edge must be untouched').toBe(0);
+  });
+
+  /**
+   * **The accepted outcome carries the definition's own `nameKey`, not one
+   * derived from its id** -- the word the acknowledgement of a designation
+   * renders (#966 site 2).
+   *
+   * **This case exists because a mutation survived without it.** Replacing
+   * `roomNameKey: definition.nameKey` with `` `${definition.id}.name` `` passed
+   * the whole suite -- 541 tests across `tests/foundation`, this file's
+   * neighbours and the two files that assert the sentence -- because all
+   * eighteen shipped rooms happen to author `<id>.name`. `roomDefinitionSchema`
+   * constrains `nameKey` to an `identifierSchema` and nothing more, so content
+   * authoring `room.foo.title` is legal, resolves under
+   * `tests/unit/content-catalogs.test.ts`'s own contract, and would make the
+   * derived form render a key that does not exist -- a dotted string on the
+   * player's screen, which is the defect `ui-simulation-events.test.ts` guards
+   * its own keys against.
+   *
+   * The catalogue is loaded from an authored entry rather than mutated, so the
+   * key under test is one this file wrote and not one the code produced
+   * (`docs/TESTING.md`).
+   */
+  it('carries the room definition\'s own nameKey on the accepted outcome, whatever it is (#966)', () => {
+    const { registry, errors } = loadRoomCatalog([
+      {
+        schemaVersion: 1,
+        id: 'room.probe',
+        numericId: 200,
+        // Deliberately not `room.probe.name`.
+        nameKey: 'room.probe.heading',
+        category: 'housing',
+        requirements: [{ type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 }],
+      },
+    ]);
+    expect(errors, 'the probe catalogue must be legal content for this case to mean anything').toEqual([]);
+
+    const world = ownedWorld();
+    const zoning = new RoomZoningService(world, new RoomInstanceRegistry(), registry);
+    const outcome = zoning.zone({ roomCatalogId: 'room.probe', x: 4, y: 6, width: 2, height: 2 }, 10);
+
+    expect(outcome.kind).toBe('zoned');
+    if (outcome.kind !== 'zoned') throw new Error('unreachable');
+    expect(outcome.roomNameKey, 'the authored key, not `${id}.name`').toBe('room.probe.heading');
+    expect(outcome.instance.roomCatalogId, 'and it is the type that was registered').toBe('room.probe');
   });
 
   it('writes the catalog\'s own numeric id, which is what the renderer resolves a tint from', () => {
@@ -222,6 +339,51 @@ describe('a zoning request the prison cannot honour is refused, with a reason', 
     ).toMatchObject({ reason: 'invalid-area' });
   });
 
+  it('accepts a rectangle exactly MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive', () => {
+    // The sibling of 'accepts the authored minimum exactly': the minimum bound
+    // has that assertion and the maximum had none, so turning
+    // `request.width > MAX_ZONE_DIMENSION_TILES` into `>=` refused every room
+    // of exactly the largest legal width and left the whole suite green. 64x64
+    // is the room catalogue's own ceiling, so the largest room content can
+    // author has to be zonable.
+    //
+    // The value is pinned as a literal as well, because the requests below
+    // spell the constant under test on both sides of the comparison, and that
+    // holds for any value the constant could have.
+    expect(MAX_ZONE_DIMENSION_TILES).toBe(64);
+
+    // Both cases start from four owned chunks -- 64x64 tiles -- so a full-length
+    // side is inside the materialised world and the outcome is `zoned` rather
+    // than the `out-of-bounds` a one-chunk world would answer. A refusal for a
+    // different reason would satisfy an assertion written on
+    // `reason !== 'invalid-area'`, so the assertion is on acceptance.
+    const wide = service(sixtyFourTileWorld()).zoning.zone(
+      { roomCatalogId: CELL, x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES, height: 3 },
+      0,
+    );
+    expect(wide, 'the widest legal room must be zonable').toMatchObject({ kind: 'zoned' });
+
+    // The height half of the same condition, on its own line in `zone` and so
+    // its own mutation. A fresh world, because the two rectangles would
+    // otherwise overlap at the origin.
+    const tall = service(sixtyFourTileWorld()).zoning.zone(
+      { roomCatalogId: CELL, x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES },
+      0,
+    );
+    expect(tall, 'the tallest legal room must be zonable').toMatchObject({ kind: 'zoned' });
+
+    // One tile more is still refused, so the pair brackets the bound instead of
+    // only pushing it outwards. Refused before any tile is read, so the world
+    // it is asked of does not matter.
+    const { zoning } = service(sixtyFourTileWorld());
+    expect(
+      zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES + 1, height: 3 }, 0),
+    ).toMatchObject({ reason: 'invalid-area' });
+    expect(
+      zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES + 1 }, 0),
+    ).toMatchObject({ reason: 'invalid-area' });
+  });
+
   it('refuses rather than throwing when the registry already holds the anchor\'s instance', () => {
     // The shape a save written before zoning painted the plane has, and the
     // shape a scenario that registers instances directly has: an instance
@@ -341,6 +503,8 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
     if (removed.kind !== 'unzoned') throw new Error('unreachable');
     expect(removed.removedInstanceIds).toEqual([zoned.instance.instanceId]);
+    // #1006 finding 5: `removedRoomNameKeys` names this instance's own type.
+    expect(removed.removedRoomNameKeys).toEqual([CELL_NAME_KEY]);
     expect(rooms.allByRoomCatalogId(CELL), 'the registry must not still hold it').toEqual([]);
     expect(rooms.getById(zoned.instance.instanceId)).toBeUndefined();
     for (let y = 4; y < 7; y += 1) {
@@ -393,6 +557,26 @@ describe('a designation can be removed, which is what makes one recoverable', ()
       zoning.unzone({ x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES + 1, height: 1 }, 0),
       'an unbounded width would walk the coordinate space inside one tick',
     ).toMatchObject({ reason: 'invalid-area' });
+  });
+
+  it('accepts a removal rectangle exactly MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive here too', () => {
+    // `unzone` carries its own copy of the same bound, and its own copy of the
+    // same hole: `>` -> `>=` on either side survived the suite exactly as it
+    // did in `zone`. A player who drags a removal the full 64 tiles must clear
+    // the rooms under it rather than be told the area is not a rectangle.
+    const wide = service(sixtyFourTileWorld());
+    wide.zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    expect(
+      wide.zoning.unzone({ x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES, height: 3 }, 1),
+      'the widest legal removal must clear the room it covers',
+    ).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+
+    const tall = service(sixtyFourTileWorld());
+    tall.zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    expect(
+      tall.zoning.unzone({ x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES }, 1),
+      'the tallest legal removal must clear the room it covers',
+    ).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
   });
 
   it('refuses a rectangle holding no designation at all, rather than reporting a silent success', () => {
@@ -454,8 +638,21 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     const zoned = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
     if (zoned.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
     registry.unregister(zoned.instance.instanceId);
-    registry.register({ ...zoned.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
-    expect(registry.claimUse(zoned.instance.instanceId, 1 as never)).toBe(true);
+    // Re-registered with a capability and its own ceiling, and the claim below
+    // asks for that capability. It used to claim with **no** capability, which
+    // a cell answered from its floor area -- and since the owner's ruling of
+    // 2026-08-29 (#585) floor area bounds only a room type tagged as an open
+    // area, which `room.cell` is not. The subject here is `unzone` refusing
+    // while a use claim stands, so the claim is made the way a real action
+    // makes one rather than through the branch the ruling closed.
+    registry.register({
+      ...zoned.instance,
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sanitation', 1]],
+      objectCapabilities: ['sanitation'],
+    });
+    expect(registry.claimUse(zoned.instance.instanceId, 1 as never, 'sanitation')).toBe(true);
     // Nobody *lives* here, so the narrower predicate would have allowed this.
     expect(registry.occupancyOf(zoned.instance.instanceId)).toBe(0);
 
@@ -488,19 +685,30 @@ describe('a designation can be removed, which is what makes one recoverable', ()
       [...first.removedInstanceIds].sort(),
     );
     expect(first.removedInstanceIds).toHaveLength(2);
+    // #1006 finding 5: `removedRoomNameKeys` is the same length, in the same
+    // order, one type per id -- both instances are `room.cell` here, so this
+    // is the same name twice rather than a coincidence of length alone.
+    expect(first.removedRoomNameKeys).toHaveLength(first.removedInstanceIds.length);
+    expect(first.removedRoomNameKeys).toEqual([CELL_NAME_KEY, CELL_NAME_KEY]);
   });
 });
 
-describe('two adjacent rectangles of one type stay two rooms, and removal treats them as one region', () => {
-  it('records the asymmetry rather than hiding it', () => {
-    // Not a defect introduced here, and not fixed here either. The zoning plane
-    // stores a room *type* per tile and no instance id, so `zone` makes two
-    // adjacent same-type rectangles into two `RoomInstance`s while `unzone` sees
-    // one connected region and takes both. Both ends need the plane to carry an
-    // instance id per tile, which is a persistence-format decision
-    // (`docs/HUD_PROJECTIONS.md` gap 11) rather than something to settle inside
-    // a command handler. Pinned so that changing either half is a visible
-    // decision rather than a quiet one.
+describe('two adjacent rectangles of one type are two rooms at both ends (#337)', () => {
+  /**
+   * The half of ADR 0022 consequence 2 that was recorded as unchanged and is
+   * now changed. `zone` always made two touching same-type rectangles into two
+   * `RoomInstance`s; `unzone` grew each covered tile into its connected
+   * *same-type* run and took every instance in it, so clipping one corner of
+   * one of two touching cells removed both.
+   *
+   * The plane still stores a room type per tile and carries no instance id.
+   * What resolves a tile to an instance is the instance's own **rectangle**,
+   * persisted since ADR 0028 phase 1 and read by `roomInstanceContaining`
+   * (`src/simulation/objects/room-capacity.ts`) -- the function object
+   * placement already uses for exactly this question. So this costs the save
+   * format nothing; see `docs/PERSISTENCE.md`.
+   */
+  it('removes only the room the drag covers, and leaves its neighbour zoned and registered', () => {
     const world = ownedWorld();
     const { zoning, rooms } = service(world);
     const left = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
@@ -509,11 +717,188 @@ describe('two adjacent rectangles of one type stay two rooms, and removal treats
 
     expect(rooms.allByRoomCatalogId(CELL), 'two instances, not one L-shaped room').toHaveLength(2);
 
+    // One tile of the left cell -- the partial drag that used to take both.
     const removed = zoning.unzone({ x: 0, y: 0, width: 1, height: 1 }, 1);
+
+    // The neighbour first, stated as the player sees it rather than as a count:
+    // its instance is still registered under the id it was zoned with, and its
+    // rectangle is intact. This is the assertion #337 is about.
+    const survivor = rooms.getById(roomInstanceIdFor(CELL, tile(2, 0)));
+    expect(survivor, 'the room the drag never touched must survive').toBeDefined();
+    expect(survivor).toMatchObject({ anchorTile: tile(2, 0), width: 2, height: 3 });
+    expect(rooms.allByRoomCatalogId(CELL).map((instance) => instance.instanceId)).toEqual([
+      roomInstanceIdFor(CELL, tile(2, 0)),
+    ]);
+
+    // The whole of the left cell and nothing else: 2x3 tiles, one instance.
+    expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+    if (removed.kind !== 'unzoned') throw new Error('unreachable');
+    expect(removed.removedInstanceIds).toEqual([roomInstanceIdFor(CELL, tile(0, 0))]);
+    for (let y = 0; y < 3; y += 1) {
+      for (let x = 2; x < 4; x += 1) {
+        expect(world.getZoning(tile(x, y)), `the neighbour's tile ${x},${y} must stay painted`).toBe(CELL_NUMERIC_ID);
+      }
+      for (let x = 0; x < 2; x += 1) {
+        expect(world.getZoning(tile(x, y)), `the removed room's tile ${x},${y} must be cleared`).toBe(0);
+      }
+    }
+  });
+
+  it('removes an empty room beside an occupied one, and leaves the occupant assigned to theirs', () => {
+    // The stranding half of #337, and the reading that is actually reachable
+    // through `unzone` today: the occupancy guard runs over the *whole* flooded
+    // region, so a neighbour's resident did not dangle -- it made the empty
+    // room unremovable instead. Both readings follow from one cause, and this
+    // asserts the consequence a player can see: the drag is honoured, the
+    // occupied room is untouched, and its occupant is still assigned to it.
+    const world = ownedWorld();
+    const registry = new RoomInstanceRegistry();
+    const { zoning } = service(world, registry);
+    const left = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    const right = zoning.zone({ roomCatalogId: CELL, x: 2, y: 0, width: 2, height: 3 }, 0);
+    if (left.kind !== 'zoned' || right.kind !== 'zoned') throw new Error('both zones must be accepted');
+
+    // Capacity by hand, exactly as the two refusal tests above do it, so this
+    // stays a test about `unzone` rather than about object placement --
+    // `tests/integration/room-zoning-loop.test.ts` drives the real bed.
+    registry.unregister(right.instance.instanceId);
+    registry.register({ ...right.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
+    expect(registry.assign(right.instance.instanceId, 7 as never)).toBe(true);
+
+    const removed = zoning.unzone({ x: 0, y: 0, width: 2, height: 3 }, 1);
+
+    expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+    if (removed.kind !== 'unzoned') throw new Error('unreachable');
+    expect(removed.removedInstanceIds).toEqual([left.instance.instanceId]);
+
+    expect(registry.getById(right.instance.instanceId), 'the occupied room must survive').toBeDefined();
+    expect(registry.occupantsOf(right.instance.instanceId), 'and its occupant must still be assigned to it').toEqual([
+      7,
+    ]);
+    expect(registry.occupancyOf(right.instance.instanceId)).toBe(1);
+    expect(world.getZoning(tile(2, 0)), 'the occupied room keeps its tiles').toBe(CELL_NUMERIC_ID);
+    expect(world.getZoning(tile(0, 0)), 'the empty room loses its own').toBe(0);
+  });
+
+  it('still refuses when the drag reaches the occupied room itself', () => {
+    // The guard that has to survive the narrowing: an occupied room is refused
+    // when the rectangle covers *it*, which is the case
+    // `accommodationInstanceId` depends on. A fix that bounded removal to one
+    // instance and dropped the occupancy check would pass the two tests above.
+    const world = ownedWorld();
+    const registry = new RoomInstanceRegistry();
+    const { zoning } = service(world, registry);
+    const left = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    const right = zoning.zone({ roomCatalogId: CELL, x: 2, y: 0, width: 2, height: 3 }, 0);
+    if (left.kind !== 'zoned' || right.kind !== 'zoned') throw new Error('both zones must be accepted');
+    registry.unregister(right.instance.instanceId);
+    registry.register({ ...right.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
+    registry.assign(right.instance.instanceId, 7 as never);
+
+    // One tile of the occupied cell, and one of the empty one.
+    const removed = zoning.unzone({ x: 1, y: 0, width: 2, height: 1 }, 1);
+
+    expect(removed).toMatchObject({ kind: 'refused', reason: 'room-occupied', tick: 1 });
+    // And nothing was half-applied: the empty room in the same drag survives.
+    expect(registry.getById(left.instance.instanceId)).toBeDefined();
+    expect(world.getZoning(tile(0, 0))).toBe(CELL_NUMERIC_ID);
+  });
+
+  it('takes both rooms in one drag when the drag covers both', () => {
+    // Narrowing removal to an instance must not turn a deliberate wide drag
+    // into a single-room removal: `removedInstanceIds` is plural because a
+    // rectangle can genuinely cover several rooms, and that is unchanged.
+    const world = ownedWorld();
+    const { zoning, rooms } = service(world);
+    zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    zoning.zone({ roomCatalogId: CELL, x: 2, y: 0, width: 2, height: 3 }, 0);
+
+    const removed = zoning.unzone({ x: 0, y: 0, width: 4, height: 3 }, 1);
 
     expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 12 });
     if (removed.kind !== 'unzoned') throw new Error('unreachable');
-    expect(removed.removedInstanceIds, 'one region, so both instances go').toHaveLength(2);
+    expect(removed.removedInstanceIds).toEqual(
+      [roomInstanceIdFor(CELL, tile(0, 0)), roomInstanceIdFor(CELL, tile(2, 0))].sort(),
+    );
+    // #1006 finding 5: one name per id, in the same order as `removedInstanceIds`.
+    expect(removed.removedRoomNameKeys).toEqual([CELL_NAME_KEY, CELL_NAME_KEY]);
+    expect(rooms.allByRoomCatalogId(CELL)).toEqual([]);
+  });
+
+  it('still clears paint that belongs to no rectangle, without taking the room next to it', () => {
+    // The state a restored V4 save produces, beside a room zoned by this build.
+    // A V4 room instance records no rectangle and there is no honest default
+    // (`roomBoundsOf`, `src/simulation/objects/room-capacity.ts`), so nothing
+    // can resolve its tiles to it -- and removal exists precisely so that no
+    // designation is permanent, which means those tiles must stay clearable.
+    // The flood fill is kept for them, and it has to stop where a real
+    // rectangle begins or it is the old defect in a smaller costume.
+    const world = ownedWorld();
+    const registry = new RoomInstanceRegistry();
+    const { zoning } = service(world, registry);
+    const modern = zoning.zone({ roomCatalogId: CELL, x: 2, y: 0, width: 2, height: 3 }, 0);
+    if (modern.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
+
+    // Painted and registered by hand, with no `width`/`height` -- the two keys
+    // are omitted rather than set to `undefined`, which is what a V4 row is.
+    const legacyId = roomInstanceIdFor(CELL, tile(0, 0));
+    registry.register({
+      instanceId: legacyId,
+      roomCatalogId: CELL,
+      anchorTile: tile(0, 0),
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: [],
+    });
+    for (let y = 0; y < 3; y += 1) for (let x = 0; x < 2; x += 1) world.setZoning(tile(x, y), CELL_NUMERIC_ID);
+
+    const removed = zoning.unzone({ x: 0, y: 0, width: 1, height: 1 }, 1);
+
+    // Six tiles: the legacy room's own run, and not the six next door.
+    expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+    if (removed.kind !== 'unzoned') throw new Error('unreachable');
+    expect(removed.removedInstanceIds, 'the rectangle-less room is removable').toEqual([legacyId]);
+    expect(registry.getById(modern.instance.instanceId), 'the room with a rectangle must survive').toBeDefined();
+    for (let y = 0; y < 3; y += 1) {
+      for (let x = 2; x < 4; x += 1) {
+        expect(world.getZoning(tile(x, y)), `the neighbour's tile ${x},${y} must stay painted`).toBe(CELL_NUMERIC_ID);
+      }
+      for (let x = 0; x < 2; x += 1) {
+        expect(world.getZoning(tile(x, y)), `the legacy tile ${x},${y} must be cleared`).toBe(0);
+      }
+    }
+  });
+
+  it('clears only the painted part of a rectangle that overhangs the world, and materialises nothing', () => {
+    // A rectangle is bounded at `MAX_ZONE_DIMENSION_TILES` per side and against
+    // nothing else, so a save can carry an instance whose recorded rectangle
+    // reaches into a chunk that does not exist. `setZoning` *materialises* a
+    // chunk, so writing a zero over every tile of the rectangle would grow the
+    // world on its way to removing nothing -- the same reason `zone` checks
+    // every tile before it writes any.
+    const world = ownedWorld();
+    const registry = new RoomInstanceRegistry();
+    const { zoning } = service(world, registry);
+    const overhangingId = roomInstanceIdFor(CELL, tile(30, 0));
+    registry.register({
+      instanceId: overhangingId,
+      roomCatalogId: CELL,
+      anchorTile: tile(30, 0),
+      width: 4,
+      height: 3,
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: [],
+    });
+    // Only the half inside chunk (0,0) is painted, which is all a save could
+    // have carried: the plane lives inside the chunks.
+    for (let y = 0; y < 3; y += 1) for (let x = 30; x < 32; x += 1) world.setZoning(tile(x, y), CELL_NUMERIC_ID);
+
+    const removed = zoning.unzone({ x: 30, y: 0, width: 1, height: 1 }, 1);
+
+    expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+    expect(world.hasChunk({ x: chunkCoordinate(1), y: chunkCoordinate(0) }), 'no chunk may be grown').toBe(false);
+    expect(registry.getById(overhangingId)).toBeUndefined();
   });
 });
 

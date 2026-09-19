@@ -2,7 +2,18 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26.** The owner approved the substance of this ADR — the
+fairer queue — before the status line moved, and the implementing change has
+been on `main` since it merged. So the status was the last thing here that was
+still false, which is the defect §2 of [`STATUS-QUEUE.md`](./STATUS-QUEUE.md)
+predicted for an ADR that lands alongside its own code: it sat `Proposed` on
+`main` while the code it describes was already shipping.
+
+What is accepted is the mechanism and the five decisions below, on the same
+terms as the code that implements them. The approval does **not** reach the
+starvation revisit condition recorded under the queueing rule — that stays a
+condition to watch rather than a settled answer, and it is named here so a
+reader does not mistake an accepted ADR for a closed question.
 
 Three of the five decisions below are answers to questions
 [ADR 0028](./0028-object-placement-and-derived-room-capacity.md) left open and
@@ -16,6 +27,14 @@ arrived with it, which is the shape §2 of
 [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) warns about: an ADR that lands alongside
 its code is `Proposed` on `main` from the moment it merges and can sit there
 unnoticed. Its rule is followed here — the queue entry is in the same commit.
+
+**Two passages below have since been corrected and one has been measured. Read
+§*Amendment, 2026-08-26* before relying on §*Consequences* or on decision 5's
+revisit condition:** the consequences section's claim that no room a player can
+build reaches this gate expired when ADR 0028 phase 4 shipped, its claim that
+the yard's ceiling is zero for ever was already wrong when this status line
+moved, and the starvation decision 5 names is now measured rather than
+predicted. Nothing in the decisions themselves moves.
 
 ### The number
 
@@ -34,6 +53,26 @@ figure below was read or measured on disk at `84e247c` (v0.0.62) or produced by
 running this tree. There is no external tier: ADR 0028 already did the
 comparable-game work this depends on, and this document decides the shape of
 three functions in it.
+
+> **That sentence is a global pin, it is advisory, and it has been broken twice
+> in this document by commits whose messages do not mention it (2026-09-15).**
+> `docs/adr/README.md`'s section on anchor pins carries the evidence that a pin
+> neither freezes the code nor is honoured by editors. Below this line:
+> `9e3727a0` (2026-09-05) added a correction to §*What is owed, and to whom*,
+> and `80b845cd` (2026-09-08) added a **new** `file:line`
+> (`src/persistence/save-schema.ts:36`, in the §*Decision 6* parenthetical) that
+> was read at `adb9ed00` and not at `84e247c` — the worse of the two shapes,
+> because a new anchor below an unchanged pin silently inherits a date nobody
+> read it at. That anchor has since drifted to `:38` and is corrected there.
+>
+> **PR #1231 excluded `80b845cd` from its evidence on the ground that it "moves
+> an anchor *above* its pin". That reading is half right and the conclusion is
+> wrong.** This document carries **two** pins: this one, covering the whole
+> document from line 51, and a second inside the 2026-08-26 amendment
+> (*"Read at `54418b6` … every `file:line` below was opened on that tree"*).
+> The hunk sits above the amendment's pin and **below this one**, so the commit
+> belongs in that evidence table rather than in the excluded pair. A document
+> with two pins needs checking against both.
 
 ---
 
@@ -315,10 +354,66 @@ why no room a player can build has a non-zero concurrent-use capacity today.
 readout that shows a starving need is what should trigger this, and the fix
 should be a stated ordering rather than a tie-break buried in `claimUse`.
 
+*Its premise fired at `b097e70` and its trigger cannot fire, because no shipped
+surface shows a prisoner's needs. See §*Amendment, 2026-08-26*, which measures
+the starvation this paragraph predicts: with a six-seat canteen and 24
+prisoners, indices 0–5 eat 40 meals each and indices 6–23 eat nothing at all,
+identically on every run.*
+
+> **Amended 2026-08-28: this decision's fairness half is closed, and its
+> revisit condition was never what fired.** ADR 0041 decision 2 was taken as
+> issue #434 and
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md): `ActionSystem.update` now runs the two contending passes —
+> arrivals, then idle selections — in descending need urgency, with ascending
+> entity index as the tie-break, which is the *"stated ordering rather than a
+> tie-break buried in `claimUse`"* the revisit condition above asked for. What
+> actually triggered it was the issue, not a need readout; no HUD surface shows
+> a prisoner's needs even now (#104), so the trigger this paragraph names is
+> still unable to fire and the fix landed without it.
+>
+> **Decision 5's own words hold in a narrower form than they did.** *"A
+> low-index prisoner is systematically favoured"* is no longer true of a
+> contested **need**: measured over 40,000 ticks with 24 prisoners and a
+> two-head shower room, the two highest-index prisoners went from zero showers
+> to six each and the worst hygiene anyone reached went from 0.0 to 96.8. It is
+> still true of a contested **room whose need is served another way**: the
+> six-seat canteen this decision's amendment measured leaves all 24 prisoners at
+> the same stored hunger unit as each meal block opens, so the urgency key has
+> nothing to separate them by and the tie-break reproduces the old order.
+> Prisoners 12-23 still never enter it. That residue is recorded rather than
+> fixed, because with the prisoners measurably identical there is no
+> state-derived reason to prefer either, and the alternatives that would rotate
+> them anyway are the ones ADR 0041 rejected as C and D.
+>
+> **Decision 6 is untouched and no save version moved.** The ordering keys are
+> pure functions of state the save already carries — needs in stored units, the
+> classification group, the incident override, the room instances and the tick —
+> so nothing was persisted to buy the fairness.
+>
+> **The ADR that records *which need decides urgency* is
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md).**
+> This paragraph said it "is owed a centrally-assigned number and does not exist
+> yet" and told the reader to treat the choice as open; the number was assigned
+> the same day and the document exists. It also carries, as its open question 1,
+> the half of decision 5 that is *not* closed — a canteen whose contenders are
+> identical to the stored unit — with ADR 0041's option C and a tick-derived
+> rotation costed against each other and neither taken.
+
 ### 6. A use claim is derived, not persisted. No save version moves
 
 **Decided.** `RoomInstanceRegistry.getSnapshot` still emits residency only, no
 save-schema key is added, and `SAVE_ENVELOPE_VERSION` does not move.
+
+(**`SAVE_ENVELOPE_VERSION` never existed, on this date or any other.** The
+constant this decision means is `SAVE_SCHEMA_VERSION`,
+`src/persistence/save-schema.ts:38` (read 2026-09-15; the anchor this
+parenthetical carried when it was written on 2026-09-08 was `:36`, and the
+constant reads `6` today), which was already declared and already
+`5` in the tree this document was written against — so the sentence above is
+true and only its name is wrong. Marked rather than overwritten, per
+`docs/AGENT_WORKFLOW.md` §4: the decision is untouched, and
+[ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+decision 4 inherited the same misspelling from this line.)
 
 A use claim is a pure function of two values the save already carries:
 `CurrentActionComponent.phase` and the cold state's
@@ -370,6 +465,17 @@ Four commitments, and one gate entry.
    settled before the action index, the action target and `actionsStarted` are
    written, so a refusal leaves no half-started action behind and the metric
    counts actions that actually began.
+   *ADR 0041's amendment reported this commitment as held but **unguarded** — a
+   mutation violating it left the whole suite green, because no ordinary prison
+   can reach the branch. It has a guard since issue #434:
+   `tests/unit/prisoners-concurrent-room-use.test.ts`, "leaves no action index,
+   no target and no started-action count behind", drives the refusal through a
+   registry that refuses `claimUse` and asserts the three production writes.
+   Moving `actionsStarted += 1` above the claim turns it red. **The branch is
+   still unreachable from a fixture that only builds a prison**, and #434's
+   reordering did not change that: `findAvailableForUse` is consulted two
+   statements before `claimUseIfNeeded` and nothing runs in between, within one
+   prisoner's turn, whichever prisoner's turn it is.*
 
 ---
 
@@ -408,10 +514,33 @@ every unmet demand there was a routing failure. They now differ by 8,058, and
 that difference is the capacity refusals this change introduced: demand that was
 previously invisible because it was silently satisfied.
 
+> **Amended 2026-08-28 (#435): this table has two more rows available, and the
+> four it already has are unchanged.** `substitutionCycles` and
+> `contendedSubstitutionCycles` count a prisoner who *was* served, and worse
+> than they asked for — the case ADR 0041 decision 1 created and nothing
+> counted. Re-derived on this same scenario at `aefd8fc` (250 actors, seed
+> `0x5eed5eed`, 2,500 ticks, admitted through the test's own generator):
+> `substitutionCycles` **3,956** and `contendedSubstitutionCycles` **356**, with
+> a per-prisoner spread of 0..29 and 0..3 respectively.
+>
+> **Those two are a re-derivation and the four above are not**, which is the
+> distinction that matters for reading this section. The `main` and `this
+> branch` columns are a before/after of *this* decision at `84e247c`; five
+> merges of prisoner behaviour later — ADR 0041's fallback, #434's ordering,
+> ADR 0059's walk — the same scenario now measures `actionsStarted` 11,828,
+> `actionsCompleted` 714, `unmetDemandCycles` 11,004 and `routeFailures` 10,903.
+> The table is not restated with those, because what it records is a delta this
+> change caused and not a current reading of the fixture.
+
 `totalOccupancy` is unchanged, which is decision 1's whole point: the economy
 does not move.
 
 ### Nothing a player can build is affected yet
+
+*Both paragraphs of this subsection are false as of `b097e70`, and the second
+was false before the status line above moved. They are left standing rather than
+edited, and corrected in §*Amendment, 2026-08-26*, which quotes them and says
+which clause moved.*
 
 Every action that resolves by catalogue id targets a room whose
 `concurrentUseCapacity` is derived from the objects standing in it, and ADR 0028
@@ -433,6 +562,18 @@ and this ADR does not close it.
   residency figure. `concurrentUseCapacity` is now a second number a room can be
   over, and `projectOccupancy` projects neither it nor the use count — noted in
   `room-projection.ts`'s own comment as not projected at all yet. Phase 5's job.
+
+  **Half of that is no longer owed, and the bullet is corrected rather than
+  overwritten because the clause that moved is not the one it is about
+  (2026-09-05).** The *use count* is projected: `RoomListRowViewModel.
+  concurrentUse` carries one ceiling per capability and `useOccupancyOf`'s
+  count against each, and the Rooms panel reads it out (#997, #1003). So
+  `room-projection.ts`'s comment no longer says "not projected at all yet" and
+  an agent who greps for that sentence will not find it. What is still owed is
+  the **over-capacity** readout itself, and its reason has changed too: not
+  that the projection cannot say it — `current` and `capacity` are both
+  published unclamped, so `current > capacity` is derivable — but that no
+  surface does.
 - **The starvation in decision 5**, with the revisit condition stated there.
 - **A use claim in #31's release path**, per decision 3.
 
@@ -453,3 +594,324 @@ and this ADR does not close it.
    `claimUse` takes an `EntityId` and is agnostic; nothing in
    `src/simulation/security/` calls it, and whether a guard occupying a room
    should count against its seats is a deployment decision.
+
+---
+
+## Amendment, 2026-08-26: both halves of §*Nothing a player can build is affected yet* are false, decision 5's revisit condition cannot fire on its own terms, and the starvation is measured
+
+*This amends **the consequences section and the revisit condition under decision
+5**. No decision moves: decisions 1 to 7 are the shipped rule and this changes
+none of them, including decision 5's ascending-index tie-break itself. What has
+gone false is a **statement about the tree** — a consequences paragraph written
+when nothing could reach the gate, and a revisit condition anchored on a surface
+that does not exist. The form is the one ADR 0027's §*Status* Update and ADR
+0028's three amendments established: the record of what was decided stays, the
+old wording is quoted rather than overwritten, and what the tree does instead is
+recorded beside it.*
+
+*Status is untouched: this ADR remains **Accepted, 2026-08-26**. Read at
+`54418b6` (v0.0.121); every `file:line` below was opened on that tree and every
+number was produced by running it.*
+
+> **Re-read 2026-09-15, every anchor opened. Fifteen of the eighteen
+> `file:line` citations below this line had moved, and two of the sentences
+> holding them have gone false.** They are re-aimed and marked below; the
+> sentence above is corrected rather than deleted because `54418b6` is the tree
+> it was true of, and per `docs/AGENT_WORKFLOW.md` §4 a correction marks both
+> directions. The two that still land exactly are `definition.ts:389-397` and
+> `tests/foundation/adr-status-reference-contract.test.ts:234-244`.
+
+### The half that expired: a canteen a player builds now seats six
+
+The consequences section says:
+
+> Every action that resolves by catalogue id targets a room whose
+> `concurrentUseCapacity` is derived from the objects standing in it, and ADR
+> 0028 phase 1 ships one object buildable (`object.bed`). A canteen, shower
+> room, common room and classroom therefore all derive **0**, and `0 >= 0`
+> refused those actions before this change as well. So in a shipped session the
+> gate changes nothing observable; it becomes observable in phase 4, when those
+> objects become placeable.
+
+The last clause came true and the rest expired with it. ADR 0028 phase 4 shipped
+at `b097e70` (#384): `src/content/room-catalog.ts:182` finishes `room.canteen`
+with two dining tables and four benches, `src/content/object-catalog.ts:108`
+gives the `3x2` `object.dining-table` `capabilities: ['dining']`,
+`src/simulation/construction/definition.ts:466` makes `dining-table-wooden` a
+buildable row, and `src/simulation/prisoners/actions.ts:120-121` is the action
+that asks for `'dining'` in `room.canteen`.
+
+Measured on the real command path — `PurchaseMaterials`, `ZoneRoom`,
+`PlaceObject`, the real `ConstructionSystem`, the real kernel — a canteen
+furnished to its catalogue minimum derives a **`'dining'` ceiling of 6** while
+its all-objects `concurrentUseCapacity` reads 14. So **the sentence "nothing a
+player can build is affected yet" is false, and the heading above it is false**;
+this gate is the thing that now decides who eats. `definition.ts:389-397` states
+the same arithmetic from the construction side and predicted this paragraph's
+expiry in its own words.
+
+### The half that was already false when the status line moved
+
+The same section says:
+
+> `room.yard` is the one room this can never serve, and it is unchanged: it has
+> no object requirement at all, so `concurrentUseCapacity` is 0 for ever and
+> `action.yard-recreation` stays unreachable.
+
+That is the wrong direction, and it did not expire — it was **wrong on `main` on
+the day this document's status line moved**.
+`RoomInstanceRegistry.concurrentUseCapacityFor` read
+`if (capability === undefined) return Number.POSITIVE_INFINITY;`, and
+`src/simulation/prisoners/actions.ts:165-166` gives `action.yard-recreation` no
+`requiredObjectCapability`. The yard's ceiling was therefore **infinite, not
+zero**, and the docblock on `ActionDefinition.requiredObjectCapability` said so
+in its own words: *"Absent means any instance of the target room type qualifies,
+and no object-derived ceiling applies"*.
+
+(**Both of the quoted lines are gone, and the finding they carried is not —
+2026-09-15.** The anchors this paragraph used to carry, `room-instance-registry.ts:350`
+and `actions.ts:20-26`, are demoted to their symbols above rather than re-aimed,
+because what they pointed at no longer exists. `concurrentUseCapacityFor`
+(`src/simulation/prisoners/room-instance-registry.ts:609`) now reads
+`if (capability === undefined) return openGroundCapacityOf(instance);` (`:610`,
+the helper at `:329`), so the yard's ceiling is **finite and derived from the
+room's own ground**, not infinite; and the docblock
+(`src/simulation/prisoners/actions.ts:32-36`) now reads *"Absent means any
+instance of the target room type qualifies, and the ceiling comes from the
+room's own ground rather than from its objects"* and keeps the older reading
+below it. **What this section is about is untouched by either change**: the
+consequences sentence said the yard derives `0` for ever, and `0` is exactly
+what it has never derived.)
+
+The change that did it is `8a5fdcc` (#335), recorded as ADR 0028's
+§*Amendment, 2026-08-26: the concurrent-use ceiling is scoped to the capability
+being asked for*. `git merge-base --is-ancestor 8a5fdcc f591648` succeeds, and
+`f591648` is #356, the commit that moved this ADR's status line — so the
+sentence was already false when it was approved. It is recorded here rather than
+deleted, because "an accepted ADR carried a false consequence for two merges"
+is the fact worth keeping.
+
+Nothing above touches ADR 0028's open question 4, which this ADR declined to
+close and still does not close.
+
+### Decision 5's revisit condition: its premise has fired, its trigger cannot
+
+Decision 5 reads:
+
+> **Revisit condition:** when phase 4 makes canteens and shower rooms real, the
+> readout that shows a starving need is what should trigger this, and the fix
+> should be a stated ordering rather than a tie-break buried in `claimUse`.
+
+Two clauses, and they have come apart.
+
+- **The premise has fired.** Phase 4 shipped at `b097e70`, per the section
+  above.
+- **The trigger cannot fire, because the readout it names does not exist.**
+  `src/simulation/presentation/prisoner-projection.ts:311` builds `lowestNeed`
+  (set on the row at `:366`) and `projectPrisonerDetail` (`:692`) carries all
+  six need levels;
+  `src/simulation/worker/projection-catalog.ts:316` serves them on the
+  `hud/prisoner-detail` channel. **Nothing under `src/ui/` asks for that
+  channel** — the only prisoner projection the HUD consumes is
+  `projectPrisonerPopulationCounts`, through
+  `src/simulation/presentation/status-strip-projection.ts:31` (called at `:843`,
+  `const population = projectPrisonerPopulationCounts(source.prisoners);`; this
+  branch wrote `:752`, which was a docblock line by the time it merged
+  `origin/main` on 2026-09-16), and it carries no need. So a prisoner's hunger can sit at 0 for the length of a session with no
+  surface in the game reporting it.
+
+That is why this went unnoticed for the two merges above: the condition was
+written to be triggered by a player noticing something the game does not show
+them. **A revisit condition anchored on a surface that does not exist is not a
+condition.** Stated here so the next one is anchored on a measurement instead.
+
+> **Amended 2026-08-29 (#535 decision 6). No decision changes. The surface the
+> bullet above says does not exist now does, so the trigger it calls unfireable
+> can fire.** Marked rather than rewritten: "the readout does not exist" is the
+> premise a reader would carry forward, and the *shape* of the failure it
+> records — a condition anchored on a surface nobody built — is worth keeping
+> whatever the surface's state today.
+>
+> The bullet rotted in **two** steps, and neither was wrong when written:
+>
+> 1. *"the only prisoner projection the HUD consumes is
+>    `projectPrisonerPopulationCounts`"* became false at `f8393f0` (#459,
+>    2026-08-28), which gave `src/ui/simulation-prisoner-roster.ts` the
+>    `hud/prisoner-roster` channel. `git merge-base --is-ancestor f8393f0
+>    068dbb5` **fails**, so this paragraph (`068dbb5`, 2026-08-26) predates it
+>    and was accurate on the day. What stayed true through that merge is the
+>    sentence that matters here: the roster deliberately dropped `lowestNeed`,
+>    so nothing yet reported a need.
+> 2. *"a prisoner's hunger can sit at 0 for the length of a session with no
+>    surface in the game reporting it"* became false today. Each Regime roster
+>    row draws that prisoner's worst need as a bar, with the need's word beside
+>    it and `data-need-permille` on the row.
+>
+> `hud/prisoner-detail` is still consumed by nothing under `src/ui/`, so that
+> half of the bullet stands unchanged.
+>
+> **What this does not do is take decision 5's revisit.** It removes the reason
+> the revisit could not be triggered; whether the starvation measured below now
+> warrants the stated ordering decision 5 asks for is that revisit's question,
+> and it is not answered here.
+
+### The measurement decision 5 deferred, taken
+
+Decision 5 accepts the unfairness in terms it chose carefully — *"nothing in
+`selectBestAction` or in the scan compares two prisoners. So with demand
+permanently above capacity, the same prisoners lose every time"* — and §*What
+this decision does not settle* 1 records that a refused prisoner does not fall
+back to `action.eat-in-cell`. Neither statement had a number against it. They do
+now.
+
+A prison built through the real commands: one `room.cell` with 24 beds
+(`residentCapacity: 24`, so every prisoner is housed and every prisoner has an
+`own-accommodation` target), one `room.canteen` furnished to its catalogue
+minimum (`'dining'` ceiling **6**), 24 prisoners admitted, 24,000 ticks — ten
+in-game days, thirty meal blocks. `routeFailures: 0`, so nothing below is a
+navigation artefact.
+
+| prisoner index | meals eaten | meals eaten in cell | hunger reached | ticks at hunger 0 | refused at the canteen door |
+| --- | --- | --- | --- | --- | --- |
+| 0–5 | **40** each | 0 | never below 179.5 | 0 | 0 |
+| 6–23 | **0** each | **0** | **0.0** | ~18,915 of 24,000 | 40 each |
+
+The cut falls exactly on the ceiling, and it falls on the same prisoners on
+every run — byte-identical per-prisoner outcomes across two runs, and identical
+`ActionMetrics`. A sweep against the same six-seat canteen puts the cliff at the
+seventh prisoner: 6 prisoners → all six eat; 7 → indices 0–5 eat 40 meals each
+and index 6 eats nothing; 8 → indices 6,7 eat nothing; 12 → 6,…,11 eat nothing;
+24 → 6,…,23 eat nothing. **The population above the ceiling never eats at all,
+however large it is.** With one dining table instead of two the same shape holds
+one index lower: 0–2 eat 40 each, 3–23 eat none.
+
+**`action.eat-in-cell` rescues nobody, and cannot.** Not one of the 24 prisoners
+performed it in 24,000 ticks. `beginNextAction` picks one action before it asks
+about a target — `selectBestAction`
+(`src/simulation/prisoners/utility-ai.ts:63`) scores `deficit × effect` with no
+availability term — and `action.eat-meal`'s hunger effect is `4` against
+`action.eat-in-cell`'s `3` (`actions.ts:121` and `:125`), on the same need, in the
+same `meal` category, so the canteen outscores the cell at every hunger level
+above zero deficit. When the target then failed to resolve, `beginNextAction`
+counted an unmet cycle and returned; there was no second candidate. The fallback
+§*What this decision does not settle* 1 leaves open was not merely unimplemented
+— under that scoring rule it was **unreachable**.
+
+> **That paragraph's last two sentences are false as of
+> [ADR 0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
+> and they are kept in the past tense rather than deleted because the
+> measurement above them was taken under the rule they describe (2026-09-15).**
+> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1616`) no longer
+> takes one action. It walks `rankActions`' whole ordered list —
+> `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1624`) —
+> and `continue`s past any candidate whose target does not resolve (`:1627`,
+> `if (target === undefined) continue;`), counting `unmetDemandCycles` **once,
+> after every candidate has been tried** (`:1668`,
+> `this.unmetDemandCycles += 1;`, the last statement of the method) rather than
+> at the first that failed. So a prisoner refused a canteen
+> seat now falls through to `action.eat-in-cell`, which is precisely the
+> fallback this paragraph called unreachable, and `recordSubstitution` (`:1724`)
+> is a second counter for how often it happens.
+>
+> **Every one of those five anchors was written on 2026-09-15 and was dead by
+> 2026-09-16**, when this branch merged `origin/main`: they read `:1629`,
+> `:1638`, `:1640`, `:1681` and `:1737`, all thirteen or so lines high, and
+> `:1638` had landed on a blank line. `action-system.ts` is 1,838 lines and
+> among the most-edited files in `src/`, which is what makes a bare line number
+> into it the least durable citation this corpus writes
+> (`docs/AGENT_WORKFLOW.md` §4).
+>
+> **This document already names the ADR that did it and did not join the two
+> sentences up.** §*What this changes* below cites ADR 0041 as having *"took
+> decision 5's base half and deferred its fairness half as decision 2"*; the
+> paragraph above says the base half is unreachable. Both have stood since
+> 2026-08-27. **The 24-prisoner table above is therefore a measurement of a rule
+> the tree no longer runs**, and re-running it is decision 5's revisit, not this
+> correction's.
+
+**The mechanism is incumbency, not just index order**, and this is the part
+decision 5 did not foresee. One meal block traced tick by tick, prisoner 0 (a
+winner) against prisoner 6 (a loser), `useClaims` being the canteen's `'dining'`
+occupancy:
+
+```
+tick   claims  p0                        p6
+14000       0  idle/use-toilet/out       idle/use-toilet/out
+14020       0  travelling/eat-meal/out   travelling/eat-meal/out
+14040       6  performing/eat-meal/IN    idle/eat-meal/out      <- p6 refused at the door
+14060       6  performing/eat-meal/IN    idle/eat-meal/out      <- p6 refused at selection
+14080       0  idle/eat-meal/IN          travelling/eat-meal/out
+14100       6  performing/eat-meal/IN    idle/eat-meal/out      <- p0 re-claims standing still
+```
+
+Decision 2 puts the claim at arrival, so **a traveller holds nothing and a
+prisoner already standing on the anchor tile holds the `sameTile` fast path**
+(`action-system.ts:1636`, `const arrivesImmediately = sameTile(currentTile,
+destination);`; the predicate at `:291`. This branch wrote `:1649`, which was a
+bare ` */` by the time it merged `origin/main` on 2026-09-16). A winner who finishes a meal stays in the room, and on
+the next reconsideration takes the seat again without moving, while the loser is
+still walking. Half of every winner's meals are taken that way: of 40 meals
+each, **20 were entered from `idle` on the anchor tile and 20 after travelling**.
+Ascending index decides the first round of a block; incumbency decides every
+round after it, and the two point the same way. So the losing set is not merely
+"the high indices lose more often" — it is closed, and it never reopens.
+
+**What the consequence is, bounded honestly.** `hunger` clamps at `NEED_MIN`
+(`src/simulation/prisoners/needs.ts`), and **no system in `src/` reads
+`hunger`** — the only need feeding a downstream consequence is `safety`, through
+`src/simulation/runtime/new-session.ts:598` into `IncidentTriggerSystem`.
+
+> **Both halves of that clause are false as of
+> [ADR 0048](0048-what-a-sectors-occupants-are.md) decision 2, and the anchor
+> that carried it points at nothing related (2026-09-15).** `needsPressure` is
+> now *"the mean deficit over all six needs, not `safety` alone"*: `needDeficitOf`
+> sums over `NEED_IDS` in declared order
+> (`src/simulation/runtime/new-session.ts:1387`) and the sector sample averages
+> it over the sector's occupants (`:1420`–`:1424`), which
+> `IncidentTriggerSystem` reads as `{ kind: 'needs-pressure' }`
+> (`src/simulation/incidents/trigger-system.ts:515`). So **`hunger` does have a
+> downstream reader**, and starving three quarters of a prison now raises its
+> riot risk. The old anchor `new-session.ts:598` is a constructor argument in an
+> unrelated block today.
+>
+> **What this does not do is make the paragraph's conclusion wrong in the
+> direction a reader would guess.** *"Real starvation with a bounded
+> consequence"* stays the right shape — nothing still kills, releases or
+> disciplines a starving prisoner, and #31 still owns the release path — but the
+> bound moved, and the sentence *"in a game that currently has no way to tell
+> the player"* was already answered by the 2026-08-29 amendment above.
+Nothing kills, releases or disciplines a starving prisoner (#31 still owns the
+release path). So this is **real starvation with a bounded consequence**, not a
+spiral: 75% of the population permanently pinned at a need level of zero, doing
+nothing about it, in a game that currently has no way to tell the player. The
+absent readout is the same gap as the section above, which is why the two are
+amended together.
+
+### What this changes, and what a reader has to do that no gate can
+
+- **No decision moves.** Decision 5's ascending-index rule is what ships and is
+  what was measured. Whether it should be replaced by a scheduling policy is
+  written up separately as a proposal, with options and costs, and is
+  deliberately **not** implemented here — decision 5's own reason stands, that a
+  fix is a per-tick ordering decision over the whole population and therefore
+  ADR 0020's territory. **That proposal is [ADR
+  0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
+  which took decision 5's base half and deferred its fairness half as decision
+  2 — now tracked as issue #434.** So the reader's job here is no longer to
+  notice that something is owed; it is to read #434 before re-arguing the
+  ordering question from this section.
+- **§*What is owed, and to whom*'s second bullet is discharged as a
+  measurement** and re-owed as a decision.
+- **An amendment moves no `Status` line, so nothing mechanical in this
+  repository can see this correction.**
+  `tests/foundation/adr-status-reference-contract.test.ts:234-244` blanks a
+  section whose heading matches `/amendment/i` before it scans, and everywhere
+  else it compares *status words* to *status statements* — it has no notion of a
+  consequences paragraph that stopped being true.
+  `adr-numbering-contract.test.ts` compares the index to the filenames on disk.
+  `adr-status-queue-anchor-contract.test.ts` reads `STATUS-QUEUE.md` alone. All
+  three are green on this tree with both false paragraphs standing — verified by
+  running them, before this amendment was written and after. **A reader is the
+  only gate a consequences section has**, and an entry in
+  [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) is what that reader is owed; it is not
+  written in this commit and is owed by it.

@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { actorAnimationPhase, actorFrameOrdinal, createActorPose, selectActorPose } from '../actors/actor-pose';
+import { createCrowdOffset, crowdKeyForPosition, crowdSpreadOffset, NO_CROWD_KEY } from '../actors/crowd-spread';
 import { createSpritePlacement, placeFootPivotSprite } from '../actors/sprite-placement';
 import type { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { depthForAnchor } from '../depth';
@@ -21,17 +22,38 @@ import { TILE_SIZE_PX, tileCentreToWorld, tileRangeContains, type TileRange } fr
  *   population -- and stays there.
  * - **Culling is a numeric range test per actor**, so an off-screen crowd
  *   costs a comparison each and no display objects at all.
- * - **The per-frame path allocates nothing.** Pose selection, frame lookup and
- *   pivot placement all fill caller-owned objects, and the atlas frame index
- *   answers with pre-built descriptors instead of building them per call.
+ * - **The per-frame path allocates no view data.** Pose selection, frame
+ *   lookup, pivot placement and the crowd offset all fill caller-owned
+ *   objects, the two scratch arrays the co-location pass fills are reused and
+ *   grow to a high-water mark like the sprite pool, and the atlas frame index
+ *   answers with pre-built descriptors instead of building them per call. The
+ *   one thing that does allocate is inside the two `Map`s the co-location pass
+ *   keys by drawn position: `Map.set` with a key not seen since the last
+ *   `clear()` allocates an entry, so a frame drawing *v* visible actors on *d*
+ *   distinct points pays *d* of those. This bullet used to read "allocates
+ *   nothing", which was true before the co-location pass existed and is not
+ *   true now; the sentence is corrected rather than kept.
  * - **Redundant GPU state is skipped**: `setTexture` and the origin/scale that
  *   go with it are touched only when the resolved frame actually changed.
  *
- * What it costs, honestly: one `Map` probe, one pose selection and a handful of
- * setter calls per *visible* actor per frame, plus one range test per actor
- * anywhere in the world. The remaining per-frame cost that does scale with
- * total population is that range test, which is what a spatial index would
- * remove later.
+ * What it costs, honestly: one sprite-pool `Map` probe, two co-location `Map`
+ * probes, one pose selection and a handful of setter calls per *visible* actor
+ * per frame, plus one range test per actor anywhere in the world. The remaining
+ * per-frame cost that does scale with total population is that range test,
+ * which is what a spatial index would remove later.
+ *
+ * ### Two actors on one spot
+ *
+ * A snapshot legitimately puts several actors on the same tile -- a room's
+ * `anchorTile` is where every actor performing an action in that room stands
+ * (#944 section 3's measurement record), so a housed population stacks by
+ * construction. Drawn at one point they are one figure, which is
+ * issue #944: 28 actors on two tiles drew two figures. So before drawing, this
+ * layer walks the visible actors once to find which of them share a drawn
+ * point, and `crowd-spread.ts` turns each one's rank in its group into a
+ * bounded offset inside its own tile. That module's docblock carries the rule,
+ * the reason the answer is a placement and not a depth bias, and -- stated
+ * there rather than implied -- the exact limit of what it buys.
  */
 
 /** Tiles of slack around the viewport, so a sprite taller than its tile does not pop at the edge. */
@@ -58,6 +80,22 @@ export class ActorLayer {
   private readonly free: PooledSprite[] = [];
   private readonly pose = createActorPose();
   private readonly placement = createSpritePlacement();
+  private readonly crowdOffset = createCrowdOffset();
+  /**
+   * The visible actors of the frame being drawn, and their crowd keys, in the
+   * feed's order.
+   *
+   * Two parallel scratch arrays rather than one array of pairs, so the second
+   * pass needs no per-actor object, and reused across frames rather than
+   * rebuilt: `length = 0` keeps the backing store, so this grows to the
+   * largest visible population ever reached and then allocates nothing, which
+   * is the sprite pool's own bargain.
+   */
+  private readonly visibleActors: RenderActor[] = [];
+  private readonly visibleCrowdKeys: number[] = [];
+  /** Actors sharing each drawn point this frame, then how many of each group have been drawn. */
+  private readonly crowdSizes = new Map<number, number>();
+  private readonly crowdRanks = new Map<number, number>();
   private frameCounter = 0;
   private visibleCount = 0;
   private unresolvedCount = 0;
@@ -79,9 +117,42 @@ export class ActorLayer {
       maxTileY: range.maxTileY + CULL_MARGIN_TILES,
     };
 
+    // Pass one: cull, and tally how many actors share each drawn point.
+    //
+    // A *moving* actor takes no part. It is already distinguishable by its
+    // motion, the stack #944 measured is motionless, and an extrapolated
+    // position that momentarily rounds onto a standing actor's point would
+    // otherwise shove that actor sideways for a frame or two -- a visible pop
+    // in exchange for nothing.
+    this.visibleActors.length = 0;
+    this.visibleCrowdKeys.length = 0;
+    this.crowdSizes.clear();
+    this.crowdRanks.clear();
     for (const actor of actors) {
       if (!tileRangeContains(culled, actor.tileX, actor.tileY)) continue;
-      if (this.draw(actor, nowSeconds)) this.visibleCount += 1;
+      const key =
+        actor.deltaX === 0 && actor.deltaY === 0 ? crowdKeyForPosition(actor.tileX, actor.tileY) : NO_CROWD_KEY;
+      this.visibleActors.push(actor);
+      this.visibleCrowdKeys.push(key);
+      if (key !== NO_CROWD_KEY) this.crowdSizes.set(key, (this.crowdSizes.get(key) ?? 0) + 1);
+    }
+
+    // Pass two: draw, in the feed's order, so the rank a crowd offset comes
+    // from is that order -- which is documented and deterministic
+    // (`actorsFromSnapshot`, `encodeRenderActorsKeyframe`).
+    for (let index = 0; index < this.visibleActors.length; index += 1) {
+      const actor = this.visibleActors[index]!;
+      const key = this.visibleCrowdKeys[index]!;
+      const size = key === NO_CROWD_KEY ? 1 : (this.crowdSizes.get(key) ?? 1);
+      if (size > 1) {
+        const rank = this.crowdRanks.get(key) ?? 0;
+        this.crowdRanks.set(key, rank + 1);
+        crowdSpreadOffset(rank, size, this.crowdOffset);
+      } else {
+        this.crowdOffset.x = 0;
+        this.crowdOffset.y = 0;
+      }
+      if (this.draw(actor, nowSeconds, this.crowdOffset.x, this.crowdOffset.y)) this.visibleCount += 1;
     }
 
     this.releaseUnseen();
@@ -98,7 +169,8 @@ export class ActorLayer {
     this.free.length = 0;
   }
 
-  private draw(actor: RenderActor, nowSeconds: number): boolean {
+  /** `offsetTilesX`/`offsetTilesY` come from `crowd-spread.ts` and are zero for an actor standing alone. */
+  private draw(actor: RenderActor, nowSeconds: number, offsetTilesX: number, offsetTilesY: number): boolean {
     const pose = selectActorPose(actor, this.pose);
 
     // Fall back to the idle clip rather than dropping the actor: an asset that
@@ -123,8 +195,8 @@ export class ActorLayer {
     }
 
     const placement = placeFootPivotSprite(
-      tileCentreToWorld(actor.tileX),
-      tileCentreToWorld(actor.tileY),
+      tileCentreToWorld(actor.tileX) + offsetTilesX * TILE_SIZE_PX,
+      tileCentreToWorld(actor.tileY) + offsetTilesY * TILE_SIZE_PX,
       frame,
       undefined,
       this.placement,
@@ -143,6 +215,12 @@ export class ActorLayer {
     // The feet are the depth anchor, and they are half a tile south of the
     // actor's tile centre in world terms -- the same southern-edge rule the
     // tile layer sorts structures by, so an actor and a wall on one row agree.
+    //
+    // `placement.y` is the *drawn* foot, crowd offset included, and that is
+    // load-bearing rather than incidental: a crowd's members are offset south
+    // by distinct amounts, so they get distinct depths and the overlap order
+    // of two actors on one tile is decided by where they are drawn instead of
+    // by which block of the feed's array they came from (#944 §2).
     sprite.image.setDepth(depthForAnchor(placement.y + TILE_SIZE_PX / 2, 'actor'));
     sprite.lastSeenFrame = this.frameCounter;
     return true;

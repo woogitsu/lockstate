@@ -4,6 +4,11 @@ import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import type { DeploymentPhase } from '../security/guard-roster';
+import {
+  displayedDeploymentPhase,
+  type DisplayedDeploymentPhase,
+  type SectorPostSource,
+} from '../security/deployment-phase';
 import type { CoverageReportEntry } from '../security/deployment-system';
 import type { TilePosition } from '../world/coordinates';
 import {
@@ -53,6 +58,18 @@ export interface StaffProjectionSource {
   readonly staff: StaffRosterSource;
   readonly deployment?: StaffCoverageSource;
   readonly patrol?: StaffPatrolMetricsSource;
+  /**
+   * Where a sector's post tile is read from, so a row can say `'returning'`
+   * rather than assert a post the guard is not standing on
+   * (`src/simulation/security/deployment-phase.ts`).
+   *
+   * **Optional, and absent means the stored phase is reported as it stands.**
+   * A projection is not the place to refuse a source: a fixture that hands
+   * over a roster and no sectors is measuring the roster, and the honest
+   * answer for it is `GuardRoster`'s own word. A session supplies it
+   * (`projection-catalog.ts`, `hud/staff`).
+   */
+  readonly sectors?: SectorPostSource;
 }
 
 export interface StaffProjectionOptions {
@@ -68,7 +85,12 @@ export interface StaffProjectionOptions {
 }
 
 export interface StaffAssignmentViewModel {
-  readonly deploymentPhase: DeploymentPhase;
+  /**
+   * `DisplayedDeploymentPhase`, not `DeploymentPhase`: `'returning'` is
+   * derived here and is stored nowhere. See
+   * `src/simulation/security/deployment-phase.ts`.
+   */
+  readonly deploymentPhase: DisplayedDeploymentPhase;
   readonly sectorId?: string;
   /** `-1` is the simulation's "final leg back to post" sentinel; absent while not patrolling. */
   readonly patrolWaypointIndex?: number;
@@ -108,7 +130,7 @@ export interface StaffViewModel {
     readonly count: number;
   }[];
   /** Fixed declared order, so a phase never appears and vanishes between frames. */
-  readonly countsByDeploymentPhase: readonly { readonly deploymentPhase: DeploymentPhase; readonly count: number }[];
+  readonly countsByDeploymentPhase: readonly { readonly deploymentPhase: DisplayedDeploymentPhase; readonly count: number }[];
   /** Per sector at the given tick, ascending sector id. Empty when no deployment system was supplied. */
   readonly coverage: readonly StaffCoverageRowViewModel[];
   readonly totals: {
@@ -127,18 +149,38 @@ export interface StaffViewModel {
   readonly deploymentMetrics?: { readonly deploymentFailures: number };
 }
 
-const DEPLOYMENT_PHASES: readonly DeploymentPhase[] = ['unassigned', 'travelling', 'on-post', 'on-search'];
+/**
+ * The four the simulation declares, in `DeploymentPhase`'s own order, and
+ * then the derived one.
+ *
+ * `'returning'` is appended rather than slotted next to `'travelling'`, which
+ * is where it belongs by meaning, precisely so the list keeps saying which
+ * four are the enum's: a reader comparing this against
+ * `src/simulation/security/guard-roster.ts` sees a prefix and one addition,
+ * not five members it has to diff. The rows this counts are counted here or
+ * nowhere -- `countsByDeploymentPhase` sums to the whole roster, so a phase a
+ * row can hold and this list omits would quietly lose a head.
+ */
+const DISPLAYED_DEPLOYMENT_PHASES: readonly DisplayedDeploymentPhase[] = [
+  'unassigned',
+  'travelling',
+  'on-post',
+  'on-search',
+  'returning',
+];
 
 function projectRow(
   source: StaffRosterSource,
   entityId: EntityId,
   staffRoles: ContentRegistry<StaffRoleDefinition>,
   identity: ActorIdentitySource | undefined,
+  sectors: SectorPostSource | undefined,
 ): StaffRosterRowViewModel {
   const name = identity?.getName('staff', entityId);
   const staffRoleId = source.getStaffRoleId(entityId);
   const role = staffRoles.getById(staffRoleId);
   const sectorId = source.getSectorId(entityId);
+  const tile = source.getTile(entityId);
   const waypointIndex = source.getPatrolWaypointIndex(entityId);
   const loopStartedAtTick = source.getPatrolLoopStartedAtTick(entityId);
 
@@ -154,9 +196,9 @@ function projectRow(
           permissions: [...role.permissions].sort(compareStableIds),
         }
       : {}),
-    tile: toTileViewModel(source.getTile(entityId)),
+    tile: toTileViewModel(tile),
     assignment: {
-      deploymentPhase: source.getDeploymentPhase(entityId),
+      deploymentPhase: displayedDeploymentPhase(source.getDeploymentPhase(entityId), sectorId, tile, sectors),
       ...(sectorId !== undefined ? { sectorId } : {}),
       ...(waypointIndex !== undefined ? { patrolWaypointIndex: waypointIndex } : {}),
       ...(loopStartedAtTick !== undefined ? { patrolLoopStartedAtTick: loopStartedAtTick } : {}),
@@ -187,10 +229,10 @@ export function projectStaff(
 ): StaffViewModel {
   const staffRoles = options.staffRoles ?? defaultStaffRoleRegistry;
   const entityIds = source.staff.allGuardIds();
-  const rows = entityIds.map((entityId) => projectRow(source.staff, entityId, staffRoles, options.identity));
+  const rows = entityIds.map((entityId) => projectRow(source.staff, entityId, staffRoles, options.identity, source.sectors));
 
   const countsByRoleId = new Map<string, number>();
-  const countsByPhase = new Map<DeploymentPhase, number>();
+  const countsByPhase = new Map<DisplayedDeploymentPhase, number>();
   for (const row of rows) {
     countsByRoleId.set(row.staffRoleId, (countsByRoleId.get(row.staffRoleId) ?? 0) + 1);
     const phase = row.assignment.deploymentPhase;
@@ -228,7 +270,7 @@ export function projectStaff(
       department: role.department,
       count: countsByRoleId.get(role.id) ?? 0,
     })),
-    countsByDeploymentPhase: DEPLOYMENT_PHASES.map((phase) => ({
+    countsByDeploymentPhase: DISPLAYED_DEPLOYMENT_PHASES.map((phase) => ({
       deploymentPhase: phase,
       count: countsByPhase.get(phase) ?? 0,
     })),

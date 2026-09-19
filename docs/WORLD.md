@@ -105,18 +105,95 @@ pricing, selection and UI; it is not the ownership test.
 - Verifies land ownership (`requiresOwnedLand`).
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
-Its one production caller is `ConstructionSystem.submitOrder`, which refuses a
+It has three production callers, each supplying its own requirement set:
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
+inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
+(`src/simulation/objects/object-placement-service.ts:526`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
+`ZONING_REQUIREMENT`). **This document said "its one production caller" from
+`f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
+the third at `6cededc` (#320), so the sentence had been wrong for about a
+hundred releases. The terrain clause below is scoped to `SUBMISSION_REQUIREMENT`
+and does not describe the other two — `zoning.ts:417` records that `canBuildAt`
+defaults terrain checks **on**.
+
+`ConstructionSystem.submitOrder` refuses a
 build order whose tile the player does not own — the order is `failed` with
 `failReason: 'unowned-land'` rather than queued, because ownership is
-permission and permission cannot be queued (#215). That caller passes
+permission and permission cannot be queued (#215). *Which* tile that is, for an
+order that occupies an edge rather than a tile, is the subsection below. That caller passes
 `requiresOwnedLand` only: **terrain is deliberately not enforced at
 submission**, so a wall may currently be ordered on water or on rock. Turning
 either on is its own gameplay decision, and `SUBMISSION_REQUIREMENT` in
 `src/simulation/construction/system.ts` is where it would be taken.
 
-Which tile must be owned for an *edge* order is the order's own tile, not the
-tile across the edge it occupies: every boundary edge of an owned parcel has
-unowned land on the far side, and a prison is a perimeter.
+### An edge order is judged by both tiles the edge separates
+
+An *edge* order is permitted when **either** of the two tiles the edge
+separates qualifies — the ownership test and the bounds test beside it, asked
+of both and satisfied by either. The world keeps one slot per edge and keeps it
+on the north and west side, so the south face of owned land is addressed as the
+north edge of the first unowned row and its east face as the west edge of the
+first unowned column; `ConstructionSystem.submitOrder`
+(`src/simulation/construction/system.ts:540`) asks `admits` (`:583`) about the
+order's own tile and, only if that refuses, about the tile across the named
+edge. Non-edge buildables are unaffected — an object is addressed by a tile and
+has no far side, which is what `occupiesTileEdge` decides — and the refusal the
+player is told about is still the order's own tile's, because that is the tile
+they named.
+
+**This paragraph said the opposite until issue #448, and the reason it did is
+the durable half.** It read:
+
+> Which tile must be owned for an *edge* order is the order's own tile, not the
+> tile across the edge it occupies: every boundary edge of an owned parcel has
+> unowned land on the far side, and a prison is a perimeter.
+
+The justification is right, and it is *why* the rule is now symmetric; the rule
+it justified was only half of it. Asking the order's own tile alone approved the
+north and west faces of owned land and refused the south and east faces — the
+same physical wall, on the same property line, decided by which of its two
+neighbours the world happened to keep the slot on. Since
+[ADR 0045](./adr/0045-must-a-zoned-room-be-enclosed.md) that was a wrong
+*refusal* rather than a wrong readout: `roomPerimeterEnclosure` reads a room's
+south boundary off the row below it, so a room flush against the edge of owned
+land could never be sealed and therefore could never be zoned.
+[ADR 0047](./adr/0047-raising-a-building-on-open-ground.md) decision 6 is the
+ruling; #448 is where it landed, with the corner cell in
+`tests/integration/edge-of-owned-land-room.test.ts` as the case that could not
+be built before.
+
+**The refusal a player actually met was `out-of-bounds`, not `unowned-land`.**
+No land purchase exists, so a session owns exactly one 32×32 chunk and the
+south and east faces of owned land are also the edge of the materialised world
+— which the bounds check refuses before ownership is ever consulted. Both
+halves had to widen together for the fix to be reachable at all; the
+ownership half alone would have changed nothing a player could see.
+
+**Completing such an order materialises the neighbouring chunk, and the
+frontier ring that would make that deliberate is deferred.** `writeEdge` →
+`setTopEdge` → `setMapValue` loads the chunk it is asked to write into, and
+`WorldRenderView` draws every loaded chunk, so walling the south or east face of
+the world's frontier puts a fresh 32×32 block of unowned ground on screen where
+there was empty background. ADR 0047 decision 6 proposes pre-materialising the
+eight chunks around owned land at session start so the world has a visible edge
+from the first frame. It is **not** taken here, for three reasons:
+
+- **It changes what a new session's world is**, from one materialised chunk to
+  nine — moving the world snapshot every new prison writes, `loadedBounds`, and
+  the loaded-chunk set navigation is handed. That is a world-model decision, and
+  ADR 0047 is *Proposed*; taking it inside a defect fix would be self-approving
+  it (`docs/AGENT_WORKFLOW.md` §3).
+- **The fix does not need it.** The ground that appears is unowned and stays
+  unowned, so every rule that asks `canBuildAt` for owned land still refuses it
+  — a room may not be zoned there, and
+  `tests/integration/edge-of-owned-land-room.test.ts` asserts that rather than
+  assuming it. Only the wall was ever allowed across the line. What is deferred
+  is a presentation guarantee, not a rule.
+- **The ring's shape is a question land purchase will answer differently.** A
+  ring around *owned land*, recomputed when a parcel is bought, is not the same
+  object as a ring around chunk `(0, 0)`, and building the second now is work
+  the first would throw away.
 
 ## Snapshot schema
 
@@ -124,7 +201,12 @@ unowned land on the far side, and a prison is a perimeter.
 - `version`: snapshot format version (`1`),
 - `chunkSize`: chunk dimension (default `32`, at most `WORLD_CHUNK_SIZE_LIMIT`),
 - `ownedChunks`: sorted list of owned chunk positions,
-- `chunks`: sorted chunk records with revisions and optional RLE terrain,
+- `chunks`: sorted chunk records with revisions and, each optional, the RLE
+  terrain plane and the `topEdge`, `leftEdge` and `zoning` planes
+  (`src/simulation/world/sparse-world.ts:45-56`). **This bullet named only
+  terrain** from `2ef4194` until this correction, through eleven later edits to
+  this file, while walls, doors and the zoning plane were all persisted —
+  `docs/NAVIGATION.md:83-85` relies on the opposite,
 - `parcels`: sorted registered parcel definitions,
 - `ownedParcels`: sorted list of owned parcel IDs.
 

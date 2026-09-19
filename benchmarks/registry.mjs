@@ -1,3 +1,4 @@
+import { actorRenderPublicationScenario } from './scenarios/actor-render-publication.mjs';
 import { foundationSmokeScenario } from './scenarios/foundation-smoke.mjs';
 import {
   worldChunkSizeDensePrisonScenario,
@@ -10,6 +11,19 @@ import {
   navigationMealRushScenario,
   navigationMixedDestinationScenario,
 } from './scenarios/navigation-actor-tiers.mjs';
+import {
+  navigationProductionLockdownReturnScenario,
+  navigationProductionMealRushScenario,
+  navigationProductionSingleRequestBudgetScenario,
+  navigationProductionYardCrossingScenario,
+} from './scenarios/navigation-production.mjs';
+import {
+  regimeScheduleLookupEightGroupsScenario,
+  regimeScheduleLookupFourGroupsScenario,
+  regimeScheduleLookupIdleSessionScenario,
+  regimeScheduleLookupSixteenGroupsScenario,
+  regimeScheduleLookupTwoGroupsScenario,
+} from './scenarios/regime-schedule-lookup.mjs';
 
 export const benchmarkScenarios = Object.freeze([
   foundationSmokeScenario,
@@ -20,6 +34,16 @@ export const benchmarkScenarios = Object.freeze([
   navigationMealRushScenario,
   navigationLockdownReturnScenario,
   navigationMixedDestinationScenario,
+  navigationProductionMealRushScenario,
+  navigationProductionLockdownReturnScenario,
+  navigationProductionSingleRequestBudgetScenario,
+  navigationProductionYardCrossingScenario,
+  actorRenderPublicationScenario,
+  regimeScheduleLookupTwoGroupsScenario,
+  regimeScheduleLookupFourGroupsScenario,
+  regimeScheduleLookupEightGroupsScenario,
+  regimeScheduleLookupSixteenGroupsScenario,
+  regimeScheduleLookupIdleSessionScenario,
 ]);
 
 export function findBenchmarkScenario(id) {

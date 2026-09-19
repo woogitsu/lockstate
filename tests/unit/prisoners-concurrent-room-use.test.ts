@@ -3,6 +3,8 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { ComponentBitset } from '../../src/simulation/entity/component';
 import { EntityStore, type EntityId } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
+import { LocomotionStore, LocomotionSystem } from '../../src/simulation/locomotion';
+import { OPEN_GROUND } from '../helpers/open-ground';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -13,12 +15,33 @@ import {
   PositionComponent,
   PrisonerColdState,
   PrisonerRecordComponent,
+  SubstitutionRecordComponent,
   intakeStageIndex,
 } from '../../src/simulation/prisoners/components';
 import { NeedsComponent } from '../../src/simulation/prisoners/needs';
 import { DEFAULT_REGIME_SCHEDULES } from '../../src/simulation/prisoners/regime';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
+
+/**
+ * The walk store and the system that advances it, wired the way
+ * `PrisonerOperationsRuntime` wires them (ADR 0059). An `ActionSystem`
+ * registered without one starts journeys that never finish, because the
+ * arrival now happens when the walk ends rather than when the router answers.
+ */
+function registerLocomotion(kernel: Kernel, position: PositionComponent): LocomotionStore {
+  const locomotion = new LocomotionStore();
+  kernel.registerSystem(
+    new LocomotionSystem('prisoners.locomotion', (ticks) =>
+      locomotion.advance(ticks, OPEN_GROUND, (index, tile) => {
+        position.tileX[index] = tile.x;
+        position.tileY[index] = tile.y;
+      }),
+    ),
+  );
+  return locomotion;
+}
+
 
 /**
  * ADR 0028 phase 6 and [ADR 0029](../../docs/adr/0029-concurrent-room-use-claims.md):
@@ -102,6 +125,13 @@ function buildContentionFixture(options: {
   readonly prisonerCount: number;
   readonly concurrentUseCapacity: number;
   readonly startInCellBlock?: boolean;
+  /**
+   * A registry to use in place of a plain one -- the hook the
+   * "a refused claim mutates nothing" case below needs, because ADR 0029
+   * decision 7 commitment 4 guards a branch no *ordinary* prison can reach.
+   * See that case for why refusing from outside is the honest way to reach it.
+   */
+  readonly registry?: RoomInstanceRegistry;
 }): ContentionFixture {
   const slots = options.prisonerCount + 2;
   const store = new EntityStore(slots);
@@ -113,8 +143,9 @@ function buildContentionFixture(options: {
   const needs = new NeedsComponent(slots);
   const currentAction = new CurrentActionComponent(slots);
   const position = new PositionComponent(slots);
+  const substitutions = new SubstitutionRecordComponent(slots);
   const coldState = new PrisonerColdState();
-  const roomInstances = new RoomInstanceRegistry();
+  const roomInstances = options.registry ?? new RoomInstanceRegistry();
 
   const cellBlock = buildCellBlockFixture(4);
   const navigation = new NavigationSystem(
@@ -135,6 +166,8 @@ function buildContentionFixture(options: {
     objectCapabilities: ['dining'],
   });
 
+  const kernel = new Kernel(MEAL_BLOCK_START_TICK, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
+  const locomotion = registerLocomotion(kernel, position);
   const actionSystem = new ActionSystem(
     store,
     query,
@@ -142,13 +175,14 @@ function buildContentionFixture(options: {
     needs,
     currentAction,
     position,
+    substitutions,
     coldState,
     roomInstances,
     navigation,
-    DEFAULT_REGIME_SCHEDULES,
+    locomotion,
+    () => DEFAULT_REGIME_SCHEDULES,
   );
 
-  const kernel = new Kernel(MEAL_BLOCK_START_TICK, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
   kernel.registerSystem(navigation);
   kernel.registerSystem(actionSystem);
 
@@ -370,6 +404,16 @@ describe('a save restore neither leaks nor duplicates a concurrent-use claim', (
    * `RoomInstanceRegistry.loadSnapshot` plus `ActionSystem.reinstateUseClaims`
    * -- which is exactly the pair `PrisonerOperationsRuntime.loadSnapshot`
    * calls in that order.
+   *
+   * **The other half of the rebuild is not reachable from this file and is
+   * measured in `tests/integration/own-accommodation-claim-restore.test.ts`.**
+   * `reinstateUseClaims` filters on `action.target.kind !== 'room-catalog-id'`,
+   * and this fixture houses nobody (see `MEAL_BLOCK_START_TICK` above: *"no
+   * accommodation is set for anybody here"*), so no prisoner here can be
+   * performing an `own-accommodation` action and that half of the filter is
+   * structurally out of reach. Weakening it to `if (action === undefined)
+   * continue;` leaves every case in this file green while a restore invents a
+   * claim on a prisoner's own cell.
    */
   it('rebuilds exactly the claims the performing prisoners hold, and rebuilding twice does not double them', () => {
     const fixture = buildContentionFixture({ prisonerCount: 4, concurrentUseCapacity: 2 });
@@ -514,5 +558,69 @@ describe('the same command order gives byte-identical results with the gate biti
     fixture.step(200);
     expect(fixture.roomInstances.totalUseClaims).toBe(0);
     expect(fixture.performingInCanteen()).toBe(0);
+  });
+});
+
+/**
+ * [ADR 0029](../../docs/adr/0029-concurrent-room-use-claims.md) decision 7
+ * **commitment 4**: *"A refused claim mutates nothing. In `beginNextAction` the
+ * claim is settled before the action index, the action target and
+ * `actionsStarted` are written, so a refusal leaves no half-started action
+ * behind and the metric counts actions that actually began."*
+ *
+ * ## Why this needs a registry that refuses, and why that is not the fixture
+ * supplying both sides
+ *
+ * ADR 0041's amendment reported this commitment as *held in the code but
+ * unguarded*: **a mutation violating it deliberately left the whole suite
+ * green**, because the branch is unreachable in an ordinary prison.
+ * `resolveTargetInstance` consults `findAvailableForUse` and `claimUseIfNeeded`
+ * runs two statements later with nothing in between, so a prisoner who reaches
+ * the claim has already been told there is room and is never refused. Issue
+ * #434's reordering of the scan does **not** change that -- it changes which
+ * prisoner is processed when, not what happens between those two statements
+ * inside one prisoner's turn -- so the branch is still unreachable from a
+ * fixture that only builds a prison.
+ *
+ * The refusal is therefore injected, and what is asserted is entirely
+ * production state: the action index, the target and `actionsStarted`. The
+ * fixture supplies the *stimulus*, which is what a fixture is for; it supplies
+ * no part of the expected answer, which is what #375 is about. The alternative
+ * -- leaving the commitment unguarded because no prison can break it today --
+ * is what ADR 0041's amendment already recorded as unsatisfactory, and a
+ * parallel or differently-ordered scan is exactly what would make it reachable.
+ */
+class RefusingRegistry extends RoomInstanceRegistry {
+  public refusedCount = 0;
+
+  public override claimUse(): boolean {
+    this.refusedCount += 1;
+    return false;
+  }
+}
+
+describe('a refused claim mutates nothing (ADR 0029 decision 7, commitment 4)', () => {
+  it('leaves no action index, no target and no started-action count behind', () => {
+    const registry = new RefusingRegistry();
+    const fixture = buildContentionFixture({ prisonerCount: 2, concurrentUseCapacity: 2, registry });
+
+    // The precondition: the room *would* admit them. `findAvailableForUse`
+    // answers the canteen for both, so both reach the claim and both are
+    // refused there rather than being filtered out one statement earlier.
+    expect(fixture.roomInstances.findAvailableForUse('room.canteen', 'dining')?.instanceId).toBe(fixture.canteenInstanceId);
+
+    fixture.step(1);
+
+    expect(registry.refusedCount, 'both prisoners reached the claim').toBe(2);
+    expect(fixture.performingInCanteen()).toBe(0);
+    for (const entityId of fixture.prisoners) {
+      const index = fixture.store.getIndex(entityId);
+      expect(fixture.currentAction.actionIndex[index], 'an action index for an action that never began').toBe(-1);
+      expect(fixture.currentAction.phase[index]).toBe(IDLE_PHASE);
+      expect(fixture.coldState.getActionTarget(entityId), 'a target for a room the prisoner was refused').toBeUndefined();
+    }
+    // No candidate resolved for either prisoner, so both cycles are unmet
+    // demand -- and `actionsStarted` counts actions that actually began.
+    expect(fixture.actionSystem.getMetrics()).toMatchObject({ actionsStarted: 0, actionsCompleted: 0, unmetDemandCycles: 2 });
   });
 });

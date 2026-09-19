@@ -4,15 +4,153 @@ on:
   workflow_dispatch:
 
 permissions:
+  # `contents: write` is what `git push --delete` needs, and it was the whole
+  # of this block until run 2 on 2026-08-30.
+  #
+  # WHY A SECOND SCOPE HAD TO BE NAMED. Declaring a `permissions:` block at all
+  # sets every scope it does not list to `none` -- that is the point of
+  # declaring one -- so `contents: write` alone meant `pull-requests: none`.
+  # `deletebranches.sh` reads `GET /repos/{owner}/{repo}/pulls?state=open` to
+  # protect the head branch of every open pull request, and this repository is
+  # private, so that read is not public and the token could only be refused:
+  #
+  #     curl: (22) The requested URL returned error: 403
+  #
+  # THE SCRIPT FAILED CORRECTLY AND THAT IS WORTH RECORDING RATHER THAN JUST
+  # FIXING. The 403 stopped the run before a single branch was deleted, because
+  # the script treats the open-pull-request list as a precondition rather than
+  # as an optimisation: it runs under `set -euo pipefail` and the list feeds a
+  # `grep -qxF` guard, so losing it aborts instead of quietly protecting
+  # nothing. The alternative shape -- carry on with an empty list -- would have
+  # deleted the head branches of both open pull requests on the first
+  # successful dispatch in this repository's history. The `if [ -z
+  # "${GITHUB_TOKEN:-}" ]` check at the top of the script is the same
+  # reasoning; this is the case that check does not cover, because the token
+  # was present and merely powerless.
+  #
+  # `read`, not `write`. Nothing here opens, closes, comments on or edits a
+  # pull request; the list is consulted and thrown away.
   contents: write
+  pull-requests: read
 
 jobs:
   delete-branches:
-    runs-on: ubuntu-latest
+    # `[self-hosted, Linux, X64, wsl2]`, not `ubuntu-latest`. The header above
+    # records that this workflow HAS NEVER SUCCEEDED -- one run, failed after
+    # four seconds with no step recorded and no log, the signature of a runner
+    # that was never provisioned -- and that version.yml failed identically in
+    # the same four seconds until `adb6b01` moved it to this label. That is the
+    # precedent, and this is the change the header said it was waiting for.
+    #
+    # MEASURED ON 2026-08-30, AND THE LABEL CHANGE WORKED. Run 2 (the first
+    # dispatch after that change) reached this runner, checked out, fetched and
+    # entered `deletebranches.sh`, and its log names the steps it ran. It still
+    # failed -- so "HAS NEVER SUCCEEDED" above stays literally true and is kept
+    # rather than softened -- but it failed at the open-pull-request lookup,
+    # after 13 seconds and inside the script, for the token-scope reason the
+    # `permissions:` block above now records. What that run retires is the
+    # DIAGNOSIS, not the tally: the four-second no-step-no-log signature is
+    # gone, and with it the last reason to suspect the runner. Everything from
+    # `runs-on:` to the script is now known to work on this label.
+    runs-on: self-hosted
     steps:
+      # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
+      # THAT MATTERS MOST.
+      #
+      # This step was the one `uses:` in `.github/workflows/**` still naming a
+      # mutable tag (`actions/checkout@v4`); every other one already named a
+      # 40-character sha. It sits on the only workflow here granted
+      # `contents: write` whose checkout keeps its credential and whose later
+      # steps run `git push origin --delete` over the branch list in
+      # `deletebranches.sh`. A tag is a pointer somebody else can move, so with
+      # `@v4` the answer to "what code runs with that token" was "whatever
+      # actions/checkout's v4 tag points at when a maintainer dispatches this".
+      # A single unpinned entry among pinned ones is worse than none pinned at
+      # all: a reviewer who reads the others takes the discipline as settled and
+      # does not look.
+      #
+      # Two facts that bound the finding rather than dissolve it, stated because
+      # a comment that only argues one way is not evidence. This workflow is
+      # `workflow_dispatch` only, so nothing but a person with repository access
+      # ever starts it; and the attacker the tag admits is whoever can move a
+      # tag in actions/checkout, which is not a threat this repository can do
+      # anything about except stop depending on it. Neither is a reason to keep
+      # the tag, because pinning costs nothing and the property is now
+      # mechanical: tests/foundation/ci-configuration-contract.test.ts requires
+      # a 40-character sha of every `uses:` in this directory, so a workflow
+      # added later cannot reintroduce the gap quietly.
+      #
+      # WHY THE v6 SHA AND NOT A v4 ONE. The two are the same interface. Diffing
+      # actions/checkout's action.yml at the v4 tag against the same file at the
+      # commit pinned below gives exactly one changed line -- `using: node20`
+      # becomes `using: node24` -- and every input this step passes
+      # (`persist-credentials`, `fetch-depth`) keeps its name, its meaning and
+      # its default. So the choice was between two spellings of one interface,
+      # and v6 is the spelling this repository already runs: it is the sha every
+      # other checkout here already names, and one of those (version.yml) keeps
+      # its credential and pushes a branch and a tag exactly as this one does,
+      # and has done so for every release commit on `main`. The
+      # alternative would have been to write a 40-character id for a v4 commit,
+      # and an id nobody in the change verified is not a pin.
+      #
+      # WHAT CHANGES ON THE RUNNER. v6 asks the Actions runner for the node24
+      # handler where v4 asked for node20. On `[self-hosted, Linux, X64, wsl2]`
+      # that is measured: every other call site here runs it, and every run in
+      # this repository that has ever succeeded ran on that label.
+      #
+      # AND WHAT THIS DOES NOT FIX -- READ THIS BEFORE TRUSTING THE JOB ABOVE.
+      # `runs-on:` here is `ubuntu-latest`, and nothing about `ubuntu-latest` is
+      # measurable in this repository, because THIS WORKFLOW HAS NEVER
+      # SUCCEEDED. It has run once, and failed after four seconds with no step
+      # recorded and no log, which is the signature of a runner that was never
+      # provisioned. version.yml's first run failed identically in the same four
+      # seconds and was moved to the self-hosted label at `adb6b01`, whose
+      # message records the measurement and whose header section "Which runner,
+      # and why the obvious answer was wrong" carries the argument; version.yml
+      # names this workflow in that section as the precedent it had wrongly
+      # relied on.
+      #
+      # **That paragraph's conclusion is now out of date and is corrected here
+      # rather than overwritten, because it is what asked for this change.** It
+      # read: "the state of this job is: pinned, explicit about its credential,
+      # and still not runnable as written", and it deferred the fix on the
+      # ground that moving a `git push --delete` onto a runner that will
+      # actually execute it "is a decision about deleting branches, not a
+      # decision about pinning an action... It deserves its own change and its
+      # own reasoning." This is that change. The owner asked for the merged
+      # branches to go on 2026-08-29, against 344 remote branches of which 106
+      # were fully merged into `main`; the label moved, and
+      # `deletebranches.sh` stopped being a frozen list. The reasoning is in
+      # that script's header and in the two steps at the end of this file.
+      #
+      # The superseded paragraph, left standing above so a reader who greps for
+      # it finds the record and not a live claim:
+      # in passing, because moving a workflow that runs `git push origin
+      # --delete` onto a runner that will actually execute it is a decision
+      # about deleting branches, not a decision about pinning an action -- and
+      # `deletebranches.sh` carries a hard-coded branch list from 2026-08-23
+      # under `set -e`, so the first real run needs that list checked as well as
+      # the label. It deserves its own change and its own reasoning.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          # THE SECOND CHECKOUT IN THIS REPOSITORY THAT KEEPS THE TOKEN, and
+          # until this line the only one that did not say so.
+          # `persist-credentials` defaults to `true` in v4 and in v6 alike, so
+          # this step has always kept its credential -- by inheritance, which is
+          # the one way a setting that decides whether a token survives into a
+          # shell script should not be decided. `bash deletebranches.sh` below
+          # runs `git push origin --delete`, so the credential has to survive
+          # the checkout and `true` is deliberate. It is written out for the
+          # reason version.yml writes out its own: an exception that is
+          # inherited is invisible in the diff that would remove it, and
+          # tests/foundation/ci-configuration-contract.test.ts can only require
+          # `false` of every other checkout if the two that need `true` state
+          # it.
+          persist-credentials: true
+          # Full history: "Verify branches to delete" below reads
+          # `git branch -r --merged origin/main`, and at the action's default
+          # depth of 1 that comparison has nothing to walk.
           fetch-depth: 0
 
       - name: Configure git
@@ -23,16 +161,67 @@ jobs:
       - name: Fetch branches
         run: git fetch --prune
 
-      - name: Verify branches to delete
-        run: |
-          echo "Branches that will be deleted:"
-          git branch -r --merged origin/main | grep -E "(claude|codex|foundation)" || echo "No branches found"
-
-      - name: Run delete script
+      # A DRY RUN OF THE SAME SCRIPT THAT DELETES, rather than a separate
+      # calculation. The step that used to stand here computed the set with
+      # `git branch -r --merged origin/main | grep -E "(claude|codex|foundation)"`
+      # and then handed control to a script that ignored that result entirely.
+      # So this log described one set and the delete acted on another, and the
+      # description was the more convincing of the two because it was derived.
+      #
+      # The grep is gone with it. Those three prefixes predate the `agent/*`
+      # convention every agent branch has used since, so the pattern had
+      # stopped naming what actually accumulates.
+      - name: Show what would be deleted
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: bash deletebranches.sh
 
+      # `--apply` is explicit because the script's default is now a dry run.
+      # The previous version deleted the moment it was invoked, which is the
+      # wrong default for an irreversible operation on a shared remote.
+      - name: Delete merged branches
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash deletebranches.sh --apply
+
+      # ASKS THE REMOTE, NOT THE RUNNER'S CLONE (#620).
+      #
+      # This printed `git branch -r | grep -vc 'origin/HEAD'` until 2026-08-30,
+      # and on the first successful run of this workflow it reported **450**
+      # remaining branches while `git ls-remote --heads origin | wc -l`
+      # answered **254**. `git branch -r` lists remote-TRACKING refs in the
+      # local clone, which is not the set of branches on the remote.
+      #
+      # WHY THE RUNNER'S CLONE HOLDS MORE IS NOT ESTABLISHED, and is not
+      # asserted here. What is measured: the two figures DISAGREE on the runner
+      # and AGREE in an ordinary clone (270 and 270 at the time of writing), so
+      # the local-clone basis is the difference and the remote is the authority.
+      # A plausible mechanism is that this runner reuses one long-lived working
+      # directory across jobs -- its logs name
+      # `/home/mateusz/actions-runner-lockstate-N/_work/lockstate/lockstate` --
+      # and accumulates refs the `git fetch --prune` above does not reach. That
+      # is a guess offered as one, because the fix does not depend on it: asking
+      # the remote is correct whatever the clone is doing.
+      #
+      # It matters because this step is the ONLY thing a person reads to decide
+      # whether the cleanup did what it said. A run that deletes 103 branches
+      # and then reports a total 77% too high invites exactly two wrong
+      # conclusions -- that the deletions did not take, or that the repository
+      # has far more branches than it does -- and both prompt an action on a
+      # number nobody sourced.
+      #
+      # `ls-remote` needs no local state and cannot drift.
+      #
+      # THE SECOND FIGURE WAS ALREADY CORRECT and is left on the local clone
+      # deliberately: `--merged origin/main` is a reachability question, and a
+      # stale extra ref can only make that count too HIGH, never too low. So
+      # the safety claim this step exists to make -- "nothing merged is still
+      # present" -- cannot be weakened by the drift that broke the headline.
       - name: Verify deletion
         run: |
-          echo "Remaining branches with claude/codex/foundation:"
           git fetch --prune
-          git branch -r | grep -E "(claude|codex|foundation)" | wc -l
+          echo "Remaining remote branches: $(git ls-remote --heads origin | wc -l)"
+          echo "Merged into main and still present (protected refs only, so 0 or wip/ leftovers):"
+          git branch -r --merged origin/main \
+            | grep -vE 'origin/(HEAD|main)$' \
+            | grep -vc 'origin/wip/' || true

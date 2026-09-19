@@ -1,4 +1,15 @@
-import type { HudRoomNeedsViewModel, HudViewModel } from '../../src/ui/hud';
+import type {
+  HudBuildQueueViewModel,
+  HudHeldGuardsViewModel,
+  HudIntakePipelineViewModel,
+  HudStaffCoverageViewModel,
+  HudPendingDeliveriesViewModel,
+  HudPrisonerDetailViewModel,
+  HudPrisonerRosterViewModel,
+  HudRegimeViewModel,
+  HudRoomNeedsViewModel,
+  HudViewModel,
+} from '../../src/ui/hud';
 
 /**
  * The contract between the in-page UI harness (`ui-harness.ts`) and
@@ -76,13 +87,176 @@ export interface LayoutBox {
  * proven is that the browser gave this one a box -- not merely that the node
  * is in the document.
  */
+/**
+ * The Overview section's readout (issue #1183).
+ *
+ * `figures` and `noneText` are deliberately separate: the panel's whole
+ * contract is that "no prison is reporting" and "a prison reporting zero"
+ * cannot draw the same, so a probe that collapsed them into one nullable
+ * string could not tell the two apart either.
+ */
+export interface OverviewProbe {
+  readonly laidOut: boolean;
+  /** Each row's raw figure as the panel was handed it, keyed by `data-figure`. */
+  readonly figures: Readonly<Record<string, string>>;
+  /** Each row's rendered text, in paint order. */
+  readonly rowTexts: readonly string[];
+  /** Whether the three figures have a box at all. */
+  readonly figuresLaidOut: boolean;
+  /** Whether the sentinel sentence has a box at all. */
+  readonly noneLaidOut: boolean;
+  /** What the sentinel says, or `''` when it is not drawn. */
+  readonly noneText: string;
+}
+
 export interface IntakeProbe {
   readonly laidOut: boolean;
   readonly admitLaidOut: boolean;
   readonly admitLabel: string;
   readonly admitDisabled: boolean | null;
-  /** The sentence that says an admission needs somewhere to put the arrival. */
+  /** The sentence that says what an admission needs, and what it costs when the prison is full. */
   readonly hint: string;
+  /**
+   * The over-admission warning (issue #549), as a **box** rather than as an
+   * attribute.
+   *
+   * `null` when the line has no box at all -- which is what `[hidden]` is meant
+   * to produce and is emphatically not the same claim as `hidden === true`. A
+   * stylesheet whose `:not([hidden])` guard has been lost paints the line at
+   * full height with the attribute still set, and a spec reading `.hidden`
+   * would agree with it. `layoutBoxOf` returns `null` only for a genuinely
+   * unlaid-out node, so an assertion on this cannot pass while the player is
+   * looking at a warning that should not be there.
+   */
+  readonly noPlaceBox: LayoutBox | null;
+  /** What the warning says, or `''` when it says nothing. */
+  readonly noPlaceText: string;
+  /** `data-without-place`: the figure the panel was told, without parsing a localized sentence. */
+  readonly noPlaceCount: string | null;
+  /** The warning's colour, computed. The tone is the whole difference between this line and the readout below it. */
+  readonly noPlaceColor: string;
+  /** The pipeline readout's box, `null` when the block is folded away. */
+  readonly pipelineBox: LayoutBox | null;
+  readonly pipelineWaiting: string | null;
+  readonly pipelineFailed: string | null;
+  /** One line per stage that holds somebody: the stage id and what the line says. */
+  readonly pipelineStages: readonly { readonly stage: string; readonly text: string }[];
+  /** The panel's own box, so a spec can ask whether it has paid for its content. */
+  readonly panelBox: LayoutBox | null;
+  /** `scrollHeight - clientHeight` on the panel: how much taller its content is than the box it was given. */
+  readonly panelOverflow: number;
+  /** The same shortfall for the panel body, which is the box the new line is actually inside. */
+  readonly bodyOverflow: number;
+  /** Everything the panel drew, so a spec can assert on the sentence a player reads. */
+  readonly text: string;
+}
+
+/**
+ * One option of the Build panel's edge chooser, as a player actually receives
+ * it (issue #341).
+ *
+ * `BuildProbe.edge` reports `data-choice`, which is an **id**: an
+ * implementation that labels every edge "North" still reports `west` there, so
+ * no assertion over it can see a label defect. #339 measured that exact
+ * mutation passing all 2,321 tests in the repository. This carries the id and
+ * the *drawn text* side by side so a spec can require them to disagree in the
+ * way two distinct edges must.
+ *
+ * The geometry is here for #220's reason: `toContainText` does not imply
+ * visibility, and the edge chooser lives inside a collapsible section whose
+ * body is `hidden` until the player opens it, so a label can be in the DOM
+ * with nothing on screen. `laidOut` is the browser's own answer via
+ * `offsetParent`; the box says the text was given room to be read.
+ */
+export interface BuildEdgeLabelProbe {
+  /** `data-choice` -- the id, which a label defect leaves correct. */
+  readonly id: string;
+  /** The option button's rendered text: the label, and the thing under test. */
+  readonly label: string;
+  /** `offsetParent`, not the `hidden` attribute, which is inherited. */
+  readonly laidOut: boolean;
+  /** The option's border box in CSS pixels. Both must exceed 0 to be readable. */
+  readonly widthPx: number;
+  readonly heightPx: number;
+}
+
+/**
+ * One control in `.hud-build__actions`, measured **label against button**
+ * rather than button against panel (issue #926).
+ *
+ * ## Why this exists beside `BuildProbe.actionsOverflowPx`
+ *
+ * That field reads `button.getBoundingClientRect()`, and its own comment says
+ * why it refuses the row's `scrollWidth`. It is right about the row, and it
+ * cannot see this: `hud.css` gives the arm button `min-width: 0` on purpose --
+ * ADR 0022 measured a third button overflowing this row by 37.9px, and a flex
+ * item's default `min-width: auto` is why -- so the *button box* is guaranteed
+ * to fit by construction. What `min-width: 0` does not do is let the label
+ * reflow into the smaller box: `.ui-action__label` is `white-space: nowrap`
+ * and `.ui-action` declared no `overflow`, so the text rendered at its full
+ * intrinsic width starting from a narrower box and the remainder painted onto
+ * the next button in the row.
+ *
+ * **A gate whose unit is a box cannot see an overflow that paints outside that
+ * box.** Every field here is measured on the label, or on the label against a
+ * sibling, for that reason.
+ */
+export interface ActionLabelFitProbe {
+  /**
+   * The `hud-build__*` class that says *which* control this is, so a failure
+   * names it. Every button in this row carries exactly one such class
+   * (`build-panel.ts` adds them); the bare `.ui-action` is reported as `''`
+   * rather than guessed at.
+   */
+  readonly control: string;
+  /** The label's rendered text -- the thing whose width is under test. */
+  readonly label: string;
+  /** The button's own border box. `min-width: 0` is what keeps this inside the row. */
+  readonly buttonWidthPx: number;
+  readonly buttonHeightPx: number;
+  readonly buttonRightPx: number;
+  /**
+   * The label span's border box. While `white-space: nowrap` holds and the
+   * span is a flex item (default `min-width: auto`, so it cannot shrink below
+   * its min-content width), this is the text's full intrinsic width whatever
+   * the button's is.
+   */
+  readonly labelWidthPx: number;
+  readonly labelHeightPx: number;
+  readonly labelRightPx: number;
+  /**
+   * `labelRight - buttonRight`: **positive means the label paints outside its
+   * own button.** This is the number issue #926 is about, and the one no
+   * existing assertion in this repository reads.
+   */
+  readonly labelOverflowPx: number;
+  /**
+   * The left edge of the next laid-out button in the row, or `null` when this
+   * control is the last one -- which is a real state here, because the buy
+   * disclosure is `hidden` while the removal mode is on.
+   */
+  readonly neighbourLeftPx: number | null;
+  /** Which control that neighbour is, on `control`'s terms. */
+  readonly neighbour: string | null;
+  /**
+   * `labelRight - neighbourLeft`: positive means the label's text is painting
+   * over the neighbouring control. `0` when there is no neighbour to reach.
+   *
+   * Kept separate from `labelOverflowPx` because the two answer different
+   * questions and #926's own weakest claim was about exactly this gap: the
+   * first says the label left its box, the second says what it landed on.
+   */
+  readonly neighbourOverlapPx: number;
+  /**
+   * `scrollWidth > clientWidth` on the label -- the text is wider than the box
+   * it is being laid out in, so something has to give.
+   *
+   * This is `true` both for a label that overflows visibly and for one clipped
+   * by `overflow: hidden`, which is deliberate: those are the same fact about
+   * the *text* and differ only in what paints. `labelOverflowPx` separates
+   * them, and a fix that merely hid the symptom would leave this `true`.
+   */
+  readonly labelWiderThanBox: boolean;
 }
 
 export interface BuildProbe {
@@ -94,6 +268,16 @@ export interface BuildProbe {
   readonly tileX: string;
   readonly tileY: string;
   readonly edge: string | null;
+  /**
+   * Every edge option, in the order they are drawn: id, rendered label, and
+   * the box the browser gave that label (issue #341).
+   *
+   * The field `edge` above cannot answer this. It reads `data-choice`, so the
+   * mutation that returns `'build-edge.north.name'` for every edge -- which
+   * paints the West option "North" -- leaves it reporting `west` and every
+   * assertion over it green.
+   */
+  readonly edgeLabels: readonly BuildEdgeLabelProbe[];
   /** True when the edge chooser is showing at all -- it is hidden for a non-edge buildable. */
   readonly edgeChooserVisible: boolean;
   readonly submitDisabled: boolean;
@@ -121,6 +305,21 @@ export interface BuildProbe {
    * again on the row that now has one.
    */
   readonly actionsOverflowPx: number;
+  /**
+   * Every laid-out control in `.hud-build__actions`, in DOM order, measured
+   * label-against-button (issue #926). See `ActionLabelFitProbe` for why this
+   * cannot be read off `actionsOverflowPx`.
+   */
+  readonly actionLabelFits: readonly ActionLabelFitProbe[];
+  /**
+   * The actions row's own height in CSS pixels.
+   *
+   * Here because it is the cost of the fix that was *not* chosen: the row is
+   * `align-items: stretch`, so a label allowed to wrap makes the whole row two
+   * lines tall and every control below it moves. A wrap that solved #926 by
+   * growing the panel would be visible here and nowhere else in this probe.
+   */
+  readonly actionsHeightPx: number;
   /** The note line under the controls, which says what the armed gesture does. */
   readonly hint: string;
   /** True while the numeric fallback section is folded away. */
@@ -128,6 +327,17 @@ export interface BuildProbe {
   /** The `data-target` readout, or null when nothing is aimed at. */
   readonly targetReadout: string | null;
   readonly targetText: string;
+  /**
+   * Whether the readout `targetText` was read from is laid out, and its box
+   * (issue #341, on #220's lesson).
+   *
+   * `targetText` is a `textContent` read and answers the same on a readout the
+   * browser never painted. The readout is the *second* place an edge becomes a
+   * label and the one where a wrong edge is invisible, so the string being
+   * right is only half the claim -- a player has to be able to read it.
+   */
+  readonly targetLaidOut: boolean;
+  readonly targetBox: LayoutBox | null;
   /** The buy disclosure (#89): whether it is offered at all, and whether it is open. */
   readonly buyToggleVisible: boolean;
   readonly buyOpen: boolean;
@@ -135,10 +345,254 @@ export interface BuildProbe {
   readonly buyRowVisible: boolean;
   /** The buy button's whole label, which states the quantity, the material and the total. */
   readonly buyLabel: string;
+  /**
+   * Whether the buy button reports itself **unavailable** -- `aria-disabled`
+   * (issue #772): the control's availability is judged against the same
+   * `pressAffordabilityVerdict` the press itself is judged against, so this
+   * and `buyLabel` moving independently of each other is exactly the gap
+   * #772 is about.
+   */
+  readonly buyUnavailable: boolean;
+  /**
+   * Whether the buy button is **disabled** -- the DOM property, which is a
+   * different question from `buyUnavailable` and is read so a test can pin
+   * that they stay different (the narrowing of 2026-09-02).
+   *
+   * PR #799 put the affordability verdict on this bit, which removed the
+   * press and with it the only sentence a player is given for the refusal
+   * (`hud.refusal.purchase-materials-past-floor`, the owner's ruling 18 of
+   * 2026-08-31). A test that asserts `buyUnavailable` alone would go green
+   * again the day somebody re-wired the verdict onto `disabled` and re-took
+   * the press; asserting this one stays `false` is what makes the narrowing
+   * a fact rather than a comment.
+   *
+   * It is *not* always `false`: `createBusyGroup` holds every command control
+   * disabled while one is in flight
+   * (`src/ui/primitives/async-action.ts`), so this reads `true` inside that
+   * window. Only assertions taken while nothing is in flight mean anything.
+   */
+  readonly buyDisabled: boolean;
   /** What the quantity stepper currently shows. */
   readonly buyQuantity: string;
+  /**
+   * **The sentence that says what stops a press and what would lift it** --
+   * the wording half of #772, on the owner's ruling of 2026-09-03
+   * (`hud.build.buy-shortfall`), or `''` when nothing stops the press.
+   *
+   * The figure in it is the **shortfall**
+   * (`AffordabilityVerdict.shortfallMinorUnits`), which is neither the price
+   * the label above states nor the balance the FUNDS chip states -- so a test
+   * reading this can tell a right number from a plausible wrong one.
+   */
+  readonly buyShortfallText: string;
+  /**
+   * Whether the browser gave that line a box, which `buyShortfallText` cannot
+   * say: a `textContent` read is identical on a painted line and on one whose
+   * author `display` beat `[hidden]` the other way (#220's lesson, and the
+   * reason `.hud-build__buy-shortfall[hidden]` exists in `hud.css`).
+   */
+  readonly buyShortfallLaidOut: boolean;
+  /**
+   * `aria-describedby` on the Buy button, as the raw attribute.
+   *
+   * The line is the control's *description* while it stands, and it is removed
+   * again when it withdraws -- so this is what says a screen-reader user meets
+   * the sentence at the control rather than only somewhere on the panel. Read
+   * raw rather than as a boolean because the attribute is a *list*: the refusal
+   * band writes an id into it too (`markControl`, `src/ui/hud/hud.ts`), and the
+   * state after a real refused press carries both.
+   */
+  readonly buyDescribedBy: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
+  /** The queue fold (#348) -- see `BuildQueueProbe`. */
+  readonly queue: BuildQueueProbe;
+  /** What has been bought and has not arrived (#285) -- see `PendingDeliveriesProbe`. */
+  readonly deliveries: PendingDeliveriesProbe;
+}
+
+/**
+ * The Build panel's queue block, and every field here is a `getClientRects()` or
+ * `offsetParent` answer rather than an attribute read.
+ *
+ * That is issue #220's lesson applied to a control that did not exist when it
+ * was learned. #220 measured that a message routed to the alerts list is on
+ * screen at **no** viewport -- `hud.css` drops `.hud__corner` at 720px and below,
+ * and the section starts folded -- so the row was `offsetParent === null` with a
+ * 0x0 box everywhere while `toContainText` passed. A cancel button is a worse
+ * case than a message: a control the player cannot reach is a feature that does
+ * not exist, and the whole point of this block is that it is *pressable* on a
+ * phone.
+ */
+export interface BuildQueueProbe {
+  /** Whether the browser gave the section a box at all. `false` in the arrival state, by design. */
+  readonly sectionLaidOut: boolean;
+  /** `aria-expanded` on the fold's header: `false` when it appears, which is the design. */
+  readonly open: boolean;
+  /** The header's figure -- the whole queue's length, never the row count. */
+  readonly countText: string;
+  /** The section's box, so a spec can say where in the panel it sits. */
+  readonly sectionBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly BuildQueueRowProbe[];
+  /** The "and N more" line, empty when every queued order has a row. */
+  readonly moreText: string;
+  /**
+   * The money line below the block (#627, #629, #640): what the queue could not
+   * buy, as a rendered sentence with the figure substituted.
+   *
+   * Empty whenever the queue is paid for, which is every session that never
+   * runs out. Read from outside `.hud-build__queue`, because that is where the
+   * node is: the fold starts collapsed and #625 is the record of what putting a
+   * requirement inside it costs.
+   */
+  readonly shortfallText: string;
+  /**
+   * Whether the browser laid that line out, and whether it has an
+   * `offsetParent`.
+   *
+   * Both, for the reason `cancelBox`/`cancelHasOffsetParent` below are both:
+   * `offsetParent` is `null` inside a `display: none` ancestor, and a node can
+   * have one and still be 0x0. `.hud-build__note` carries an author `display`
+   * that beats `[hidden]`, so "the attribute says hidden" is exactly the claim
+   * that must not be trusted here.
+   */
+  readonly shortfallLaidOut: boolean;
+  readonly shortfallHasOffsetParent: boolean;
+  /** Its box, so a spec can say it is inside the panel's visible one rather than below the fold (#220). */
+  readonly shortfallBox: LayoutBox | null;
+}
+
+export interface BuildQueueRowProbe {
+  /** `data-order`: *which* order this row is aimed at. The whole feature is that this is answerable. */
+  readonly orderId: string;
+  /** `data-state`: what the row says it is waiting for, as an id rather than as translated text. */
+  readonly state: string;
+  /** The rendered sentence: what it is, where it is, which edge. */
+  readonly labelText: string;
+  /** The rendered state word, so an unresolved `build-order-state.*` key is caught. */
+  readonly stateText: string;
+  /** The cancel button's accessible name, which must name *this* order. */
+  readonly cancelAccessibleName: string;
+  /**
+   * The cancel button's own box and whether it has an `offsetParent`.
+   *
+   * Both, and neither alone is enough: `offsetParent` is `null` for a node inside
+   * a `display: none` ancestor, and a node can have one and still be 0x0.
+   */
+  readonly cancelBox: LayoutBox | null;
+  readonly cancelHasOffsetParent: boolean;
+  readonly cancelDisabled: boolean;
+}
+
+/**
+ * The pending-delivery rows inside the Build panel's buy disclosure (#285), and
+ * every field here is a `getClientRects()` or `offsetParent` answer rather than
+ * an attribute read.
+ *
+ * The same discipline `BuildQueueProbe` carries, for a sharper case: these
+ * controls promise *money back*, and the four-row layout this surface was
+ * measured against put the fourth Cancel 7.9px below the panel's visible bottom
+ * with a full 78x44 box and an `offsetParent` -- laid out, hit-testable, and off
+ * screen. Only rectangles can tell that apart from a working control.
+ */
+export interface PendingDeliveriesProbe {
+  /** Whether the browser gave the block a box at all. `false` while nothing is pending, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-pending` on the block: how many deliveries the panel was told about, as a string. */
+  readonly pending: string | null;
+  /** The header's figure -- the whole list and what it would refund, never the row count. */
+  readonly countText: string;
+  readonly blockBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly PendingDeliveryRowProbe[];
+  /** The "and N more" line, empty when every pending delivery has a row. */
+  readonly moreText: string;
+}
+
+export interface PendingDeliveryRowProbe {
+  /** `data-delivery`: *which* purchase this row's control refunds. */
+  readonly orderId: string;
+  /** The rendered sentence: how much of what, and what cancelling it gives back. */
+  readonly labelText: string;
+  /** The cancel button's accessible name, which must name what the row says. */
+  readonly cancelAccessibleName: string;
+  readonly cancelBox: LayoutBox | null;
+  readonly cancelHasOffsetParent: boolean;
+  readonly cancelDisabled: boolean;
+}
+
+/**
+ * The Staff panel's held-guards section (ADR 0034), and every field here is a
+ * `getClientRects()` or `offsetParent` answer rather than an attribute read.
+ *
+ * #220's lesson applied to the newest control in the interface: a Release button
+ * that is laid out, hit-tests to itself and is not on screen is a feature that
+ * does not exist. Unlike the delivery rows one panel over these are not inside a
+ * disclosure, so the arrival state has a box the moment the simulation reports a
+ * held guard -- which is what makes `blockBox` and `panelVisibleBottom` the
+ * pair the reachability assertions turn on.
+ */
+export interface HeldGuardsProbe {
+  /** Whether the browser gave the block a box at all. `false` until the first reply, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-held` on the block: how many guards the panel was told are held, as a string. */
+  readonly held: string | null;
+  /** The header's figure -- the whole roster's held/free pair, never the row count. */
+  readonly summaryText: string;
+  readonly blockBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly HeldGuardRowProbe[];
+  /** The "and N more" line, empty when every held guard has a row. */
+  readonly moreText: string;
+  /** The "nobody is assigned" line, empty while any guard is held. */
+  readonly emptyText: string;
+}
+
+export interface HeldGuardRowProbe {
+  /** `data-guard`: *which* guard this row's control releases. */
+  readonly guardId: string;
+  /** The rendered sentence: who, and what is holding them. */
+  readonly labelText: string;
+  readonly releaseBox: LayoutBox | null;
+  readonly releaseHasOffsetParent: boolean;
+  readonly releaseDisabled: boolean;
+}
+
+/**
+ * The coverage block on the Staff panel
+ * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md)
+ * consequence 1).
+ *
+ * Everything here is *measured* rather than read off an attribute, for
+ * `HeldGuardsProbe`'s reason: the block has no box until the first `hud/staff`
+ * reply, and "the attribute says hidden" and "the browser drew nothing" are
+ * different claims -- only the second is what a player experiences.
+ */
+export interface StaffCoverageProbe {
+  /** Whether the browser gave the block a box at all. `false` until the first reply, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-tone` on the block: which of the three states the panel decided, as a string. */
+  readonly tone: string | null;
+  /** The header's pair: assigned against required. */
+  readonly summaryText: string;
+  /** The badge's word, which is what makes the tone readable without colour. */
+  readonly badgeText: string;
+  /** `data-tone` on the badge itself, so a badge and a block that disagreed would show. */
+  readonly badgeTone: string | null;
+  /** The sentence under it -- the action, where there is one. */
+  readonly hintText: string;
+  /**
+   * The consequence sentence below the hint -- what the rung costs -- or `''`
+   * on the two rungs that have none (the owner's wording of 2026-09-03).
+   *
+   * Its own field rather than a second entry in `hintText`, which reports only
+   * the first visible note: the two sentences answer different questions, and a
+   * probe that concatenated them could not tell a block that lost the
+   * consequence line from one that never had it.
+   */
+  readonly consequenceText: string;
+  readonly blockBox: LayoutBox | null;
 }
 
 /** The Staff panel on the Security tab (ADR 0025). */
@@ -150,9 +604,374 @@ export interface StaffProbe {
   readonly selected: string | null;
   /** The hire button's whole label, which states the role and what the press will spend. */
   readonly hireLabel: string;
+  /**
+   * Whether the hire button reports itself **unavailable** -- `aria-disabled`
+   * (issue #772's other half): the control's availability is judged against
+   * the same `pressAffordabilityVerdict` the press itself is judged against,
+   * so this and `hireLabel` moving independently of each other is exactly the
+   * gap #772 is about, one control over from the Buy button.
+   */
+  readonly hireUnavailable: boolean;
+  /**
+   * Whether the hire button is **disabled** -- the DOM property, which is a
+   * different question from `hireUnavailable` and is read so a test can pin
+   * that they stay different, exactly as `BuildProbe.buyDisabled` is.
+   *
+   * The affordability verdict must never reach this bit: `disabled` removes
+   * the press, and the press is the only producer of
+   * `hud.refusal.hire-staff-past-floor`. It is the *last* producer of
+   * `'past-the-overdraft-floor'` anywhere in the HUD since the Buy button's
+   * narrowing of 2026-09-02 (see `paintBuyTotal`), so a verdict written here
+   * would leave that reason with no way to reach a player at all.
+   *
+   * It is *not* always `false`: no role selected disables it -- that is
+   * authority rather than advice -- and `createBusyGroup` holds every command
+   * control disabled while one is in flight
+   * (`src/ui/primitives/async-action.ts`). Only assertions taken with a role
+   * chosen and nothing in flight mean anything.
+   */
   readonly hireDisabled: boolean;
+  /**
+   * **The sentence that says what stops a hire and what would lift it** -- the
+   * owner's ruling of 2026-09-03 (`hud.security.hire-shortfall`, byte-identical
+   * to the Buy button's), or `''` when nothing stops the press.
+   *
+   * The figure is the shortfall against the *engagement fee* one press debits,
+   * not the daily wage the note beside it prices -- so this and `hireLabel`
+   * carry two different numbers about one press, and a test can tell them
+   * apart.
+   */
+  readonly hireShortfallText: string;
+  /** Whether the browser gave that line a box, on `buyShortfallLaidOut`'s terms. */
+  readonly hireShortfallLaidOut: boolean;
+  /** `aria-describedby` on the Hire button, raw, on `buyDescribedBy`'s terms. */
+  readonly hireDescribedBy: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
+  /** Which guards are held, and by what (ADR 0034) -- see `HeldGuardsProbe`. */
+  readonly held: HeldGuardsProbe;
+  /** What the prison asks for against what it has (ADR 0048) -- see `StaffCoverageProbe`. */
+  readonly coverage: StaffCoverageProbe;
+  /**
+   * The bottom of the panel's *client* box -- where its content starts being
+   * clipped. The fold the reachability assertions compare a Release button's own
+   * bottom edge against, in the shape `BuildLayoutProbe.panelVisibleBottom` set.
+   */
+  readonly panelVisibleBottom: number;
+  /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
+  readonly panelOverflow: number;
+  readonly panelBox: LayoutBox | null;
+}
+
+/**
+ * One line of the timetable, as a player actually receives it (issue #451).
+ *
+ * The pairing every readout in this file needs: an id nothing can get wrong
+ * beside the words that can be. `group` is `data-group`, so an implementation
+ * that labelled every group "General Population" still reports `high-risk`
+ * there -- which is why the rendered strings sit next to it rather than being
+ * derived from it.
+ *
+ * `laidOut` is `getClientRects()` and not the `hidden` attribute, for the
+ * reason `.hud-regime__blocks[hidden]` exists in `hud.css`: this block carries
+ * an author `display: flex`, which beats the user agent's `[hidden] { display:
+ * none }`, so "the attribute says hidden" and "the browser drew nothing" are
+ * two different claims here.
+ */
+export interface RegimeBlockProbe {
+  /** `data-group` -- the stable classification-group id. */
+  readonly group: string;
+  /** The group's rendered name. */
+  readonly nameText: string;
+  /** How far through the running block, as the panel words it. */
+  readonly progressText: string;
+  /** The sentence listing what this group may do right now. */
+  readonly allowsText: string;
+  readonly laidOut: boolean;
+}
+
+/**
+ * One roster row that the browser actually drew.
+ *
+ * The rows are **pooled**: `PRISONER_ROSTER_ROW_LIMIT` of them exist from the
+ * first paint and a shorter reply hides the tail rather than removing it, so
+ * every one of them keeps the last prisoner's words in its `textContent`
+ * forever. A `textContent` walk therefore reports people who are no longer on
+ * the roster, and `RegimeProbe.rows` is filtered by `getClientRects()` for
+ * exactly that reason -- it is the list a player can see, not the list the DOM
+ * holds.
+ */
+export interface RegimeRosterRowProbe {
+  /** `data-prisoner` -- the entity id, which is the row's only stable name. */
+  readonly prisoner: string;
+  /** `data-classification-group`, or null before classification has run. */
+  readonly classificationGroup: string | null;
+  /** `data-risk-tier`, or null before classification has run. */
+  readonly riskTier: string | null;
+  /** Who the row is about, as the panel put the two halves of a name together. */
+  readonly nameText: string;
+  /** What they are doing, wrapper included when they are walking to it. */
+  readonly activityText: string;
+  /** The badge's word -- the half of the badge that survives a colour-blind player. */
+  readonly badgeText: string;
+  /** `data-tone` on the badge, so a word and a colour that disagreed would show. */
+  readonly badgeTone: string | null;
+  /**
+   * The worst-need bar (issue #535 decision 6), as five separate readings.
+   *
+   * Five and not one, because the point of this readout is that a need becomes
+   * **measurable from outside the simulation**, and the bar's own drawing is the
+   * one form that is not: a fill is a `data-filled` on ten `<span>`s and a
+   * colour, and a probe reconstructing a level from those would be
+   * re-implementing the panel's quantization in the test that checks it.
+   *
+   * - `need` -- `data-need`, the stable need id. Not the translated word, so an
+   *   assertion is about the simulation rather than the locale catalog.
+   * - `needPermille` -- `data-need-permille`, `0`..`1000`, unquantized. **This is
+   *   the field that tells "the need was served" from "the need decayed but not
+   *   far enough"**, which nothing outside the worker could distinguish before.
+   * - `needUnmet` -- `data-need-unmet`, whether the state is withholding grant
+   *   over it. The worst need being unmet is exactly `unmetNeedCount >= 1`, so
+   *   this answers whether the prisoner is costing the prison income at all.
+   * - `needText` -- the need's word as drawn, so the colour never stands alone.
+   * - `needTone` / `needValueText` -- `data-tone` and `aria-valuetext` on the
+   *   bar, the accessible half of the same fact.
+   */
+  readonly need: string | null;
+  readonly needPermille: string | null;
+  readonly needUnmet: string | null;
+  readonly needText: string;
+  readonly needTone: string | null;
+  readonly needValueText: string | null;
+  /**
+   * Whether the row is a control, and whether it is the chosen one
+   * (issue #895).
+   *
+   * Four readings of one fact, because they have four different failure modes
+   * and the whole point of a selectable row is that no single one of them is
+   * the surface:
+   *
+   * - `role` -- `"radio"` on a row that holds somebody and **absent** on a
+   *   vacated pooled row. The absence is load-bearing rather than tidy:
+   *   `app-shell.spec.ts`'s #88 sweep asserts that the controls it can never
+   *   lay out are exactly its written exemption list, so a pooled row that
+   *   stayed a control while empty would fail it.
+   * - `tabIndex` -- the roving tab stop. Exactly one filled row carries `0`
+   *   and the rest carry `-1`, which is what makes the group one `Tab` stop
+   *   rather than four.
+   * - `ariaChecked` -- what a screen reader is told, so the selection is not
+   *   carried by colour alone.
+   * - `selected` -- `data-selected`, what the stylesheet and a probe read.
+   *
+   * `tabIndex` is the resolved property rather than the attribute, so a row
+   * with no `tabindex` at all reports `-1` on a `div` and the attribute is read
+   * through `role` instead.
+   */
+  readonly role: string | null;
+  readonly tabIndex: number;
+  readonly ariaChecked: string | null;
+  readonly selected: string | null;
+  /**
+   * The row's border box.
+   *
+   * Not a way to detect a row overflowing sideways -- it is a flex item of a
+   * column the panel sizes, so it reports the container's width whatever its
+   * contents do, which is the same reason `BuildProbe.actionsOverflowPx` is read
+   * off the buttons rather than off the row's `scrollWidth`. What it is for is
+   * the vertical question: where this row sits against the panel's fold.
+   */
+  readonly box: LayoutBox | null;
+}
+
+/**
+ * One need line of the inspector (issue #895).
+ *
+ * The same six readings a roster row gives for its one worst need, per need --
+ * which is the whole of what this block adds. `unmet` on all six is the
+ * *composition* of `unmetNeedCount`, the figure
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` multiplies; the roster's
+ * single row can only ever say whether that count is at least one.
+ */
+export interface RegimeDetailNeedProbe {
+  /** `data-need`, the stable simulation id rather than the translated word. */
+  readonly need: string | null;
+  readonly permille: string | null;
+  readonly unmet: string | null;
+  /** The need's word as drawn, so the bar's colour never stands alone. */
+  readonly nameText: string;
+  /** `data-tone` and `aria-valuetext` on the bar: the accessible half of the same fact. */
+  readonly tone: string | null;
+  readonly valueText: string | null;
+}
+
+/**
+ * The inspector under the roster: the one prisoner the player selected
+ * (issue #895).
+ *
+ * `laidOut` is `getClientRects()` and not the attribute, for the reason every
+ * other block in this probe is read that way: this panel's stylesheet gives
+ * several of its own children an author `display`, which beats the user agent's
+ * `[hidden] { display: none }`, so "this block is not on screen" is a claim only
+ * a real layout can settle.
+ */
+export interface RegimePrisonerDetailProbe {
+  readonly laidOut: boolean;
+  /** `data-prisoner`: which prisoner the block is about, without parsing a name. */
+  readonly prisoner: string | null;
+  /** The heading, which is the prisoner's name -- the block authors no heading of its own. */
+  readonly nameText: string;
+  readonly badgeText: string;
+  readonly badgeTone: string | null;
+  /** Only the need lines the browser drew: the rows are pooled, exactly as the roster's are. */
+  readonly needs: readonly RegimeDetailNeedProbe[];
+  readonly box: LayoutBox | null;
+}
+
+/**
+ * The Regime panel on the fifth tab (issue #451): the timetable, the roster,
+ * and where the browser put the bottom of it.
+ *
+ * Nothing here restates a decision `regime-panel.ts` or `roster-panel.ts` makes headlessly.
+ * `describePrisonerRow`, `formatPrisonerName`, `formatPrisonerActivity` and
+ * `formatRegimeAllowsText` are pure and exported precisely so `pnpm test` can
+ * own which word goes in which slot; what this reports is the half `pnpm test`
+ * cannot reach at all -- which of these boxes the browser laid out, what text
+ * it actually rendered into them, and where the last of them ends against the
+ * panel's fold.
+ */
+export interface RegimeProbe {
+  /**
+   * `offsetParent`, which is null for a `hidden` element or one inside a
+   * `hidden` ancestor. The rail question, asked of `.ui-panel.hud-regime`: the
+   * timetable's panel.
+   *
+   * **It stopped being "exactly one of five may have a box" at ADR 0115**,
+   * which split this surface into two panels laid out together on the Plan
+   * dnia tab -- the second pair in `.hud__side`, after Intake and Staff on
+   * Manage. `rosterPanelLaidOut` below is the other half, and the sweep in
+   * `ui-shell.spec.ts` (*"never shares the rail slot ..."*) reads both.
+   */
+  readonly laidOut: boolean;
+  /**
+   * The same question asked of `.ui-panel.hud-roster`, the roster and
+   * inspector's own panel (ADR 0115).
+   *
+   * Separate from `laidOut` rather than folded into it, because "both halves
+   * of Plan dnia are on screen together" is the thing the owner's ruling
+   * decided and is therefore the thing a test has to be able to fail on.
+   */
+  readonly rosterPanelLaidOut: boolean;
+  /** Whether the timetable block was drawn at all -- `false` until a reply arrives, by design. */
+  readonly blocksLaidOut: boolean;
+  /** Every timetable line the browser drew, in the order it drew them. */
+  readonly blocks: readonly RegimeBlockProbe[];
+  /** Whether the roster block was drawn at all -- `false` until a reply arrives, by design. */
+  readonly rosterLaidOut: boolean;
+  /** `data-total`: the population the projection reported, not the window's length. */
+  readonly total: string | null;
+  /**
+   * `data-ever-admitted`: whether `admittedCount` is nonzero (issue #506).
+   * `null` while the roster block itself has not been drawn -- the same
+   * absent-vs-`"false"` distinction `total` draws, and for the same reason:
+   * "nothing answered yet" and "answered, and nobody has ever been admitted"
+   * are different facts.
+   */
+  readonly everAdmitted: string | null;
+  /** The "N of M" figure beside the roster header. */
+  readonly countText: string;
+  /** Only the rows a player can see -- see `RegimeRosterRowProbe`. */
+  readonly rows: readonly RegimeRosterRowProbe[];
+  /**
+   * The empty-prison sentence, and whether the browser gave it a box.
+   *
+   * Both, because the attribute cannot answer it. Under
+   * `@media (max-height: 700px)` `hud.css` gives `.hud-regime__note` an author
+   * `display: -webkit-box` to clamp it to one line, and an author `display`
+   * beats the user agent's `[hidden] { display: none }` -- the trap
+   * `.hud-build__deliveries-more` is named for. So "this line is hidden" is a
+   * claim only a real layout at a real viewport can settle.
+   */
+  readonly emptyLaidOut: boolean;
+  readonly emptyText: string;
+  /** The "and N more" line, on the same terms and for the same reason. */
+  readonly moreLaidOut: boolean;
+  readonly moreText: string;
+  /**
+   * `innerText` of **both** panels, joined: what the browser rendered, with the
+   * pooled rows it did not draw left out.
+   *
+   * `textContent` is the wrong read here twice over -- it carries the hidden
+   * rows' stale words, and it is identical on a panel that was never painted.
+   *
+   * Both, since ADR 0115, because every assertion that reads this field is
+   * asking *what is on the Plan dnia tab* -- the panel title, the empty-prison
+   * sentence, an unresolved message key -- and that question has two boxes as
+   * its answer now. Reading one would make every such assertion quietly
+   * half-blind.
+   */
+  readonly text: string;
+  /**
+   * The bottom of the roster panel's *client* box -- where its content starts
+   * being clipped, unaffected by scrolling. The fold, in the shape
+   * `StaffProbe.panelVisibleBottom` and `RoomsLayoutProbe.panelVisibleBottom`
+   * report it.
+   *
+   * **`.ui-panel.hud-roster`, not `.ui-panel.hud-regime`**, since ADR 0115:
+   * every assertion built on this field pairs it with `lastLineBottom` or the
+   * inspector's box, and both of those are inside the roster's panel now. The
+   * timetable's own panel is `scheduleBox` below, and it is not a scroll
+   * container at all.
+   */
+  readonly panelVisibleBottom: number;
+  /** `scrollHeight - clientHeight` on the roster panel: 0 when the panel itself does not scroll. */
+  readonly panelOverflow: number;
+  readonly panelScrollTop: number;
+  /**
+   * The timetable panel's border box, and how far its own content overflows it
+   * (ADR 0115).
+   *
+   * `scheduleOverflow` is expected to be 0 forever rather than usually:
+   * `.ui-panel.hud-regime` is `flex: 0 0 auto` and is not a scroll container,
+   * so a timetable taller than its box would be *clipped* rather than
+   * scrollable -- the failure a screenshot does show and this field localises.
+   */
+  readonly scheduleBox: LayoutBox | null;
+  readonly scheduleOverflow: number;
+  /**
+   * Where the timetable's last line ends, against `scheduleBox`.
+   *
+   * The measurement the split exists to make true: with one panel, scrolling
+   * to the last roster row carried the timetable off the top of the shared
+   * box, so what the day allows was unreachable while a player read who was in
+   * it. Two panels cannot do that to each other, and this is the number that
+   * says so at a viewport rather than in a comment.
+   */
+  readonly scheduleLastLineBottom: number;
+  /**
+   * The bottom edge of the lowest thing the panel drew: the last roster row,
+   * the "and N more" line, or the empty sentence, whichever is furthest down.
+   *
+   * The number a reachability assertion turns on. A roster is the only block in
+   * this rail whose height grows with the *population*, and the panel is
+   * `overflow-y: auto`, so a roster that does not fit is pushed below the fold
+   * rather than clipped visibly -- which a screenshot would not show and
+   * `panelOverflow` alone would not localise to a line.
+   */
+  readonly lastLineBottom: number;
+  readonly panelBox: LayoutBox | null;
+  /**
+   * The inspector, and it is deliberately **not** folded into
+   * `lastLineBottom` above (issue #895).
+   *
+   * That figure is the roster's own reachability measurement -- the assertion
+   * *"keeps the last line of the roster inside the panel's fold at every
+   * viewport"* turns on it, in the state where nobody is selected and this
+   * block has no box at all. Adding a block that only exists after a press to
+   * the same number would change what that assertion measures without saying
+   * so. The inspector's own box is reported here instead, so a spec that wants
+   * the selected state measures it against `panelVisibleBottom` explicitly.
+   */
+  readonly detail: RegimePrisonerDetailProbe;
 }
 
 export interface LayoutProbe {
@@ -219,6 +1038,16 @@ export interface RoomsProbe {
   /** `data-area` on the readout block: `x,y,width,height`, or empty for none. */
   readonly area: string;
   readonly areaText: string;
+  /**
+   * Whether the area readout has a box at all.
+   *
+   * Laid out and not merely present, for `armLaidOut`'s reason and one more:
+   * the block folds when there is no rectangle to report, and `hud.css` gives
+   * it an author `display: flex` behind a `:not([hidden])` guard -- so a probe
+   * that read the attribute would agree with a rule that had lost its guard and
+   * was painting the placeholder anyway.
+   */
+  readonly areaLaidOut: boolean;
   /** The one note line: the arm hint, the removal hint, the too-small warning or the enclosure warning. */
   readonly noteText: string;
   /** `data-tone`, so a warning is distinguishable from a hint without matching prose. */
@@ -226,13 +1055,55 @@ export interface RoomsProbe {
   /** The two rule lines: the authored minimum, and the enclosure requirement. */
   readonly ruleText: readonly string[];
   readonly enclosureText: string;
+  /** Whether the enclosure readout has a box, for `areaLaidOut`'s reason: it folds until a room has been evaluated. */
+  readonly enclosureLaidOut: boolean;
+  /** `data-needs` on the panel: the total the readout was told about, or empty when it has no box. */
+  readonly panelNeeds: string;
+  /**
+   * `data-full` on the panel: how many rooms are at a concurrent-use ceiling
+   * (ADR 0028 phase 5).
+   *
+   * A second attribute rather than a second value of `panelNeeds`, because
+   * `hud.css` donates the catalogue's floor on either and a spec has to be able
+   * to tell which subject bought the donation.
+   */
+  readonly panelFull: string;
   readonly armLaidOut: boolean;
   readonly removeLaidOut: boolean;
   readonly confirmLaidOut: boolean;
   readonly cancelLaidOut: boolean;
   readonly confirmText: string;
   readonly confirmDisabled: boolean;
+  /**
+   * What each id in Confirm's `aria-describedby` resolves to, in order:
+   * `'note'`, `'refusal'`, `'other'`, or `'dangling'` for an id that names no
+   * element. Resolved in the page because the ids are generated.
+   */
+  readonly confirmDescribedBy: readonly string[];
+  /**
+   * What the four coordinate fields hold, as the strings the inputs carry:
+   * tile X, tile Y, width, height.
+   *
+   * Read off the DOM rather than from the panel, because the clamp being
+   * checked is the field's: `NumberField` is controlled, so what an input shows
+   * after a `change` is what its owner accepted, and an owner that accepted an
+   * out-of-range number would show it here.
+   */
+  readonly coordinates: readonly string[];
+  /** `data-collapsed` on the typed route's disclosure. */
+  readonly coordinatesFolded: string;
   readonly armPressed: string;
+  /**
+   * The arm control's rendered label -- "Draw on map" disarmed, "Stop drawing"
+   * armed.
+   *
+   * `aria-pressed` beside it says the same thing to a screen reader, and both
+   * are read because they are two different promises: one is what the player
+   * sees, the other what the toggle announces, and issue #684 is about the
+   * moment the seen half was folded off the screen while the state changed
+   * underneath it.
+   */
+  readonly armText: string;
   readonly removePressed: string;
   /**
    * `data-collapsed` on the panel, and whether its body has a box at all.
@@ -255,14 +1126,69 @@ export interface RoomsProbe {
    * only assertion worth making about a state that is supposed to have no box.
    */
   readonly needsLaidOut: boolean;
+  /**
+   * The block's header eyebrow, which is the only thing that says *which*
+   * subject it is drawing (ADR 0028 phase 5).
+   *
+   * The block has two: rooms the player has not finished building, and rooms
+   * that are finished and cannot take another user. They share the box, the
+   * room line and the item list, so a spec that read only the lines could not
+   * tell a full room from an unfinished one.
+   */
+  readonly needsLabelText: string;
+  /** `data-full` on the block: how many rooms are at a ceiling, when that is the subject. */
+  readonly needsFull: string;
   /** `data-unfinished`: how many rooms the simulation called unfinished, as a number rather than as prose. */
   readonly needsUnfinished: string;
   /** `data-needs`: how many unmet requirements those rooms have between them. */
   readonly needsTotal: string;
   /** The figure beside the header eyebrow. */
   readonly needsCountText: string;
-  /** The one detail line: which room, where, and what it wants. */
+  /**
+   * The room line: which room the readout is about, and where.
+   *
+   * It named the room *and* one object it wanted until #529 ("Cell at 12, 4
+   * needs Bed"). The objects moved to `needsItemText` below when the readout
+   * began enumerating all of them, so this is now the heading over that list.
+   */
   readonly needsLineText: string;
+  /** One entry per thing the named room is short, with its quantity where there is one, in the order drawn (#529). */
+  readonly needsItemText: readonly string[];
+  /**
+   * `data-kind` per line, in the same order (#938).
+   *
+   * `'object'` for an unmet object requirement and `'doorway'` for a room
+   * whose walls hold no door. Read as data rather than by matching the
+   * sentence, because a spec that told the two apart by their English would be
+   * a spec of the locale -- and the defect #938 records is exactly a readout
+   * whose two states rendered the same.
+   */
+  readonly needsItemKinds: readonly string[];
+  /**
+   * How many *rows* those lines occupy, counted by distinct top edges (#938).
+   *
+   * `.hud-rooms__needs-items` is a wrapping row, so a line count is not a
+   * height: `1 x Bed` and `1 x Toilet` share one row and that compression is
+   * part of what pays for the block existing at all. What this reports is the
+   * claim `.hud-rooms__needs-item[data-kind='doorway']` makes -- the doorway
+   * sentence takes a row to itself and the object chips compress under it --
+   * which is a property of the *kind* of line rather than of how wide this
+   * locale's words happen to be, and is what bounds the block at two rows for
+   * every shape the shipped catalogue can produce.
+   *
+   * Rounded to whole pixels before they are compared, because a wrapped row's
+   * top is a subpixel figure and two chips on one row must count as one row.
+   */
+  readonly needsItemRows: number;
+  /**
+   * The whole block's laid-out height, in CSS pixels.
+   *
+   * What `ROOM_NEEDS_NAMED_LIMIT` is a budget *for*: that constant is a claim
+   * about how much of the rail this readout may spend, and a line count is not
+   * that claim -- a spec asserting "three lines are drawn" stays green over a
+   * block whose lines have been clipped to nothing.
+   */
+  readonly needsHeight: number;
 }
 
 /**
@@ -331,7 +1257,7 @@ export interface RefusalProbe {
   readonly height: number;
   /** `title` of every control the HUD has marked as having failed. */
   readonly failedControls: readonly string[];
-  /** True when every marked control's `aria-describedby` is the refusal line's id. */
+  /** True when every marked control's `aria-describedby` *contains* the refusal line's id. */
   readonly describedByRefusal: boolean;
   /** The line's `role` and `aria-live`, so "a live region says it" is asserted and not assumed. */
   readonly role: string | null;
@@ -394,7 +1320,48 @@ export interface LockstateUiHarness {
    */
   laidOut(selector: string): boolean;
 
-  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void;
+  /**
+   * `nowMs` freezes the panel's clock, which is what makes the delete
+   * confirmation's age sentence deterministic (#1142): the age is
+   * `nowMs - updatedAt` and nothing else. Omitted, the panel reads `Date.now`
+   * exactly as the application's own construction does.
+   */
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean; readonly nowMs?: number }): void;
+  /** Puts a prison on the stub's list with a chosen name and a chosen age (#1142). */
+  seedPrison(prisonId: string, displayName: string, updatedAt: number): void;
+  /**
+   * Every prison the panel has asked the controller to delete, in order.
+   *
+   * The only reading that separates "asked first" from "deleted first and said
+   * so afterwards": both leave the same rows on screen.
+   */
+  /**
+   * `SavePanel.confirmDelete` called directly, returning its decision as a
+   * string. The only reachable route to the unconfirmed case from a browser:
+   * the confirming control exists only while a deletion is armed.
+   */
+  confirmDeleteDirect(prisonId: string): string;
+  deletedPrisons(): readonly string[];
+  /** Every prison whose held copy the panel has asked to free (ADR 0114). */
+  forgottenPrisons(): readonly string[];
+  /**
+   * Makes the stub's next restore report this outcome.
+   *
+   * The only route to the three refusals from a browser: a window that closes
+   * on a wall clock cannot be waited out in a test, and the point of ADR 0114's
+   * design is that the refusal is decided by the layer below the panel anyway.
+   */
+  setRestoreOutcome(outcome: 'restored' | 'window-closed' | 'slot-taken' | 'not-found'): void;
+  /** Rows on the page for deleted prisons -- read from the DOM. */
+  deletedPrisonRowCount(): number;
+  /** Copies the stub still holds, which is what a freed copy has to change and a row cannot show. */
+  heldCopyCount(): number;
+  /** Clicks a control on one deleted prison's own row, identified by the row rather than by label. */
+  clickDeletedPrisonButton(prisonId: string, label: string): boolean;
+  /** The delete confirmation's question as rendered, or `''` when none is on the page. */
+  deleteConfirmationText(): string;
+  /** What the keyboard is standing on, by label; `''` for `<body>` (article 16's failure state). */
+  focusedControlLabel(): string;
   clickSaveButton(label: string): boolean;
   saveButtonState(label: string): ButtonState;
   savePanelStatus(): string;
@@ -453,6 +1420,7 @@ export interface LockstateUiHarness {
    * panel and is shown on the Overview tab instead of it.
    */
   intakeProbe(): IntakeProbe;
+  overviewProbe(): OverviewProbe;
   /** Presses the admit button. A real click, so a disabled button genuinely does nothing. */
   clickAdmitPrisoner(): boolean;
 
@@ -468,6 +1436,22 @@ export interface LockstateUiHarness {
   clickBuildable(definitionId: string): boolean;
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;
+  /**
+   * Aims the panel's target readout at one tile edge, the way the world does.
+   *
+   * `main.ts` wires `BuildTool.attachReadout` straight into
+   * `HudHandle.setBuildTarget`, and this calls that same method on the mounted
+   * HUD -- driving a real Phaser pointer belongs to `app-shell.spec.ts`. The
+   * numeric edge chooser deliberately does *not* feed this readout: choosing
+   * an edge there changes what `clickPlaceOrder` will send, not what the
+   * player is currently aimed at. So the readout has to be aimed to be read.
+   *
+   * `null` clears it. Returns `false` when no HUD is mounted, so a spec cannot
+   * pass by asserting about an aim that never happened.
+   */
+  aimBuildTarget(
+    target: { readonly x: number; readonly y: number; readonly edge: string; readonly segments: number } | null,
+  ): boolean;
   clickPlaceOrder(): boolean;
   /** Opens or closes the buy disclosure (#89). */
   clickBuyToggle(): boolean;
@@ -524,13 +1508,49 @@ export interface LockstateUiHarness {
   ): boolean;
   /** The live readout as the pointer moves; `undefined` clears it. */
   hoverWorldRoom(area: { x: number; y: number; width: number; height: number } | undefined): boolean;
+  /**
+   * Controls what the room tool's stand-in reports for `classifyArea` (issue
+   * #493) -- the answer to "is this rectangle's own perimeter walled in",
+   * which `RoomTool` would otherwise answer from a real `WorldRenderView` this
+   * harness never builds. Defaults to `'sealed'` -- **not** the `'open'`
+   * answer a real, worldless tool gives -- because every spec written before
+   * #493 drags an ordinary rectangle expecting an ordinary designation to
+   * succeed, and none of them calls this. Only a spec that is itself about
+   * enclosure needs to.
+   *
+   * Takes effect for every `dragWorldRoom` and `clickRoomsControl('coordinates-submit')`
+   * call from here on, so a spec sets it once before the gesture whose warning
+   * it is asserting about.
+   */
+  setWorldRoomEnclosure(enclosure: 'sealed' | 'open'): void;
   clickRoomType(roomId: string): boolean;
   /**
    * A real click on one of the panel's controls, so a disabled or hidden one
    * does not fire. Four of them are the actions row; `fold` is the panel's own
-   * header control.
+   * header control; `coordinates` is the typed route's disclosure header and
+   * `coordinates-submit` the control inside it that produces the rectangle.
    */
-  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold'): boolean;
+  clickRoomsControl(
+    control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold' | 'coordinates' | 'coordinates-submit',
+  ): boolean;
+  /**
+   * Types into the panel's coordinate fields, the way a player's keyboard does:
+   * the value lands in the input and the input reports `change`.
+   *
+   * Nothing becomes pending here. The fields are the typed route's *aim*, and
+   * `clickRoomsControl('coordinates-submit')` is its release -- the same
+   * separation a drag has between moving and letting go.
+   *
+   * Fields left out of the object are left alone, so a spec can move one number
+   * of four and say so. Returns `false` when a named field is not in the DOM,
+   * so a spec cannot pass by typing into nothing.
+   */
+  typeRoomCoordinates(values: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+  }): boolean;
   /**
    * Publishes what the simulation said about the last room designated.
    *
@@ -550,6 +1570,91 @@ export interface LockstateUiHarness {
    * to be handed each of them to prove it.
    */
   reportRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
+  /** Publishes the build queue, which in the real app arrives over `simulation/request-projection`. */
+  reportBuildQueue(queue: HudBuildQueueViewModel | undefined): void;
+  /** Presses the queue fold's header. Returns false when the section is not laid out. */
+  toggleBuildQueue(): boolean;
+  /** Presses the cancel control on the row aimed at `orderId`. Returns false when no such row is laid out. */
+  pressBuildQueueCancel(orderId: string): boolean;
+  /**
+   * Publishes what has been bought and has not arrived, which in the real app is
+   * read over `simulation/request-projection` by
+   * `src/ui/simulation-pending-deliveries.ts` (#285).
+   *
+   * `queue` is optional and reported alongside, because the two surfaces share a
+   * panel and their heights interact: a queue takes 45px out of the catalogue's
+   * floor, and the disclosure below it has to still fit.
+   */
+  reportPendingDeliveries(
+    deliveries: HudPendingDeliveriesViewModel | undefined,
+    queue?: HudBuildQueueViewModel,
+  ): void;
+  /** Presses the cancel control on the delivery row aimed at `orderId`. Returns false when no such row is laid out. */
+  pressPendingDeliveryCancel(orderId: string): boolean;
+  /**
+   * Publishes which guards are held and by what, which in the real app is read
+   * over `simulation/request-projection` by `src/ui/simulation-held-guards.ts`
+   * (ADR 0034).
+   *
+   * `undefined` is "nothing has been asked", which is a different fact from a
+   * model reporting no held guards -- the first draws no block at all and the
+   * second draws a sentence, and the panel has to be handed each to prove it.
+   */
+  reportHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
+  /** Publishes where the prison's arrivals are, the way `IntakePipelineReader` does in the real app. */
+  reportIntakePipeline(pipeline: HudIntakePipelineViewModel | undefined): void;
+  /**
+   * Publishes how many guards the prison asks for against how many it has,
+   * which in the real app is read over `simulation/request-projection` by
+   * `src/ui/simulation-staff-coverage.ts` (ADR 0048).
+   *
+   * `undefined` is "nothing has been asked", which is a different fact from a
+   * model reporting no shortage -- the first draws no block at all and the
+   * second draws a green badge, and the panel has to be handed each to prove
+   * that a prison nothing is answering for does not read as a covered one.
+   */
+  reportStaffCoverage(coverage: HudStaffCoverageViewModel | undefined): void;
+  /** Presses the release control on the row aimed at `guardId`. Returns false when no such row is laid out. */
+  pressGuardRelease(guardId: number): boolean;
+  /** The Regime panel on the fifth tab (issue #451). */
+  regimeProbe(): RegimeProbe;
+  /**
+   * Publishes what each classification group's day allows and who is in the
+   * prison, which in the real app arrive over `simulation/request-projection`
+   * by way of `src/ui/simulation-regime.ts` and
+   * `src/ui/simulation-prisoner-roster.ts`.
+   *
+   * Both in one call, and that is not a convenience: they are the two blocks of
+   * one panel and their heights interact, so a spec that could only publish one
+   * at a time could never measure the panel a player actually gets. The same
+   * reason `reportPendingDeliveries` takes the queue beside the deliveries.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all -- absent draws no block, and a present
+   * roster with `total: 0` draws the sentence about an empty prison only when
+   * `everAdmitted` is also false. A `total: 0` roster with `everAdmitted: true`
+   * -- everybody admitted has since left -- draws neither sentence (issue
+   * #506; see `roster-panel.ts`'s `paintRoster`).
+   */
+  reportRegime(
+    regime: HudRegimeViewModel | undefined,
+    roster?: HudPrisonerRosterViewModel,
+    detail?: HudPrisonerDetailViewModel,
+  ): void;
+  /**
+   * Tells the HUD that the prisoner the player selected has been released
+   * (issue #895).
+   *
+   * The one thing `reportRegime` above cannot express, and the reason it cannot
+   * is the point: `HudViewModel.prisonerDetail` going absent covers
+   * nothing-asked, a read in flight and a failed read, none of which makes the
+   * player's choice false. In the real app this is what the host does when
+   * `PrisonerDetailReader.read` answers `'released'` -- `projectPrisonerDetail`
+   * returning nothing, which happens for exactly one reason,
+   * `!entityStore.isAlive(entityId)`.
+   */
+  clearPrisonerSelection(): void;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

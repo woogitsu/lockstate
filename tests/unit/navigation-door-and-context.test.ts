@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
-import { DoorRegistry, type DoorDefinition } from '../../src/simulation/navigation/door';
+import { DoorRegistry, MINIMUM_DOOR_COST_MULTIPLIER, type DoorDefinition } from '../../src/simulation/navigation/door';
 import { checkDoorAccess, doorTraversalCost, type RouteContext } from '../../src/simulation/navigation/route-context';
 
 function makeDoor(overrides: Partial<DoorDefinition> = {}): DoorDefinition {
@@ -24,10 +24,16 @@ describe('checkDoorAccess', () => {
 
   it('denies insufficient clearance regardless of open/closed state', () => {
     const context: RouteContext = { role: 'prisoner', securityClearance: 0 };
-    expect(checkDoorAccess(makeDoor({ state: 'open', requiredSecurityClearance: 1 }), context)).toEqual({
-      allowed: false,
-      reason: 'insufficient-clearance',
-    });
+    // "Regardless of open/closed state" is a claim over both states, and until
+    // 2026-09-08 only `open` was here: gating the clearance check on
+    // `door.state !== 'closed'` left this test green and was caught only by
+    // four route-level tests two files away, none of which say so in a title.
+    for (const state of ['open', 'closed'] as const) {
+      expect(checkDoorAccess(makeDoor({ state, requiredSecurityClearance: 1 }), context), state).toEqual({
+        allowed: false,
+        reason: 'insufficient-clearance',
+      });
+    }
   });
 
   it('denies a missing named permission even with sufficient clearance', () => {
@@ -39,7 +45,24 @@ describe('checkDoorAccess', () => {
 
   it('blocks a locked door for everyone without emergencyOverride, regardless of clearance', () => {
     const door = makeDoor({ state: 'locked', requiredSecurityClearance: 0 });
-    expect(checkDoorAccess(door, { role: 'guard', securityClearance: 99 })).toEqual({ allowed: false, reason: 'locked' });
+    // "Everyone" and "regardless of clearance" are two universals, and one
+    // guard at clearance 99 samples neither of them: letting `role: 'prisoner'`
+    // walk through a locked door left this test green, and nothing else in the
+    // repository caught it either -- 297 tests across every vitest file that
+    // touches `checkDoorAccess` stayed green with exactly that hole open.
+    const contexts: readonly RouteContext[] = [
+      { role: 'guard', securityClearance: 99 },
+      { role: 'guard', securityClearance: 0 },
+      { role: 'staff', securityClearance: 3, permissions: ['medical-wing'] },
+      { role: 'prisoner', securityClearance: 0 },
+      { role: 'prisoner', securityClearance: 99 },
+    ];
+    for (const context of contexts) {
+      expect(checkDoorAccess(door, context), `${context.role} at clearance ${context.securityClearance}`).toEqual({
+        allowed: false,
+        reason: 'locked',
+      });
+    }
   });
 
   it('emergencyOverride bypasses only the lock, not clearance/permission', () => {
@@ -47,6 +70,16 @@ describe('checkDoorAccess', () => {
     expect(checkDoorAccess(door, { role: 'prisoner', securityClearance: 0, emergencyOverride: true })).toEqual({
       allowed: false,
       reason: 'insufficient-clearance',
+    });
+    // The permission half of "not clearance/permission" was unreachable until
+    // 2026-09-08: the sample above lacks the clearance too, and clearance is
+    // checked first, so `checkDoorAccess` returned before the permission check
+    // ran. Making emergencyOverride skip that check as well left this test
+    // green and nothing else caught it. This actor clears the door and is
+    // refused for the one remaining reason.
+    expect(checkDoorAccess(door, { role: 'guard', securityClearance: 5, emergencyOverride: true })).toEqual({
+      allowed: false,
+      reason: 'missing-permission',
     });
     expect(
       checkDoorAccess(door, { role: 'guard', securityClearance: 5, permissions: ['medical-wing'], emergencyOverride: true }),
@@ -78,6 +111,41 @@ describe('DoorRegistry', () => {
     doors.register(makeDoor());
     expect(() => doors.register(makeDoor({ id: 'door-2' }))).toThrow(RangeError); // same edge, different id
     expect(() => doors.register(makeDoor({ position: { x: tileCoordinate(9), y: tileCoordinate(9) } }))).toThrow(RangeError); // same id, different edge
+  });
+
+  /**
+   * The precondition `boundedLocalSearch` cannot check for itself.
+   *
+   * Its Manhattan heuristic charges one step per remaining tile and its
+   * closed set is never reopened, so a door cheaper than a plain step makes
+   * the heuristic overestimate and the route it returns is no longer the
+   * cheapest one inside its own bound -- with no failure to observe, just a
+   * longer path. `docs/NAVIGATION.md`'s "Known correctness caveat" promises
+   * optimality *within* the regions the portal search chose, so this is the
+   * guard that keeps that sentence true;
+   * `tests/unit/navigation-local-search-admissibility.test.ts` measures what
+   * it buys and what its absence costs.
+   *
+   * `NaN` is here because it is the case a bare `< 1` comparison lets
+   * through -- `NaN < 1` is `false` -- and a `NaN` door cost makes every
+   * route across it cost `NaN`.
+   */
+  it('rejects a costMultiplier below a plain step, or one that is not a finite number', () => {
+    const doors = new DoorRegistry();
+    for (const costMultiplier of [MINIMUM_DOOR_COST_MULTIPLIER - Number.EPSILON, 0.99, 0.75, 0.25, 0, -1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(() => doors.register(makeDoor({ costMultiplier })), `costMultiplier ${costMultiplier}`).toThrow(RangeError);
+    }
+    // Refused before anything is written: the registry is untouched, so the
+    // edge and the id are both still free.
+    expect(doors.all()).toEqual([]);
+    expect(doors.structuralRevision).toBe(0);
+    expect(doors.accessRevision).toBe(0);
+
+    for (const costMultiplier of [MINIMUM_DOOR_COST_MULTIPLIER, 1.5, 2, 10]) {
+      const registry = new DoorRegistry();
+      registry.register(makeDoor({ costMultiplier }));
+      expect(registry.getById('door-1')?.costMultiplier).toBe(costMultiplier);
+    }
   });
 
   it('setState updates the stored door on both lookup paths and bumps accessRevision + that door\'s own version, but not structuralRevision', () => {

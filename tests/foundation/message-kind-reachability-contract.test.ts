@@ -36,7 +36,13 @@ import {
  * sends `simulation/initialize` as the first message the worker ever receives.
  * Both findings were re-verified against this tree before this gate was
  * written, and the sweep found two more the audit did not name:
- * `protocol/ping` has no sender either, and neither does `simulation/event`.
+ * `protocol/ping` has no sender either, and neither did `simulation/event`.
+ * **The second half of that sentence stopped being true in issue #507** and is
+ * marked rather than overwritten, because the reason it was recorded has not
+ * gone away: `simulation/event` now has a producer in the worker and a reader
+ * on the main thread, so the only kind this sweep still finds unsent is
+ * `protocol/ping` (beside the two `protocol/handshake` halves, which are sent
+ * but unprovoked and accounted for separately below).
  *
  * **This gate decides none of that.** Whether the handshake should be sent,
  * deleted, or folded into `simulation/initialize` is an ADR 0003 decision-4
@@ -145,15 +151,36 @@ const UNSENT_MAIN_TO_WORKER_KINDS: Readonly<Record<string, string>> = {
 /**
  * Worker-to-main kinds nothing under `src/` sends, with why.
  *
- * `simulation/delta` is the half of #274 A1 that the audit found true; A1's
- * point was that the *other* half of that ADR sentence ("no schema") is false.
+ * It held two entries until ADR 0040 slice 1 (#414) gave `simulation/delta` a
+ * sender -- `state-machine.ts#publishRenderDelta`, unprompted on the tick loop
+ * -- which is the direction this gate is written to fail in: the entry could
+ * not survive the sender, so deleting it was a step of that change and not a
+ * tidy-up after it. #274 A1's finding was true when it was written and is now
+ * closed; A1's other half, that the ADR sentence claiming "no schema" was
+ * false, was already false then.
  */
-const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
-  'simulation/delta':
-    '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts#deltaMessageSchema`), is a member of `types.ts#workerToMainMessageSchema` and has a transfer-list case (`transferables.ts#collectProtocolTransferables`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
-  'simulation/event':
-    'Declared in the kind union with a schema (`types.ts#eventMessageSchema`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts#collectProtocolTransferables`), and constructed by nothing. It has no main-thread reader either: the six main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts`, `simulation-alerts.ts`, `simulation-clock.ts`, `simulation-commands.ts`, `simulation-counts.ts` and `simulation-zoning.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. That enumeration is counted rather than asserted: KIND_SWITCHING_MODULES below is derived from the scan, and a seventh dispatcher, a rename, or a module that grows a `simulation/event` case fails this gate instead of quietly making this sentence false. It has already worked twice: #283 made four dispatchers five, and the Rooms tab (ADR 0022, amended) made five six with `simulation-zoning.ts`, which reads the enclosure notice off `simulation/status-counts` -- and neither could be landed without coming back to this sentence. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
-};
+/*
+ * **Empty since issue #507**, and the emptying is the point rather than a
+ * tidy-up. `simulation/event` was the sole entry: declared in the kind union
+ * with a schema (`types.ts#eventMessageSchema`), given a transfer-list case,
+ * and constructed by nothing, with no main-thread reader either. It now has
+ * both -- `state-machine.ts#publishEvents` posts it and
+ * `src/ui/simulation-events.ts` dispatches on it --
+ * so the entry could not survive the sender, and deleting it was a step of
+ * that change rather than a follow-up to it. That is the direction this gate
+ * is written to fail in, and it fired on exactly the three assertions it was
+ * built to fire on: this list going stale, the dispatcher count moving from
+ * six to seven, and `unsentWorkerToMain` emptying.
+ *
+ * ADR 0003 listed "asynchronous domain events" among the families the protocol
+ * must support, and that family had been declared and dead since the protocol's
+ * first commit; #507 gave it its first two producers.
+ *
+ * The empty object is deliberate rather than a deletion of the constant: it is
+ * what makes "every worker-to-main kind has a sender" an assertion that can go
+ * red again, and the next dead kind has somewhere to be recorded.
+ */
+const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {};
 
 /**
  * Worker-to-main kinds that `src/` constructs but that no production path can
@@ -552,30 +579,46 @@ describe('every protocol message kind has a sender, and every sent kind can be p
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-events.ts',
       'src/ui/simulation-zoning.ts',
     ]);
     expect(KIND_SWITCHING_MODULES).toContain(TRANSFER_SWITCH);
-    expect(MAIN_THREAD_KIND_SWITCHES.length).toBe(6);
+    expect(MAIN_THREAD_KIND_SWITCHES.length).toBe(7);
 
-    const reason = UNSENT_WORKER_TO_MAIN_KINDS['simulation/event']!;
-    // The count word is *derived* from the measurement rather than written
-    // here twice. Measured, the obvious form of this assertion --
-    // `toContain('the five main-thread modules ...')` -- is satisfiable by
-    // editing the number in the sentence and the number in the assertion
-    // together, which is one search-and-replace and exactly the edit a
-    // sixth dispatcher would prompt. Spelling the numeral from
-    // `MAIN_THREAD_KIND_SWITCHES.length` removes that option: the sentence
-    // has to agree with the scan, and there is nowhere to say five but here.
+    /*
+     * **What this half of the test asserts changed direction in issue #507,
+     * and the change is recorded rather than overwritten.**
+     *
+     * It used to read the `simulation/event` entry out of
+     * `UNSENT_WORKER_TO_MAIN_KINDS` and check three things about its *prose*:
+     * that it spelled the dispatcher count the scan had just measured, that it
+     * named every module in that scan, and -- the substance -- that none of
+     * those modules had a `case 'simulation/event':`. All three existed to stop
+     * a sentence claiming "nothing reads this kind" from quietly outliving the
+     * day something did.
+     *
+     * Something now does, so there is no entry left to check and those three
+     * assertions have nothing to hold. Deleting them outright would throw away
+     * the property they were really buying, which is that this file cannot
+     * describe the dispatch surface loosely. So the substance assertion is kept
+     * and **inverted**: exactly one module may dispatch on `simulation/event`,
+     * and it must be the translator that owns the channel. A second reader
+     * appearing -- the ordinary way a channel like this sprawls -- fails here
+     * and sends its author to `src/ui/simulation-events.ts` to say why two
+     * modules need it.
+     *
+     * The `default:` check is untouched. It never depended on the entry: an
+     * unknown kind must be dropped rather than crash, whatever the union
+     * currently holds.
+     */
+    const eventReaders = MAIN_THREAD_KIND_SWITCHES.filter((where) => {
+      const source = scanned.find((candidate) => candidate.where === where)!;
+      return source.text.includes("case 'simulation/event':");
+    });
     expect(
-      reason,
-      `the \`simulation/event\` entry does not say "${NUMERALS[MAIN_THREAD_KIND_SWITCHES.length]}", which is how many main-thread modules the scan actually found dispatching on a message kind`,
-    ).toContain(`the ${NUMERALS[MAIN_THREAD_KIND_SWITCHES.length]} main-thread modules that \`switch (message.kind)\``);
-    for (const where of MAIN_THREAD_KIND_SWITCHES) {
-      expect(
-        reason,
-        `${where} dispatches on a message kind and the \`simulation/event\` entry does not name it -- that entry claims to enumerate the complete set, which is the claim #283 made false`,
-      ).toContain(where.slice(where.lastIndexOf('/') + 1));
-    }
+      eventReaders,
+      "`simulation/event` is read by exactly one main-thread module by design (issue #507). A second dispatcher means two surfaces are interpreting one channel -- say why in `src/ui/simulation-events.ts`, or route the new reader through it",
+    ).toEqual(['src/ui/simulation-events.ts']);
 
     for (const where of MAIN_THREAD_KIND_SWITCHES) {
       const source = scanned.find((candidate) => candidate.where === where)!;
@@ -583,10 +626,6 @@ describe('every protocol message kind has a sender, and every sent kind can be p
         source.text,
         `${where} dispatches on a message kind with no \`default\`, so an unknown kind is no longer dropped`,
       ).toContain('default:');
-      expect(
-        source.text,
-        `${where} now has a case for 'simulation/event', so the entry saying nothing reads it is false`,
-      ).not.toContain("case 'simulation/event':");
     }
   });
 
@@ -615,9 +654,12 @@ describe('every protocol message kind has a sender, and every sent kind can be p
      * means. That is strictly more than a line number could ever prove.
      */
     // The denominator, in the shape the rest of this file pins its figures:
-    // thirteen distinct symbols across four modules is what is being verified,
+    // twelve distinct symbols across four modules is what is being verified,
     // so a citation that reverts to a line number reduces it and is visible
-    // rather than merely unchecked.
+    // rather than merely unchecked. It was thirteen until #414 deleted the
+    // `simulation/delta` entry, which was the only sentence citing
+    // `deltaMessageSchema` and `workerToMainMessageSchema`; the sender it
+    // gained is cited in that entry's place.
     const distinct = new Set(ANCHORED_CITATIONS.map((citation) => `${citation.basename}#${citation.symbol}`));
     expect(
       [...distinct].sort(),
@@ -627,12 +669,12 @@ describe('every protocol message kind has a sender, and every sent kind can be p
       'state-machine.ts#handleHandshake',
       'state-machine.ts#handleMessage',
       'state-machine.ts#handlePing',
+      'state-machine.ts#publishEvents',
+      'state-machine.ts#publishRenderDelta',
       'transferables.ts#collectProtocolTransferables',
       'types.ts#MAIN_TO_WORKER_MESSAGE_KINDS',
-      'types.ts#deltaMessageSchema',
       'types.ts#eventMessageSchema',
       'types.ts#pingMessageSchema',
-      'types.ts#workerToMainMessageSchema',
       'worker-session-host.ts#DEFAULT_REPLY_TIMEOUT_MS',
       'worker-session-host.ts#initialize',
       'worker-session-host.ts#request',
@@ -878,12 +920,18 @@ describe('every protocol message kind has a sender, and every sent kind can be p
 
   it('measures the state #274 A1 and A2 describe, exactly', () => {
     // The denominators, stated so the gate reports a fact and not only guards
-    // one. Four of twenty kinds have no sender and two more are sent but
+    // one. Three of twenty kinds have no sender and two more are sent but
     // unprovokable, so a third of the protocol was declared and dead when this
-    // was written and a fifth of it still is. Making the figures exact means a
-    // kind that quietly loses its last sender cannot be settled by adding a
+    // was written and a quarter of it still is. Making the figures exact means
+    // a kind that quietly loses its last sender cannot be settled by adding a
     // list entry alone -- the count has to change too, and a reviewer sees
     // that the protocol got emptier.
+    //
+    // It moved in the other direction for the first time with ADR 0040 slice 1
+    // (#414): `simulation/delta` gained a sender, so the figures below went
+    // from four unsent and sixteen sent to three and seventeen. That is the
+    // outcome this gate exists to require of a kind that stops being dead --
+    // the same commit that adds the sender has to come back here.
     //
     // The two kinds #104's projection channel added -- `simulation/request-projection`
     // and `simulation/projection` -- moved every figure below and none of the
@@ -891,13 +939,15 @@ describe('every protocol message kind has a sender, and every sent kind can be p
     // request the main thread really constructs, so neither needed an entry.
     // That is the outcome this gate exists to require of a new kind.
     expect([...unsentMainToWorker]).toEqual(['protocol/handshake', 'protocol/ping']);
-    expect([...unsentWorkerToMain]).toEqual(['simulation/delta', 'simulation/event']);
+    // Empty since issue #507 gave `simulation/event` its first producer; it
+    // held exactly that one kind before. The figures below move with it.
+    expect([...unsentWorkerToMain]).toEqual([]);
     expect([...unreachableWorkerToMain]).toEqual(['protocol/handshake-accepted', 'protocol/pong']);
 
     const sent = ALL_KINDS.filter((kind) => sendingFiles(kind).length > 0);
-    expect(sent.length).toBe(16);
-    expect(ALL_KINDS.length - sent.length).toBe(4);
-    expect(sent.length - unreachableWorkerToMain.length).toBe(14);
+    expect(sent.length).toBe(18);
+    expect(ALL_KINDS.length - sent.length).toBe(2);
+    expect(sent.length - unreachableWorkerToMain.length).toBe(16);
   });
 
   it('names only kinds the protocol declares, in both lists and in the union itself', () => {

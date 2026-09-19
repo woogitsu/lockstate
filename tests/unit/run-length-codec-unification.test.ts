@@ -6,7 +6,8 @@ import {
   encodeEntityStoreSnapshot,
   type EncodedEntityStoreSnapshot,
 } from '../../src/simulation/entity/entity-codec';
-import { decodeTerrainRle, encodeTerrainRle, WorldSnapshotError } from '../../src/simulation/world/sparse-world';
+import { decodeTerrainRle, encodeTerrainRle, WorldSnapshotError, type TerrainRle } from '../../src/simulation/world/sparse-world';
+import { decodeRenderLayer } from '../../src/simulation/presentation/world-projection';
 
 /**
  * #123 item 3: one declared wire format, two implementations, asymmetric
@@ -155,6 +156,44 @@ describe('the range check is one parameter, and it reaches both callers', () => 
     expect(() =>
       decodeEntityStoreSnapshot({ ...validEntity(), alive: [[0, 8, 9] as unknown as readonly [number, number]] }),
     ).toThrow(RangeError);
+  });
+
+  it('the render-layer plane rejects the same out-of-range values, with its own RangeError text', () => {
+    // #182: `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`)
+    // was a third hand-rolled implementation of this same shape, reported but
+    // not folded in by #123 item 3. It now decodes through
+    // `expandRunLengthsInto` too, with a `maxValue` of 255 (the only shape it
+    // decodes -- a render layer is always a `Uint8Array`) and its own two
+    // `RangeError` messages, collapsed exactly as the original loop collapsed
+    // them.
+    for (const value of [-1, 1.5, Number.NaN, 999]) {
+      expect(() => decodeRenderLayer([[value, 4]], 4), String(value)).toThrow('Invalid render-layer RLE.');
+    }
+  });
+
+  it('the render-layer plane rejects a malformed run the same way the other two planes do', () => {
+    // Before #182, the render-layer loop destructured `[value, count]`
+    // directly off each run with no shape check at all -- `for (const
+    // [value, count] of rle)`. A run that is not a 2-element array (here, a
+    // bare `null` slipped into the tuple array) threw a raw, undocumented
+    // `TypeError` from the destructuring itself, not the `RangeError` this
+    // decoder's contract promises. `expandRunLengthsInto`'s explicit
+    // `Array.isArray(run)` check catches it before any destructuring happens,
+    // so this is a real hardening and not only a deduplication.
+    expect(() => decodeRenderLayer([null as unknown as readonly [number, number]], 4)).toThrow('Invalid render-layer RLE.');
+    expect(() => decodeRenderLayer([[0, 4, 9] as unknown as readonly [number, number]], 4)).toThrow(
+      'Invalid render-layer RLE.',
+    );
+  });
+
+  it('the render-layer plane decodes exactly what it always decoded, for every shape the world plane does', () => {
+    // Same round-trip guarantee as the world and entity planes above: sharing
+    // the algorithm must not change what a valid render layer decodes to.
+    for (const [label, values] of SHAPES) {
+      const buffer = Uint8Array.from(values);
+      const rle: TerrainRle = encodeTerrainRle(buffer);
+      expect(decodeRenderLayer(rle, buffer.length), label).toEqual(buffer);
+    }
   });
 
   it('keeps each plane its own error type rather than a shared generic one', () => {

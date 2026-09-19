@@ -17,6 +17,40 @@ export type { SearchStats } from './local-search';
  * identically, so results stay deterministic and comparable. Delegates its
  * search core to `region-dijkstra.ts`'s `runRegionDijkstra`, shared with
  * `flow-field.ts`'s all-targets variant.
+ *
+ * **Rooted at the destination, walked from the origin** (#360), which is the
+ * one thing that makes a shared `RegionFlowField` the same plan this function
+ * computes rather than merely an equally expensive one:
+ *
+ * - Total cost is symmetric, so an origin-rooted and a destination-rooted
+ *   search agree on `dist` -- but not on `prevPortal`. A relaxation is a
+ *   strict improvement (`region-dijkstra.ts`), so among equal-cost
+ *   predecessors the recorded one is whichever was relaxed first, and "first"
+ *   is frontier order *measured from the search's own source*. Rooted at the
+ *   origin, the destination's predecessor is chosen by distance-from-origin;
+ *   rooted at the destination, the origin's successor is chosen by
+ *   distance-from-destination. Those are different quantities, so the two
+ *   searches picked different doors whenever two region routes tied -- 64 of
+ *   256 origin/destination pairs on a four-room ring, 20 of them at strictly
+ *   higher cost. `flow-field.ts` can only be rooted at the destination (that
+ *   is what makes one pass answer for every origin), so this is the end that
+ *   had to move.
+ * - A per-portal tie-break (record the smaller door id among equal-cost
+ *   relaxations) does *not* close it: rooted at the origin that rule picks the
+ *   cheapest **last** hop of a tied path, rooted at the destination it picks
+ *   the cheapest **first** hop, and a path whose first hop is canonically
+ *   smaller need not be the path whose last hop is. Rooting both searches at
+ *   the same end is the fix; a rule stated over door ids is not.
+ * - The early exit does not weaken the equivalence. `stopAt` breaks when the
+ *   origin is dequeued, and every region on the returned chain has a
+ *   *strictly* smaller distance-to-destination than the origin (each hop costs
+ *   more than zero), so each was dequeued -- and had its predecessor
+ *   finalised, since relaxation skips visited regions -- before the break. The
+ *   chain is therefore identical to the one a full field records.
+ *
+ * `origin`/`destination` keep their caller-facing meaning and the returned
+ * portals are still ordered origin -> destination; only the search direction
+ * is reversed, so no `reverse()` is needed to produce that order.
  */
 function dijkstraRegionPath(
   graph: NavigationGraph,
@@ -25,21 +59,21 @@ function dijkstraRegionPath(
   destination: RegionId,
   isPortalAllowed: (portal: Portal) => boolean,
   stats?: SearchStats,
+  doorDependencies?: Set<string>,
 ): readonly Portal[] | undefined {
   if (origin === destination) return [];
 
-  const { dist, prevPortal } = runRegionDijkstra(graph, doors, origin, isPortalAllowed, stats, destination);
-  if (!dist.has(destination)) return undefined;
+  const { dist, prevPortal } = runRegionDijkstra(graph, doors, destination, isPortalAllowed, stats, origin, doorDependencies);
+  if (!dist.has(origin)) return undefined;
 
   const path: Portal[] = [];
-  let cursor = destination;
-  while (cursor !== origin) {
+  let cursor = origin;
+  while (cursor !== destination) {
     const portal = prevPortal.get(cursor);
-    if (portal === undefined) return undefined; // invariant: dist.has(destination) guarantees a recorded predecessor chain to origin
+    if (portal === undefined) return undefined; // invariant: dist.has(origin) guarantees a recorded predecessor chain to the destination
     path.push(portal);
     cursor = portal.regionA === cursor ? portal.regionB : portal.regionA;
   }
-  path.reverse();
   return path;
 }
 
@@ -116,6 +150,13 @@ export function sliceIntoSegments(
  * door) plus one local search bounded to just the regions that plan
  * visits -- never one unbounded tile search. Never mutates `world`/
  * `doors`/`graph`.
+ *
+ * `doorDependencies`, when supplied, is filled with every door this answer
+ * depends on -- including the ones it refused, and the ones it declined to
+ * cross because something cheaper was open. `RouteCache` needs that set and
+ * not the crossed doors alone; see `runRegionDijkstra` for why it is the doors
+ * incident to a region within reach of the answer, and #357 for what serving
+ * an answer whose blocking door was never recorded looks like.
  */
 export function findRoute(
   world: SparseWorld,
@@ -125,6 +166,7 @@ export function findRoute(
   destination: TilePosition,
   context: RouteContext,
   stats?: SearchStats,
+  doorDependencies?: Set<string>,
 ): RouteResult {
   const originRegion = graph.tileToRegion.get(tileKey(origin));
   if (originRegion === undefined) return { ok: false, failure: { reason: 'invalid-origin' } };
@@ -148,10 +190,14 @@ export function findRoute(
         return door !== undefined && checkDoorAccess(door, context).allowed;
       },
       stats,
+      doorDependencies,
     );
 
     if (permissionAwarePath === undefined) {
-      const physicalPath = dijkstraRegionPath(graph, doors, originRegion, destinationRegion, () => true, stats);
+      // The physical pass decides `unreachable` versus `permission-denied` and
+      // which door `blockedBy` names, so the doors *it* looked at are part of
+      // this answer too and are collected into the same set.
+      const physicalPath = dijkstraRegionPath(graph, doors, originRegion, destinationRegion, () => true, stats, doorDependencies);
       if (physicalPath === undefined) return { ok: false, failure: { reason: 'unreachable' } };
 
       const blockedBy = findBlockingDoor(physicalPath, doors, context);

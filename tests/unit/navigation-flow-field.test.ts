@@ -9,6 +9,7 @@ import {
 import { findRoute } from '../../src/simulation/navigation/router';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { buildCellBlockFixture, buildFixtureGraph } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 const GUARD: RouteContext = { role: 'guard', securityClearance: 5 };
 const PRISONER: RouteContext = { role: 'prisoner', securityClearance: 0 };
@@ -28,11 +29,11 @@ describe('computeRegionFlowField / findRouteUsingFlowField: reference comparison
       const viaFullSearch = findRoute(fixture.world, fixture.doors, graph, cellTile, canteenEntry, GUARD);
 
       if (viaFullSearch.ok) {
-        expect(viaField).toBeDefined();
-        expect(viaField?.ok).toBe(true);
-        if (viaField?.ok) {
-          expect(viaField.route.totalCost).toBe(viaFullSearch.route.totalCost);
-        }
+        // `findRouteUsingFlowField` answers `RouteResult | undefined`, so
+        // definedness is asserted first and `expectOk` narrows what is left.
+        expect(viaField, 'the field must cover a cell the full search reaches').toBeDefined();
+        expectOk(viaField!, 'the flow-field route from this cell');
+        expect(viaField.route.totalCost).toBe(viaFullSearch.route.totalCost);
         comparedCount += 1;
       }
     }
@@ -69,6 +70,21 @@ describe('computeRegionFlowField / findRouteUsingFlowField: reference comparison
     const farAway = { x: tileCoordinate(9999), y: tileCoordinate(9999) };
     const result = findRouteUsingFlowField(field, fixture.world, fixture.doors, graph, farAway, canteenEntry, undefined);
     expect(result).toEqual({ ok: false, failure: { reason: 'invalid-origin' } });
+
+    // The `invalid-destination` half of this title exercised nothing until
+    // 2026-09-08. Returning `invalid-origin` for an off-map destination left
+    // this test green, and so did every other vitest file that mentions
+    // `findRouteUsingFlowField` or `invalid-destination` -- 22 tests, all
+    // green with the two reasons confused.
+    const offMapDestination = findRouteUsingFlowField(field, fixture.world, fixture.doors, graph, fixture.cellTiles[0]!, farAway, undefined);
+    expect(offMapDestination).toEqual({ ok: false, failure: { reason: 'invalid-destination' } });
+
+    // "Without needing a findRoute fallback" is the rest of the title, and
+    // `undefined` is exactly the value this function returns to ask for that
+    // fallback (see the test above). Both assertions above are `toEqual`
+    // against a concrete refusal, so neither can be satisfied by one.
+    expect(result).not.toBeUndefined();
+    expect(offMapDestination).not.toBeUndefined();
   });
 });
 

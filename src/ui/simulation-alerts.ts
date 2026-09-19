@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../content/localization';
 import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
+import { PROTOCOL_FAULT_CODES } from '../simulation/protocol/types';
 import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-model';
 
 /**
@@ -33,12 +34,21 @@ import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-mo
 const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'admit.no-accommodation': 'hud.alert.refusal.admit.no-accommodation',
   'admit.population-full': 'hud.alert.refusal.admit.population-full',
+  'build.duplicate-order': 'hud.alert.refusal.build.duplicate-order',
   'build.out-of-bounds': 'hud.alert.refusal.build.out-of-bounds',
   'build.unbuildable': 'hud.alert.refusal.build.unbuildable',
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',
+  'build.unknown-buildable': 'hud.alert.refusal.build.unknown-buildable',
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
+  'cancel-build-order.stale-cancellation': 'hud.alert.refusal.cancel-build-order.stale-cancellation',
+  'cancel-purchase.not-pending': 'hud.alert.refusal.cancel-purchase.not-pending',
+  'construction.materials-unfunded': 'hud.alert.refusal.construction.materials-unfunded',
+  'dismiss.unknown-staff': 'hud.alert.refusal.dismiss.unknown-staff',
+  'edit-regime-block.unknown-block': 'hud.alert.refusal.edit-regime-block.unknown-block',
+  'edit-regime-block.unknown-group': 'hud.alert.refusal.edit-regime-block.unknown-group',
   'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
+  'hire.no-duty-for-role': 'hud.alert.refusal.hire.no-duty-for-role',
   'hire.roster-full': 'hud.alert.refusal.hire.roster-full',
   'hire.unknown-role': 'hud.alert.refusal.hire.unknown-role',
   'place-object.duplicate-order': 'hud.alert.refusal.place-object.duplicate-order',
@@ -52,10 +62,17 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
   'purchase.unknown-material': 'hud.alert.refusal.purchase.unknown-material',
+  'release-guard.not-held': 'hud.alert.refusal.release-guard.not-held',
+  'release-guard.unknown-guard': 'hud.alert.refusal.release-guard.unknown-guard',
   'remove-object.nothing-to-remove': 'hud.alert.refusal.remove-object.nothing-to-remove',
+  'remove-wall.nothing-to-remove': 'hud.alert.refusal.remove-wall.nothing-to-remove',
+  'sell.insufficient-stock': 'hud.alert.refusal.sell.insufficient-stock',
+  'sell.invalid-quantity': 'hud.alert.refusal.sell.invalid-quantity',
+  'sell.unknown-material': 'hud.alert.refusal.sell.unknown-material',
   'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',
+  'zone.not-enclosed': 'hud.alert.refusal.zone.not-enclosed',
   'zone.out-of-bounds': 'hud.alert.refusal.zone.out-of-bounds',
   'zone.overlaps-existing-room': 'hud.alert.refusal.zone.overlaps-existing-room',
   'zone.unknown-room-type': 'hud.alert.refusal.zone.unknown-room-type',
@@ -105,6 +122,59 @@ const PROTOCOL_FAULT_LABEL_KEYS: Readonly<Record<ProtocolFaultCode, Localization
   'shutting-down': 'hud.alert.fault.shutting-down',
   'internal-error': 'hud.alert.fault.internal-error',
 };
+
+/**
+ * The sentence this catalogue already ships for a fault an *action* failed
+ * with, found by walking a thrown value.
+ *
+ * ## Why this is here and not beside the thing that throws
+ *
+ * `PROTOCOL_FAULT_LABEL_KEYS` above is the one table in the repository that
+ * says what a fault code means to a player, and it is exhaustive over the
+ * closed twelve-member vocabulary by construction. A second lookup written
+ * anywhere else would be the drift `tests/unit/ui-simulation-alerts.test.ts`
+ * exists to prevent, and the one that drifted would be the one still passing.
+ * So the map stays private and this is the accessor.
+ *
+ * ## Why it walks the `cause` chain
+ *
+ * Because the layers between the worker and a panel wrap rather than
+ * flatten, deliberately. `WorkerSessionHost` raises `WorkerFaultError`
+ * carrying the code; `startFromSnapshot` re-raises it as
+ * `SnapshotRestoreRejectedError` or `SnapshotRestoreFaultError` with the
+ * original as `cause`; `WorkerPerSessionHost.beginSession` wraps a worker
+ * that could not be constructed the same way. Reading only the outermost
+ * value would lose the code on exactly the paths that have one.
+ *
+ * ## Why it duck-types instead of importing the error classes
+ *
+ * A `code` that is a member of `PROTOCOL_FAULT_CODES` is the whole contract,
+ * and it is the contract the protocol declares. Importing
+ * `src/persistence/session/worker-session-host.ts` for an `instanceof` would
+ * make a UI module depend on the persistence seam to read a protocol value,
+ * and would still miss `ProjectionRequestError`, which carries the same codes
+ * from a different module. The closed set is what makes the check safe: an
+ * arbitrary object with a `code` of `'not-found'` matches nothing.
+ *
+ * Returns `undefined` when nothing in the chain declared a protocol fault --
+ * a storage `DOMException`, a reply timeout, a file the browser would not
+ * read. Those carry no code, so there is no catalogue sentence to find and
+ * the caller has to decide what to say instead.
+ */
+export function protocolFaultMessageKeyOf(error: unknown): LocalizationKey | undefined {
+  const codes: readonly string[] = PROTOCOL_FAULT_CODES;
+  // Bounded rather than `while (true)`: a `cause` cycle is possible in
+  // principle and a UI helper must not be the thing that hangs the page.
+  let current: unknown = error;
+  for (let depth = 0; depth < 8 && current !== null && typeof current === 'object'; depth += 1) {
+    const code = (current as { readonly code?: unknown }).code;
+    if (typeof code === 'string' && codes.includes(code)) {
+      return PROTOCOL_FAULT_LABEL_KEYS[code as ProtocolFaultCode];
+    }
+    current = (current as { readonly cause?: unknown }).cause;
+  }
+  return undefined;
+}
 
 /**
  * The two row families this module produces, as prefixes on
@@ -171,6 +241,24 @@ const FAULT_ROW_PREFIX = 'fault-';
  * simulation state to hold it, which is a decision rather than a detail, so
  * it is recorded in `docs/HUD_PROJECTIONS.md` instead of guessed at here.
  *
+ * **That paragraph is kept and is now half true, which is worth one sentence
+ * rather than a silent edit.** It is still exactly right about *these* rows: no
+ * gesture retires a refusal or a fault, and `docs/HUD_PROJECTIONS.md` gap 34 is
+ * still where that decision waits. What it stopped being right about is the
+ * *list*, because the other producer's rows can now be dismissed -- the owner's
+ * decision 2 of 2026-09-01 on
+ * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).
+ * And the shape this paragraph predicted is the shape that was built: a
+ * `DismissAlert` command and a mark in `SimulationEventLog`, which is a piece
+ * of simulation state, snapshotted so the row stays gone across a reload.
+ *
+ * Why it did **not** reach a refusal row, decided rather than deferred: a
+ * refusal is a *level*, republished unchanged on `simulation/status-counts` up
+ * to twice a second and replaced in place by ordinal, so retiring one means
+ * suppressing a value the worker keeps re-asserting -- a different mechanism
+ * from marking a run of occurrences as read, and one nobody has ruled on. ADR
+ * 0084 says in terms that it does not reopen gap 34.
+ *
  * For a **refusal**, `severity` is `'warning'` for every reason, and
  * uniformly rather than arbitrarily: each of these says the same thing -- the
  * player asked for something and the prison is not doing it -- and grading one
@@ -191,11 +279,46 @@ const FAULT_ROW_PREFIX = 'fault-';
  * `hire.insufficient-funds` and `purchase.insufficient-funds` are the fourth
  * (ADR 0025): the treasury refuses both, and only the command says which panel
  * the player should be looking at.
+ *
+ * **`construction.materials-unfunded` is the ladder's second rung and the
+ * sharpest instance of the rule this whole comment states.** It is the same
+ * treasury refusing the same `ProcurementSystem.purchase` as
+ * `purchase.insufficient-funds`, and it is a different sentence because it is
+ * a different *rung*: the owner's ruling 19 of 2026-08-31 refused a player's
+ * delivery at -1,250 and the build queue's own materials at -2,000, so one
+ * sentence on both told a prison at -1,800 that deliveries were refused when
+ * what had actually stopped was construction. Until the owner ruled on
+ * 2026-09-01 this table had no row for it to resolve to -- and could not have
+ * had one, because `reportMaterialsFunding` had no reason to record. That is
+ * the mechanism working: a `Record` over a closed union is what made "rung 2
+ * needs a sentence" a compile error rather than a wish.
+ *
+ * **Ruling 19's two thresholds are history, not the present.** The owner's
+ * later ruling on #771 (2026-09-01, ADR 0017's equalisation amendment)
+ * retired the -1,250/-2,000 split this paragraph's example depends on:
+ * `construction.materials-unfunded` and `purchase.insufficient-funds` now
+ * fire at the same -1,250. The row this section argues for still earns its
+ * keep -- the two remain different *events* on different controls, which is
+ * the fourth-instance rule this whole comment states -- but the -1,800
+ * example above is a snapshot of the band #771 closed, not a balance where
+ * the two sentences can still disagree today.
+ *
+ * **Those two now resolve to the host's own sentences** -- the owner's ruling
+ * 23 of 2026-08-31, *"Te same słowa co host"*. One refusal is decided on either
+ * side of `sender.submit` and both land on the same `.hud__refusal` band, so a
+ * charge the standing overdraft cannot carry says the same thing whichever side
+ * caught it. They stay two rows here rather than becoming references to
+ * `hud.refusal.hire-staff-past-floor` and
+ * `hud.refusal.purchase-materials-past-floor`, because this table's contract is
+ * one authored `hud.alert.refusal.*` key per `RefusalReason` and the
+ * `hud.refusal.*` namespace belongs to a control on this thread, not to the
+ * wire -- and because the fourth-instance rule above still applies to them: the
+ * two sentences share their tail and differ in what did not happen.
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
   previous: readonly HudAlertViewModel[] = [],
-): readonly HudAlertViewModel[] | undefined {
+): readonly HudAlertViewModel[] | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
@@ -247,11 +370,20 @@ export function hudAlertsFromWorkerMessage(
 
     // The session is over. A refusal by a simulation that no longer exists is
     // not something the player can act on, and neither is a fault raised by a
-    // worker that has stopped, so the list empties -- the same thing the
-    // counts do with `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+    // worker that has stopped, so the list comes off.
+    //
+    // **`'none'` rather than `[]` as of issue #1184, and the difference is the
+    // whole fix.** An empty array is what a prison *reporting nothing wrong*
+    // sends, and returning it here made the two indistinguishable: the HUD
+    // painted `'hud.alerts.empty'` -- "No active alerts" -- over a session
+    // that had ended, the same sentence it paints for a running prison with a
+    // clean log. This is now the tri-state `hudRefusalFromWorkerMessage`
+    // below has always had, and for the identical reason: `undefined` is a
+    // message that said nothing about alerts and the field must be left alone,
+    // `'none'` is a message that says there is no longer anything to report,
+    // and `src/main.ts` deletes the field for it.
     case 'simulation/stopped':
-      return [];
+      return 'none';
 
     default:
       return undefined;
@@ -310,7 +442,15 @@ export function hudRefusalFromWorkerMessage(
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
       if (refusal === undefined) return 'none';
-      return { sequence: refusal.sequence, labelKey: REFUSAL_LABEL_KEYS[refusal.reason] };
+      // `routeDecidedSince` is forwarded rather than acted on here: this
+      // function serves the band, and the band's rule is `hud.ts`'s to state.
+      // Spread rather than passed as `undefined`, because
+      // `exactOptionalPropertyTypes` is on and the field is `true`-or-absent.
+      return {
+        sequence: refusal.sequence,
+        labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
+        ...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as const } : {}),
+      };
     }
 
     // The session is over, so the band empties -- the same thing the list

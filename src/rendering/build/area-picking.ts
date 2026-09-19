@@ -1,5 +1,6 @@
 import { type TileRange, worldToTile } from '../tile-metrics';
-import type { WorldPoint } from './edge-picking';
+import type { WorldRenderView } from '../world/world-view';
+import type { BuildEdgeId, WorldPoint } from './edge-picking';
 
 /**
  * Turning a drag across the world into the rectangle of tiles a player meant.
@@ -151,6 +152,21 @@ export interface RoomToolPort {
   place(rect: TileRect): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;
+  /**
+   * The scene's own read of the world, handed over once per rendered frame
+   * (issue #493).
+   *
+   * Not a gesture and not routed through `target`/`place`: this is what the
+   * tool needs to answer "is this rectangle's own perimeter walled in" for
+   * *any* rectangle it is asked about, including one the HUD's typed
+   * coordinates form produced with no drag and no frame of its own (#411's
+   * parity guarantee -- both producers of a rectangle must reach the same
+   * answer). `WorldRenderView` is already the renderer's read-only projection
+   * of the same edge layers `tile-layer.ts` paints walls from, so handing the
+   * reference costs nothing this scene was not already computing for its own
+   * repaint, and the tool never becomes stale by more than one rendered frame.
+   */
+  setWorld?(world: WorldRenderView): void;
 }
 
 /**
@@ -213,8 +229,18 @@ export interface ObjectToolPort {
    * mean.
    */
   footprint(): { readonly width: number; readonly height: number } | undefined;
-  /** The player pressed and released. One tile: one object placed, or one removed. */
-  place(tile: { readonly tileX: number; readonly tileY: number }): void;
+  /**
+   * The player pressed and released. One tile: one object placed, or one
+   * removed.
+   *
+   * **`edge`, added by ADR 0106, is the tile edge `pickEdgeAtWorld` resolved
+   * the same press to.** It is meaningless while placing -- an object has no
+   * edge -- and it is what lets a removal fall through to a completed wall or
+   * door when the tile holds no object: see `ObjectTool.place`'s own comment
+   * for the fallback rule, and `removeWallSchema`'s for why that fallback
+   * lives in the session command handler rather than being decided here.
+   */
+  place(tile: { readonly tileX: number; readonly tileY: number; readonly edge?: BuildEdgeId }): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;
 }

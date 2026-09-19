@@ -1,5 +1,6 @@
 import type { EntityId } from '../entity/entity-store';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { assertValidActorNamePool, PLACEHOLDER_ACTOR_NAME_POOL, type ActorNamePool } from './name-pool';
 
 /**
@@ -100,6 +101,49 @@ export interface ActorIdentitySource {
  */
 export interface ActorIdentityMinter {
   assign(kind: ActorKind, entityId: EntityId, rng: Xoshiro128StarStar): ActorName;
+}
+
+/**
+ * Minting **and** dropping a name: the pair a caller that owns an actor's whole
+ * lifetime needs, as opposed to `ActorIdentityMinter`, which is the half a
+ * caller that only ever admits needs.
+ *
+ * It exists because minting without releasing is a leak with a schedule.
+ * `release` below already states the contract -- a retained entry eventually
+ * hands a recycled slot the previous occupant's name -- and until #441 nothing
+ * in `src/` called it, so every collaborator that could mint was typed as
+ * though the other half did not exist. A caller that spawns and destroys
+ * prisoners asks for this type instead, and cannot be handed a registry that
+ * can only mint.
+ *
+ * `ActorIdentityRegistry` satisfies it. `GuardRoster` still takes the minter
+ * alone, which is honest: no path in `src/` dismisses a guard, so nothing there
+ * has a release to call yet.
+ *
+ * **The reason given in that last sentence has been false since 2026-08-29, and
+ * it is quoted rather than overwritten because the conclusion outlived its own
+ * premise.** `a8a446ed` (issue #533, ADR 0070) added
+ * `src/simulation/staff/dismissal.ts`, whose documented step 6 is *"The name is
+ * given back"*: `dismissStaff` calls `StaffNameReleasePort.release('staff', id)`
+ * before `GuardRoster.forget` destroys the entity, and
+ * `src/simulation/runtime/new-session.ts` supplies the real
+ * `ActorIdentityRegistry` for that port -- on the one construction of
+ * `StaffDismissalService` in `src/`, which `restoreSimulationRuntime` also goes
+ * through because it builds its runtime with `createNewSimulationRuntime`. So a
+ * path in `src/` does dismiss a guard, the release it needs is called, and
+ * `tests/unit/staff-dismissal-completeness.test.ts` fails on the whole session
+ * graph if that wiring is dropped.
+ *
+ * **`GuardRoster` still taking the minter alone is now honest for the opposite
+ * reason, which is why the type did not change with the fact.** The release is
+ * not the roster's to call: `forget`'s own docblock says a dismissal *"has to
+ * give back a claim through its claimant, cancel a route, release a name and
+ * take contraband out of the prison, and none of that is the roster's to
+ * know"*. Widening its constructor to `ActorIdentityLifecycle` would hand it a
+ * release it must not use. Was: nobody could call it. Is: somebody else does.
+ */
+export interface ActorIdentityLifecycle extends ActorIdentityMinter {
+  release(kind: ActorKind, entityId: EntityId): boolean;
 }
 
 export interface ActorIdentityEntry {
@@ -306,8 +350,14 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
    * population.
    */
   public loadSnapshot(snapshot: ActorIdentitySnapshot): void {
+    // A version this build does not implement says which build wrote the
+    // save, not that the save is bad, so it is `unsupported-by-this-build`
+    // and the file is still worth keeping for the build that reads it (#431).
     if (snapshot.version !== ACTOR_IDENTITY_SNAPSHOT_VERSION) {
-      throw new RangeError(`Unsupported actor identity snapshot version ${String(snapshot.version)}.`);
+      throw new SnapshotRefusedError(
+        'unsupported-by-this-build',
+        `Unsupported actor identity snapshot version ${String(snapshot.version)}.`,
+      );
     }
     for (const kind of ACTOR_KINDS) this.namesOf(kind).clear();
     this.fullNameCounts.clear();
@@ -323,7 +373,11 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
     for (const entry of snapshot.entries) {
       assertEntityId(entry.entityId);
       const names = this.namesOf(entry.kind);
-      if (names.has(entry.entityId)) throw new RangeError(`Actor identity snapshot repeats ${entry.kind} ${entry.entityId}.`);
+      // The payload contradicting itself: no build restores two names for one
+      // entity, so `damaged-payload` rather than the version row above.
+      if (names.has(entry.entityId)) {
+        throw new SnapshotRefusedError('damaged-payload', `Actor identity snapshot repeats ${entry.kind} ${entry.entityId}.`);
+      }
       const name = this.validated({ givenName: entry.givenName, familyName: entry.familyName });
       names.set(entry.entityId, name);
       this.retain(name);

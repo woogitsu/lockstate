@@ -1,10 +1,31 @@
+// MODELLED, NOT PRODUCTION.
+//
 // Self-contained mirror of #22's navigation work-budget/queue/flow-field
 // design (src/simulation/navigation/{path-request-queue,flow-field,router}.ts),
 // following this repository's established benchmark convention (see
 // kernel-throughput.mjs, entity-soa.mjs): a hand-rolled, dependency-free
 // re-implementation of the same *shape* of algorithm for throughput
-// evidence, not an import of the production module graph. Correctness of
-// the real algorithm is proven separately by
+// evidence, not an import of the production module graph.
+//
+// #410 measured what that costs, and it is more than "throughput evidence"
+// suggests. `regionGraphExpansionCost = Math.ceil(cellCount / 4)` below is a
+// number this file invents; the real `runRegionDijkstra` charges what the
+// portal graph actually makes it charge. At the 250-actor smoke tier this
+// scenario reports 4,780 work units where the production modules count
+// 16,087 for the same shape, and three separate mutations of real navigation
+// code (a disabled A* heuristic, a removed region-Dijkstra early exit, a
+// quadrupled work budget) leave every checksum and metric in this file
+// bit-identical. The three tuning constants below have also drifted from the
+// values a session actually runs on (`DEFAULT_NAVIGATION_SYSTEM_OPTIONS`,
+// src/simulation/runtime/new-session.ts:65): budget 400 against 2,000, aging
+// interval 15 against 20, flow-field threshold 6 against 8 -- and nothing
+// noticed, because nothing here reads them from production.
+// It therefore gates nothing about `src/`, and is kept as a
+// cheap directional reference and as the workload
+// `scripts/run-navigation-actor-tier-report.mjs` reports on --
+// `benchmarks/scenarios/navigation-production.mjs` is what gates.
+//
+// Correctness of the real algorithm is proven separately by
 // tests/unit/navigation-path-request-queue.test.ts,
 // tests/unit/navigation-flow-field.test.ts and
 // tests/unit/navigation-system.test.ts, which exercise the actual
@@ -72,6 +93,13 @@ function doorTraversalCost(door) {
   return 2;
 }
 
+/**
+ * Same reason as `resolveLeg` below: without the union written out, the two
+ * returns infer one object with an optional `reason` and every consumer sees
+ * `string | undefined` (#602).
+ *
+ * @returns {{ allowed: true } | { allowed: false, reason: string }}
+ */
 function checkAccess(door, context) {
   if (door.state === 'locked' && !context.emergencyOverride) return { allowed: false, reason: 'locked' };
   if (context.securityClearance < door.clearance) return { allowed: false, reason: 'insufficient-clearance' };
@@ -79,6 +107,14 @@ function checkAccess(door, context) {
   return { allowed: true };
 }
 
+/**
+ * The union is written out because TypeScript infers one optional-property
+ * object from the two returns below and then `leg.cost` is `number |
+ * undefined` at every call site even after `leg.ok` is checked (#602).
+ *
+ * @returns {{ ok: true, cost: number, expansions: number }
+ *   | { ok: false, reason: string, expansions: number }}
+ */
 function resolveLeg(graph, cellId, context, chargeRegionGraphCost) {
   const door = graph.doorsByCellId.get(cellId);
   let expansions = chargeRegionGraphCost ? graph.regionGraphExpansionCost : 1;
@@ -279,21 +315,21 @@ function makeScenario(id, description, seed, mode) {
 
 export const navigationMealRushScenario = makeScenario(
   'navigation.meal-rush',
-  'Work-budget/queue/flow-field throughput for many actors converging on one shared destination (meal rush), mirroring src/simulation/navigation/path-request-queue.ts and flow-field.ts.',
+  'MODELLED, not production: a hand-rolled mirror of the work-budget/queue/flow-field shape for many actors converging on one shared destination (meal rush). Imports nothing from src/; see navigation.production.meal-rush for the same scenario driven through the real modules, and #410 for why both exist.',
   0x4d45414c, // 'MEAL'
   'meal-rush',
 );
 
 export const navigationLockdownReturnScenario = makeScenario(
   'navigation.lockdown-return',
-  'Work-budget/queue throughput for many actors each returning to a distinct assigned cell (lockdown return-to-cell) -- no shared-destination flow-field benefit available.',
+  'MODELLED, not production: a hand-rolled mirror of the work-budget/queue shape for many actors each returning to a distinct assigned cell (lockdown return-to-cell), with no shared-destination flow-field benefit available. Imports nothing from src/; see navigation.production.lockdown-return.',
   0x4c4f434b, // 'LOCK'
   'lockdown-return',
 );
 
 export const navigationMixedDestinationScenario = makeScenario(
   'navigation.mixed-destination',
-  'Work-budget/queue/flow-field throughput for actors with independently random origin/destination pairs (mixed destinations).',
+  'MODELLED, not production: a hand-rolled mirror of the work-budget/queue/flow-field shape for actors with independently random origin/destination pairs (mixed destinations). Imports nothing from src/; it has no production-code counterpart yet.',
   0x4d495844, // 'MIXD'
   'mixed',
 );

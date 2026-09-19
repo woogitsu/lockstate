@@ -49,7 +49,9 @@ import {
  * `src/rendering/` remains outside, which is a real limit and not an
  * oversight: a `Map`-order walk there is not guarded here. Measured with the
  * same scanner, that tree holds 11 unordered enumerations (9 distinct
- * expressions). It is deliberately excluded -- AGENTS.md's first
+ * expressions). Re-measured at `80fd343` the way this sentence describes --
+ * `SCANNED_ROOTS` repointed at `src/rendering/` in a scratch copy of this file
+ * -- and it is still exactly 11, after #414 added modules to that tree. It is deliberately excluded -- AGENTS.md's first
  * architectural boundary is that rendering is not simulation, its sprite
  * pools iterate insertion order by design, and its order reaches neither a
  * save nor a hash, so covering it would add nine exemptions whose reason is
@@ -94,22 +96,40 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       '`stop` fails every still-pending worker request with the same error after the shutdown reply, clearing each one\'s own timer. No entry\'s teardown is folded into another\'s, and the keys are `crypto.randomUUID()` message ids, so there is no order derived from state to sort into. Main-thread transport, like `worker/client.ts` below; no snapshot or save payload is built from this walk.',
   },
   {
+    file: 'src/simulation/construction/system.ts',
+    expression: 'this.orders.values()',
+    reason:
+      "`duplicateClaim` (issue #514) asks whether *any* other order still claims the same buildable, tile and edge, and stops at the first match -- a membership test like `memory-client.ts`'s below, not an ordering: every walk order returns the same boolean, because the predicate applied to each order (id, state, definitionId, location, edge) reads nothing about any other order and folds nothing across the walk. Which particular matching order the loop happens to return is never read -- `submitOrder` only checks the result against `undefined` -- so even the *identity* of the match, not only whether one exists, is order-independent. `orderedOrders()` -- the sorted accessor -- is deliberately not used here; its own doc says paying for the sort would be wasted on a caller with no use for it, and this is that caller.",
+  },
+  {
     file: 'src/simulation/contraband/intelligence.ts',
     expression: 'this.records.entries()',
     reason:
       '`decayAll` subtracts the same fixed amount from every record and deletes the ones that fall to the floor. Each record is independent of the others, so the set of survivors and their confidences are identical in any order. Reads of the ledger go through `all()`/`getSnapshot()`, which sort.',
   },
   {
+    file: 'src/simulation/contraband/search-system.ts',
+    expression: 'job.pathRequestIdsByGuard.values()',
+    reason:
+      "`abandonRoutes` hands every route the job still has in flight back to `NavigationSystem.abandonRequest` and then clears the map (SIM-002). A keyed delete from the request queue and from the result map commutes -- each id names a different request, no walk step reads or folds in another, and the method returns nothing the caller reads -- so every walk order leaves navigation holding exactly the same set. The map itself never reaches a snapshot: `getSnapshot` writes the job's guard ids and target index, and `loadSnapshot` rebuilds every in-flight request empty because a restored session's `NavigationSystem` is a fresh one.",
+  },
+  {
+    file: 'src/simulation/incidents/response-system.ts',
+    expression: 'record.pathRequestIdsByGuard.values()',
+    reason:
+      "`abandonResponseRoutes`, the sibling of `SearchSystem.abandonRoutes` above and commutative for the identical reason: it gives every responder's outstanding route back to `NavigationSystem.abandonRequest` and clears the map, and a keyed delete from two maps has the same effect wherever in the walk it happens. Nothing is folded across guards and nothing is returned. `ResponseRecord` is not persisted at all -- ADR 0033 rebuilds an interrupted response from the incident rather than from a saved record -- so no walk order here can reach a save or a determinism hash.",
+  },
+  {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.occupants.values()',
     reason:
-      '`loadSnapshot` clears every occupancy set before refilling from the snapshot. Emptying all of them touches each set once and leaves no residue that could depend on the order, and the refill is driven by the snapshot array, not by this walk.',
+      '`loadSnapshot` clears every occupancy set before refilling from the snapshot, and `releaseEntity` deletes one departing entity from every set (#441). Both touch each set exactly once and fold nothing from one set into another, so the resulting occupancy is identical in any order -- a deletion of a given key from a given set has the same effect wherever in the walk it happens. The refill is driven by the snapshot array, not by this walk, and every read of occupancy goes through `occupantsOf`/`getSnapshot`, which sort.',
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.useClaims.values()',
     reason:
-      "`loadSnapshot` clears every concurrent-use claim map, for the same reason and with the same argument as `this.occupants.values()` above: emptying all of them touches each set once and leaves no residue an order could depend on. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
+      "`loadSnapshot` clears every concurrent-use claim map and `releaseEntity` drops one departing entity's claim from every one of them (#441), for the same reason and with the same argument as `this.occupants.values()` above: each map is touched once, nothing is folded across maps, and a keyed delete commutes. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
@@ -124,6 +144,18 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       '`instancesOccupiedBy` collects the instance ids holding one entity and returns `result.sort()`, so the walk order cannot reach a caller. Membership is a per-set question, so no earlier ordering decision is folded into the answer either.',
   },
   {
+    file: 'src/simulation/prisoners/room-instance-registry.ts',
+    expression: 'this.instances.values()',
+    reason:
+      "`totalResidentCapacity` (#771's starter-rung predicate) sums every registered instance's `residentCapacity`, an integer field, into a running total with `+=`. Integer addition is commutative and associative, so the total is identical in every walk order, and nothing about *which* instance contributed which part of the sum is read anywhere -- the caller only compares the total to zero. The method touches no snapshot and folds nothing across instances beyond the arithmetic sum itself.",
+  },
+  {
+    file: 'src/simulation/rooms/room-needs-cleared-notice.ts',
+    expression: 'this.ready',
+    reason:
+      "`RoomNeedsClearedNoticeSystem.update`'s pruning pass deletes every instance id this pass did not see (issue #1006 finding 3) -- a keyed delete from a `Set`, which commutes for `room-instance-registry.ts`'s `this.occupants` reason above: a deletion of a given key has the same effect wherever in the walk it happens, and no earlier deletion changes whether a later key is still present to delete. Nothing is folded across ids and nothing is returned; the walk immediately above it that decides *which* rooms fire an event iterates `list.rooms.rows`, `projectRoomList`'s own canonically sorted output, not this set. `this.ready` is never persisted -- it seeds silently from live state on this system's first `update()` (the `seeded` idiom `InsolvencyRungSystem` also uses), so no walk order here can reach a save or a determinism hash.",
+  },
+  {
     file: 'src/simulation/rooms/topology.ts',
     expression: 'this.chunkTopologies.entries()',
     reason:
@@ -134,6 +166,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
     expression: 'this.prisons.values()',
     reason:
       'A membership test, not an ordering: `registerPrison` asks whether any prison already holds the requested slot index, and at most one can -- `prisons_owner_slot_unique` is on `(owner_id, slot_index)`. Every walk order therefore returns the same answer, and the answer is a boolean rather than a sequence. This is a test double for a cloud client besides, so nothing it enumerates reaches a simulation snapshot or a determinism hash.',
+  },
+  {
+    file: 'src/simulation/locomotion/locomotion.ts',
+    expression: 'this.walks',
+    reason:
+      "`advance` steps each walk by the same number of sub-tile units and writes that walker's own tile through the caller's `writeTile`; no walk reads or folds in another, so every walk order leaves every actor on the same tile (ADR 0059). The one step that is *not* commutative is deliberately not in this loop: two prisoners who reach the last free seat of a room on one tick are decided by who claims it first, so arrivals are collected into `this.arrived`, **sorted ascending by key** and dispatched after the walk -- ascending entity index, which is ADR 0005's canonical order and the same order `EntityQuery.execute` grants claims in. The map is also never read out: it holds no state a snapshot carries, `LocomotionStore.clear` empties it on restore, and `read` is a keyed lookup rather than a walk.",
   },
   {
     file: 'src/simulation/worker/worker-channel.ts',
@@ -220,8 +258,23 @@ describe('the simulation iterates collections in a canonical order', () => {
       expect(entry.reason.length, `exemption for ${entry.file} -> ${entry.expression} needs a real reason`).toBeGreaterThan(80);
     }
     // The allow-list accounts for every unordered enumeration and nothing
-    // more, so its length is the number a reviewer has to audit.
-    expect(REPORT.unorderedCount).toBe(ALLOWED.length);
+    // more. Stated as the *identities* rather than as a tally, which is both
+    // stronger and no longer accidentally coupled to how many times a justified
+    // field happens to be walked.
+    //
+    // It used to read `expect(REPORT.unorderedCount).toBe(ALLOWED.length)`, and
+    // that held only while every exempted field was enumerated from exactly one
+    // method. `reportCanonicalIterationViolations`'s own contract has always
+    // said otherwise -- "an exemption ... covers every occurrence of that
+    // expression in that file" -- so the tally was measuring occurrences
+    // against justifications. #441 gave `RoomInstanceRegistry` a second walk of
+    // `occupants` and of `useClaims` (`releaseEntity`), which is two more
+    // occurrences and no more claims to audit: the count moved to 13 while this
+    // list stayed at eleven, and both numbers were right.
+    expect(REPORT.unorderedExpressions).toEqual([...ALLOWED.map((entry) => `${entry.file}::${entry.expression}`)].sort());
+    // The tally is still non-vacuous, and is now allowed to exceed the list by
+    // exactly the number of extra occurrences of an already-justified field.
+    expect(REPORT.unorderedCount).toBeGreaterThanOrEqual(ALLOWED.length);
   });
 });
 

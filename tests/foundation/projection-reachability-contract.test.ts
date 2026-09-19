@@ -1,8 +1,8 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
-import { PROJECTION_IDS } from '../../src/simulation/protocol/types';
+import { PROJECTION_IDS, type ProjectionId } from '../../src/simulation/protocol/types';
 import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
 
 /**
@@ -61,14 +61,189 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; ten of the
- * twelve catalogued read models have a route and no reader.
+ * of it. It still does not claim that every projection is painted; **five of the
+ * fifteen catalogued read models have a route and no reader.**
+ *
+ * That number is stated with the way to re-derive it, because it is a tally and
+ * this file's whole subject is claims that rot. `PROJECTION_IDS`
+ * (`src/simulation/protocol/types.ts`, the tuple `PROJECTION_IDS`) has fifteen
+ * members; grepping all fifteen as string literals across `src/ui/` and
+ * `src/rendering/` returns **ten**, so fifteen minus ten is five. The ten
+ * are `hud/room-list` and `hud/room-detail` (`simulation-room-needs.ts`),
+ * `hud/held-guards` (`simulation-held-guards.ts`), `hud/pending-deliveries`
+ * (`simulation-pending-deliveries.ts`), `hud/prisoner-population`
+ * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`),
+ * `hud/staff` (`simulation-staff-coverage.ts`), `hud/prisoner-roster`
+ * (`simulation-prisoner-roster.ts`), `hud/prisoner-detail`
+ * (`simulation-prisoner-detail.ts`) and `hud/status-strip`
+ * (`simulation-regime.ts`). `src/rendering/` matches none. The five with a
+ * route and nobody on it are `hud/security`, `hud/contraband`,
+ * `hud/incidents`, `hud/incident-detail` and `world/render-snapshot`.
+ *
+ * **This paragraph said "nine" and "six" until issue #895, and both were right
+ * when written.** `src/ui/simulation-prisoner-detail.ts` is the tenth reader
+ * and `hud/prisoner-detail` is the read model that moved between the two lists
+ * -- the *first* of the five that #157 found waiting on a selection model to
+ * get one. The pair still moves together only by coincidence, for the reason
+ * the amendment below this one gives: `simulation-room-needs.ts` reads two ids,
+ * so a count of reader files and a count of read models are different numbers
+ * and stop agreeing whenever one module requests two projections.
+ *
+ * **Added 2026-08-29 (#157), reinstating the `UNPAINTED_ROUTE` idiom this file
+ * deleted at #331 -- named per id this time rather than as one entry, because
+ * six ids need it rather than two.** #157 asked whether an unread route is
+ * dead, waiting on something named, or blocked on a protocol shape the channel
+ * lacks; investigating it found five of the six waiting on the same undone
+ * decision (`tests/foundation/unconsumed-action-contract.test.ts`'s
+ * `AWAITING_CONSUMER['selection.primary']`: *"there is no selection state, no
+ * highlight and no inspector"*) and the sixth (`world/render-snapshot`)
+ * -- **and one of that five stopped waiting at issue #895, which is the
+ * finding rather than the digit.** The quoted sentence had three clauses and
+ * only the middle one still holds: the Regime panel's roster rows are now a
+ * selection (`role="radio"`, `aria-checked`, a roving tab stop) and the block
+ * under them is an inspector, so `hud/prisoner-detail` had its blocker
+ * removed by a panel rather than by the world-pointer selection model
+ * `selection.primary` names. There is still no *highlight* -- nothing in
+ * `src/rendering/` marks the selected prisoner in the world -- and
+ * `selection.primary` still has no consumer at all, which is why that entry
+ * stands, amended, rather than being deleted; and
+ * superseded by `simulation-snapshot-feed.ts`'s session-snapshot bundle, an
+ * open question ADR 0040 already records and defers to its slice 4. Neither is
+ * an accident this gate should paper over, and neither should be allowed to
+ * become one silently again: `UNPAINTED_PROJECTION_IDS` below names each id
+ * with what blocks it, and the test after `ROUTED_ELSEWHERE`'s own is written
+ * to fail in both directions -- an id with a reader keeps a stale entry from
+ * standing (exactly how the single `UNPAINTED_ROUTE` entry died at #331), and
+ * an id added to `PROJECTION_CATALOG` tomorrow with neither a reader nor an
+ * entry fails immediately instead of joining this list unnoticed the way
+ * `world/render-snapshot` did. This is a narrower promise than "every route is
+ * painted" -- it is "every unpainted route says why," which is the one a text
+ * scan over stable string ids can actually keep without drifting the day a
+ * panel's internal shape changes.
+ *
+ * **This said "nine of the fifteen" and "six", then "eight" and "seven", and
+ * every one of them was right when written.** The directions are marked rather
+ * than overwritten because the pair -- how many read models, how many reader
+ * modules -- is what a reader checks, and the two stop agreeing whenever one
+ * module requests two projections. `src/ui/simulation-staff-coverage.ts` was
+ * the seventh reader (ADR 0048 consequence 1); the eighth and ninth are
+ * `src/ui/simulation-prisoner-roster.ts` and `src/ui/simulation-regime.ts`
+ * (issue #451), which are counted here as *two* modules reading two projections
+ * so the two counts happen to move together this time. The tenth is
+ * `src/ui/simulation-prisoner-detail.ts` (issue #895), one module reading one
+ * id, so they move together again -- which is luck and not a rule. The `file:line`
+ * citations that used to sit beside each reader are gone rather than
+ * renumbered, for `docs/AGENT_WORKFLOW.md` §4's reason: a line number into a file
+ * under active edit is the least durable citation here, and every one of these
+ * pointed at a `request(` call that a single inserted comment moves.
+ *
+ * The eighth and ninth readers are the first whose subject is the prison's
+ * **inhabitants**. `src/ui/simulation-prisoner-roster.ts` carries who is in the
+ * prison, what each of them is doing and how each is classified;
+ * `src/ui/simulation-regime.ts` carries what each classification group's day
+ * allows at this tick, off the one field of `hud/status-strip` that the *push*
+ * route does not already publish. Together they are the first surface for
+ * #450's consequence chain -- an incident writes a disciplinary record,
+ * `ClassificationReviewSystem` rewrites the prisoner's tier and group from it,
+ * and `ActionSystem` puts them on a different timetable -- of which the only
+ * thing that had ever reached a player was `activeIncidents`, one integer on
+ * one stat tile.
+ *
+ * **This said "ten", and the arithmetic slip is the interesting part rather than
+ * the digit.** Six ids are read by *five* modules, because
+ * `simulation-room-needs.ts` reads two of them -- so a count of reader files
+ * gives five and fifteen minus five gives ten. The sentence is about read
+ * *models*, not reader modules, and the two stop agreeing the moment one module
+ * requests two projections. It was already wrong when it was written, and the
+ * same off-by-one from the same cause was independently found in
+ * `docs/HUD_PROJECTIONS.md` §9; ADR 0040's open question 4 has had nine right
+ * all along.
+ *
+ * A literal grep can only prove a *lower* bound on readers -- a module that
+ * built an id at runtime would be invisible to it -- so that was checked
+ * separately rather than assumed: the only place in `src/ui/` or
+ * `src/rendering/` that holds a `ProjectionId` as a value instead of a literal
+ * is `simulation-projections.ts:159`, the requester's own signature, which is
+ * the transport every one of the six calls through rather than a reader of any
+ * particular projection. So there is no indirect resolution to miss, and nine is
+ * exact rather than an upper bound.
+ *
+ * The second painter is `src/ui/simulation-build-queue.ts`, and it is worth
+ * naming because it closed a *different* gap from the room readout's. That one
+ * made a verdict visible. This one carries the **order ids** of the orders that
+ * are still pending, which is what `CancelBuildOrder` names -- and until it
+ * existed that command was the repository's only one with no production
+ * producer, because no control could aim at an order nothing had told this
+ * thread about. So this channel is now the route by which a *command* becomes
+ * reachable, not only the route by which a readout does.
+ *
+ * The fourth is `src/ui/simulation-pending-deliveries.ts`, over
+ * `hud/pending-deliveries`, and it is the second time this channel is what makes
+ * a *command* reachable rather than a readout -- with the difference that what
+ * sat unreachable behind it was not a control but a **credit** (#285).
+ * `ProcurementSystem.cancel` refunds the recorded price of a delivery that has
+ * not landed, exactly, and every caller in the repository was a test -- so the
+ * one thing besides the state income line that puts money back into the treasury
+ * could not happen in any session a player could drive. A purchase id is minted
+ * on the main thread and immediately forgotten; this projection is what carries
+ * it back, so a control can name one.
+ *
+ * The fifth is `src/ui/simulation-held-guards.ts`, over `hud/held-guards`, and it
+ * is the **third** time this channel is what makes a *command* reachable rather
+ * than a readout -- with the difference that what sat unreachable behind it was
+ * neither a control nor a credit but a **release** (ADR 0034, answering ADR 0033's
+ * open question 3). `GuardRoster.unassign` has been complete since #26 and every
+ * caller of it in `src/` sits inside the system that made the claim being
+ * released, each firing only when that system decides the claim is over -- so a
+ * claim whose owner had lost track of it was permanent, which is what issue #352
+ * measured as four guards held for ever. A guard id is minted inside the
+ * simulation and never reached this thread at all; this projection is what
+ * carries it out, together with the one fact the roster cannot answer on its own
+ * -- which of the two `'on-search'` claimants holds the guard.
+ *
+ * The sixth is `src/ui/simulation-staff-coverage.ts`, over `hud/staff`, and it
+ * is the first whose subject is neither a readout of what the prison holds nor
+ * an id a control aims at, but a **warning**. ADR 0048 made a riot reachable in
+ * a prison a player can build and scaled `requiredGuardCount` with occupancy, so
+ * a prison that outgrows its guards riots; its own Consequences record that
+ * `StaffCoverageRowViewModel` carried `required`/`assigned`/`shortage` and no
+ * panel rendered any of it, which left the build-up invisible. Measured in a
+ * 12-bed prison driven through the real command path: the report reads
+ * `required: 1` from the first admission through the eighth and `required: 2` on
+ * the tick the ninth lands -- 12,788 ticks before that prison's first riot. The
+ * reader carries the summed totals rather than the per-sector rows, because
+ * `applyDefaultSecuritySector` derives exactly one sector for every session a
+ * player can start.
+ *
+ * The third is `src/ui/simulation-intake.ts`, over `hud/prisoner-population`,
+ * and it is the first one about *people* rather than about the building: it
+ * says where the arrivals the player has already admitted are, which is the
+ * difference between an admission that is waiting for a cell and one that can
+ * never be housed at all. Neither state had a surface, although the strip
+ * counted both among the population.
+ *
+ * The tenth is `src/ui/simulation-prisoner-detail.ts`, over
+ * `hud/prisoner-detail` (issue #895), and it is the first reader on this
+ * channel whose request names **one row**: every one above it asks a question
+ * with no subject and takes whatever window the projection holds, while this
+ * one carries an `EntityId` the player chose by pressing a roster row. What
+ * sat unreachable behind it was neither a control nor a credit nor a warning
+ * but a **composition**: the state withholds part of a prisoner's day of the
+ * operating grant per unmet need, and the roster row shows the worst need of
+ * six -- so a prisoner costing the prison four needs' worth and one costing it
+ * a single need were indistinguishable in every surface the application had.
+ * It is also the first route this gate has seen leave
+ * `UNPAINTED_PROJECTION_IDS` by having its stated blocker removed rather than
+ * by that blocker being re-argued: the entry named "no selection state, no
+ * highlight and no inspector", and a panel-local selection answered two thirds
+ * of it.
  */
 
 const ROOT = join(__dirname, '../..');
 const PRESENTATION_DIR = 'src/simulation/presentation';
 const CATALOG_FILE = 'src/simulation/worker/projection-catalog.ts';
 const UI_DIR = 'src/ui';
+const RENDERING_DIR = 'src/rendering';
 
 const read = (path: string): string => stripComments(readFileSync(join(ROOT, path), 'utf8'));
 
@@ -117,12 +292,86 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  * assertion below. Named individually so that a reader which is renamed or
  * moved out of `src/ui/` fails here instead of silently leaving the surface.
  */
-const PAINTERS = ['simulation-room-needs.ts'] as const;
+const PAINTERS = [
+  'simulation-build-queue.ts',
+  'simulation-held-guards.ts',
+  'simulation-intake.ts',
+  'simulation-pending-deliveries.ts',
+  // Issue #895. The first reader on this channel whose request names **one**
+  // row: `hud/prisoner-detail` is `target: 'entity'`, and the id is the one the
+  // player pressed on a roster row. Named here for the reason this list gives,
+  // and it is the direction that matters most for a detail route -- the id is
+  // quoted in exactly one file, so a rename that moved it out of `src/ui/`
+  // would take the last reader of that projection with it and the per-id check
+  // below would report the route unpainted again.
+  'simulation-prisoner-detail.ts',
+  'simulation-prisoner-roster.ts',
+  'simulation-regime.ts',
+  'simulation-room-needs.ts',
+  'simulation-staff-coverage.ts',
+  // Issue #533. The **second** reader of `hud/staff`, beside
+  // `simulation-staff-coverage.ts` above, and it is named here for the reason
+  // this list gives: named individually so a reader renamed or moved out of
+  // `src/ui/` fails here rather than silently leaving the surface -- which
+  // matters more for a second reader of one id than for a first, because the
+  // per-id check below would still find the *other* one and report the id as
+  // read.
+  'simulation-staff-roster.ts',
+] as const;
 
 const catalogSource = read(CATALOG_FILE);
 
 /** A projection the catalog actually calls: `projectThing(` in the catalog's source. */
 const catalogued = (name: string): boolean => new RegExp(`\\b${name}\\s*\\(`).test(catalogSource);
+
+/** Every `.ts` file under `directory`, recursively, as a path relative to `ROOT`. */
+function collectTypeScriptFiles(directory: string): readonly string[] {
+  const files: string[] = [];
+  for (const entry of [...readdirSync(join(ROOT, directory))].sort()) {
+    const relative = `${directory}/${entry}`;
+    if (statSync(join(ROOT, relative)).isDirectory()) {
+      files.push(...collectTypeScriptFiles(relative));
+    } else if (entry.endsWith('.ts')) {
+      files.push(relative);
+    }
+  }
+  return files;
+}
+
+/**
+ * Every candidate reader file, scanned once. Recursive (unlike `PAINTERS`'
+ * own top-level scan) because a per-id check has no equivalent of
+ * `SimulationProjectionRequester` to anchor on -- it is looking for the id
+ * literal itself, and that could in principle be quoted from a subdirectory
+ * such as `src/ui/hud/`.
+ */
+const READER_SURFACE = [...collectTypeScriptFiles(UI_DIR), ...collectTypeScriptFiles(RENDERING_DIR)];
+
+/**
+ * Files that quote this projection id as a string literal -- the same
+ * technique the doc comment above used by hand to produce "nine of fifteen",
+ * mechanized so it cannot go stale the way a tally in a comment does.
+ */
+const readersOf = (id: string): readonly string[] => READER_SURFACE.filter((file) => read(file).includes(`'${id}'`));
+
+/**
+ * Projection ids with a route and, today, no reader -- named individually with
+ * what blocks one, so the entry a reader makes stale is exactly the entry that
+ * described its own absence. A reason must state what is verifiably true
+ * today, with a citation, and must not merely restate a plan.
+ */
+const UNPAINTED_PROJECTION_IDS: Readonly<Partial<Record<ProjectionId, string>>> = {
+  'hud/incident-detail':
+    "No reader. The `-detail` half of the incidents pair, and it waits on the *list* half rather than on a selection model: `hud/incidents` below has no reader and no panel, so there is no row for a player to press. **This entry said it \"waits on the same blocker as `hud/prisoner-detail`\" and that sentence is spent** -- issue #895 gave that route a reader by making the Regime panel's roster rows selectable, which is a per-panel selection rather than the world-pointer `selection.primary` both entries used to point at, and the shape it took is the one an incidents panel would copy: a row carrying the id, `role=\"radio\"` on the row, and a detail block beneath. `docs/research/audit-2026-08-26/10-product-roadmap.md:327` still names the generic inspector panel this family was expected to arrive with.",
+  'hud/incidents':
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` names the panel this waits on, "Incident notification + response controls," and it is not built. **The cost clause this entry carried was wrong in its coordinate and is now half wrong in its claim, so both are corrected in place.** It read: *"`projectIncidents` ... calls `IncidentLog.all()` and pages in memory, so each request costs `O(all incidents ever recorded)` regardless of the requested window -- tracked at `docs/HUD_PROJECTIONS.md:1613-1616`"*. Those lines are gap **22**, about a guard\'s deployment phase; the incidents gap is **28**. And "pages in memory" stopped being true: `projectIncidents` carries a terminal ordinal through its one walk and builds a row only inside the window, so the allocation is `O(limit)`. The **walk** is still `O(allIncidentsEverRecorded)`, because the aggregate this projection reports is a fold over every record -- that is the half gap 28 is named for and it needs an index inside `IncidentLog`.',
+  'hud/contraband':
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists this as unbuilt, after the incidents panel ("then hud/contraband and hud/security"). `ConfiscationLedger.all()` (`src/simulation/contraband/confiscation.ts`) is unbounded over a session for the reason `docs/HUD_PROJECTIONS.md:1600-1603` gives, and `drain()` still has no caller anywhere in `src/` or `tests/`.',
+  'hud/security':
+    'No reader. `docs/adr/0036-a-derived-default-security-sector.md:508` says plainly "no panel reads `hud/security` at all," and `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists it as the last of this family\'s unbuilt panels.',
+  'world/render-snapshot':
+    "No reader. `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`) has no caller outside its own module and `tests/`; the render path gets world chunks through `src/rendering/feed/simulation-snapshot-feed.ts`'s session-snapshot bundle instead of pulling this projection. ADR 0040 open question 4 (`docs/adr/0040-the-shape-of-the-render-delta-channel.md:522`) leaves reuse-versus-delete to slice 4 and deliberately does not decide it here.",
+};
 
 describe('every projection the worker can produce has a route out of it', () => {
   it('scans the read-model layer it means to, and really finds projections in it', () => {
@@ -130,7 +379,7 @@ describe('every projection the worker can produce has a route out of it', () => 
     // stopped matching would make every assertion below true of an empty set,
     // which reads exactly like compliance -- the failure this whole family of
     // gates exists to prevent.
-    expect(PROJECTIONS.length).toBeGreaterThanOrEqual(13);
+    expect(PROJECTIONS.length).toBeGreaterThanOrEqual(14);
     expect(new Set(PROJECTIONS.map(({ name }) => name)).size).toBe(PROJECTIONS.length);
     // Named files, so a projection module that is renamed or moved out of the
     // scanned directory fails here rather than silently leaving the surface.
@@ -138,6 +387,7 @@ describe('every projection the worker can produce has a route out of it', () => 
     for (const expected of [
       'clock-projection.ts',
       'contraband-projection.ts',
+      'guard-release-projection.ts',
       'incident-projection.ts',
       'prisoner-projection.ts',
       'room-projection.ts',
@@ -235,5 +485,43 @@ describe('every projection the worker can produce has a route out of it', () => 
     // had been deleted and the readers were mentioning a name that no longer
     // sends anything.
     expect(read(`${UI_DIR}/simulation-projections.ts`)).toContain("kind: 'simulation/request-projection',");
+  });
+
+  /*
+   * An explicit timeout: this walks the whole tree and exceeded
+   * `vitest.config.ts`'s global 5,000 ms under contention on 2026-09-03.
+   * The measurement and the reasoning are in
+   * `comment-symbol-existence-contract.test.ts`, beside the slowest of them.
+   * No assertion changes; only the patience does.
+   */
+  it('gives every projection id a reader, or a reason blocking one', () => {
+    for (const id of PROJECTION_IDS) {
+      const readers = readersOf(id);
+      const reason = UNPAINTED_PROJECTION_IDS[id];
+      if (readers.length > 0) {
+        // The direction that killed the single `UNPAINTED_ROUTE` entry at
+        // #331: a reader landed and the entry describing its absence must go
+        // with it, or the next reader down this list learns nothing from a
+        // record that is already false.
+        expect(
+          reason,
+          `${id} is now read by ${readers.join(', ')} -- delete its UNPAINTED_PROJECTION_IDS entry, it is stale`,
+        ).toBeUndefined();
+      } else {
+        expect(
+          reason,
+          `${id} has no reader under src/ui/ or src/rendering/ and no UNPAINTED_PROJECTION_IDS entry saying why. Wire a reader, or add an entry naming what blocks one`,
+        ).toBeDefined();
+        expect(reason!.trim().length, `${id}'s UNPAINTED_PROJECTION_IDS entry needs a reason, not a label`).toBeGreaterThan(80);
+      }
+    }
+  }, 60_000);
+
+  it('keeps the unpainted-projection list honest in the other direction', () => {
+    const declared = new Set<string>(PROJECTION_IDS);
+    expect(
+      Object.keys(UNPAINTED_PROJECTION_IDS).filter((id) => !declared.has(id)),
+      'this key is not a declared projection id, so its entry accounts for nothing and can never go stale',
+    ).toEqual([]);
   });
 });

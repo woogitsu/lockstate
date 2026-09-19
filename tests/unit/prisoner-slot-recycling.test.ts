@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
-import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import {
+  ACTION_PHASES,
+  CurrentActionComponent,
+  PositionComponent,
+  PrisonerRecordComponent,
+  SubstitutionRecordComponent,
+  intakeStageIndex,
+} from '../../src/simulation/prisoners/components';
 import { NEED_IDS, NEED_MAX_SCALED, NeedsComponent } from '../../src/simulation/prisoners/needs';
 import type { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
@@ -18,11 +25,18 @@ const RNG_STREAM = 'prisoners.classification';
  * `entityStore` and `admitPrisoner` publicly, so these tests use nothing but
  * the public surface -- the same surface
  * `tests/determinism/snapshot-restore-fidelity.test.ts` already recycles an
- * index through. But no *gameplay* path reaches it: nothing in `src/` destroys
- * a prisoner entity and nothing in `src/` admits one either, so the situation
- * cannot occur in a session today and becomes reachable only with the first
- * release/parole path (#31). These tests exist so that the day it does, a
- * recycled slot behaves like a fresh one.
+ * index through.
+ *
+ * **These cases have stopped being anticipatory.** They used to close with
+ * "the situation cannot occur in a session today and becomes reachable only
+ * with the first release/parole path (#31) ... so that the day it does, a
+ * recycled slot behaves like a fresh one". That day is #441: a prisoner whose
+ * sentence ends is released, their index goes back on the free list, and the
+ * next admission lands on it. What these cases pin is now ordinary gameplay,
+ * and it is deliberately still driven through `entityStore.destroy` rather than
+ * through `releasePrisoner` -- destroy alone is the *harsher* input, because it
+ * leaves behind exactly the cold state and occupancy a real release drops, so a
+ * component reset that only worked alongside a full release would fail here.
  */
 
 interface SlotArrayLike {
@@ -74,6 +88,7 @@ function componentsUnderTest(): readonly {
     { name: 'NeedsComponent', runtimeKey: 'needs', make: () => new NeedsComponent(CAPACITY) },
     { name: 'CurrentActionComponent', runtimeKey: 'currentAction', make: () => new CurrentActionComponent(CAPACITY) },
     { name: 'PositionComponent', runtimeKey: 'position', make: () => new PositionComponent(CAPACITY) },
+    { name: 'SubstitutionRecordComponent', runtimeKey: 'substitutions', make: () => new SubstitutionRecordComponent(CAPACITY) },
   ];
 }
 
@@ -102,6 +117,12 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'records.riskTier': 0,
   'records.classificationGroupIndex': 0,
   'records.intakeStage': intakeStageIndex('queued'),
+  // `0` -- not sanctioned. Issue #80, ADR 00XX.
+  'records.solitarySanctionEndTick': 0,
+  // `0` -- not injured. Issue #589, the owner's ruling of 2026-09-17. A
+  // recycled index must not hand its previous occupant's injury to the next
+  // prisoner, which is the whole of what this file is for.
+  'records.injured': 0,
   // Stated once for every need, the way `NeedsComponent.reset` itself loops
   // `NEED_IDS`: a seventh need is covered here with no second edit. The value
   // is `NEED_MAX` expressed in the units `levels` actually stores -- scaled by
@@ -115,24 +136,42 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'currentAction.needFulfilledLastTick': 0,
   'position.tileX': 0,
   'position.tileY': 0,
+  // Nobody has been served worse than they asked for in a slot nobody has
+  // occupied, and a prisoner admitted into a recycled one starts their own
+  // sentence with their own count (#435).
+  'substitutions.substitutionCycles': 0,
+  'substitutions.contendedSubstitutionCycles': 0,
 };
 
 describe('per-prisoner component slot defaults', () => {
-  it('counts eighteen per-slot arrays across the four index-keyed components', () => {
+  it('counts twenty-two per-slot arrays across the five index-keyed components', () => {
     const perComponent = componentsUnderTest().map((entry) => [entry.name, slotArraysOf(entry.make()).size] as const);
 
-    // Both `session-systems.ts` and `docs/PERSISTENCE.md` state "eighteen
-    // per-prisoner component arrays" when justifying the save payload's
-    // shape, and `admitPrisoner` has to reset all of them. A nineteenth
-    // array fails here, which is the prompt to update the reset list, the
-    // codec and both documents together.
+    // **The two numbers here are no longer one number, and that is the point.**
+    // `admitPrisoner` has to reset every array below -- twenty-two since #589
+    // added `records.injured` to the twenty-one #80 left, which had added
+    // `solitarySanctionEndTick` (ADR 00XX) to the twenty #435 left --
+    // while `session-systems.ts` and `docs/PERSISTENCE.md` say "nineteen
+    // per-prisoner component arrays" about the *payload*, which is the same
+    // list minus `SubstitutionRecordComponent`'s two: they are diagnostics, no
+    // save carries them, and a restore clears them rather than migrating them
+    // (see that component). This assertion used to read eighteen persisted
+    // across four components and pinned both facts at once; it now pins the
+    // reset's total and names the persisted subset, so a twenty-second array
+    // still fails here and the prompt is to say which of the two lists it
+    // joins.
     expect(perComponent).toEqual([
-      ['PrisonerRecordComponent', 6],
+      ['PrisonerRecordComponent', 8],
       ['NeedsComponent', 6],
       ['CurrentActionComponent', 4],
       ['PositionComponent', 2],
+      ['SubstitutionRecordComponent', 2],
     ]);
-    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(18);
+    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(22);
+    const persisted = perComponent.filter(([name]) => name !== 'SubstitutionRecordComponent');
+    // 20, not 19, since #589: `records.injured` is state a system reads back,
+    // so the codec writes it, exactly as it does `solitarySanctionEndTick`.
+    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(20);
   });
 
   it('pins the value of every default, not only that reset agrees with construction', () => {
@@ -150,7 +189,7 @@ describe('per-prisoner component slot defaults', () => {
       for (const [path, array] of dirtiedArrays) afterReset.set(`${runtimeKey}.${path}`, array[slot]!);
     }
 
-    // A nineteenth array has to state its default here as well as in its
+    // A twenty-second array has to state its default here as well as in its
     // component's list -- the count assertion above says an array was added,
     // this one says nobody decided what it should read as when unoccupied.
     expect([...fresh.keys()].sort()).toEqual(Object.keys(SLOT_DEFAULTS).sort());
@@ -229,11 +268,13 @@ describe('admitting a prisoner into a recycled index', () => {
     const runtime = fixture.prisoners;
 
     const resettable = resettableComponentsOf(runtime);
-    // Pinned so that a fifth index-keyed component added to the runtime shows
-    // up here rather than being silently left out of `admitPrisoner` -- the
-    // component-level twin of the array-level count assertion above. Once
-    // listed, the loop below covers it with no further edit.
-    expect([...resettable.keys()].sort()).toEqual(['currentAction', 'needs', 'position', 'records']);
+    // Pinned so that a **sixth** index-keyed component added to the runtime
+    // shows up here rather than being silently left out of `admitPrisoner` --
+    // the component-level twin of the array-level count assertion above. Once
+    // listed, the loop below covers it with no further edit. The fifth arrived
+    // with #435 and was added by extending this list, which is what the
+    // assertion is for.
+    expect([...resettable.keys()].sort()).toEqual(['currentAction', 'needs', 'position', 'records', 'substitutions']);
 
     const first = runtime.admitPrisoner({ sentenceLengthTicks: 400_000, priorIncidents: 3 }, fixture.originTile);
     const index = runtime.entityStore.getIndex(first);
@@ -258,6 +299,7 @@ describe('admitting a prisoner into a recycled index', () => {
       ['needs', new NeedsComponent(CAPACITY)],
       ['currentAction', new CurrentActionComponent(CAPACITY)],
       ['position', new PositionComponent(CAPACITY)],
+      ['substitutions', new SubstitutionRecordComponent(CAPACITY)],
     ] as const) {
       for (const [path, array] of slotArraysOf(component)) freshDefaults.set(`${name}.${path}`, array[0]!);
     }
@@ -304,9 +346,12 @@ describe('admitting a prisoner into a recycled index', () => {
     // `phaseStartedAtTick`) and the one named RNG draw per classification
     // would both differ if the two arms admitted at different ticks or made a
     // different number of draws, and the comparison would be meaningless
-    // rather than merely failing. Occupancy stays symmetric too -- nothing
-    // releases a destroyed prisoner's cell (#31), so the recycled arm's first
-    // prisoner holds its cell exactly as the fresh arm's does.
+    // rather than merely failing. Occupancy stays symmetric too, and since
+    // #441 that is a property of what this test calls rather than of the
+    // codebase: `entityStore.destroy` releases nothing, so the recycled arm's
+    // first prisoner holds its cell exactly as the fresh arm's does.
+    // `releasePrisoner` would free it and the two arms would then differ in
+    // occupancy for a reason that has nothing to do with slot recycling.
     const admit = (fixture: PrisonerScenarioFixture) =>
       fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 90_000, priorIncidents: 1 }, fixture.originTile);
 

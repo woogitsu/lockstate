@@ -3,11 +3,14 @@ import {
   HUD_VIEW_MODEL_SCHEMA_VERSION,
   WORLD_RENDER_SNAPSHOT_SCHEMA_ID,
   WORLD_RENDER_SNAPSHOT_SCHEMA_VERSION,
+  projectBuildQueue,
   projectContraband,
+  projectHeldGuards,
   projectIncidentDetail,
   projectIncidents,
   projectPrisonerDetail,
   projectPrisonerPopulationCounts,
+  projectPendingDeliveries,
   projectPrisonerRoster,
   projectRoomDetail,
   projectRoomList,
@@ -74,6 +77,14 @@ import type { SimulationRuntime } from '../runtime/new-session';
  * room-instance-to-sector mapping at all -- `room-projection.ts` says so at
  * length -- and inventing a spatial containment rule *here*, in the wiring,
  * would be the worst place in the repository to decide it.
+ *
+ * `RoomProjectionOptions.placedObjects` **is** supplied, and it is the one
+ * option this file passes. There the spatial rule is not invented here: ADR 0028
+ * decision 2 already states it (an object belongs to the room whose rectangle
+ * contains its anchor), `roomContains` implements it, and the projection reads
+ * that. Without it every `object` requirement falls back to the room's
+ * capability list and ignores its authored `minQuantity`, which is issue #528 --
+ * a canteen with one dining table and one bench reading finished.
  */
 
 /** What one request asks for, after the boundary has validated it. */
@@ -173,6 +184,14 @@ function statusStripSource(runtime: SimulationRuntime, tick: number) {
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
     rooms: runtime.prisoners,
+    // The session's timetables rather than the module constant this source
+    // previously left `projectStatusStrip` to default to
+    // ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+    // §6). Without this line the panel would keep reporting
+    // `DEFAULT_REGIME_SCHEDULES` after an `EditRegimeBlock` had changed the day
+    // the prisoners actually run -- a projection stating something the
+    // simulation had stopped doing.
+    regimeSchedules: runtime.prisoners.regimes.all(),
     staff: runtime.securityGuards,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
@@ -201,6 +220,75 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'none',
     project: (runtime, tick) => ({ view: projectStatusStrip(statusStripSource(runtime, tick)) as unknown as JsonValue }),
+  },
+
+  /**
+   * What is still waiting to be built.
+   *
+   * `runtime.construction` is the one `ConstructionSystem` a session has, so
+   * this is the queue the crew is actually working through rather than a second
+   * view of it. Paged, because a queue has no ceiling: a drag along thirty tiles
+   * is thirty orders, and `docs/HUD_PROJECTIONS.md` contract 5 puts the window
+   * in the caller's hands with `MAX_PROJECTION_PAGE_LIMIT` as the ceiling.
+   */
+  'hud/build-queue': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.build-queue`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectBuildQueue(runtime.construction, pageRequest(request), runtime.justInTimeMaterials);
+      return { view: view as unknown as JsonValue, page: pageOfView(view.orders) };
+    },
+  },
+
+  /*
+   * What has been bought and has not arrived (#285).
+   *
+   * `runtime.procurement` is the source and it needs no adapter: the projection
+   * takes `{ pendingDeliveries }` and `ProcurementSystem` already exposes exactly
+   * that as a public accessor over the list `snapshot`/`restore` carry. So this
+   * entry reads state a V5 save has always held, which is why the surface behind
+   * it moves no persisted shape and bumps no save version.
+   *
+   * `paged: true` for the reason the build queue is: a player can press Buy as
+   * often as the treasury allows, so the list has no ceiling and the window is
+   * the caller's, bounded by `MAX_PROJECTION_PAGE_LIMIT` at the protocol edge.
+   */
+  'hud/pending-deliveries': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.pending-deliveries`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectPendingDeliveries(runtime.procurement, pageRequest(request));
+      return { view: view as unknown as JsonValue, page: pageOfView(view.deliveries) };
+    },
+  },
+
+  /**
+   * ADR 0034's read model: which guards are held, and by what.
+   *
+   * `runtime.guardRelease` is handed in as the claim resolver rather than the
+   * projection re-deriving the claim, and that is the point of the entry rather
+   * than a convenience -- the row and the `ReleaseGuardAssignment` that aims at
+   * it must resolve "what is holding this guard" by one rule, and
+   * `GuardReleaseService.claimOf` is that rule.
+   *
+   * `paged: true` for `hud/pending-deliveries`' reason: the roster has no
+   * ceiling short of `GuardRoster`'s capacity, so the window is the caller's,
+   * bounded by `MAX_PROJECTION_PAGE_LIMIT` at the protocol edge.
+   */
+  'hud/held-guards': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.held-guards`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectHeldGuards(
+        { staff: runtime.securityGuards, claims: runtime.guardRelease },
+        pageRequest(request),
+        { identity: runtime.actorIdentity },
+      );
+      return { view: view as unknown as JsonValue, page: pageOfView(view.held) };
+    },
   },
 
   'hud/prisoner-population': {
@@ -245,7 +333,22 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: true,
     target: 'none',
     project: (runtime, _tick, request) => {
-      const view = projectRoomList(runtime.prisoners, pageRequest(request));
+      const view = projectRoomList(runtime.prisoners, pageRequest(request), {
+        placedObjects: runtime.placedObjects,
+        // The world's edge layers, the session's own door registry and the
+        // region partition built from both, so a row can say whether anybody
+        // can get into the room (#938, and ADR 0108 for the third). All three
+        // come from the runtime rather than from a copy: `navigation.doors` is
+        // the registry the router, the caches and `doorsSnapshot` all read
+        // (`runtime/new-session.ts` says why there is only one) and
+        // `getGraph()` is the graph the router routes over, so the panel's
+        // answer and the walk's answer cannot disagree.
+        perimeter: {
+          edges: runtime.world,
+          doors: runtime.navigation.doors,
+          regions: runtime.navigation.getGraph(),
+        },
+      });
       return { view: view as unknown as JsonValue, page: pageOfView(view.rooms) };
     },
   },
@@ -255,7 +358,18 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'id',
     project: (runtime, _tick, request) => {
-      const detail = projectRoomDetail(runtime.prisoners, idTarget(request));
+      const detail = projectRoomDetail(runtime.prisoners, idTarget(request), {
+        placedObjects: runtime.placedObjects,
+        // The list's reason, and it has to be all three: the needs readout
+        // asks for the list and then for one detail per unfinished room, so a
+        // detail that could not answer this would drop the fact between the
+        // two requests.
+        perimeter: {
+          edges: runtime.world,
+          doors: runtime.navigation.doors,
+          regions: runtime.navigation.getGraph(),
+        },
+      });
       return detail === undefined ? {} : { view: detail as unknown as JsonValue };
     },
   },
@@ -270,6 +384,11 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
           staff: runtime.securityGuards,
           deployment: runtime.deploymentSystem,
           patrol: runtime.patrolSystem,
+          // Post tiles, so a row can say `Returning` instead of asserting a
+          // post the guard is not standing on. The same registry
+          // `hud/security` below reads, and the one the deployment system
+          // routes against, so the panel and the walk cannot disagree.
+          sectors: runtime.securitySectors,
         },
         tick,
         pageRequest(request),

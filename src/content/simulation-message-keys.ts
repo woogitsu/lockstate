@@ -169,6 +169,83 @@ export const SIMULATION_ENUM_GROUPS = [
       'action.yard-recreation': 'Yard Time',
       'action.common-room-recreation': 'Common Room',
       'action.classroom-education': 'Class',
+      // Not "Free Association", which is the *category*'s label two groups
+      // up. A roster cell says what the prisoner is doing, and repeating the
+      // regime's own word for the block would make the two columns read as
+      // the same fact; the shorter form is also what the wing calls it.
+      'action.free-association': 'Association',
+      // The job, not the room: a roster cell says what the prisoner is doing,
+      // and `room.laundry.name` is already "Laundry" two catalogs over.
+      'action.laundry-work': 'Laundry Duty',
+      // Same rule as the line above, and the same shape: `room.kitchen.name`
+      // is already "Kitchen" two catalogs over, so the cell says the job.
+      // **This is the one new player-facing sentence issue #532 adds, and it
+      // is a draft for the owner's review** -- no existing string in this file
+      // fits (the `work` *category* label is "Work", which is what a roster
+      // would say for laundry duty too, and `room.kitchen.name` names the
+      // place rather than the activity).
+      'action.kitchen-work': 'Kitchen Duty',
+      // Same rule again -- the cell says the job, not the place -- and **the
+      // owner confirmed this word on 2026-09-03**, shown it among candidates
+      // and answering *"Errand"*. So this label is settled copy: of the three
+      // sentences ADR 0093's *What is owed to the owner* reserves, it is the
+      // first to be settled, and the other two are still owed.
+      //
+      // **It read the same word marked as provisional until that
+      // confirmation, and what the marking said is kept rather than
+      // overwritten** (`docs/AGENT_WORKFLOW.md` §4). It read: *"**this is a
+      // draft for the owner's review, exactly as the line above it is.** ADR
+      // 0093's section *What is owed to the owner* names the carry's label as
+      // the first of three sentences it cannot write, and this file is not
+      // where that reservation can be honoured by omission: the group above
+      // declares `form: 'definition-id-field'` over `DEFAULT_ACTIONS`, and
+      // `tests/unit/simulation-message-keys.test.ts` requires each namespace
+      // to label *exactly* the ids its declaration declares. So an entry has
+      // to exist for `action.carry` the moment the catalogue holds it, and the
+      // choice is between a draft that is marked as one and a suite that
+      // cannot go green."* Every word of that is still true of the mechanism;
+      // what changed is that the entry is no longer provisional, so the string
+      // does not move and the marking does. The line above it --
+      // `action.kitchen-work` -- is still a draft, and the confirmation of
+      // this one says nothing about it.
+      //
+      // "Errand" rather than "Carrying" (a phase, and `action-phase` already
+      // labels three of those), "Haulage" (the trade, not the shift) or
+      // "Delivery Duty" (which names the *purchase* a player made, and a carry
+      // will not always be a delivery once other producers arrive). Those were
+      // the alternatives put to the owner beside the chosen word.
+      'action.carry': 'Errand',
+      // The care, not the place: `room.infirmary.name` is already "Infirmary"
+      // two catalogs over, which is the rule `action.laundry-work`,
+      // `action.kitchen-work` and `action.carry` above already follow -- a
+      // roster cell says what the prisoner is *doing*.
+      //
+      // **This is the one new player-facing string issue #589 adds, and it is
+      // a draft for the owner's review** -- no existing string fits (the
+      // `hygiene` *category* label is "Hygiene", which is what a roster would
+      // say for a shower too). An entry has to exist the moment the catalogue
+      // holds the action: the group above declares `form: 'definition-id-field'`
+      // over `DEFAULT_ACTIONS` and `tests/unit/simulation-message-keys.test.ts`
+      // requires each namespace to label *exactly* the ids its declaration
+      // declares, so the choice is between a draft marked as one and a suite
+      // that cannot go green -- the same bind `action.carry`'s note records.
+      //
+      // **What makes it TRUE, which is the half `AGENTS.md`'s fourth
+      // reservation keeps.** The wording is this repository's since 2026-09-04;
+      // that the sentence be true is the owner's. This one is shown by
+      // `PrisonerActionViewModel` for the action a prisoner is *currently
+      // performing*, and an action is only ever current after
+      // `ActionSystem.resolveTargetInstance` answered it a real
+      // `room.infirmary` instance with a free `medical-treatment` place and
+      // `claimUseIfNeeded` took the claim. So "Treatment" appears exactly when
+      // a prisoner is on a medical bed in an infirmary that exists. A prison
+      // with no infirmary never shows it: the promotion in `planIdleSelection`
+      // is gated on `prisonProvides`, the injured prisoner picks their
+      // need-ranked candidate instead, and the cell says what they are really
+      // doing. **No string anywhere claims a prisoner is being treated, or is
+      // waiting to be, on the strength of the flag alone** -- which is why
+      // #589 needs one sentence and no refusal beside it.
+      'action.infirmary-treatment': 'Treatment',
     },
   },
   {
@@ -247,6 +324,40 @@ export const SIMULATION_ENUM_GROUPS = [
       travelling: 'Travelling',
       'on-post': 'On Post',
       'on-search': 'On Search',
+      returning: 'Returning',
+    },
+    additionalIds: [
+      {
+        id: 'returning',
+        reason:
+          "`projectStaff` types a roster row's phase as `DisplayedDeploymentPhase` -- `DeploymentPhase | 'returning'` -- and derives this member rather than storing it (`src/simulation/security/deployment-phase.ts`). A guard restored from a save taken mid-journey settles on `'on-post'` while standing wherever the walk had got to, and `On Post` is an assertion about a tile it is not on; `Returning` is the word the owner chose for it. It is deliberately not a fifth `DeploymentPhase`: that union is persisted in every save under a `.strict()` schema and is read by the coverage census, both travel systems and the release service, none of which needs a new member to answer a question about one row's wording.",
+      },
+    ],
+  },
+  {
+    // Labelled rather than exempted, unlike every refusal vocabulary beside it,
+    // and the difference is what the words are *for*. A refusal is a sentence
+    // about something that did not happen; this is a **label on a row** -- the
+    // Staff panel's held-guards list says what is holding each guard, one dense
+    // phrase per row, exactly as `deployment-phase` above labels the phase. ADR
+    // 0034 is the decision it arrived with.
+    //
+    // `'unattributed'` is the one member worth naming here: it is an
+    // `'on-search'` guard that neither `'on-search'` claimant names, which is
+    // the residue ADR 0033 is about. It is a real state a player can see -- in
+    // the window between loading a save taken during a response and that
+    // system's next scheduled update -- so it needs a word rather than an
+    // exemption, and the word says "nothing is holding this" rather than naming
+    // a claimant that does not exist.
+    namespace: 'guard-claim',
+    sourceFile: 'src/simulation/security/guard-release.ts',
+    declaration: 'GUARD_CLAIM_KINDS',
+    form: 'const-array',
+    labels: {
+      deployment: 'Sector Post',
+      'incident-response': 'Incident Response',
+      search: 'Contraband Search',
+      unattributed: 'Unclaimed',
     },
   },
   {
@@ -355,7 +466,7 @@ export const SIMULATION_ENUM_GROUPS = [
     sourceFile: 'src/simulation/contraband/item.ts',
     declaration: 'ContrabandState',
     form: 'string-union',
-    labels: { concealed: 'Concealed', confiscated: 'Confiscated' },
+    labels: { concealed: 'Concealed', confiscated: 'Confiscated', departed: 'Left With Holder' },
   },
   {
     namespace: 'intelligence-target',
@@ -404,6 +515,22 @@ export const SIMULATION_ENUM_GROUPS = [
     labels: { pickup: 'Pickup', dropoff: 'Drop-off' },
   },
   {
+    // Where a build order has got to, and since the Build panel's queue block
+    // these words are **on screen** rather than merely authored: five of the
+    // eight are what a queued order's row says it is waiting for, resolved
+    // through `deriveSimulationMessageKey('build-order-state', state)` from the
+    // `state` on `BuildQueueOrderViewModel`.
+    //
+    // `assigned` was `'Assigned'` while nothing rendered any of these, and that
+    // word does not survive being read by a player: an `assigned` order has its
+    // materials and is waiting for the crew, and since #348 the crew is the
+    // constraint -- one order in progress at a time -- so this is the state a
+    // queue of eleven walls spends its whole wait in. "Assigned" names what the
+    // simulation did to it; "Awaiting the crew" names what the player is waiting
+    // for, which is the same distinction `'materials-pending'` already resolved
+    // in favour of the player with "Awaiting Materials". The stable id is
+    // untouched: it is persisted in `save-schema.ts` and a label is not an id
+    // (ADR 0011).
     namespace: 'build-order-state',
     sourceFile: 'src/simulation/construction/build-order.ts',
     declaration: 'BuildOrderLifecycleState',
@@ -412,7 +539,7 @@ export const SIMULATION_ENUM_GROUPS = [
       planned: 'Planned',
       approved: 'Approved',
       'materials-pending': 'Awaiting Materials',
-      assigned: 'Assigned',
+      assigned: 'Awaiting the Crew',
       'in-progress': 'In Progress',
       completed: 'Completed',
       cancelled: 'Cancelled',
@@ -525,14 +652,71 @@ export const SIMULATION_ENUM_GROUPS = [
     },
   },
   {
+    // **The one group whose ids are also named by a hand-authored key family,
+    // and the two families disagreed on two of the seven labels.**
+    //
+    // `OBJECT_CATEGORY_NAME_KEYS` in `src/content/object-catalog.ts` maps the
+    // same seven ids to `object.category.<id>.name`, and
+    // `default-locale-en.ts` authors text for all seven. This group derives
+    // `object-category.<id>.name`. The keys differ by one character -- a dot
+    // where the other has a hyphen -- so `validateSimulationEnumGroups`'
+    // `duplicate-key` check, which compares exact keys, cannot see them as
+    // related, and both families land in the assembled `en` catalog. Measured
+    // on `defaultLocaleEnCatalog` rather than inferred:
+    //
+    //     sanitation     authored="Plumbing"  derived="Sanitation"
+    //     food-service   authored="Catering"  derived="Food Service"
+    //
+    // and the other five agreed. `tests/foundation/content-vocabulary-contract.test.ts`
+    // now fails on any such pair, so the divergence is gated as a class rather
+    // than corrected as two instances.
+    //
+    // **The authored family's copy is the one that wins, and this table's two
+    // labels changed to match it -- not the other way round.** Three reasons,
+    // in order of force:
+    //
+    //  1. It is the family with a consumer. `buildableCategory`
+    //     (`src/main.ts:845`) renders
+    //     `OBJECT_CATEGORY_NAME_KEYS[category]` in the Build panel's category
+    //     filter. Nothing anywhere calls
+    //     `deriveSimulationMessageKey('object-category', …)` -- the string
+    //     `'object-category'` appears in no `src/` or `tests/` file outside
+    //     this one -- so these seven derived keys reach no surface at all.
+    //  2. Its copy is deliberate and argued. `default-locale-en.ts` records
+    //     why `sanitation` reads "Plumbing" and `food-service` reads
+    //     "Catering": the id names the *domain* while the option has to name
+    //     the things in it, and a player hunting a shower head looks for
+    //     plumbing. "Sanitation" and "Food Service" here were the id spelled
+    //     with a capital letter, which is this table's default and is right
+    //     for the other five.
+    //  3. ADR 0035 §7 decided it, and is Accepted. Its table assigns "the
+    //     seven category *names*" to `OBJECT_CATEGORY_NAME_KEYS`, "beside the
+    //     schema that declares them", and it explicitly **rejects** the
+    //     computed alternative: *"A convention computed at the call site --
+    //     `object.category.${category}.name` -- type-checks against any
+    //     string and would have shipped exactly that."* Deleting
+    //     `OBJECT_CATEGORY_NAME_KEYS` in favour of
+    //     `deriveSimulationMessageKey` is that rejected option, so it is an
+    //     ADR amendment and not a cleanup.
+    //
+    // What agreement does **not** fix: there are still two places an object
+    // category's English name is written, which is what this module's own
+    // docblock exists to prevent ("the group table below is the single place
+    // an enum value is declared"). Agreement makes the duplication harmless
+    // and gated; it does not make it right. The architectural fix is to
+    // exempt `objectCategorySchema` in this file's completeness test on ADR
+    // 0035 §7's grounds -- the category name is content, and this table is the
+    // wrong home for it -- which needs an edit to
+    // `tests/unit/simulation-message-keys.test.ts`'s `UNLABELLED` list and a
+    // line in ADR 0035. It is proposed rather than taken here.
     namespace: 'object-category',
     sourceFile: 'src/content/object-catalog.ts',
     declaration: 'objectCategorySchema',
     form: 'zod-enum',
     labels: {
       furniture: 'Furniture',
-      sanitation: 'Sanitation',
-      'food-service': 'Food Service',
+      sanitation: 'Plumbing',
+      'food-service': 'Catering',
       security: 'Security',
       storage: 'Storage',
       utility: 'Utility',
@@ -599,6 +783,36 @@ export function simulationEnumMessages(): Readonly<Record<LocalizationKey, strin
 /** Every key this module declares, in derivation order. */
 export function simulationEnumMessageKeys(): readonly LocalizationKey[] {
   return Object.keys(simulationEnumMessages());
+}
+
+/**
+ * Every stable id in one namespace, in the order this catalogue declares them.
+ *
+ * **The point of it is which module may ask.** A HUD panel that offers the
+ * player a *choice* out of one of these vocabularies -- the Regime panel's
+ * regime editor is the first, offering the seven `ActionCategory` members --
+ * needs the whole vocabulary and not only the members the current projection
+ * happens to carry, and it may not import `ACTION_CATEGORIES` itself: the HUD
+ * imports nothing from `src/simulation/**` (`AGENTS.md` boundary 1, gated by
+ * `tests/unit/ui-hud-messages.test.ts`). This module is already on the HUD's
+ * side of that line and is already where the same panel derives each member's
+ * label from, so the ids and the words come from one source rather than two.
+ *
+ * **It is a safe source rather than a convenient one**, and the reason is
+ * `validateSimulationEnumGroups` below: a group's `labels` keys must agree
+ * *exactly* with its `sourceFile`'s own declaration -- containment is not
+ * enough, which is what `additionalIds` exists to make possible -- so a
+ * category added to `ACTION_CATEGORIES` and not to this catalogue fails
+ * `tests/foundation/content-vocabulary-contract.test.ts` rather than quietly
+ * leaving a toggle off the panel.
+ *
+ * `additionalIds` are deliberately **not** included: they are ids the source
+ * declaration does not hold, with a reason, and a control that offered one
+ * would be offering a value the simulation's own vocabulary does not contain.
+ */
+export function simulationEnumIds(namespace: SimulationEnumNamespace): readonly string[] {
+  const group = SIMULATION_ENUM_GROUPS.find((candidate) => candidate.namespace === namespace);
+  return group === undefined ? [] : Object.keys(group.labels);
 }
 
 export type SimulationEnumGroupError =

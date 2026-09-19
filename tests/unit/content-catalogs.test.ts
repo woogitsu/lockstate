@@ -23,6 +23,37 @@ describe('default content catalogs load cleanly (imported at module scope; a fai
     }
   });
 
+  /**
+   * **The owner's ruling of 2026-08-29 (issue #585), which amends
+   * [ADR 0071](../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md):**
+   * capacity derived from a room's own floor area applies only to room types
+   * explicitly tagged as open areas, and the three the owner named are
+   * `room.yard`, `room.holding-cell` and `room.delivery-bay`.
+   *
+   * Pinned as the whole set and not as three memberships, because the failure
+   * this guards is a **fourth** room quietly acquiring the tag: adding
+   * `openArea: true` to `room.cell` is one word, it turns a bedless cell back
+   * into somewhere prisoners can be, and nothing else in the tree would say
+   * so. `RoomInstanceRegistry` reads the tag off the instance and can no more
+   * tell a correct tagging from an incorrect one than the arithmetic can.
+   *
+   * The behaviour the tag produces is `prisoners-room-instance-registry.test.ts`'s
+   * and is deliberately not asserted here against this same list -- a rule
+   * checked against the catalogue it is read from would agree with any tagging.
+   */
+  it('tags exactly the three room types the owner ruled are open areas', () => {
+    expect(defaultRoomContentRegistry.all().filter((room) => room.openArea === true).map((room) => room.id).sort()).toEqual([
+      'room.delivery-bay',
+      'room.holding-cell',
+      'room.yard',
+    ]);
+    // Absent rather than `false` on the other fifteen: "explicitly tagged" is
+    // the owner's own test, and an authored `openArea: false` would be a
+    // second way of saying the default, which is how a list like this comes to
+    // disagree with itself.
+    expect(defaultRoomContentRegistry.all().filter((room) => room.openArea === false)).toEqual([]);
+  });
+
   it('loads a representative object catalog', () => {
     expect(defaultObjectRegistry.size()).toBeGreaterThanOrEqual(10);
   });
@@ -77,10 +108,19 @@ describe('schema validation rejects malformed content with a clear, structured e
   });
 
   it('collects a schema error alongside a duplicate-id error in the same load() call', () => {
+    // The three rows carried `capabilities: []` as a don't-care filler until
+    // `objectDefinitionSchema` gained `.min(1)`, which refuses an empty list
+    // outright (an object with no capabilities makes every room requiring it
+    // permanently unsatisfiable -- see the field's own comment and
+    // `tests/foundation/content-vocabulary-contract.test.ts`). With `[]` every
+    // row now fails on *that* instead, which is the wrong subject: this case
+    // is about one duplicate id and one bad `schemaVersion` being collected in
+    // the same pass. A real capability keeps the two intended faults the only
+    // faults.
     const { registry, errors } = loadObjectCatalog([
-      { schemaVersion: 1, id: 'object.ok', numericId: 1, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] },
-      { schemaVersion: 1, id: 'object.ok', numericId: 2, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] }, // duplicate id
-      { schemaVersion: 99, id: 'object.bad', numericId: 3, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] }, // bad schema version
+      { schemaVersion: 1, id: 'object.ok', numericId: 1, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] },
+      { schemaVersion: 1, id: 'object.ok', numericId: 2, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] }, // duplicate id
+      { schemaVersion: 99, id: 'object.bad', numericId: 3, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] }, // bad schema version
     ]);
 
     expect(registry.size()).toBe(1);

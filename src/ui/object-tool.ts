@@ -1,5 +1,6 @@
 import type { ObjectToolPort, TileRect } from '../rendering/build/area-picking';
-import type { HudObjectGesture, HudWorldObjectSource } from './hud';
+import type { BuildEdgeId } from '../rendering/build/edge-picking';
+import type { BuildPanelTarget, HudObjectGesture, HudWorldObjectSource } from './hud';
 
 /**
  * What the preview covers while the tool is armed to remove: one tile.
@@ -68,8 +69,26 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
    */
   private gestures: ((gesture: HudObjectGesture) => void) | undefined;
 
+  /**
+   * Where the live aim goes, attached after mounting exactly as `gestures` is
+   * and for the same reason (#550).
+   *
+   * The sibling of `BuildTool.attachReadout` and `RoomTool.attachReadout`, and
+   * the field this class spent phase 1 without: its `target` was declared and
+   * empty, so the Build panel's one live readout had nothing to say while an
+   * object or a removal was armed -- and, because the wall tool was disarmed
+   * without withdrawing its own last aim, what it said instead was a tile
+   * belonging to a gesture the player had already finished.
+   */
+  private readout: ((target: BuildPanelTarget | undefined) => void) | undefined;
+
   public attachGestures(report: (gesture: HudObjectGesture) => void): void {
     this.gestures = report;
+  }
+
+  /** Points the live readout at the mounted panel. */
+  public attachReadout(readout: (target: BuildPanelTarget | undefined) => void): void {
+    this.readout = readout;
   }
 
   /**
@@ -106,6 +125,9 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
     this.removing = options.removing ?? this.removing;
     this.armed =
       armed && (this.removing || (this.definitionId !== undefined && this.tileFootprint !== undefined));
+    // A tool that is not armed is aimed at nothing, and says so -- the rule
+    // `BuildTool.setArmed` records in full (#550).
+    if (!this.armed) this.readout?.(undefined);
   }
 
   public isArmed(): boolean {
@@ -133,17 +155,32 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
   }
 
   /**
-   * The pointer moved. Reported to nobody today, and declared anyway.
+   * The pointer moved. Reported as the **anchor tile**, which is what a press
+   * here means (#550).
    *
-   * `ObjectToolPort.target` is optional and this implementation is the honest
-   * minimum: the footprint rectangle drawn in the world *is* the readout, and
-   * the Build panel's target line is edge-shaped (`BuildPanelTarget` carries an
-   * `edge` and a segment count), so routing a tile through it would print
-   * "north" beside a bed. Giving the panel an object-shaped readout is a
-   * surface change with its own layout budget, and it is not phase 1's.
+   * The rectangle the scene hands in is the *preview*: the footprint an object
+   * would claim, or one tile while removing. What the readout answers is
+   * "where", and where is the tile the press names -- the same one `place`
+   * reports and the same one the command carries. So the two extra numbers are
+   * dropped here rather than printed: a line reading the footprint would be
+   * saying what the ghost in the world is already showing, in the panel's
+   * tightest row, and it would say `1 × 1` for every removal.
+   *
+   * This used to be empty, and its comment gave the reason: `BuildPanelTarget`
+   * was edge-shaped, so "routing a tile through it would print 'north' beside a
+   * bed". That was true of the shape and false as a conclusion -- what it
+   * argued for was widening the shape, which is what #550 did. The cost of
+   * leaving it empty was not a missing line but a *wrong* one, because the
+   * readout it declined to write to was still showing the wall tool's last
+   * aim.
    */
-  public target(_rect: TileRect | undefined): void {
-    // Intentionally empty; see the comment above.
+  public target(rect: TileRect | undefined): void {
+    if (this.readout === undefined) return;
+    if (rect === undefined) {
+      this.readout(undefined);
+      return;
+    }
+    this.readout({ x: rect.tileX, y: rect.tileY });
   }
 
   /**
@@ -151,18 +188,30 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
    *
    * Which command is decided **here** and not in the scene, because this is the
    * layer that holds the mode and the scene may not decide what a press means.
-   * Removing reports the tile alone; placing reports the tile and the selected
-   * buildable.
+   * Removing reports the tile and, since ADR 0106, the edge the same press
+   * resolved to; placing reports the tile and the selected buildable.
+   *
+   * **`edge` is forwarded only while removing.** An object has no edge -- the
+   * gesture is one press on one tile -- so a `place` report carries none, and
+   * `tile.edge` is simply not read on that arm. `WorldScene` computes it
+   * unconditionally (its own comment says why: this call site cannot tell in
+   * advance which arm will read it), so this method is where the placing arm's
+   * "no edge" becomes true rather than the scene's.
    *
    * A disarmed tool reports nothing. A tool armed to place with no selection
    * also reports nothing, and that case is unreachable -- `setArmed` refuses to
    * arm to place without both halves -- so returning keeps it unreachable rather
    * than asserting it.
    */
-  public place(tile: { readonly tileX: number; readonly tileY: number }): void {
+  public place(tile: { readonly tileX: number; readonly tileY: number; readonly edge?: BuildEdgeId }): void {
     if (!this.armed) return;
     if (this.removing) {
-      this.gestures?.({ kind: 'remove', x: tile.tileX, y: tile.tileY });
+      this.gestures?.({
+        kind: 'remove',
+        x: tile.tileX,
+        y: tile.tileY,
+        ...(tile.edge === undefined ? {} : { edge: tile.edge }),
+      });
       return;
     }
     const definitionId = this.definitionId;

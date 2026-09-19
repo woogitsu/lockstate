@@ -7,10 +7,71 @@ export const STAFF_ROLE_CATALOG_SCHEMA_VERSION = 1 as const;
 export const staffDepartmentSchema = z.enum(['administration', 'security', 'medical', 'operations']);
 export type StaffDepartment = z.infer<typeof staffDepartmentSchema>;
 
+/**
+ * **Which departments may be put on a security post**
+ * ([ADR 0053](../../docs/adr/0053-who-may-stand-a-security-post.md) decision 1,
+ * closing issue #456).
+ *
+ * The four `department` values were authored with #23 and, until this list
+ * existed, **not one of them changed any outcome**: `HireStaff` refused only an
+ * id the registry does not declare, `GuardRoster.hire` stored whatever it was
+ * given, and `DeploymentSystem`, `IncidentResponseSystem` and `SearchSystem`
+ * each claimed from `GuardRoster.unassignedGuardIds()` with no filter at all.
+ * Measured on `bb3a01e` through the real command path: five hires of
+ * `administrator`, `nurse`, `kitchen-staff`, `doctor` and `warden` produced
+ * **zero refusals**, put entity 0 (`staff-role.administrator`) `on-post` in
+ * `security-sector.prison`, and made the coverage report read
+ * `required: 1, assigned: 1, shortage: 0`. Over 30,000 ticks that prison had
+ * four riots and contained every one of them with nobody injured; under this
+ * list it has six and loses all six, which is what a prison with no guards
+ * should look like.
+ *
+ * **It lives in the catalogue rather than in the security module** because it
+ * is a statement about this file's own vocabulary -- which of the departments
+ * declared three lines above is a *duty* department -- and `AGENTS.md`
+ * boundary 6 puts content definitions in data modules rather than in condition
+ * chains inside a system. The *mechanism* that reads it is
+ * `src/simulation/security/post-eligibility.ts`; the tunable is here.
+ *
+ * **Why the department and not a new authored field.** A
+ * `canHoldSecurityPost` boolean per role would let a `security` role be
+ * declared post-ineligible -- a CCTV operator, a records officer with a
+ * clearance -- and no role in the catalogue today is that. Adding the field
+ * would bump `STAFF_ROLE_CATALOG_SCHEMA_VERSION` and oblige every externally
+ * authored entry to carry it, in service of a distinction nothing needs yet.
+ * ADR 0053 records the day it becomes worth having.
+ *
+ * **Why not `permissions` and why not `baseSecurityClearance`.** Both were
+ * measured against the catalogue and both give the wrong answer.
+ * `'security-wing'` is held by `warden` as well as `guard` and
+ * `security-chief`, so a permissions rule makes the warden a riot responder --
+ * and `permissions` is documented above as `RouteContext.permissions`, which
+ * is where a role may *walk*, not what it may *do*. `baseSecurityClearance`
+ * orders the roles `warden 10 > security-chief 8 > administrator 6 = doctor 6
+ * > guard 5`, which ranks the administrator above the guard at guarding.
+ */
+export const POST_ELIGIBLE_STAFF_DEPARTMENTS: readonly StaffDepartment[] = ['security'];
+
+/**
+ * **Whole minor units, and `.int()` is load-bearing rather than tidy.**
+ *
+ * This schema admitted any non-negative number until payroll landed, and every
+ * authored figure was already an integer -- so no catalogue value moves here.
+ * What moves is what a *fractional* one would do. `minPerDay` is money: it is
+ * charged through `Treasury.spend`, which requires a safe integer and refuses
+ * anything else, so a wage of `80.5` would have made every hire of that role
+ * answer `insufficient-funds` for ever with a full treasury, and it now also
+ * sums into `PayrollSystem`'s daily bill, where a float would put
+ * non-associative addition into a balance a save carries and the determinism
+ * fingerprint hashes (`docs/DETERMINISM.md` makes no exception for money).
+ *
+ * Rejecting it at the catalogue is the only place the refusal is legible: the
+ * failure it prevents surfaces nowhere near the number that caused it.
+ */
 export const wageBandSchema = z
   .object({
-    minPerDay: z.number().nonnegative(),
-    maxPerDay: z.number().nonnegative(),
+    minPerDay: z.number().int().nonnegative(),
+    maxPerDay: z.number().int().nonnegative(),
   })
   .strict()
   .refine((band) => band.maxPerDay >= band.minPerDay, { message: 'maxPerDay must be >= minPerDay' });
@@ -55,6 +116,22 @@ export const staffRoleDefinitionSchema = z
   .strict();
 
 export type StaffRoleDefinition = z.infer<typeof staffRoleDefinitionSchema>;
+
+/**
+ * Whether a staff member hired into `role` may be claimed for a security duty
+ * -- standing a sector post, answering an incident, or running a contraband
+ * search ([ADR 0053](../../docs/adr/0053-who-may-stand-a-security-post.md)).
+ *
+ * A predicate over the *definition* rather than over an id, so the one caller
+ * that has already resolved a role -- `StaffHiringService.hire` -- does not
+ * look it up a second time in a registry it was handed. The id-shaped form is
+ * `isPostEligibleStaffRoleId` in `src/simulation/security/post-eligibility.ts`,
+ * which resolves through a registry and answers `false` for an id nothing
+ * declares.
+ */
+export function isPostEligibleStaffRole(role: StaffRoleDefinition): boolean {
+  return POST_ELIGIBLE_STAFF_DEPARTMENTS.includes(role.department);
+}
 
 const rawStaffRoleDefinitions: readonly StaffRoleDefinition[] = [
   {

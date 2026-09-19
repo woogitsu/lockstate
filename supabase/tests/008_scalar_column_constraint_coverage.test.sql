@@ -32,10 +32,53 @@
 -- `integer`, `bigint`, `smallint`, `numeric`, `double precision`, and
 -- `timestamp with time zone`.
 --
--- WHAT THIS SUITE DOES NOT ASSERT. Not that any bound is the right number, and
--- not that any constraint refuses anything -- suites 001, 002, 004 and 006 do
--- that for the columns they created. This one asserts coverage and
--- accountability, which no other suite holds.
+-- WHAT THIS SUITE DOES NOT ASSERT, AND WHERE THAT IS ASSERTED INSTEAD. Not
+-- that any bound is the right number, and not that any constraint refuses
+-- anything. This one asserts coverage and accountability, which no other suite
+-- holds.
+--
+-- This paragraph used to end "suites 001, 002, 004 and 006 do that for the
+-- columns they created", and that was false for nine of the thirteen
+-- constraint objects named below. It was found by mutation rather than by
+-- reading: every CHECK in `public` was dropped and re-added under the same name
+-- over the same `conkey` with a predicate admitting everything
+-- (`check (num_nonnulls(<same columns>) >= 0)`), and nine of these thirteen
+-- survived with all 287 assertions green -- `entitlement_events_quantity_check`
+-- (the SQL half of `MAX_SAVE_SLOTS_PER_GRANT`),
+-- `entitlement_events_schema_version_check`, `challenge_definitions_window`,
+-- `entitlement_events_expiry_after_occurrence`,
+-- `challenge_definitions_version_check`,
+-- `prisons_current_revision_non_negative`, `prisons_slot_index_positive`,
+-- `save_versions_revision_positive` and
+-- `save_versions_byte_size_non_negative`. This suite cannot see that, and it is
+-- right not to try: an in-place rewrite leaves the catalog entry it reads
+-- looking identical. #280 recorded the in-place-rewrite gap as a residual, and
+-- this sentence was the half of that residual that was untrue.
+--
+-- Where each of the thirteen is now driven, in both directions, verified by
+-- mutating each one alone and watching the named assertion go red:
+--
+--   suite 001  prisons_slot_index_positive, prisons_current_revision_non_negative,
+--              save_versions_revision_positive, save_versions_byte_size_non_negative
+--   suite 002  entitlement_events_quantity_check, entitlement_events_schema_version_check,
+--              entitlement_events_expiry_after_occurrence, challenge_definitions_window,
+--              challenge_definitions_version_check,
+--              challenge_submissions_challenge_version_check,
+--              challenge_submissions_ranked_score_finite
+--   suite 006  save_versions_save_schema_version_check, user_settings_schema_version_check
+--
+-- Suite 004 is no longer named here: it drives capacity arithmetic, not any
+-- constraint object this suite declares.
+--
+-- WHAT REMAINS OPEN, stated as a subject rather than as a tally so that adding
+-- a column cannot silently make it false. The mapping above is a LIST, and a
+-- list is exactly what this suite is shaped not to be: a scalar column added
+-- tomorrow gets a `mechanism` row here, this suite's rule confirms the object
+-- exists and constrains the column, and nothing anywhere will drive it. There
+-- is no rule that can demand a behavioural probe -- a probe needs a value, and
+-- only a person knows which value is one past the bound -- so the honest
+-- statement is that coverage is enforced and refusal is remembered. An
+-- `unconstrained-by-decision` entry has nothing to drive by construction.
 --
 -- EXECUTED against plain PostgreSQL via `pnpm verify:sql`.
 
@@ -71,13 +114,48 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('save_versions',         'revision',                'range-check', 'save_versions_revision_positive', null),
   ('save_versions',         'save_schema_version',     'range-check', 'save_versions_save_schema_version_check', null),
   ('user_settings',         'settings_schema_version', 'range-check', 'user_settings_schema_version_check', null),
+  ('telemetry_events',      'consent_version',         'range-check', 'telemetry_events_consent_version_check', null),
 
-  -- Pinned rather than bounded, and deliberately the only one: the ledger's
-  -- schema version is part of ADR 0008's event contract, so a new version needs
-  -- a migration by design. The two other `*_schema_version` columns are ranges
-  -- for the opposite reason -- a pin would refuse a version before the
-  -- migration admitting it could exist.
+  -- The retention audit's three counted columns (20260904090000, ADR 0046
+  -- section 7 item 1). `retention_days` is bounded ABOVE as well as below and
+  -- that is the one worth reading twice: a run recorded with 100,000 days is a
+  -- run that retained everything, and an audit trail should not be able to
+  -- describe one as retention. `deleted_count` is the count the DELETE itself
+  -- reported, so its floor is the only bound available -- there is no ceiling
+  -- on how many rows a window may legitimately reach.
+  ('telemetry_retention_runs', 'run_id',              'range-check', 'telemetry_retention_runs_run_id_check', null),
+  ('telemetry_retention_runs', 'retention_days',      'range-check', 'telemetry_retention_runs_retention_days_check', null),
+  ('telemetry_retention_runs', 'deleted_count',       'range-check', 'telemetry_retention_runs_deleted_count_check', null),
+
+  -- `claimed_occurred_at` is the client's `occurredAt` in epoch milliseconds,
+  -- deliberately a `bigint` and not a `timestamptz` so that no retention window
+  -- can key on it (ADR 0046 section 7 item 1: the wire schema is
+  -- `z.number().int().min(0)` with no upper bound, from an unauthenticated
+  -- endpoint, so a batch dated the year 4000 is admissible). Bounded at
+  -- `Number.MAX_SAFE_INTEGER`, the ceiling `z.number().int()` can actually
+  -- carry and the same one `tickSchema` uses.
+  ('telemetry_events',      'claimed_occurred_at',     'range-check', 'telemetry_events_claimed_occurred_at_check', null),
+
+  -- The two sample rates. Both are `double precision` bounded to [0, 1], which
+  -- refuses NaN and both infinities for free -- every comparison against NaN is
+  -- false -- so neither needs the separate `finite-check`
+  -- `challenge_submissions.ranked_score` carries. `registry_sample_rate` is the
+  -- receiver's own registry value and the only one an aggregate may weight by;
+  -- `claimed_sample_rate` is the caller's claim and is named so that nothing
+  -- multiplies by it (ADR 0046 section 7 item 7).
+  ('telemetry_events',      'registry_sample_rate',    'range-check', 'telemetry_events_registry_sample_rate_check', null),
+  ('telemetry_events',      'claimed_sample_rate',     'range-check', 'telemetry_events_claimed_sample_rate_check', null),
+
+  -- Pinned rather than bounded, and there are now two. The ledger's schema
+  -- version is part of ADR 0008's event contract, so a new version needs a
+  -- migration by design; `telemetry_events.schema_version` is pinned because
+  -- `telemetryEnvelopeSchema` declares `z.literal(TELEMETRY_SCHEMA_VERSION)`,
+  -- so the ingest refuses anything but 1 before the column is reached and a
+  -- range here would be looser than the code that feeds it. The two other
+  -- `*_schema_version` columns are ranges for the opposite reason -- a pin
+  -- would refuse a version before the migration admitting it could exist.
   ('entitlement_events',    'schema_version',          'pinned-literal', 'entitlement_events_schema_version_check', null),
+  ('telemetry_events',      'schema_version',          'pinned-literal', 'telemetry_events_schema_version_check', null),
 
   -- The one float. `double precision` admits NaN and both infinities, and
   -- PostgreSQL orders NaN above every other float -- above Infinity -- so on
@@ -91,7 +169,19 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('challenge_definitions', 'opens_at',                'relational-check', 'challenge_definitions_window', null),
   ('challenge_definitions', 'closes_at',               'relational-check', 'challenge_definitions_window', null),
   ('entitlement_events',    'occurred_at',             'relational-check', 'entitlement_events_expiry_after_occurrence', null),
-  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null);
+  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null),
+
+  -- The retention audit's two timestamps, constrained against each other by
+  -- `telemetry_retention_runs_window` for exactly the reason the two rows above
+  -- are: a `cutoff` at or after `ran_at` is a run that deleted rows it had just
+  -- accepted, and that is a property of their ordering rather than of where
+  -- either sits in the calendar. Note that neither is an
+  -- `unconstrained-by-decision` entry even though both are server-written: they
+  -- are genuinely constrained, so declaring them unconstrained would fail this
+  -- suite's own "no column recorded as unconstrained has quietly gained a
+  -- constraint" rule.
+  ('telemetry_retention_runs', 'ran_at',              'relational-check', 'telemetry_retention_runs_window', null),
+  ('telemetry_retention_runs', 'cutoff',              'relational-check', 'telemetry_retention_runs_window', null);
 
 -- Unconstrained, with reasons, and each one declaring whether a client role can
 -- write it. Two distinct kinds, and the difference matters: the first kind is
@@ -127,18 +217,39 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason, clien
   ('profiles',              'created_at',    'unconstrained-by-decision', null,
    'Server-defaulted; not client-writable since 20260824140000, which replaced this table''s table-level INSERT and UPDATE grants with per-column lists that omit created_at.', false),
 
-  -- (b) Client-writable, and that is a finding rather than a decision. A
-  --     client can set these at insert time and walk `updated_at` backwards --
-  --     reproduced in #194, whose `updated_at` half is still open. They are
-  --     listed here so this suite records the open finding instead of reading
-  --     as though the state were intended; the entries move to a real mechanism
-  --     when that half is acted on.
+  -- (b) These three were group (b) -- "client-writable, and that is a finding
+  --     rather than a decision" -- for as long as #194's `updated_at` half was
+  --     open, and the note here said the entries "move to a real mechanism when
+  --     that half is acted on". 20260826130000 acted on it, and this is what
+  --     moving looks like: the server stamps all three from a
+  --     `BEFORE INSERT OR UPDATE` trigger and none of them is in a client
+  --     grant, so `client_writable` is now false and the last assertion in this
+  --     suite is what forced the flip. Group (b) is empty; nothing in this
+  --     schema is now recorded as unconstrained *and* client-writable.
+  --
+  --     Still `unconstrained-by-decision` rather than a mechanism, and the
+  --     distinction is the point: a trigger decides *who writes* the column,
+  --     not what range it may hold. An absolute calendar bound on a timestamp
+  --     is the same product question group (a) declines to answer, and it is
+  --     now declined for the same reason -- no client can reach the column.
   ('prisons',               'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE by explicit grant. Whether a client may set its own updated_at is the decision in #194; a client-supplied value cannot be trusted for ordering.', true),
+   'Server-stamped by prisons_stamp_updated_at since 20260826130000 (#194), which also revoked the grants that reached it. An absolute calendar bound would be a product decision.', false),
   ('profiles',              'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via the per-column INSERT and UPDATE grants 20260824140000 left in place. Open finding #194.', true),
+   'Server-stamped by profiles_stamp_updated_at since 20260826130000 (#194); the per-column INSERT and UPDATE grants no longer name it.', false),
   ('user_settings',         'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via table-level INSERT and UPDATE; 20260824140000 deliberately changed nothing here. Open finding #194.', true);
+   'Server-stamped by user_settings_stamp_updated_at since 20260826130000 (#194), which replaced this table''s table-level INSERT and UPDATE with per-column lists that omit it.', false),
+
+  -- (a3) The telemetry ingest's server stamp (20260904090000, ADR 0046
+  --      section 7 item 1). Group (a)'s shape exactly: `default now()`, no
+  --      grant for any role, and the only writer is a SECURITY DEFINER
+  --      function that never names the column -- so an ingest record's own
+  --      `receivedAt`, which the Worker does send, is ignored rather than
+  --      honoured. Suite 012 drives that direction by sending one dated 1970.
+  --      An absolute calendar bound is the same product question group (a)
+  --      declines, and it is declined here for the stronger reason: the value
+  --      is `now()` by construction.
+  ('telemetry_events',      'received_at',   'unconstrained-by-decision', null,
+   'Server-defaulted with now(); no grant for any role, and record_telemetry_events() never names the column, so an ingest record''s claimed receivedAt is ignored. It is the only time value a retention window may key on (ADR 0046 section 7 item 1).', false);
 
 -- --- The enumeration, from the catalog --------------------------------
 

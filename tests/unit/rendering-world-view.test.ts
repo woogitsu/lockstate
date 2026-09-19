@@ -8,6 +8,7 @@ import { buildRowIndex, type RowContent } from '../../src/rendering/world/row-in
 import type { RenderStructure } from '../../src/rendering/world/structures';
 import { structuresFromConstruction } from '../../src/rendering/world/structures';
 import { createTileSample, WorldRenderView, type TileSample } from '../../src/rendering/world/world-view';
+import { roomPerimeterEnclosure } from '../../src/simulation/rooms/enclosure';
 
 /**
  * The renderer's world view has to agree with the simulation's world about
@@ -58,6 +59,87 @@ describe('world render view', () => {
 
     view.readTile(4, 4, sample);
     expect(sample.zoning).toBe(1);
+  });
+
+  /**
+   * Issue #493. `roomPerimeterEnclosure` used to take a `SparseWorld`
+   * specifically; it now takes `RoomEdgeReader`, the two-method port
+   * `WorldRenderView` implements below, so a pending rectangle's own
+   * enclosure can be classified from the renderer's side of the worker
+   * boundary against the identical function `RoomZoningService.zone` refuses
+   * an open room by -- rather than a second implementation of the same
+   * perimeter walk that could silently disagree with it (the class of defect
+   * #93 found between two independent readings of tile ownership).
+   */
+  describe('room enclosure, read from the renderer\'s own projection', () => {
+    /** Walls the whole perimeter of an inclusive rectangle, on the two edges the world stores. */
+    function wallPerimeter(
+      world: SparseWorld,
+      rectangle: { readonly x: number; readonly y: number; readonly width: number; readonly height: number },
+    ): void {
+      const right = rectangle.x + rectangle.width - 1;
+      const bottom = rectangle.y + rectangle.height - 1;
+      for (let x = rectangle.x; x <= right; x += 1) {
+        world.setTopEdge(tile(x, rectangle.y), 1);
+        world.setTopEdge(tile(x, bottom + 1), 1);
+      }
+      for (let y = rectangle.y; y <= bottom; y += 1) {
+        world.setLeftEdge(tile(rectangle.x, y), 1);
+        world.setLeftEdge(tile(right + 1, y), 1);
+      }
+    }
+
+    it('reads a tile\'s own north and west edges back out, agreeing with readTile', () => {
+      const view = WorldRenderView.fromSnapshot(buildWorld().snapshot());
+
+      expect(view.getTopEdge(tile(2, 3))).toBe(1);
+      expect(view.getLeftEdge(tile(2, 3))).toBe(0);
+      expect(view.getLeftEdge(tile(5, 3))).toBe(1);
+      expect(view.getTopEdge(tile(5, 3))).toBe(0);
+    });
+
+    it('reads 0 for a chunk the simulation has not materialised, exactly as SparseWorld does', () => {
+      const world = buildWorld();
+      const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+      expect(view.getTopEdge(tile(500, 500))).toBe(0);
+      expect(view.getLeftEdge(tile(500, 500))).toBe(0);
+      expect(world.getTopEdge(tile(500, 500))).toBe(0);
+    });
+
+    it('agrees with the simulation about a sealed rectangle', () => {
+      const world = new SparseWorld(8);
+      world.load(chunk);
+      const rectangle = { x: 1, y: 1, width: 4, height: 3 };
+      wallPerimeter(world, rectangle);
+      const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+      expect(roomPerimeterEnclosure(world, rectangle)).toEqual({ enclosure: 'sealed' });
+      expect(roomPerimeterEnclosure(view, rectangle)).toEqual({ enclosure: 'sealed' });
+    });
+
+    it('agrees with the simulation about an open rectangle, gap and all', () => {
+      const world = new SparseWorld(8);
+      world.load(chunk);
+      const rectangle = { x: 1, y: 1, width: 4, height: 3 };
+      wallPerimeter(world, rectangle);
+      // Open one edge on the east side after sealing the rest.
+      world.setLeftEdge(tile(5, 2), 0);
+      const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+      const fromSimulation = roomPerimeterEnclosure(world, rectangle);
+      const fromRenderer = roomPerimeterEnclosure(view, rectangle);
+      expect(fromSimulation).toEqual({ enclosure: 'open', gap: { tile: tile(5, 2), edge: 'west' } });
+      expect(fromRenderer).toEqual(fromSimulation);
+    });
+
+    it('reports an unmaterialised rectangle as open, exactly as an unloaded SparseWorld chunk does', () => {
+      const view = WorldRenderView.empty();
+      expect(roomPerimeterEnclosure(view, { x: 0, y: 0, width: 3, height: 3 })).toEqual({
+        enclosure: 'open',
+        gap: { tile: tile(0, 0), edge: 'north' },
+      });
+    });
   });
 
   it('reports unmaterialised land as not loaded rather than as empty ground', () => {

@@ -13,6 +13,7 @@ import {
   type ProtocolDecodeErrorCode,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol';
+import { expectOk } from '../helpers/expect-ok';
 
 const requestEnvelope = {
   protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -173,16 +174,69 @@ describe('simulation worker protocol', () => {
             staffUnassigned: 1,
             rooms: 6,
             roomCapacity: 158,
+            // Deliberately **not** 158. The total counts every registered
+            // instance's resident capacity, including an infirmary's medical
+            // beds; this counts only the rooms intake would house somebody in.
+            // A fixture that gave both the same figure could not tell a
+            // decoder that read the wrong one apart from a correct one.
+            accommodationCapacity: 150,
             roomOccupants: 3,
+            // Deliberately **not** 3, for `accommodationCapacity`'s reason one
+            // field up. `roomOccupants` is assignments and this is the
+            // residency places that currently exist (issue #585); a bed taken
+            // out from under a sitting resident separates them, and a fixture
+            // that gave both the same figure could not tell a decoder reading
+            // the wrong one apart from a correct one.
+            occupiedPlaces: 2,
+            // Three distinct figures summing to 4, which is this payload's own
+            // `prisoners` -- so a decoder reading the wrong one of the three,
+            // or deriving any of them from another field, cannot pass. They
+            // are the guard-coverage rungs the population is standing on
+            // (issue #588).
+            prisonersCovered: 1,
+            prisonersUnderstaffed: 2,
+            prisonersUnguarded: 1,
             activeIncidents: 0,
+            // Agrees with `activeIncidents: 0` above -- nothing open, nothing
+            // to name (issue #506 finding 2).
+            activeIncidentType: undefined,
             contrabandDiscovered: 7,
+            // Deliberately `false` against a `roomCapacity` of 158 above, and
+            // the pair is the point: the two used to be asked the same
+            // question on two sides of the boundary and a fixture where they
+            // agreed could not tell a host that re-derived the predicate from
+            // `roomCapacity === 0` apart from one that read it
+            // (`statusCountsSchema.isFreshUnfurnishedPrison`). This prison is
+            // furnished on both readings, which is the ordinary case; the
+            // prison where they come apart is
+            // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`.
+            isFreshUnfurnishedPrison: false,
             treasuryMinorUnits: 24_920,
-            // Derived from this payload's own `tick` and `roomOccupants`
-            // rather than picked: three occupied places, thirteen ticks of the
-            // day served, `floor(300 x 3 x 13 / 2400)` = 4 (#29). A fixture
+            // Derived from this payload's own `tick` and `occupiedPlaces`
+            // rather than picked: two occupied places, thirteen ticks of the
+            // day served, `floor(300 x 2 x 13 / 2400)` = 3 (#29). A fixture
             // that claimed a rounder figure would be asserting a state no tick
             // in this envelope could produce.
-            stateIncomeAccruedTodayMinorUnits: 4,
+            //
+            // **It was 4 and derived from `roomOccupants`**, which was right
+            // while the two counts were the same number by construction. Issue
+            // #585 made the state pay per place rather than per assignment, so
+            // an accrual derived from the assignment count now describes a
+            // prison this payload does not hold.
+            stateIncomeAccruedTodayMinorUnits: 3,
+            // Five guards on this payload's own roster at the catalogue's
+            // 80-a-day guard band: 5 x 80 = 400 (ADR 0042 step 3). Chosen to
+            // agree with `staff: 5` above rather than picked, for the reason
+            // the accommodation comment gives -- a figure unrelated to the rest
+            // of the envelope could not tell a decoder reading the wrong field
+            // apart from one reading the right one.
+            dailyWageBillMinorUnits: 400,
+            // A prison paying its way owes nothing, which is the reading every
+            // other field in this envelope describes: 24,920 in the treasury
+            // and no shortfall anywhere. The non-zero case is measured against
+            // a real runtime in tests/unit/economy-payroll.test.ts, not
+            // asserted from a hand-written envelope.
+            unpaidWagesMinorUnits: 0,
           },
         },
       },
@@ -208,7 +262,12 @@ describe('simulation worker protocol', () => {
       {
         ...eventEnvelope,
         kind: 'simulation/event',
-        payload: { tick: 12, event: structuredPayload },
+        // A typed event rather than the opaque `versionedPayload` this kind
+        // used to carry: issue #507 gave the family its first producers and a
+        // closed, discriminated vocabulary in its place, so that a member
+        // added to it fails to compile until somebody has decided what it says
+        // to a player. See `simulationEventSchema` in `protocol/types.ts`.
+        payload: { tick: 12, event: { sequence: 1, tick: 11, type: 'prisoners.discharged', count: 2 } },
       },
       {
         ...responseEnvelope,
@@ -371,8 +430,20 @@ describe('simulation worker protocol', () => {
       staffUnassigned: 1,
       rooms: 6,
       roomCapacity: 158,
+      // Present for the same reason `treasuryMinorUnits` and
+      // `stateIncomeAccruedTodayMinorUnits` below are: without it every payload
+      // here is already invalid for a *missing count*, so each refusal would
+      // pass while proving nothing about the thing it names. Same figure as the
+      // fixture at the top of this file, for the same reason it is that figure
+      // there.
+      accommodationCapacity: 150,
       roomOccupants: 3,
+      // Present for the same reason every count in this local copy is, and
+      // carrying the same figure as the fixture at the top of this file for
+      // the same reason it carries it there (issue #585).
+      occupiedPlaces: 2,
       activeIncidents: 0,
+      activeIncidentType: undefined,
       contrabandDiscovered: 7,
       // Present so each refusal below is refused for the reason it names.
       // Without it every payload here is already invalid for a *missing
@@ -386,7 +457,17 @@ describe('simulation worker protocol', () => {
       // refusal would pass while proving nothing about the thing it names
       // (#29 added this field to the projection). Same figure as the fixture
       // at the top of this file, for the same reason it is that figure there.
-      stateIncomeAccruedTodayMinorUnits: 4,
+      stateIncomeAccruedTodayMinorUnits: 3,
+      // The same reason a fourth and a fifth time, and the reason this local
+      // copy exists at all: ADR 0042 step 3 added two counts to the projection,
+      // and until they were added here every payload below was invalid for two
+      // *missing counts* -- so the `replyTo` case in particular passed while
+      // proving nothing about `replyTo`. That is the failure the paragraph
+      // above records #96 causing once already, repeated by #29 and repeated
+      // again here; the fixture is a copy, so it has to be brought forward by
+      // hand each time. Same figures as the fixture at the top of this file.
+      dailyWageBillMinorUnits: 400,
+      unpaidWagesMinorUnits: 0,
     };
 
     // Nothing ever requests this message, so ADR 0003 decision 2 says it must
@@ -463,11 +544,31 @@ describe('simulation worker protocol', () => {
       staffUnassigned: 0,
       rooms: 0,
       roomCapacity: 0,
+      accommodationCapacity: 0,
       roomOccupants: 0,
+      // A prison at tick 0 has furnished nothing and houses nobody, so it
+      // holds no place either (issue #585).
+      occupiedPlaces: 0,
+      // A prison at tick 0 has nobody in a sector, so no rung holds anybody
+      // (issue #588). Zero for the same reason every count above is.
+      prisonersCovered: 0,
+      prisonersUnderstaffed: 0,
+      prisonersUnguarded: 0,
       activeIncidents: 0,
+      activeIncidentType: undefined,
       contrabandDiscovered: 0,
+      // A prison at tick 0 has furnished nothing, so it is fresh -- the same
+      // reading as `roomCapacity: 0` above, which is the one case in which the
+      // registry figure and the catalogue fan-out cannot disagree
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`).
+      isFreshUnfurnishedPrison: true,
       treasuryMinorUnits: 25_000,
       stateIncomeAccruedTodayMinorUnits: 0,
+      // A session that has hired nobody: the whole of this fixture is a prison
+      // at tick 0 with its opening balance untouched, so both payroll counts
+      // (ADR 0042 step 3) are 0 for the same reason every count above is.
+      dailyWageBillMinorUnits: 0,
+      unpaidWagesMinorUnits: 0,
     };
     const withRefusal = (refusal: unknown): unknown => ({
       ...eventEnvelope,
@@ -476,7 +577,7 @@ describe('simulation worker protocol', () => {
     });
 
     const accepted = decodeWorkerToMainMessage(withRefusal({ sequence: 3, tick: 9, reason: 'build.unowned-land' }));
-    expect(accepted.ok, accepted.ok ? '' : JSON.stringify(accepted.error)).toBe(true);
+    expectOk(accepted, 'the status-counts publication that carries a refusal');
 
     // Absent is valid and is what a session that has refused nothing sends.
     const withoutRefusal = decodeWorkerToMainMessage({
@@ -484,13 +585,13 @@ describe('simulation worker protocol', () => {
       kind: 'simulation/status-counts',
       payload: { tick: 12, schemaVersion: 1, counts },
     });
-    expect(withoutRefusal.ok, withoutRefusal.ok ? '' : JSON.stringify(withoutRefusal.error)).toBe(true);
+    expectOk(withoutRefusal, 'the publication a session that has refused nothing sends');
 
     // Every declared reason is accepted, so the enum on the wire and the
     // reasons the two systems produce cannot drift apart silently.
     for (const reason of REFUSAL_REASONS) {
       const decoded = decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason }));
-      expect(decoded.ok, `${reason} was rejected by the decoder`).toBe(true);
+      expectOk(decoded, `the wire form of the declared reason ${reason}`);
     }
 
     // A reason nobody declared. This is the case that matters: the mapping

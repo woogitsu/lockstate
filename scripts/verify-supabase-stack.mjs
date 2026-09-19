@@ -131,6 +131,16 @@ async function main() {
     return session === undefined ? anonymousHeaders : asUser(session);
   }
 
+  /**
+   * One PostgREST request. The options bag is written out because TypeScript
+   * infers it from the destructuring pattern alone -- `{ method?: string }`,
+   * because `method` is the only member with a default -- and then rejects
+   * every call site that passes `session`, `trusted`, `body` or `prefer`
+   * (#602).
+   *
+   * @param {string} path
+   * @param {{ session?: { access_token: string }, trusted?: boolean, method?: string, body?: unknown, prefer?: string }} [options]
+   */
   async function rest(path, { session, trusted, method = 'GET', body, prefer } = {}) {
     const response = await fetch(`${apiUrl}/rest/v1/${path}`, {
       method,

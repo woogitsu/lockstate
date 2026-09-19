@@ -1,3 +1,4 @@
+import type { JsonValue } from '../../shared/json';
 import type { ConstructionSnapshot } from '../construction/system';
 import type { ActorIdentitySnapshot } from '../identity';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
@@ -6,6 +7,7 @@ import type { NamedRngStreamState } from '../rng/streams';
 import type { WorldSnapshotV1 } from '../world/sparse-world';
 import { SparseWorld } from '../world/sparse-world';
 import { createNewSimulationRuntime, type SimulationRuntime } from './new-session';
+import { SnapshotRefusedError } from './restore-refusal';
 import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystems } from './session-systems';
 
 /**
@@ -19,6 +21,28 @@ import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystem
  * evolves under its own version/migration contract.
  */
 export interface SessionSnapshotBundle {
+  /**
+   * The u32 the writing session's named RNG streams were derived from
+   * (issue #412, ADR 0038 §4).
+   *
+   * Optional, and **absence means 0** -- not "unknown". That is a statement of
+   * fact about the corpus rather than a convention: until issue #479,
+   * production never supplied another value (`src/main.ts` constructed
+   * `SessionController` with no `masterSeed`, and `session-controller.ts` took
+   * `?? 0`), so every save written before #479 was written by a session
+   * seeded at 0. #479 gave `src/main.ts` a real `generateMasterSeed`
+   * (`crypto.getRandomValues`), so a save written by a build carrying that fix
+   * records whatever seed its prison actually drew -- this field's own
+   * meaning did not change, only what production feeds it. It is therefore
+   * the optional-field pattern `entities` / `simulation` / `identity` already
+   * use, `SAVE_SCHEMA_VERSION` stays 5, and no migration step fabricates it.
+   *
+   * It was inert until #415: the seed's only job was deriving the four initial
+   * stream states, and `Kernel.restoreState` overwrote all four. Now that a
+   * stream the bundle omits is re-seeded rather than discarded, the seed is the
+   * only input that stream has, so a restore has to know it.
+   */
+  readonly masterSeed?: number;
   readonly kernel: KernelSnapshot;
   readonly world: WorldSnapshotV1;
   readonly construction: ConstructionSnapshot;
@@ -70,6 +94,13 @@ export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
  * without dragging the protocol version with it -- and declaring it matters,
  * because a build that received the other shape silently would restore a
  * corrupt liveness ledger instead of faulting `snapshot-incompatible`.
+ *
+ * **Not bumped by `masterSeed` (#412).** The rule is the same one
+ * `docs/PERSISTENCE.md` states for an optional save field and ADR 0038 §4
+ * applies to this one: the field is optional, its absence has exactly one
+ * meaning (0), and no existing field changed meaning -- so a build that
+ * receives a bundle without it restores exactly as it did before rather than
+ * mis-reading anything. A bump would only relabel a refusal nobody is making.
  */
 export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
 
@@ -119,8 +150,16 @@ export interface RestoredScopeEntry {
  * - Navigation's route/flow-field caches and its pending path-request queue
  *   belong to a `NavigationSystem` instance a restored session rebuilds; the
  *   subsystems that referenced one (prisoners mid-travel, guards mid-leg,
- *   carry jobs, search legs, incident responses) each reset that reference on
- *   restore, idempotently, and re-request on their next scheduled tick.
+ *   carry jobs, search legs) each reset that reference on restore,
+ *   idempotently, and re-request on their next scheduled tick.
+ *
+ *   **`IncidentResponseSystem` used to be named in that list and does not
+ *   belong** (#352, ADR 0033): it cannot re-request, because the incident
+ *   lifecycle is forward-only and it holds no record to re-request against.
+ *   What a restored session does instead is *release* the claim the interrupted
+ *   response was holding -- the responders and the sector lockdown, both of
+ *   which the payload carries -- on its first scheduled update. See
+ *   `IncidentResponseSystem.releaseOrphanedClaims`.
  *
  * `docs/PERSISTENCE.md` records the reason for every exclusion.
  * `restoreSimulationRuntime` returns this summary so a caller -- and the
@@ -266,10 +305,12 @@ export interface RestoreResult {
 function toRngStreamState(entry: { readonly name: string; readonly state: { readonly algorithm: string; readonly version: number; readonly words: readonly number[] } }): NamedRngStreamState {
   const words = entry.state.words;
   if (words.length !== 4) {
-    throw new RangeError(`RNG stream "${entry.name}" must have exactly 4 state words, got ${words.length}.`);
+    throw new SnapshotRefusedError('damaged-payload', `RNG stream "${entry.name}" must have exactly 4 state words, got ${words.length}.`);
   }
   if (entry.state.algorithm !== 'xoshiro128**' || entry.state.version !== 1) {
-    throw new RangeError(`RNG stream "${entry.name}" has an unsupported algorithm/version.`);
+    // An algorithm this build does not implement is a save a build that does
+    // would read, so it is not the row above (#431).
+    throw new SnapshotRefusedError('unsupported-by-this-build', `RNG stream "${entry.name}" has an unsupported algorithm/version.`);
   }
   return {
     name: entry.name,
@@ -293,6 +334,11 @@ function toKernelSnapshot(kernel: SessionSnapshotBundle['kernel']): KernelSnapsh
  */
 export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnapshotBundle {
   return {
+    // Read off the runtime, which either was created at this seed or was
+    // restored from a bundle that recorded it -- so a save taken after a load
+    // reports the seed the session was originally played at, and the value
+    // survives any number of round trips.
+    masterSeed: runtime.masterSeed,
     kernel: runtime.kernel.snapshot(),
     world: runtime.world.snapshot(),
     construction: runtime.construction.snapshot(),
@@ -309,10 +355,25 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
  * session gets (via `createNewSimulationRuntime`'s `world` option, so there
  * is exactly one definition of how a session is assembled), then applies
  * the kernel and construction snapshots onto it.
+ *
+ * ### Which seed the rebuilt runtime is given
+ *
+ * The bundle's own `masterSeed` where it records one, and the `masterSeed`
+ * argument only where it does not. That ordering is the point of #412: the
+ * save is the authority on what run it is, and the argument is the default for
+ * a save written before the field existed -- which, by the corpus fact
+ * recorded on `SessionSnapshotBundle.masterSeed`, is 0 for every such save.
+ * Production restores therefore stop taking the `= 0` default by accident and
+ * start taking a recorded value, without a caller having to know the seed to
+ * pass it in.
+ *
+ * The seed is load-bearing here rather than cosmetic: `Kernel.restoreState`
+ * merges the bundle's streams **over** the four this call has just derived
+ * from it (#415), so it is what any stream the bundle omits is seeded from.
  */
 export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSeed = 0): RestoreResult {
   const world = SparseWorld.fromSnapshot(bundle.world);
-  const runtime = createNewSimulationRuntime(masterSeed, { world });
+  const runtime = createNewSimulationRuntime(bundle.masterSeed ?? masterSeed, { world });
 
   runtime.construction.restore(bundle.construction);
   runtime.kernel.restoreState(toKernelSnapshot(bundle.kernel));
@@ -325,7 +386,10 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     // store. A `simulation` section without `entities` is therefore a
     // malformed bundle, not a partial one.
     if (entityStore === undefined) {
-      throw new RangeError('A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.');
+      throw new SnapshotRefusedError(
+        'damaged-payload',
+        'A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.',
+      );
     }
     restoreSessionSystems(runtime, bundle.simulation, entityStore);
   } else if (entityStore !== undefined) {
@@ -341,5 +405,70 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     runtime.actorIdentity.loadSnapshot(bundle.identity);
   }
 
+  /*
+   * Last, after every population this reads is in place: the guard coverage
+   * census, re-derived rather than restored.
+   *
+   * `SafetyCoverageSystem` holds no snapshot -- its census is a pure function
+   * of the sectors, the guards on them and where the prisoners are standing,
+   * all three of which the bundle carries -- so `docs/PERSISTENCE.md`'s rule
+   * ("authoritative state is persisted; derived state and in-flight work are
+   * not") is kept exactly as it was, and no field is added to any payload.
+   * What changes is *when* the derivation happens.
+   *
+   * It used to happen on the system's first scheduled update, ten ticks in,
+   * and for every other ten-tick cadence in the kernel that is the right
+   * answer. It is the wrong one here because **a restored session does not
+   * tick**: `SimulationWorkerStateMachine.handleInitialize` transitions to `paused`
+   * and then publishes one `simulation/status-counts` immediately -- on
+   * purpose, so that a prison with a population is not shown as a row of
+   * zeros -- and the next tick is whenever the player presses play. So the
+   * strip's coverage chip read `0` on a prison holding twelve people, under
+   * the green `Covered` badge `coverageBadge` prints whenever no rung is
+   * short, for as long as the player left it paused. Measured in
+   * `tests/integration/session-save-round-trip.test.ts`.
+   *
+   * `takeCensus` provisions nothing: no time passed between the save and the
+   * load, and the same test asserts no prisoner's `safety` moves across it.
+   */
+  runtime.safetyCoverage.takeCensus(runtime.kernel.tick);
+
   return { runtime, scope: restoredScopeFor(bundle) };
+}
+
+/**
+ * The one place a transport payload becomes a `SessionSnapshotBundle`.
+ *
+ * **This is a declared unsafe step, not a check**, and the point of giving it
+ * a name and a signature is that the unsafety stops being invisible. Three
+ * call sites used to spell `snapshot.data as unknown as SessionSnapshotBundle`
+ * inline -- `src/ui/simulation-commands.ts`,
+ * `src/rendering/feed/simulation-snapshot-feed.ts` and
+ * `src/simulation/worker/state-machine.ts` -- and all three now call this. The
+ * fourth site of the same seam is the save reader, which has a typed payload
+ * rather than a transport one and goes through `bundleFromSavePayload` in
+ * `src/persistence/session/session-controller.ts` instead.
+ *
+ * `as unknown as` erases the argument's type as well as the result's, so those
+ * three sites would have accepted *any* expression at all, including one that
+ * had stopped being a snapshot payload. Here the argument is typed, so the
+ * compiler checks that what is handed over is at least a `JsonValue`.
+ *
+ * **Why the cast cannot be removed.** `JsonValue` is a recursive union that
+ * carries no structural information about the object inside it, so TypeScript
+ * refuses even a single-step `as` here (TS2352, *"neither type sufficiently
+ * overlaps"*) and names `unknown` as the required intermediate. The type-level
+ * relationship that *is* checkable is the one between the save schema's
+ * inferred payload type and this interface, and
+ * `tests/foundation/save-payload-snapshot-bundle-shape-contract.test.ts` pins
+ * it.
+ *
+ * **What makes the claim true at runtime, per call site.** Every caller has
+ * already validated the value: the worker protocol decoder re-validates a
+ * `structured-clone` snapshot against `versionedPayloadSchema`, and the save
+ * reader validates against `decodeSaveEnvelope` and its checksum. This
+ * function adds nothing to that and must not be read as if it did.
+ */
+export function sessionSnapshotBundleFromTransport(data: JsonValue): SessionSnapshotBundle {
+  return data as unknown as SessionSnapshotBundle;
 }

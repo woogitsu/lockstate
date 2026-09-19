@@ -24,9 +24,11 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ## Why this needs no save-version bump, asserted rather than claimed
  *
- * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 5 now, and
- * **neither number is this system's**: the bump belongs to ADR 0028 phase 1,
- * which took `capacity` off a room instance and put a rectangle on it. What
+ * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 6 now, and
+ * **no number in that sequence is this system's**: 5 belongs to ADR 0028 phase
+ * 1, which took `capacity` off a room instance and put a rectangle on it, and 6
+ * to ADR 0113, which put each classification group's timetable in the save so a
+ * command could edit it. What
  * this file asserts is unchanged and is the part that matters --
  * `StateIncomeSystem` holds no state at all
  * -- no accumulator, no last-paid tick -- so it adds no field to the payload,
@@ -36,8 +38,17 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * mentions this system, which is what makes "derived, not stored" a fact about
  * the save rather than a claim about the code.
  *
- * The only economy state in a save is the treasury balance itself, and the
- * balance is a *result* of past payments rather than a record of a pending one.
+ * **The economy state in a save is no longer only the treasury balance**, and
+ * this paragraph used to say it was: *"The only economy state in a save is the
+ * treasury balance itself, and the balance is a result of past payments rather
+ * than a record of a pending one."* The second clause is still true and is
+ * still this file's subject. The first stopped being true with ADR 0042 step 3,
+ * which added `simulation.economy.payroll` -- arrears, which genuinely are a
+ * record rather than a result, because nothing in a restored session could
+ * recompute the fact that a day's wages went unpaid. That field is
+ * `tests/integration/economy-payroll-save.test.ts`'s subject, not this one's;
+ * what it costs this file is the netting below, because the scenario's five
+ * guards are now billed every day the income pays.
  *
  * ## Why this is an integration test and not a unit test
  *
@@ -85,12 +96,12 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   ).toBe(SAVE_SCHEMA_VERSION);
   // V5 since ADR 0028 phase 1, and the assertion is kept pinned rather than
   // deleted: what it guards is that a bump has a *reason*, not that the number
-  // never moves. The reason for this one is object placement -- a room instance
-  // stops carrying its capacity and starts carrying its rectangle -- and it is
-  // nothing to do with the income line, which still adds no field to the
-  // payload. The two paragraphs below the version check are what actually
-  // enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(5);
+  // never moves. The reason for the latest one is ADR 0113 -- `simulation`
+  // gains a required `regimeSchedules` section, because a timetable that can be
+  // edited cannot be recovered from an absent field -- and it is nothing to do
+  // with the income line, which still adds no field to the payload. The two
+  // paragraphs below the version check are what actually enforce that.
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(6);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);
@@ -142,14 +153,110 @@ function step(runtime: SimulationRuntime, count: number): void {
 const OCCUPIED_PLACES = 4;
 const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLACES;
 
+/**
+ * What the scenario's own staff cost, which this file has to net off since
+ * ADR 0042 step 3.
+ *
+ * `buildDeterminismScenario` hires five guards straight onto the roster
+ * (`tests/helpers/determinism-scenario.ts:180`) rather than through
+ * `StaffHiringService`, so no engagement charge is taken -- but `PayrollSystem`
+ * reads the roster and bills all five at the catalogue's 80 a day on the same
+ * boundary tick this file's income lands on. **Both figures are written out
+ * here rather than read from the catalogue**, so a change to either is a
+ * deliberate edit to this file and not a silent re-derivation; the first case
+ * below asserts them against the runtime, so a literal that stops being true
+ * fails where it is legible instead of turning every balance below into a
+ * puzzle.
+ *
+ * Netting rather than removing the guards: the scenario is shared with the
+ * determinism suite, and changing it to suit this file would move a fixture
+ * several other files pin.
+ */
+const SCENARIO_STAFF = 5;
+const ONE_DAY_WAGES = 400;
+/**
+ * What the scenario's four wall orders bought for themselves, which this file
+ * has to net off since #627.
+ *
+ * `SCENARIO_COMMANDS` places four `wall-brick` orders against a prison whose
+ * construction container starts empty, and ADR 0017 decision 7 -- *"materials
+ * are just-in-time by default; holding is permitted, never required"* -- means
+ * an order now buys what it needs at the moment it is placed. Measured on this
+ * tree: **three** of the four buy, for 2 `item.brick` each at 40, and the
+ * fourth buys nothing because the scenario's own carry jobs have moved bricks
+ * into that container by the time it is placed. So 6 x 40 = 240, once, at tick
+ * 0, and never again.
+ *
+ * That the fourth buys nothing is the *"holding is permitted"* half working,
+ * and it is why this constant is 240 rather than 320. It is written out here
+ * rather than read off the runtime for `ONE_DAY_WAGES`'s reason -- a figure
+ * derived from the code under test agrees with any implementation -- and the
+ * first case below anchors it against the scenario that produces it.
+ *
+ * **It is no longer spent all at once, and that is the second thing ADR 0093
+ * moved here.** At tick 40 three orders have bought (240); the fourth buys its
+ * two bricks later in the first day, as the container drains and the carry has
+ * still not delivered, taking the settled figure to 320. So this file needs two
+ * constants where it needed one, and the pair is the measurement: the
+ * by-tick-40 figure anchors the first case and the settled figure anchors every
+ * balance from tick 1,200 onwards. Nothing buys after that -- the day-two assertions hold against the
+ * same settled figure.
+ *
+ * **This constant was 160 until
+ * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md), and the old value is
+ * kept here rather than overwritten because the *reason* it moved is the
+ * decision.** Two of the four used to buy nothing, because the scenario's two
+ * carry jobs had moved *twelve* bricks into the container by the time the
+ * fourth order was placed: `operations.jobs` ran at order 260 every five ticks
+ * and resolved each leg into a teleport, so both jobs finished almost
+ * immediately whatever the regime said. A carry is an action now -- chosen by
+ * an idle prisoner whose block allows `work`, and **walked** -- so fewer bricks
+ * have arrived by tick 0 and one more wall pays for its own.
+ *
+ * ADR 0093 decision 6 names the files whose numbers move for exactly this
+ * reason and says why it is acceptable: *"determinism is a promise of
+ * reproducibility, not of stability across a decided change in behaviour"*. It
+ * names `tests/helpers/determinism-scenario.ts` and its determinism
+ * dependants; **this file is a fourth dependant it did not name**, reached
+ * through the same helper, and that is worth recording rather than silently
+ * fixing.
+ */
+const SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40 = 240;
+/** And what the four of them have spent by the time the first day settles. */
+const SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED = 320;
+/** What the scenario holds at tick 40, with one wall still to pay for itself. */
+const BALANCE_AT_TICK_40 = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
+/** What the scenario holds once every wall has paid for itself. */
+const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
+/** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
+const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
+
 describe('a mid-day save neither loses the partial day nor pays for it twice', () => {
   it('settles at the occupied places intake actually produced, which is fewer than the prisoners admitted', () => {
     const runtime = sessionAtTick(40);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(OCCUPIED_PLACES);
+    // The two literals every balance below is netted with, anchored to the
+    // scenario that produces them rather than trusted.
+    expect(runtime.securityGuards.allGuardIds().length, 'the scenario hires its staff on the roster directly').toBe(
+      SCENARIO_STAFF,
+    );
+    expect(runtime.payroll.dailyWageBillMinorUnits(), 'five guards at the catalogue`s 80 a day').toBe(ONE_DAY_WAGES);
     expect(
       runtime.treasury.balanceMinorUnits,
-      'nothing has been paid yet: the first day boundary is at tick 2,399',
-    ).toBe(25_000);
+      'no state income has been paid yet: the first day boundary is at tick 2,399 -- but three of the walls have bought their bricks (#627)',
+    ).toBe(BALANCE_AT_TICK_40);
+    // The anchor for the literal above: exactly three just-in-time purchases at
+    // this tick, for the three orders placed before the carry jobs had
+    // delivered anything. A fourth here would mean the deficit stopped netting
+    // off stock already held.
+    expect(
+      runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity, delivery.paidMinorUnits]),
+      'three orders bought two bricks each; the fourth found bricks already in the container',
+    ).toEqual([
+      ['item.brick', 2, 80],
+      ['item.brick', 2, 80],
+      ['item.brick', 2, 80],
+    ]);
   });
 
   it('restores the same accrual it had mid-day, because the accrual is recomputed from the tick', () => {
@@ -197,11 +304,11 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
 
     expect(original.kernel.tick).toBe(DAY_LENGTH_TICKS);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(original.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
     expect(
       restored.treasury.balanceMinorUnits,
       'the restored session paid the same one day: not zero (the partial day lost) and not two days (the boundary replayed)',
-    ).toBe(25_000 + ONE_DAY_PAYMENT);
+    ).toBe(OPENING_BALANCE + ONE_DAY_NET);
   });
 
   it('pays once, not twice, when the save is taken on the very tick the payment is due', () => {
@@ -219,38 +326,38 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
      * the last-paid-day field it suggested recording.
      */
     const original = sessionAtTick(DAY_LENGTH_TICKS - 1);
-    expect(original.treasury.balanceMinorUnits, 'the payment has not run yet').toBe(25_000);
+    expect(original.treasury.balanceMinorUnits, 'the payment has not run yet').toBe(OPENING_BALANCE);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS - 1);
 
     step(restored, 1);
     expect(restored.treasury.balanceMinorUnits, 'the pending boundary runs after the restore, once').toBe(
-      25_000 + ONE_DAY_PAYMENT,
+      OPENING_BALANCE + ONE_DAY_NET,
     );
 
     // And it does not run a second time on the next tick.
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
   });
 
   it('does not re-pay a boundary the save was taken just after', () => {
     const original = sessionAtTick(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(original.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET);
 
     // The next payment is a whole day away, not immediate: the restored tick
     // is 2,400 and the predicate is `tick % 2,400 === 2,399`.
     step(restored, DAY_LENGTH_TICKS - 1);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS * 2 - 1);
     expect(restored.treasury.balanceMinorUnits, 'still one day paid on the tick before the second boundary').toBe(
-      25_000 + ONE_DAY_PAYMENT,
+      OPENING_BALANCE + ONE_DAY_NET,
     );
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT * 2);
+    expect(restored.treasury.balanceMinorUnits).toBe(OPENING_BALANCE + ONE_DAY_NET * 2);
   });
 
   it('pays a restored session over two further days at the same rate as one that was never saved', () => {
@@ -267,9 +374,9 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
       // repeatedly rather than once.
       restored = saveAndLoad(restored).restored;
 
-      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(25_000 + ONE_DAY_PAYMENT * day);
+      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(OPENING_BALANCE + ONE_DAY_NET * day);
       expect(restored.treasury.balanceMinorUnits, `day ${String(day)}, restored`).toBe(
-        25_000 + ONE_DAY_PAYMENT * day,
+        OPENING_BALANCE + ONE_DAY_NET * day,
       );
     }
   });

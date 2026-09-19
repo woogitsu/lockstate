@@ -1,12 +1,23 @@
 import Phaser from 'phaser';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
-import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
+import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
-import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../../src/rendering/build/edge-picking';
+import type {
+  BuildToolPort,
+  EdgeTarget,
+  EditHistoryPort,
+  ToolStandDownPort,
+} from '../../src/rendering/build/edge-picking';
+import type { ObjectToolPort, RoomToolPort, TileRect } from '../../src/rendering/build/area-picking';
+import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import type {
   CameraScroll,
+  HarnessChunkPosition,
   HarnessEdge,
   HarnessPoint,
+  HarnessRect,
   LockstateWorldSceneHarness,
   PointerCensus,
 } from './world-scene-harness-api';
@@ -32,13 +43,23 @@ import type {
  * (`Scale.RESIZE`, `CENTER_BOTH`), because the behaviour under test involves
  * `window`-level listeners and a canvas that fills the viewport.
  *
- * No atlases are loaded and the feed is empty. Nothing here draws anything worth
- * looking at, and it does not need to: the assertions are about where the camera
- * is pointing, how far it is zoomed, which world point it puts under a given
- * pixel, what the build tool was asked to place and what the edit history was
- * asked to reverse -- none of which depends on
- * there being art or a world. An empty world moves exactly as far per frame as a
- * full one.
+ * No atlases are loaded, and the feed is empty until a spec asks otherwise.
+ * Nothing here draws anything worth looking at, and it does not need to: the
+ * assertions are about where the camera is pointing, how far it is zoomed,
+ * which world point it puts under a given pixel, what the build tool was asked
+ * to place and what the edit history was asked to reverse -- none of which
+ * depends on there being art or a world. An empty world moves exactly as far
+ * per frame as a full one.
+ *
+ * **`loadChunks` is the one exception, and it exists for issue #793.** The
+ * minimap's mapping is the only behaviour on this scene that reads
+ * `WorldRenderView.loadedBounds`, so it is the only one that cannot be
+ * exercised against an empty feed at all -- `navigateToMinimapPoint` answers
+ * `false` and moves nothing. Materialising chunks here is what lets
+ * `world-scene-minimap.spec.ts` assert the mapping to the float against the
+ * camera position `frameCameraOnFirstWorld` independently arrives at, which
+ * the app-level gate cannot: it reads the camera back through an
+ * integer-pixel bisection of the canvas.
  */
 
 const CANVAS_PARENT_ID = 'world-scene-harness-root';
@@ -54,8 +75,31 @@ function memoryStore(): KeyValueStore {
   };
 }
 
-const emptyFeed: RenderFeed = {
-  readFrame: () => EMPTY_RENDER_FRAME,
+/**
+ * The frame the scene is served, and how many times it has actually asked for
+ * one.
+ *
+ * Empty until a spec calls `loadChunks`, which is why every spec that predates
+ * issue #793 sees exactly what it always saw: `EMPTY_RENDER_FRAME`, with no
+ * `loadedBounds`, so `frameCameraOnFirstWorld` never fires and the camera
+ * starts where Phaser put it.
+ *
+ * `reads` is the harness's own counter and not scene introspection. It is what
+ * makes "the scene has consumed this frame" answerable without guessing at
+ * Phaser's callback order: `lastLoadedBounds` is assigned and
+ * `frameCameraOnFirstWorld` is called in the same `update()` that calls
+ * `readFrame`, so one further read after a swap is the exact precondition a
+ * minimap spec needs, and a busy machine cannot shorten it the way a fixed
+ * count of animation frames can.
+ */
+let currentFrame: RenderFrame = EMPTY_RENDER_FRAME;
+let reads = 0;
+
+const feed: RenderFeed = {
+  readFrame: () => {
+    reads += 1;
+    return currentFrame;
+  },
 };
 
 /**
@@ -103,12 +147,89 @@ const editHistory: EditHistoryPort = {
 };
 
 const toHarnessEdge = (edge: EdgeTarget): HarnessEdge => ({ tileX: edge.tileX, tileY: edge.tileY, edge: edge.edge });
+const toHarnessRect = (rect: TileRect): HarnessRect => ({
+  tileX: rect.tileX,
+  tileY: rect.tileY,
+  width: rect.width,
+  height: rect.height,
+});
+
+/**
+ * A room tool that records instead of zoning.
+ *
+ * The same double the build tool above is, for the same reason (#516): what
+ * `blur`/`releaseMissed` must do is entirely on the renderer's side of the
+ * boundary, and a list of what `place` received plus the last thing `target`
+ * was shown is the smallest thing that can tell "cancelled" from "committed".
+ */
+let roomArmed = false;
+const placedAreas: TileRect[] = [];
+let targetedArea: TileRect | undefined;
+
+const roomTool: RoomToolPort = {
+  isArmed: () => roomArmed,
+  isRemoving: () => false,
+  place: (rect) => {
+    placedAreas.push(rect);
+  },
+  target: (rect) => {
+    targetedArea = rect;
+  },
+};
+
+/**
+ * An object tool that records instead of placing, with a fixed 1x1 footprint
+ * while armed -- the simplest shape that exercises the gesture (#516). The
+ * bed's 1x2 footprint is the HUD's concern, not this recovery's; `isObjectArmed`
+ * only needs `footprint()` to answer something.
+ */
+let objectArmed = false;
+const placedObjects: { tileX: number; tileY: number }[] = [];
+let targetedObject: TileRect | undefined;
+
+const objectTool: ObjectToolPort = {
+  isArmed: () => objectArmed,
+  isRemoving: () => false,
+  footprint: () => (objectArmed ? { width: 1, height: 1 } : undefined),
+  place: (tile) => {
+    placedObjects.push({ tileX: tile.tileX, tileY: tile.tileY });
+  },
+  target: (rect) => {
+    targetedObject = rect;
+  },
+};
+
+/**
+ * An arming owner that records the request **and acts on it** (#959).
+ *
+ * Both halves are deliberate, and the second is what the other doubles in
+ * this file do not do. `standDownRequests` is the report the scene owes --
+ * one press, one request, and nothing at all while a gesture was there to
+ * abandon instead. Clearing the three flags is this double standing in for
+ * `src/main.ts`, which turns the same request into two panels' arming
+ * (`HudHandle.standToolsDown`); without it the spec could only assert that a
+ * message was sent and never that the world stopped belonging to the tool,
+ * which is the half issue #959 measured in funds.
+ */
+let standDownRequests = 0;
+
+const toolStandDown: ToolStandDownPort = {
+  standDown: () => {
+    standDownRequests += 1;
+    buildArmed = false;
+    objectArmed = false;
+    roomArmed = false;
+  },
+};
 
 const scene = new WorldScene({
-  feed: emptyFeed,
+  feed,
   keyValueStore: memoryStore(),
   buildTool,
   editHistory,
+  toolStandDown,
+  roomTool,
+  objectTool,
   // No atlas library: the harness asserts nothing about art, and loading one
   // would make every spec here depend on the git-LFS baseline.
   loadAtlasLibrary: () => Promise.reject(new Error('the input harness loads no atlases')),
@@ -201,12 +322,64 @@ const harness: LockstateWorldSceneHarness = {
   armBuildTool: (armed) => {
     buildArmed = armed;
   },
+  standDownRequests: () => standDownRequests,
+  isAnyToolArmed: () => buildArmed || objectArmed || roomArmed,
   placedRuns: () => placed.map((run) => run.map(toHarnessEdge)),
   historyRequests: () => [...historyRequests],
   clearHistoryRequests: () => {
     historyRequests.length = 0;
   },
   targetedRun: () => targeted?.map(toHarnessEdge),
+  armRoomTool: (armed) => {
+    roomArmed = armed;
+  },
+  placedAreas: () => placedAreas.map(toHarnessRect),
+  targetedArea: () => (targetedArea === undefined ? undefined : toHarnessRect(targetedArea)),
+  armObjectTool: (armed) => {
+    objectArmed = armed;
+  },
+  placedObjects: () => [...placedObjects],
+  targetedObject: () => (targetedObject === undefined ? undefined : toHarnessRect(targetedObject)),
+  loadChunks: (chunkSize: number, chunks: readonly HarnessChunkPosition[]): Promise<void> => {
+    // A real `SparseWorld`, snapshotted exactly as the simulation worker
+    // snapshots its own, and projected by the production
+    // `WorldRenderView.fromSnapshot`. So `loadedBounds` -- the one thing the
+    // mapping under test reads -- is computed here by the same code that
+    // computes it in a running session, from a chunk layout the spec chose.
+    // A harness that assembled the rectangle itself would be handing the scene
+    // the answer and then checking the scene against it.
+    const world = new SparseWorld(chunkSize);
+    for (const chunk of chunks) {
+      world.load({ x: chunkCoordinate(chunk.chunkX), y: chunkCoordinate(chunk.chunkY) });
+    }
+    currentFrame = {
+      revision: currentFrame.revision + 1,
+      world: WorldRenderView.fromSnapshot(world.snapshot()),
+      structures: [],
+      actors: [],
+    };
+
+    const readsBefore = reads;
+    return new Promise<void>((resolve) => {
+      const poll = (): void => {
+        if (reads > readsBefore) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(poll);
+      };
+      requestAnimationFrame(poll);
+    });
+  },
+  navigateToMinimapPoint: (fx, fy) => scene.navigateToMinimapPoint(fx, fy),
+  displaceCamera: (scrollX, scrollY) => {
+    scene.cameras.main.setScroll(scrollX, scrollY);
+  },
+  framesRead: () => reads,
+  homeIndicator: () => {
+    const mark = scene.homeIndicatorMark;
+    return mark === undefined ? undefined : { x: mark.position.x, y: mark.position.y, angleRadians: mark.angleRadians };
+  },
 };
 
 window.lockstateWorldSceneHarness = harness;

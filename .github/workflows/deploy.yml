@@ -67,9 +67,11 @@ concurrency:
   #   * Every step before `Deploy to Cloudflare` publishes nothing, so a run
   #     cancelled in one of them leaves the live site exactly as it was. That
   #     is all of them, not a sample: checkout, Node setup, Corepack, the
-  #     node_modules check, install, scripts/check-deploy-secrets.sh, and in
-  #     the production job `pnpm verify` as well. Every cancellation recorded
-  #     on #134 was of that kind, seconds in.
+  #     node_modules check, install, both scripts/check-deploy-secrets.sh
+  #     invocations and the `vite build` the second one scans, and in the
+  #     production job `pnpm verify` as well. Every cancellation recorded on
+  #     #134 was of that kind, seconds in. A build is not a publish: the
+  #     bundle-scan step writes only to `dist/` on the runner.
   #   * The publishing step is a single `wrangler deploy` behind a `vite build`
   #     (scripts/cloudflare-task.mjs). Whether cancelling *during* that upload
   #     can leave a half-published Worker is NOT established here, anywhere
@@ -83,9 +85,12 @@ concurrency:
   # Two properties of the group itself, because they are easy to misread:
   #
   #   * `github.event_name` is `workflow_run` for every automatic deploy, so
-  #     the group evaluates to the constant `deploy-staging` and all automatic
-  #     deploys contend with one another. A `workflow_dispatch` of
-  #     `production` gets `deploy-production` and is never cancelled by one.
+  #     the group evaluates to the constant `deploy-staging` for every automatic
+  #     deploy that will publish, and all of those contend with one another.
+  #     One that will not publish is diverted to a group of its own -- see
+  #     "WHICH RUNS JOIN THE GROUP" below, which is the newer half of this
+  #     argument. A `workflow_dispatch` of `production` gets
+  #     `deploy-production` and is never cancelled by either.
   #   * The trigger is CI completion rather than the merge (see `on:` above),
   #     so a cancelled run is one whose CI has already passed: cancellation
   #     here discards verified work. It also means "joins the group last" is
@@ -96,7 +101,52 @@ concurrency:
   #
   # If a half-finished deployment is ever actually seen, #134's answer is to
   # move to `cancel-in-progress: false` with a queue, not to patch around it.
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+  #
+  # WHICH RUNS JOIN THE GROUP, AND ONE KIND THAT MUST NOT (#424).
+  #
+  # A `workflow_run` run whose triggering CI did not conclude `success`
+  # publishes nothing: the `staging` guard rejects it, and `staging-blocked`
+  # below reports it. Such a run used to join `deploy-staging` all the same,
+  # so `cancel-in-progress: true` let a run that deploys nothing cancel one
+  # that was deploying. Twice on 2026-08-26, and read what actually happened
+  # rather than the conclusion:
+  #
+  #   * run 32996017285's `Deploy to Cloudflare (staging)` step concluded
+  #     `success` at 17:46:31; the job was cancelled at 17:46:35.
+  #   * run 32971477174's step concluded `cancelled`, but its log ends
+  #     `Deployed lockstate-staging triggers (2.63 sec)` at 12:58:52.659 and
+  #     `##[error]The operation was canceled.` 0.24 s later.
+  #
+  # BOTH PUBLISHED. What the cancellation destroyed is the record, not the
+  # deploy: two runs that updated the live site are filed as `cancelled`, and
+  # a reader auditing what reached the Worker has to open the log to find out.
+  # Note also what this does NOT show: neither upload was interrupted, so the
+  # "cancelled *during* `wrangler deploy`" case the bullets above call unknown
+  # rather than safe is still unobserved. Not safer -- just not seen.
+  #
+  # INFERRED, not read out of a log: that the runs which cancelled them were
+  # 32996050125 and 32971516619. Both concluded `skipped`, both published
+  # nothing, and each was created seconds before the cancellation while
+  # sharing the group; no other run joined in either window. The cancelling
+  # run is not named in the cancelled run's log, so this is timing and group
+  # membership rather than a direct observation.
+  #
+  # So the group now carries the triggering run's conclusion. A run that will
+  # not publish gets `deploy-blocked-<triggering run id>`, a group of one: it
+  # cancels no deploy, and nothing cancels it mid-announcement -- and an
+  # announcement that can be cancelled is a silent deploy again, which is the
+  # whole of #424.
+  #
+  # `conclusion` is the ONLY term of the `staging` guard repeated here, on
+  # purpose. It is the term that varies in practice, and the set it diverts is
+  # exactly the set `staging-blocked` fires on, so the two stay legible
+  # together. A run rejected for the guard's other two terms -- a CI run a
+  # pull request started, or one whose head commit came from a fork -- still
+  # joins `deploy-staging` and can still cancel a publish. That is unchanged
+  # behaviour rather than a new hole, and the alternative is copying the whole
+  # guard into a group expression where it could drift out of step with the
+  # guard itself.
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || github.event.workflow_run.conclusion == 'success' && 'staging' || format('blocked-{0}', github.event.workflow_run.id) }}
   cancel-in-progress: true
 
 env:
@@ -105,17 +155,105 @@ env:
 
 jobs:
   staging:
+    # Two `||` alternatives, and every term in each one is load-bearing. As a
+    # sentence: publish a CI run that PASSED, that a PUSH started, on a branch
+    # of THIS repository -- or a manual dispatch of `staging` from `main`.
+    #
     # `conclusion` must be tested explicitly. `types: [completed]` fires for a
     # failed, cancelled and timed-out run too -- "completed" is not "passed",
     # and without this a red CI would still deploy.
+    #
+    # `head_repository.full_name` is about a FORK, and `branches: [main]` above
+    # does not imply it: that filter matches the *triggering run's head
+    # branch*, and a fork's branch can be named `main`. ci.yml triggers on a
+    # bare `pull_request`, so a pull request opened from a fork starts a CI run
+    # that belongs to THIS repository and carries the fork's head branch and
+    # the fork's commit -- which the `Checkout` step below then builds, because
+    # it deliberately takes `workflow_run.head_sha`. lockstate.io is a Custom
+    # Domain on the Worker this job deploys, so that commit is the public site
+    # (docs/DEPLOYMENT.md, "What currently serves lockstate.io").
+    #
+    # What is NOT the mitigation, and that is the point. Every job in ci.yml
+    # carries the same test against
+    # `github.event.pull_request.head.repo.full_name` -- three jobs today, and
+    # tests/foundation/ci-configuration-contract.test.ts now requires it of a
+    # fourth -- so every job of such a run is skipped as things stand. Whether
+    # GitHub then reports that run's `conclusion` as `skipped` or as `success`
+    # is not established by anything in this repository, and it is the whole
+    # difference between latent and live: which is exactly why it must not be
+    # the thing protecting the site. It was a property of another file,
+    # uncommented there, that ONE unguarded job added to ci.yml would have
+    # flipped, with nothing in either file connecting the two. These terms put
+    # the requirement where the deploy is, so it holds whatever ci.yml grows
+    # next.
+    #
+    # `workflow_run.event == 'push'` is a second door rather than a restatement
+    # of the first: a `workflow_dispatch` of CI on `main` also completes on
+    # `main`, from this repository, and CI passing is not a merge. Publishing
+    # on demand is what this workflow's own `workflow_dispatch` is for.
+    #
+    # `github.ref == 'refs/heads/main'` on the dispatch alternative. A dispatch
+    # checks out `github.ref` (see `Checkout` below), and this job runs no
+    # `pnpm verify`: the `production` job's "Verify before shipping" step has
+    # no counterpart here, because the automatic path's gate is the CI run that
+    # triggered it and a dispatch has no triggering run at all. So without this
+    # term, dispatching `staging` at any ref published that ref to the live
+    # site with no gate of any kind -- no CI, no environment approval. It is
+    # now the branch the automatic path publishes anyway. Two stronger answers
+    # exist and neither is this file's to choose: requiring the dispatched
+    # ref's own CI to have passed, and required reviewers on the `staging`
+    # GitHub Environment (a repository setting, invisible from here -- the same
+    # shape as the `production` environment's reviewers, which
+    # docs/DEPLOYMENT.md, "Credentials" says is what actually blocks an
+    # unattended production deploy). Both are the owner's decision.
     if: >-
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-      || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
-    runs-on: [self-hosted, Linux, X64, wsl2]
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_repository.full_name == github.repository)
+      || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging'
+      && github.ref == 'refs/heads/main')
+    runs-on: self-hosted
     timeout-minutes: 30
     environment:
       name: staging
       url: ${{ steps.deploy.outputs.url }}
+    # THE COMMIT THIS JOB BUILDS, NAMED EXPLICITLY, BECAUSE THE AMBIENT ONE IS
+    # WRONG HERE AND ONLY HERE.
+    #
+    # `tooling/build-identity.mjs` stamps the bundle -- the badge, the save
+    # envelope's `gameVersion`, the worker's `workerBuildId` -- from the first
+    # of `LOCKSTATE_COMMIT_SHA`, `CF_PAGES_COMMIT_SHA`, `GITHUB_SHA` that is
+    # set, then `git`. For a `workflow_run` run GitHub sets `GITHUB_SHA` to the
+    # DEFAULT BRANCH'S TIP, not the ref the `Checkout` step below deliberately
+    # takes -- the same fact that makes that `ref:` line necessary. So without
+    # this, the published bundle carried a version read out of one commit's tree
+    # and a commit id read out of a different commit, and the commit it named
+    # was the one that had NOT been built.
+    #
+    # Seen, in one run rather than reasoned about: Deploy run 33005151972
+    # (`success`) reports `head_sha` 2a53baa, `chore(release): v0.0.118`, while
+    # its own checkout log resolves `ref: 64cd3799e0ab...` -- 64cd379, which
+    # carries `0.0.114`. That deploy shipped 64cd379's tree stamped 2a53baa,
+    # seven commits apart. Every recent successful Deploy run has a
+    # `chore(release)` head_sha, so this was the ordinary case.
+    #
+    # The expression is the `Checkout` step's `ref:` expression with `github.ref`
+    # swapped for `github.sha`, and it has to stay that way: on a
+    # `workflow_dispatch` the checkout takes `github.ref` and `github.sha` is
+    # that ref's tip, so the two agree; on a `workflow_run` both take the
+    # triggering run's head. If one of them is ever edited, edit the other in
+    # the same commit -- tests/foundation/build-commit-identity-contract.test.ts
+    # requires this job to pass an explicit sha, and says so when it stops.
+    #
+    # At job level, not step level, because two steps below run a `vite build`:
+    # the bundle scan builds once, and `cloudflare-task.mjs deploy` builds again
+    # inside the deploy process. A stamp on only one of them would put the wrong
+    # commit on the artefact that is actually published.
+    #
+    # The `production` job needs no counterpart: it takes no `ref:`, so it
+    # checks out `GITHUB_SHA` and the ambient value is already the built commit.
+    env:
+      LOCKSTATE_COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
     steps:
       # A `workflow_run` run is NOT checked out at the commit that triggered it.
       # It defaults to the head of the default branch, so with two merges close
@@ -160,15 +298,42 @@ jobs:
 
       # Fail on a missing secret rather than deploying a build whose Supabase
       # configuration is silently empty. `VITE_`-prefixed values are inlined
-      # into the browser bundle, so only the publishable key belongs here --
-      # see docs/DEPLOYMENT.md.
-      - name: Check required configuration is present
+      # into the browser bundle, so only publishable values belong there -- the
+      # `env` sweep refuses any `VITE_` variable that carries a secret, not just
+      # the ones named below. See docs/DEPLOYMENT.md.
+      #
+      # This is a pre-flight over the environment. It says nothing about the
+      # artefact; the `bundle` scan below is what answers that (issue #344).
+      - name: Check configuration is present and holds no browser-visible secret
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-        run: bash scripts/check-deploy-secrets.sh
+        run: bash scripts/check-deploy-secrets.sh env
+
+      # The bundle scan is the check whose subject is what a visitor receives.
+      # It must run against a bundle built from these exact values, so the
+      # build happens here rather than being inferred from an earlier one --
+      # `pnpm verify` builds without this `env:` and so proves nothing about
+      # an inlined secret.
+      #
+      # `cloudflare-task.mjs deploy` builds and uploads inside one process, so
+      # no workflow step can sit between its build and its upload; this step
+      # therefore builds a second time. Folding the scan into
+      # scripts/verify-cloudflare-build.mjs, which already runs after every
+      # build including the deploy one, would remove the duplicate build. That
+      # file is out of scope for issue #344 and the move is proposed there.
+      - name: Build and scan the bundle for browser-visible secrets (staging)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/cloudflare-task.mjs build staging
+          bash scripts/check-deploy-secrets.sh bundle
 
       - name: Deploy to Cloudflare (staging)
         id: deploy
@@ -206,6 +371,128 @@ jobs:
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
+  # A BLOCKED DEPLOY MUST NOT BE SILENT (#424).
+  #
+  # When the `staging` guard's automatic alternative rejects a run, every job
+  # in this workflow skips, and GitHub reports a run whose every job skipped as
+  # `skipped`. `skipped` is not `failure`: no red X in the Actions list, no
+  # notification, nothing that distinguishes it from a run that had nothing to
+  # do. A deploy that is genuinely blocked therefore looks exactly like one
+  # that is merely slow. Read off the runs on 2026-08-26: no Deploy run
+  # concluded `success` between 32994037499 at 17:25:21 and 33005151972 at
+  # 19:26:26, two hours and one minute apart, and seven consecutive runs in
+  # between -- 32996050125, 32996093805, 32997470428, 33004133740,
+  # 33004481382, 33005039649, 33005071431 -- all concluded `skipped`. The
+  # Actions list showed no failure at any point in it, and what ended the gap
+  # was a later merge going green on its own rather than anyone noticing.
+  #
+  # One correction to that window, because it is the kind this repository gets
+  # wrong: 32996017285 sits inside it and did publish. Its
+  # `Deploy to Cloudflare (staging)` step completed successfully at 17:46:31;
+  # the run says `cancelled` because a rejected run joined its concurrency
+  # group four seconds later. So the site was not frozen for the whole two
+  # hours -- what was continuous is the silence, not the staleness.
+  #
+  # This job is the announcement, and it is deliberately not a new mechanism.
+  # It fails, so the run concludes `failure`, so a blocked deploy is reported
+  # exactly the way every other failure in this repository is reported. No
+  # notification tier, no external service, nothing to configure, nothing that
+  # can itself go stale.
+  #
+  # ITS GUARD IS THE `staging` GUARD'S AUTOMATIC ALTERNATIVE WITH ONE TERM
+  # NEGATED, and the other terms are repeated rather than dropped:
+  #
+  #   * `event == 'push'` and `head_repository.full_name == github.repository`
+  #     are #423's terms, and this job needs them for a reason of its own. A
+  #     run rejected by either of those is the gate WORKING -- a pull request's
+  #     CI is not a merge, and a fork's commit must never reach the Worker that
+  #     serves lockstate.io -- and a working gate must not report failure.
+  #     Without them, anyone who can open a pull request from a fork could turn
+  #     this repository's Deploy workflow red at will.
+  #   * `conclusion != 'success'` is the negation. Together with the `staging`
+  #     guard it partitions the automatic path: for a completed CI run that a
+  #     push to `main` of this repository started, exactly one of the two jobs
+  #     runs. This one publishes nothing, checks out nothing and reads no
+  #     secret, so it weakens neither the gate nor the site.
+  #
+  # `cancelled` IS INCLUDED, AND THAT IS A DECISION. A CI run on `main` is
+  # cancelled more often than it fails, and not for the reason ci.yml's
+  # concurrency comment gives: GitHub keeps at most one PENDING run per
+  # concurrency group whatever `cancel-in-progress` says, so a third merge
+  # arriving while one CI run is in progress and another waits cancels the
+  # waiting one. CI runs 33004940891 and 33005035205 are both that -- pushes to
+  # `main`, both `cancelled`, both with zero jobs recorded because neither ever
+  # started. Such a commit is usually carried to the site later by a
+  # descendant's deploy, so this announcement will sometimes name a commit that
+  # arrives anyway. It stays included: the commit was still not published as
+  # itself, nothing retries it, and the alternative -- announcing only an
+  # outright CI `failure` -- leaves a cancelled run silently blocking
+  # publication, which is this defect wearing a different conclusion.
+  #
+  # NOT `ubuntu-latest`, however little this job does. It does not work in this
+  # repository: version.yml's header measures a four-second failure with no
+  # step recorded and no log, on run 32727713492.
+  staging-blocked:
+    if: >-
+      github.event_name == 'workflow_run'
+      && github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_repository.full_name == github.repository
+      && github.event.workflow_run.conclusion != 'success'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      # Every value arrives through `env:` rather than being interpolated into
+      # the script. Nothing admitted by the guard above is attacker-controlled,
+      # but a `${{ }}` expanded inside a `run:` block is textual substitution
+      # into a shell, and this file should not carry an example of it for the
+      # next job to copy.
+      - name: Report that the site was not published
+        env:
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BLOCKED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          case "$CI_CONCLUSION" in
+            failure | timed_out)
+              why="its CI run did not pass"
+              next="Fix main. Nothing here retries this commit."
+              ;;
+            cancelled)
+              why="its CI run was cancelled"
+              next="Usually a later merge superseded it while its CI was still queued, in which case a descendant's deploy carries this commit to the site. Confirm that a later Deploy run succeeded before reading this as harmless."
+              ;;
+            *)
+              why="its CI run concluded '$CI_CONCLUSION', which is neither a pass nor an ordinary failure"
+              next="Read the CI run before assuming which it is; a run that never started reaches here too."
+              ;;
+          esac
+
+          {
+            echo "## The staging deploy did not happen"
+            echo
+            echo "\`$BLOCKED_SHA\` was not published, because $why."
+            echo
+            echo "- Triggering CI run: $CI_RUN_URL (\`$CI_CONCLUSION\`)"
+            echo "- $next"
+            echo
+            echo "The site still serves whatever the last successful Deploy run published."
+            echo "This workflow triggers on CI *completion*, so nothing re-attempts this"
+            echo "commit on its own: the next merge whose CI passes publishes its own commit"
+            echo "and carries this one along. A \`workflow_dispatch\` of this workflow with"
+            echo "\`target=staging\` publishes the current tip of \`main\`, which is not"
+            echo "necessarily this commit and is gated by nothing -- see docs/DEPLOYMENT.md,"
+            echo "\"What can publish the staging Worker\"."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::error title=Staging deploy blocked::$BLOCKED_SHA was not published, because $why. $CI_RUN_URL"
+
+          # The whole point of this job. An `::error::` annotation on its own
+          # leaves the run green, and a green run is the silence this exists to
+          # end.
+          exit 1
+
   production:
     # Manual only. The `production` environment should carry required
     # reviewers, which is what actually blocks this — the `if` alone would not.
@@ -219,7 +506,7 @@ jobs:
     # been deployed, and wrangler does so without warning. See docs/DEPLOYMENT.md,
     # "What currently serves lockstate.io".
     if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     timeout-minutes: 30
     environment:
       name: production
@@ -229,6 +516,46 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          # ALL HISTORY, FOR THE SAME REASON ci.yml's `verify` JOB TAKES IT:
+          # "Verify before shipping" below runs `pnpm verify`, and `pnpm verify`
+          # reads history. tests/foundation/documentation-commit-citation-contract.test.ts
+          # resolves every commit sha the documentation cites, and its first
+          # case fails -- deliberately, rather than skipping -- on a checkout
+          # too shallow to resolve any of them. Read the comment on ci.yml's
+          # `verify` checkout for what the depth costs and why a narrower one
+          # was rejected; this is the same decision, not a second one.
+          #
+          # Without this line the job takes `actions/checkout`'s default depth
+          # of 1, and `pnpm verify` fails here for a reason that has nothing to
+          # do with the commit being shipped. Reproduced against a depth-1
+          # clone of this branch:
+          #
+          #   FAIL ... > runs on a checkout deep enough to answer, and fails
+          #              rather than skipping when it is not
+          #   AssertionError: this checkout is shallow ... expected true to be false
+          #   Tests  3 failed | 5 passed (8)
+          #
+          # It is a fail-safe failure -- it happens before anything is
+          # published -- but it is a production deploy blocked on a documentation
+          # gate reporting a checkout, and the message names a shallow clone
+          # rather than the commit, so it reads as a broken gate.
+          #
+          # AND IT WAS NOT INTERMITTENT, WHICH IS THE PART WORTH KNOWING. The
+          # workspace on this runner is per REPOSITORY and shared across
+          # workflows -- read out of a real run's log, not inferred: Deploy run
+          # 33005151972's `staging` job worked in
+          # `_work/lockstate/lockstate` and its `git clean -ffdx` deleted
+          # `browser-suite.log` and `test-results/`, which only ci.yml's
+          # `browser` job creates. So CI's `assets` and `browser` jobs, and this
+          # workflow's own `staging` job, all leave that workspace shallow at
+          # the default depth. But this job did not merely inherit that state:
+          # at a positive `fetch-depth` `actions/checkout` issues
+          # `git fetch --depth=1` itself, which re-writes `.git/shallow` even
+          # against a complete repository (measured in ci.yml's comment, and
+          # visible as the `--depth=1` line in that run's log). The step would
+          # therefore have failed on every dispatch, including the first one
+          # after a cold clone -- not on some of them.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -260,18 +587,41 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check required configuration is present
+      - name: Check configuration is present and holds no browser-visible secret
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-        run: bash scripts/check-deploy-secrets.sh
+        run: bash scripts/check-deploy-secrets.sh env
 
       # Re-run the full gate against the exact commit being shipped. CI having
       # passed on `main` earlier is not the same statement.
       - name: Verify before shipping
         run: pnpm verify
+
+      # The bundle scan is the check whose subject is what a visitor receives.
+      # It must run against a bundle built from these exact values, so the
+      # build happens here rather than being inferred from an earlier one --
+      # `pnpm verify` builds without this `env:` and so proves nothing about
+      # an inlined secret.
+      #
+      # `cloudflare-task.mjs deploy` builds and uploads inside one process, so
+      # no workflow step can sit between its build and its upload; this step
+      # therefore builds a second time. Folding the scan into
+      # scripts/verify-cloudflare-build.mjs, which already runs after every
+      # build including the deploy one, would remove the duplicate build. That
+      # file is out of scope for issue #344 and the move is proposed there.
+      - name: Build and scan the bundle for browser-visible secrets (production)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/cloudflare-task.mjs build production
+          bash scripts/check-deploy-secrets.sh bundle
 
       - name: Deploy to Cloudflare (production)
         env:

@@ -31,12 +31,25 @@ import { tileCoordinate, type TilePosition } from '../../src/simulation/world/co
  *
  * ## Where this file stops
  *
- * At the simulation. The **panel's numeric route still hides its edge chooser
- * for a door** (`occupiesEdge` is `category === 'wall'` in `src/main.ts`), so a
- * door submitted through the two number fields lands on whichever edge was last
+ * At the simulation, and that has not changed -- but the HUD question this
+ * paragraph left open has been answered, so the paragraph is corrected rather
+ * than deleted.
+ *
+ * It read: *"The **panel's numeric route still hides its edge chooser for a
+ * door** (`occupiesEdge` is `category === 'wall'` in `src/main.ts`), so a door
+ * submitted through the two number fields lands on whichever edge was last
  * selected rather than on one the player chose. That is a HUD surface question
- * and it is left open deliberately; the world's pointer gesture already fills
- * the edge in, which is the route this file exercises by naming one.
+ * and it is left open deliberately."* It was, and issue #531 is where it was
+ * closed: `src/main.ts` now publishes `occupiesEdge: occupiesTileEdge(
+ * definition)`, so the coordinate form offers a door the same chooser it offers
+ * a wall, and `intentEdge` in `src/ui/hud/build-panel.ts` stops any hidden
+ * chooser's retained value from riding along on a command.
+ *
+ * What still holds is where this file stops. The world's pointer gesture
+ * already fills the edge in, which is the route this file exercises by naming
+ * one; the panel's half is asserted in `tests/unit/ui-hud-build-panel.test.ts`
+ * and `tests/foundation/composition-root-contract.test.ts`, because nothing
+ * headless can mount the panel or import the composition root.
  */
 
 const SEED = 0xd0021;

@@ -5,13 +5,17 @@ import {
   identifierSchema,
   jsonValueSchema,
   sequenceSchema,
+  simulationEventSchema,
   tickSchema,
   uint32Schema,
 } from '../simulation/protocol/types';
+import { MAX_BUFFERED_SIMULATION_EVENTS } from '../simulation/events/event-log';
 import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
 import { NEED_MAX_SCALED } from '../simulation/prisoners/needs';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/regime';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
+import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
@@ -21,6 +25,7 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -30,7 +35,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 5 as const;
+export const SAVE_SCHEMA_VERSION = 6 as const;
 
 // --- Kernel / RNG ---
 
@@ -66,8 +71,17 @@ const namedRngStreamStateSchema = z
  * (`tests/perf/persistence-decode-aliasing.perf.ts`).
  *
  * One line, and it closes both trust entry points -- `createSaveEnvelope` and
- * `decodeSaveEnvelope` -- across all three payload versions and the V1 -> V2 ->
- * V3 migration chain, because `kernelSnapshotSchema` is shared by all of them.
+ * `decodeSaveEnvelope` -- across every payload version and the whole migration
+ * chain, because `kernelSnapshotSchema` is shared by all of them: it appears
+ * once per version below, and `save-migrations.ts` exports one
+ * `migrateSaveEnvelopeV<n>ToV<n+1>` per step.
+ *
+ * **This read "all three payload versions and the V1 -> V2 -> V3 migration
+ * chain" on 2026-09-15, when there were six schemas and five steps** -- and
+ * `docs/PERSISTENCE.md` carried the same claim twice, once as "four" and once
+ * as "three", in one file. The number is gone rather than set to six because
+ * the sentence is about the schema being *shared*, which is true at any count
+ * and stops the tally from rotting a fourth time.
  */
 const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
 
@@ -168,6 +182,41 @@ const buildOrderSchema = z
      * so no migration step is needed and none is added.
      */
     edge: z.enum(['north', 'west']).optional(),
+    /**
+     * Where the order sits in the sequence of gestures the player made
+     * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
+     * #722) -- the `QueuedCommand.sequence` of the command that placed it. The
+     * crew reaches orders in `(placementSequence ?? -1, id)`; see
+     * `compareBuildOrderExecution` in
+     * `src/simulation/construction/build-order.ts`.
+     *
+     * Optional, and **not** a version bump, on exactly the reasoning `edge`
+     * above and `currentTransaction` below are declared under, checked against
+     * `docs/PERSISTENCE.md`'s three conditions rather than assumed:
+     *
+     * - *Absent means what the older build already did.* An order with no
+     *   ordinal sorts ahead of every stamped one and tie-breaks by id, so a
+     *   save in which no order carries the key walks in ascending id -- which
+     *   is what every build before this one did, whole. No migration step is
+     *   needed and none is added.
+     * - *The key still has to be declared.* This schema is `.strict()`, so an
+     *   order carrying the field could not be saved at all until this line
+     *   existed; `createSaveEnvelope` refuses it with
+     *   `unrecognized_keys Unrecognized key: "placementSequence"`.
+     * - *Absence is not ambiguous and no existing field changed shape or
+     *   meaning.* A missing key means "this order predates the field", and
+     *   `id`, `edge`, `state`, `progress` and the rest all mean exactly what
+     *   they meant. So `SAVE_SCHEMA_VERSION` does not move -- the line ADR
+     *   0038 §1 draws, and the one V2 (#50) and V3 (#70) crossed.
+     *
+     * A non-negative integer because the kernel's counter is one:
+     * `Kernel.restoreState` refuses a snapshot whose `expectedSequence` is
+     * not. Validated rather than taken as `z.number()` so that a value the
+     * comparator could not order -- a fraction, a negative that collides with
+     * the `?? -1` sentinel -- is refused at the boundary instead of quietly
+     * reordering a prison.
+     */
+    placementSequence: z.number().int().min(0).optional(),
     state: z.enum([
       'planned',
       'approved',
@@ -220,10 +269,49 @@ const constructionSnapshotSchema = z
 // `capacity`. This schema is frozen historical shape: it exists only so the
 // migration chain can validate a save written by an older build before
 // upgrading it, and must never be edited to match new code.
+//
+// The `capacity` bound below is the one edit that is *not* "matching new
+// code", on the same footing as #102's `chunkSize` cap: it narrows what
+// counts as a valid save at a version, for a field that sizes allocations,
+// and it removes only values no writer produced. See the field's own comment.
 
 const entityStoreSnapshotV1Schema = z
   .object({
-    capacity: z.number().int().min(0),
+    /**
+     * Bounded at the same `0xf_ffff` `entityStoreSnapshotV2Schema` uses just
+     * below, and for the same reason `chunkSize` is bounded
+     * above: **this number sizes allocations,
+     * before anything has checked it.** `upgradeEntityLiveness`
+     * (`save-migrations.ts`) builds a `Uint16Array` + `Uint8Array` +
+     * `Uint32Array` straight from it -- 7 bytes per slot -- and V1's schema
+     * never required the three arrays to be `capacity` long, so an *empty*
+     * array set reaches that allocation. `decodeSaveEnvelope` runs the whole
+     * migration chain **before** verifying the checksum, so the checksum is
+     * no obstacle either (it is an integrity check, not a signature).
+     * Measured on the shipped `save-v1-in-progress.json` with only this field
+     * changed: `capacity: 10000000` allocated +70.0 MB from a 1,566-byte
+     * envelope and was refused only afterwards; `capacity: 4294967295` threw
+     * `RangeError: Array buffer allocation failed` **out of**
+     * `decodeSaveEnvelope`, which aborted `PrisonSaveRepository.loadCurrent`'s
+     * recovery walk before it could reach the older good generation.
+     *
+     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:15`), the
+     * ceiling `EntityStore`'s own constructor enforces at `:103`, so this is
+     * not a number invented for a schema. **It narrows nothing that was
+     * loadable**: V2's identical bound already refused every such save one
+     * step later, as `migration-produced-invalid-output` -- above `0xf_ffff` a
+     * refusal was already certain, and all this moves is *when* (before the
+     * allocation instead of after) and the label on it.
+     *
+     * The widest capacity any writer in this repository produces is
+     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:392,597`);
+     * a sweep of every numeric and symbolic `capacity` assignment in `src/`
+     * and `tests/` finds nothing above it, and both checked-in V1 fixtures
+     * carry 8. ADR 0038 §1 classifies this as a *value* the build cannot
+     * interpret -- refused -- rather than an absence to be honoured, so it is
+     * not a compatibility change and needs no version bump.
+     */
+    capacity: z.number().int().min(0).max(0xf_ffff),
     nextAvailableIndex: z.number().int().min(0),
     maxActiveIndex: z.number().int().min(-1),
     freeCount: z.number().int().min(0),
@@ -328,6 +416,43 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     riskTier: z.array(byteSchema),
     classificationGroupIndex: z.array(byteSchema),
     intakeStage: z.array(byteSchema),
+    // **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR 0038 §1's
+    // rule (issue #80, ADR 00XX): absent is a fact about the save's age, and
+    // it means exactly what every build before this one already meant --
+    // "nobody has ever been sanctioned in this session" -- so
+    // `decodePrisonerComponents` leaves `PrisonerRecordComponent`'s own
+    // every-slot-zero default standing rather than overwriting it. A present
+    // array is still checked against `activeLength` below, exactly as every
+    // required array is.
+    solitarySanctionEndTick: z.array(uint32Schema).optional(),
+    /*
+     * **Optional, and `SAVE_SCHEMA_VERSION` is not bumped** -- the same rule
+     * and the same shape as `solitarySanctionEndTick` above (issue #589, the
+     * owner's ruling of 2026-09-17).
+     *
+     * **The ruling authorised a bump and it is not spent, which is a decision
+     * rather than an omission.** The option the owner approved said
+     * `SAVE_SCHEMA_VERSION` would move by one field; the repository's own
+     * accepted rule says it should not, and the rule wins because it is what
+     * makes the change safe rather than what makes it tidy. ADR 0038 decision
+     * 1, restating `docs/PERSISTENCE.md`'s "Adding an optional field without a
+     * version bump": *"Absence is a fact about the save's age and is honoured
+     * with the value the writing build would have held"*, with a bump required
+     * instead only where absence is ambiguous or an existing field changed
+     * meaning. All three of that section's conditions hold here -- the field is
+     * optional, absent means exactly what every earlier build meant ("nobody in
+     * this session has been hurt"), and no existing field moves -- and ADR 0038
+     * rejected a V6 bump for `masterSeed` on the ground that its only migration
+     * content would be fabricating a value the save does not record, which is
+     * precisely what a `false`-per-slot migration step would be here.
+     *
+     * `z.array(byteSchema)` rather than a boolean array because
+     * `PrisonerRecordComponent.injured` is a `Uint8Array` and the payload
+     * carries the stored units verbatim, the way every other component array
+     * here does; `0` and `1` are the only values written and
+     * `tests/unit/prisoners-injury.test.ts` is what pins that.
+     */
+    injured: z.array(byteSchema).optional(),
     // Named, not positional: reordering `NEED_IDS` in the simulation must not
     // silently reinterpret an existing save's levels as a different need.
     needs: z
@@ -364,6 +489,8 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     check('riskTier', value.riskTier);
     check('classificationGroupIndex', value.classificationGroupIndex);
     check('intakeStage', value.intakeStage);
+    if (value.solitarySanctionEndTick !== undefined) check('solitarySanctionEndTick', value.solitarySanctionEndTick);
+    if (value.injured !== undefined) check('injured', value.injured);
     check('actionIndex', value.actionIndex);
     check('actionPhase', value.actionPhase);
     check('phaseStartedAtTick', value.phaseStartedAtTick);
@@ -412,9 +539,21 @@ const roomInstanceSchemaV4 = z
  * `width`/`height` are **optional**, and that is a decision rather than
  * caution: a V4 row genuinely does not record the rectangle and there is no
  * honest default -- `1x1` asserts a room the player did not zone, `64x64`
- * asserts one that overlaps its neighbours. An instance with no rectangle
- * contains no objects and therefore resolves to zero capacity, which is
- * precisely the pre-object-placement behaviour and so not a regression.
+ * asserts one that overlaps its neighbours.
+ *
+ * **What an absent rectangle then means at *restore* moved** (issue #559,
+ * [ADR 0074](../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)),
+ * and the sentence that stood here is marked rather than deleted: it read *"An
+ * instance with no rectangle contains no objects and therefore resolves to zero
+ * capacity, which is precisely the pre-object-placement behaviour and so not a
+ * regression."* True of *object-derived* capacity, and it stopped covering the
+ * case once #554 gave an objectless room a ceiling from its own ground -- an
+ * instance with no rectangle answered `Infinity` there, not zero.
+ * `restoreSessionSystems` now recovers the rectangle from the *world* section's
+ * zoning plane, which the same payload carries, so an absent rectangle in this
+ * row is no longer an absent rectangle in the restored session. This schema is
+ * untouched by that and `SAVE_SCHEMA_VERSION` does not move: nothing is written
+ * back, and the recovery is recomputed on every load.
  *
  * Bounded at `MAX_ZONE_DIMENSION_TILES` on both sides, which is the bound
  * `RoomZoningService.zone` refuses `invalid-area` above, so a hand-edited save
@@ -486,6 +625,49 @@ const objectsSectionSchema = z
   })
   .strict();
 
+/**
+ * The alerts log the player scrolls back through (the owner's decision 4 of
+ * 2026-09-01 on
+ * [ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md)).
+ *
+ * **Added to V5 rather than bumping to V6**, under the rule
+ * `docs/PERSISTENCE.md` states at "Adding an optional field without a version
+ * bump" and `masterSeed` and `objects` are already instances of: it is
+ * optional, and its absence is unambiguous as a fact about the corpus rather
+ * than by convention -- no build that wrote a save before this change could
+ * record an alerts log, because nothing snapshotted one, and every one of
+ * those saves restored to exactly what an absent section means here, an empty
+ * log. So no migration step is added, and `SAVE_SCHEMA_VERSION` does not move.
+ * ADR 0084 predicted this in its Consequences and said to record it so a
+ * future implementer does not re-litigate it; this is that record, and it was
+ * re-checked against ADR 0038 section 1 and that document's own
+ * "Adding an optional field without a version bump" section rather
+ * than taken from the ADR.
+ *
+ * The cost of not bumping is the one `masterSeed` records: an **older** build
+ * reading a save that carries this key refuses it as `invalid-shape` where a
+ * V6 bump would have said `unsupported-version`. Both refuse; only the label
+ * differs.
+ *
+ * `simulationEventSchema` is the protocol's own union rather than a copy
+ * declared here. A second shape for the same records would be a window the
+ * moment an event type gains a field -- the argument `PurchaseMaterials` makes
+ * in `commands.ts` about two boundaries disagreeing, which cost this
+ * repository an intermittent unreproducible save failure once already.
+ *
+ * `records` is bounded here as well as in the log, and by the same constant:
+ * a payload that arrived with ten thousand records would otherwise be restored
+ * into a buffer that `SimulationEventLog.append` only trims on the next
+ * *append*, so a session that recorded nothing more would hold it for ever.
+ */
+const alertsSectionSchema = z
+  .object({
+    sequence: sequenceSchema,
+    records: z.array(simulationEventSchema).max(MAX_BUFFERED_SIMULATION_EVENTS),
+    dismissed: z.array(sequenceSchema).max(MAX_BUFFERED_SIMULATION_EVENTS),
+  })
+  .strict();
+
 const prisonersSectionSchemaFor = <RoomInstance extends z.ZodTypeAny>(
   needLevelMax: number,
   roomInstance: RoomInstance,
@@ -553,7 +735,20 @@ const doorDefinitionSchema = z
     state: z.enum(['open', 'closed', 'locked']),
     requiredSecurityClearance: z.number().int().min(0),
     requiredPermission: z.string().min(1).optional(),
-    costMultiplier: z.number(),
+    /**
+     * Bounded, like `requiredSecurityClearance` above and unlike the bare
+     * `z.number()` this was: a save is the one boundary an authored door cost
+     * can cross, and a multiplier below a plain step makes
+     * `boundedLocalSearch`'s heuristic inadmissible (see
+     * `MINIMUM_DOOR_COST_MULTIPLIER`). Shared with the historical V3/V4
+     * shapes deliberately: no build of this game has ever written a value
+     * below `1` -- the only producers are `createGradedDoor` and
+     * `BuildableDefinition.placesDoor`, both `1` -- so the tightening
+     * rejects no save that exists, and leaving the historical leaf loose
+     * would let a migrated payload deliver the value `DoorRegistry.register`
+     * now throws on.
+     */
+    costMultiplier: z.number().min(MINIMUM_DOOR_COST_MULTIPLIER),
   })
   .strict();
 
@@ -649,7 +844,25 @@ const contrabandSectionSchema = z
             categoryId: z.string().min(1),
             provenance: contrabandProvenanceSchema,
             holder: contrabandHolderSchema,
-            state: z.enum(['concealed', 'confiscated']),
+            /*
+             * `'departed'` is the third member, added with ADR 0061's intake
+             * introduction route: a prisoner who leaves takes what they were
+             * concealing with them, and the record stays for the audit trail.
+             *
+             * **A widening, and `SAVE_SCHEMA_VERSION` is not bumped**, on
+             * ADR 0038 §1's conditions checked rather than assumed: every save
+             * written before this change still validates, because no older
+             * payload can contain a value this enum did not have; absence of
+             * the value has exactly one meaning (no holder of that item has
+             * ever left); and no existing member changed meaning. It carries
+             * §4's one stated cost, the same one `intelligenceSequence` above
+             * carries: this section is `.strict()` and the enum is closed, so
+             * an *older* build reading a save that has recorded a departure
+             * refuses it as `invalid-shape` where a bump would have said
+             * `unsupported-version` -- a label on a refusal both builds make
+             * either way.
+             */
+            state: z.enum(['concealed', 'confiscated', 'departed']),
             movementLog: z.array(z.object({ holder: contrabandHolderSchema, atTick: tickSchema }).strict()),
           })
           .strict(),
@@ -670,6 +883,33 @@ const contrabandSectionSchema = z
           .strict(),
       ]),
     ),
+    /**
+     * `IntelligenceLedger`'s allocation counter (ADR 0012 category 1, #431's
+     * neighbour rather than #431 itself).
+     *
+     * **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR 0038 §1's
+     * three conditions, each checked rather than assumed: the field is
+     * optional; absence has exactly one meaning -- the counter is derived from
+     * the maximum surviving id suffix, which is what every build did before
+     * this key existed, so an older save restores exactly as it did; and no
+     * existing field changed meaning. It is the same pattern `masterSeed`
+     * (§4), `entities`, `simulation` and `identity` already use, and it
+     * carries §4's one stated cost too: this section is `.strict()`, so an
+     * *older* build reading a save that carries this key refuses it as
+     * `invalid-shape` where a bump would have said `unsupported-version` --
+     * the label on a refusal both builds make either way.
+     *
+     * It cannot be folded into the `intelligence` array above, which is keyed
+     * by the ids that *survive*. `IntelligenceLedger.decayAll` deletes expired
+     * records, so the surviving maximum is a lower bound on what has been
+     * minted; a continuous run and a run restored from the same save minted
+     * `intel.4` and `intel.3` respectively before this field existed.
+     *
+     * `contrabandSectionSchema` is shared by the V3, V4 and V5 session-systems
+     * shapes, so -- exactly as `currentTransaction` above -- the key is
+     * equally valid in all three and no migration step has to add it.
+     */
+    intelligenceSequence: z.number().int().min(0).optional(),
     informants: z.array(
       z.object({ holderKind: z.enum(['prisoner', 'staff']), holderId: z.string().min(1), reliability: z.number() }).strict(),
     ),
@@ -753,6 +993,12 @@ const incidentsSectionSchema = z
               })
               .strict()
               .optional(),
+            // **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR
+            // 0038 §1's rule: absent is a fact about the save's age -- an
+            // incident this build's `IncidentTriggerSystem` did not yet mark
+            // an instigator on -- and it means exactly what an older build
+            // already meant, "no instigator recorded" (issue #80, ADR 00XX).
+            instigatorId: entityIdSchema.optional(),
           })
           .strict(),
       ]),
@@ -863,15 +1109,80 @@ const MAX_PENDING_DELIVERIES = 4_096;
  * **Bounded, because these are client-writable numbers.** A save is a file the
  * player's browser produced and could have edited, and the same reasoning that
  * bounds the trusted tier's columns (#105 finding 4, #191) applies to a
- * balance and a delivery queue: `nonnegative().int()` on the money, a
+ * balance and a delivery queue: `int()` on every figure, a
  * `max` on the queue so a hand-edited save cannot ask the runtime to hold
  * a million pending deliveries, and `safe()` so an arithmetic overflow cannot
  * be smuggled in as a starting condition.
+ *
+ * **This paragraph said `nonnegative().int()` on the money, and that half of
+ * it stopped being true at ADR 0075 decision 2** -- marked rather than
+ * overwritten, because the sign bound was load-bearing for the argument the
+ * `payroll` field below makes and a reader needs to see it go. `nonnegative()`
+ * survives on `payroll.unpaidWagesMinorUnits` and on the delivery queue's
+ * `arrivesAtTick` and `paidMinorUnits`; it is gone from the balance, and that
+ * field's own comment says why.
+ * What did not change is the part this paragraph was actually about: a
+ * hand-edited figure still has to be an integer inside the safe range.
  */
 const economySectionSchema = z
   .object({
     treasury: z
-      .object({ balanceMinorUnits: z.number().int().nonnegative().safe() })
+      /*
+       * **`.safe()` and not `.nonnegative()` since ADR 0075 decision 2**, and
+       * the loosening is the point rather than a slip. A balance may now be
+       * negative -- the decision's own headline is *"the balance may go
+       * negative … and nothing ends the session"* -- so a prison that saved
+       * while under water has to load while under water, or a reload is a way
+       * out of the debt. `Treasury.restore`'s validator was widened in the
+       * same change, because a boundary the runtime accepts and the file
+       * refuses is a window rather than a stricter check.
+       *
+       * The bound that mattered is unchanged: `.int().safe()` still refuses a
+       * fraction and still refuses a hand-edited figure outside the safe
+       * range, which is what #105 finding 4 and #191 asked of a
+       * client-writable number.
+       *
+       * **Why no migration step, and it is not this file's optional-field
+       * pattern.** That pattern is about *absence*, and this field is
+       * required: absence is not a case a reader can be in. What settles it is
+       * ADR 0038 decision 1's other clause -- *"a value the build cannot
+       * interpret is a fact about the blob and is refused"* -- and the line
+       * moved outward. The balances this build interprets are a strict
+       * superset of the ones the previous build could write, so there is
+       * nothing for a step to do: every save in the corpus is already valid
+       * under the new bound, and a step that rewrote a balance would be
+       * inventing a figure the file records correctly.
+       *
+       * **The cost, in the shape `masterSeed` and `payroll` state theirs.**
+       * Those two record that an *older* build refuses a save carrying their
+       * key as `invalid-shape` where a V6 bump would have said
+       * `unsupported-version`. A loosened *value* bound costs the same thing
+       * in a narrower case: a save whose balance is negative is refused
+       * `invalid-shape` by every build older than this one, and a negative
+       * balance is the only thing this loosening makes unreadable to them. It
+       * is one-directional, which is why it is acceptable and not why it is
+       * free.
+       *
+       * **Proven rather than asserted.**
+       * `tests/migrations/save-v5-negative-balance.test.ts` walks the boundary
+       * from both sides: every balance the previous bound accepted still
+       * decodes unmigrated and restores to itself, a negative one decodes and
+       * restores under water, the V1 fixtures with no economy section at all
+       * still land on the starting balance, and a fraction or an unsafe
+       * magnitude of either sign is still refused behind a valid checksum.
+       *
+       * **What is not here, and is a gap rather than a boundary:** ADR 0075
+       * decision 2's other half. There is no loan section in this schema, so
+       * an outstanding principal does not survive a save, and neither does
+       * the overdraft floor that let the prison spend it -- `TreasurySnapshot`
+       * is `{ balanceMinorUnits }` and nothing else. `src/simulation/economy/loans.ts`
+       * says so first and calls it a gap;
+       * `tests/determinism/loan-ledger-restore-boundary.test.ts` measures what
+       * a reload currently forgives, and is written to fail the moment a
+       * ledger starts surviving so that whoever adds the section has to come
+       * through here.
+       */
+      .object({ balanceMinorUnits: z.number().int().safe() })
       .strict(),
     procurement: z
       .object({
@@ -890,6 +1201,53 @@ const economySectionSchema = z
           .max(MAX_PENDING_DELIVERIES),
       })
       .strict(),
+    /**
+     * What the prison owes its staff
+     * ([ADR 0049](../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+     * [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+     * step 3), in the same minor units as the balance beside it.
+     *
+     * **Optional, absent means nothing is owed, and `SAVE_SCHEMA_VERSION`
+     * stays at 5.** The condition `docs/PERSISTENCE.md` sets for that is that
+     * absence be unambiguous, and here it is a fact about the corpus rather
+     * than a convention: no build that could write a V5 save had a recurring
+     * charge, so no such save can be hiding a real debt behind a missing key.
+     * The cost of not bumping is the one that section records -- an *older*
+     * build reading a save that carries this key refuses it as `invalid-shape`
+     * where a V6 would have said `unsupported-version`.
+     *
+     * **`nonnegative()` here used to be "the same invariant the balance above
+     * carries, and it points the other way", and since ADR 0075 decision 2 it
+     * is not.** The paragraph that stood here argued: a negative balance is
+     * what a debt would be if the treasury could overdraw; it cannot,
+     * deliberately, because ADR 0017 decision 8's ladder ends in *"staff
+     * unpaid"* and a treasury that overdrew would pay them. The premise is
+     * gone -- the treasury *can* overdraw now, as far as
+     * `Treasury.overdraftFloorMinorUnits` allows, and the balance above no
+     * longer carries a sign bound at all.
+     *
+     * Both directions are kept because the *conclusion* survives its own
+     * premise and a reader should be able to see that it does. This field is
+     * still non-negative, and now for a reason of its own rather than by
+     * symmetry: arrears are what the prison **owes its staff**, a magnitude
+     * with no meaningful negative reading, and a negative one would mean the
+     * staff owed the prison wages. A prison under water expresses that in the
+     * balance, which is the field that gained the sign.
+     *
+     * `.safe()` for the reason the fields above carry it: a save is a file the
+     * player's browser produced and could have edited, and
+     * `PayrollSystem.update` saturates rather than throwing if it is handed a
+     * figure one day short of the safe range.
+     *
+     * **Proven rather than asserted.** `tests/integration/economy-payroll-save.test.ts`
+     * decodes a real V5 save with this key removed and a real V4 save written
+     * before the field existed, restores both to zero arrears, and refuses a
+     * hand-edited save carrying a negative one behind a valid checksum.
+     */
+    payroll: z
+      .object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })
+      .strict()
+      .optional(),
   })
   .strict();
 
@@ -923,9 +1281,83 @@ const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny>(
 const sessionSystemsV3Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3, roomInstanceSchemaV4)).strict();
 /** Frozen historical shape: scaled needs (#259), authored room capacity, no objects section. */
 const sessionSystemsV4Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4)).strict();
-/** Current shape: room instances carry their rectangle and no derived fields, and placed objects have a section (ADR 0028). */
+/**
+ * Frozen historical shape: room instances carry their rectangle and no derived
+ * fields, placed objects have a section (ADR 0028), and the alerts log has one
+ * (ADR 0084, the owner's decision 4 of 2026-09-01).
+ *
+ * Both extra sections are optional and both are added *here* rather than in
+ * `sessionSystemsShapeFor` above, which is what keeps the V3 and V4 shapes
+ * frozen: a save written by one of those builds is still exactly what it was.
+ */
 const sessionSystemsV5Schema = z
-  .object({ ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5), objects: objectsSectionSchema.optional() })
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
+    objects: objectsSectionSchema.optional(),
+    alerts: alertsSectionSchema.optional(),
+  })
+  .strict();
+
+/**
+ * One classification group's timetable, as the session runs it
+ * ([ADR 0113](../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §2).
+ *
+ * `RegimeSchedule`'s own shape reused rather than a parallel one invented,
+ * which is the discipline `docs/PERSISTENCE.md` describes for `payload`
+ * generally. `.strict()` on both objects, like every other section here.
+ *
+ * **`allowedCategories` is `.min(1)`** for the reason `editRegimeBlockSchema`
+ * gives at the command boundary: an empty array names nothing in
+ * `ACTION_CATEGORIES`, and a block a prisoner can never act in is the state
+ * ADR 0054 exists to rule out. It is a shape defect either way -- nothing
+ * about the session is needed to see it -- so it is refused here as
+ * `invalid-shape` rather than surviving into a restore.
+ *
+ * **What this schema deliberately does not check: gaplessness.** That is a
+ * rule about a schedule's blocks *together*, and it is enforced by
+ * `RegimeScheduleRegistry.loadSnapshot`, which is the subsystem that owns it --
+ * the same split this file's own header states ("semantic rules ... belong to
+ * the subsystems that own them and are enforced by their own `loadSnapshot`").
+ */
+const regimeBlockSchema = z
+  .object({
+    startTickOfDay: z.number().int().min(0).max(DAY_LENGTH_TICKS - 1),
+    endTickOfDay: z.number().int().min(1).max(DAY_LENGTH_TICKS),
+    allowedCategories: z.array(z.enum(ACTION_CATEGORIES)).min(1),
+  })
+  .strict();
+
+const regimeScheduleSchema = z
+  .object({
+    classificationGroupId: identifierSchema,
+    blocks: z.array(regimeBlockSchema).min(1),
+  })
+  .strict();
+
+const regimeSchedulesSectionSchema = z.array(regimeScheduleSchema).min(1);
+
+/**
+ * Current shape: V5's, plus the required `regimeSchedules` section
+ * (ADR 0113 §2).
+ *
+ * Added here rather than in `sessionSystemsShapeFor` for the reason V5's two
+ * optional sections are: V3's and V4's shapes stay frozen, so a save written
+ * by one of those builds is still exactly what it was.
+ *
+ * **Required rather than optional, which is the whole reason for the version
+ * bump.** `EncodedSessionSystems.regimeSchedules` carries the argument: absence
+ * is genuinely ambiguous once a schedule can be edited, so there is no honest
+ * default a reader could apply, and `migrateSaveEnvelopeV5ToV6` manufactures
+ * the section instead.
+ */
+const sessionSystemsV6Schema = z
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
+    objects: objectsSectionSchema.optional(),
+    alerts: alertsSectionSchema.optional(),
+    regimeSchedules: regimeSchedulesSectionSchema,
+  })
   .strict();
 
 // --- Envelope ---
@@ -1011,8 +1443,12 @@ const savePayloadV4Schema = z
  * - **`width`/`height` fail the "absence is unambiguous" condition.** A V4 room
  *   instance genuinely does not record its rectangle and there is no honest
  *   default, so the field is optional *at V5* and absence keeps its own
- *   meaning: this room's rectangle was not recorded, so nothing can be
- *   attributed to it.
+ *   meaning: this **row's** rectangle was not recorded. Since #559 that is no
+ *   longer the same statement as "this room's rectangle is unknown" -- the
+ *   payload's world section carries the zoning plane the room was painted into,
+ *   and the restore reads the rectangle back off it (ADR 0074). The field stays
+ *   optional and this schema stays frozen; what changed is only what a restore
+ *   does with an absent one.
  * - **The removal of `capacity` crosses the line V4 itself crossed.** It was a
  *   *required* field, so dropping it changes the shape.
  *
@@ -1024,14 +1460,79 @@ const savePayloadV4Schema = z
  * equal the dropped ones.
  *
  * Everything outside `simulation` is byte-identical to V4.
+ *
+ * **V5 gained one more optional field after it shipped**: `masterSeed` (#412),
+ * under the same "adding an optional field without a version bump" rule the
+ * objects section is an instance of. A V5 save written before it exists is
+ * still a valid V5 save and still loads; see the field's own comment for the
+ * fact that makes its absence unambiguous.
  */
 const savePayloadV5Schema = z
   .object({
+    /**
+     * The u32 the session's named RNG streams were derived from (#412,
+     * ADR 0038 §4). Added to V5 rather than bumping to V6, because it is the
+     * optional-field pattern this file already documents at `:69-92` of
+     * `docs/PERSISTENCE.md` and applies to `objects` immediately above:
+     * optional, and absence means 0 unambiguously -- production has never
+     * supplied another value, so every save written before this field existed
+     * was written at seed 0. There is nothing for a migration step to do, so
+     * none is added rather than one fabricating a value the save does not
+     * record.
+     *
+     * `uint32Schema` and not `masterSeedSchema` from `services/challenges`:
+     * they are the same range, and `src/persistence` does not depend on
+     * `src/services`. `deriveXoshiroState` refuses anything outside it.
+     *
+     * The cost, recorded because "no bump is needed" is true and "no bump
+     * costs nothing" is not: `.strict()` means an **older** build reading a
+     * save that carries this key refuses it as `invalid-shape` where a V6 bump
+     * would have said `unsupported-version`. Both builds refuse it; only the
+     * label differs.
+     */
+    masterSeed: uint32Schema.optional(),
     kernel: kernelSnapshotSchema,
     world: worldSnapshotSchema,
     construction: constructionSnapshotSchema,
     entities: entityStoreSnapshotV2Schema.optional(),
     simulation: sessionSystemsV5Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
+  })
+  .strict();
+
+/**
+ * V6 (ADR 0113 §2): `simulation` gains a **required** `regimeSchedules`
+ * section.
+ *
+ * Everything outside that one key is byte-identical to V5, `masterSeed`
+ * included.
+ *
+ * **Why it is a bump and not the optional-field pattern**, which this file
+ * applies three times immediately above: that pattern's condition is that
+ * absence be unambiguous. It held for `objects` ("no object has been placed" --
+ * no V4 build could place one), for `alerts` ("this save does not know") and
+ * for `masterSeed` ("absent means 0" -- production could write nothing else).
+ * It does not hold here. A V5 save records no schedule, and the moment a
+ * schedule is editable, an absent section cannot distinguish "this prison runs
+ * the defaults" from "this prison's edits were not recorded". A schedule that
+ * does not exist has to be *manufactured* by a migration, which is
+ * `docs/PERSISTENCE.md`'s own line for when a bump is required rather than
+ * optional.
+ *
+ * **`simulation` itself stays optional, and that is not a hole.** A payload
+ * with no `simulation` section at all is a save from a build that had no
+ * subsystem state, and `migrateSaveEnvelopeV2ToV3` established that a
+ * migration may not fabricate one -- see `migrateSaveEnvelopeV5ToV6` for what
+ * that means here, and for why it is honest rather than a gap.
+ */
+const savePayloadV6Schema = z
+  .object({
+    masterSeed: uint32Schema.optional(),
+    kernel: kernelSnapshotSchema,
+    world: worldSnapshotSchema,
+    construction: constructionSnapshotSchema,
+    entities: entityStoreSnapshotV2Schema.optional(),
+    simulation: sessionSystemsV6Schema.optional(),
     identity: actorIdentitySnapshotSchema.optional(),
   })
   .strict();
@@ -1044,9 +1545,11 @@ export type SavePayloadV2 = DeepReadonly<z.infer<typeof savePayloadV2Schema>>;
 export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
 /** Historical V4 payload shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
+/** Historical V5 payload shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
+export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV5;
+export type SavePayload = SavePayloadV6;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1106,13 +1609,19 @@ const saveEnvelopeV4ObjectSchema = z
 const saveEnvelopeV4Schema = withOrderedTimestamps(saveEnvelopeV4ObjectSchema);
 
 const saveEnvelopeV5ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV5Schema })
+  .object({ ...saveEnvelopeMetadataShape(5), payload: savePayloadV5Schema })
   .strict();
 
 const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV5Schema`. */
-const saveEnvelopeMetadataV5Schema = withOrderedTimestamps(
+const saveEnvelopeV6ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV6Schema })
+  .strict();
+
+const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV6Schema`. */
+const saveEnvelopeMetadataV6Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -1124,13 +1633,15 @@ export type SaveEnvelopeV2 = DeepReadonly<z.infer<typeof saveEnvelopeV2ObjectSch
 export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSchema>>;
 /** Historical V4 envelope shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
+/** Historical V5 envelope shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
+export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV5;
+export type SaveEnvelope = SaveEnvelopeV6;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1143,7 +1654,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(1, saveEnvelopeV1Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV6Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -1163,6 +1675,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 4,
   toVersion: 5,
   migrate: (input) => migrateSaveEnvelopeV4ToV5(input as SaveEnvelopeV4),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 5,
+  toVersion: 6,
+  migrate: (input) => migrateSaveEnvelopeV5ToV6(input as SaveEnvelopeV5),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1332,8 +1849,47 @@ export function decodeSaveEnvelope(input: unknown): SaveDecodeResult {
 }
 
 export interface CreateSaveEnvelopeInput {
+  /**
+   * The seed the captured session's RNG streams were derived from (#412),
+   * taken from the bundle the authoritative simulation handed back rather than
+   * from whatever seed the composing host was configured with -- those differ
+   * the moment a session is loaded rather than created.
+   *
+   * Optional so a caller that genuinely has no seed to report (a payload
+   * composed by hand in a test, the migration path) writes a save shaped
+   * exactly like every save written before the field existed, instead of
+   * asserting a 0 it does not know.
+   */
+  readonly masterSeed?: number;
   readonly gameVersion: string;
   readonly prisonId: string;
+  /**
+   * What the composing session believes the next revision is -- **a proposal,
+   * not an allocation** (ADR 0109 Decision 1).
+   *
+   * `PrisonSaveRepository.writeGeneration` re-stamps this inside the
+   * `readwrite` transaction that compares the slot's `currentRevision`, so the
+   * number that reaches storage is allocated where it can be compared rather
+   * than where it was guessed. The only case that keeps what is passed here is
+   * the first write to a slot that has no `currentRevision` to allocate from.
+   *
+   * **Re-stamping costs this schema nothing, and that is why the design is
+   * affordable.** `createSaveEnvelope` below hashes the *payload* and puts
+   * this field in the metadata beside the digest, so changing it invalidates
+   * no checksum, moves no `saveSchemaVersion`, and leaves `decodeSaveEnvelope`
+   * unaffected. ADR 0105 left the choice between "a lock, a queue, or
+   * allocating the revision at write time" open because it did not have that
+   * fact; ADR 0109 Context 4 established it.
+   *
+   * **This docblock exists partly because ADR 0109 said it already did.** The
+   * document's "Consequences for existing sentences" names a *"'not this
+   * issue' note about caller-managed revisions"* in this file as a sentence
+   * that would go false. There was no such note here and there never had been
+   * -- `git log -S` over this file finds neither phrase -- and the sentence it
+   * meant lives in `docs/PERSISTENCE.md`'s own envelope-shape block. Rather
+   * than record only that the ADR was wrong, the note it expected is now
+   * written, stating what is true.
+   */
   readonly revision: number;
   readonly createdAt: number;
   readonly updatedAt: number;
@@ -1364,7 +1920,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV5Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV6Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -1372,7 +1928,8 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV5Schema.parse({
+  const payload = savePayloadV6Schema.parse({
+    ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
     construction: input.construction,
@@ -1381,7 +1938,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV5Schema.parse({
+  const metadata = saveEnvelopeMetadataV6Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

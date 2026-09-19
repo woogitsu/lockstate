@@ -54,15 +54,20 @@ const pendingSyncSchema = z
  * string where the window of generation ids belongs, an object written by
  * something other than this repository.
  *
- * **No migration is needed and none is added.** `PrisonSlotMetadata` has had
- * exactly one shape since it was introduced (`git log` on `store.ts`: the
- * only later edit to that file is a comment), the database version has never
- * been bumped past 1, and the record's writers are `PrisonSaveRepository`
- * plus the browser harness's seeder -- all of which write this shape. So
- * there is no legacy variant for a step to convert. A future field addition
- * follows the envelope's own rule (docs/PERSISTENCE.md, "Adding an optional
- * field without a version bump"): optional, with absence meaning what the
- * older build already did.
+ * **No migration is needed and none is added.** `PrisonSlotMetadata` had
+ * exactly one shape from when it was introduced until #1097 added
+ * `currentRevision`, the database version has never been bumped past 1, and
+ * the record's writers are `PrisonSaveRepository` plus the browser harness's
+ * seeder -- all of which write this shape. So there is no legacy variant for
+ * a step to convert. A field addition follows the envelope's own rule
+ * (docs/PERSISTENCE.md, "Adding an optional field without a version bump" --
+ * the same rule `construction.currentTransaction` was added under):
+ * optional, with absence meaning what the older build already did.
+ * `currentRevision` is the instance of that rule: absence means "no
+ * generation has landed in this slot since it was written by a build that
+ * records this field" -- either a slot that predates it, or the sliver of
+ * time between `create()` and the first generation it writes -- and nothing
+ * repairs it retroactively; the slot's next durable save populates it.
  */
 export const prisonSlotMetadataSchema = z
   .object({
@@ -82,6 +87,11 @@ export const prisonSlotMetadataSchema = z
     createdAt: z.number().int().min(0),
     updatedAt: z.number().int().min(0),
     pendingSync: pendingSyncSchema.optional(),
+    // Optional for the same reason `currentGenerationId` is: absent (or an
+    // explicit `undefined`, which `create()` writes) both mean "no generation
+    // has landed here yet under this field's own writer" -- see the header
+    // comment above and `PrisonSlotMetadata.currentRevision`'s doc comment.
+    currentRevision: z.number().int().min(0).optional(),
   })
   .strict();
 

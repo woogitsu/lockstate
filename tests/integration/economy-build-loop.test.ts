@@ -14,6 +14,7 @@ import {
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #89, through the loop issue #96 decided: **money buys materials,
@@ -101,7 +102,7 @@ function stepUntil(runtime: SimulationRuntime, predicate: () => boolean, limit =
 }
 
 describe('money buys materials and a wall gets built (#89, #96)', () => {
-  it('completes a build order that no starting stock paid for', () => {
+  it('completes a build order the player bought the materials for first', () => {
     const runtime = createNewSimulationRuntime(7);
 
     // The prison starts with money and no materials. Both halves asserted:
@@ -111,15 +112,6 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const materials = runtime.containers.getById(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     expect(materials, 'the construction container must exist').toBeDefined();
     expect(materials!.quantityOf('item.brick'), 'the prison must start with no bricks').toBe(0);
-
-    // Order the wall first, so it is genuinely waiting on materials rather
-    // than being placed into a stocked prison.
-    const order = createBuildOrder('wall-1', WALL, tile(4, 6), 'north');
-    runtime.construction.submitOrder(order);
-    expect(order.state, 'the order must be approved -- the land is owned (#215)').toBe('approved');
-
-    runtime.kernel.step();
-    expect(runtime.construction.getOrder('wall-1')?.state).toBe('materials-pending');
 
     // Buy the bricks through the real command path, not by calling the
     // system: the decoder and the session command router are part of what is
@@ -147,19 +139,52 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     );
     runtime.kernel.step();
 
+    /*
+     * **The order is placed second, and it used to be placed first.**
+     *
+     * The old comment here read *"Order the wall first, so it is genuinely
+     * waiting on materials rather than being placed into a stocked prison"*,
+     * and that ordering stopped being available on the change that implemented
+     * ADR 0017 decision 7 (#627): an order placed against an empty prison now
+     * *buys* its own materials, so ordering first and then pressing Buy is two
+     * purchases for one wall. That is not a defect -- the player asked for
+     * both -- but it is no longer this case's subject.
+     *
+     * This case is now the **holding** half of decision 7, *"holding is
+     * permitted"*: a player who pre-buys sees exactly the behaviour they saw
+     * before #627, one purchase and one wall. The just-in-time half is
+     * `pays for a wall the player never pressed Buy for` below, and that one is
+     * #627's own subject.
+     */
+    const order = createBuildOrder('wall-1', WALL, tile(4, 6), 'north');
+    runtime.construction.submitOrder(order);
+    expect(order.state, 'the order must be approved -- the land is owned (#215)').toBe('approved');
+
+    // To the next scheduled construction tick rather than one step: the order
+    // is now submitted at tick 1 rather than tick 0, and `ConstructionSystem`
+    // runs every ten ticks, so a single step lands between two of them.
+    expect(stepUntil(runtime, () => runtime.construction.getOrder('wall-1')?.state !== 'approved'))
+      .toBeGreaterThanOrEqual(0);
+    expect(runtime.construction.getOrder('wall-1')?.state).toBe('materials-pending');
+
     // Paid now, delivered later. Both are asserted because the money leaving
     // immediately is what makes a save taken mid-flight matter -- and the
     // amount is asserted exactly, because "less than the starting balance" is
-    // also true of a purchase that charged the wrong price.
+    // also true of a purchase that charged the wrong price. Exactly one
+    // purchase, so nothing bought the same bricks twice.
     expect(runtime.treasury.balanceMinorUnits).toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS - BRICK_PRICE! * BRICKS_PER_WALL,
     );
     expect(runtime.procurement.pendingDeliveries).toHaveLength(1);
     expect(materials!.quantityOf('item.brick'), 'nothing arrives on the tick it is bought').toBe(0);
+    // The tick the lorry is due, read off the queue rather than recomputed:
+    // "it arrived early" has to be measured against the purchase's own tick,
+    // and the order is no longer placed on the same tick as the purchase.
+    const arrivesAtTick = runtime.procurement.pendingDeliveries[0]!.arrivesAtTick;
 
-    const stepsToDelivery = stepUntil(runtime, () => materials!.quantityOf(WALL_REQUIREMENT.itemId) > 0);
-    expect(stepsToDelivery, 'the delivery never arrived').toBeGreaterThan(0);
-    expect(stepsToDelivery, 'it arrived early').toBeGreaterThanOrEqual(PROCUREMENT_DELIVERY_DELAY_TICKS - 2);
+    expect(stepUntil(runtime, () => materials!.quantityOf(WALL_REQUIREMENT.itemId) > 0), 'the delivery never arrived')
+      .toBeGreaterThan(0);
+    expect(runtime.kernel.tick, 'it arrived early').toBeGreaterThanOrEqual(arrivesAtTick);
     expect(runtime.procurement.pendingDeliveries, 'an arrived delivery must leave the queue').toHaveLength(0);
 
     const stepsToCompletion = stepUntil(runtime, () => runtime.construction.getOrder('wall-1')?.state === 'completed');
@@ -174,7 +199,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const runtime = createNewSimulationRuntime(7);
     const before = runtime.treasury.balanceMinorUnits;
 
-    const outcome = runtime.procurement.purchase('buy-huge', 'item.brick', 100_000, 0);
+    const outcome = runtime.procurement.purchase('buy-huge', 'item.brick', 100_000, 0, 'deliveries');
     expect(outcome).toEqual({ ok: false, reason: 'insufficient-funds' });
     expect(runtime.treasury.balanceMinorUnits, 'a refused purchase must not spend').toBe(before);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
@@ -196,7 +221,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
      * codec and says nothing about whether the save carries it.
      */
     const runtime = createNewSimulationRuntime(7);
-    runtime.procurement.purchase('buy-1', 'item.brick', 10, runtime.kernel.tick);
+    runtime.procurement.purchase('buy-1', 'item.brick', 10, runtime.kernel.tick, 'deliveries');
     expect(runtime.treasury.balanceMinorUnits).toBeLessThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
 
     const bundle = captureSessionSnapshot(runtime);
@@ -216,11 +241,13 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
 
   it('refunds exactly what a cancelled delivery cost, and stops it arriving', () => {
     /*
-     * `cancel` has no caller in `src/` yet -- there is no cancel-purchase
-     * command -- and it is tested rather than left bare because the mutation
-     * pass found it completely unguarded: replacing the refund with
-     * `credit(0)` passed everything. An untested public method on a system
-     * that spends money is worse than one that does not exist.
+     * `cancel` **now has a caller in `src/`** -- `CancelMaterialPurchase`
+     * reaches it through `createSessionCommandHandler`, and the Build panel's
+     * buy disclosure is what aims it (#285). This case predates that and stays
+     * as the unit-level guard on the arithmetic: the mutation pass found the
+     * refund completely unguarded, and replacing it with `credit(0)` passed
+     * everything. `tests/integration/economy-purchase-cancellation.test.ts`
+     * drives the same refund through the real command pipeline instead.
      *
      * The refund is the *recorded* `paidMinorUnits`, never a recomputation
      * from the catalog. Recomputing would refund today's price for a purchase
@@ -230,12 +257,17 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const runtime = createNewSimulationRuntime(7);
     const before = runtime.treasury.balanceMinorUnits;
 
-    const outcome = runtime.procurement.purchase('buy-1', 'item.brick', 5, 0);
-    expect(outcome.ok).toBe(true);
+    const outcome = runtime.procurement.purchase('buy-1', 'item.brick', 5, 0, 'deliveries');
+    expectOk(outcome, 'the five bricks bought before the refund');
     const spent = before - runtime.treasury.balanceMinorUnits;
     expect(spent, 'the fixture must actually have spent something').toBeGreaterThan(0);
 
-    expect(runtime.procurement.cancel('buy-1')).toBe(true);
+    // 5 bricks at 40 is 200, and the outcome states what came back rather than
+    // leaving the caller to infer it from a balance -- which is what
+    // `session-commands.ts` needs in order to tell a refused cancellation from a
+    // silent one.
+    expect(runtime.procurement.cancel('buy-1')).toEqual({ ok: true, refundedMinorUnits: 200 });
+    expect(spent, 'the fixture must have spent exactly the catalog price of five bricks').toBe(200);
     expect(runtime.treasury.balanceMinorUnits, 'a cancellation must refund exactly what was paid').toBe(before);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
 
@@ -245,7 +277,10 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     for (let step = 0; step < PROCUREMENT_DELIVERY_DELAY_TICKS * 2; step += 1) runtime.kernel.step();
     expect(materials.quantityOf('item.brick')).toBe(0);
 
-    expect(runtime.procurement.cancel('buy-1'), 'cancelling twice must not refund twice').toBe(false);
+    expect(runtime.procurement.cancel('buy-1'), 'cancelling twice must not refund twice').toEqual({
+      ok: false,
+      reason: 'not-pending',
+    });
     expect(runtime.treasury.balanceMinorUnits).toBe(before);
   });
 
@@ -263,12 +298,12 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
      * reads the queue.
      */
     const forwards = createNewSimulationRuntime(7);
-    forwards.procurement.purchase('b-second', 'item.brick', 1, 0);
-    forwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0);
+    forwards.procurement.purchase('b-second', 'item.brick', 1, 0, 'deliveries');
+    forwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0, 'deliveries');
 
     const backwards = createNewSimulationRuntime(7);
-    backwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0);
-    backwards.procurement.purchase('b-second', 'item.brick', 1, 0);
+    backwards.procurement.purchase('a-first', 'item.wood-plank', 1, 0, 'deliveries');
+    backwards.procurement.purchase('b-second', 'item.brick', 1, 0, 'deliveries');
 
     const ids = (runtime: SimulationRuntime): readonly string[] =>
       runtime.procurement.pendingDeliveries.map((delivery) => delivery.orderId);

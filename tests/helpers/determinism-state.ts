@@ -91,7 +91,37 @@ export function carriedScopeState(runtime: SimulationRuntime): JsonValue {
   });
 }
 
-/** Every snapshot and metrics surface the runtime exposes -- the broadest state two runs can be compared on. */
+/**
+ * Every snapshot and metrics surface the runtime exposes **except the
+ * economy** -- the broadest state two runs can be compared on, with one
+ * documented hole.
+ *
+ * **That sentence read "every snapshot and metrics surface the runtime
+ * exposes", full stop, and it was too broad** -- flagged by an external audit
+ * of 2026-08-31 and true when checked: neither the word `treasury` nor
+ * `balance` occurs anywhere in this file. `SimulationRuntime` exposes
+ * `treasury`, `procurement`, `justInTimeMaterials`, `stateIncome`, `loans` and
+ * `payroll`, and **none of them is read here**, so two runtimes that differ in
+ * nothing but money produce the same fingerprint.
+ *
+ * **The exclusion is deliberate and is pinned rather than accidental**, which
+ * is the half the audit could not see from this file: `#697` asserts it
+ * directly, with two sessions differing only in balance hashing identically as
+ * runtimes. The surface that *does* see money is the **save checksum**, which
+ * `#697` pins in the other direction, and `src/simulation/economy/treasury.ts`
+ * carries the same measurement at its own site.
+ *
+ * **What was actually wrong was where that was written down.** A reader of
+ * `treasury.ts` knew; a reader of this file was told the opposite by the one
+ * line describing it. The exclusion is stated here now, so the two files agree
+ * and so the next person to add an economy surface has to decide rather than
+ * assume.
+ *
+ * **This is not a claim that the economy is deterministic.** It is a claim
+ * about what this helper compares. If a determinism defect ever lands in
+ * money, no test built on this function will notice it -- and that is the
+ * decision to revisit, not this comment.
+ */
 export function fullRuntimeState(runtime: SimulationRuntime): JsonValue {
   return toJsonValue({
     kernel: runtime.kernel.snapshot(),
@@ -102,7 +132,11 @@ export function fullRuntimeState(runtime: SimulationRuntime): JsonValue {
     prisonerActionMetrics: runtime.prisoners.actionSystem.getMetrics(),
     containers: runtime.containers.getSnapshot(),
     jobs: runtime.jobs.getSnapshot(),
-    jobWorkers: runtime.jobWorkers.getSnapshot(),
+    // `jobWorkers` used to be read here and is gone: ADR 0093 decision 4
+    // retired `JobWorkerPool`, and the fact it held -- which prisoner is on
+    // which errand -- is `assignedWorkerId` on each job in `jobs` above, which
+    // this fingerprint already carries.
+
     guards: runtime.securityGuards.getSnapshot(),
     sectorControlStates: runtime.securitySectors.getSnapshot(),
     deploymentMetrics: runtime.deploymentSystem.getMetrics(),

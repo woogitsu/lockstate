@@ -8,7 +8,10 @@ import {
   tileRectsEqual,
 } from '../../src/rendering/build/area-picking';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
+import { WorldRenderView } from '../../src/rendering/world/world-view';
 import { MAX_ZONE_DIMENSION_TILES } from '../../src/simulation/rooms/zoning';
+import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
+import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import type { HudRoomArea, HudRoomGesture } from '../../src/ui/hud';
 import { RoomTool } from '../../src/ui/room-tool';
 
@@ -207,10 +210,95 @@ describe('RoomTool routes a gesture without knowing what a command is', () => {
     expect(areas).toEqual([{ x: 3, y: 4, width: 6, height: 6 }, undefined]);
   });
 
+  it('withdraws its aim when it is disarmed, rather than leaving the last one on the panel', () => {
+    // Issue #550, found on the Build panel and swept here: the readout is a
+    // claim about where the pointer is aimed, and a disarmed tool has handed
+    // the pointer back to the camera. Leaving the last rectangle on the "Area"
+    // line would keep a control asserting something false -- and nothing else
+    // clears it, because pressing "Draw on map" a second time neither hides the
+    // panel (which does clear it) nor produces a rectangle of its own.
+    const areas: (HudRoomArea | undefined)[] = [];
+    const tool = new RoomTool();
+    tool.attachReadout((area) => areas.push(area));
+    tool.setArmed(true, { roomId: 'room.cell', removing: false });
+
+    tool.target({ tileX: 3, tileY: 4, width: 6, height: 6 });
+    expect(areas.at(-1)).toEqual({ x: 3, y: 4, width: 6, height: 6 });
+
+    tool.setArmed(false, { roomId: 'room.cell', removing: false });
+
+    expect(areas.at(-1), 'a disarmed tool is aimed at nothing').toBeUndefined();
+  });
+
   it('drops a gesture when nothing is attached, which is a page with a world and no interface', () => {
     const tool = new RoomTool();
     tool.setArmed(true, { roomId: 'room.cell', removing: false });
     expect(() => tool.place({ tileX: 0, tileY: 0, width: 2, height: 3 })).not.toThrow();
     expect(() => tool.target(undefined)).not.toThrow();
+  });
+});
+
+/**
+ * `classifyArea`, issue #493.
+ *
+ * The one place this tool now knows a geometric fact about a room: whether an
+ * arbitrary rectangle's own perimeter is walled in, against the newest
+ * `WorldRenderView` the scene has handed it. Not a gesture -- neither
+ * `attachGestures` nor `attachReadout` fires from any of these -- because this
+ * is the query the HUD makes of the tool directly (`HudWorldRoomSource
+ * .classifyArea`), for a rectangle that may not have come from a drag at all.
+ */
+describe('RoomTool answers whether a rectangle is enclosed, for whoever asks', () => {
+  const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+  function worldWalledAt(rectangle: { x: number; y: number; width: number; height: number }): WorldRenderView {
+    const world = new SparseWorld(8);
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    const right = rectangle.x + rectangle.width - 1;
+    const bottom = rectangle.y + rectangle.height - 1;
+    for (let x = rectangle.x; x <= right; x += 1) {
+      world.setTopEdge(tile(x, rectangle.y), 1);
+      world.setTopEdge(tile(x, bottom + 1), 1);
+    }
+    for (let y = rectangle.y; y <= bottom; y += 1) {
+      world.setLeftEdge(tile(rectangle.x, y), 1);
+      world.setLeftEdge(tile(right + 1, y), 1);
+    }
+    return WorldRenderView.fromSnapshot(world.snapshot());
+  }
+
+  it('reports open before any world has been handed to it', () => {
+    const tool = new RoomTool();
+    expect(tool.classifyArea({ x: 0, y: 0, width: 4, height: 3 })).toBe('open');
+  });
+
+  it('reports sealed for a rectangle whose own perimeter is fully walled', () => {
+    const tool = new RoomTool();
+    const area = { x: 1, y: 1, width: 4, height: 3 };
+    tool.setWorld(worldWalledAt(area));
+    expect(tool.classifyArea(area)).toBe('sealed');
+  });
+
+  it('reports open for a rectangle with even one gap in its perimeter', () => {
+    const tool = new RoomTool();
+    const area = { x: 1, y: 1, width: 4, height: 3 };
+    const world = worldWalledAt(area);
+    tool.setWorld(world);
+    // A rectangle drawn one tile larger on every side is walled nowhere along
+    // its own new perimeter -- the walls above belong to the smaller room, not
+    // to this one.
+    expect(tool.classifyArea({ x: 0, y: 0, width: 6, height: 5 })).toBe('open');
+  });
+
+  it('follows the newest world handed to it, replacing rather than merging with the last one', () => {
+    const tool = new RoomTool();
+    const area = { x: 2, y: 2, width: 3, height: 3 };
+    tool.setWorld(worldWalledAt(area));
+    expect(tool.classifyArea(area)).toBe('sealed');
+
+    // An empty world arrives -- a fresh session, or a snapshot that has not
+    // materialised this land -- and the old answer must not survive it.
+    tool.setWorld(WorldRenderView.empty());
+    expect(tool.classifyArea(area)).toBe('open');
   });
 });

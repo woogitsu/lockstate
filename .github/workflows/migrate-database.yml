@@ -60,7 +60,7 @@ env:
 
 jobs:
   migrate:
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     timeout-minutes: 30
     environment:
       name: ${{ inputs.target }}
@@ -74,11 +74,16 @@ jobs:
       # hosted project -- before the CLI is even provisioned, so a broken
       # migration set stops here rather than after `supabase link`.
       #
-      # The asymmetry this closes: deploy.yml re-runs the whole gate before a
-      # Worker deploy, which `wrangler rollback` can undo. This workflow ran no
-      # verification at all before `supabase db push`, which cannot be undone --
-      # docs/DEPLOYMENT.md states that rollback of a migration is not
-      # automated. The irreversible operation was the unguarded one.
+      # The asymmetry this closes: deploy.yml's `production` job re-runs the
+      # whole gate before a Worker deploy, and a Worker deploy is undoable with
+      # `wrangler rollback` either way. (Its `staging` job does not re-run the
+      # gate: the automatic path's gate is the CI run whose completion triggers
+      # it, and a `workflow_dispatch` of `staging` has no triggering run at all
+      # -- which is why that alternative is restricted to `main`. See its `if:`.)
+      # This workflow ran no verification at all before `supabase db push`,
+      # which cannot be undone -- docs/DEPLOYMENT.md states that rollback of a
+      # migration is not automated. The irreversible operation was the
+      # unguarded one.
       #
       # `verify:sql` is the only thing in this repository that executes the SQL
       # under supabase/: it applies all nine migrations in order and runs the

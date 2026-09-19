@@ -2,7 +2,8 @@ import type { SimulationClient } from '../../simulation/worker/client';
 import type { WorkerToMainMessage } from '../../simulation/protocol/types';
 import { SIMULATION_PROTOCOL_VERSION } from '../../simulation/protocol/types';
 import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
-import { SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
+import { declaredRestoreFailureReason, RESTORE_CODE_FAULT } from '../../simulation/runtime/restore-refusal';
+import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
 
 /** Injectable so tests are not tied to `crypto.randomUUID` availability. */
 export interface WorkerSessionHostOptions {
@@ -16,18 +17,25 @@ const DEFAULT_REPLY_TIMEOUT_MS = 15_000;
 
 /**
  * A `protocol/error` the worker sent in answer to one of our requests, with
- * its fault code preserved.
+ * its fault code and declared `details` preserved.
  *
- * The code is kept because callers act on it: `startFromSnapshot` turns
- * `snapshot-incompatible` into a `SnapshotRestoreRejectedError`, which is
- * what tells the session layer the *save* was refused rather than the worker
- * being unreachable. Flattening every fault into a bare `Error` would leave
- * that distinction to string matching on a message.
+ * The code is kept because callers act on it, and `details` is kept for the
+ * same reason: `startFromSnapshot` reads the restore reason the worker
+ * *declared* there and re-raises the matching class, which is what tells the
+ * session layer whether the *save* was refused, the worker was unreachable, or
+ * our own restore code threw. Flattening a fault into a bare `Error` would
+ * leave those distinctions to string matching on a message, which is the
+ * defect #431 removes.
+ *
+ * `details` is `unknown` rather than a decoded shape: it arrives as
+ * `jsonValue` and `declaredRestoreFailureReason` is what narrows it, against
+ * the closed set, without a cast.
  */
 export class WorkerFaultError extends Error {
   public constructor(
     public readonly code: string,
     detail: string,
+    public readonly details?: unknown,
   ) {
     super(`Simulation worker fault (${code}): ${detail}`);
     this.name = 'WorkerFaultError';
@@ -70,8 +78,8 @@ export class WorkerSessionHost implements SessionRuntimeHost {
     clearTimeout(entry.timer);
 
     if (message.kind === 'protocol/error') {
-      const payload = message.payload as { code?: string; message?: string };
-      entry.reject(new WorkerFaultError(payload.code ?? 'unknown', payload.message ?? 'no detail'));
+      const payload = message.payload as { code?: string; message?: string; details?: unknown };
+      entry.reject(new WorkerFaultError(payload.code ?? 'unknown', payload.message ?? 'no detail', payload.details));
       return;
     }
     entry.resolve(message);
@@ -100,14 +108,30 @@ export class WorkerSessionHost implements SessionRuntimeHost {
   }
 
   /**
-   * A `snapshot-incompatible` fault is re-raised as
-   * `SnapshotRestoreRejectedError`, because that code is the worker saying
-   * this payload cannot be restored — and only that answer may cost the
-   * session layer a generation. A timeout, a dead worker or any other fault
-   * code propagates unchanged, so an unreachable worker never gets a good
-   * save demoted (see `SnapshotRestoreRejectedError`).
+   * ### Which fault becomes which error
    *
-   * The worker also stays usable after refusing a snapshot: the fault is
+   * The **declared reason**, not the fault code, decides — the worker writes
+   * one into every restore fault's `details`
+   * (`src/simulation/runtime/restore-refusal.ts`), and this reads it back.
+   * That is #431's requirement that the two causes be *"distinguishable by a
+   * declared value, not by string matching on an error message"*, held one
+   * layer earlier than the demotion decision that consumes it.
+   *
+   * - A declared refusal reason → `SnapshotRestoreRejectedError` carrying it.
+   *   Only that answer may cost the session layer a generation.
+   * - `restore-code-fault` → `SnapshotRestoreFaultError`. Our defect; the
+   *   session layer must retire nothing for it.
+   * - A timeout, a dead worker or a fault about anything else → propagates
+   *   unchanged, so an unreachable worker never gets a good save demoted.
+   *
+   * A `snapshot-incompatible` fault that declares **no** reason is treated as
+   * our defect rather than as a refusal, and that is deliberate rather than
+   * defensive: all three producers of that code declare one
+   * (`SimulationWorkerStateMachine.handleInitialize`), so a fault without one
+   * is a producer that forgot, and guessing a verdict about a player's save on
+   * its behalf is the exact move this issue exists to delete.
+   *
+   * The worker also stays usable after refusing a snapshot: the refusal is
    * raised as recoverable, so the next generation can be handed to the same
    * worker rather than needing a new one. This host does exactly that.
    * Production wraps it in `WorkerPerSessionHost`, which takes a fresh worker
@@ -127,8 +151,20 @@ export class WorkerSessionHost implements SessionRuntimeHost {
         },
       });
     } catch (error) {
-      if (error instanceof WorkerFaultError && error.code === 'snapshot-incompatible') {
-        throw new SnapshotRestoreRejectedError(error.message, { cause: error });
+      if (!(error instanceof WorkerFaultError)) throw error;
+
+      const reason = declaredRestoreFailureReason(error.details);
+      if (reason === RESTORE_CODE_FAULT) {
+        throw new SnapshotRestoreFaultError(error.message, { cause: error });
+      }
+      if (reason !== undefined) {
+        throw new SnapshotRestoreRejectedError(reason, error.message, { cause: error });
+      }
+      if (error.code === 'snapshot-incompatible') {
+        throw new SnapshotRestoreFaultError(
+          `The worker refused this snapshot without declaring why, so no verdict has been reached about the save: ${error.message}`,
+          { cause: error },
+        );
       }
       throw error;
     }

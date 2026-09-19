@@ -10,6 +10,12 @@ three answers is chosen.** Options A, B and C under question 1 and the three
 shapes under question 3 are exactly as open after this status as before it; #31
 is where they become load-bearing and where they get taken.
 
+**Two of the three questions are no longer open.** Question 2 was answered by
+ADR 0050 / #441 (2026-08-28), recorded in the amendment below. **Question 1 is
+now answered too (2026-08-29, #169): option A is taken**, alongside the
+already-shipped option C — see "Amendment, 2026-08-29" under Question 1.
+Question 3 remains exactly as open as this Status originally left it.
+
 Read the rest of this document as approved architecture in that narrow sense: it
 is binding about *how* the questions are answered — together, at a labelled test,
 with the RNG consequence stated — and about nothing else.
@@ -116,6 +122,170 @@ Pinning a known-defective behaviour is itself a statement, so it is made
 explicitly rather than by omission: these cases say "this is what happens
 today and it is wrong", not "this is acceptable". Every option below changes
 at least one of them, which is the point — none can be implemented silently.
+
+### Addendum, 2026-08-26 (#169): the tripwire's own coverage, measured
+
+*No decision changes here. Two claims this section makes about the gate were
+checked by mutating what the gate guards, and both needed sharpening — a
+tripwire is worth only what it detects, and this one detected less than
+stated.*
+
+**The generation check was not exercised at all.** Every
+`isAlive(staleId) === false` in `entity-generation-wrap.test.ts` was asserted
+between a `destroy` and the following `spawn` — with the slot on the free
+list, so the expectation was satisfied by `alive[index] !== 1` and never
+reached the generation comparison. Removing the generation term from
+`isAlive` entirely — #110's fix, and the exact guard whose failure at the wrap
+is this document's subject — left **all 190 test files and 2,229 tests green**.
+Those assertions now run with the slot occupied, where only the generation can
+reject the id.
+
+**The wrap period was not pinned in that file.** Every loop there runs exactly
+4,096 cycles, so any period dividing 4,096 lands on the same starting
+generation and satisfies every assertion: the `& 0xFFF` → `& 0xF` mutation
+cited above passed all six of its original cases, and only
+`actor-identity.test.ts` failed. That matters more than a plain coverage gap,
+because `actor-identity.test.ts` is the pin option A is named below as
+re-baselining — so the only guard on this counter was scheduled to be removed
+by one of the options this file exists to gate. The period is now pinned in
+`entity-generation-wrap.test.ts` as well, in a case that survives option A on
+its own terms.
+
+**Question 3's RNG consequence is now measured rather than argued.** The claim
+below that a re-intake "shifts the stream every later arrival's classification
+is read from" is pinned in `prisoners-intake-system.test.ts`: three later
+arrivals with identical inputs, admitted in the same order, take risk tiers
+`[2, 2, 0]` without the re-intake and `[2, 0, 2]` with it. The baseline is a
+second identical session rather than a literal copied from a previous run, so
+neither side of the comparison is supplied by the behaviour under test.
+
+**Still latent, re-verified at v0.0.88.** `EntityStore.destroy` has no call
+site anywhere in `src/` — all twelve `.destroy(` hits are Phaser teardown in
+`src/rendering/`. No index is recycled even once in a session a player can
+drive, so neither the wrap nor the re-intake is reachable through any shipped
+path; `submitIntake`'s only caller remains `admitPrisoner`, which spawns a
+fresh entity every time. The decisions below stay with #31.
+
+### Amendment, 2026-08-28 (#441): question 2 is answered, and the paragraph above is no longer true
+
+*No decision in the rest of this document is edited. The paragraph above is
+kept, dated and contradicted here rather than rewritten, because what it
+recorded — that every observation in this ADR was reached by driving
+`EntityStore` directly, never by playing — is the reason the questions were
+framed as they are.*
+
+[ADR 0050](./0050-when-a-sentence-ends.md) implements a release path for
+prisoners: a prisoner whose `sentenceEndTick` the clock has passed is dropped
+from every `EntityId`-keyed store and the entity is destroyed. So:
+
+- **`EntityStore.destroy` now has a call site in `src/`**
+  (`src/simulation/prisoners/release.ts`), and prisoner indices are recycled in
+  an ordinary session. Measured over a 200,000-tick run of the real kernel: 115
+  lifetime prisoners against a `maxActiveIndex` of 23.
+- **Question 2 is answered, as option C plus the accounting option C asked
+  for.** ADR 0050 decision 2 names every store, and
+  `tests/unit/prisoner-release-completeness.test.ts` is the mechanism that keeps
+  the list complete — a reflection walk of the real session's object graph
+  rather than a hand-written list, which is what this document said the decision
+  actually was. All four of the methods tabulated under question 2 now have a
+  caller, and `PrisonerColdState` has the per-entity `release` it lacked.
+- **Question 1 is not answered and is now reachable**, which is the reverse of
+  the situation this ADR was written in. Option A is still not taken, and the
+  re-baseline of `actor-identity.test.ts` this document names as part of taking
+  it is still not approved. What has changed is the exposure: with option C
+  implemented, no store holds a departed prisoner's id at all, so the surviving
+  hazard is a stale handle held *outside* every store across 4,096 recycles of
+  one index. ADR 0050's *What would change my mind* names the experiment that
+  would settle whether one exists.
+- **Question 3 is not answered.** The release path creates no re-intake caller.
+  The "one prisoner, two beds" state it measured is now recoverable rather than
+  permanent, because `RoomInstanceRegistry.releaseEntity` drops an entity from
+  every instance rather than from the one the cold state names.
+- **The two tripwire files are unchanged**, and that is the correct outcome
+  rather than an omission: they pin question 1's and question 3's behaviour, and
+  neither is decided here. `tests/unit/prisoner-slot-recycling.test.ts`, which
+  pins the #111 component reset, keeps driving `EntityStore.destroy` directly
+  rather than `releasePrisoner` — destroy alone is the harsher input, because it
+  leaves behind exactly what a real release drops.
+
+### Amendment, 2026-08-29 (#169): question 1 is answered — option A taken, alongside the already-shipped option C
+
+*Dispatched to verify the previous amendment's own hinge first: does discharge
+actually recycle an index, or does #441 merely make a prisoner disappear without
+touching `EntityStore`? Re-checked by reading rather than assumed. It recycles.*
+`PrisonerDischargeSystem.update` (`src/simulation/prisoners/discharge-system.ts:170-174`)
+calls `releasePrisoner`, which ends with `entityStore.destroy(entityId)`
+(`src/simulation/prisoners/release.ts:194`), and `EntityStore.spawn` takes from
+`freeIndices` before it ever advances `nextAvailableIndex`
+(`src/simulation/entity/entity-store.ts:131-141`) — so a released index is the
+*first* one a later admission reuses, not a fallback. Confirmed live, not
+hypothetical: `PrisonerOperationsRuntime` wires `new-session.ts`'s real
+`actorIdentity`, `gangs`, `jobWorkers` and `contraband` into
+`releaseSurfaces` (`src/simulation/runtime/new-session.ts:410-432`,
+`src/simulation/prisoners/prisoner-operations-runtime.ts:290-303`), so a
+discharge in an actual session runs every one of the four release calls this
+ADR's Question 2 table used to list as uncalled — they are no longer uncalled,
+which is the rest of what this amendment re-verifies before deciding anything.
+
+**Option A is taken: `EntityStore.destroy` retires a slot that dies at
+generation 4,095 rather than recycling it.** `src/simulation/entity/entity-store.ts`
+gained `MAX_GENERATION = 0xFFF` and `destroy()` no longer does
+`generations[index] = (generations[index] + 1) & 0xFFF` unconditionally — when
+the dying generation is already `MAX_GENERATION`, the index is marked dead and
+never pushed onto `freeIndices`, so `spawn()` can never hand it out again. Every
+other slot still gets its full 4,096 lives; only the 4,097th is refused. This is
+exactly option A as scoped above, taken with no re-baseline surprises beyond the
+one this document already named:
+
+- **The cost is the capacity loss this document priced, and nothing else.**
+  `canSpawn` and `admitPrisoner`'s existing `population-full` refusal
+  (`prisoner-operations-runtime.ts:660`) already treat "no free index and none
+  ahead" as an ordinary, handled outcome — retirement only makes that outcome
+  reachable slightly sooner in the pathological case this ADR is about, not a
+  new failure mode nobody catches.
+- **No save-format change**, confirmed by re-reading `loadSnapshot` rather than
+  assumed: `generations` already stores values up to 4,095 in a `Uint16Array`,
+  and `freeIndices` is a prefix of length `freeCount` — a retired index is
+  simply absent from that prefix, on save and on restore, with no new field.
+  The "on top of the capacity cost" migration this document priced for option A
+  does not apply; that clause was written when B's migration was the
+  neighbouring comparison and is worth correcting explicitly rather than
+  leaving to imply one exists here.
+- **`actor-identity.test.ts`'s wrap-period pin is re-baselined**, as named
+  above as the specific thing a reviewer approving option A would also be
+  approving: it now pins that index 0 is retired after 4,096 cycles rather than
+  that its id comes back, and the `describe` block's own decision — a name is
+  not derived from an id — is unweakened, resting on point 1 (allocation
+  policy) and the id-collision-across-stores case right beside it in the same
+  file, neither of which retirement touches.
+- **`tests/unit/entity-generation-wrap.test.ts` is rewritten rather than
+  extended**: every `DEFECT`-labelled case pinned the old wrap; each now pins
+  the corresponding fixed behaviour (a stale handle stays dead, a retired
+  slot's would-be new occupant never inherits the old one's cell, gang or
+  name), plus a case confirming a retired index is never reissued across
+  further destroy/spawn traffic on its neighbours. Mutated back to the
+  unconditional-wrap `destroy()` to confirm RED (7 failures across this file
+  and `actor-identity.test.ts`), restored by hand to confirm GREEN — see the
+  commit that lands this amendment for the exact counts.
+
+**A and C are both taken, which this document said was the only combination
+that fixes both halves.** C (release clears the three `EntityId`-keyed stores)
+shipped with ADR 0050 / #441 and does not, on its own, stop a stale handle held
+*outside* every store from reading a wrapped-back id as alive — that residual
+gap is exactly what ADR 0050's own "What would change my mind" named as
+unsettled. A closes it structurally: the id cannot recur at all, so there is no
+wrapped-back value left for an outside handle to collide with, whether or not
+release remembered to clear anything. Conversely A alone would still leave an
+orphaned map entry in a store nobody cleared — harmless once the id can never
+recur, but a leak — which is exactly why C stays taken alongside it rather than
+made redundant by it.
+
+**What this still does not settle**, restated because taking A does not answer
+either standing item: the capacity-exhaustion policy question in "What this
+decision does not settle" item 1 below is unchanged — `spawn` still throws and
+`admitPrisoner` still catches it via `canSpawn`, which is the existing handling,
+not a new one this amendment adds. And question 3 (`submitIntake` for an
+already-admitted prisoner) is untouched by anything in this amendment.
 
 ## Question 1 — what happens when a generation is exhausted?
 

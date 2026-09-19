@@ -1,0 +1,375 @@
+{
+  "saveSchemaVersion": 4,
+  "gameVersion": "lockstate-0.0.61",
+  "prisonId": "v4-yard-prison",
+  "revision": 1,
+  "createdAt": 1756000000000,
+  "updatedAt": 1756000000001,
+  "checksum": "8914cc5d3763857d",
+  "payload": {
+    "kernel": {
+      "tick": 50,
+      "expectedSequence": 1,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1457617010,
+              3327600441,
+              1755050327,
+              3061151647
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2941428508,
+              640319167,
+              1876554455,
+              1393302323
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              3140749505,
+              401362599,
+              2259522482,
+              3973638010
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2437987375,
+              1337818631,
+              3025813947,
+              360057261
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 64,
+          "dirty": true,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              132
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              660
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [
+          {
+            "instanceId": "room.yard:4:4",
+            "roomCatalogId": "room.yard",
+            "anchorTile": {
+              "x": 4,
+              "y": 4
+            },
+            "capacity": 0,
+            "objectCapabilities": []
+          }
+        ],
+        "roomInstanceOccupancy": [
+          [
+            "room.yard:4:4",
+            []
+          ]
+        ]
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [],
+        "sectorControlStates": [],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 0,
+            "maxActiveIndex": -1,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                0,
+                500
+              ]
+            ]
+          },
+          "records": []
+        },
+        "schedules": [],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [],
+          "members": [],
+          "reputation": [],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 25000
+        },
+        "procurement": {
+          "pending": []
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": []
+    }
+  }
+}

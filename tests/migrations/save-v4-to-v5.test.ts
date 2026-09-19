@@ -5,7 +5,9 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from '../../src/persistence/save-migrations';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import {
   SAVE_SCHEMA_VERSION,
   decodeSaveEnvelope,
@@ -79,6 +81,7 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
 function sessionWithABed(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(0x0b1ec7);
   submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: 4, y: 6 }));
   while (runtime.kernel.tick < 200) runtime.kernel.step();
@@ -91,14 +94,17 @@ function sessionWithABed(): SimulationRuntime {
  */
 function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   const runtime = createNewSimulationRuntime(0x5ca1e);
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
-  // The two things about a current capture that are newer than V4: the objects
-  // section did not exist, and a room instance carried a capacity and a
-  // capability list instead of a rectangle.
-  const { objects: _objects, ...simulation } = bundle.simulation;
+  // The three things about a current capture that are newer than V4: the
+  // objects section did not exist, the alerts section did not exist either
+  // (the owner's decisions of 2026-09-01 on ADR 0084 added it beside `objects`
+  // under the same optional-field rule), and a room instance carried a
+  // capacity and a capability list instead of a rectangle.
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -139,6 +145,7 @@ describe('save-schema V4 -> V5 migration', () => {
     // starts authoring a capacity this file fails instead of quietly migrating
     // a value it had assumed away.
     const runtime = createNewSimulationRuntime(3);
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
 
     expect(runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toMatchObject({
@@ -181,16 +188,42 @@ describe('save-schema V4 -> V5 migration', () => {
     // The other half of "lossless": what the restore *writes* for a migrated row
     // equals what V4 carried. Zero and empty in, zero and empty out.
     const migrated = migrateSaveEnvelopeV4ToV5(v4EnvelopeWithARoom());
-    const restored = restoreSimulationRuntime(migrated.payload as unknown as SessionSnapshotBundle, 0).runtime;
+    // Walked one step further before restoring, since ADR 0113 made
+    // `simulation.regimeSchedules` required at V6: `restoreSimulationRuntime`
+    // takes a current-version bundle, and handing it a V5 payload directly
+    // would be this test asserting about a shape no decode path produces.
+    const restored = restoreSimulationRuntime(
+      migrateSaveEnvelopeV5ToV6(migrated).payload as unknown as SessionSnapshotBundle,
+      0,
+    ).runtime;
 
     expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toMatchObject({
       residentCapacity: 0,
       concurrentUseCapacity: 0,
       objectCapabilities: [],
     });
-    // The rectangle is genuinely unknown for a migrated row, and the instance
-    // says so rather than claiming one.
-    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.width).toBeUndefined();
+    /*
+     * **This assertion used to read `.width).toBeUndefined()`**, under the
+     * comment *"the rectangle is genuinely unknown for a migrated row, and the
+     * instance says so rather than claiming one"*. Both directions are marked
+     * rather than overwritten, because the sentence was right about the
+     * *migration* and wrong about the *restore*, and only the second half
+     * moved.
+     *
+     * The migration still invents nothing -- the assertion above this one,
+     * over `migrateSaveEnvelopeV4ToV5`'s own output, is unchanged and still
+     * says so. What changed is that `restoreSessionSystems` now recovers the
+     * rectangle from the world's zoning plane, which the same payload carries
+     * and which `RoomZoningService.zone` painted when the room was designated
+     * (issue #559, ADR 0074). So the rectangle was never *unknown*; it was
+     * unread.
+     *
+     * `2x3` is `CELL_RECT`, the rectangle this fixture's own V4 session was
+     * told to zone. It is asserted against that constant rather than against
+     * anything the restore computed.
+     */
+    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.width).toBe(CELL_RECT.width);
+    expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.height).toBe(CELL_RECT.height);
     expect(restored.placedObjects.size).toBe(0);
   });
 
@@ -238,7 +271,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(5);
+      expect(SAVE_SCHEMA_VERSION).toBe(6);
     }
   });
 

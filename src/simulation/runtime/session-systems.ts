@@ -1,17 +1,22 @@
-import type { ProcurementSnapshot, TreasurySnapshot } from '../economy';
+import { isOpenAreaRoom } from '../../content/room-catalog';
+import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
 import type { ConfiscationEvent } from '../contraband/confiscation';
+import { applyDefaultSearchPolicies } from '../contraband/default-search-policies';
 import type { InformantRecord } from '../contraband/informants';
 import type { IntelligenceLedger } from '../contraband/intelligence';
 import type { ContrabandRegistry } from '../contraband/item';
 import type { SearchPolicyDefinition } from '../contraband/search-policy';
 import type { SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
+import { SnapshotRefusedError } from './restore-refusal';
+import { applyDefaultGangs } from '../incidents/default-gangs';
 import type { TunnelRecord } from '../incidents/escape';
 import type { GangRegistry } from '../incidents/gangs';
 import type { IncidentLog } from '../incidents/incident';
 import type { IncidentResponseSystem } from '../incidents/response-system';
 import type { SectorRiskTracker } from '../incidents/sector-risk';
 import type { IncidentTriggerSystem } from '../incidents/trigger-system';
+import type { SimulationEventLogSnapshot } from '../events/event-log';
 import type { DoorDefinition } from '../navigation/door';
 import { Container } from '../operations/inventory';
 import type { CarryItemJob } from '../operations/job';
@@ -23,7 +28,10 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
+import type { EncodedRegimeSchedule } from '../prisoners/regime-registry';
 import type { PlacedObject } from '../objects';
+import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
+import { applyDefaultSecuritySector } from '../security/default-sector';
 import type { DeploymentSchedule } from '../security/deployment-schedule';
 import type { GuardRecord, GuardRoster } from '../security/guard-roster';
 import type { SecuritySectorDefinition } from '../security/sector';
@@ -48,10 +56,10 @@ import type { SimulationRuntime } from './new-session';
  *    registry directly (doors, sector definitions, room instances, the
  *    runtime's mutable configuration arrays) it sorts explicitly.
  * 2. **Population-shaped, never capacity-shaped.** `DEFAULT_PRISONER_CAPACITY`
- *    is 5,000 slots; writing eighteen per-prisoner component arrays at that
- *    allocation would cost **~298 KiB (305,332 bytes) in every save even for a
- *    prison with no prisoners at all** — the exact mistake #50 removed from
- *    the entity ledger. See `encodePrisonerComponents` for what is written
+ *    is 5,000 slots; writing the twenty *persisted* per-prisoner component
+ *    arrays at that allocation would cost **~318 KiB (325,372 bytes) in every
+ *    save even for a prison with no prisoners at all** — the exact mistake #50
+ *    removed from the entity ledger. See `encodePrisonerComponents` for what is written
  *    instead.
  *
  *    That figure is the JSON size of the encoded shape at 5,000 slots with
@@ -59,7 +67,7 @@ import type { SimulationRuntime } from './new-session';
  *    51,000, `actionIndex` at its `-1` sentinel, the rest zero), measured
  *    rather than derived — the encoded arrays are `readonly number[]`, so the
  *    cost is digit widths and not element sizes. A populated mid-game prison,
- *    where three of the arrays hold seven-digit tick stamps, measures ~425 KiB
+ *    where three of the arrays hold seven-digit tick stamps, measures ~445 KiB
  *    at the same capacity. `docs/PERSISTENCE.md` states the same two figures
  *    for the same claims; this comment once said ~300 KiB for the first, which
  *    was neither figure (#169).
@@ -67,7 +75,12 @@ import type { SimulationRuntime } from './new-session';
  *    Both numbers moved with save-schema V4 (#259): needs are stored scaled by
  *    `NEED_SCALE`, five digits rather than three, across 30,000 elements at
  *    this capacity. The pre-V4 figures were ~240 KiB (245,332 bytes) and
- *    ~337 KiB.
+ *    ~337 KiB. Both moved again with issue #80 (ADR 00XX): a nineteenth
+ *    persisted array, `solitarySanctionEndTick`, was added at zero -- the
+ *    pre-#80 V5 figures were ~298 KiB (305,332 bytes) and ~425 KiB. And again
+ *    with issue #589 (the owner's ruling of 2026-09-17): a **twentieth**,
+ *    `injured`, also at zero -- the pre-#589 figures were ~308 KiB
+ *    (315,360 bytes) and ~435 KiB.
  */
 
 // --- Prisoner components -----------------------------------------------
@@ -86,12 +99,25 @@ import type { SimulationRuntime } from './new-session';
  * prefix costs nothing for them.
  *
  * Until #111 that residue was also future behaviour: `admitPrisoner` reset
- * five of the eighteen arrays, so recycling a freed index handed the next
+ * five of the then eighteen arrays, so recycling a freed index handed the next
  * prisoner the previous one's needs, classification and action state. It now
- * resets all eighteen, so a dead slot's contents can no longer become a live
- * prisoner's starting state. Whether the payload could therefore shrink to
- * the live indices only is a save-format change and a decision of its own;
- * writing the prefix is correct either way, and is what this codec does.
+ * resets **all twenty-two**, so a dead slot's contents can no longer become a
+ * live prisoner's starting state. **This sentence read "all eighteen", then
+ * "all twenty", then "all twenty-one", and the payload's count and the
+ * reset's count are two different sets**: #435 added `SubstitutionRecordComponent`'s two arrays,
+ * which `admitPrisoner` resets and this codec deliberately does not write --
+ * they are diagnostics, not state any system reads back, and issue #435 puts a
+ * save-schema change out of scope. #80 then added `solitarySanctionEndTick`
+ * to `PrisonerRecordComponent`, which is state a system reads back, so this
+ * codec does write it (see `solitarySanctionEndTick` above), and #589 then added
+ * `injured` to the same component for the same reason. The payload's
+ * **twenty** is the number the size claim above is about; the reset's
+ * **twenty-two** is the number `tests/unit/prisoner-slot-recycling.test.ts`
+ * pins.
+ *
+ * Whether the payload could therefore shrink to the live indices only is a
+ * save-format change and a decision of its own; writing the prefix is correct
+ * either way, and is what this codec does.
  *
  * Why plain arrays and not run-length encoding (which `entities` uses):
  * needs levels, positions and tick stamps differ per prisoner, so RLE would
@@ -111,6 +137,29 @@ export interface EncodedPrisonerComponents {
   readonly riskTier: readonly number[];
   readonly classificationGroupIndex: readonly number[];
   readonly intakeStage: readonly number[];
+  /**
+   * Optional on decode only, the same shape `intelligenceSequence` above uses
+   * (ADR 0038 §1, issue #80): a bundle written before this field existed
+   * simply never sanctioned anyone, and `decodePrisonerComponents` leaves the
+   * fresh component's every-slot-zero default standing for it rather than
+   * writing zeros over zeros. `encodePrisonerComponents` always produces it
+   * for a live runtime -- the optionality is for a save read back, not for
+   * this session's own output.
+   */
+  readonly solitarySanctionEndTick?: readonly number[];
+  /**
+   * Optional on decode only, for exactly the reason `solitarySanctionEndTick`
+   * above is (ADR 0038 §1, issue #589): a bundle written before this field
+   * existed is a bundle in which nobody was ever hurt, and
+   * `decodePrisonerComponents` leaves the fresh component's every-slot-zero
+   * default standing for it rather than writing zeros over zeros.
+   * `encodePrisonerComponents` always produces it for a live runtime.
+   *
+   * `0` or `1`. It is a byte array rather than a bitset because the payload is
+   * JSON either way and a packed form would be a second encoding to keep in
+   * step -- see `PrisonerRecordComponent.injured`.
+   */
+  readonly injured?: readonly number[];
   /**
    * Keyed by need id rather than positional, so reordering `NEED_IDS` cannot
    * silently swap two needs' levels in an existing save.
@@ -186,6 +235,24 @@ export interface EncodedOperations {
   /** `[containerId, [[itemId, quantity, reserved], ...]]`. Container *ids* are carried too: a restored session has only the construction container until this registers the rest. */
   readonly containers: readonly (readonly [string, readonly (readonly [string, number, number])[]])[];
   readonly jobs: readonly CarryItemJob[];
+  /**
+   * **Written empty and read as nothing, deliberately**
+   * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 5).
+   *
+   * `JobWorkerPool` is retired: eligibility is the regime's and busyness is
+   * the board's. Removing this key would be the save bump the decision refuses
+   * to spend -- an older build refuses a save on a missing required key, and
+   * `save-schema.ts` validates it as required -- so the writer keeps emitting
+   * `{ workers: [], busy: [] }` and the reader keeps validating it and ignores
+   * it. Two empty arrays against a `SAVE_SCHEMA_VERSION` move, which is the
+   * same trade ADR 0038 decision 4 makes for keeping `masterSeed` optional.
+   *
+   * **An older save with a non-empty pool loads cleanly.** A listed worker who
+   * holds an assigned job is resumed from the board -- their own active job
+   * makes `action.carry` providable again (`ActionSystem.carryAvailableFor`) --
+   * and one who does not was merely *eligible*, which is now a question the
+   * regime answers every cycle rather than a stored fact.
+   */
   readonly jobWorkers: { readonly workers: readonly number[]; readonly busy: readonly number[] };
   readonly electricity: EncodedUtilityNetwork;
   readonly water: EncodedUtilityNetwork;
@@ -226,6 +293,18 @@ export interface EncodedSecurity {
 export interface EncodedContraband {
   readonly items: ReturnType<ContrabandRegistry['getSnapshot']>;
   readonly intelligence: ReturnType<IntelligenceLedger['getSnapshot']>;
+  /**
+   * `IntelligenceLedger`'s allocation counter (ADR 0012 category 1).
+   *
+   * Optional, and **not** a save-schema version bump, on ADR 0038 §1's
+   * optional-field rule: absent means what every build did before the field
+   * existed -- derive the counter from the maximum surviving id suffix -- so a
+   * bundle written by an older build restores exactly as it did. It cannot be
+   * folded into `intelligence`, which is keyed by the ids that *survive*;
+   * `decayAll` deletes expired records, so the surviving maximum is a lower
+   * bound on what has been minted rather than the counter.
+   */
+  readonly intelligenceSequence?: number;
   readonly informants: readonly InformantRecord[];
   readonly confiscations: readonly ConfiscationEvent[];
   readonly searchPolicies: readonly SearchPolicyDefinition[];
@@ -252,6 +331,25 @@ export interface EncodedIncidents {
  */
 export interface EncodedSessionSystems {
   readonly prisoners: EncodedPrisoners;
+  /**
+   * Every classification group's timetable, as the session is actually running
+   * it ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+   * §2).
+   *
+   * **Required, and that is why `SAVE_SCHEMA_VERSION` went to 6** rather than
+   * this being the optional-field pattern `objects`, `alerts` and `economy`
+   * below are instances of. That pattern's stated condition is that absence is
+   * unambiguous, and here it is not: a V5 save records no schedule at all, and
+   * "absent means `DEFAULT_REGIME_SCHEDULES`" is a sentence that is true only
+   * until the first edited save is written by a build that would then be
+   * indistinguishable from an unedited one. `migrateSaveEnvelopeV5ToV6` is what
+   * resolves it, by writing the two schedules every V5 session provably ran.
+   *
+   * Canonical order is `RegimeScheduleRegistry`'s, not the session's write
+   * history -- see that class for why an insertion-ordered array would put the
+   * sequence of a player's edits into the save's checksum.
+   */
+  readonly regimeSchedules: readonly EncodedRegimeSchedule[];
   readonly operations: EncodedOperations;
   readonly navigation: EncodedNavigation;
   readonly security: EncodedSecurity;
@@ -294,6 +392,32 @@ export interface EncodedSessionSystems {
    * `capacity` off a room instance.
    */
   readonly objects?: EncodedObjects;
+  /**
+   * The alerts log the player scrolls back through (the owner's decision 4 of
+   * 2026-09-01 on
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   * **Optional, and absence means "this save does not know"** -- which is what
+   * every save written before this change meant, because no such build
+   * snapshotted the log at all, and every one of them restored to the empty
+   * log an absent section restores to now. That is the optional-field pattern
+   * `docs/PERSISTENCE.md` describes, on its own stated condition, so
+   * `SAVE_SCHEMA_VERSION` stays at 5 and no migration step is added, exactly
+   * as for `objects` above and `economy.payroll` below.
+   *
+   * **Why it is in the save at all, having twice been argued out of it.**
+   * `SimulationEventLog`'s docblock and `docs/PERSISTENCE.md` both argued the
+   * exclusion, and both were right about the *band*: an event is a statement
+   * that something happened now. What the owner decided is that the **log** is
+   * a different surface from the band -- it is what a player scrolls back
+   * through -- so the records come back and are replayed with `restored: true`,
+   * which rebuilds the list and announces nothing. Both documents are
+   * corrected rather than quietly contradicted.
+   *
+   * It also carries the dismissals, and it has to: a row a player retired that
+   * came back on the next load would make the owner's decisions 3 and 4 fight.
+   */
+  readonly alerts?: SimulationEventLogSnapshot;
 }
 
 export interface EncodedObjects {
@@ -304,6 +428,29 @@ export interface EncodedObjects {
 export interface EncodedEconomy {
   readonly treasury: TreasurySnapshot;
   readonly procurement: ProcurementSnapshot;
+  /**
+   * Wages billed and not paid
+   * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3).
+   *
+   * **Optional, and absence means "nothing is owed"** -- which is what every
+   * save written before payroll existed meant, because no such build could
+   * leave a wage unpaid: `Treasury.spend` was called only by
+   * `ProcurementSystem.purchase` and `StaffHiringService.hire`, both of which
+   * refuse rather than owe. That is the optional-field pattern
+   * `docs/PERSISTENCE.md` describes, on its own stated condition -- absence is
+   * unambiguous as a fact about the corpus rather than by convention -- so
+   * `SAVE_SCHEMA_VERSION` stays at 5 and no migration step is added, exactly as
+   * for `simulation.objects` and `masterSeed`.
+   *
+   * **Why it is in the save at all**, when `StateIncomeSystem` beside it is
+   * proudly stateless: arrears are *history*, not a derivation. Nothing in a
+   * restored session's positions, occupancy or tick could reconstruct the fact
+   * that a day's wages went unpaid, and dropping it would forgive the debt on
+   * every load -- which would make saving and reloading the cheapest way out of
+   * insolvency in the game.
+   */
+  readonly payroll?: PayrollSnapshot;
 }
 
 // --- Prisoner component codec ------------------------------------------
@@ -327,6 +474,8 @@ export function encodePrisonerComponents(prisoners: SimulationRuntime['prisoners
     riskTier: sliceOf(prisoners.records.riskTier, activeLength),
     classificationGroupIndex: sliceOf(prisoners.records.classificationGroupIndex, activeLength),
     intakeStage: sliceOf(prisoners.records.intakeStage, activeLength),
+    solitarySanctionEndTick: sliceOf(prisoners.records.solitarySanctionEndTick, activeLength),
+    injured: sliceOf(prisoners.records.injured, activeLength),
     needs: needs as { readonly [Need in NeedId]: readonly number[] },
     actionIndex: sliceOf(prisoners.currentAction.actionIndex, activeLength),
     actionPhase: sliceOf(prisoners.currentAction.phase, activeLength),
@@ -358,8 +507,19 @@ export function decodePrisonerComponents(
   position: ReturnType<PositionComponent['getSnapshot']>;
 } {
   const length = encoded.activeLength;
-  if (!Number.isInteger(length) || length < 0 || length > capacity) {
-    throw new RangeError(`Prisoner component snapshot covers ${length} slots, which is outside a capacity of ${capacity}.`);
+  // Two refusals wearing one message, and #431 needs them apart. A prefix
+  // wider than this build's capacity is the same fact `EntityStore.loadSnapshot`
+  // states one module over -- the writing build allocated more than we do, and
+  // a wider build reads the file. A non-integer or negative prefix is the
+  // payload contradicting itself and no build reads it.
+  if (!Number.isInteger(length) || length < 0) {
+    throw new SnapshotRefusedError('damaged-payload', `Prisoner component snapshot covers ${length} slots, which is not a slot count.`);
+  }
+  if (length > capacity) {
+    throw new SnapshotRefusedError(
+      'unsupported-by-this-build',
+      `Prisoner component snapshot covers ${length} slots, which is outside a capacity of ${capacity}.`,
+    );
   }
 
   const records = new PrisonerRecordComponent(capacity).getSnapshot();
@@ -369,6 +529,13 @@ export function decodePrisonerComponents(
   records.riskTier.set(encoded.riskTier);
   records.classificationGroupIndex.set(encoded.classificationGroupIndex);
   records.intakeStage.set(encoded.intakeStage);
+  // Absent means "nobody has ever been sanctioned in this session" (ADR
+  // 0038 §1) -- the fresh `PrisonerRecordComponent` above already holds that
+  // value in every slot, so there is nothing to overwrite.
+  if (encoded.solitarySanctionEndTick !== undefined) records.solitarySanctionEndTick.set(encoded.solitarySanctionEndTick);
+  // Absent means "nobody has ever been hurt in this session" (ADR 0038 §1,
+  // issue #589) -- the same shape and the same one meaning as the line above.
+  if (encoded.injured !== undefined) records.injured.set(encoded.injured);
 
   const needs = new NeedsComponent(capacity).getSnapshot();
   for (const needId of NEED_IDS) needs[needId].set(encoded.needs[needId]);
@@ -491,6 +658,12 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
   const coldState = runtime.prisoners.coldState.getSnapshot();
 
   return pruneUndefined({
+    // Emitted unconditionally by a live capture: every session has exactly the
+    // timetables its `RegimeScheduleRegistry` holds, which is `DEFAULT_REGIME_SCHEDULES`
+    // until an `EditRegimeBlock` says otherwise. There is no "this save does
+    // not know" state for a required section, which is what separates it from
+    // `objects` and `alerts` below.
+    regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -503,7 +676,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     operations: {
       containers: runtime.containers.getSnapshot().map(([id, stock]) => [id, stock.map((entry) => [entry[0], entry[1], entry[2]] as const)] as const),
       jobs: runtime.jobs.getSnapshot().map((job) => ({ ...job })),
-      jobWorkers: { ...runtime.jobWorkers.getSnapshot() },
+      jobWorkers: { workers: [], busy: [] },
       electricity: utilitySnapshot(runtime.electricity),
       water: utilitySnapshot(runtime.water),
     },
@@ -522,6 +695,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     contraband: {
       items: runtime.contraband.getSnapshot(),
       intelligence: runtime.intelligence.getSnapshot(),
+      intelligenceSequence: runtime.intelligence.getSequence(),
       informants: runtime.informants.getSnapshot(),
       confiscations: runtime.confiscations.getSnapshot(),
       searchPolicies: [...runtime.searchPolicies].sort((a, b) => (a.scope < b.scope ? -1 : a.scope > b.scope ? 1 : 0)),
@@ -531,6 +705,11 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     economy: {
       treasury: runtime.treasury.snapshot(),
       procurement: runtime.procurement.snapshot(),
+      // Emitted unconditionally by a live capture, zero and all -- the same
+      // distinction the `objects` section draws below: a prison that owes
+      // nothing writes `{ unpaidWagesMinorUnits: 0 }`, which says "nothing is
+      // owed", where an *absent* section says "this save does not know".
+      payroll: runtime.payroll.snapshot(),
     },
     // Emitted unconditionally by a live capture, empty array and all: a session
     // that has placed nothing writes `{ placedObjects: [] }`, which says "this
@@ -539,6 +718,11 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // know -- the same distinction `migrateSaveEnvelopeV2ToV3` draws for the
     // `simulation` section itself.
     objects: { placedObjects: runtime.placedObjects.getSnapshot() },
+    // Emitted unconditionally by a live capture, empty buffer and all, on the
+    // same terms as `objects` above: a session that has had nothing to say
+    // writes an empty log, which says "this prison has said nothing", where an
+    // *absent* section says "this save does not know".
+    alerts: runtime.events.getSnapshot(),
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -584,8 +768,79 @@ export function restoreSessionSystems(
   // 1. Navigation doors at baseline, then sectors (which snapshot that
   //    baseline), then the control states that cascade onto the doors.
   for (const door of systems.navigation.doors) runtime.navigation.doors.register({ ...door });
-  for (const sector of systems.security.sectorDefinitions) runtime.securitySectors.register({ ...sector });
+  /*
+   *    **A sector the runtime already holds gets the payload's definition
+   *    applied over it, not skipped** ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+   *    decision 3, confirmed by the owner 2026-09-02: *"the save wins over the
+   *    derivation"*).
+   *
+   *    `SecuritySectorRegistry.register` throws on a duplicate id, and since
+   *    [ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md)
+   *    the runtime this function is handed already holds one sector: the derived
+   *    default, registered by `createNewSimulationRuntime`, which
+   *    `restoreSimulationRuntime` builds the session with. Without *some* guard
+   *    a save written by any session at all would fail to load on the duplicate
+   *    id -- that half of the reasoning below is unchanged.
+   *
+   *    **What used to be here argued that skipping was right rather than
+   *    convenient, and that argument doesn't survive ADR 0092.** It read, in
+   *    full: *"`SecuritySectorRegistry`'s own contract is that a sector's
+   *    static definition is 'assumed re-registered identically by
+   *    session/scenario setup before `loadSnapshot` runs' -- only the mutable
+   *    control state is part of the snapshot. The default sector is a pure
+   *    function of the world, the world is restored before this runs and
+   *    handed into the same wiring a live session uses, so what the payload
+   *    carries for it and what the runtime derived are the same definition;
+   *    the payload's copy is redundant rather than authoritative, exactly as
+   *    room geometry and navigation caches are."* Every clause was true the
+   *    day it was written, because `postTile` had exactly one writer in
+   *    `src/` and `patrolRoute` had none -- there was no way for the payload's
+   *    row to *differ* from the derivation, so "redundant" and "authoritative"
+   *    were the same thing in practice. ADR 0092 is what removes that: a
+   *    player-authored post or route (once its command exists) makes the
+   *    payload's row genuinely different from what today's derivation would
+   *    produce on reload, and skipping it would silently discard what the
+   *    player placed. The owner was shown exactly that (a bundle hand-edited
+   *    to carry `postTile: (20,20)` and two waypoints restoring as (16,16)
+   *    with no route) and ruled that what the player placed must come back.
+   *
+   *    So: **register** an id the runtime does not hold yet (a scenario
+   *    sector, or the first load of any save), and **redefine** -- decision
+   *    2's narrow mutator, restricted to `postTile`/`patrolRoute`/
+   *    `expectedPatrolLoopTicks` -- one it already holds, so the payload's
+   *    copy of those three fields wins over whatever `createNewSimulationRuntime`
+   *    derived. `redefine` cannot touch `id`, `gradeId` or `doorIds`, so this
+   *    can never re-point which doors a sector governs or which baseline
+   *    `normalDoorStates` restores to -- only decision 3's three fields move.
+   *    `tests/integration/security-default-sector.test.ts` still pins that an
+   *    *untouched* save's payload and the fresh derivation are identical (the
+   *    case this whole mechanism has to keep working), and now also pins that
+   *    a *differing* payload row survives the round trip instead of being
+   *    overwritten by the derivation.
+   */
+  for (const sector of systems.security.sectorDefinitions) {
+    if (runtime.securitySectors.getDefinition(sector.id) === undefined) {
+      runtime.securitySectors.register({ ...sector });
+    } else {
+      runtime.securitySectors.redefine(sector.id, {
+        postTile: sector.postTile,
+        ...(sector.patrolRoute !== undefined ? { patrolRoute: sector.patrolRoute } : {}),
+        ...(sector.expectedPatrolLoopTicks !== undefined ? { expectedPatrolLoopTicks: sector.expectedPatrolLoopTicks } : {}),
+      });
+    }
+  }
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
+
+  // 1b. The timetables, before anything that could read one
+  //     ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+  //     §4). Ordering matters only in one direction and it is cheap to state:
+  //     `ActionSystem` reads a schedule per idle prisoner per reconsideration
+  //     cycle, and nothing in this function steps a system, so no read can
+  //     happen before the end of it -- but a future step that did would read
+  //     `DEFAULT_REGIME_SCHEDULES` rather than the save's if this line came
+  //     after it. `loadSnapshot` re-orders the rows into canonical order and
+  //     re-asserts each one gapless rather than trusting the file.
+  runtime.prisoners.regimes.loadSnapshot(systems.regimeSchedules);
 
   // 2. Definitions that other snapshots reference by id.
   //
@@ -596,13 +851,51 @@ export function restoreSessionSystems(
   //    the restore order stated rather than implicit -- and it has to be this
   //    way round, because a capacity is a fact about the objects inside a
   //    rectangle and the rectangle has to exist first.
+  //
+  //    **A row that records no rectangle gets one back from the world's zoning
+  //    plane, which this payload also carries** (issue #559,
+  //    [ADR 0074](../../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)).
+  //    A save-schema V4 row carries an anchor and no extent, and until #554
+  //    that cost nothing visible; ADR 0071 then gave a room with a rectangle a
+  //    concurrent-use ceiling derived from its own ground and left
+  //    `POSITIVE_INFINITY` standing for a room without one, so a restored V4
+  //    yard admitted every prisoner at once while the same yard zoned in this
+  //    build admitted four. `RoomZoningService.zone` paints the room type's
+  //    `numericId` over every tile it designates and that plane is persisted,
+  //    so the rectangle is *recoverable* rather than lost --
+  //    `recoverRoomBoundsFromZoningPlane` is the arithmetic, and its own header
+  //    is why the answer is exact rather than a guess.
+  //
+  //    **It runs here rather than in `migrateSaveEnvelopeV4ToV5`**, and the
+  //    reason is measured in `tests/migrations/save-v4-room-bounds.test.ts`: a
+  //    V4 payload restored and re-captured produces a *current-version*
+  //    envelope that still carries the boundless row, so a repair inside the
+  //    migration would never be offered that save again. Nothing is written to
+  //    any file here; the recovery is recomputed on every load, which is
+  //    [ADR 0033](../../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+  //    shape rather than ADR 0030's.
+  //
+  //    A row the plane cannot support keeps its absent bounds and ADR 0071's
+  //    unbounded ceiling. That residue is deliberate: inventing a rectangle the
+  //    plane does not show would assert a room the player never zoned.
+  const recoveredBounds = recoverRoomBoundsFromZoningPlane(runtime.world, systems.prisoners.roomInstanceDefinitions);
   for (const instance of systems.prisoners.roomInstanceDefinitions) {
+    const recovered = recoveredBounds.get(instance.instanceId);
     runtime.prisoners.roomInstances.register({
       ...instance,
       anchorTile: { ...instance.anchorTile },
+      ...(recovered === undefined ? {} : { width: recovered.width, height: recovered.height }),
       residentCapacity: 0,
       concurrentUseCapacity: 0,
       objectCapabilities: [],
+      // Re-derived from this build's catalogue, never read back from the save.
+      // `openArea` is a property of the room *type* (owner's ruling of
+      // 2026-08-29, issue #585, amending ADR 0071), so a persisted copy could
+      // disagree with the build that loads it -- which is the reason ADR 0028
+      // phase 1 stopped persisting capacity, applied to a tag. Nothing is
+      // written: `PersistedRoomInstance` is built field by field against a
+      // `.strict()` schema and carries no such field.
+      openArea: isOpenAreaRoom(instance.roomCatalogId),
     });
   }
 
@@ -628,7 +921,17 @@ export function restoreSessionSystems(
 
   // 3. Prisoners: liveness, components and occupancy in one call, so the
   //    runtime's own bitset re-derivation and in-flight travel reset run.
-  const components = decodePrisonerComponents(systems.prisoners.components, entityStore.capacity);
+  //    The components are sized to **this runtime's** store, not to the
+  //    capacity the save records, for the reason `EntityStore.loadSnapshot`
+  //    now gives: the save's capacity is the length of the array the writing
+  //    build happened to allocate. Sizing them to it produced arrays that
+  //    `PrisonerRecordComponent.loadSnapshot` could copy into this runtime's
+  //    only while the two builds agreed -- a save from a *larger* build threw
+  //    `RangeError` out of `TypedArray.set` with nothing said about capacity
+  //    at all. `decodePrisonerComponents` bounds `activeLength` against what
+  //    it is handed, so the refusal for a prefix that genuinely does not fit
+  //    now names this store's capacity, which is the number that decides.
+  const components = decodePrisonerComponents(systems.prisoners.components, runtime.prisoners.entityStore.capacity);
   runtime.prisoners.loadSnapshot({
     entityStore,
     records: components.records,
@@ -640,12 +943,38 @@ export function restoreSessionSystems(
       currentActionTargetInstanceId: systems.prisoners.coldState.currentActionTargetInstanceId.map(([id, value]) => [id, value] as [number, string]),
     },
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
-  });
+  },
+  // The tick the restored session resumes at, which `Kernel.restoreState` has
+  // already installed by the time this runs -- `restoreSimulationRuntime` calls
+  // it before this function. Its only use is stamping
+  // `ActionMetrics.substitutionsCountedSinceTick`: the substitution counters
+  // are per prisoner and no save carries them (issue #435), so a restore opens
+  // a new counting window and this is the number that says so out loud.
+  runtime.kernel.tick);
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
   runtime.jobs.loadSnapshot(systems.operations.jobs.map((job) => ({ ...job })));
-  runtime.jobWorkers.loadSnapshot(systems.operations.jobWorkers);
+  /*
+   * **The board's half of ADR 0093 decision 5's one restore rule**, and it has
+   * to run after `prisoners.loadSnapshot` above because the predicate reads the
+   * restored population.
+   *
+   * A carrier restored mid-errand needs nothing here: `loadSnapshot` dropped
+   * every `travelling` prisoner to `idle`, the carry is still in their
+   * `actionIndex`, and their own active job makes it providable again -- so the
+   * next reconsideration cycle re-selects the carry and
+   * `ActionSystem.resolveTargetInstance` resumes the leg the job records, from
+   * the tile the save carried. What needs closing is the *other* direction: a
+   * job assigned to an id that no longer names a living prisoner would sit
+   * `'assigned'` for the rest of the session holding a reservation nothing
+   * would release. `'carrier-departed'` is the reason it is failed with, and
+   * `compensateHeldStock` gives the goods back under ADR 0037.
+   *
+   * `operations.jobWorkers` is deliberately not restored -- see
+   * `EncodedOperations.jobWorkers`.
+   */
+  runtime.carryJobs.reconcileRestoredJobs((workerId) => runtime.prisoners.entityStore.isAlive(workerId));
   runtime.electricity.loadSnapshot(systems.operations.electricity);
   runtime.water.loadSnapshot(systems.operations.water);
 
@@ -670,11 +999,15 @@ export function restoreSessionSystems(
   if (systems.economy !== undefined) {
     runtime.treasury.restore(systems.economy.treasury);
     runtime.procurement.restore(systems.economy.procurement);
+    // Absent on every save written before payroll existed, and the runtime
+    // then keeps the zero arrears `createNewSimulationRuntime` gave it -- which
+    // is what a prison that could not owe a wage actually owed.
+    if (systems.economy.payroll !== undefined) runtime.payroll.restore(systems.economy.payroll);
   }
 
   // 6. Contraband, intelligence and searches.
   runtime.contraband.loadSnapshot(systems.contraband.items);
-  runtime.intelligence.loadSnapshot(systems.contraband.intelligence);
+  runtime.intelligence.loadSnapshot(systems.contraband.intelligence, systems.contraband.intelligenceSequence);
   runtime.informants.loadSnapshot(systems.contraband.informants);
   runtime.confiscations.loadSnapshot(systems.contraband.confiscations);
   runtime.searchPolicies.length = 0;
@@ -694,4 +1027,94 @@ export function restoreSessionSystems(
   runtime.incidentSectorIds.push(...systems.incidents.watchedSectorIds);
   runtime.incidentTriggerSystem.loadSnapshot(systems.incidents.trigger);
   runtime.incidentResponseSystem.loadSnapshot(systems.incidents.response);
+
+  /*
+   * 8. The derived default sector, re-applied after the payload
+   *    ([ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md)).
+   *
+   *    `createNewSimulationRuntime` already derived it, and steps 1, 5 and 7
+   *    above have just overwritten two of the three collections it filled:
+   *    `securitySchedules` and `incidentSectorIds` are both cleared and refilled
+   *    from the payload, because `DeploymentSystem` and `IncidentTriggerSystem`
+   *    read those arrays live and restoring means refilling the array rather
+   *    than replacing it. A save written *before* this ADR carries both of them
+   *    empty, so without this line loading such a save would strip the sector's
+   *    staffing requirement and its place on the incident watch list, and the
+   *    tier would go dark again on exactly the saves players already have.
+   *
+   *    So it runs last, and `applyDefaultSecuritySector` is idempotent and
+   *    payload-wins: a save that carries a schedule or a watch entry for this
+   *    sector keeps its own, and one that carries neither gets the derived pair.
+   *    This is the whole of what makes ADR 0036 need **no save-schema bump and
+   *    no migration** -- `SAVE_SCHEMA_VERSION` stays 5 and no persisted field is
+   *    added, because derived state is recomputed rather than carried.
+   */
+  const defaultSector = applyDefaultSecuritySector({
+    world: runtime.world,
+    sectors: runtime.securitySectors,
+    schedules: runtime.securitySchedules,
+    watchedSectorIds: runtime.incidentSectorIds,
+  });
+
+  /*
+   * 8b. The two gangs, re-applied after the payload
+   *     ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   *     decision 1), and for exactly the reason 8 and 9 give.
+   *
+   *     Step 7 above called `GangRegistry.loadSnapshot`, which **clears every
+   *     definition** before it replays the payload's -- so a save written
+   *     before ADR 0103, which is every save that exists, restores a prison
+   *     with no gangs at all and a `'gang-retaliation'` producer that can
+   *     never fire again. Honouring that absence with the derived value rather
+   *     than a throw is ADR 0038 §1, the same reading step 9 makes about the
+   *     search policies.
+   *
+   *     `applyDefaultGangs` is idempotent and payload-wins per id: a save that
+   *     carries a gang under one of the two ids keeps its own definition and
+   *     its own territory, and the *members* and *grudges* the payload
+   *     restored are untouched either way -- this call registers definitions
+   *     and writes neither. So no persisted field is added,
+   *     `SAVE_SCHEMA_VERSION` does not move, and there is no migration.
+   */
+  applyDefaultGangs(runtime.gangs, defaultSector.id);
+
+  /*
+   * 9. The four default search policies, re-applied after the payload
+   *    ([ADR 0073](../../../docs/adr/0073-who-orders-a-contraband-search.md)
+   *    Part 1, issue #552), and for exactly the reason above.
+   *
+   *    Step 6 cleared and refilled `searchPolicies` from the payload, because
+   *    `SearchSystem` reads that array live. **Every save written before ADR
+   *    0073 carries it empty** -- nothing in `src/` had ever pushed to it -- so
+   *    without this line a restored prison would be the one place
+   *    `SearchSystem.findPolicy` still throws, on the first sweep
+   *    `SectorSearchDutySystem` orders. The saves that condition reaches are
+   *    the ones players already have, which is the same argument ADR 0036 made
+   *    for the sector.
+   *
+   *    `applyDefaultSearchPolicies` is idempotent and payload-wins: a save that
+   *    carries a policy for a scope keeps its own, and one that carries none
+   *    gets the default. So no persisted field is added, `SAVE_SCHEMA_VERSION`
+   *    does not move, and there is no migration -- absence is honoured with a
+   *    value rather than a throw (ADR 0038 §1).
+   */
+  applyDefaultSearchPolicies(runtime.searchPolicies);
+
+  /*
+   * 10. The alerts log the session had said, so the player gets it back (the
+   *     owner's decision 4 of 2026-09-01 on
+   *     [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
+   *
+   *     Last, and order-free: nothing else in this function reads the log and
+   *     nothing the log holds is consulted by any restore step, because these
+   *     are records of what was *said* rather than state anything is derived
+   *     from. It is placed here rather than in step 1 for that reason -- a
+   *     reader looking for the ordering constraints of a restore does not have
+   *     to consider it at all.
+   *
+   *     Absent means an empty log, which is what every save written before this
+   *     change restored to. Nothing is fabricated for one: a prison that came
+   *     back saying nothing is exactly what those saves recorded.
+   */
+  if (systems.alerts !== undefined) runtime.events.loadSnapshot(systems.alerts);
 }

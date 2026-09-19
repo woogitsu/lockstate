@@ -219,6 +219,18 @@ describe('the V3 simulation section is validated, not trusted', () => {
         water: { type: 'water', nodes: [], connections: [], failedNodeIds: [] },
       },
       navigation: { doors: [] },
+      // V6's required section (ADR 0113). Hand-built like everything else here,
+      // and minimal: the schema requires at least one group with at least one
+      // block, because a session in which no group has a timetable is not a
+      // state any build can produce. Gaplessness is `RegimeScheduleRegistry`'s
+      // rule and not this schema's, which is why one whole-day block is enough
+      // to be well-formed here.
+      regimeSchedules: [
+        {
+          classificationGroupId: 'general-population',
+          blocks: [{ startTickOfDay: 0, endTickOfDay: 2_400, allowedCategories: ['sleep'] }],
+        },
+      ],
       security: {
         sectorDefinitions: [],
         sectorControlStates: [],

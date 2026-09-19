@@ -1,4 +1,5 @@
 import type { SaveEnvelope } from '../save-schema';
+import { classifyStoreError } from './errors';
 import type { SaveResult } from './repository';
 
 export interface AutosaveDependencies {
@@ -66,16 +67,61 @@ export class AutosaveScheduler {
     void this.performSave(prisonId);
   }
 
+  /**
+   * Runs one save and **always settles the prison afterwards**, whatever
+   * happened.
+   *
+   * The `finally` is the whole point and it is guarding a measured defect,
+   * not a hypothetical one. `runSave` claims the slot by setting the state to
+   * `'saving'` and then calls this method through `void`, so before the
+   * `try/finally` a single rejection -- most plausibly `buildEnvelope`, which
+   * captures authoritative state over the worker boundary and therefore
+   * rejects whenever the worker has faulted, hung or gone away -- left the
+   * entry parked in `'saving'` for ever. `settle` never ran, so no follow-up
+   * timer was ever scheduled and `markDirty` could only ever set
+   * `'saving-with-pending-dirty'` on a save that had already finished:
+   * autosave stopped for the rest of the session, after one failure, and the
+   * only trace was an unhandled rejection in the console.
+   *
+   * Failure is also *reported* rather than merely survived, through the same
+   * `onResult` a successful write goes to. A save that fails where nothing
+   * player-visible learns of it is the shape this repository treats as a real
+   * bug, not a cosmetic one (ADR 0024 decision 2 makes the same argument for
+   * a worker fault: recovering is defensible only while the failure is
+   * visible), and `SessionController` already forwards `onResult` to the save
+   * panel's status line.
+   */
   private async performSave(prisonId: string): Promise<void> {
-    const envelope = await this.deps.buildEnvelope(prisonId);
-    if (envelope === undefined) {
+    try {
+      const result = await this.attemptSave(prisonId);
+      // `undefined` means `buildEnvelope` had nothing worth saving, which is
+      // not an outcome to report -- no write was attempted.
+      if (result !== undefined) this.deps.onResult?.(prisonId, result);
+    } finally {
       this.settle(prisonId);
-      return;
     }
+  }
 
-    const result = await this.deps.save(prisonId, envelope);
-    this.deps.onResult?.(prisonId, result);
-    this.settle(prisonId);
+  /**
+   * The save itself, which **never rejects**: a thrown failure becomes the
+   * same `SaveResult` a refused write already produces, so one code path
+   * reports both.
+   *
+   * `classifyStoreError` rather than a hand-written `unknown-error`, because
+   * the throw can come from storage as easily as from capture -- `save()`
+   * classifies the failures it catches itself, and a `QuotaExceededError`
+   * that escapes by any other route deserves the same answer rather than a
+   * second, blunter vocabulary for it.
+   */
+  private async attemptSave(prisonId: string): Promise<SaveResult | undefined> {
+    try {
+      const envelope = await this.deps.buildEnvelope(prisonId);
+      if (envelope === undefined) return undefined;
+      return await this.deps.save(prisonId, envelope);
+    } catch (error) {
+      const classified = classifyStoreError(error);
+      return { ok: false, error: { code: classified.code, message: `Autosave failed: ${classified.message}` } };
+    }
   }
 
   /** Schedules exactly one follow-up if the prison was dirtied while this save ran, otherwise goes idle. */

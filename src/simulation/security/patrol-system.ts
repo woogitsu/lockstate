@@ -1,6 +1,7 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId } from '../entity/entity-store';
 import type { NavigationSystem } from '../navigation/navigation-system';
+import { routeWaypoints } from '../navigation/route';
 import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
@@ -110,9 +111,23 @@ export class PatrolSystem implements SystemRegistration {
   }
 
   private continueLeg(guardId: EntityId, sector: SecuritySectorDefinition, tick: number): void {
+    // Between two tiles. `GuardLocomotionSystem` moves them every tick; this
+    // system reconsiders every ten, so most visits to a travelling guard stop
+    // here -- the change ADR 0088 makes, mirroring ADR 0059's for prisoners.
+    if (this.guards.locomotion.isWalking(guardId)) return;
+
     const requestId = this.guards.getPathRequestId(guardId);
     if (requestId === undefined) {
-      // Restored mid-leg (see GuardRoster.loadSnapshot) -- re-request the current leg rather than assuming arrival.
+      // **The restore this line was written for does not reach it, and never
+      // did.** The sentence here read "Restored mid-leg (see
+      // GuardRoster.loadSnapshot) -- re-request the current leg rather than
+      // assuming arrival," and `loadSnapshot` has cleared the waypoint index
+      // and settled the phase on `'on-post'` since the same commit that added
+      // both (#26), so a restored guard arrives at `update` through the
+      // `beginLoop` branch above instead. It is kept as what it actually is:
+      // a defensive re-request for a `'travelling'` guard that holds a
+      // waypoint and no request id, rather than an assumption that a leg
+      // nobody is routing has completed.
       this.requestLeg(guardId, sector, this.guards.getPatrolWaypointIndex(guardId) ?? 0, tick);
       return;
     }
@@ -137,8 +152,39 @@ export class PatrolSystem implements SystemRegistration {
       return;
     }
 
-    const currentIndex = this.guards.getPatrolWaypointIndex(guardId)!;
-    this.guards.setTile(guardId, this.legTarget(sector, currentIndex));
+    /*
+     * The route is walked rather than applied in one step (ADR 0088). A
+     * one-waypoint leg -- the guard was already standing on this waypoint,
+     * which `legTarget` can name for the post itself on the final leg --
+     * arrives immediately.
+     */
+    if (this.guards.locomotion.beginWalk(guardId, routeWaypoints(outcome.result.route))) {
+      this.onArrivedAtLegTarget(guardId, tick);
+    }
+  }
+
+  /**
+   * Called when a walk toward the current leg's target tile finishes --
+   * immediately, for a leg with no distance in it, or by
+   * `GuardLocomotionSystem` on the tick a longer one ends
+   * (`createGuardLocomotionSystem` in `guard-locomotion.ts` is what dispatches
+   * an arrival here rather than to `DeploymentSystem`).
+   *
+   * Re-derives the sector and the current waypoint index rather than taking
+   * them as parameters, because the caller is `GuardLocomotionSystem` and
+   * holds neither -- it dispatches by nothing but the fact that this guard
+   * has a `patrolWaypointIndex`, exactly as `update` above already does.
+   *
+   * Public for that wiring alone, the same reason `DeploymentSystem.onArrivedAtPost`
+   * is.
+   */
+  public onArrivedAtLegTarget(guardId: EntityId, tick: number): void {
+    const sectorId = this.guards.getSectorId(guardId);
+    if (sectorId === undefined) return; // released/dismissed mid-walk: nothing left to advance
+    const sector = this.sectors.getDefinition(sectorId);
+    if (sector === undefined || sector.patrolRoute === undefined || sector.patrolRoute.length === 0) return;
+    const currentIndex = this.guards.getPatrolWaypointIndex(guardId);
+    if (currentIndex === undefined) return; // not this system's walk (a deployment travel, not a patrol leg)
 
     if (currentIndex === RETURNING_TO_POST) {
       const startedAt = this.guards.getPatrolLoopStartedAtTick(guardId) ?? tick;
@@ -149,7 +195,7 @@ export class PatrolSystem implements SystemRegistration {
       return;
     }
 
-    const nextIndex = currentIndex + 1 < sector.patrolRoute!.length ? currentIndex + 1 : RETURNING_TO_POST;
+    const nextIndex = currentIndex + 1 < sector.patrolRoute.length ? currentIndex + 1 : RETURNING_TO_POST;
     this.requestLeg(guardId, sector, nextIndex, tick);
   }
 }

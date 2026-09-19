@@ -24,6 +24,30 @@ export type RowSortedLayer = (typeof ROW_SORTED_LAYERS)[number];
  */
 export const DEPTH_ROW_STRIDE = 8;
 
+/**
+ * There is one bias for every actor, and splitting it per population would not
+ * help -- read this before adding `prisoner` and `guard` entries below.
+ *
+ * Issue [#944](https://github.com/matmaxalez/lockstate/issues/944) §4 step 2
+ * proposes exactly that: co-located actors get the identical depth from
+ * `depthForAnchor`, Phaser's sort is stable, and the tie therefore fell to the
+ * feed's array order -- prisoners first, guards second -- so on a shared tile
+ * the guard always won and the prisoners were always the hidden ones. A
+ * distinct bias per population does fit: `DEPTH_ROW_STRIDE` leaves room, and
+ * the row term is in world units, so adjacent rows are 512 apart.
+ *
+ * **It was not done, because it cannot do the thing that is wanted.** A bias
+ * decides which of two figures drawn at one point is on top; it cannot make
+ * both of them visible, so it would move the guarantee from "the prisoners are
+ * always hidden" to "the guards are always hidden" and leave 22 prisoners on
+ * one tile drawing as one figure either way. Two figures where two actors
+ * stood is a *placement* problem, and the answer is
+ * `src/rendering/actors/crowd-spread.ts`: co-located actors are drawn at
+ * distinct points inside their own tile, `ActorLayer` takes this function's
+ * anchor from the drawn foot, and the tie is gone rather than re-pointed.
+ * `tests/unit/rendering-crowd-spread.test.ts` and
+ * `tests/browser/actor-crowding.spec.ts` are the gates.
+ */
 const LAYER_BIAS: Readonly<Record<RowSortedLayer, number>> = {
   /** Walls, doors and placed objects. */
   structure: 0,
@@ -41,6 +65,65 @@ const LAYER_BIAS: Readonly<Record<RowSortedLayer, number>> = {
  * collide.
  */
 export const FLOOR_DEPTH = -1_000_000_000;
+
+/**
+ * Floor artwork, which sits one step *below* the ground `Graphics`.
+ *
+ * Below, not above, and that is what makes it one `Graphics` per chunk instead
+ * of two. The ground layer paints four things in one buffer -- terrain colour,
+ * the room tint, the unowned shade and the grid -- and only the first of them
+ * belongs under the art. So the painter skips the terrain fill on any tile a
+ * floor sprite covers and lets the sprite show through from underneath, which
+ * leaves the other three drawing over it exactly as they always did.
+ *
+ * It is still a billion units below the row-sorted band, so nothing with height
+ * can reach it.
+ */
+export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
+
+/**
+ * A room's name, written across its floor.
+ *
+ * **Above the row-sorted band, and that is a reversal of what ADR 0098 option C
+ * priced, taken on a measurement rather than on taste.** That option describes
+ * a per-room mark *"drawn over the floor and under the objects"*, so the first
+ * version of this constant was `FLOOR_DEPTH + 1`. Measured in Chromium at 1280
+ * x 720 with one finished bed standing at the centre of a named Canteen, the
+ * name rendered as **"teen" at zoom 1.0 and "een" at zoom 3.0** -- the bed is
+ * drawn with height, from its foot, so it covers the room's middle, which is
+ * exactly where a centred name goes. A name that cannot be read has not done
+ * the one thing the owner's ruling asked of it.
+ *
+ * What the reversal costs is small and bounded in the other direction: the name
+ * is a constant 13 screen pixels tall whatever the zoom, so at zoom 1 it hides
+ * 16 of a 64-pixel tile's height and at zoom 3 it hides 16 of 192. An object is
+ * identifiable around it; a word is not identifiable through it. ADR 0098's
+ * option C is a costing of an option, not a decision, so nothing approved is
+ * contradicted here.
+ *
+ * **THE CLAUSE THAT USED TO CARRY THAT ARGUMENT WENT FALSE ON 2026-09-06 AND
+ * IS MARKED HERE RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md` section 4).
+ * It asserted that ADR 0098 had not been decided -- DESCRIBED rather than
+ * quoted, because `adr-status-reference-contract` reads a restated status as a
+ * live claim by position and not by quotation marks, so quoting a stale status
+ * turns the gate red; #1043 reached the same resolution from the other side.
+ * ADR 0098's decisions 1 to 4 were accepted by the owner that evening. **The conclusion is unchanged and
+ * now rests on a different premise, which is exactly why the old one is worth
+ * seeing**: what is accepted are 0098's four DECISIONS, and its option C is
+ * not among them -- an option list is a costing, and accepting a requirement
+ * does not accept every way of discharging it. 0098 decision 4 is in fact the
+ * clause that protects this reversal: the map owes no distinct look at every
+ * zoom, and a name that reads "een" at zoom 3.0 is the case it had in mind.
+ *
+ * `-FLOOR_DEPTH - 1` rather than a bare literal, because the two bounds are one
+ * bound and writing it this way makes that the declaration: the ground sits as
+ * far below the row-sorted band as the name sits above it, so a world would
+ * have to extend about 1.95 million tiles from the origin -- in either
+ * direction -- for a row to reach either of them. The `- 1` leaves
+ * `BuildOverlay`'s fixed `1_000_000_000` preview depth on top, so a wall ghost
+ * the player is currently dragging still draws over a room's name.
+ */
+export const ROOM_LABEL_DEPTH = -FLOOR_DEPTH - 1;
 
 /**
  * Depth for something whose base sits at `anchorWorldY`.

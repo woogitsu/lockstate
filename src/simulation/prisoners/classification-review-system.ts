@@ -1,0 +1,476 @@
+import type { EntityId, EntityStore } from '../entity/entity-store';
+import type { EntityQuery } from '../entity/query';
+import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import {
+  CLASSIFICATION_REVIEW_INTERVAL_TICKS,
+  reviewClassification,
+  type ClassificationAssessment,
+  type RiskTier,
+} from './classification';
+import { classificationGroupIndex, intakeStageFromIndex, type PrisonerRecordComponent } from './components';
+import type { IntakeContrabandIntroducer, IntakeGangAssigner } from './intake-system';
+import {
+  buildDisciplinaryIndex,
+  CLEAN_DISCIPLINARY_RECORD,
+  NO_DISCIPLINARY_EVIDENCE,
+  type DisciplinaryEvidenceSource,
+  type DisciplinaryRecord,
+} from './disciplinary-record';
+
+/**
+ * Observability only, and **not persisted** -- the same standing
+ * `IntakeMetrics` has (no save section carries `completedCount` either). A
+ * counter that resets on restore is safe here precisely because nothing reads
+ * it back into simulation state: the tier a review writes is a function of
+ * tick and evidence, so a restored session recomputes the same tier whatever
+ * these say.
+ */
+export interface ClassificationReviewMetrics {
+  /** How many individual prisoner reviews have been carried out. */
+  readonly reviewsCompleted: number;
+  /** Reviews that raised a prisoner's tier. */
+  readonly tierIncreases: number;
+  /** Reviews that lowered it. */
+  readonly tierDecreases: number;
+  /** Reviews that moved a prisoner between `general-population` and `high-risk`, in either direction -- the subset that changes which regime timetable they live under. */
+  readonly groupChanges: number;
+}
+
+/**
+ * The tick a prisoner's intake classification was written, or `undefined`
+ * when it cannot be established.
+ *
+ * **Derived from two fields the save already carries, which is the whole
+ * reason this change needs no schema bump** (ADR 0032 decision 1).
+ * `IntakeSystem` writes `sentenceEndTick = tick + sentenceLengthTicks` at the
+ * `'classification'` stage and both operands are persisted, so the difference
+ * is exactly that tick. No new per-prisoner field, no V6, no migration.
+ *
+ * `undefined` covers the one case the arithmetic cannot survive:
+ * `sentenceEndTick` is a `Uint32Array` slot and `sentenceLengthTicks` may be
+ * up to `MAX_SENTENCE_LENGTH_TICKS` (`0xffff_ffff`), so the sum wraps for a
+ * long enough sentence and the difference is no longer the classification
+ * tick. Detected rather than guessed: a wrapped sum is strictly less than the
+ * sentence length it was added to. Such a prisoner is **never reviewed**,
+ * which is the honest answer -- inventing a classification tick would move
+ * their tier on evidence about somebody else's clock.
+ */
+export function classifiedAtTickOf(sentenceEndTick: number, sentenceLengthTicks: number): number | undefined {
+  if (sentenceEndTick < sentenceLengthTicks) return undefined;
+  return sentenceEndTick - sentenceLengthTicks;
+}
+
+/**
+ * The stages at which a prisoner has a classification to review.
+ *
+ * `'queued'`, `'reception'` and `'classification'` have not written one yet --
+ * `riskTier` is still the zero a fresh slot holds, which is the same reason
+ * `prisoner-projection.ts` reports `classified: false` for them.
+ *
+ * `'failed'` is excluded because a tier written there could never reach a
+ * regime or a placement: no branch of `IntakeSystem.update` matches the stage.
+ *
+ * **This used to give a second reason and that reason is now false.** It read
+ * *"it is terminal and inert (ADR 0028 decision 8): no branch of
+ * `IntakeSystem.update` matches it and **nothing releases the record**"*.
+ * `PrisonerDischargeSystem` releases it: `SENTENCE_BEARING_STAGES` is
+ * `['accommodation-assignment', 'completed', 'failed']`, and that file states
+ * the difference from this list explicitly, from its own side -- *"a
+ * `'failed'` record is a prisoner the prison is holding, counted in the
+ * population and drawn on the map, whose sentence is running exactly like
+ * anybody else's"*. Only this side was left saying the old thing.
+ *
+ * The exclusion itself is unchanged and still right; what changed is that it
+ * rests on one reason rather than two. A `'failed'` prisoner is released at
+ * the end of their sentence like anybody else -- they are simply never
+ * *reviewed* while they are held, because a tier written at that stage has
+ * nowhere to go.
+ */
+export const REVIEWABLE_STAGES: readonly string[] = ['accommodation-assignment', 'completed'];
+
+/**
+ * The tier a review has to *reach* before it asks what the prisoner is
+ * carrying (ADR 0080).
+ *
+ * 3 rather than 1, and it is not a balance number: it is the tier at which the
+ * eligible-category band `2 + tier` first admits a fifth entry, which on the
+ * shipped catalogue is `contraband.weapon`. Every lower step of that band
+ * already has a producer at intake.
+ */
+const ESCALATION_INTRODUCTION_MINIMUM_TIER = 3;
+
+/**
+ * Periodic classification review -- issue #78's "periodic review that can move
+ * someone in either direction", driven by issue #80's consequence for the
+ * prisoner involved in an incident or a contraband find.
+ *
+ * ## What it does
+ *
+ * Once every `CLASSIFICATION_REVIEW_INTERVAL_TICKS`, every prisoner who has
+ * been classified for at least that long is reassessed by
+ * `reviewClassification` and their `riskTier` and `classificationGroupIndex`
+ * are rewritten. Both are existing, already-persisted slots on
+ * `PrisonerRecordComponent`; this system adds no state of its own beyond the
+ * unpersisted metrics above.
+ *
+ * ## What a rewritten tier reaches
+ *
+ * Three consumers, all of them already wired, which is why this is a small
+ * change with real consequences rather than a bookkeeping one:
+ *
+ * - **`ActionSystem`** reads `classificationGroupIndex` on every
+ *   reconsideration and resolves the regime schedule from it, so a prisoner who
+ *   reaches tier 3 is moved onto the high-risk timetable -- confined to
+ *   sleep/meal/hygiene for 2,200 of the day's 2,400 ticks. That is the
+ *   consequence a player watches happen.
+ * - **`rateCellSharing`**, through `IntakeSystem.findBestAvailable`: the
+ *   rating's one term is the worst classification distance across a cell's live
+ *   occupants, so a sitting prisoner's tier moving changes where the *next*
+ *   arrival is housed. ADR 0027 recorded that this needed #78's mutability to
+ *   become a loop rather than a filter; this is it.
+ * - **`projectPrisonerRoster`/`projectPrisonerDetail`** and
+ *   `projectStatusStrip`'s `prisonersHighRisk`, which are published already.
+ *   That count could previously only ever change on an admission.
+ *
+ *   **"Published" was as far as it went until 2026-08-31, and this bullet is
+ *   extended rather than corrected because nothing it said was wrong.** Issue
+ *   #703's fourth owner ruling gave both a reader: the status strip's second
+ *   chip states `prisonersHighRisk`, and `projectPrisonerRoster` now orders by
+ *   descending tier, so a prisoner this system raises to tier 3 moves to the
+ *   top of the Regime panel's four-row window on the next publication instead
+ *   of changing a number nothing displayed.
+ *
+ * ## Determinism
+ *
+ * - **The `prisoners.classification` stream is not touched**, so the sequence a
+ *   later admission draws its screening variance from is untouched. See
+ *   `reviewClassification`'s note for why a draw *there* would be worse than it
+ *   looks.
+ *
+ *   **This bullet read "No RNG. `context.rng` is not touched" until ADR 0080,
+ *   and half of it is now false.** A review that raises a prisoner into tier 3
+ *   draws from `contraband.introduction` -- a different stream, registered by
+ *   the session, and the same one intake draws from. Both halves are kept
+ *   rather than overwritten because the reason the original said it has not
+ *   gone away: what must never happen here is a draw on the *classification*
+ *   stream, and that is still what does not happen. What changed is that
+ *   "no stream at all" was a stronger claim than the reason required, and the
+ *   weapon nobody could smuggle was the price of it.
+ * - **No clock.** Every temporal input is `context.tick` or a persisted tick.
+ * - **Canonical iteration.** `EntityQuery.execute()`, ascending entity index,
+ *   the same walk `IntakeSystem` and `ActionSystem` use. The disciplinary index
+ *   is a `Map` that is only ever `get`-ed, never enumerated.
+ * - **Order-independent anyway.** Each prisoner's new tier is a pure function
+ *   of their own record and the shared evidence fold, and nothing written in
+ *   this pass is read by it, so the outcome does not depend on the walk order
+ *   even though the walk is canonical.
+ * - **Idempotent.** `reviewClassification` is absolute rather than
+ *   incremental, so running this system twice at one tick writes the same
+ *   values the first pass did.
+ *
+ * ## This is no longer the only writer of `riskTier`, since ADR 0090
+ *
+ * `ClassificationEarlyWarningSystem` (`classification-early-warning-system.ts`)
+ * also writes it, on a much faster schedule, and it changes nothing about what
+ * is written here: it can only ever *raise* a tier, and only ever as far as
+ * `EARLY_WARNING_TIER_CEILING` (`Medium`), so this system's own arithmetic,
+ * schedule and result are exactly what they were before it existed. It exists
+ * because this system's own floor -- the earliest any prisoner classified in a
+ * session's first review period can ever be reviewed is tick 47,999, batched
+ * rather than per-prisoner (see `schedule`'s docblock) -- makes it structurally
+ * impossible for *this* system alone to show `Medium` before `High` without
+ * either delaying `High` past that floor or moving the floor itself, both of
+ * which the owner's ruling on #788 forbids. See ADR 0090 for the reasoning in
+ * full and why a second, capped-lower system is the answer rather than a
+ * change to any constant here.
+ */
+export class ClassificationReviewSystem implements SystemRegistration {
+  public readonly id = 'prisoners.classification-review';
+  /**
+   * Immediately after `prisoners.intake` (50) and before everything that reads
+   * a classification. It is appended into the gap between intake and
+   * `prisoners.needs-decay` (60) rather than at the end of the order so that a
+   * tier written this tick is the tier `prisoners.actions` (250) resolves a
+   * regime from on the same tick, instead of one tick late.
+   */
+  public readonly order = 55;
+  /**
+   * The last tick of every review period, mirroring `economy.state-income`'s
+   * end-of-day phase.
+   *
+   * ## The reason this comment gave welds two claims together, and the phase
+   * ## delivers only one of them
+   *
+   * Kept rather than replaced, because a true premise carrying a false
+   * conclusion is the harder kind to spot and the shape is the thing worth
+   * recording. It read:
+   *
+   * > The phase matters more than it looks: at `phaseTicks: 0` the first run
+   * > is tick 0, **where nobody is classified** and every prisoner is skipped,
+   * > so the readout would be a system that has "run" and done nothing.
+   *
+   * **Claim one -- "nobody is classified" at tick 0 -- is true, and the phase
+   * does fix it.** Measured in a real session that submits its admission at
+   * tick 0: after executing tick 0 there is **1 prisoner entity alive and 0
+   * classified** -- the command dispatched at the head of `step(0)` has already
+   * spawned the entity, but `IntakeSystem` has not reached the
+   * `'classification'` stage and `'queued'` is not in `REVIEWABLE_STAGES`.
+   * After executing tick 23,999 the same session has **1 alive and 1
+   * classified**. So the phase does buy a run over a classified population
+   * rather than an unclassified one.
+   *
+   * **Claim two -- "a system that has run and done nothing" -- the phase does
+   * not fix, and never did.** `update`'s guard is
+   * `context.tick - classifiedAtTick < CLASSIFICATION_REVIEW_INTERVAL_TICKS`,
+   * and `classifiedAtTickOf` returns either `undefined` or the difference of
+   * two `Uint32Array` reads it has already guarded against wrapping, so
+   * `classifiedAtTick` is never negative. The whole proof is one line --
+   * **`23,999 - 0 = 23,999 < 24,000`** -- so even a prisoner classified on the
+   * very first tick is skipped, and **every prisoner is skipped on the first
+   * run whatever the phase is**. The phase moves the empty run from tick 0 to
+   * tick 23,999; it does not remove it. The stated benefit is not delivered by
+   * the mechanism credited with it.
+   *
+   * Measured rather than argued, through this system in the real kernel:
+   * 24,000 prisoners alive at once, one per possible classification tick in
+   * `[0, 23,999]`, gives `reviewsCompleted === 0` after the run at 23,999 and
+   * `24,000` after the run at 47,999. Found by the owner's read-only audit of
+   * `origin/main` at v0.0.242 and confirmed at the lines before anything here
+   * was changed.
+   *
+   * ## What the phase costs and buys, on the same 24,000 cases
+   *
+   * One tick, against one degenerate regression. Compared with
+   * `phaseTicks: 0`, this phase reviews **23,999 of the 24,000 one tick
+   * earlier**, and reviews **one of them 23,999 ticks later** -- the prisoner
+   * whose `classifiedAtTick` is exactly `0`, who becomes due at 24,000, which
+   * is on phase 0's grid and one past this one's. That case is not a fresh
+   * session's first admission, which is classified at tick **15**; it is
+   * reachable from a fixture or a restore.
+   *
+   * **And it is not load-bearing for what the first period now looks like.**
+   * The arithmetic above has not changed, but the world it runs in has: since
+   * [#593](https://github.com/matmaxalez/lockstate/issues/593) re-ranged
+   * sentences to 14-90 in-game days, **97.27%** of prisoners reach a first
+   * review where **14.00%** used to. Re-derived against those numbers rather
+   * than inherited from the old ones: on the same 7,700-case cross-section
+   * (every drawable length at 100 arrival phases) `phaseTicks: 0` gives
+   * **97.35%** -- six prisoners in 7,700 apart. Nothing about that ruling's
+   * purpose turns on the phase in either direction.
+   *
+   * ## What the phase rests on now
+   *
+   * Two things, and claim two is not one of them. **The first sentence of this
+   * docblock**: this is the last tick of a period, which is exactly what
+   * `economy.state-income` does for a day, and a period-end system running at
+   * period end is legible without having to be load-bearing. **And claim one**,
+   * narrowed to what it actually says: the first run happens over a classified
+   * population rather than an unclassified one, which is a better readout even
+   * though neither run reviews anybody.
+   *
+   * **The value is deliberately left alone.** Moving it would shift when every
+   * review in every session fires, underneath a balance change (#593) that is
+   * already large, and a one-tick argument is not a reason to take that on.
+   * `tests/unit/prisoners-classification-review.test.ts` pins the
+   * empty-first-run fact at its extremal case, so claim two's refutation is
+   * checkable rather than another sentence that can rot.
+   */
+  public readonly schedule = {
+    intervalTicks: CLASSIFICATION_REVIEW_INTERVAL_TICKS,
+    phaseTicks: CLASSIFICATION_REVIEW_INTERVAL_TICKS - 1,
+  };
+
+  private reviewsCompleted = 0;
+  private tierIncreases = 0;
+  private tierDecreases = 0;
+  private groupChanges = 0;
+
+  public constructor(
+    private readonly store: EntityStore,
+    private readonly query: EntityQuery,
+    private readonly records: PrisonerRecordComponent,
+    /**
+     * Defaults to "no evidence at all" so a session that wires no incident
+     * pipeline reviews against a clean record rather than throwing. A prisoner
+     * in such a session still moves -- clean-conduct credit is the term that
+     * needs no evidence to accrue.
+     */
+    private readonly evidence: DisciplinaryEvidenceSource = NO_DISCIPLINARY_EVIDENCE,
+    /**
+     * The same introduction port `IntakeSystem` takes, asked again at the one
+     * review that carries a prisoner **into** tier 3 -- ADR 0080, issue
+     * [#677](https://github.com/matmaxalez/lockstate/issues/677).
+     *
+     * The same port and not a second one, deliberately: the rule stays in
+     * `src/simulation/contraband/introduction.ts`, this system supplies only
+     * the tier and the tick, and a session that wires no introducer keeps
+     * exactly the behaviour it had.
+     *
+     * **Omitted, nothing changes and no stream advances**, which is what every
+     * fixture in `tests/` relies on.
+     */
+    private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
+    /** The named stream the introduction draws from. Only read when an introducer is supplied. */
+    private readonly contrabandRngStreamName: string = 'contraband.introduction',
+    /**
+     * The same membership port `IntakeSystem` takes, asked again wherever this
+     * system writes a prisoner's `classificationGroupIndex` -- **ADR 0103 open
+     * question 5, answered by the owner on 2026-09-09.**
+     *
+     * OQ5 asked *"when is membership assigned -- at intake, or wherever the
+     * tier is written?"* and named assigning at both sites as "the obvious
+     * repair ... with its own determinism question". The owner chose the
+     * review site. **The provenance is the weaker kind and is disclosed rather
+     * than dressed up**, exactly as ADR 0104's Status does: the ruling is the
+     * label of a clickable option this session wrote and the owner chose, not
+     * a sentence they typed.
+     *
+     * ## Why this needed answering at all
+     *
+     * Decision 6 keys membership on `high-risk`, and `high-risk` was
+     * unreachable from the only admission surface the game has:
+     * `src/main.ts` builds the one `AdmitPrisoner` command and passes
+     * `ADMISSION_REQUEST.priorIncidents`, which is `0` and is a **held**
+     * decision rather than an oversight (that constant's own docblock says
+     * so, and says why: drawing priors moves risk tiers, and tiers decide cell
+     * sharing, contraband and regime). So gangs, grudges and
+     * `'gang-retaliation'` were built, tested, and unreachable in play. This
+     * port is what makes them reachable, because a review **can** carry a
+     * prisoner admitted at `priorIncidents: 0` into tier 3.
+     *
+     * ## The determinism question OQ5 raised, answered by the port's own shape
+     *
+     * `IntakeGangAssigner` takes **no `rng`** and says so in its own docblock:
+     * *"a session that wires it registers no seventh stream and no existing
+     * seed's classification draw moves."* A second call site therefore adds no
+     * stream and moves no draw, which is what makes assigning at both sites
+     * cheap rather than delicate.
+     *
+     * **This is NOT the reason `contrabandIntroducer` above is gated on the
+     * step into tier 3, and the two must not be read as the same gate.** That
+     * producer *does* consume a draw, so calling it on every increase would
+     * advance a stream in prisons where nothing changed hands. This one cannot
+     * do that. It is called on a group **change** because membership keys on
+     * the group and a change is when the group is news -- bookkeeping, not
+     * determinism.
+     *
+     * ## Assigning at both sites is idempotent, not merely tolerable
+     *
+     * `defaultGangIdForArrival` is a pure function of the entity id
+     * (`DEFAULT_GANG_IDS[entityId % DEFAULT_GANG_IDS.length]`) and `addMember`
+     * moves-or-sets, so an arrival who was `high-risk` at intake and is
+     * re-affirmed here lands in the same gang both times.
+     *
+     * **What this deliberately does not do is revoke.** A prisoner who leaves
+     * `high-risk` keeps their membership, because `defaultGangIdForArrival`
+     * answers `undefined` for every other group and this system does not
+     * invent a removal ADR 0103 never asked for. `releasePrisoner` is still the
+     * only thing that drops a member.
+     *
+     * **Omitted, nothing changes**, which is what every fixture that wires no
+     * assigner relies on.
+     */
+    private readonly gangAssigner?: IntakeGangAssigner,
+  ) {}
+
+  public getMetrics(): ClassificationReviewMetrics {
+    return {
+      reviewsCompleted: this.reviewsCompleted,
+      tierIncreases: this.tierIncreases,
+      tierDecreases: this.tierDecreases,
+      groupChanges: this.groupChanges,
+    };
+  }
+
+  /**
+   * What a review would decide for one prisoner at `tick`, without writing
+   * anything -- issue #78's "the panel can explain *why* someone sits where
+   * they do", answerable on demand rather than only at a scheduled tick.
+   *
+   * `undefined` for an id that is not alive, has not been classified yet, or
+   * whose classification tick cannot be established (see
+   * `classifiedAtTickOf`).
+   *
+   * Folds the whole evidence set per call, so it is a projection/inspection
+   * entry point and deliberately not on any per-tick path. `update` folds once
+   * for the entire population instead.
+   */
+  public assess(entityId: EntityId, tick: number): ClassificationAssessment | undefined {
+    if (!this.store.isAlive(entityId)) return undefined;
+    const index = this.store.getIndex(entityId);
+    const disciplinary = buildDisciplinaryIndex(this.evidence).get(entityId) ?? CLEAN_DISCIPLINARY_RECORD;
+    return this.assessOne(index, tick, disciplinary);
+  }
+
+  private assessOne(index: number, tick: number, disciplinary: DisciplinaryRecord): ClassificationAssessment | undefined {
+    if (!REVIEWABLE_STAGES.includes(intakeStageFromIndex(this.records.intakeStage[index]!))) return undefined;
+    const classifiedAtTick = classifiedAtTickOf(this.records.sentenceEndTick[index]!, this.records.sentenceLengthTicks[index]!);
+    if (classifiedAtTick === undefined) return undefined;
+    return reviewClassification({
+      sentenceLengthTicks: this.records.sentenceLengthTicks[index]!,
+      priorIncidentsAtIntake: this.records.priorIncidentsAtIntake[index]!,
+      classifiedAtTick,
+      tick,
+      disciplinary,
+    });
+  }
+
+  public update(context: SimulationContext): void {
+    // One fold for the whole population, not one per prisoner: the incident log
+    // has no per-participant index (ADR 0027 records that a participant query
+    // is a full scan), so asking it once per review period is the shape that
+    // keeps this off any hot path.
+    const disciplinaryIndex = buildDisciplinaryIndex(this.evidence);
+
+    for (const entityId of this.query.execute()) {
+      const index = this.store.getIndex(entityId);
+
+      const classifiedAtTick = classifiedAtTickOf(this.records.sentenceEndTick[index]!, this.records.sentenceLengthTicks[index]!);
+      if (classifiedAtTick === undefined) continue;
+      // A prisoner classified less than a full period ago is not due: their
+      // intake screening draw stands until they have served one review
+      // interval, which is what keeps that draw meaningful rather than a value
+      // the next scheduled tick overwrites.
+      if (context.tick - classifiedAtTick < CLASSIFICATION_REVIEW_INTERVAL_TICKS) continue;
+
+      const assessment = this.assessOne(index, context.tick, disciplinaryIndex.get(entityId) ?? CLEAN_DISCIPLINARY_RECORD);
+      if (assessment === undefined) continue;
+
+      const previousTier = this.records.riskTier[index]! as RiskTier;
+      const previousGroupIndex = this.records.classificationGroupIndex[index]!;
+      const nextGroupIndex = classificationGroupIndex(assessment.classificationGroupId);
+
+      this.records.riskTier[index] = assessment.riskTier;
+      this.records.classificationGroupIndex[index] = nextGroupIndex;
+
+      this.reviewsCompleted += 1;
+      if (assessment.riskTier > previousTier) {
+        this.tierIncreases += 1;
+        // ADR 0080. The contraband band is `2 + tier` categories of an
+        // ascending-severity ordering, so the fifth slot -- the weapon -- opens
+        // at tier 3 alone, and intake at `priorIncidents: 0` cannot score one
+        // (`1 + 0 + 1`, clamped). Asking the introduction question here, at the
+        // review that *raises* somebody into tier 3, is what gives that slot a
+        // producer without moving a single balance number.
+        //
+        // **Only the step into 3, and not every increase.** A draw on a 0 -> 1
+        // review would advance this stream in prisons where no band has
+        // changed hands, and a well-run prison would stop being
+        // bit-identical to the one it is today for no gain: measured over four
+        // seeds of a 40-cell, 8-guard prison, this condition leaves the
+        // contraband it produces exactly as it was.
+        if (assessment.riskTier >= ESCALATION_INTRODUCTION_MINIMUM_TIER && this.contrabandIntroducer !== undefined) {
+          this.contrabandIntroducer.introduce(entityId, assessment.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
+        }
+      } else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
+      if (nextGroupIndex !== previousGroupIndex) {
+        this.groupChanges += 1;
+        // ADR 0103 open question 5, answered by the owner on 2026-09-09: the
+        // second membership write site. The rule stays in
+        // `defaultGangIdForArrival` -- this system supplies the group and the
+        // tick and nothing else, the same division the introducer above uses.
+        this.gangAssigner?.assign(entityId, assessment.classificationGroupId, context.tick);
+      }
+    }
+  }
+}

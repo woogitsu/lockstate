@@ -10,6 +10,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 
 /**
@@ -51,7 +52,13 @@ const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
 const BED_TILE = { x: 4, y: 6 } as const;
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
 const ARRIVAL = { x: 16, y: 16 };
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`. */
+/**
+ * What one press of the Intake panel's control asks for -- the tile and `priorIncidents: 0` from
+ * `ADMISSION_REQUEST` in `src/main.ts`, and a sentence length that press no longer sends.
+ * Since #535 decision 5 an omitted length is drawn inside the simulation from
+ * `prisoners.sentence`; naming one here is still legal, is never redrawn, and is what keeps
+ * this fixture's timings fixed.
+ */
 const ADMISSION = { sentenceLengthTicks: 10_000, priorIncidents: 0 };
 
 /** Dispatches one command through the kernel, at the sequence the kernel is expecting. */
@@ -77,6 +84,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 function prisonWithBedOrdered(seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   return runtime;
@@ -193,10 +201,20 @@ describe('a bed placed in a zoned cell gives that cell a capacity', () => {
     expect(DEFAULT_ACTIONS[runtime.prisoners.currentAction.actionIndex[arrival]!]?.id).toBe('action.sleep');
     expect(runtime.prisoners.coldState.getActionTarget(arrivalId)).toBe(cellInstanceId);
     // And the need it fulfils is the one that stays high while every other one
-    // falls: measured at tick 400, `sleep` is 254.7 of 255 while `hunger` has
-    // dropped to 242.5 and `bladder` to 235. The bed is doing work.
+    // falls: measured at tick 400, `sleep` is 249.0 of 255 while `hunger` has
+    // dropped below it. The bed is doing work.
+    //
+    // **This comment read "`sleep` is 254.7 of 255 while `hunger` has dropped
+    // to 242.5 and `bladder` to 235", and the floor below was 250.** Both were
+    // right for an abstracted arrival. Since ADR 0059 the prisoner walks from
+    // the delivery tile to the cell anchor instead of being written onto it,
+    // so part of the window between admission and tick 400 is spent walking
+    // and the sleep level at 400 is 249.0. The floor is re-measured rather
+    // than relaxed: it is still above the level a prison with no bed reaches,
+    // which is what the assertion is for, and the comparison against `hunger`
+    // on the next line is untouched.
     const sleepLevel = runtime.prisoners.needs.levels.sleep[arrival]! / NEED_SCALE;
-    expect(sleepLevel).toBeGreaterThan(250);
+    expect(sleepLevel).toBeGreaterThan(248);
     expect(runtime.prisoners.needs.levels.hunger[arrival]! / NEED_SCALE).toBeLessThan(sleepLevel);
   });
 });
@@ -297,6 +315,8 @@ describe('what the placement does to the rest of the prison', () => {
     // again -- which is the next assertion.
     expect(runtime.placedObjects.size).toBe(1);
 
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+
     submit(runtime, 'rezone', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
 
     // A newly zoned room counts objects that were already standing there.
@@ -394,6 +414,7 @@ describe('what the placement does to the rest of the prison', () => {
     // or accepted on the state at its own tick, and none of the three depends
     // on which of the others ran first.
     const reordered = createNewSimulationRuntime(SEED);
+    wallRoomPerimeter(reordered.world, CELL_RECT, { doors: reordered.navigation.doors });
     submit(reordered, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(reordered, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
     submit(reordered, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));

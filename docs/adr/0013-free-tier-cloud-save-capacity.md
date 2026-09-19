@@ -157,9 +157,15 @@ an assertion and becomes a fact, and the bound is applied to the fact.
 
 Reasoning for the figure:
 
-- `docs/PERSISTENCE.md:742-745` measures the envelope across four benchmark
+- `docs/PERSISTENCE.md`'s **"Measured size impact"** table, under
+  *"V3: the save carries the prison, not just the plot (#70)"* (`:1045-1050`),
+  measures the envelope across four benchmark
   tiers at **42.0 KiB** for a small prison (25 prisoners) and **2.86 MiB** for
-  x-large (3,000), at save-schema V3. V4 (#259) adds a known,
+  x-large (3,000), at save-schema V3. (The anchor read `:742-745`, which now
+  lands on a paragraph about `masterSeed` being added to V5 — a passage about
+  save *versions* rather than save *sizes*, close enough in subject to read as
+  though the citation were merely imprecise. Both figures were re-checked
+  against the table above and are unchanged.) V4 (#259) adds a known,
   population-proportional delta on top — two bytes per prisoner per need, so
   ~0.3 KiB and ~35 KiB respectively.
   **Those figures replace the 66.0 KiB / 29.4 KiB pair this bullet used to

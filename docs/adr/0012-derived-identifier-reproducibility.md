@@ -91,9 +91,37 @@ Requirements:
 - not treated as stable across recomputes by any consumer, and never persisted,
   hashed or compared across a save boundary.
 
-`GlobalTopologyId` is category 2 and does not currently meet it: the counter
+`GlobalTopologyId` is category 2 and **now meets it**. The counter resets:
+`nextGlobalId` is a function-local of `recomputeGlobalTopology`
+(`src/simulation/rooms/topology.ts:256`, incremented at `:262`), so ids are
+handed out from 1 in canonical sorted order on every recompute, and the two
+things that have to hold together for that are written beside the declaration
+at `:249-255`.
+
+**This paragraph said the opposite until it was corrected, and the old wording
+is kept rather than overwritten**, because what it cost is the point. It read:
+*"`GlobalTopologyId` is category 2 and does not currently meet it: the counter
 must reset per recompute (or the id must be derived from the component's own
-canonical key) so that identical geometry yields identical ids.
+canonical key) so that identical geometry yields identical ids."* That was
+written in `dc3d7da` and was true then. It stopped being true when `bd49852`
+(PR #295, issue #112) made the counter function-local at v0.0.39, and **this
+document was updated around it eight hours and seven releases later** in
+`98c933d`, which added the Status note and the Consequences note without
+touching this sentence — so the **Status** above and the **Consequences** below
+have both recorded the fix landing while the *Decision* went on denying it.
+A reader who stops at the Decision, as a reader of an ADR is meant to, came
+away believing a live determinism defect that had been closed **eighty-two
+releases** earlier — v0.0.39 to v0.0.121, counted as `chore(release)` commits
+in `bd49852..b710c62`. That is the failure mode `docs/AGENT_WORKFLOW.md` §4 names
+last: reading a document's own headings against each other is a different check
+from any diff, and no diff was ever going to catch this one.
+
+**What this ADR still reserves is not that counter.** It is the world-streaming
+policy: whether an unloaded chunk should be *representable* in a topology at
+all, and if so from what persisted geometry. The Consequences below state that
+question, and state why dropping an unloaded chunk's retained topology was the
+only answer available compatible with the category-2 requirement — that closes
+the residue, not the policy.
 
 ### Neither category may be left implicit
 A counter that is neither snapshotted nor reset is the failure mode this ADR
@@ -143,15 +171,97 @@ module doc, and `tests/determinism/` gains a pin for it.
   ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)), and the
   exception carried its own escape clause: if routing state ever enters a save,
   they become category 1. **That clause has since fired.** `pathRequestId` is a
-  field of the persisted job record (`src/persistence/save-schema.ts:419`) and
-  of the persisted guard record (`:468`), both inside the `simulation` section
-  of the shipped payload (`:837` for V3, `:867` for V4). What keeps it harmless
+  field of the persisted job record (`src/persistence/save-schema.ts:672`) and
+  of the persisted guard record (`:734`), both inside the `simulation` section
+  of the shipped payload — which is now **three** payload versions and not two:
+  `:1296` for V3, `:1326` for V4 and `:1395` for V5. What keeps it harmless
   is therefore not the exception but explicit compensation on the restore side:
-  `JobRegistry.loadSnapshot` clears `pathRequestId` for a `'travelling'` job
-  (`src/simulation/operations/job.ts:110`) and `GuardRoster.loadSnapshot` does
+  `JobRegistry.loadSnapshot` — a name that never existed in this repository;
+  the class is and always was `JobBoard`
+  (`src/simulation/operations/job.ts:121`) — clears `pathRequestId` for a
+  `'travelling'` job
+  (`src/simulation/operations/job.ts:284`) and `GuardRoster.loadSnapshot` does
   the same for a `'travelling'` guard
-  (`src/simulation/security/guard-roster.ts:198`), so no restored session
-  consumes an id minted by a previous one. Whether the taxonomy should now move
+  (`src/simulation/security/guard-roster.ts:281`), so no restored session
+  consumes an id minted by a previous one.
+  (**Four of the six anchors in this bullet had drifted and one claim had been
+  overtaken.** They read `save-schema.ts:419`, `:468`, `:837` for V3 and `:867`
+  for V4, and `job.ts:110`; `guard-roster.ts:198` had not moved. The
+  V3-and-V4 pairing is the substantive half: V5 was added by `6cededc` and
+  carries the same `simulation` section, so the compensation above covers a
+  third version that this bullet did not know existed. Both restore-side
+  clears are both spelled `restored.pathRequestId = undefined`, and
+  `grep -rn 'restored.pathRequestId = undefined' src/` returns exactly those two
+  and nothing else, so that is what re-derives this pair when the anchors next
+  move. (The looser `pathRequestId = undefined` returns four — two live clears
+  in `job-system.ts` and `guard-roster.ts` that are not restore-side — so the
+  `restored.` prefix is load-bearing in that grep, not decoration.)
+  [ADR 0015](./0015-actor-identity-allocation.md)'s amendment of 2026-08-27
+  found the identical V3/V4-versus-V5 drift in its own citations of these same
+  schemas, independently — two ADRs describing one file, both stopped counting
+  at V4.
+
+  **Re-read 2026-09-08: the name above did not exist on the day it was written
+  either.** `JobRegistry.loadSnapshot` entered this bullet at `16aa2e2d` —
+  whose own subject is *"Correct twelve ADRs that state something about the
+  codebase that is false"* — and `job.ts` declared `JobBoard` in that same
+  tree. The name is marked rather than overwritten for the reason
+  `docs/AGENT_WORKFLOW.md` §4 gives, and because a correction pass is where it
+  came from.
+
+  **Both greps above were re-run and the load-bearing one still holds.**
+  `restored.pathRequestId = undefined` returns exactly two, `job.ts:284` and
+  `guard-roster.ts:281`. The looser `pathRequestId = undefined` now returns
+  **three** rather than four — `job-system.ts` was deleted with
+  `JobWorkerPool` at `cd41a1d6` (ADR 0093 decision 4), so one of the two live
+  clears it used to find is gone and the remaining one is
+  `guard-roster.ts:194`. The `restored.` prefix is more load-bearing than
+  before, not less.
+
+  **All six anchors in this bullet have drifted again and are deliberately not
+  re-anchored here.** Measured on the same date: both restore-side clears are
+  where the grep above puts them, `job.ts:284` and `guard-roster.ts:281`, not
+  at `:162` and `:198`, and the four `save-schema.ts` anchors have moved with
+  them. Re-anchoring six citations is its own pass with its own numbers; this
+  correction is about the name, and the grep two sentences up is what
+  re-derives the pair meanwhile.
+
+  **THAT PASS HAS NOW BEEN TAKEN, 2026-09-08, and the paragraph above is wrong
+  about the count and wrong about "all".** The bullet carries **eight** rooted
+  anchors, not six, and **seven** of them had moved:
+
+  | citation | read | reads now |
+  | --- | --- | --- |
+  | `save-schema.ts` job record's `pathRequestId` | `:532` | **`:672`** |
+  | `save-schema.ts` guard record's `pathRequestId` | `:594` | **`:734`** |
+  | `save-schema.ts` V3 `simulation` | `:981` | **`:1296`** |
+  | `save-schema.ts` V4 `simulation` | `:1011` | **`:1326`** |
+  | `save-schema.ts` V5 `simulation` | `:1076` | **`:1395`** |
+  | `job.ts` — the `JobBoard` class | `:121` | **`:121`, unmoved** |
+  | `job.ts` — the job-side clear | `:162` | **`:284`** |
+  | `guard-roster.ts` — the guard-side clear | `:198` | **`:281`** |
+
+  So `save-schema.ts` holds **five** citations and not four, and the one the
+  paragraph's "all" swept up with the rest — the `JobBoard` class, added by the
+  name correction two paragraphs above — had not drifted at all. The earlier
+  count is left standing rather than edited because how it reached six is not
+  reconstructible from here and guessing at it would be a third wrong number.
+
+  **The three payload anchors were re-derived by reading what each one holds,
+  not by adding an offset**: `:1296` sits in `savePayloadV3Schema` against
+  `sessionSystemsV3Schema`, `:1326` in `savePayloadV4Schema` against
+  `sessionSystemsV4Schema`, and `:1395` against `sessionSystemsV5Schema`
+  (declared at `:1240`, `:1242` and `:1252`). The two clears were re-derived by
+  the grep the paragraph above names, which still returns exactly two.
+
+  **Why this bullet keeps drifting, and it is not a gate that is failing.**
+  `tests/foundation/documentation-source-anchor-contract.test.ts` asserts that a
+  cited line **exists** — its failure message is *"these documented anchors name
+  a line that is not there"* — and nothing about whether that line says what the
+  citation claims. Its own header quotes ADR 0006 on exactly that limit. So an
+  anchor that slides from `:532` to `:672` inside a 1,900-line file stays green
+  while pointing at the wrong thing, which is the whole reason the `grep` two
+  paragraphs up is the durable form and these numbers are the perishable one.) Whether the taxonomy should now move
   these to category 1, and what that obliges, is left open rather than settled
   here; the acceptance above did not take it either.
 - Future gameplay systems get a decision to follow instead of a precedent to

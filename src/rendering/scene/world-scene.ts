@@ -9,11 +9,15 @@ import {
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
-import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
+import { planEnvironmentAtlas } from '../assets/environment-atlas-plan';
+import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
+import { SourceArtCatalog } from '../assets/source-art-catalog';
+import { type CameraState, type HomeIndicator, type WorldBounds, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
 import {
   type BuildToolPort,
   type EdgeTarget,
   type EditHistoryPort,
+  type ToolStandDownPort,
   type WorldPoint,
   edgeRunFromDrag,
   edgeTargetsEqual,
@@ -22,6 +26,7 @@ import {
 import type { RenderFeed } from '../feed/render-feed';
 import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
+import { loadEnvironmentAtlas } from '../phaser/environment-textures';
 import { BuildOverlay } from '../phaser/build-overlay';
 import { AreaOverlay } from '../phaser/area-overlay';
 import {
@@ -33,8 +38,10 @@ import {
   type RoomToolPort,
   type TileRect,
 } from '../build/area-picking';
+import { HomeIndicatorLayer } from '../phaser/home-indicator-layer';
+import { RoomLabelLayer } from '../phaser/room-label-layer';
 import { TileLayer } from '../phaser/tile-layer';
-import { TILE_SIZE_PX, visibleTileRange, type TileRange } from '../tile-metrics';
+import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
 import { VOID_COLOR } from '../world/appearance';
 
 /**
@@ -86,6 +93,27 @@ export interface WorldSceneOptions {
   readonly feed: RenderFeed;
   /** Injectable so a test or a preview can supply a batch without the network. */
   readonly loadAtlasLibrary?: () => Promise<AtlasLibrary>;
+  /**
+   * The generated source-art catalog the environment sprites are cut from.
+   *
+   * Injectable for the same reason `loadAtlasLibrary` is, and separate from it
+   * because the two batches are independent: the actors come from
+   * `/assets/actors` and are 8-direction animation clips, the environment comes
+   * from `/game-content/source-art` and is whole sheets an extraction manifest
+   * carves up. Either can fail without the other, and either failing leaves a
+   * playable world.
+   */
+  readonly loadSourceArtCatalog?: () => Promise<SourceArtCatalog>;
+  /**
+   * The generated rendered-art catalog (ADR 0100), a second and independent
+   * batch from the one above: `/game-content/rendered-art.v1.json` names
+   * Blender-rendered object frames rather than owner-sheet crops. Injectable
+   * for the same reason, and failing independently for the same reason --
+   * `loadEnvironmentArt` awaits both before publishing either, so a failure in
+   * either leaves the coloured-block world this scene already draws before
+   * any art arrives.
+   */
+  readonly loadRenderedArtCatalog?: () => Promise<RenderedArtCatalog>;
   readonly onError?: (error: Error) => void;
   /**
    * Where a build gesture goes. Absent, the world is view-only and every
@@ -107,6 +135,16 @@ export interface WorldSceneOptions {
    * no build tool either.
    */
   readonly editHistory?: EditHistoryPort;
+
+  /**
+   * Where "put the tool down" goes (issue #959).
+   *
+   * The scene recognises the key and reports what was asked for; it does not
+   * know which panel armed which tool, for the same reason it does not know
+   * what a build order is. Absent, `Escape` cancels a gesture in progress and
+   * changes no arming -- the behaviour every release before #959 had.
+   */
+  readonly toolStandDown?: ToolStandDownPort;
 
   /**
    * Where a room-designation gesture goes (ADR 0022).
@@ -158,6 +196,26 @@ export interface WorldSceneOptions {
   readonly roomTint?: () => number | undefined;
 
   /**
+   * The room type's own name, in the player's language, for a zoning numeric id
+   * -- or `undefined` for an id this build's catalogue does not name.
+   *
+   * A function, and text rather than a message key, for the two reasons
+   * `roomTint` above is a function returning a colour. The renderer is handed
+   * *the answer it needs to draw*: which words a room type is called is a
+   * content-plus-localization decision, and both live at the composition root
+   * (`src/main.ts`), so a scene that resolved a key would be a second place
+   * that knows how this game is translated. And it is read on every paint
+   * rather than taken once, so a future locale change reaches the map without
+   * the scene holding a stale copy.
+   *
+   * Absent, no room is named and every gesture keeps exactly the meaning it
+   * had -- the same shape an absent `buildTool` has. That is the state of
+   * `tests/browser/world-scene-harness.ts`, which asserts about input and
+   * nothing about words.
+   */
+  readonly roomName?: (zoningNumericId: number) => string | undefined;
+
+  /**
    * Where input settings are read from.
    *
    * The renderer used to reach for `window.localStorage` itself, in a class
@@ -189,6 +247,8 @@ export interface WorldSceneOptions {
 export class WorldScene extends Phaser.Scene {
   private feed: RenderFeed;
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
+  private readonly loadSourceArtCatalog: () => Promise<SourceArtCatalog>;
+  private readonly loadRenderedArtCatalog: () => Promise<RenderedArtCatalog>;
   private readonly onError: (error: Error) => void;
 
   /**
@@ -206,8 +266,10 @@ export class WorldScene extends Phaser.Scene {
 
   private readonly buildTool: BuildToolPort | undefined;
   private readonly editHistory: EditHistoryPort | undefined;
+  private readonly toolStandDown: ToolStandDownPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
   private readonly roomTint: (() => number | undefined) | undefined;
+  private readonly roomName: ((zoningNumericId: number) => string | undefined) | undefined;
   private readonly objectTool: ObjectToolPort | undefined;
   private readonly objectTint: (() => number | undefined) | undefined;
   /** The pointer currently drawing a wall run, and the world point it pressed. */
@@ -217,6 +279,12 @@ export class WorldScene extends Phaser.Scene {
   private hoveredEdge: EdgeTarget | undefined;
 
   private tiles: TileLayer | undefined;
+  /**
+   * Undefined when no `roomName` was supplied, rather than a layer that draws
+   * nothing: a layer with no source of words would still walk the world for
+   * regions once per revision to write no text.
+   */
+  private roomLabels: RoomLabelLayer | undefined;
   private actors: ActorLayer | undefined;
   private buildOverlay: BuildOverlay | undefined;
 
@@ -244,15 +312,33 @@ export class WorldScene extends Phaser.Scene {
   private objectRect: TileRect | undefined;
   private hoveredObjectTile: TileRect | undefined;
   private objectOverlay: AreaOverlay | undefined;
+  /**
+   * The edge marker that points at the prison when the prison is off screen
+   * (issue #794). Created with the other presentation layers and cleared with
+   * them, because it is one of them.
+   */
+  private homeIndicator: HomeIndicatorLayer | undefined;
   private framedOnWorld = false;
+  /**
+   * The most recent frame's `frame.world.loadedBounds` (issue #793).
+   *
+   * Refreshed every `update()`, from the exact same read `frameCameraOnFirstWorld`
+   * already takes -- no new subscription to the feed. `navigateToMinimapPoint`
+   * is the only reader: a minimap click can arrive between two `update()`s (an
+   * input event, not a render tick), and there is otherwise nowhere on this
+   * scene to ask "how big is the world right now" outside the render loop.
+   */
+  private lastLoadedBounds: TileBounds | undefined;
 
   public constructor(options: WorldSceneOptions) {
     super('WorldScene');
     this.feed = options.feed;
     this.buildTool = options.buildTool;
     this.editHistory = options.editHistory;
+    this.toolStandDown = options.toolStandDown;
     this.roomTool = options.roomTool;
     this.roomTint = options.roomTint;
+    this.roomName = options.roomName;
     this.objectTool = options.objectTool;
     this.objectTint = options.objectTint;
     this.keyboard = new KeyboardInputAdapter(
@@ -267,6 +353,8 @@ export class WorldScene extends Phaser.Scene {
       () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
+    this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());
+    this.loadRenderedArtCatalog = options.loadRenderedArtCatalog ?? (() => RenderedArtCatalog.load());
     this.onError =
       options.onError ??
       ((error) => {
@@ -290,9 +378,12 @@ export class WorldScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);
+    const roomName = this.roomName;
+    if (roomName !== undefined) this.roomLabels = new RoomLabelLayer(this, roomName);
     this.buildOverlay = new BuildOverlay(this);
     this.areaOverlay = new AreaOverlay(this);
     this.objectOverlay = new AreaOverlay(this);
+    this.homeIndicator = new HomeIndicatorLayer(this);
 
     // Phaser tracks exactly one touch pointer unless told otherwise, so a
     // second finger was never delivered and `TouchGestureTracker` could not
@@ -314,6 +405,136 @@ export class WorldScene extends Phaser.Scene {
     // all; it is VERIFIED now, and that spec is what keeps it so.
     this.input.addPointer(2);
 
+    /*
+     * ---- a gesture in progress belongs to the world, not to the HUD --------
+     *
+     * The HUD frames the world and never covers it, but the islands in it that
+     * take clicks have to take clicks: `.hud` is `pointer-events: none` and
+     * `hud.css`'s "Every interactive island opts back in" rule restores `auto`
+     * on `.hud-strip`, `.hud__aside > *`, `.hud__side > *` and
+     * `.hud-tabs__inner` (whole panels), plus, inside `.hud__corner`, the
+     * handful of actual controls named beneath that rule (issue #1054 --
+     * `.hud__corner`'s own panels are not scroll containers, so opting the
+     * whole panel in bought nothing and cost a press on their blank chrome).
+     * Phaser listens for `mousemove` on **this canvas**
+     * and nowhere else (`node_modules/phaser/src/input/mouse/MouseManager.js`,
+     * `startListeners`; `boot` falls back to `manager.game.canvas` because
+     * `src/main.ts`'s game config sets no `input.mouseEventTarget`), so a
+     * left-drag that crossed one of those islands simply stopped being
+     * delivered: the last move the canvas heard was the last move `extendBuild`
+     * saw, `commitBuild` placed the run as it stood there, and a player who
+     * dragged seven tiles got five walls and was told nothing at all -- no
+     * refusal, no alert, no console line (issue #878).
+     *
+     * **Measured, at 1440x900, by
+     * `tests/browser/playtest-878-what-a-drag-under-the-hud-reaches.playtest.ts`
+     * across `a9219cfc` and `7bafc3a9` -- this branch's gate commit and the
+     * commit that added this listener to it, so the listener is the only
+     * difference between the two trees.** Seventy drags, each one
+     * started on reachable canvas and pulled to the far edge of the visible
+     * world: **1082 tiles drawn, 901 walls placed -- 83.3%, and 43 of the 70
+     * drags built less than they drew**, the worst of them one wall for
+     * fourteen tiles. With the listener the same run reports 1082 of 1082 --
+     * 100%, and not one of the seventy drags short.
+     *
+     * **Reachability is a different measurement, it does not move, and it is a
+     * curve rather than a number.** How much of the world takes a pointer at
+     * all is `hud.css` against the window size -- the HUD is a frame of roughly
+     * fixed pixel width around a playfield that shrinks -- so a single headline
+     * figure for it is a figure about one window.
+     * `tests/browser/playtest-878-viewports.playtest.ts` reports it across the
+     * five viewports `ui-shell.spec.ts` already covers, and every row of it is
+     * **identical before and after this change**, which is the point of
+     * including it: nothing a renderer does can move where the HUD is, so a fix
+     * that appeared to would be measuring something else.
+     *
+     *   viewport   canvas share   press-reachable tiles   largest free rect
+     *   1440x900   64.1%          198 of 308 (64.3%)      144 of 308
+     *   1280x720   56.1%          136 of 240 (56.7%)      100 of 240
+     *   1024x768   49.6%           92 of 192 (47.9%)       60 of 192
+     *    900x600   36.7%           40 of 126 (31.7%)       21 of 126
+     *    375x812    8.2%          no 64x64 square of reachable canvas exists
+     *
+     * The first column is a fixed 16px sample grid with no calibrated origin in
+     * it, and it is there because the tile counts are phase-sensitive: the same
+     * method on the same tree read 198 and 202 free tile centres at 1440x900
+     * from two different bisection squares, and a separate measurement read
+     * 194. All three are the same ~64%.
+     *
+     * What the drag fidelity above measures is therefore **not** reachability.
+     * 286 of 308 tiles could be reached by *some* drag even unfixed, because
+     * the run is re-derived from the press on every move the canvas does hear,
+     * so a drag whose *last* move happens to land back on canvas recovers its
+     * whole run. Reachability was never the injury. Fidelity was.
+     *
+     * `setPointerCapture` makes this canvas the target of every subsequent
+     * event for that pointer, so the rest of the drag arrives here whatever it
+     * passes over, and the release arrives here too. The reachable band stops
+     * mattering **while a gesture is in progress**, which is when it mattered.
+     *
+     * **Why this works at all, and it is not obvious.** Phaser never listens
+     * for `pointermove` -- only `mousemove` and `touchmove` -- so a capture
+     * that redirected *pointer* events alone would change nothing here. It
+     * redirects the compatibility mouse events too: a pointer captured to an
+     * element retargets the `mousemove`/`mouseup` derived from it to that same
+     * element. That is the load-bearing fact of this fix and it was measured
+     * rather than assumed -- the instrument above logs, for every move the
+     * canvas hears, both the event target and what
+     * `document.elementFromPoint` says was on top at that instant, and on this
+     * tree it reports three moves with `target=CANVAS` while
+     * `elementFromPoint` names `save-panel__button`, `save-panel__button`,
+     * `save-panel__actions`. Without the capture the same drag produces six
+     * moves, none of them over an island, and stops.
+     *
+     * **Why capture rather than reconstructing the missing part of the run.**
+     * Interpolating between the last and first points the canvas heard would
+     * put back the *commands* and not the gesture: the ghost would still freeze
+     * at the island's edge, so the player would still be shown one thing and
+     * given another, and every other pointer gesture -- the area rectangle, the
+     * object footprint, the middle-drag pan -- would need its own copy of the
+     * same repair. This is one line at the mechanism, and it fixes the class.
+     *
+     * **What it does not change, and this is the constraint that ruled the
+     * alternatives out.** An island still takes a press that *lands* on it:
+     * capture is claimed from a `pointerdown` **on the canvas**, so a press
+     * that starts on the Build panel is never captured and the panel keeps it.
+     * A drag that starts on the canvas and ends over a control does not click
+     * that control -- which was already true, because a `click` needs its press
+     * and its release on one element. Both halves are asserted at every
+     * viewport by `tests/browser/world-scene-drag-under-the-hud.spec.ts`,
+     * which is the gate for this change: a fix that took the pointer away from
+     * the HUD would be a worse defect than the one it closed.
+     *
+     * **Unconditional, and not narrowed to an armed tool.** The middle-drag
+     * pan loses its moves to an island in exactly the same way, so narrowing
+     * this to a build gesture would leave that half broken. A `pointerType`
+     * branch would be inert rather than wrong: touch never had this defect,
+     * because a touch drag reaches the scene through `touchmove`, which Phaser
+     * registers on this same canvas
+     * (`node_modules/phaser/src/input/touch/TouchManager.js`,
+     * `startListeners`, with the same `game.canvas` fallback), and the Touch
+     * Events specification captures every `touchmove` and `touchend` of a
+     * sequence to the element its `touchstart` hit. So there is nothing for a
+     * branch to protect and nothing for the capture to spoil.
+     *
+     * It is not removed on `pointerup`: capture is released implicitly by the
+     * browser when the pointer goes up or is cancelled, so releasing it by hand
+     * would be a second mechanism for something the platform already does.
+     *
+     * It is not guarded, either, and the reason is that both of
+     * `setPointerCapture`'s failure modes are excluded by where it is called
+     * from. It throws `NotFoundError` for a `pointerId` that is not an active
+     * pointer -- and this id came off a `pointerdown` that is being dispatched
+     * -- and `InvalidStateError` for an element not connected to a document,
+     * which cannot be true of the element that just received the event. A
+     * `try`/`catch` here would swallow a fault that means something else.
+     */
+    const canvas = this.game.canvas;
+    const capturePointer = (event: PointerEvent): void => {
+      canvas.setPointerCapture(event.pointerId);
+    };
+    canvas.addEventListener('pointerdown', capturePointer);
+
     const keyDown = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyDown(event));
     };
@@ -329,8 +550,21 @@ export class WorldScene extends Phaser.Scene {
     // `visibilitychange` does not fire for it. Phaser's own
     // `Core.Events.BLUR` would work too; `window` keeps this symmetric with the
     // two listeners above, so the pair is added and removed together.
+    //
+    // `cancelAllGestures()` closes the same gap for the mouse (issue #516):
+    // a button released while the page has no focus can lose its `mouseup`
+    // the same way a `keyup` does, and `buildPointerId`/`areaPointerId`/
+    // `objectPointerId` have no timeout and no other listener that would ever
+    // notice. Left alone, the ghost for whichever gesture was open keeps
+    // following the cursor on plain hover -- `extendBuild` and its two
+    // siblings match on a pointer id, not on whether a button is actually
+    // down -- until `Escape` clears it by hand. Cancelling rather than
+    // committing matches `keyboard.releaseAll()`'s own choice: a release that
+    // never arrived is not evidence the player meant to finish the gesture,
+    // it is evidence nothing is listening for them any more.
     const blur = (): void => {
       this.keyboard.releaseAll();
+      this.cancelAllGestures();
     };
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
@@ -356,11 +590,15 @@ export class WorldScene extends Phaser.Scene {
         this.touchGestures.begin({ id: pointer.id, x: pointer.x, y: pointer.y });
         // One finger builds only while a tool is armed *and* it is the only
         // finger down; a second finger arriving hands the gesture back to the
-        // camera (see `pointermove`).
+        // camera before either finger can commit a placement on release.
         if (this.activeTouchCount() === 1) {
           if (this.isBuildArmed()) this.beginBuild(pointer);
           else if (this.isObjectArmed()) this.beginObject(pointer);
           else if (this.isRoomArmed()) this.beginArea(pointer);
+        } else {
+          // Cancel on arrival, not on the first pinch move: either finger may
+          // lift before moving, and its release must not place the old preview.
+          this.cancelAllGestures();
         }
         return;
       }
@@ -398,9 +636,7 @@ export class WorldScene extends Phaser.Scene {
           // player never loses the ability to move around while building.
           // A second finger abandons any run in progress rather than
           // committing a wall the player was actually trying to scroll past.
-          this.cancelBuild();
-          this.cancelObject();
-          this.cancelArea();
+          this.cancelAllGestures();
           const camera = this.cameras.main;
           const panned = this.cameraState();
           const next = zoomAtScreenPoint(
@@ -459,21 +695,27 @@ export class WorldScene extends Phaser.Scene {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', blur);
+      canvas.removeEventListener('pointerdown', capturePointer);
       this.tiles?.destroy();
+      this.roomLabels?.destroy();
       this.actors?.destroy();
       this.buildOverlay?.destroy();
       this.areaOverlay?.destroy();
       this.objectOverlay?.destroy();
+      this.homeIndicator?.destroy();
       this.tiles = undefined;
+      this.roomLabels = undefined;
       this.actors = undefined;
       this.buildOverlay = undefined;
       this.areaOverlay = undefined;
       this.objectOverlay = undefined;
+      this.homeIndicator = undefined;
     });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
     // legible tile world rather than a blank screen.
     void this.loadActorAtlases();
+    void this.loadEnvironmentArt();
   }
 
   public override update(time: number, delta: number): void {
@@ -512,9 +754,57 @@ export class WorldScene extends Phaser.Scene {
     const frame = this.feed.readFrame(nowSeconds);
     const range = this.visibleTiles();
 
+    this.lastLoadedBounds = frame.world.loadedBounds;
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
     this.tiles?.update(frame, range);
+    // After the tiles and with the same frame, because the two must not be able
+    // to disagree: a name is only ever true of the floor it is written on, and
+    // that floor is painted from this exact `frame.world` (`room-label-layer.ts`
+    // records what the 30-second geometry window does and does not do to that).
+    this.roomLabels?.update(frame, range, this.cameras.main.zoom);
     this.actors?.update(frame.actors, range, nowSeconds);
+    // Handed over every frame rather than read once: `frame.world` is replaced
+    // wholesale on every snapshot (`WorldRenderView.fromSnapshot`), and this is
+    // the one point in the scene that already holds the newest one. The room
+    // tool's own copy of it is then never more than one rendered frame behind
+    // whatever the walls on screen actually are (issue #493) -- no additional
+    // request to the worker, because this reference was already being read for
+    // the repaint above.
+    this.roomTool?.setWorld?.(frame.world);
+    // Last, and after the camera has been moved by this frame's pan poll above,
+    // so the marker answers for the view the player is about to see rather than
+    // the one they just left (issue #794).
+    this.homeIndicator?.update(this.cameraState(), this.loadedWorldBounds());
+  }
+
+  /**
+   * `lastLoadedBounds` in world units -- the rectangle the home marker points
+   * at (issue #794).
+   *
+   * **This is what "the prison" means as a bound here, and it is read rather
+   * than chosen.** `WorldRenderView.loadedBounds` is the one definition of "how
+   * big is the world" this codebase has, and it already has two production
+   * readers: `frameCameraOnFirstWorld`, which is where a session's camera is
+   * pointed on first sight of a world, and `navigateToMinimapPoint`, which is
+   * what a minimap press means. A third definition here -- the *owned* chunks,
+   * or the bounding box of placed geometry -- would disagree with both: owned
+   * chunks exclude the unowned-but-loaded ground the frontier reaches and the
+   * scene already draws, and placed geometry does not exist as a rectangle
+   * anywhere in this tree. So the marker points at the same place the camera
+   * was first pointed, which is also the place the minimap's centre goes.
+   *
+   * The half-open convention is `tileToWorld`'s: `maxTileX` is the last tile
+   * *in* the world, so its far edge is `maxTileX + 1`.
+   */
+  private loadedWorldBounds(): WorldBounds | undefined {
+    const bounds = this.lastLoadedBounds;
+    if (bounds === undefined) return undefined;
+    return {
+      left: tileToWorld(bounds.minTileX),
+      top: tileToWorld(bounds.minTileY),
+      right: tileToWorld(bounds.maxTileX + 1),
+      bottom: tileToWorld(bounds.maxTileY + 1),
+    };
   }
 
 
@@ -566,15 +856,41 @@ export class WorldScene extends Phaser.Scene {
         case 'camera.zoom.out':
           this.stepZoom(1 / KEYBOARD_ZOOM_STEP);
           break;
-        case 'build.cancel':
-          // One key, both gestures. At most one of them has anything in
-          // progress -- the two tools are armed from panels on different tabs
-          // and leaving a tab disarms its tool -- and each is a no-op with
-          // nothing to abandon, so `Escape` cannot cancel the wrong one.
-          this.cancelBuild();
-          this.cancelObject();
-          this.cancelArea();
+        case 'build.cancel': {
+          /*
+           * One key, two states, in an order the player can predict (#959).
+           *
+           * **The gesture first.** All three of them: at most one has
+           * anything in progress -- the tools are armed from panels on
+           * different tabs and leaving a tab disarms its tool -- and each is
+           * a no-op with nothing to abandon, so `Escape` cannot cancel the
+           * wrong one.
+           *
+           * **Then the tool, on a press that found no gesture.** Until #959
+           * this case stopped at the line above, so `Escape` cleared a
+           * half-drawn run and never touched the arming: the tool stayed
+           * live, the press said nothing, and the next drag on what the
+           * player believed was a disarmed world laid walls. Measured by
+           * playing -- two accepted `PlaceBuildOrder`s and 160 off the funds
+           * chip, with the clock paused.
+           *
+           * The ordering is the whole decision, and it is why this is not one
+           * more call beside the three above. A half-drawn run and an armed
+           * tool are two different states; a key that cleared both at once
+           * would take the tool away from a player who only wanted their
+           * crooked run back, on a control they cannot get back without
+           * finding the panel. So the first press costs the gesture and
+           * leaves the tool in their hand, and a second press -- or a first
+           * one with nothing drawn -- puts it down.
+           *
+           * Read *before* the cancel, because the cancel is what makes it
+           * false.
+           */
+          const abandoned = this.gestureInProgress();
+          this.cancelAllGestures();
+          if (!abandoned) this.toolStandDown?.standDown();
           break;
+        }
         /*
          * Reported, not performed. Undo reverses a *simulation* transaction --
          * the orders a gesture placed -- and `src/rendering/` may not submit a
@@ -619,6 +935,34 @@ export class WorldScene extends Phaser.Scene {
     );
     camera.setZoom(next.zoom);
     camera.setScroll(next.scroll.x, next.scroll.y);
+  }
+
+  /**
+   * One zoom step for a control that is not a key (issue #1023).
+   *
+   * The range `ZOOM_BOUNDS` declares has been reachable on the wheel, on a
+   * pinch and on `+`/`-` since this scene was written, and nothing on screen
+   * said so -- no zoom control existed in the HUD at all, which is issue
+   * #1023's whole subject. This is the seam the HUD's pair of buttons presses
+   * through, and it is public for the same reason `navigateToMinimapPoint`
+   * above is: the HUD may not import `src/rendering/**` (`AGENTS.md` boundary
+   * 1), so the composition root joins the two.
+   *
+   * **Deliberately the keyboard's step and the keyboard's code path, not a
+   * second zoom.** `KEYBOARD_ZOOM_STEP` one way and its reciprocal the other,
+   * through `stepZoom`, so a button press and a key press are the same
+   * movement about the same point and eight presses cross the whole range --
+   * the property that constant's own comment was chosen for. A separate
+   * factor here would give the game two zooms that disagree about how far one
+   * press goes, and a `camera.setZoom` of its own would walk past the bounds
+   * the wheel respects, which is the mistake `stepZoom` documents.
+   *
+   * Presentational only, per `AGENTS.md` boundary 1: writes
+   * `this.cameras.main` and nothing else, exactly as every other camera
+   * gesture on this scene does. No simulation command is built or sent.
+   */
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    this.stepZoom(direction === 'in' ? KEYBOARD_ZOOM_STEP : 1 / KEYBOARD_ZOOM_STEP);
   }
 
   // ---- build tool ---------------------------------------------------
@@ -729,6 +1073,18 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to a run in progress and the camera must not act on it. */
   private extendBuild(pointer: Phaser.Input.Pointer): boolean {
     if (this.buildPointerId !== pointer.id || this.buildPress === undefined) return false;
+    // #516: this pointer's release may have happened with nothing left to
+    // hear it. Detected here rather than only at `blur`, because focus never
+    // has to leave the page for a `pointerup` to go missing -- see
+    // `releaseMissed`. Returning `false` after cancelling lets this same move
+    // fall through to the ordinary armed-hover path below, so the ghost is
+    // repainted at the current position on this move rather than one move
+    // later.
+    if (this.releaseMissed(pointer)) {
+      this.cancelBuild();
+      this.hoveredEdge = undefined;
+      return false;
+    }
     this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
     this.paintBuildPreview();
     return true;
@@ -751,12 +1107,15 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Abandons a run without placing anything.
    *
-   * Three ways in: a second finger arriving during a pinch, the tool being
-   * disarmed mid-gesture, and `Escape` (`build.cancel`, #200 item 2). The
-   * early return means `Escape` with nothing in progress does nothing, which is
-   * the truthful behaviour -- there is no run to abandon, and clearing the
-   * hover ghost as well would take away the preview the armed tool is supposed
-   * to be showing.
+   * Five ways in: a second finger arriving during a pinch, the tool being
+   * disarmed mid-gesture, `Escape` (`build.cancel`, #200 item 2), the window
+   * losing focus (`blur`, #516 -- the same recovery #202 added for a held key),
+   * and a hover move that proves this pointer's release never reached
+   * `pointerup`/`pointerupoutside` at all (`extendBuild`'s `releaseMissed`
+   * check, #516). The early return means `Escape` with nothing in progress
+   * does nothing, which is the truthful behaviour -- there is no run to
+   * abandon, and clearing the hover ghost as well would take away the preview
+   * the armed tool is supposed to be showing.
    *
    * It leaves the pointer down. A player who presses `Escape` mid-drag and
    * keeps dragging gets the ordinary armed-hover preview back, and the release
@@ -788,6 +1147,13 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to an area gesture and the camera must not act on it. */
   private extendArea(pointer: Phaser.Input.Pointer): boolean {
     if (this.areaPointerId !== pointer.id || this.areaPress === undefined) return false;
+    // #516: the same recovery `extendBuild` performs, for the same reason --
+    // see `releaseMissed`.
+    if (this.releaseMissed(pointer)) {
+      this.cancelArea();
+      this.hoveredTile = undefined;
+      return false;
+    }
     this.areaRect = tileRectFromDrag(this.areaPress, this.worldPointOf(pointer));
     this.paintAreaPreview();
     return true;
@@ -810,7 +1176,7 @@ export class WorldScene extends Phaser.Scene {
   /**
    * Abandons an area gesture without designating anything.
    *
-   * The same three ways in as `cancelBuild`, the same early return for the
+   * The same five ways in as `cancelBuild`, the same early return for the
    * same reason -- `Escape` with nothing in progress does nothing, which is the
    * truthful behaviour -- and it leaves the pointer down, so a player who
    * presses `Escape` mid-drag and keeps dragging designates nothing on release,
@@ -844,6 +1210,13 @@ export class WorldScene extends Phaser.Scene {
   /** True when the move belonged to an object gesture and the camera must not act on it. */
   private extendObject(pointer: Phaser.Input.Pointer): boolean {
     if (this.objectPointerId !== pointer.id) return false;
+    // #516: the same recovery `extendBuild` performs, for the same reason --
+    // see `releaseMissed`.
+    if (this.releaseMissed(pointer)) {
+      this.cancelObject();
+      this.hoveredObjectTile = undefined;
+      return false;
+    }
     this.objectRect = this.footprintUnder(pointer);
     this.paintObjectPreview();
     return true;
@@ -861,14 +1234,29 @@ export class WorldScene extends Phaser.Scene {
     // The *anchor*, not the rectangle: the tool and the command both take one
     // tile, and the rectangle only ever existed so the player could see what a
     // press would claim.
-    if (rect !== undefined) this.objectTool?.place({ tileX: rect.tileX, tileY: rect.tileY });
+    //
+    // `edge` (ADR 0106) is computed unconditionally, from the release pointer
+    // -- the same point the tile above is already tracking, so the two agree
+    // about where the gesture ended even after a drag corrects it. It is
+    // computed here rather than only while removing because deciding which
+    // arm reads it is `ObjectTool.place`'s job, not this scene's: the scene
+    // reports the geometry a press resolved to and the tool decides what a
+    // press means, exactly as `isRemoving()` is read for the preview colour
+    // alone and never for what a press *does*.
+    if (rect !== undefined) {
+      this.objectTool?.place({
+        tileX: rect.tileX,
+        tileY: rect.tileY,
+        edge: pickEdgeAtWorld(this.worldPointOf(pointer)).edge,
+      });
+    }
     return true;
   }
 
   /**
    * Abandons an object gesture without placing anything.
    *
-   * The same three ways in as `cancelBuild` and `cancelArea`, the same early
+   * The same five ways in as `cancelBuild` and `cancelArea`, the same early
    * return for the same reason, and it leaves the pointer down -- so a player
    * who presses `Escape` mid-drag and keeps dragging places nothing on release,
    * because `commitObject` matches on an `objectPointerId` this has cleared.
@@ -879,6 +1267,85 @@ export class WorldScene extends Phaser.Scene {
     this.objectRect = undefined;
     this.objectOverlay?.clear();
     this.objectTool?.target?.(undefined);
+  }
+
+  /**
+   * Abandons whichever of the three pointer gestures is in progress, without
+   * placing anything.
+   *
+   * Exists so the call sites that need "all three, unconditionally" --
+   * a second finger arriving or moving mid-pinch, `Escape` (`build.cancel`), and
+   * `blur` (#516) -- say so once rather than repeating the same three calls
+   * each time a fourth needed them. Each `cancel*` already returns immediately
+   * when its own pointer id is `undefined` (see `cancelBuild`), so calling all
+   * three here is exactly as safe as it was at each call site before this
+   * existed: at most one of the three ever has anything to abandon, because
+   * the tools are armed from panels on different tabs and `isRoomArmed`/
+   * `isObjectArmed` already arbitrate the rest.
+   */
+  private cancelAllGestures(): void {
+    this.cancelBuild();
+    this.cancelObject();
+    this.cancelArea();
+  }
+
+  /**
+   * Whether a pointer currently owns one of the three gestures (#959).
+   *
+   * The same condition each `cancel*` early-returns on, asked once and from
+   * the outside -- so `build.cancel` can tell "this press took a half-drawn
+   * run" from "this press found nothing to take" without any of the three
+   * having to report back. Making the three return a boolean was the
+   * alternative and was rejected: `blur` and the pinch branch call them for
+   * their effect and would then be discarding a value, and a `cancel` that
+   * answers a question is a second contract on a function whose whole job is
+   * to leave no trace.
+   *
+   * A *hover ghost* is deliberately not a gesture here. `buildSegments` holds
+   * one edge while an armed tool merely previews under the cursor, with no
+   * pointer id, and treating that as something to abandon would put the
+   * player's first `Escape` into a state they cannot see: the preview would
+   * go and the panel would still say the tool is on, which is exactly the
+   * disagreement #200 wrote its hover assertion to prevent.
+   */
+  private gestureInProgress(): boolean {
+    return this.buildPointerId !== undefined || this.objectPointerId !== undefined || this.areaPointerId !== undefined;
+  }
+
+  /**
+   * True when a plain move proves this pointer's release never reached the
+   * page as an explicit `pointerup`/`pointerupoutside` (issue #516).
+   *
+   * `commitBuild`/`commitArea`/`commitObject` only ever run from those two
+   * Phaser events, and nothing else watches for a release going missing --
+   * `blur` (above) covers the window losing focus, but a `pointerup` can go
+   * missing without focus ever leaving the page (a driver dropping the event,
+   * a release the browser delivers to a different element under pointer
+   * capture in a way this app never sees). When that happens the gesture's
+   * pointer id survives untouched, and the next plain hover move recomputes
+   * the pending run/rectangle against the *original* press point as though the
+   * button were still down -- reproduced twice in #516's evidence, including
+   * `Escape` being the only thing that ever cleared it.
+   *
+   * `pointer.buttons` is Phaser's own bitmask, current as of this call: `0`
+   * means the engine believes no button is held.
+   *
+   * `!pointer.wasTouch` is not a hedge, it is load-bearing, and it is checked
+   * first: a touch pointer's `buttons` is set to `1` once, by `touchstart`,
+   * and a plain `touchmove` never revisits it -- only `touchend` sets it back
+   * to `0` (`node_modules/phaser/src/input/Pointer.js`, `touchstart`/
+   * `touchmove`/`touchend`). So a touch drag's `pointermove` events never
+   * legitimately read `buttons === 0` while the finger is still down, and the
+   * one touch event that does carry `0` (`touchend`) already fires
+   * `pointerup`/`pointerupoutside` first, through the ordinary commit path,
+   * before any further move could observe it. Without this guard a second
+   * finger arriving mid-drag -- which the `pinch` branch above already
+   * cancels on purpose, through `cancelAllGestures()` -- would risk this
+   * running too on a gesture that is not actually abandoned; with it, this
+   * function only ever answers `true` for the mouse.
+   */
+  private releaseMissed(pointer: Phaser.Input.Pointer): boolean {
+    return !pointer.wasTouch && pointer.buttons === 0;
   }
 
   private previewObjectHover(pointer: Phaser.Input.Pointer): void {
@@ -944,13 +1411,34 @@ export class WorldScene extends Phaser.Scene {
     this.buildTool?.target?.(this.buildSegments);
   }
 
+  /**
+   * The home marker as it was last drawn, or `undefined` when none was
+   * (issue #794) -- a diagnostics read in the same class as `rendererStats`.
+   *
+   * It exists because the marker is the one thing this scene draws that a
+   * browser spec cannot read back off the canvas: a `Graphics` path is not
+   * queryable, and a spec that recomputed the mark from a camera it had read
+   * would be checking `offscreenHomeIndicator` against itself rather than
+   * checking that this scene feeds it the right rectangle.
+   */
+  public get homeIndicatorMark(): HomeIndicator | undefined {
+    return this.homeIndicator?.mark;
+  }
+
   /** Sprite and layer counts, for a diagnostics overlay or a manual budget check. */
-  public get rendererStats(): { readonly actors: number; readonly pooledSprites: number; readonly tileObjects: number } {
+  public get rendererStats(): {
+    readonly actors: number;
+    readonly pooledSprites: number;
+    readonly tileObjects: number;
+    /** Actors this frame whose logical asset id has no loaded clip -- `ActorLayer.stats.unresolved`. Zero is the healthy number. */
+    readonly unresolvedActors: number;
+  } {
     const stats = this.actors?.stats;
     return {
       actors: stats?.visible ?? 0,
       pooledSprites: stats?.pooled ?? 0,
       tileObjects: this.tiles?.pooledObjectCount ?? 0,
+      unresolvedActors: stats?.unresolved ?? 0,
     };
   }
 
@@ -970,6 +1458,87 @@ export class WorldScene extends Phaser.Scene {
     );
   }
 
+  /**
+   * Moves the camera to the world position a point on `.hud-minimap__surface`
+   * represents (issue #793): the minimap accepted clicks and did nothing with
+   * them, and the owner's ruling is that it should navigate.
+   *
+   * **The mapping, established from the code rather than guessed.** The
+   * surface has no rendered content of its own (`hud.ts`'s comment on it:
+   * *"Minimap rendering belongs to the renderer, not to the HUD; this is the
+   * frame it will draw into"*) -- so before this change it represented no
+   * region of the world at all, which is itself the finding the issue asked
+   * for. The one existing definition of "how big is the world" in this
+   * codebase is `WorldRenderView.loadedBounds` -- everything the simulation
+   * has materialised, the same bounds `frameCameraOnFirstWorld` above uses to
+   * frame a session's first paint, and the same bounds `world-view.ts`'s own
+   * comment glosses as answering that exact question. `fx`/`fy` -- normalized
+   * to the surface's own box, `0,0` top-left and `1,1` bottom-right -- are
+   * read linearly across that rectangle in tile space, and the result is
+   * centred on the camera at this scene's own `TILE_SIZE_PX`. Two
+   * alternatives were considered and rejected: the *owned* chunks alone would
+   * leave every unowned-but-loaded tile the frontier can reach (#792 §4)
+   * outside the map, silently narrowing "the world" to less than the scene
+   * already draws; a *fixed* world size does not exist anywhere in this
+   * codebase to read (the world is sparse and grows by construction, exactly
+   * what boundary 8 asks for) and inventing one here would be a second,
+   * disagreeing definition of a fact `WorldRenderView` already owns.
+   *
+   * **Every point in the surface maps to a tile** as long as any world is
+   * loaded: the mapping is a plain linear reparameterisation of the whole
+   * `[0,1]x[0,1]` box onto the whole loaded rectangle, with no sub-region
+   * excluded. The one input that cannot be mapped is `lastLoadedBounds`
+   * itself being `undefined` -- no session has ever published a world to this
+   * feed, which is the state of the page before a prison exists (or of a
+   * `Worker`-less page, `NO_SIMULATION_FEED`) -- and that is reported to the
+   * caller as `false` rather than silently doing nothing, so the HUD can tell
+   * the player their click found nothing instead of repeating the exact
+   * silence issue #793 is about.
+   *
+   * Presentational only, per `AGENTS.md` boundary 1: reads `lastLoadedBounds`
+   * (a cached copy of a value already read for rendering) and writes only
+   * `this.cameras.main`. No simulation command is built or sent, matching
+   * every other camera gesture (drag, wheel, keyboard) on this scene.
+   */
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastLoadedBounds;
+    if (bounds === undefined) return false;
+    const clampedX = Math.min(1, Math.max(0, fx));
+    const clampedY = Math.min(1, Math.max(0, fy));
+    const tileX = bounds.minTileX + clampedX * (bounds.maxTileX - bounds.minTileX + 1);
+    const tileY = bounds.minTileY + clampedY * (bounds.maxTileY - bounds.minTileY + 1);
+    this.cameras.main.centerOn(tileToWorld(tileX), tileToWorld(tileY));
+    return true;
+  }
+
+  /**
+   * Fetches the environment sheets, cuts the reviewed sprites out of them and
+   * hands the result to the tile layer.
+   *
+   * Started from `create` and never awaited, so the first frames of a session
+   * are drawn as coloured blocks and repainted once when the sheets arrive.
+   * That ordering is the contract, not a compromise: `docs/RENDERING.md` says
+   * art failing to load leaves a playable, legible tile world, and a boot that
+   * waited on several megabytes of PNG would break it in the other direction.
+   */
+  private async loadEnvironmentArt(): Promise<void> {
+    try {
+      // Both catalogs in parallel: two independent downloads
+      // (`loadRenderedArtCatalog`'s own docstring says why), and both are
+      // awaited before either is used -- one `catch` covers both fetches and
+      // the plan/pack that follows, so a rendered-art failure leaves the
+      // coloured-block world exactly as a source-art failure already did,
+      // rather than publishing a partial atlas.
+      const [sourceArt, renderedArt] = await Promise.all([this.loadSourceArtCatalog(), this.loadRenderedArtCatalog()]);
+      const art = await loadEnvironmentAtlas(this, planEnvironmentAtlas(sourceArt, undefined, renderedArt));
+      // The scene may have shut down while the batch was in flight.
+      if (this.tiles === undefined) return;
+      this.tiles.setEnvironmentArt(art);
+    } catch (error) {
+      this.onError(error instanceof Error ? error : new Error(String(error)));
+    }
+  }
+
   private async loadActorAtlases(): Promise<void> {
     try {
       const library = await this.loadAtlasLibrary();
@@ -983,3 +1552,4 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 }
+

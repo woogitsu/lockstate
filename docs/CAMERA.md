@@ -32,3 +32,54 @@ This follows from the second and third bullets together: `scroll + viewport / 2`
 
 `tests/browser/world-scene-touch.spec.ts` pins both halves through the real pinch gesture: the world point under the fingers is held to three decimal places, and the scroll moves by exactly the amount above. It exercises the clamp at **both** ends of `ZOOM_BOUNDS` for the reason the last bullet in the contract states — `zoomAtScreenPoint` clamps *before* it computes the scroll, so at a limit the correction is the one the clamped zoom needs. Reverse that order and the camera still stops at 3, because `setZoom` receives the clamped value either way, while the world lurches out from under the fingers by the difference; a zoom-only assertion cannot see it, which is why the anchor is asserted at the clamp and not only inside the range.
 
+
+## The pan is free, and the way home is drawn rather than enforced
+
+There is no bound on `scroll`. A player can pan until the world is entirely
+off screen, and issue #794 measured what that leaves: a solid black canvas, a
+HUD still reading normally, and nothing saying which way the prison is. The
+pan being *deterministically reversible* — 3,200px out and 3,200px back returns
+the origin exactly — is not the same property as being recoverable by someone
+who did not count their drags.
+
+**What is bound instead is the answer to "where is it".** When the loaded world
+is wholly outside `visibleWorldBounds`, `offscreenHomeIndicator`
+(`src/rendering/camera/home-indicator.ts`) returns a screen-space point on a
+ring inset from the viewport edge, on the ray from the viewport centre towards
+the middle of that world, and the bearing along that ray;
+`HomeIndicatorLayer` draws a chevron there at `setScrollFactor(0)`. The moment
+any part of the world is visible again the function answers `undefined` and
+nothing is drawn.
+
+**The rectangle it points at is `WorldRenderView.loadedBounds` in world units**,
+which is the same rectangle `frameCameraOnFirstWorld` centres a session's first
+paint on and the same one `navigateToMinimapPoint` maps the minimap across. A
+third definition here — the owned chunks, or a bounding box over placed
+geometry — would disagree with both, and the owned chunks in particular exclude
+the unowned-but-loaded ground the scene already draws.
+
+**Why not clamp the pan**, which is the cheaper of the three shapes #794 names.
+Every bound available to the renderer is that same materialised rectangle, and
+for most of a session it is *smaller than the viewport*: a 32-tile starter chunk
+is 2,048 world units against the 6,400 a 1280px viewport shows at
+`ZOOM_BOUNDS.min`. A clamp to a rectangle smaller than the view either does
+nothing or holds the camera still. It also costs something the game needs: a
+build gesture reaches the simulation through `screenToWorld`, so a tile the
+camera cannot be pointed at is a tile the player cannot build on, and this world
+grows outwards by construction.
+
+The marker is presentation like everything else on this page. It reads a camera
+and a rectangle already read for the repaint, and writes one `Graphics` object.
+
+**One thing the marker does not do, measured rather than assumed.** `.hud` is
+`position: fixed; inset: 0` over the whole canvas and Phaser's camera viewport
+*is* the whole canvas, so the ring is inset from the viewport edge and not from
+the edge of the map a player can see. Read off the assembled page at 1280x720
+with `document.elementFromPoint` and the bounding boxes of every opaque `.hud`
+descendant: the due-north ring point `(640, 34)` falls inside `.hud-strip`
+(`0,0 1280x81`) and the due-east point `(1246, 360)` inside `.save-panel`
+(`1004,147 264x221`); due west and due south are clear. Pointing at the visible
+map rather than at the canvas needs a safe-area rectangle the renderer can
+read, and no such thing exists in this tree — it is a boundary decision, not a
+constant, and `src/rendering/phaser/home-indicator-layer.ts` carries the same
+measurement beside the code.

@@ -1,0 +1,344 @@
+{
+  "format_version": 1,
+  "current_iteration": 5,
+  "source_commit": "8f6d6616788a601c9fc58b48a7f81a99d7639d5d",
+  "game_repository_included": false,
+  "files": {
+    "AKTUALNY_PROTOTYP/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "AKTUALNY_PROTOTYP/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "AKTUALNY_PROTOTYP/dist/app.js": {
+      "bytes": 67169,
+      "sha256": "50be345082d30819b0e6c1a1387052279199f4179a23e167287757dc45242e21"
+    },
+    "AKTUALNY_PROTOTYP/dist/audyt.md": {
+      "bytes": 4034,
+      "sha256": "3517ca1074e012041b7cf20ae1d6f9f6b24af9598acfb11ed97f95fac6cbef91"
+    },
+    "AKTUALNY_PROTOTYP/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "AKTUALNY_PROTOTYP/dist/index.html": {
+      "bytes": 6201,
+      "sha256": "078b2cc69430ec8091a3518b07f859fce3766af41c05eba0362d902aee3fe343"
+    },
+    "AKTUALNY_PROTOTYP/dist/konstytucja.md": {
+      "bytes": 6859,
+      "sha256": "c2557035c89154f2ff75c3a3a531501da0574548dd8835b5082a065b97f8edc3"
+    },
+    "AKTUALNY_PROTOTYP/dist/projekt.md": {
+      "bytes": 15388,
+      "sha256": "0a65cf1f5e202f57396f8f3989b07febccec0f6c34f874b2ec3e332904718ae5"
+    },
+    "AKTUALNY_PROTOTYP/dist/style.css": {
+      "bytes": 43629,
+      "sha256": "ba502c639ac148a04228fef35146ab2437c94e06e574cddd63fb71d24be5305d"
+    },
+    "AKTUALNY_PROTOTYP/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "AKTUALNY_PROTOTYP/tests/audit.cjs": {
+      "bytes": 3295,
+      "sha256": "934af139afac9105fb27d856ec527379ed7a0c4f22a127f5606af7b4f180a659"
+    },
+    "ASSETY/wizja-mapy.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "DOKUMENTACJA/01-BRIEF-I-DECYZJE.md": {
+      "bytes": 1942,
+      "sha256": "50d4c8a57878e70cadd89766ace97e3df79abecfc89cabce0de0e298dcc13632"
+    },
+    "DOKUMENTACJA/02-SYSTEM-WIZUALNY.md": {
+      "bytes": 2679,
+      "sha256": "0f6e7fec6379260548f6716924f2df136921ad8b065d7dae9061365eed85bee7"
+    },
+    "DOKUMENTACJA/03-INTERAKCJE-I-URZADZENIA.md": {
+      "bytes": 3086,
+      "sha256": "6f1bd227e06d269022b9ad273fbfa003d72780bfab27b6ece4688e300e8cfd82"
+    },
+    "DOKUMENTACJA/04-RESEARCH-I-BACKLOG.md": {
+      "bytes": 2689,
+      "sha256": "1ed5e7910758508b9e915d2547fcfe3a920b8aae21eadd3748f7b1cc81204ad9"
+    },
+    "DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md": {
+      "bytes": 3553,
+      "sha256": "89957ebb2d4b6734280a4e53ce8ed7534203b4d55ba059065bb96309c4bc4977"
+    },
+    "DOKUMENTACJA/06-PLAN-TESTOW.md": {
+      "bytes": 2060,
+      "sha256": "be12256dbf5df87618826ffdccbce8f0ff7a9ad656a617896055aeee197c3354"
+    },
+    "DOKUMENTACJA/07-STATUS-I-OGRANICZENIA.md": {
+      "bytes": 1911,
+      "sha256": "c7974019b256c14c91049fb9f2a6013f4004089721549c47cb82f7ff28dcd2b9"
+    },
+    "DOKUMENTACJA/08-PROMPT-GRAFIKI.md": {
+      "bytes": 1805,
+      "sha256": "34141fe0907a196c00942edf98b1f21e251517785723434b5e827ded0f56d060"
+    },
+    "DOKUMENTACJA/09-REJESTR-WERSJI.md": {
+      "bytes": 623,
+      "sha256": "7406aafe3bff950a728a8346fcebabbde7cbacac1a27864fa3d06c80f27bd1e6"
+    },
+    "DOKUMENTACJA/audyt.md": {
+      "bytes": 4034,
+      "sha256": "3517ca1074e012041b7cf20ae1d6f9f6b24af9598acfb11ed97f95fac6cbef91"
+    },
+    "DOKUMENTACJA/konstytucja.md": {
+      "bytes": 6859,
+      "sha256": "c2557035c89154f2ff75c3a3a531501da0574548dd8835b5082a065b97f8edc3"
+    },
+    "DOKUMENTACJA/projekt.md": {
+      "bytes": 15388,
+      "sha256": "0a65cf1f5e202f57396f8f3989b07febccec0f6c34f874b2ec3e332904718ae5"
+    },
+    "HISTORIA/01-pierwszy-kierunek/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "HISTORIA/01-pierwszy-kierunek/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/app.js": {
+      "bytes": 44538,
+      "sha256": "45e04ee295748dfcaf34c044ab73421b7dcff29f3e8d9f0a07f6e0bd5ceed547"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/index.html": {
+      "bytes": 6135,
+      "sha256": "8fee51331d564dca7729ee8327c8aedab84e2f3762bf1f40a3ea2d5bad6d024a"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/konstytucja.md": {
+      "bytes": 4669,
+      "sha256": "09664e6514ebf4ffed47f91e1189432a5b5773cc376195da0251f06b2c0d6981"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/projekt.md": {
+      "bytes": 10796,
+      "sha256": "3fd74e17a4d4a7f55ed2174e57dc5fd96f29fda4449e9d31b43a1619315b07a1"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/style.css": {
+      "bytes": 26795,
+      "sha256": "0ca9e9ddc61d5e376ad620d3ea51e5227c04d354f3134681d2903f224c844cad"
+    },
+    "HISTORIA/01-pierwszy-kierunek/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "HISTORIA/02-warsztat-i-research/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "HISTORIA/02-warsztat-i-research/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/app.js": {
+      "bytes": 50085,
+      "sha256": "eacf38754b3863d0bd64098f2f2e0449163555fccb7682e669eb92f252ef4819"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/index.html": {
+      "bytes": 6201,
+      "sha256": "078b2cc69430ec8091a3518b07f859fce3766af41c05eba0362d902aee3fe343"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/konstytucja.md": {
+      "bytes": 4669,
+      "sha256": "09664e6514ebf4ffed47f91e1189432a5b5773cc376195da0251f06b2c0d6981"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/projekt.md": {
+      "bytes": 12591,
+      "sha256": "1b505e148db9de3701c7317b1ef1b5749ec551d1d0be4db85ecd25f6fe0c084c"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/style.css": {
+      "bytes": 35175,
+      "sha256": "a9a6709e55bd5fd74053ca33c98c7fbe0a389198fcba6e9c8f54183c5585924d"
+    },
+    "HISTORIA/02-warsztat-i-research/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "HISTORIA/03-panele-i-resize/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "HISTORIA/03-panele-i-resize/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "HISTORIA/03-panele-i-resize/dist/app.js": {
+      "bytes": 60033,
+      "sha256": "a738ce9a04b34fd386206466c03a33ca21c3879e774248acbe71fa296b68ef52"
+    },
+    "HISTORIA/03-panele-i-resize/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "HISTORIA/03-panele-i-resize/dist/index.html": {
+      "bytes": 6201,
+      "sha256": "078b2cc69430ec8091a3518b07f859fce3766af41c05eba0362d902aee3fe343"
+    },
+    "HISTORIA/03-panele-i-resize/dist/konstytucja.md": {
+      "bytes": 4669,
+      "sha256": "09664e6514ebf4ffed47f91e1189432a5b5773cc376195da0251f06b2c0d6981"
+    },
+    "HISTORIA/03-panele-i-resize/dist/projekt.md": {
+      "bytes": 14297,
+      "sha256": "69b05a6b09837d49969dd2879a2343b5ec5205c5f709409f30ccaa97d16ed5f1"
+    },
+    "HISTORIA/03-panele-i-resize/dist/style.css": {
+      "bytes": 39067,
+      "sha256": "2030bc30b36c01118c401719fa288fd90ddd7fa526d9513177455ca779a705b1"
+    },
+    "HISTORIA/03-panele-i-resize/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "HISTORIA/04-tryb-nocny/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "HISTORIA/04-tryb-nocny/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "HISTORIA/04-tryb-nocny/dist/app.js": {
+      "bytes": 61933,
+      "sha256": "a397b8032155613f1e920a8969cfb61e9bd5225194fdcdc8b7b0128ff236c9e4"
+    },
+    "HISTORIA/04-tryb-nocny/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "HISTORIA/04-tryb-nocny/dist/index.html": {
+      "bytes": 6201,
+      "sha256": "078b2cc69430ec8091a3518b07f859fce3766af41c05eba0362d902aee3fe343"
+    },
+    "HISTORIA/04-tryb-nocny/dist/konstytucja.md": {
+      "bytes": 4669,
+      "sha256": "09664e6514ebf4ffed47f91e1189432a5b5773cc376195da0251f06b2c0d6981"
+    },
+    "HISTORIA/04-tryb-nocny/dist/projekt.md": {
+      "bytes": 14891,
+      "sha256": "b18c6db84f5c8d5e8fa2f467a81ba82fcfccea77e259932e2bb002fa450fdfa7"
+    },
+    "HISTORIA/04-tryb-nocny/dist/style.css": {
+      "bytes": 43369,
+      "sha256": "73a395710a09a29a795adc2c367298e78418a780b875d150df91a7a706a4e06a"
+    },
+    "HISTORIA/04-tryb-nocny/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/.openai/hosting.json": {
+      "bytes": 88,
+      "sha256": "27c3592b99babdb9d883644c0f7b5a3e2acc7173a20cb664e82e6a4d0a88cfbc"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/README.md": {
+      "bytes": 802,
+      "sha256": "4dc66929ab9ee5daaf1b1204ce3a7bbb3fbe5a9b67c78c43c5e75c31c6458583"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/app.js": {
+      "bytes": 67169,
+      "sha256": "50be345082d30819b0e6c1a1387052279199f4179a23e167287757dc45242e21"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/audyt.md": {
+      "bytes": 4034,
+      "sha256": "3517ca1074e012041b7cf20ae1d6f9f6b24af9598acfb11ed97f95fac6cbef91"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/before.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/index.html": {
+      "bytes": 6201,
+      "sha256": "078b2cc69430ec8091a3518b07f859fce3766af41c05eba0362d902aee3fe343"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/konstytucja.md": {
+      "bytes": 6859,
+      "sha256": "c2557035c89154f2ff75c3a3a531501da0574548dd8835b5082a065b97f8edc3"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/projekt.md": {
+      "bytes": 15388,
+      "sha256": "0a65cf1f5e202f57396f8f3989b07febccec0f6c34f874b2ec3e332904718ae5"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/style.css": {
+      "bytes": 43629,
+      "sha256": "ba502c639ac148a04228fef35146ab2437c94e06e574cddd63fb71d24be5305d"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/dist/world.png": {
+      "bytes": 3289069,
+      "sha256": "9c6b7a7281cdb00406c8679051bada4ad86e602ff41a97c7a256e6f42e7852fe"
+    },
+    "HISTORIA/05-audyt-i-konstytucja/tests/audit.cjs": {
+      "bytes": 3295,
+      "sha256": "934af139afac9105fb27d856ec527379ed7a0c4f22a127f5606af7b4f180a659"
+    },
+    "HISTORIA/PRZEKAZANIE_V2/implementation.md": {
+      "bytes": 5033,
+      "sha256": "7ae1f2a6cbcd83adc2be21b8fc2319d4b610d52aba159b74150ca1aa8c16a75f"
+    },
+    "HISTORIA/PRZEKAZANIE_V2/intro.md": {
+      "bytes": 4035,
+      "sha256": "d48ca49832c6442054c92080902fbc80792ecd4feb38b027dd490454c981e103"
+    },
+    "HISTORIA/ZMIANY/02-warsztat-i-research.patch": {
+      "bytes": 60371,
+      "sha256": "d5e45e550bfa175a143455df020bbf9fdd51db9788276837abe73b4a05d2a7b1"
+    },
+    "HISTORIA/ZMIANY/03-panele-i-resize.patch": {
+      "bytes": 37252,
+      "sha256": "93ee9ce52d6bf6b123174c954e17c675f6921006beb3837976ca001f54b3ae04"
+    },
+    "HISTORIA/ZMIANY/04-tryb-nocny.patch": {
+      "bytes": 12291,
+      "sha256": "30c5f12330697f4d6477e97f84817c1bfa2ec04a0db6efa5fde449114fffe8f3"
+    },
+    "HISTORIA/ZMIANY/05-audyt-i-konstytucja.patch": {
+      "bytes": 56386,
+      "sha256": "e0c892d37eb19f52896aaabc930ae9a748be9122953c182855304924b37125a8"
+    },
+    "INDEKS.html": {
+      "bytes": 2247,
+      "sha256": "9c29a89cc1ff89a8aff588dc0ebbaa2f967b7aa7615db21c0bd0fdfc701170d7"
+    },
+    "PODGLAD.py": {
+      "bytes": 572,
+      "sha256": "a682577f5ae9dc17a9f4432a709c1ab3912766c7537a91db8664f2b0d1b1bee5"
+    },
+    "REFERENCJE/detal-repo-2026-09-11.png": {
+      "bytes": 74477,
+      "sha256": "68004c2a5aface03c4e5b267b48e381742d9bd0f991c5f8dadee7b18ebdc8584"
+    },
+    "REFERENCJE/interfejs-repo-2026-09-06.png": {
+      "bytes": 190738,
+      "sha256": "76d44cb70f7c173acd4b6da2dba324df2dff1f551c78081e040d9a33363b56e9"
+    },
+    "REFERENCJE/uwagi-uzytkownika-panele.png": {
+      "bytes": 2130355,
+      "sha256": "b8b2587880aa8f8c3c6d9d9832c9970774432f302a9573b01d11749ff067e3aa"
+    },
+    "SPRAWDZ_PACZKE.py": {
+      "bytes": 464,
+      "sha256": "200d1b025d943448c8a4dfc034fd685f8ea04d8a3d294890de2f5b1726fd727b"
+    },
+    "START_TUTAJ.md": {
+      "bytes": 3148,
+      "sha256": "923e69622724dc824689ddb0cf8a8cb9a221f2e17e30dd0d78b04a6da951fc82"
+    }
+  }
+}

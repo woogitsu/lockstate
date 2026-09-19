@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import type { SaveWriteErrorCode } from '../../src/persistence/local/errors';
 import { openHarness } from './harness-fixture';
 

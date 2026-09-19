@@ -2,8 +2,10 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
 import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
+import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
-import { classifyPrisoner, type ClassificationInput } from './classification';
+import { classifyPrisoner, type AdmissionRequest } from './classification';
+import { drawSentenceLengthTicks, PRISONER_SENTENCE_RNG_STREAM, SENTENCE_UNSET_TICKS } from './sentence';
 import {
   CLASSIFICATION_GROUP_IDS,
   classificationGroupIdFromIndex,
@@ -14,6 +16,72 @@ import {
   intakeStageIndex,
 } from './components';
 import type { RoomInstanceRegistry } from './room-instance-registry';
+
+/**
+ * The one thing intake tells the contraband substrate: an arrival has just been
+ * classified, and may be concealing something
+ * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)).
+ *
+ * A narrow injected port, exactly like `ActorIdentityMinter` above it and for
+ * the same two reasons. `ContrabandRegistry` is **session** state -- it outlives
+ * the prisoner slice and is snapshotted beside it, not inside it -- so this
+ * module may not own one; and a fixture that stands up prisoners alone has no
+ * contraband registry to hand over, so the collaborator is optional and intake
+ * draws nothing at all without it. `NamedRngStreams.get` throws for a stream a
+ * session never registered, which is what makes "optional" load-bearing rather
+ * than tidy.
+ */
+export interface IntakeContrabandIntroducer {
+  /** Called once per arrival, at the tick their `riskTier` is written and from the stage that writes it. */
+  introduce(entityId: EntityId, riskTier: number, tick: number, rng: Xoshiro128StarStar): void;
+}
+
+/**
+ * Which gang an arrival joins, if any --
+ * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+ * decision 6.
+ *
+ * Optional and port-shaped for exactly the reasons
+ * `IntakeContrabandIntroducer` above is: `GangRegistry` is session state that
+ * outlives the prisoner slice, and a fixture that stands up prisoners alone
+ * has no registry to hand over. Absent, intake assigns nobody and behaves
+ * exactly as it did before ADR 0103.
+ *
+ * **No `rng` parameter, and that is the difference from the port above.**
+ * ADR 0103 decision 5 adds no RNG stream, so the rule behind this port is a
+ * function of recorded input; a session that wires it registers no seventh
+ * stream and no existing seed's classification draw moves.
+ */
+export interface IntakeGangAssigner {
+  /** Called once per arrival, at the tick their `classificationGroupIndex` is written and from the stage that writes it. */
+  assign(entityId: EntityId, classificationGroupId: string, tick: number): void;
+}
+
+/**
+ * What the player is told when a queued arrival finally gets a bed
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * `IntakeSystem`'s mirror of `ResidentRelocationNotice`
+ * (`src/simulation/events/resident-relocation-notice.ts`), and optional and
+ * port-shaped for the same two reasons `IntakeContrabandIntroducer` above is:
+ * the identity registry and the room catalog are session state that outlives
+ * the prisoner slice, and a fixture that stands up prisoners alone has neither
+ * to hand over. Absent, intake houses people exactly as it did before this
+ * port existed and simply says nothing about it.
+ *
+ * **A port rather than `SimulationEventLog` and `ActorIdentityMinter` taken
+ * directly**, because naming this prisoner needs a *read* of an already-minted
+ * name and `ActorIdentityMinter`'s own comment says it is narrow "so that
+ * `IntakeSystem` cannot rename or release, only name a new arrival" -- read
+ * access is a different capability than mint access, and this system is not
+ * the place to widen it. `createIntakeHousedNotice`
+ * (`src/simulation/events/intake-housed-notice.ts`) is where the identity
+ * registry's read side, the room catalog and the event log meet, composed at
+ * the session root exactly as `createResidentRelocationNotice` is.
+ */
+export interface IntakeHousedNotice {
+  /** Called once per arrival, at the tick their `RoomInstanceRegistry.assign` succeeds and from the stage that calls it. */
+  announce(entityId: EntityId, roomCatalogId: string, tick: number): void;
+}
 
 export interface IntakeMetrics {
   readonly completedCount: number;
@@ -80,6 +148,102 @@ export const DEFAULT_ACCOMMODATION_POLICY: AccommodationPolicy = {
 };
 
 /**
+ * Every accommodation an arrival could be housed in, whatever the
+ * classification draw returns: the union of every group's targets, deduplicated
+ * on the pair the registry is asked for.
+ *
+ * The read-only counterpart of `IntakeSystem.resolveExistingTarget`, and it
+ * exists so that a *reader* of the prison -- the status strip's accommodation
+ * capacity (`src/simulation/presentation/status-strip-projection.ts`) -- asks
+ * the same authored question the stage asks, rather than naming `room.cell` in
+ * a condition of its own. `AGENTS.md` boundary 6: which room types house a
+ * resident is content, and the content lives in an `AccommodationPolicy`.
+ *
+ * **The union, and not one group's list**, for the reason
+ * `hasAccommodationTarget` gives: the draw picks the group two stages after
+ * admission, so the only true statement about a room instance ahead of the draw
+ * is "some arrival could be housed here". Under
+ * `DEFAULT_ACCOMMODATION_POLICY` that is `room.cell` and `room.solitary-cell`,
+ * both requiring `'sleep-surface'` -- both groups list both, in opposite
+ * orders, and this collapses the two orders into one set.
+ *
+ * **Deduplicated on `(roomCatalogId, requiredObjectCapability)` rather than on
+ * the room id alone.** Two groups may name one room type under different
+ * capability requirements, and those are two different questions to ask of an
+ * instance; collapsing them onto the room id would silently drop one. Nothing
+ * in the shipped policy does this -- it is what keeps a custom policy that does
+ * from reading wrong.
+ *
+ * Deterministic and draws nothing: `CLASSIFICATION_GROUP_IDS` order, then the
+ * policy's own declared order within each group. The `Set` is membership-tested
+ * and never iterated (`docs/DETERMINISM.md`).
+ */
+/**
+ * The first room type in a classification group's preference order of which
+ * `roomInstances` holds **any** instance, or `undefined` when it holds none of
+ * them.
+ *
+ * Extracted from `IntakeSystem.resolveExistingTarget` (issue #80) so
+ * `SanctionSystem` can ask the identical question when a solitary term ends
+ * and a sanctioned prisoner is returned to ordinary housing -- the same
+ * "which room does this classification group belong in" question intake asks
+ * on admission, asked again on release, from one definition rather than two
+ * that could disagree about what a group's targets are. See
+ * `IntakeSystem.resolveExistingTarget`'s own doc comment for why "any
+ * instance" and not "an available instance" is the right question, and for
+ * the guarantee `hasAccommodationTarget` rests on it.
+ *
+ * Draws nothing and iterates an authored array, so no named stream moves and
+ * no scenario fingerprint depends on it.
+ */
+export function firstAvailableAccommodationTarget(
+  policy: AccommodationPolicy,
+  roomInstances: RoomInstanceRegistry,
+  classificationGroupId: string,
+): AccommodationTarget | undefined {
+  for (const target of policy.resolveTargets(classificationGroupId)) {
+    if (roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return target;
+  }
+  return undefined;
+}
+
+/**
+ * The identity of an accommodation target, as a string a `Map` or a `Set` can
+ * key on: the room type **and** the capability it must offer, never the room
+ * type alone.
+ *
+ * Extracted from `resolveAccommodationTargets` so that a second caller asking
+ * "how many free places does this target have" keys its budget by exactly what
+ * that function deduplicated by. Two spellings of this pair is how a reader
+ * would come to credit one target with another's places.
+ *
+ * `identifierSchema` (`src/simulation/protocol/types.ts`) admits no `\u0000`,
+ * and both halves of the pair are catalogue ids it validates, so the joined
+ * key cannot collide with a different pair.
+ */
+export function accommodationTargetKey(target: AccommodationTarget): string {
+  return `${target.roomCatalogId}\u0000${target.requiredObjectCapability ?? ''}`;
+}
+
+export function resolveAccommodationTargets(
+  policy: AccommodationPolicy = DEFAULT_ACCOMMODATION_POLICY,
+): readonly AccommodationTarget[] {
+  const targets: AccommodationTarget[] = [];
+  const seen = new Set<string>();
+
+  for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+    for (const target of policy.resolveTargets(classificationGroupId)) {
+      const key = accommodationTargetKey(target);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      targets.push(target);
+    }
+  }
+
+  return targets;
+}
+
+/**
  * Deterministic intake pipeline (issue #24): each entity advances at most
  * one stage per scheduled tick, in ascending entity-id order (via
  * `EntityQuery`, never Map/Set iteration order). `accommodation-assignment`
@@ -114,11 +278,65 @@ export class IntakeSystem implements SystemRegistration {
      */
     private readonly identity?: ActorIdentityMinter,
     private readonly identityRngStreamName: string = ACTOR_IDENTITY_RNG_STREAM,
+    /**
+     * Optional contraband introduction (`src/simulation/contraband/introduction.ts`).
+     * Left out entirely, intake behaves exactly as it did before ADR 0061 and
+     * draws nothing on the contraband stream -- so a session that never
+     * registers `contraband.introduction` is not obliged to.
+     */
+    private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
+    private readonly contrabandRngStreamName: string = 'contraband.introduction',
+    /**
+     * The stream a sentence length is drawn from when the admission did not
+     * name one (#535 decision 5, `src/simulation/prisoners/sentence.ts`).
+     *
+     * A name and not an optional port, unlike `identity` and
+     * `contrabandIntroducer` above, because there is no collaborator to leave
+     * out -- the draw needs the stream and nothing else. **A session that has
+     * not registered this stream is still never asked for it**, for the same
+     * reason those two ports keep their sessions honest: the draw is made only
+     * for an admission that omitted a length, and `admitPrisonerSchema`
+     * requires `.positive()` of the length it carries, so every admission that
+     * names one reaches `NamedRngStreams.get` exactly as often as it did
+     * before this parameter existed: never.
+     */
+    private readonly sentenceRngStreamName: string = PRISONER_SENTENCE_RNG_STREAM,
+    /**
+     * Gang membership for this arrival
+     * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+     * decision 6). Absent, intake assigns nobody to a gang -- which is what it
+     * did before ADR 0103 and what every fixture predating it expects.
+     *
+     * Last in the list, after the four optional collaborators above, so no
+     * existing call site's positional arguments move.
+     */
+    private readonly gangAssigner?: IntakeGangAssigner,
+    /**
+     * What the player is told once this arrival gets a bed
+     * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3).
+     * Absent, intake houses people exactly as it always has and says nothing.
+     *
+     * Last in the list, after the five optional collaborators above, so no
+     * existing call site's positional arguments move.
+     */
+    private readonly housedNotice?: IntakeHousedNotice,
   ) {}
 
-  public submitIntake(entityId: EntityId, input: ClassificationInput): void {
+  /**
+   * Records what the admission asked for, and what it left to the simulation.
+   *
+   * `AdmissionRequest` rather than `ClassificationInput`: since #535 decision 5
+   * the length is optional at the boundary, and an omitted one is stored as
+   * `SENTENCE_UNSET_TICKS` for the `classification` stage to draw. That is a
+   * write of the value the slot already holds -- `records.reset` runs one line
+   * earlier in `admitPrisoner` -- and it is made explicitly rather than skipped
+   * so that this method still writes every field it is responsible for, which
+   * is what `tests/unit/prisoners-intake-system.test.ts`'s "already-admitted
+   * prisoner" cases read it as doing.
+   */
+  public submitIntake(entityId: EntityId, input: AdmissionRequest): void {
     const index = this.store.getIndex(entityId);
-    this.records.sentenceLengthTicks[index] = input.sentenceLengthTicks;
+    this.records.sentenceLengthTicks[index] = input.sentenceLengthTicks ?? SENTENCE_UNSET_TICKS;
     this.records.priorIncidentsAtIntake[index] = Math.min(255, input.priorIncidents);
     this.records.intakeStage[index] = intakeStageIndex('queued');
   }
@@ -132,13 +350,17 @@ export class IntakeSystem implements SystemRegistration {
    * Placement-relevant records for a cell's current occupants, **skipping
    * any id that is no longer alive**.
    *
-   * The liveness filter is required rather than defensive. `release` is
-   * never called for a destroyed prisoner (#31), so `occupants` can hold
-   * the id of an entity that no longer exists, and `EntityStore.getIndex`
-   * masks without checking -- reading that id's record would silently
-   * return whoever currently occupies the recycled slot. The caller's
-   * ascending-entity-id order is preserved: this appends in input order and
-   * only ever drops.
+   * The liveness filter is required rather than defensive, **and the reason it
+   * is required has been replaced by a better one.** It used to be that
+   * `release` was never called for a destroyed prisoner (#31), so `occupants`
+   * could hold the id of an entity that no longer existed. Since #441 it is
+   * called -- `releasePrisoner` drops a departing prisoner from every instance
+   * -- so the ordinary case is now that a dead id is *not* in this list. The
+   * filter stays because it is the guard that makes that a fact rather than a
+   * hope: `EntityStore.getIndex` masks without checking, so a single missed
+   * removal anywhere would silently rate this cell against whoever currently
+   * occupies the recycled slot. The caller's ascending-entity-id order is
+   * preserved: this appends in input order and only ever drops.
    */
   private sharingViewsOf(occupants: readonly EntityId[]): readonly CellSharingView[] {
     const views: CellSharingView[] = [];
@@ -164,12 +386,17 @@ export class IntakeSystem implements SystemRegistration {
    * is the whole reason this exists, and it is a difference in *kind*:
    *
    * - `allByRoomCatalogId(...).length === 0` is `'failed'`, and `'failed'` is
-   *   **terminal**. No branch of `update` matches it, so a prisoner who
-   *   reaches it stays there for the rest of the session -- measured:
-   *   registering a matching room instance four hundred ticks later leaves
-   *   the stage at `'failed'`. `ActionSystem` gates on `'completed'`
-   *   (`action-system.ts`), and nothing in `src/` releases a prisoner (#31),
-   *   so that record is inert and undeletable.
+   *   **terminal within the stage machine**. No branch of `update` matches it,
+   *   so a prisoner who reaches it stays there -- measured: registering a
+   *   matching room instance four hundred ticks later leaves the stage at
+   *   `'failed'`. `ActionSystem` gates on `'completed'`
+   *   (`action-system.ts`), so that record is inert.
+   *   **It is no longer undeletable, and this sentence used to say it was**,
+   *   on the grounds that nothing in `src/` released a prisoner (#31). Since
+   *   #441 `PrisonerDischargeSystem` treats `'failed'` as a sentence-bearing
+   *   stage, so the record ends when the sentence would have -- which changes
+   *   how long the bad answer lasts and not that it is one, so the guard
+   *   below is unchanged.
    * - An instance that exists but is full or lacks the capability is a
    *   *wait*: the stage is kept and retried, `accommodationBacklogTicks`
    *   counts it, and the arrival completes the moment a place frees up. That
@@ -266,10 +493,7 @@ export class IntakeSystem implements SystemRegistration {
    * no scenario fingerprint depends on it.
    */
   private resolveExistingTarget(classificationGroupId: string): AccommodationTarget | undefined {
-    for (const target of this.accommodationPolicy.resolveTargets(classificationGroupId)) {
-      if (this.roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return target;
-    }
-    return undefined;
+    return firstAvailableAccommodationTarget(this.accommodationPolicy, this.roomInstances, classificationGroupId);
   }
 
   public update(context: SimulationContext): void {
@@ -297,6 +521,47 @@ export class IntakeSystem implements SystemRegistration {
       }
 
       if (stage === 'classification') {
+        // The sentence, for an admission that did not name one (#535 decision
+        // 5). Here rather than in the command handler, and here rather than at
+        // `'reception'`, for three reasons that all point at the same line:
+        //
+        //   - It is inside `EntityQuery.execute()`'s canonical
+        //     ascending-entity-id walk, exactly as the name minting above and
+        //     the contraband introduction below are. So the order sentences are
+        //     drawn in is a function of *state*, not of the order a player
+        //     happened to press Admit or of how many commands shared a tick --
+        //     which is the property the two draws either side of it are
+        //     commented to defend, and the one a draw in `session-commands.ts`
+        //     could not have offered.
+        //   - Both readers of the value are the next two statements:
+        //     `classifyPrisoner` reads it against
+        //     `LONG_SENTENCE_THRESHOLD_TICKS`, and `sentenceEndTick` is the
+        //     sum of it and the clock. Drawing it anywhere earlier would mean
+        //     carrying a decided number through two stages for nobody.
+        //   - `prisoners.sentence`, never `prisoners.classification`. An extra
+        //     draw on the classification stream would shift every risk tier
+        //     every seed has ever produced, one admission onward, for a reason
+        //     that has nothing to do with screening variance. Isolated streams
+        //     are what `docs/DETERMINISM.md` asks for and this is the case they
+        //     are for.
+        //
+        //     This bullet used to end: *"with the drawn range entirely below
+        //     `LONG_SENTENCE_THRESHOLD_TICKS`, the tier this stage assigns is
+        //     bit-identical to the one it assigned before this line existed."*
+        //     **That stopped being true when the owner ruled on #593** and
+        //     `MIN_SENTENCE_DAYS`/`MAX_SENTENCE_DAYS` became 14 and 90 (ADR
+        //     0079): 90 days is 216,000 ticks and the threshold is 200,000, so
+        //     the seven drawable lengths from 84 days up now score the
+        //     long-sentence point and the tier this stage assigns is *not*
+        //     bit-identical to the pre-#541 one. The property was spent on
+        //     purpose, and it is marked rather than deleted because it is the
+        //     reason the stream is separate -- **what the separate stream still
+        //     buys is unchanged and is the half that mattered**: the sentence
+        //     draw does not move `prisoners.classification`'s position, so the
+        //     screening variance of every seed is where it always was.
+        if (this.records.sentenceLengthTicks[index] === SENTENCE_UNSET_TICKS) {
+          this.records.sentenceLengthTicks[index] = drawSentenceLengthTicks(context.rng.get(this.sentenceRngStreamName));
+        }
         const rng = context.rng.get(this.rngStreamName);
         const result = classifyPrisoner(
           { sentenceLengthTicks: this.records.sentenceLengthTicks[index]!, priorIncidents: this.records.priorIncidentsAtIntake[index]! },
@@ -305,6 +570,32 @@ export class IntakeSystem implements SystemRegistration {
         this.records.riskTier[index] = result.riskTier;
         this.records.classificationGroupIndex[index] = classificationGroupIndex(result.classificationGroupId);
         this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLengthTicks[index]!;
+
+        // Here rather than at `'reception'`, because the tier is what decides
+        // both halves of the introduction and it does not exist one line
+        // earlier. Inside `EntityQuery.execute()`'s ascending-entity-id walk
+        // like the name minting above, so the order draws are made in is a
+        // function of state; and after the record writes, so a reader of the
+        // registry sees an arrival whose classification is already complete.
+        if (this.contrabandIntroducer !== undefined) {
+          this.contrabandIntroducer.introduce(entityId, result.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
+        }
+
+        // Beside the introduction above and for the same reason it is here
+        // rather than at `'reception'`: the classification is what decides it
+        // and it does not exist one line earlier
+        // ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+        // decision 6). Inside the same ascending-entity-id walk, and after the
+        // record writes, so the registry and the record agree the moment
+        // either is read. `result.classificationGroupId` rather than a second
+        // derivation from the index just written -- one of the two spellings
+        // would eventually be the stale one.
+        //
+        // **Draws nothing.** Unlike the introduction above it is handed no
+        // stream, so wiring it moves no existing seed's screening variance
+        // (ADR 0103 decision 5).
+        this.gangAssigner?.assign(entityId, result.classificationGroupId, context.tick);
+
         this.records.intakeStage[index] = intakeStageIndex('accommodation-assignment');
         continue;
       }
@@ -359,6 +650,12 @@ export class IntakeSystem implements SystemRegistration {
         this.coldState.setAccommodation(entityId, instance.instanceId);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
+        // Issue #966 site 3: the tick a queued arrival stops waiting is the
+        // tick a bed exists to say so about -- `target.roomCatalogId` is the
+        // type `findBestAvailable` just matched `instance` against, so this
+        // names the room the assignment above actually claimed rather than
+        // re-deriving it from the instance afterwards.
+        this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
       }
     }
   }

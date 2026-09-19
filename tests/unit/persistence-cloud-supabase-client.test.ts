@@ -331,6 +331,21 @@ describe('SupabaseCloudSaveClient: registerPrison maps every create_prison statu
  * treatment. Its `conflict` case carries one extra decision worth pinning:
  * `cloudCurrent` is omitted when the reported revision is 0, because there is
  * no earlier version to point the caller at.
+ *
+ * THE ROW A FIXTURE SUPPLIES HAS TO BE A ROW THE SQL CAN RETURN, and the
+ * revision-0 case below did not. As written it supplied
+ * `{ version_id: 'v-0', revision: 0, checksum: 'sum-0' }` -- a version that
+ * does not exist, given an id and a checksum. `create_save_version` returns
+ * `v_current_version_id, v_current_revision, v_current_checksum` on a conflict
+ * (`20260822190300_create_save_version_rpc.sql:132-138`), and a prison with no
+ * saved version holds NULL and 0 for the first two
+ * (`20260822190100_create_prisons.sql:12-13`), so the real row is
+ * `('conflict', NULL, 0, NULL)` -- pinned by execution against PostgreSQL in
+ * `supabase/tests/001_rls_and_save_version_rpc.test.sql`. Against the honest
+ * fixture the test failed: the adapter's null-column guard ran before the
+ * status switch and answered `{ status: 'error' }`, so the branch this test is
+ * named after was unreachable and the test passed on a state that cannot
+ * occur.
  */
 function uploadEnvelope(revision: number): SaveEnvelope {
   const world = new SparseWorld(32);
@@ -384,9 +399,39 @@ describe('SupabaseCloudSaveClient: uploadVersion maps every create_save_version 
 
   it('conflict at revision 0 omits cloudCurrent, because there is no earlier version to point at', async () => {
     const { outcome } = await uploadWith(
-      createSaveVersionRow({ status: 'conflict', version_id: 'v-0', revision: 0, checksum: 'sum-0' }),
+      createSaveVersionRow({ status: 'conflict', version_id: null, revision: 0, checksum: null }),
     );
     expect(outcome).toEqual({ status: 'conflict', cloudCurrent: undefined });
+  });
+
+  /**
+   * The other half of the revision-0 case, and the reason the fix is not
+   * "tolerate nulls on a conflict". A conflict at a positive revision is the
+   * cloud naming a version that exists; an incomplete row there is incoherent,
+   * not empty. Read as empty it would send the caller to
+   * `resolveSyncConflict('keep-local', undefined)` and a `retry-push` at
+   * revision 1, into a prison that is already past it.
+   */
+  it('a conflict at a positive revision refuses an incomplete version instead of reading it as an empty prison', async () => {
+    for (const missing of ['version_id', 'checksum'] as const) {
+      const row = createSaveVersionRow({ status: 'conflict', version_id: 'v-9', revision: 9, checksum: 'sum-9', [missing]: null });
+      const { outcome } = await uploadWith(row);
+      expect(outcome, `a null ${missing} at revision 9 is incoherent, not an empty prison`).toEqual({
+        status: 'error',
+        message: 'create_save_version returned no row.',
+      });
+    }
+  });
+
+  /**
+   * The revision is the column that decides which of the two conflicts this is,
+   * so a row without one is refused rather than guessed at. The fixture leaves
+   * the other two columns populated on purpose: a row missing all three would
+   * pass this assertion on the strength of the id alone.
+   */
+  it('a conflict with no revision at all is an error, since the revision is what tells the two conflicts apart', async () => {
+    const { outcome } = await uploadWith(createSaveVersionRow({ status: 'conflict', version_id: 'v-9', revision: null, checksum: 'sum-9' }));
+    expect(outcome).toEqual({ status: 'error', message: 'create_save_version returned no row.' });
   });
 
   it('gives the three statuses three distinct outcomes', async () => {

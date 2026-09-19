@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { identifierSchema } from '../simulation/protocol/types';
+import type { LocalizationKey } from './localization';
 import { buildContentRegistry, type ContentRegistry, type ContentRegistryError } from './registry';
 
 export const OBJECT_CATALOG_SCHEMA_VERSION = 1 as const;
@@ -14,6 +15,40 @@ export const objectCategorySchema = z.enum([
   'medical',
 ]);
 export type ObjectCategory = z.infer<typeof objectCategorySchema>;
+
+/**
+ * What each authored category is *called*, for a surface that groups by one
+ * ([ADR 0035](../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+ *
+ * These seven ids have been authored since the object catalogue shipped and
+ * nothing has ever named one on screen: the category decided which appearance
+ * a placed object gets and which rooms could require it, and no surface asked
+ * a player to choose by it. The Build panel's catalogue filter is the first,
+ * so this is where the seven get names -- in the content layer, beside the
+ * schema that declares them, exactly as an object's own `nameKey` is content.
+ *
+ * **A `Record<ObjectCategory, …>` and not a lookup function**, and the type is
+ * the whole enforcement: an eighth member added to `objectCategorySchema`
+ * fails `pnpm typecheck` here rather than resolving to a key nobody authored
+ * and rendering as raw dotted text (ADR 0011's unresolved-key behaviour is
+ * visible, which is better than blank, but it is still not a name). A
+ * convention like `object.category.${category}.name` computed at the call site
+ * would type-check with any string and would have shipped exactly that.
+ *
+ * A buildable that places **no** object has no entry here and cannot have one
+ * -- see `buildableObjectCategory` in
+ * `src/simulation/construction/definition.ts` for the two rows that means, and
+ * `buildableCategory` in `src/main.ts` for what names them instead.
+ */
+export const OBJECT_CATEGORY_NAME_KEYS: Readonly<Record<ObjectCategory, LocalizationKey>> = {
+  furniture: 'object.category.furniture.name',
+  sanitation: 'object.category.sanitation.name',
+  'food-service': 'object.category.food-service.name',
+  security: 'object.category.security.name',
+  storage: 'object.category.storage.name',
+  utility: 'object.category.utility.name',
+  medical: 'object.category.medical.name',
+};
 
 export const objectFootprintSchema = z
   .object({
@@ -30,8 +65,29 @@ export const objectDefinitionSchema = z
     nameKey: identifierSchema,
     category: objectCategorySchema,
     footprint: objectFootprintSchema,
-    /** Capability tags rooms can require by object id today (see room-catalog.ts), and future jobs/needs systems can query by capability. */
-    capabilities: z.array(identifierSchema).max(16),
+    /**
+     * Capability tags rooms can require by object id today (see
+     * room-catalog.ts), and future jobs/needs systems can query by capability.
+     *
+     * **`.min(1)`, because an empty list is not "an object with no
+     * capabilities" -- it is a room requirement that can never be met.**
+     * `requirementStatus` in
+     * `src/simulation/presentation/room-projection.ts` reads
+     * `definition.capabilities.length === 0` and returns
+     * `'missing-capability'` on the spot, so an object authored with `[]`
+     * makes every room requiring it permanently unsatisfiable, and silently:
+     * the room reports a missing capability, the player places the object the
+     * requirement names, and the report does not change. The bound was
+     * `.max(16)` with no minimum, so the schema accepted it.
+     *
+     * The alternative -- treating `[]` as vacuously satisfied, which is what
+     * `Array.prototype.every` would do without the explicit length check --
+     * was not chosen and is not this schema's call to make: it would let a
+     * capability-less object satisfy any requirement naming it. Refusing the
+     * data is the narrower fix, and it fails at catalog load with the id in
+     * the report rather than in a projection three layers away.
+     */
+    capabilities: z.array(identifierSchema).min(1).max(16),
   })
   .strict();
 

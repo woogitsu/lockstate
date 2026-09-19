@@ -1,6 +1,6 @@
 import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../content/room-catalog';
 import type { ContentRegistry } from '../../content/registry';
-import { createBuildOrder, type BuildOrder } from '../construction/build-order';
+import { createBuildOrder, type BuildOrder, type BuildOrderLifecycleState } from '../construction/build-order';
 import { getBuildableDefinition, BUILDABLE_REGISTRY } from '../construction/definition';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
@@ -242,12 +242,51 @@ export interface RemoveObjectRemoved {
  * *standing* object is not refunded, and the asymmetry is the honest one: an
  * order that never finished gives its materials back, and a thing that was
  * built out of them does not.
+ *
+ * **The currency of the first half changed on 2026-08-31 and the asymmetry did
+ * not, which is why the paragraph is marked rather than rewritten.** The
+ * owner's ruling 20 -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
+ * *"Pieniądze dopóki ekipa nie zaczęła"*, recorded in
+ * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+ * amendment of that date -- has `cancelOrder` give back **money** for an order
+ * the crew has not started, and **nothing** for one it has. So *"refunds the
+ * materials the order had allocated"* is false of every state this method can
+ * reach, and *"an order that never finished gives its materials back"* is
+ * false with it. What is unchanged is the sentence those two exist to support:
+ * a standing object is still not refunded, this method still never reaches a
+ * `completed` order, and the removal a player presses on an unfinished bed
+ * still gives something back where the removal they press on a finished one
+ * gives nothing.
+ *
+ * **What is now undecided rather than merely asymmetric is the standing
+ * object**, which ADR 0076 decision B rules on and ruling 20 does not mention.
+ * That amendment marks it as the owner's and does not choose between the three
+ * answers now available.
  */
 export interface RemoveObjectOrderCancelled {
   readonly kind: 'order-cancelled';
   readonly orderId: string;
   readonly objectId: string;
   readonly anchorTile: TilePosition;
+  /**
+   * The order's lifecycle state as it was **before** `cancelOrder` ran
+   * ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+   *
+   * It is on the outcome because it cannot be recovered from anywhere else
+   * once `remove` has returned: `ConstructionSystem.allOrders` hands out the
+   * live order objects and `cancelOrder` writes `'cancelled'` over exactly the
+   * field the two cancellation sentences are told apart by, so a handler that
+   * looked the order up afterwards would read `'cancelled'` for every press.
+   * `createConstructionCommandHandler`'s `CancelBuildOrder` branch solves the
+   * same problem the same way, one call earlier, and its comment argues it.
+   *
+   * **A state and not a sentence, and not a boolean.** The two sentences a
+   * cancellation can carry are chosen by `SimulationEventLog`'s exhaustive
+   * `switch` over `BuildOrderLifecycleState`, which is where a ninth state
+   * fails to compile until somebody has decided what the prison says about it;
+   * a boolean computed here would be a second, unguarded copy of that table.
+   */
+  readonly stateAtCancellation: BuildOrderLifecycleState;
 }
 
 export type RemoveObjectOutcome = RemoveObjectRemoved | RemoveObjectOrderCancelled | RemoveObjectRefusal;
@@ -278,7 +317,10 @@ export interface ObjectOrderSink {
   submitOrder(order: BuildOrder): void;
   registerTransactionOrder(orderId: string, transactionId?: string): void;
   /**
-   * Cancels an order and gives its allocated materials back.
+   * Cancels an order and gives back what ruling 20 says that order is owed --
+   * **money** while the crew has not started it, and nothing once it has
+   * (ADR 0076's amendment of 2026-08-31). This line read *"and gives its
+   * allocated materials back"* until that date.
    *
    * Added for removal (phase 3), and called only for an order this service has
    * established is **not** `completed`, `cancelled` or `failed` -- so the throw
@@ -287,6 +329,124 @@ export interface ObjectOrderSink {
    * object is in the registry, which is the branch that takes it.
    */
   cancelOrder(id: string): void;
+}
+
+/**
+ * What a removal asks when the room it emptied is now housing more residents
+ * than it can sleep ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * The same shape, for the same reason, as `RoomZoningService`'s
+ * `ResidentRelocationPort`: a narrow port rather than the prisoner runtime
+ * itself, so this module keeps no dependency on classification, cold state or
+ * the accommodation policy beyond the one question it asks.
+ * `PrisonerOperationsRuntime.relocateExcessResidentsOf` implements it, and the
+ * composition root is the only thing that holds both sides.
+ *
+ * **Optional, and absence means ADR 0028 decision 2 unamended.** A fixture
+ * that builds an `ObjectPlacementService` without it gets exactly the
+ * behaviour this service always had -- the object goes, the capacity drops,
+ * and every resident stays where they were. Only a session that wires
+ * `new-session.ts`'s real runtime in relocates anybody.
+ *
+ * **It cannot refuse the removal and is not asked before it.** ADR 0076
+ * records "refusing the removal while a resident depends on the object" as not
+ * taken, for #478's reason: a room could otherwise become permanently
+ * un-editable through ordinary play. So this is called *after* the object has
+ * gone and the capacity has been re-derived -- which is also the only moment
+ * "who is excess" has an answer -- and its result changes nothing about the
+ * outcome the player is handed.
+ */
+export interface ExcessResidentRelocationPort {
+  /**
+   * Moves the residents of `instanceIds` who no longer hold a place that
+   * exists into accommodation that does, best-effort, and reports who moved
+   * and who could not. See
+   * `PrisonerOperationsRuntime.relocateExcessResidentsOf` for what "nowhere to
+   * go" means, why it is not all-or-nothing here, and why the choice of
+   * destination cannot be an unseeded one.
+   */
+  relocateExcessResidentsOf(instanceIds: readonly string[]): {
+    /**
+     * Who moved, and **into which instance**.
+     *
+     * The second field arrived with the notice ADR 0076 owed: the wording the
+     * owner approved names one prisoner and one room, so an entity id alone
+     * could fill neither placeholder. See `ExcessResidentRelocation` in the
+     * prisoner runtime for why the destination is reported rather than looked
+     * up again afterwards.
+     */
+    readonly relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[];
+    readonly stranded: readonly number[];
+  };
+}
+
+/**
+ * What the player is told when a removal has moved somebody
+ * ([ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i)).
+ *
+ * A second narrow port beside `ExcessResidentRelocationPort` rather than a
+ * return value this service reads, and for the same reason the first one is a
+ * port: a prisoner's *name* and a room's *message key* are two more things
+ * `src/simulation/objects/` would otherwise have to know about, on top of the
+ * question it actually asks. `createResidentRelocationNotice`
+ * (`src/simulation/events/resident-relocation-notice.ts`) implements it and
+ * the composition root holds both sides.
+ *
+ * **Optional, and absence means the removal is silent** -- which is what every
+ * fixture that builds this service by hand wants, and what shipped between
+ * PR #637 and this change.
+ *
+ * It is told only about residents who *moved*. A resident with nowhere to go
+ * is left where ADR 0028 decision 2 put them and the owner has approved no
+ * sentence about that state, so this service does not hand one over.
+ */
+export interface ExcessResidentRelocationNoticePort {
+  announceRelocations(relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[]): void;
+}
+
+/**
+ * What the player is told when a *standing* object is taken away
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **A structural port rather than `SimulationEventLog`**, exactly as
+ * `ObjectOrderSink` above is a port rather than `ConstructionSystem`: this
+ * module holds no sentence, imports nothing from `src/simulation/events/` and
+ * gains no dependency on the events channel. `SimulationEventLog` satisfies it
+ * as written, so the composition root passes the log itself rather than an
+ * adapter -- unlike `ExcessResidentRelocationNoticePort` above, which needs one
+ * because a relocation sentence names a prisoner and a room and this module
+ * knows about neither.
+ *
+ * ## Why the notice is raised here and not at the command handler
+ *
+ * **Because two sentences on one press have to arrive in the right order, and
+ * the band drops the loser rather than queueing it.** A removal can raise
+ * `prisoners.relocated` as well -- `relocateResidentsLeftWithoutAPlace` below,
+ * ADR 0076 decision A(i) -- and `admitToEventBand`
+ * (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+ * immediately over an `'info'` incumbent and **discards the incumbent**. So a
+ * removal recorded *after* the relocation would paint the money sentence over
+ * *"{name} had nowhere to sleep and moved to {room}."* and lose it -- and lose
+ * it outright below 720px, where `hud.css` drops the alerts list that would
+ * otherwise still hold it.
+ *
+ * Recorded before the relocation, the same two sentences both reach the player:
+ * the `'warning'` takes the line, the `'info'` that arrives inside the 600 ms
+ * dwell floor does not outrank it and therefore **waits**, and
+ * `releaseEventBandFloor` puts it up when the floor lapses. That is the case
+ * ADR 0084 decision 4's waiting slot exists for.
+ *
+ * ## Why only this method calls it
+ *
+ * `onOrderReverted` below destroys spend too, and it must not raise this: it is
+ * the `Undo` route, and `construction.undone-spend-destroyed` already says so
+ * for that press (#927). Two sentences for one `Z` is what #932 refused. So the
+ * port is asked on the arm `RemoveObject` alone can reach.
+ */
+export interface RemovedObjectNoticePort {
+  recordObjectRemoved(tick: number): void;
 }
 
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
@@ -305,6 +465,12 @@ export class ObjectPlacementService {
     private readonly resolver: RoomCapacityResolver,
     private readonly orders: ObjectOrderSink,
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
+    /** ADR 0076 decision A(i). Absent in a fixture; wired to the prisoner runtime in a real session. See `ExcessResidentRelocationPort`. */
+    private readonly residentRelocation?: ExcessResidentRelocationPort,
+    /** ADR 0076 decision A(i)'s notice. Absent in a fixture; wired to the events channel in a real session. See `ExcessResidentRelocationNoticePort`. */
+    private readonly relocationNotice?: ExcessResidentRelocationNoticePort,
+    /** #945's notice. Absent in a fixture; the session's `SimulationEventLog` in a real session. See `RemovedObjectNoticePort`. */
+    private readonly removalNotice?: RemovedObjectNoticePort,
   ) {}
 
   /**
@@ -316,8 +482,19 @@ export class ObjectPlacementService {
    * both order them that way -- a tile outside the materialised world has no
    * ownership to ask about, and `SparseWorld` materialises a chunk on write, so
    * checking in the other order would grow the world on the way to refusing.
+   *
+   * @param placementSequence The `QueuedCommand.sequence` of the `PlaceObject`
+   * command that asked for this, stamped onto the build order so the object
+   * takes its turn in the same queue a wall does (ADR 0082 decisions 1 and 2,
+   * #722). **A third parameter beside `tick` rather than a field on
+   * `PlaceObjectRequest`**, because a refusal echoes the request back
+   * (`PlaceObjectRefusal.request`) and an ordinal for an order that was never
+   * created is a number with no subject. Optional for the reason `tick` is
+   * not: a fixture calling this directly has no command behind it, and an
+   * order with no ordinal sorts exactly where it sorted before the field
+   * existed -- see `compareBuildOrderExecution`.
    */
-  public place(request: PlaceObjectRequest, tick: number): PlaceObjectOutcome {
+  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
     const definition = BUILDABLE_REGISTRY.get(request.definitionId);
     if (definition === undefined) return this.refuse('unknown-buildable', request, tick);
 
@@ -362,7 +539,12 @@ export class ObjectPlacementService {
     const room = roomInstanceContaining(this.world, this.roomInstances, anchor, this.rooms);
     if (room === undefined) return this.refuse('outside-room', request, tick, anchor);
 
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor));
+    // `undefined` for `edge`: an object is addressed by a tile and occupies no
+    // edge. The ordinal after it is the placement order this object takes in
+    // the build queue (ADR 0082, #722) -- a bed placed after three hundred
+    // walls waits for the three hundred, which is decision 1 read literally
+    // over *every* build order rather than over walls alone.
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -406,18 +588,34 @@ export class ObjectPlacementService {
    *
    * ## What happens to a room that was occupied or in use
    *
-   * **Nothing is evicted and no claim is touched**, which is ADR 0028 decision
-   * 2 for residents and the same answer extended to the concurrent-use claims
-   * ADR 0029 added after that decision was written. Removal changes a capacity;
-   * it does not reach into anybody's action or anybody's accommodation.
+   * **Nothing is evicted and no *use* claim is touched.** Removal changes a
+   * capacity; it does not reach into anybody's action.
    *
-   * The consequence is a room whose claim count is above its capacity, and it is
-   * a **legal, named state on both collections**:
+   * **The residency half of that sentence was unconditional until
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+   * decision A(i), and it read: "Nothing is evicted and no claim is touched",
+   * for residents and use claims alike.** It is narrowed rather than
+   * withdrawn, in the terms that ADR narrows ADR 0028 decision 2 in. Nobody is
+   * evicted -- nobody is put on the street, and a resident the prison has
+   * nowhere else to put stays exactly where they were, sleeping in a cell with
+   * no bed in it. What changed is that a resident the prison *can* rehouse is
+   * **moved** rather than left: `ExcessResidentRelocationPort` is asked, after
+   * the capacity has been re-derived, to relocate the residents who no longer
+   * hold a place that exists. It cannot refuse this removal and is not
+   * consulted before it.
+   *
+   * So the room whose claim count stands above its capacity is still a
+   * **legal, named state on both collections** -- for use claims always, and
+   * for residency whenever relocation found nowhere to go, which is the branch
+   * ADR 0076 decision A(ii) makes the state stop paying for:
    *
    *  - `assign` refuses at `occupants.size >= residentCapacity` and
    *    `findAvailableResidence` skips a full instance, so the room stops taking
-   *    new residents while the prisoner already living there keeps their
-   *    `accommodationInstanceId` and keeps sleeping.
+   *    new residents -- and a prisoner relocation could not move keeps their
+   *    `accommodationInstanceId` and keeps sleeping there. That the room stops
+   *    taking new residents is what makes it safe to ask for relocation
+   *    afterwards rather than before: it cannot be handed back the resident it
+   *    just gave up.
    *  - `claimUse` refuses at `claims for this capability >= that capability's
    *    ceiling` and `findAvailableForUse` skips at the same comparison, so the
    *    room stops taking new users of the thing that was removed -- and only of
@@ -451,6 +649,53 @@ export class ObjectPlacementService {
     const object = this.placedObjects.objectAt(tile);
     if (object !== undefined) {
       this.placedObjects.remove(object.placedObjectId);
+      /*
+       * And the player is told what that cost them
+       * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+       *
+       * **On this line and not at the command handler**, and not merged into
+       * the relocation notice two lines down: `RemovedObjectNoticePort` carries
+       * the whole argument, which is that the band discards an `'info'` a
+       * `'warning'` displaces, so the order of the two sentences a removal can
+       * raise decides whether the player reads both or one.
+       *
+       * **After the registry write, so the notice cannot outrun the fact.**
+       * `PlacedObjectRegistry.remove` answers `boolean` and this arm is only
+       * reached with an object in hand, so there is nothing to check -- but a
+       * sentence recorded before the row was dropped would be a claim about a
+       * removal that had not happened yet, which is the promise-the-code-does-
+       * not-keep `AGENTS.md`'s fourth exclusion reserves.
+       *
+       * **The pending-order arm below said nothing at all until
+       * [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+       * sentence that argued for the silence is kept rather than deleted,
+       * because half of it is still the reason that arm does not call this
+       * method.** It read:
+       *
+       * > The pending-order arm below records nothing: it refunds, and a
+       * > sentence about money that does not come back is false of it.
+       *
+       * The clause after the colon still holds, and it is why *this* notice is
+       * still raised on this arm alone. What does not follow from it is the
+       * clause before it. A press saying nothing does not leave the player
+       * reading nothing: `HudViewModel.event` is replaced by a newer event and
+       * by nothing else (`src/main.ts`), and `refusals.supersede` supersedes a
+       * *refusal*, so with the clock paused a cancellation pressed after a
+       * removal stood under *"the money it cost does not come back"* -- the
+       * removal's true sentence, false about the press it had come to stand
+       * over. Silence is not neutral on a band that holds one sentence.
+       *
+       * So the arm below now records the sentence that is true **of itself**,
+       * through the event `CancelBuildOrder` has recorded since #932 rather
+       * than through a new one: it reads the order's state before cancelling,
+       * carries it out on `RemoveObjectOrderCancelled.stateAtCancellation`, and
+       * `createSessionCommandHandler` hands that to
+       * `SimulationEventLog.recordBuildOrderCancelled`, whose `switch` answers
+       * *"the money it cost is refunded"* for the four states before the crew
+       * starts and *"anything already spent past the point of no return stays
+       * spent"* for `'in-progress'`. No new sentence was authored for this.
+       */
+      this.removalNotice?.recordObjectRemoved(tick);
       // Re-derived from the **anchor**, not from the pressed tile: containment
       // is a statement about the anchor (ADR 0028 decision 2), and a bed whose
       // second tile pokes out of the cell would otherwise re-derive whatever
@@ -458,6 +703,7 @@ export class ObjectPlacementService {
       // both untouched by the removal, so this resolves the same room the
       // placement resolved.
       const roomInstanceId = this.resolver.resolveContaining(object.anchorTile);
+      this.relocateResidentsLeftWithoutAPlace(roomInstanceId);
       return {
         kind: 'removed',
         placedObjectId: object.placedObjectId,
@@ -469,8 +715,21 @@ export class ObjectPlacementService {
 
     const pending = this.orderBuildingObjectAt(tile);
     if (pending !== undefined) {
+      // Read **before** the cancellation, for the reason
+      // `createConstructionCommandHandler`'s `CancelBuildOrder` branch reads
+      // its own copy before calling the same method: `cancelOrder` writes
+      // `'cancelled'` onto the order, `allOrders()` handed out the live object,
+      // and the distinction the two sentences exist for is gone the moment it
+      // returns. See `RemoveObjectOrderCancelled.stateAtCancellation` (#988).
+      const stateAtCancellation = pending.order.state;
       this.orders.cancelOrder(pending.order.id);
-      return { kind: 'order-cancelled', orderId: pending.order.id, objectId: pending.objectId, anchorTile: pending.order.location };
+      return {
+        kind: 'order-cancelled',
+        orderId: pending.order.id,
+        objectId: pending.objectId,
+        anchorTile: pending.order.location,
+        stateAtCancellation,
+      };
     }
 
     const refusal: RemoveObjectRefusal = {
@@ -506,9 +765,11 @@ export class ObjectPlacementService {
    *
    * At most one can exist -- `place` refuses `tile-occupied` against exactly
    * this set -- so the walk's order decides nothing. It is still taken over
-   * `allOrders()`, which `ConstructionSystem` keeps sorted by id, so the answer
-   * is a function of state rather than of insertion history even in a session
-   * whose invariant was somehow broken.
+   * `allOrders()`, which `ConstructionSystem` keeps in its own canonical order
+   * (placement order with id as the tie-break since ADR 0082; ascending id
+   * alone before it, and still that for an order book with no ordinals), so the
+   * answer is a function of state rather than of insertion history even in a
+   * session whose invariant was somehow broken.
    */
   private orderBuildingObjectAt(tile: TilePosition): { readonly order: BuildOrder; readonly objectId: string } | undefined {
     const key = tileKey(tile);
@@ -558,6 +819,19 @@ export class ObjectPlacementService {
    * player regrets and a standing object they regret are different facts with
    * different answers.
    *
+   * **The two clauses about refunding are false since the owner's ruling of
+   * 2026-09-01 and are kept because the distinction they were drawing is what
+   * that ruling closed.** *"Taking a finished object away returns nothing. Not
+   * its materials, not its money."* --
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date -- reverses decision B, so this route refunds
+   * nothing either and the two commands agree. **The rest of the paragraph is
+   * unchanged and is now the whole of why both exist**: they are keyed
+   * differently (the order's own tile versus any tile of the footprint), they
+   * are reached differently (the undo stack versus a press), and a pending
+   * order the player regrets is still a different fact from a standing object
+   * they regret. What is no longer different is the answer about materials.
+   *
    * The object is identified by the tile it was anchored on rather than by an
    * id carried on the order, because the id *is* a function of that tile
    * (`placedObjectIdFor`). Nothing has to be stored to find it again.
@@ -571,8 +845,41 @@ export class ObjectPlacementService {
       return false;
     }
     this.placedObjects.remove(object.placedObjectId);
-    this.resolver.resolveContaining(anchor);
+    this.relocateResidentsLeftWithoutAPlace(this.resolver.resolveContaining(anchor));
     return true;
+  }
+
+  /**
+   * ADR 0076 decision A(i), on the one line both routes out of the world reach.
+   *
+   * **Both**, and that is the decision rather than a convenience.
+   * `RemoveObject` and the `Undo` of a completed object order take the same
+   * bed out of the same room and drop the same `residentCapacity`; a
+   * relocation wired to only one of them would leave a prisoner's cell
+   * depending on which gesture the player used, and it is the *undo* route
+   * that `tests/integration/economy-bed-recycling.test.ts` measures the
+   * recycling loop through. The two commands disagreeing about materials is
+   * decision B and is not this; the two agreeing about residents is this.
+   *
+   * Called after `resolveContaining` and never before it: "who is excess"
+   * is a question about the capacity standing *now*, and before the
+   * re-derivation the room still claims the capacity the object it no longer
+   * has was supplying.
+   *
+   * `undefined` is an object that stood in no room -- legal, and nothing to
+   * ask about. An instance with no excess is an ordinary call that moves
+   * nobody, so the guard here is only the containment one.
+   */
+  private relocateResidentsLeftWithoutAPlace(roomInstanceId: string | undefined): void {
+    if (roomInstanceId === undefined) return;
+    const outcome = this.residentRelocation?.relocateExcessResidentsOf([roomInstanceId]);
+    if (outcome === undefined) return;
+    // **The notice is on this line and not on either caller's**, so it reaches
+    // the player from `RemoveObject` and from `Undo` alike or from neither.
+    // A notice wired to the press alone would be silent on the route
+    // `tests/integration/economy-bed-recycling.test.ts` drives the recycling
+    // loop through, which is the route it matters most on.
+    this.relocationNotice?.announceRelocations(outcome.relocated);
   }
 
   /**
@@ -586,8 +893,10 @@ export class ObjectPlacementService {
    * the materials take -- during which the tile must not be handed out twice.
    *
    * Cost is one pass over the order list per placement command, which is a
-   * player press and not a tick. `ConstructionSystem.allOrders()` is already
-   * sorted by id, so the set is a function of state.
+   * player press and not a tick. `ConstructionSystem.allOrders()` is already in
+   * a canonical order -- sorted by id until ADR 0082, by
+   * `(placementSequence ?? -1, id)` since -- so the set is a function of state
+   * either way. It is a `Set`, so which order it is built in decides nothing.
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();

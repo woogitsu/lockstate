@@ -3,16 +3,20 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import {
   type SaveMessage,
   describeActionFailure,
+  describeFailureDetail,
   describeImportResult,
   describeLoadFailure,
   describeRestoredScope,
   describeSaveResult,
+  orderPrisonsForDisplay,
   parseImportedSave,
 } from '../../src/ui/save-panel';
 import { SAVE_PANEL_MESSAGE_KEY, SAVE_PANEL_MESSAGE_KEYS } from '../../src/ui/save-panel-messages';
+import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 
 /**
@@ -37,7 +41,7 @@ function resolve(message: SaveMessage): string {
 }
 describe('describeSaveResult: distinct, actionable recovery states', () => {
   it('reports a successful save with its generation id', () => {
-    const status = describeSaveResult({ ok: true, generationId: 'gen-abc' });
+    const status = describeSaveResult({ ok: true, generationId: 'gen-abc', revision: 3 });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusSaved);
     expect(resolve(status)).toBe('Saved (generation gen-abc).');
@@ -141,14 +145,94 @@ describe('save panel message keys (issue #208)', () => {
 
   it('names one failure key per action, and a fallback for one it does not know', () => {
     const keys = (['create', 'save', 'load', 'delete', 'export', 'import'] as const).map(
-      (actionId) => describeActionFailure({ actionId, error: new Error('boom') }).messageKey,
+      (actionId) => describeActionFailure({ actionId, error: new Error('boom') }, localizer).messageKey,
     );
     expect(new Set(keys).size, 'each action must fail in its own words').toBe(keys.length);
     // `AsyncActionFailure.actionId` is a plain string, so an id this panel
     // does not own can reach it. It must still say something.
-    const unknown = describeActionFailure({ actionId: 'not-an-action', error: new Error('boom') });
+    const unknown = describeActionFailure({ actionId: 'not-an-action', error: new Error('boom') }, localizer);
     expect(unknown.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.failureUnknown);
     expect(resolve(unknown)).toContain('boom');
+  });
+});
+
+/**
+ * Issue #680, the reporting half: a failure that declares a protocol fault
+ * code is told to the player in the sentence the catalogue already ships for
+ * that code, not in the engine's own English.
+ *
+ * The pseudo-locale sweep recorded on issue #680 measured what the player
+ * actually read -- `Could not create a prison: Simulation worker fault
+ * (already-initialized): Kernel is already initialized.` -- and named the
+ * reason it is a defect rather than a judgement call: `src/content/default-locale-en.ts` has carried
+ * `hud.alert.fault.already-initialized` all along, and the HUD one panel over
+ * renders that class of failure from a key.
+ *
+ * These assertions resolve through the real bundled catalogue, so they fail
+ * both when the routing is removed and when the key stops existing.
+ */
+describe('a failure that named a protocol fault is reported from the catalogue (#680)', () => {
+  /** The shape `WorkerSessionHost.WorkerFaultError` presents, without importing the persistence seam. */
+  function workerFault(code: string, detail: string): Error & { code: string } {
+    const error = new Error(`Simulation worker fault (${code}): ${detail}`) as Error & { code: string };
+    error.code = code;
+    return error;
+  }
+
+  it('replaces the engine sentence the player used to read', () => {
+    const status = describeActionFailure(
+      { actionId: 'create', error: workerFault('already-initialized', 'Kernel is already initialized.') },
+      localizer,
+    );
+
+    expect(resolve(status)).toBe(
+      'Creating the prison failed: A simulation request was refused — this session already has a prison loaded.',
+    );
+    // The exact string the sweep found on screen, asserted absent rather than
+    // inferred from the sentence above: a template that stopped interpolating
+    // at all would satisfy the assertion above and not this one.
+    expect(resolve(status)).not.toContain('Simulation worker fault');
+    expect(resolve(status)).not.toContain('already-initialized');
+  });
+
+  it('finds the code through the wrappers the session layer raises', () => {
+    // `startFromSnapshot` re-raises a worker fault as `SnapshotRestoreRejectedError`
+    // with the original as `cause`, and `WorkerPerSessionHost.beginSession`
+    // wraps a worker it could not construct the same way. Reading only the
+    // outermost value would lose the code on exactly those paths.
+    const wrapped = new Error('The snapshot was refused.', {
+      cause: workerFault('snapshot-incompatible', 'Snapshot could not be restored: nope.'),
+    });
+
+    expect(describeFailureDetail(wrapped, localizer)).toBe(
+      localizer.format('hud.alert.fault.snapshot-incompatible'),
+    );
+  });
+
+  it('keeps the thrown message when nothing declared a fault code', () => {
+    // A reply timeout, a storage `DOMException`, a file the browser would not
+    // read. There is no shipped sentence for these and authoring one is not
+    // this module's to do, so the detail that names what went wrong survives.
+    expect(describeFailureDetail(new Error('did not reply within 15000ms'), localizer)).toBe(
+      'did not reply within 15000ms',
+    );
+    // An object whose `code` is not a protocol fault must not be mistaken for
+    // one: the closed vocabulary is what makes the duck-typed check safe.
+    const notAFault = new Error('nothing here') as Error & { code: string };
+    notAFault.code = 'not-found';
+    expect(describeFailureDetail(notAFault, localizer)).toBe('nothing here');
+  });
+
+  it('has a real sentence for every code the protocol can raise', () => {
+    // The map behind this is exhaustive over `ProtocolFaultCode` by
+    // construction, so this asserts the other half: that each key resolves to
+    // authored text rather than rendering as its own dotted name.
+    for (const code of PROTOCOL_FAULT_CODES) {
+      const detail = describeFailureDetail(workerFault(code, 'diagnostic English'), localizer);
+      expect(detail, code).not.toContain('diagnostic English');
+      expect(detail, code).not.toMatch(/^hud\.alert\.fault\./);
+      expect(detail.length, code).toBeGreaterThan(10);
+    }
   });
 });
 
@@ -170,20 +254,43 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
    * to the stricter registry rule; everything else here was ungated.
    */
   const MODULES = [
+    'affordability.ts',
+    'app-shell-messages.ts',
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',
+    'display-scale-messages.ts',
+    'display-scale.ts',
+    'host-refusal.ts',
+    'language-messages.ts',
+    'language.ts',
     'object-tool.ts',
+    'prisoner-sentence.ts',
     'room-tool.ts',
     'save-panel.ts',
+    'save-panel-delete.ts',
     'save-panel-messages.ts',
     'simulation-alerts.ts',
+  'simulation-build-queue.ts',
     'simulation-clock.ts',
     'simulation-commands.ts',
+    'simulation-conditions.ts',
     'simulation-counts.ts',
+    'simulation-events.ts',
+    'simulation-held-guards.ts',
+    'simulation-intake.ts',
+    'simulation-pending-deliveries.ts',
+    'simulation-prisoner-detail.ts',
+    'simulation-prisoner-roster.ts',
     'simulation-projections.ts',
+    'simulation-regime.ts',
     'simulation-room-needs.ts',
+    'simulation-staff-coverage.ts',
+  'simulation-staff-roster.ts',
     'simulation-zoning.ts',
+    'telemetry-consent-prompt.ts',
+    'theme-messages.ts',
+    'theme.ts',
   ] as const;
 
   /** Source with comments removed, so prose about a rule cannot trip the rule. */
@@ -302,7 +409,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   } as const;
 
   it('reports a completed import with the generation it wrote', () => {
-    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', migrated: false });
+    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', revision: 4, migrated: false });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImported);
     expect(resolve(status)).toBe('Imported the save file into this prison (generation gen-xyz).');
@@ -311,7 +418,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   it('says so when the file it imported came from an older version', () => {
     // The player-visible evidence that the migration chain ran. Nothing else
     // in the interface can tell them.
-    const status = describeImportResult({ ok: true, generationId: 'gen-old', migrated: true });
+    const status = describeImportResult({ ok: true, generationId: 'gen-old', revision: 5, migrated: true });
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportedMigrated);
     expect(resolve(status)).toContain('older version');
     expect(resolve(status)).toContain('gen-old');
@@ -413,5 +520,71 @@ describe('describeRestoredScope: honest about what a save carries', () => {
     // a save still leaves derived and in-flight state behind, and the panel
     // is where the player is told so.
     expect(text).toContain('navigation caches');
+  });
+});
+
+/**
+ * Issue #445: the order of the prison list.
+ *
+ * Reversing `SavePanel.refresh`'s comparator survived the whole suite, and
+ * put the prison the player last touched at the *bottom* of their own list --
+ * the row they want is the one furthest from where they are looking, and the
+ * defect is visible to anyone with more than one prison. Nothing anywhere in
+ * `tests/` asserted an ordering on `updatedAt` (verified by grep across
+ * `tests/**` and `src/**\/*.test.ts` at the time of writing: every hit was a
+ * fixture field, a schema-validation case or a migration passthrough).
+ *
+ * The fixture is written so that neither of the two orders that could satisfy
+ * the assertion by accident does: the expected order is not the order the
+ * records are given in, and it is not their id order in either direction.
+ * `expectedOrder` is a written-out literal, never a sort of the fixture --
+ * re-deriving it here would be the comparator under test wearing the test's
+ * clothes.
+ */
+describe('orderPrisonsForDisplay: the player\'s most recent prison is at the top (#445)', () => {
+  function slot(prisonId: string, updatedAt: number): PrisonSlotMetadata {
+    return {
+      prisonId,
+      gameVersion: '0.0.0',
+      displayName: prisonId,
+      currentGenerationId: `${prisonId}-gen`,
+      generationIds: [`${prisonId}-gen`],
+      createdAt: 1_700_000_000_000,
+      updatedAt,
+    };
+  }
+
+  /** Given in an order that is neither by id nor by `updatedAt`. */
+  const stored: readonly PrisonSlotMetadata[] = [
+    slot('prison-d', 1_700_000_003_000),
+    slot('prison-a', 1_700_000_002_000),
+    slot('prison-c', 1_700_000_001_000),
+    slot('prison-b', 1_700_000_004_000),
+  ];
+  const givenOrder = ['prison-d', 'prison-a', 'prison-c', 'prison-b'];
+  const expectedOrder = ['prison-b', 'prison-d', 'prison-a', 'prison-c'];
+
+  it('is a fixture no accidental ordering can satisfy', () => {
+    // The guard that keeps the case below meaningful if this fixture is ever
+    // edited: an assertion that happens to agree with the order the records
+    // arrive in, or with their ids, proves nothing about the comparator.
+    const ids = [...givenOrder].sort();
+    expect(givenOrder).toEqual(stored.map((prison) => prison.prisonId));
+    expect(expectedOrder).not.toEqual(givenOrder);
+    expect(expectedOrder).not.toEqual([...givenOrder].reverse());
+    expect(expectedOrder).not.toEqual(ids);
+    expect(expectedOrder).not.toEqual([...ids].reverse());
+    expect(new Set(stored.map((prison) => prison.updatedAt)).size).toBe(stored.length);
+  });
+
+  it('lists the prisons newest first', () => {
+    expect(orderPrisonsForDisplay(stored).map((prison) => prison.prisonId)).toEqual(expectedOrder);
+  });
+
+  it('leaves the list the controller handed it untouched', () => {
+    // `listPrisons` returns a view of a list the controller may keep, so
+    // rendering must not reorder it as a side effect.
+    orderPrisonsForDisplay(stored);
+    expect(stored.map((prison) => prison.prisonId)).toEqual(givenOrder);
   });
 });

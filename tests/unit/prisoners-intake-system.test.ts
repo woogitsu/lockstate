@@ -13,13 +13,14 @@ import {
   intakeStageFromIndex,
   intakeStageIndex,
 } from '../../src/simulation/prisoners/components';
-import { DEFAULT_ACCOMMODATION_POLICY, IntakeSystem } from '../../src/simulation/prisoners/intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, IntakeSystem, type IntakeHousedNotice } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 const RNG_STREAM = 'prisoners.classification';
 
@@ -226,7 +227,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
 
     const LOW_RISK = { sentenceLengthTicks: 100, priorIncidents: 0 };
 
-    it('houses nobody at all through the shipped session path, because a zoned room has no capacity', () => {
+    it('houses nobody through the shipped session path while the cell is unfurnished, because capacity comes from the objects standing in it', () => {
       /*
        * The precondition every case below is built around, end to end
        * through the real session rather than asserted in prose.
@@ -250,17 +251,52 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
        * for a structurally absent room type, and the backlog counter is the
        * one that moves.
        *
-       * Which makes this a tripwire and not a restatement of
-       * `rooms-zoning.test.ts`'s `capacity: 0` pin. That pin is about one
-       * registration; this is about the consequence three systems later --
-       * occupant-aware allocation (#79) cannot be exercised in a shipped
-       * session, so every other case in this describe registers its
-       * instances by hand. The day capacity is derived from placed objects
-       * (ADR 0028), this case fails, and the failure is the notice that
-       * ADR 0027's stated precondition has expired and #79 is now reachable
-       * for real.
+       * Which makes this a statement about the consequence three systems
+       * later, and not a restatement of `rooms-zoning.test.ts`'s `capacity: 0`
+       * pin -- that pin is about one registration.
+       *
+       * ## This case was written as a tripwire, and it could not fire
+       *
+       * The sentence that used to end here read: *"The day capacity is derived
+       * from placed objects (ADR 0028), this case fails, and the failure is the
+       * notice that ADR 0027's stated precondition has expired and #79 is now
+       * reachable for real."*
+       *
+       * **That day came, and this case did not fail.** ADR 0028 is Accepted and
+       * its phase 1 shipped; capacity is derived from placed objects today
+       * (`RoomCapacityResolver`, `src/simulation/objects/room-capacity.ts`).
+       * The notice never arrived, because the trigger was not expressible in
+       * this fixture: it zones an *empty* rectangle, and an empty rectangle
+       * holds nobody under both designs -- before ADR 0028 because no room had
+       * capacity, after it because there is nothing standing in this one. The
+       * assertions below were never the ones that would move.
+       *
+       * The lesson, for whoever writes the next tripwire: **a tripwire has to
+       * exercise the input the change is about.** A test that pins the value
+       * `0` cannot tell "0 because the mechanism is absent" from "0 because the
+       * mechanism ran and this input sums to nothing", and only the first of
+       * those was supposed to be permanent. What would have fired is a case
+       * zoning a rectangle with a bed in it -- and that case now exists, at
+       * integration level, asserting the opposite outcome in literals:
+       * `tests/integration/object-placement-loop.test.ts` pins
+       * `residentCapacity: 1` and `objectCapabilities: ['sleep-surface']` for a
+       * furnished cell, houses an admitted prisoner in it, and measures the
+       * state income the occupied place earns as `+300` over one in-game day.
+       *
+       * So what this case still guards is narrower than its old title claimed
+       * and is permanently true: an **unfurnished** zoned cell accommodates
+       * nobody, and the arrival waits rather than failing. Occupant-aware
+       * allocation (#79) *is* now reachable in a shipped session -- which is
+       * why the other cases in this describe, which register their instances
+       * by hand, are a convenience rather than the only available route.
        */
       const runtime = createNewSimulationRuntime(7);
+      // Walled first: `zone` refuses an `enclosed` room whose perimeter is
+      // open, and both of these author that requirement. The subject here is
+      // what a zoned room *holds*, so the walls are setup rather than the
+      // thing under test.
+      wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 3, height: 3 });
+      wallRoomPerimeter(runtime.world, { x: 8, y: 2, width: 3, height: 3 });
       const cell = runtime.roomZoning.zone({ roomCatalogId: 'room.cell', x: 2, y: 2, width: 3, height: 3 }, 0);
       const solitary = runtime.roomZoning.zone({ roomCatalogId: 'room.solitary-cell', x: 8, y: 2, width: 3, height: 3 }, 0);
       if (cell.kind !== 'zoned' || solitary.kind !== 'zoned') {
@@ -369,23 +405,51 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     });
 
     it('ignores an occupant that is no longer alive rather than reading a recycled slot', () => {
-      // `RoomInstanceRegistry.release` is never called for a destroyed
-      // prisoner (#31), so an occupant set can name an entity that no longer
-      // exists, and `EntityStore.getIndex` masks without checking. Reading
-      // that id's record would return whoever now holds the recycled index.
-      // With the liveness filter the dead tier-3 resident contributes
-      // nothing, so 'shared-a' rates 0 and wins the tie on instance id;
-      // without it, it would rate 3 and the arrival would be sent to
-      // 'shared-b'.
+      /*
+       * `RoomInstanceRegistry.release` is never called for a destroyed
+       * prisoner (#31), so an occupant set can name an entity that no longer
+       * exists, and `EntityStore.getIndex` masks without checking. Reading
+       * that id's record would return whoever now holds the recycled index.
+       *
+       * **Somebody else has to be holding it, and that is what this case used
+       * to be missing.** It destroyed the resident and admitted the arrival
+       * immediately, so `EntityStore.spawn` handed the arrival the freed index
+       * itself (`freeIndices` is LIFO) and `sharingViewsOf` read the arrival's
+       * *own* `riskTier` back out of the dead id -- a distance of 0, a rating
+       * of 0, and `shared-a` winning either way. Measured on the shipped
+       * fixture: `deadIndex 0, arrivalIndex 0, sameSlot true`, and deleting
+       * `if (!this.store.isAlive(occupant)) continue;` left this file 18/18
+       * green. The comment claiming "it would rate 3" was describing an
+       * outcome the fixture could not produce.
+       *
+       * So the freed slot is filled first, by a tier-3 entity that is not in
+       * any cell. Now the dead id aliases *that* record: with the liveness
+       * filter `shared-a` rates 0 and wins the tie on instance id; without it,
+       * `shared-a` rates 3 and the arrival is sent to `shared-b`, which is
+       * what the case always claimed to be testing.
+       */
       const prison = sharedCellPrison();
       const dead = prison.seatResident('shared-a', 3);
       prison.store.destroy(dead);
       expect(prison.roomInstances.occupantsOf('shared-a')).toEqual([dead]);
 
+      // Whoever the store hands the freed index to next. Housed nowhere, so
+      // the only way it can reach the rating is through the stale id.
+      const squatter = prison.store.spawn();
+      prison.records.riskTier[prison.store.getIndex(squatter)] = 3;
+
       const arrival = prison.admit(LOW_RISK);
       const kernel = makeKernel();
       kernel.registerSystem(prison.intakeSystem);
       for (let i = 0; i < 20; i += 1) kernel.step();
+
+      // The three facts that make the assertion below mean what it says. The
+      // last one is the guard: without it this case can silently return to
+      // comparing the arrival with itself, which is how it passed for as long
+      // as it did.
+      expect(prison.store.isAlive(dead)).toBe(false);
+      expect(prison.store.getIndex(dead), 'the dead id now aliases the squatter').toBe(prison.store.getIndex(squatter));
+      expect(prison.store.getIndex(dead), 'the arrival must not be the one holding the recycled slot').not.toBe(prison.store.getIndex(arrival));
 
       expect(prison.coldState.getAccommodation(arrival)).toBe('shared-a');
     });
@@ -493,6 +557,82 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     expect(fixture.prisoners.roomInstances.occupancyOf(firstCell!)).toBe(1);
     // DEFECT: and the metric counts one prisoner as two completed intakes.
     expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(2);
+  });
+
+  it('DEFECT (#169 item 3): a re-intake shifts the classification stream, so later arrivals are classified differently', () => {
+    // **The determinism half of the case above, and the reason this question
+    // is not merely bookkeeping.** ADR 0026 states it in prose -- the second
+    // run reaches the `classification` stage and draws from
+    // `prisoners.classification`, "so a re-intake shifts the stream every
+    // later arrival's classification is read from", and "a re-intake path
+    // that could be replayed a different number of times would therefore be
+    // a determinism defect, not merely a bookkeeping one". Nothing measured
+    // it. This does.
+    //
+    // Determinism is the property most of this suite exists to protect: the
+    // same seed and the same command sequence must produce the same state.
+    // A re-intake is an extra draw on a shared named stream, so it moves
+    // every subsequent consumer of that stream -- which means the defect is
+    // not confined to the prisoner who was re-submitted.
+    //
+    // ## Why this is asserted as a difference rather than against literals
+    //
+    // The expected value of a classification draw cannot be written down
+    // without re-implementing `classifyPrisoner` and the RNG, and a literal
+    // copied out of a previous run of the code under test would be this
+    // repository's dominant test defect -- a fixture supplying both sides of
+    // its own comparison. So the baseline comes from a source independent of
+    // the behaviour being tested: **a second identical session**. Two runs
+    // that differ in nothing must agree, and two runs that differ only by one
+    // extra `submitIntake` call must -- today -- disagree.
+    //
+    // That pair is what makes each half non-vacuous. The equality would fail
+    // if the draw were nondeterministic for any other reason; the inequality
+    // would fail if classification collapsed to a constant, which is the way
+    // a broken draw would otherwise look like a fix.
+    //
+    // Measured when this was written, for the record rather than as an
+    // assertion: the three later arrivals' risk tiers are `[2, 2, 0]` without
+    // the re-intake and `[2, 0, 2]` with it -- the same three prisoners,
+    // admitted in the same order with identical inputs, classified
+    // differently because an unrelated entity went through intake twice.
+    //
+    // Whichever of ADR 0026 question 3's three shapes is taken changes this
+    // case: refusing the re-intake removes the second draw, cleaning up
+    // first has to answer for the stream explicitly, and moving re-intake to
+    // its own entry point makes this call unreachable. None is taken here.
+    function runSession(reIntake: boolean): readonly number[] {
+      const fixture = buildPrisonerScenarioFixture({ cellCount: 8, capacity: 20 });
+      const kernel = makeKernel();
+      fixture.prisoners.registerOn(kernel);
+
+      const first = fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 1_000, priorIncidents: 0 }, fixture.originTile);
+      for (let i = 0; i < 25; i += 1) kernel.step();
+
+      if (reIntake) {
+        fixture.prisoners.intakeSystem.submitIntake(first, { sentenceLengthTicks: 1_000, priorIncidents: 0 });
+        for (let i = 0; i < 25; i += 1) kernel.step();
+      }
+
+      // Three later arrivals, identical inputs, admitted in a fixed order.
+      const later = [0, 1, 2].map(() =>
+        fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 500, priorIncidents: 1 }, fixture.originTile));
+      for (let i = 0; i < 30; i += 1) kernel.step();
+
+      return later.map((entityId) => fixture.prisoners.records.riskTier[fixture.prisoners.entityStore.getIndex(entityId)]!);
+    }
+
+    const control = runSession(false);
+    const controlRepeated = runSession(false);
+    const withReIntake = runSession(true);
+
+    // The independent baseline: same seed, same commands, same state.
+    expect(controlRepeated).toEqual(control);
+    expect(control).toHaveLength(3);
+
+    // DEFECT: one extra `submitIntake` for an unrelated, already-housed
+    // prisoner, and these three are classified differently.
+    expect(withReIntake).not.toEqual(control);
   });
   /**
    * The property the whole admission guard exists to provide, asserted over
@@ -717,5 +857,117 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       expect(prison.intakeSystem.getMetrics().failedCount).toBe(0);
       expect(prison.intakeSystem.getMetrics().accommodationBacklogTicks, 'the wait must be counted as unmet demand').toBeGreaterThan(0);
     });
+  });
+});
+
+/**
+ * The housed notice, `IntakeSystem`'s optional port for issue #966 site 3 --
+ * the place the simulation already computes a queued arrival getting a bed
+ * and used to publish nothing about it.
+ */
+describe('IntakeSystem: the housed notice (#966 site 3)', () => {
+  /** A one-cell, one-place prison with a bed standing, so an arrival is housed on the first accommodation-assignment tick. */
+  function onePlacePrison(housedNotice?: IntakeHousedNotice) {
+    const capacity = 4;
+    const store = new EntityStore(capacity);
+    const bitset = new ComponentBitset(capacity);
+    const query = new EntityQuery(store, bitset);
+    query.mask.require(0);
+    const records = new PrisonerRecordComponent(capacity);
+    const coldState = new PrisonerColdState();
+    const roomInstances = new RoomInstanceRegistry();
+    roomInstances.register({
+      instanceId: 'cell-1',
+      roomCatalogId: 'room.cell',
+      anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      objectCapabilities: ['sleep-surface'],
+    });
+    const intakeSystem = new IntakeSystem(
+      store,
+      query,
+      records,
+      coldState,
+      roomInstances,
+      DEFAULT_ACCOMMODATION_POLICY,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      housedNotice,
+    );
+    return { store, bitset, query, records, coldState, roomInstances, intakeSystem };
+  }
+
+  it('announces exactly the tick RoomInstanceRegistry.assign succeeds, naming the room the assignment actually claimed', () => {
+    const announced: Array<{ entityId: number; roomCatalogId: string; tick: number }> = [];
+    const housedNotice: IntakeHousedNotice = {
+      announce: (entityId, roomCatalogId, tick) => announced.push({ entityId, roomCatalogId, tick }),
+    };
+    const { store, bitset, intakeSystem } = onePlacePrison(housedNotice);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    const entityId = store.spawn();
+    bitset.add(store.getIndex(entityId), 0);
+    intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    // Not yet: queued, reception and classification each need their own
+    // scheduled tick before accommodation-assignment is even asked.
+    expect(announced, 'nothing is announced before an assignment has actually succeeded').toEqual([]);
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    expect(announced).toEqual([{ entityId, roomCatalogId: 'room.cell', tick: expect.any(Number) }]);
+    expect(intakeSystem.getMetrics().completedCount, 'the notice fires alongside completion, not instead of it').toBe(1);
+  });
+
+  it('announces nothing for an arrival left waiting on a full cell', () => {
+    const announced: unknown[] = [];
+    const housedNotice: IntakeHousedNotice = { announce: (...args) => announced.push(args) };
+    const { store, bitset, intakeSystem } = onePlacePrison(housedNotice);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    // Two arrivals, one place: the second is left waiting, not housed.
+    const first = store.spawn();
+    bitset.add(store.getIndex(first), 0);
+    intakeSystem.submitIntake(first, { sentenceLengthTicks: 100, priorIncidents: 0 });
+    const second = store.spawn();
+    bitset.add(store.getIndex(second), 0);
+    intakeSystem.submitIntake(second, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    expect(announced).toHaveLength(1);
+    expect(intakeSystem.getMetrics().completedCount).toBe(1);
+    expect(intakeSystem.getMetrics().accommodationBacklogTicks, 'the second arrival is waiting, not housed').toBeGreaterThan(0);
+  });
+
+  /**
+   * The red-then-green control this port needs: absent, `IntakeSystem` must
+   * behave **exactly** as it did before this port existed -- the same
+   * guarantee every other optional collaborator on this class documents about
+   * itself. Housing still completes; nothing throws for calling an absent
+   * port; nothing is announced because there is nowhere to announce it to.
+   */
+  it('houses an arrival exactly as before when no housedNotice is wired at all', () => {
+    const { store, bitset, intakeSystem } = onePlacePrison(undefined);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    const entityId = store.spawn();
+    bitset.add(store.getIndex(entityId), 0);
+    intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    expect(() => {
+      for (let i = 0; i < 20; i += 1) kernel.step();
+    }).not.toThrow();
+
+    expect(intakeSystem.getMetrics().completedCount).toBe(1);
   });
 });

@@ -7,7 +7,15 @@
  * reaching into every other subsystem itself.
  */
 export interface SectorRiskSample {
-  /** Mean unmet-need pressure across the sector's prisoners (1 = fully unmet). */
+  /**
+   * Mean unmet-need pressure across the sector's prisoners (1 = fully unmet).
+   *
+   * "Mean" over two axes since [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * decision 2: each occupant's deficit is the mean over `NEED_IDS`, and the
+   * sample is the mean of those. It used to be the `safety` deficit alone,
+   * which `action.sleep` restores twenty times faster than it decays, so the
+   * term was pinned near zero for anybody with a bed.
+   */
   readonly needsPressure: number;
   /** Guard coverage shortfall (1 = zero of the required guards present). */
   readonly staffingShortfall: number;
@@ -30,13 +38,125 @@ export interface SectorRiskPolicy {
   readonly sustainedSamplesRequired: number;
 }
 
-/** Directional defaults, not a committed balance decision (issue #28 explicitly excludes final balance; see `docs/BENCHMARKING.md`'s no-hard-threshold policy). */
+/**
+ * Directional defaults, not a committed balance decision (issue #28 explicitly
+ * excludes final balance; see `docs/BENCHMARKING.md`'s no-hard-threshold
+ * policy).
+ *
+ * **Three of the five moved with [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md),
+ * and the ladder they were chosen against is in that document.** The shape they
+ * now express, in one sentence each:
+ *
+ * - `needsPressureWeight: 1` — **neglect alone can cause a riot.** It was `0.5`
+ *   against a `hotThreshold` of `0.6`, so the needs term could contribute at
+ *   most `0.5` and no prison, however badly run, could riot while its single
+ *   guard was on post. That is the second half of issue #442, and it made
+ *   staffing the cause of unrest rather than its amplifier.
+ *
+ *   **Measured 2026-08-28 on #436's re-verification pass, and the sentence
+ *   above is true of the *weight* and not yet of the *game*.** Raising it to 1
+ *   made neglect able in principle to reach `hotThreshold` on its own; what
+ *   reaches it in practice is homelessness, not neglect. A prisoner who holds a
+ *   furnished cell has `sleep`, `hunger`, `bladder` and `safety` all served
+ *   from it, so the only needs a *built* prison can pin at zero are `hygiene`
+ *   and `recreation` — ADR 0054 decision 1 rules those room-gated — and two of
+ *   six at zero is a ceiling of about `0.48` on `needsPressure`, under the
+ *   `0.65` line. Measured over **ten** in-game days -- the fixture's 24,000
+ *   ticks at `DAY_LENGTH_TICKS` 2,400, which this bullet and four documents
+ *   beside it called twenty until
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   checked the division -- eight prisoners in eight furnished
+ *   cells with no shower room and no yard: peak score **0.4824** and **zero**
+ *   riots with one guard on post, **0.7979** and three riots with none
+ *   (`tests/integration/room-gated-needs.test.ts`; 0.7981 on the same fixture
+ *   since ADR 0059). The prisoner who does
+ *   push the term past the line is the one with no accommodation at all, whose
+ *   six needs all decay unopposed — which is what
+ *   `tests/integration/security-default-sector.test.ts`'s and
+ *   `incident-trigger-reachability.test.ts`'s riot fixtures are actually made
+ *   of. So the bullet is kept rather than rewritten, and this paragraph is what
+ *   it does not yet say: **at these numbers, staffing is still the amplifier
+ *   that decides, for every prison whose prisoners have somewhere to live.**
+ *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
+ *   settle in this docblock.
+ *
+ *   **The sentence about the prisoner with no accommodation is kept and its
+ *   last clause is no longer general**
+ *   ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ *   accepted 2026-09-07). Such a prisoner now reaches every action that does
+ *   not need a cell, so what decays unopposed for them is `sleep` and
+ *   `bladder` in **any** prison, plus `hunger`, `hygiene` and `recreation` in
+ *   a prison that has not built a canteen, a shower room or a recreation room,
+ *   plus `safety` where the sector is unguarded. Measured on the second of the
+ *   two fixtures named above: an over-admitted prison with none of those rooms
+ *   is byte-identical before and after that decision, and one with all three,
+ *   staffed to requirement, fell from 0.6513 to 0.3462 and stopped rioting.
+ *
+ *   **The two sentences that followed are corrected rather than overwritten,
+ *   because they are what four files repeated and a reader may be holding.**
+ *   They said the amenity-rich prison "now opens nothing at all", and that
+ *   "the riot fixtures are still made of unhoused prisoners; they are made of
+ *   unhoused prisoners **in prisons that built nothing for them**". Both
+ *   over-generalise one fixture, in two different directions, and both were
+ *   measured on 2026-09-07 against this tree with
+ *   `../prisoners/action-system.ts` alone reverted to `558ece5f`:
+ *
+ *   - *Nothing at all* was a property of one seed. Over 40 consecutive seeds
+ *     the same prison one guard short opens assaults on 19 of them, up to 10
+ *     in a run. Riots are what stopped; incidents are not.
+ *   - *Now* was a property of sixteen prisoners. Add a seventeenth and it
+ *     riots again -- once, where the reverted tree opens five -- because
+ *     `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so occupant 17 takes
+ *     `required` from 2 to 3 and one guard's `staffingShortfall` from 1/2 to
+ *     2/3, which is 0.05 on a row that had 0.0305 of headroom under
+ *     `hotThreshold`. Staffed to requirement the boundary is 96 prisoners
+ *     rather than 32, and by 32 on one guard the riot count is identical
+ *     before and after.
+ *   - The prison that built the rooms is therefore not exempt, it is
+ *     **provisioned for a population**, and the provisioning is what decides:
+ *     hold 96 prisoners and their twelve guards and raise only the canteen
+ *     and the shower room (`'dining'` 6 to 12, `'hygiene'` 2 to 6) and the
+ *     score falls 0.6435 to 0.5158 and the riots go 3 to 0.
+ *
+ *   So what this decision moved is the population a built prison rides out,
+ *   not the existence of the content
+ *   (`tests/integration/incident-trigger-reachability.test.ts`, "and it starts
+ *   rioting again one prisoner later").
+ *
+ *   **And since
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   that staffed row is no longer free, without this weight moving at all.** What an unmet need costs a prison that never riots is on
+ *   the income line: `StateIncomeSystem` withholds part of the state's
+ *   prisoner-day grant for each of the six needs a place's occupant has at or
+ *   below `STATE_INCOME_UNMET_NEED_LEVEL`, so the prison above earns 20,800
+ *   over its ten days where a prison with a shower room and a yard earns
+ *   24,000 (`tests/integration/needs-state-grant-loop.test.ts`). That was
+ *   deliberately built *outside* this score: ADR 0061 already declined to feed
+ *   `contrabandPressure` into it because doing so moved the 0.4824 row to
+ *   ~0.60 and destroyed the evidence #477 exists to present, and the same
+ *   argument forbids reaching for `needsPressureWeight` here.
+ * - `staffingShortfallWeight: 0.3` — **unchanged, and now the amplifier it was
+ *   named for.** A completely unguarded sector adds `0.3`, which turns a
+ *   mediocre prison into a rioting one and leaves a well-run one alone:
+ *   measured, a furnished prison sits at `0.164` at its worst and is still
+ *   below the line with no guards at all.
+ * - `contrabandPressureWeight: 0.2` — unchanged, and still structurally zero:
+ *   `IntelligenceLedger.report`'s only caller in `src/` is `reportInformantTip`,
+ *   which has no caller at all (ADR 0042 §#442).
+ * - `hotThreshold: 0.65` — the line, read directly off `needsPressure` now that
+ *   its weight is 1: a sector is hot when its prisoners' needs are on average
+ *   about two-thirds unmet, or a third unmet with nobody guarding them.
+ * - `sustainedSamplesRequired: 12` — twelve samples at the trigger's 50-tick
+ *   cadence is 600 ticks, a quarter of an in-game day of *continuously* bad
+ *   conditions. It was three, which is 150 ticks; the window is what makes a
+ *   riot the end of a bad stretch rather than of a bad moment.
+ */
 export const DEFAULT_SECTOR_RISK_POLICY: SectorRiskPolicy = {
-  needsPressureWeight: 0.5,
+  needsPressureWeight: 1,
   staffingShortfallWeight: 0.3,
   contrabandPressureWeight: 0.2,
-  hotThreshold: 0.6,
-  sustainedSamplesRequired: 3,
+  hotThreshold: 0.65,
+  sustainedSamplesRequired: 12,
 };
 
 /** Pure, explicit-factor weighted sum, clamped to [0,1] -- the same "explicit factors, no hidden condition chain" shape as #27's `resolveDetectionProbability`. */

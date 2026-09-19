@@ -32,15 +32,34 @@ design. That gap is now closed except where noted:
   the server timestamps a client could stamp (see "The server's timestamps
   are the server's" below), `20260824110000`, `20260824110100` and
   `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
-  #163's trusted-role `TRUNCATE`. So do **suites 005 to 010 in their
-  entirety** and every change the first four suites have gained since. All of
-  it has been executed only against plain PostgreSQL. The date is what
-  defines the set here, not this list: the list stood at eleven while twelve
-  postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 268 assertions
-  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10), measured on the run that
+  #163's trusted-role `TRUNCATE`, the two dated `20260826` for #280 and
+  #194's open half, and `20260904090000` for the telemetry ingest. So does
+  **every suite from 005 onwards, in its entirety**, and every change the
+  first four suites have gained since. All of it has been executed only
+  against plain PostgreSQL. The date is what defines the set here, not this
+  list: the list stood at eleven while twelve postdated the run, **and then
+  the same thing happened twice more** — re-derived 2026-09-15,
+  `ls supabase/migrations/ | cut -c1-8 | sort | uniq -c` shows a
+  `20260904` migration this enumeration did not name, and `supabase/tests/`
+  holds a suite `012` that "005 to 011" excluded. A closed range is a tally
+  wearing different clothes; the range is now open-ended. The counts above are
+  the stack-run counts, not today's.
+  `pnpm verify:sql` is at 412 assertions
+  (54/54, 104/104, 37/37, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6, 89/89), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
+
+  **That line read "321 assertions (54/54, 104/104, 35/35, 33/33, 8/8, 23/23,
+  11/11, 12/12, 25/25, 10/10, 6/6)" until 2026-09-04**, and the sentence above
+  it still reads **"suites 005 to 011 in their entirety"**, which is left as it
+  stands because it is what was measured then. Both are dated by one change:
+  `20260904090000_create_telemetry_events.sql` added the telemetry ingest
+  destination and, on the owner's ruling of that date, its retention job, which
+  brought **suite 012** (89 assertions), took suite 003 from 35 to 37 with the
+  fourth database role, and extended suites 005, 007, 008, 009 and 010 with the
+  new objects' declarations. So the unexecuted-against-the-stack set is now
+  **suites 005 to 012**, and the twelfth has never run anywhere but on plain
+  PostgreSQL.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -55,7 +74,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 268 assertions — which
+  migration and every suite via `pnpm verify:sql` — 412 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -72,13 +91,34 @@ design. That gap is now closed except where noted:
   database (`src/persistence/cloud/supabase-client.ts`); a pure-JS fake
   asserting RLS, grants or RPC semantics would test the fake, not the
   contract. `verify:stack` at least exercises the same HTTP contract that
-  client speaks. One narrower claim *is* now unit-tested, because it is a
-  property of the query this repository builds rather than of the database:
-  `tests/unit/persistence-cloud-supabase-client.test.ts` drives the client
-  through a PostgREST stand-in that applies the `.eq()` filters it is given,
-  and pins that both save-version reads are scoped to their prison (see
-  "Every save-version read is scoped to its prison" below). It asserts
-  nothing about ownership, roles or policies.
+  client speaks. **Two** narrower claims *are* now unit-tested, because both
+  are properties of the code in that file rather than of the database, and
+  `tests/unit/persistence-cloud-supabase-client.test.ts` pins both, in three
+  suites. *Which rows the client asks for:* it drives the class through a
+  PostgREST stand-in that applies the `.eq()` filters it is given, and pins
+  that both save-version reads are scoped to their prison (see "Every
+  save-version read is scoped to its prison" below). *Which outcome each RPC
+  status maps to:* for `create_prison` and `create_save_version` alike --
+  that no two statuses collapse onto the same outcome, that the call sends the
+  parameter names the migration declares, that a single-element array is
+  unwrapped the way PostgREST returns a set-returning function, and that the
+  byte size sent is measured in UTF-8 bytes, which is the figure
+  `save_versions_enforce_size` bounds against.
+  `tests/foundation/rpc-status-vocabulary-contract.test.ts` is the gate beside
+  it, pinning that the client's row types name exactly the statuses the
+  migrations can return -- so a *missing* case is a type error where a *wrong*
+  case was caught by nothing (#264 S7). Neither test asserts anything about
+  ownership, roles or policies.
+
+  Two limits of that stand-in, because they are what a reader of this bullet
+  needs next. **It does not cast.** It accepts `'prison-1'` as a prison id
+  (`tests/unit/persistence-cloud-supabase-client.test.ts:475`) where the real
+  `prisons.id` is `uuid` and the database refuses it -- #338. That is one
+  concrete instance of this bullet's own warning that a fake tests the fake,
+  and it is named here so the caution reads as a live risk rather than a
+  general one. And the headline is not softened by any of the above: nothing
+  under `tests/` opens a database connection, `pnpm verify:sql` exercises the
+  SQL rather than this class, and `pnpm verify:stack` is in no CI gate.
 - **Not attempted:** the JSONB-vs-Storage payload benchmark and any real
   upload/download/restore timing. The local stack makes this newly
   possible, but it is a benchmark of its own rather than a by-product of
@@ -89,13 +129,51 @@ design. That gap is now closed except where noted:
   the DDL has now run there. None of the checks above has. The local stack
   runs the same images, but nothing here has exercised a real project's
   networking, quotas or connection pooling.
-- **Not applied anywhere but a scratch database:** the twelve migrations
-  dated `20260824` — everything from
-  `20260824090000_pin_trigger_function_search_path.sql` through
-  `20260824150000_revoke_trusted_truncate.sql`. They are all
-  newer than the hosted apply above, so the hosted project still carries the
-  declarations, grants, constraints and function bodies as they stood on
-  2026-08-23 until they are pushed. Two of them can refuse to apply on a
+
+  **What applies them**, which this document recorded the *fact* of without
+  ever naming the *mechanism* — the consequence
+  [ADR-0016](./adr/0016-migration-delivery-mechanism.md) left explicitly
+  undischarged against this file: **staging is applied automatically, on every
+  merge to `main`, through Supabase's own GitHub integration; production is
+  not.** Production migrations are a manual dispatch of
+  `.github/workflows/migrate-database.yml`, gated by environment approval and a
+  typed project ref, defaulting to `dry_run: true`. The consequence that follows
+  is ADR 0016's, restated here because a reader of this file alone would not
+  otherwise meet it: **a merge to `main` that touches `supabase/migrations/` is
+  a deployment, and reviewing that pull request is reviewing one.**
+- **Not applied anywhere but a scratch database:** **everything dated after
+  `20260823100000`**. That is the whole of the claim, deliberately without a
+  count — run
+
+  ```bash
+  ls supabase/migrations/ | awk 'substr($0,1,14) > "20260823100000"'
+  ```
+
+  and read the answer. `substr($0,1,14)` rather than a bare `$0 >` comparison:
+  the filenames carry a descriptive suffix, so
+  `20260823100000_bound_free_tier_capacity.sql` sorts *after* the bare
+  timestamp string and a whole-name comparison silently includes the boundary
+  migration itself (15 lines instead of 14).
+
+  This bullet said "the twelve migrations dated `20260824`" and that was wrong
+  in exactly the way `docs/DEPLOYMENT.md`'s identical sentence was wrong before
+  `1ec7d16` replaced its count with a derivation: **there are two more, dated
+  `20260826`**, so fourteen postdate the nine recorded as applied above. The
+  omitted pair is `20260826120000_revoke_ambient_table_privileges.sql` — a
+  privilege revocation — and `20260826130000_server_stamp_updated_at.sql`, the
+  server-side `updated_at` stamping. Both are the same class of control this
+  paragraph goes on to enumerate as missing from the hosted project, which is
+  precisely why `1ec7d16` called the omission out rather than just fixing the
+  arithmetic. This document already knew they existed: the bullet three
+  sections above names "the two dated `20260826` for #280 and #194's open
+  half", and this one omitted them anyway. A count beside a directory that
+  computes it is the shape that keeps failing here.
+
+  They are all newer than the hosted apply above, so the hosted project still
+  carries the declarations, grants, constraints and function bodies as they
+  stood on 2026-08-23 — including the ambient table privileges `20260826120000`
+  revokes and without the `updated_at` stamping `20260826130000` adds — until
+  they are pushed. Two of them can refuse to apply on a
   populated project rather than applying silently, which is deliberate and is
   what their headers describe: the ledger's natural-key index if two
   provider-less `entitlement_events` rows are identical in every recorded
@@ -106,16 +184,58 @@ design. That gap is now closed except where noted:
   `20260824101000`, `20260824120000` and `20260824130000` add CHECK
   constraints without `NOT VALID`, so PostgreSQL validates the existing rows
   and a violating one refuses the migration too.
-  `20260824150000_revoke_trusted_truncate.sql` (#163) is the newest of them
-  and is worth naming on its own: a single `REVOKE`, applied to a scratch
+  `20260824150000_revoke_trusted_truncate.sql` (#163) is worth naming on its
+  own: a single `REVOKE`, applied to a scratch
   database only, so whatever `TRUNCATE` the hosted project grants
   `service_role` is untouched until it is pushed — and what that is remains
   unverified, since every grant observed here is the harness's model of
-  Supabase's defaults.
+  Supabase's defaults. This sentence used to call it "the newest of them",
+  which stopped being true the moment `20260826120000` landed — the same
+  staleness the count above had, in a superlative rather than in a number, so
+  it is named rather than only corrected. `20260826120000` revokes ambient
+  table privileges and is unverified against the hosted project for exactly the
+  same reason.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
   pure TypeScript, including a two-concurrent-pushes test.
+- **Not executed by the shipped build, because the shipped build never loads
+  it:** every module under `src/persistence/cloud/` is outside the production
+  import graph. Walked from the two entry points `vite.config.ts` declares,
+  nothing the browser runs imports the cloud client, the sync engine or their
+  types; nothing under `src/` calls `createClient` at all, and the two modules
+  naming `@supabase/supabase-js` import it `import type`, so the SDK
+  contributes no code to the bundle either.
+
+  **This belongs in this section rather than further down**, because this
+  section's job is to say what has and has not run and "no code path a player
+  can take reaches this tier" is the strongest such statement available about
+  it. The fact was already in this document — under "Conflict resolution",
+  where it reads as a remark about that subsection — and in
+  `docs/ARCHITECTURE.md`, which states it in the topology and in the
+  persistence paragraph. What was missing is that a reader of the executed
+  inventory above would finish it without learning that the client half of
+  everything it inventories has no caller.
+
+  It is a decision rather than an oversight, and the decision is written down:
+  [ADR 0044](./adr/0044-what-happens-to-a-service-tier-nothing-calls.md) keeps
+  this tree on stated terms — it is waiting on a signed-in account (#34), and
+  what would make it dead is the owner deciding cloud save is out of scope.
+
+  **Correction, 2026-08-29.** The reducer for that account state now exists —
+  `src/ui/account/account-session.ts`, #34 phase 1, landed 2026-08-27 — and
+  says outright that it "does not talk to Supabase"; the effectful caller that
+  would actually call `createClient`, `signInAnonymously` or `linkIdentity`
+  still does not exist in `src/` at all. That new tree is unreachable for the
+  same reason and on the same terms as this one, and is now tracked the same
+  way: `tests/foundation/trusted-tier-reachability-contract.test.ts` added it
+  to `SCANNED_ROOTS` and `PARKED_TREES` (2026-08-29). Two gates hold the state
+  in both directions:
+  `tests/foundation/documentation-claims-contract.test.ts` fails if any module
+  outside `src/persistence/cloud/` reads Supabase configuration, and
+  `tests/foundation/trusted-tier-reachability-contract.test.ts` fails if the
+  production graph reaches any module *in* it. Both failure messages name this
+  document, because wiring it means correcting this bullet in the same change.
 
 ### Running the local stack
 
@@ -192,8 +312,11 @@ invisible until it was run on the real thing.
 
    leaving those roles `TRUNCATE, REFERENCES, TRIGGER, MAINTAIN` and nothing
    the Data API can serve. That was written as though the residue were
-   inert, and one of the four is not: see "Declarations, not only
-   privileges" below for what `TRUNCATE` reaches past.
+   inert. One of the four was not — see "Declarations, not only privileges"
+   below for what `TRUNCATE` reaches past — and the other three were inert
+   only conditionally, on a condition nothing asserted; all four are revoked
+   now, along with the default that handed them back on the next table. See
+   "Nothing in `public` starts open" below.
    `supabase/config.toml` documents the escape hatch
    (`[api] auto_expose_new_tables = true`) as deprecated, with the field
    removed on 2026-10-30 — so this is not a local-stack quirk to work
@@ -565,12 +688,17 @@ suite has an allow-list — and the allow-list is the interesting part:
 domains are already exactly what the contract permits, so there is nothing a
 constraint could add.
 
-**Three of the twelve allow-list entries record an open finding rather than a
-settled decision.** `prisons.updated_at`, `profiles.updated_at` and
-`user_settings.updated_at` are **client-writable** — a client can set them at
-insert time and walk them backwards, reproduced in **#194**. Those entries move
-to a real mechanism when #194's open half is acted on, and the suite fails if
-they are not.
+**All twelve allow-list entries now record a settled decision.** Three of them
+recorded an open finding until `20260826130000_server_stamp_updated_at.sql`:
+`prisons.updated_at`, `profiles.updated_at` and `user_settings.updated_at` were
+**client-writable** — a client could set them at insert time and walk them
+backwards, reproduced in **#194** — and the entries said in as many words that
+they "move to a real mechanism when that half is acted on". It was acted on
+(see "The server stamps `updated_at`" below), and moving is exactly what
+happened: all three flipped `client_writable` to false, and the last assertion
+in that suite is what forced the flip rather than leaving three reasons saying
+`CLIENT-WRITABLE` about columns no client can write. Group (b) — unconstrained
+*and* client-writable — is now empty.
 
 **It was five until `20260824140000_protect_server_timestamps.sql`** (see "The
 server's timestamps are the server's" below). `prisons.created_at` and
@@ -663,6 +791,91 @@ admits the row. Those need a running PostgREST, which is `pnpm verify:stack`'s
 job and is in no CI gate (#105 owner check 4). What it closes is the neighbouring
 gap, which is the half that can be closed without a stack.
 
+## The prison id has a type, and the client is the one that mints it
+
+**A cloud prison id is a UUID, and it is the same value as the local prison
+id.** `prisons.id` is `uuid` (`20260822190100_create_prisons.sql:7`), and every
+cloud operation either passes it into a `uuid` parameter — `create_prison(
+p_prison_id uuid, …)`, `create_save_version(p_prison_id uuid, …)` — or compares
+it against a `uuid` column: `.eq('id', …)` on `prisons`, `.eq('prison_id', …)`
+on `save_versions`. The bounds table above gives `game_version`, `checksum` and
+`storage_path` a documented domain and said nothing about this one, which is the
+gap #338 fell through.
+
+The producer did not mint that type. `src/ui/save-panel.ts` minted
+`prison-${Date.now().toString(36)}`, and PostgreSQL raises `22P02` *during
+argument coercion*, so the failure lands before the function body runs — before
+the `auth.uid()` fail-closed check, before the advisory lock, before the
+slot-capacity trigger. Executed against the schema `pnpm verify:sql` builds, as
+`authenticated` with a JWT subject set:
+
+```
+select * from public.create_prison('prison-mfa1x2y','lockstate-0.0.80',1,'New Prison');
+ERROR:  invalid input syntax for type uuid: "prison-mfa1x2y"
+```
+
+Every one of the four `SupabaseCloudSaveClient` operations failed that way, for
+every prison the game creates, on every project — the same
+no-configuration-works shape as #192, one layer earlier. It was latent only
+because nothing constructs the client yet (`grep -rn 'import.meta.env' src/`
+returns no match), which also means no `prisons` row anywhere carries a
+non-UUID id: none could be inserted.
+
+**Why the client mints it rather than the database.** `prisons.id` defaults to
+`gen_random_uuid()` and `create_prison` passes `coalesce(p_prison_id,
+gen_random_uuid())`, so a caller *may* send `null` and let the server choose.
+The client does not, and should not. The RPC's header states the reason —
+"`p_prison_id` is caller-supplied so a client can create the cloud slot with the
+prison id its local repository already uses" — and the stack is local-first:
+`SessionController.createPrison` writes the slot and generation 1 to IndexedDB
+before any network call exists, so the id has to exist offline, before there is
+a server to ask. Adopting a server-chosen id would mean either forbidding
+offline prison creation or rewriting a local primary key after a round trip, and
+it would give up the local-id-equals-cloud-id property deliberately on purpose
+here. #343 reaches the same conclusion from the other direction: dropping the
+parameter "breaks the local-id-equals-cloud-id property the header asks for".
+
+**What the UUID does and does not do for #343.** #343 is that a caller-supplied
+id colliding with a row the caller cannot see escapes as a raw `23505` with the
+id echoed in `DETAIL`, which confirms the existence of another account's prison.
+A random 122-bit id does not close that — the missing status and the `DETAIL`
+echo are SQL-side and remain #343's to fix — but it does remove the part that
+made it cheap to aim: `Date.now().toString(36)` is guessable to the millisecond,
+so under the old scheme the ids of real prisons were predictable, and a global
+primary key plus a confirmation oracle plus a guessable id space is a worse
+combination than any one of the three.
+
+**Existing local saves keep their old ids, and this is a one-way break for the
+cloud only.** The save panel is wired into `src/main.ts`, so prisons created
+before the fix exist on real devices with `prison-<base36>` ids in IndexedDB.
+Nothing about them breaks: `identifierSchema` still admits them, the local
+repository still keys on them, and they load and autosave exactly as before —
+local-first persistence never needed a UUID. What they cannot do is register in
+the cloud once the cloud client is wired (#287); `registerPrison` would pass the
+legacy id into `uuid` and get the `22P02` above.
+
+That is recorded as a known break rather than fixed here, because every way of
+fixing it is a decision this document should not make implicitly. Rewriting a
+legacy local id is a primary-key rewrite across the local repository, the slot
+metadata and the save envelope's own `prisonId`; carrying a separate cloud id
+alongside the local one gives up the local-id-equals-cloud-id property on
+purpose; and deriving a UUID from the legacy id by hash invents an id scheme.
+Whichever is chosen belongs to the cloud-wiring issue and, per `CLAUDE.md`, to
+an ADR rather than to implementation code — and it is bounded work, because a
+legacy-id prison is detectable exactly by not matching the canonical UUID form.
+
+`tests/foundation/cloud-prison-id-domain-contract.test.ts` is the gate. It reads
+the declared type of every prison id out of `supabase/migrations/`, discovering
+the sites rather than listing them, requires all of them to be `uuid`, and
+asserts the real producer's output matches the canonical UUID form — a strict
+subset of what PostgreSQL's `uuid` accepts, measured by execution. The
+expectation comes from the DDL and the value from the producer, which is the
+separation the previous gates lacked: `pnpm verify:sql` proves the SQL against
+itself and never sees a TypeScript producer, and
+`tests/unit/persistence-cloud-supabase-client.test.ts` drives the client with
+`'prison-1'` through a stand-in that never casts, so the double went on
+accepting exactly the argument the real column refuses.
+
 ## The server's timestamps are the server's
 
 `20260824140000_protect_server_timestamps.sql` (#194) closes the `created_at`
@@ -693,12 +906,14 @@ the insert path set it anyway. The rule was stated, correct, and held on one of
 the two write paths.
 
 Both tables now grant INSERT per column. `prisons` gets
-`(id, owner_id, game_version, display_name, slot_index, updated_at)` — matching
-its UPDATE list plus identity, with `created_at` and both pointer columns absent.
+`(id, owner_id, game_version, display_name, slot_index)` — matching its UPDATE
+list plus identity, with both timestamps and both pointer columns absent.
 `owner_id` **must** be granted: the insert policy is `auth.uid() = owner_id` and
 the column has no default, so a client has to supply it. `profiles`, which had no
-column-level treatment at all, gets `(id, display_name, updated_at)` for INSERT
-and `(display_name, updated_at)` for UPDATE.
+column-level treatment at all, gets `(id, display_name)` for INSERT and
+`(display_name)` for UPDATE. (Both lists carried `updated_at` until
+`20260826130000`, described in the next section; the sentence above used to name
+it.)
 
 **It has to be revoke-then-grant, and that is now proved rather than asserted.**
 The prisons migration has always claimed that a column-level `REVOKE` cannot
@@ -707,12 +922,12 @@ subtract a privilege out of a table-level grant. Verified by mutation: replacing
 public.prisons` leaves the client able to write `created_at`, and five
 assertions across two suites catch it.
 
-**Scope: `created_at` only.** Whether a client may stamp its own `updated_at` is
-a real decision and it is #194's open half — `prisons` grants it on purpose, and
-the alternative is a `before update` trigger, which is a choice about whether
-anything is ever to trust that column for ordering. Every `updated_at` keeps
-exactly the privileges it had, so `user_settings` needed no change at all: it has
-no `created_at`.
+**That migration's scope was `created_at` only.** Whether a client may stamp its
+own `updated_at` was the real decision, and it was #194's open half: `prisons`
+granted it on purpose, and the alternative was a trigger, which is a choice about
+whether anything may ever trust that column for ordering. `20260824140000` left
+every `updated_at` exactly the privileges it had, so `user_settings` needed no
+change at all — it has no `created_at`. The next section is that decision.
 
 **Nothing broke**, verified rather than assumed: no code in `src/` writes any of
 these columns. Both cloud writes now go through a `SECURITY DEFINER` RPC, which
@@ -739,8 +954,259 @@ it** unless an allow-list says otherwise with a reason. Both directions fail —
 `default now()` column that becomes client-writable is caught unless listed, and
 a listed column that stops being client-writable is caught too, so acting on
 #194's open half forces the entry out rather than leaving it asserting something
-untrue. Three entries remain, all three `updated_at`, all three citing that open
-decision.
+untrue. **It held exactly three entries — all three `updated_at` — and it holds
+none: `20260826130000` acted on the decision and the second direction forced all
+three out, which is the property the empty table is kept for.** The rule stays
+live for the next `default now()` column somebody adds.
+
+## The server stamps `updated_at`, and that is a rule for every future table
+
+`20260826130000_server_stamp_updated_at.sql` decides **#194's open half**, and
+ADR 0008 §2 records it as a rule rather than as a migration, because the question
+is asked again by every table that gets a timestamp: **authority over a row is
+not authority over the record of when it was written.** §2 classifies "saves,
+settings" as Z0/Z1 client-authoritative, and that row is about a row's
+*content*; a `created_at`/`updated_at` column is not content, it is the server's
+statement about the write, so its authority is Z2 even where the payload's is
+Z0's. `20260824140000` established that for `created_at` without naming it;
+this completes it for `updated_at` on `prisons`, `profiles` and `user_settings`.
+
+**Two reasons the client-writable answer lost, and neither is an argument from
+principle — both were executed.**
+
+The first is that the reconciliation it would have served is prohibited.
+`src/persistence/cloud/sync-engine.ts` states the contract in as many words:
+*"silent last-write-wins is prohibited"*. Ordering is `prisons.current_revision`,
+advanced transactionally inside `create_save_version()`, and a client cannot
+write it — reproduced as `authenticated`, `update public.prisons set
+current_revision = 999` raises `42501`. Conflicts go to an explicit user choice
+(`resolveSyncConflict`), never to a timestamp comparison. A client-supplied edit
+time therefore has no consumer in the design as it stands and exactly one
+prohibited use.
+
+The second is the one that settled it: **without a trigger the column was not
+merely untrustworthy, it was wrong.** `default now()` fires on `INSERT` and never
+again, and nothing stamped it on `UPDATE`, so an `UPDATE` that did not name
+`updated_at` left it at the insert value. Reproduced as `authenticated`:
+
+```
+insert into public.user_settings (user_id, settings_schema_version, payload)
+  values (…, 1, '{"a":1}');
+update public.user_settings set updated_at = '2020-01-01T00:00:00Z' where …;
+update public.user_settings set payload = '{"a":2}' where …;
+-->  payload {"a": 2} | updated_at 2020-01-01 00:00:00+00 | wall clock 2026-08-26
+```
+
+Nothing in `src/` names the column, so nothing was keeping it current. The choice
+was never "trustworthy versus client-known"; it was "trustworthy versus stale".
+
+**What the forgery could actually do, ranked honestly**, because the severity is
+what decides whether this was urgent. Reproduced as `authenticated`: an `INSERT`
+stamping `updated_at` at 4000-01-01 and an `UPDATE` walking it back to 1900-01-01
+both succeeded on all three tables.
+
+* **Not cross-tenant.** Every policy on these tables scopes both `USING` and
+  `WITH CHECK` to `auth.uid()`, read back from `pg_policies`, so a forged value
+  reaches only the forger's own row. ADR 0008 §2's "forging it only affects the
+  forger" holds.
+* **Not audit-trail forgery.** The audit trail is `entitlement_events` —
+  append-only, server-stamped (`recorded_at`, no client grant), reachable only
+  through `record_entitlement_event()`.
+* **The real exposure is a future reader.** A retention or cleanup job keyed on
+  `updated_at` ("cleanup of abandoned anonymous accounts" is named as open work
+  below, and in ADR 0013 §§5–6), a "last synced" figure shown to a player, or a
+  settings sync that grows a reconciliation rule. Each would inherit a number the
+  client chose, and the first of those is a row that outlives its cleanup by
+  being stamped in the year 4000.
+
+So: **LATENT**, and the reason to close it now is that the column becomes
+load-bearing in the commit that first *reads* it, not in the commit that first
+writes it.
+
+**The alternative, and the door left open.** If a client-side edit time is ever
+needed — two devices editing settings offline is the case #194's own comment
+raises, and it is a real one — it gets its own column named for what it is
+(`client_edited_at`), so a reader of the value can see whose claim it is without
+going to look at a grant. Overloading `updated_at` to mean both is what makes a
+timestamp untrustworthy at the point of use.
+
+**Both halves, deliberately.** The trigger makes the column *correct*; removing
+it from the grants makes a client that sends one fail with `42501` rather than be
+silently corrected, which is how this schema already treats every column a client
+has no business writing — suite 001 asserts `42501` for
+`prisons.current_revision`, not that a write to it is ignored. A silently
+corrected value is one the client believes it set and the server did not.
+
+One function, `stamp_updated_at()`, for three `BEFORE INSERT OR UPDATE … FOR
+EACH ROW` triggers: the body is the rule, and a rule written once cannot drift
+between the tables it applies to. It is `SECURITY INVOKER` — it reads and writes
+nothing but `NEW`, so there is no relation for a caller to shadow — and pins
+`search_path = public, pg_temp` anyway, because suite 005 requires every trigger
+function in `public` to.
+
+**Scope is `updated_at` only.** `user_settings` keeps `user_id` in its UPDATE
+list, even though the `prisons` and `profiles` grants exclude their identity
+columns on the argument that "a client has no reason to rewrite an identity".
+Taking it away would be a second, unrelated tightening decided inside a migration
+about timestamps, and it takes away nothing: `user_settings_update_own`'s
+`WITH CHECK` already refuses any value other than `auth.uid()`, so the only write
+it permits is a no-op.
+
+**Nothing broke**, verified against the tree rather than assumed: no code in
+`src/` writes any of the three columns, or writes `profiles` or `user_settings`
+at all. `SupabaseCloudSaveClient` selects `game_version`, `current_version_id`,
+`id`, `revision`, `checksum` and `created_at` and never an `updated_at`; both
+write paths go through `SECURITY DEFINER` RPCs, which bypass column grants.
+
+## Nothing in `public` starts open
+
+`20260826120000_revoke_ambient_table_privileges.sql` closes **#280 finding F14**
+and the class it sits inside. The finding is that `REFERENCES` and `TRIGGER` —
+and, from PostgreSQL 17, `MAINTAIN` — were the residue `TRUNCATE` left behind,
+and that suite 003 dismissed them as "ambient defaults that carry no Data API
+meaning". They carried none *today*, and that is the problem with the dismissal
+rather than a defence of it:
+
+* `TRIGGER` permits `CREATE TRIGGER`, which additionally needs `EXECUTE` on a
+  trigger function and `CREATE` on a schema to define one;
+* `REFERENCES` permits a foreign key *into* the table from a table you own,
+  which needs `CREATE` on a schema to have a table at all.
+
+Read back on the harness, `has_schema_privilege(role, 'public', 'CREATE')` is
+`f` for all three roles, so both are inert there. Whether they are inert on the
+hosted project is unknown, which is exactly why #116 and #163 already ask the
+owner for `\dn+ public`. The revoke lands regardless, because a privilege whose
+harmlessness depends on a second privilege nobody asserts is not one this schema
+wants to hold — and it costs nothing identified: nothing here creates a trigger
+or a foreign key at runtime, and PostgREST exposes no verb that reaches either.
+ADR 0008 §2 records the ruling generalised, so the next ambient privilege needs
+no third one.
+
+**The durable half is the one #280 did not find.** All three TRUNCATE revokes
+note that `on all tables in schema public` expands at execution time, so a table
+added later inherits the privilege again, and all three point at suite 003's
+schema-wide sweep as what fails when it does. Executed: that is true — a
+`create table public.newly_added_table (…)` appended to the previous migration,
+with RLS enabled, one own-row policy and `grant select … to authenticated`,
+failed the TRUNCATE sweep on the next run of `pnpm verify:sql`.
+
+But the sweep fails *after* the table exists, and the fix a reader then applies
+is a fourth `revoke truncate on all tables`. What regenerates the defect is the
+default privilege itself:
+
+```
+select defaclobjtype, defaclacl from pg_default_acl;   -- before
+ r | {anon=Dxt/root,authenticated=Dxt/root,service_role=Dxt/root}
+ S | {anon=w/root,authenticated=w/root,service_role=w/root}
+```
+
+`D` is `TRUNCATE`, `x` `REFERENCES`, `t` `TRIGGER` — on every table created in
+`public` from then on. Executed before the revoke, a freshly created table came
+out `{root=arwdDxt/root,anon=Dxt/root,authenticated=Dxt/root,service_role=Dxt/root}`
+with `has_table_privilege('anon', …, 'TRUNCATE')` true; after it, both
+`pg_default_acl` rows are gone and a freshly created table and sequence come out
+with a **null ACL** — owner only. **A new relation in `public` now starts closed,
+and its migration opens exactly what it means to open.**
+
+The sequence row is **#280 finding F15**'s other half. F15 observes that suite
+003's grant sweeps filtered `relkind in ('r','v','m','p','f')` and never looked
+at sequences, and that this is vacuous only while no sequence exists — every key
+here is a `uuid`. The `S` default is what makes it stop being vacuous: Supabase
+grants `all` on sequences and revokes only `usage, select`, leaving `UPDATE`,
+which is `setval`. The first `bigserial` or identity column would have arrived
+with all three roles able to rewind its counter. The sweeps now include `'S'`, as
+F15 asks, and the default is revoked so there is nothing left to arrive with.
+
+`MAINTAIN` is **version-guarded rather than skipped**. It exists from PostgreSQL
+17 and this schema is run on 16 and 18, so naming it unconditionally is a syntax
+error on 16 — which is why #280 left it out. A `do` block reading
+`server_version_num` names it only where it exists, and it is worth naming:
+`MAINTAIN` carries `LOCK TABLE` in the stronger modes as well as
+VACUUM/ANALYZE/CLUSTER/REINDEX, so on 18 it is the one remaining ambient
+privilege with an availability cost rather than none.
+
+**What is not closed, stated so it is not read as closed.** A default privilege
+is per (grantor role, schema). These statements are issued by whichever role runs
+the migration — `root` on the harness, `postgres` on a hosted project — which is
+also the role that creates the tables here, so they cover every table this
+repository's migrations add. A table created in `public` by some *other* role
+draws on that role's defaults instead. Suite 003's sweeps are schema-wide and
+role-parameterised, so such a table still fails them; the default privilege
+narrows how often that can happen, it does not replace the sweep.
+
+**How it is pinned.** Five assertions in suite 003 (28 → 33). The ambient sweep
+reads privilege *letters* out of the ACL text rather than calling
+`has_table_privilege` per privilege name, which is portable across server
+versions **and** exhaustive in a way naming them could not be: it covers `D`,
+`x`, `t`, `m` and anything a future major version adds. Sequences are swept under
+the stricter rule of no privilege at all. Two of the five are behavioural — a
+table and a sequence created inside the suite must arrive with no grant for any
+Data API role — because a `pg_default_acl` that is empty for the wrong reason
+(a different grantor role, a renamed schema) would satisfy the catalog assertion.
+
+Proved by mutation, each run through a full `pnpm verify:sql` and reverted with
+an empty `git diff --stat`:
+
+```
+=== dropping the references/trigger revoke on existing tables
+  ✗ 003: 32/33 — not ok 22 (no Data API role holds a privilege outside the four DML ones)
+=== dropping the TABLE default-privilege revoke
+  ✗ 003: 31/33 — not ok 23 (no default privilege grants a Data API role anything)
+                 not ok 25 (a table and a sequence created now arrive with no grant)
+=== dropping the SEQUENCE default-privilege revoke
+  ✗ 003: 31/33 — not ok 23, 25
+=== a sequence appears while the sequence default still grants setval
+  ✗ 003: 27/33 — not ok 15, 16, 17 (the three role sweeps, now that 'S' is in them),
+                 not ok 22, 23, 25
+=== revoke all on all tables from all three roles (the over-revoke direction)
+  ✗ 001 0/37, 002 5/88, 003 16/33, 004, 006, 008, 009, 010 — no false clean
+```
+
+## Triggers, not only policies and constraints
+
+`supabase/tests/011_trigger_inventory.test.sql` (6 assertions) is the third suite
+in this family, after 009 for policies and 010 for constraints, and it exists for
+the reason those two do. #280 audited this schema's controls by mutation and
+found policies and multi-column constraints uncovered. **It did not look at
+triggers, and triggers were uncovered too.** Measured by the same method, against
+the tree before that suite:
+
+* dropping `prisons_stamp_updated_at` — every suite green;
+* narrowing a `before insert or update` stamp to `before update`, losing exactly
+  the write path `20260824140000` exists to close — every suite green.
+
+The second is this repository's signature defect shape applied to its own fix: a
+control stated for two write paths and enforced on one. The assertions written
+beside the trigger could not see it happen, because they name a trigger rather
+than its timing and its events. Six triggers existed before this suite, and
+`pg_trigger` was read by exactly one assertion in the repository — in suite 007,
+only to confirm that a named trigger exists.
+
+What it pins: the full inventory of all nine triggers by table, timing, events,
+`FOR EACH ROW`, function and `UPDATE OF` column list, with `tgtype` decoded so a
+failure names the property that changed rather than an integer nobody can read;
+and the ADR 0008 §2 rule as a *rule* — every `updated_at` in `public` is stamped
+on both write paths unless an allow-list names who writes it instead, with a
+reason. One entry: `entitlements.updated_at`, written as `now()` by
+`record_entitlement_event()`'s upsert on a table no Data API role can write.
+Both directions fail, so that entry cannot outlive the state it describes.
+
+Two of the six are behavioural, on both write paths and all three tables. The
+`INSERT` half needs a *privileged* writer, and that is the point rather than a
+workaround: `updated_at` is out of every client grant, so no client probe can
+distinguish a trigger firing on `INSERT` from the `default now()` that supplies
+the same value. The table owner plants a 2020 value and the trigger overwrites
+it, which also asserts that the stamp has **no exempt write path** — the property
+`entitlement_events`' append-only trigger relies on too. Planting a stale value
+for the `UPDATE` probe therefore needs `alter table … disable trigger`, which no
+client role can reach.
+
+**Deliberately not pinned:** `pg_get_triggerdef` text or a body hash, for the
+reason suite 010 refuses `pg_get_constraintdef` — it would fail on a whitespace
+edit and on a server version that renders a definition differently. **Residual,
+stated:** a trigger rewritten in place under the same name, table, timing, events
+and column list is invisible to the inventory; what holds that is the behavioural
+coverage here and in suites 002 and 004.
 
 ## Declarations, not only privileges
 
@@ -933,7 +1399,7 @@ cannot subtract one column's privilege out of a table-level grant, so on any
 project where `authenticated` holds table-level `UPDATE`,
 `revoke update (current_revision) on prisons from authenticated` leaves it
 intact and changes nothing. `prisons` therefore revokes `UPDATE` outright
-and grants back only `(display_name, game_version, slot_index, updated_at)`,
+and grants back only `(display_name, game_version, slot_index)`,
 leaving `create_save_version()` — `SECURITY DEFINER`, with its own
 `auth.uid()` check inside — as the only path able to advance the pointer
 columns.
@@ -942,15 +1408,17 @@ Since defect 4, that `REVOKE` is a no-op on a current project, which never
 granted table-level `UPDATE` in the first place. It stays because the thing
 it closes is a *default*: it must remain closed on a project that sets
 `[api] auto_expose_new_tables = true`, and on any project created before the
-default changed. The grant of the four editable columns is what does the
-positive work in both cases.
+default changed. The grant of the three editable columns is what does the
+positive work in both cases. (It was four until `20260826130000` took
+`updated_at` out of it — see "The server stamps `updated_at`" above.)
 
 `save_versions` goes further: `authenticated` gets `SELECT` and no
 insert/update/delete grant at all, so immutability doesn't depend on a
-trigger the client could reason its way around. `anon` gets nothing — read
-back from the catalog, its ACL entry on this table is `xt` (`REFERENCES`,
-`TRIGGER`), the ambient residue of Supabase's defaults, and
-`has_table_privilege('anon', 'public.save_versions', 'SELECT')` is false. The
+trigger the client could reason its way around. `anon` gets nothing at all — read
+back from the catalog, it has no ACL entry on this table whatsoever, and
+`has_table_privilege('anon', 'public.save_versions', 'SELECT')` is false. Until
+`20260826120000` the entry read `xt` (`REFERENCES`, `TRIGGER`), the ambient
+residue of Supabase's defaults; see "Nothing in `public` starts open" above. The
 schema-wide sweep in `supabase/tests/003_data_api_grants.test.sql` says the
 same thing exhaustively: the only relation `anon` reaches in `public` is
 `challenge_definitions`, for `SELECT`.
@@ -1071,6 +1539,15 @@ that #19's follow-up wiring did produce (`src/ui/save-panel.ts` over
 `SessionController`) drives the *local* repository only; `SessionController`
 touches Supabase nowhere, and no module in `src/ui/` imports
 `src/persistence/cloud/`.
+
+**This paragraph is not the place a reader looks for that fact, and it stayed
+the only place for three days.** It is now stated in "What has and has not been
+executed" at the top, where the inventory is, and generalised there from
+`src/ui/` to the whole production import graph — which is the stronger and the
+checkable claim. #378 reported this document as not carrying the fact at all,
+which was already false when it was written (`5e1018d`, 2026-08-23, added the
+sentence above); what was true is that it was here rather than there. Both
+statements are kept rather than one overwriting the other.
 
 ## Anonymous identity upgrade
 

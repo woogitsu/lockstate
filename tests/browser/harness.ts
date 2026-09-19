@@ -6,6 +6,13 @@ import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/sav
 import { LifecycleSaveHandler } from '../../src/persistence/session/lifecycle';
 import { InProcessSessionHost } from '../../src/persistence/session/runtime-host';
 import { SessionController } from '../../src/persistence/session/session-controller';
+import { WorkerPerSessionHost } from '../../src/persistence/session/worker-per-session-host';
+import { SimulationClient } from '../../src/simulation/worker/client';
+// `?worker` is Vite's statically-analyzable worker import, exactly as
+// `src/main.ts:31` takes it. ADR 0109's falsifier is explicit that its
+// measurement must use the worker host rather than the in-process one.
+import SimulationWorker from '../../src/simulation/worker/worker.ts?worker';
+import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-channel';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
@@ -17,6 +24,8 @@ import type {
   HarnessFillResult,
   HarnessLegacyGeneration,
   HarnessLifecycleObservation,
+  HarnessLifecycleWrite,
+  HarnessLifecycleWriteObservation,
   HarnessLoadSummary,
   HarnessQuotaEstimate,
   HarnessSaveSummary,
@@ -55,6 +64,18 @@ const LIFECYCLE_TRIGGERS_KEY = 'lockstate-harness/lifecycle-triggers';
 function recordLifecycleTrigger(trigger: string): void {
   const existing = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
   sessionStorage.setItem(LIFECYCLE_TRIGGERS_KEY, existing === null || existing === '' ? trigger : `${existing},${trigger}`);
+}
+
+/** ADR 0109's falsifier record. Same reasoning as `LIFECYCLE_TRIGGERS_KEY`: it has to outlive the realm that wrote it. */
+const LIFECYCLE_WRITES_KEY = 'lockstate-harness/lifecycle-writes';
+
+/** Set by the lifecycle handler's `onAttempt` so a write issued inside a lifecycle flush can name the event that caused it. */
+let currentLifecycleTrigger: string | undefined;
+
+function recordLifecycleWrite(write: HarnessLifecycleWrite): void {
+  const raw = sessionStorage.getItem(LIFECYCLE_WRITES_KEY);
+  const existing = raw === null || raw === '' ? [] : (JSON.parse(raw) as HarnessLifecycleWrite[]);
+  sessionStorage.setItem(LIFECYCLE_WRITES_KEY, JSON.stringify([...existing, write]));
 }
 
 const unhandledRejections: string[] = [];
@@ -594,6 +615,61 @@ const harness: LockstateBrowserHarness = {
   readLifecycleObservation(): HarnessLifecycleObservation {
     const raw = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
     return { triggers: raw === null || raw === '' ? [] : raw.split(',') };
+  },
+
+  async armLifecycleWriteFalsifier(prisonId: string): Promise<void> {
+    sessionStorage.removeItem(LIFECYCLE_WRITES_KEY);
+    const repository = requireRepository();
+
+    // The real production host, not `InProcessSessionHost`: ADR 0109's weakest
+    // claim is explicit that its own measurement used the in-process host and
+    // that a `WorkerSessionHost` run is what would settle it. `capture()` is
+    // then a genuine round trip across the worker boundary, which is the
+    // asynchrony the falsifier needs -- the window between capture and write
+    // is where a page can be torn down.
+    const channel = new SimulationWorkerChannel(() => new SimulationClient(new SimulationWorker()));
+    channel.open();
+    const controller = new SessionController(repository, new WorkerPerSessionHost(channel), { gameVersion: GAME_VERSION });
+
+    // Wrap the instance method rather than subclassing, so what runs is the
+    // production `PrisonSaveRepository.save` with one synchronous observation
+    // in front of it. The observation is taken *before* the call, which is the
+    // instant ADR 0109 Decision 2 cares about: "was there a live object to
+    // compare an in-memory epoch against when this write was issued?"
+    const realSave = repository.save.bind(repository);
+    let capturedSession: unknown;
+    repository.save = async (targetPrisonId: string, envelope: SaveEnvelope) => {
+      const live = controller.getActiveSession();
+      recordLifecycleWrite({
+        trigger: currentLifecycleTrigger ?? 'manual',
+        envelopeRevision: envelope.revision,
+        authorisingSessionAlive: live !== undefined,
+        authorisingSessionIsSame: live !== undefined && live === capturedSession,
+      });
+      return realSave(targetPrisonId, envelope);
+    };
+
+    await controller.createPrison(prisonId);
+    capturedSession = controller.getActiveSession();
+
+    new LifecycleSaveHandler(controller, {
+      onAttempt: (trigger) => {
+        recordLifecycleTrigger(trigger);
+        currentLifecycleTrigger = trigger;
+      },
+    }).attach();
+  },
+
+  async readLifecycleWriteObservation(prisonId: string): Promise<HarnessLifecycleWriteObservation> {
+    const raw = sessionStorage.getItem(LIFECYCLE_WRITES_KEY);
+    const writes = raw === null || raw === '' ? [] : (JSON.parse(raw) as HarnessLifecycleWrite[]);
+    const slots = await requireRepository().list();
+    const slot = slots.find((candidate) => candidate.prisonId === prisonId);
+    return {
+      writes,
+      durableRevision: slot?.currentRevision ?? null,
+      durableGenerations: slot?.generationIds.length ?? 0,
+    };
   },
 
   takeUnhandledRejections(): readonly string[] {

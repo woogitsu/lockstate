@@ -80,7 +80,21 @@ and drop a readout, not corrupt state.
 
 Publication is a **read**: the worker posts `Kernel.tick` and
 `FixedStepClock.control` after the tick loop has finished stepping, at most
-every 250 ms and only when the tick has moved. It calls nothing on the kernel.
+every 250 ms. It calls nothing on the kernel.
+
+The clause this sentence used to carry -- "and only when the tick has moved" --
+overstated what that check does on this channel. `publishClockState` does return
+early when the tick has not moved, but the branch never withholds a message:
+while `running`, a tick is at most 50 ms of wall time, so the interval cannot
+open with the tick standing still. Instrumented over the tick-loop suite, the
+early return was taken 221 times and **not once** with the interval open; the
+largest elapsed time on that path was 45 ms against a 250 ms interval (#444
+item 4). The interval is the gate; the equality check is belt-and-braces. The
+contrast is worth keeping: `publishRenderDelta`'s identical pair of lines *is*
+load-bearing, because nothing resets its published-tick fields, so on the first
+wake the interval is trivially open and only the tick test stops a delta that
+`deltaMessageSchema` refuses. See both docblocks in
+`src/simulation/worker/state-machine.ts`.
 This is what keeps clock control compatible with ADR 0009's determinism
 guarantee, and `tests/determinism/clock-transport.test.ts` is the executable
 form of that claim.
@@ -93,9 +107,10 @@ them. The projections take live registries and entity stores, so they can
 only run inside the worker; with no message for their output the always-
 visible status strip painted the literal zeros of `EMPTY_HUD_VIEW_MODEL`
 for a whole session, however many prisoners the simulation held (issue
-#104). `simulation/delta` was declared in the kind union with a schema
-(`src/simulation/protocol/types.ts:400`) but no sender, which is not a route
-either.
+#104). `simulation/delta` was declared in the kind union
+(`src/simulation/protocol/types.ts:23`) with a schema (`deltaMessageSchema`,
+`:521-524`) but no sender, which is not a route either. (The schema anchor read
+`:400`, which is now inside `requestProjectionMessageSchema`'s payload.)
 
 `simulation/status-counts` is the first message that carries a projection.
 It follows the `simulation/clock-state` precedent above rather than
@@ -111,7 +126,12 @@ already sit.
 The payload is the projection's `counts` block field for field, as
 validated non-negative integers, plus the `tick` they were read at, the
 projection's own `schemaVersion` and -- since the 2026-08-24 amendment
-below -- an optional `refusal`. It is deliberately not a
+below -- an optional `refusal`. **It has carried a second optional sibling,
+`zoning`, since #312, and no amendment here records it**; `zoningNoticeSchema`
+and `statusCountsMessageSchema` in `src/simulation/protocol/types.ts` are the
+definition, and `docs/adr/STATUS-QUEUE.md` §5 carries the gap as the owner's
+call rather than an editor's. Read every sentence below that enumerates this
+payload as naming two siblings, not one. It is deliberately not a
 `versionedPayload`: that type exists to move an *opaque* `data` blob, and
 here the message kind already names which schema the payload follows, so
 declaring every field lets the boundary reject a negative or fractional
@@ -127,10 +147,26 @@ rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
 all when none of the counts has changed. The tick stamp is what stops a
 readout from being taken for a statement about a later state than the one
 it describes. Measured per publication at 300 room instances and 40 guards:
-0.22-4.18 ms to project and 0.03-0.09 ms to structured-clone a 380-382 byte
-payload -- the largest form the channel can send, carrying twelve counts, a
+0.30-1.09 ms to project and 0.03-0.06 ms to structured-clone a 416-418 byte
+payload -- the largest form the channel can send, carrying thirteen counts, a
 refusal and the longest declared reason -- flat from 250 to 5,000 actors
 (`tests/unit/worker-status-counts.test.ts`, reported not asserted).
+
+**Re-measured at fifteen counts**, and stated here rather than substituted into
+the paragraph above, which is what that paragraph's whole subject asks for: the
+same case now reports `payloadJsonBytes=473` at 250 actors and `475` at 1,000,
+2,500 and 5,000, still flat in the population. The two fields are payroll's
+(ADR 0042 step 3): what one in-game day of the roster costs, and what the
+prison has failed to pay. The `436` bound below moved to **493** by the rule it
+was itself set by -- the measured maximum plus the same 18 bytes of head room --
+so a *sixteenth* count breaches it too.
+
+**Those figures replace a `380-382` that had already stopped being current
+before the thirteenth count was written**, and the correction is recorded in
+both directions because the paragraph below is about exactly this failure. Run
+on the tree as it stood with twelve counts, the same case measured **388-390**,
+not 380-382 -- so the "18 bytes of head room" stated four paragraphs down was
+10. Nobody had re-run it; the drift is digits in the values, not a field.
 
 That byte figure **replaces** the `342-344` this paragraph used to state, and
 it replaces it by re-measurement rather than by re-labelling -- the whole point
@@ -151,13 +187,60 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- twelve
-count keys, a refusal of exactly three scalars, and a serialized payload under
-400 bytes -- because the shape is the property that makes the cadence safe, and
-the population cannot move it. The 400-byte assertion now has 18 bytes of head
-room rather than 56: a thirteenth count with a name as long as the twelfth
-would breach it, and should be read as this channel's soft limit making itself
-felt rather than as an arbitrary threshold to raise.
+What the test *asserts* is the shape and not any of these numbers -- twenty-one
+integers of counts, every one of them an integer scalar rather than a list, a
+refusal of exactly three scalars, and a serialized payload under a byte
+ceiling -- because the shape is the
+property that makes the cadence safe, and the population cannot move it.
+
+*(The tally reads twenty since the owner's ruling 18 of 2026-08-31 added
+`treasuryOverdraftFloorMinorUnits`, how far below zero the balance may be
+taken, on top of issue #585's `occupiedPlaces`. It has been corrected on this line
+every time a count landed, which is why the sentence now names the ceiling
+rather than quoting it: the byte figure has been raised from 436 to 493 to 533
+to 603 to 622 while this paragraph quoted one of them, and
+`tests/unit/worker-status-counts.test.ts` is where both numbers are actually
+enforced. `tests/foundation/documentation-claims-contract.test.ts` checks the
+word against the projection's own schema, which is why this line cannot drift
+again.)*
+
+**The thirteenth count arrived, and the paragraph that predicted it read:**
+*"The 400-byte assertion now has 18 bytes of head room rather than 56: a
+thirteenth count with a name as long as the twelfth would breach it, and should
+be read as this channel's soft limit making itself felt rather than as an
+arbitrary threshold to raise."* It was right that the limit would be felt and
+its arithmetic was one re-measurement out of date (see above). What was done
+about it, so that the raise is derived and not arbitrary:
+
+- `accommodationCapacity` costs 28 bytes of the largest declared payload, which
+  now measures 416-418. The bound moved to **436**, leaving the same 18 bytes
+  of head room the 400 was believed to have -- so a *fourteenth* count with a
+  name as long as the thirteenth breaches this bound too. The soft limit is
+  still felt, one field further along.
+- The property the byte bound was standing in for is now asserted directly:
+  every value in `counts` must be an integer scalar. A key count cannot see a
+  field that stayed one key and became a list, and a size bound can only see
+  one once it is long enough; this sees it at length zero, at any population.
+  A relaxed bound needs the thing it was proxying for pinned where it cannot be
+  relaxed.
+
+**The fourteenth and fifteenth arrived together, and the prediction held
+again.** Payroll (ADR 0042 step 3) put `dailyWageBillMinorUnits` and
+`unpaidWagesMinorUnits` on the channel -- two fields rather than one because a
+treasury that cannot go negative cannot express a debt, so what the prison
+holds and what it owes are separate non-negative integers. Re-measured rather
+than adjusted by arithmetic: 473-475 bytes, so the bound is 493 and the head
+room is again 18. The scalar assertion above is what actually excludes a list,
+and it is unchanged by the raise -- which is exactly why it was added when the
+bound was last relaxed.
+
+That the field was worth 28 bytes at all is the argument for it, not against:
+`HudCountsViewModel.prisonerCapacity` was the literal `0` until it existed, so
+`occupancyTone`'s over-capacity warning could not fire in any session, and
+ADR 0048 decision 2 had just made overcrowding the thing a prison riots over.
+It is a *simulation* figure -- the summed resident capacity of the rooms the
+session's `AccommodationPolicy` names -- so neither the pull route below nor a
+main-thread derivation could have carried it.
 
 It calls nothing on the kernel and advances nothing, which is what keeps
 ADR 0009's determinism guarantee intact:
@@ -165,9 +248,17 @@ ADR 0009's determinism guarantee intact:
 driven through the real worker, publishing as it goes, to end byte-identical
 to the same sixty ticks stepped with no worker at all.
 
-No list crosses this channel: the payload is twelve integers beside at most
-one three-field refusal record, so `docs/HUD_PROJECTIONS.md` contract 5 has
-nothing to bound here yet. A projection with rows in it must be paged before
+No list crosses this channel: the payload is the `counts` block beside at
+most one refusal record and at most one zoning notice, every member of all
+three a scalar and none of them a list, so `docs/HUD_PROJECTIONS.md` contract 5
+has nothing to bound here yet. That sentence is now *executable* rather than
+only asserted about the count of keys -- see the shape paragraph below. **That sentence read "twelve integers beside at
+most one three-field refusal record" and had been half-false since #312** --
+which is the same failure as the "eleven"/`344` this section spends three
+paragraphs on, one field further along, so the subject is stated here and the
+counting is left to `statusCountsSchema` and to
+`tests/unit/worker-status-counts.test.ts`, which asserts the key count and a
+ceiling on the serialized size. A projection with rows in it must be paged before
 it may be published on a timer, because a per-send cost that grows with the
 prison is the failure this cadence was chosen to avoid.
 
@@ -209,6 +300,71 @@ The `payload` therefore gains an optional `refusal`:
 vocabularies behind it cannot collide, and closed so that a reason this build
 does not know fails at the decoder rather than reaching the HUD as a row with
 no sentence behind it.
+
+**That enumeration was exact for twenty-three days and is now incomplete. It
+is marked here rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both
+directions). The sentence above is what this amendment decided on 2026-08-24,
+and the three members it names are unchanged. `refusalSchema` gained a
+**fourth** on 2026-09-16, in #1261, implementing ADR 0091 decision 2 (option F,
+ruled by the owner that day):
+
+```ts
+routeDecidedSince: z.literal(true).optional()
+```
+
+**It is not a fourth member of the same kind, and that is what an editor who
+only lengthened the list would lose.** `sequence`, `tick` and `reason` are
+properties *of the refusal*: which one it is, when it happened, and why.
+`routeDecidedSince` is not a property of the refusal at all. It reports
+something that happened **after** it -- that the same command route has since
+decided another outcome -- and it rides on the refusal's record because that is
+where the reader already is. `RefusalLog` sets it on the standing record
+without touching any of the three: `sequence`, `tick`, `reason` and `count` are
+what they were, `last` still carries the record, and the alerts list still
+shows the row. The rule that consumes it lives in ADR 0091 and not here; what
+this ADR decides is the wire shape.
+
+**So why not a third sibling of `counts`, beside `refusal` and `zoning`?**
+Because the fact has no subject of its own. A sibling would have to carry a
+refusal's identity to say which refusal it was about -- which is the `sequence`
+it would then be duplicating -- and would have to be cleared in step with
+`record` replacing the refusal, an invariant spanning two fields where carrying
+it on the record is an invariant spanning none. `zoning` is a sibling because
+it *does* have its own subject: a room designation, with its own ordinal and
+its own tick. This has neither.
+
+**The `true`-or-absent shape is load-bearing rather than terse.** The fact is
+monotone per record -- a route that has decided something since cannot
+un-decide it while this refusal is the standing one, and a new `record`
+replaces the whole value -- so `z.literal(true).optional()` makes "present and
+false" *unrepresentable* rather than merely unused, and keeps this payload's
+own convention, in which `refusal` and `zoning` are absent when there is
+nothing to say rather than present and empty. It is also the choice that kept
+the change off the ~30 fixtures and ~15 `toEqual` assertions that spell
+`{ sequence, tick, reason }` out literally; #1261's price section reports both
+figures and reports that a required `boolean` would have paid them.
+
+**Nothing in the two sections below moves, and each holds for a reason worth
+stating rather than assuming.** "Why this shape, and why not a new message
+kind" argues that a snapshot channel may only carry snapshot-shaped things: one
+more scalar on a record that is already at most one is still not a queue, and
+*"the standing refusal's own route has decided something since"* is as plain a
+reading of the session at a tick as *"the last refusal was X"*. "Cost, and why
+the cadence still holds" is unchanged in its bound -- the flag is written from
+the command dispatch at the command's tick and only read by the publication --
+but the worker's *publish gate* is not: the flag turns over on a refusal whose
+ordinal never moves, so #1261 had to put a second watermark beside
+`_publishedRefusalSequence`, or the sequence gate would have suppressed the one
+publication the change exists to send. "Compatibility" holds for its own stated
+reason, unchanged: the member is optional, both peers are emitted from one
+build, and the envelope version stays `1`.
+
+**One sentence further up this section now reads narrower than it looks.**
+*"What the test asserts is the shape ... a refusal of exactly three scalars"*
+is still literally true of `tests/unit/worker-status-counts.test.ts`, whose
+`expect(Object.keys(payload.refusal)).toHaveLength(3)` runs against a payload
+that carries no `routeDecidedSince`. Read it as a statement about that fixture,
+not about the schema's ceiling, which is four.
 
 ### Why this shape, and why not a new message kind
 
@@ -293,9 +449,17 @@ rather than with the boundary.
 So the protocol grows **once**, and the catalogue behind it grows instead:
 
 - `simulation/request-projection` (main-to-worker) names a `projectionId` from
-  a closed vocabulary — `PROJECTION_IDS` in `src/simulation/protocol/types.ts`,
-  twelve members today — with optional `offset`/`limit` and an optional
-  `target` (an entity id, or a string id) for the three detail projections.
+  a closed vocabulary — `PROJECTION_IDS` at
+  `src/simulation/protocol/types.ts:314-330`, **fifteen** members, one per line
+  between the `[` and the `] as const` — with optional `offset`/`limit` and an
+  optional `target` (an entity id, or a string id) for the three detail
+  projections, which are `hud/prisoner-detail`, `hud/room-detail` and
+  `hud/incident-detail`. (**This bullet said "twelve members today".** The
+  count is the half that rotted; "three detail projections" beside it was and
+  is correct, which is why the three are now named rather than tallied — a
+  reader can check a name against the list and cannot check a sum. The
+  vocabulary being closed is what makes the drift invisible: adding a member is
+  a one-line change in `types.ts` that no gate ties back to this sentence.)
 - `simulation/projection` (worker-to-main) answers exactly one of those. It
   carries the id, the tick it was read at, the page window it actually built,
   and the view model.
@@ -346,10 +510,14 @@ against the next slice, without deciding any of them:
   counter is needed. Should a *row* projection ever want a cadence, finding 3's
   argument for a revision counter on the source registry stands untouched.
 
-Finding 4 — no cell-only capacity — is unaffected: it is a gap in the
-simulation, not in the channel, and `HudCountsViewModel.prisonerCapacity`
-still reports `0` so the strip omits the bar rather than drawing a wrong
-denominator.
+Finding 4 — no cell-only capacity — is unaffected *by this route*: it was a gap
+in the simulation, not in the channel. **It is closed as of the
+`accommodationCapacity` change** (see the amendment below): the simulation now
+publishes the summed resident capacity of the rooms its `AccommodationPolicy`
+names, and `HudCountsViewModel.prisonerCapacity` maps from it instead of
+reporting `0`. Both directions are marked because the reasoning still holds —
+the fix had to be a *simulation* figure on the cadence channel, and could not
+have been the pull route or a main-thread derivation.
 
 Decision 9 is untouched and is worth restating because this route sits next to
 it: a `simulation/command-result` of `status: 'queued'` means the message was
@@ -405,11 +573,18 @@ the `kind` first, does not know it, and classifies it as
 outcome is a readout that never appears rather than a payload interpreted as
 something else. Both peers are emitted from one build in any case.
 
-`simulation/delta` is still not adopted and still has no sender. A projection
-reply is a **level** read at a tick, not a diff from a base tick, so nothing
-here needs `baseTick`, a base-tick contract, or an answer for a receiver that
-missed the base — the three things #157 finding 5 says a delta sender would
-still require beyond the schema that already exists.
+`simulation/delta` was still not adopted and had no sender when this section
+was written. It has one since ADR 0040 slice 1 (#414):
+`state-machine.ts#publishRenderDelta` posts an unsolicited keyframe of actor
+positions on the tick loop, carrying an `array-buffer` body — the first
+production use of that transport, and of this kind, since the protocol's first
+commit. What that changes for *this* section is nothing: a projection reply is
+a **level** read at a tick, not a diff from a base tick, so nothing here needs
+`baseTick`, a base-tick contract, or an answer for a receiver that missed the
+base — the three things #157 finding 5 says a delta sender would still require
+beyond the schema that already exists. Slice 1 needs only the first of the
+three, because it publishes keyframes alone; the base-tick contract lands with
+the changed-only messages that need it.
 
 ### What this does not do
 
@@ -432,9 +607,11 @@ Message identifiers are correlation and diagnostics identifiers, not simulation 
 
 ### Implementation note, 2026-08-24: decision 4's handshake has no sender
 
-Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:17`, `:204`, `:304`; `src/simulation/protocol/transferables.ts:30`, `:35`; `src/simulation/worker/state-machine.ts:417`, `:444`, `:453`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:58`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts precisely because the state is still `'uninitialized'` (`state-machine.ts:472-474`).
+Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:18`, `:206`, `:425`; `src/simulation/protocol/transferables.ts:41`, `:50`; `src/simulation/worker/state-machine.ts:607`, `:637` (`handleHandshake`), `:646`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:59`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:142`), which `handleInitialize` (`state-machine.ts:665`) accepts precisely because the state is still `'uninitialized'` (`:666-668`).
 
-Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:154`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:457`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
+**Every `src/` anchor in the paragraph above was re-measured and eight of the nine had moved**; the finding itself is unchanged, and was re-established rather than assumed. The nine used to read `types.ts:7`, `:17`, `:204`, `:304`; `transferables.ts:30`, `:35`; `state-machine.ts:417`, `:444`, `:453`, and one test anchor was one line out (`simulation-worker-protocol.test.ts:58`). The substance holds exactly: grepping `protocol/handshake` across `src/` still returns four hits in `types.ts`, two in `transferables.ts` and three in `state-machine.ts`, all receivers or declarations, and the only senders are still those four test files. Two of the old anchors are worth naming because of *where* they now land: `state-machine.ts:444` and `:453` sit inside the body of an unsolicited `simulation/status-counts` post — a different message entirely, and one whose comments discuss what ADR 0003 forbids. A reader checking the handshake claim there would have found no handshake handling at all, in a passage that reads as though it were about this ADR, and could reasonably have concluded the paragraph was stale in substance rather than in anchors. That is the cost this sweep is paying down: a drifted anchor that lands on unrelated code is a stale citation, but one that lands on *plausible* code is a false finding waiting to be reported.
+
+Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:156`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:650`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
 
 **Decision 4 is left standing rather than rewritten, because the repair is the owner's choice and not an editor's** (issue #274, Q4; issue #118 item 1): either send the handshake from `WorkerSessionHost` and make `'ready'` a reachable state, or delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend decision 4 together with [ADR 0006](./0006-simulation-worker-adapter.md)'s states 1-2. Until one is taken, read decision 4 as the design and this note as what `main` does.
 

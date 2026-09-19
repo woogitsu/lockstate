@@ -1,77 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { tileKey, type TilePosition } from '../../src/simulation/world/coordinates';
-import type { SparseWorld } from '../../src/simulation/world/sparse-world';
-import type { DoorRegistry } from '../../src/simulation/navigation/door';
-import { neighbors, resolveEdge } from '../../src/simulation/navigation/region-graph';
-import { checkDoorAccess, doorTraversalCost, type RouteContext } from '../../src/simulation/navigation/route-context';
+import type { TilePosition } from '../../src/simulation/world/coordinates';
+import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { findRoute } from '../../src/simulation/navigation/router';
+import { flatSearchCost } from '../helpers/navigation-flat-search';
 import { buildFixtureGraph, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
- * A deliberately naive, obviously-correct full-map Dijkstra with no
- * hierarchy at all -- the reference oracle the issue's test requirements
- * ask for ("reference comparison against a small flat search"). It knows
- * nothing about regions or portals; it just walks every tile.
+ * The flat oracle itself now lives in `tests/helpers/navigation-flat-search.ts`,
+ * because `tests/determinism/navigation-shared-plan-equivalence.test.ts` needs
+ * the same independent cost reference on the ring fixture and a second copy of
+ * an oracle is a second thing to keep correct.
  */
-function flatSearchCost(
-  world: SparseWorld,
-  doors: DoorRegistry,
-  origin: TilePosition,
-  destination: TilePosition,
-  context: RouteContext | undefined, // undefined = ignore permissions entirely, physical connectivity only
-  bounds: { readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number },
-): number | undefined {
-  const originKey = tileKey(origin);
-  const destinationKey = tileKey(destination);
-  const dist = new Map<string, number>([[originKey, 0]]);
-  const visited = new Set<string>();
-  const frontier = new Map<string, TilePosition>([[originKey, origin]]);
-
-  while (frontier.size > 0) {
-    let currentKey: string | undefined;
-    let currentTile: TilePosition | undefined;
-    let best = Number.POSITIVE_INFINITY;
-    for (const [key, tile] of frontier) {
-      const d = dist.get(key) ?? Number.POSITIVE_INFINITY;
-      if (d < best) {
-        best = d;
-        currentKey = key;
-        currentTile = tile;
-      }
-    }
-    if (currentKey === undefined || currentTile === undefined) break;
-    frontier.delete(currentKey);
-    if (visited.has(currentKey)) continue;
-    visited.add(currentKey);
-    if (currentKey === destinationKey) return dist.get(currentKey);
-
-    for (const neighbor of neighbors(currentTile)) {
-      if (neighbor.x < bounds.minX || neighbor.x > bounds.maxX || neighbor.y < bounds.minY || neighbor.y > bounds.maxY) continue;
-      const neighborKey = tileKey(neighbor);
-      if (visited.has(neighborKey)) continue;
-
-      const edge = resolveEdge(world, currentTile, neighbor);
-      const door = doors.getByEdge(edge.ownerTile, edge.side);
-      let cost: number;
-      if (door !== undefined) {
-        if (context !== undefined && !checkDoorAccess(door, context).allowed) continue;
-        cost = doorTraversalCost(door);
-      } else if (edge.wallValue !== 0) {
-        continue;
-      } else {
-        cost = 1;
-      }
-
-      const tentative = best + cost;
-      if (tentative < (dist.get(neighborKey) ?? Number.POSITIVE_INFINITY)) {
-        dist.set(neighborKey, tentative);
-        frontier.set(neighborKey, neighbor);
-      }
-    }
-  }
-
-  return undefined;
-}
 
 const LEFT_TILE = { x: 1, y: 1 } as TilePosition;
 const RIGHT_TILE = { x: 6, y: 1 } as TilePosition;
@@ -87,13 +27,13 @@ describe('findRoute vs. a naive flat full-map search (correctness oracle)', () =
 
     const guardRoute = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
     const guardFlatCost = flatSearchCost(world, doors, LEFT_TILE, RIGHT_TILE, GUARD, BOUNDS);
-    expect(guardRoute.ok).toBe(true);
-    expect(guardRoute.ok && guardRoute.route.totalCost).toBe(guardFlatCost);
+    expectOk(guardRoute, "the guard's route across the two rooms");
+    expect(guardRoute.route.totalCost).toBe(guardFlatCost);
 
     const staffRoute = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, MEDICAL_STAFF);
     const staffFlatCost = flatSearchCost(world, doors, LEFT_TILE, RIGHT_TILE, MEDICAL_STAFF, BOUNDS);
-    expect(staffRoute.ok).toBe(true);
-    expect(staffRoute.ok && staffRoute.route.totalCost).toBe(staffFlatCost);
+    expectOk(staffRoute, "the medical staff's route across the two rooms");
+    expect(staffRoute.route.totalCost).toBe(staffFlatCost);
   });
 
   it('agrees with the flat search that a permission-lacking actor has no valid route, while physical connectivity still exists', () => {

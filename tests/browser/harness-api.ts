@@ -128,6 +128,44 @@ export interface HarnessLifecycleObservation {
   readonly triggers: readonly string[];
 }
 
+/**
+ * What the falsifier for ADR 0109's weakest claim observed, read back after a
+ * real navigation destroyed the page that produced it.
+ *
+ * ADR 0109 Decision 2 keeps the session epoch **non-durable**, on the claim
+ * that both parties to "is this writer still the authorised session?" are live
+ * objects in one process at the moment the question is asked. The document
+ * names its own falsifier: a capture that survives its own *page* rather than
+ * its own session -- a `pagehide`/`visibilitychange` flush during teardown --
+ * would leave no live object to compare against and turn the epoch into a
+ * durable lease, which is `AGENTS.md` reservation 2.
+ *
+ * So the probe records, **synchronously at the instant the write is issued**,
+ * whether the `SessionController` that authorised it was still alive and still
+ * holding the very session the capture began against. A module variable would
+ * die with the realm; `sessionStorage` survives the navigation for the next
+ * load to read.
+ */
+export interface HarnessLifecycleWriteObservation {
+  /** One entry per write issued through the repository after the probe was armed, in order. */
+  readonly writes: readonly HarnessLifecycleWrite[];
+  /** `currentRevision` on the slot as it stands now, or `null` when the slot has none. */
+  readonly durableRevision: number | null;
+  /** How many generations the slot holds now. */
+  readonly durableGenerations: number;
+}
+
+export interface HarnessLifecycleWrite {
+  /** What fired the save: the lifecycle trigger, or `'manual'` outside a lifecycle event. */
+  readonly trigger: string;
+  /** The revision the envelope carried. */
+  readonly envelopeRevision: number;
+  /** Whether the authorising `SessionController` still held an active session when the write was issued. */
+  readonly authorisingSessionAlive: boolean;
+  /** Whether the session in the controller's field was the very object the capture began against. */
+  readonly authorisingSessionIsSame: boolean;
+}
+
 export interface LockstateBrowserHarness {
   /**
    * Opens `lockstate-saves` and builds a repository over the real adapter.
@@ -193,6 +231,21 @@ export interface LockstateBrowserHarness {
 
   /** Reads back everything the attached handler recorded, including across a navigation. */
   readLifecycleObservation(): HarnessLifecycleObservation;
+
+  /**
+   * Arms ADR 0109's own falsifier, with the **real worker-backed host** the
+   * ADR asks for rather than `InProcessSessionHost`.
+   *
+   * Builds `SimulationWorkerChannel` + `WorkerPerSessionHost` +
+   * `SessionController` exactly as `src/main.ts` does, creates a session,
+   * wraps the repository's `save` in a synchronous recorder, and attaches a
+   * production-wired `LifecycleSaveHandler`. The spec then navigates, which is
+   * what produces a real browser `pagehide` and destroys the realm.
+   */
+  armLifecycleWriteFalsifier(prisonId: string): Promise<void>;
+
+  /** Reads back what the falsifier recorded, plus the durable state that survived the navigation. */
+  readLifecycleWriteObservation(prisonId: string): Promise<HarnessLifecycleWriteObservation>;
 
   /**
    * Drains every `unhandledrejection` seen since the last call. A storage

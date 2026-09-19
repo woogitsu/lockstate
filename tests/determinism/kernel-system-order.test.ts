@@ -89,7 +89,12 @@ describe('kernel system ordering', () => {
     ]);
   });
 
-  it('dispatches all due commands, in sequence order, before any system runs that tick', () => {
+  // The title names the tie-break rather than "sequence order", because
+  // sequence is only ever the tie-break: `first` and `second` share tick 0,
+  // which is the *only* reason sequence decides between them. ADR 0020's
+  // 2026-08-27 amendment is about precisely this conflation, and a case title
+  // that repeated it would be the same claim in a place grep would not find.
+  it('dispatches every due command before any system runs that tick, breaking a shared tick by sequence', () => {
     const log: string[] = [];
     const kernel = new Kernel();
     kernel.setCommandHandler((command) => log.push(`cmd:${command.id}`));
@@ -136,6 +141,102 @@ describe('kernel system ordering', () => {
     expect(() => kernel.submitCommand('past', 1, 0, packCommand({ type: 'Undo' }))).toThrow(/past/i);
   });
 
+  /*
+   * The three cases below are one defect and its premise (DET-05).
+   *
+   * `step()` tested the head of the sorted queue with a strict `!==`, so a
+   * command whose `executeAtTick` had already passed was not skipped -- it
+   * *stayed* at the head, and the `break` fired on it on every subsequent
+   * tick. Every command behind it, for the rest of the session, was
+   * therefore never dispatched, with no throw, no refusal and no log: the
+   * player's input silently stopped having any effect.
+   *
+   * ADR 0020 is what settles which way to fix it, and it says both halves.
+   * "At the start of a tick, **all due commands** are dispatched in strict
+   * sequence order before any systems run" -- a command whose tick has
+   * passed is due, so `!==` never implemented that sentence. And ADR 0009
+   * makes the command stream replay evidence, so *dropping* the overdue
+   * command instead would put a hole in the log a replay reproduces from --
+   * actively corrupting rather than merely lossy, because `Undo`/`Redo`
+   * travel in the same stream and count positions in it.
+   */
+
+  it('a live kernel never holds a command whose tick has passed, which is the premise the next two cases rest on', () => {
+    const kernel = new Kernel();
+    kernel.setCommandHandler(() => {});
+
+    // `executeAtTick === tick` is accepted -- it is `<` that is refused --
+    // so this is the tightest a live queue ever gets.
+    kernel.submitCommand('at-current-tick', 0, 0, null);
+    kernel.submitCommand('ahead', 1, 3, null);
+
+    for (let tick = 0; tick < 5; tick += 1) {
+      kernel.step();
+      for (const command of kernel.snapshot().commands) {
+        expect(command.executeAtTick, `pending ${command.id} once the kernel reached tick ${kernel.tick}`).toBeGreaterThanOrEqual(kernel.tick);
+      }
+    }
+
+    // Non-vacuous: the loop above really did have commands to check, and
+    // both of them really were dispatched rather than sitting unexamined.
+    expect(kernel.snapshot().commands).toEqual([]);
+    // And the front door is what keeps the invariant, so the overdue queue
+    // the next two cases build can only arrive from a snapshot -- a save
+    // file, whose schema validates `executeAtTick` and `tick` as
+    // independent fields and never their relation.
+    expect(() => kernel.submitCommand('behind', 2, 0, null)).toThrow(/past/i);
+  });
+
+  it('dispatches a command whose tick has already passed, ahead of the commands queued behind it', () => {
+    const log: string[] = [];
+    const kernel = new Kernel();
+    kernel.setCommandHandler((command) => log.push(`cmd:${command.id}`));
+    kernel.registerSystem(probe('system', 10, log));
+
+    kernel.restoreState({
+      tick: 10,
+      expectedSequence: 3,
+      rngStates: [],
+      commands: [
+        { id: 'overdue', sequence: 0, executeAtTick: 5, payload: null },
+        { id: 'due-now', sequence: 1, executeAtTick: 10, payload: null },
+        { id: 'later', sequence: 2, executeAtTick: 11, payload: null },
+      ],
+    });
+
+    kernel.step();
+    // Sequence order, and still before any system runs that tick.
+    expect(log).toEqual(['cmd:overdue', 'cmd:due-now', 'system@10']);
+
+    kernel.step();
+    expect(log).toEqual(['cmd:overdue', 'cmd:due-now', 'system@10', 'cmd:later', 'system@11']);
+    expect(kernel.snapshot().commands).toEqual([]);
+  });
+
+  it('does not let one overdue command silently stop every later command, including input submitted after the load', () => {
+    const log: string[] = [];
+    const kernel = new Kernel();
+    kernel.setCommandHandler((command) => log.push(command.id));
+
+    kernel.restoreState({
+      tick: 100,
+      expectedSequence: 1,
+      rngStates: [],
+      commands: [{ id: 'overdue', sequence: 0, executeAtTick: 99, payload: null }],
+    });
+
+    // The player's next order. `submitCommand` accepts it and the worker
+    // acknowledges it as `queued`, which is the whole severity of the
+    // defect: the acknowledgement was truthful and the command still never
+    // ran, because it sat behind an overdue head for ever.
+    kernel.submitCommand('player-input', 1, 120, null);
+
+    for (let step = 0; step < 1_000; step += 1) kernel.step();
+
+    expect(log).toEqual(['overdue', 'player-input']);
+    expect(kernel.snapshot().commands).toEqual([]);
+  });
+
   /**
    * The pin that matters for stored replay evidence: adding, removing or
    * renumbering a simulation system changes what a recorded command stream
@@ -144,12 +245,46 @@ describe('kernel system ordering', () => {
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
    *
-   * ## The two times this list has changed, and what the ADR 0009 step came to
+   * ## Every time this list has changed, and what the ADR 0009 step came to
    *
-   * `procurement` (order 110) was added with the purchase loop (#96, #89), and
+   * `procurement` (order 110) was added with the purchase loop (#96, #89),
    * `economy.state-income` (order 120) with the state's per-prisoner-day
-   * payment (#29, ADR 0017 decision 3). Both are reviewed edits, and the
-   * ADR 0009 finding below applies unchanged to the second.
+   * payment (#29, ADR 0017 decision 3), and
+   * `prisoners.classification-review` (order 55) with the periodic
+   * reclassification that gives an incident a consequence for the prisoner in
+   * it (#78, #80, ADR 0032). All three are reviewed edits, and the ADR 0009
+   * finding below applies unchanged to each.
+   *
+   * **What the third one does and does not disturb.**
+   * `prisoners.classification-review` is inserted into the gap between
+   * `prisoners.intake` (50) and `prisoners.needs-decay` (60), so no existing
+   * system moves -- the gap is why the order was chosen, and it has to be
+   * *before* `prisoners.actions` (250) because a tier written on a tick must be
+   * the tier the same tick resolves a regime schedule from. It is scheduled
+   * once every ten in-game days (`intervalTicks: 24,000`, `phaseTicks:
+   * 23,999`), and every determinism test in this directory runs the scenario for
+   * 400 ticks -- so, exactly like `economy.state-income` below, it is
+   * registered, pinned here, and never fires in any of them. The recorded
+   * scenario's outcome is byte-identical because of the schedule, not because
+   * the system is inert: `tests/integration/incident-consequence-loop.test.ts`
+   * runs past the phase and watches a tier move.
+   *
+   * **What the fourth one does and does not disturb.** `economy.payroll`
+   * (order 130) is [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3's recurring debit -- every employee's authored `wageBand.minPerDay`,
+   * billed once per in-game day. It is inserted into the gap between
+   * `economy.state-income` (120) and `navigation` (150), so no existing system
+   * moves, and the gap is not where it landed but *why*: both economy systems
+   * run on the day's last tick, so the order between them decides whether the
+   * day just served pays for the staff who served it. Before the income the
+   * prison would fall into arrears every day and clear them every day; after
+   * it, the day settles. It shares `economy.state-income`'s schedule
+   * (`intervalTicks: 2,400`, `phaseTicks: 2,399`), so the same sentence below
+   * applies to it unchanged: every determinism test in this directory runs the
+   * scenario for 400 ticks, and this system is registered, pinned here and
+   * never fires in any of them. A test that ran past tick 2,399 with anybody
+   * hired would see the treasury fall, and should --
+   * `tests/integration/economy-payroll-loop.test.ts` does.
    *
    * **What the second one does and does not disturb.** `economy.state-income`
    * is appended *after* `procurement` and before `navigation` (150), so no
@@ -161,6 +296,97 @@ describe('kernel system ordering', () => {
    * scenario's outcome is byte-identical is the schedule, not the system being
    * inert. A test that ran past tick 2,399 would see the treasury move, and
    * should.
+   *
+   * **What the fourth one does and does not disturb.**
+   * `prisoners.discharge` (order 65) is appended into the gap between
+   * `prisoners.needs-decay` (60) and `construction` (100), so again no existing
+   * system moves. Its position is argued rather than convenient: a prisoner
+   * whose sentence ended must not be handed a route (`navigation`, 150), an
+   * action (`prisoners.actions`, 250) or a haulage job (`operations.jobs`, 260)
+   * later in the tick they leave on. Unlike the three above it fires often --
+   * `intervalTicks: 20`, `phaseTicks: 0` -- but it releases nobody in this
+   * directory's 400-tick scenarios, because the earliest tick at which any
+   * sentence in them can end is the classification tick plus the shortest
+   * sentence the scenario admits. The recorded outcome is byte-identical for
+   * that reason and not because the system is inert;
+   * `tests/integration/sentence-end-release.test.ts` runs past a sentence end
+   * and watches a prisoner leave.
+   *
+   * **The fifth is `prisoners.locomotion` (order 200), and it is the first
+   * one in this list that changes what the recorded scenarios produce.** ADR
+   * 0059 puts a walk between a resolved route and the arrival that used to be
+   * applied in the same statement, so a prisoner reaches a room a route-length
+   * of ticks later than they did and every downstream figure that depends on
+   * *when* an action started moves with it. That is the decision rather than a
+   * side effect of the registration, and it is why this system was not simply
+   * appended into a free order slot and left unmentioned: 200 sits after
+   * `navigation` (150), which produces the routes, and before
+   * `prisoners.actions` (250), which asks whether a walk has finished, so a
+   * walk that ends on tick *n* is acted on at tick *n*.
+   *
+   * **The sixth is `prisoners.sanctions` (order 300), and it is a reviewed
+   * edit for the same reason `prisoners.classification-review` was: issue
+   * #80's solitary sanction, the follow-through half of ADR 0061's assault.**
+   * Appended after `incidents.response` (295) -- the highest order any system
+   * declares -- so no existing system moves. The order is argued rather than
+   * merely available: `IncidentResponseSystem`'s new `onAssaultAdjudicated`
+   * port writes `solitarySanctionEndTick` from *inside* its own update, so a
+   * system ordered after it can attempt the same tick's relocation instead of
+   * waiting a full scheduled cycle -- nothing about correctness depends on
+   * this, since a sanction picked up one cycle later is the same outcome
+   * later, but it is the tighter of two legal orderings and costs nothing to
+   * take. Scheduled every 5 ticks, matching `prisoners.intake`. None of the
+   * determinism scenarios in this directory run an assault to a terminal
+   * state, so this system is registered, pinned here and never moves anything
+   * in any of them -- `tests/integration/assault-sanction-loop.test.ts` is
+   * where a sanction is watched actually being imposed, enforced and lifted.
+   *
+   * **The seventh is `economy.insolvency-rungs` (order 135), and it is a
+   * reviewed edit for the owner's ruling of 2026-09-01 on issue #767** (ADR
+   * 0087 decision 2's amendment): a one-off notice at the moment the treasury
+   * crosses the deliveries or the construction rung, beside the standing
+   * `PrisonCondition` a status-counts publication already carries for both.
+   * Inserted into the gap between `economy.payroll` (130) and `navigation`
+   * (150), so no existing system moves -- and the gap is argued rather than
+   * merely available, exactly as `economy.payroll`'s own paragraph above
+   * argues its: nothing that spends treasury money runs at an order later
+   * than 130 in this session (`procurement` is 110, a command-handler spend
+   * is dispatched before any system runs that tick, and `payroll` itself is
+   * 130), so a system at 135 always reads a tick's *final* balance before
+   * `navigation` and everything after it runs. Scheduled every tick
+   * (`intervalTicks: 1, phaseTicks: 0`), unlike `economy.payroll`'s once-a-day
+   * cadence, because a crossing can happen on any tick a spend lands, not only
+   * the payroll tick -- but it changes none of the recorded 400-tick
+   * determinism scenarios' outcomes: it only ever *reads* the treasury and
+   * conditionally appends to `SimulationEventLog`, and none of those scenarios
+   * drives a treasury balance anywhere near either rung, so it runs every
+   * tick, is pinned here, and emits nothing in any of them.
+   * `tests/integration/economy-payroll-loop.test.ts` and the browser
+   * playtest behind issue #767 are where a crossing is watched actually
+   * firing.
+   *
+   * **The eighth is `prisoners.classification-early-warning` (order 52), and
+   * it is a reviewed edit for the owner's ruling on issue #788** (ADR 0090):
+   * `Medium` must stop being a tier the periodic review can only skip over on
+   * its way to `High`. Inserted into the gap between `prisoners.intake` (50)
+   * and `prisoners.classification-review` (55), so no existing system moves --
+   * and it must run before the review it never disagrees with once both fire
+   * on the same tick (`schedule` doc on the system itself explains why the
+   * order does not need to matter for correctness, only for which of the two
+   * writes is the one a reader sees). Scheduled once a day
+   * (`intervalTicks: 2,400`, `phaseTicks: 2,399`) -- ten times more often than
+   * `prisoners.classification-review`'s ten-day interval, and every
+   * determinism test in this directory runs the scenario for 400 ticks, so
+   * exactly like `economy.state-income` and `economy.payroll` this system is
+   * registered, pinned here, and never fires in any of them. It can only ever
+   * raise a tier and only ever as far as `Medium`
+   * (`EARLY_WARNING_TIER_CEILING`), so even a test that ran one of these
+   * scenarios past tick 2,399 would see no *new* outcome from this system
+   * alone unless a prisoner had already accrued disciplinary findings by
+   * then -- none of these scenarios' incidents resolve or lapse that early.
+   * `tests/integration/risk-tier-neglect-reachability.test.ts` is where this
+   * system is watched actually raising a tier, well before the review that
+   * used to be the first thing to move it at all.
    *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
@@ -178,23 +404,93 @@ describe('kernel system ordering', () => {
    * and it is simply not yet reachable, which is a different thing from being
    * satisfied -- and it is the reason this comment says so rather than the
    * edit passing silently.
+   *
+   * **The ninth is `rooms.needs-cleared-notice` (order 140), issue #1006
+   * finding 3's confirmation that a repaired room stopped being short of
+   * anything the Rooms panel checks for.** Inserted into the same gap
+   * `economy.insolvency-rungs` was, between it (135) and `navigation` (150),
+   * so no existing system moves -- and after 135 rather than before it for
+   * the reason argued at the class itself: it reads room, door and
+   * placed-object state that a command handler or `construction` (100) has
+   * already settled for the tick, and nothing between 135 and `navigation`
+   * writes any of the three. Scheduled once a day
+   * (`intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1`),
+   * `PayrollSystem`'s own cadence and for the same reason -- every
+   * determinism scenario in this directory runs 400 ticks, under one sixth
+   * of `DAY_LENGTH_TICKS` (2,400), so this system is registered, pinned here,
+   * and never fires in any of them, exactly as `economy.state-income` and
+   * `economy.payroll` above do not.
+   * `tests/unit/room-needs-cleared-notice.test.ts` is where a crossing is
+   * watched actually firing.
    */
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
       { id: 'prisoners.intake', order: 50 },
+      { id: 'prisoners.classification-early-warning', order: 52 },
+      { id: 'prisoners.classification-review', order: 55 },
       { id: 'prisoners.needs-decay', order: 60 },
+      { id: 'prisoners.discharge', order: 65 },
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },
+      { id: 'economy.payroll', order: 130 },
+      { id: 'economy.insolvency-rungs', order: 135 },
+      { id: 'rooms.needs-cleared-notice', order: 140 },
       { id: 'navigation', order: 150 },
+      { id: 'prisoners.locomotion', order: 200 },
+      /*
+       * **Inserted right after the prisoner instance** (ADR 0088, answering
+       * ADR 0059 open question 4): both walk the same window, after
+       * navigation and before anything that reads an arrival, and neither
+       * depends on the other -- `LocomotionStore` is one instance per
+       * population, addressed by a different key in each (a component index
+       * for prisoners, an `EntityId` for guards). 201 rather than a shared
+       * 200, because the test below this one requires every declared order in
+       * a real session to be distinct.
+       */
+      { id: 'security.locomotion', order: 201 },
       { id: 'prisoners.actions', order: 250 },
-      { id: 'operations.jobs', order: 260 },
+      /*
+       * **`operations.jobs` (260) is gone from this list, and removing a row
+       * is not lowering a floor** -- the floor is that every declared order in
+       * a real session is distinct and is read off the declarations alone, and
+       * both stay true.
+       *
+       * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4
+       * retires `JobSystem` as a `SystemRegistration`: a carry is an
+       * `ActionDefinition` now, so `prisoners.actions` at 250 both decides the
+       * errand and moves the carrier, and the lifecycle code survives as a
+       * pure executor that system *calls* rather than as a system that runs
+       * after it. The row is moved here the way ADR 0088 moved the pin for
+       * `security.locomotion`: named in the ADR, changed in the same commit,
+       * with the reason in the test.
+       *
+       * **What the old row was for is the point of removing it.** Two
+       * authorities wrote one prisoner in one tick -- 250 decided what the
+       * prisoner was doing and 260 overrode where they stood -- and
+       * `tests/foundation/two-authorities-one-prisoner-contract.test.ts` pinned
+       * the result. That file now pins the single authority instead.
+       */
       { id: 'contraband.intelligence', order: 265 },
       { id: 'security.deployment', order: 270 },
+      /*
+       * **Inserted between deployment (270) and patrol (280) rather than
+       * appended** (issue #588), which is the one place in this list where a
+       * new system is not at the end -- and it moves nothing, because it takes
+       * a number nothing else declared. The position is argued, not available:
+       * `SafetyCoverageSystem` reads `DeploymentSystem.getCoverageReport`, so
+       * it has to run after the assignments this tick made or it provisions
+       * from last tick's coverage; and `IncidentTriggerSystem` (285) samples
+       * `needsPressure` over the `safety` level this system has just moved,
+       * which is how coverage comes to suppress incidents at all.
+       */
+      { id: 'prisoners.safety-coverage', order: 275 },
       { id: 'security.patrol', order: 280 },
       { id: 'incidents.trigger', order: 285 },
+      { id: 'contraband.search-duty', order: 288 },
       { id: 'contraband.search', order: 290 },
       { id: 'incidents.response', order: 295 },
+      { id: 'prisoners.sanctions', order: 300 },
     ]);
   });
 

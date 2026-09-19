@@ -15,7 +15,12 @@ Architecture notes: "hidden simulation state and player-visible
 intelligence projections are distinct." `ContrabandRegistry` is the
 ground truth of what contraband actually exists, where, and how it got
 there -- this is never exposed wholesale to a UI. `IntelligenceLedger`
-records are the *only* thing a future security-desk UI would read: a
+records are one of the things a security-desk UI reads — and, since
+`src/simulation/presentation/contraband-projection.ts:64-71` takes five sources
+(`searchSystem`, `confiscations`, `intelligence`, `informants` and
+`searchPolicies`), not the only one. **This sentence said "the *only* thing"**,
+which an added source falsifies without touching it; that projection's own
+header (`:22-31`) already restates the intended rule more narrowly. A
 confidence-scoped, expiring belief about a target, never the raw truth.
 `ContrabandRegistry.getMovementHistory` (an item's full source-to-present
 trail) is explicitly a **debug tool**, not a normal-UI projection --
@@ -38,9 +43,11 @@ instance; `legalContext` is descriptive data for future policy work.
 `item.ts`'s `ContrabandRegistry` is the full lifecycle issue #27 requires:
 `introduce` (the one and only way an item is created -- no fabricated
 stock), `moveHolder` (the one and only way possession changes, appending
-to a permanent `movementLog`), and `confiscate` (the one and only way an
-item leaves circulation; there is deliberately no further "destroy" --
-disposal of confiscated evidence is a future #28 concern). A holder is
+to a permanent `movementLog`), `confiscate` (the way an item is taken out
+of circulation *by the prison*; there is deliberately no further "destroy"
+-- disposal of confiscated evidence is a future #28 concern), and
+`departHolder` (the way an item leaves *with its holder*). A record is
+never deleted by any of them. A holder is
 `{ kind: 'prisoner' | 'staff' | 'cell' | 'container', id }`: `'prisoner'`/
 `'staff'` ids are `EntityStore` ids (as decimal strings) from
 `PrisonerOperationsRuntime`/`GuardRoster` respectively -- two separate
@@ -54,6 +61,116 @@ delivery crate awaiting inspection).
 -- issue #27's explicit "avoid scanning every entity/item for each search
 tick." A confiscated item is removed from that index immediately, so a
 later search of its last holder never re-finds it.
+
+**`'departed'` is the third `ContrabandState`**, added by
+[ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md) with the
+introduction route below: a prisoner who is discharged, or who gets out
+through an escape attempt nobody contained, takes what they were concealing
+with them. It is not a fourth way for an item to leave from *inside* the
+prison -- nothing consumes or destroys one -- and the record and its movement
+log survive, because issue #27 asks for provenance "sufficient for debugging
+and evidence". Left `'concealed'` instead, the item would sit at a holder key
+naming a destroyed entity for the rest of the session, and
+`tests/unit/prisoner-release-completeness.test.ts` could not see it: that gate
+walks the session graph for the numeric `EntityId`, and a `ContrabandHolder.id`
+is a string.
+
+## How contraband gets in
+
+`introduction.ts`, and it is the answer to a sentence that stood in this
+document's wiring section for months: *"no fabricated contraband ... the same
+convention every prior issue's wiring follows"*. That convention is intact --
+**a session that admits nobody holds no contraband, for ever** -- and what
+changed is that "until a session introduces them" now has a producer inside
+`src/` instead of waiting for a scenario format that does not exist.
+
+At the `classification` stage of intake, where an arrival's `RiskTier` is
+written, one draw on `contraband.introduction` decides whether they are
+concealing something and a second decides what. `IntakeSystem` takes it as an
+optional injected port, exactly as it already takes `ActorIdentityMinter`.
+
+- **Who the player admits decides both halves.** The chance rises with the tier
+  (0.10 at tier 0 to 0.40 at tier 3) and so does the band of the catalogue they
+  can draw from: the `2 + tier` least severe entries in `severity` order. Only
+  an arrival classified high risk can bring a weapon in. That is a prefix of an
+  authored ordering rather than a second weight table, so a category added to
+  `contraband-catalog.ts` places itself by its own `severity`.
+- **The id is derived, not allocated** ([ADR 0012](./adr/0012-derived-identifier-reproducibility.md)
+  category 2): `contraband.intake.<entityId>.<tick>`, so no counter joins the
+  save payload and a restored session mints exactly what a continuous one did.
+- **Why the arrival and not the delivery.** The substrate anticipates the
+  delivery route most concretely — `SearchScope` declares `'delivery'`,
+  `ContrabandHolderKind` declares `'container'`, and `searchContainerLocations`
+  exists for it. It is the one route that cannot be built: `ProcurementSystem`'s
+  own header records that `room.delivery-bay` and `object.loading-dock-door`
+  "are declared content that no session instantiates (#141)", so a delivery
+  lands in a container with no location and `locateSearchTarget` throws for one.
+  Contraband introduced there would be unreachable by the system built to find
+  it.
+
+## Who orders a search
+
+**This section read *"What the prison cannot yet do about it is order a search.
+`SearchSystem` is complete and `submitOrder` has no production caller,
+`searchPolicies` is empty in every session, and there is no command type. So a
+prison now holds contraband it has no way to look for, and that half is the
+owner's — ADR 0061 open question 1."*** Every sentence of that was true and the
+first two are now false, which is why it is marked rather than overwritten:
+issue #552 reported the visible consequence — the status strip's **Contraband**
+figure reads `getMetrics().itemsDiscovered`, so it was structurally pinned at 0
+— and [ADR 0073](adr/0073-who-orders-a-contraband-search.md) answers it in two
+parts.
+
+**Four default policies, always** (ADR 0073 Part 1). `default-search-policies.ts`
+authors one policy per `SearchScope` as an exhaustive `Record` over the union,
+and `applyDefaultSearchPolicies` fills only the scopes a list lacks. It runs in
+`createNewSimulationRuntime` *and* after the payload in `restoreSessionSystems`,
+exactly like `applyDefaultSecuritySector` and for its reason: every save written
+before ADR 0073 carries `searchPolicies: []` and would otherwise be the one place
+`findPolicy` still throws. **No save-schema bump and no migration** — the
+payload already carries the array, and absence is honoured with a value.
+
+**A standing sector duty, not a player command** (ADR 0073 Part 2, Option A).
+`SectorSearchDutySystem` (`contraband.search-duty`, order 288) submits one
+sweep per **staffed** sector every `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS` (600,
+a quarter of an in-game day), over a window of at most four of that sector's
+occupants that rotates by a whole window each sweep, so every prisoner is
+reached in `ceil(population / 4)` sweeps rather than the same few for ever. It
+holds no state: "is a sweep outstanding" is a prefix scan of
+`SearchSystem.orderIds()` and the window is derived from the tick, so nothing
+new enters the payload.
+
+**Two conditions, and they are the cost.** A sector orders nothing unless (1)
+a guard is assigned to it and (2) the **search** pool can staff the order.
+ADR 0073's Option A says *"guards on post search their own sector"*; taken
+literally that is not implementable, because `assignQueuedOrders` staffs from
+`claimableSearchGuardIds` — the unassigned, post-eligible pool (ADR 0053) less
+the guards held for incident response (issue #996) — never from a posted guard,
+so an order in a fully-posted prison would queue for ever. So the duty is
+*a staffed sector runs sweeps and a **spare** guard walks them*: a prison that
+hires exactly its posted requirement finds nothing.
+
+**Which hire turns searching on moved on 2026-09-05, and this paragraph said the
+other number.** It read *"the first hire past it is what makes contraband
+findable"*, measured at *"twelve admissions, three guards, sixteen in-game days:
+63 sweeps completed, both introduced items found"*. Since issue #996 a search
+may not claim the last `INCIDENT_RESPONSE_GUARD_RESERVE` free guards, so it is
+the **second** hire past the requirement, and the same prison with a fourth
+guard runs 64 sweeps over those sixteen days and finds both items — while the
+three-guard one runs none. The retired figures are kept because a reader
+comparing this file against an older branch needs to see which changed
+(`docs/research/2026-09-05-what-a-sweep-costs-the-response.md`,
+`tests/integration/contraband-search-duty.test.ts`).
+
+**What is still the owner's** is ADR 0073's Option B, the targeted search
+control: search *this* cell, *this* person, sweep *that* sector. The ADR
+recommends not building it until a standing duty has been played, because its
+whole value is letting a player spend guards deliberately and nobody yet knows
+what a search costs.
+
+What contraband *does* beyond being found is feed the two incident
+producers ADR 0061 added: it is a term in the assault score and a precondition
+of an escape attempt (`docs/INCIDENTS.md`, "Three producers").
 
 ## Intelligence: uncertain, scoped and expiring
 
@@ -107,8 +224,9 @@ supply exactly one -- the caller, which already knows sector membership
 from wherever it authored the sector/cells, supplies the list rather than
 this system inferring it). `submitOrder` enqueues; the order **stays
 queued** (observably, via `getMetrics().searchesQueued`/`isQueued`) until
-enough of `GuardRoster.unassignedGuardIds()` exist to meet the scope's
-policy `requiredGuardCount` -- "searches create jobs and consume staff/
+enough post-eligible unassigned staff exist **beyond the incident reserve**
+(`claimableSearchGuardIds`, [ADR 0053](./adr/0053-who-may-stand-a-security-post.md)
+and issue #996) to meet the scope's policy `requiredGuardCount` -- "searches create jobs and consume staff/
 time rather than resolving instantly," and a real staffing diversion,
 since every guard a search claims is one `DeploymentSystem` cannot use to
 fill a sector shortage that same cycle.
@@ -141,9 +259,45 @@ issue #27 requires: `ConfiscationEvent` carries the item's full
 provenance, where it was found, which search order and guard found it,
 and when -- "confiscation records provenance/evidence and emits typed
 downstream events." `all()` is read-only inspection; `drain()` is how a
-future consumer (#28's incident/disciplinary pipeline, not built yet)
+future consumer (#28's incident/disciplinary pipeline, **which has since been
+built** — `src/simulation/incidents/` and
+`src/simulation/prisoners/disciplinary-record.ts`, whose `:76-80` explicitly
+declines to `drain()`, so `drain` still has no caller in `src/`)
 would take ownership of pending events without the ledger growing
 unbounded across a long session.
+
+**Added 2026-08-31: the ledger now has a second reader, and it is the status
+strip.** The owner's ruling 3 on issue #703 — *"The message names what
+contraband was found."* — is answered by
+`StatusStripViewModel.counts.contrabandNameKey`, which publishes the contraband
+catalog's own `nameKey` so the **Contraband** chip carries a badge reading
+"Weapon", "Drugs", "Phone", "Currency" or "Tool". No new copy: those five
+strings are the `nameKey`s this document's *Contraband categories* section
+already describes, and until then nothing on screen read one.
+
+**The key never appears as a literal in `src/ui/`, and that is deliberate.** The
+HUD may not hand-write a content key: the projection publishes
+`ContrabandCategoryDefinition.nameKey` and the HUD resolves whatever it is
+handed, the same arrangement `PrisonerRoomRefViewModel.roomNameKey` already has.
+So a scenario running its own contraband catalog names its own categories, and
+`grep -rn "contraband\.weapon\.name" src/ui/` answers nothing useful either way
+-- `grep -rn "contrabandNameKey" src/ui/` is the grep that finds the reader.
+
+Two properties of that reader are worth stating here, because they are
+statements about this ledger rather than about the HUD:
+
+- **It calls `all()` and never `drain()`**, for `projectContraband`'s reason:
+  draining would consume the evidence a readout is built from.
+- **The name is published only when the ledger still accounts for the count.**
+  The chip's figure comes from `SearchSystem.getMetrics().itemsDiscovered` and
+  the name comes from this ledger; a drain would empty the second and leave the
+  first standing, so one surviving row could otherwise name a count of thirty. A
+  badge qualifies the whole count, so a mixed haul is published with **no** name
+  as well — naming one category would be a claim about the other.
+
+The remaining half of that ruling — naming *each* find rather than a haul that
+happens to be uniform — needs a per-discovery sentence nobody has authored, and
+a sentence is the owner's (`AGENTS.md`, the fourth exclusion). It is open.
 
 ## Snapshot/restore
 
@@ -165,12 +319,22 @@ resuming and completing correctly after a full restore.
 ## Wiring into `SimulationRuntime`
 
 `createNewSimulationRuntime` constructs an empty `ContrabandRegistry`,
-`IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, an empty
-mutable `searchPolicies` array and an empty `searchContainerLocations` map
-(no fabricated contraband, intelligence, informants or policies -- the
-same convention every prior issue's wiring follows), registers
-`IntelligenceSystem` and `SearchSystem` on the kernel, and pre-registers
-both named RNG streams. `SearchSystem`'s default `TargetLocationResolver`
+`IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, a
+`searchPolicies` array and an empty `searchContainerLocations` map
+(no fabricated contraband, intelligence or informants -- the
+same convention every prior issue's wiring follows; see "How contraband gets
+in" above for what that convention does and does not now mean). **The policy
+array is no longer among the empty ones**: `applyDefaultSearchPolicies` fills
+it before anything can order a search, because an empty list makes
+`findPolicy` throw rather than making a subsystem inert (ADR 0073 Part 1, and
+"Who orders a search" above). It registers
+`IntelligenceSystem`, `SectorSearchDutySystem` and `SearchSystem` on the kernel, and pre-registers
+all three named RNG streams -- `contraband.detection`,
+`contraband.intelligence` and, since ADR 0061, `contraband.introduction`.
+The third is separate from the other two for the reason they are separate
+from each other (issue #27's *"one subsystem's draws cannot perturb
+another"*): admitting a prisoner must not shift the sequence a search checks
+concealment against. `SearchSystem`'s default `TargetLocationResolver`
 (`locateSearchTarget`) resolves a target's tile from the real registries
 already constructed for that session: `PrisonerOperationsRuntime.position`
 for `'prisoner'` targets, `GuardRoster.getTile` for `'staff'` targets,

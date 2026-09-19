@@ -40,23 +40,40 @@ function loneStream(seed: number): Xoshiro128StarStar {
 // ---------------------------------------------------------------------------
 
 describe('why a name cannot be derived from an entity id', () => {
-  it('pins that EntityStore hands the same id back after 4,096 destroy/spawn cycles at one index', () => {
-    // `destroy()` bumps a 12-bit generation, so index 0's id cycles. A name
-    // computed as f(entityId) would therefore hand the 4,097th occupant of a
-    // slot the *first* occupant's name. This is the fact the stored decision
-    // rests on, so it is pinned rather than left in a comment.
+  it('pins that EntityStore retires index 0 rather than handing its id back after 4,096 destroy/spawn cycles (#169, ADR 0026 option A)', () => {
+    // `destroy()` bumps a 12-bit generation, so an index's id used to cycle
+    // back to its starting value after 4,096 destroy/spawn cycles -- which is
+    // exactly the fact this pin used to assert, because a name computed as
+    // f(entityId) would then hand the 4,097th occupant of a slot the *first*
+    // occupant's name.
+    //
+    // That specific recurrence is now closed: `EntityStore.destroy` retires a
+    // slot that dies at its last generation instead of recycling it (#169,
+    // ADR 0026 question 1, option A), so index 0's very first id can never be
+    // reissued. This is the re-baseline ADR 0026 named as option A's cost --
+    // "the id genuinely no longer comes back" -- and the decision this
+    // `describe` block is about does not weaken for it: derivation is still
+    // rejected on the allocation-policy ground alone (point 1 in ADR 0015),
+    // and this file's very next case shows a prisoner and a staff member
+    // sharing id 0 across two different stores, which retirement does
+    // nothing to prevent either.
     const store = new EntityStore(4);
     const first = store.spawn();
 
     let latest = first;
-    for (let cycle = 0; cycle < 4_096; cycle += 1) {
+    for (let cycle = 0; cycle < 4_095; cycle += 1) {
       store.destroy(latest);
       latest = store.spawn();
-      expect(store.getIndex(latest)).toBe(0); // the freed index is recycled immediately
-      if (cycle < 4_095) expect(latest).not.toBe(first);
+      expect(store.getIndex(latest)).toBe(0); // the freed index recycles for its first 4,095 lives
+      expect(latest).not.toBe(first);
     }
 
-    expect(latest).toBe(first);
+    // The 4,096th destroy is on a slot at its last generation: retirement,
+    // not recycling. The next spawn takes a different index entirely.
+    store.destroy(latest);
+    const afterRetirement = store.spawn();
+    expect(store.getIndex(afterRetirement)).not.toBe(0);
+    expect(store.isIndexAlive(0)).toBe(false);
   });
 
   it('keeps a prisoner and a staff member with the same numeric id apart', () => {
@@ -365,6 +382,40 @@ describe('actor identity is deterministic through a real session', () => {
 // The HUD surface.
 // ---------------------------------------------------------------------------
 
+/**
+ * One written-out name per prisoner in `runNamedScenario`'s intake order, in
+ * place of the minted ones.
+ *
+ * The alternative -- `expect(row.name).toEqual(registry.getName('prisoner',
+ * row.entityId))` -- put the accessor the projection itself calls on both
+ * sides of the comparison, so it agreed with itself for any `getName` at all
+ * (#375). Measured: making `getName` hand back entity `0`'s name for every
+ * actor of its kind left this whole file 26/26 green, while the roster panel
+ * showed one prisoner's name against all eight rows.
+ *
+ * The names are literals rather than the values the placeholder pool happens
+ * to mint, because `PLACEHOLDER_ACTOR_NAME_POOL` is explicitly a placeholder:
+ * pinning drawn names here would re-baseline the day it is replaced, and the
+ * mint itself is already pinned against literals by
+ * `tests/determinism/session-restore-rng-ownership.test.ts`. The initial
+ * letter tracks the entity id so a row that reads the wrong actor's entry is
+ * legible in the failure diff rather than merely unequal.
+ *
+ * `rename` throws for an actor with no identity, so these calls are also the
+ * assertion that the scenario really minted eight names: the case cannot
+ * degrade into labelling a population the pipeline never named.
+ */
+const LABELLED_PRISONERS = [
+  { entityId: 0, name: { givenName: 'Ada', familyName: 'Ashcroft' } },
+  { entityId: 1, name: { givenName: 'Bruno', familyName: 'Bellweather' } },
+  { entityId: 2, name: { givenName: 'Cleo', familyName: 'Castellan' } },
+  { entityId: 3, name: { givenName: 'Dara', familyName: 'Dunmore' } },
+  { entityId: 4, name: { givenName: 'Emil', familyName: 'Eastcote' } },
+  { entityId: 5, name: { givenName: 'Faye', familyName: 'Fairholm' } },
+  { entityId: 6, name: { givenName: 'Gus', familyName: 'Garrowby' } },
+  { entityId: 7, name: { givenName: 'Hana', familyName: 'Holloway' } },
+] as const;
+
 describe('identity reaches the HUD through the projections', () => {
   it('labels prisoner roster rows and the detail view when an identity source is supplied', () => {
     const { fixture, registry } = runNamedScenario(77);
@@ -372,17 +423,40 @@ describe('identity reaches the HUD through the projections', () => {
     const unnamed = projectPrisonerRoster(fixture.prisoners, { limit: 50 });
     expect(unnamed.rows.every((row) => row.name === undefined)).toBe(true);
 
-    const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
-    expect(named.rows).toHaveLength(PRISONER_COUNT);
-    for (const row of named.rows) {
-      expect(row.name).toBeDefined();
-      expect(row.name).toEqual(registry.getName('prisoner', row.entityId));
-    }
+    // The pipeline named every arrival, and it handed them the ids the
+    // literals below are written against.
+    //
+    // **Sorted before comparing, since 2026-08-31.** This read
+    // `minted.rows.map(...)` against the literal list directly, which also
+    // asserted the roster's *order* -- and issue #703's fourth ruling made that
+    // order highest risk tier first rather than ascending entity id, so eight
+    // named prisoners come back in a tier order this file has no business
+    // pinning. The claim here is which *population* was named, and it is
+    // unweakened: both sides are still the full set of eight ids, and
+    // `hud-projections.test.ts` is where the order itself is asserted.
+    const minted = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
+    expect(minted.rows).toHaveLength(PRISONER_COUNT);
+    expect(minted.rows.every((row) => row.name !== undefined)).toBe(true);
+    expect([...minted.rows.map((row) => row.entityId)].sort((left, right) => left - right)).toEqual(
+      LABELLED_PRISONERS.map((entry) => entry.entityId),
+    );
 
-    const entityId = named.rows[0]!.entityId;
+    for (const { entityId, name } of LABELLED_PRISONERS) registry.rename('prisoner', entityId, name);
+
+    const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
+    expect(
+      [...named.rows]
+        .sort((left, right) => left.entityId - right.entityId)
+        .map((row) => ({ entityId: row.entityId, name: row.name })),
+    ).toEqual(LABELLED_PRISONERS.map((entry) => ({ entityId: entry.entityId, name: { ...entry.name } })));
+
+    // Not the first prisoner, so a detail view that reads any entry of the
+    // right *kind* rather than this actor's own is a failure and not a
+    // coincidence.
+    const { entityId, name } = LABELLED_PRISONERS[3]!;
     const detail = projectPrisonerDetail(fixture.prisoners, entityId, { identity: registry })!;
-    expect(detail.name).toBeDefined();
-    expect(detail.name).toEqual(registry.getName('prisoner', entityId));
+    expect(detail.name).toEqual({ givenName: 'Dara', familyName: 'Dunmore' });
+    expect(detail.name).toEqual({ ...name });
     expect(projectPrisonerDetail(fixture.prisoners, entityId)!.name).toBeUndefined();
   });
 
@@ -407,10 +481,21 @@ describe('identity reaches the HUD through the projections', () => {
 
   it('hands out a copy, never a reference into registry state', () => {
     const { fixture, registry } = runNamedScenario(88);
-    const row = projectPrisonerRoster(fixture.prisoners, { limit: 1 }, { identity: registry }).rows[0]!;
+    // The third prisoner rather than the first: `not.toBe` alone is satisfied
+    // by any object at all, and its companion used to be
+    // `toEqual(registry.getName('prisoner', row.entityId))` -- the same call
+    // the projection makes, on both sides (#375). A written-out name on a row
+    // that is not entity `0` makes the pair say "the right value, in a
+    // different object".
+    const target = 2;
+    const before = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry }).rows[target]!;
+    registry.rename('prisoner', before.entityId, { givenName: 'Cleo', familyName: 'Castellan' });
 
+    const row = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry }).rows[target]!;
+
+    expect(row.entityId).toBe(before.entityId);
+    expect(row.name).toEqual({ givenName: 'Cleo', familyName: 'Castellan' });
     expect(row.name).not.toBe(registry.getName('prisoner', row.entityId));
-    expect(row.name).toEqual(registry.getName('prisoner', row.entityId));
   });
 
   it('leaves the registry untouched when projecting', () => {

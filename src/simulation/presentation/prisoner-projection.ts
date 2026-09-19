@@ -1,11 +1,13 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
+import { isNeedUnmetForStateIncome } from '../economy/income';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import { DEFAULT_ACTIONS } from '../prisoners/actions';
 import {
   ACTION_PHASES,
+  CLASSIFICATION_GROUP_IDS,
   classificationGroupIdFromIndex,
   type ActionPhase,
   type CurrentActionComponent,
@@ -15,6 +17,13 @@ import {
   type PrisonerColdState,
   type PrisonerRecordComponent,
 } from '../prisoners/components';
+import {
+  accommodationTargetKey,
+  DEFAULT_ACCOMMODATION_POLICY,
+  firstAvailableAccommodationTarget,
+  resolveAccommodationTargets,
+  type AccommodationPolicy,
+} from '../prisoners/intake-system';
 import { NEED_IDS, NEED_MAX, type NeedId, type NeedsComponent } from '../prisoners/needs';
 import type { ActionCategory } from '../prisoners/regime';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
@@ -53,6 +62,29 @@ export interface PrisonerProjectionSource {
   readonly position: PositionComponent;
   readonly coldState: PrisonerColdState;
   readonly roomInstances: RoomInstanceRegistry;
+  /**
+   * How many prisoners have ever been admitted this session, whatever
+   * became of them since (`PrisonerOperationsRuntime.admittedCount`,
+   * issue #506). Not the live population -- `entityStore` already answers
+   * that -- but the one fact that lets `projectPrisonerRoster` tell "nobody
+   * has ever been admitted" apart from "everybody who was admitted has
+   * since left", which a live count of zero cannot distinguish on its own.
+   */
+  readonly admittedCount: number;
+  /**
+   * The accommodation policy this session's `IntakeSystem` is running, which is
+   * what `waitingWithoutPlace` is scoped by.
+   *
+   * Optional and structural, exactly as `StatusStripSource.accommodationPolicy`
+   * is: `PrisonerOperationsRuntime` declares one and therefore satisfies this
+   * without being told, while a fixture that stands up prisoner components
+   * alone is not obliged to invent one and gets
+   * `DEFAULT_ACCOMMODATION_POLICY`. A projection may not name `room.cell` in a
+   * condition of its own -- which room types house a resident is content
+   * (`AGENTS.md` boundary 6), and the content lives in an
+   * `AccommodationPolicy`.
+   */
+  readonly accommodationPolicy?: AccommodationPolicy;
 }
 
 /**
@@ -94,6 +126,39 @@ export interface PrisonerNeedViewModel {
   readonly needId: NeedId;
   /** `permille: 0` is a fully unmet need; `1000` is fully satisfied. */
   readonly level: BoundedValue;
+  /**
+   * Whether the state counts this need as unmet when it settles this
+   * prisoner's day of the operating grant -- `isNeedUnmetForStateIncome`, the
+   * same predicate `unmetNeedCount` sums to compute the money.
+   *
+   * **This read "whether the state withholds part of this prisoner's day of
+   * the operating grant because of this need", it stopped being true on
+   * 2026-09-03**, when the owner suspended
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they
+   * played, **and it is true again since they restored it to `40` on
+   * 2026-09-04** (both rulings are in that constant's docblock). The flag
+   * itself did not move a bit across either: it is the same predicate over the
+   * same threshold, and it is what the money is computed from at any rate.
+   * Every wording is kept rather than replaced (`docs/AGENT_WORKFLOW.md` §4),
+   * because the pair of them is what shows the flag is about the threshold and
+   * never about the rate.
+   *
+   * **A fact about what the state pays, not a claim about what a player should
+   * be alarmed by**, and the two are deliberately separate:
+   * `STATE_INCOME_UNMET_NEED_LEVEL`'s own comment says so, and
+   * `docs/HUD_PROJECTIONS.md` gap 7 keeps the player-facing warning threshold
+   * with the owner. A consumer may draw this; what it may not do is relabel it
+   * "critical".
+   *
+   * Projected rather than left to the reader because the alternative is a HUD
+   * module importing `src/simulation/economy/income.ts` to re-run the
+   * comparison, which `AGENTS.md` boundary 1 forbids outright -- and because a
+   * threshold the panel recomputed would be a second copy of a balance number
+   * on the thread that owns none. `roster-panel.ts` predicted exactly this
+   * shape: *"what would make one is a projected threshold ... and both are
+   * projection changes rather than panel ones."*
+   */
+  readonly unmetForStateIncome: boolean;
 }
 
 export interface PrisonerActionViewModel {
@@ -171,6 +236,43 @@ export interface PrisonerPopulationCountsViewModel {
   readonly byIntakeStage: readonly { readonly intakeStage: IntakeStage; readonly count: number }[];
   readonly byClassificationGroupId: readonly { readonly classificationGroupId: string; readonly count: number }[];
   readonly unclassified: number;
+  /**
+   * How many arrivals are waiting for accommodation the prison has **no free
+   * place for right now** -- issue #549.
+   *
+   * ### Why this is not the `accommodation-assignment` count
+   *
+   * `byIntakeStage` already answers "how many are at Cell Assignment", and that
+   * is a different question. `IntakeSystem` runs every five ticks, so an
+   * arrival reaching that stage sits in it for one scheduled interval **before
+   * anybody looks for a bed for them** -- in a prison with a free cell they are
+   * housed on the next intake tick and were never stuck. A readout keyed on the
+   * stage would therefore blink a warning at a prison that is working, and a
+   * player who learned to ignore that blink would ignore the real thing too.
+   *
+   * This subtracts the places the prison can actually offer. It is `0` for
+   * every arrival that has somewhere to go and rises only once the beds run
+   * out, which is the state issue #549 measured: a one-bed cell, twelve
+   * admissions, one housed and eleven with nowhere to sleep.
+   *
+   * ### What it deliberately does not count
+   *
+   * - **Arrivals before `accommodation-assignment`.** `queued`, `reception` and
+   *   `classification` arrivals have not been classified yet, and which room
+   *   type they may be housed in is a `prisoners.classification` draw that has
+   *   not been made. Counting them would mean predicting that draw, which is
+   *   the thing `IntakeSystem.hasAccommodationTarget`'s own note refuses to do.
+   * - **Arrivals whose classification group has no room type in this prison at
+   *   all.** They reach the terminal `failed` stage on the next intake tick and
+   *   `byIntakeStage` reports them there. They are a different sentence -- a
+   *   place will not release them -- and counting them here as well would
+   *   report one person twice.
+   *
+   * So this is exactly "somebody a bed would house, and there is no bed". It is
+   * not a claim about the *future*: an arrival counted here is housed the
+   * moment a place exists, and nothing here says one ever will.
+   */
+  readonly waitingWithoutPlace: number;
 }
 
 function roomRef(
@@ -189,8 +291,20 @@ function roomRef(
   };
 }
 
+/**
+ * One need, from the whole level `NeedsComponent.get` reports.
+ *
+ * The level is read **once** and both fields are derived from that one read:
+ * `toBoundedValue` for how full it is and `isNeedUnmetForStateIncome` for
+ * whether the state withholds for it. A second `needs.get` would let a bar and
+ * its own threshold flag describe two different ticks.
+ */
+function toNeedViewModel(needId: NeedId, level: number): PrisonerNeedViewModel {
+  return { needId, level: toBoundedValue(level, NEED_MAX), unmetForStateIncome: isNeedUnmetForStateIncome(level) };
+}
+
 function needViewModel(needs: NeedsComponent, index: number, needId: NeedId): PrisonerNeedViewModel {
-  return { needId, level: toBoundedValue(needs.get(index, needId), NEED_MAX) };
+  return toNeedViewModel(needId, needs.get(index, needId));
 }
 
 /** Scans the six needs in declared order, so a tie resolves to the earlier `NEED_IDS` entry rather than to iteration luck. */
@@ -204,7 +318,7 @@ function lowestNeed(needs: NeedsComponent, index: number): PrisonerNeedViewModel
       lowestId = needId;
     }
   }
-  return { needId: lowestId, level: toBoundedValue(lowestLevel, NEED_MAX) };
+  return toNeedViewModel(lowestId, lowestLevel);
 }
 
 function isClassified(stage: IntakeStage): boolean {
@@ -254,43 +368,276 @@ function projectRosterRow(
 }
 
 /**
- * One window of the prisoner roster, in ascending entity-index order --
- * the same canonical order `EntityQuery.execute()` walks (ADR 0005), so
- * paging is stable across ticks and identical on every client.
+ * `projectPrisonerRoster`'s reply: the paged window plus one fact the page
+ * envelope alone cannot state -- issue #506.
+ */
+export interface PrisonerRosterPage extends ViewModelPage<PrisonerRosterRowViewModel> {
+  /**
+   * True once `admittedCount` is nonzero: at least one prisoner has been
+   * admitted this session, even if the live population (`total`) has since
+   * fallen back to zero. `false` only means "nobody has ever been admitted"
+   * -- it is not a claim about who is here *now*, which `total` already
+   * answers.
+   *
+   * This is what lets a reader distinguish a prison nobody has used yet from
+   * one whose entire population served its sentence and left -- both read
+   * `total: 0`, and only this field tells them apart.
+   *
+   * **That used to be a claim about a *batch* leaving together**, because
+   * `ADMISSION_REQUEST` in `src/main.ts` gave every admission the same fixed
+   * `sentenceLengthTicks` (ADR 0050, "What this does not decide"). Since #535
+   * decision 5 it does not: a sentence is drawn per prisoner from
+   * `prisoners.sentence`, so a batch admitted together now leaves over a
+   * spread of up to fourteen in-game days. The sentence above is narrowed
+   * rather than deleted, because the state it describes is unchanged and
+   * merely arrived at differently -- and it is *more* reachable now, not less:
+   * one prisoner leaving at a time means `total` passes through zero on the
+   * way down whenever the last of them goes.
+   */
+  readonly everAdmitted: boolean;
+}
+
+/**
+ * The ordering rank of a prisoner classification has not run on yet.
  *
- * **Cost.** The scan walks entity indices `0..maxActiveIndex` to find the
- * requested window and to count the population; each step is one
- * `Uint8Array` liveness read, the same walk ADR 0005 measured at ~0.6 ms
- * for 5,000 entities. Only the `limit` rows in the window allocate an
- * object, so a 25-row panel over a 5,000-prisoner population builds 25 row
- * objects, not 5,000 -- see `tests/unit/hud-projections-scale.test.ts` for
- * measured allocation counts at every actor tier.
+ * **Below tier 0 and not equal to it**, which is the same distinction
+ * `PrisonerRosterRowViewModel.classified` exists to carry: `records.riskTier`
+ * is a zero-initialised `Uint8Array`, so a queued arrival reads `0` and would
+ * otherwise sort among the assessed minimal-risk prisoners. "Not assessed yet"
+ * is not "assessed as harmless", and the Intake panel is where an arrival still
+ * in the pipeline is read.
+ */
+const UNCLASSIFIED_ROSTER_RANK = -1;
+
+/**
+ * The key the roster is ordered by, for one live entity index.
  *
- * Rows are **not** sortable by an arbitrary column here. Sorting 5,000
- * prisoners by need or by cell would be `O(n log n)` plus a full
- * materialisation every time the sort key changed; the HUD should page,
- * or a future indexed accessor should be added to the prisoner runtime.
+ * The `riskTier` a classified prisoner carries, and
+ * `UNCLASSIFIED_ROSTER_RANK` before classification has run. Read off the same
+ * two component arrays `projectRosterRow` reads, so the ordering key and the
+ * badge the panel paints from `riskTier` cannot disagree.
+ */
+function rosterOrderRank(source: PrisonerProjectionSource, index: number): number {
+  const stage = intakeStageFromIndex(source.records.intakeStage[index]!);
+  if (!isClassified(stage)) return UNCLASSIFIED_ROSTER_RANK;
+  return source.records.riskTier[index]!;
+}
+
+/**
+ * One window of the prisoner roster, **highest risk tier first**, ties broken
+ * by ascending entity index -- the same canonical order `EntityQuery.execute()`
+ * walks (ADR 0005), so paging is stable across ticks and identical on every
+ * client.
+ *
+ * **This used to read "in ascending entity-index order", full stop, and that
+ * half is what changed** (issue #703, the owner's fourth ruling of
+ * 2026-08-31): *"the Regime roster sorts by tier instead of by arrival
+ * order."* The old sentence is kept here rather than overwritten because the
+ * *reason* it gave is still in force and still shapes this function -- an order
+ * derived from state, never from insertion or arrival time
+ * (`docs/HUD_PROJECTIONS.md` section 2). Entity index is now the tie-break
+ * instead of the whole key, so paging is stable for exactly the reason it
+ * always was.
+ *
+ * Why the ruling: after ADR 0080 the tier is the gate on both a weapon and an
+ * escape, so it stopped being a label and became the roster's subject. A
+ * four-row window (`PRISONER_ROSTER_ROW_LIMIT`) in arrival order over a prison
+ * of up to `DEFAULT_PRISONER_CAPACITY` showed the four oldest prisoners, which
+ * answers a question nobody asks; the same four rows in tier order are the four
+ * the player has to act on.
+ *
+ * **Cost, and why this is not the arbitrary-column sort refused below.** Two
+ * walks of entity indices `0..maxActiveIndex` instead of one -- each step one
+ * `Uint8Array` liveness read, the same walk ADR 0005 measured at ~0.6 ms for
+ * 5,000 entities -- and no comparison function anywhere. The key has a handful
+ * of values (`RiskTier` is `0 | 1 | 2 | 3`, plus the unclassified rank), so the
+ * first walk counts a bucket per rank and the second hands each prisoner its
+ * position from that bucket's running cursor: a counting sort, `O(n)`, with two
+ * arrays of at most five numbers. Only the rows *in the window* allocate an
+ * object, exactly as before, so a 25-row panel over a 5,000-prisoner
+ * population still builds 25 row objects and not 5,000 -- see
+ * `tests/unit/hud-projections-scale.test.ts` for measured allocation counts at
+ * every actor tier.
+ *
+ * Rows are still **not** sortable by an arbitrary column here, and the
+ * paragraph that refused it stands: sorting 5,000 prisoners by need or by cell
+ * would be `O(n log n)` plus a full materialisation every time the sort key
+ * changed; the HUD should page, or a future indexed accessor should be added to
+ * the prisoner runtime. **The refusal is narrower than it reads, and this
+ * change is what shows where its edge is** -- what it prices is a *comparison*
+ * sort over a key with as many values as there are prisoners. A single fixed
+ * key with five possible values is a bucket count, and it costs one extra
+ * liveness walk.
  */
 export function projectPrisonerRoster(
   source: PrisonerProjectionSource,
   request: PageRequest = {},
   options: PrisonerProjectionOptions = {},
-): ViewModelPage<PrisonerRosterRowViewModel> {
+): PrisonerRosterPage {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
   const { offset, limit } = resolvePageRequest(request);
-  const rows: PrisonerRosterRowViewModel[] = [];
+
+  /*
+   * First walk: the population, and how much of it sits at each rank.
+   *
+   * Indexed by `rank - UNCLASSIFIED_ROSTER_RANK` so the unclassified rank has
+   * a bucket at 0 and no index is negative. The array is grown by what the
+   * walk actually finds rather than sized from a tier-count constant this
+   * module would have to keep in step with `RiskTier` -- there is no such
+   * constant, and this is why one is not introduced: a fifth tier added to the
+   * simulation sorts above tier 3 here with no edit, which is the property
+   * `simulation-message-keys.ts` gets from deriving its keys rather than
+   * listing them.
+   */
+  const countByRank: number[] = [];
   let total = 0;
+  let highestRank = UNCLASSIFIED_ROSTER_RANK;
 
   for (let index = 0; index <= source.entityStore.maxActiveIndex; index += 1) {
     if (!source.entityStore.isIndexAlive(index)) continue;
-    const positionInList = total;
     total += 1;
-    if (positionInList < offset) continue;
-    if (rows.length >= limit) continue;
-    rows.push(projectRosterRow(source, rooms, options.gangs, options.identity, index));
+    const rank = rosterOrderRank(source, index);
+    const bucket = rank - UNCLASSIFIED_ROSTER_RANK;
+    countByRank[bucket] = (countByRank[bucket] ?? 0) + 1;
+    if (rank > highestRank) highestRank = rank;
   }
 
-  return { total, offset, limit, rows };
+  // Where each rank's run of rows begins in the sorted list, highest rank
+  // first. Walked downward, so the accumulator *is* the start of the next run.
+  const nextPositionByRank: number[] = [];
+  let runStart = 0;
+  for (let rank = highestRank; rank >= UNCLASSIFIED_ROSTER_RANK; rank -= 1) {
+    const bucket = rank - UNCLASSIFIED_ROSTER_RANK;
+    nextPositionByRank[bucket] = runStart;
+    runStart += countByRank[bucket] ?? 0;
+  }
+
+  /*
+   * Second walk: give every prisoner its sorted position and materialise only
+   * the ones the window asked for.
+   *
+   * Ascending index, so two prisoners at the same rank take their positions in
+   * ascending entity index -- the tie-break, and the reason a row the player is
+   * reading does not move under them between publications (issue #209). Nothing
+   * here depends on iteration order beyond that: the position is arithmetic
+   * over counts taken from state.
+   */
+  const windowEnd = Math.min(total, offset + limit);
+  const rows: PrisonerRosterRowViewModel[] = new Array<PrisonerRosterRowViewModel>(Math.max(0, windowEnd - offset));
+  let filled = 0;
+
+  for (let index = 0; index <= source.entityStore.maxActiveIndex && filled < rows.length; index += 1) {
+    if (!source.entityStore.isIndexAlive(index)) continue;
+    const bucket = rosterOrderRank(source, index) - UNCLASSIFIED_ROSTER_RANK;
+    const sortedPosition = nextPositionByRank[bucket]!;
+    nextPositionByRank[bucket] = sortedPosition + 1;
+    if (sortedPosition < offset || sortedPosition >= windowEnd) continue;
+    rows[sortedPosition - offset] = projectRosterRow(source, rooms, options.gangs, options.identity, index);
+    filled += 1;
+  }
+
+  return { total, offset, limit, rows, everAdmitted: source.admittedCount > 0 };
+}
+
+/**
+ * Free resident places per accommodation target, from the registry the intake
+ * stage itself asks.
+ *
+ * The same walk `accommodationCapacityOf` makes in
+ * `status-strip-projection.ts` -- targets in `resolveAccommodationTargets`
+ * order, each instance credited to at most one target -- with two differences,
+ * and both are the point:
+ *
+ * - it subtracts the current occupancy, because a full cell is capacity and not
+ *   a place; and
+ * - it keeps the totals **per target** rather than summing them, because a
+ *   high-risk arrival held for a solitary cell is not housed by a free place in
+ *   an ordinary one. A single prison-wide total would report nobody waiting in
+ *   exactly the configuration that strands somebody.
+ *
+ * `Math.max(0, ...)` on each instance rather than on the total: an instance
+ * whose `residentCapacity` fell below its occupancy -- a bed removed from a
+ * cell somebody sleeps in -- has no places to offer, and must not cancel out
+ * the places another cell does have.
+ *
+ * Deterministic and allocation-bounded by the number of accommodation
+ * instances: `allByRoomCatalogId` returns its cached ascending-instance-id
+ * sort, the target list is authored, and both collections are keyed rather
+ * than iterated.
+ */
+function freeAccommodationPlacesByTarget(
+  roomInstances: RoomInstanceRegistry,
+  policy: AccommodationPolicy,
+): Map<string, number> {
+  const free = new Map<string, number>();
+  const counted = new Set<string>();
+
+  for (const target of resolveAccommodationTargets(policy)) {
+    let places = 0;
+    for (const instance of roomInstances.allByRoomCatalogId(target.roomCatalogId)) {
+      if (counted.has(instance.instanceId)) continue;
+      if (
+        target.requiredObjectCapability !== undefined &&
+        !instance.objectCapabilities.includes(target.requiredObjectCapability)
+      ) {
+        continue;
+      }
+      counted.add(instance.instanceId);
+      places += Math.max(0, instance.residentCapacity - roomInstances.occupancyOf(instance.instanceId));
+    }
+    free.set(accommodationTargetKey(target), places);
+  }
+
+  return free;
+}
+
+/**
+ * How many of the arrivals waiting at `accommodation-assignment` the prison
+ * currently has nowhere to put -- see `waitingWithoutPlace`.
+ *
+ * It resolves each group's target the way `IntakeSystem` does, through the one
+ * shared `firstAvailableAccommodationTarget`, and then spends that target's
+ * free places on the arrivals holding it. What it does **not** do is re-run the
+ * placement: which instance an arrival lands in is a cell-sharing rating
+ * (`rateCellSharing`) and it cannot change whether a place exists, so counting
+ * needs the budget and not the choice.
+ *
+ * The answer does not depend on the order groups are visited in, because a
+ * target's shortfall is `max(0, arrivals holding it - its places)` however the
+ * arrivals holding it are split between groups. `CLASSIFICATION_GROUP_IDS`
+ * order is used anyway, so nothing here reads a `Map`'s insertion order
+ * (`docs/DETERMINISM.md`).
+ *
+ * A group whose target is `undefined` is skipped rather than counted: the
+ * prison holds no instance of any room type that group may be housed in, so
+ * those arrivals become `failed` on the next intake tick and `byIntakeStage`
+ * reports them there. Counting them here as well would put one person in two
+ * sentences that mean opposite things -- "a bed would fix this" and "nothing
+ * will".
+ */
+function waitingWithoutPlaceCount(
+  source: PrisonerProjectionSource,
+  policy: AccommodationPolicy,
+  waitingByGroup: ReadonlyMap<string, number>,
+): number {
+  if (waitingByGroup.size === 0) return 0;
+
+  const free = freeAccommodationPlacesByTarget(source.roomInstances, policy);
+  let withoutPlace = 0;
+
+  for (const groupId of CLASSIFICATION_GROUP_IDS) {
+    const waiting = waitingByGroup.get(groupId) ?? 0;
+    if (waiting <= 0) continue;
+    const target = firstAvailableAccommodationTarget(policy, source.roomInstances, groupId);
+    if (target === undefined) continue;
+    const key = accommodationTargetKey(target);
+    const places = free.get(key) ?? 0;
+    const housed = Math.min(waiting, places);
+    free.set(key, places - housed);
+    withoutPlace += waiting - housed;
+  }
+
+  return withoutPlace;
 }
 
 /**
@@ -301,6 +648,8 @@ export function projectPrisonerRoster(
 export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource): PrisonerPopulationCountsViewModel {
   const byStage = new Map<IntakeStage, number>();
   const byGroup = new Map<string, number>();
+  /** Arrivals at `accommodation-assignment` only, by the group whose targets decide where they may go. */
+  const waitingByGroup = new Map<string, number>();
   let total = 0;
   let unclassified = 0;
 
@@ -315,6 +664,7 @@ export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource
     }
     const groupId = classificationGroupIdFromIndex(source.records.classificationGroupIndex[index]!);
     byGroup.set(groupId, (byGroup.get(groupId) ?? 0) + 1);
+    if (stage === 'accommodation-assignment') waitingByGroup.set(groupId, (waitingByGroup.get(groupId) ?? 0) + 1);
   }
 
   return {
@@ -330,6 +680,11 @@ export function projectPrisonerPopulationCounts(source: PrisonerProjectionSource
       count: byGroup.get(groupId) ?? 0,
     })),
     unclassified,
+    waitingWithoutPlace: waitingWithoutPlaceCount(
+      source,
+      source.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY,
+      waitingByGroup,
+    ),
   };
 }
 

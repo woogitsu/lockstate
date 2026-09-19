@@ -1,3 +1,15 @@
+// MODELLED, NOT PRODUCTION.
+//
+// The `EntityStore` measured below is declared in this file. Nothing here
+// imports `src/`, so every number this scenario reports holds for any
+// Structure-of-Arrays entity storage, including one this repository does not
+// have, and none of them gates anything about the shipped entity layer.
+//
+// `docs/BENCHMARKING.md`'s scenario rule 9 is why this marker is the first
+// line rather than a remark further down: a scenario named after a subsystem
+// it does not import is #410's defect, and the only place a reader reliably
+// looks is the top of the file.
+
 const ENTITY_SOA_SEED = 0x82f1b4a3;
 
 function rotateLeft(value, shift) {
@@ -155,7 +167,7 @@ export const entitySoaScenario = Object.freeze({
   id: 'entity.soa.benchmark',
   version: 1,
   description:
-    'Evaluates the hand-rolled Structure-of-Arrays (SoA) Entity Component System throughput for spawn, destroy, and deterministic iterations.',
+    'MODELLED, not production: a Structure-of-Arrays (SoA) entity store declared in this benchmark file, measured for spawn, destroy and deterministic iteration throughput. Imports nothing from src/, so it gates nothing about the shipped entity layer.',
   seed: ENTITY_SOA_SEED,
   profiles: Object.freeze({
     smoke: Object.freeze({

@@ -50,6 +50,57 @@ export function filledSegments(value: number, max: number, segments = DEFAULT_BA
   return Math.min(segments - 1, Math.max(1, Math.ceil((value / max) * segments)));
 }
 
+/**
+ * How many *overflow* segments are lit for `value` beyond `max` (issue #609).
+ *
+ * ## Why this is a second function and not a change to the one above
+ *
+ * `filledSegments` is duplicated on purpose -- `toBoundedValue` in
+ * `src/simulation/presentation/view-model.ts` is the same rule, written twice
+ * because `AGENTS.md` boundary 1 forbids `src/ui/primitives/**` importing
+ * `src/simulation/**`, and `tests/unit/segment-fill-agreement.test.ts` drives
+ * both over the same inputs so a change to either alone fails. **Touching its
+ * return values to express overflow would have broken that agreement**, and
+ * the simulation-side copy has no business knowing about over-capacity. So
+ * this is additive: `filledSegments` keeps saying "all ten lit", which is
+ * true, and this says how far past the end the value went.
+ *
+ * ## What it measures, and where it saturates
+ *
+ * The excess as a fraction of capacity, on the same `ceil` rule and with the
+ * same reserved last segment, so one prisoner past capacity lights one
+ * overflow segment rather than rounding to none. **It saturates at twice
+ * capacity**: 6-of-3 and 12-of-3 both light all ten, because a ten-segment
+ * vocabulary has ten buckets and the second lap uses all of them.
+ *
+ * That saturation is a deliberate limit rather than an oversight, and it is
+ * only acceptable because it is not the only channel: the PRISONERS chip
+ * carries the exact pair of numbers beside this bar, so "how far over" is
+ * legible in digits and this bar's job is to make it *noticeable* at a
+ * glance. A bar alone cannot carry an unbounded ratio, and pretending
+ * otherwise -- a log scale, say -- would be a bar nobody can read back.
+ *
+ * Returns 0 for any value at or under capacity, which is what makes the whole
+ * mechanism inert for a bounded metric. The Regime panel's need bars pass
+ * `value: need.permille` against `max: NEED_BAR_MAX_PERMILLE`, a permille
+ * against 1000, so they can reach the maximum and never pass it and this
+ * function returns 0 for every input they can produce.
+ */
+export function overflowSegments(value: number, max: number, segments = DEFAULT_BAR_SEGMENTS): number {
+  if (!Number.isFinite(value) || !Number.isFinite(max) || max <= 0 || segments <= 0) return 0;
+  /*
+   * No `if (value <= max) return 0` here, and its absence is deliberate and
+   * was measured. That guard was written first, and a mutation that deleted
+   * it **survived every test in `segment-overflow.test.ts`** -- because the
+   * excess is non-positive for any value at or under capacity, and
+   * `filledSegments`'s own second line returns 0 for exactly that. The guard
+   * could not fail, which makes it a line that rots rather than a line that
+   * protects. The behaviour it stated is pinned by test instead, where a
+   * change to `filledSegments`'s zero handling would be caught.
+   */
+  return filledSegments(value - max, max, segments);
+}
+
 export interface SegmentedBarOptions {
   /** Accessible name. The bar is a readout, so it must be named. */
   readonly label: string;
@@ -63,6 +114,20 @@ export interface SegmentedBarState {
   /** Spoken form, e.g. "142 of 180". Colour and length never carry this alone. */
   readonly valueText: string;
   readonly tone?: BadgeTone;
+  /**
+   * Renames the bar, for a pooled bar whose *subject* changes between repaints
+   * rather than only its value.
+   *
+   * The Regime panel's roster rows are pooled and each draws that prisoner's
+   * **worst** need, so one bar is "Hunger" on one tick and "Bladder" on the
+   * next. `options.label` is fixed at construction and cannot say that; a bar
+   * left with the stale name would announce the wrong need with the right
+   * number, which is worse than announcing nothing.
+   *
+   * Omitted leaves the name alone, so the status strip's occupancy bar -- whose
+   * subject never changes -- passes nothing and is unaffected.
+   */
+  readonly label?: string;
 }
 
 export interface SegmentedBar {
@@ -89,11 +154,51 @@ export function createSegmentedBar(options: SegmentedBarOptions): SegmentedBar {
     for (const [index, cell] of cells.entries()) {
       cell.dataset['filled'] = index < filled ? 'true' : 'false';
     }
+
+    /*
+     * OVERFLOW IS DRAWN INSIDE THE SAME TEN CELLS, NOT APPENDED BESIDE THEM.
+     *
+     * The obvious shape -- extra segments past the end, so the bar visibly
+     * runs off its own scale -- was rejected on width. This bar sits in a
+     * status-strip chip on a strip of eight competing for one glance, and the
+     * binding viewport this project measures is 900x600; a bar that doubles
+     * its width exactly when the prison is in trouble is a layout change
+     * fired by a game state, which is the kind of thing that reads fine at
+     * 1440 and pushes a chip off the strip at 900.
+     *
+     * So the second lap is drawn *over* the first: cells carry
+     * `data-overflow` for the portion of the second lap they represent, and
+     * the stylesheet gives that a **notch** -- two 1px hairlines in the
+     * strip's own background colour -- rather than a second colour. Colour is
+     * already spoken for: `data-tone` is `danger` for any over-capacity
+     * value, and this repository's own rule is that a state is never carried
+     * by colour alone. Shape is a second channel, and it composes with the
+     * red rather than competing with it.
+     *
+     * **This paragraph said "hatch" until an audit caught it.** The first
+     * implementation was a `repeating-linear-gradient`, and
+     * `tests/unit/ui-design-tokens.test.ts` rejected it -- that gate forbids
+     * `gradient(` in every stylesheet under `src/ui/`, because "separation
+     * comes from a 1px hairline and a background step, and from nothing
+     * else". The CSS was rewritten and this comment was not, so for one
+     * commit the module described a rendering the stylesheet forbids.
+     *
+     * `overflow` is 0 for every value at or under capacity, so a bounded
+     * metric writes `data-overflow="false"` on all ten cells forever and
+     * looks exactly as it did.
+     */
+    const overflow = overflowSegments(state.value, state.max, count);
+    for (const [index, cell] of cells.entries()) {
+      cell.dataset['overflow'] = index < overflow ? 'true' : 'false';
+    }
+    root.dataset['overCapacity'] = overflow > 0 ? 'true' : 'false';
+
     root.dataset['tone'] = state.tone ?? options.tone ?? 'neutral';
     root.setAttribute('aria-valuemin', '0');
     root.setAttribute('aria-valuemax', String(Math.max(0, state.max)));
     root.setAttribute('aria-valuenow', String(Math.max(0, state.value)));
     root.setAttribute('aria-valuetext', state.valueText);
+    if (state.label !== undefined) root.setAttribute('aria-label', state.label);
   };
 
   return { element: root, update };

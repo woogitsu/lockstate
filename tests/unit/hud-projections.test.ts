@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
 import { canonicalJson } from '../../src/simulation/determinism/canonical';
 import { NEED_IDS, NEED_MAX } from '../../src/simulation/prisoners/needs';
+import { classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import { IncidentLog } from '../../src/simulation/incidents/incident';
 import {
   BOUNDED_VALUE_SEGMENTS,
   projectContraband,
@@ -15,10 +18,16 @@ import {
   projectSecurity,
   projectStaff,
   projectStatusStrip,
+  soleDiscoveredContrabandNameKey,
   toBoundedValue,
 } from '../../src/simulation/presentation';
+import type { RoomDetailViewModel, RoomListViewModel } from '../../src/simulation/presentation/room-projection';
+import { placedObjectAt } from '../../src/simulation/objects';
+import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
+import type { AccommodationPolicy } from '../../src/simulation/prisoners/intake-system';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
-import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
 
@@ -207,6 +216,369 @@ describe('status strip', () => {
     expect(strip.counts.roomOccupants).toBeGreaterThan(0);
   });
 
+  /**
+   * Issue #506 finding 2: a bare count cannot say which kind of incident is
+   * open. Driven through `IncidentLog`'s own `open` -- the real producer
+   * `runtime.incidents` is, and the same shortcut
+   * `tests/integration/incident-consequence-loop.test.ts`'s `lapsedRiot`
+   * already takes for the same reason its own comment gives (a trigger needs
+   * a watched sector and a risk sample over threshold, neither of which this
+   * is measuring) -- rather than a hand-built `StatusStripIncidentSource`
+   * that would only prove this projection agrees with a view model this test
+   * itself invented (#375).
+   */
+  it('names the open incident kind when every open incident agrees, and only then', () => {
+    // A fresh runtime rather than `runScenario()`'s driven determinism
+    // scenario: that scenario runs a real prison for `TICKS` ticks and
+    // already opens its own incidents along the way (measured: it does), so
+    // asserting "nothing open" against it would be asserting a fact about
+    // this scenario's seed rather than about the projection. `new-session.ts`
+    // is still the real `IncidentLog` production code depends on -- it is
+    // simply not yet stepped, the same starting point
+    // `tests/integration/incident-consequence-loop.test.ts`'s `housedPrisoner`
+    // uses for the identical reason.
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+    const strip = (): ReturnType<typeof projectStatusStrip> =>
+      projectStatusStrip({
+        tick: runtime.kernel.tick,
+        prisoners: runtime.prisoners,
+        rooms: runtime.prisoners,
+        staff: runtime.securityGuards,
+        incidents: runtime.incidents,
+        searchSystem: runtime.searchSystem,
+      });
+
+    // Nothing open yet: no single kind to report.
+    expect(strip().counts.activeIncidents).toBe(0);
+    expect(strip().counts.activeIncidentType).toBeUndefined();
+
+    runtime.incidents.open(
+      { id: 'incident-type-test-1', type: 'assault', sectorId: 'sector.wing-a', participantIds: [], severity: 3, causeFactors: [] },
+      runtime.kernel.tick,
+    );
+    const oneOpen = strip();
+    expect(oneOpen.counts.activeIncidents).toBe(1);
+    expect(oneOpen.counts.activeIncidentType).toBe('assault');
+
+    // A second sector, a different kind (ADR 0061 decision 6: one open
+    // incident per *sector*, so this is a shape one derived sector can never
+    // produce, but the projection must still answer it honestly rather than
+    // pick one of the two).
+    runtime.incidents.open(
+      { id: 'incident-type-test-2', type: 'riot', sectorId: 'sector.wing-b', participantIds: [], severity: 6, causeFactors: [] },
+      runtime.kernel.tick,
+    );
+    const twoOpenMixed = strip();
+    expect(twoOpenMixed.counts.activeIncidents).toBe(2);
+    expect(twoOpenMixed.counts.activeIncidentType).toBeUndefined();
+
+    // Ending the riot leaves one open incident of one kind again. `'lapsed'`
+    // rather than `'resolved'`, because `'active' -> 'resolved'` is not a
+    // legal transition (`isLegalIncidentTransition`) -- an incident is
+    // notified and responded to before it can be contained; lapsing is the
+    // other terminal state and reachable straight from `'active'`.
+    runtime.incidents.transition('incident-type-test-2', 'lapsed', runtime.kernel.tick, {
+      injuredEntityIds: [],
+      propertyDamage: 0,
+      escaped: false,
+    });
+    const backToOne = strip();
+    expect(backToOne.counts.activeIncidents).toBe(1);
+    expect(backToOne.counts.activeIncidentType).toBe('assault');
+  });
+
+  /**
+   * The rule behind `counts.contrabandNameKey`, at the lowest layer that
+   * proves it -- the owner's ruling 3 on issue #703, *"The message names what
+   * contraband was found."*
+   *
+   * `soleDiscoveredContrabandNameKey` is exported and pure for the reason
+   * `occupancyTone` and `orderPrisonsForDisplay` are: it is a rule about not
+   * making a false statement, and a rule that only exists inside a function
+   * needing a session is a rule no test can put under pressure. Two of the
+   * four cases below are unreachable from a real prison at all -- a drained
+   * ledger and a category the catalog does not know -- which is exactly why
+   * they are here rather than in
+   * `tests/integration/contraband-search-duty.test.ts`, where the two
+   * reachable ones are driven through real searches.
+   *
+   * The literal keys are the shipped catalog's own `nameKey`s
+   * (`src/content/contraband-catalog.ts`); they are written out rather than
+   * read back off the registry so the expectation does not come from the same
+   * lookup the function performs.
+   */
+  it('names one contraband category for a whole count, and refuses to name a count it is not true of', () => {
+    const catalog = defaultContrabandRegistry;
+
+    // One category, however many items: the word is true of the count.
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }], 1, catalog)).toBe('contraband.weapon.name');
+    expect(
+      soleDiscoveredContrabandNameKey(
+        [{ categoryId: 'contraband.phone' }, { categoryId: 'contraband.phone' }, { categoryId: 'contraband.phone' }],
+        3,
+        catalog,
+      ),
+    ).toBe('contraband.phone.name');
+
+    // Nothing found names nothing. Not the same fact as the two below, and the
+    // same rendering: the chip shows `0` and no badge.
+    expect(soleDiscoveredContrabandNameKey([], 0, catalog)).toBeUndefined();
+
+    // Two categories. Naming either would be a claim about the other, so
+    // neither is named -- and the *first* is not preferred, which is what the
+    // second ordering pins.
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.phone' }, { categoryId: 'contraband.weapon' }], 2, catalog),
+    ).toBeUndefined();
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }, { categoryId: 'contraband.phone' }], 2, catalog),
+    ).toBeUndefined();
+
+    /*
+     * **A ledger that no longer accounts for the count.** The count comes from
+     * `SearchSystem`'s own counter and the records come from
+     * `ConfiscationLedger`; `drain()` empties the second and leaves the first
+     * standing, so one surviving row must not be allowed to name a count of
+     * thirty. Nothing in `src/` drains it today, which is why this case can
+     * only be reached here -- and why the guard is a statement about what the
+     * two numbers mean rather than a defence against a caller that exists.
+     */
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }], 30, catalog)).toBeUndefined();
+    // The other direction of the same disagreement: more records than the
+    // counter admits to.
+    expect(
+      soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.weapon' }, { categoryId: 'contraband.weapon' }], 1, catalog),
+    ).toBeUndefined();
+
+    // A category the supplied catalog does not know yields nothing rather than
+    // a fabricated `${categoryId}.name`: the catalog owns the mapping from a
+    // stable id to a message key, and a projection that guessed one would be
+    // authoring keys no locale need contain -- which is the promise
+    // `AGENTS.md`'s fourth exclusion forbids, arrived at by accident.
+    expect(soleDiscoveredContrabandNameKey([{ categoryId: 'contraband.nothing-like-this' }], 1, catalog)).toBeUndefined();
+  });
+
+  /**
+   * A prison built to tell `roomCapacity` and `accommodationCapacity` apart.
+   *
+   * Not `buildDeterminismScenario`: every capacity-bearing room in that one is
+   * a `room.cell`, so the two figures agree there and a fixture in which they
+   * agree cannot fail if the scoping is dropped. This is still a real session
+   * -- `createNewSimulationRuntime`, real `PlacedObject`s, the real
+   * `RoomCapacityResolver` -- built so the two figures must differ.
+   *
+   * Five sleep surfaces stand in it and they are authored here, one line each:
+   * a bed in each of two cells, a bed in a solitary cell, and two medical beds
+   * in an infirmary. The canteen's dining table and bench are the objects the
+   * comment this change deleted blamed for the whole problem; they carry no
+   * `'sleep-surface'` and are here to show they cost nothing.
+   *
+   * So `roomCapacity` is 5 and `accommodationCapacity` is 3, and both are
+   * written out below rather than summed from the fixture -- a total derived
+   * the way the projection derives it would hold for any scoping rule at all.
+   */
+  const ACCOMMODATION_TILE = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+  function buildAccommodationPrison(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+
+    for (const instance of [
+      { instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: ACCOMMODATION_TILE(2, 2), width: 2, height: 3 },
+      { instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: ACCOMMODATION_TILE(5, 2), width: 2, height: 3 },
+      { instanceId: 'solitary-1', roomCatalogId: 'room.solitary-cell', anchorTile: ACCOMMODATION_TILE(8, 2), width: 2, height: 2 },
+      { instanceId: 'infirmary-1', roomCatalogId: 'room.infirmary', anchorTile: ACCOMMODATION_TILE(2, 8), width: 4, height: 4 },
+      { instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: ACCOMMODATION_TILE(8, 8), width: 6, height: 6 },
+    ]) {
+      runtime.prisoners.roomInstances.register({
+        ...instance,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        objectCapabilities: [],
+      });
+    }
+
+    for (const object of [
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(2, 2), 0),
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(5, 2), 0),
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(8, 2), 0),
+      placedObjectAt('object.medical-bed', ACCOMMODATION_TILE(2, 8), 0),
+      placedObjectAt('object.medical-bed', ACCOMMODATION_TILE(4, 8), 0),
+      placedObjectAt('object.dining-table', ACCOMMODATION_TILE(8, 8), 0),
+      placedObjectAt('object.bench', ACCOMMODATION_TILE(8, 11), 0),
+    ]) {
+      if (!runtime.placedObjects.place(object)) {
+        throw new Error(`the fixture's ${object.objectId} at (${object.anchorTile.x}, ${object.anchorTile.y}) must be placeable`);
+      }
+    }
+    runtime.roomCapacity.resolveAll();
+
+    return runtime;
+  }
+
+  it('does not count an infirmary\'s medical beds as somewhere to live', () => {
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners, rooms: runtime.prisoners });
+
+    // Five sleep surfaces are registered, so the room total reads five --
+    // `object.medical-bed` declares `'sleep-surface'` exactly as `object.bed`
+    // does, which is correct and is why `src/simulation/construction/definition.ts`
+    // says an infirmary "derives a residency it has no intake route to use".
+    expect(strip.counts.roomCapacity).toBe(5);
+    // Three of them are somewhere `IntakeSystem` would put an arrival: the two
+    // cells and the solitary cell. The infirmary's two are not, and this is
+    // the whole difference between the published denominator and the total.
+    expect(strip.counts.accommodationCapacity).toBe(3);
+  });
+
+  it('counts a solitary cell, because the accommodation policy does', () => {
+    // The obvious wrong denominator is "sum over `room.cell`", which reads 2
+    // here. `DEFAULT_ACCOMMODATION_POLICY` lists `room.solitary-cell` for both
+    // classification groups, so a prison of solitary cells houses people and
+    // its beds are places (`IntakeSystem.resolveExistingTarget`).
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners, rooms: runtime.prisoners });
+
+    expect(strip.counts.accommodationCapacity).toBe(3);
+
+    const cellsOnly: AccommodationPolicy = {
+      resolveTargets: () => [{ roomCatalogId: 'room.cell', requiredObjectCapability: 'sleep-surface' }],
+    };
+    const scoped = projectStatusStrip({
+      tick: 0,
+      prisoners: runtime.prisoners,
+      rooms: runtime.prisoners,
+      accommodationPolicy: cellsOnly,
+    });
+
+    // Two, from the same prison. The room ids are read out of the policy and
+    // are not written into the projection (`AGENTS.md` boundary 6): a rule that
+    // hard-coded them would answer 3 to both of these.
+    expect(scoped.counts.accommodationCapacity).toBe(2);
+  });
+
+  /**
+   * Puts `count` arrivals into `accommodation-assignment` in `group`, without
+   * running intake.
+   *
+   * The classification a prisoner receives is a `prisoners.classification` draw
+   * made two stages after the admission, and the panel's own admission scores
+   * `general-population` with certainty (`IntakeSystem.hasAccommodationTarget`
+   * measured 2,000 of 2,000 seeds), so a *high-risk* arrival cannot be arranged
+   * by pressing Admit. What is being measured here is the projection's
+   * arithmetic over a state the stage machine can be in, and
+   * `tests/integration/over-admission-signal.test.ts` is what establishes that
+   * the ordinary state is reachable by playing.
+   */
+  function waitAtAccommodationAssignment(runtime: SimulationRuntime, group: string, count: number): void {
+    for (let arrival = 0; arrival < count; arrival += 1) {
+      const entityId = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 10_000, priorIncidents: 0 }, { x: 16, y: 16 });
+      const index = runtime.prisoners.entityStore.getIndex(entityId);
+      runtime.prisoners.records.intakeStage[index] = intakeStageIndex('accommodation-assignment');
+      runtime.prisoners.records.classificationGroupIndex[index] = classificationGroupIndex(group);
+    }
+  }
+
+  describe('who the prison has no bed for (issue #549)', () => {
+    it('counts nobody as bedless while the prison still has a free place for them', () => {
+      // Two ordinary cell beds, two arrivals holding out for one. Both are at
+      // Cell Assignment, which is the figure a naive warning would read -- and
+      // both have somewhere to go.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 2);
+
+      const counts = projectPrisonerPopulationCounts(runtime.prisoners);
+      expect(counts.byIntakeStage.find((entry) => entry.intakeStage === 'accommodation-assignment')?.count).toBe(2);
+      expect(counts.waitingWithoutPlace).toBe(0);
+    });
+
+    it('counts the arrivals past the last free bed, and only those', () => {
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 5);
+
+      // Two beds these arrivals may be housed in -- `room.cell` is
+      // `general-population`'s first target and the prison holds instances of it,
+      // so the solitary cell's bed is never reached and the infirmary's two never
+      // were places at all. Five waiting, three with nowhere.
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(3);
+    });
+
+    it('subtracts the occupants, so a bed somebody is already in is not a free place', () => {
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 2);
+      // With both cell beds empty this prison houses both of them -- the case
+      // above. One resident housed by hand takes one bed, and the same two
+      // arrivals are now one short. A count built from capacity alone reads 0.
+      const resident = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 10_000, priorIncidents: 0 }, { x: 16, y: 16 });
+      expect(runtime.prisoners.roomInstances.assign('cell-1', resident)).toBe(true);
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(1);
+    });
+
+    it('does not house a high-risk arrival in an ordinary cell it is not held for', () => {
+      // The case a single prison-wide total of free places gets wrong, and it is
+      // wrong in the direction that matters: it would report nobody waiting while
+      // somebody genuinely has nowhere to go.
+      //
+      // `DEFAULT_ACCOMMODATION_POLICY` sends a high-risk arrival to
+      // `room.solitary-cell` and falls back to `room.cell` only for a prison
+      // holding *no* solitary cell at all -- a full one is waited on, never
+      // fallen back from (`IntakeSystem.resolveExistingTarget`). This prison
+      // holds one solitary cell with one bed, so a second high-risk arrival has
+      // nowhere, however many ordinary cells stand empty beside it.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'high-risk', 2);
+
+      const counts = projectPrisonerPopulationCounts(runtime.prisoners);
+      expect(counts.byIntakeStage.find((entry) => entry.intakeStage === 'accommodation-assignment')?.count).toBe(2);
+      // Two free ordinary cells stand right there, and they are not this
+      // arrival's to take.
+      expect(counts.waitingWithoutPlace).toBe(1);
+    });
+
+    it('leaves an arrival with no room type at all to the terminal stage rather than counting them twice', () => {
+      // A prison with nowhere for anybody: the arrivals here reach `'failed'` on
+      // the next intake tick and `byIntakeStage` reports them there. Counting
+      // them as bedless as well would put one person into two sentences that mean
+      // opposite things -- "a bed would fix this" and "nothing will".
+      const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+      waitAtAccommodationAssignment(runtime, 'general-population', 3);
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(0);
+    });
+
+    it('scopes the free places to the policy, never to a room id of its own', () => {
+      // The same reading `accommodationCapacity` is held to (`AGENTS.md` boundary
+      // 6): which room types house a resident is content, and a projection may
+      // not name one in a condition of its own.
+      //
+      // Two prisons out of one. Under the shipped policy these three arrivals are
+      // held for the two ordinary cell beds and one is left over; under a policy
+      // that houses everybody in solitary they are held for that room's single
+      // bed and two are. A rule with `room.cell` written into it answers 1 to
+      // both.
+      const runtime = buildAccommodationPrison();
+      waitAtAccommodationAssignment(runtime, 'general-population', 3);
+      const solitaryOnly: AccommodationPolicy = {
+        resolveTargets: () => [{ roomCatalogId: 'room.solitary-cell', requiredObjectCapability: 'sleep-surface' }],
+      };
+
+      expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(1);
+      expect(
+        projectPrisonerPopulationCounts({ ...runtime.prisoners, accommodationPolicy: solitaryOnly }).waitingWithoutPlace,
+      ).toBe(2);
+    });
+  });
+
+  it('reports no accommodation for a prison with no room source at all', () => {
+    // Not a guess and not a default: a runtime with no room registry has no
+    // beds, exactly as `stateIncomeAccruedTodayMinorUnits` reports 0 for one.
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners });
+
+    expect(strip.counts.accommodationCapacity).toBe(0);
+    expect(strip.counts.roomCapacity).toBe(0);
+  });
+
   it('reports the clock as day number plus position within the in-game day', () => {
     const runtime = runScenario();
     const strip = projectStatusStrip({ tick: runtime.kernel.tick, clockControl: { mode: 'running', speed: 2 }, prisoners: runtime.prisoners });
@@ -240,14 +612,36 @@ describe('status strip', () => {
 });
 
 describe('prisoner roster and detail', () => {
-  it('lists every live prisoner in ascending entity id, and pages without changing the order', () => {
+  /**
+   * **The name of this case read "in ascending entity id" until 2026-08-31.**
+   * Issue #703's fourth ruling made the roster's order highest risk tier first,
+   * ties on ascending entity index, so the whole-list order is asserted against
+   * that pair now. The *paging* half is unchanged and is the half this case was
+   * always mostly about.
+   */
+  it('lists every live prisoner by descending tier then ascending id, and pages without changing the order', () => {
     const runtime = runScenario();
     const all = projectPrisonerRoster(runtime.prisoners);
     expect(all.total).toBe(4);
     expect(all.rows).toHaveLength(4);
 
-    const ids = all.rows.map((row) => row.entityId);
-    expect([...ids].sort((left, right) => left - right)).toEqual(ids);
+    // The order the projection promises, written out independently of it: the
+    // rows sorted by `(-riskTier, entityId)` must be the rows as they arrived.
+    const key = (row: { readonly riskTier?: number; readonly entityId: number }): readonly [number, number] => [
+      -(row.riskTier ?? -1),
+      row.entityId,
+    ];
+    const expectedOrder = [...all.rows].sort((left, right) => {
+      const [leftTier, leftId] = key(left);
+      const [rightTier, rightId] = key(right);
+      return leftTier === rightTier ? leftId - rightId : leftTier - rightTier;
+    });
+    expect(all.rows.map((row) => row.entityId)).toEqual(expectedOrder.map((row) => row.entityId));
+
+    // Non-vacuity: this scenario really does hold more than one tier, so the
+    // check above is not satisfied by a single-tier population in which any
+    // ascending-id order would pass.
+    expect(new Set(all.rows.map((row) => row.riskTier)).size).toBeGreaterThan(1);
 
     const windowed = projectPrisonerRoster(runtime.prisoners, { offset: 2, limit: 1 });
     expect(windowed).toMatchObject({ total: 4, offset: 2, limit: 1 });
@@ -439,6 +833,285 @@ describe('room list and detail', () => {
   });
 });
 
+/**
+ * Issue #528: the authored `minQuantity` on an `object` requirement, which
+ * `requirementStatus` never read.
+ *
+ * `room.canteen` asks for two dining tables and four benches
+ * (`src/content/room-catalog.ts`), and one of each read the room finished --
+ * not cosmetically, because the concurrent-use ceiling is footprint-derived, so
+ * a canteen the panel called finished seated three diners rather than six.
+ *
+ * ## Every fixture below is a real session
+ *
+ * `createNewSimulationRuntime`, real `PlacedObject` rows through
+ * `PlacedObjectRegistry.place`, and the real `RoomCapacityResolver` writing the
+ * derived fields -- the same shape `buildAccommodationPrison` above uses, and
+ * for the same reason: an instance whose `objectCapabilities` are typed into the
+ * fixture proves only that the fixture and the assertion agree. The rooms are
+ * registered directly rather than zoned, because `ZoneRoom` needs a walled,
+ * enclosed rectangle and what is under test is the projection rather than the
+ * zoning gate; `tests/integration/furnished-prison-loop.test.ts` is the same
+ * assertion off real `ZoneRoom` and `PlaceObject` commands.
+ *
+ * ## Every expected count is a literal read off the catalogues
+ *
+ * `room.canteen` -> 2 dining tables and 4 benches. `room.classroom` -> 1
+ * bookshelf and 4 chairs. `room.reception` -> 1 desk and 2 chairs.
+ * `room.security-office` -> 1 security console. Written out here rather than
+ * read from `defaultRoomContentRegistry`, so a requirement edited to `1` would
+ * fail these instead of moving with them.
+ */
+describe('room requirement quantities (#528)', () => {
+  const TILE = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+  interface FurnishedRoom {
+    readonly instanceId: string;
+    readonly roomCatalogId: string;
+    readonly anchorTile: { readonly x: number; readonly y: number };
+    readonly width: number;
+    readonly height: number;
+    /** `[objectId, anchor]`, anchors chosen so no two footprints overlap. */
+    readonly objects: readonly (readonly [string, { readonly x: number; readonly y: number }])[];
+  }
+
+  function furnish(rooms: readonly FurnishedRoom[]): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+    for (const room of rooms) {
+      runtime.prisoners.roomInstances.register({
+        instanceId: room.instanceId,
+        roomCatalogId: room.roomCatalogId,
+        anchorTile: room.anchorTile as never,
+        width: room.width,
+        height: room.height,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        objectCapabilities: [],
+      });
+      for (const [objectId, anchor] of room.objects) {
+        if (!runtime.placedObjects.place(placedObjectAt(objectId, anchor as never, 0))) {
+          throw new Error(`the fixture's ${objectId} at (${anchor.x}, ${anchor.y}) must be placeable`);
+        }
+      }
+    }
+    runtime.roomCapacity.resolveAll();
+    return runtime;
+  }
+
+  /** The requirement statuses one room reads, keyed by the object id each names. */
+  function statuses(runtime: SimulationRuntime, instanceId: string): Record<string, string> {
+    const detail = projectRoomDetail(runtime.prisoners, instanceId, { placedObjects: runtime.placedObjects })!;
+    const byObjectId: Record<string, string> = {};
+    for (const requirement of detail.requirements) {
+      if (requirement.objectId === undefined) continue;
+      byObjectId[requirement.objectId] = requirement.status;
+    }
+    return byObjectId;
+  }
+
+  /** One dining table and one bench: the exact prison issue #528 was played in. */
+  const SHORT_CANTEEN: FurnishedRoom = {
+    instanceId: 'canteen-short',
+    roomCatalogId: 'room.canteen',
+    anchorTile: TILE(8, 8),
+    width: 6,
+    height: 6,
+    objects: [
+      ['object.dining-table', TILE(8, 8)],
+      ['object.bench', TILE(8, 11)],
+    ],
+  };
+
+  /** The same room with the authored two tables and four benches standing in it. */
+  const FULL_CANTEEN: FurnishedRoom = {
+    instanceId: 'canteen-full',
+    roomCatalogId: 'room.canteen',
+    anchorTile: TILE(20, 8),
+    width: 6,
+    height: 6,
+    objects: [
+      ['object.dining-table', TILE(20, 8)],
+      ['object.dining-table', TILE(23, 8)],
+      ['object.bench', TILE(20, 11)],
+      ['object.bench', TILE(22, 11)],
+      ['object.bench', TILE(20, 12)],
+      ['object.bench', TILE(22, 12)],
+    ],
+  };
+
+  it('reads a canteen short of its authored quantities as unfinished', () => {
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    // One of each, against an authored two and four.
+    expect(statuses(runtime, 'canteen-short')).toEqual({
+      'object.dining-table': 'missing-capability',
+      'object.bench': 'missing-capability',
+    });
+    expect(projectRoomDetail(runtime.prisoners, 'canteen-short', { placedObjects: runtime.placedObjects })!.requirementSummary)
+      .toEqual({ total: 4, objectRequirements: 2, satisfiedByCapability: 0, missingCapability: 2, notEvaluated: 2 });
+
+    // And the list projection agrees, which is the number the Rooms panel reads
+    // (`unfinishedRoomIds` filters on `missingCapability > 0`).
+    const row = projectRoomList(runtime.prisoners, {}, { placedObjects: runtime.placedObjects })
+      .rooms.rows.find((candidate) => candidate.instanceId === 'canteen-short')!;
+    expect(row.requirementSummary.missingCapability).toBe(2);
+  });
+
+  it('reads the same canteen finished once the authored two and four stand in it', () => {
+    const runtime = furnish([FULL_CANTEEN]);
+    expect(statuses(runtime, 'canteen-full')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  it('counts only the objects inside the room\'s own rectangle', () => {
+    // Both canteens in one prison. The short one is one table and one bench
+    // short-of-quantity while six more of the same objects stand 12 tiles away,
+    // so a count that forgot the rectangle would call it finished.
+    const runtime = furnish([SHORT_CANTEEN, FULL_CANTEEN]);
+    expect(statuses(runtime, 'canteen-short')).toEqual({
+      'object.dining-table': 'missing-capability',
+      'object.bench': 'missing-capability',
+    });
+    expect(statuses(runtime, 'canteen-full')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  /**
+   * Substitution: an object satisfies a requirement when its own capabilities
+   * cover the required object's. That rule is not new here -- it is what
+   * `src/simulation/construction/definition.ts` states about the buildable rows
+   * and calls "the containment rule doing its job" -- and #528 is about the
+   * *count*, so these pin that counting did not quietly change the rule.
+   */
+  it('counts an object whose capabilities cover the required one\'s, in both directions', () => {
+    const runtime = furnish([
+      // Four benches, no chair. `object.bench` is `['seating', 'recreation']`
+      // and `object.chair` is `['seating']`, so each bench covers a chair.
+      {
+        instanceId: 'classroom-benches',
+        roomCatalogId: 'room.classroom',
+        anchorTile: TILE(2, 2),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.bookshelf', TILE(2, 2)],
+          ['object.bench', TILE(2, 3)],
+          ['object.bench', TILE(4, 3)],
+          ['object.bench', TILE(2, 4)],
+          ['object.bench', TILE(4, 4)],
+        ],
+      },
+      // One bench where four chairs are asked for: covered, and not enough.
+      {
+        instanceId: 'classroom-one-bench',
+        roomCatalogId: 'room.classroom',
+        anchorTile: TILE(10, 2),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.bookshelf', TILE(10, 2)],
+          ['object.bench', TILE(10, 3)],
+        ],
+      },
+      // A security console covers a desk (`['surveillance', 'workstation']`
+      // over `['workstation']`)...
+      {
+        instanceId: 'reception-console',
+        roomCatalogId: 'room.reception',
+        anchorTile: TILE(2, 10),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.security-console', TILE(2, 10)],
+          ['object.chair', TILE(2, 11)],
+          ['object.chair', TILE(3, 11)],
+        ],
+      },
+      // ...and a desk does not cover a security console, for want of
+      // `'surveillance'`. Two desks, so this cannot pass on quantity either.
+      {
+        instanceId: 'security-office-desks',
+        roomCatalogId: 'room.security-office',
+        anchorTile: TILE(10, 10),
+        width: 6,
+        height: 5,
+        objects: [
+          ['object.desk', TILE(10, 10)],
+          ['object.desk', TILE(12, 10)],
+        ],
+      },
+    ]);
+
+    expect(statuses(runtime, 'classroom-benches')).toEqual({
+      'object.bookshelf': 'satisfied-by-capability',
+      'object.chair': 'satisfied-by-capability',
+    });
+    expect(statuses(runtime, 'classroom-one-bench')).toEqual({
+      'object.bookshelf': 'satisfied-by-capability',
+      'object.chair': 'missing-capability',
+    });
+    expect(statuses(runtime, 'reception-console')).toEqual({
+      'object.desk': 'satisfied-by-capability',
+      'object.chair': 'satisfied-by-capability',
+    });
+    expect(statuses(runtime, 'security-office-desks')).toEqual({
+      'object.security-console': 'missing-capability',
+    });
+  });
+
+  /**
+   * The documented fallback, and the reason the fix is not a regression for a
+   * save that predates room bounds: with nothing to count, the projection
+   * answers from the instance's capability list exactly as it did before #528.
+   * Both halves are asserted, because "the fallback exists" and "the fallback is
+   * the weaker answer" are different claims.
+   */
+  it('falls back to the capability list when it is handed nothing to count', () => {
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    // No `placedObjects` option: the same short canteen reads finished, which is
+    // precisely the pre-#528 answer and precisely why the worker supplies it.
+    const withoutObjects = projectRoomDetail(runtime.prisoners, 'canteen-short')!;
+    expect(withoutObjects.requirements.filter((requirement) => requirement.type === 'object').map((requirement) => requirement.status))
+      .toEqual(['satisfied-by-capability', 'satisfied-by-capability']);
+
+    // And an instance with no recorded rectangle -- a V4 save's shape -- takes
+    // the same path even when the objects are supplied, because nothing can be
+    // attributed to a room whose rectangle is unknown.
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'canteen-boundless',
+      roomCatalogId: 'room.canteen',
+      anchorTile: TILE(8, 8) as never,
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: ['dining', 'recreation', 'seating'],
+    });
+    expect(statuses(runtime, 'canteen-boundless')).toEqual({
+      'object.dining-table': 'satisfied-by-capability',
+      'object.bench': 'satisfied-by-capability',
+    });
+  });
+
+  it('is what the worker actually asks for, so a real session counts', () => {
+    // The wiring and not the rule: `projection-catalog.ts` must hand the
+    // registry over, or every session a player runs takes the fallback above and
+    // #528 is unfixed on screen while every test here passes.
+    const runtime = furnish([SHORT_CANTEEN]);
+
+    const detail = PROJECTION_CATALOG['hud/room-detail'].project(runtime, 0, {
+      target: { kind: 'id', id: 'canteen-short' },
+    }).view as unknown as RoomDetailViewModel | undefined;
+    expect(detail?.requirementSummary.missingCapability).toBe(2);
+
+    const list = PROJECTION_CATALOG['hud/room-list'].project(runtime, 0, {}).view as unknown as RoomListViewModel;
+    expect(list.rooms.rows.find((row) => row.instanceId === 'canteen-short')?.requirementSummary.missingCapability).toBe(2);
+  });
+});
+
 describe('staff', () => {
   it('projects real roles, assignments and coverage', () => {
     const runtime = runScenario();
@@ -457,15 +1130,22 @@ describe('staff', () => {
     expect(staff.countsByRoleId.find((entry) => entry.staffRoleId === 'staff-role.guard')?.count).toBe(5);
     expect(staff.countsByRoleId.find((entry) => entry.staffRoleId === 'staff-role.nurse')?.count).toBe(0);
 
+    // The four `DeploymentPhase` declares, in its own order, then the derived
+    // fifth (`src/simulation/security/deployment-phase.ts`). `'returning'` is
+    // a word a row can hold, so the list has to hold it too or the sum below
+    // would lose a head the moment a save taken mid-journey is reloaded.
     expect(staff.countsByDeploymentPhase.map((entry) => entry.deploymentPhase)).toEqual([
       'unassigned',
       'travelling',
       'on-post',
       'on-search',
+      'returning',
     ]);
     expect(staff.countsByDeploymentPhase.reduce((sum, entry) => sum + entry.count, 0)).toBe(5);
 
-    expect(staff.coverage.map((entry) => entry.sectorId)).toEqual(['sector-a', 'sector-b']);
+    // Three sectors: the scenario's two, plus the derived default every session
+    // carries (ADR 0036), which asks for one guard exactly as those two do.
+    expect(staff.coverage.map((entry) => entry.sectorId)).toEqual(['sector-a', 'sector-b', 'security-sector.prison']);
     for (const entry of staff.coverage) {
       expect(entry.required).toBe(1);
       expect(entry.shortage).toBe(Math.max(0, entry.required - entry.assigned));
@@ -498,13 +1178,19 @@ describe('security', () => {
       runtime.kernel.tick,
     );
 
-    expect(security.sectors.map((sector) => sector.sectorId)).toEqual(['sector-a', 'sector-b']);
+    // The scenario's two, plus the derived default every session carries
+    // (ADR 0036). It has no doors and no patrol route, which is what the
+    // assertions on `security.sectors[2]` below say.
+    expect(security.sectors.map((sector) => sector.sectorId)).toEqual(['sector-a', 'sector-b', 'security-sector.prison']);
     const sectorA = security.sectors[0]!;
     expect(sectorA.controlState).toBe(runtime.securitySectors.getControlState('sector-a'));
     expect(sectorA.doors.map((door) => door.doorId)).toEqual(['door-1']);
     expect(sectorA.doors[0]).toMatchObject({ state: 'open', requiredSecurityClearance: 0 });
     expect(sectorA.patrol).toMatchObject({ hasRoute: true, waypointCount: 2, expectedLoopTicks: 40 });
     expect(security.sectors[1]?.patrol.hasRoute).toBe(false);
+    expect(security.sectors[2]).toMatchObject({ sectorId: 'security-sector.prison', gradeId: 'grade.general', controlState: 'normal' });
+    expect(security.sectors[2]?.doors).toEqual([]);
+    expect(security.sectors[2]?.patrol.hasRoute).toBe(false);
 
     expect(sectorA.staffing.assigned).toBe(
       staffAssignedTo(runtime, 'sector-a'),
@@ -562,7 +1248,13 @@ describe('contraband', () => {
       searchPolicies: runtime.searchPolicies,
     });
 
-    expect(contraband.policies.map((policy) => policy.scope)).toEqual(['cell']);
+    // All four since #552: a session ships one policy per scope, and the
+    // scenario replaces the `'cell'` one rather than appending a second (which
+    // `findPolicy` would never have reached). The permille below is still the
+    // scenario's own 0.5 and not a default -- `default-search-policies.ts`
+    // authors 0.7 for `'cell'` -- so this case still distinguishes the policy
+    // the fixture chose from the one the session ships.
+    expect(contraband.policies.map((policy) => policy.scope)).toEqual(['cell', 'delivery', 'person', 'sector']);
     expect(contraband.policies[0]?.baseDetectionProbability.permille).toBe(500);
     expect(contraband.metrics).toMatchObject(runtime.searchSystem.getMetrics());
     for (const order of contraband.searchOrders) {
@@ -673,7 +1365,15 @@ describe('incidents', () => {
     expect(riot).toMatchObject({ type: 'riot', sectorId: 'sector-a', severity: 8, participantCount: 3, terminal: false });
     expect(riot.severityBar).toEqual(toBoundedValue(8, 10));
     expect(riot.ageTicks).toBe(10);
-    expect(riot.requiredResponders).toBe(runtime.incidentResponseSystem.requiredResponderCount(8));
+    // A literal, not `runtime.incidentResponseSystem.requiredResponderCount(8)`
+    // (#416). Asking the production code what it thinks the answer is and then
+    // asserting the projection agrees holds for every implementation of the
+    // rule, including a wrong one -- the projection reads that exact method, so
+    // the two sides were one side. `respondersPerSeverityPoint` is 0.5 and the
+    // requirement rounds up, so a severity-8 riot needs four; the rule itself
+    // is pinned in `tests/unit/incident-response.test.ts`, and what belongs
+    // here is that the projection publishes it rather than something else.
+    expect(riot.requiredResponders).toBe(4);
   });
 
   it('never exposes the hidden cause factors that produced an incident', () => {
@@ -701,5 +1401,80 @@ describe('incidents', () => {
   it('returns undefined for an unknown incident id', () => {
     const runtime = runScenario();
     expect(projectIncidentDetail({ incidents: runtime.incidents }, 'incident.nope', runtime.kernel.tick)).toBeUndefined();
+  });
+
+  /**
+   * A real `IncidentLog` rather than `runScenario`'s, and the reason is the
+   * subject rather than convenience: the scenario finishes **one** incident,
+   * and a window is only observable over a list longer than the window. Every
+   * record below is still opened and transitioned through the real lifecycle,
+   * so an illegal transition throws here exactly as it does in the other
+   * cases above.
+   */
+  function logWithTerminalIncidents(count: number): IncidentLog {
+    const log = new IncidentLog();
+    for (let index = 0; index < count; index += 1) {
+      const id = `incident.past.${String(index).padStart(3, '0')}`;
+      log.open({ id, type: 'assault', sectorId: 'sector-a', participantIds: [index + 1], severity: 3, causeFactors: [] }, index);
+      log.transition(id, 'notified', index);
+      log.transition(id, 'responding', index);
+      log.transition(id, 'resolved', index, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+    }
+    log.open({ id: 'incident.open', type: 'riot', sectorId: 'sector-a', participantIds: [1], severity: 4, causeFactors: [] }, count);
+    return log;
+  }
+
+  it('builds a row only for the terminal incidents the window asked for', () => {
+    // `projectRow` is module-private, so what is counted is the one call it
+    // makes on a collaborator: `requiredResponderCount`, once per row it
+    // builds and nowhere else in the projection. That makes "how many rows
+    // were materialised" observable from outside without exporting anything
+    // for the test's benefit.
+    //
+    // This is the assertion the change is for. Before it, every terminal
+    // incident ever recorded got a row and `pageOf` threw all but `limit` of
+    // them away -- so this counter read 41 for a request that shows four.
+    let rowsBuilt = 0;
+    const response = {
+      getMetrics: () => ({ incidentsResolved: 0, incidentsLapsed: 0, respondersDispatched: 0, routeFailures: 0 }),
+      requiredResponderCount: (severity: number) => {
+        rowsBuilt += 1;
+        return severity;
+      },
+    };
+
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(40), response }, 1_000, { offset: 10, limit: 4 });
+
+    // Four terminal rows inside the window, plus the one open incident, which
+    // `active` reports in full and unpaged by design.
+    expect(rowsBuilt).toBe(5);
+    expect(incidents.active.map((incident) => incident.incidentId)).toEqual(['incident.open']);
+  });
+
+  it('pages the terminal incidents exactly where the discarded slice used to', () => {
+    // The page itself, asserted separately from the cost above: same records,
+    // same order, same `total`/`offset`/`limit`, so the change is invisible to
+    // a caller. `all()` is ascending by id and the ordinal counts in that
+    // order, so the window starting at 10 is `past.010` onwards.
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(40) }, 1_000, { offset: 10, limit: 4 });
+
+    expect(incidents.resolved.rows.map((incident) => incident.incidentId)).toEqual([
+      'incident.past.010',
+      'incident.past.011',
+      'incident.past.012',
+      'incident.past.013',
+    ]);
+    expect(incidents.resolved).toMatchObject({ total: 40, offset: 10, limit: 4 });
+    expect(incidents.summary).toMatchObject({ total: 41, stillOpen: 1, resolved: 40, lapsed: 0 });
+  });
+
+  it('reports an empty window rather than a first page when the offset is past the end', () => {
+    // The edge `slice(offset, offset + limit)` answered by construction and
+    // the ordinal has to answer by arithmetic: an offset beyond the last
+    // terminal record is an empty page whose `total` is still the whole count.
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(3) }, 1_000, { offset: 9, limit: 4 });
+
+    expect(incidents.resolved.rows).toEqual([]);
+    expect(incidents.resolved).toMatchObject({ total: 3, offset: 9, limit: 4 });
   });
 });

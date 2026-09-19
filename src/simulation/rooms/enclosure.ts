@@ -1,5 +1,4 @@
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
-import type { SparseWorld } from '../world/sparse-world';
 
 /**
  * Whether a zoned rectangle is walled in along its own boundary.
@@ -12,12 +11,33 @@ import type { SparseWorld } from '../world/sparse-world';
  * boundary is its whole frontier -- so a `sealed` answer is a true statement
  * about the tiles inside it.
  *
- * It is **not** a region-enclosure query, and the difference is a false
- * negative rather than a false positive. A rectangle drawn strictly inside a
- * larger sealed building, with no partition walls of its own, is reported
- * `open` here while being topologically indoors. Answering *that* needs the
- * enclosing region rather than the rectangle, which nothing in this
- * repository computes:
+ * ## What `enclosed` means, and why that settles whether this is narrow
+ *
+ * **This section used to call the difference below a false negative, and it is
+ * now a definition.** It said: this is not a region-enclosure query, a
+ * rectangle drawn strictly inside a larger sealed building with no partition
+ * walls of its own is reported `open` while being topologically indoors, and
+ * "the narrowness is why nothing *refuses* a room on it".
+ *
+ * The owner has ruled that `zone` must refuse an open room (issue #446's third
+ * open question; the ADR "Must a zoned room be enclosed" is the decision). What
+ * that ruling settles is not only the outcome but the *question*: a room
+ * definition's `enclosed` requirement now means **this room's own boundary is
+ * closed**, not "this room is topologically indoors". Against that question
+ * this function is not a narrow proxy for something better -- it is the exact
+ * answer, with no false negatives and no false positives, in
+ * `2 * (width + height)` edge reads.
+ *
+ * The consequence is a rule about layout rather than a defect: a rectangle
+ * inside a larger sealed hall, with no partitions of its own, is not an
+ * enclosed room and `RoomZoningService.zone` refuses it `not-enclosed`.
+ * Adjacent rooms may share a wall -- room A's east boundary and room B's west
+ * boundary are the same stored edge -- so this is subdivision, not
+ * double-walling.
+ *
+ * The paragraphs below are kept because they are still true and still bound
+ * what a *region* query would cost, should a future decision want the
+ * topological reading back as a widening. Nothing here waits on them any more:
  *
  * - `TopologyManager` (`./topology.ts`) does **region detection**, not
  *   enclosure. It flood-fills each chunk across zero-valued edges, joins the
@@ -33,9 +53,12 @@ import type { SparseWorld } from '../world/sparse-world';
  *   `registerSystem` block beside it, so no tick recomputes it and
  *   `getTopologyId` answers `0` for every tile in a running session.
  *
- * So this module deliberately implements the narrower predicate it can state
- * honestly, and the narrowness is why nothing *refuses* a room on it -- see
- * `RoomZoningService.zone`.
+ * So this module implements the predicate it can state honestly, and since the
+ * ruling above that predicate *is* the rule -- `RoomZoningService.zone` refuses
+ * an `enclosed` room whose answer here is `open`. Only `enclosed`: `outdoors`
+ * (`room.yard`) and `none` accept any perimeter, because a walled exercise yard
+ * is an ordinary prison yard and because `outdoors` is a claim about a roof,
+ * which this world model does not represent at all.
  *
  * ## A sealed room can have a door in it, and that is recent
  *
@@ -78,6 +101,24 @@ export interface TileRectangle {
  */
 export type RoomEnclosure = 'sealed' | 'open';
 
+/*
+ * **`RoomPerimeterAccess` and `roomPerimeterAccess` used to live here, and ADR
+ * 0108 moved the verdict out of this module rather than widening it.**
+ *
+ * The type they published had three values and the docblock on it stated the
+ * asymmetry in its own words: *"`'no-way-in'` is certain, `'doorway'` is
+ * necessary rather than sufficient, and no sentence built on this may claim
+ * more"*, handing the region question to `buildNavigationGraph`. #1006 measured
+ * what shipping a player-facing readout on the half that is not certain costs
+ * -- silence in exactly the state that costs 2,000 a day and every yard tick --
+ * and the answer is now `RoomAccess` in `./reachability.ts`, which asks this
+ * module's two perimeter questions first and the region question afterwards.
+ *
+ * What stays here is what this module can state honestly about one rectangle:
+ * `roomPerimeterEnclosure` above, and `roomPerimeterHoldsDoor` below.
+ */
+
+
 /**
  * Which edge of which tile the world stores a gap at.
  *
@@ -99,13 +140,68 @@ export interface RoomEnclosureResult {
 }
 
 /**
+ * The two reads this module needs from a world, named as a port rather than as
+ * `SparseWorld` (issue #493).
+ *
+ * `SparseWorld` still satisfies this structurally and every call site inside
+ * `src/simulation/**` keeps passing one -- nothing there changes. What this
+ * makes possible is a *second* implementation on the other side of the worker
+ * boundary: `src/rendering/world/world-view.ts`'s `WorldRenderView` is the
+ * renderer's own decoded, read-only projection of the same two edge layers,
+ * built for painting walls, and it satisfies this port with no adapter. A
+ * pending rectangle's own enclosure can therefore be classified from the
+ * *client* side of the boundary -- once, at the composition root that already
+ * knows both the world and the HUD's vocabulary -- against the identical
+ * function `RoomZoningService.zone` refuses by, rather than a second
+ * implementation of the same walk that could silently disagree with it. That
+ * is the discipline `WorldRenderView.isTileOwned`'s own comment already states
+ * for ownership (`isTileOwnedBy` is imported, not reimplemented, after #93
+ * found the two disagreeing); this is the same rule applied to enclosure.
+ *
+ * A concrete class typed as a parameter would refuse this, because a class
+ * with private fields is only assignable to *that* class -- `WorldRenderView`
+ * has its own private chunk map and could never satisfy `SparseWorld`
+ * structurally no matter which public methods it grew. An interface has no
+ * private side to fail to match, which is the whole reason this exists as one.
+ */
+export interface RoomEdgeReader {
+  getTopEdge(tile: TilePosition): number;
+  getLeftEdge(tile: TilePosition): number;
+}
+
+/**
+ * The one read `roomPerimeterHoldsDoor` needs from a door registry, named as a
+ * port for the reason `RoomEdgeReader` is one.
+ *
+ * `DoorRegistry.getByEdge` satisfies it structurally and every call site
+ * passes one. The return type is `unknown` rather than `DoorDefinition |
+ * undefined` deliberately: this module needs to know only whether an edge
+ * *has* a door, and a `DoorDefinition` here would import the navigation
+ * vocabulary -- its lock state, its cost multiplier, its permissions -- into a
+ * module that must not weigh any of it. A locked door is still a door to this
+ * question, which is the same policy `buildNavigationGraph` applies when it
+ * records a portal "regardless of its current lock state".
+ *
+ * `'left'` and `'top'` are `DoorSide`'s own spelling for the two edges the
+ * world stores, and they are the same two edges `RoomEnclosureGap` calls
+ * `'west'` and `'north'`. Two vocabularies for one pair of edges is not this
+ * module's to unify -- the door registry is keyed on one of them and
+ * `src/rendering/build/edge-picking.ts` on the other -- so the walk below
+ * reads a tile's north edge through `getTopEdge` and asks the registry for the
+ * same tile's `'top'`.
+ */
+export interface RoomDoorReader {
+  getByEdge(tile: TilePosition, side: 'left' | 'top'): unknown;
+}
+
+/**
  * Evaluates the perimeter of `rectangle` against the world's edge layers.
  *
  * A rectangle with a non-positive dimension has no perimeter to check and is
  * reported `'open'` with no gap: it is not a shape that could enclose
  * anything, and the caller has already refused it as an invalid area.
  */
-export function roomPerimeterEnclosure(world: SparseWorld, rectangle: TileRectangle): RoomEnclosureResult {
+export function roomPerimeterEnclosure(world: RoomEdgeReader, rectangle: TileRectangle): RoomEnclosureResult {
   if (rectangle.width < 1 || rectangle.height < 1) return { enclosure: 'open' };
 
   const left = rectangle.x;
@@ -138,6 +234,59 @@ export function roomPerimeterEnclosure(world: SparseWorld, rectangle: TileRectan
   }
 
   return { enclosure: 'sealed' };
+}
+
+/**
+ * Whether any edge on `rectangle`'s perimeter carries a **registered door**.
+ *
+ * The second of this module's two perimeter questions, and the one that makes
+ * a crossing possible at all: `edgeStanding` (`../navigation/traversal.ts`)
+ * consults `DoorRegistry` *before* the edge value, and `buildNavigationGraph`
+ * records a portal for exactly that edge whatever its lock state. So a closed
+ * perimeter holding no door anywhere is a boundary no route can cross in either
+ * direction -- `traversal.ts` states it as a rule rather than an observation:
+ * *"any non-zero value with no registered door is an impassable wall"*.
+ *
+ * **It answers about the wall line and says nothing about what is behind it**,
+ * which is the whole reason `roomAccess` (`./reachability.ts`) exists to ask a
+ * second question of the region graph. A caller reading `true` here as "somebody
+ * can get in" is making exactly the claim #1006 was filed about.
+ *
+ * ## Determinism and cost
+ *
+ * The same canonical perimeter order `roomPerimeterEnclosure` walks -- north row
+ * west to east, then south row, then west column, then east column -- so the two
+ * walks cannot disagree about which edges belong to the rectangle. A pure read
+ * of the registry; it materialises nothing, for the reason that function gives.
+ * At most `2 * (width + height)` lookups, and it **returns on the first door
+ * found**, so the answer is a function of the rectangle rather than of the loop.
+ */
+export function roomPerimeterHoldsDoor(doors: RoomDoorReader, rectangle: TileRectangle): boolean {
+  if (rectangle.width < 1 || rectangle.height < 1) return false;
+
+  const left = rectangle.x;
+  const top = rectangle.y;
+  const right = rectangle.x + rectangle.width - 1;
+  const bottom = rectangle.y + rectangle.height - 1;
+
+  for (let x = left; x <= right; x += 1) {
+    // The rectangle's top boundary: this tile's own north edge, which the
+    // registry keys as `'top'`.
+    if (doors.getByEdge(tile(x, top), 'top') !== undefined) return true;
+  }
+  for (let x = left; x <= right; x += 1) {
+    // Its bottom boundary: the north edge of the row below it.
+    if (doors.getByEdge(tile(x, bottom + 1), 'top') !== undefined) return true;
+  }
+  for (let y = top; y <= bottom; y += 1) {
+    if (doors.getByEdge(tile(left, y), 'left') !== undefined) return true;
+  }
+  for (let y = top; y <= bottom; y += 1) {
+    // Its east boundary: the west edge of the column to its right.
+    if (doors.getByEdge(tile(right + 1, y), 'left') !== undefined) return true;
+  }
+
+  return false;
 }
 
 function tile(x: number, y: number): TilePosition {

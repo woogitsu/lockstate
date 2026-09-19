@@ -86,10 +86,69 @@ production wiring... for prisoners." Realistic guard headcounts are tens,
 not thousands, so every field lives in a small `Map` rather than a
 hot-SoA-component treatment -- there is no per-tick hot path at this scale
 (see `tests/unit/security-scale.test.ts`'s 60-sector/120-guard benchmark).
-A guard's `deploymentPhase` (`'unassigned' | 'travelling' | 'on-post'`) and
-optional `patrolWaypointIndex` are the only fields `DeploymentSystem` and
-`PatrolSystem` need to coordinate ownership of a travelling guard (see
-below).
+A guard's `deploymentPhase` and optional `patrolWaypointIndex` are the only
+fields `DeploymentSystem` and `PatrolSystem` need to coordinate ownership of a
+travelling guard (see below). **This sentence used to write the phase out as
+`'unassigned' | 'travelling' | 'on-post'` and that was three of four**: issue
+#27 added `'on-search'` for a guard pulled onto search duty, which is
+`contraband/search-system.ts`'s own bookkeeping and is invisible to both
+systems above. The union is named rather than copied here now, because a list
+in prose is the part that rots.
+
+A **fifth** word reaches a Staff panel row, `Returning`, and it is deliberately
+not a member of that union -- see *A guard restored halfway to its post* under
+Snapshot/restore below.
+
+## Who may stand a post
+
+A staff member may be claimed for a security duty -- a sector post, an
+incident response, a contraband search -- only if their role is in a
+department `POST_ELIGIBLE_STAFF_DEPARTMENTS` names
+(`src/content/staff-role-catalog.ts`). Today that list is `security` alone, so
+`staff-role.guard` and `staff-role.security-chief` are the two roles of eight
+that can be sent anywhere. [ADR 0053](./adr/0053-who-may-stand-a-security-post.md)
+decides it and issue #456 is what it closes.
+
+The rule is read in exactly one place, `claimableGuardIds`
+(`src/simulation/security/post-eligibility.ts`), which `DeploymentSystem` and
+`IncidentResponseSystem` call where they used to call
+`GuardRoster.unassignedGuardIds()` directly. **`SearchSystem` and
+`SectorSearchDutySystem` read a narrower pool since issue #996** —
+`claimableSearchGuardIds`, the same function's result less
+`INCIDENT_RESPONSE_GUARD_RESERVE` — so that a contraband sweep can never be the
+reason an incident has nobody to send. That is one *rule* in one place still:
+the reserve is applied in the same module, and neither search call site decides
+anything of its own. `GuardRoster` itself is unchanged:
+`unassignedGuardIds()` still answers who has no assignment, which is what the
+Staff panel's `unassigned` headcount is a count of.
+
+`StaffHiringService` refuses a hire into an ineligible role outright
+(`hire.no-duty-for-role`), because nothing in `src/` removes a staff member from
+the roster and `PayrollSystem` bills every id on it at every day boundary -- so
+such a hire would be a permanent wage for no effect. A save written before this
+rule can still carry one, and the claim filter is what stops those from covering
+a post.
+
+Measured on `bb3a01e`, in the three-prisoner one-bed prison
+`tests/integration/security-default-sector.test.ts` builds, hiring an
+administrator, a nurse, a cook, a doctor and a warden through the real command
+path: **zero refusals, the administrator `on-post`, coverage
+`required: 1, assigned: 1, shortage: 0`, and over 30,000 ticks four riots -- all
+four resolved, sixteen responders dispatched, nobody injured.** Under the rule
+the same prison has six riots, all six lapsed, nobody dispatched and eighteen
+injuries, which is what a prison with no guards should look like.
+
+**Both figures are riot counts, and a riot is no longer the only thing that
+prison produces.** Since
+[ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md) the same
+unguarded, unhoused prison also opens `'assault'` incidents in the stretches
+between riot windows -- `tests/integration/security-default-sector.test.ts`
+pins one of them, at `incidentsTriggered: 2` against `riotsTriggered: 1`. The
+riot half of the measurement above was **not** re-run at 30,000 ticks for this
+change, so it is left as the measurement it was rather than restated as a
+current one; what was re-measured, across seven prisons at 30,000 ticks each, is
+that no riot count and no peak sector risk moved, and that table is in ADR 0061's
+Consequences.
 
 ## Deployment: filling sector requirements without teleporting
 
@@ -102,7 +161,8 @@ fabricated demand.
 
 `deployment-system.ts`'s `DeploymentSystem` (a `SystemRegistration`,
 scheduled every 10 ticks) deterministically fills each sector's shortage
-from unassigned guards (ascending entity id) and drives every assigned
+from **post-eligible** unassigned guards (ascending entity id; see "Who may
+stand a post" below) and drives every assigned
 guard to its `postTile` through the real `NavigationSystem` -- staff do not
 teleport into deployment zones. `getCoverageReport(tick)` exposes
 per-sector required/assigned/shortage counts, sorted by sector id, without
@@ -154,21 +214,156 @@ proves a sector's `'restricted'` override, a guard mid-patrol-leg and a
 still-unassigned guard all restoring correctly together in one scenario,
 matching #25's combined-not-per-class restore-test convention.
 
+### A guard restored halfway to its post
+
+**The reset above is right and the word it left behind was not** (the owner's
+ruling 24 of 2026-08-31, answering the question
+`docs/research/2026-08-31-what-a-reload-keeps-and-what-it-says.md` §C.1 handed
+over rather than settled). `'on-post'` is an assertion about a tile -- the
+guard is standing on its sector's `postTile` -- and a guard restored mid-walk
+is settled on that phase while standing wherever the walk had got to. The
+projection therefore checks the assertion instead of repeating it: a guard
+whose phase is `'on-post'` and whose tile is not the post tile is shown as
+**Returning** (`src/simulation/security/deployment-phase.ts`,
+`displayedDeploymentPhase`).
+
+Two properties are the whole of the design:
+
+- **Derived, never stored.** `DisplayedDeploymentPhase` is
+  `DeploymentPhase | 'returning'` and exists only in the view model, so
+  `guardRecordSchema`'s closed `deploymentPhase` enum is untouched and
+  `SAVE_SCHEMA_VERSION` stays 5. A widening would have been legal without a
+  bump (ADR 0038 §1) but would have cost an older build the ability to read a
+  save that recorded the value, and would have put the question "what does
+  this mean to me" to every reader of the phase. The label comes from
+  `simulation-message-keys.ts`'s `deployment-phase` group as an
+  `additionalIds` entry.
+- **A returning guard counts toward coverage**, exactly as it did while it was
+  reported as `'on-post'`: `assignedGuardCountFor` counts every guard whose
+  phase is not `'unassigned'`. The alternative would have made every reload
+  invent a shortage, which `assignUnassignedGuards` would fill on its next
+  cycle -- a prison coming back with more guards posted than it was saved
+  with.
+
+The word ends on its own, and something had to be added for that to be true.
+`DeploymentSystem.walkBackToPost` sends a guard back to a post it holds and is
+not standing on; a sector with a patrol route is left to `PatrolSystem`, which
+starts the loop from wherever the guard stands and takes the phase to
+`'travelling'`. Before this, a restored guard in a sector with **no** route
+stood where it was for the rest of the session -- and since ADR 0036 that is
+every session a player can start.
+`tests/integration/security-returning-after-restore.test.ts` runs the ticks for
+both endings.
+
 ## Wiring into `SimulationRuntime`
 
 `createNewSimulationRuntime` (`src/simulation/runtime/new-session.ts`)
-constructs an empty `SecuritySectorRegistry` (bound to the session's own
-`NavigationSystem.doors`), an empty `GuardRoster`, an empty mutable
+constructs a `SecuritySectorRegistry` (bound to the session's own
+`NavigationSystem.doors`), an empty `GuardRoster`, a mutable
 `securitySchedules` array, and registers `DeploymentSystem`/`PatrolSystem`
-on the kernel -- all exposed on `SimulationRuntime`. Exactly like
-#19/#22/#24/#25 before it: this wires real infrastructure with no
-fabricated default content. No sectors, no hired guards and no deployment
-requirements exist until an actual session/scenario registers them -- or,
-for a guard, until a `HireStaff` command arrives
-([ADR 0025](./adr/0025-guard-hiring-surface.md));
-`securitySchedules` stays a plain mutable array specifically so scenario
-setup can `push` staffing requirements into it after construction --
-`DeploymentSystem` reads the array live on every scheduled tick.
+on the kernel -- all exposed on `SimulationRuntime`. `securitySchedules`
+stays a plain mutable array specifically so scenario setup can `push`
+staffing requirements into it after construction -- `DeploymentSystem` reads
+the array live on every scheduled tick.
+
+### One derived sector, and why this is the exception to "no fabricated default content"
+
+Every other registry here starts empty, and the sector registry used to as
+well. **That was the defect issue #396 measured**, not the invariant:
+`securitySectors.register` had exactly one caller in all of `src/` --
+`restoreSessionSystems`, reading a save payload -- so a session a player could
+start held zero sectors, and `DeploymentSystem`, `PatrolSystem`,
+`IncidentTriggerSystem` and `IncidentResponseSystem` all iterated empty
+collections for the whole life of that session. The tier was measured only in
+scenarios and in restored saves.
+
+[ADR 0036](./adr/0036-a-derived-default-security-sector.md) closes it with a
+**derived** default rather than an authored one. `applyDefaultSecuritySector`
+(`src/simulation/security/default-sector.ts`) is called from the composition
+root and fills three collections, because filling one of them changes nothing:
+
+| collection | value | why the other two are needed |
+| --- | --- | --- |
+| `securitySectors` | `security-sector.prison`, `grade.general`, **no doors**, post tile at the middle of the first owned chunk in canonical `(y, x)` order | -- |
+| `securitySchedules` | one guard, all day -- a **floor** since ADR 0048, not the whole requirement | `DeploymentSystem.requiredGuardCountFor` answers `0` for a sector with no schedule, so a sector alone posts nobody |
+| `incidentSectorIds` | that one id | `IncidentTriggerSystem` samples only the ids it is handed, so a staffed sector nothing watches opens no incident |
+
+A derived sector is not fabricated *content*: it carries no authored geometry,
+no name, no grade nobody chose, and it is a pure function of the world's chunk
+size and its owned chunks. Because it is pure it is **re-derived on load rather
+than persisted** -- `applyDefaultSecuritySector` runs again at the end of
+`restoreSessionSystems`, is idempotent, and leaves anything the payload already
+carried alone. `SAVE_SCHEMA_VERSION` stays 5 and no migration exists; a save
+written before ADR 0036 gains the sector on load.
+
+**Its post tile is the tile `NEW_PRISON_ORIGIN_TILE` holds** (16, 16 for a new
+session's 32-tile chunk), and that is load-bearing twice over: a hire is posted
+without a route request, and the tile is on owned walkable ground.
+
+> **It used to be load-bearing a third time**, and this paragraph said so: *"an
+> unhoused arrival standing there is a sector occupant for
+> `resolveSectorOccupants`"*. That was true and it was the only way any prison
+> had occupants, because the resolver counted prisoners standing on exactly that
+> tile and `ActionSystem` moves a housed prisoner to their room's anchor.
+> [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) replaced the rule, so
+> occupancy no longer rests on the coincidence -- see "What a sector's occupants
+> are" below.
+
+### What a sector's occupants are
+
+[ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) decision 1:
+**the derived sector is the prison, so its occupants are every living prisoner
+standing on land the prison owns** (`world.isTileOwned`, the same rule the
+renderer shades from, ADR 0019). Any *other* registered sector keeps the
+post-tile rule, because `SecuritySectorDefinition` records a grade, doors, a post
+tile and an optional patrol route and none of those is an area -- the derived
+sector is the one sector whose area is known without anyone drawing it.
+
+`src/simulation/security/sector-occupancy.ts` holds the rule and answers it two
+ways: `resolveSectorOccupants` for the list `IncidentTriggerSystem` samples and
+records as participants, and `countSectorOccupants` for the number
+`DeploymentSystem` scales its requirement by. Both walk the live prisoner
+indices and sort by entity id; neither is persisted, and no save-schema field
+moved.
+
+### A requirement that grows with the prison
+
+[ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) decision 3:
+`DeploymentSystem.requiredGuardCountFor` answers
+`max(scheduled, ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))`, with the
+constant at 8. It **only ever raises** -- a schedule is authored data and the
+population is a demand on top of it -- and **a scheduled zero is an exemption
+that stays zero**, which is what lets a save carry one and what
+`tests/helpers/default-security-sector.ts` relies on.
+
+The reason is arithmetic rather than flavour: `staffingShortfall` is
+`shortage / required`, so a requirement pinned at one is `1` before the first
+hire and `0` for ever afterwards, whatever the population. That is issue #442's
+"hiring one guard makes the incident system unreachable", and it is why the
+scaling is applied in `requiredGuardCountFor` rather than by rewriting the
+schedule: that method is the one place the requirement is read, by
+`assignUnassignedGuards` and by `getCoverageReport` both, so what is enforced
+and what the projections publish cannot disagree.
+
+**What it does not bring back**, measured in
+`tests/integration/security-default-sector.test.ts`:
+
+- **Patrol.** The derived sector has no `patrolRoute`, so `PatrolSystem` is
+  still a no-op. A route is an authored loop of waypoints and a derived one
+  would be a made-up path across whatever the player built.
+- **Lockdown's physical effect.** `doorIds` is empty, so `setControlState`
+  moves a control state that cascades onto nothing. A perimeter is the one
+  thing the derivation cannot know.
+- **Contraband search used to be on this list and has left it** (issue #552,
+  [ADR 0073](adr/0073-who-orders-a-contraband-search.md)). The bullet read
+  *"for a reason that was never a sector: `SearchSystem.submitOrder` has no
+  caller in `src/` at all"*, and the reason it gives was right -- a sector was
+  never what search was missing. What it was missing, four policies and a
+  producer, now exists: a **staffed** sector orders a rotating sweep of its own
+  occupants every 600 ticks, walked by a guard the deployment requirement has
+  not already taken (`contraband.search-duty`). So a sector alone still does not
+  make searches happen; a sector with somebody standing it, and one guard spare,
+  does. `docs/CONTRABAND.md`, "Who orders a search", carries the rule.
 
 ## Readonly projections for UI
 
@@ -204,6 +399,9 @@ effects (a session UI exists -- the HUD and save panel -- but the only thing
 it surfaces is a headcount of hired guards and how many are unassigned
 (#104), beside the Staff panel that hires one
 ([ADR 0025](./adr/0025-guard-hiring-surface.md)) and lists hireable roles
-rather than hired people; no sector, no patrol and no deployment state
-reaches a panel); alarms, cameras or any detection
+rather than hired people, plus the held-guards block a release aims at
+([ADR 0034](./adr/0034-releasing-a-claimed-guard.md)); `projectSecurity`
+exists and `hud/security` is published, but no panel reads it, so sector
+control state, patrol metrics and coverage still reach no surface); alarms,
+cameras or any detection
 mechanic beyond the access-control/patrol substrate itself.

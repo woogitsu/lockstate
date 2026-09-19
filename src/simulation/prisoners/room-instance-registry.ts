@@ -117,6 +117,36 @@ export interface RoomInstance {
   readonly concurrentUseCapacityByCapability?: readonly (readonly [string, number])[];
   /** The union of the capabilities of the objects inside the rectangle, deduplicated, ascending by code unit. Derived. */
   readonly objectCapabilities: readonly string[];
+  /**
+   * Whether this instance's **room type** is tagged as an open area, and
+   * therefore whether `openGroundCapacityOf` has a domain here at all.
+   *
+   * The owner's ruling of 2026-08-29 on issue #585, amending ADR 0071: floor
+   * area bounds only the room types explicitly tagged in
+   * `src/content/room-catalog.ts` -- `room.yard`, `room.holding-cell`,
+   * `room.delivery-bay`. Everything else derives 0 for an action that consumes
+   * no object.
+   *
+   * **Carried onto the instance rather than looked up**, which is what keeps
+   * ADR 0071 decision 4 exactly true: that rule lives here *because* this
+   * module has no runtime imports at all and "reads only the instance". A
+   * catalogue import would falsify the sentence the decision rests on, so the
+   * two registration sites -- `RoomZoningService.zone` and
+   * `restoreSessionSystems`, both of which already read content -- resolve the
+   * tag through `isOpenAreaRoom` and hand the answer over.
+   *
+   * **Not persisted, and re-derived on every load.** It is a property of the
+   * room *type*, so a save that carried it could disagree with the build that
+   * read it back -- the same reason ADR 0028 phase 1 stopped persisting
+   * capacity. `PersistedRoomInstance` is built field by field against a
+   * `.strict()` schema, so no save format moves for this and
+   * `SAVE_SCHEMA_VERSION` is untouched.
+   *
+   * **Optional, and absent means not an open area.** A hand-built fixture that
+   * wants an open-ground ceiling has to say so, which is what "explicitly
+   * tagged" means.
+   */
+  readonly openArea?: boolean;
 }
 
 /**
@@ -132,6 +162,183 @@ export interface RoomDerivedCapacity {
   readonly concurrentUseCapacity: number;
   readonly concurrentUseCapacityByCapability: readonly (readonly [string, number])[];
   readonly objectCapabilities: readonly string[];
+}
+
+/**
+ * How many tiles of open ground one prisoner needs to use a room that supplies
+ * no object for them to use.
+ *
+ * [ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md),
+ * which is where the reasoning lives; this comment is the arithmetic.
+ *
+ * **Data rather than architecture** (ADR 0017 decision 5), and it carries the
+ * standing flag the repository's other directional constants carry
+ * (`src/simulation/prisoners/sentence.ts`'s bounds,
+ * `src/simulation/contraband/intelligence.ts`'s decay,
+ * `src/simulation/world/tile-ownership.ts`'s rule): **taken on the measurement
+ * below and open to re-measurement, not settled for ever.** Issue #532's
+ * *mechanism* -- that an objectless room is bounded by its ground rather than
+ * by nothing -- is what the owner decided, and a different integer changes how
+ * much rather than whether.
+ *
+ * ## Where 16 comes from
+ *
+ * Every other room's ceiling is `tiles / places` at its authored catalogue
+ * minimum, and those densities are already in the content:
+ *
+ * ```
+ * room.laundry      3x3 =  9 tiles / 4 places ('laundry',          2 machines x 2)  =  2.25
+ * room.kitchen      4x4 = 16 tiles / 4 places ('food-preparation', stove + counter) =  4.0
+ * room.shower-room  3x3 =  9 tiles / 2 places ('hygiene',          2 heads x 1)     =  4.5
+ * room.canteen      6x6 = 36 tiles / 6 places ('dining',           2 tables x 3)    =  6.0
+ * room.common-room  5x5 = 25 tiles / 4 places ('recreation',       2 benches x 2)   =  6.25
+ * room.classroom    5x5 = 25 tiles / 2 places ('education',        1 bookshelf x 2) = 12.5
+ * ```
+ *
+ * 16 is deliberately **looser than all six**, which is the honest reading of
+ * what the yard is: the one activity that is people spread out over open
+ * ground rather than people at a piece of furniture, and the one room whose
+ * capacity the player can extend for nothing. A number inside that range would
+ * make the free room the densest as well as the cheapest.
+ *
+ * Measured at 8 instead of 16: a minimum yard admits 8, all six prisoners of
+ * the reference prison fit, and `action.common-room-recreation` falls back to
+ * the 96 ticks it had before this change -- so 8 does not deliver the decision
+ * at that prison size, which is the evidence the figure rests on rather than a
+ * preference. `tests/integration/yard-and-common-room.test.ts` is where that
+ * was measured.
+ *
+ * What it produces at the catalogue minimums is the figure the decision is
+ * actually about: an 8x8 yard -- the smallest `RoomZoningService.zone` permits
+ * -- admits **4**, exactly what a 5x5 common room with its two authored
+ * benches admits. The yard keeps every advantage it had except being
+ * unbounded: it still scores higher (`recreation: 3` and `safety: 0.1` against
+ * the common room's `recreation: 2`), it still costs no walls, no objects and
+ * no materials, and a player who wants all of a larger population outdoors
+ * simply zones more ground. What it no longer does is admit everybody in every
+ * prison for ever, which is what left `action.common-room-recreation` with no
+ * state it could win in.
+ */
+export const TILES_PER_OPEN_GROUND_PLACE = 16;
+
+/**
+ * How many actors an instance's own rectangle admits for an action that
+ * consumes no object, or `Number.POSITIVE_INFINITY` when the instance records
+ * no rectangle.
+ *
+ * Reads nothing but the instance, which is why it lives here rather than
+ * beside `deriveRoomCapacity`: this module has no runtime imports at all, and
+ * a ceiling that needed the object catalogue to answer "how big is this room"
+ * would be the reason it acquired one.
+ *
+ * **Never below 1 for an instance that has a rectangle at all**, and that
+ * clamp is the rule rather than a rounding convenience. `Math.floor` alone
+ * would answer 0 for every rectangle under 16 tiles -- a 2x3 cell, a 3x3
+ * laundry -- and a room that exists but admits nobody is exactly the defect
+ * issue #326 removed when it stopped reading an objectless yard as a ceiling
+ * of zero. Reintroducing it one room size down would be the same mistake with
+ * a different subject. A rectangle the player drew is somewhere at least one
+ * prisoner can stand.
+ *
+ * No zoned `room.yard` reaches the clamp: its authored `minimum-size`
+ * requirement is 8x8 and 64 tiles, which `RoomZoningService.zone` enforces, so
+ * the smallest legal yard derives 4. The clamp is there for every *other*
+ * room, which is where a future action naming no capability would otherwise
+ * find a silent zero.
+ */
+/**
+ * Which of one instance's residents hold a place that **currently exists**:
+ * the first `residentCapacity` of `occupantsAscending`, and none at all when
+ * the room has furnished no residency capacity.
+ *
+ * The whole of issue #585's rule, extracted from
+ * `RoomInstanceRegistry.residentIdsWithExistingPlace` so that it can be tested
+ * as arithmetic rather than only through a registry -- which is what lets the
+ * three cases that matter (under, exactly at, and over capacity) be pinned
+ * without building a prison for each.
+ *
+ * **`occupantsAscending` must already be sorted**, because the caller has just
+ * sorted it (`occupantsOf`) and a second sort here would be a copy of an
+ * ordering rule that has to agree with `residentIds`. It takes an array and a
+ * number rather than an instance, so it cannot read anything the caller has
+ * not decided to hand it.
+ *
+ * `slice` and never the input array itself, even when every resident is
+ * backed. **A `residentCapacity >= occupantsAscending.length` fast path was
+ * written here first and taken out again**, and the reason is worth recording
+ * because it is what mutation testing is for: mutating its `>=` to `>` changed
+ * nothing any test could see, and nothing any test *could* have seen -- at
+ * exactly-equal length `slice` returns an array with identical contents, so
+ * the two branches differ only in whether the caller is handed the input array
+ * back by reference. That is an equivalent mutant, and the honest fix is to
+ * delete the branch rather than to write a test that pins an identity nobody
+ * should depend on. It also removes the aliasing: no caller can now reach
+ * `occupantsOf`'s array through this function's result.
+ *
+ * The `> 0` guard is not the same kind of line and is not dead. `slice(0, 0)`
+ * would answer `[]` on its own, but `slice(0, -1)` answers *every resident but
+ * the last* -- so a negative capacity would silently pay for a bedless cell.
+ * Nothing derives a negative `residentCapacity` today (`deriveRoomCapacity`
+ * sums footprint widths, and `objectFootprintSchema` bounds `width` below at
+ * 1), and this guard is the reason that stays a fact about the content rather
+ * than a dependency of the money.
+ */
+export function residentsWithExistingPlace(
+  occupantsAscending: readonly EntityId[],
+  residentCapacity: number,
+): readonly EntityId[] {
+  return residentCapacity > 0 ? occupantsAscending.slice(0, residentCapacity) : [];
+}
+
+/**
+ * The exact complement of `residentsWithExistingPlace`: which of one
+ * instance's residents hold **no** place that currently exists, ascending.
+ *
+ * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * decision A(i) calls these residents *"the excess"*, and this function is why
+ * "the excess" and "the residents the state declines to pay for" cannot drift
+ * apart: they are one partition of `occupantsAscending`, computed here at one
+ * index, rather than two rules that happen to agree today. `A(ii)` withholds
+ * the money for exactly the entities this returns
+ * (`RoomInstanceRegistry.residentIdsWithExistingPlace` returns the other half),
+ * and `PrisonerOperationsRuntime.relocateExcessResidentsOf` tries to move
+ * exactly these -- so a relocation that succeeds is also, and by construction,
+ * the removal of the reason the state was withholding.
+ *
+ * **`occupantsAscending` must already be sorted**, for
+ * `residentsWithExistingPlace`'s reason and with its consequence: the lowest
+ * entity ids keep the places, so it is the *highest* that move. That
+ * tie-break is `docs/DETERMINISM.md`'s total order and not a preference --
+ * which resident moves changes the prison, so it may not depend on insertion
+ * history.
+ *
+ * `Math.max(0, ...)` rather than the sibling's `residentCapacity > 0` guard,
+ * and it is the same defence written the other way round: `slice(-1)` answers
+ * *the last resident only*, so a negative capacity would leave every resident
+ * but one unrelocated while the sibling paid for none of them. Nothing derives
+ * a negative `residentCapacity` today; this is what keeps that a fact about
+ * the content rather than a dependency of who gets moved.
+ */
+export function residentsWithoutExistingPlace(
+  occupantsAscending: readonly EntityId[],
+  residentCapacity: number,
+): readonly EntityId[] {
+  return occupantsAscending.slice(Math.max(0, residentCapacity));
+}
+
+function openGroundCapacityOf(instance: RoomInstance): number {
+  // The owner's ruling of 2026-08-29 (issue #585), amending ADR 0071: floor
+  // area is a resource only a room *tagged* as an open area supplies, and it
+  // is checked before the rectangle rather than after, because a room that is
+  // not an open area has no open-ground answer whatever its size -- including
+  // the `POSITIVE_INFINITY` a missing rectangle would otherwise produce. A
+  // boundless non-open-area instance falling through to "unbounded" is exactly
+  // the shape the ruling exists to close.
+  if (instance.openArea !== true) return 0;
+  const { width, height } = instance;
+  if (width === undefined || height === undefined) return Number.POSITIVE_INFINITY;
+  if (width < 1 || height < 1) return Number.POSITIVE_INFINITY;
+  return Math.max(1, Math.floor((width * height) / TILES_PER_OPEN_GROUND_PLACE));
 }
 
 export class RoomInstanceRegistry {
@@ -298,10 +505,34 @@ export class RoomInstanceRegistry {
    * ceiling made it exactly that.
    *
    * **Without `capability`, every claim, whatever it consumes** -- which is
-   * `claimCountOf`'s question ("is anybody holding this instance at all") and
-   * not a question any ceiling is compared against. A claim taken for an action
-   * that names no capability is counted here and bounded by nothing; see
-   * `concurrentUseCapacityFor`.
+   * `claimCountOf`'s question ("is anybody holding this instance at all").
+   *
+   * **It is now a question a ceiling *is* compared against, and this sentence
+   * used to say the opposite.** It read *"A claim taken for an action that
+   * names no capability is counted here and **bounded by nothing**"*, which was
+   * true until #532 gave `concurrentUseCapacityFor` case 1 a real answer:
+   * `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))`, the
+   * instance's own ground. `claimUse` compares this count against it like any
+   * other, so an open-ground action -- the yard's recreation being the one that
+   * matters -- now fills up.
+   *
+   * **One exception, and it is the shape of the old sentence surviving in a
+   * corner:** an instance that records no `width`/`height` has nothing to
+   * derive from and still answers `POSITIVE_INFINITY`.
+   *
+   * **This exception used to name a V4 save as its example and no longer may**
+   * (issue #559, ADR 0074). It read *"a V4 instance restored from a save has no
+   * `width`/`height` to derive from and still answers `POSITIVE_INFINITY` ...
+   * so a legacy save keeps the unbounded behaviour"*, and that was the defect
+   * rather than a description of one: a V4 yard restored on a build with #554
+   * in it kept the very dominance #554 exists to remove. A V4 row records no
+   * rectangle, but the payload's *world* section does -- `RoomZoningService.zone`
+   * paints the room type over every tile it designates -- so
+   * `restoreSessionSystems` recovers it
+   * (`src/simulation/rooms/bounds-recovery.ts`) and such an instance normally
+   * arrives here with bounds. What is left in this corner is an instance whose
+   * plane cannot support a rectangle at all: a hand-edited save, or paint
+   * cleared out from under a row. Inventing one for those is still refused.
    *
    * A linear walk of the claim map when scoped, rather than a second index per
    * capability: the map holds one entry per actor *currently performing in this
@@ -325,16 +556,45 @@ export class RoomInstanceRegistry {
    * Three cases, and the first is the one that turned the yard from an
    * exemption into a derivation:
    *
-   * 1. **No capability required: no object-derived ceiling at all.** An action
-   *    that names no capability consumes no object, so a rule that sums object
-   *    footprints has no domain, and the honest reading of an undefined ceiling
-   *    is "this rule does not bound it" rather than "it bounds it at zero".
-   *    Zero is what the previous rule said, and it said it about `room.yard` --
-   *    64 tiles of open ground that admitted nobody, while the same yard
-   *    holding one three-tile delivery door admitted three prisoners for
-   *    outdoor exercise. `room.yard` requires no object in
-   *    `src/content/room-catalog.ts`; it is the only room type that does not,
-   *    and it is therefore the only genuinely unbounded one.
+   * 1. **No capability required: bounded by the room's own ground.** An action
+   *    that names no capability consumes no object, so the rule that sums
+   *    object footprints has no domain here -- but "no *object-derived*
+   *    ceiling" is not the same statement as "no ceiling", and reading it as
+   *    the second is what issue #532 measured the cost of. `room.yard`
+   *    requires no object in `src/content/room-catalog.ts` and is the only
+   *    room type that does not, so it was the only room in the game that
+   *    admitted every prisoner at once, for ever, however small it was. That
+   *    is what left `action.common-room-recreation` with no state it could
+   *    win: it scores below `action.yard-recreation` at every non-zero
+   *    deficit, and a yard that never fills never falls through to it.
+   *    So the ceiling comes from the resource such a room actually has, which
+   *    is its floor: `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`
+   *    ([ADR 0071](../../../docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md)).
+   *    Still derived and still authored nowhere per room -- an 8x8 yard admits
+   *    4 and a 16x16 yard admits 16, from the rectangle the player drew.
+   *
+   *    **An instance with no recorded rectangle keeps the old answer, and that
+   *    is not a hedge.** The rule has no domain without bounds, and inventing a
+   *    rectangle would assert a room the player did not zone -- which is
+   *    `roomBoundsOf`'s reasoning in
+   *    `src/simulation/objects/room-capacity.ts` applied to the one place a
+   *    missing rectangle would otherwise start refusing prisoners a room they
+   *    had before the upgrade.
+   *
+   *    **This paragraph named a V4 save as the case, and that half is
+   *    withdrawn** (issue #559, ADR 0074). A V4 *row* records no rectangle, but
+   *    the same payload's world section carries the zoning plane the room was
+   *    painted into, so the restore recovers the rectangle from it and a
+   *    restored V4 yard is bounded like any other. Keeping the unbounded answer
+   *    for it was not conservatism, it was #554 not reaching the save path.
+   *    What still reaches this branch is an instance the plane cannot support:
+   *    see `src/simulation/rooms/bounds-recovery.ts`.
+   *
+   *    The previous rule, kept rather than overwritten because it was right
+   *    about what it denied: an *object-footprint* ceiling on an objectless
+   *    room read as zero, and admitted nobody to 64 tiles of open ground while
+   *    the same yard holding one three-tile delivery door admitted three. This
+   *    does not put that back -- no object is consulted here at all.
    * 2. **A resolved instance: the capability's own sum**, or zero when no
    *    object in the room carries it. Zero here subsumes the separate "is this
    *    capability present" test `findAvailableForUse` used to make, since a
@@ -347,7 +607,7 @@ export class RoomInstanceRegistry {
    *    dispatch and a restore resolves every instance before a tick runs.
    */
   public concurrentUseCapacityFor(instance: RoomInstance, capability?: string): number {
-    if (capability === undefined) return Number.POSITIVE_INFINITY;
+    if (capability === undefined) return openGroundCapacityOf(instance);
     const breakdown = instance.concurrentUseCapacityByCapability;
     if (breakdown === undefined) {
       return instance.objectCapabilities.includes(capability) ? instance.concurrentUseCapacity : 0;
@@ -401,6 +661,163 @@ export class RoomInstanceRegistry {
    */
   public get totalOccupancy(): number {
     return this.occupiedPlaceCount;
+  }
+
+  /**
+   * The summed `residentCapacity` of **every** registered room instance,
+   * whatever its room-catalog id and whether or not `IntakeSystem`'s
+   * accommodation policy would ever house anyone in it — so this is `0`
+   * exactly when nothing anywhere in the prison has a standing sleep surface.
+   *
+   * ## Why this exists: the "fresh, unfurnished" predicate a starter rung reads
+   *
+   * ADR 0017's "Amendment, 2026-09-01: a starter rung for a fresh,
+   * unfurnished prison" defines "unfurnished" as *this being `0`* —
+   * `src/simulation/economy/treasury.ts`'s `STARTER_RUNG_FLOORS_MINOR_UNITS`
+   * is only in force while it is. It is read live at the moment a
+   * `PurchaseMaterials` or `HireStaff` command is handled
+   * (`src/simulation/runtime/session-commands.ts`) rather than cached or set
+   * once at session start, so it cannot go stale the way a flag someone
+   * remembered (or forgot) to flip could: the moment `RoomCapacityResolver`
+   * raises any instance's `residentCapacity` above zero — which happens only
+   * when a build order that places a `'sleep-surface'` object completes — the
+   * very next command sees it, with nothing to update and nothing to forget.
+   *
+   * **Not `roomCapacity`, the close cousin `status-strip-projection.ts`
+   * publishes, and the difference is deliberate.** That figure walks
+   * `collectRoomInstances`, filtered through the *content* room registry, so
+   * it cannot see an instance registered under a room-catalog id that
+   * registry does not define (`status-strip-projection.ts`'s own "gap 15").
+   * A structural safety gate has no content registry to hand and no reason to
+   * accept that blind spot — it asks the registry itself, which is the
+   * authority on what is actually standing, ADR 0028's `RoomInstance`'s own
+   * derived field.
+   *
+   * **Includes `object.medical-bed`, deliberately, the same as `roomCapacity`
+   * does.** A prison that has only furnished an infirmary has still proven it
+   * can buy and place a plank-built sleep surface — which is the fact the
+   * starter rung exists to guarantee, not a promise that this specific
+   * capacity is one `IntakeSystem` can use. Ending the exemption a step early
+   * is the safe direction: the fallback is the ordinary, already-shipped
+   * rung, not a lock.
+   *
+   * `O(rooms)`, walked fresh on every call rather than a maintained backing
+   * field like `totalOccupancy`'s: room counts are small (tens, not
+   * thousands) and this is read only from command handling, not from a
+   * per-tick system, so there is no cost here worth caching against.
+   */
+  public get totalResidentCapacity(): number {
+    let total = 0;
+    for (const instance of this.instances.values()) total += instance.residentCapacity;
+    return total;
+  }
+
+  /**
+   * **Who** holds those places: every entity with a residency claim anywhere
+   * in the registry, ascending by entity id. `length` is `totalOccupancy`.
+   *
+   * The counterpart `totalOccupancy` could not answer, and it exists because
+   * an occupied place stopped being worth a flat rate: `StateIncomeSystem`
+   * pays per occupied place at a rate that depends on the conditions the
+   * *occupant* is held in
+   * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+   * so the income line needs the occupants
+   * and not only the count. Residency and not use claims, for the reason
+   * `totalOccupancy` above gives at length -- a prisoner eating lunch is not a
+   * second prisoner-day.
+   *
+   * **Sorted, and for `occupantsOf`'s reason rather than for tidiness.** Live
+   * insertion order is `assign` order and a restored session's is
+   * `getSnapshot`'s ascending sort, so an unsorted walk would fold the same
+   * prison two ways across a save. The current consumer folds integers, where
+   * order happens not to matter; writing the sort down here is what stops that
+   * from being a property the next consumer has to rediscover.
+   *
+   * **Cost, stated because two callers are on paths that care.**
+   * `O(P log P)` in the number of housed prisoners, with one array: the day
+   * boundary pays it once per 2,400 ticks, and `projectStatusStrip` pays it
+   * once per projection. At the 200-prisoner reference tier that is a
+   * 200-element sort; at the 5,000-actor tier
+   * (`docs/PRISONER_OPERATIONS.md`'s actor tiers) it is a 5,000-element one,
+   * which is the one allocation that projection makes that scales with the
+   * population -- `projectStatusStrip`'s own cost note says so rather than
+   * leaving the claim it used to make ("nothing here builds a per-actor
+   * object") standing unqualified.
+   */
+  public residentIds(): readonly EntityId[] {
+    const result: EntityId[] = [];
+    for (const occupants of this.occupants.values()) {
+      for (const entityId of occupants) result.push(entityId);
+    }
+    return result.sort((left, right) => left - right);
+  }
+
+  /**
+   * Who holds a residency place **that currently exists**: every entity
+   * assigned to an instance, minus those an instance is holding above its own
+   * `residentCapacity`, ascending by entity id.
+   *
+   * ## Why this is a second accessor and not a change to `residentIds`
+   *
+   * `residentIds` answers "who is assigned", and that answer is still the right
+   * one for the status strip's `roomOccupants` and for every caller asking what
+   * the prison is *holding*. ADR 0028 decision 2 is explicit that a removed bed
+   * evicts nobody -- the room stops accepting new occupants and the sitting
+   * resident stays -- so an assignment above capacity is a real state of the
+   * simulation and not a bookkeeping error to be swept up. What this accessor
+   * adds is the *other* question, which only the income line asks: how many of
+   * those assignments are backed by a place that is still standing.
+   *
+   * Issue #585 is the measurement that forced the two apart. One
+   * `item.wood-plank` bought one bed, `Undo` released the completed order's
+   * materials back into the container, and the plank went round again into the
+   * next cell -- leaving **three prisoners assigned, one bed standing, and a
+   * day's grant of 900 against a control's 300**. `residentIds` was right about
+   * all three prisoners being housed and wrong about all three being places.
+   *
+   * ## The over-capacity tie-break, which is observable and therefore pinned
+   *
+   * When an instance holds more residents than its `residentCapacity`, the
+   * lowest entity ids keep the places. That is not arbitrary in the sense of
+   * being unobservable: `StateIncomeSystem` pays each place at a rate that
+   * depends on its occupant's own unmet needs
+   * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+   * so *which* resident keeps the place changes the money. It is ascending
+   * entity id because that is the total order this registry already imposes
+   * everywhere a collection of occupants is handed out -- `occupantsOf`,
+   * `residentIds` -- so the tie-break adds no new ordering rule to
+   * `docs/DETERMINISM.md`'s contract and cannot fold the same prison two ways
+   * across a save.
+   *
+   * The walk is over `this.occupants` and not over `this.instances`, and that
+   * is the `docs/DETERMINISM.md` answer rather than a preference. `register`
+   * seeds an occupant set for every instance, so the two maps have identical
+   * key sets and either would visit the same rooms -- but `this.occupants` is
+   * an enumeration `tests/determinism/canonical-iteration-contract.test.ts`
+   * has already audited and justified, and walking `this.instances` would put
+   * a fourteenth expression on that allow-list to say the same thing a
+   * thirteenth already says. The unordered walk is safe here for the reason
+   * that list records: **the selection is per-instance-local**. Each
+   * instance's own ascending occupant list decides which of its residents keep
+   * places, and no instance's answer depends on when another was visited. The
+   * result is then sorted, so the order this method hands out is a function of
+   * the prison and not of its history.
+   *
+   * `O(P log P)` in housed prisoners with one array, the same cost class as
+   * `residentIds`, and paid on the same two paths: once per in-game day at the
+   * grant boundary and once per projection.
+   */
+  public residentIdsWithExistingPlace(): readonly EntityId[] {
+    const result: EntityId[] = [];
+    for (const [instanceId, occupants] of this.occupants) {
+      if (occupants.size === 0) continue;
+      const instance = this.instances.get(instanceId);
+      if (instance === undefined) continue;
+      for (const entityId of residentsWithExistingPlace(this.occupantsOf(instanceId), instance.residentCapacity)) {
+        result.push(entityId);
+      }
+    }
+    return result.sort((left, right) => left - right);
   }
 
   /**
@@ -568,11 +985,45 @@ export class RoomInstanceRegistry {
   public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
       const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
-      // An action naming no capability has no object-derived ceiling, so there
-      // is nothing to count and no reason to walk the claim map for it.
+      // Infinity now means only one thing: an instance that records no
+      // rectangle. **This used to add "which is what a V4 save carries"**, and
+      // that clause is withdrawn (issue #559, ADR 0074): a V4 row's rectangle
+      // is recovered from the zoning plane at restore, so what reaches this
+      // branch is a row no plane can support. There is no number to compare
+      // against and no reason to walk the claim map for it. **This
+      // short-circuit used to be the yard's**, and since #532 the yard has a
+      // finite ceiling and falls through to the comparison below like every
+      // other room.
       if (ceiling === Number.POSITIVE_INFINITY) return true;
       return this.useOccupancyOf(instance.instanceId, requiredObjectCapability) < ceiling;
     });
+  }
+
+  /**
+   * Whether this prison has anywhere at all that an action targeting
+   * `roomCatalogId` could be performed -- an instance of that type with a
+   * non-zero ceiling for the capability the action consumes.
+   *
+   * **`findAvailableForUse` without the claims**, and the omission is the whole
+   * point rather than an optimisation --
+   * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   * decision 3 makes it the rule and not merely this method's habit. Its one
+   * caller is `needUrgency`'s providability test (issue #434), which decides
+   * the *order* the contended scan runs in. An ordering key that counted the claims taken earlier in the
+   * same scan would be a function of the scan position it is deciding: prisoner
+   * A's key would depend on whether prisoner B had already been served, the sort
+   * would stop being a function of state, and two runs of the same seed could
+   * disagree the moment anything reordered the collection loop. This asks the
+   * question that has one answer for the whole cycle -- *can this prison serve
+   * this at all* -- and leaves *who gets it now* to `findAvailableForUse`, which
+   * still runs per prisoner in the execution half of the scan.
+   *
+   * A zero ceiling is the honest "no": since issue #326 a capability no object
+   * in the room carries derives 0, so an unfurnished canteen answers `false`
+   * here for `'dining'` exactly as it refuses a seat there.
+   */
+  public hasPlaceForUse(roomCatalogId: string, requiredObjectCapability?: string): boolean {
+    return this.allByRoomCatalogId(roomCatalogId).some((instance) => this.concurrentUseCapacityFor(instance, requiredObjectCapability) > 0);
   }
 
   /**
@@ -630,16 +1081,26 @@ export class RoomInstanceRegistry {
    * path they cannot see from its call site. Reading `this.occupants`
    * directly keeps the two costs independent, and the duplicated comparator
    * is four tokens.
+   *
+   * `excludeInstanceIds` (issue #478) is a membership test only, never
+   * iterated -- it names instances a caller already knows are about to stop
+   * existing (`RoomZoningService.unzone` relocating residents out of a room
+   * it is in the middle of removing) and which must therefore never be
+   * offered back as somewhere to relocate *into*. Omitted, this is exactly
+   * the three-argument method it always was; `IntakeSystem` and
+   * `SanctionSystem` pass nothing and are unaffected.
    */
   public findBestAvailable(
     roomCatalogId: string,
     rate: (occupants: readonly EntityId[], instance: RoomInstance) => number,
     requiredObjectCapability?: string,
+    excludeInstanceIds?: ReadonlySet<string>,
   ): RoomInstance | undefined {
     let best: RoomInstance | undefined;
     let bestRating = Number.POSITIVE_INFINITY;
 
     for (const instance of this.allByRoomCatalogId(roomCatalogId)) {
+      if (excludeInstanceIds?.has(instance.instanceId) === true) continue;
       if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) continue;
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) continue;
 
@@ -707,9 +1168,18 @@ export class RoomInstanceRegistry {
    * diner honestly nor let the toilet be used while lunch was on.
    *
    * A claim for an action naming no capability is stored with `undefined` and
-   * bounded by nothing -- see `concurrentUseCapacityFor` case 1. It is still
-   * recorded, because `releaseUse`, `claimCountOf` and `totalUseClaims` all
-   * need to know the actor is in there.
+   * bounded by the instance's own ground -- `concurrentUseCapacityFor` case 1,
+   * which since #532 answers
+   * `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))` rather than
+   * `Infinity`. **This said "bounded by nothing"**, which was true of that case
+   * before #532; it then said it was true of *a V4 instance restored from a
+   * save*, and that is withdrawn too (issue #559, ADR 0074) -- the restore
+   * recovers such an instance's rectangle from the zoning plane the same
+   * payload carries. What is left unbounded is an instance whose plane shows no
+   * rectangle at all.
+   *
+   * It is recorded either way, because `releaseUse`, `claimCountOf` and
+   * `totalUseClaims` all need to know the actor is in there.
    */
   public claimUse(instanceId: string, entityId: EntityId, capability?: string): boolean {
     const instance = this.instances.get(instanceId);
@@ -767,6 +1237,52 @@ export class RoomInstanceRegistry {
     claims.set(entityId, capability);
     this.useClaimCount += claims.size - before;
     return true;
+  }
+
+  /**
+   * Drops `entityId` from **both** of this registry's entity-keyed ledgers --
+   * every residency and every concurrent-use claim -- because that entity has
+   * ceased to exist (ADR 0050 decision 2).
+   *
+   * ## Why one method and not two calls from the release path
+   *
+   * `release` and `releaseUse` each need an instance id the caller has to know,
+   * and the caller's two pointers -- `PrisonerColdState`'s
+   * `accommodationInstanceId` and `currentActionTargetInstanceId` -- are not a
+   * complete answer to "where is this entity recorded". ADR 0026 question 3
+   * measured a prisoner holding `['cell-0', 'solitary-cell-0']` while the cold
+   * state named only the newer of the two, with the older one leaked
+   * permanently. A release built on those pointers would reproduce that leak
+   * exactly on the day something reintroduces it. This asks the ledgers
+   * themselves instead, so the answer cannot disagree with them.
+   *
+   * The two ledgers are dropped together for the same reason `ActionSystem`'s
+   * `releaseUseClaim` is not gated on the action's target kind: one method per
+   * exit, asked unconditionally, so no path can be the one that forgot.
+   *
+   * ## Cost
+   *
+   * One walk of each ledger -- two `Map` probes per registered instance -- paid
+   * once per departure, never per tick. At the scale this registry is built for
+   * (`DEFAULT_PRISONER_CAPACITY` is 5,000 and a cell instance houses one
+   * prisoner, so instances are population-shaped) that is the same order as the
+   * `0..maxActiveIndex` walk `EntityQuery.execute` already performs on every
+   * scheduled prisoner tick, and it happens on a small fraction of them. A
+   * reverse `EntityId -> instanceId` index would make it O(1) and would be a
+   * third ledger to keep consistent with the two above; that trade is worth
+   * revisiting only if a departure rate ever makes it measurable.
+   *
+   * Total: an entity recorded nowhere is a no-op, and releasing twice is
+   * another. Both counters follow the observed size change rather than the
+   * call, so neither can go negative.
+   */
+  public releaseEntity(entityId: EntityId): void {
+    for (const occupants of this.occupants.values()) {
+      if (occupants.delete(entityId)) this.occupiedPlaceCount -= 1;
+    }
+    for (const claims of this.useClaims.values()) {
+      if (claims.delete(entityId)) this.useClaimCount -= 1;
+    }
   }
 
   /**

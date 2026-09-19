@@ -5,7 +5,14 @@ import {
   type MessagePortLike,
 } from '../../src/simulation/worker/state-machine';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import { procurableMaterial } from '../../src/content/procurement-catalog';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
+import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import { expectOk } from '../helpers/expect-ok';
 
 class MockPort implements MessagePortLike {
   public messages: any[] = [];
@@ -88,10 +95,121 @@ test('StateMachine rejects commands before initialize', () => {
     }
   });
   
-  expect(machine.state).toBe('faulted');
+  // **This assertion used to read `expect(machine.state).toBe('faulted')`,
+  // and the refusal it describes is unchanged: the command is still rejected,
+  // still with `not-initialized`, and still without reaching a kernel.** What
+  // changed is what the refusal costs the worker (#680). Spending the worker
+  // on a request that touched no simulation state is what made the first
+  // "New prison" of a page fail `already-initialized` after any panel had
+  // read from the boot worker; `SimulationWorkerStateMachine.fault` documents
+  // `recoverable: true` for exactly this condition, and ADR 0024 §1 settled
+  // the same argument for the decode path.
+  expect(machine.state).toBe('uninitialized');
   expect(port.messages.length).toBe(1);
   expect(port.messages[0].kind).toBe('protocol/error');
   expect(port.messages[0].payload.code).toBe('not-initialized');
+  expect(port.messages[0].payload.recoverable).toBe(true);
+});
+
+/**
+ * Issue #680: a request refused *because there is no simulation yet* must not
+ * spend the worker.
+ *
+ * The page's panel readers are built at boot over the channel, not over a
+ * session (#149), so the very first `.ui-tab` press asks the **boot worker**
+ * -- the one `SimulationWorkerChannel.claimForSession` hands to the first
+ * session -- for a projection it cannot have. Answering that with a
+ * non-recoverable fault moved the worker to `faulted`, and `faulted` is not
+ * `uninitialized`, so `handleInitialize` then refused the player's first
+ * "New prison" with `already-initialized` and the message *"Kernel is already
+ * initialized."* -- about a worker that had no kernel and never had one.
+ *
+ * The rule this asserts is `fault()`'s own: `recoverable` is true "where the
+ * fault rejected a request *without* touching simulation state, so leaving the
+ * worker unusable would strand the session for a failure it did not cause". A
+ * guard that fires *before* any kernel exists cannot have touched one.
+ *
+ * `tests/integration/session-first-create-after-a-panel-read.test.ts` carries
+ * the composition half.
+ */
+describe('a request refused before there is a simulation (#680)', () => {
+  const REFUSED_BEFORE_INITIALIZE: readonly {
+    readonly what: string;
+    readonly code: string;
+    readonly message: MainToWorkerMessage;
+  }[] = [
+    {
+      what: 'a projection read, which is what every tab press fires',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'projection-1',
+        kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/prisoner-population' },
+      },
+    },
+    {
+      what: 'a snapshot request',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'snapshot-1',
+        kind: 'simulation/request-snapshot',
+        payload: { reason: 'manual-save' },
+      },
+    },
+    {
+      what: 'a submitted command',
+      code: 'not-initialized',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'command-1',
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: 'cmd-1',
+          sequence: 0,
+          executeAtTick: 5,
+          command: { transport: 'structured-clone', schemaId: 'test', schemaVersion: 1, data: null },
+        },
+      },
+    },
+    {
+      what: 'a clock control',
+      code: 'invalid-state',
+      message: {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'clock-1',
+        kind: 'simulation/set-clock',
+        payload: { mode: 'running', speed: 1 },
+      },
+    },
+  ];
+
+  for (const { what, code, message } of REFUSED_BEFORE_INITIALIZE) {
+    test(`${what} is refused, reported as recoverable, and leaves the worker able to start a session`, () => {
+      const port = new MockPort();
+      const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+
+      machine.handleMessage(message);
+
+      expect(port.messages.map((m) => m.kind)).toEqual(['protocol/error']);
+      expect(port.messages[0].payload.code).toBe(code);
+      // The half that costs the player their first prison: a fault the worker
+      // survives, rather than one that spends it.
+      expect(port.messages[0].payload.recoverable).toBe(true);
+      expect(machine.state).toBe('uninitialized');
+
+      machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'init-1',
+        kind: 'simulation/initialize',
+        payload: { sessionId: 'session-1', source: { kind: 'new', masterSeed: 1234 } },
+      });
+
+      expect(machine.state).toBe('paused');
+      expect(port.messages[1].kind).toBe('simulation/ready');
+    });
+  }
 });
 
 test('StateMachine handles clock controls', () => {
@@ -219,7 +337,7 @@ describe('publishing the clock while it runs', () => {
     expect(reports.length).toBeGreaterThan(0);
     for (const report of reports) {
       const decoded = decodeWorkerToMainMessage(report);
-      expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+      expectOk(decoded, `the unsolicited clock-state report at tick ${String(report.payload.tick)}`);
     }
   });
 
@@ -242,8 +360,15 @@ describe('publishing the clock while it runs', () => {
     for (let step = 0; step < 20; step += 1) advance(50); // 20 ticks over 1s.
 
     const reports = published(port);
-    expect(reports.length).toBeGreaterThan(0);
-    expect(reports.length).toBeLessThanOrEqual(Math.ceil(1_000 / CLOCK_STATE_PUBLISH_INTERVAL_MS));
+    // Written out rather than `Math.ceil(1_000 / CLOCK_STATE_PUBLISH_INTERVAL_MS)`,
+    // which recomputed the ceiling from the constant it was bounding, so the
+    // ceiling rose by exactly the factor the traffic did (#375). 1,000 ms at a
+    // 250 ms interval is four, and four is what the loop produces, so the
+    // equality is the bound and it fails in both directions. Measured: the
+    // derived form stayed green at `250 -> 50`, twenty reports against a
+    // ceiling that had grown to twenty; the two cases above this one caught it.
+    expect(CLOCK_STATE_PUBLISH_INTERVAL_MS, 'the bound below is written against a 250 ms interval').toBe(250);
+    expect(reports.length).toBe(4);
   });
 
   test('stops publishing once the clock is paused', () => {
@@ -289,7 +414,13 @@ test('StateMachine queues valid commands', () => {
     }
   });
   
-  const response = port.messages[port.messages.length - 1];
+  // The last *command result*, not the last message. A command accepted while
+  // the clock is paused is now dispatched on the spot, and that publishes a
+  // `simulation/status-counts` behind the acknowledgement (ADR 0051), so
+  // "the last message" stopped naming the reply. The assertion is unchanged in
+  // substance and narrower in what it reads.
+  const results = port.messages.filter((message) => message.kind === 'simulation/command-result');
+  const response = results[results.length - 1];
   expect(response.kind).toBe('simulation/command-result');
   expect(response.payload.status).toBe('queued');
 });
@@ -357,8 +488,20 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
     });
   };
 
+  /**
+   * The last command result, which is not always the last message: an accepted
+   * command against a paused clock is dispatched at once and publishes a
+   * counts readout after the acknowledgement (ADR 0051). A refusal publishes
+   * none -- nothing was dispatched -- so this filter changes nothing for the
+   * cases below and stops the helper from depending on that.
+   */
+  const lastCommandResult = (port: MockPort): any => {
+    const results = port.messages.filter((message) => message.kind === 'simulation/command-result');
+    return results[results.length - 1];
+  };
+
   const lastFault = (port: MockPort): { code: string; message: string } => {
-    const last = port.messages[port.messages.length - 1];
+    const last = lastCommandResult(port);
     expect(last.kind).toBe('simulation/command-result');
     expect(last.payload.status).toBe('rejected');
     return last.payload.fault;
@@ -379,7 +522,7 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
   test('a replayed sequence reports duplicate-message', () => {
     const port = initialized();
     submit(port, 0, 0);
-    expect(port.messages[port.messages.length - 1].payload.status).toBe('queued');
+    expect(lastCommandResult(port).payload.status).toBe('queued');
     // Sequence 0 again, now that the kernel expects 1.
     submit(port, 0, 0);
     const fault = lastFault(port);
@@ -399,5 +542,440 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
     const port = initialized();
     submit(port, 0, -1);
     expect(lastFault(port).code).toBe('invalid-state');
+  });
+});
+
+/**
+ * The paused drain, at the boundary that owns it (ADR 0051).
+ *
+ * The behaviour under test is the worker's, not the kernel's, and the split is
+ * deliberate: `Kernel.submitCommand` still only queues, and
+ * `Kernel.dispatchDueCommands` still only dispatches when it is called. What
+ * changed is that `handleSubmitCommand` calls it while the clock is stopped,
+ * because nothing else will -- `transition` runs the tick loop only in the
+ * `running` state, so before this a command a player gave during a pause was
+ * acknowledged and then produced nothing until they pressed play.
+ *
+ * `tests/browser/app-shell.spec.ts` ("answers an order given while the clock is
+ * paused") is the half that shows the player is told; this is the half that
+ * shows the simulation was changed, and neither implies the other.
+ */
+describe('a command submitted against a paused clock', () => {
+  const placeWall = (machine: SimulationWorkerStateMachine, sequence: number, tile: number): void => {
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: `place-${String(sequence)}`,
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: `order-command-${String(sequence)}`,
+        sequence,
+        // A fresh session sits at tick 0, which is what the HUD projects for a
+        // paused clock (`SimulationCommandSender.projectExecuteTick` adds no
+        // lead while stopped), so this is a *due* command rather than a
+        // contrived one.
+        executeAtTick: 0,
+        command: packCommand({
+          type: 'PlaceBuildOrder',
+          orderId: `order-${String(sequence)}`,
+          definitionId: 'wall-brick',
+          x: tile,
+          y: tile,
+        }),
+      },
+    });
+  };
+
+  const start = (): { port: MockPort; machine: SimulationWorkerStateMachine } => {
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'init',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 'paused-session', source: { kind: 'new', masterSeed: 99 } },
+    });
+    expect(machine.state).toBe('paused');
+    return { port, machine };
+  };
+
+  /** The construction orders the worker would put in a save right now. */
+  const orderStates = (port: MockPort, machine: SimulationWorkerStateMachine): string[] => {
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'snap',
+      kind: 'simulation/request-snapshot',
+      payload: { reason: 'manual-save' },
+    });
+    const reply = port.messages[port.messages.length - 1];
+    expect(reply.kind).toBe('simulation/snapshot');
+    return (reply.payload.snapshot.data.construction.orders as { state: string }[]).map((order) => order.state);
+  };
+
+  test('is dispatched immediately, so the order exists before any tick has run', () => {
+    const { port, machine } = start();
+    placeWall(machine, 0, 5);
+
+    // The kernel is still at tick 0 -- nothing here advanced time -- and the
+    // order is nonetheless real and approved. Both halves matter: an order
+    // that arrived by way of a tick would be a different fix.
+    const snapshotReply = port.messages.filter((message) => message.kind === 'simulation/ready')[0];
+    expect(snapshotReply.payload.tick).toBe(0);
+    expect(orderStates(port, machine)).toEqual(['approved']);
+    // And the command is out of the queue rather than waiting in it, which is
+    // what distinguishes "dispatched" from "still acknowledged".
+    const snapshot = port.messages[port.messages.length - 1];
+    expect(snapshot.payload.snapshot.data.kernel.commands).toEqual([]);
+    expect(snapshot.payload.snapshot.data.kernel.tick).toBe(0);
+  });
+
+  test('publishes a counts readout the player-facing readouts ride on, even though no count moved', () => {
+    const { port, machine } = start();
+    const before = port.messages.filter((message) => message.kind === 'simulation/status-counts').length;
+    // One baseline, from `handleInitialize`, and nothing else yet.
+    expect(before).toBe(1);
+
+    placeWall(machine, 0, 5);
+
+    const after = port.messages.filter((message) => message.kind === 'simulation/status-counts');
+    // A build order moves none of the figures this payload carries, so
+    // `statusCountsEqual` would have suppressed this publication: the forced
+    // event flag is the only reason it exists. It is what `src/main.ts`
+    // refreshes the Build panel's queue block on, and while the clock is
+    // stopped there is no tick-loop wake behind it to catch the miss.
+    expect(after.length).toBe(before + 1);
+    expect(after[after.length - 1].payload.tick).toBe(0);
+  });
+
+  /**
+   * The paused drain publishes a success sentence too, not only a counts
+   * readout (issue #749, found by playing rather than by this file).
+   *
+   * `createConstructionCommandHandler` writes `construction.order-cancelled`
+   * to `SimulationEventLog` on a successful `CancelBuildOrder`, and until this
+   * test's production fix, nothing published it while the clock stayed
+   * paused: `onTickLoop` is the only caller of `publishEvents()`, and
+   * `transition` stops the tick-loop interval for every state but `running`.
+   * A player who cancels a queued order -- almost always done while paused,
+   * managing a queue -- saw the row vanish and the treasury move, correctly,
+   * and never saw the sentence #749 exists to add, until they next pressed
+   * Play. Reproduced on the assembled page:
+   * `tests/browser/playtest-749-say-it-when-it-works.playtest.ts` act a, run
+   * against the unfixed worker, held the band empty for the whole of a 3 s
+   * wait and showed the sentence only after Play was pressed.
+   *
+   * Mutation: comment out the `this.publishEvents()` line this test guards
+   * -> 1 failed ("no simulation/event message reached the port before any
+   * tick had run") | the rest of this describe block still passed, which is
+   * the point: status counts alone do not catch this.
+   */
+  test('publishes the cancellation sentence immediately too, not only on the next tick-loop wake', () => {
+    const { port, machine } = start();
+    placeWall(machine, 0, 5);
+    const orderId = 'order-0';
+
+    const beforeEvents = port.messages.filter((message) => message.kind === 'simulation/event').length;
+    expect(beforeEvents).toBe(0);
+
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'cancel-0',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'cancel-command-0',
+        sequence: 1,
+        executeAtTick: 0,
+        // ADR 0107: `order-0`'s only write so far is `submitOrder`'s own
+        // (`'approved'`, from `placeWall` above, dispatched immediately
+        // against the paused clock) -- its first, so its revision is 1.
+        command: packCommand({ type: 'CancelBuildOrder', orderId, expectedRevision: 1 }),
+      },
+    });
+
+    // No tick has run -- `orderStates` above establishes that a paused-drain
+    // command does not advance `Kernel.tick` -- so a message here is not one
+    // that could have ridden a tick-loop wake. It has to be this handler's own
+    // publish.
+    const events = port.messages.filter((message) => message.kind === 'simulation/event');
+    expect(events.length).toBe(1);
+    expect(events[0].payload.event.type).toBe('construction.order-cancelled');
+    expect(events[0].payload.tick).toBe(0);
+  });
+
+  test('answers a run of orders given during one pause, one publication each', () => {
+    const { port, machine } = start();
+    for (let sequence = 0; sequence < 3; sequence += 1) placeWall(machine, sequence, 5 + sequence);
+
+    expect(orderStates(port, machine)).toEqual(['approved', 'approved', 'approved']);
+    // Three presses, three readouts, on top of the one baseline -- the bound
+    // this forced publication is argued on is "one per command the player
+    // submits", and a run of them is where that bound is worth checking. The
+    // 500 ms interval does not suppress them: `performanceNow` is pinned at 0
+    // here, so every one of these is inside one window.
+    expect(port.messages.filter((message) => message.kind === 'simulation/status-counts').length).toBe(4);
+  });
+
+  /**
+   * The worker's own refusal of a purchase, at the layer where it stays
+   * deterministic.
+   *
+   * `tests/browser/app-shell.spec.ts` used to drive this through the Build
+   * panel by pressing Buy twice against a paused clock: both presses passed
+   * `src/main.ts`'s pre-flight because a paused clock had dispatched neither,
+   * and `ProcurementSystem` refused the second once the clock ran. The paused
+   * drain closes that window -- the first press is paid for at once and the
+   * second meets an accurate pre-flight -- so from that panel the refusal is
+   * now reachable only inside the twenty-tick lead an order given while the
+   * clock *runs* carries, which is a one-second race the browser suite lost
+   * when it was tried.
+   *
+   * Here there is no pre-flight to pre-empt it: the pre-flight lives in the
+   * composition root's intent handler, not in the command sender and not in
+   * the worker, so two `PurchaseMaterials` submitted straight at this boundary
+   * reach `Treasury.spend` exactly as a command from any other producer would
+   * -- a queued command in a restored save, or a future one. What this asserts
+   * is `ProcurementSystem`'s refusal reaching `RefusalLog` and riding out on
+   * `simulation/status-counts`. The *rest* of that route -- the payload
+   * becoming a band and an alerts row in the assembled page -- is proven by
+   * the refused build order in `tests/browser/app-shell.spec.ts`, which takes
+   * the identical path with a different reason id.
+   */
+  test('publishes the refusal when the treasury cannot cover a purchase dispatched during the pause', () => {
+    const { port, machine } = start();
+    const unitPrice = procurableMaterial('item.brick')?.unitPriceMinorUnits;
+    if (unitPrice === undefined) return expect.unreachable('item.brick is not for sale, so no purchase can be driven');
+    /*
+     * Half of what the prison can *spend*, plus one unit: affordable once,
+     * never twice.
+     *
+     * **This divided `TREASURY_STARTING_BALANCE_MINOR_UNITS` and that was the
+     * whole of spending power** while `Treasury`'s floor was zero. #703 ruling A
+     * opens a standing overdraft in every session
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2), so half the opening balance was affordable twice over and the second
+     * purchase was not refused at all. The two bounds asserted below are the
+     * property the case needs and they are unchanged; only what they are
+     * measured against moved.
+     */
+    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const quantity = Math.floor(spendable / unitPrice / 2) + 1;
+    expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
+    expect(2 * quantity * unitPrice).toBeGreaterThan(spendable);
+
+    const purchase = (sequence: number): void => {
+      machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: `buy-${String(sequence)}`,
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: `buy-command-${String(sequence)}`,
+          sequence,
+          executeAtTick: 0,
+          command: packCommand({
+            type: 'PurchaseMaterials',
+            orderId: `purchase-${String(sequence)}`,
+            itemId: 'item.brick',
+            quantity,
+          }),
+        },
+      });
+    };
+
+    purchase(0);
+    const afterFirst = port.messages.filter((message) => message.kind === 'simulation/status-counts').at(-1);
+    // The first one was paid for, during the pause, and the readout says so.
+    expect(afterFirst.payload.counts.treasuryMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+    );
+    expect(afterFirst.payload.refusal).toBeUndefined();
+
+    purchase(1);
+    const afterSecond = port.messages.filter((message) => message.kind === 'simulation/status-counts').at(-1);
+    // The second could not be, so `ProcurementSystem` refused it and the
+    // refusal rode out on the same channel the balance did.
+    expect(afterSecond.payload.counts.treasuryMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+    );
+    expect(afterSecond.payload.refusal?.reason).toBe('purchase.insufficient-funds');
+    // The refusal is what opened the gate: an unchanged balance would have
+    // been suppressed by `statusCountsEqual` without it.
+    expect(afterSecond).not.toBe(afterFirst);
+  });
+
+  test('leaves a command scheduled ahead of the pause alone, which is ADR 0020 decision territory', () => {
+    const { port, machine } = start();
+    // An order given while the clock was running carries a twenty-tick lead,
+    // so it is not due at tick 0 and must stay queued: draining it early would
+    // dispatch a command before the tick it names, which is the one thing this
+    // change must not do.
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'ahead',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'order-command-ahead',
+        sequence: 0,
+        executeAtTick: 20,
+        command: packCommand({ type: 'PlaceBuildOrder', orderId: 'order-ahead', definitionId: 'wall-brick', x: 9, y: 9 }),
+      },
+    });
+
+    expect(orderStates(port, machine)).toEqual([]);
+    const snapshot = port.messages[port.messages.length - 1];
+    expect(
+      (snapshot.payload.snapshot.data.kernel.commands as { executeAtTick: number }[]).map(
+        (command) => command.executeAtTick,
+      ),
+    ).toEqual([20]);
+  });
+});
+
+/**
+ * What the worker answers once it has been told to shut down.
+ *
+ * Issue #444 drove five request kinds through a shut-down state machine and
+ * got five different answers, *"none of them using the fault code named for
+ * it"*: `submit-command` got no reply at all and the caller waited out
+ * `WorkerSessionHost`'s 15-second timeout; `request-snapshot` got a full
+ * session bundle handed out during shutdown; `request-projection` got a
+ * projection; `set-clock` got a refusal under the generic `'invalid-state'`;
+ * `ping` got a pong. `'shutting-down'` was a member of the closed fault
+ * vocabulary that nothing could produce, and
+ * `tests/foundation/fault-code-reachability-contract.test.ts` recorded it as
+ * such.
+ *
+ * These cases are what that gate's entry was exchanged for. They are written
+ * as *behaviour* rather than as a count of emissions, because the gate can
+ * only see that `fault('shutting-down'` is spelled somewhere in the producing
+ * surface -- it cannot see that the refusal is correlated, that it is
+ * recoverable, or that the snapshot the handler would otherwise have captured
+ * is not posted.
+ */
+describe('a request that arrives after simulation/shutdown', () => {
+  /** An initialised worker that has been shut down, and the messages so far discarded. */
+  function shutDown(): { port: MockPort; machine: SimulationWorkerStateMachine } {
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'msg-init',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 's1', source: { kind: 'new', masterSeed: 11 } },
+    });
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'msg-stop',
+      kind: 'simulation/shutdown',
+      payload: { reason: 'user-request' },
+    });
+    expect(machine.state).toBe('shutting-down');
+    // The `simulation/stopped` acknowledgement and everything before it, so
+    // each case below reads only what its own request provoked.
+    port.messages.length = 0;
+    return { port, machine };
+  }
+
+  const send = (machine: SimulationWorkerStateMachine, message: MainToWorkerMessage): void => {
+    machine.handleMessage(message);
+  };
+
+  test.each([
+    [
+      'simulation/submit-command',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-command',
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: 'c-1',
+          sequence: 0,
+          executeAtTick: 0,
+          command: packCommand({ type: 'PlaceBuildOrder', orderId: 'o-1', definitionId: 'wall-brick', x: 2, y: 2 }),
+        },
+      },
+    ],
+    [
+      'simulation/request-snapshot',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-snapshot',
+        kind: 'simulation/request-snapshot',
+        payload: { reason: 'manual-save' },
+      },
+    ],
+    [
+      'simulation/request-projection',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-projection',
+        kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/status-strip' },
+      },
+    ],
+    [
+      'simulation/set-clock',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-clock',
+        kind: 'simulation/set-clock',
+        payload: { mode: 'running', speed: 1 },
+      },
+    ],
+  ])('is refused with the fault code named for it: %s', (_kind, message) => {
+    const { port, machine } = shutDown();
+
+    send(machine, message as MainToWorkerMessage);
+
+    // One answer, and it is the refusal rather than silence, a bundle or a
+    // projection. The kind matters as much as the code: `request-snapshot`
+    // used to post `simulation/snapshot` here, carrying the whole session.
+    expect(port.messages.map((posted) => posted.kind)).toEqual(['protocol/error']);
+    const fault = port.messages[0];
+    expect(fault.payload.code).toBe('shutting-down');
+    // Correlated, so `WorkerSessionHost.settle` rejects the pending request
+    // immediately instead of leaving it to the 15-second reply timeout that
+    // ADR 0024's Context names as the misleading symptom.
+    expect(fault.replyTo).toBe((message as { messageId: string }).messageId);
+    // And it is on the wire in a shape the main thread's decoder accepts, not
+    // merely an object with the right fields.
+    expectOk(decodeWorkerToMainMessage(fault), 'the shutdown refusal');
+  });
+
+  test('leaves the session exactly where it was, which is what separates this from #444 item 2', () => {
+    const { port, machine } = shutDown();
+
+    send(machine, {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'req-command',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'c-1',
+        sequence: 0,
+        executeAtTick: 0,
+        command: packCommand({ type: 'PlaceBuildOrder', orderId: 'o-1', definitionId: 'wall-brick', x: 2, y: 2 }),
+      },
+    });
+
+    // `fault()` transitions only when the fault is *not* recoverable, and this
+    // one is -- a request refused at the first line of its handler touched
+    // nothing. So the worker is still shutting down rather than faulted, and
+    // the refusal says so on the wire as well as in the state.
+    expect(machine.state).toBe('shutting-down');
+    expect(port.messages[0].payload.recoverable).toBe(true);
+  });
+
+  test('still answers a liveness probe, because a shutting-down worker is still answering', () => {
+    const { port, machine } = shutDown();
+
+    send(machine, {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'req-ping',
+      kind: 'protocol/ping',
+      payload: { nonce: 'n-1' },
+    });
+
+    // The one kind of the five deliberately left alone: `protocol/ping` asks
+    // whether this worker is still there, and it is. Refusing it would turn a
+    // true answer into a fault.
+    expect(port.messages.map((posted) => posted.kind)).toEqual(['protocol/pong']);
   });
 });

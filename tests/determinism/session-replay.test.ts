@@ -96,10 +96,62 @@ describe('deterministic replay of a seeded session', () => {
     expect(runtime.prisoners.intakeSystem.getMetrics().completedCount).toBeGreaterThan(0);
     expect(runtime.prisoners.actionSystem.getMetrics().actionsStarted).toBeGreaterThan(0);
     expect(runtime.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
-    expect(runtime.jobs.getSnapshot().some((job) => job.state === 'completed')).toBe(true);
+    /*
+     * **The board is exercised, and at 400 ticks that means *claimed*, not
+     * *completed*.** This line read `.some((job) => job.state ===
+     * 'completed')` until [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md):
+     * `operations.jobs` ran every five ticks from tick 0 and resolved each leg
+     * into a teleport, so both of the scenario's carries finished long before
+     * 400. A carry is an action now -- chosen by an idle prisoner whose block
+     * allows `work` -- and `GENERAL_POPULATION_REGIME`'s first work block opens
+     * at **500**. Measured on this scenario: both jobs are still `'available'`
+     * at 401 and both are `'completed'` by 801.
+     *
+     * So the horizon this file hashes no longer reaches a completed carry, and
+     * the honest fix is to say what it *does* reach here and to prove the rest
+     * at a horizon that reaches it, below. Weakening this to
+     * `getSnapshot().length > 0` would have been the wrong repair: the fixture
+     * submits those jobs itself, so it would assert the fixture rather than the
+     * subsystem.
+     */
+    expect(runtime.jobs.getSnapshot().length, 'the scenario stopped putting jobs on the board').toBeGreaterThan(0);
+    expect(
+      runtime.jobs.getSnapshot().every((job) => job.state === 'available'),
+      'a job was claimed inside 400 ticks; the regime gate this assertion is written around has moved',
+    ).toBe(true);
     expect(runtime.securityGuards.allGuardIds().some((id) => runtime.securityGuards.getSectorId(id) !== undefined)).toBe(true);
     expect(runtime.navigation.getQueueMetrics().resolvedCount).toBeGreaterThan(0);
     expect(state['contraband']).toBeDefined();
+  });
+
+  /**
+   * The carry substrate, at the horizon that reaches it.
+   *
+   * Split out of the non-no-op test above rather than folded into it, because
+   * the two answer different questions and want different horizons: that one
+   * asks whether the *hashed* run is vacuous, and this asks whether the job
+   * board does anything at all. Raising `TICKS` to cover both would have
+   * doubled every hash and every checkpoint in this file -- 34.6 ms of hashing
+   * per checkpoint, per the note above `runScenario` -- for a property that
+   * needs one extra unhashed run.
+   *
+   * 900 rather than 800: the measurement is that both jobs are `'completed'` by
+   * 801, and a horizon pinned to the measured tick would fail on any change
+   * that moved it by one.
+   */
+  it('carries both of the scenario\'s jobs once the first work block opens, which the hashed horizon does not reach', () => {
+    const runtime = runScenario(SCENARIO_SEED, 900);
+    const jobs = runtime.jobs.getSnapshot();
+    expect(jobs.length).toBeGreaterThan(0);
+    expect(
+      jobs.map((job) => job.state),
+      `no job completed by tick 900: ${JSON.stringify(jobs)}`,
+    ).toEqual(jobs.map(() => 'completed'));
+    // Carried by a prisoner, which is the whole of what ADR 0093 changed: the
+    // job records who, and the board answers the other way round by entity id.
+    for (const job of jobs) {
+      expect(job.assignedWorkerId, `${job.id} completed with no carrier`).toBeDefined();
+    }
   });
 
   it('produces a different state hash from a different master seed -- the hash is seed-sensitive, not constant', () => {
@@ -113,7 +165,11 @@ describe('deterministic replay of a seeded session', () => {
     const runtime = runScenario();
     const streams = runtime.kernel.snapshot().rngStates;
 
-    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'identity.actor-name', 'prisoners.classification']);
+    // `prisoners.sentence` joined the set with #535 decision 5. This
+    // scenario's admissions name their own sentences, so the stream is never
+    // drawn from here and every canonical hash below is unmoved by it -- which
+    // is the property an isolated stream is registered for.
+    expect(streams.map((entry) => entry.name)).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence']);
     for (const stream of streams) {
       expect(stream.state.algorithm).toBe('xoshiro128**');
       expect(stream.state.words).toHaveLength(4);

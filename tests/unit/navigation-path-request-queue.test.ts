@@ -50,6 +50,65 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
     expect(resolved[0]!.id).toBe('high');
   });
 
+  /**
+   * The other half of the guarantee `agingIntervalTicks` is documented to
+   * give -- "guarantees eventual processing under sustained overload"
+   * (`PathRequestQueueOptions`). Aging only ever lifts a waiting request
+   * *into* a tie with the requests arriving around it; if the tie itself is
+   * then won by whichever arrived most recently, the aged request is
+   * overtaken by every new arrival and is starved for ever. So the tie-break
+   * is a fairness guarantee in its own right, not a determinism detail, and
+   * aging is switched off here (interval 1000 across a 5-tick window) exactly
+   * so the tie is the whole subject.
+   *
+   * The two tests below are the only ones in this file that can see it. The
+   * determinism case compares `runOnce()` against `runOnce()`, which holds for
+   * any deterministic comparator including a reversed one, and enqueues all
+   * sixteen of its requests at tick 0, so the `enqueuedAtTick` branch is never
+   * even reached; the aging case asserts `toBeGreaterThanOrEqual(5)`, a lower
+   * bound that resolving later still satisfies. Measured at 83d9616: reversing
+   * the comparison to `b.enqueuedAtTick - a.enqueuedAtTick` left both files
+   * green, 27/27.
+   *
+   * **The ids are load-bearing.** The older request is named `zulu` and the
+   * newer `alpha`, so the id tie-break on the following line of `processTick`
+   * prefers the *newer* one. The only comparison in the comparator that can
+   * put `zulu` first is `enqueuedAtTick`, which makes these red when it is
+   * reversed *and* when it is deleted outright -- a test built on ids that
+   * sorted the same way as the enqueue order would survive the deletion.
+   */
+  it('serves the older of two equally-ranked requests first, so a waiting one is not overtaken by a new arrival', () => {
+    const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
+    const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
+
+    queue.enqueue({ id: 'zulu', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
+    queue.enqueue({ id: 'alpha', origin: cellTiles[1]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 5);
+
+    // Both sit at effective priority 0 at tick 5 (0 + floor(5/1000) = 0), so
+    // the first comparison cannot separate them and the budget admits exactly
+    // one request.
+    const resolved = queue.processTick({ tick: 5, workBudget: 1, world, doors, graph, routeCache, flowFieldCache });
+
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0]!.id).toBe('zulu');
+    expect(queue.size()).toBe(1);
+  });
+
+  it('orders the whole tick oldest-first among equally-ranked requests, not merely its head', () => {
+    const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
+    const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
+
+    queue.enqueue({ id: 'zulu', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
+    queue.enqueue({ id: 'alpha', origin: cellTiles[1]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 5);
+
+    // Same pair, a budget that admits both: the ordering claim is about the
+    // sequence the tick emits, not only about which request wins a single slot.
+    const resolved = queue.processTick({ tick: 5, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache });
+
+    expect(resolved.map((outcome) => outcome.id)).toEqual(['zulu', 'alpha']);
+    expect(queue.size()).toBe(0);
+  });
+
   it('ages a low-priority request until it eventually outranks a stream of newly-arriving higher-priority ones', () => {
     const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
     const queue = new PathRequestQueue({ agingIntervalTicks: 5, flowFieldActivationThreshold: 1000 });
@@ -111,7 +170,13 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
       for (let tick = 0; tick < 30 && queue.size() > 0; tick += 1) {
         outcomes.push(...queue.processTick({ tick, workBudget: 5, world, doors, graph, routeCache, flowFieldCache }));
       }
-      return outcomes.map((o) => ({ id: o.id, ok: o.result.ok, usedFlowField: o.usedFlowField }));
+      // `o.result` in full, not `o.result.ok`. Until 2026-09-08 this projection
+      // kept only the success flag, so "and results" in the title asserted
+      // nothing about the routes: a `totalCost` that drifted by a nonce on
+      // every `findRoute` call left this test green while five of its
+      // navigation siblings -- including `navigation-system.test.ts`'s own
+      // determinism test, which keeps costs -- went red on it.
+      return outcomes.map((o) => ({ id: o.id, result: o.result, usedFlowField: o.usedFlowField }));
     };
 
     expect(runOnce()).toEqual(runOnce());
@@ -143,6 +208,48 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
     const resolved = queue.processTick({ tick: 0, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache });
     expect(resolved.every((r) => !r.usedFlowField)).toBe(true);
     expect(queue.getMetrics().flowFieldActivations).toBe(0);
+  });
+
+  /**
+   * `flowFieldActivationThreshold` is documented as a **minimum** -- "minimum
+   * currently-pending requests sharing a (destination region, context) before
+   * a shared `RegionFlowField` is computed" -- so the configured number is the
+   * first count that shares, not the last that does not. The two cases above
+   * are measured at 10 and at 3 against a threshold of 5: above it and below
+   * it, never *at* it, and the boundary is where an inclusive comparison and
+   * an exclusive one differ. Measured at 83d9616, weakening
+   * `>= this.options.flowFieldActivationThreshold` to `>` left this file, the
+   * budget/cache file, `navigation-system.test.ts` and
+   * `navigation-flow-field.test.ts` green -- 40/40. Mutated, a prison
+   * configured for 5 shares only at 6, and the configured number silently
+   * means one more than it says.
+   *
+   * The pair below pins it from both sides at adjacent counts: threshold - 1
+   * must not share and threshold exactly must.
+   */
+  it('activates a shared flow field at exactly the configured threshold, and not one request below it', () => {
+    const THRESHOLD = 5;
+
+    const runWithPendingCount = (pendingCount: number) => {
+      const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
+      const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: THRESHOLD });
+      for (let i = 0; i < pendingCount; i += 1) {
+        queue.enqueue({ id: `meal-${i}`, origin: cellTiles[i]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
+      }
+      // A budget nothing can exhaust, so the group really is `pendingCount`
+      // requests deep when the threshold is consulted.
+      const resolved = queue.processTick({ tick: 0, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache });
+      expect(resolved).toHaveLength(pendingCount);
+      return { sharedAny: resolved.some((r) => r.usedFlowField), activations: queue.getMetrics().flowFieldActivations };
+    };
+
+    const justBelow = runWithPendingCount(THRESHOLD - 1);
+    expect(justBelow.activations).toBe(0);
+    expect(justBelow.sharedAny).toBe(false);
+
+    const exactlyAt = runWithPendingCount(THRESHOLD);
+    expect(exactlyAt.activations, 'a group exactly at the configured threshold must share a field').toBe(1);
+    expect(exactlyAt.sharedAny).toBe(true);
   });
 });
 

@@ -1,5 +1,6 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
 import type { ActorIdentityMinter } from '../identity/actor-identity';
+import { LocomotionStore } from '../locomotion';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
@@ -45,6 +46,19 @@ export interface GuardRecord {
 export class GuardRoster {
   public readonly entityStore: EntityStore;
   private readonly records = new Map<EntityId, GuardRecord>();
+  /**
+   * Where a `'travelling'` guard is between the tile it left and the tile it
+   * is walking to (ADR 0088, answering [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+   * open question 4 and completing the required `canCross` socket [ADR 0077](../../../docs/adr/0077-when-a-route-stops-being-valid.md)
+   * left for exactly this).
+   *
+   * One store per population, not a composite key into the prisoner one --
+   * `LocomotionStore`'s own header explains why -- and it lives here rather
+   * than on `DeploymentSystem` or `PatrolSystem` because both write a guard's
+   * tile and both need to ask whether a walk is still in progress; the roster
+   * is the one place already answering `getTile`/`setTile` for both.
+   */
+  public readonly locomotion = new LocomotionStore();
 
   public constructor(
     capacity: number,
@@ -79,6 +93,22 @@ export class GuardRoster {
     // has a name, so a recycled id that somehow kept its entry cannot shift
     // the stream (`release` on destroy is what actually prevents that; see
     // ADR 0015's "a destroy path must release").
+    //
+    // **That destroy path now exists** (issue #533): `dismissStaff` in
+    // `src/simulation/staff/dismissal.ts` calls
+    // `ActorIdentityRegistry.release('staff', id)` before `forget` below
+    // destroys the entity, so the parenthetical above names a real caller
+    // rather than a requirement nobody met. A staff index is recycled in an
+    // ordinary session from that change onward.
+    //
+    // Re-read end to end on 2026-09-16 and this half of the pair is the one
+    // that held. `ActorIdentityLifecycle`'s docblock in
+    // `src/simulation/identity/actor-identity.ts` had gone on asserting the
+    // opposite -- *"no path in `src/` dismisses a guard, so nothing there has a
+    // release to call yet"* -- for eighteen days; it now carries the correction
+    // and the reason this constructor is still typed `ActorIdentityMinter`
+    // anyway. Named here rather than left implicit so the two sentences are
+    // findable from each other the next time either moves.
     this.identity?.assign('staff', entityId, this.identityRng!());
     this.records.set(entityId, {
       staffRoleId,
@@ -91,6 +121,40 @@ export class GuardRoster {
       patrolLoopStartedAtTick: undefined,
     });
     return entityId;
+  }
+
+  /**
+   * Drops one staff member's record and destroys their entity -- the one roster
+   * write a dismissal performs
+   * ([ADR 0070](../../../docs/adr/0070-dismissing-a-staff-member.md) decision 2,
+   * issue #533).
+   *
+   * **Deliberately not called `dismiss`, and deliberately not the whole of one.**
+   * A dismissal has to give back a claim through its claimant, cancel a route,
+   * release a name and take contraband out of the prison, and none of that is
+   * the roster's to know: `src/simulation/staff/dismissal.ts` owns the ordering
+   * for exactly the reason `GuardReleaseService` owns the release ordering
+   * rather than `unassign` doing it (ADR 0034). Calling this alone leaves a
+   * search job routing somebody who no longer exists. It is `public` because
+   * that module is in a different directory, not because it is a way in.
+   *
+   * `false` for an id this roster does not hold, and it touches nothing in that
+   * case -- so a double dismissal cannot destroy whoever occupies the slot now.
+   * The record goes first and the entity second, matching `releasePrisoner`'s
+   * step 7: `destroy` bumps the generation, after which every read above would
+   * have been a lookup against the wrong key.
+   */
+  public forget(entityId: EntityId): boolean {
+    if (!this.records.delete(entityId)) return false;
+    // Forgets the heading too, not merely the walk -- `locomotion.cancelWalk`
+    // inside `unassign` below already dropped any walk in progress, but a
+    // dismissal can also destroy a guard who is `'on-search'` or `'on-post'`
+    // and has never been `unassign`ed, so this call is not redundant with it.
+    // Matches `releasePrisoner`'s "forgets the walk and the heading before the
+    // index is recycled".
+    this.locomotion.forget(entityId);
+    this.entityStore.destroy(entityId);
+    return true;
   }
 
   private require(entityId: EntityId): GuardRecord {
@@ -139,6 +203,13 @@ export class GuardRoster {
     record.pathRequestId = undefined;
     record.patrolWaypointIndex = undefined;
     record.patrolLoopStartedAtTick = undefined;
+    // A walk in progress is abandoned on the tile it had reached, the same
+    // rule an interrupted prisoner errand follows. Unconditional rather than
+    // gated on the phase, for the reason `GuardReleaseService.release`'s own
+    // `pathRequestId` read is unconditional: a walk can be in progress under
+    // any phase that travels, and `cancelWalk` is total, so asking costs one
+    // `Map` miss for a guard that was not walking.
+    this.locomotion.cancelWalk(entityId);
   }
 
   public getPathRequestId(entityId: EntityId): string | undefined {
@@ -188,9 +259,30 @@ export class GuardRoster {
    * restarts the loop from wherever the guard's tile actually is) or
    * `'unassigned'` otherwise, exactly like `PrisonerOperationsRuntime` and
    * `JobBoard` reset stale in-flight travel on restore.
+   *
+   * **That paragraph is unchanged and still describes what this method does.
+   * What it does not say is what the guard's *tile* then is** -- wherever the
+   * walk had got to, which for a deployment leg is nowhere near the post the
+   * phase now names. Two things outside this method answer for that, both
+   * added under the owner's ruling 24 of 2026-08-31 and neither of them a
+   * change to the reset above:
+   *
+   * - a roster row says `Returning` rather than `On Post` for such a guard.
+   *   The word is derived from this state, not stored in it, so no member is
+   *   added to a union every save carries
+   *   (`src/simulation/security/deployment-phase.ts`);
+   * - `DeploymentSystem` walks the guard back. Before that, in a sector with
+   *   no patrol route -- which since ADR 0036 is every session a player can
+   *   start -- nothing in `src/` ever moved it again.
    */
   public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
+    // No save carries a walk (ADR 0059's rule, unchanged for a second
+    // population): a restored `'travelling'` guard's path request named the
+    // previous `NavigationSystem` instance's queue and is dropped below in the
+    // same way, so any in-flight walk is equally unresumable and is cleared
+    // rather than left pointing at waypoints nothing will ever finish.
+    this.locomotion.clear();
     this.records.clear();
     for (const [entityId, record] of snapshot.records) {
       const restored: GuardRecord = { ...record };

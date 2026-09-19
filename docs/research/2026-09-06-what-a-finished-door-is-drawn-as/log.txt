@@ -1,0 +1,38 @@
+calibration: tile (0,0) top-left = (-304, -574)
+door tile (15,13); centre probe {"x":688,"y":290}; north probe {"x":688,"y":264}
+this tile's own bare floor: centre [106,87,68], north [106,87,68]
+for reference, what the painter would put at the centre probe at each alpha, side fill [124,96,55] over that floor: 0.35 -> [112,90,63], 0.65 -> [118,93,60], 1.00 -> [124,96,55]
+VERIFIED placed: definitionId=door-wooden at (15,13) edge=north
+clock started at t+0ms, tick 5
+--- act one: one door, one clock, nothing else pressed
+t+   272ms centre=[112,90,63] slabAlpha=0.35 north=[130,105,72] | queue: QUEUED | 1 waiting · 0 being built | last snapshot tick 5 says the order is "materials-pending"
+t+  4612ms centre=[112,90,63] slabAlpha=0.35 north=[130,105,72] | queue: .hud-build__queue: not laid out | last snapshot tick 5 says the order is "materials-pending"
+t+ 30393ms centre=[106,87,68] slabAlpha=0.00 north=[125,119,116] | queue: .hud-build__queue: not laid out | last snapshot tick 607 says the order is "completed"
+---
+the Build panel stopped listing the order at t+4612ms
+the renderer's own feed first held a snapshot saying "completed" at t+30393ms
+snapshots on the wire during the run: 21, of which 19 were the render feed's -- the rest are the local save's and the feed discards them (simulation-snapshot-feed.ts:323)
+the tile centre first stopped carrying a construction slab at t+30393ms
+THE WINDOW A PLAYER SEES: 25781ms of a finished door still drawn as a construction ghost
+---
+--- act two: a second door at tile (19,13), with Pause/Play pressed once per sample so the feed stays fresh
+that tile's own bare floor: [106,87,68]
+VERIFIED placed: definitionId=door-wooden at (19,13) edge=north
+t+     0ms centre=[112,90,63] slabAlpha=0.35 north=[130,105,72] | last snapshot tick 764 says the order is "materials-pending"
+t+  4958ms centre=[118,93,60] slabAlpha=0.65 north=[151,120,75] | last snapshot tick 781 says the order is "in-progress"
+t+ 14160ms centre=[106,87,68] slabAlpha=0.00 north=[125,119,116] | last snapshot tick 821 says the order is "completed"
+---
+across both acts, 12 samples:
+  at PLANNED_ALPHA (~0.35): 8
+  at BUILDING_ALPHA (~0.65): 2
+  at full opacity -- what #1027 says a completed door is drawn at: 0
+---
+console lines other than Phaser's banner: 8
+  debug: [vite] connecting...
+  debug: [vite] connected.
+  log: %cPhaser v4.2.1 (WebGL | Web Audio)%c https://phaser.io/v4021 color: #ffffff; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAARBJREFUeNpi/P//P0OHsPB/BiCoePuWkYFEwALSXJElzMBgLwE2CNkQxgWr/yMr/p8QimlBu5DQ//+8vBBco/ofzAe6imH+qv/53/6jYJAYSA4ZoxoANYTPKhiuCQZwGcJU+e4dqpMmvsDq14krV2MPAxDha2CMKvoXoiE/PBQUDgQD8j82UFae9B9bOIC8B9UD9gIjjIMN7Ns6lWHn4XMoYu62RgxO3tkMjIyMII2MYAOAtmFVhA+ADHf2ycGMRhANjUq8YO+WKWCvgAORIV8CkpDCrzIwsLIymC1qAtuAD4Bsh3sBmqAY3qcGwL2AC4DCpKtzHlgzOLWihwEuzTCN0GhDJHeYC4gByBphACDAAH2dDIxdjr+VAAAAAElFTkSuQmCC"), linear-gradient(to bottom, #000814, #001d3d, #003566); background-repeat: no-repeat; background-position: 4px center, 0 0; padding: 2px 6px 2px 24px; background: transparent
+  warning: [GroupMarkerNotSet(crbug.com/242999)!:A0A0200054310000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+  warning: [.WebGL-0x2ec05e1b600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x2ec05e1b600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x2ec05e1b600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x2ec05e1b600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)

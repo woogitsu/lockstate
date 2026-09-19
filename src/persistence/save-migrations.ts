@@ -2,12 +2,15 @@ import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
 import type { JsonValue } from '../shared/json';
 import { NEED_IDS, NEED_MAX_SCALED, NEED_SCALE } from '../simulation/prisoners/needs';
+import { DEFAULT_REGIME_SCHEDULES } from '../simulation/prisoners/regime';
+import { RegimeScheduleRegistry, type EncodedRegimeSchedule } from '../simulation/prisoners/regime-registry';
 import type {
   SaveEnvelopeV1,
   SaveEnvelopeV2,
   SaveEnvelopeV3,
   SaveEnvelopeV4,
   SaveEnvelopeV5,
+  SaveEnvelopeV6,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -258,17 +261,42 @@ type RoomInstancesV5 = readonly {
  * `tests/migrations/save-v4-to-v5.test.ts` re-verifies the premise off a real
  * captured session rather than trusting this paragraph.
  *
- * **No `width`/`height` is fabricated.** They are optional at V5 precisely so
- * that this step does not have to choose: `1x1` would assert a room the player
- * did not zone and `64x64` one that overlaps its neighbours, and either is the
- * invented-consequence defect. An instance with no rectangle is attributed no
- * objects, so its capacity stays 0 -- which is what it was.
+ * **No `width`/`height` is fabricated *here*, and that is still right.** They
+ * are optional at V5 precisely so that this step does not have to choose:
+ * `1x1` would assert a room the player did not zone and `64x64` one that
+ * overlaps its neighbours, and either is the invented-consequence defect.
  *
- * And the hard case is unreachable in practice for a *player's* save: while
- * `ZoneRoom` had no producer no save could contain a room instance at all, and
- * the producer arrived in the same release train as this migration. What this
- * handles honestly is a save written by a build that had the Rooms tab and not
- * object placement, plus any hand-authored one.
+ * **What follows from that is no longer "so a migrated room has no rectangle"**
+ * (issue #559,
+ * [ADR 0074](../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)).
+ * The payload's *world* section carries the zoning plane, and
+ * `RoomZoningService.zone` painted the room type over every tile of the
+ * rectangle when the player designated it -- so the rectangle survives in the
+ * save even though the row does not carry it, and `restoreSessionSystems`
+ * reads it back (`src/simulation/rooms/bounds-recovery.ts`). Nothing about
+ * that belongs here: a migration writes a conclusion into the file, and the
+ * restored session can derive this one from what it was handed, which is
+ * [ADR 0033](../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+ * distinction and the reason ADR 0030 decision 3's premise failed (#391).
+ *
+ * **Two sentences here claimed the hard case was unreachable in practice, and
+ * both were false.** They read: *"An instance with no rectangle is attributed
+ * no objects, so its capacity stays 0 -- which is what it was"*, and *"the hard
+ * case is unreachable in practice for a player's save: while `ZoneRoom` had no
+ * producer no save could contain a room instance at all, and the producer
+ * arrived in the same release train as this migration."*
+ *
+ * The first stopped being true when #554 gave an objectless room a ceiling
+ * derived from its own ground: an instance with no rectangle then answered
+ * `Infinity` for a capability-free action rather than 0, which is #559.
+ *
+ * The second was never true. `84e1c61` shipped the Rooms tab that zones a room
+ * at 2026-08-25 16:59 and `6cededc` moved the schema to V5 at 20:08 the same
+ * day, with **twelve tagged releases in between** (v0.0.49 .. v0.0.61) and
+ * `room.yard` in the catalogue throughout.
+ * `tests/fixtures/persistence/save-v4-yard.json` is a save v0.0.61 actually
+ * wrote, captured from that build in a detached worktree, and it holds a zoned
+ * yard.
  */
 function dropDerivedRoomFields(instances: RoomInstancesV4): RoomInstancesV5 {
   return instances.map((instance) => ({
@@ -337,4 +365,110 @@ export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV5;
+}
+
+
+/**
+ * The two timetables every V5 session provably ran, in the shape V6 records
+ * them ([ADR 0113](../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §2).
+ *
+ * **Nothing here is guessed, and that is a fact rather than an argument.**
+ * `DEFAULT_REGIME_SCHEDULES` (`regime.ts`) has only ever been the two authored
+ * constants; `PrisonerOperationsRuntime` and `projectStatusStrip` are the two
+ * consumers, both default to it, and no production call site has ever passed
+ * anything else (`grep -rn "regimeSchedules" src/simulation/runtime/new-session.ts
+ * src/simulation/runtime/restore-session.ts src/main.ts` was empty before this
+ * change). Nor could a V5 save have recorded a different one: `grep -rn
+ * "regimeSchedules" src/persistence/` was empty too -- a regime was not in the
+ * save at all, so there is no older value for this to contradict.
+ *
+ * **There were already two implicit schedules, not one**, which is why the
+ * question "which group owns the existing schedule" has no answer to give: each
+ * group already owned its own, under the id it already carries.
+ *
+ * **Routed through `RegimeScheduleRegistry` rather than encoded here**, which
+ * is `upgradeEntityLiveness`' discipline at the top of this file applied to a
+ * second section: a migrated save and a freshly captured one then converge on
+ * one encoding rather than two that could drift. It is load-bearing and not
+ * tidiness -- the registry puts each block's `allowedCategories` into
+ * `ACTION_CATEGORIES` order, and `GENERAL_POPULATION_REGIME`'s block at tick
+ * 2,100 is authored `['recreation', 'free-association', 'hygiene']`, so
+ * encoding the constant directly would write bytes a live capture of the same
+ * schedule never produces.
+ *
+ * Read off the constants rather than re-typed, so a later edit to either
+ * authored schedule moves this migration's output with it. That is the correct
+ * coupling and not an accident: what this function claims is "whatever the
+ * defaults were, that is what a V5 save ran", and pinning a copy of today's
+ * blocks here would turn that true sentence into a false one the day a block
+ * changes.
+ */
+function defaultRegimeSchedulesForMigration(): readonly EncodedRegimeSchedule[] {
+  return new RegimeScheduleRegistry(DEFAULT_REGIME_SCHEDULES).getSnapshot();
+}
+
+/**
+ * V5 -> V6 (ADR 0113 §2): `simulation` gains a required `regimeSchedules`
+ * section.
+ *
+ * ## What it writes, and the one case where it writes nothing
+ *
+ * For a payload that **has** a `simulation` section, the two schedules above
+ * are spliced in beside `prisoners`/`operations`/`security`, unconditionally.
+ * No field is guessed, no prisoner's history is touched, and nothing that
+ * already happened changes -- this migration changes what future ticks read.
+ *
+ * For a payload that has **no** `simulation` section, nothing is added, and
+ * that is the honest answer rather than a gap. ADR 0113 §2 says "for every V5
+ * input", written against the ordinary case; the case it does not name is a
+ * save whose payload carries no subsystem state at all -- a V1 or V2 save
+ * walked forward by the chain, which the checked-in fixtures under
+ * `tests/fixtures/persistence/` are. `migrateSaveEnvelopeV2ToV3` established
+ * that a migration may not fabricate a `simulation` section, and V6's own
+ * shape could not be satisfied by half of one: `sessionSystemsV6Schema`
+ * requires `prisoners`, `operations`, `navigation`, `security`, `contraband`
+ * and `incidents` beside the new key. Manufacturing those to house a schedule
+ * would invent an empty prison's worth of state to record a timetable nobody
+ * was running.
+ *
+ * Such a save loses nothing by it: `RegimeScheduleRegistry` is seeded with
+ * `DEFAULT_REGIME_SCHEDULES` by `PrisonerOperationsRuntime`'s constructor, and
+ * `restoreSessionSystems` -- the only caller of `loadSnapshot` -- is itself
+ * only reached when `bundle.simulation !== undefined`. So a payload with no
+ * `simulation` restores onto exactly the two schedules it ran, by the same
+ * route it always did.
+ *
+ * The checksum is recomputed for the reason every step before this one
+ * recomputes it, and with the same guarantee: `decodeSaveEnvelope` compares the
+ * *stored* checksum against the payload as written, at its declared version,
+ * before the chain runs -- so this function's output is never the value that
+ * comparison examines.
+ *
+ * Pure: builds new objects and never mutates `input`.
+ */
+export function migrateSaveEnvelopeV5ToV6(input: SaveEnvelopeV5): SaveEnvelopeV6 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+
+  const simulation =
+    payload.simulation === undefined
+      ? undefined
+      : { ...payload.simulation, regimeSchedules: defaultRegimeSchedulesForMigration() };
+
+  const migratedPayload = {
+    ...(payload.masterSeed === undefined ? {} : { masterSeed: payload.masterSeed }),
+    kernel: payload.kernel,
+    world: payload.world,
+    construction: payload.construction,
+    ...(payload.entities === undefined ? {} : { entities: payload.entities }),
+    ...(simulation === undefined ? {} : { simulation }),
+    ...(payload.identity === undefined ? {} : { identity: payload.identity }),
+  };
+
+  return {
+    saveSchemaVersion: 6,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV6;
 }

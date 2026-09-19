@@ -134,16 +134,51 @@ export const DRAG_AXIS_THRESHOLD_PX = TILE_SIZE_PX / 2;
  * two candidate edges on that axis the press was nearer -- the top of this
  * tile or the top of the next one down; the left of this tile or the left of
  * the one to its right.
+ *
+ * ### The mid-line is a tie, and it breaks towards the pressed tile (#886)
+ *
+ * A press exactly halfway down a tile is not nearer either of its two
+ * horizontal edges, and one halfway across is not nearer either of its
+ * vertical ones. The comparison used to be `< 0.5`, which sent that press to
+ * the tile **below** or to the **right** -- a tile the player did not press.
+ * Two things it contradicted, and the second is the one a player sees:
+ *
+ * - `edgeRunFromDrag` below states the division of labour as *"The press says
+ *   which tile; the drag says which way"*, and `pickEdgeAtWorld` above states
+ *   its own tie rule as *"towards north, then west"*, which is towards the
+ *   pressed tile. On the mid-line this function disagreed with both.
+ * - The hover ghost is painted from `pickEdgeAtWorld` and the run from this
+ *   function (`previewHover` and `extendBuild` in
+ *   `src/rendering/scene/world-scene.ts`), so hovering a tile's centre drew
+ *   the wall on that tile's top line and then dragging sideways moved it to
+ *   the line below -- with the edge *kind* unchanged, so nothing the player
+ *   could see explained the jump. A preview that moves for no visible reason
+ *   is the one thing `BuildOverlay` exists to prevent.
+ *
+ * Found while measuring issue #886, whose premise -- that four wall drags
+ * around a rectangle do not enclose it -- is refuted: four drags traced along
+ * the tile boundary lines lay exactly the `2 * (width + height)` perimeter
+ * edges and the room zones first time. What the reproduction had hit was this
+ * tie, reached exactly because a press at a tile centre is on both mid-lines
+ * at once. `tests/browser/playtest-886-do-four-drags-enclose.playtest.ts` is
+ * the measurement.
+ *
+ * It does **not** make a drag through the tile centres enclose the tiles it
+ * crossed, and no rule here could: the mid-line is equidistant from the two
+ * lines the wall could go on, so whichever way the tie falls, two of the four
+ * sides land one tile from where a player aiming at the middle of a row of
+ * tiles meant them. What changes is that the ghost and the run agree, and that
+ * the run starts on the tile that was pressed.
  */
 export function pickEdgeOnAxis(point: WorldPoint, axis: 'x' | 'y'): EdgeTarget {
   const tileX = worldToTile(point.x);
   const tileY = worldToTile(point.y);
   if (axis === 'x') {
     const withinY = point.y / TILE_SIZE_PX - tileY;
-    return { tileX, tileY: withinY < 0.5 ? tileY : tileY + 1, edge: 'north' };
+    return { tileX, tileY: withinY <= 0.5 ? tileY : tileY + 1, edge: 'north' };
   }
   const withinX = point.x / TILE_SIZE_PX - tileX;
-  return { tileX: withinX < 0.5 ? tileX : tileX + 1, tileY, edge: 'west' };
+  return { tileX: withinX <= 0.5 ? tileX : tileX + 1, tileY, edge: 'west' };
 }
 
 /**
@@ -242,4 +277,38 @@ export interface EditHistoryPort {
   undo(): void;
   /** The player asked for the last thing they undid to be reapplied. */
   redo(): void;
+}
+
+/**
+ * What the renderer needs from whoever owns *arming* (issue #959).
+ *
+ * A **third** port beside `BuildToolPort` and `EditHistoryPort`, and a
+ * separate one for the reason `EditHistoryPort` is separate: it answers a
+ * different question. `BuildToolPort` is *asked* whether the world pointer
+ * builds and is handed the gesture it drew; this is *told* that the player
+ * has put the tool down, and it is not the build tool's alone -- one press of
+ * `Escape` means "put down whatever I am holding", and which of the three
+ * tools that is lives in the HUD, on whichever panel armed it.
+ *
+ * So the scene names no tool here, deliberately. It has three ports and a
+ * documented arbitration between them (`isBuildArmed`/`isObjectArmed`/
+ * `isRoomArmed`), and a scene that chose which one to stand down would be
+ * running that arbitration a second time, in a place where being wrong means
+ * the player's pointer stays taken. The composition root already holds the
+ * one answer.
+ *
+ * Absent, `Escape` does exactly what it did before this port existed: it
+ * abandons whatever gesture is in progress and leaves the arming alone. That
+ * is the state of every harness that supplies no arming owner.
+ */
+export interface ToolStandDownPort {
+  /**
+   * The player asked for the armed tool to be put down.
+   *
+   * Unconditional, and asked even when nothing is armed -- for the reason
+   * `BuildTool.undo` is unconditional. Whether anything was armed is the
+   * HUD's own state, and a scene that filtered on its own read of it would
+   * make the key work only when the renderer and the panel happened to agree.
+   */
+  standDown(): void;
 }

@@ -1,13 +1,17 @@
-import type { ActorIdentityMinter } from '../../src/simulation/identity/actor-identity';
+import type { ActorIdentityLifecycle } from '../../src/simulation/identity/actor-identity';
+import { SimulationEventLog } from '../../src/simulation/events';
 import type { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import type { RoomInstance } from '../../src/simulation/prisoners/room-instance-registry';
+import type { SanctionPolicy } from '../../src/simulation/prisoners/sanction-system';
 import { buildCellBlockFixture } from './navigation-fixture';
 
 export interface PrisonerScenarioFixture {
   readonly navigation: NavigationSystem;
   readonly prisoners: PrisonerOperationsRuntime;
+  /** The session's event log, so a scenario can assert what the prison said and not only what it became (issue #507). */
+  readonly events: SimulationEventLog;
   readonly generalCellTiles: readonly RoomInstance['anchorTile'][];
   readonly solitaryCellTiles: readonly RoomInstance['anchorTile'][];
   readonly originTile: RoomInstance['anchorTile'];
@@ -32,8 +36,10 @@ export function buildPrisonerScenarioFixture(options: {
   readonly workBudgetPerTick?: number;
   readonly agingIntervalTicks?: number;
   readonly flowFieldActivationThreshold?: number;
-  /** Optional actor-identity minting; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). */
-  readonly identity?: ActorIdentityMinter;
+  /** Optional actor identity; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). The lifecycle type, not the minter alone, because the runtime it is handed to also releases a departing prisoner's name (#441). */
+  readonly identity?: ActorIdentityLifecycle;
+  /** Optional solitary-sanction policy (issue #80); omitted, `DEFAULT_SANCTION_POLICY` applies, exactly as a real session gets. Passed through so a test of `SanctionSystem` itself is not stuck driving thousands of ticks to reach a real term's end. */
+  readonly sanctionPolicy?: SanctionPolicy;
 }): PrisonerScenarioFixture {
   const cellBlock = buildCellBlockFixture(options.cellCount);
   const navigation = new NavigationSystem(
@@ -47,10 +53,18 @@ export function buildPrisonerScenarioFixture(options: {
   );
   navigation.setLoadedChunks(cellBlock.chunkPositions);
 
+  // The session's event log, exposed on the fixture so a scenario that steps
+  // past a sentence end can assert what the prison *said* rather than only
+  // that the population fell -- which is the whole distinction issue #507
+  // draws, and the one a fixture that swallowed the log could not express.
+  const events = new SimulationEventLog();
+
   const prisoners = new PrisonerOperationsRuntime({
     capacity: options.capacity,
     navigation,
+    events,
     ...(options.identity !== undefined ? { identity: options.identity } : {}),
+    ...(options.sanctionPolicy !== undefined ? { sanctionPolicy: options.sanctionPolicy } : {}),
   });
 
   // classifyPrisoner's scoring (classification.ts) puts a sizeable minority
@@ -81,7 +95,11 @@ export function buildPrisonerScenarioFixture(options: {
   }
 
   prisoners.roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: canteenTile, residentCapacity: 40, concurrentUseCapacity: 40, objectCapabilities: ['dining'] });
-  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, residentCapacity: 60, concurrentUseCapacity: 60, objectCapabilities: [] });
+  // `openArea: true` because `room.yard` is one: since the owner's ruling of
+  // 2026-08-29 (#585) floor-area capacity is derived only for a room type
+  // explicitly tagged in `src/content/room-catalog.ts`, and a hand-registered
+  // instance has to carry the tag the zoning path would have put on it.
+  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, residentCapacity: 60, concurrentUseCapacity: 60, objectCapabilities: [], openArea: true });
   prisoners.roomInstances.register({ instanceId: 'shower-room-0', roomCatalogId: 'room.shower-room', anchorTile: showerTile, residentCapacity: 8, concurrentUseCapacity: 8, objectCapabilities: ['hygiene'] });
   prisoners.roomInstances.register({ instanceId: 'common-room-0', roomCatalogId: 'room.common-room', anchorTile: commonRoomTile, residentCapacity: 30, concurrentUseCapacity: 30, objectCapabilities: [] });
   prisoners.roomInstances.register({ instanceId: 'classroom-0', roomCatalogId: 'room.classroom', anchorTile: classroomTile, residentCapacity: 20, concurrentUseCapacity: 20, objectCapabilities: [] });
@@ -89,6 +107,7 @@ export function buildPrisonerScenarioFixture(options: {
   return {
     navigation,
     prisoners,
+    events,
     generalCellTiles,
     solitaryCellTiles,
     originTile: canteenTile,

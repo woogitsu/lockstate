@@ -1,10 +1,12 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
-import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
-import { edgeNumericIdFor, getBuildableDefinition } from './definition';
+import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
+import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
+import { type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
-import { type TilePosition, tileToChunk } from '../world/coordinates';
+import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
 
 export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
@@ -42,9 +44,127 @@ export interface ConstructionSnapshot {
  * `completed` is in the set: completing now writes world geometry, and
  * geometry that cannot be removed would make the first wall a player places
  * permanent. `cancelled` and `failed` are terminal.
+ *
+ * **Exported since ADR 0107**, so `createConstructionCommandHandler`'s
+ * `CancelBuildOrder` branch can tell "not found or already terminal, the
+ * pre-existing idempotency `handler.ts` argues for at length" apart from "found,
+ * cancellable, and possibly stale" without a second copy of this predicate --
+ * exactly the hazard `destroysSpendOnCancel`'s own docblock argues against for
+ * its own two states.
  */
-function isCancellable(state: BuildOrder['state']): boolean {
+export function isCancellable(state: BuildOrder['state']): boolean {
   return state !== 'cancelled' && state !== 'failed';
+}
+
+/**
+ * States whose cancellation destroys what was spent on the order, in both
+ * currencies -- the point of no return.
+ *
+ * The two states `cancelOrder` neither releases nor pays for: `'in-progress'`
+ * by ruling 20 of 2026-08-31, and `'completed'` by the owner's ruling of
+ * 2026-09-01 (*"Taking a finished object away returns nothing. Not its
+ * materials, not its money."*, ADR 0076's amendment of that date). The table
+ * on `cancelOrder` argues each.
+ *
+ * **A named predicate rather than the inline `stateAtCancellation ===
+ * 'in-progress' || hadGeometry` it replaces, because there are now two readers
+ * and they must never disagree.** `cancelOrder` uses it to decide what is
+ * destroyed; `undo()` uses it to decide whether the transaction it just
+ * reversed destroyed anything, which is what
+ * [#927](https://github.com/matmaxalez/lockstate/issues/927) is about. A third
+ * state joining this set has to be told to one place, not remembered in two.
+ *
+ * `SimulationEventLog.recordBuildOrderCancelled` deliberately does **not** read
+ * this: that module imports `BuildOrderLifecycleState` for its type only and
+ * runs no construction code, and its `switch` over the whole lifecycle is
+ * exhaustive on purpose so that a ninth state fails to compile until somebody
+ * has decided what the prison says about it. Two spellings of the same fact,
+ * one of which the compiler defends -- which is the shape that file argues for.
+ */
+function destroysSpendOnCancel(state: BuildOrder['state']): boolean {
+  return state === 'in-progress' || state === 'completed';
+}
+
+/**
+ * What one `undo()` press did: whether it reversed anything at all, and -- when
+ * it did -- whether any of what it reversed was past the point of no return
+ * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ *
+ * ## Why this is not the count the ruling declined
+ *
+ * The owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749) rules that Undo's
+ * sentence *"does not name a count"* and rules explicitly that the
+ * transaction-size plumbing is not to be built. `spendDestroyed` is not that
+ * plumbing and cannot become it: it is one bit, it says nothing about how many
+ * orders moved, and it is `true` for a run of one exactly as for a run of
+ * twelve. What it carries is the same distinction the *Cancel* channel has had
+ * since that ruling -- money back, or what was spent stays spent -- which the
+ * Undo channel could not make and therefore never made.
+ *
+ * ## Why a union rather than two booleans
+ *
+ * `spendDestroyed` is meaningless when nothing was reversed, and a flat
+ * `{ reversed: boolean; spendDestroyed: boolean }` would let a caller read it
+ * anyway. Narrowing on `reversed` is what stops that. It also stops the older
+ * hazard: this method answered `boolean`, so `if (system.undo())` was the
+ * caller, and an object return would have made that condition true for ever
+ * without the compiler saying a word.
+ */
+export type ConstructionUndoOutcome =
+  | { readonly reversed: false }
+  | { readonly reversed: true; readonly spendDestroyed: boolean };
+
+/**
+ * What one order of `definition` requires, summed per item id.
+ *
+ * **Summed rather than taken line by line, because the sell-back's bound is
+ * *this order's own requirement* and a definition is not forbidden from naming
+ * one item twice.** Two lines of one brick are one requirement for two bricks,
+ * and handing the procurement sink each line separately would bound the second
+ * call by a figure the first had already used up.
+ *
+ * A non-positive quantity is dropped rather than summed: it is not a
+ * requirement, and letting it into the map would put an item id in the walk
+ * that the order never needed.
+ *
+ * Shared by `ConstructionSystem.refundSurplusOf` and
+ * `ConstructionSystem.previewCancelRefundMinorUnits` rather than written once
+ * each, so the figure the Build panel's row is bounded by and the figure the
+ * press is bounded by cannot diverge.
+ */
+function requiredQuantitiesByItemId(definition: BuildableDefinition): Map<string, number> {
+  const requiredByItemId = new Map<string, number>();
+  for (const requirement of definition.materialsRequired) {
+    if (requirement.quantity <= 0) continue;
+    requiredByItemId.set(requirement.itemId, (requiredByItemId.get(requirement.itemId) ?? 0) + requirement.quantity);
+  }
+  return requiredByItemId;
+}
+
+/**
+ * The other tile an edge order's edge belongs to.
+ *
+ * `BuildEdge` names only the two slots the world stores, so the tile across a
+ * `'north'` edge is the row above and the tile across a `'west'` edge is the
+ * column to the left. There is no `'south'` or `'east'` member to handle:
+ * `build-order.ts` explains at length why a caller thinking in those terms
+ * addresses the neighbouring tile instead, and this is the inverse of that
+ * translation rather than a second spelling of it.
+ *
+ * `undefined` for a location whose neighbour is not a safe integer.
+ * `PlaceBuildOrder` validates `x` and `y` as `z.number().int()` and bounds
+ * neither, so `Number.MIN_SAFE_INTEGER` is a coordinate a command can carry;
+ * `tileCoordinate` throws `RangeError` one below it, and a throw here would
+ * fault the worker out of a kernel command dispatch rather than refuse
+ * anything. The caller reads `undefined` as "no far side to fall back on",
+ * which leaves such an order refused for its own tile exactly as before.
+ */
+function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
+  const x = edge === 'west' ? location.x - 1 : location.x;
+  const y = edge === 'north' ? location.y - 1 : location.y;
+  if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) return undefined;
+  return { x: tileCoordinate(x), y: tileCoordinate(y) };
 }
 
 /**
@@ -77,7 +197,7 @@ const SUBMISSION_REQUIREMENT: BuildabilityRequirement = {
  * The two vocabularies really are different and this is not ceremony:
  * `buildability.ts` uses `unowned_land` with an underscore, every member of
  * `BUILD_ORDER_FAIL_REASONS` is hyphenated, and `failReason` is persisted --
- * `save-schema.ts:176` and `:402` carry it into the save. Letting an
+ * `save-schema.ts:224` and `:676` carry it into the save. Letting an
  * underscore reach a save because two modules disagreed about a separator
  * would be a format decision made by accident.
  *
@@ -175,18 +295,98 @@ export interface DoorPlacementSink {
  */
 const MOCK_CREW_WORKER_ID = 'mock-worker-1';
 
+/**
+ * What a `RemoveWall` press can be refused for
+ * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+ *
+ * **One entry, and the table exists anyway**, for the reason
+ * `RemoveObjectRefusalReason` records of its own single member: a table is
+ * what makes a *second* reason a compile error at the mapping in
+ * `src/simulation/refusals/refusal-log.ts` rather than a silent `undefined` on
+ * the wire.
+ *
+ * Spelled exactly like `RemoveObjectRefusalReason`'s and `UnzoneRoomRefusalReason`'s
+ * member of the same name, because it is the same fact about a third gesture:
+ * the player pressed somewhere there was nothing of theirs to take away. It is
+ * namespaced apart from both on the wire (`remove-wall.*` against
+ * `remove-object.*` and `unzone.*`) for the reason every other collision in
+ * `REFUSAL_REASONS` is -- a player who pressed the world expecting a wall to
+ * come down must not read a sentence about a room.
+ */
+export type RemoveWallRefusalReason = 'nothing-to-remove';
+
+/**
+ * What a `CancelBuildOrder` press can be refused for
+ * ([ADR 0107](../../../docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md)).
+ *
+ * **One entry, and the table exists anyway**, for the reason
+ * `RemoveWallRefusalReason` records of its own single member: a table is what
+ * makes a *second* reason a compile error at the mapping in
+ * `src/simulation/refusals/refusal-log.ts` rather than a silent `undefined` on
+ * the wire.
+ *
+ * `stale-cancellation` fires when the order's own revision counter
+ * (`revisionOf`, below) has moved past the value the press was aimed at --
+ * the row that produced the press was painted from a state this order has
+ * since transitioned out of, deterministically, in the ~2 seconds of
+ * simulation time ADR 0107 Context §3 measures between a row being priced and
+ * a running-clock command executing. Namespaced `cancel-build-order.*` apart
+ * from every other refusal family for the reason every such namespace in this
+ * file is: a player who pressed a queue row's `Cancel` and lost that race must
+ * not read a sentence that could be confused with `cancel-purchase.not-pending`
+ * or the unrelated main-thread-only `hud.refusal.cancel-build-order` (ADR 0107
+ * Context §9).
+ */
+export type CancelBuildOrderRefusalReason = 'stale-cancellation';
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
-  
+
   // Run every 10 ticks (2 times per second)
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private orders = new Map<string, BuildOrder>();
+  /**
+   * A per-order monotonic counter, bumped once for every write to
+   * `order.state` (`setState`, below) -- ADR 0107 Decision §1's answer to
+   * "what did the row's Cancel button see". Never serialized: it lives
+   * outside `ConstructionSnapshot`, is never read by `snapshot()` or
+   * `restore()`, and never touches `BuildOrder`'s persisted shape (ADR 0107
+   * Decision §2 and §6). Its usefulness is bounded to one live worker
+   * session's few-second window between a row being painted and a press
+   * executing on it, and a restore rebuilds every row from scratch, so there
+   * is nothing pre-restore for a post-restore press to compare against.
+   */
+  private orderRevisions = new Map<string, number>();
 
   // A transaction is just a list of order IDs.
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
+  /**
+   * Whether the player has done something since the newest thing on
+   * `undoStack`, so that a press of `Undo` would reach past their latest action
+   * rather than take it back
+   * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2).
+   *
+   * **This class records the fact and does not act on it**, which is the whole
+   * of why it is a field and two getters rather than a branch inside `undo()`.
+   * `undo()` means *"reverse the newest transaction"* and every caller that
+   * wants that meaning still gets it; whether one particular press is entitled
+   * to it is a policy about a command, and it lives with the command, in
+   * `createConstructionCommandHandler`. The first draft of this change put the
+   * branch here and eight existing tests refuted it in one run -- their subject
+   * is what the cancellation costs, reached through `undo()` directly, and a
+   * history that refuses its own method had made that unreachable.
+   *
+   * A boolean and not a tick, deliberately: the question is *"is the top of
+   * this stack still the player's latest action"*, and the three writers -- a
+   * stack write clears it, an unrelated command sets it, a successful redo
+   * clears it -- answer exactly that. A tick would additionally need every
+   * transaction to carry the tick it was pushed at, which is a save-schema
+   * field and therefore a migration, for an answer this already gives.
+   */
+  private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
 
@@ -212,40 +412,307 @@ export class ConstructionSystem implements SystemRegistration {
      * production caller passes a sink. See `DoorPlacementSink`.
      */
     private readonly doorPlacement?: DoorPlacementSink,
+    /**
+     * Where the queue's unmet material demand is bought
+     * ([ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
+     * decision 7, issue #627).
+     *
+     * Fifth and optional, so every existing caller -- `createNewSimulationRuntime`
+     * aside -- constructs the system exactly as before. Absent, this system
+     * behaves precisely as it did before #627: an order placed against an
+     * empty container parks in `'materials-pending'` and is retried for ever.
+     * That is still right for a bare `ConstructionSystem` wired to
+     * `UNLIMITED_MATERIALS_PROVIDER`, or to a container something else fills
+     * -- the determinism scenario's carry jobs, for one. See
+     * `ConstructionProcurementSink`.
+     */
+    private readonly materialsProcurement?: ConstructionProcurementSink,
+    /**
+     * What the **scheduled** purchase pass bought, and what it could not
+     * (issues #627, #629, #640).
+     *
+     * Sixth and optional, on exactly the terms the fifth is: every existing
+     * caller constructs the system as before, and absent, `update` behaves
+     * precisely as it did -- the report is computed and dropped, which is what
+     * it did on this line until now.
+     *
+     * **Why a callback and not a `RefusalLog` held here.** This system owns no
+     * refusal log and must not start owning one: `RefusalLog`'s own class
+     * comment argues at length that it is a notice about something the player
+     * just did, which is why it is not snapshotted, and a scheduled system is
+     * the wrong place to reason about that. So the report is *handed out* and
+     * the composition root decides what a session does with it -- the same
+     * shape `ObjectPlacementSink` and `DoorPlacementSink` already use for
+     * "something outside construction has to hear about this".
+     *
+     * **Only the press paths reported before, and that was the defect.**
+     * `reportMaterialsFunding` had exactly two callers --
+     * `construction/handler.ts` and `runtime/session-commands.ts`, both on a
+     * press -- so a shortfall announced at the press was never revisited by
+     * the retry that followed it. Measured on this branch: a prison spent down
+     * to 40 against a wall costing 80 refuses, is then refunded to 25,000, and
+     * builds the wall from the scheduled pass alone -- and `refusals.last` is
+     * still the `purchase.insufficient-funds` recorded at tick 1, standing
+     * over a solvent prison with the wall up.
+     */
+    private readonly onMaterialsProcured?: (report: MaterialsProcurementReport | undefined, tick: number) => void,
+    /**
+     * That one build order just finished
+     * ([ADR 0116](../../../docs/adr/0116-whether-a-finished-object-is-an-event.md),
+     * the owner's ruling of 2026-09-16).
+     *
+     * Seventh and optional, on exactly the terms the fifth and sixth are:
+     * every existing caller constructs the system as before, and absent, a
+     * completed order does what it has always done and says nothing.
+     *
+     * **A callback and not a `SimulationEventLog` held here, for the reason
+     * `onMaterialsProcured` above is a callback**: this system owns no event
+     * log and must not start owning one. What the completion of a build order
+     * *means* to a session -- whether it is worth a line, on which surface, in
+     * whose words -- is a decision about the HUD's alerts channel, and it lives
+     * with the composition root that already answers the same question for
+     * every other producer. `createNewSimulationRuntime` passes
+     * `SimulationEventLog.recordBuildOrderCompleted`; a bare
+     * `ConstructionSystem` in a test or a determinism scenario passes nothing
+     * and is unchanged.
+     *
+     * **Called after the world is written, not before**, which is the half a
+     * reader should check rather than assume: the call sits below
+     * `setState(order, 'completed')` and below `finalizeConstruction(order)`,
+     * so ADR 0116 §6's two truth conditions -- an order reached `'completed'`
+     * at this tick, and what it writes is in the world at this tick -- both
+     * hold at the moment the record is appended. Moving it above either line
+     * would make the sentence a prediction.
+     *
+     * @param tick The tick being executed. Not a clock reading: `update`
+     * receives it from the kernel's dispatch.
+     */
+    private readonly onOrderFinished?: (tick: number) => void,
   ) {}
 
   /**
    * Accepts an order, or fails it with a reason.
    *
-   * Two checks, in this order, and the order matters: a tile outside the
-   * materialised world has no ownership to ask about, so `out-of-bounds` is
-   * decided first and `canBuildAt` is never handed a chunk that does not
-   * exist.
+   * Four checks, in this order, and the order matters.
+   *
+   * **The buildable is asked about first**, because it is the only one of the
+   * four that is a property of the *request* rather than of a tile or of the
+   * order book: an order naming a row nobody declared is refused whatever is
+   * under it and whatever else is queued, so asking about anything else would
+   * be answering a narrower question first. It also touches nothing -- no
+   * chunk lookup, no `canBuildAt`, no scan of `this.orders` -- which matters
+   * because `SparseWorld` materialises a chunk on write and a refusal must
+   * grow no world (`ObjectPlacementService.place` orders its own checks for the
+   * same reason).
+   *
+   * `getBuildableDefinition` is deliberately **not** used here: it throws, and
+   * this is reached from inside a kernel command dispatch, where a throw faults
+   * the worker instead of refusing anything. The registry is read directly and
+   * the answer becomes a `failReason` the player is told about, which is the
+   * treatment `ObjectPlacementService` already gives the identical id for
+   * `PlaceObject`. Until this check existed an unknown id was **approved**, and
+   * `update`'s own lookup then threw on every scheduled tick for the rest of the
+   * session -- and, because `snapshot()` carries the order, for the rest of the
+   * save's life as well.
+   *
+   * **Second, whether this exact request is already standing** --
+   * `duplicateClaim`, issue #514. Also a property of the request rather than
+   * of a tile (it reads `this.orders`, never the world), so it keeps the same
+   * place in the ordering the buildable check argues for: cheaper and more
+   * fundamental questions first. See `duplicateClaim` for what "already
+   * standing" means and why `completed` is included in it.
+   *
+   * Then the two tile checks, in the order they were already in: a tile outside
+   * the materialised world has no ownership to ask about, so `out-of-bounds` is
+   * decided before `canBuildAt` is ever handed a chunk that does not exist.
+   * `admits` is that pair, asked of one tile.
+   *
+   * **For edge geometry the pair is asked of both tiles the edge separates,
+   * and either one admitting is enough** (issue #448, ADR 0047 decision 6).
+   * The world keeps one slot per edge and keeps it on the *north* and *west*
+   * side, so the south boundary of a rectangle is the north edge of the row
+   * below it and the east boundary is the west edge of the column to its
+   * right -- tiles outside the rectangle. Asking only the order's own tile
+   * therefore approved the north and west faces of owned land and refused the
+   * south and east faces: the same physical wall, on the same property line,
+   * decided by which of its two neighbours the world happened to keep the slot
+   * on. `docs/WORLD.md`'s own justification -- *"a prison is a perimeter"* --
+   * argues for the symmetric rule, and since ADR 0045 made `zone` refuse an
+   * open `enclosed` room the asymmetry was a wrong *refusal* rather than a
+   * wrong readout: a room flush against the edge of owned land could never be
+   * sealed, so it could never be zoned.
+   *
+   * Three properties of the widening, each deliberate:
+   *
+   * - **The far tile is consulted only when the order's own tile is refused**,
+   *   so the ordinary interior order costs exactly what it cost before, and a
+   *   refusal still grows no world -- `getChunk` and `canBuildAt` are reads,
+   *   and neither materialises a chunk the way a write does.
+   * - **The refusal the player is told about is still their own tile's.** It
+   *   is the tile they named and the one they can act on; reporting the far
+   *   tile's reason would answer a question nobody asked. Every refusal this
+   *   method could produce before it produces unchanged.
+   * - **Non-edge buildables are untouched.** An object is addressed by a tile
+   *   and has no far side, which is what `occupiesTileEdge` decides. It is the
+   *   predicate rather than `category === 'wall'` written out again, because a
+   *   door occupies an edge too and a second copy is how the two answers come
+   *   to disagree -- `src/main.ts` holds exactly such a copy and it already
+   *   does disagree, which `occupiesTileEdge`'s own comment now records.
+   *
+   * **What this makes reachable, stated rather than discovered.** An approved
+   * order whose own tile is in a chunk that does not exist yet writes its edge
+   * on completion, and `SparseWorld.setTopEdge` materialises the chunk to hold
+   * it -- so walling the south face of the world's frontier grows a fresh
+   * 32x32 chunk of unowned ground, which the render view draws because it draws
+   * every loaded chunk. That is a visible change and it is **not** hidden
+   * behind this fix; ADR 0047 decision 6 proposes a pre-materialised frontier
+   * ring as the way to make it deliberate, and `docs/WORLD.md` records why
+   * that is deferred rather than taken here.
    */
   public submitOrder(order: BuildOrder): void {
     if (this.orders.has(order.id)) {
       throw new Error(`BuildOrder ${order.id} already exists`);
     }
 
-    const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
-    const chunkState = this.world.getChunk(chunk);
-    if (!chunkState) {
-      order.state = 'failed';
-      order.failReason = 'out-of-bounds';
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) {
+      this.setState(order, 'failed');
+      order.failReason = 'unknown-buildable';
       this.orders.set(order.id, order);
       return;
     }
 
-    const buildability = canBuildAt(this.world, order.location, SUBMISSION_REQUIREMENT);
-    if (!buildability.buildable) {
-      order.state = 'failed';
-      order.failReason = SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+    if (this.duplicateClaim(order, definition) !== undefined) {
+      this.setState(order, 'failed');
+      order.failReason = 'duplicate-order';
       this.orders.set(order.id, order);
       return;
     }
 
-    order.state = 'approved';
+    const refusal = this.admits(order.location);
+    if (refusal !== undefined) {
+      const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+      if (across === undefined || this.admits(across) !== undefined) {
+        this.setState(order, 'failed');
+        order.failReason = refusal;
+        this.orders.set(order.id, order);
+        return;
+      }
+    }
+
+    this.setState(order, 'approved');
     this.orders.set(order.id, order);
+  }
+
+  /**
+   * Whether one tile would carry this order, or the reason it would not.
+   *
+   * `undefined` means yes. The two checks are the two `submitOrder` already
+   * ran, in the order it already ran them, extracted so that both tiles of an
+   * edge can be asked the identical question -- a second copy of the pair is
+   * how the two sides of one wall would come to be judged by different rules.
+   */
+  private admits(tile: TilePosition): BuildOrderFailReason | undefined {
+    const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
+    if (this.world.getChunk(chunk) === undefined) return 'out-of-bounds';
+
+    const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
+    if (buildability.buildable) return undefined;
+    return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+  }
+
+  /**
+   * The other order this exact request duplicates, or `undefined` if none
+   * claims the same ground (issue #514).
+   *
+   * "Same request" is `definitionId`, tile and resolved edge together --
+   * exactly `buildSupersessionKey`'s four fields, because the withdrawal a
+   * later success performs and the refusal a duplicate attempt earns are
+   * about the identical identity: what a supersession forgives is what a
+   * duplicate check should have refused in the first place. Only two of the
+   * four are compared as coordinates and the third as a resolved edge because
+   * `resolveBuildEdge` is what makes an order with no explicit `edge` and one
+   * carrying `DEFAULT_BUILD_EDGE` explicitly compare equal, the same
+   * normalisation `createConstructionCommandHandler` already applies when it
+   * builds `order`'s own supersession key from this same order right after
+   * `submitOrder` returns.
+   *
+   * **`definitionId` is part of the identity, not dropped.** Two different
+   * buildables claiming the same tile edge -- a wall and, on the same edge, a
+   * door -- are not a duplicate of one another under this method; whether
+   * that combination should itself be refused is a separate, pre-existing
+   * question this change does not touch (`revertConstruction`'s own comment
+   * records that nothing rejects a second wall of a *different* kind on an
+   * edge that already has one, and that stays true here).
+   *
+   * **`cancelled` and `failed` never claim, `completed` usually does, and
+   * *which* buildable decides the exception.** A `completed` order has
+   * already written its wall into the world -- that is the entire content of
+   * issue #514's third question, "what happens to an order for a tile that
+   * is already built": before this method existed, nothing did, and a second
+   * identical order for an already-built edge was **approved**, allocated
+   * its own materials once the crew reached it, and rebuilt geometry that
+   * was already there, for nothing. Folding "already built" into the same
+   * check that catches "still queued" is also the shape
+   * `ObjectPlacementService.place` already uses for the identical pair of
+   * facts about a tile, under its own `tile-occupied`.
+   *
+   * `cancelled` and `failed` are excluded unconditionally because both gave
+   * the tile back: a cancelled order must not permanently block the same
+   * request from being retried, and neither may an order that failed for an
+   * unrelated reason (out of bounds, unowned land) and is then corrected and
+   * resubmitted -- both are ordinary play, not a duplicate press.
+   *
+   * **A `completed` order for an *object* buildable (`placesObjectId`) is
+   * the one case excluded too, and it is not this method guessing -- it is
+   * this class's own asymmetry.** `ObjectPlacementService.remove` takes a
+   * standing object away by deleting it from `PlacedObjectRegistry` directly
+   * (`object-placement-service.ts`) and never calls `cancelOrder` for an
+   * object that has already completed -- only for one still in flight. So a
+   * bed's finished order stays `completed` in `this.orders` for the rest of
+   * the session even after the bed itself is gone, and `PlacedObjectRegistry`
+   * -- not this order -- is what is now authoritative for "is something
+   * standing here". Counting that stale `completed` order as a claim would
+   * refuse a player who removed a bed to move it from ever placing another
+   * one on the freed tile, which is a worse bug than #514 in the opposite
+   * direction: a refusal too eager to let ordinary play through
+   * (`docs/AGENT_WORKFLOW.md`, "a refusal that is too eager is a worse bug
+   * than the one being fixed"). It costs this method nothing extra to get
+   * right: `ObjectPlacementService.place` already refuses a tile a standing
+   * object or an in-flight order covers, under `tile-occupied`, before this
+   * class is ever asked -- `tilesClaimedByOrdersInFlight` even excludes
+   * `completed` from that scan for the identical reason -- so this method
+   * only has to agree with a check that already exists, not invent tile
+   * occupancy for objects on its own. Edge geometry (walls, doors) and pure
+   * utility buildables have no such second registry -- `cancelOrder` is the
+   * only way any of them is ever taken back, and it always leaves `cancelled`
+   * behind -- so `completed` keeps meaning "still there" for every buildable
+   * that is not this one exception.
+   *
+   * **Cost is one pass over every order this session has ever held, on a
+   * player press and not on a tick.** `ObjectPlacementService`'s analogous
+   * scan documents the same trade-off in the same words for the same reason:
+   * `update()` already walks and sorts the full order list on every
+   * scheduled construction tick (`schedule.intervalTicks: 10`, twice a
+   * second, forever), which is a materially higher-frequency cost than one
+   * more unsorted pass per `PlaceBuildOrder` command. Iteration order does not
+   * matter to the answer -- this asks *whether* a claim exists, never *which*
+   * one -- so the raw `Map` is walked directly rather than through
+   * `orderedOrders()`, which would pay for a sort this method has no use for.
+   */
+  private duplicateClaim(order: BuildOrder, definition: BuildableDefinition): BuildOrder | undefined {
+    const edge = resolveBuildEdge(order);
+    const isObjectBuildable = definition.placesObjectId !== undefined;
+    for (const existing of this.orders.values()) {
+      if (existing.id === order.id) continue;
+      if (existing.state === 'cancelled' || existing.state === 'failed') continue;
+      if (existing.state === 'completed' && isObjectBuildable) continue;
+      if (existing.definitionId !== order.definitionId) continue;
+      if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
+      if (resolveBuildEdge(existing) !== edge) continue;
+      return existing;
+    }
+    return undefined;
   }
 
   public registerTransactionOrder(orderId: string, transactionId?: string): void {
@@ -258,9 +725,108 @@ export class ConstructionSystem implements SystemRegistration {
       this.redoStack = []; // Clear redo stack on new action
     }
     this.currentTransaction.push(orderId);
+    // The top of the history is now something the player just did, so the next
+    // press of `Undo` is about their latest action rather than about an older
+    // one.
+    this.newerActionThanTheStackTop = false;
   }
 
-  public undo(): void {
+  /**
+   * Records that the player did something this history cannot hold
+   * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2,
+   * accepted by the owner on 2026-09-09).
+   *
+   * Only `PlaceBuildOrder` and `PlaceObject` write to this stack -- a hire, a
+   * designation, an admission, a dismissal, an alert dismissal, a removal and a
+   * cancel all write nothing and cannot -- so before this existed the press
+   * reached past every one of them to the last wall.
+   * [#956](https://github.com/woogitsu/lockstate/issues/956) measured the cost:
+   * a player who hires a guard and presses the one key labelled `Undo` keeps
+   * the guard, keeps the wage, and loses a finished wall with no refund.
+   *
+   * Called from `createSessionCommandHandler`, the one place that sees every
+   * command, for each accepted command that is neither a stack write nor a
+   * history control.
+   */
+  public noteActionThatDoesNotWriteTheUndoStack(): void {
+    this.newerActionThanTheStackTop = true;
+  }
+
+  /**
+   * Whether a press of `Undo` would reach past the player's own latest action.
+   *
+   * Read by `createConstructionCommandHandler` and by nothing else. Paired with
+   * `hasSomethingToUndo` below, because the two answer different questions and
+   * the handler needs both: a press against an empty history is not a refusal
+   * and has never said anything.
+   */
+  public get undoWouldReachPastTheLatestAction(): boolean {
+    return this.newerActionThanTheStackTop;
+  }
+
+  /** Whether `undo()` has any transaction at all to reach, open gesture included. */
+  public get hasSomethingToUndo(): boolean {
+    return this.currentTransaction.length > 0 || this.undoStack.length > 0;
+  }
+
+  /**
+   * Reverses the most recent transaction, and answers **whether it reversed
+   * anything and whether what it reversed was past the point of no return**
+   * (#749, #927).
+   *
+   * ## Why the return value exists, and what it is deliberately not
+   *
+   * It is not a count. The owner's ruling of 2026-09-01 on
+   * [#749](https://github.com/matmaxalez/lockstate/issues/749) gives Undo a
+   * success sentence and rules that it *"does not name a count"* -- an undo
+   * reverses a whole transaction, so naming one order would be a small lie
+   * whenever a run of several was taken back -- and rules explicitly that the
+   * transaction-size plumbing is **not** to be built. `redoTransaction.length`
+   * is sitting right there and is not returned, on purpose.
+   *
+   * **This method answered a bare `boolean` until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * paragraph above is kept whole because it is still the rule -- what changed
+   * is that one bit was not enough to be honest with.** A `boolean` says only
+   * *something moved*, so the handler could say only *"the last change to the
+   * build queue was undone"* -- over a press that had just destroyed a finished
+   * wall's materials and refunded nothing. `ConstructionUndoOutcome` adds the
+   * one bit that fixes it and no more: `spendDestroyed` is not a size and
+   * cannot grow into one. See that type for why it is not the plumbing the
+   * ruling declined.
+   *
+   * What *is* needed for that sentence to be honest is the one bit this
+   * answers: a press against an empty stack, or against a transaction whose
+   * orders have all reached a terminal state, reverses nothing, and a band
+   * reading "the last change to the build queue was undone" over a queue
+   * nothing happened to is the player-visible promise the code does not keep
+   * that `AGENTS.md`'s fourth exclusion is about. `false` is what stops the
+   * handler saying it.
+   *
+   * Both no-op shapes answer `{ reversed: false }` and the second is the one a
+   * caller would miss: a transaction *was* popped -- so the undo stack really
+   * did shrink -- and yet nothing in the world changed, because `isCancellable`
+   * rejected every order in it. The redo stack is not pushed in that case
+   * either, which is the existing behaviour this return value now reports
+   * rather than changes.
+   *
+   * ## Where `spendDestroyed` is read from, and why it costs nothing
+   *
+   * The state each order is in **before** `cancelOrder` is called, which this
+   * loop already holds in `order` and which `cancelOrder` would otherwise
+   * compute privately and throw away -- the same read, for the same reason, the
+   * `CancelBuildOrder` branch of `createConstructionCommandHandler` makes one
+   * level up. Read after the call every order is `'cancelled'` and the
+   * distinction is gone.
+   *
+   * It is an **or** across the transaction, not a per-order answer: a drag that
+   * mixes three finished walls with nine queued ones destroys what the three
+   * cost and refunds what the nine did, and *"anything already spent past the
+   * point of no return stays spent"* is true of exactly that mixture. A
+   * per-order breakdown would be the count the ruling declined, arrived at from
+   * the other side.
+   */
+  public undo(): ConstructionUndoOutcome {
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
@@ -268,9 +834,10 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     const transaction = this.undoStack.pop();
-    if (!transaction) return; // Nothing to undo
+    if (!transaction) return { reversed: false }; // Nothing to undo
 
     const redoTransaction: string[] = [];
+    let spendDestroyed = false;
 
     for (const orderId of transaction) {
       const order = this.orders.get(orderId);
@@ -285,18 +852,34 @@ export class ConstructionSystem implements SystemRegistration {
       // write, so undo means the same thing for a finished order as for a
       // pending one.
       if (!isCancellable(order.state)) continue;
+      // Before the call, because `cancelOrder` sets `'cancelled'` on its second
+      // line. This is the whole of #927's plumbing.
+      if (destroysSpendOnCancel(order.state)) spendDestroyed = true;
       this.cancelOrder(orderId);
       redoTransaction.push(orderId);
     }
 
-    if (redoTransaction.length > 0) {
-      this.redoStack.push(redoTransaction);
-    }
+    if (redoTransaction.length === 0) return { reversed: false };
+    this.redoStack.push(redoTransaction);
+    return { reversed: true, spendDestroyed };
   }
 
-  public redo(): void {
+  /**
+   * Re-applies the most recent undone transaction, and answers whether it
+   * re-applied anything (#749).
+   *
+   * The mirror of `undo` above on every point that method's docblock makes,
+   * including the one it is most tempting to drop: `undoTransaction.length` is
+   * a count and is not returned, because the owner's ruling gives Redo a
+   * sentence that names no count either.
+   *
+   * `false` covers the empty redo stack and the popped transaction whose orders
+   * were no longer `'cancelled'` -- reachable because `redo` restores only an
+   * order still in that state, and a later press may have moved it.
+   */
+  public redo(): boolean {
     const transaction = this.redoStack.pop();
-    if (!transaction) return; // Nothing to redo
+    if (!transaction) return false; // Nothing to redo
 
     const undoTransaction: string[] = [];
 
@@ -306,14 +889,21 @@ export class ConstructionSystem implements SystemRegistration {
       
       if (order.state === 'cancelled') {
         // We restore it to approved
-        order.state = 'approved';
+        this.setState(order, 'approved');
         undoTransaction.push(orderId);
       }
     }
 
-    if (undoTransaction.length > 0) {
-      this.undoStack.push(undoTransaction);
-    }
+    if (undoTransaction.length === 0) return false;
+    this.undoStack.push(undoTransaction);
+    // Symmetrical with `registerTransactionOrder`: a redo that re-applied
+    // something has just made the top of the stack the player's latest action
+    // again, so the press after it must not be refused. Without this line a
+    // hire, a redo and an undo would leave the redo stranded -- re-applied and
+    // impossible to take back -- which is a worse shape than the one this whole
+    // change exists to fix.
+    this.newerActionThanTheStackTop = false;
+    return true;
   }
 
   /**
@@ -328,6 +918,120 @@ export class ConstructionSystem implements SystemRegistration {
    *
    * `cancelled` and `failed` still throw: they are terminal, and there is no
    * geometry behind them to reverse.
+   *
+   * ## What comes back, and in which currency (the owner's ruling 20 of
+   * 2026-08-31)
+   *
+   * *"Anulowanie zwraca pieniądze zamiast cegieł"* and *"Pieniądze dopóki ekipa
+   * nie zaczęła"* -- money instead of bricks, and only until the crew has
+   * started. [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of that date records both, says which part of its decision B they
+   * supersede, and is **unsigned**: this method is what the owner is being asked
+   * to sign, not something the signature has already covered.
+   *
+   * | state at the press | what the player gets |
+   * | --- | --- |
+   * | `planned` | nothing, and nothing was spent: `pendingOrderDemand` never counts a planned order, so no purchase was ever made for it |
+   * | `approved` | money -- what its demand caused to be bought, whether that is still a delivery on the road or has already landed on the shelf |
+   * | `materials-pending` | the same |
+   * | `assigned` | money -- the catalogue value of the allocation it is holding; the materials are **not** returned to stock |
+   * | `in-progress` | nothing at all. The allocation is dropped unreleased and unpaid |
+   * | `completed` | **nothing at all**, in either currency, and the geometry still comes down |
+   *
+   * **The `completed` row read *"the materials, into the container, exactly as
+   * before -- ADR 0076 decision B, which ruling 20 does not reach"* until
+   * 2026-09-01, and it is marked rather than rewritten because it is what
+   * decision B decided.** The owner's ruling of that date -- *"Taking a
+   * finished object away returns nothing. Not its materials, not its money."*
+   * -- reverses B's own sentence and closes the inversion ruling 20 created and
+   * reported: cancel at `in-progress` and the materials were gone, wait for
+   * `completed` and `Undo` returned them all, so it paid to let the crew
+   * finish. ADR 0076's *"Amendment, 2026-09-01: taking a finished object away
+   * returns nothing"* records it.
+   *
+   * **The `approved` and `materials-pending` rows read *"money -- the
+   * just-in-time deliveries its demand caused, where the whole delivery is now
+   * surplus"* until #717, and that sentence is kept because it is what the
+   * implementation did rather than what the ruling said.** Ruling 20 promises
+   * *money* in both states; the code only paid where the money still happened
+   * to be sitting in a **delivery**. `ProcurementSystem` is scheduled every
+   * tick and this system every tenth, so a just-in-time delivery is unloaded
+   * into the container up to ten ticks before the order that demanded it is
+   * offered to `tryAllocate` -- and for those ten ticks the order is
+   * `'materials-pending'`, holds no allocation, and has no delivery left to
+   * cancel. The press gave back **nothing** and left the bricks, which is
+   * issue #717's *"returns bricks, never money"* measured in the one window
+   * that sentence was still true in. It is the same shape of inversion the
+   * amendment of 2026-09-01 closed for `completed`: cancel a tick earlier and
+   * the whole price came back, cancel ten ticks later at `'assigned'` and the
+   * whole price came back, and in between the currency changed with nothing on
+   * screen relating the two. `refundSurplusOf` now runs
+   * `ConstructionProcurementSink.refundSurplusStock` behind
+   * `refundSurplusDeliveries`, bounded by the cancelled order's own
+   * requirement so that a stockpile the player pressed *Buy* for is not
+   * liquidated by one cancel press.
+   *
+   * **The ruling says *object* and this method cannot tell a bed from a wall,
+   * so it is read as "a completed order".** The inversion is identical for a
+   * wall, and branching on `placesObjectId` here would close it for the
+   * buildable a player places rarely and leave it open for the one they draw
+   * most -- *"two commands disagree"*, which decision B existed to end,
+   * reappearing as *"two buildables disagree"*. The amendment flags this as the
+   * one place the implementation is wider than the words, and the owner's
+   * signature covers it.
+   *
+   * **Reversing the geometry is not the refund and does not travel with it.**
+   * `revertConstruction` still runs for a `completed` order, `isCancellable`
+   * still holds `'completed'`, and `undo()` still delegates here -- for the
+   * reason those three always gave: a finished wall that could not be taken
+   * down would be permanent the moment it was placed, and an undo stack that
+   * claimed to have reversed something it had not would be a lie.
+   *
+   * **Why `in-progress` destroys value on purpose.** It is the only place in
+   * the money loop where value leaves rather than changing form, and it is the
+   * whole content of the second ruling: if the materials came back in either
+   * currency, cancelling late would cost nothing and "until the crew has
+   * started" would be a distinction without a difference. The materials went
+   * into a wall that is now being un-built.
+   *
+   * **One refund per order, in exactly one currency, with the allocation
+   * emptied in the same step.** That is decision B's hazard inherited word for
+   * word with *materials* replaced by *money*, and it is sharper than B's was:
+   * B's double refund needed two presses, and paying for the plank while also
+   * releasing it needs one. Every branch below therefore ends at the same
+   * `materialsAllocated = []`, and `redo()` -- which returns an order to
+   * `'approved'` and lets it allocate again -- can find nothing stale to be
+   * paid a second time from.
+   *
+   * **A line the catalogue cannot price is released rather than destroyed.** A
+   * buildable may require an item nothing sells (`UnprocurableMaterial`'s
+   * `'unpurchasable'`), and there is no honest money figure for it; the sink
+   * hands those lines back and they go into the container the way every line
+   * used to.
+   *
+   * **With no procurement sink wired, every cancellable state releases exactly
+   * as it did before ruling 20, and `in-progress` and `completed` are the two
+   * exceptions.** A bare `ConstructionSystem` is not a session -- it has no
+   * treasury behind it and cannot pay anybody -- so "money instead of bricks"
+   * has no meaning there and the materials go back, which is what
+   * `UNLIMITED_MATERIALS_PROVIDER` and `ContainerMaterialsProvider` have always
+   * done. Neither of those two is conditional on the sink because their rule is
+   * not about money: the materials are consumed by works that are being
+   * un-built, whether or not anybody is keeping accounts.
+   *
+   * **This sentence said `in-progress` was *"the one exception"* and it stopped
+   * being true on 2026-09-01, the day the ruling above moved `completed` into
+   * the same arm; it is corrected rather than deleted because the count is
+   * exactly the kind of claim that rots** (`docs/AGENT_WORKFLOW.md` §4). Found
+   * while reading this method for #927, three days late.
+   *
+   * **What stops that fallback hiding a lost wiring** is that the sink's one
+   * production caller is `createNewSimulationRuntime`, and
+   * `tests/integration/economy-money-conservation.test.ts` drives that function
+   * rather than a fixture: a session whose sink went missing would refund
+   * bricks where those cases measure money, in every one of the states ruling
+   * 20 names. This is not the `composition-root-contract` shape of hazard --
+   * that gate is about `src/main.ts`, which does not construct this system.
    */
   public cancelOrder(id: string): void {
     const order = this.orders.get(id);
@@ -336,18 +1040,421 @@ export class ConstructionSystem implements SystemRegistration {
       throw new Error(`Cannot cancel order in state ${order.state}`);
     }
 
-    const hadGeometry = order.state === 'completed';
-    order.state = 'cancelled';
+    const stateAtCancellation = order.state;
+    const hadGeometry = stateAtCancellation === 'completed';
+    this.setState(order, 'cancelled');
     if (hadGeometry) this.revertConstruction(order);
 
-    // The materials this order actually consumed go back where they came
-    // from. `materialsAllocated` is emptied in the same step,
-    // so a `redo()` -- which returns the order to `'approved'` and lets it
-    // allocate again -- cannot refund a second time from a stale record.
     if (order.materialsAllocated.length > 0) {
-      this.materialsProvider.release(order.materialsAllocated);
+      // Read before the field is emptied, because both the release and the
+      // refund are computed from it and the emptying is unconditional.
+      const allocated = order.materialsAllocated;
       order.materialsAllocated = [];
+      if (destroysSpendOnCancel(stateAtCancellation)) {
+        // Ruling 20's "nothing" for `in-progress`, and the owner's ruling of
+        // 2026-09-01 for `completed`. Neither released nor paid for: see the
+        // table above for why each is the ruling rather than a leak.
+        //
+        // **The condition read `stateAtCancellation === 'in-progress' ||
+        // hadGeometry` until #927 and is now the named `destroysSpendOnCancel`,
+        // which is the same test and not a new one.** `undo()` needs the same
+        // question answered to say what it destroyed, and two inline copies of
+        // a two-state set is how they come to disagree.
+        //
+        // **`hadGeometry` moved into this arm on 2026-09-01 and the line it
+        // left is kept in the table above rather than deleted.** It used to
+        // read `hadGeometry || this.materialsProcurement === undefined`, and
+        // that first operand was ADR 0076 decision B: a finished thing
+        // un-builds into its full materials, which is what ruling 20 declined
+        // to reach and what this ruling reverses.
+        //
+        // **Neither of these two states is conditional on the procurement
+        // sink**, and the reason is the same for both: their rule is not about
+        // money. The materials went into works that are being un-built, and
+        // they are gone whether or not anybody is keeping accounts. Only the
+        // four states below choose a currency, which is why only they ask
+        // whether there is a treasury behind them.
+      } else if (this.materialsProcurement === undefined) {
+        this.materialsProvider.release(allocated);
+      } else {
+        this.materialsProvider.release(this.materialsProcurement.refundAllocatedMaterials(allocated));
+      }
     }
+
+    this.refundSurplusOf(stateAtCancellation, order);
+  }
+
+  /**
+   * Takes back the money a cancellation has just made surplus, where it is
+   * still recoverable.
+   *
+   * ## Why this is here at all
+   *
+   * A `PlaceBuildOrder` buys at the press (`procureQueuedMaterials`, ADR 0017
+   * decision 7), and the goods take `PROCUREMENT_DELIVERY_DELAY_TICKS` to land.
+   * So an order cancelled soon after it is placed is holding **nothing** -- it
+   * never reached `tryAllocate` -- while its money sits in a delivery on the
+   * road. Without this, "cancelling gives back money" would be false in
+   * precisely the state a player is most likely to press it in, and the four
+   * refundable states ruling 20 names would collapse to one.
+   *
+   * **And an order cancelled *later* than that is holding nothing either, for
+   * ten ticks at a time, which is what #717 measured.** This system is
+   * scheduled every tenth tick and `ProcurementSystem` every tick, so between
+   * a delivery being unloaded and the order it was bought for reaching
+   * `tryAllocate` the material is on the shelf and the order still reads
+   * `'materials-pending'`. There is no delivery left to turn around there, so
+   * the delivery arm alone answered that press with nothing at all -- and
+   * `refundSurplusStock` is the arm that answers it, at the catalogue price,
+   * bounded by the order's own requirement. Both arms stop at the same line
+   * `withdrawOrdersAwaitingMaterial` stops at: the point where the next
+   * scheduled pass would find nothing to buy.
+   *
+   * It is the supply-side mirror of `withdrawOrdersAwaitingMaterial`, which
+   * #687 built for the opposite press: that one answers a cancelled *delivery*
+   * by removing demand, this one answers a cancelled *order* by removing
+   * supply. Both stop at the same line -- the point where the next scheduled
+   * pass would find nothing to buy -- and both read it off the same two
+   * figures, `demandedQuantityOf` and `ConstructionProcurementSink.heldOrInFlightOf`.
+   *
+   * ## Which states it runs for, and why not the others
+   *
+   * `'approved'` and `'materials-pending'` only: they are the two states
+   * `pendingOrderDemand` counts, so they are the only ones whose cancellation
+   * moves the demand figure this is subtracting from. An `'assigned'` or
+   * `'in-progress'` order is not demand -- its materials were withdrawn from
+   * the container by `tryAllocate` -- so running this for one would compare an
+   * unchanged demand against an unchanged supply and could only act on a
+   * surplus some *earlier* press had already been offered. `'planned'` is not
+   * demand either. `'completed'` is left out for a different reason, and since
+   * the owner's ruling of 2026-09-01 that reason has become the simple one:
+   * **a completed order releases nothing**, so it cannot raise supply and
+   * cannot make a delivery surplus.
+   *
+   * **This paragraph read *"releasing its materials really does raise supply
+   * and really could make a delivery surplus, but ADR 0076 decision B governs
+   * that press and ruling 20 does not reach it, so its behaviour is left
+   * exactly where B put it"* until then.** It was the honest reading while
+   * decision B stood: the exclusion was a deferral to another decision rather
+   * than an argument. The deferral is answered -- ADR 0076's amendment of
+   * 2026-09-01 reverses B -- and what the exclusion now rests on is arithmetic,
+   * which is the stronger footing for the same line of code.
+   *
+   * ## Re-entrancy with `withdrawOrdersAwaitingMaterial`
+   *
+   * That method calls `cancelOrder` in a loop, so this runs inside it. It
+   * cannot make that loop run away: the loop only cancels while demand still
+   * *exceeds* supply, and this only refunds while supply exceeds demand, so at
+   * most one of the two is ever doing anything. The `#687` sequence -- cancel a
+   * delivery, then withdraw orders behind it -- therefore reaches exactly the
+   * same end state it reached before this existed.
+   */
+  private refundSurplusOf(stateAtCancellation: BuildOrder['state'], order: BuildOrder): void {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return;
+    if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return;
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) return;
+    const requiredByItemId = requiredQuantitiesByItemId(definition);
+    // Ascending item id: this credits the treasury, so the walk writes
+    // simulation state (`docs/DETERMINISM.md`, "Canonical iteration order").
+    for (const itemId of [...requiredByItemId.keys()].sort()) {
+      /*
+       * Read once and handed to both arms. Neither of them touches the order
+       * book -- one cancels a delivery, the other takes stock off a shelf --
+       * so the demand this cancellation left standing cannot move between the
+       * two calls, and re-reading it would suggest it could.
+       */
+      const demanded = this.demandedQuantityOf(itemId);
+      /*
+       * **Deliveries first, stock second, and the order is the price.** A
+       * delivery refunds its own recorded `paidMinorUnits`, which is what
+       * `ProcurementSystem.cancel` exists to do and what closes the
+       * buy-low-cancel-high trade; stock can only be valued from the
+       * catalogue, because material on a shelf carries no record of what it
+       * cost. Selling the shelf while a delivery for the same item was still
+       * refundable would prefer the weaker figure for no reason.
+       */
+      sink.refundSurplusDeliveries(itemId, demanded);
+      sink.refundSurplusStock(itemId, demanded, requiredByItemId.get(itemId)!);
+    }
+  }
+
+  /**
+   * What `cancelOrder(orderId)` would credit the treasury right now, without
+   * calling it -- the figure the Build panel's queue row shows beside its own
+   * Cancel button (the owner's ruling of 2026-09-02).
+   *
+   * ## Why a preview and not the row reading `cancelOrder`'s own return
+   *
+   * `cancelOrder` answers `void` and mutates on every call -- it flips the
+   * order to `'cancelled'`, drops its allocation, and (through the sink) may
+   * turn a delivery around -- and the row is painted from a **projection**,
+   * read on a cadence with no press behind it
+   * (`src/simulation/presentation/construction-projection.ts`). Reading the
+   * figure the same way the row reads everything else would cancel the order
+   * to find out what cancelling it pays.
+   *
+   * ## The table this reads, and where it actually lives
+   *
+   * `cancelOrder`'s own docblock carries the owner's ruling 20 table -- what
+   * state pays what -- and this method's branches are that table, because a
+   * preview has no mutated `order.state` to dispatch on and therefore cannot
+   * be folded into `refundSurplusOf`'s existing dispatch the way this method's
+   * one sibling call is. What is **not** restated is any arithmetic: every
+   * money figure below is computed by one of the sink's three preview methods
+   * -- `previewSurplusRefundMinorUnits`, `previewSurplusStockRefundMinorUnits`
+   * and `previewAllocatedRefundMinorUnits` -- the exact non-mutating twins of
+   * the three calls `cancelOrder` itself makes (`refundSurplusDeliveries`,
+   * `refundSurplusStock`, `refundAllocatedMaterials`), sharing their
+   * selection, clamping and pricing rules with those methods by construction
+   * and not by this method's own judgement about what they would answer.
+   *
+   * **The stock twin was the third and arrived with the sell-back of #717.**
+   * Until the owner ruled on 2026-09-02 a cancellation in the ten-tick window
+   * between a delivery landing and its order allocating paid nothing, so a row
+   * reading `0` there was right; it is not any more, and
+   * `tests/integration/construction-queue-row-pays-what-it-shows.test.ts` is
+   * the assertion that says so against the treasury itself.
+   *
+   * `demandedQuantityOf(itemId, id)` is the one place this diverges from
+   * `refundSurplusOf`'s own call to it, and it has to: `refundSurplusOf` runs
+   * after `cancelOrder` has already written `order.state = 'cancelled'`, so
+   * the demand walk excludes this order for free. This method must not write
+   * that, so it passes the order's own id to exclude it explicitly instead --
+   * see `pendingOrderDemand`'s comment.
+   *
+   * `0` for an id that names no order, for a terminal state (`isCancellable`
+   * says no), and for every state ruling 20 (and the owner's ruling of
+   * 2026-09-01 for `completed`) pays nothing for: `'planned'`,
+   * `'in-progress'`, `'completed'`. `0` also when no procurement sink is
+   * wired -- a bare `ConstructionSystem` has no treasury to credit, and
+   * `cancelOrder` pays no money there either, exactly as `refundSurplusOf`
+   * itself returns early for the same reason.
+   *
+   * Never throws and never asserts `isCancellable` past the early return:
+   * this is read by a projection request, which the same contract
+   * `refundSurplusDeliveries` and its siblings are held to (must not throw)
+   * binds transitively -- a row that cannot be cancelled simply reads `0`.
+   */
+  public previewCancelRefundMinorUnits(orderId: string): number {
+    const order = this.orders.get(orderId);
+    if (order === undefined || !isCancellable(order.state)) return 0;
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return 0;
+
+    const stateAtCancellation = order.state;
+    if (order.materialsAllocated.length > 0) {
+      // Only `'assigned'` reaches here paying anything: `'in-progress'` and
+      // `'completed'` are the two states `cancelOrder` destroys an allocation
+      // for rather than pricing it (ruling 20, and the owner's ruling of
+      // 2026-09-01 for `completed`), and both hold a non-empty
+      // `materialsAllocated` exactly as `'assigned'` does.
+      if (stateAtCancellation === 'in-progress' || stateAtCancellation === 'completed') return 0;
+      return sink.previewAllocatedRefundMinorUnits(order.materialsAllocated);
+    }
+
+    // Empty `materialsAllocated` and cancellable is `'planned'`, `'approved'`
+    // or `'materials-pending'`: the three states that have not allocated yet.
+    // Only the last two are `refundSurplusOf`'s own candidates -- `'planned'`
+    // never became demand, so `pendingOrderDemand` never counted it and no
+    // purchase was ever made for it.
+    if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return 0;
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) return 0;
+    // The same per-item-id summing `refundSurplusOf` does, through the same
+    // helper: the stock arm's bound is the order's own requirement, and a
+    // preview that bounded it line by line where the press bounds it per item
+    // would disagree with the press for any definition naming one item twice.
+    const requiredByItemId = requiredQuantitiesByItemId(definition);
+    // Ascending item id, matching `refundSurplusOf`'s own walk -- this reads no
+    // simulation state, but a preview that visited items in a different order
+    // from the real cancellation would be a second opinion about the walk
+    // rather than a read of it.
+    let refundMinorUnits = 0;
+    for (const itemId of [...requiredByItemId.keys()].sort()) {
+      // Read once and handed to both arms, exactly as `refundSurplusOf` reads
+      // it once -- with the previewed order excluded by id here, because
+      // nothing has written `order.state = 'cancelled'` yet.
+      const demanded = this.demandedQuantityOf(itemId, order.id);
+      // Deliveries first, stock second: the same two arms in the same order
+      // `refundSurplusOf` runs them in, because the stock arm prices what the
+      // delivery arm leaves behind.
+      refundMinorUnits += sink.previewSurplusRefundMinorUnits(itemId, demanded);
+      refundMinorUnits += sink.previewSurplusStockRefundMinorUnits(itemId, demanded, requiredByItemId.get(itemId)!);
+    }
+    return refundMinorUnits;
+  }
+
+  /**
+   * Takes queued orders back off the book until the prison no longer has to
+   * buy `itemId` again -- the demand-side answer to a cancelled just-in-time
+   * delivery (issue #687).
+   *
+   * ## What it is for
+   *
+   * `ProcurementSystem.cancel` refunds a delivery that has not landed, exactly,
+   * and #285 built the command that reaches it so a player could take money
+   * back. #640 then made a build order buy its own materials, and the two
+   * together produce a control that lies: the procurement fold offers *"15
+   * bought - 1,200 back if cancelled"*, the money really does come back
+   * (`23,800 -> 24,760`, measured on issue #687), and the first scheduled
+   * construction tick after *Play* spends it again, because the fifteen orders
+   * are still queued and `procureQueuedMaterials` still finds their deficit.
+   * Nothing is wrong in either half. What is missing is that cancelling the
+   * *supply* left the *demand* standing.
+   *
+   * So this removes exactly as much demand as it takes to make the refund
+   * survive the clock, and no more.
+   *
+   * ## Why the loop asks the sink rather than counting the delivery
+   *
+   * The cancelled quantity is the obvious measure and it is the wrong one. A
+   * just-in-time purchase buys the **deficit**, which is demand minus stock
+   * minus everything already in flight, so its quantity is not the demand it
+   * answers: cancel a two-brick delivery against a container that has since
+   * taken in ten bricks of its own and no order needs withdrawing at all.
+   * Asking `heldOrInFlightOf` is asking the same subtraction the next
+   * scheduled pass will make, so this stops at exactly the point that pass
+   * stops finding anything to buy.
+   *
+   * ## Which order goes
+   *
+   * The **last order in the crew's own walk** among those still waiting on
+   * materials: `update` iterates `orderedOrders()` and starts the first
+   * eligible order, so the last one is the work furthest from being reached.
+   * Withdrawing from the back therefore never takes an order the crew was
+   * about to start, and it is a function of the order book alone -- no clock,
+   * no insertion order, no RNG (`docs/DETERMINISM.md`, "Canonical iteration
+   * order").
+   *
+   * **Since ADR 0082 (#722) that is the segment the player drew last, and the
+   * three paragraphs below are the record of what it was before.** The walk is
+   * `(placementSequence ?? -1, id)`, so the back of it is the newest gesture,
+   * and "withdraw the one the player drew last" is now exactly what this does
+   * for any order placed through a command. What is unchanged is the property
+   * the old text was defending: the answer is still the same segment on every
+   * machine and after every restore, because the ordinal is persisted and
+   * `restore()` brings it back with the order.
+   *
+   * **Until 2026-08-31 it was the greatest id**, and ids are
+   * `order-${crypto.randomUUID()}` on the main thread, so it was **not**
+   * placement order and the segment that went was not the last one drawn.
+   *
+   * **#693 called this "the least surprising segment to take" and named its own
+   * doubt about that; the doubt was right and its guess about what a player
+   * sees was wrong in the direction that matters.** It expected a segment to
+   * vanish *"from somewhere in the middle of the line"*. A UUID's ordinal
+   * position within a run is uniform, so the greatest id was as likely to be
+   * either end of the row as the middle -- and the extreme case was reachable
+   * rather than theoretical: with ids that do not follow placement order the
+   * segment withdrawn could be the tile the player drew **first**, at the far
+   * left of a left-to-right drag. Measured, no browser needed, because a
+   * `BuildOrder` carries its own `location`:
+   * `tests/integration/economy-refund-survives-the-clock.test.ts`, which used
+   * to assert *"takes whichever segment holds the greatest id, which can be
+   * the first one drawn"* and now asserts the placement-ordered answer for a
+   * stamped queue beside the unchanged id-ordered answer for one that carries
+   * no ordinals. **#693's doubt is closed by that, not merely acknowledged.**
+   *
+   * **What would change it is a persisted field and therefore a save-format
+   * decision, not a better sort.** That sentence was true when it was written
+   * and `BuildOrder.placementSequence` is that field -- one optional key in
+   * `buildOrderSchema`, no `SAVE_SCHEMA_VERSION` bump, argued in ADR 0082's
+   * "The save-format cost". The rest of the old paragraph still holds and is
+   * why the fix took that shape rather than another: `Map` insertion order is
+   * not available, because `orderedOrders` re-sorts precisely so that a
+   * restore cannot change the answer, and a snapshot is not required to
+   * preserve insertion order.
+   *
+   * **An order book with no ordinals behaves exactly as it did**, which is
+   * every save written before the field and every fixture that builds orders
+   * directly: they tie at the `-1` sentinel and the id decides, so this still
+   * withdraws the greatest id there.
+   *
+   * ## What it cannot create
+   *
+   * Only `'approved'` and `'materials-pending'` orders are candidates -- the
+   * two states `pendingMaterialDemand` counts, and the two that have **not**
+   * allocated anything. `cancelOrder` releases `materialsAllocated` back into
+   * the container, so withdrawing an order that had allocated would put stock
+   * back at the same moment the caller credited the treasury, which is
+   * `tests/integration/economy-money-conservation.test.ts`'s mutation M2 --
+   * value created out of a keystroke -- and is what #285 refused when it
+   * declined to wire a refund to `undo()`. An order in these two states holds
+   * an empty `materialsAllocated`, so the release is a no-op and the only
+   * thing that moves is the money the delivery itself carried.
+   *
+   * **The middle of that paragraph changed under the owner's ruling 20 of
+   * 2026-08-31 and the conclusion did not, which is why it is marked rather
+   * than rewritten.** `cancelOrder` no longer releases an allocation in these
+   * states -- it pays for it -- so what withdrawing an allocated order would
+   * now do is credit the treasury *twice over*, once for the allocation and
+   * once for the delivery. That is the same M2, reached by a shorter route. The
+   * candidate set is unchanged and the empty-allocation property it rests on is
+   * unchanged with it.
+   *
+   * Answers the ids it withdrew, newest-walked first, so a caller can say what
+   * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys
+   * nothing, so nothing can have been cancelled on its behalf.
+   */
+  public withdrawOrdersAwaitingMaterial(itemId: string): readonly string[] {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return [];
+
+    const withdrawn: string[] = [];
+    // Bounded by the order book: every pass either cancels one candidate --
+    // which removes it from the candidate set for ever, `cancelled` being
+    // terminal -- or stops. It cannot spin on an order it fails to remove.
+    for (;;) {
+      const demanded = this.demandedQuantityOf(itemId);
+      if (demanded <= sink.heldOrInFlightOf(itemId)) break;
+      const candidate = this.lastOrderAwaitingMaterial(itemId);
+      if (candidate === undefined) break;
+      this.cancelOrder(candidate.id);
+      withdrawn.push(candidate.id);
+    }
+    return withdrawn;
+  }
+
+  /**
+   * What the queue still wants of one item, read off `pendingMaterialDemand`
+   * so the two can never disagree. `excludeOrderId` is threaded through to it;
+   * see that method's own comment for why it exists.
+   */
+  private demandedQuantityOf(itemId: string, excludeOrderId?: string): number {
+    for (const requirement of this.pendingMaterialDemand(this.orderedOrders(), excludeOrderId)) {
+      if (requirement.itemId === itemId) return requirement.quantity;
+    }
+    return 0;
+  }
+
+  /**
+   * The last order in the crew's walk that is still waiting for `itemId`.
+   *
+   * "Last in the walk" is the whole of the rule and it is deliberately not
+   * spelled out as an id or as an ordinal: `orderedOrders()` owns what the
+   * walk is, and this loop reads it backwards. That is why ADR 0082 changed
+   * which segment is withdrawn without changing a line of this method.
+   *
+   * The candidate set is exactly `pendingMaterialDemand`'s -- `'approved'` or
+   * `'materials-pending'`, a definition the registry still holds, a positive
+   * requirement for this item -- because withdrawing an order that contributes
+   * nothing to the demand would not move the figure the caller is driving to
+   * zero, and the loop would then cancel the whole queue one order at a time.
+   */
+  private lastOrderAwaitingMaterial(itemId: string): BuildOrder | undefined {
+    const ordered = this.orderedOrders();
+    for (let index = ordered.length - 1; index >= 0; index -= 1) {
+      const order = ordered[index]!;
+      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (definition === undefined) continue;
+      if (definition.materialsRequired.some((requirement) => requirement.itemId === itemId && requirement.quantity > 0)) {
+        return order;
+      }
+    }
+    return undefined;
   }
 
   public getOrder(id: string): BuildOrder | undefined {
@@ -355,8 +1462,91 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
-   * Every order, in ascending id (code-unit order), never `Map` insertion
-   * order.
+   * The revision `order.state` is currently at, for an `expectedRevision` on
+   * the wire to be compared against (ADR 0107 Decision §1-§2).
+   *
+   * Mirrors `previewCancelRefundMinorUnits`'s own contract: never throws, `0`
+   * for an id this system holds no order under (a mismatch a caller already
+   * treats as "cancellable at all" fails on `getOrder` first, not on this).
+   */
+  public revisionOf(orderId: string): number {
+    return this.orderRevisions.get(orderId) ?? 0;
+  }
+
+  /**
+   * The one place `order.state` is written (ADR 0107 Decision §3).
+   *
+   * Eleven sites wrote `order.state =` directly before this existed --
+   * `submitOrder`'s three failure arms and its `'approved'` line, `redo()`,
+   * `cancelOrder`, and five in the scheduled tick loop -- and a revision
+   * counter a twelfth site could forget to bump would be worse than no
+   * counter at all: a silently-stale key is indistinguishable from a correct
+   * one until somebody measures it, exactly the argument
+   * `destroysSpendOnCancel`'s own docblock makes about its two states. Every
+   * one of the eleven now calls this instead, so a new site that assigns the
+   * field directly is a `grep -n "order\.state ="` away from being caught in
+   * review rather than a defect a future #859 has to re-discover.
+   */
+  private setState(order: BuildOrder, next: BuildOrder['state']): void {
+    order.state = next;
+    this.orderRevisions.set(order.id, this.revisionOf(order.id) + 1);
+  }
+
+  /**
+   * The completed order, if any, claiming this tile edge -- what a
+   * `RemoveWall` press resolves to
+   * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+   *
+   * **Only a `'completed'` order counts, deliberately.** An in-flight wall or
+   * door already has a pointer route -- the queue's per-row cancel, since
+   * `PENDING_BUILD_ORDER_STATES` excludes only `'completed'`
+   * (`src/simulation/presentation/construction-projection.ts:87-93`) -- so
+   * this resolver is not asked to arbitrate a wall still being built, and a
+   * press over one answers `undefined` here exactly as it would if nothing
+   * were there at all.
+   *
+   * **Filtered to `edgeNumericIdFor(...) !== 0`**, or an old *object* order
+   * sharing this location would match: an object order never sets `.edge`
+   * (`resolveBuildEdge` defaults every unset edge to `'north'`), and its
+   * completed row survives in `this.orders` long after
+   * `ObjectPlacementService.remove` has deleted the object itself from
+   * `PlacedObjectRegistry` -- nothing here ever purges a finished order.
+   * `otherCompletedClaimants` below tolerates the same false match without
+   * this filter because both of its callers filter it back out themselves
+   * (`remainingEdgeValue` on `otherValue !== 0`, `anotherCompletedDoorClaims`
+   * on `placesDoor`); this resolver has no second reader to lean on, so it
+   * filters here.
+   *
+   * **Highest id wins when more than one completed order claims the same
+   * edge**, matching `remainingEdgeValue`'s own precedent for which claimant
+   * an edge's *value* belongs to -- the walk below is ascending and keeps
+   * overwriting `winner`, exactly as that method keeps overwriting `value`.
+   * Stated as a rule rather than left implicit: `remainingEdgeValue` only ever
+   * has to agree with itself about a number, and this resolver has to name
+   * one order to cancel.
+   */
+  public completedOrderClaimingEdge(location: TilePosition, edge: BuildEdge): BuildOrder | undefined {
+    let winner: BuildOrder | undefined;
+    for (const order of this.orderedOrders()) {
+      if (order.state !== 'completed') continue;
+      if (order.location.x !== location.x || order.location.y !== location.y) continue;
+      if (resolveBuildEdge(order) !== edge) continue;
+      if (edgeNumericIdFor(getBuildableDefinition(order.definitionId)) === 0) continue;
+      winner = order;
+    }
+    return winner;
+  }
+
+  /**
+   * Every order, in placement order with ascending id as the tie-break, never
+   * `Map` insertion order.
+   *
+   * **This read "ascending id (code-unit order)" until 2026-08-31, and that is
+   * what it did.** ADR 0082 decisions 1 and 2 changed the first key and kept
+   * the second: the walk is now `(placementSequence ?? -1, id)`, which is
+   * `compareBuildOrderExecution`. The old sentence is kept because the rest of
+   * this docblock is an argument about why the sort exists at all, and that
+   * argument is untouched by which key it sorts on.
    *
    * This stopped being cosmetic the moment `finalizeConstruction` began
    * writing world geometry: two orders that finish on the same scheduled tick
@@ -366,15 +1556,19 @@ export class ConstructionSystem implements SystemRegistration {
    * `restore()` re-inserts from a snapshot rather than replaying that
    * history -- so a restored session could disagree with the live one it came
    * from. See `docs/DETERMINISM.md`, "Canonical iteration order".
+   *
+   * **Sorting on a persisted field keeps every word of that.**
+   * `placementSequence` is in the snapshot and comes back through `restore()`
+   * with the order it belongs to, so the sequence a restored session answers
+   * is the same one the live session answered -- which is the property the
+   * sort has to have, and the one `Map` insertion order does not.
    */
   private orderedOrders(): readonly BuildOrder[] {
-    return [...this.orders.values()].sort((left, right) =>
-      left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
-    );
+    return [...this.orders.values()].sort(compareBuildOrderExecution);
   }
 
   /**
-   * Every order, in the same ascending-id order every internal walk uses.
+   * Every order, in the same placement order every internal walk uses.
    *
    * Public because the object placement boundary has to know which tiles orders
    * *in flight* have already claimed: two beds ordered onto one tile inside the
@@ -408,8 +1602,9 @@ export class ConstructionSystem implements SystemRegistration {
    * used to.
    *
    * **Whether the crew is free is decided once, before the walk, and not
-   * re-decided as it proceeds.** The walk is `orderedOrders()`, ascending id,
-   * which is the canonical sequence the whole class uses. If occupancy were
+   * re-decided as it proceeds.** The walk is `orderedOrders()` -- placement
+   * order with id as the tie-break since ADR 0082 (#722), ascending id alone
+   * before it -- which is the canonical sequence the whole class uses. If occupancy were
    * re-read per order, then an order finishing during this pass would free the
    * crew for any waiting order sorting *after* it and not for one sorting
    * before -- so whether a queue lost a tick at each handover would depend on
@@ -447,13 +1642,83 @@ export class ConstructionSystem implements SystemRegistration {
     // read as one busy crew here rather than being paused.
     let crewBusy = orders.some((candidate) => candidate.state === 'in-progress');
 
+    /*
+     * **Buy what the queue needs before asking whether it can be allocated**
+     * (issue #627, ADR 0017 decision 7).
+     *
+     * Before the walk rather than inside it, and once rather than per order,
+     * for the reason `ConstructionProcurementSink` sets out at length.
+     *
+     * **Unconditionally, including with nothing queued.** The sink records
+     * what it could not afford, and a record with no moment to be cleared goes
+     * stale the instant the queue drains. This call is that moment.
+     *
+     * It buys nothing when the prison already holds the materials or has them
+     * in flight, which is the entire cost of this line for a player who
+     * pre-buys -- and it is also why this call is not a second purchase on top
+     * of the one the `PlaceBuildOrder` handler already made at this tick.
+     *
+     * **The report is handed to `onMaterialsProcured` rather than discarded**,
+     * which is the whole of #640's second finding. See that parameter.
+     */
+    this.onMaterialsProcured?.(this.procureQueuedMaterials(context.tick), context.tick);
+
     for (const order of orders) {
-      const def = getBuildableDefinition(order.definitionId);
-      
+      // A terminal order needs no definition, so it is not asked for one. This
+      // used to be a `case` at the bottom of the switch, below an
+      // unconditional lookup -- which meant a *completed* order was still
+      // being resolved every scheduled tick to decide to do nothing, and a
+      // save carrying a finished order for a row a later catalogue no longer
+      // ships would have faulted the worker on the same line. Skipping first
+      // also keeps a completed order out of the refusal branch below: what it
+      // built is in the world, and re-failing it would be a state regression
+      // rather than a recovery.
+      if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed') {
+        continue;
+      }
+
+      // Read leniently, because **this is inside a scheduled system update and
+      // a throw here faults the worker.** `getBuildableDefinition` throws, and
+      // that is the whole of BUG-01: an order naming an unknown row was
+      // approved by `submitOrder`, stored, carried into the save by
+      // `snapshot()` -- and then this line threw on every subsequent tick, for
+      // every order in the prison, forever. `submitOrder` now refuses such an
+      // order at the boundary and tells the player why, so nothing *new* can
+      // reach here; this is what recovers a save that already holds one. The
+      // order is failed with the same reason `submitOrder` would have given it,
+      // which is terminal, so it is skipped from the next tick on and the queue
+      // behind it drains normally.
+      //
+      // No refusal is recorded here, and that is a **known gap rather than a
+      // decision this code is entitled to make**. `ConstructionSystem` holds no
+      // `RefusalLog` -- the command handler does -- and `RefusalLog`'s own class
+      // comment argues at length that it must not carry a notice about
+      // something a *previous* session did, which is why it is not snapshotted.
+      // Nor does the order become visible by being failed: `hud/build-queue`
+      // publishes only `PENDING_BUILD_ORDER_STATES`, and `failed` is one of the
+      // three that projection deliberately excludes. So what a player observes
+      // here is a stuck row disappearing and the prison building again, with no
+      // sentence explaining it. Giving that a surface means either wiring a
+      // refusal sink into this system or giving the build queue a failed
+      // section, and both are decisions for whoever owns the HUD contract.
+      const def = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (def === undefined) {
+        this.setState(order, 'failed');
+        order.failReason = 'unknown-buildable';
+        // A ghost stops being drawn: `structuresFromConstruction` maps
+        // `failed` to no phase at all, so this tile had a translucent block on
+        // it a moment ago and now has none. Beyond the two transitions ADR
+        // 0099 decision 3 enumerates, and covered for the reason those two
+        // are: it happens on a tick rather than on a command, so nothing else
+        // would tell the renderer.
+        this.world.markDrawnWorldChanged();
+        continue;
+      }
+
       switch (order.state) {
         case 'approved':
           // Auto-transition to materials pending
-          order.state = 'materials-pending';
+          this.setState(order, 'materials-pending');
           break;
           
         case 'materials-pending': {
@@ -462,23 +1727,46 @@ export class ConstructionSystem implements SystemRegistration {
           // UNLIMITED_MATERIALS_PROVIDER (the default) preserves #16's
           // original always-available behavior for every caller that
           // hasn't opted into a real materials substrate.
+          //
+          // **This is still a wait, and issue #627 did not make it not one.**
+          // The purchase above spends now and the goods arrive
+          // `PROCUREMENT_DELIVERY_DELAY_TICKS` later, so an order whose
+          // materials were bought this tick sits here for ten more scheduled
+          // ticks before this line answers `true`. What changed is what the
+          // wait is *on*: a delivery that is coming, rather than a purchase
+          // nothing in the game had told the player to make.
           const satisfied = this.materialsProvider.tryAllocate(def.materialsRequired);
           if (!satisfied) break; // stays materials-pending, retried next scheduled tick
           order.materialsAllocated = def.materialsRequired.map((req) => ({ itemId: req.itemId, quantity: req.quantity }));
-          order.state = 'assigned';
+          this.setState(order, 'assigned');
           break;
         }
 
         case 'assigned':
           // The crew is the constraint. A waiting order keeps its allocated
           // materials and is retried on the next scheduled tick, exactly as a
-          // `materials-pending` order waits on the container above; because
-          // the walk is by ascending id, the one that starts is always the
-          // first eligible id and never the first submission.
+          // `materials-pending` order waits on the container above; the one
+          // that starts is always the first eligible order in the walk.
+          //
+          // **That walk was ascending id until ADR 0082 (#722), and this
+          // comment used to end "always the first eligible id and never the
+          // first submission" -- which was true and was the defect.** The walk
+          // is now placement order, so for orders placed through a command the
+          // first eligible one *is* the earliest still-eligible submission.
+          // For an order book carrying no ordinals -- a save written before
+          // the field, a fixture -- the old sentence still describes it
+          // exactly.
           if (crewBusy) break;
           crewBusy = true;
           order.assignedWorkerId = MOCK_CREW_WORKER_ID;
-          order.state = 'in-progress';
+          this.setState(order, 'in-progress');
+          // The first of an order's two drawn phase changes: the `planned`
+          // ghost becomes the `building` one (`structuresFromConstruction`).
+          // ADR 0099 decision 3's second bullet, and the reason that bullet
+          // exists -- no chunk layer is written here, so `geometryRevision`
+          // and `contentRevision` both stand still and a marker derived from
+          // them would say nothing happened.
+          this.world.markDrawnWorldChanged();
           break;
 
         case 'in-progress':
@@ -487,18 +1775,165 @@ export class ConstructionSystem implements SystemRegistration {
           
           if (order.progress >= def.workRequired) {
             order.progress = def.workRequired;
-            order.state = 'completed';
+            this.setState(order, 'completed');
             this.finalizeConstruction(order);
+            // The second, and the one issue #1037 is about: the `building`
+            // ghost becomes the finished thing. `finalizeConstruction` bumps a
+            // chunk revision for most buildables and would therefore have
+            // moved the marker through `markChanged` anyway -- this line is
+            // not relying on that, because the *state* change is the fact
+            // being reported and a buildable whose finalisation writes no
+            // layer would otherwise finish invisibly. Idempotence is not
+            // needed: the marker means "not what it was", so counting one
+            // change twice costs nothing but a second comparison that already
+            // differs.
+            this.world.markDrawnWorldChanged();
+            // ADR 0116, the owner's ruling of 2026-09-16: a finished order is
+            // an event, `'info'`, log-only, and counted rather than repeated.
+            //
+            // **Last of the three lines and not first**, which is the whole of
+            // what makes the sentence true rather than predictive: `setState`
+            // has already written `'completed'`, `finalizeConstruction` has
+            // already put the geometry or the object in the world, and only
+            // then is the record appended. ADR 0116 §6 states both conditions
+            // and `onOrderFinished`'s own docblock on the constructor says why
+            // the order of these lines is load-bearing.
+            //
+            // **Inside the `if`, not inside `case 'in-progress'`**: the walk
+            // reaches this arm on every scheduled pass of an unfinished order
+            // and advances `progress` by ten, so a call one line out would
+            // announce a completion five times per wall.
+            this.onOrderFinished?.(context.tick);
           }
-          break;
-
-        case 'completed':
-        case 'cancelled':
-        case 'failed':
-          // Final states, cleanup can happen later or be kept for history
           break;
       }
     }
+  }
+
+  /**
+   * Buys whatever the queue still needs, and answers what happened.
+   *
+   * Public because two callers need it and they need it at different moments.
+   * `update` calls it on every scheduled construction tick, which is the
+   * safety net; `createConstructionCommandHandler` calls it on the
+   * `PlaceBuildOrder` that created the demand, which is what makes the money
+   * leave at the press and what puts a shortfall in front of the player while
+   * they can still act on it (#627, #629).
+   *
+   * `undefined` when no sink was wired, which is a bare `ConstructionSystem`
+   * rather than a session: there is nothing to report because nothing was
+   * asked, and a caller must not read that as "everything is funded".
+   *
+   * It never throws -- the sink's own contract forbids it, for the reason
+   * `ObjectPlacementSink`'s methods do not throw -- and it never changes an
+   * order's state. An order stays exactly where it was whatever this answers;
+   * a purchase only ever changes what the *container* will hold ten seconds
+   * from now.
+   */
+  public procureQueuedMaterials(tick: number): MaterialsProcurementReport | undefined {
+    return this.materialsProcurement?.procureForPendingOrders(
+      this.pendingOrderDemand(this.orderedOrders()),
+      tick,
+    );
+  }
+
+  /**
+   * Every order still waiting for materials, in the crew's own walk, each
+   * carrying the whole of what its buildable requires.
+   *
+   * **The shape #703 ruling 12 needs, and the one `pendingMaterialDemand`
+   * below is now computed from.** The ruling made the ORDER the unit a partly
+   * filled purchase is atomic at (ADR 0081 Decision 2), so the sink has to be
+   * handed the orders rather than one figure per item id -- it cannot recover
+   * "which two bricks belong to which wall" from a sum, and per-order
+   * atomicity is exactly that question.
+   *
+   * The membership rule is unchanged and is stated once, here, rather than
+   * twice: `'approved'` counts as well as `'materials-pending'`, `'planned'`
+   * does not, a definition the registry does not hold contributes nothing, and
+   * a non-positive requirement is dropped. `pendingMaterialDemand`'s docblock
+   * is where each of those is argued.
+   *
+   * **Walk order is `orderedOrders()`'s and is not re-sorted here.** It decides
+   * which orders an insufficient balance funds, which makes it a fact about
+   * money -- and it is ascending order **id**, which is not placement order for
+   * the `order-${crypto.randomUUID()}` ids a session mints. ADR 0081 Decision 2
+   * records what that costs: the ruling *"halves the expected requirement and
+   * leaves the worst case exactly where it is"*. ADR 0082 proposes a persisted
+   * placement ordinal and is unsigned, so nothing here anticipates it.
+   */
+  /**
+   * `excludeOrderId` is second and optional, and every existing caller passes
+   * neither -- `procureQueuedMaterials` and `pendingMaterialDemand`'s own
+   * production caller (`refundSurplusOf`) both want the demand as the order
+   * book stands. It exists for `previewCancelRefundMinorUnits`: a preview must
+   * not mutate `order.state` to ask "what if this one had already been
+   * cancelled", where `refundSurplusOf` gets that answer for free because
+   * `cancelOrder` has already written `'cancelled'` by the time it calls this
+   * chain. Passing an id here is the read-only route to the same exclusion.
+   */
+  private pendingOrderDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly QueuedOrderDemand[] {
+    const demand: QueuedOrderDemand[] = [];
+    for (const order of orders) {
+      if (order.id === excludeOrderId) continue;
+      if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (definition === undefined) continue;
+      const requirements = definition.materialsRequired.filter((requirement) => requirement.quantity > 0);
+      if (requirements.length === 0) continue;
+      demand.push({ orderId: order.id, requirements });
+    }
+    return demand;
+  }
+
+  /**
+   * What every order still waiting for materials will ask the container for,
+   * summed per item.
+   *
+   * **No longer what the sink is handed** -- `pendingOrderDemand` above is,
+   * since #703 ruling 12 -- and this is now derived from it so the two cannot
+   * disagree, which is the property `demandedQuantityOf` depends on. Its one
+   * remaining caller is `withdrawOrdersAwaitingMaterial`'s loop (#687), which
+   * asks a per-item question and is right to.
+   *
+   * **`'approved'` counts as well as `'materials-pending'`**, because the two
+   * are one tick apart -- `update` promotes `approved` to `materials-pending`
+   * in the very walk this feeds -- and counting only the second would delay
+   * every purchase by a scheduled tick for no reason a player could name.
+   *
+   * **`'planned'` does not count.** `submitOrder` never leaves an order there
+   * (it writes `'approved'` or `'failed'`) and `update`'s switch has no case
+   * for it, so an order in that state -- reachable only from a hand-written
+   * or hostile save -- never allocates. Buying for it would spend the
+   * treasury on materials nothing will ever consume.
+   *
+   * **Allocated material is in neither term.** An order past
+   * `'materials-pending'` has already had its requirement *withdrawn* from the
+   * container by `tryAllocate`, so it is not demand here and it is not stock
+   * there; that is what makes the sink's subtraction of one from the other
+   * meaningful.
+   *
+   * Ascending item id, and the walk that feeds it is already ascending order
+   * id, so the result is a function of the order book and not of iteration
+   * order (`docs/DETERMINISM.md`, "Canonical iteration order"). This writes
+   * simulation state -- it decides what money is spent on -- so that is a
+   * requirement rather than tidiness.
+   *
+   * An order naming a row `BUILDABLE_REGISTRY` does not hold contributes
+   * nothing and is left for the walk to fail, which is where the reason the
+   * player is told is decided.
+   */
+  /** `excludeOrderId` is threaded straight through to `pendingOrderDemand`; see its own comment. */
+  private pendingMaterialDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly MaterialRequirement[] {
+    const demand = new Map<string, number>();
+    for (const order of this.pendingOrderDemand(orders, excludeOrderId)) {
+      for (const requirement of order.requirements) {
+        demand.set(requirement.itemId, (demand.get(requirement.itemId) ?? 0) + requirement.quantity);
+      }
+    }
+    return [...demand.keys()]
+      .sort()
+      .map((itemId) => ({ itemId, quantity: demand.get(itemId)! }));
   }
 
   /**
@@ -693,9 +2128,51 @@ export class ConstructionSystem implements SystemRegistration {
     };
   }
 
+  /**
+   * ### The structural guard, and why it is here rather than in the schema
+   *
+   * ADR 0038 deferred this line explicitly -- *"`construction/system.ts` has
+   * the same replace-without-checking shape and produces a **`TypeError`** on
+   * a plausible corruption ... its right home is #403 mitigation (a), where a
+   * `TypeError` from our own restore code is the motivating example for
+   * classifying code-fault against data-fault"*. This is that home (#431).
+   *
+   * Without it, `data.orders` arriving as anything but an array threw
+   * `Cannot read properties of undefined (reading 'map')` -- an error class
+   * indistinguishable from a genuine defect in this method, which is exactly
+   * what the new taxonomy must not have to guess at. With it, the payload is
+   * refused as `damaged-payload` by a check that says so.
+   *
+   * Three array checks and no deeper walk, deliberately. A save reaching here
+   * through `SessionController` has already been validated field by field by
+   * `constructionSnapshotSchema`; what this guards is the *other* two callers
+   * of `restoreSimulationRuntime` -- a worker `simulation/initialize` payload,
+   * whose snapshot data the protocol declares only as `jsonValue`, and
+   * `InProcessSessionHost` -- so the check belongs to the shape the loop below
+   * actually depends on, not to a second copy of the schema
+   * (`src/persistence/save-schema.ts` owns that, and ADR 0038's
+   * *"Validate the stream set in the save schema"* section argues against
+   * duplicating a semantic rule into it).
+   */
   public restore(data: ConstructionSnapshot): void {
+    for (const [field, value] of [
+      ['orders', data.orders],
+      ['undoStack', data.undoStack],
+      ['redoStack', data.redoStack],
+    ] as const) {
+      if (!Array.isArray(value)) {
+        throw new SnapshotRefusedError('damaged-payload', `Construction snapshot "${field}" must be an array.`);
+      }
+    }
+
     this.orders.clear();
     for (const order of data.orders) {
+      if (!Array.isArray(order?.materialsAllocated)) {
+        throw new SnapshotRefusedError(
+          'damaged-payload',
+          `Construction snapshot order "${String(order?.id)}" must carry a materialsAllocated array.`,
+        );
+      }
       this.orders.set(order.id, { ...order, materialsAllocated: order.materialsAllocated.map((m) => ({ ...m })) });
     }
     this.undoStack = data.undoStack.map((transaction) => [...transaction]);

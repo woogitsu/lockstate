@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 // The resolver the *build* uses, imported rather than re-described, so the
 // assertion that a version bump reaches a player is a behavioural one. See
 // "version bump workflow contract" at the foot of this file.
+import { environmentRenderedArtIds } from '../../src/rendering/assets/environment-sprites';
+
 import { packageVersion } from '../../tooling/build-identity.mjs';
 
 /**
@@ -1098,8 +1100,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: [self-hosted, Linux, X64, wsl2]':
-      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all.',
+    'runs-on: self-hosted':
+      'the self-hosted runner pool. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. This exact selector is pinned in tests/foundation/deploy-blocked-announcement-contract.test.ts so every working workflow follows the repository-wide runner policy.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
@@ -1108,6 +1110,8 @@ describe('version bump workflow contract', () => {
       "the tag spelling, stated rather than inherited from npm's default. `v0.0.7` is what the badge puts on screen, so it is what a bug report quotes.",
     'git reset --quiet --hard "origin/$branch"':
       'every retry recomputes the next patch from what the branch holds now. Without it a run that lost a race would re-propose the version the winner just took, and all three attempts would be rejected for the same reason.',
+    'run: node tooling/anchor-budget-spend.mjs':
+      'the annotation that reports the STATUS-QUEUE.md anchor budget\'s spend at the one moment (a version bump) `ci.yml` never runs a check on its own release commit. See tooling/anchor-budget-spend.mjs and tests/foundation/anchor-budget-spend-annotation.test.ts.',
   };
 
   it('runs on a push to main, and on nothing that carries no commit', async () => {
@@ -1233,6 +1237,52 @@ describe('version bump workflow contract', () => {
       await readRepositoryFile('src/content/default-locale-en.ts'),
       "the `brand.build` catalog entry no longer renders the version with a leading `v`. The tags .github/workflows/version.yml publishes are `v0.0.N` precisely so that the string on screen and the string in the tag list are the same string. Change one and you have to change the other, and say so in the workflow header's tag section.",
     ).toContain("'brand.build': 'v{version}");
+  });
+
+  it('reports the anchor budget spend only after the bump step, from the script that computation actually lives in', async () => {
+    const workflow = withoutComments(await readRepositoryFile(WORKFLOW));
+
+    const bumpStepIndex = workflow.indexOf('git push --atomic origin');
+    const reportStepIndex = workflow.indexOf('node tooling/anchor-budget-spend.mjs');
+
+    expect(
+      bumpStepIndex,
+      `${WORKFLOW} no longer contains the atomic push this ordering assertion anchors on; see the "keeps the settings..." test above for that step's own gate.`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      reportStepIndex,
+      `${WORKFLOW} no longer runs tooling/anchor-budget-spend.mjs; see the REQUIRED_SETTINGS entry above.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    expect(
+      reportStepIndex,
+      `the anchor budget spend annotation in ${WORKFLOW} must run AFTER the bump step's atomic push, not before it -- it reports the version package.json now holds, and that value does not exist until the bump has already landed.`,
+    ).toBeGreaterThan(bumpStepIndex);
+
+    // The script itself must exist and export what version.yml's step and
+    // tests/foundation/anchor-budget-spend-annotation.test.ts both depend on --
+    // a workflow step naming a script that was never committed would parse,
+    // "keeps the settings" above would still pass (it only checks the workflow
+    // text), and CI would only discover the mistake by failing at runtime on
+    // `main`, after a merge, which is exactly the silent-failure shape this
+    // annotation exists to avoid for the anchor budget itself.
+    const script = await readRepositoryFile('tooling/anchor-budget-spend.mjs');
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs is referenced from .github/workflows/version.yml but is empty or missing.',
+    ).toMatch(/export function computeAnchorSpend/u);
+    expect(script).toMatch(/export function formatAnchorSpendAnnotation/u);
+
+    // Non-blocking by construction: the CLI's only path to a non-zero exit
+    // would be `process.exit`/an uncaught throw escaping the top-level
+    // try/catch its own header commits to. Asserting the shape here means a
+    // future edit that removes that guard fails a fast, textual check instead
+    // of only being discoverable by a real failing merge on `main`.
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs no longer wraps its CLI entry point in a try/catch. This annotation runs from a workflow that has already merged -- a failing step here blocks nothing and would only be noise, so the script must never let an unexpected error escape as a non-zero exit.',
+    ).toMatch(/try\s*\{[\s\S]*\}\s*catch/u);
+    expect(script).not.toMatch(/process\.exit\(\s*[1-9]/u);
   });
 });
 
@@ -1521,5 +1571,1434 @@ describe('deploy trigger and checkout contract', () => {
     ).toContain(
       "github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'",
     );
+  });
+
+  /**
+   * Phrases the reasoning above the `staging` job's `if:` must still carry, and
+   * what each one is load-bearing for. Substrings rather than a second copy of
+   * the comment: the wording stays editable, the argument does not quietly go
+   * missing. Same shape, and the same reason, as REQUIRED_REASONING in the
+   * deploy concurrency contract above.
+   */
+  const REQUIRED_STAGING_GUARD_REASONING: Readonly<Record<string, string>> = {
+    "a fork's branch can be named `main`":
+      "why `branches: [main]` on the trigger is not the fork check: that filter matches the triggering run's head branch, and a fork picks that name freely.",
+    'What is NOT the mitigation':
+      "that ci.yml's own fork guards are not what protects this deploy. Relying on them means relying on what GitHub reports as the `conclusion` of a run whose every job skipped, which nothing in this repository establishes.",
+    head_sha:
+      "the step the whole finding turns on: the `Checkout` below builds the triggering run's head commit, so a run this guard accepts is a commit this job publishes.",
+    'no gate of any kind':
+      'what a `workflow_dispatch` of `staging` passed through before the ref term -- no CI, no environment approval -- and so why that alternative is restricted rather than trusted.',
+  };
+
+  /**
+   * The `||`-separated alternatives of a folded job guard, each trimmed.
+   *
+   * Why the guard is split before anything is asserted about it: GitHub gives
+   * `&&` higher precedence than `||`, so each alternative is an independent
+   * path to the job running, and a term gates only the path that carries it.
+   * `A && B || C` runs on `C` alone. Asserting that a term appears *somewhere
+   * in the guard* therefore does not assert that it gates anything -- the term
+   * could have moved onto the other alternative, or a third alternative could
+   * have been added beside it, and a whole-string `toContain` would still
+   * pass. The same scoping reason `jobBlock` exists rather than a whole-file
+   * search.
+   */
+  function guardAlternatives(guard: string, job: string): readonly string[] {
+    const alternatives = guard
+      .split('||')
+      .map((alternative) => alternative.trim())
+      .filter((alternative) => alternative.length > 0);
+
+    // Vacuity guard: an empty list satisfies nothing below, but it would blame
+    // the workflow for a broken split.
+    expect(
+      alternatives.length,
+      `the \`if:\` guard on the \`${job}:\` job in ${DEPLOY} split into no alternatives; the parser is broken.`,
+    ).toBeGreaterThan(0);
+
+    return alternatives;
+  }
+
+  /**
+   * The one `||` alternative of a job guard that tests for a given event.
+   *
+   * Exactly one, asserted rather than assumed: with the same event tested on
+   * two alternatives, "this alternative requires X" stops being a statement
+   * about what the job does, because the other one does not require it.
+   */
+  function guardAlternativeFor(guard: string, job: string, eventName: string): string {
+    const matching = guardAlternatives(guard, job).filter((alternative) =>
+      alternative.includes(`github.event_name == '${eventName}'`),
+    );
+
+    expect(
+      matching.length,
+      `the \`if:\` guard on the \`${job}:\` job in ${DEPLOY} no longer has exactly one \`||\` alternative testing \`github.event_name == '${eventName}'\` (found ${matching.length}). Everything asserted below is about which terms gate that path, and that can only be read off one alternative: split the path in two, or fold it into another, and a term can be present in the guard while gating nothing. Restructure if the shape has to change, and pin the new shape here in the same commit.`,
+    ).toBe(1);
+
+    return matching[0] ?? '';
+  }
+
+  it('deploys only a CI run that a push started, never one a pull request started', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const automatic = guardAlternativeFor(guard, 'staging', 'workflow_run');
+
+    // The leading `&&` is part of the pinned text on purpose. Without it the
+    // assertion is satisfied by `... || github.event.workflow_run.event ==
+    // 'push'`: the term present, and gating nothing. That is the mutation this
+    // file's header calls a gate weaker than it looks.
+    expect(
+      automatic,
+      `the \`staging\` job in ${DEPLOY} no longer requires the triggering CI run to have been started by a *push*. ci.yml runs on \`pull_request\` and on \`workflow_dispatch\` as well, and \`branches: [main]\` filters the triggering run's HEAD BRANCH rather than its event: a pull request opened from a fork whose branch is named \`main\`, and a manual dispatch of CI on \`main\`, both produce a completed CI run this trigger accepts. CI passing is not a merge. Restore \`&& github.event.workflow_run.event == 'push'\`.`,
+    ).toContain("&& github.event.workflow_run.event == 'push'");
+  });
+
+  it('deploys only a CI run whose commit came from this repository, never a fork of it', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const automatic = guardAlternativeFor(guard, 'staging', 'workflow_run');
+
+    // Pinned with its leading `&&` for the same reason as the term above.
+    expect(
+      automatic,
+      `the \`staging\` job in ${DEPLOY} no longer requires the triggering CI run's head commit to have come from this repository. ci.yml triggers on a bare \`pull_request\`, so a pull request opened from a FORK starts a CI run that belongs to this repository and carries the fork's head branch and the fork's commit -- and the \`Checkout\` step deliberately builds \`workflow_run.head_sha\`, so that commit is what \`wrangler deploy\` publishes to the Worker holding the lockstate.io Custom Domain. ci.yml's own fork guards do not close this: they make every job of such a run *skip*, and what GitHub reports as that run's \`conclusion\` is established nowhere in this repository -- one unguarded job added to ci.yml would settle it the wrong way, with nothing connecting the two files. Restore \`&& github.event.workflow_run.head_repository.full_name == github.repository\`.`,
+    ).toContain('&& github.event.workflow_run.head_repository.full_name == github.repository');
+  });
+
+  it('publishes a manual staging dispatch only from main', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const dispatched = guardAlternativeFor(guard, 'staging', 'workflow_dispatch');
+
+    // The whole conjunction rather than the ref term alone: `github.ref` is
+    // the ref this job checks out, so the term has to sit on the alternative
+    // that does the checking out, conjoined to it rather than beside it.
+    expect(
+      dispatched.replace(/[()]/gu, '').trim(),
+      `the \`staging\` job in ${DEPLOY} no longer restricts a manual dispatch to \`main\`. A \`workflow_dispatch\` checks out \`github.ref\` -- any branch, any tag -- and this job runs no \`pnpm verify\` and sits behind no environment approval, so without this term dispatching \`staging\` publishes an arbitrary ref straight to the Worker that serves lockstate.io, gated by nothing. \`main\` is the branch the automatic path publishes anyway. If a stronger gate replaces it -- the dispatched ref's own CI, or required reviewers on the \`staging\` environment -- that is the owner's decision to record, and its new shape is pinned here in the same commit.`,
+    ).toContain(
+      "github.event_name == 'workflow_dispatch' && inputs.target == 'staging' && github.ref == 'refs/heads/main'",
+    );
+  });
+
+  it('offers exactly the two paths above, so a third cannot be added unnoticed', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const alternatives = guardAlternatives(guard, 'staging');
+
+    // Every assertion above scopes itself to one alternative, which is what
+    // makes it mean anything -- and is also what makes it blind to a new
+    // alternative beside it. `A || B || anything` runs on `anything`. This is
+    // the term that turns "these two paths are gated" into "these are the
+    // paths".
+    expect(
+      alternatives.length,
+      `the \`if:\` guard on the \`staging\` job in ${DEPLOY} now has ${alternatives.length} \`||\` alternatives rather than 2. Each one is an independent path to publishing the Worker that serves lockstate.io, and the assertions above are each scoped to one of the two this contract knows about, so a third is unchecked by construction. Adding a path here is a deployment decision: say what gates it, and assert that here in the same commit.`,
+    ).toBe(2);
+  });
+
+  it('still explains why each of those terms is there, beside the terms', async () => {
+    const jobLines = jobBlock(await readRepositoryFile(DEPLOY), 'staging');
+    const guardStart = jobLines.findIndex(
+      (line) => line.search(/\S/u) === 4 && /^if:/u.test(line.trim()),
+    );
+
+    expect(
+      guardStart,
+      `the \`staging\` job in ${DEPLOY} has no job-level \`if:\` for a comment to sit above.`,
+    ).toBeGreaterThan(0);
+
+    const reasoning = jobLines
+      .slice(0, guardStart)
+      .filter((line) => line.trim().startsWith('#'))
+      .join('\n');
+
+    // Vacuity guard: every phrase below is equally absent from an empty
+    // string, so this says which of the two failures happened.
+    expect(
+      reasoning.length,
+      `the \`if:\` on the \`staging\` job in ${DEPLOY} carries no comment above it at all, or the comment parse is broken.`,
+    ).toBeGreaterThan(400);
+
+    const missing = Object.keys(REQUIRED_STAGING_GUARD_REASONING).filter(
+      (phrase) => !reasoning.includes(phrase),
+    );
+
+    expect(
+      missing.map((phrase) => `${phrase} -- ${REQUIRED_STAGING_GUARD_REASONING[phrase]}`),
+      `the reasoning above the \`staging\` job's \`if:\` in ${DEPLOY} no longer makes this part of its argument. Three of those terms are there for reasons invisible from this file -- a fork's branch can be named \`main\`, ci.yml's fork guards are not what protects the deploy, and a dispatch checks out an arbitrary ref past no gate at all -- and a term whose reason has been deleted is a term the next reader tidies away. Restore it; or, if a term genuinely changed, rewrite the argument and update this map to the phrases the new one turns on.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * `.github/workflows/ci.yml` triggers on a bare `pull_request` and every job in
+ * it runs on `[self-hosted, ...]`, so each job is a path from "someone opened a
+ * pull request from a fork" to "their code ran on the owner's machine": the
+ * steps check the fork's ref out and `pnpm verify` executes what it finds
+ * there. One term on each job closes that, and nothing in the workflow makes a
+ * job added later inherit it -- `needs:` skips a dependent when its dependency
+ * skips, which is a property of today's graph rather than of the workflow, and
+ * `if: always()` or a job with no `needs:` chain has none of it.
+ *
+ * Deliberately not folded into the deploy contract above, because it is no
+ * longer the same statement. deploy.yml's `staging` job now tests
+ * `workflow_run.event` and `workflow_run.head_repository.full_name` for itself,
+ * so this guard is not what stands between a fork and the public site. What it
+ * stands between is a fork and the runner.
+ */
+describe('fork pull request execution contract', () => {
+  const CI = '.github/workflows/ci.yml';
+
+  /**
+   * The job-level guard, as one exact line. A literal written here rather than
+   * read out of the workflow: a term derived from the file it is checking holds
+   * for whatever the file happens to say.
+   */
+  const FORK_GUARD =
+    "    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository";
+
+  /** Every top-level job under `jobs:`, mapped to the lines of its block. */
+  function jobBlocks(workflow: string): ReadonlyMap<string, readonly string[]> {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.indexOf('jobs:');
+
+    expect(
+      start,
+      `${CI} has no top-level \`jobs:\` block, so nothing below is reading what it thinks it is.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const blocks = new Map<string, string[]>();
+    /** Two-space-indented lines this parser could not read as a job header. */
+    const unreadable: string[] = [];
+    let current: string[] | undefined;
+
+    for (const [offset, line] of lines.slice(start + 1).entries()) {
+      // Every character class here is load-bearing and none may be
+      // "simplified" away. What makes an unmatched header dangerous rather
+      // than merely unhelpful: a line this pattern misses is not a break, it
+      // falls through to `current?.push(line)` and is APPENDED TO THE PREVIOUS
+      // JOB'S BLOCK -- which still carries its own guard. So the new job does
+      // not appear in `names`, is not checked, and nothing goes red. Three
+      // spellings, each measured by appending a guardless job to ci.yml:
+      //
+      //   lint-docs:    -> FAIL, expected [ 'lint-docs' ] to deeply equal []
+      //   _lint-docs:   -> whole file green
+      //   "lint-docs":  -> whole file green
+      //
+      // `(?:#.*)?` is the first of the three and was measured the same way: a
+      // job header carrying a trailing comment -- `  lint-docs: # remove after
+      // #999` -- matched nothing, and the byte-identical job without the
+      // comment failed. `_` is in the class because GitHub's job id grammar
+      // admits it, and the optional quotes because YAML admits those.
+      const header = /^ {2}"?([A-Za-z_][\w-]*)"?:\s*(?:#.*)?$/u.exec(line);
+      if (header) {
+        current = [];
+        blocks.set(header[1] ?? '', current);
+        continue;
+      }
+      // A new top-level key ends `jobs:`.
+      if (line.trim().length > 0 && !/^\s/u.test(line)) break;
+
+      // AND THE HALF THAT MAKES IT FAIL CLOSED. Widening the pattern closes
+      // three spellings; this closes the fourth, whatever it turns out to be.
+      // Inside `jobs:` a line at exactly two-space indentation IS a job
+      // header -- everything belonging to a job is indented four or more --
+      // so one this parser cannot read is a job it is about to hide inside
+      // its predecessor. That is a failure with its own message rather than a
+      // silent append. Comments at this indentation are ordinary here (ci.yml
+      // introduces `assets` and `browser` with a paragraph each) and are the
+      // only exemption.
+      if (/^ {2}\S/u.test(line) && !/^ {2}#/u.test(line)) {
+        unreadable.push(`${CI}:${String(start + 2 + offset)}: ${line.trim()}`);
+      }
+
+      current?.push(line);
+    }
+
+    expect(
+      unreadable,
+      `these lines sit at job-header indentation in ${CI} and this parser cannot read them as job headers. It does not skip such a line, it appends it to the PREVIOUS job's block -- so a job spelled this way is never checked for the fork guard and this contract stays green about it, which is the whole failure mode the pattern above records measuring three times. Either the line is a job header in a spelling the pattern does not admit, in which case widen it and add the spelling to that list, or something other than a job now lives directly under \`jobs:\` and this parser needs to know about it.`,
+    ).toEqual([]);
+
+    // Vacuity guard: with no jobs parsed, "every job carries the guard" is
+    // true of nothing at all.
+    expect(
+      blocks.size,
+      `no jobs parsed out of ${CI}; the parser is broken.`,
+    ).toBeGreaterThanOrEqual(3);
+
+    return blocks;
+  }
+
+  it('guards every job against a fork pull request, including one added later', async () => {
+    const blocks = jobBlocks(await readRepositoryFile(CI));
+    const names = [...blocks.keys()];
+
+    // Named so a rename fails here, in the commit that renames, rather than
+    // leaving this contract quietly checking a set of jobs that has moved on.
+    // `toContain` rather than an exact set: a NEW job must satisfy the
+    // assertion below rather than this one.
+    for (const job of ['verify', 'assets', 'browser']) {
+      expect(
+        names,
+        `${CI} no longer has a \`${job}:\` job. If it was renamed, rename it here in the same commit; if it was removed, say so here -- a gate this contract cannot find is a gate this contract does not check.`,
+      ).toContain(job);
+    }
+
+    // Comments are dropped first, and the guard is matched as a whole line at
+    // job-level indentation: a comment *describing* the guard, or a
+    // step-level `if:` deeper in the job, must not be able to satisfy an
+    // assertion that the job carries it.
+    const guarded = names.filter((job) =>
+      (blocks.get(job) ?? [])
+        .filter((line) => !line.trim().startsWith('#'))
+        .some((line) => line === FORK_GUARD),
+    );
+
+    // Positive presence first, so the assertion below cannot pass by finding
+    // nothing. Deliberately `> 0` rather than a floor of three: a floor would
+    // fire first when a single job lost its guard, reporting "no job carries
+    // it" about a file where two still do, and the next reader would go
+    // looking for the wrong defect. Which jobs are unguarded is the assertion
+    // below; this one only distinguishes "a guard was removed" from "the exact
+    // line pinned in FORK_GUARD was reformatted, so this contract now matches
+    // nothing anywhere".
+    expect(
+      guarded.length,
+      `no job in ${CI} carries the fork guard as a job-level \`if:\` at all. Either every one of them lost it, or the exact line pinned in FORK_GUARD has been reformatted and this contract is matching nothing -- check which before treating it as the security failure it would otherwise be.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      names.filter((job) => !guarded.includes(job)),
+      `these jobs in ${CI} carry no fork guard. This workflow triggers on a bare \`pull_request\` and runs on a self-hosted runner, so an unguarded job executes a fork's code -- \`vite.config.ts\`, everything under \`tests/\` -- on the owner's machine, in a workspace reused between jobs and between runs. Add \`if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository\` to each, exactly as the other jobs spell it. If a job genuinely must run on a fork's pull request, it needs a reason written beside it and an exception recorded here in the same commit.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * Two properties of `.github/workflows/**` as a *set*, rather than of one
+ * workflow: every action it runs is pinned to a commit, and every checkout says
+ * out loud whether it keeps its token. Both were true of the files and asserted
+ * by nothing, which is the same shape as everything else in this file -- the
+ * configuration and the check that is supposed to enforce it living apart.
+ *
+ * The parsers below are shared by the two contracts that follow and are written
+ * positionally rather than with a YAML library. That is deliberate:
+ * `AGENTS.md` prohibits adding a dependency for trivial functionality, and
+ * `repository-contract.test.ts` makes the same argument for the toolchain pins.
+ * The price of hand-parsing is that the parser can be wrong quietly, so both
+ * contracts below open with the same guard: what the step parser found is
+ * compared against a flat line scan of the same text, and a step the parser
+ * cannot see is a failure rather than a silence. That is the defence the
+ * `SECURITY_HEADER_BASELINE` reader at the top of this file also needed, for
+ * exactly the same reason.
+ */
+
+const WORKFLOWS = '.github/workflows';
+
+interface WorkflowStep {
+  /** Repository-relative path of the workflow, so a failure message is actionable. */
+  readonly workflow: string;
+  /** 1-based line of the `- ` that opens the step. */
+  readonly line: number;
+  /** Every line of the step, comments included; the callers strip where it matters. */
+  readonly lines: readonly string[];
+}
+
+/** Every `.yml`/`.yaml` under `.github/workflows`, path -> contents. */
+async function readWorkflows(): Promise<ReadonlyMap<string, string>> {
+  const names = (await readdir(path.join(repositoryRoot, '.github', 'workflows')))
+    .filter((name) => name.endsWith('.yml') || name.endsWith('.yaml'))
+    .sort();
+
+  // Vacuity guard, first of two. This one establishes that there are files;
+  // the per-contract guard below establishes that the parser reads the steps
+  // inside them. Every assertion in both contracts is "no workflow does X",
+  // and no workflow does anything when there are none.
+  expect(
+    names.length,
+    `no workflow files were found under ${WORKFLOWS}; every assertion below would hold of nothing at all.`,
+  ).toBeGreaterThan(0);
+
+  const workflows = new Map<string, string>();
+  for (const name of names) {
+    workflows.set(`${WORKFLOWS}/${name}`, await readRepositoryFile(`${WORKFLOWS}/${name}`));
+  }
+
+  return workflows;
+}
+
+/**
+ * Every step of every job in one workflow: the `- ` line that opens it and each
+ * line under it, up to the next step at the same indentation or the end of the
+ * `steps:` block that holds it. A second job's `steps:` opens a new block, so
+ * this reads all of them rather than only the first.
+ */
+function parseWorkflowSteps(workflow: string, contents: string): readonly WorkflowStep[] {
+  const lines = contents.split(/\r?\n/u);
+  const steps: WorkflowStep[] = [];
+
+  let stepsIndent: number | undefined;
+  let itemIndent: number | undefined;
+  let current: string[] | undefined;
+  let currentLine = 0;
+
+  const close = (): void => {
+    if (current !== undefined) {
+      steps.push({ workflow, line: currentLine, lines: current });
+      current = undefined;
+    }
+  };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const raw = lines[index] ?? '';
+
+    if (raw.trim().length === 0) {
+      current?.push(raw);
+      continue;
+    }
+
+    const indent = raw.search(/\S/u);
+
+    if (stepsIndent === undefined) {
+      if (raw.trim() === 'steps:') {
+        stepsIndent = indent;
+      }
+      continue;
+    }
+
+    // Anything at or left of the `steps:` key ends the block -- including the
+    // next job's own `steps:`, which immediately opens another one.
+    if (indent <= stepsIndent) {
+      close();
+      stepsIndent = raw.trim() === 'steps:' ? indent : undefined;
+      itemIndent = undefined;
+      continue;
+    }
+
+    if (raw.trim().startsWith('- ') && (itemIndent === undefined || indent === itemIndent)) {
+      close();
+      itemIndent = indent;
+      current = [raw];
+      currentLine = index + 1;
+      continue;
+    }
+
+    current?.push(raw);
+  }
+
+  close();
+  return steps;
+}
+
+/**
+ * The column a step's *keys* sit in. The `- ` marker occupies the two columns
+ * to their left, so `- name: Checkout` and the `uses:` below it are the same
+ * key level, and a `persist-credentials:` two columns deeper is not.
+ */
+function stepKeyIndent(step: WorkflowStep): number {
+  return (step.lines[0] ?? '').search(/\S/u) + 2;
+}
+
+/**
+ * The value of one of a step's own keys and the 1-based line it is written on,
+ * or `undefined` when the step has no such key.
+ *
+ * The line is the *key's* line rather than the step's, so that a source
+ * reported from here and a source reported by the flat scan below are the same
+ * string for the same setting. Reporting the step's opening `- name:` line
+ * instead would make the two counting guards compare two different things and
+ * fail for a reason that is not a defect -- which is how this was found.
+ */
+function stepScalar(step: WorkflowStep, key: string): { readonly value: string; readonly line: number } | undefined {
+  const keyIndent = stepKeyIndent(step);
+
+  for (const [offset, line] of step.lines.entries()) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0 || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const marker = trimmed.startsWith('- ');
+    const at = line.search(/\S/u) + (marker ? 2 : 0);
+    const text = marker ? trimmed.slice(2) : trimmed;
+
+    if (at === keyIndent && text.startsWith(`${key}:`)) {
+      return { value: text.slice(key.length + 1).trim(), line: step.line + offset };
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * The settings under a step's `with:` key, trimmed, whole-line comments
+ * dropped. Comments are dropped because several checkouts in this repository
+ * *discuss* `persist-credentials` in prose beside the setting -- version.yml's
+ * comment names the value every other checkout uses -- so a comment must never
+ * be able to satisfy an assertion that a step sets it. That is the same
+ * weakness the provisioning, version bump and deploy checkout contracts above
+ * were each rewritten to close.
+ */
+function stepWithSettings(step: WorkflowStep): readonly string[] {
+  const keyIndent = stepKeyIndent(step);
+  const start = step.lines.findIndex(
+    (line) => line.search(/\S/u) === keyIndent && line.trim() === 'with:',
+  );
+
+  if (start === -1) {
+    return [];
+  }
+
+  const settings: string[] = [];
+  for (const line of step.lines.slice(start + 1)) {
+    if (line.trim().length === 0) {
+      continue;
+    }
+    if (line.search(/\S/u) <= keyIndent) {
+      break;
+    }
+    if (line.trim().startsWith('#')) {
+      continue;
+    }
+    settings.push(line.trim());
+  }
+
+  return settings;
+}
+
+/**
+ * Lines that *look* like the thing the structural parser is meant to find,
+ * counted by a flat scan that shares no code with `parseWorkflowSteps`. The two
+ * counts are compared in both contracts below: a job, a step or a whole file the
+ * structural parser silently skipped shows up as a shortfall here rather than as
+ * a green run over a smaller corpus.
+ */
+function flatMatches(workflows: ReadonlyMap<string, string>, pattern: RegExp): readonly string[] {
+  const found: string[] = [];
+
+  for (const [workflow, contents] of workflows) {
+    contents.split(/\r?\n/u).forEach((line, index) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('#')) {
+        return;
+      }
+      if (pattern.test(trimmed.startsWith('- ') ? trimmed.slice(2) : trimmed)) {
+        found.push(`${workflow}:${String(index + 1)}`);
+      }
+    });
+  }
+
+  return found;
+}
+
+/**
+ * Every action this repository runs is named by a commit, not by a tag.
+ *
+ * ## The defect
+ *
+ * A `uses:` naming a tag is a `uses:` whose code somebody else chooses, later,
+ * without touching this repository. Every `uses:` here already named a
+ * 40-character sha except one: `actions/checkout@v4` in delete-branches.yml,
+ * the only workflow granted `contents: write` whose checkout keeps its
+ * credential and whose later steps run `git push origin --delete`. The odd one
+ * out is the expensive shape, because a reviewer who reads the pinned ones
+ * concludes the discipline is settled and stops reading.
+ *
+ * ## Why this is a contract and not just a fix
+ *
+ * Pinning that one line closes the instance. What closes the class is this: a
+ * workflow added next month, copied from any of the countless examples that
+ * spell `@v4`, fails here in the commit that adds it. That is the difference
+ * between an audit finding and a property, and it is why this block exists
+ * rather than only the edit to the workflow.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the sha is a *good* one -- that it exists in the action's own repository,
+ * that it is the commit its `# v6` comment claims, or that it has not been
+ * withdrawn. Nothing in this repository can answer any of those, and
+ * `documentation-commit-citation-contract.test.ts` states the same bound from
+ * the other side: a 40-character sha belonging to another repository resolves
+ * nowhere here. What is checked is the property that makes the answer *fixed*
+ * at all, which is the one property a tag does not have.
+ */
+describe('workflow action pinning contract', () => {
+  /** `owner/repo@<40 hex>`. A tag, a branch or an abbreviation is not this. */
+  const PINNED = /^[\w.-]+\/[\w.-]+@[0-9a-f]{40}$/u;
+
+  /** Any `uses:`, whether the step parser can reach it or not. */
+  const USES = /^uses:\s*\S/u;
+
+  interface ActionUse {
+    readonly source: string;
+    readonly reference: string;
+    readonly comment: string | undefined;
+  }
+
+  async function actionUses(): Promise<{
+    readonly workflows: ReadonlyMap<string, string>;
+    readonly uses: readonly ActionUse[];
+  }> {
+    const workflows = await readWorkflows();
+    const uses: ActionUse[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      for (const step of parseWorkflowSteps(workflow, contents)) {
+        const used = stepScalar(step, 'uses');
+        if (used === undefined) {
+          continue;
+        }
+
+        const hash = used.value.indexOf('#');
+        uses.push({
+          source: `${workflow}:${String(used.line)}`,
+          reference: (hash === -1 ? used.value : used.value.slice(0, hash)).trim(),
+          comment: hash === -1 ? undefined : used.value.slice(hash + 1).trim(),
+        });
+      }
+    }
+
+    return { workflows, uses };
+  }
+
+  it('reads every uses: there is, so nothing below can pass by reading fewer', async () => {
+    const { workflows, uses } = await actionUses();
+    const flat = flatMatches(workflows, USES);
+
+    // Vacuity guard, second of two, and the one that matters. A parser that
+    // returned nothing -- or that lost one job because its header carried a
+    // trailing comment, which is the exact defect `jobBlocks` above records
+    // measuring -- makes "every action is pinned" true of an empty list. The
+    // flat scan shares no code with the structural one, so the two agreeing is
+    // evidence rather than a tautology.
+    expect(
+      uses.length,
+      `no \`uses:\` was parsed out of ${WORKFLOWS} at all, while a flat scan of the same files found ${String(flat.length)}. The step parser is broken; fix it rather than the workflows.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      uses.map(({ source }) => source),
+      `the step parser and a flat line scan of the same files disagree about where the \`uses:\` lines are. Every one the parser cannot see is an action running unchecked by the assertions below, which would stay green about it. The flat scan is the authority here: fix the parser.`,
+    ).toEqual(flat);
+  });
+
+  it('names a 40-character commit for every action it runs', async () => {
+    const { uses } = await actionUses();
+
+    // A `./`-prefixed reference is a composite action inside this repository,
+    // checked out with everything else and therefore already pinned by the
+    // commit under test. None exists today; the branch is here so that adding
+    // one is not a spurious failure, and the positive check below is what stops
+    // it becoming the door that empties this gate.
+    const external = uses.filter(({ reference }) => !reference.startsWith('./'));
+    const pinned = external.filter(({ reference }) => PINNED.test(reference));
+
+    // Positive presence before the absence, in the shape the fork guard
+    // contract above argues for: this distinguishes "a pin was removed" from
+    // "the form pinned in PINNED no longer matches anything anywhere".
+    expect(
+      pinned.length,
+      `no \`uses:\` in ${WORKFLOWS} matches the pinned form at all. Either every one of them lost its sha, or the pattern in PINNED has stopped matching \`owner/repo@<40 hex>\` -- check which before treating this as the supply-chain failure it would otherwise be.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      external
+        .filter(({ reference }) => !PINNED.test(reference))
+        .map(({ source, reference }) => `${source} -> ${reference}`),
+      `these run an action named by a tag or a branch rather than by a commit. A tag is a pointer its owner can move, so what runs on this repository's runners -- with whatever \`permissions:\` the workflow declares -- would be decided later, elsewhere, by somebody else. Pin the exact commit and name the release it is in a trailing \`# vN\` comment, exactly as the other call sites do. This is not theoretical here: the entry this gate was written for was \`actions/checkout@v4\` on the only workflow granted \`contents: write\` with a credential-keeping checkout and a \`git push origin --delete\`.`,
+    ).toEqual([]);
+  });
+
+  it('says which release each sha is, beside the sha', async () => {
+    const { uses } = await actionUses();
+
+    // The sha is what makes the pin fixed; the comment is what makes it
+    // reviewable. Without it an upgrade is a diff of two 40-character hex
+    // strings and nobody can see whether it went forwards -- so the pin is
+    // correct and unmaintainable, and the next reader deletes it back to a tag
+    // because a tag they can read.
+    expect(
+      uses
+        .filter(({ reference }) => PINNED.test(reference))
+        .filter(({ comment }) => comment === undefined || !/^v\d/u.test(comment))
+        .map(({ source, reference }) => `${source} -> ${reference}`),
+      `these pin a commit with no trailing \`# vN\` comment naming the release it is. Add one. A pin nobody can read is a pin nobody will keep: every other call site here reads \`# v6\`, and a bare sha among them is the entry a later tidy-up turns back into a tag.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * Every checkout says whether it keeps its token, and only the two that push
+ * keep it.
+ *
+ * ## The defect
+ *
+ * When this gate was written, `persist-credentials: false` was set on every
+ * checkout in ci.yml, deploy.yml and migrate-database.yml, and asserted
+ * nowhere. The only test in this repository that mentioned the setting was the
+ * version bump contract above, which pins `true` for version.yml -- and whose
+ * justification asserted the very fact it did not check: "Every other checkout
+ * sets `false`, so a copy-paste from one of them leaves this job unable to
+ * push". That is a prose claim about lines in three other files, in a
+ * repository whose most-repeated defect is a document disagreeing with the
+ * code. Deleting any one of those settings left the whole suite green;
+ * measured, deleting ci.yml's `verify` one now fails two cases below and
+ * nothing else.
+ *
+ * ## Why absence is a failure rather than a default
+ *
+ * `actions/checkout` defaults `persist-credentials` to `true` -- in v4 and in
+ * the pinned v6 alike -- so a checkout that says nothing keeps its token in the
+ * repository's git config for every later step of the job, on a self-hosted
+ * runner whose workspace is reused between jobs and between runs. "Says
+ * nothing" and "says true" are the same behaviour and completely different
+ * reviews: one is a decision, the other is an omission that reads like one. So
+ * this gate requires the setting to be *written* at every checkout, and
+ * delete-branches.yml gained an explicit `true` in the same change that
+ * introduced this block -- it had been relying on the default since it was
+ * added.
+ *
+ * ## What it cannot see
+ *
+ * Whether a job that sets `false` then supplies a credential by hand. One does:
+ * ci.yml's `assets` job configures an `extraheader` for a single `git lfs pull`
+ * and unsets it on exit, and says at length why that is preferable to relaxing
+ * this setting. A gate that forbade the pattern would forbid the safer of the
+ * two, so this one is about the checkout only.
+ */
+describe('checkout credential persistence contract', () => {
+  /** Any `uses:` naming this action, whether the step parser can reach it or not. */
+  const CHECKOUT = /^uses:\s*actions\/checkout(?:[@\s]|$)/u;
+
+  /**
+   * The checkouts that keep their token, and what each one pushes. A workflow
+   * absent from this map must set `false`; a workflow present must set `true`.
+   *
+   * Keyed by workflow rather than by step because each of these has exactly one
+   * checkout. If one grows a second that should not keep the token, this map
+   * demands `true` of it and the gate goes red -- which is the direction to fail
+   * in: the fix is then to key this by step and say why, in that commit.
+   */
+  const KEEPS_ITS_TOKEN: Readonly<Record<string, string>> = {
+    '.github/workflows/version.yml':
+      'the version bump rewrites `package.json`, tags it, and pushes the branch and the tag atomically, so the credential has to survive its checkout. The version bump workflow contract above pins that `true` and that `git push --atomic` together.',
+    '.github/workflows/delete-branches.yml':
+      '`bash deletebranches.sh` runs `git push origin --delete` over the branch list that script carries, which is the whole purpose of the workflow and the reason it is the only other one granted `contents: write`. That workflow has never had a successful run and its own comment says so; the credential setting is still a decision it has to state.',
+  };
+
+  interface Checkout {
+    readonly workflow: string;
+    readonly source: string;
+    readonly persistCredentials: string | undefined;
+  }
+
+  async function checkouts(): Promise<{
+    readonly workflows: ReadonlyMap<string, string>;
+    readonly steps: readonly Checkout[];
+  }> {
+    const workflows = await readWorkflows();
+    const steps: Checkout[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      for (const step of parseWorkflowSteps(workflow, contents)) {
+        const used = stepScalar(step, 'uses');
+        if (used === undefined) {
+          continue;
+        }
+
+        // The trailing `# v6` is dropped before the name is matched, and the
+        // version is not part of the match: an `actions/checkout` at any
+        // version, or at none, is a checkout whose credential handling this
+        // gate is answerable for. Requiring `@` here and not in the flat scan
+        // below would make a version-less `uses:` invisible to one side and
+        // report it as a broken parser on the other.
+        const hash = used.value.indexOf('#');
+        const reference = (hash === -1 ? used.value : used.value.slice(0, hash)).trim();
+        if (!/^actions\/checkout(?:@|$)/u.test(reference)) {
+          continue;
+        }
+
+        const setting = stepWithSettings(step).find((line) => line.startsWith('persist-credentials:'));
+
+        steps.push({
+          workflow,
+          source: `${workflow}:${String(used.line)}`,
+          persistCredentials:
+            setting === undefined ? undefined : setting.slice('persist-credentials:'.length).trim(),
+        });
+      }
+    }
+
+    return { workflows, steps };
+  }
+
+  it('reads every actions/checkout there is, so nothing below can pass by reading fewer', async () => {
+    const { workflows, steps } = await checkouts();
+    const flat = flatMatches(workflows, CHECKOUT);
+
+    expect(
+      steps.length,
+      `no \`actions/checkout\` step was parsed out of ${WORKFLOWS} at all, while a flat scan of the same files found ${String(flat.length)}. Every assertion below is "no checkout does X" and holds of an empty list; the parser is what is broken.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      steps.map(({ source }) => source),
+      `the step parser and a flat line scan of the same files disagree about where the \`actions/checkout\` steps are. A checkout the parser cannot see is a checkout whose credential handling is asserted by nothing, with this gate green about it. The flat scan is the authority: fix the parser.`,
+    ).toEqual(flat);
+  });
+
+  it('states persist-credentials at every checkout rather than inheriting the default', async () => {
+    const { steps } = await checkouts();
+
+    expect(
+      steps
+        .filter(({ persistCredentials }) => persistCredentials === undefined)
+        .map(({ source }) => source),
+      `these checkouts set no \`persist-credentials\` at all. The action defaults it to \`true\`, so silence here means the job's token stays in the repository's git config for every step that follows -- on a self-hosted runner whose workspace is reused between jobs. Write the value out: \`false\` unless the job pushes, and \`true\` with the reason beside it if it does.`,
+    ).toEqual([]);
+  });
+
+  it('keeps the token only where something pushes, and drops it everywhere else', async () => {
+    const { steps } = await checkouts();
+
+    const dropping = steps.filter(({ persistCredentials }) => persistCredentials === 'false');
+
+    // Positive presence first, for the reason the fork guard contract states:
+    // this separates "a checkout stopped dropping its credential" from "the
+    // `with:` parser stopped reading the setting", which are otherwise the same
+    // red.
+    expect(
+      dropping.length,
+      `no checkout in ${WORKFLOWS} sets \`persist-credentials: false\` at all. Either every one of them now keeps its token, or the \`with:\` parser has stopped reading the setting -- establish which before treating this as the security failure it would otherwise be.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      steps
+        .filter(({ workflow, persistCredentials }) =>
+          KEEPS_ITS_TOKEN[workflow] === undefined
+            ? persistCredentials !== 'false'
+            : persistCredentials !== 'true',
+        )
+        .map(
+          ({ workflow, source, persistCredentials }) =>
+            `${source} -> persist-credentials: ${persistCredentials ?? '(unset)'}${
+              KEEPS_ITS_TOKEN[workflow] === undefined
+                ? ''
+                : ` -- must be true: ${KEEPS_ITS_TOKEN[workflow] ?? ''}`
+            }`,
+        ),
+      `these checkouts do not carry the credential setting their workflow requires. A job that does not push must set \`persist-credentials: false\`, so its token does not outlive the step that needed it -- and on this repository's self-hosted runner it would otherwise outlive the *job*, in a workspace the next run reuses. The workflows allowed \`true\` are listed in KEEPS_ITS_TOKEN with what each of them pushes; another one needs an entry there written in the same commit, and the entry has to name what it pushes rather than that it wants the token.`,
+    ).toEqual([]);
+  });
+
+  it('keeps the exception list honest: an entry whose workflow no longer checks out must go', async () => {
+    const { steps } = await checkouts();
+    const present = new Set(steps.map(({ workflow }) => workflow));
+
+    expect(
+      Object.keys(KEEPS_ITS_TOKEN).filter((workflow) => !present.has(workflow)),
+      `these workflows are listed as needing a credential-keeping checkout and have none -- either the workflow is gone or its checkout is. An exemption for a step that no longer exists is an exemption waiting to cover a different one, which is the argument \`documentation-commit-citation-contract.test.ts\` makes for its own allowlists.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The steps of one top-level job of one workflow, by line range rather than by
+ * re-parsing the job structure: `parseWorkflowSteps` above already reads every
+ * step of every job, and a second structural parser would be a second thing to
+ * keep right.
+ *
+ * Module scope rather than inside one contract, because two contracts below
+ * now ask the same question of two different jobs.
+ */
+function jobSteps(workflow: string, contents: string, job: string): readonly WorkflowStep[] {
+  const lines = contents.split(/\r?\n/u);
+  const header = `  ${job}:`;
+  const start = lines.indexOf(header);
+
+  expect(
+    start,
+    `${workflow} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
+  ).toBeGreaterThanOrEqual(0);
+
+  // The next thing at job indentation or shallower ends the block. Comments
+  // are skipped rather than treated as the end: in this file a paragraph at
+  // two-space indentation introduces the job *after* it, and stopping there
+  // would be right for the range but wrong the moment the paragraph moves.
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index] ?? '';
+    if (line.trim().length === 0 || /^\s*#/u.test(line)) {
+      continue;
+    }
+    if (/^ {0,2}\S/u.test(line)) {
+      end = index;
+      break;
+    }
+  }
+
+  // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
+  // from 0, so the open interval below is `(start, end]` in 1-based terms.
+  return parseWorkflowSteps(workflow, contents).filter((step) => step.line > start + 1 && step.line <= end);
+}
+
+/**
+ * The `browser` job keeps the evidence of its own failures.
+ *
+ * ## The defect
+ *
+ * `tests/browser/` is the layer that keeps finding defects nothing else can
+ * (docs/TESTING.md), and its CI job failed twice on this branch with a
+ * 60-second page-load timeout inside a setup helper. Neither failure was
+ * diagnosable, because the one artefact that would have discriminated between
+ * the candidate causes -- the `error-context.md` Playwright writes beside a
+ * failure, an ARIA snapshot of the page at the moment it gave up -- was
+ * written into the runner's workspace and then deleted, unread, by the next
+ * run's `git clean -ffdx`. Measured rather than assumed at the time:
+ * `git grep -n "upload-artifact" -- .github/` matched nothing anywhere in the
+ * repository, no step in any job carried `if: failure()`, and the GitHub API
+ * reported `total_count: 0` artifacts for the failing run.
+ *
+ * ## Why this is a contract and not just the step
+ *
+ * The step alone is one commit away from being deleted as noise by someone
+ * reading a workflow whose runs are all green -- which is exactly the state
+ * this repository was in for the whole life of the `browser` job. What the
+ * assertions below hold is not "an upload step exists" but that the *names*
+ * on it are still the names of the things that produce the evidence: the
+ * `tee` target in the suite step, and Playwright's `outputDir`. Renaming
+ * either one without following it here is the realistic way this quietly
+ * starts uploading nothing, and it fails in the commit that does it.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the upload succeeds, that the runner can reach the artifact service,
+ * or that anybody reads what it stores. Nothing here can answer those. It
+ * also does not pin `retention-days` or `if-no-files-found`: both are policy
+ * a later reader may legitimately retune, and neither decides whether the
+ * evidence survives the job.
+ */
+describe('browser failure evidence contract', () => {
+  const CI = '.github/workflows/ci.yml';
+  const PLAYWRIGHT_CONFIG = 'tests/browser/playwright.config.ts';
+
+  /**
+   * Playwright's `outputDir` when the config does not name one, relative to
+   * the workspace root the job runs in. At the pinned @playwright/test the
+   * default is `path.join(packageJsonDir, 'test-results')`, and the nearest
+   * `package.json` above `tests/browser/` is the repository root's -- so the
+   * directory lands beside the checkout rather than under `tests/browser/`.
+   * The assertion that the config still names no `outputDir` is what keeps
+   * this constant honest.
+   */
+  const DEFAULT_OUTPUT_DIR = 'test-results/';
+
+  /** The lines of a step's `path: |` block, trimmed, comments dropped. */
+  function pathEntries(step: WorkflowStep): readonly string[] {
+    const start = step.lines.findIndex((line) => /^path:\s*\|-?\s*$/u.test(line.trim()));
+    if (start === -1) {
+      return [];
+    }
+
+    const blockIndent = (step.lines[start] ?? '').search(/\S/u);
+    const entries: string[] = [];
+    for (const line of step.lines.slice(start + 1)) {
+      if (line.trim().length === 0) {
+        continue;
+      }
+      if (line.search(/\S/u) <= blockIndent) {
+        break;
+      }
+      if (line.trim().startsWith('#')) {
+        continue;
+      }
+      entries.push(line.trim());
+    }
+
+    return entries;
+  }
+
+  it('uploads, on failure, exactly the two things the browser suite leaves behind', async () => {
+    const contents = await readRepositoryFile(CI);
+    const steps = jobSteps(CI, contents, 'browser');
+
+    // Vacuity guard, in the shape the two contracts above use: every
+    // assertion below is about a step found in this list, and a list of none
+    // satisfies nothing rather than failing.
+    expect(
+      steps.length,
+      `no steps were parsed out of the \`browser\` job in ${CI}. The line-range filter or \`parseWorkflowSteps\` is broken; fix it rather than the workflow.`,
+    ).toBeGreaterThan(0);
+
+    // The log filename is read out of the step that writes it rather than
+    // written down here, so renaming the `tee` target and not the upload
+    // fails below instead of silently uploading a file that no longer exists.
+    const teeTargets = steps.flatMap((step) =>
+      step.lines
+        .filter((line) => !line.trim().startsWith('#'))
+        .flatMap((line) => {
+          const match = /\|\s*tee\s+(\S+)/u.exec(line);
+          return match?.[1] === undefined ? [] : [match[1]];
+        }),
+    );
+
+    expect(
+      teeTargets,
+      `the \`browser\` job in ${CI} no longer pipes its suite output through \`tee\` to exactly one file. That file is half of what the failure upload collects -- the whole stdout of the run, rather than the tail GitHub renders -- so if it is gone, or if there are now two, decide what the upload should carry and say so here in the same commit.`,
+    ).toHaveLength(1);
+
+    const suiteLog = teeTargets[0] ?? '';
+
+    const uploads = steps.filter((step) => {
+      const used = stepScalar(step, 'uses');
+      if (used === undefined) {
+        return false;
+      }
+      const hash = used.value.indexOf('#');
+      const reference = (hash === -1 ? used.value : used.value.slice(0, hash)).trim();
+      return /^actions\/upload-artifact(?:@|$)/u.test(reference);
+    });
+
+    expect(
+      uploads,
+      `the \`browser\` job in ${CI} runs no \`actions/upload-artifact\` step. Without one, a failing run's \`error-context.md\` files and its \`${suiteLog}\` are written into the self-hosted runner's workspace and deleted by the next run's \`git clean -ffdx\` -- which is exactly the state two undiagnosable timeout failures on this job were left in. Restore the step rather than this assertion.`,
+    ).toHaveLength(1);
+
+    const upload = uploads[0] as WorkflowStep;
+
+    // `always()` would upload an empty artifact on every green run; a missing
+    // condition would do the same and also run when the suite passed. The
+    // cost of `failure()` is that a *cancelled* job -- `timeout-minutes`, or
+    // the concurrency group -- uploads nothing, which the step's own comment
+    // records as a deliberate trade.
+    expect(
+      stepScalar(upload, 'if')?.value,
+      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: failure()\`. Unconditional, it stores an empty artifact on every green run; on \`always()\` the same. If a job that is being *cancelled* rather than failed now needs to upload too, that is \`always()\` plus a re-read of the comment on the step, not a silent widening.`,
+    ).toBe('failure()');
+
+    // The suite step must have run before there is anything to collect, and a
+    // step ordered above it would upload the previous run's leftovers.
+    const suiteStep = steps.find((step) =>
+      step.lines.some((line) => !line.trim().startsWith('#') && line.includes(`| tee ${suiteLog}`)),
+    );
+
+    expect(
+      suiteStep === undefined ? -1 : upload.line - suiteStep.line,
+      `the failure-evidence upload in the \`browser\` job of ${CI} is ordered before the step that runs the suite, so it would collect whatever the previous run left in the reused workspace rather than this run's evidence.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      pathEntries(upload),
+      `the failure-evidence upload in the \`browser\` job of ${CI} must collect exactly Playwright's output directory and the suite log. \`${DEFAULT_OUTPUT_DIR}\` is where the \`error-context.md\` for each failing test lands and is the artefact that separates "the harness server never came up" from "the page came up and what the helper waited for never appeared"; \`${suiteLog}\` is the full stdout. If the \`tee\` target above was renamed, rename it here too.`,
+    ).toEqual([DEFAULT_OUTPUT_DIR, suiteLog]);
+  });
+
+  it('keeps the upload path pointing at the directory Playwright actually writes', async () => {
+    const config = await readRepositoryFile(PLAYWRIGHT_CONFIG);
+
+    // The upload names a literal `test-results/` because the config names no
+    // `outputDir` and Playwright's default resolves there. That is a fact
+    // about the config, so it is asserted against the config: the day someone
+    // sets `outputDir`, the upload above starts collecting an empty directory
+    // and nothing else in this repository would notice.
+    expect(
+      config
+        .split(/\r?\n/u)
+        .filter((line) => /^\s*outputDir\s*:/u.test(line))
+        .map((line) => line.trim()),
+      `${PLAYWRIGHT_CONFIG} now sets \`outputDir\`, and ${CI}'s failure-evidence upload still collects the default \`${DEFAULT_OUTPUT_DIR}\`. One of the two has to move: point the upload at the configured directory and update DEFAULT_OUTPUT_DIR here, in this commit. Playwright resolves an unset \`outputDir\` to \`<package.json dir>/test-results\`, which for this config is the repository root -- that is the only reason the literal in the workflow is right.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The measurement harness is invoked by something.
+ *
+ * ## The defect
+ *
+ * Issue #1083. `tests/perf/` carries three files and 35 tests behind its own
+ * Vitest config, `docs/TESTING.md` documented the command, and **nothing in
+ * the repository ran it**: no `package.json` script, no CI step. The root
+ * `vitest.config.ts` collects `*.test.ts` and every file there is named
+ * `*.perf.ts` on purpose, so `pnpm test` could not reach them either. They
+ * were read by `tsc` and executed by nobody, and they passed -- which is the
+ * whole point of the issue rather than a mitigation of it, because nothing
+ * would have said if they had stopped.
+ *
+ * ## Why the config is asserted and not merely the path
+ *
+ * Running these files on the root config's budget is not a slower version of
+ * the same check, it is a red one: that config sets `testTimeout: 5_000`
+ * against the harness's `900_000`, and #1083 records **six** `Test timed out
+ * in 5000ms` failures produced that way, none of them a defect. Re-measured
+ * with `--testTimeout=5000` and nothing else changed, **12 of the 35** failed
+ * that way -- the count follows the machine, which is why this contract
+ * asserts the config rather than a number. So a script that pointed
+ * `vitest run` at `tests/perf/` without `--config` would satisfy "the harness
+ * is invoked" and fail every run.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the harness asserts anything worth asserting, or that it is fast.
+ * `docs/BENCHMARKING.md` owns the first and forbids timing assertions
+ * outright; the second is a runner property that changes under this repository
+ * without a commit, as the `browser` job's budget comments in the workflow
+ * record at length. What is checked is that the gate is *reachable*, which is
+ * the one property #1083 found missing.
+ *
+ * ## The reserved file
+ *
+ * The CI step this asserts is inside `.github/workflows/ci.yml`, which is
+ * `AGENTS.md` reservation 3. The owner released one step for it on 2026-09-09,
+ * and that entry records both what was authorised and that its provenance is a
+ * clicked option label rather than the owner's own words. Widening this
+ * contract to require a second step would be requiring a change nobody has
+ * authorised.
+ */
+describe('measurement harness reachability contract', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SCRIPT = 'test:perf';
+  const CONFIG = 'tests/perf/vitest.perf.config.ts';
+
+  it('gives the harness a script that runs it through its own config', async () => {
+    const manifest = JSON.parse(await readRepositoryFile('package.json')) as {
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    const script = manifest.scripts?.[SCRIPT];
+
+    expect(
+      script,
+      `package.json no longer declares a \`${SCRIPT}\` script. #1083 is the state where \`${CONFIG}\` exists and nothing invokes it: the harness is typechecked and never run, and its 35 assertions report nothing when they break. The CI step below runs this script by name, so removing it empties that step too.`,
+    ).toBeDefined();
+
+    expect(
+      script,
+      `\`pnpm ${SCRIPT}\` must pass \`--config ${CONFIG}\`. Without it these files inherit the root \`vitest.config.ts\`'s \`testTimeout: 5_000\` against the harness's own \`900_000\`: #1083 measured six \`Test timed out in 5000ms\` failures that way and a re-measurement with \`--testTimeout=5000\` produced 12 of 35. A run of this harness without its config is red for a reason that is not about the code.`,
+    ).toContain(`--config ${CONFIG}`);
+  });
+
+  it('runs that script from the `verify` job, so the harness is a gate and not a habit', async () => {
+    const contents = await readRepositoryFile(CI);
+    const steps = jobSteps(CI, contents, 'verify');
+
+    // Vacuity guard, in the shape the contracts above use: every assertion
+    // below is about a step found in this list, and a list of none satisfies
+    // nothing rather than failing.
+    expect(
+      steps.length,
+      `no steps were parsed out of the \`verify\` job in ${CI}. The line-range filter or \`parseWorkflowSteps\` is broken; fix it rather than the workflow.`,
+    ).toBeGreaterThan(0);
+
+    const commands = steps
+      .map((step) => stepScalar(step, 'run')?.value)
+      .filter((value): value is string => value !== undefined)
+      .map((value) => value.trim());
+
+    expect(
+      commands,
+      `${CI}'s \`verify\` job no longer runs \`pnpm ${SCRIPT}\`. That step is the whole of what the owner authorised on 2026-09-09 (\`AGENTS.md\`, reservation 3), and without it \`tests/perf/\` is back in the state #1083 filed: a harness with a config, a script, documentation and no runner. Steps found: ${commands.join(' | ') || '(none)'}`,
+    ).toContain(`pnpm ${SCRIPT}`);
+  });
+
+  it('leaves the harness out of the default suite, which is what hid it and is still right', async () => {
+    const root = await readRepositoryFile('vitest.config.ts');
+    const include = root.split(/\r?\n/u).filter((line) => /^\s*include\s*:/u.test(line));
+
+    // Vacuity guard: the assertion below is about what `include` names, and a
+    // config this filter cannot find an `include` in would satisfy it with
+    // nothing read at all.
+    expect(
+      include,
+      'vitest.config.ts declares no `include:` on a line of its own, so the assertion below reads nothing. Fix this filter rather than the config.',
+    ).toHaveLength(1);
+
+    /*
+     * The other direction of the contract above. #1083's answer is a gate, not
+     * a fold-in: collecting `*.perf.ts` from the root config would give these
+     * files a runner and a five-second budget in the same move, and `pnpm test`
+     * would start paying for multi-hundred-chunk fixtures on every run.
+     */
+    expect(
+      include[0],
+      `vitest.config.ts's \`include\` now reaches the measurement harness. It must not: this config's \`testTimeout\` is \`5_000\` where the harness's own is \`900_000\`, and its fixtures are expensive enough that \`pnpm test\` would stop being the fast gate. The harness is reached through \`pnpm ${SCRIPT}\` and its own config instead.`,
+    ).not.toContain('perf');
+  });
+});
+
+/**
+ * Two jobs reach for `python3` and nothing in this repository provisions it
+ * (#1089's audit). Installing it needs root, and the `woogitsu-linux-*` pool
+ * has no passwordless sudo -- proved on job 101846181533, 2026-09-07 -- so
+ * what the repository can add is a diagnosis rather than a fix: a guard that
+ * names the host step instead of dying on a bare `python3: command not found`
+ * and exit 127.
+ *
+ * **This contract exists because that guard is otherwise ungated.** Both jobs
+ * are `workflow_dispatch`-only and neither has run since the pool changed
+ * (`branch-gc.yml` 2026-09-03, `delete-branches.yml` 2026-08-30), so nothing
+ * in CI executes either line. A future edit could delete the guard and every
+ * other gate in this repository would stay green -- which is precisely the
+ * case #1089 was written about, one level up: an assumption nobody can see
+ * until the day it matters.
+ *
+ * **What it does NOT claim.** It does not assert that `python3` is present on
+ * any runner; nothing here can read the host, and `AGENTS.md` reservation 3
+ * makes the same point about dashboards. It asserts only that the two call
+ * sites still say what to do when it is absent.
+ *
+ * The `delete-branches.yml` half deliberately reads `deletebranches.sh` and
+ * not the workflow. The workflow names no interpreter at all -- it runs
+ * `bash deletebranches.sh` -- and the audit row that cites `python3` for this
+ * job cites `deletebranches.sh:107`. A guard written into the workflow would
+ * be guarding the wrong file.
+ */
+describe('python3 availability diagnosis contract (#1089)', () => {
+  it('branch-gc names the host step when python3 is missing, rather than exiting 127', async () => {
+    const source = await readRepositoryFile('.github/workflows/branch-gc.yml');
+
+    // Vacuity guard: the assertion below is about the guard sitting in front
+    // of a real use, so establish the use is still there. If `branch-gc.yml`
+    // stops running python3 this test should be deleted, not satisfied.
+    expect(
+      source,
+      '`branch-gc.yml` no longer invokes python3; this contract is guarding a call site that has gone.',
+    ).toContain('python3 - <<');
+
+    expect(
+      source,
+      '`branch-gc.yml` invokes python3 with no `command -v` guard in front of it. Nothing here can install python3 -- that needs root and this pool has no passwordless sudo -- so the guard is the whole remedy: without it the job dies on a bare `python3: command not found` in a run whose next act is deleting branches on a shared remote.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('python3 - <<');
+    expect(
+      guardIndex,
+      '`branch-gc.yml` has a `command -v python3` guard, but it sits after the heredoc it is supposed to protect, so the bare 127 happens first.',
+    ).toBeLessThan(useIndex);
+  });
+
+  it('deletebranches.sh says what is missing before it reaches the interpreter', async () => {
+    const source = await readRepositoryFile('deletebranches.sh');
+
+    expect(
+      source,
+      '`deletebranches.sh` no longer pipes through python3; this contract is guarding a call site that has gone.',
+    ).toContain('| python3 -c');
+
+    expect(
+      source,
+      '`deletebranches.sh` reaches python3 with no `command -v` guard. `set -euo pipefail` already makes the failure safe -- an empty `open_heads` would leave every open pull request unprotected, and the script exits instead -- so what the guard adds is the sentence, not the safety.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('| python3 -c');
+    expect(
+      guardIndex,
+      '`deletebranches.sh` guards python3 after the pipeline that uses it.',
+    ).toBeLessThan(useIndex);
+  });
+});
+
+/**
+ * Every job in every workflow asks for the bare `self-hosted` pool, and nothing
+ * else.
+ *
+ * ## Why this is a repository-wide gate rather than two spot checks
+ *
+ * The selector was already pinned in exactly two places -- `version.yml`'s job
+ * in this file's "version bump workflow contract", and `deploy.yml`'s
+ * `staging-blocked` in `tests/foundation/deploy-blocked-announcement-contract.test.ts`
+ * -- each with the same argument attached: `ubuntu-latest` has never worked in
+ * this repository, and the two workflows that asked for it failed in four
+ * seconds with no step recorded and no log. Both comments say they pin the
+ * policy; neither could see the other seven jobs.
+ *
+ * The gap that leaves is not hypothetical in the other direction either. Until
+ * `80b54a97` every `runs-on:` here was a **label list** -- `[self-hosted,
+ * Linux, X64, wsl2]` and similar -- and a label list is a claim about which
+ * machines exist. Those claims rot: `AGENTS.md` and `CLAUDE.md` between them
+ * carry three generations of runner names (`woogitsu-host-*`,
+ * `woogitsu-linux-*`, `lockstate-wsl-DOM-NEW-*`), each correct when written and
+ * each wrong now, and a job pinned to a label that no longer exists does not
+ * fail loudly -- it queues forever.
+ *
+ * ## The instruction
+ *
+ * Recorded 2026-09-13, in the owner's own words, when they were told what the
+ * workflows currently ask for:
+ *
+ * > runnery to po prostu self hosted i tak ustaw wszędzie
+ *
+ * ("the runners are just self-hosted, so set it that way everywhere.") Every
+ * `runs-on:` on disk already read `self-hosted` when that was said, so this
+ * test changes no workflow and is not a release inside `AGENTS.md`'s third
+ * reservation. It is the instruction written down where a future change has to
+ * walk past it: a label list, a matrix, or a hosted runner added to any
+ * workflow now fails here and names the sentence above.
+ */
+describe('runner selector contract', () => {
+  it('asks for the bare self-hosted pool in every job of every workflow', async () => {
+    const workflows = await readWorkflows();
+    const selectors: string[] = [];
+    const wrong: string[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      const lines = contents.split(/\r?\n/u);
+      for (const [index, line] of lines.entries()) {
+        const match = /^\s*runs-on:\s*(?<value>.*?)\s*$/u.exec(line);
+        if (match === null) continue;
+        const value = match.groups?.['value'] ?? '';
+        selectors.push(`${workflow}:${index + 1}`);
+        if (value !== 'self-hosted') wrong.push(`${workflow}:${index + 1} -> ${value}`);
+      }
+    }
+
+    // Not vacuous: six workflows, and every one of them has at least one job.
+    expect(
+      selectors.length,
+      'no `runs-on:` was found in any workflow, so this contract is checking nothing',
+    ).toBeGreaterThanOrEqual(6);
+
+    expect(
+      wrong,
+      'these jobs do not ask for the bare `self-hosted` pool. The owner\'s instruction of 2026-09-13 is that the runners are just self-hosted and that it be set that way everywhere; a label list additionally pins the job to machine names that have already changed three times in this repository, and a job pinned to a label nothing carries queues forever rather than failing',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The `browser` job's `git lfs pull --include=` list and
+ * `src/rendering/assets/environment-sprites.ts` must name the same rendered
+ * art, in both directions. Only one of those directions was ever checked.
+ *
+ * ## The half that was already checked, and the half that was not
+ *
+ * `ci.yml`'s *"Assert the environment sheets decoded"* step greps
+ * `renderedArtId` out of `environment-sprites.ts` and requires each id it
+ * finds to exist on disk as image data, failing closed with its own
+ * instruction `add '<id>' to the --include filter above`. That covers
+ * **declared and unfetched**: a sprite wired without its glob turns the job
+ * red. It is generic and needs no edit, ever.
+ *
+ * It says nothing about **listed and undeclared**. A glob that outlives the
+ * sprite it was added for is invisible to every gate in this repository, and
+ * `AGENTS.md` reservation 3 means an agent cannot simply delete one: the
+ * `--include=` line is the owner's, released to them three times and never for
+ * a removal.
+ *
+ * ## The finding that produced this contract, and the audit claim it refutes
+ *
+ * `furniture.cell.locker.variants` is that glob. Dated, because the interval
+ * is the point: the sprite `env.object.storage-rack` was wired to it in
+ * `67b3429e` (2026-09-06 21:15:39Z), the owner authorised the three glob
+ * segments in `a98d4001` (2026-09-07 05:24:36Z), and a playtest got the sprite
+ * reverted in `bb7dc40a` (2026-09-07 09:50:44Z) -- **four hours and
+ * twenty-six minutes** after the authorisation. The glob stayed.
+ *
+ * A repository-wide freshness audit reported in 2026-09-12 that the surviving
+ * glob *"now fetches art nothing draws -- the exact cost the wildcard
+ * alternative was refused for"*, priced it at **1,672,608 bytes pulled from
+ * LFS on every `browser` job**, and proposed a reservation-3 release to remove
+ * it. **That is refuted, and the glob costs nothing.** `bb7dc40a` also
+ * `git rm`'d the only file that could match it,
+ * `rendered.furniture.cell.locker.variants.10a6c751ad5c.png` (11.27 KiB), so
+ * the glob has matched **zero files** since the same commit that orphaned it.
+ * The only locker file left is the owner's sheet
+ * `furniture.cell.locker.variants.89a3cfd67726.png`, **without** the
+ * `rendered.` prefix, and that prefix is load-bearing exactly so that the
+ * owner's sheet and the render the game draws can sit under one id. The audit
+ * named this as its own weakest claim and was right to: it had never watched
+ * CI fetch the file, and the file was in its worktree because the tree is
+ * materialised, not because a glob pulled it. `docs/ART_PIPELINE.md` carries
+ * the same correction against the sentence that started it.
+ *
+ * So the removal is tidiness rather than a violated decision, and it stays the
+ * owner's. **What is ours is the gate**, and the allowance below is what lets
+ * it land before the removal instead of after: the one segment is permitted by
+ * name, a second one is not, and the allowance is checked to be still dead --
+ * the moment a `rendered.` locker file is published again, the premise that
+ * this glob costs nothing is false and this contract says so.
+ */
+describe('LFS include filter contract (#1149 §1)', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SOURCE_ART = 'public/game-content/source-art';
+  const RENDERED_GLOB = new RegExp(`^${SOURCE_ART}/rendered\\.(?<id>.+)\\.\\*\\.png$`, 'u');
+
+  /**
+   * Rendered ids the `--include=` list may name while nothing declares them.
+   * An **upper bound**, not a requirement: removing a segment listed here
+   * keeps this contract green, which is what lets the owner delete one without
+   * a test change riding along in a reserved file's commit. Adding to this
+   * list is how a future glob escapes the gate, so each entry needs the same
+   * evidence the one below has -- a named commit, and no file on disk.
+   */
+  const ALLOWED_UNDECLARED: readonly string[] = ['furniture.cell.locker.variants'];
+
+  async function listedRenderedIds(): Promise<readonly string[]> {
+    const contents = await readRepositoryFile(CI);
+    const ids: string[] = [];
+
+    for (const line of contents.split(/\r?\n/u)) {
+      const match = /git lfs pull --include="(?<list>[^"]*)"/u.exec(line);
+      if (match === null) continue;
+      for (const entry of (match.groups?.['list'] ?? '').split(',')) {
+        const glob = RENDERED_GLOB.exec(entry.trim());
+        if (glob !== null) ids.push(glob.groups?.['id'] ?? '');
+      }
+    }
+
+    return [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
+
+  it('names every rendered art id the sprite table declares', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+
+    // Vacuity guards. A parser that finds nothing satisfies a subset assertion
+    // rather than failing it, which is the failure mode this whole file's
+    // other contracts guard against in the same shape.
+    expect(
+      declared.length,
+      '`environmentRenderedArtIds()` returned nothing, so there is no declaration to check the filter against. Fix the sprite table or this helper, not the workflow.',
+    ).toBeGreaterThan(0);
+    expect(
+      listed.length,
+      `no \`${SOURCE_ART}/rendered.*.png\` segment was parsed out of any \`git lfs pull --include=\` line in ${CI}. Either the filter was rewritten into a shape this parser does not read, or it no longer fetches rendered art at all; fix the parser rather than the workflow, because a contract that parses nothing checks nothing.`,
+    ).toBeGreaterThanOrEqual(3);
+
+    const missing = declared.filter((id) => !listed.includes(id));
+
+    expect(
+      missing,
+      `these rendered art ids are declared in \`src/rendering/assets/environment-sprites.ts\` but named by no segment of ${CI}'s \`git lfs pull --include=\` list. That filter is a literal comma-separated list of globs, not a \`rendered.*\` wildcard over them (the owner was offered the wildcard on 2026-09-07 and refused it), so an unnamed id's file is never fetched in CI's pointer-only checkout and the \`Assert the environment sheets decoded\` step then fails closed on it. This contract exists so that failure arrives in a three-second unit run rather than forty minutes into the \`browser\` job. The filter line is \`AGENTS.md\` reservation 3 and needs the owner's authorisation to extend, which is why this is reported here rather than fixed.`,
+    ).toEqual([]);
+  });
+
+  it('names nothing the sprite table does not declare, beyond the one dead segment', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+    const unexpected = undeclared.filter((id) => !ALLOWED_UNDECLARED.includes(id));
+
+    expect(
+      unexpected,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list and declared by no sprite in \`src/rendering/assets/environment-sprites.ts\`. Nothing else in this repository checks this direction: the decode assertion fails closed on an id that is *declared and unfetched* and is silent about one that is *listed and undeclared*, which is how \`furniture.cell.locker.variants\` outlived its sprite by five days before an audit noticed. A glob whose published file still exists fetches bytes nothing draws on every \`browser\` job, which is the exact cost the \`rendered.*\` wildcard was refused for on 2026-09-07. Removing a segment is \`AGENTS.md\` reservation 3 and therefore the owner's; report it rather than widening the allowance list.`,
+    ).toEqual([]);
+  });
+
+  it('keeps the allowance honest: a permitted segment must still match no published file', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+
+    const published = await readdir(path.join(repositoryRoot, SOURCE_ART));
+    const paying = undeclared.filter((id) =>
+      published.some((name) => name.startsWith(`rendered.${id}.`) && name.endsWith('.png')),
+    );
+
+    expect(
+      paying,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list, declared by no sprite, and **do** have a published file under \`${SOURCE_ART}/\`. The whole justification for tolerating an undeclared segment is that it matches nothing and therefore costs nothing -- refuting the 2026-09-12 audit's claim that the locker glob pulled 1,672,608 bytes per job, because \`bb7dc40a\` had deleted the only file it could match. A published file makes that justification false and turns the segment into a real per-job download of art nothing draws. Either the sprite is being re-wired (declare it, and this passes by the other route) or the file should not have been published.`,
+    ).toEqual([]);
   });
 });

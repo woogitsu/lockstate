@@ -18,7 +18,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands were declared. **One had a producer.** (There are eleven now:
+ * Six commands were declared. **One had a producer.** (There are twelve now:
  * `UnzoneRoom` arrived with the Rooms tab, `HireStaff` with the Staff panel,
  * `AdmitPrisoner` with the Intake panel, and `PlaceObject` and `RemoveObject`
  * with the object tool's two modes, and each arrived with a producer.)
@@ -30,7 +30,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: ten of eleven
+ * ## What it reads today: fourteen of fourteen
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -98,9 +98,82 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * chord, so a command reachable only from a test would have left touch exactly
  * where it was.
  *
- * So `CancelBuildOrder` is the whole of what the list below still holds, and
- * the count is measured, not carried: ten producers all in `src/main.ts`, one
- * command with none.
+ * `CancelBuildOrder` was the whole of what the list below held, and **the list
+ * is now empty**. It was the last one, and it is the only entry that ever came
+ * off this list for a reason that was not "somebody built the control": the
+ * control had been buildable all along and would have been *worse* than nothing,
+ * because the thing it could not do was name an order. `CancelBuildOrder` takes
+ * an `orderId`, and no order id reached the main thread at all --
+ * `src/simulation/protocol/commands.ts` still says so where it argues that
+ * `RemoveObject` carries a tile instead: an order id is something "nothing on
+ * screen shows and no snapshot carries". So the missing piece was a *read model*,
+ * not a button, and the entry below stood for as long as it did because that was
+ * a correct diagnosis.
+ *
+ * What changed is #348. Construction now builds **one order at a time** --
+ * `tests/unit/construction-crew-capacity.test.ts` and
+ * `tests/unit/construction-geometry.test.ts` measure it: a twelve-segment run
+ * finishes at tick **730** where it used to finish at **70** -- so a queue became
+ * a real, long-lived thing a player waits on, and "cancel the third one, keep the
+ * rest" went from a hypothetical to the obvious thing to want. `hud/build-queue`
+ * carries the pending orders and their ids, `src/ui/simulation-build-queue.ts`
+ * reads them, the Build panel draws a row per order, and `src/main.ts` turns a
+ * press on a row into the command. The entry is deleted and the count below moved
+ * with it, in the same change, which is what this file exists to force.
+ *
+ * `CancelMaterialPurchase` is the twelfth and it landed the way the last five
+ * did -- with its producer, in one change (#285) -- but it is worth naming
+ * separately because of what it made reachable one layer down. Its consumer,
+ * `ProcurementSystem.cancel`, was in exactly the position `GuardRoster.hire` had
+ * been in: complete, idempotent, snapshotted, restored, tested, and with **every
+ * caller in the repository in a test**. `grep -rn "procurement\.cancel" src/`
+ * found nothing at all. So the one thing in the economy that credits the
+ * treasury besides the state's income line could not be produced by any session
+ * a player could drive, and money spent on a delivery they had changed their mind
+ * about was unrecoverable. The blocker was this file's own subject twice over:
+ * no command named a purchase, and no read model carried a purchase id to the
+ * thread that would have had to name one.
+ *
+ * `ReleaseGuardAssignment` is the thirteenth and it landed the same way the last
+ * six did -- with its producer, in one change (ADR 0034) -- and it is worth
+ * naming separately for what it makes reachable, which is the same shape as
+ * `CancelMaterialPurchase`'s and one resource over. `GuardRoster.unassign` is
+ * complete and has been since #26, and **every caller of it in `src/` sits inside
+ * the system that made the claim being released**, each firing only when that
+ * system decides the claim is over. So a claim whose owner had lost track of it
+ * was permanent, which is precisely what issue #352 was: ADR 0033 measured four
+ * guards and one sector still held 53,000 ticks after a restore and recorded that
+ * *"`GuardRoster.unassign`'s callers in `src/` are all unreachable for an
+ * `'on-search'` guard, and no dismiss command exists"*, then said in its open
+ * question 3 that the absence *"will make the next resource-claiming system's
+ * equivalent bug terminal too"*. The blocker was this file's own subject twice
+ * over again: no command named a guard, and no read model carried a guard id --
+ * `hud/staff` was catalogued and unread, and would not have been enough anyway,
+ * because `'on-search'` is a shared phase and a row saying so cannot say which
+ * claimant holds the guard.
+ *
+ * `DismissStaff` is the fourteenth (issue #533, the owner's decision on issue
+ * #535 decision 4) and it landed the same way the last seven did -- with its
+ * producer, in one change -- and it is worth naming separately for what it makes
+ * reachable, which is the mirror image of `ReleaseGuardAssignment`'s. That
+ * command's own schema comment says it is *"Not a dismissal ... firing destroys
+ * an entity, which is ADR 0026's subject and needs its own decision about id
+ * reuse"*, and until #533 no such command existed: `staff/hiring.ts` stated in
+ * its own words that *"nothing in `src/` ever removes a staff member from"* the
+ * roster, and `PayrollSystem` bills every id the roster holds at every in-game
+ * day boundary. So a hire was a standing charge no session could end, measured
+ * at a prison spent from 25,000 down to 0 by three guards it had no use for.
+ *
+ * The blocker was this file's own subject twice over again, and the *read model*
+ * half is the interesting one: a staff id did already reach this thread, on
+ * `hud/held-guards` -- and it was the wrong set of staff ids. That projection
+ * carries the *held* subset, and the guards a trapped player most needs rid of
+ * are the ones nothing is holding. `src/ui/simulation-staff-roster.ts` is the
+ * piece that had actually been missing, and it reads `hud/staff` -- catalogued
+ * since #104 and, for rows, unread until now.
+ *
+ * The count is measured, not carried: **fourteen producers, all in `src/main.ts`,
+ * and no command with none.**
  *
  * ## What counts as a producer
  *
@@ -123,7 +196,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * - A producer that assembles the object from a variable (`{ type: kind, ... }`)
  *   is invisible to a text scan. None exists today, and the positive control
- *   below fails loudly if any of the eight that do exist stops being found.
+ *   below fails loudly if any of the eleven that do exist stops being found.
  * - The scan cannot tell a live dispatch from dead code inside `src/`. It
  *   answers "can this command be constructed anywhere in the application",
  *   which is the weaker and checkable half of "can a player send it".
@@ -149,17 +222,59 @@ const ROOT = resolve(__dirname, '../..');
  * today, and it fails as stale the moment the command gains a producer.
  */
 const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
-  // This reason used to end at "the Build panel places an order and offers no
-  // way to withdraw a *particular* one", and #328 made that half false without
-  // producing this command. Object placement phase 3 added a Remove toggle that
-  // does withdraw a particular order -- but it sends `RemoveObject`, whose
-  // handler calls `ConstructionSystem.cancelOrder` directly, and it reaches
-  // object orders only (`orderBuildingObjectAt` walks the orders whose
-  // buildable declares a `placesObjectId`). So `CancelBuildOrder` is still
-  // constructed by nothing, and the gap it names is now the narrower and more
-  // precise one below: a *wall* run.
-  CancelBuildOrder:
-    'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. A pending *object* order can be withdrawn individually since #328, by pressing its tile with the Build panel armed to Remove -- that route sends `RemoveObject` and cancels the order inside its handler, so it produces this command not at all. Nothing reaches a *wall* order the same way: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
+  // **Empty, and that is a first.** Every command this repository declares can
+  // now be constructed by the application.
+  //
+  // The last entry was `CancelBuildOrder`, and it is worth recording what it
+  // said rather than only that it is gone, because the shape of it is the
+  // lesson. It read: handled at `construction/handler.ts`, reachable from
+  // `ConstructionSystem.cancelOrder`, and constructed by nothing -- with the
+  // narrowing that #328 forced on it, that a pending *object* order could be
+  // withdrawn individually by pressing its tile with the Build panel armed to
+  // Remove, because that route sends `RemoveObject` and cancels the order inside
+  // its handler. Nothing reached a *wall* order the same way: a misplaced run
+  // could be taken back whole by `KeyZ`, because undo pops the last transaction,
+  // which is not the same control. The entry ended by naming what was needed --
+  // "cancelling the third order of a twelve-segment run still needs a per-order
+  // control on the panel" -- and calling it #174 territory, because the panel was
+  // already over its height budget.
+  //
+  // Both halves of that were true and both are now answered. The height is
+  // answered by the block being `hidden` while nothing is queued and *collapsed*
+  // when it appears, so the panel's arrival height is unchanged
+  // (`BUILD_QUEUE_ROW_LIMIT` in `src/ui/hud/build-panel.ts` carries the
+  // measurement). The naming is answered by `hud/build-queue`, which is the piece
+  // that had actually been missing: the panel could always have had a button, and
+  // a button that could not name an order would have been a second, worse undo.
+  //
+  // An empty list here is not a state to defend -- it is the state this gate
+  // exists to bring about. The twelfth and thirteenth commands arrived and
+  // neither touched this list, which is the only way a new one should land:
+  // `CancelMaterialPurchase` came with its producer, its consumer and its read
+  // model in one change (#285), and `ReleaseGuardAssignment` came with the same
+  // three in one change (ADR 0034). A fourteenth added with no producer belongs
+  // here with a reason, and fails the count below until it is either wired or
+  // written down.
+  //
+  // **It stopped being empty on 2026-09-14 and is empty again since
+  // 2026-09-16**, and the entry that stood here for those two days is recorded
+  // rather than only its absence, because it said what it expected to happen
+  // to it and that is what happened. It read: ADR 0113 slice 1 (#1167) landed
+  // the command, its consumer in `session-commands.ts`, its two refusals and
+  // the V6 save section together, and not the producer, because the Day-plan
+  // panel that would send it is stage 3 of the identity-v5 rollout (epic
+  // #1155) and `src/ui/` was held by two other agents -- so "a producer
+  // written here would have been written blind against a panel being
+  // rewritten". It ended: "this entry is expected to be deleted by the panel
+  // change, not by a second thought about the command."
+  //
+  // The panel change is #1167's editor: seven toggles per classification
+  // group under `.hud-regime__editor`, sending the categories the block would
+  // then allow. Nothing about the command was reconsidered, and the three
+  // facts that entry offered an implementer all held -- the integration test
+  // drives the real kernel path, both refusals reach `RefusalLog`, and
+  // `hud/status-strip` already reported the edited schedule, so the panel had
+  // something to read and something to send.
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -201,16 +316,56 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all eight in `src/main.ts`, which is the composition root
-    // and the only place in `src/` that builds a command object.
+    // where it is -- all sixteen in `src/main.ts`, which is the composition
+    // root and the only place in `src/` that builds a command object.
+    //
+    // **This read `all eleven` until this change**, and it was right when #367
+    // wrote it at `0e70f14`. It went false at `8dc95eb` (#392,
+    // `CancelMaterialPurchase`), then further at `e44bcb9` (#394,
+    // `ReleaseGuardAssignment`) and `a8a446e` (#533, `DismissStaff`) -- three
+    // additions, none of which touched the sentence
+    // counting them, which is the shape `docs/AGENT_WORKFLOW.md` section 4 names:
+    // a sentence stating a tally is not touched by adding the thing it tallies.
+    // Corrected rather than overwritten, because the number is not the finding
+    // and the assertion below is: `COMMAND_TYPES.length` is pinned two lines
+    // down, so the *comment* could rot for three additions while the *gate*
+    // could not rot for one. Fourteen of the fifteen were named in this block;
+    // `Undo` is named at the `case 'Undo':` case below, for the reason given
+    // there.
+    //
+    // **And it read `all fourteen` until the owner's decisions of 2026-09-01 on
+    // [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)**,
+    // which added `DismissAlert` -- with its producer, from the alerts list's
+    // own rows. The correction is the fifth of exactly the shape the paragraph
+    // above describes, which is why the paragraph is kept.
+    //
+    // **And it read `all fifteen` until ADR 0106**, which added `RemoveWall`
+    // -- with its producer, in the same `case 'remove-object':` branch
+    // `RemoveObject` already had, distinguished by whether the intent carries
+    // an `edge`. The sixth correction of the same shape.
+    // **And it read `all sixteen` until `SellMaterials`** (ADR 0075 decision
+    // 3, invoked by ADR 0096 decision 3(b)), which arrived with its producer
+    // in the same change -- `case 'sell-materials':` beside
+    // `case 'purchase-materials':` -- rather than spending time on the list
+    // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(11);
+    expect(COMMAND_TYPES.length).toBe(18);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    // The seventeenth, which made an unreachable *credit path* reachable a
+    // second time (#285 made the first, for a cancelled delivery): the only
+    // caller of `ProcurementSystem.sellStock` and `previewSellStock` in the
+    // repository was a test.
+    expect(producersOf('SellMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('HireStaff')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
+    // The alerts log's own gesture (ADR 0084 decision 3). Named here for the
+    // reason `RemoveObject` is named below: its whole point is that a *press*
+    // reaches it, so a producer that existed only in a test would be exactly
+    // the defect this gate is named after.
+    expect(producersOf('DismissAlert')).toEqual(['src/main.ts']);
     // The two the Rooms tab added, asserted by name rather than only by the
     // count: a producer that had drifted out of the composition root would
     // still keep the count green.
@@ -220,11 +375,36 @@ describe('every declared simulation command either has a producer or is accounte
     // whole purpose is that a *gesture* reaches it, so a producer that existed
     // only in a test would be the exact defect this gate is named after.
     expect(producersOf('RemoveObject')).toEqual(['src/main.ts']);
+    // The sixteenth, added by ADR 0106 beside `RemoveObject` in the same
+    // branch (ADR 0106): the completed-wall arm of the same removal gesture,
+    // reached only when the object arm this gate already named finds
+    // nothing. Named separately for `RemoveObject`'s own reason: a producer
+    // that existed only in a test would be exactly the defect this gate is
+    // named after, and this is the command whose whole point is that a
+    // touch player's *press* reaches a finished wall at all.
+    expect(producersOf('RemoveWall')).toEqual(['src/main.ts']);
     expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
     // The tenth and eleventh, added by ADR 0028 phases 1 and 3 by the same
     // route: arriving *with* their producers rather than spending time on the
     // list below.
     expect(producersOf('PlaceObject')).toEqual(['src/main.ts']);
+    // And the one this file was written about: the only command that needed a
+    // *read model* rather than a control before it could exist, and the last to
+    // get a producer -- see this file's header.
+    expect(producersOf('CancelBuildOrder')).toEqual(['src/main.ts']);
+    // And the twelfth, which is the one that made an unreachable *credit path*
+    // reachable rather than an unreachable control (#285): the only caller of
+    // `ProcurementSystem.cancel` in the repository was a test.
+    expect(producersOf('CancelMaterialPurchase')).toEqual(['src/main.ts']);
+    // And the thirteenth, which made an unreachable *release* reachable rather
+    // than an unreachable control or credit (ADR 0034): every caller of
+    // `GuardRoster.unassign` in `src/` was inside the system that had made the
+    // claim, so a claim whose owner had lost track of it was permanent.
+    expect(producersOf('ReleaseGuardAssignment')).toEqual(['src/main.ts']);
+    // And the fourteenth, which made an unreachable *departure* reachable: no
+    // path in `src/` had ever removed a staff member from `GuardRoster`, so the
+    // wage bill a hire started could not be ended (#533).
+    expect(producersOf('DismissStaff')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -237,6 +417,10 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'UnzoneRoom'`);
     expect(main!.text).toContain(`type: 'PlaceObject'`);
     expect(main!.text).toContain(`type: 'RemoveObject'`);
+    expect(main!.text).toContain(`type: 'RemoveWall'`);
+    expect(main!.text).toContain(`type: 'CancelBuildOrder'`);
+    expect(main!.text).toContain(`type: 'CancelMaterialPurchase'`);
+    expect(main!.text).toContain(`type: 'ReleaseGuardAssignment'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
@@ -245,21 +429,28 @@ describe('every declared simulation command either has a producer or is accounte
     // as producing an `X`, this gate would report every command as
     // reachable and be exactly wrong about the one that is not.
     //
-    // Demonstrated on `CancelBuildOrder`, which is handled there and produced
-    // nowhere. It used to be `Undo` -- a stronger example while `Undo` was the
-    // command with a handler branch, a full implementation behind it and no
-    // way to reach it, and an impossible one now that #261 gave it a producer
-    // in `src/main.ts`: the third assertion would be asserting the opposite of
-    // the truth. The control moved to the command that still has the property.
+    // Demonstrated on `CancelBuildOrder`, and the example has now been
+    // through both of its available shapes. It used to be `Undo` -- a stronger
+    // example while `Undo` was the command with a handler branch, a full
+    // implementation behind it and no way to reach it -- and it moved here when
+    // #261 gave `Undo` a producer. Now this command has one too, so the
+    // *interesting* half of the control is what remains: the handler branch is
+    // still not read as a dispatch, and the producer is found where it really is.
+    //
+    // With no unproduced command left anywhere, there is no example that can
+    // demonstrate the rule by having zero producers; asserting "the handler is
+    // not the producer" while naming the file that *is* is the strongest form
+    // available, and it is the form that keeps working as commands gain
+    // producers.
     const handler = producerSources.find((source) => source.where === join('src', 'simulation', 'construction', 'handler.ts'));
     expect(handler, 'the construction command handler moved; this control needs its new path').toBeDefined();
     expect(handler!.text).toContain(`case 'CancelBuildOrder':`);
     expect(producerPattern('CancelBuildOrder').test(handler!.text)).toBe(false);
-    expect(producersOf('CancelBuildOrder')).toEqual([]);
+    expect(producersOf('CancelBuildOrder')).toEqual(['src/main.ts']);
 
-    // And the same file's `case 'Undo':` is still not read as a dispatch, now
-    // that a real one exists one module away: the branch is in the handler and
-    // the producer is in `src/main.ts`, and this gate tells them apart.
+    // And the same file's `case 'Undo':` is still not read as a dispatch: the
+    // branch is in the handler and the producer is in `src/main.ts`, and this
+    // gate tells them apart.
     expect(handler!.text).toContain(`case 'Undo':`);
     expect(producerPattern('Undo').test(handler!.text)).toBe(false);
     expect(producersOf('Undo')).toEqual(['src/main.ts']);
@@ -298,7 +489,14 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures ten produced and one unproduced, which is where ADR 0028 phase 3 left the command surface', () => {
+  // **This name read "measures seventeen produced and one unproduced, the
+  // first entry this list has held in six passes", and both halves of it went
+  // false in the same commit that moved the two assertions below to 0 and
+  // 18** (#1167). A test name is what a reader of a CI log is shown, so it is
+  // corrected here rather than left describing the state the body had just
+  // stopped asserting -- and it is kept quoted, because this file's whole
+  // subject is a count that means something.
+  it('measures eighteen produced and none unproduced, the list empty again after its one entry', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -313,14 +511,47 @@ describe('every declared simulation command either has a producer or is accounte
     // *with* its producer, one and eight once #261 step 4 added
     // `AdmitPrisoner` the same way, one and nine once ADR 0028 phase 1
     // added `PlaceObject` -- also with its producer, from two routes: the
-    // object tool's world gesture and the Build panel's numeric fields -- and
-    // one and ten once phase 3 added `RemoveObject` with the same two routes in
-    // their removing mode. Both numbers move in the same change as a producer,
-    // which is the point of asserting the count as well as the list: neither can
-    // be edited alone and stay green. Note the denominator moves too, so a
-    // twelfth command added with no producer fails here as well as failing the
-    // accounting above.
-    expect(unproducedTypes.length).toBe(1);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(10);
+    // object tool's world gesture and the Build panel's numeric fields -- one
+    // and ten once phase 3 added `RemoveObject` with the same two routes in
+    // their removing mode, **zero and eleven** once the Build panel's queue
+    // block gave `CancelBuildOrder` the only thing it had ever been short of -- a
+    // read model that names the pending orders, so a control can aim at one --
+    // and **zero and twelve** once `CancelMaterialPurchase` arrived with its
+    // producer and gave the same treatment to a purchase (#285), which is what
+    // finally put a caller in `src/` in front of `ProcurementSystem.cancel`, and
+    // **zero and thirteen** once `ReleaseGuardAssignment` arrived the same way
+    // and put the first caller in `src/` in front of `GuardRoster.unassign` for a
+    // guard something is *holding* (ADR 0034), and **zero and fourteen** once
+    // `DismissStaff` arrived the same way and put the first caller in `src/` in
+    // front of anything that removes a staff member from the roster at all
+    // (#533) -- which, unlike the three before it, was not an unreachable
+    // existing path but a path that did not exist, and **zero and fifteen**
+    // once `DismissAlert` arrived the same way (ADR 0084 decision 3, the
+    // owner's, 2026-09-01) and gave the alerts log the player gesture two
+    // modules in `src/ui/` had each recorded as missing, and **zero and
+    // sixteen** once `RemoveWall` arrived the same way (ADR 0106) and put a
+    // pointer route in front of `ConstructionSystem.completedOrderClaimingEdge`
+    // for a finished wall, which until then had none, and **zero and
+    // seventeen** once `SellMaterials` arrived the same way (ADR 0075
+    // decision 3, invoked by ADR 0096 decision 3(b)) and put the first
+    // caller in `src/` in front of `ProcurementSystem.sellStock` and
+    // `previewSellStock`.
+    // Both numbers move in the same change as a producer, which is the point of
+    // asserting the count as well as the list: neither can be edited alone and
+    // stay green. Note the denominator moves too, so an eighteenth command
+    // added with no producer fails here as well as failing the accounting
+    // above.
+    // **One and seventeen from 2026-09-14 to 2026-09-16**, and the streak of
+    // zeroes above ended deliberately for those two days: ADR 0113's
+    // `EditRegimeBlock` landed with its consumer, its refusals and its save
+    // section and without its panel, for the reason `AWAITING_PRODUCER`
+    // recorded. **Zero and eighteen again since the Regime panel's editor
+    // shipped** (#1167) -- `regime-panel.ts`'s toggle group sends it, `hud.ts`
+    // dispatches it and `src/main.ts` submits it, which is the three-file route
+    // every other command takes. Both numbers still move together, which is
+    // what this pair of assertions is for -- a nineteenth command added with no
+    // producer fails here as well as failing the accounting above.
+    expect(unproducedTypes.length).toBe(0);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
   });
 });

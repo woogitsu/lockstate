@@ -11,6 +11,7 @@ import {
 } from '../../src/simulation/runtime/restore-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * Issue #261 step 4: **an `AdmitPrisoner` command puts a prisoner in the
@@ -77,7 +78,13 @@ const PRISON_ID = 'admission-round-trip-prison';
 
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
 const ARRIVAL = { x: 16, y: 16 };
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`. */
+/**
+ * What one press of the Intake panel's control asks for -- the tile and `priorIncidents: 0` from
+ * `ADMISSION_REQUEST` in `src/main.ts`, and a sentence length that press no longer sends.
+ * Since #535 decision 5 an omitted length is drawn inside the simulation from
+ * `prisoners.sentence`; naming one here is still legal, is never redrawn, and is what keeps
+ * this fixture's timings fixed.
+ */
 const ADMISSION = { sentenceLengthTicks: 10_000, priorIncidents: 0 };
 
 /** Dispatches one command through the kernel, at the sequence the kernel is expecting. */
@@ -105,6 +112,11 @@ const CANTEEN_MINIMUM = { width: 6, height: 6 } as const;
 
 function zoneCell(runtime: SimulationRuntime, id: string, roomId: string = CELL): void {
   const size = roomId === CANTEEN ? CANTEEN_MINIMUM : CELL_MINIMUM;
+  // Walls first, and a door, because `zone` refuses an `enclosed` room whose
+  // perimeter is open and every room this file zones authors that
+  // requirement. The door is what keeps the room reachable once it is sealed;
+  // see `tests/helpers/room-walls.ts`.
+  wallRoomPerimeter(runtime.world, { x: 4, y: 6, ...size }, { doors: runtime.navigation.doors });
   submit(runtime, id, packCommand({ type: 'ZoneRoom', roomId, x: 4, y: 6, ...size }));
 }
 
@@ -125,6 +137,10 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * new session starts paused and both presses land before the clock runs.
  */
 function zoneAndAdmitAtTickZero(runtime: SimulationRuntime): void {
+  // Before the commands are queued rather than between them: writing an edge
+  // is not a command, so doing it here keeps both commands due at tick 0,
+  // which is the whole point of this helper.
+  wallRoomPerimeter(runtime.world, { x: 4, y: 6, width: 2, height: 3 }, { doors: runtime.navigation.doors });
   runtime.kernel.submitCommand(
     'cmd-zone',
     runtime.kernel.expectedSequence,
@@ -297,6 +313,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     const runtime = createNewSimulationRuntime(SEED);
     // `room.solitary-cell`'s authored minimum is 2x2, read from the catalogue
     // rather than assumed; the zoning service evaluates it since #312.
+    wallRoomPerimeter(runtime.world, { x: 4, y: 6, width: 2, height: 2 }, { doors: runtime.navigation.doors });
     submit(runtime, 'cmd-zone-solitary', packCommand({ type: 'ZoneRoom', roomId: SOLITARY_CELL, x: 4, y: 6, width: 2, height: 2 }));
     // Asserted before the admission so a solitary cell refused for its own
     // reasons cannot pass for the admission behaviour under test.
@@ -424,7 +441,12 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: NEED_MAX_SCALED - 60,
       hygiene: NEED_MAX_SCALED - 40,
       bladder: NEED_MAX_SCALED - 160,
-      safety: NEED_MAX_SCALED - 20,
+      // Same step as `hunger` since issue #588 raised
+      // `NEED_DECAY_PER_TICK.safety` to 0.05. Nothing provisions it here: the
+      // derived sector asks for a guard the moment it holds anybody and this
+      // fixture hires none, so the sector is `unguarded` and
+      // `SafetyCoverageSystem` adds nothing.
+      safety: NEED_MAX_SCALED - 100,
       recreation: NEED_MAX_SCALED - 30,
     });
     expect(wholeNeeds(runtime, index)).toEqual({
@@ -442,7 +464,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: NEED_MAX_SCALED - 1_200,
       hygiene: NEED_MAX_SCALED - 800,
       bladder: NEED_MAX_SCALED - 3_200,
-      safety: NEED_MAX_SCALED - 400,
+      safety: NEED_MAX_SCALED - 2_000,
       recreation: NEED_MAX_SCALED - 600,
     });
     expect(wholeNeeds(runtime, index)).toEqual({
@@ -450,7 +472,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: 249,
       hygiene: 251,
       bladder: 239,
-      safety: 253,
+      safety: 245,
       recreation: 252,
     });
 
@@ -463,7 +485,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       sleep: 183,
       hygiene: 207,
       bladder: 63,
-      safety: 231,
+      safety: 135,
       recreation: 219,
     });
     for (const needId of NEED_IDS) {

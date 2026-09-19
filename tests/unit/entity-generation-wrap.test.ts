@@ -7,61 +7,70 @@ import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar';
 
 /**
- * **These cases pin a defect, not an intention.** Read that first, because
- * every assertion below asserts the wrong answer on purpose.
+ * **These cases used to pin a defect on purpose; they now pin the fix.**
+ * Read the history here before touching `EntityStore.destroy`, because every
+ * case below is the re-baseline ADR 0026 named as the cost of taking option A.
  *
- * `destroy()` does `generations[index] = (generations[index] + 1) & 0xFFF`,
- * so one index's generation returns to where it started after exactly 4,096
- * destroy/spawn cycles of that index (`EntityStore.destroy`). At that
- * moment a handle to an entity that died 4,096 lifetimes ago starts naming
- * the entity currently in the slot: `isAlive` says true, `getIndex` and
- * `getGeneration` both agree, and no record anywhere can tell the two apart.
- * That is a use-after-free with the safety net removed, and it is silent in
- * both directions -- a stale read returns the wrong prisoner's data and a
- * stale `destroy` kills the right slot's *current* occupant.
+ * `destroy()` used to do `generations[index] = (generations[index] + 1) &
+ * 0xFFF` unconditionally, so one index's generation returned to where it
+ * started after exactly 4,096 destroy/spawn cycles of that index. At that
+ * moment a handle to an entity that died 4,096 lifetimes ago started naming
+ * the entity currently in the slot: `isAlive` said true, `getIndex` and
+ * `getGeneration` both agreed, and no record anywhere could tell the two
+ * apart. That was a use-after-free with the safety net removed, and it was
+ * silent in both directions -- a stale read returned the wrong prisoner's
+ * data and a stale `destroy` killed the right slot's *current* occupant.
  *
- * Three stores rely for their entire safety on a recycled index producing a
+ * Three stores relied for their entire safety on a recycled index producing a
  * key that misses -- `PrisonerColdState`, `GangRegistry` and
  * `ActorIdentityRegistry`, all plain `Map<EntityId, …>`. At the wrap they
- * stop missing and start inheriting: the same defect as #111, one level up,
- * and in a place no per-index component reset can reach, because the whole
- * mechanism is "the key is different now".
+ * stopped missing and started inheriting: the same defect as #111, one level
+ * up, and in a place no per-index component reset could reach, because the
+ * whole mechanism was "the key is different now".
  *
- * ## Why the wrong answer is asserted rather than fixed
+ * ## The decision taken (#169, ADR 0026 question 1, option A)
  *
- * Every available fix is a decision, and #169 says so. Refusing to recycle a
- * retired index trades silent corruption for a capacity limit; widening the
- * generation field costs index bits out of the same 32-bit word (halving
- * addressable entities per bit) *and* a save migration; clearing the three
- * stores on release needs a release path that does not exist (#31) and
- * reintroduces the "list every store" problem #111 was about. ADR 0026 is
- * Accepted as the framing and the tripwire, not as an answer, and leaves all
- * three open. Deciding one inside a test would be the quietest possible way
- * to make that choice.
+ * `EntityStore.destroy` now **retires** a slot that dies at generation 4,095
+ * instead of recycling it: the index is marked dead and never pushed back
+ * onto `freeIndices`, so that exact `EntityId` -- identical to the slot's very
+ * first id -- can never be reissued. Silent corruption becomes a bounded
+ * capacity loss (one retired index per 4,096 releases of the same slot),
+ * which `EntityStore.canSpawn` and `admitPrisoner`'s existing
+ * `population-full` refusal already handle as an ordinary outcome. See
+ * `EntityStore.destroy`'s doc comment for the full argument, and ADR 0026 for
+ * why option A and option C (already shipped with #441's release path, which
+ * clears these same three stores on every departure) are complements rather
+ * than alternatives: C alone still left `isAlive`/`destroy` lying at the
+ * wrap; A alone still left an orphaned map entry behind (harmless once the id
+ * can never recur, but a leak). Both are now taken.
  *
- * ## What these cases are for, then
+ * ## Why this file, and not just `actor-identity.test.ts`
  *
- * A tripwire. Every one of the three options changes an assertion here, so
- * none can be implemented without arriving at this file and saying which
- * option was taken. Nothing else in the suite notices: mutating the wrap
- * period from `& 0xFFF` to `& 0xF` -- a 256x worse version of exactly this
- * defect -- leaves the entire suite green except `actor-identity.test.ts`'s
- * pin on the arithmetic period, which observes the counter and not one of
- * its consequences.
+ * Nothing else in the suite observed any of this before #169's audit found
+ * it: mutating the wrap period from `& 0xFFF` to `& 0xF` -- a 256x worse
+ * version of the old defect -- used to leave the entire suite green except
+ * `actor-identity.test.ts`'s pin on the arithmetic period, which observed the
+ * counter and not one of its consequences. This file is the guard on the
+ * consequences; `actor-identity.test.ts` keeps the guard on the period
+ * (re-baselined alongside this file, see its own comment).
  *
- * ## Latency, stated so the severity is not overstated
+ * ## Mutation discipline (#169)
  *
- * Nothing in `src/` destroys an entity, so no index is recycled even once
- * today, let alone 4,096 times (#31). These cases reach the wrap by driving
- * `EntityStore` directly. What makes it worth pinning before #31 rather than
- * after is that 4,096 recycles of one index is a long-running prison, not a
- * pathological input.
+ * The cases below were confirmed RED against the pre-fix `destroy()` --
+ * generation incremented and freed unconditionally, no retirement branch --
+ * and GREEN again with the fix restored. See the commit message for the
+ * exact before/after counts.
  */
 
 const WRAP_PERIOD = 4_096;
 
-/** Destroys and respawns one index until its generation returns to where it started. */
-function cycleUntilWrap(store: EntityStore, first: number): number {
+/**
+ * Destroys and respawns one index `WRAP_PERIOD` times. Before the fix this
+ * landed back on the id the index started with; now the last destroy retires
+ * the index, so the returned id names a *different* index whose generation
+ * is 0 -- the retirement, not a recycle.
+ */
+function cycleUntilRetirement(store: EntityStore, first: number): number {
   let latest = first;
   for (let cycle = 0; cycle < WRAP_PERIOD; cycle += 1) {
     store.destroy(latest);
@@ -70,55 +79,78 @@ function cycleUntilWrap(store: EntityStore, first: number): number {
   return latest;
 }
 
-describe('EntityId generation wrap (#169, DEFECT PINNED -- see this file’s header)', () => {
-  it('DEFECT: a stale handle reports itself alive again once the generation wraps', () => {
+describe('EntityId generation wrap (#169, ADR 0026 option A -- retire rather than recycle)', () => {
+  it('rejects a stale handle for every one of the 4,095 recycles before retirement, and retires the index at the 4,096th destroy rather than recycling it', () => {
     const store = new EntityStore(4);
     const stale = store.spawn();
+    const staleIndex = store.getIndex(stale);
 
     store.destroy(stale);
-    expect(store.isAlive(stale)).toBe(false); // correct, for the first 4,095 recycles
     let latest = store.spawn();
     for (let cycle = 1; cycle < WRAP_PERIOD; cycle += 1) {
-      store.destroy(latest);
+      // Same guard as before the fix: the slot is alive and only the
+      // generation can reject a stale id, exercised 4,095 times. This half
+      // of the file's behaviour is unchanged by option A -- it is what A
+      // strengthens into "for every recycle, forever" rather than replaces.
       expect(store.isAlive(stale)).toBe(false);
+      expect(store.isAlive(latest)).toBe(true);
+      expect(store.getIndex(latest)).toBe(staleIndex); // still the same index recycling
+      store.destroy(latest);
       latest = store.spawn();
     }
 
-    // The 4,096th recycle brings the generation back around. `latest` is a
-    // different entity by every meaning the simulation has, and the store
-    // can no longer say so.
-    expect(latest).toBe(stale);
-    expect(store.isAlive(stale)).toBe(true); // DEFECT: should still be false
+    // The 4,096th recycle used to bring the generation back around and hand
+    // `latest` the exact id `stale` named. Now the index is retired instead:
+    // `latest` is a fresh index at generation 0, `stale`'s index never comes
+    // back, and neither id is ever alive again.
+    expect(store.getIndex(latest)).not.toBe(staleIndex);
+    expect(store.isAlive(stale)).toBe(false);
+    expect(store.isIndexAlive(staleIndex)).toBe(false);
+    expect(store.isAlive(latest)).toBe(true);
+
+    // The retired index stays retired: further destroy/spawn traffic on
+    // other indices can never hand it out again, because it was never
+    // returned to the free list. Two more full cycles of destroy/spawn on
+    // whatever `spawn()` gives out next never reproduce `staleIndex`.
+    for (let cycle = 0; cycle < 2; cycle += 1) {
+      store.destroy(latest);
+      latest = store.spawn();
+      expect(store.getIndex(latest)).not.toBe(staleIndex);
+    }
   });
 
-  it('DEFECT: a stale handle destroys the live entity now holding the slot', () => {
-    // The write side, and the worse half. A retained handle -- in a queued
-    // command, a pending path request, a projection built last tick -- does
-    // not merely read the wrong prisoner. It kills them.
+  it('destroying an already-retired id is a no-op, the same tolerance an ordinary stale id gets', () => {
     const store = new EntityStore(4);
     const stale = store.spawn();
-    const live = cycleUntilWrap(store, stale);
+    const live = cycleUntilRetirement(store, stale);
     const bystander = store.spawn();
 
+    // Before the fix, this destroy call reached the wrap and killed `live`
+    // (`live`'s id and `stale`'s id had become identical). Retirement means
+    // `stale`'s slot is simply gone: this call has nothing left to act on.
     store.destroy(stale);
 
-    expect(store.isAlive(live)).toBe(false); // DEFECT: `live` was never destroyed
+    expect(store.isAlive(live)).toBe(true); // no longer collateral damage
     expect(store.isAlive(bystander)).toBe(true); // unrelated slots are untouched
   });
 
-  it('DEFECT: PrisonerColdState hands the new occupant the previous occupant’s cell', () => {
+  it('PrisonerColdState no longer hands the new occupant of a retired index the previous occupant’s cell', () => {
     const store = new EntityStore(4);
     const coldState = new PrisonerColdState();
 
     const first = store.spawn();
     coldState.setAccommodation(first, 'cell-first');
 
-    const latest = cycleUntilWrap(store, first);
+    const latest = cycleUntilRetirement(store, first);
 
-    expect(coldState.getAccommodation(latest)).toBe('cell-first'); // DEFECT: should be undefined
+    // `latest` is a genuinely different EntityId now (a different index, at
+    // its own generation 0), so the map lookup misses on its own merits --
+    // not because release happened to clear it, but because the key that
+    // used to collide can no longer be produced.
+    expect(coldState.getAccommodation(latest)).toBeUndefined();
   });
 
-  it('DEFECT: GangRegistry hands the new occupant the previous occupant’s gang', () => {
+  it('GangRegistry no longer hands the new occupant of a retired index the previous occupant’s gang', () => {
     const store = new EntityStore(4);
     const gangs = new GangRegistry();
     gangs.register({ id: 'gang.north', territorySectorIds: [] });
@@ -126,17 +158,19 @@ describe('EntityId generation wrap (#169, DEFECT PINNED -- see this file’s hea
     const first = store.spawn();
     gangs.addMember('gang.north', first);
 
-    const latest = cycleUntilWrap(store, first);
+    const latest = cycleUntilRetirement(store, first);
 
-    expect(gangs.getGangOf(latest)).toBe('gang.north'); // DEFECT: should be undefined
-    expect(gangs.membersOf('gang.north')).toEqual([latest]);
+    expect(gangs.getGangOf(latest)).toBeUndefined();
+    expect(gangs.membersOf('gang.north')).toEqual([first]); // the stale membership is still on record, but under an id nothing can ever spawn again
   });
 
-  it('DEFECT: ActorIdentityRegistry hands the new occupant the previous occupant’s name', () => {
+  it('ActorIdentityRegistry no longer hands the new occupant of a retired index the previous occupant’s name', () => {
     // The one with a stated contract to violate: `release` is documented as
     // **required** when an actor is destroyed, precisely because "a retained
     // entry would eventually hand the slot's next occupant the previous
-    // occupant's name". Nothing calls it (#31), and this is that eventually.
+    // occupant's name". Option A closes the same hole from the other side --
+    // even an entry nobody ever released cannot be handed out again, because
+    // the id it is keyed by cannot recur.
     const store = new EntityStore(4);
     const identity = new ActorIdentityRegistry();
     const rng = new Xoshiro128StarStar(deriveXoshiroState(1, 'identity.actor-name').words);
@@ -144,28 +178,27 @@ describe('EntityId generation wrap (#169, DEFECT PINNED -- see this file’s hea
     const first = store.spawn();
     const minted = identity.assign('prisoner', first, rng);
 
-    const latest = cycleUntilWrap(store, first);
+    const latest = cycleUntilRetirement(store, first);
+    const second = identity.assign('prisoner', latest, rng);
 
-    // Worse than a stale read: `assign` is idempotent, so intake's reception
-    // stage finds an existing entry, draws nothing, and the new prisoner is
-    // named after the old one without any code path noticing.
-    expect(identity.assign('prisoner', latest, rng)).toEqual(minted); // DEFECT: should mint a new name
-    expect(identity.getName('prisoner', latest)).toEqual(minted);
+    expect(second).not.toEqual(minted); // a fresh id mints a fresh name
+    expect(identity.getName('prisoner', latest)).toEqual(second);
   });
 
-  it('is per index: wrapping one index says nothing about its neighbour', () => {
+  it('is per index: retiring one index says nothing about its neighbour', () => {
     // Not a defect -- recorded because it bounds the blast radius. The
-    // generations array is per slot, so this is a 4,096-recycle period on
-    // each index independently, not a global counter.
+    // generations array is per slot, so this is a 4,096-recycle-then-retire
+    // period on each index independently, not a global counter.
     const store = new EntityStore(4);
     const a = store.spawn();
     const b = store.spawn();
 
-    const wrappedA = cycleUntilWrap(store, a);
+    const afterRetirement = cycleUntilRetirement(store, a);
 
-    expect(wrappedA).toBe(a);
+    expect(store.getIndex(afterRetirement)).not.toBe(store.getIndex(a));
+    expect(store.isIndexAlive(store.getIndex(a))).toBe(false); // retired
     expect(store.getIndex(b)).toBe(1);
     expect(store.getGeneration(b)).toBe(0);
-    expect(store.isAlive(b)).toBe(true);
+    expect(store.isAlive(b)).toBe(true); // never touched by a's retirement
   });
 });

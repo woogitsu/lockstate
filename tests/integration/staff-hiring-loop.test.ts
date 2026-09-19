@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import {
+  INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  Treasury,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  TREASURY_STARTING_BALANCE_MINOR_UNITS,
+} from '../../src/simulation/economy';
 import { projectStaff } from '../../src/simulation/presentation/staff-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
@@ -12,8 +17,10 @@ import { StaffHiringService, staffHireCostMinorUnits } from '../../src/simulatio
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { alertRows } from '../helpers/alert-rows';
+import { reportedCounts } from '../helpers/hud-counts';
 
 /**
  * Hiring a guard through the real command path
@@ -64,7 +71,8 @@ function submitHire(
 
 /**
  * The `simulation/status-counts` publication the worker would send for this
- * runtime, assembled exactly as `WorkerStateMachine.publishStatusCounts` does:
+ * runtime, assembled exactly as
+ * `SimulationWorkerStateMachine.publishStatusCounts` does:
  * the projection beside the session's most recent refusal, and the refusal
  * absent rather than null when there has been none.
  *
@@ -126,12 +134,42 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // 1. The projection the worker publishes.
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     expect(counts.staff).toBe(1);
-    // Unassigned, and honestly so: a new session registers no deployment
-    // schedule, so `DeploymentSystem` has no sector to send anybody to.
+    /*
+     * **Unassigned, and this line has now been all three things** -- which is
+     * why both earlier readings are kept rather than overwritten.
+     *
+     * It first read `staffUnassigned === 1`, with a comment saying "honestly
+     * so: a new session registers no deployment schedule, so
+     * `DeploymentSystem` has no sector to send anybody to". That was true and
+     * it was issue #396's bug: `securitySectors.register` had one caller in all
+     * of `src/`, the restore path, so the whole security tier was inert in
+     * every session a player could start.
+     *
+     * ADR 0036 fixed that and the line became `0` / `'on-post'`: a session
+     * carries one derived sector asking for one guard all day, and the first
+     * hire filled it on the tick the command landed.
+     *
+     * Issue #533 moves it back to `1`, for a reason that is *not* #396's and
+     * must not be read as its return. The tier is still wired -- the sector,
+     * the schedule and the watch entry are all registered, and
+     * `tests/integration/security-default-sector.test.ts` measures a guard
+     * posted the moment the prison holds anybody. What changed is the demand:
+     * this fixture's prison has **no prisoners**, and a sector with nobody in
+     * it asks for no guards, so the hire lands in the pool
+     * `IncidentResponseSystem` and `SearchSystem` claim from rather than on a
+     * post nobody needs. The distinction is checkable rather than rhetorical,
+     * and the next three lines check it: the sector exists, it asks for
+     * nobody, and it reports no shortage.
+     */
     expect(counts.staffUnassigned).toBe(1);
+    expect(runtime.securityGuards.getDeploymentPhase(runtime.securityGuards.allGuardIds()[0]!)).toBe('unassigned');
+    expect(runtime.securityGuards.getSectorId(runtime.securityGuards.allGuardIds()[0]!)).toBeUndefined();
+    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+      { sectorId: 'security-sector.prison', required: 0, assigned: 0, shortage: 0 },
+    ]);
 
     // 2. The view model the status strip actually renders, off the wire.
-    expect(hudCountsFromWorkerMessage(publication(runtime))?.staff).toBe(1);
+    expect(reportedCounts(publication(runtime)).staff).toBe(1);
 
     // 3. The staff projection's own row, which carries who they are rather
     //    than how many. It is the only place the role survives the hire.
@@ -140,8 +178,15 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     expect(roster.roster.rows[0]?.staffRoleId).toBe(GUARD);
     expect(roster.roster.rows[0]?.staffRoleNameKey).toBe(defaultStaffRoleRegistry.getById(GUARD)!.nameKey);
     expect(roster.roster.rows[0]?.department).toBe('security');
+    // The tile is where the hire was placed and stays there, which is now true
+    // for a duller reason than it used to be: `NEW_PRISON_ORIGIN_TILE` is also
+    // the derived sector's post tile (ADR 0036), so a posted hire would not have
+    // moved either. See the `staffUnassigned` block above for why this prison
+    // posts nobody -- it holds no prisoners, and issue #533 stopped an empty
+    // sector demanding a guard.
     expect(roster.roster.rows[0]?.tile).toEqual({ x: ORIGIN.x, y: ORIGIN.y });
     expect(roster.roster.rows[0]?.assignment.deploymentPhase).toBe('unassigned');
+    expect(roster.roster.rows[0]?.assignment.sectorId).toBeUndefined();
     expect(roster.countsByRoleId.find((entry) => entry.staffRoleId === GUARD)?.count).toBe(1);
     expect(roster.totals).toMatchObject({ hired: 1, unassigned: 1 });
   });
@@ -149,12 +194,43 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
   it('refuses a hire the treasury cannot cover with exactly one player-visible message, and hires nobody', () => {
     const runtime = createNewSimulationRuntime(SEED);
 
-    // The precondition, and the one thing here that is set up by hand rather
-    // than driven: spend the treasury down to one unit under the wage. Doing
-    // it with `Treasury.spend` rather than by hiring 312 guards keeps the
-    // measurement about the refusal instead of about the roster.
-    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - (WAGE - 1))).toBe(true);
-    expect(runtime.treasury.balanceMinorUnits).toBe(WAGE - 1);
+    /*
+     * The precondition, and the one thing here that is set up by hand rather
+     * than driven: spend the treasury down to one unit under the wage. Doing it
+     * with `Treasury.spend` rather than by hiring 312 guards keeps the
+     * measurement about the refusal instead of about the roster.
+     *
+     * **This spent to `WAGE - 1` and stopped**, which was one unit under what a
+     * hire costs while `Treasury`'s floor was zero. Since #703 ruling A every
+     * session opens a standing overdraft of `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`
+     * ([ADR 0083](../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
+     * §2), so the position one unit under a hire is `floor + WAGE - 1` and the
+     * old line left the prison able to hire thirty more guards. The boundary is
+     * the same boundary -- `canAfford` is `balance - amount >= floor` -- and this
+     * is it, expressed against the floor the prison has.
+     *
+     * **And the floor a *hire* is judged against moved again with the owner's
+     * ruling 19 of 2026-08-31.** The paragraph above is kept because the
+     * boundary is still the same boundary and only the number in it has changed.
+     * Ruling 19 (drafted as ADR 0017's "Amendment, 2026-09-01") gives ADR 0017
+     * decision 8's rungs their own thresholds inside the overdraft; taking on
+     * staff is not one of the three rungs and is given the *shallowest* of them,
+     * so a hire is refused below -1,250 rather than below -2,500 --
+     * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, argued at
+     * `src/simulation/staff/hiring.ts`. The drain itself is at the wage rung,
+     * because that is the only class that can reach an arbitrary depth.
+     */
+    const oneUnderAHire = INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + WAGE - 1;
+    expect(runtime.treasury.spend(TREASURY_STARTING_BALANCE_MINOR_UNITS - oneUnderAHire, 'wages')).toBe(true);
+    expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
+    expect(
+      runtime.treasury.canAfford(WAGE, 'hiring'),
+      'one minor unit under, and it is the hiring rung that says so',
+    ).toBe(false);
+    expect(
+      runtime.treasury.canAfford(WAGE, 'wages'),
+      'while the treasury itself would still carry it, which is the ladder',
+    ).toBe(true);
 
     // The tick the command is *dispatched* at, which is the one the refusal
     // carries -- not the tick the kernel has reached by the time it is read.
@@ -169,7 +245,7 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // money -- a refusal that spent the wage and hired nobody would satisfy
     // the roster assertion alone.
     expect(runtime.securityGuards.allGuardIds()).toEqual([]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(WAGE - 1);
+    expect(runtime.treasury.balanceMinorUnits).toBe(oneUnderAHire);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).staff).toBe(0);
 
     // Exactly one refusal, and it is this one. `sequence` is both the ordinal
@@ -186,18 +262,35 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // sentence (ADR 0011) -- with the bundled locale resolving that key to
     // real text rather than to its own dotted self, which is the failure a
     // `Record` value can ship as.
-    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    const alerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
     expect(alerts).toEqual([
       { id: 'refusal-1', labelKey: 'hud.alert.refusal.hire.insufficient-funds', severity: 'warning' },
     ]);
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-    const sentence = localizer.format(alerts![0]!.labelKey);
-    expect(sentence).not.toBe(alerts![0]!.labelKey);
+    const sentence = localizer.format(alerts[0]!.labelKey);
+    expect(sentence).not.toBe(alerts[0]!.labelKey);
     expect(sentence.trim().length).toBeGreaterThan(0);
     // Not the purchase sentence. The two refusals share a condition and must
     // not share a message, or a player who pressed Hire is sent to the Build
     // panel to look for materials they never ordered.
     expect(sentence).not.toBe(localizer.format('hud.alert.refusal.purchase.insufficient-funds'));
+    /*
+     * **And it is the host's sentence, word for word** -- the owner's ruling 23
+     * of 2026-08-31. The boundary this test set up by hand is the one
+     * `src/main.ts` pre-checks before it submits: a wage the last published
+     * balance cannot carry is refused on that thread with
+     * `hud.refusal.hire-staff-past-floor`, and the same wage a tick later --
+     * several hires inside one tick, or a balance that moved since the last
+     * publication -- is refused here. One press produces exactly one of the
+     * two, on the same band, so they say the same thing.
+     *
+     * This is the assertion that makes the precondition above load-bearing
+     * rather than decorative: `canAfford` is `balance - amount >= floor`, so
+     * the refusal really is the floor and the floor is what the sentence names.
+     */
+    expect(sentence, "ruling 23: the worker says the host's words").toBe(
+      localizer.format(HUD_MESSAGE_KEY.refusalHireStaffPastFloor),
+    );
   });
 
   it('refuses a role the catalogue does not declare, and records it as its own reason', () => {

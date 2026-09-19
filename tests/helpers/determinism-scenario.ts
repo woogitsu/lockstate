@@ -4,6 +4,7 @@ import { Container } from '../../src/simulation/operations/inventory';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
+import { useSearchPolicy } from './search-policy';
 
 /**
  * One scenario, built identically every time, that touches every
@@ -133,12 +134,31 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   // objects exist, so every room that contains one is re-derived once.
   runtime.roomCapacity.resolveAll();
 
-  // -- prisoners: classification draws from `prisoners.classification`.
+  /*
+   * -- prisoners: classification draws from `prisoners.classification`.
+   *
+   * **The four sentences are forty times what they were, and the ratios
+   * between them are unchanged.** They used to be 900, 4,000, 2,200 and 600
+   * ticks, which was a free choice while nothing in `src/` released anybody and
+   * a wrong one afterwards: #441 made a sentence end, and this scenario's whole
+   * population walked out inside two in-game days. Every consumer that runs
+   * further than that then measures a prison emptying rather than the thing it
+   * is about -- `economy-state-income-persistence.test.ts` was measuring a
+   * per-prisoner-day income line against a population that halved mid-day.
+   *
+   * The shortest is now 24,000 ticks, ten in-game days, against a longest
+   * consumer run of three (`DAY_LENGTH_TICKS * 3`); the longest is 160,000,
+   * still under `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so **no
+   * classification input crosses a threshold and no tier moves**. That is what
+   * makes this a fixture change rather than a scenario change: the draws, the
+   * tiers, the housing and the iteration orders every test in
+   * `tests/determinism/` pins are all identical.
+   */
   const prisonerIds = [
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, TILE(1, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 4_000, priorIncidents: 6 }, TILE(2, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 2_200, priorIncidents: 2 }, TILE(3, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 600, priorIncidents: 9 }, TILE(1, 2)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 36_000, priorIncidents: 0 }, TILE(1, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 160_000, priorIncidents: 6 }, TILE(2, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 88_000, priorIncidents: 2 }, TILE(3, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 24_000, priorIncidents: 9 }, TILE(1, 2)),
   ];
 
   // -- security: doors, sectors (registered out of id order), schedules, patrol route.
@@ -163,9 +183,22 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   const store = new Container('store');
   store.deposit('item.brick', 40);
   runtime.containers.register(store);
-  // Registered in descending entity id, so a job system that trusted
-  // registration order instead of `idleWorkers()`'s sort would diverge.
-  for (const entityId of incidental([...prisonerIds].reverse())) runtime.jobWorkers.register(entityId);
+  /*
+   * **No worker is registered any more, because there is no pool to register
+   * in** ([ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 4).
+   * This loop read *"Registered in descending entity id, so a job system that
+   * trusted registration order instead of `idleWorkers()`'s sort would
+   * diverge"*, and the property it defended has moved rather than gone:
+   * eligibility is the regime's now, and who gets a contended errand is
+   * `ActionSystem`'s idle scan -- descending need urgency, ties by ascending
+   * component index (ADR 0062). That order is defended by
+   * `tests/determinism/session-replay.test.ts` over this whole scenario, and
+   * the carriers below reach the board through it rather than through a set.
+   *
+   * The two jobs stay, and they are what makes this scenario exercise the
+   * carry at all: a prisoner in a `work` block with an available job takes the
+   * errand at rank 0.
+   */
   runtime.searchContainerLocations.set('store', TILE(2, 6));
   runtime.searchContainerLocations.set('construction-materials', TILE(3, 6));
   for (const job of incidental([
@@ -185,7 +218,9 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   ])) {
     runtime.contraband.introduce(item.id, item.categoryId, { kind: 'cell', id: item.holderId }, { sourceType: 'room-object', sourceId: item.sourceId, introducedAtTick: 0 });
   }
-  runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0.2 });
+  // Replaces the session's default `'cell'` policy rather than appending a
+  // second one, so this scenario's tuning is genuinely the one in force (#552).
+  useSearchPolicy(runtime, { scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0.2 });
 
   // Mints sequential `intel.<n>` ids, so report order is recorded input.
   runtime.intelligence.report('cell', 'cell-1', 0.7, 'informant', 0);
@@ -203,6 +238,28 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   ])) {
     runtime.gangs.register(gang);
   }
+  /*
+   * One member on each side, because since
+   * [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 4 `tryOpenRetaliation` refuses a pair whose members have gone --
+   * and until this line both of these gangs were empty, so the retaliation
+   * this scenario has always opened would silently stop opening and every
+   * assertion downstream of it would go on passing against a prison with no
+   * incidents in it.
+   *
+   * **ADR 0103 named two fixtures that needed members and this is a third**,
+   * in `tests/helpers/` rather than in `tests/unit/`, which is why it is worth
+   * a comment: the two it named are in `tests/unit/incident-trigger.test.ts`.
+   *
+   * Real prisoners of this scenario rather than invented ids -- the
+   * retaliation's participant list is `membersOf` both sides, and it feeds
+   * `IncidentResponseSystem.lapse`'s injured list, so ids nobody admitted
+   * would make that a fact about entities the prison does not hold. Written in
+   * ascending gang id and read out of `prisonerIds` by position, so the
+   * *scenario* still records who is in which gang rather than deriving it.
+   */
+  runtime.gangs.addMember('gang-a', prisonerIds[1]!);
+  runtime.gangs.addMember('gang-b', prisonerIds[3]!);
   runtime.gangs.addGrudge('gang-a', 'gang-b', 0.8);
 
   return runtime;

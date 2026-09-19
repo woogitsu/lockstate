@@ -46,7 +46,21 @@ export const telemetryEnvelopeSchema = z
     release: releaseIdentitySchema,
     /** Which consent policy version the player agreed to when this was recorded. */
     consentVersion: z.number().int().min(1),
-    /** Travels with the event so the receiver can weight instead of guessing. */
+    /**
+     * The rate this event was actually sampled at.
+     *
+     * It used to say the receiver can "weight instead of guessing" by it. That
+     * holds only for a *trusted* sender. Telemetry ingestion is unauthenticated
+     * by design (ADR 0046 §7 item 6), and `1 / sampleRate` is then a multiplier
+     * the caller chooses -- unbounded, since `0` passes `.min(0)`. A receiver
+     * takes the rate from its own copy of the registry, keyed by
+     * `(schemaVersion, name)`, and reads this field as a claim to compare
+     * against rather than a factor to multiply by (ADR 0046 §7 item 7).
+     *
+     * The bound is not widened or narrowed here on purpose: a client-side
+     * constraint is a correctness check on this client and is not admission
+     * control on an endpoint anyone can `POST` to.
+     */
     sampleRate: z.number().min(0).max(1),
     attributes: z.record(identifierSchema, telemetryAttributeValueSchema),
   })

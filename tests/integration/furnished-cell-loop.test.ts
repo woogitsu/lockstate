@@ -11,6 +11,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * [ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
@@ -69,7 +70,13 @@ const BED_TILE = { x: 4, y: 6 } as const;
 const TOILET_TILE = { x: 5, y: 6 } as const;
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
 const ARRIVAL = { x: 16, y: 16 };
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`. */
+/**
+ * What one press of the Intake panel's control asks for -- the tile and `priorIncidents: 0` from
+ * `ADMISSION_REQUEST` in `src/main.ts`, and a sentence length that press no longer sends.
+ * Since #535 decision 5 an omitted length is drawn inside the simulation from
+ * `prisoners.sentence`; naming one here is still legal, is never redrawn, and is what keeps
+ * this fixture's timings fixed.
+ */
 const ADMISSION = { sentenceLengthTicks: 10_000, priorIncidents: 0 };
 
 const cellInstanceId = `${CELL}:${CELL_RECT.x}:${CELL_RECT.y}`;
@@ -95,6 +102,7 @@ function prisonWithBedOrdered(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   return runtime;
@@ -281,8 +289,32 @@ describe('what the toilet does and does not change in the running prison', () =>
       expect(runtime.prisoners.roomInstances.occupancyOf(cellInstanceId)).toBe(1);
       expect(runtime.prisoners.intakeSystem.getMetrics()).toMatchObject({ completedCount: 1, failedCount: 0 });
       // 25,000 less one plank at 65 and one brick at 40, plus two days of state
-      // income at 300 a day for one occupied place.
-      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600);
+      // income at 300 a day for one occupied place -- **less one 40**, which
+      // is one unmet need on the second day's settlement (ADR 0064).
+      //
+      // The 40 is `safety`, and it arrived with issue #588. Neither prison
+      // here hires anybody, so the derived sector is `unguarded` from the
+      // first admission and provisions nothing; `safety` falls at 0.05 a tick
+      // and crosses `STATE_INCOME_UNMET_NEED_LEVEL` 4,080 ticks after
+      // admission, which is before tick 4,799 and after tick 2,399 -- so day
+      // one pays in full and day two does not. It is written as
+      // `600 - 40` rather than as `560` so that the two facts stay separate: a
+      // prison of one occupied place earns 600 over two days, and this one is
+      // charged for one unmet need on one of them.
+      //
+      // **The second 40 was gone between the owner's ruling of 2026-09-03,
+      // which set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`,
+      // and their restoration of it to `40` on 2026-09-04.** Both directions
+      // are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4): for
+      // that one day this assertion read `25_000 - 65 - 40 + 600`, and the
+      // paragraph above stood unrewritten through it, because the `safety`
+      // crossing it derives is a fact about this fixture and did not move --
+      // only what the crossing costs did. Both rulings, and the two
+      // measurements the second was conditional on, are in that constant's
+      // docblock. The three facts stay separate for the reason they always
+      // did: a prison of one occupied place earns 600 over two days, one
+      // unmet need is charged on the second of them, and the charge is 40.
+      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600 - 40);
     }
 
     // **The measurement that keeps this phase honest.** `action.use-toilet`
@@ -292,20 +324,63 @@ describe('what the toilet does and does not change in the running prison', () =>
     // the same curve in both prisons. Phase 2 changes what the cell *reports*,
     // not what the prisoner *does*.
     expect(needsOf(furnished)).toEqual(needsOf(bedOnly));
-    // Not a vacuous comparison: the loop really ran and the needs moved a long
-    // way. Measured at tick 4,800 in both prisons: hunger 25.0 of 255, sleep
-    // 254.7, hygiene 163.0, bladder 212.6 -- so the two needs the cell can
-    // serve are high, hunger is nearly exhausted because `action.eat-in-cell`
-    // gains 3 a tick against a canteen's 4, and hygiene has no route at all
-    // until phase 4 places a shower head.
-    expect(needLevel(furnished, 'hunger')).toBeLessThan(100);
+    /*
+     * Not a vacuous comparison: the loop really ran and the needs moved a long
+     * way. Measured at tick 4,800 in both prisons: hunger **240.5** of 255,
+     * sleep 254.7, hygiene 163.0, bladder **247.8** -- the three needs the cell
+     * can serve are high, and hygiene has no route at all until phase 4 places
+     * a shower head.
+     *
+     * **This paragraph used to read hunger 25.0 and bladder 212.6, and it
+     * explained the 25.0 by saying "hunger is nearly exhausted because
+     * `action.eat-in-cell` gains 3 a tick against a canteen's 4". That
+     * explanation was wrong, and it was wrong about a mechanism that had never
+     * run once.** 255 - 25.0 = 230 levels, and hunger decays at 0.05 a tick
+     * (`NEED_DECAY_PER_TICK`), so 230 levels is exactly 4,600 ticks of pure
+     * decay -- admission at tick 200 to the measurement at 4,800, with **not
+     * one tick of eating** in between. `action.eat-in-cell` had not gained 3 a
+     * tick against anything; it had never been performed, in this prison or in
+     * any other, because `action.eat-meal` outscored it at every hunger level
+     * and then failed to resolve a canteen that does not exist. This file
+     * records no per-action counters, so nothing in it could have caught the
+     * difference between a weak meal and no meal at all.
+     *
+     * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+     * decision 1 made the prisoner fall back to the next-best legal candidate
+     * in the same cycle, so the cell meal now runs and the number moved from
+     * 25.0 to 240.5. `tests/integration/cell-only-meal-fallback.test.ts` is
+     * where that is measured with the per-action counters this file lacks;
+     * what is asserted here is only that the correction reached this prison.
+     *
+     * Bladder moved for the same reason and it is worth naming, because it is
+     * not about meals: in the regime's three `hygiene` blocks the prisoner used
+     * to select `action.shower`, find no shower room and stand idle: now they
+     * fall back to `action.use-toilet`.
+     */
+    // 240.5, which is what the paragraph above records, reached again by a
+    // different route: ADR 0059 puts a walk
+    // in front of every arrival, so the last cell meal inside the window falls
+    // a few ticks differently. The paragraph's claim is the *equality between
+    // the two prisons*, and that is the assertion on the next line.
+    expect(needLevel(furnished, 'hunger')).toBe(240.5);
+    // 247.8, which is what the paragraph above records: at the shipped walking
+    // speed the toilet is close enough that the walk costs this level nothing.
+    // The equality between the two prisons is what this test asserts.
+    expect(needLevel(furnished, 'bladder')).toBe(247.8);
     expect(needLevel(furnished, 'sleep')).toBeGreaterThan(250);
   });
 
-  it('makes none of the five room-gated actions reachable, and would not even if it were a bed', () => {
+  it('makes none of the six room-gated actions reachable, and would not even if it were a bed', () => {
     const furnished = prisonWithBedAndToiletOrdered();
     stepTo(furnished, 200);
 
+    // Eight, not six: `action.infirmary-treatment` joined them at #589, and
+    // `action.laundry-work` joined them in
+    // [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+    // and `action.kitchen-work` at #532, and each is one more room this prison
+    // has not built rather than a change to what this file measures. The list
+    // is the point -- a bed and a toilet make a cell, and a cell is none of
+    // these rooms.
     const roomGated = DEFAULT_ACTIONS.filter((action) => action.target.kind === 'room-catalog-id');
     expect(roomGated.map((action) => action.id)).toEqual([
       'action.eat-meal',
@@ -313,6 +388,9 @@ describe('what the toilet does and does not change in the running prison', () =>
       'action.yard-recreation',
       'action.common-room-recreation',
       'action.classroom-education',
+      'action.laundry-work',
+      'action.kitchen-work',
+      'action.infirmary-treatment',
     ]);
 
     /*
@@ -370,6 +448,7 @@ describe('what the toilet does and does not change in the running prison', () =>
       const runtime = createNewSimulationRuntime(SEED);
       submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
       submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+      wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 5, height: 5 }, { doors: runtime.navigation.doors });
       submit(runtime, 'zone-common', packCommand({ type: 'ZoneRoom', roomId: 'room.common-room', x: 10, y: 10, width: 5, height: 5 }));
       submit(runtime, 'place', packCommand({ type: 'PlaceObject', orderId: 'o-1', definitionId, x: 11, y: 11 }));
       stepTo(runtime, 200);
@@ -437,6 +516,7 @@ describe('what the toilet does and does not change in the running prison', () =>
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
     submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(runtime, 'place-toilet', packCommand({ type: 'PlaceObject', orderId: 'a-toilet', definitionId: 'toilet-brick', x: 5, y: 6 }));
     submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'b-bed', definitionId: 'bed-wooden', x: 4, y: 6 }));

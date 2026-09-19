@@ -1,4 +1,6 @@
 import type { RoomToolPort, TileRect } from '../rendering/build/area-picking';
+import type { WorldRenderView } from '../rendering/world/world-view';
+import { roomPerimeterEnclosure, type RoomEnclosure } from '../simulation/rooms/enclosure';
 import type { HudRoomArea, HudWorldRoomSource, HudRoomGesture } from './hud';
 
 /**
@@ -35,16 +37,40 @@ import type { HudRoomArea, HudWorldRoomSource, HudRoomGesture } from './hud';
  *
  * ### It does not know what a room *is*
  *
- * No catalogue, no minimum size, no enclosure rule. It holds the selected room
- * id because the intent carries one, and it holds whether the gesture removes
- * because the renderer has to know which preview to draw. Every judgement about
- * whether the rectangle is acceptable is the simulation's, and every judgement
- * about how to say so is the panel's.
+ * No catalogue, no minimum size. It holds the selected room id because the
+ * intent carries one, and it holds whether the gesture removes because the
+ * renderer has to know which preview to draw. Every judgement about whether
+ * the rectangle is *acceptable* is the simulation's, and every judgement about
+ * how to say so is the panel's.
+ *
+ * **It does know one geometric fact about a room, since issue #493: whether a
+ * rectangle's own perimeter is walled in.** That is not the enclosure *rule* --
+ * this class has no idea which room types require one, and never will, since
+ * that is content the panel alone holds. It is the one measurement the panel
+ * cannot take itself (`src/ui/hud/**` may not import the simulation) and the
+ * renderer cannot decide (a renderer answering an acceptability question from
+ * logic of its own would be a second source of truth, the same reasoning
+ * `WorldRenderView.isTileOwned`'s own comment gives for ownership). So it sits
+ * here, at the one seam that already knows both the world and the HUD's
+ * vocabulary -- reusing `roomPerimeterEnclosure`, the identical function
+ * `RoomZoningService.zone` refuses an open room by, rather than a second walk
+ * of the same two edge layers that could silently disagree with it.
  */
 export class RoomTool implements RoomToolPort, HudWorldRoomSource {
   private armed = false;
   private removing = false;
   private roomId: string | undefined;
+  /**
+   * The scene's own read of the world, current to within one rendered frame.
+   *
+   * `undefined` until the first frame, and while it is, `classifyArea` reports
+   * `'open'` -- the same answer an empty `WorldRenderView` would give, since
+   * every chunk reads as unmaterialised, but reached with no need to construct
+   * one just to ask it. Never mutated here: `setWorld` replaces the reference
+   * wholesale, exactly as `WorldRenderView.fromSnapshot` replaces the scene's
+   * own copy, so this class never becomes a second owner of world state.
+   */
+  private world: WorldRenderView | undefined;
 
   /**
    * Where a finished gesture goes.
@@ -86,6 +112,16 @@ export class RoomTool implements RoomToolPort, HudWorldRoomSource {
     if (options.roomId !== undefined) this.roomId = options.roomId;
     this.removing = options.removing ?? this.removing;
     this.armed = armed && (this.removing || this.roomId !== undefined);
+    // A tool that is not armed is aimed at nothing, and says so -- the rule
+    // `BuildTool.setArmed` records in full (#550).
+    //
+    // This surface reached the defect from a different direction than the Build
+    // panel did, and it is the same defect: nothing else clears the Rooms
+    // panel's "Area" line when the player presses "Draw on map" a second time,
+    // so it kept naming the last rectangle the pointer passed over while the
+    // pointer had been handed back to the camera. Leaving the tab already
+    // cleared it; disarming on the tab did not.
+    if (!this.armed) this.readout?.(undefined);
   }
 
   public isArmed(): boolean {
@@ -98,6 +134,28 @@ export class RoomTool implements RoomToolPort, HudWorldRoomSource {
 
   public get selectedRoomId(): string | undefined {
     return this.roomId;
+  }
+
+  /** The scene's newest read of the world. See the field's own comment. */
+  public setWorld(world: WorldRenderView): void {
+    this.world = world;
+  }
+
+  /**
+   * Whether `area`'s own perimeter is walled in, against the newest world this
+   * tool has been handed.
+   *
+   * Takes an `HudRoomArea` rather than a `TileRect`, unlike every other method
+   * here: its two callers are both on the HUD side of the seam -- a finished
+   * world gesture, already converted, and the panel's typed-coordinates form,
+   * which never held a `TileRect` at all. `roomPerimeterEnclosure`'s own
+   * `TileRectangle` is the same four readonly numbers as `HudRoomArea`, so the
+   * value is handed through with no conversion and no second shape to keep in
+   * step.
+   */
+  public classifyArea(area: HudRoomArea): RoomEnclosure {
+    if (this.world === undefined) return 'open';
+    return roomPerimeterEnclosure(this.world, area).enclosure;
   }
 
   /**

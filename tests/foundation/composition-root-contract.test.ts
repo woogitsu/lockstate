@@ -102,9 +102,9 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
   },
   {
     what: 'the worker\'s refusals reach the HUD\'s alerts list',
-    source: 'const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);',
+    source: 'const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts ?? []);',
     reason:
-      'Issue #261, and the exact shape this list exists for: a seam that is correct, fully covered, and joined to nothing. `HudViewModel.alerts` -- the list, the severity badges, the folding section, the empty-state row and the insertion ordering #209 measured in a real browser -- is fully implemented, and between #220 and #261 **nothing assigned to it**: this file wrote `clock` and `counts`, and the only assignment anywhere in `src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL` (#220 moved the one message that had ever been routed there to `.hud__unavailable`). So a build order the simulation refused (`state: \'failed\'`, `failReason: \'out-of-bounds\'`) reached the main thread and was dropped, with no ghost drawn and no refusal line raised, because the refusal line answers a rejected *command* and this command was queued. `hudAlertsFromWorkerMessage` is pure and has its own unit tests either way, so deleting this one line restores the defect exactly with `tsc` clean and the suite green -- which is the mutation this entry kills. The pinned call gained its second argument in #187: the list has two producers now -- a refusal, and an uncorrelated `protocol/error` that nothing else on this thread reads -- and passing `viewModel.alerts` is what stops a status-counts publication, which arrives up to twice a second, from painting over a fault row within 500 ms. Dropping the argument compiles, because the parameter defaults to `[]`.',
+      'Issue #261, and the exact shape this list exists for: a seam that is correct, fully covered, and joined to nothing. `HudViewModel.alerts` -- the list, the severity badges, the folding section, the empty-state row and the insertion ordering #209 measured in a real browser -- is fully implemented, and between #220 and #261 **nothing assigned to it**: this file wrote `clock` and `counts`, and the only assignment anywhere in `src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL` (#220 moved the one message that had ever been routed there to `.hud__unavailable`). So a build order the simulation refused (`state: \'failed\'`, `failReason: \'out-of-bounds\'`) reached the main thread and was dropped, with no ghost drawn and no refusal line raised, because the refusal line answers a rejected *command* and this command was queued. `hudAlertsFromWorkerMessage` is pure and has its own unit tests either way, so deleting this one line restores the defect exactly with `tsc` clean and the suite green -- which is the mutation this entry kills. The pinned call gained its second argument in #187: the list has two producers now -- a refusal, and an uncorrelated `protocol/error` that nothing else on this thread reads -- and passing `viewModel.alerts` is what stops a status-counts publication, which arrives up to twice a second, from painting over a fault row within 500 ms. Dropping the argument compiles, because the parameter defaults to `[]`. The `?? []` in the pinned line arrived with issue #1184, which made the field itself optional -- absent is now "no prison is reporting", and the list this call updates is still a list.',
   },
   {
     what: 'the worker\'s refusals reach the band the player can actually see',
@@ -123,6 +123,84 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
     source: '{ worldBuild: tool, editHistory: tool }',
     reason:
       'Issue #261, and the other half of the same seam. The key reaches the HUD rather than the command sender so that a refusal paints the refusal line instead of a `console.warn` -- the defect #225 removed from the build drag. `MountHudOptions.editHistory` is optional, so deleting this argument compiles, and the HUD then registers no sink: `BuildTool.undo()` drops the request and the player gets silence from a key that is bound. Measured: with `editHistory: tool` deleted, `tsc` is clean and all 1,780 tests pass, because `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own.',
+  },
+  {
+    what: 'the telemetry pump is started, so the sink ever flushes',
+    source: 'pipeline.startPump(',
+    reason:
+      'Issues #36 and #446, and the same shape as #146 exactly. `BatchingTelemetrySink` is deliberately timer-free -- its own header says "the host calls `pump(now)` from its own idle or interval orchestration" -- and for the whole life of the subsystem no host did, so nothing ever flushed and `git log --all -S "recorder.pump"` was empty. `startTelemetryPump` has its own unit tests over an injected scheduler and they pass whether or not anything calls it; the browser primitive it needs (`requestIdleCallback`) exists only here. Deleting this call leaves `tsc` clean and every test green while restoring a sink that queues forever and sends nothing, which is precisely the state ADR 0044 recorded.',
+  },
+  {
+    what: 'the telemetry consent prompt is mounted when there is somewhere to send',
+    source: 'createTelemetryConsentPrompt({',
+    reason:
+      'Issue #36, and the defect ADR 0044 called the clearest single statement of what was wrong: the four `telemetry.consent.*` strings shipped inside the bundle through `defaultMessageCatalogEn` while nothing rendered them, so "a player downloads the consent prompt for a telemetry system that cannot send". `localization-key-completeness` proves those keys resolve and would keep proving it with nothing on screen; `createTelemetryConsentPrompt` is browser-only code no headless test executes. Deleting this call leaves `tsc` clean and the suite green and returns the keys to being text no surface reaches -- and, worse than before, leaves a build that has an ingestion destination configured collecting nothing while never asking, because the gate defaults closed. Guarded by `telemetry.enabled` on purpose: with no destination configured there is nothing to consent to and the prompt must not appear.',
+  },
+  {
+    what: 'the page\'s unhandled errors reach the telemetry recorder',
+    source: "crashReporter.reportUnhandledError(event.error ?? event.message, 'page-error')",
+    reason:
+      'Issues #36 and #446. Between the pipeline landing and this line, `git grep -lI "recorder\\.\\(record\\|recordError\\)" -- src/ | grep -v "src/services/telemetry/"` returned nothing: consent, admission, batching, sampling, redaction and a transport, and **not one event produced anywhere**. `createCrashReporter` has its own unit tests over an injected recorder and they pass whether or not a listener calls it, and a listener is browser-only code no headless test executes -- which is exactly the shape of #146 and #261. The registration must also stay near the top of the file: a module-scope throw is reported to whatever is listening at the moment it happens, so a listener registered after the worker, the scene and the HUD cannot see the boot crash ADR 0010 calls the one a developer cannot reproduce. Measured while this was built: deleting this line and the three below leaves `tsc` clean and 427 tests across `tests/foundation/` and the telemetry and boundary units green.',
+  },
+  {
+    what: 'an unhandled promise rejection reaches the telemetry recorder',
+    source: "crashReporter.reportUnhandledError(event.reason, 'page-rejection')",
+    reason:
+      'Issues #36 and #446, and the half that is easiest to lose. Almost everything this page does after first paint is a promise -- `bootPersistence`, every save, every worker request -- so a rejection is the *likelier* crash shape here, and it reaches a different browser event with a different payload property than the line above. The only `unhandledrejection` listener anywhere in `src/` before this change was `src/simulation/worker/worker.ts`, which routes into the worker protocol and never into telemetry, so deleting this line returns the main thread to reporting no rejection at all while `tsc` stays clean and the suite stays green.',
+  },
+  {
+    what: 'a simulation worker that will not start at boot is recorded as a diagnostic',
+    source: "crashReporter?.reportWorkerLoss('boot', error)",
+    reason:
+      'Issues #36, #82 and #446. `diagnostic.worker-terminated` is registered with the purpose "detect simulation worker loss, which is invisible to the player until state stops advancing", and nothing produced it. The producer binds to the catch that already raises #82\'s player-facing notice rather than being pushed into `SimulationClient` or `WorkerPerSessionHost`, because `SimulationClient` records one module over that a failure belongs "on the route the protocol already has rather than through a channel of this class\'s own" -- and a telemetry import under `src/simulation/` is refused outright by `tests/unit/services-layer-boundaries.test.ts`. Deleting it is invisible: `console.error` beside it keeps the log line, so nothing else changes.',
+  },
+  {
+    what: 'a simulation worker lost after boot is recorded as a diagnostic',
+    source: "if (!available) crashReporter?.reportWorkerLoss('session')",
+    reason:
+      'Issues #36, #149 and #446, and the case the boot binding cannot cover. Since a session boundary is a worker boundary, construction can fail long after first paint, and `WorkerPerSessionHost` reports it through `onWorkerAvailability(false)` -- a route this file already reads for the HUD notice. That callback carries no thrown value, which is why the report carries no error class rather than a fabricated one. Deleting this line leaves the HUD notice intact and the diagnostic silent, with `tsc` clean and every test green, which is precisely the state that made this whole list necessary.',
+  },
+  {
+    what: 'the staffing warning has a reader at all',
+    source: 'new StaffCoverageReader(client)',
+    reason:
+      'ADR 0048 consequence 1. The Staff panel\'s coverage block is the only surface for the requirement `DeploymentSystem` scales with occupancy -- one guard per eight prisoners standing on owned land -- and it is a *pulled* field: `HudViewModel.staffCoverage` is optional and the panel draws no box until something answers, so a page that constructs no reader shows exactly what the repository showed before this change, which is nothing. `StaffCoverageReader` has its own unit tests over a fake channel and `staffCoverageFromProjection` is pure, so both stay green with this line gone; `hud/staff` had been catalogued and unread since #104 shipped it, which is the state deleting this line restores. Measured: with the construction replaced by `undefined`, `tsc` is clean and the unit and integration tests for this feature all pass.',
+  },
+  {
+    what: 'opening the Manage tab asks for the coverage figures at once',
+    source: "if (activeTab === 'manage') refreshStaffCoverage();",
+    reason:
+      'ADR 0048 consequence 1 (issue #442), and the half a player notices. Every other reader on #104\'s channel is asked twice -- once on arriving at its tab and once per counts publication -- and the arrival ask is what stops a block being empty for up to 500ms. It matters more here than for the readouts beside it because this one is a *warning*: a player who opened the Manage tab (the `security` tab until the navigation moved to the delivery\'s five sections on 2026-09-14, ADR 0112 decision 3) because they suspected they were short would be shown nothing at all for half a second, which reads as "no problem" rather than as "not loaded yet". Deleting it leaves the cadence ask intact, so nothing fails and the block merely arrives late -- exactly the class of silent loss this list exists for.',
+  },
+  {
+    what: 'the coverage figures are refreshed on the cadence, not only on arrival',
+    source: 'refreshHeldGuards();\n      refreshStaffRoster();\n      refreshStaffCoverage();',
+    reason:
+      'ADR 0048 consequence 1 (issue #442), and the half a player does *not* notice, which is why it is pinned in context rather than by its own name. `refreshStaffCoverage()` appears twice in this file and `toContain` cannot tell the two apart, so this entry names the cadence call by the line above it. Without it the block is painted once when the Manage tab opens and never again: a player who leaves that tab showing while the ninth prisoner is admitted keeps reading a green "Covered" over a prison that has since outgrown its guards, which is worse than no readout. The whitespace is safe to pin because this repository has no formatter -- `agrees with package.json about whether a linter or formatter exists`, below, is the gate that keeps that true. Deleting the call leaves `tsc` clean and every test green. **Issue #533 put `refreshStaffRoster()` between the two lines this entry pins**, which is why the pinned text names three calls rather than two: the roster block feeding `DismissStaff` lives on the same tab and is refreshed on the same cadence for the same reason, and pinning it here is what stops it being dropped back to arrival-only. **This entry\'s label said "on the counts cadence" until 2026-09-01 and that was never true** (issue #718): the listener this block sits in returns early only when all six of its translators say nothing, and `hudClockFromWorkerMessage` has no "nothing changed" arm, so what reaches these calls is the clock heartbeat at 250ms rather than the counts channel at 500ms. Measured: a prison with nobody housed publishes `simulation/status-counts` once in thirty seconds and refreshes these readouts 120 times. `tests/foundation/hud-refresh-cadence-contract.test.ts` is the gate for the cadence itself; this entry still pins the calls, which is a different thing and still worth pinning.',
+  },
+  {
+    what: 'the Build catalogue asks the simulation which rows sit on an edge',
+    source: 'occupiesEdge: occupiesTileEdge(definition)',
+    reason:
+      "Issue #531. This line read `occupiesEdge: definition.category === 'wall'` -- a second copy of a rule the simulation already owns, and `occupiesTileEdge`'s own comment had been amended to record that the two answers disagreed. Measured over the whole registry, `door-wooden` is the only row they disagree about, and it is also the only row that reaches `place-build-order` while answering `false`: it is `category: 'object'` naming a `placesDoor`, so it writes `DOOR_EDGE_NUMERIC_ID` onto an edge while this row told the HUD it sat on none. The Build panel therefore hid its edge chooser for a door and submitted the panel's retained edge regardless, so a door typed into the coordinate form took whichever edge had last been chosen for a wall rather than one the player picked. Restoring the re-derivation leaves `tsc` clean and every unit test green, because nothing headless imports this file and `occupiesTileEdge`'s own tests pass either way, which is the mutation this entry kills. The behaviour is measured in `tests/browser/ui-shell.spec.ts` (\"shows the edge chooser for a door\"); this catches it in `pnpm test`.",
+  },
+  {
+    what: "the world's Escape reaches the tool that can put itself down",
+    source: '{ toolStandDown: buildTool }',
+    reason:
+      "Issue #959, and the same shape as `editHistory` one entry above -- deliberately, because it is the same object under a third port. `WorldSceneOptions.toolStandDown` is optional, and correctly so: a page with no worker builds no tool and a scene that cannot disarm anything is a coherent state, so `tsc` cannot say the running application passes one. Without it, `handleActionEvents`'s `build.cancel` branch still cancels a gesture in flight -- `cancelAllGestures()` is unconditional -- and the *second* state that key carries, an armed tool with no gesture left to abandon, reaches nobody: the player presses Escape on an armed Build panel and the cursor stays armed, which is the state #959 reported. Nothing headless constructs this scene; `tests/browser/world-scene-input.spec.ts` drives `world-scene-harness.ts`, which builds a scene of its own and passes its own recorder, and the one spec that runs the real `src/main.ts` -- `tests/browser/app-shell.spec.ts` -- never presses Escape at an armed tool (`git grep -n standDown tests/browser/app-shell.spec.ts` is empty). Measured on this branch: with this spread deleted, `tsc` is clean and `pnpm test` is fully green. The one production `new WorldScene(...)` is here.",
+  },
+  {
+    what: "the world's Escape reaches the HUD, which is the only thing that knows what is armed",
+    source: '{ toolStandDown: tool }',
+    reason:
+      "Issue #959, and the other half of the same seam, pinned separately for the reason `editHistory`'s two halves are: they are two wirings in two calls and either can be deleted alone. `BuildTool.standDown` forwards the request and decides nothing -- `hud.ts`'s attachment stands **both** panels down unconditionally, because at most one of the two tools is ever armed and neither the tool nor the scene can know which -- so the composition root is the only place the request can be joined to the panels at all. `MountHudOptions.toolStandDown` is optional, so deleting this argument compiles and the HUD registers no sink; `BuildTool.standDown()` then drops the request and Escape goes back to being a key that cancels a drag and nothing else. `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own and `tests/unit/ui-hud-tool-arming.test.ts` calls `mountInterface` with a double, so both stay green either way. Measured on this branch: with this spread deleted, `tsc` is clean and `pnpm test` is fully green.",
+  },
+  {
+    what: 'a preference another tab wrote reaches this one',
+    source: 'subscribeToSettingsChanges(globalThis.window, {',
+    reason:
+      'Issue #1199. Nothing in `src/` bound the `storage` event, so a second Lockstate tab never followed the first: theme, interface scale and HUD layout were per-tab until a reload. `subscribeToSettingsChanges` is unit-tested against a fake target in `tests/unit/input-cross-tab-settings.test.ts` and every handler it calls is an apply-path with its own tests, so the seam can be entirely correct and joined to nothing -- which is the #82/#199/#146 shape this file exists for, and is exactly the state this tree was in before the fix. Deleting this one call restores the defect with `tsc` clean and the whole `node` suite green; only `tests/browser/ui-cross-tab-preferences.spec.ts`, in the browser job, would otherwise notice. The decision about which keys it carries (and that the language key is deliberately not one of them) is `docs/adr/drafts/what-a-second-tab-follows.md`.',
   },
   {
     what: 'the lifecycle save handler is attached to the controller',

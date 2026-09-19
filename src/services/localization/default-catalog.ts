@@ -36,10 +36,18 @@ const SERVICE_MESSAGES: Readonly<Record<string, MessageEntry>> = {
   'challenge.result.unverified': 'Personal result — not eligible for ranking',
   'challenge.result.rejected': 'Result rejected: {reason}',
 
+  // Rendered by `src/ui/telemetry-consent-prompt.ts`, which is mounted only
+  // by a build that has an ingestion destination configured. The first four
+  // of these shipped inside the bundle for months with nothing rendering them
+  // (ADR 0044); the last three arrive with the code that renders all seven.
   'telemetry.consent.title': 'Help improve Lockstate?',
+  'telemetry.consent.body':
+    'Nothing is sent unless you tick a box. You can change this at any time, and your choice is stored on this device only.',
   'telemetry.consent.diagnostics': 'Send crash and error diagnostics',
   'telemetry.consent.performance': 'Send performance measurements',
   'telemetry.consent.gameplay': 'Send anonymous gameplay statistics',
+  'telemetry.consent.accept': 'Save my choices',
+  'telemetry.consent.decline': 'Send nothing',
 };
 
 function contentMessages(): Record<string, MessageEntry> {

@@ -30,8 +30,51 @@
  * Ordered by when a player reaches for them, not alphabetically: you look, you
  * build the walls, you say what the rooms inside them are for, and the last two
  * are the running prison.
+ *
+ * ---
+ *
+ * **THREE OF THOSE FIVE IDS CHANGED ON 2026-09-14, AND THE PARAGRAPHS ABOVE ARE
+ * KEPT RATHER THAN REWRITTEN** -- every sentence in them is still a true record
+ * of why the bar holds five and of what each slot was for when it was taken.
+ * What moved is the naming and one panel's home, on
+ * [ADR 0112](../../../docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md)
+ * decision 3, which the owner ruled in their own typed words happens **now**
+ * rather than after the inventory:
+ *
+ * | Was | Is | The delivery's own name |
+ * |---|---|---|
+ * | `rooms` | `zones` | Strefy |
+ * | `security` | `manage` | Zarządzaj |
+ * | `regime` | `day-plan` | Plan dnia (`Schedule` in English -- see the locale) |
+ *
+ * `overview` and `build` keep their ids because the delivery keeps their
+ * subjects (Przegląd, Buduj). The **order** is unchanged: the delivery lists
+ * its five in exactly the order this array already held them in, so the
+ * "when a player reaches for them" paragraph above survives whole.
+ *
+ * **The ids are renamed rather than left alone on purpose.** They are not
+ * player-visible strings -- the labels are, and they live in
+ * `src/content/default-locale-en.ts` -- but they are read as
+ * `hud.dataset.activeTab`, as `.ui-tab[data-tab="..."]` in the browser suite,
+ * and as `activeTab === '<id>'` gates in `src/main.ts`. An id spelling
+ * `security` on the section that holds hiring, dismissal and admissions, or
+ * `rooms` on the one the player draws zones in, is a comment that lies in a
+ * place the compiler cannot check. Renaming them makes every one of those
+ * gates a compile error until it is re-read, which is why this change is safe
+ * to make mechanically: `HudTabId` is a union of literals, so a site left on
+ * an old spelling does not silently stop firing, it fails to build.
+ *
+ * **No id here is persisted, so this is not a migration.** Checked at v0.0.613
+ * rather than assumed: `activeTab` is produced by `hudShellReducer` from
+ * `INITIAL_HUD_SHELL_STATE` below and mutated only by the in-memory
+ * `select-tab` action; `src/input/storage.ts` declares four keys
+ * (`lockstate.settings.input`, `.accessibility`, `.theme` and `.layout`, the
+ * last added by #1159 since this was first measured) and none of them carries
+ * a tab id; and no field of `src/persistence/save-schema.ts` names one. A
+ * player who had `security` open yesterday gets the reducer's initial tab
+ * today, exactly as they do on every page load.
  */
-export const HUD_TAB_IDS = ['overview', 'build', 'rooms', 'security', 'regime'] as const;
+export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];
 
 export const HUD_PANEL_IDS = ['minimap', 'alerts'] as const;
@@ -44,13 +87,73 @@ export interface HudShellState {
 }
 
 /**
- * Alerts start folded. The HUD frames the world and must not cover it; a
- * list that is empty most of the time should not hold open a rectangle over
- * the prison to say so.
+ * Alerts start OPEN, on the owner's ruling of 2026-08-31 (#703, ruling 1).
+ *
+ * **This constant read `collapsedPanels: ['alerts']` until then**, under this
+ * reason, which is kept because it is still a true statement about screen
+ * space: *"Alerts start folded. The HUD frames the world and must not cover
+ * it; a list that is empty most of the time should not hold open a rectangle
+ * over the prison to say so."*
+ *
+ * What that reason weighed was an empty list against a rectangle. What it did
+ * not weigh is a **full** one nobody can see. Measured on 2026-08-31: a
+ * successful escape was written to the event log three times and painted zero
+ * times -- the band keeps only the newest event and the all-clear on the same
+ * tick replaced it, while the row that would have survived was in a list this
+ * constant kept shut.
+ *
+ * **The same fold is cited as a reason not to route anything to that list in
+ * many places across `src/`**, and opening the list by default is the one
+ * change that addresses all of them at once, which is why the ruling went this
+ * way rather than giving the escape sentence a row of its own. Each of those
+ * citations is a true record of issue #220's defect -- a message that reaches
+ * the player at *no* viewport -- and each is why some sentence got a HUD row
+ * instead.
+ *
+ * **This paragraph's twelve-item enumeration was deleted on one branch and
+ * re-aimed on another, the two met in a merge, and both were partly right.**
+ * The deletion (#1235) opened the twelve numbers then on disk and found none of
+ * them landing on a sentence about the fold: `view-model.ts:1090` was
+ * `readonly width: number;`, `rooms-panel.ts:1355` an `element('div', {` call.
+ * That is a true report of numbers that had rotted wholesale -- and it is not
+ * a reason to delete the citations, because the underlying facts had not
+ * changed and the anchors were repairable. The re-aiming pass (#1224) repaired
+ * eleven of them. The merged list is below, with the two defects found while
+ * resolving this conflict corrected rather than carried:
+ * `view-model.ts:1593` and `:1649`, `hud.ts:1129`, `:1200` and `:1295`,
+ * `rooms-panel.ts:1520`, `src/ui/simulation-zoning.ts:26`,
+ * `content/default-locale-en.ts:1982`, `main.ts:1336` and `:2131`, and
+ * `hud.css:710` and `:747`.
+ *
+ * **The two corrections, stated so neither is re-derived.**
+ * `default-locale-en.ts:1973` was a blank line; the sentence it was aimed at --
+ * *"DOM and painted at no viewport, because that section starts folded"* -- is
+ * at `:1982`, nine lines down. And `simulation-zoning.ts` was written bare,
+ * which `documentation-links-contract` resolves relative to THIS file; the
+ * module sits at `src/ui/simulation-zoning.ts`, one directory out from
+ * `src/ui/hud/`, so the bare form named nothing. It is rooted here.
+ *
+ * **What is NOT asserted, because the claim was checked and did not hold.**
+ * The re-aiming pass closed with *"Every one of the twelve is corrected in
+ * both directions"*; one of the twelve then landed on a blank line, so that
+ * sentence is dropped rather than repeated. Each of the twelve above was
+ * opened on `4453ef1b` while writing this. What no list can promise is that it
+ * will still be true next week: a twelve-item list of `file:line` into files
+ * under active edit is the least durable citation this repository has
+ * (`docs/AGENT_WORKFLOW.md` §4), and this one rotted wholesale once already
+ * without a single underlying fact changing.
+ *
+ * The enumeration a reader can run instead, which is a lower bound rather than
+ * the curated set above:
+ * `grep -rniE "starts folded|starts collapsed" src/ --include=*.ts --include=*.css`
+ *
+ * The accepted cost, stated by the owner: a fixed slice of screen height at
+ * every width. The fold itself is untouched -- a player who wants the world
+ * back closes it, and `toggle-panel` remembers that for the session.
  */
 export const INITIAL_HUD_SHELL_STATE: HudShellState = {
   activeTab: 'overview',
-  collapsedPanels: ['alerts'],
+  collapsedPanels: [],
 };
 
 export type HudShellAction =

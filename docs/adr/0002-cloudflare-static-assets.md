@@ -28,14 +28,80 @@ The deployment contract must support deep links, safe cache invalidation, produc
 
 ### Operational note, 2026-08-24: what is configured here is not what is deployed
 
-The two deployment bullets above describe the topology this ADR **decided**, and `wrangler.jsonc` configures exactly that: `:11-18` for `lockstate-staging` on `workers.dev` with no route, `:19-32` for `lockstate` on the `lockstate.io` Custom Domain with `workers_dev` and `preview_urls` false. Neither describes what is currently serving traffic.
+The two deployment bullets above describe the topology this ADR **decided**, and `wrangler.jsonc` configures exactly that: its `env.staging` block for `lockstate-staging` on `workers.dev` with no route, its `env.production` block for `lockstate` on the `lockstate.io` Custom Domain with `workers_dev` and `preview_urls` false. Neither describes what is currently serving traffic.
 
-`docs/DEPLOYMENT.md`, "What currently serves lockstate.io" (`:165-176`), records the operating state: `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard, and the Worker `lockstate` that this ADR names as production is "a Worker that has never been deployed". Two things follow, and the second is why this note exists:
+`docs/DEPLOYMENT.md`'s section **"What currently serves lockstate.io"** records the operating state: `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard, and the Worker `lockstate` that this ADR names as production is *"a Worker that has never been deployed"*. Two things follow, and the second is why this note exists:
 
-- A merge to `main` already updates the public site: the `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration.
-- **Dispatching the `production` job would take the live domain off the Worker currently holding it** and transfer it onto a freshly created one, and wrangler does not warn. `docs/DEPLOYMENT.md:172` names that as a trap. Read that section before acting on the production bullet above.
+- A merge to `main` already updates the public site: the `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. That section says it in those terms — *"Nothing needs to be enabled for that to happen; it is happening."*
+- **Dispatching the `production` job would take the live domain off the Worker currently holding it** and transfer it onto a freshly created one, and wrangler does not warn. That section's second bullet is the one that says so — *"Dispatching the `production` job would silently take the domain away … Running that job transfers the live domain onto it, and wrangler does not warn."* Read the whole section before acting on the production bullet above.
 
-This note records the discrepancy; it does not resolve it. Which of the two Workers is *meant* to be production is an open decision for the owner (issue #274, Q9), so the deployment bullets above are deliberately left standing as the decision they are rather than rewritten to describe `lockstate-staging`. The live binding cannot be read from this repository at all — `docs/DEPLOYMENT.md:176` says so itself — so the operating state above is what that document records, not something this repository can verify.
+**Every reference above is by section title and quotation, and the three line numbers this paragraph used to carry were all wrong.** It cited the section as `docs/DEPLOYMENT.md:165-176`, the trap as `:172` and the unverifiability as `:176`. The section begins at `:196`; `:165-176` spans a *different* section, **"What can publish the staging Worker"** (`:166`), which is about which credentials let CI publish staging and says nothing about what holds the domain. So the three anchors did not merely drift by a few lines — they landed on a neighbouring subject that reads plausibly, which is the failure mode that matters here: **this is the one citation in this corpus where following the wrong paragraph can cost the live domain.** A reader sent to `:165-176`, finding a section about publishing staging and no trap warning, could reasonably conclude the trap had been resolved and dispatch the `production` job.
+
+That is why the anchors are not repaired with better line numbers. `docs/AGENT_WORKFLOW.md` §4 states the rule this instance pays for: *"A `file:line` into a document under active edit is the least durable citation here; a quoted sentence is the most."* `docs/DEPLOYMENT.md` is under active edit — the drift is 31 lines — so a quoted sentence and a section title are what survive the next insertion above them.
+
+This note records the discrepancy; it does not resolve it. Which of the two Workers is *meant* to be production is an open decision for the owner (issue #274, Q9), so the deployment bullets above are deliberately left standing as the decision they are rather than rewritten to describe `lockstate-staging`. The live binding cannot be read from this repository at all — that same section says so itself, *"Nothing here can confirm that binding either … only Cloudflare → Workers → `lockstate-staging` → Settings → Domains & Routes shows the live state"* — so the operating state above is what that document records, not something this repository can verify.
+
+**A SECOND INSTANCE OF THE SAME CLASS, IN THIS NOTE'S OWN FIRST SENTENCE, CORRECTED 2026-09-16 — AND THIS ONE NO DELTA PASS COULD HAVE RAISED.** Until this edit that sentence cited `wrangler.jsonc` by line: *"`:11-18` for `lockstate-staging` … `:19-32` for `lockstate`"*. Both spans were exact on 2026-08-24 and both died in one commit, `b2aaa3f1` of 2026-09-03 — the telemetry entry point, 26 inserted lines, 18 of them above `env`: a `main` key with a five-line comment, and a ten-line comment plus `binding` and `run_worker_first` inside the top-level `assets` block. The staging block is now `:29-42` and the production block `:43-58`, so **both stale anchors land inside the top-level worker rather than in `env` at all** — `:11-18` opens on `"workers_dev": true` and runs into that new comment, and `:19` and `:20` are two of its lines. That is precisely the *"drifts onto plausible-looking code"* failure the paragraph above names: a reader following `:12` finds a real `preview_urls` key on the development worker and no reason to keep looking.
+
+**Why it outlived thirteen days of sweeps, and what replaced it.** `wrangler.jsonc` has been changed exactly twice in this repository's life and not at all since `b2aaa3f1`, which touched neither this ADR nor anything else citing it — so the file has been in no delta window since the day it invalidated these anchors, and a pass that reads what changed was never going to look. Nor does the mechanical gate reach it: `tests/foundation/documentation-source-anchor-contract.test.ts` extracts only a backtick span that is *entirely* a rooted path plus `:N`, and `:11-18` continuing a sentence is not that. The repair is the one this note already applied to `docs/DEPLOYMENT.md` one paragraph up — the two blocks are named by their JSON key path, `env.staging` and `env.production`, which grep answers and which no insertion above them can move. **`wrangler.jsonc` was read and not touched: it is deploy configuration and the owner's under `AGENTS.md`'s third reservation.**
+
+### Amendment, 2026-09-03: the assets-only bullet is now false, and this is the commit it went false in
+
+*This amends the Decision bullet **"Deploy the current application as an
+assets-only Worker with no application-server entry point"**. Status is
+untouched: this ADR remains **Accepted**. **The decision to add the entry point
+is the owner's**, taken on 2026-09-03 in their own words and recorded in
+`AGENTS.md`'s "The owner's standing mandate"; the wording of this section and
+every consequence drawn in it are this editor's under that decision. A reader
+who disagrees with a consequence should treat that consequence as open — the
+decision itself is not.*
+
+**What is now true.** `wrangler.jsonc` declares `main`, so this deployment is
+no longer assets-only. The bullet is left standing above rather than
+overwritten, on this ADR's own precedent: the operational note directly above
+records a state of the world beside a decision instead of rewriting the
+decision, and `docs/adr/README.md`'s *"An amendment to an accepted ADR"*
+section requires the dated-heading form this section takes.
+
+**Which sentence went false, and which did not.** `docs/DEPLOYMENT.md`'s "What
+this does to ADR 0002, and when" worked this out before the change existed, and
+its conclusion holds on inspection:
+
+- The rejected alternative **"Add a Worker server entry point now"** is
+  honoured rather than overturned. It was rejected because *"no trusted server
+  behavior is currently required. A placeholder server would add routing and
+  security surface without product value."* What arrived is not a placeholder:
+  the entry point carries the telemetry ingest, which is the product value that
+  rejection said was missing. The word that dated is *"currently"*.
+- The **Decision bullet does go false**, and it goes false in the commit that
+  adds `main` — not on 2026-08-27, when the owner decided the order, and not
+  earlier on 2026-09-03, when they authorised the merge. Amending it before
+  that commit would have put this document ahead of the code.
+- **Two Decision bullets are unaffected, and were checked rather than
+  assumed.** `assets.not_found_handling` is still `single-page-application` in
+  all three environments, and `assets.directory` is still generated by the Vite
+  plugin rather than hard-coded. `scripts/verify-cloudflare-build.mjs` asserts
+  both on the built output.
+- `docs/DEPLOYMENT.md`'s Contract paragraph — *"a server-side Worker entry
+  point must not be added merely to serve the SPA"* — survives untouched. An
+  ingest handler is not that.
+
+**What the entry point does to the topology this ADR decided**, stated because
+it does not follow from `main` alone: `assets.run_worker_first` is `true`, so
+the Worker is in front of **every** request to the domain, each fingerprinted
+`/assets/*` file included. It has to be. `single-page-application` handling
+makes the asset router match every path it is asked about, so under the default
+assets-first routing a Worker script would never be reached at all. The handler
+answers one configured path and returns every other request to the assets
+binding unchanged, and with no ingest path configured — which is every
+environment in `wrangler.jsonc` — it answers nothing and claims nothing.
+
+**What is not amended.** No cache bullet, no header bullet, no environment
+bullet, and nothing about production publishing. The `public/_headers` bullet
+in particular still describes what governs every asset response, because those
+responses still come from Static Assets. What it does *not* reach is a response
+the Worker writes itself, so the ingest handler sets its own headers; that is a
+new fact about a new surface rather than a change to this decision.
 
 ## Alternatives considered
 

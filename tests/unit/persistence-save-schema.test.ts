@@ -14,9 +14,13 @@ import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
-import { chunkCoordinate, WORLD_CHUNK_SIZE_LIMIT } from '../../src/simulation/world/coordinates';
+import { chunkCoordinate, tileCoordinate, WORLD_CHUNK_SIZE_LIMIT } from '../../src/simulation/world/coordinates';
+import { MINIMUM_DOOR_COST_MULTIPLIER } from '../../src/simulation/navigation/door';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSystems } from '../../src/simulation/runtime/session-systems';
 import freshPrisonFixture from '../fixtures/persistence/save-v1-fresh-prison.json';
 import inProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
+import { expectOk } from '../helpers/expect-ok';
 
 const FIXTURES = [
   { name: 'fresh prison', fixture: freshPrisonFixture },
@@ -36,8 +40,8 @@ describe('save envelope: checked-in V1 fixtures', () => {
     it(`decodes the "${name}" fixture identically before and after a JSON round trip`, () => {
       const direct = decodeSaveEnvelope(fixture);
       const roundTripped = decodeSaveEnvelope(JSON.parse(JSON.stringify(fixture)) as unknown);
-      expect(direct.ok).toBe(true);
-      expect(roundTripped.ok).toBe(true);
+      expectOk(direct, 'decoding the fixture directly');
+      expectOk(roundTripped, 'decoding the fixture after a JSON round trip');
       if (!direct.ok || !roundTripped.ok) return;
       expect(roundTripped.value).toStrictEqual(direct.value);
     });
@@ -47,7 +51,7 @@ describe('save envelope: checked-in V1 fixtures', () => {
       // must never rewrite it in place, or a later test would be asserting
       // against a fixture this test had already upgraded.
       const before = JSON.stringify(fixture);
-      expect(decodeSaveEnvelope(fixture).ok).toBe(true);
+      expectOk(decodeSaveEnvelope(fixture), 'decoding the fixture');
       expect(JSON.stringify(fixture)).toBe(before);
       expect(fixture.saveSchemaVersion).toBe(1);
     });
@@ -204,7 +208,7 @@ describe('trusted save envelopes', () => {
   it('trusts the output of decodeSaveEnvelope, which is a fresh value rather than the caller’s object', () => {
     const input = JSON.parse(JSON.stringify(freshPrisonFixture)) as SaveEnvelopeV1;
     const decoded = decodeSaveEnvelope(input);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'decoding the fresh-prison fixture');
     if (!decoded.ok) return;
     expect(decoded.value).not.toBe(input);
     expect(isTrustedSaveEnvelope(decoded.value)).toBe(true);
@@ -239,7 +243,7 @@ describe('trusted save envelopes', () => {
     expect(() => {
       (envelope as unknown as { checksum: string }).checksum = '0'.repeat(16);
     }).toThrow(TypeError);
-    expect(decodeSaveEnvelope(envelope).ok).toBe(true);
+    expectOk(decodeSaveEnvelope(envelope), 'decoding the envelope');
   });
 });
 
@@ -305,6 +309,82 @@ describe('save envelope: chunkSize is bounded at the schema, before any restore 
   it('still accepts every chunk size this codebase has ever written', () => {
     for (const size of [4, 8, 16, 32]) {
       expect(decodeSaveEnvelope(envelopeWithChunkSize(size))).toMatchObject({ ok: true });
+    }
+  });
+});
+
+/**
+ * The same class of gap as `chunkSize` above, on the field beside a bounded
+ * neighbour: `costMultiplier` was a bare `z.number()` next to
+ * `requiredSecurityClearance`'s `.int().min(0)`.
+ *
+ * What it costs is not an allocation but a wrong answer.
+ * `boundedLocalSearch` is an A* whose Manhattan heuristic charges one step
+ * per remaining tile and whose closed set is never reopened, so it is exact
+ * only while no traversable edge costs less than a step
+ * (`MINIMUM_DOOR_COST_MULTIPLIER`). `restoreSessionSystems` registers each
+ * saved door verbatim, so a save is the one boundary an authored multiplier
+ * can cross -- and a sub-unit one makes routing silently return
+ * non-shortest paths rather than fail.
+ *
+ * `DoorRegistry.register` throws on such a value now, which closes the hole
+ * either way; the schema is still the right place for the *save* path,
+ * because a malformed record should be rejected as a malformed record rather
+ * than fault a worker mid-restore.
+ */
+describe('save envelope: a door cost multiplier below a plain step is refused at the schema', () => {
+  /**
+   * Built by hand from a real captured payload, then edited and
+   * re-checksummed -- the shape a hand-edited save file has.
+   * `captureSessionSystems` is used for the surrounding sections precisely so
+   * this asserts the schema and not a fabricated payload's plausibility.
+   */
+  function envelopeWithDoorCostMultiplier(costMultiplier: number): unknown {
+    const runtime = createNewSimulationRuntime(7);
+    runtime.navigation.doors.register({
+      id: 'door-saved',
+      position: { x: tileCoordinate(4), y: tileCoordinate(1) },
+      side: 'left',
+      state: 'closed',
+      requiredSecurityClearance: 0,
+      costMultiplier: MINIMUM_DOOR_COST_MULTIPLIER,
+    });
+
+    const envelope = buildTestEnvelope({ simulation: captureSessionSystems(runtime) });
+    const edited = JSON.parse(JSON.stringify(envelope)) as {
+      checksum: string;
+      payload: { simulation: { navigation: { doors: { costMultiplier: number }[] } } };
+    };
+    const doors = edited.payload.simulation.navigation.doors;
+    expect(doors).toHaveLength(1);
+    const door = doors[0];
+    if (door === undefined) throw new Error('The captured payload must carry the registered door.');
+    door.costMultiplier = costMultiplier;
+    edited.checksum = computeSaveChecksum(edited.payload as never);
+    return edited;
+  }
+
+  it('pins the bound, so lowering it is a visible change rather than a silent one', () => {
+    expect(MINIMUM_DOOR_COST_MULTIPLIER).toBe(1);
+    expect(decodeSaveEnvelope(envelopeWithDoorCostMultiplier(MINIMUM_DOOR_COST_MULTIPLIER))).toMatchObject({ ok: true });
+  });
+
+  it('rejects a multiplier below the bound as an invalid shape, before any restore is attempted', () => {
+    for (const costMultiplier of [MINIMUM_DOOR_COST_MULTIPLIER - Number.EPSILON, 0.75, 0.25, 0, -5]) {
+      expect(decodeSaveEnvelope(envelopeWithDoorCostMultiplier(costMultiplier)), `costMultiplier ${costMultiplier}`).toMatchObject({
+        ok: false,
+        error: { code: 'invalid-shape' },
+      });
+    }
+  });
+
+  it('still accepts every multiplier this codebase has ever written', () => {
+    // `createGradedDoor` defaults to 1 and `BuildableDefinition.placesDoor`
+    // says 1; the fixtures reach 2. Nothing has ever produced less, which is
+    // why bounding the leaf shared with the frozen V3/V4 shapes rejects no
+    // save that exists.
+    for (const costMultiplier of [1, 1.5, 2]) {
+      expect(decodeSaveEnvelope(envelopeWithDoorCostMultiplier(costMultiplier))).toMatchObject({ ok: true });
     }
   });
 });

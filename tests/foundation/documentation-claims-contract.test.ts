@@ -63,12 +63,56 @@ async function collectSourceFiles(directory: string): Promise<readonly string[]>
  */
 const POSITIVE_CONTROL = /\bexport\b/u;
 
-async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
-  const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+/**
+ * Every subtree the walk must reach, asserted by name.
+ *
+ * **The count floor below is not enough, and this is why.** The guard used to
+ * be `files.length > 100` alone, and `src/` holds 372 `.ts` files -- so
+ * dropping the largest subtree, `src/simulation/` (178 files), leaves 194 and
+ * the floor still passes. Measured, not reasoned: with one line in
+ * `collectSourceFiles` skipping `simulation`, a planted
+ * `compressPayloadProbe()` returning `"gzip"` in
+ * `src/simulation/economy/income.ts` left *"compresses nothing"* **green with
+ * the offender in the tree**.
+ *
+ * A count cannot close that direction, because the number a partial walk
+ * returns is still a large number. The set of subtrees can, and it fails by
+ * name -- so the message says which subtree stopped being read rather than
+ * that a number got smaller.
+ *
+ * **Adding a directory under `src/` is meant to fail here.** That is the point:
+ * a new subtree is a new place a documentation claim can be contradicted, and
+ * this contract should not silently stop covering it. Add the name.
+ */
+const REQUIRED_SRC_SUBTREES = [
+  'content',
+  'input',
+  'persistence',
+  'rendering',
+  'services',
+  'shared',
+  'simulation',
+  'ui',
+] as const;
 
-  // Vacuity guard: an empty or failed walk would make every assertion below
-  // pass while reading nothing.
+async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
+  const src = path.join(repositoryRoot, 'src');
+  const files = await collectSourceFiles(src);
+
+  // Vacuity guard, first direction: an empty or failed walk would make every
+  // assertion below pass while reading nothing.
   expect(files.length, 'no TypeScript files found under src/; the walk is broken').toBeGreaterThan(100);
+
+  // Second direction, and the one a count cannot see: a walk that reached
+  // *some* of `src/`. See `REQUIRED_SRC_SUBTREES` above for the measurement.
+  const reached = new Set(
+    files.map((file) => path.relative(src, file).split(path.sep)[0]).filter((segment) => segment !== undefined),
+  );
+  const missing = REQUIRED_SRC_SUBTREES.filter((subtree) => !reached.has(subtree));
+  expect(
+    missing,
+    'the walk under src/ never reached these subtrees, so every claim below is unchecked for them -- either the walk is broken or a directory was renamed and this list was not',
+  ).toEqual([]);
 
   const matches: string[] = [];
   for (const file of files) {
@@ -259,17 +303,30 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * asked for, and the reason this list is an enumeration rather than a cap
      * of one.
      *
-     * A third entry is still a real event and still has to pass through here.
-     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
-     * lines, and neither exists; the degradation ladder of decision 8 debits
-     * rather than credits.
+     * **The third entry has now arrived, and it is not an income line.**
+     * `LoanBook.draw` (ADR 0075 decision 2) hands over a principal, and that
+     * decision requires the difference to stay visible: *"a ledger where the
+     * operating net is negative while cash rises is a loan masking a deficit,
+     * and the player should be able to see the difference."* So the
+     * allow-list grows by one and gap 21 was rewritten in the same change to
+     * say which of the three are income and which are not -- the same
+     * treatment `StateIncomeSystem` got, and the reason this list is an
+     * enumeration rather than a cap of two.
+     *
+     * A fourth entry is still a real event and still has to pass through
+     * here. ADR 0017 decision 3 names grants and prison labour as the
+     * *secondary* income lines and neither exists; ADR 0075 decision 1's
+     * threshold grants would be the first of them, and a grant *is* an inflow
+     * a loan takes its share of, so whoever adds one routes it through
+     * `LoanBook.divert` as well as through here.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+      'something other than ProcurementSystem.cancel, StateIncomeSystem and LoanBook.draw now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change -- and route it through LoanBook.divert, because ADR 0075 decision 2 repays a loan out of every positive inflow',
     ).toEqual([
       path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'loans.ts'),
       path.join('src', 'simulation', 'economy', 'procurement.ts'),
     ]);
   });
@@ -331,6 +388,58 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
+  it('does not claim in prose that nothing charges the treasury', async () => {
+    /**
+     * **The mirror of the assertion above, and it is here because the gate
+     * above could not see its own reflection.**
+     *
+     * That one pins the *income* direction: no module may write that nothing
+     * credits the treasury. The identical claim exists with the sign flipped --
+     * that nothing takes money *out* -- and until this check it was ungated and
+     * false. `src/ui/hud/projection.ts` reasoned, in the comment that decides
+     * the Funds chip has no warning tone, that "the state now pays in once a
+     * day and nothing at all is charged, so a warning here would describe a
+     * slope that runs the wrong way."
+     *
+     * That was true when it was written, on 2026-08-25 in `4f711d5` (#311),
+     * and it has since been falsified twice, in the two ways money can leave a
+     * treasury:
+     *
+     * - **A charge the player cannot decline.** `916ac46` (#455, 2026-08-28)
+     *   made wages recurring: `PayrollSystem` bills every employee's
+     *   `wageBand.minPerDay` at each in-game day boundary.
+     * - **A charge the player makes without meaning to.** `a87b0d3` (#640)
+     *   made a `PlaceBuildOrder` buy its own materials at the press, so one
+     *   drag along a tile edge takes 80 per segment out of the balance.
+     *
+     * `git merge-base --is-ancestor 4f711d5 916ac46` holds, so the order is
+     * settled rather than inferred: the sentence predates the first thing that
+     * made it false by three days.
+     *
+     * **What this gate is not.** It does not say the Funds chip should have a
+     * tone. Whether a balance is "low", and at what number, is a threshold, and
+     * ADR 0017 decision 5 reserves every such value to #29. It says only that a
+     * module may not *reason from* an absolute that the code contradicts --
+     * which is the same thing the assertion above says, and the reason that one
+     * exists is that the phrase had by then been written wrong twice.
+     */
+    const denials = await sourceProseMatching(/\bnothing\s+(?:\w+\s+){0,3}(?:charges|is\s+charged|charged)\b[^.]*/giu);
+
+    // Non-vacuity first, exactly as the assertion above does it and for the
+    // same reason: a scan handed nothing reports no violations and reads
+    // identically to compliance.
+    const CONTROL = 'The state pays in once a day and nothing at all is charged.';
+    expect(
+      CONTROL.match(/\bnothing\s+(?:\w+\s+){0,3}(?:charges|is\s+charged|charged)\b[^.]*/giu),
+      'the pattern no longer recognises the sentence this check exists to catch, so its empty result below proves nothing',
+    ).not.toBeNull();
+
+    expect(
+      denials.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
+      'this sentence denies that anything charges the treasury. Two changes have falsified it: PayrollSystem bills a wage at every in-game day boundary (#455), and a build order buys its own materials at the press (#640). Delete the claim rather than qualifying it, and do not replace it with a threshold -- what counts as a low balance is #29\'s under ADR 0017 decision 5',
+    ).toEqual([]);
+  });
+
   it('agrees with itself about how many integers the status-counts channel carries', async () => {
     /*
      * Three files state this number in prose and one of them drifted.
@@ -358,6 +467,8 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
 
     const WORDS: Readonly<Record<number, string>> = {
       9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
+      15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen', 19: 'nineteen', 20: 'twenty',
+      21: 'twenty-one',
     };
     const word = WORDS[fieldCount];
     expect(word, `add ${fieldCount} to this gate's number-word table`).toBeDefined();
@@ -374,6 +485,92 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
       expect(
         text.includes(`${word} integers`),
         `${claimant} does not say "${word} integers", but simulation/status-counts carries ${fieldCount}`,
+      ).toBe(true);
+    }
+  });
+
+  /**
+   * The two claims `docs/PRISONER_OPERATIONS.md` makes *about the size and
+   * shape of the action catalogue*, asserted against the catalogue.
+   *
+   * Both were false when this gate was written, and each was false in the way
+   * `docs/AGENT_WORKFLOW.md` §4 predicts: *"a sentence asserting an absence or
+   * a count rots first -- adding the thing it denies never touches the
+   * sentence denying it."*
+   *
+   * - The scope bullet's bold **10 candidate actions** was already one behind
+   *   its *own* prose, which enumerated an eleventh two lines below it, and
+   *   went two behind the code on 2026-09-03 when ADR 0093 appended
+   *   `action.carry`.
+   * - *"`action.free-association` is the catalogue's one entry with no need
+   *   effect"* stopped being true the same morning and for the same reason:
+   *   `action.carry` declares `needEffectsPerTick: {}` too, and `actions.ts`
+   *   says so in the carry's own comment -- *"the same property
+   *   `action.free-association` has, and for the same reason"*.
+   *
+   * Both are load-bearing rather than decorative. The count is the document's
+   * own statement of what "a representative slice" currently is, which is what
+   * an agent sizes a change against; and the second sentence is the *reason* an
+   * entry may be appended to a live catalogue at all -- a 0-score candidate can
+   * never displace one addressing a need -- so a reader who believes there is
+   * exactly one such entry will not go looking for the rule that makes the
+   * second one behave differently (`ActionSystem.planIdleSelection` puts the
+   * carry at rank 0 on a rule about the job board, not on its score).
+   *
+   * Counted from `DEFAULT_ACTIONS` rather than from a fixture, so the gate
+   * cannot be satisfied by a catalogue that happens to be the right size
+   * today.
+   */
+  it('agrees with DEFAULT_ACTIONS about how many candidate actions there are and how many serve no need', async () => {
+    const source = stripComments(
+      await readFile(path.join(repositoryRoot, 'src', 'simulation', 'prisoners', 'actions.ts'), 'utf8'),
+    );
+    const entries = [...source.matchAll(/\bid: '(action\.[a-z-]+)'[\s\S]*?needEffectsPerTick: \{([^}]*)\}/gu)].map(
+      (match) => ({ id: match[1]!, effects: match[2]!.trim() }),
+    );
+    expect(entries.length, 'no DEFAULT_ACTIONS entries parsed; the catalogue shape this gate reads has changed').toBeGreaterThan(5);
+
+    const doc = await readFile(path.join(repositoryRoot, 'docs', 'PRISONER_OPERATIONS.md'), 'utf8');
+    // Whitespace-collapsed because prose wraps, exactly as the status-counts
+    // gate above had to learn.
+    const flat = doc.replace(/\s+/gu, ' ');
+
+    expect(
+      flat.includes(`**${entries.length} candidate actions**`),
+      `docs/PRISONER_OPERATIONS.md does not say "**${entries.length} candidate actions**", but DEFAULT_ACTIONS holds ${entries.length}`,
+    ).toBe(true);
+
+    const serveNoNeed = entries.filter((entry) => entry.effects === '').map((entry) => entry.id);
+    expect(serveNoNeed.length, 'no entry declares an empty needEffectsPerTick; the second half of this gate is stale').toBeGreaterThan(0);
+    /*
+     * **A positive claim about the count, not a ban on the old sentence, and
+     * the first draft of this gate got that the wrong way round.** It asserted
+     * that the string *"catalogue's one entry with no need effect"* was
+     * ABSENT -- and then went red on the corrected document, because
+     * `docs/AGENT_WORKFLOW.md` §4 requires a correction to *quote* the sentence
+     * it corrects rather than overwrite it. A substring gate cannot tell a
+     * quotation from a live claim, so a gate written that way punishes the one
+     * habit this repository most wants. Asserting the *current* count is
+     * immune: the corrected paragraph states it, and a quotation of the old
+     * sentence beside it changes nothing.
+     */
+    const COUNT_WORDS: Readonly<Record<number, string>> = {
+      1: 'one entry with no need effect',
+      2: 'two entries with no need effect',
+      3: 'three entries with no need effect',
+      4: 'four entries with no need effect',
+      5: 'five entries with no need effect',
+    };
+    const phrase = COUNT_WORDS[serveNoNeed.length];
+    expect(phrase, `add ${serveNoNeed.length} to this gate's number-word table`).toBeDefined();
+    expect(
+      flat.includes(phrase!),
+      `docs/PRISONER_OPERATIONS.md does not say "${phrase!}", but DEFAULT_ACTIONS holds ${serveNoNeed.length}: ${serveNoNeed.join(', ')}`,
+    ).toBe(true);
+    for (const id of serveNoNeed) {
+      expect(
+        doc.includes(id),
+        `docs/PRISONER_OPERATIONS.md never names ${id}, which serves no need and is one of the entries the "no need effect" paragraph is about`,
       ).toBe(true);
     }
   });

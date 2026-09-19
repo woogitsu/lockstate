@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SimulationEventLog } from '../../src/simulation/events';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
@@ -9,7 +10,7 @@ import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { IncidentResponseSystem } from '../../src/simulation/incidents/response-system';
 import { DEFAULT_SECTOR_RISK_POLICY, SectorRiskTracker } from '../../src/simulation/incidents/sector-risk';
 import { IncidentTriggerSystem } from '../../src/simulation/incidents/trigger-system';
-import { summarizeIncidents } from '../../src/simulation/incidents/alerts';
+import { summarizeIncidents } from '../../src/simulation/incidents/incident-summary';
 
 /**
  * Issue #28's performance requirement: "benchmark large simultaneous
@@ -45,6 +46,7 @@ describe('incident scale: many simultaneous incidents across many sectors', () =
     for (let i = 0; i < 120; i += 1) guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
 
     const incidents = new IncidentLog();
+    const events = new SimulationEventLog();
     const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
     const gangs = new GangRegistry();
 
@@ -52,9 +54,17 @@ describe('incident scale: many simultaneous incidents across many sectors', () =
     const trigger = new IncidentTriggerSystem(
       incidents, risk, gangs, sectorIds,
       () => ({ needsPressure: 1, staffingShortfall: 1, contrabandPressure: 1 }),
-      (sectorId) => [Number(sectorId.slice('sector-'.length))],
+      // Two prisoners per sector: a riot needs `DEFAULT_MINIMUM_RIOT_PARTICIPANTS`
+      // of them (ADR 0048), and this file's subject is thirty simultaneous
+      // responses rather than the participant floor. The second id is offset by
+      // the sector count so no two sectors claim the same prisoner.
+      (sectorId) => {
+        const cellIndex = Number(sectorId.slice('sector-'.length));
+        return [cellIndex, cellIndex + cellCount];
+      },
+      events,
     );
-    const response = new IncidentResponseSystem(incidents, sectors, guards, navigation);
+    const response = new IncidentResponseSystem(incidents, sectors, guards, navigation, events);
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);

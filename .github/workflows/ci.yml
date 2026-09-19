@@ -11,12 +11,28 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs, never a run on `main`. For a push to `main` the
-  # ref is constant, so `true` meant two merges landing close together
-  # cancelled the earlier commit's CI -- while that commit was already live,
-  # since a merge deploys. It left a shipped commit with no completed gate
-  # result and nothing reporting the hole. A merge queue of one is worth the
-  # extra minutes.
+  # Cancel superseded PR runs. For a push to `main` the ref is constant, so
+  # `true` meant two merges landing close together cancelled the earlier
+  # commit's CI -- while that commit was already live, since a merge deploys.
+  # It left a shipped commit with no completed gate result and nothing
+  # reporting the hole. A merge queue of one is worth the extra minutes.
+  #
+  # THIS DOES NOT MEAN A RUN ON `main` IS NEVER CANCELLED, and the sentence
+  # above used to say that it did. `cancel-in-progress` governs the run that is
+  # ALREADY RUNNING; GitHub separately keeps at most one PENDING run per
+  # concurrency group, whatever this setting says. So a third push arriving
+  # while one run is in progress and a second waits cancels the second -- which
+  # never starts, and records no jobs at all. Runs 33004940891 and 33005035205
+  # are both that: pushes to `main` on 2026-08-26, both `cancelled`, both with
+  # zero jobs. `main` sees this often enough to matter -- eight of the sixty
+  # most recent completed CI runs started by a push to `main`, measured over
+  # 2026-08-25T18:08Z to 2026-08-26T19:45Z.
+  #
+  # The consequence is a deployment one, and it is now reported rather than
+  # inferred: deploy.yml triggers on this workflow's COMPLETION and its
+  # `staging` job requires `conclusion == 'success'`, so a commit whose CI was
+  # cancelled here is never published as itself. deploy.yml's `staging-blocked`
+  # job says so out loud (#424); before it, that was silent.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -25,14 +41,155 @@ env:
 
 jobs:
   verify:
+    # A fork's pull request must not run on this runner, and must not become a
+    # deployment. Two separate reasons; this guard is the whole answer to the
+    # first and only half an answer to the second.
+    #
+    # The runner. `runs-on` is self-hosted, so these steps execute on a machine
+    # the owner keeps, whose workspace is reused between jobs and between runs
+    # (several comments below turn on that reuse). `pnpm verify` executes the
+    # checked-out ref's own code -- `vite.config.ts`, every file under `tests/`
+    # -- so without this term, opening a pull request from a fork is enough to
+    # run arbitrary code there.
+    #
+    # The deployment, and read this before treating the guard as sufficient.
+    # This workflow triggers on a bare `pull_request`, so a fork's pull request
+    # starts a CI run that belongs to THIS repository, and deploy.yml triggers
+    # on a completed run of it. Skipping every job here does NOT establish that
+    # such a run cannot deploy: that depends on what GitHub reports as the
+    # run's `conclusion` when all of its jobs were skipped, which nothing in
+    # this repository establishes. deploy.yml's `staging` job therefore tests
+    # `workflow_run.event` and `workflow_run.head_repository.full_name` itself,
+    # and its comment explains why the requirement belongs there rather than
+    # here. Stated in both files because the connection is invisible from
+    # either one alone.
+    #
+    # Every job in this workflow carries this term, and
+    # tests/foundation/ci-configuration-contract.test.ts requires that of a new
+    # one. `needs:` is not a substitute: a dependent job is skipped when its
+    # dependency is, but that is the shape of today's graph rather than a
+    # property of the workflow, and a job added with no `needs:` chain to
+    # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          # ALL HISTORY, BECAUSE `pnpm verify` READS HISTORY.
+          # tests/foundation/documentation-commit-citation-contract.test.ts
+          # resolves every commit sha this repository cites in `docs/**` and
+          # `tests/**` through `git rev-parse`, which is the only mechanical
+          # answer to a *fabricated* sha in prose. That is not hypothetical:
+          # `0269665` shipped a `d0b6e18` that names nothing, in the very commit
+          # whose subject was dating an undated count, and
+          # docs/HANDOVER-2026-08-26.md records a second fabrication in its own
+          # draft, caught by hand before the push.
+          #
+          # At the action's default depth of 1 the checkout holds one commit, so
+          # that check would fail for every citation in the corpus for a reason
+          # that has nothing to do with whether the citation is right. That is
+          # why the handover concluded the gate could not be built here, and why
+          # a gate that skipped itself on a shallow clone was the wrong answer
+          # to it: it would never run where it matters. The test fails, loudly
+          # and naming this setting, if it ever finds itself on a shallow
+          # checkout -- so deleting this line does not quietly disable it.
+          #
+          # WHAT THE DEPTH COSTS, MEASURED RATHER THAN FEARED -- AND EVERY
+          # NUMBER BELOW CARRIES THE COMMAND THAT PRODUCES IT, BECAUSE THE
+          # ABSOLUTES ROT AND THE COMMANDS DO NOT.
+          #
+          # They rot fast. The figures that first stood here were about five
+          # commits stale in the commit that landed them, and re-taking them
+          # only restarts the clock. So: run these, do not trust the numerals.
+          # Taken at `4ae2e39`, GIT_LFS_SKIP_SMUDGE=1 so the number is about
+          # the git pack alone, against github.com and therefore including
+          # round trips. All refs, because that is what `fetch-depth: 0`
+          # fetches.
+          #
+          #   git clone --no-local https://github.com/matmaxalez/lockstate
+          #     -> in-pack 9440   size-pack 7.39 MiB
+          #   git clone --no-local --depth 1 https://github.com/matmaxalez/lockstate
+          #     -> in-pack  922   size-pack 3.29 MiB
+          #   git rev-list --count --remotes=origin --tags   -> 1086
+          #
+          # So the depth costs about 4.1 MiB and 8,500 objects for 1,086
+          # commits. This repository's bulk is the ~55 MB of art in Git LFS,
+          # which never enters the git pack; that is why history is this cheap
+          # and it is the fact to re-check if the number ever jumps.
+          #
+          # One of those counts is NOT monotonic and reads as a mistake
+          # otherwise: commits-across-every-ref went DOWN, 1,115 -> 1,086,
+          # because delete-branches.yml removes merged branches and their
+          # unmerged commits stop being reachable. A falling count here is the
+          # cleanup working.
+          #
+          # A narrower fetch was costed and rejected, and that conclusion has
+          # survived every re-measurement so far:
+          #
+          #   git rev-list --count 4ae2e39            -> 845     (branch length)
+          #   git rev-list --count b904a1b..4ae2e39   -> 794     (deepest cited)
+          #
+          # `b904a1b` is the oldest commit the documentation cites, so a
+          # `fetch-depth` answering today's corpus needs 795 of 845 and saves
+          # 50 commits -- and would go stale the first time anything cited an
+          # older one. The gate collects those tokens itself
+          # (tests/foundation/documentation-commit-citation-contract.test.ts);
+          # re-derive with `git rev-list --count <token>..<tip>` over them
+          # rather than trusting `b904a1b` to still be the deepest.
+          #
+          # AND IT IS PAID ONCE, WHICH IS THE PART THE REUSED WORKSPACE
+          # DECIDES. This runner keeps its workspace between jobs and between
+          # runs (the `if:` comment above turns on that, and so do the LFS
+          # comments below), so `actions/checkout` fetches into an existing
+          # repository instead of cloning. At the pinned v6 its `fetch()` adds
+          # `--unshallow` exactly when `.git/shallow` exists and `fetch-depth`
+          # is not positive, so the deepening happens on the first run after
+          # this line lands and every later run is an ordinary incremental
+          # `git fetch --prune`. version.yml already checks this repository out
+          # at `fetch-depth: 0` on the same runner label on every push to
+          # `main`, so a full fetch here is not a new cost on this machine.
+          #
+          # The `assets` and `browser` jobs keep the default depth, because
+          # neither reads history -- and so does deploy.yml's `staging` job.
+          # That re-shallows this workspace after this job, and it is measured
+          # rather than assumed to be harmless. TWO SEPARATE FETCHES, and the
+          # sentence that used to stand here ran them together:
+          #
+          #   1. THE RE-SHALLOW, which is cheap and leaves the objects alone.
+          #      Against the COMPLETE clone above:
+          #
+          #        git fetch --no-tags --prune --no-recurse-submodules \
+          #          --depth=1 origin <sha>
+          #          rev-list --count HEAD   845 -> 1
+          #          .git/shallow            written
+          #          in-pack / size-pack     unchanged, not one object deleted
+          #          wall 0.553 s over file://, 1.082 s over https
+          #
+          #   2. THE `--unshallow` THE NEXT RUN OF THIS JOB PAYS, which is the
+          #      more expensive of the two and is where the old sentence was
+          #      wrong. It read "the next run's `--unshallow` finds everything
+          #      already local -- 0.055 s and no change to the pack"; that
+          #      figure belongs to the fetch in (1), and the `--unshallow` does
+          #      not reliably reuse what is on disk:
+          #
+          #        git fetch --unshallow
+          #          over file://   wall 0.296 s, pack unchanged
+          #          over https     wall 2.180 s, pack 7863 -> 8315 objects,
+          #                                        6.99 -> 7.78 MiB
+          #
+          #      Transport decides it, so a single number for this one would be
+          #      a fiction. Both were taken here; the runner pays the https
+          #      shape. Still small in absolute terms -- which is the point --
+          #      but it is a real fetch and not a no-op, so do not cite it as
+          #      free.
+          #
+          # A local transport keeps the round trips to github.com out of the
+          # number; the object transfer, which is the part that could have been
+          # large, is in both.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -89,6 +246,42 @@ jobs:
 
       - name: Verify project
         run: pnpm verify
+
+      # The measurement harness under `tests/perf/` sits outside `pnpm test` on
+      # purpose: its files are named `*.perf.ts` so the ordinary suite never
+      # pays for building multi-hundred-chunk prisons. Until #1083 nothing else
+      # ran it either -- no `package.json` script, no step here -- so it was
+      # read by `tsc` and executed by nobody, and nothing would have said if it
+      # stopped passing. Three files and 35 tests when that was measured.
+      #
+      # `pnpm test:perf` and not a bare `vitest run`, and the config is the
+      # load-bearing part. `tests/perf/vitest.perf.config.ts` sets its own
+      # `testTimeout: 900_000` where the root `vitest.config.ts` sets `5_000`,
+      # and on the five-second budget these files go red on time rather than on
+      # anything about the code: #1083 hit six `Test timed out in 5000ms`
+      # failures with an ad-hoc config, and re-running the harness with
+      # `--testTimeout=5000` and nothing else changed produced 12 of 35. The
+      # count follows the machine; that there is one is why the script exists
+      # rather than the command being typed here.
+      #
+      # It asserts schema, bytes and round-trips and never elapsed time
+      # (`docs/BENCHMARKING.md`), so a slow runner makes this step long and not
+      # flaky. ~85s where #1083 was filed; 143s on a four-way-shared container.
+      # The whole `verify` job finished in 50s on `lockstate-wsl-DOM-NEW-03`
+      # (run 34328735520) and 1m54s on `woogitsu-linux-03` (run 34284035100)
+      # against this job's 30-minute cap, so the step fits with room to spare.
+      # That matters because the cap is NOT what was authorised below: if this
+      # job ever approaches 30 minutes, that is a decision for the owner and
+      # not a number to nudge.
+      #
+      # AUTHORISED BY THE OWNER ON 2026-09-09, as one step in this job and
+      # nothing else in this file. The provenance is the weaker kind and
+      # `AGENTS.md` records it as such: the label of a clickable option the
+      # integrator wrote -- "Dodaj bramkę w CI" -- and not a sentence the owner
+      # typed. `tests/foundation/ci-configuration-contract.test.ts` pins the
+      # step and the script together, so deleting either one is red.
+      - name: Verify measurement harness
+        run: pnpm test:perf
 
       - name: Verify benchmark harness
         run: pnpm verify:benchmark
@@ -153,11 +346,13 @@ jobs:
   # Separate does not mean optional -- same precedent as `verify:sql`
   # (docs/TESTING.md), which found three real defects the first time it was run.
   assets:
+    # Same fork guard as `verify`, for the same two reasons; see the comment
+    # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Only so a failing build does not spend metered LFS bandwidth. Nothing in
     # this job depends on `verify` having provisioned anything.
     needs: verify
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       # Deliberately NOT `lfs: true`, for two measured reasons.
@@ -280,6 +475,8 @@ jobs:
   # check becomes non-optional without becoming part of them -- the same
   # precedent as `verify:sql` and `verify:assets`.
   browser:
+    # Same fork guard as `verify`, for the same two reasons; see the comment
+    # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Ordered after `assets` for two reasons, neither of them a data dependency.
     #
@@ -292,8 +489,90 @@ jobs:
     #    has to be correct on a cold workspace, not merely on the one `assets`
     #    happened to leave behind.
     needs: assets
-    runs-on: [self-hosted, Linux, X64, wsl2]
-    timeout-minutes: 30
+    runs-on: self-hosted
+    # RAISED FROM 30 TO 90 ON 2026-09-08, BY THE OWNER, AND ONLY THIS LINE.
+    #
+    # This job stopped finishing. Measured from the Actions API rather than
+    # from a feeling, on two runs of the same suite eleven hours apart:
+    #
+    #   run 34155439633, `main` @ 59049c07, runner `woogitsu-wsl-DOM-NEW-02`
+    #     step "Run the real-browser suite" 20:22:07 -> 20:35:07 = 13m 00s,
+    #     success, all 420 tests.
+    #   run 34196112204, `1d8094a1`,        runner `woogitsu-linux-06`
+    #     step "Run the real-browser suite" 06:56:45 -> 07:26:29 = 29m 44s,
+    #     CANCELLED, having reached 46 of 420.
+    #
+    # The same slowdown is visible outside this job and outside Chromium, which
+    # is what rules out the suite as its cause: `verify`'s own "Verify project"
+    # step is 17s on `woogitsu-wsl-DOM-NEW-03` and 102s on `woogitsu-linux-01`,
+    # the same `pnpm verify` on the same tree. Control: `assets` ran on the
+    # `linux-*` pool in BOTH runs and took 11s and 14s -- where the pool did not
+    # change, the time did not change.
+    #
+    # So 30 minutes was calibrated against a machine roughly six times faster
+    # than the pool this job now lands on, and at that ratio the 13-minute suite
+    # needs about 78. Ninety is that with room, not a number chosen to make
+    # today's run fit.
+    #
+    # **This does not by itself make the job green, and the owner authorised it
+    # knowing that.** Four specs exhaust `test.slow()`'s own 180s per-test cap
+    # on this pool and fail rather than cancel; issue #1008 carries them and
+    # `5a761322` cut the first (`#331`, 174s -> 132s, by making the work smaller
+    # rather than the budget bigger). What the raise buys is that the job now
+    # *reports* them instead of being killed mid-suite -- see the evidence-upload
+    # comment below, which anticipated exactly this and whose request it
+    # discharges as a side effect.
+    #
+    # **"FOUR SPECS" WAS WRONG, AND THE FIRST FINISHED RUN IS WHAT SAID SO.**
+    # Run 34215508642 -- the first `browser` job on this pool ever allowed to
+    # reach the end, which is what this line bought -- finished in **41.3
+    # minutes: 422 passed, 1 failed**. Only `#331` exhausts the cap, still, at
+    # `app-shell.spec.ts:6119` on `page.setViewportSize`. `#88` passed in 2.5 m
+    # and both `#411` specs in 2.4 m and 2.6 m; so did `a pending delivery is on
+    # the panel with the fold shut`, in 22.7 s, which the earlier partial run
+    # had recorded red at 23.6 s.
+    #
+    # The four-red picture was read off a job **cancelled at test 46 of 420**
+    # while the pool was saturated, and four of those five did not survive the
+    # job being allowed to finish. Kept rather than overwritten because the
+    # paragraph above is the reasoning the owner authorised, and because "a
+    # starved partial run is not a sample of a finished one" is the lesson.
+    #
+    # The suite needs 41.3 minutes here against 13 on the retired pool -- **3.2
+    # times**, where the `verify` step above shows ~6. The slowdown is not one
+    # uniform factor, so 90 is right for this job and says nothing about any
+    # other budget.
+    #
+    # **"~6" IS THE WORST-CASE PICK AND THE HONEST FIGURE IS ABOUT 4.** It came
+    # from three hand-chosen samples -- 17s against 102-142s -- taking the
+    # extremes of both. Over n=40 and n=30 samples of that same step the ranges
+    # are 15-23s on the retired pool and 51-142s, median ~75s, here. The two
+    # numbers in this comment that are actually load-bearing for the budget are
+    # unaffected: 41.3 minutes measured on this pool, against a 90-minute cap.
+    # Issue #1089 carries the audit.
+    #
+    # **AND "ONLY `#331`, STILL" IS WRONG TWICE.** Run 34251663361, the second
+    # `browser` job allowed to finish, ran the same suite on the same
+    # unmodified base commit and reported **423 passed (39.5m)** -- `#331`
+    # among them. It is **intermittent on this pool**, red on
+    # `woogitsu-linux-02` and green on `woogitsu-linux-03`. And `:6119` on
+    # `page.setViewportSize` is where the clock stopped, not where the time
+    # went: the retained trace prices that call at 0.12 s and puts 69% of the
+    # 180 s in the keyboard wall-ordering loop (PR #1093). Neither moves this
+    # budget, which is measured whole-suite at 41.3 and 39.5 minutes.
+    #
+    # **AND THE HOST IS NOT THE VARIABLE EITHER -- CLOSED BY #1093.** A fourth
+    # run went green on `woogitsu-linux-02`, the host of both reds, and the
+    # fastest suite of the four (35.6m) is the one that came closest to the
+    # cap. Per-test, `#331` sat at or over its 3.0-minute cap on three of the
+    # four while its neighbours held 1.5-2.7m: the variance was the test's
+    # own. #1093 cut it and merged as `8a35167b` -- `#331` **1.5m** on the
+    # next finished run, `app-shell.spec.ts` 21.3m -> 18.6m, suite 35.6m.
+    # This budget is unaffected and stays at 90.
+    #
+    # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
+    # a job, not a step, not the runner selectors, not `deploy.yml`.
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -312,8 +591,34 @@ jobs:
       - name: Provision Git LFS
         run: bash scripts/provision-git-lfs.sh
 
-      # Same path filter and same scoped credential as the `assets` job; see the
-      # comments there for why the token is set for this command alone.
+      # Same scoped credential as the `assets` job; see the comments there for
+      # why the token is set for this command alone.
+      #
+      # **Two path filters, not one.** The actor atlases were enough until the
+      # renderer started reading `public/game-content/source-art/` as well
+      # (ADR 0052). Those sheets stay pointer files unless they are named here,
+      # and the failure that produces says nothing about LFS: the page loads,
+      # the harness boots, and seven specs die on
+      # `Error: The source image could not be decoded` from inside
+      # `createImageBitmap`. Measured on this branch before the second filter
+      # existed.
+      #
+      # The names are the sheets `src/rendering/assets/environment-sprites.ts`
+      # cuts from, and **that file is the source of truth** -- a sprite added
+      # there naming a further sheet has to be added here too. The globs match on
+      # the stable prefix rather than the content hash, so re-rendered art keeps
+      # working. Deliberately not the whole directory: that is ~36 MB against
+      # ~5.7 MB for these four, on metered LFS bandwidth.
+      #
+      # **This said "the three" and "~4.4 MB" until 2026-09-05 (#1020), when
+      # `furniture.cell.bed.single.variants` became the fourth**: the first
+      # catalogued object drawn as art rather than as a coloured block. The
+      # sentence about a forgotten sheet is the one that predicted this edit,
+      # and it is worth noting that it was written before there was a fourth
+      # and held exactly.
+      #
+      # The guard below is what turns a forgotten sheet into a message that says
+      # so, instead of into seven decode errors.
       - name: Fetch runtime art from Git LFS
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -326,6 +631,78 @@ jobs:
           git config --local 'http.https://github.com/.extraheader' \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
           git lfs pull --include="public/assets/actors"
+          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png,public/game-content/source-art/furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.fixture.cell.toilet_sink.*.png,public/game-content/source-art/rendered.furniture.corridor.bench.variants.*.png,public/game-content/source-art/rendered.furniture.office.desk.employee.variants.*.png,public/game-content/source-art/rendered.furniture.cell.locker.variants.*.png"
+
+      # Every sheet the extraction manifest names must have materialised. The
+      # manifest is TypeScript and this is bash, so the asset ids are read out
+      # of it with a grep rather than imported -- crude, and it fails closed:
+      # a name it cannot find is a name that is not checked, so the count is
+      # asserted too.
+      - name: Assert the environment sheets decoded
+        run: |
+          set -euo pipefail
+          # The per-file checks are a function because there are now two id
+          # lists to run them over, and two copies of a fails-closed check are
+          # how one copy quietly stops matching the other.
+          assert_decoded() {
+            file="$1"; id="$2"
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; add '$id' to the --include filter above"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            echo "$file: $(stat -c%s "$file") bytes"
+          }
+
+          ids="$(grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+                 | sed "s/assetId: '//; s/'//" | sort -u)"
+          [ -n "$ids" ] || { echo "::error::no assetId found in environment-sprites.ts; the grep needs updating"; exit 1; }
+          for id in $ids; do
+            file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names source-art asset '$id' and no such sheet is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "$id"
+          done
+
+          # ADR 0100's second publishing lane. The owner authorised this one
+          # change to this file on 2026-09-06 -- the --include filter above and
+          # this assertion -- and nothing else in it; `AGENTS.md` records the
+          # release and its limits.
+          #
+          # A rendered sprite carries `renderedArtId`, not `assetId`. That is
+          # deliberate rather than incidental: it keeps the manifest's own
+          # sentence "The catalog names the file; this never does" literally
+          # true of `assetId`, which still resolves only against
+          # `source-art.v1.json`. The grep above therefore cannot see a
+          # rendered id, which is why this is a second list and not a wider
+          # pattern.
+          #
+          # THE `rendered.` PREFIX IN THE GLOB IS LOAD-BEARING. Both files sit
+          # in this directory today under the same id:
+          # `fixture.cell.toilet_sink.<hash>.png` is the owner's sheet, which
+          # nothing loads, and `rendered.fixture.cell.toilet_sink.<hash>.png`
+          # is the render the game draws. Globbing `"$id".*.png` here would
+          # find the owner's sheet, decode it happily, and let the render ship
+          # as an unpulled pointer -- exactly the failure this step exists to
+          # make impossible. An empty list is not an error: until a second
+          # object is drawn from a render there is one id, and a tree with none
+          # is a legitimate state.
+          rendered_ids="$(grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+                 | sed "s/renderedArtId: '//; s/'//" | sort -u)"
+          for id in $rendered_ids; do
+            file="$(ls public/game-content/source-art/rendered."$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names rendered asset '$id' and no published render is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "rendered.$id"
+          done
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -403,3 +780,158 @@ jobs:
             echo "::error::the browser suite skipped tests; running them is the entire point of this job"
             exit 1
           fi
+
+      # THE ARTEFACT A PLAYER ACTUALLY RECEIVES, EXECUTED.
+      #
+      # Everything above this point runs a Vite **dev server** over `src/**`.
+      # `tests/browser/vite.config.ts` says so of itself -- it "loads no
+      # Cloudflare plugin and never participates in `pnpm build`" -- so this
+      # job and the `verify` job's `pnpm build` between them could both be
+      # green while the bundle a player downloads had never been executed
+      # once. `scripts/verify-cloudflare-build.mjs` reads the emitted files and
+      # `scripts/verify-deployment-preview.mjs` asserts the served headers, and
+      # the latter's own header names what neither can do: "What it CANNOT
+      # check is that the policy still lets the renderer run, because it never
+      # opens a browser."
+      #
+      # WHY IT IS TWO STEPS IN THIS JOB RATHER THAN A JOB OF ITS OWN. This job
+      # has already paid for everything the artefact suite needs and a separate
+      # job would pay for all of it again: a checkout, `git lfs pull` of the
+      # runtime art on metered bandwidth, `pnpm install`, and Chromium
+      # provisioning. Measured on a developer machine, the marginal cost here
+      # is about 14 seconds -- `node scripts/cloudflare-task.mjs build
+      # production` in 3.3 s and the suite in 10.9 s including its preview
+      # server's startup -- against a job that takes roughly five minutes. A
+      # separate job would be minutes, for the same two tests.
+      #
+      # ORDERED AFTER the dev-server suite, not before, although failing in
+      # fourteen seconds rather than after five minutes would be nicer. The
+      # failure-evidence upload below is contract-bound to collect exactly
+      # `test-results/` and `browser-suite.log`
+      # (`tests/foundation/ci-configuration-contract.test.ts`), and Playwright
+      # clears `test-results/` at the start of every run: with the artefact
+      # suite first, its evidence would be deleted by the dev-server suite that
+      # followed. Nothing is lost by waiting, because the `verify` job builds
+      # the same artefact in parallel and would already be red if the build
+      # itself were broken.
+      #
+      # `pnpm build` is deliberately NOT used: it is `pnpm typecheck && node
+      # scripts/cloudflare-task.mjs build production`, and the `verify` job
+      # already runs that typecheck. The task script alone produces the
+      # byte-identical artefact and the type gate is not weakened, only not
+      # paid for twice.
+      - name: Build the production client
+        run: node scripts/cloudflare-task.mjs build production
+
+      # A FREE PORT, for the same reason the step above asks for one: this
+      # runner shares its host with active development, and the artefact
+      # config refuses to reuse a server it did not start -- attaching to one
+      # means reporting on a `dist/` this run did not build.
+      #
+      # NO `tee` HERE, and that is load-bearing rather than an oversight.
+      # `tests/foundation/ci-configuration-contract.test.ts` requires this job
+      # to pipe its suite output through `tee` to exactly one file, because
+      # that file is half of what the upload below collects. A second `tee`
+      # would make that contract fail. The vacuity guards this step still needs
+      # -- a suite cannot pass by running nothing, or by skipping its way to
+      # green -- are therefore applied to a captured variable instead, which
+      # costs only the streaming of fifteen seconds of output.
+      - name: Run the built client in a browser
+        run: |
+          set -uo pipefail
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "artefact preview server port: $port"
+          output="$(LOCKSTATE_ARTIFACT_TEST_PORT="$port" pnpm test:artifact 2>&1)" && status=0 || status=$?
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          if ! printf '%s' "$output" | grep -qE '[0-9]+ passed'; then
+            echo "::error::the production-artefact suite reported no passing tests"
+            exit 1
+          fi
+          if printf '%s' "$output" | grep -qE '[0-9]+ (skipped|did not run)'; then
+            echo "::error::the production-artefact suite skipped tests; running the built client is the entire point of it"
+            exit 1
+          fi
+
+      # THE EVIDENCE, WHICH THIS JOB USED TO THROW AWAY.
+      #
+      # This job has failed twice on a 60-second page-load timeout inside a
+      # setup helper, and neither failure could be diagnosed from the log.
+      # Playwright writes an `error-context.md` beside each failure -- an ARIA
+      # snapshot of the page at the moment it gave up, which is the one
+      # artefact that separates "the harness server never came up" from "the
+      # page came up and the thing being waited for never appeared". Nothing
+      # in this workflow ran `if: failure()` and nothing anywhere in
+      # `.github/` used `actions/upload-artifact`, so both snapshots were
+      # written into the runner's workspace and deleted by the next run's
+      # `git clean -ffdx` (deploy.yml's checkout comment records observing
+      # exactly that clean removing `browser-suite.log` and `test-results/`).
+      # The GitHub API reported zero artifacts for both runs.
+      #
+      # THE TWO PATHS, AND WHY THEY ARE THESE TWO.
+      #
+      # `test-results/` is Playwright's `outputDir`. It is not written down in
+      # `tests/browser/playwright.config.ts`, which sets no `outputDir` at
+      # all, so the default applies: at the pinned @playwright/test 1.56.1
+      # that is `path.join(packageJsonDir, 'test-results')`, and the nearest
+      # `package.json` above `tests/browser/` is the repository root's -- so
+      # it lands beside this workspace's root, which is where the step below
+      # looks. `tests/foundation/ci-configuration-contract.test.ts` fails if
+      # that config ever names an `outputDir` without this path following it.
+      #
+      # `browser-suite.log` is the `tee` target in the step above, and it is
+      # the whole stdout of the run rather than the tail GitHub renders.
+      #
+      # The payload is small on purpose and it is a property of the config,
+      # not a hope: `use:` sets no `trace`, no `screenshot` and no `video`,
+      # and all three default to off, so `test-results/` holds an
+      # `error-context.md` per failing test and nothing else. If any of those
+      # is ever turned on, revisit `retention-days` before assuming this stays
+      # cheap.
+      #
+      # `if: failure()` and not `always()`: a green run has no evidence worth
+      # keeping and `test-results/` is empty, so an unconditional upload would
+      # be an empty artifact on every run. It does mean a job *cancelled* --
+      # by the 30-minute `timeout-minutes`, or by the concurrency group --
+      # uploads nothing, because `failure()` is false for a cancellation. Both
+      # observed failures were Playwright test failures well inside that
+      # budget, so this covers them; a job that starts timing out at the
+      # thirty-minute mark instead needs `if: always()` and a re-read of this
+      # comment.
+      #
+      # **THAT LAST SENTENCE CAME TRUE ON 2026-09-08, AND THIS COMMENT IS WHY
+      # THE BUDGET WAS RAISED RATHER THAN THE CONDITION.** The job did start
+      # timing out at the thirty-minute mark, it did upload nothing, and the
+      # cost was concrete: one of the five reds that day --
+      # `a pending delivery is on the panel with the fold shut (#285, #703)`,
+      # dead at 23.6s -- is the one failure NOT explained by a spent budget,
+      # and its message is unrecoverable because this step was skipped. The
+      # timeout is 90 now, so a run that reaches the end *fails* rather than
+      # being cancelled, `failure()` is true, and the evidence uploads: the
+      # request this paragraph made is discharged without touching the
+      # condition. It is not discharged for a job cancelled some other way --
+      # the concurrency group still supersedes runs, and those still upload
+      # nothing. Changing `failure()` to `always()` is a second change to a
+      # file reserved to the owner and was NOT authorised on 2026-09-08; it
+      # stays here as the open question it has been since this comment was
+      # written.
+      #
+      # The name carries `run_attempt` as well as `run_id` because a re-run of
+      # a failed job reuses the run id, and v4 refuses to overwrite an
+      # existing artifact name rather than merging into it.
+      - name: Upload the browser suite's failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: browser-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/
+            browser-suite.log
+          retention-days: 7
+          # The suite step can fail before Playwright writes anything -- the
+          # `no passing tests` guard, or a crash in the port probe -- and an
+          # upload that fails the job for finding nothing would turn a
+          # diagnosable failure into two.
+          if-no-files-found: ignore

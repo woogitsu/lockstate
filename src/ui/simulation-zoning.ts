@@ -28,7 +28,25 @@ import type { HudZoningNoticeViewModel } from './hud/view-model';
  * would be in the DOM and painted at no viewport, which is exactly the defect
  * #220 moved "simulation unavailable" out of the alerts list to fix.
  *
- * ## Three fields, and no room id
+ * **The second half of that sentence expired on 2026-08-31 (#703, rulings 1
+ * and 5)** -- the section starts open and the corner is no longer hidden below
+ * 720px, so nothing routed to the list is painted at no viewport any more; see
+ * `INITIAL_HUD_SHELL_STATE`. *
+ * **AND THE CORNER IS hidden below 720px -- that clause is false and is
+ * corrected here rather than deleted (#1117).** The rule
+ * `.hud__corner { display: none; }` sits inside `@media (max-width: 720px)`
+ * in `hud.css`, measured `display: none` at 375x812 in the DOM harness, and
+ * `tests/browser/app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` exempts the
+ * controls that fall with it. **Nothing above changes**: this paragraph
+ * already says the distinction it supports survives without it.
+ * `event-band-dwell.ts` has carried the same correction for longer; the
+ * contradiction was known and had not reached the places that state it. **The distinction it was supporting survives
+ * without it**, and is the first sentence of this paragraph rather than the
+ * second: the alerts list carries refusals, and an accepted designation is not
+ * one. Visibility was the argument that made the taxonomy urgent; the taxonomy
+ * is what makes it right.
+ *
+ * ## Three fields out of four, and no room id
  *
  * The notice carries two enums and two integers and no room id at all, so this
  * function invents nothing and looks nothing up. `requirement` says what the
@@ -62,8 +80,9 @@ export function hudZoningFromWorkerMessage(
 
     // The session is over. A statement about the last room designated by a
     // simulation that no longer exists is not something the player can act on,
-    // so the readout empties -- the same thing the counts do with
-    // `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with `UNKNOWN_HUD_CLOCK`.
+    // so the readout empties -- the same `'none'` the counts channel answers
+    // since issue #1191 (it used to answer a row of zeros), and the same thing
+    // the clock does with `UNKNOWN_HUD_CLOCK`.
     case 'simulation/stopped':
       return 'none';
 

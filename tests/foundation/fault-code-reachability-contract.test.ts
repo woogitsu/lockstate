@@ -8,8 +8,8 @@ import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
  * A fault code the worker cannot emit is a reason the main thread can never be
  * given.
  *
- * `ProtocolFaultCode` is a closed twelve-member vocabulary, and it has twice
- * been found carrying members nothing could produce:
+ * `ProtocolFaultCode` is a closed twelve-member vocabulary, and it has three
+ * times been found carrying members nothing could produce:
  *
  * - #139/#184: `unsupported-protocol-version` and `unknown-message-kind` were
  *   unreachable because `src/simulation/worker/worker.ts` computed the
@@ -20,24 +20,56 @@ import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
  *   all three cases in adjacent `if` branches and put the answer in the `Error`
  *   *message* -- so a rejected gap reached the main thread as
  *   `code: 'invalid-state'`, `message: 'Command sequence gap: expected 0, got 1'`.
+ * - #444 item 1: `shutting-down` has never had a producer, and **this gate
+ *   reported it emitted** on the strength of a name collision inside its own
+ *   producing surface. See "What counts as emitting" below: the matcher used
+ *   to accept the code anywhere in the file text, and
+ *   `src/simulation/worker/state-machine.ts` spells `'shutting-down'` three
+ *   times as the `WorkerState` of that name. It is now recorded in
+ *   `UNEMITTED_CODES`.
  *
- * Both were found by a person reading the enum, and in both cases the whole
- * suite was green. This makes it a checked state instead: a member that nothing
- * emits must be recorded with a reason, and a recorded member that gains an
- * emitter must have its entry removed.
+ * The first two were found by a person reading the enum, the third by renaming
+ * a worker state, and in all three cases the whole suite was green. This makes
+ * it a checked state instead: a member that nothing emits must be recorded with
+ * a reason, and a recorded member that gains an emitter must have its entry
+ * removed.
  *
  * ## What counts as emitting
  *
- * The code as a single-quoted literal, comments stripped, in a `.ts` file under
- * the **producing** surface only:
+ * An **emitting position**, not an occurrence. The distinction is the whole of
+ * #444 item 1: `emits` used to be `text.includes("'" + code + "'")` over the
+ * producing surface, so any string spelled like a fault code counted -- and the
+ * one that did was in `state-machine.ts` itself, where scoping the surface
+ * narrowly could not help. Renaming the `WorkerState` label `'shutting-down'`,
+ * a refactor that changes no fault behaviour at all, turned the gate red.
+ *
+ * The three positions, all of them read out of `.ts` files under the
+ * **producing** surface with comments stripped:
+ *
+ * 1. **A `fault(` argument** -- `this.fault('not-initialized', ...)` and
+ *    `stateMachine.fault('internal-error', ...)`. `SimulationWorkerStateMachine.fault`
+ *    is the only thing in the repository that posts a `protocol/error`, so a
+ *    literal in its first argument is an emission by construction.
+ * 2. **A value in `COMMAND_REJECTION_FAULT_CODES`** (`state-machine.ts`) -- the
+ *    kernel-refusal mapping, reached through `commandRejectionFaultCode` and
+ *    handed to `fault()` as a variable.
+ * 3. **An entry in `PROTOCOL_DECODE_ERROR_CODES`** (`decode.ts`) -- the four
+ *    decode classifications, reported verbatim by `worker.ts` as
+ *    `stateMachine.fault(result.error.code, ...)`, again as a variable.
+ *
+ * Positions 2 and 3 exist because 1 alone cannot see a code that reaches
+ * `fault()` through a table. Nothing else counts: a key, a comparison, a union
+ * member and a HUD label are not emissions no matter which file they are in.
+ *
+ * The producing surface stays narrow on top of that, and the two guards are
+ * independent:
  *
  * - `src/simulation/protocol/decode.ts` -- the four decode classifications;
  * - `src/simulation/worker/**` -- every `fault()` call site and the
  *   command-result mapping.
  *
- * Scoping this narrowly is the whole measurement, and a repository-wide scan
- * would be actively wrong rather than merely loose. Three same-named strings
- * elsewhere are **not** this vocabulary, and were each checked:
+ * Three same-named strings elsewhere in `src/` are **not** this vocabulary, and
+ * were each checked:
  *
  * - `src/persistence/cloud/sync-engine.ts` has `reason: 'invalid-payload'` on
  *   its own `PullResult` union -- a different type, a different meaning
@@ -48,18 +80,15 @@ import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
  *   `error.code === 'snapshot-incompatible'`, which is a **consumer** reading a
  *   fault, not a producer emitting one.
  *
- * There is a fourth, and it is this change's own: `'sequence-gap'` is *also* a
- * `CommandRejectionKind` discriminant in `src/simulation/kernel/kernel.ts`. Two
- * vocabularies, one spelling, for the same real condition -- which is why the
- * mapping in `state-machine.ts` looks like an identity for that one entry.
+ * There is a fourth: `'sequence-gap'` is *also* a `CommandRejectionKind`
+ * discriminant in `src/simulation/kernel/kernel.ts`. Two vocabularies, one
+ * spelling, for the same real condition -- which is why the mapping in
+ * `state-machine.ts` looks like an identity for that one entry.
  *
- * A wide scan would count all four, and the consequence is specific: if the
- * worker stopped emitting `invalid-payload`, the gate would stay green on the
- * strength of an unrelated union in the persistence tree. That is the "check
- * that reads as protection and is wired to nothing" shape this file exists to
- * prevent, so it must not be this file's own shape -- and because a fully
- * reachable vocabulary makes a widened scope harmlessly invisible, the scope is
- * pinned by a **negative control** below rather than left as an argument.
+ * Under the tightened matcher none of those four sits in an emitting position,
+ * so widening the scope would no longer report them emitted; the negative
+ * control below now measures exactly that rather than asserting it in prose,
+ * and still fails if `PRODUCER_PATHS` is widened.
  *
  * The gate deliberately does not assert that each code is *reachable at
  * runtime* -- only that something produces it. Driving every producer would
@@ -72,11 +101,11 @@ const ROOT = join(__dirname, '../..');
 /**
  * Codes the vocabulary declares that nothing emits, with why.
  *
- * **Empty, and that is the assertion.** It held two entries until #187 finding
- * 2 was fixed and it should stay empty: every member of a closed refusal
- * vocabulary ought to be a refusal something can actually make. The list exists
- * so that adding a code before its producer is a decision someone writes down
- * rather than a silent gap -- the same shape as
+ * It held two entries until #187 finding 2 was fixed, was empty until #444
+ * item 1 tightened the matcher below, and holds one now. Every member of a
+ * closed refusal vocabulary ought to be a refusal something can actually make;
+ * the list exists so that a code without a producer is a decision someone
+ * writes down rather than a silent gap -- the same shape as
  * `tests/unit/services-layer-boundaries.test.ts`'s deliberately empty
  * `MODULES_PERFORMING_IO`.
  *
@@ -84,13 +113,65 @@ const ROOT = join(__dirname, '../..');
  * for the code; that is the invented-consequence defect this repository spends
  * the most effort on.
  */
-const UNEMITTED_CODES: Readonly<Record<string, string>> = {};
+const UNEMITTED_CODES: Readonly<Record<string, string>> = {
+  /*
+   * **Empty again, and the entry that left is the point.**
+   *
+   * `'shutting-down'` sat here from #444 item 1 until the emitter it named was
+   * written. Its reason read: *"No producer, and no producer has been found in
+   * any revision this gate has run against ... That guard is what a producer
+   * would replace -- it reads `if (this._state === 'shutting-down' ||
+   * this._state === 'faulted') return;`, so a command sent during shutdown is
+   * answered with silence rather than with this code, and the main thread
+   * waits out its own timeout ... Whether that guard should fault instead of
+   * returning is #444 item 2. It changes session lifetime, it is an ADR-level
+   * decision, and it is not made here."*
+   *
+   * Every clause of that was true except the last two, and they are kept
+   * quoted rather than deleted because the correction is the useful part:
+   *
+   * - **It is #444 item *1*, not item 2.** That issue's item 1 offers the fix
+   *   in as many words -- *"either record the code in `UNEMITTED_CODES` with
+   *   its reason, **or give it the emitter that is missing**: after
+   *   `simulation/shutdown`, `handleSubmitCommand` returns with no reply at
+   *   all"*. Item 2 is a different change: the `recoverable` flag on the four
+   *   *premature* guards, which does move a worker between `faulted` and not.
+   * - **It changes no session's lifetime.**
+   *   `SimulationWorkerStateMachine.fault` transitions only when the fault is
+   *   **not** recoverable, and `refusedBecauseShuttingDown` passes
+   *   `RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND`. The worker is in
+   *   `shutting-down` before the refusal and in `shutting-down` after it;
+   *   `tests/unit/worker-state-machine.test.ts` asserts exactly that, because
+   *   it is the clause this entry got wrong.
+   * - **And the decision was already taken.** ADR 0024 §1 is Accepted and
+   *   says a request that reached no simulation state must not end the
+   *   session *and must be reported*; its own Context names this path's
+   *   symptom, *"`handleSubmitCommand` returns **without replying at all**"*.
+   *   Implementing an accepted ADR is not an ADR-level decision.
+   */
+};
 
 /** The producing surface. Everything else in `src/` is a consumer or a coincidence. */
 const PRODUCER_PATHS: readonly string[] = [
   join('src', 'simulation', 'protocol', 'decode.ts'),
   join('src', 'simulation', 'worker'),
 ];
+
+/**
+ * The tables whose *values* reach `fault()` as a variable.
+ *
+ * `shape` says which literals in the block are emissions: every literal in an
+ * array, and only the values in an object. `COMMAND_REJECTION_FAULT_CODES`
+ * needs that distinction -- its keys are `CommandRejectionKind`, a different
+ * vocabulary that happens to share the spelling `sequence-gap`.
+ */
+const EMITTING_TABLES = [
+  { declaration: 'PROTOCOL_DECODE_ERROR_CODES', shape: 'array', size: 4 },
+  { declaration: 'COMMAND_REJECTION_FAULT_CODES', shape: 'object', size: 3 },
+] as const;
+
+/** How many `fault(` call sites pass a literal code today, across the producing surface. */
+const LITERAL_FAULT_CALL_SITES = 15;
 
 function collectTypeScriptFiles(target: string): readonly string[] {
   const absolute = join(ROOT, target);
@@ -102,20 +183,88 @@ function collectTypeScriptFiles(target: string): readonly string[] {
   return files;
 }
 
+/**
+ * The `[ ... ]` or `{ ... }` a `const <declaration>` is assigned, brackets
+ * included, or `undefined` if this text does not declare it.
+ *
+ * Depth-counted rather than matched with a regex, and string literals are
+ * skipped whole, so neither a nested object nor a bracket inside a quoted code
+ * can end the block early. It reads a slice rather than the file, which is the
+ * point: a literal outside the table is not a value of the table.
+ */
+function declarationBlock(text: string, declaration: string): string | undefined {
+  const declared = text.indexOf(`const ${declaration}`);
+  if (declared === -1) return undefined;
+  const assigned = text.indexOf('=', declared);
+  if (assigned === -1) return undefined;
+  const offset = text.slice(assigned).search(/[[{]/);
+  if (offset === -1) return undefined;
+
+  const from = assigned + offset;
+  const open = text[from]!;
+  const close = open === '[' ? ']' : '}';
+  let depth = 0;
+  for (let at = from; at < text.length; at += 1) {
+    const character = text[at]!;
+    if (character === `'` || character === '"' || character === '`') {
+      const end = text.indexOf(character, at + 1);
+      if (end === -1) return undefined;
+      at = end;
+      continue;
+    }
+    if (character === open) depth += 1;
+    else if (character === close) {
+      depth -= 1;
+      if (depth === 0) return text.slice(from, at + 1);
+    }
+  }
+  return undefined;
+}
+
+interface Emission {
+  readonly code: string;
+  readonly where: string;
+  /** Which of the three emitting positions this came out of. */
+  readonly position: string;
+}
+
 const producerSources = PRODUCER_PATHS.flatMap((target) => collectTypeScriptFiles(target)).map((path) => ({
   where: relative(ROOT, path).split(sep).join('/'),
-  // Stripped with the shared stripper, and **precautionary here rather than
-  // load-bearing** -- said plainly because the difference matters. Measured
-  // across the producing surface: no fault code currently appears in a comment
-  // without also appearing in code, so replacing this with the identity
-  // function changes nothing the gate can see, and that mutation survives. It
-  // stays because these two files discuss the vocabulary at length, including
-  // sentences naming which codes were unreachable, and the first such sentence
-  // that outlives its code would otherwise read as an emission (#188).
+  // Stripped with the shared stripper, and **load-bearing since #444 item 1**
+  // in one direction it was not before: `worker.ts` and `state-machine.ts`
+  // discuss `fault()` calls in prose, and a comment reading
+  // `stateMachine.fault('internal-error', ...)` matches the call-site pattern
+  // exactly. Before the matcher looked at position, a comment could only add a
+  // code that the surrounding code already emitted (#188); now it can invent
+  // an emitting position outright.
   text: stripComments(readFileSync(path, 'utf8')),
 }));
 
-const emits = (code: string): boolean => producerSources.some((source) => source.text.includes(`'${code}'`));
+function emissionsIn(source: { readonly where: string; readonly text: string }): readonly Emission[] {
+  const found: Emission[] = [];
+
+  // Position 1: a literal in `fault()`'s first argument. `\s*` spans newlines,
+  // because four of these call sites put the code on its own line.
+  for (const match of source.text.matchAll(/\bfault\(\s*'([^']*)'/g)) {
+    found.push({ code: match[1]!, where: source.where, position: 'fault() argument' });
+  }
+
+  // Positions 2 and 3: a value of a table `fault()` is called with.
+  for (const table of EMITTING_TABLES) {
+    const block = declarationBlock(source.text, table.declaration);
+    if (block === undefined) continue;
+    const literals = table.shape === 'object' ? block.matchAll(/:\s*'([^']*)'/g) : block.matchAll(/'([^']*)'/g);
+    for (const match of literals) {
+      found.push({ code: match[1]!, where: source.where, position: table.declaration });
+    }
+  }
+
+  return found;
+}
+
+const emissions = producerSources.flatMap((source) => emissionsIn(source));
+const emittedCodes = new Set(emissions.map((emission) => emission.code));
+const emits = (code: string): boolean => emittedCodes.has(code);
 const unemitted = PROTOCOL_FAULT_CODES.filter((code) => !emits(code));
 
 describe('every protocol fault code can actually be emitted', () => {
@@ -135,6 +284,120 @@ describe('every protocol fault code can actually be emitted', () => {
     const stateMachine = producerSources.find((source) => source.where === 'src/simulation/worker/state-machine.ts');
     expect(stateMachine, 'the worker state machine is no longer where this gate looks for it').toBeDefined();
     expect(stateMachine!.text).toContain(`'already-initialized'`);
+  });
+
+  it('finds all three emitting positions, so a matcher that stopped matching is loud', () => {
+    /*
+     * The vacuity guard the text scan did not need and this one does.
+     *
+     * `emits` reads three syntactic shapes. Any of them can stop matching
+     * silently -- `fault()` renamed, a table renamed or moved out of the
+     * surface, `declarationBlock` failing to find its brackets -- and the
+     * failure mode is a code reported unemitted for a reason that has nothing
+     * to do with its producer. Each position is therefore pinned at what it
+     * finds today, so the gate says which shape broke rather than which code
+     * "lost" its emitter.
+     *
+     * The call-site count is a floor: adding a `fault()` call is ordinary work
+     * and should not fail here. The two table sizes are exact, because both are
+     * closed vocabularies -- four decode classifications, three
+     * `CommandRejectionKind` members -- and a table that grew or shrank is
+     * something a reader of this gate should see.
+     */
+    const at = (position: string): readonly Emission[] => emissions.filter((emission) => emission.position === position);
+
+    expect(at('fault() argument').length, 'no `fault(<literal>)` call site matched: has `fault` been renamed?').toBeGreaterThanOrEqual(
+      LITERAL_FAULT_CALL_SITES,
+    );
+    for (const table of EMITTING_TABLES) {
+      expect(at(table.declaration).length, `${table.declaration} is no longer readable where this gate looks for it`).toBe(table.size);
+    }
+
+    // And the shape of the object reader, stated as the thing it must not do:
+    // `'sequence-gap'` is a key of `COMMAND_REJECTION_FAULT_CODES` as well as a
+    // value of it, and `'duplicate-sequence'` is only ever a key. A reader that
+    // took both sides would report a `CommandRejectionKind` as a fault code.
+    const rejectionValues = at('COMMAND_REJECTION_FAULT_CODES').map((emission) => emission.code);
+    expect(rejectionValues).not.toContain('duplicate-sequence');
+    expect(rejectionValues).toContain('duplicate-message');
+  });
+
+  it('reads each producer as emitting exactly the codes it emits', () => {
+    /*
+     * #444 item 1, as an assertion rather than a docblock, and stated per file
+     * so the diff on a break names the producer.
+     *
+     * These two sets are read out of the emitting positions, not out of the
+     * file text, and that is the whole difference: `state-machine.ts` spells
+     * `'shutting-down'` three times -- the `WorkerState` union member, the
+     * `handleSubmitCommand` guard and the `handleShutdown` transition -- and
+     * none of them is here. Renaming that worker state, which changes no fault
+     * behaviour, must move nothing in this test; under the old text matcher it
+     * turned the gate red.
+     *
+     * Written out rather than derived from `PROTOCOL_FAULT_CODES`: a set
+     * computed from the vocabulary would be true of any matcher that found the
+     * vocabulary somewhere in the file.
+     */
+    const codesFrom = (where: string): readonly string[] => {
+      const source = producerSources.find((candidate) => candidate.where === where);
+      expect(source, `${where} is no longer where this gate looks for it`).toBeDefined();
+      return [...new Set(emissionsIn(source!).map((emission) => emission.code))].sort();
+    };
+
+    expect(codesFrom('src/simulation/protocol/decode.ts')).toEqual([
+      'invalid-message',
+      'invalid-payload',
+      'unknown-message-kind',
+      'unsupported-protocol-version',
+    ]);
+    expect(codesFrom('src/simulation/worker/state-machine.ts')).toEqual([
+      'already-initialized',
+      'duplicate-message',
+      'internal-error',
+      'invalid-payload',
+      'invalid-state',
+      'not-initialized',
+      'sequence-gap',
+      // `refusedBecauseShuttingDown`'s `fault('shutting-down', ...)`, and the
+      // reason this list is written out rather than derived: it is the one
+      // code in this file whose bare literal also spells a `WorkerState`, so a
+      // reader has to be able to see that the census moved when the *emitter*
+      // arrived and not when the label did.
+      'shutting-down',
+      'snapshot-incompatible',
+    ]);
+  });
+
+  it('does not read a worker state, a key or a comparison as an emission', () => {
+    /*
+     * The matcher against the three shapes that fooled the one it replaced,
+     * written out rather than read from `src/` so the case survives the
+     * refactor that exposed it. Each line below is a real line of
+     * `state-machine.ts` with its identifier left as it stands today; the
+     * expectation is that the matcher reads no emission in any of them.
+     */
+    const collisions = [
+      `type WorkerState = 'uninitialized' | 'shutting-down' | 'faulted';`,
+      `if (this._state === 'shutting-down' || this._state === 'faulted') { return; }`,
+      `this.transition('shutting-down');`,
+      `const HUD_LABELS = { 'shutting-down': 'Shutting Down' };`,
+      `if (error.code === 'snapshot-incompatible') throw new SnapshotRestoreRejectedError(error);`,
+    ].join('\n');
+    expect(emissionsIn({ where: 'synthetic', text: collisions })).toEqual([]);
+
+    // And the positive half, so the fixture above is not passing because the
+    // matcher reads nothing at all: the same file with one real call site and
+    // one real table entry in it.
+    const withProducers = [
+      collisions,
+      `return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });`,
+      `const COMMAND_REJECTION_FAULT_CODES = { 'duplicate-sequence': 'duplicate-message' };`,
+    ].join('\n');
+    expect(emissionsIn({ where: 'synthetic', text: withProducers }).map((emission) => emission.code).sort()).toEqual([
+      'duplicate-message',
+      'not-initialized',
+    ]);
   });
 
   it('accounts for every code nothing emits', () => {
@@ -171,17 +434,21 @@ describe('every protocol fault code can actually be emitted', () => {
     /*
      * The negative control, and the reason it exists rather than a comment.
      *
-     * While every code is emitted, widening the scope to all of `src/` cannot
-     * make any assertion above fail -- more matches with everything already
-     * matched changes nothing. Measured: that mutation survives. So the scope
-     * is asserted directly, as the property that makes it necessary: these four
-     * codes occur outside the producing surface, under a *different*
-     * vocabulary each time, so a wide scan would report them emitted on
-     * evidence that has nothing to do with the worker.
+     * It used to rest on the claim that a wide scan would count these four as
+     * emissions. That claim was true of the text matcher and is **false of the
+     * one above**: none of these occurrences is a `fault()` argument or a value
+     * of either table, so widening the scope would leave every count unchanged.
+     * The control is kept and re-aimed rather than deleted, because the two
+     * guards are independent and each is cheap: the matcher is what stops a
+     * foreign spelling counting, and the scope is what stops a foreign *file*
+     * being read at all. #444 item 1 is what happens when only one of them is
+     * doing work.
      *
-     * This fails in both useful directions. Widening PRODUCER_PATHS puts these
-     * files in `producerSources` and fails the second assertion; a foreign
-     * occurrence disappearing fails the first, and its entry should then go.
+     * So it now measures both. Per file: the spelling is still there (else the
+     * entry is stale evidence and should go), the file is still outside
+     * `PRODUCER_PATHS` -- which is what fails if the scope is widened -- and
+     * the matcher finds no emission in it, which is what fails if the matcher
+     * loosens back towards a text scan.
      */
     const FOREIGN_OCCURRENCES: Readonly<Record<string, string>> = {
       'invalid-payload': 'src/persistence/cloud/sync-engine.ts',
@@ -200,6 +467,10 @@ describe('every protocol fault code can actually be emitted', () => {
         producerSources.map((source) => source.where),
         `${file} is inside the producing surface, so this gate would now count a foreign vocabulary as an emission`,
       ).not.toContain(file);
+      expect(
+        emissionsIn({ where: file, text }).map((emission) => emission.code),
+        `${file} spells '${code}' in a position this gate reads as an emission, so the matcher is no longer distinguishing the two vocabularies`,
+      ).not.toContain(code);
     }
 
     // And the denominator for the control itself: four is the number measured,
@@ -208,12 +479,21 @@ describe('every protocol fault code can actually be emitted', () => {
     expect(Object.keys(FOREIGN_OCCURRENCES).length).toBe(4);
   });
 
-  it('measures a fully reachable vocabulary, which is the number #187 changed', () => {
+  it('measures a vocabulary every member of which something can emit', () => {
     // The denominator, stated so the gate reports a fact and not only guards
-    // one. It was 10 of 12 before #187 finding 2; making it exact means a code
-    // that quietly loses its last producer cannot be fixed by adding a list
-    // entry alone -- the count has to be changed too, and a reviewer sees that
-    // the vocabulary stopped being whole.
+    // one. It was 10 of 12 before #187 finding 2, read as 12 of 12 until #444
+    // item 1 stopped the `WorkerState` label counting, was 11 of 12 while
+    // `'shutting-down'` had no emitter, and is 12 of 12 now that
+    // `refusedBecauseShuttingDown` is one. Making it exact means a code that
+    // quietly loses its last producer cannot be fixed by adding a list entry
+    // alone -- the count has to be changed too, and a reviewer sees that the
+    // vocabulary got smaller.
+    //
+    // This is the *tightened* 12 of 12 and not the one #444 refuted: that
+    // reading came from a matcher that accepted the literal anywhere in the
+    // producing surface, and `'shutting-down'` cleared it on the `WorkerState`
+    // label alone. It now has to appear in an emitting position, and the
+    // negative controls below prove the label by itself no longer counts.
     expect(unemitted).toEqual([]);
     expect(PROTOCOL_FAULT_CODES.filter((code) => emits(code)).length).toBe(12);
   });

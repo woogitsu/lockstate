@@ -178,31 +178,65 @@ export class PathRequestQueue {
       const groupKey = destinationRegion === undefined ? undefined : flowFieldGroupKey(destinationRegion, entry.request.context);
       const eligible = groupKey !== undefined && (groupCounts.get(groupKey) ?? 0) >= this.options.flowFieldActivationThreshold;
 
-      let result: RouteResult | undefined;
       let usedFlowField = false;
 
-      if (eligible && destinationRegion !== undefined && groupKey !== undefined) {
-        let field = fieldsThisTick.get(groupKey);
-        if (field === undefined) {
-          field = getOrComputeRegionFlowField(params.flowFieldCache, params.graph, params.doors, destinationRegion, entry.request.context, stats);
-          fieldsThisTick.set(groupKey, field);
-          this.flowFieldActivations += 1;
-        }
-        result = findRouteUsingFlowField(field, params.world, params.doors, params.graph, entry.request.origin, entry.request.destination, stats);
-        usedFlowField = result !== undefined;
-      }
-
-      if (result === undefined) {
-        result = findRouteCached(
-          params.routeCache,
-          () => findRoute(params.world, params.doors, params.graph, entry.request.origin, entry.request.destination, entry.request.context, stats),
-          entry.request.origin,
-          entry.request.destination,
-          entry.request.context,
-          params.graph,
-          params.doors,
-        );
-      }
+      // The route cache is asked first and flow-field sharing decides only how
+      // a *miss* is computed (#359). It used to be the other way round: the
+      // field branch ran ahead of the cache and never wrote to it, so the one
+      // destination busy enough to trip `flowFieldActivationThreshold` -- the
+      // one whose legs repeat most -- was the only destination that got no
+      // cross-tick reuse at all, re-paying a full per-actor local A* every
+      // tick. `findRouteCached` reads and writes the cache around whichever of
+      // the two computed the answer, so the two mechanisms compose instead of
+      // excluding each other: the field pays the region pass once per group per
+      // tick, the cache pays the tile pass once per leg per generation.
+      const result = findRouteCached(
+        params.routeCache,
+        (doorDependencies) => {
+          if (eligible && destinationRegion !== undefined && groupKey !== undefined) {
+            let field = fieldsThisTick.get(groupKey);
+            if (field === undefined) {
+              field = getOrComputeRegionFlowField(params.flowFieldCache, params.graph, params.doors, destinationRegion, entry.request.context, stats);
+              fieldsThisTick.set(groupKey, field);
+              this.flowFieldActivations += 1;
+            }
+            const viaField = findRouteUsingFlowField(
+              field,
+              params.world,
+              params.doors,
+              params.graph,
+              entry.request.origin,
+              entry.request.destination,
+              stats,
+              doorDependencies,
+            );
+            if (viaField !== undefined) {
+              usedFlowField = true;
+              return viaField;
+            }
+            // The field could not answer (unreachable or blocked for this
+            // context): fall through to the full search, which owns the
+            // accurate diagnosis -- and drop what the field recorded, since
+            // `findRoute` records its own.
+            doorDependencies.clear();
+          }
+          return findRoute(
+            params.world,
+            params.doors,
+            params.graph,
+            entry.request.origin,
+            entry.request.destination,
+            entry.request.context,
+            stats,
+            doorDependencies,
+          );
+        },
+        entry.request.origin,
+        entry.request.destination,
+        entry.request.context,
+        params.graph,
+        params.doors,
+      );
 
       this.pending.delete(entry.request.id);
       this.resolvedCount += 1;

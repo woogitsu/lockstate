@@ -92,7 +92,32 @@ const readSource = (file: string): string => readFileSync(join(REPOSITORY_ROOT, 
  * an unlabelled enum is a reviewable diff rather than an omission -- the
  * same device as the allow-list in the ambient-nondeterminism contract.
  */
-const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: string; readonly reason: string }[] = [
+/**
+ * An exemption whose `reason` argues about the declaration's *members* pins
+ * them here, and `members` is checked against the source on every run.
+ *
+ * **Why the field exists (#930, 2026-09-15).** This census keys on the
+ * declaration NAME and not on its members -- the `RoomAccess` entry below
+ * says so in its own words and records that ADR 0108 predicted the prose
+ * would stop being true rather than turn the gate red. It was right twice:
+ * `RoomAccess` gained a fourth value while its reason still read "its three
+ * values", and `PRISON_CONDITIONS`'s reason undercounted how many of its
+ * members reach a player. Neither cost a red run, because nothing asserted
+ * the membership an argument was made over. A fifth `PrisonCondition` would
+ * likewise inherit this exemption in silence. Pinning the member list is the
+ * cheap half of the field-level reachability gate #930 §7 asks for: it does
+ * not prove a member is read, it makes a member added under an argument that
+ * does not cover it fail loudly here, next to the argument.
+ */
+interface UnlabelledEnum {
+  readonly sourceFile: string;
+  readonly declaration: string;
+  readonly reason: string;
+  /** Exact members, in source order, when the `reason` reasons about them one by one. */
+  readonly members?: readonly string[];
+}
+
+const UNLABELLED: readonly UnlabelledEnum[] = [
   {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'MAIN_TO_WORKER_MESSAGE_KINDS',
@@ -118,6 +143,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Whether a catalogued projection takes no target, an entity id or a string id (#104). It is a property of the *catalog entry*, read only by the worker\'s own request validation to decide whether a request named the right kind of thing, and it never crosses the boundary in either direction: the wire carries `ProjectionTarget`, which is the target itself, and never this classification of it. Nothing projects it and no panel could render it.',
   },
   {
+    sourceFile: 'src/simulation/runtime/restore-refusal.ts',
+    declaration: 'SNAPSHOT_REFUSAL_REASONS',
+    reason:
+      'Why a snapshot restore was refused (#431), and exempt for the reason `PROTOCOL_FAULT_CODES` below it is: developer diagnostics on the restore boundary, read by `SessionController.loadPrison` to decide whether a generation may be retired and by a support report to tell a bad save from a bug of ours. Nothing renders "unsupported-by-this-build". What the player is told about a failed load is the save panel\'s own authored sentence with its own key -- `save.status.no-readable-generation` when the walk is exhausted, `save.failure.load` when the load threw -- and both already existed and are unchanged by this vocabulary. Whether a player *should* be told which of the two reasons applied is a real product question and a new promise: it is recorded as an open question on the ADR that decides this taxonomy rather than being answered by adding keys here.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/decode.ts',
     declaration: 'PROTOCOL_DECODE_ERROR_CODES',
     reason:
@@ -136,16 +167,79 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The only exemption here for a vocabulary that genuinely does reach the player, and the distinction is *how*. This table labels an id a panel renders as a **label** -- a cell reading "Awaiting Materials", a badge reading "High Risk" -- and a refusal is not a label: it is a whole sentence saying what did not happen and why ("The build order failed -- you do not own that land."), which a derived `refusal-reason.build.unowned-land.name` reading "Unowned Land" cannot be and would have nowhere to be rendered. So the id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-alerts.ts` (#261). The completeness this table would give is given there instead, and in two directions: the mapping is a `Record` over the closed union, so a reason added to the protocol fails to compile until it has a key, and `tests/unit/ui-simulation-alerts.test.ts` resolves every one of those keys against the bundled default catalog so none can ship as its own raw dotted text.',
   },
   {
+    sourceFile: 'src/simulation/events/event-log.ts',
+    declaration: 'ConstructionUndoSpendOutcome',
+    reason:
+      'Whether one `Undo` press destroyed what had been spent on any of the orders it reversed (#927), and exempt because it is a *selector between two authored sentences* rather than a fact of its own. `createConstructionCommandHandler` computes it from `ConstructionSystem.undo()`\'s answer and hands it to `recordConstructionUndone`, which switches it onto `construction.undone` or `construction.undone-spend-destroyed`; both of those already resolve to authored HUD sentences through `EVENT_PRESENTATION`, which is where the words a player reads come from and which the `SIMULATION_EVENT_TYPES` entry below argues out. A derived `construction-undo-spend-outcome.spend-destroyed.name` reading "Spend Destroyed" would be a second English word for a fact the sentence already carries, would have nowhere to be rendered, and would drift from it -- the same argument that entry makes, one level further from the player. It never crosses the worker boundary either: what travels is the event type it selected.',
+  },
+  {
+    sourceFile: 'src/simulation/incidents/default-gangs.ts',
+    declaration: 'DEFAULT_GANG_IDS',
+    reason:
+      'The two gangs every prison is seeded with ([ADR 0103](docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md) decision 1), and exempt for the reason `src/content/simulation-message-keys.ts` already gives about gang ids in general: `GangRegistry` accepts any `GangDefinition.id` a scenario registers, so a gang\'s label could only come from the definition that created it and not from a static table -- which is why the census excludes runtime-registered ids by name rather than by filter. These two are the first such ids `src/` itself writes, and nothing renders them: the one sentence a gang reaches a player through, `hud.alert.event.incidents.gang-retaliation-opened` ("Two gangs are settling a score."), takes no parameters at all, and both surfaces that carry a `gangId` on their projection -- `simulation-prisoner-roster.ts` and `simulation-prisoner-detail.ts` -- drop it before rendering and say in their own docblocks that they do so because it has no labelling mechanism. ADR 0103 decision 1 declines a `nameKey` on that basis; open question 8 is where it would come back, and it is open.',
+  },
+  {
+    sourceFile: 'src/simulation/rooms/reachability.ts',
+    declaration: 'RoomAccess',
+    reason:
+      'Whether anybody can get into a room -- `gap`, `doorway`, `unreachable`, `no-way-in` (#938, and ADR 0108 for the fourth) -- and exempt for the reason `ConstructionUndoSpendOutcome` above it is: it *selects* what a readout says rather than being a fact the readout names. **Two of its four values are rendered, never as labels and always as authored sentences with their own keys**: `roomNeedsFromProjections` turns `no-way-in` into a `kind: \'doorway\'` entry and `unreachable` into a `kind: \'unreachable\'` one, and the Rooms panel draws `hud.rooms.needs-doorway` ("a door -- nobody can get in") and `hud.rooms.needs-unreachable` ("a way in -- nothing outside can reach its door") for them, each locale entry carrying the proof of its own clauses. **This row read "its three values" and named only the first pair until 2026-09-11; ADR 0108 predicted the prose would stop being true rather than turn the gate red, because this census keys on the declaration name and not on its members, and it was right.** A derived `room-perimeter-access.no-way-in.name` reading "No Way In" would be a second English phrase for the fact that sentence already carries, would have nowhere to be rendered, and the other two values would need labels no surface could ever show -- a badge reading "Doorway" is not a thing this panel has. It does cross the worker boundary, as `RoomListRowViewModel.access`, and that is the point of the exemption rather than an argument against it: what crosses is the *verdict*, and the words for it are chosen on the other side, which is `src/ui/simulation-zoning.ts`\'s recorded division ("the enum pair crosses the boundary and which sentence that pair deserves stays in the panel").',
+  },
+  {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'SIMULATION_EVENT_TYPES',
+    reason:
+      'Exempt for exactly the reason `REFUSAL_REASONS` above is, and the two are best read together because they are the same shape on opposite channels. This table labels an id a panel renders as a **label**; an event is a whole sentence saying what the prison just did ("Payday went unpaid -- your staff are owed 360."), and a derived `simulation-event.economy.wages-unpaid.name` reading "Wages Unpaid" could not carry the figure and would have nowhere to be rendered. So each id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-events.ts` (#507), which is where the completeness this table would give is given instead, and in the same two directions: the mapping is a `Record` over the closed union, so an event type added to the protocol fails to compile until somebody has decided what it says and how loudly, and `tests/unit/ui-simulation-events.test.ts` resolves every key against the bundled default catalog so none can ship as its own raw dotted text. These sentences additionally take `labelParameters`, which no derived label ever could.',
+  },
+  {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'PRISON_CONDITIONS',
+    reason:
+      "A closed union recomputed onto `statusCountsSchema.conditions` (ADR 0087 decision 2, the owner's 2026-09-01 amendment on issue #767), and, as of this decision, read by nothing under `src/ui/`: no panel, no alerts row and no badge names a `PrisonCondition` member yet. That is provisional rather than an argument that it never will be -- the change that built this union was scoped to the protocol shape, the pure producer (`computeStandingPrisonConditions`) and the crossing event 'and no further', deliberately deferring the labelling `REFUSAL_REASONS` and `SIMULATION_EVENT_TYPES` above already do for the two sibling vocabularies this same decision touches. **This reason read \"Two of this union's four members already reach a player in different words today\" until 2026-09-15; it is four of four, and all four durably** (issue #930's re-measurement on `2559eb14`). `construction.unfunded` is the Build panel's `queueShortfall` row off the same predicate (`src/simulation/presentation/construction-projection.ts:396`), *\"Waiting for {total} to unblock the next order.\"*; `intake.no-place` is `isIntakeWithoutPlaceWorthShowing` / `formatIntakeWithoutPlaceText` (`src/ui/hud/intake-panel.ts:231`) on the same `> 0`, *\"{count} waiting with no place to sleep\"*, on a panel that starts uncollapsed; and both `treasury.*-refused` members are the always-visible FUNDS chip, whose `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`) is zero on exactly the deliveries rung this union's predicate reads, driving the chip's tone, its `{remaining} left` badge and its tooltip sentence. So nothing here is silently unrendered, and three of the four are painted *with a figure this union could never carry*: `conditions` is a set of names. What is deferred is a *second*, standing rendering of four facts already painted -- which is why #930's re-measurement recommends leaving the field rather than building the reader. **That last clause came due on 2026-09-17 and is kept rather than rewritten, because it is the condition this exemption set for itself.** It read: *when a panel reads this field directly, the labelling takes the same `Record`-over-closed-union shape those two entries argue for, or this exemption is removed rather than kept out of habit.* ADR 0117 (accepted by the owner that day, option 3) adds a **fifth** member, `security.post-unreachable`, which is the first that is *not* painted anywhere else -- ADR 0117 §1b measures the surface that would otherwise speak for it, the status strip's coverage chip, reading *Covered* over a permanently unguarded prison on exactly half of all ticks. So the field now has a reader, `src/ui/simulation-conditions.ts`, and it is the `Record`-over-closed-union shape this paragraph demanded: `PRISON_CONDITION_PRESENTATION` is exhaustive over `PrisonCondition`, a sixth member fails to compile until somebody says where it is painted, and the four members above are recorded there as `'painted-elsewhere'` with the surfaces named. The exemption stays because the argument it makes is unchanged -- none of these ids is rendered as a derived *label*, and four of them still reach the player in other words with a figure a set of names could never carry -- and the fifth is authored, not derived: `hud.security.post-unreachable` and `hud.security.post-unreachable-hint` in `src/ui/hud/messages.ts`, resolved against the bundled catalog like every other authored HUD sentence.",
+    // Pinned because the paragraph above argues member by member and this
+    // census keys on the declaration name: see `UnlabelledEnum.members`.
+    members: [
+      'construction.unfunded',
+      'intake.no-place',
+      'security.post-unreachable',
+      'treasury.construction-refused',
+      'treasury.deliveries-refused',
+    ],
+  },
+  {
+    sourceFile: 'src/simulation/presentation/construction-projection.ts',
+    declaration: 'PENDING_BUILD_ORDER_STATES',
+    reason:
+      'A *subset* of an enum this table already labels, and the only reason it is a declaration of its own is that the subset is a judgement worth reading: it is the five members of `BuildOrderLifecycleState` that are still coming, and `construction-projection.ts` argues out why `completed`, `cancelled` and `failed` are excluded. Every one of its five members already resolves through the `build-order-state` group above -- `projectBuildQueue` emits `state` and the Build panel renders it as `deriveSimulationMessageKey(\'build-order-state\', state)` -- so it is labelled, in the only place a label for these ids may live. A group of its own would author a second English word for the same five facts under a second namespace, and the two would drift; that is the same argument `build-edge` makes for not re-labelling `door-side`, run the other way.',
+  },
+  {
     sourceFile: 'src/simulation/construction/build-order.ts',
     declaration: 'BUILD_ORDER_FAIL_REASONS',
     reason:
       'The construction system\'s own spelling of why it failed an order, and it never leaves the simulation under this name: `createConstructionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and no projection in `src/simulation/presentation/` emits `BuildOrder.failReason` at all. It is persisted (`save-schema.ts`) and read back as save data, which is storage rather than display. Labelling it would author a second set of words for the same nine facts `REFUSAL_REASONS` already carries, and the two would drift.',
   },
   {
+    sourceFile: 'src/simulation/operations/job.ts',
+    declaration: 'CARRY_JOB_FAIL_REASONS',
+    reason:
+      'Why `JobSystem` ended a carry job -- a container id the registry does not hold, or a reservation that could not be honoured at pickup. Exempt for a *stronger* version of the reason `BUILD_ORDER_FAIL_REASONS` above is: that one at least reaches the player under a different spelling, mapped onto a `RefusalReason` by a command handler, and this one reaches no surface at all. Nothing in `src/simulation/presentation/` projects `CarryItemJob.failReason`, no command creates a carry job (so there is no handler to map it and no `carry.*` namespace on the wire -- `simulation-refusals.test.ts` asserts the wire vocabulary is exactly the ten *command* namespaces), and `docs/OPERATIONS.md` records that nothing in the HUD surfaces the operations substrate yet. It is persisted by `save-schema.ts` and read back as save data, which is storage rather than display. Labelling it would author words for a fact no panel can render; giving job failures a player-facing channel is an ADR rather than a row in this table.',
+  },
+  {
+    sourceFile: 'src/simulation/economy/treasury.ts',
+    declaration: 'SpendClass',
+    reason:
+      "Which rung of ADR 0017 decision 8's insolvency ladder a spend belongs to -- the owner's ruling 19 of 2026-08-31, drafted as ADR 0017's \"Amendment, 2026-09-01\". It is a *required argument* on `Treasury.canAfford` and `Treasury.spend`, chosen over a caller-side check precisely so that `tsc` refuses a spend that does not name its rung; it is never a value anything holds, publishes, persists or renders. Nothing crosses the worker boundary carrying it: what a player is told when a rung refuses them is the authored `hud.alert.refusal.purchase.*` or `hud.alert.refusal.hire.*` sentence for the `RefusalReason` the command handler maps to, which is the same argument `PurchaseRefusalReason` below makes one layer down. A derived `spend-class.deliveries.name` reading \"Deliveries\" would have nowhere to be rendered. **What the ruling owed the player is a sentence per rung, and the owner supplied it on 2026-09-01.** The paragraph here recorded it as owed: *\"the four existing sentences say 'that would go past what the state will carry', which is true at -2,500 and false at -1,250, and replacement copy is the owner's under `AGENTS.md`'s fourth exclusion.\"* The four now name what stops rather than the threshold -- *\"deliveries are refused until the prison earns the money\"*, which read *\"until the state pays what it owes\"* until 2026-09-04 and was replaced when issue #913 measured that the state accrues nothing for a prison holding nobody -- and rung 2 gained a `RefusalReason` and a sentence of its own (`construction.materials-unfunded`) so that a stalled build queue stops borrowing rung 1's words. None of that changes this exemption's argument: `SpendClass` is still never a value anything renders. See `src/content/default-locale-en.ts` at those five keys.",
+  },
+  {
     sourceFile: 'src/simulation/economy/procurement.ts',
     declaration: 'PurchaseRefusalReason',
     reason:
       'The procurement system\'s own spelling of why it refused a purchase, exempt for exactly the reason `BUILD_ORDER_FAIL_REASONS` above is: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything crosses the worker boundary, and nothing projects or persists it. Newly *discovered* rather than newly written -- the union used to sit inline inside `PurchaseOutcome`, where no scan could see it, and #261 named it so the mapping could be checked exhaustively at compile time.',
+  },
+  {
+    sourceFile: 'src/simulation/economy/procurement.ts',
+    declaration: 'SellStockRefusalReason',
+    reason:
+      '**No longer the exemption it was, and this entry is corrected rather than deleted because a reader who meets the old reason elsewhere needs to see which half survived.** It read: "Genuinely unreachable from a player action today rather than merely unlabelled … there is no `SellMaterials` (or similarly named) member in `simulationCommandSchema` … the day a `SellMaterials` command exists, this union stops being exempt and starts being the `PurchaseRefusalReason` pattern one command later." That day has come: `SellMaterials` is now a member of `simulationCommandSchema`, and this union is exempt for exactly `PurchaseRefusalReason`\'s own reason immediately above rather than for its old one -- `createSessionCommandHandler`\'s `SellMaterials` branch maps every member onto a `RefusalReason` through `SELL_REFUSAL_REASONS`, an exhaustive `Record`, before anything crosses the worker boundary, and nothing projects or persists it. What the player reads is the authored `hud.alert.refusal.sell.*` sentence for the `RefusalReason` that maps to, not a two-word label this table could hold -- see the `REFUSAL_REASONS` entry above for that argument in full.',
   },
   {
     sourceFile: 'src/simulation/staff/hiring.ts',
@@ -202,10 +296,34 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `PrisonerOperationsRuntime.requestAdmission` refused an `AdmitPrisoner` -- no room instance any accommodation target names, or an exhausted entity store. It is the admission counterpart of `ZoneRoomRefusalReason` and `UnzoneRoomRefusalReason` above and carries no key for the identical reason: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.admit.*` sentence per reason rather than a two-word label. See the `REFUSAL_REASONS` entry above for that argument in full.',
   },
   {
+    sourceFile: 'src/simulation/security/coverage-state.ts',
+    declaration: 'SECTOR_COVERAGE_STATES',
+    reason:
+      'The three rungs of the guard-coverage ladder -- `covered`, `understaffed`, `unguarded` (issue #588). Exempt because these three ids already have authored player-facing words and a derived group would author a *second* set of them: `hud.security.coverage-met`, `hud.security.coverage-short` and `hud.security.coverage-unguarded` read "Covered", "Understaffed" and "Unguarded", and `describeStaffCoverage` has picked between them since ADR 0048 consequence 1. The id itself never crosses the worker boundary at all -- `SafetyCoverageSystem` publishes the census as three *counts* (`prisonersCovered`, `prisonersUnderstaffed`, `prisonersUnguarded`), so nothing downstream ever receives the string to look a label up by. That is the same argument `PENDING_BUILD_ORDER_STATES` above makes about not re-labelling ids a HUD key already covers, and `tests/unit/security-coverage-state.test.ts` is where the simulation ladder and the HUD badge keys are asserted to agree rung for rung.',
+  },
+  {
+    sourceFile: 'src/simulation/prisoners/regime-registry.ts',
+    declaration: 'EditRegimeBlockRefusalReason',
+    reason:
+      'Why `RegimeScheduleRegistry.editBlock` refused an `EditRegimeBlock` -- the session has no schedule for that classification group, or the tick names no block\'s start in the one it has ([ADR 0113](docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md) §3). Exempt for the identical reason as `GuardReleaseRefusalReason` immediately below and the four unions it names: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through `EDIT_REGIME_BLOCK_REFUSAL_REASONS`, an exhaustive `Record`, before anything is published, and what the player reads is one authored `hud.alert.refusal.edit-regime-block.*` sentence per reason rather than a two-word label this table could hold. A derived `edit-regime-block-refusal-reason.unknown-block.name` reading "Unknown Block" would be a second English phrase for a fact the sentence already carries, and there is no surface that could show it: a refusal appears on the alerts channel as a sentence, never as a badge.',
+  },
+  {
+    sourceFile: 'src/simulation/security/guard-release.ts',
+    declaration: 'GuardReleaseRefusalReason',
+    reason:
+      'Why `GuardReleaseService.release` refused a `ReleaseGuardAssignment` -- the guard is already unassigned, or the roster holds no such entity (ADR 0034). Exempt for the identical reason as `ZoneRoomRefusalReason`, `UnzoneRoomRefusalReason`, `PurchaseCancelRefusalReason` and `ADMIT_PRISONER_REFUSAL_REASONS` above: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.release-guard.*` sentence per reason rather than a two-word label this table could hold. Note that the *other* union the same file declares, `GUARD_CLAIM_KINDS`, is labelled rather than exempt, and the contrast is the whole rule: a claim kind is a dense label on a roster row and a refusal reason is a sentence about something that did not happen.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:
       'Metadata of the labelling mechanism itself -- how a declaration is written in source. It describes the table, it is not a value the simulation projects.',
+  },
+  {
+    sourceFile: 'src/simulation/locomotion/locomotion.ts',
+    declaration: 'HeadingComponent',
+    reason:
+      "The sign of one axis of a walking actor's heading -- `-1`, `0` or `1` (ADR 0059). Exempt for the reason `ObjectOrientation` is: it is arithmetic rather than a vocabulary. Nothing labels it and nothing could: it is multiplied by a sub-tile offset to place an actor and packed into two nibbles of the render payload's fields word, where `src/rendering/feed/actors-from-delta.ts` hands it straight to `directionFromMovement` to choose an authored sprite direction. The eight *directions* that lookup produces are art in `assets/contracts/character-8-direction.contract.json`, not text, and a panel that ever states which way somebody is facing would be a HUD string with its own key rather than a caption for the number -1.",
   },
   // `src/content/validate-catalog.ts::EnumIdExtractionFailure` was exempted
   // here until #307. It is not a new omission: the declaration left the
@@ -422,6 +540,26 @@ describe('no enum reaches the HUD without a group covering it', () => {
       .filter((key) => !COVERED.has(key) && !exempt.has(key));
 
     expect(unaccounted).toEqual([]);
+  });
+
+  it('keeps a pinned member list matching its declaration -- an added member cannot inherit an exemption silently', () => {
+    const byKey = new Map(discovered.map((entry) => [groupKey(entry.sourceFile, entry.declaration), entry.ids]));
+    const pinned = UNLABELLED.filter((entry) => entry.members !== undefined);
+
+    // The pin mechanism is worthless if nothing carries one, and an entry
+    // losing its pin would otherwise make this assertion pass vacuously.
+    expect(pinned.map((entry) => groupKey(entry.sourceFile, entry.declaration))).toContain(
+      'src/simulation/protocol/types.ts::PRISON_CONDITIONS',
+    );
+
+    for (const entry of pinned) {
+      const ids = byKey.get(groupKey(entry.sourceFile, entry.declaration));
+      expect(ids, `pinned exemption names no discovered enum: ${entry.declaration}`).toBeDefined();
+      expect(
+        [...entry.members!].sort(),
+        `${entry.declaration} in ${entry.sourceFile} no longer has the members its exemption reasons about, one by one. Re-read that reason against the new member list before extending the pin: the member may need labelling rather than exempting.`,
+      ).toEqual([...ids!].sort());
+    }
   });
 
   it('keeps the exemption list honest -- every entry still names a real enum with a real reason', () => {

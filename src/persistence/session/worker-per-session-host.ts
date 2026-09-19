@@ -65,12 +65,20 @@ const SHUTDOWN_ACKNOWLEDGEMENT_GRACE_MS = 1_000;
  *
  * ### What it does *not* change
  *
- * The error vocabulary. `startFromSnapshot` still raises
- * `SnapshotRestoreRejectedError` only when the *snapshot* was refused, so
- * `SessionController` still demotes a generation only then. A worker that
- * could not be constructed is an ordinary `Error` and costs no generation:
- * the save may be perfectly good and deleting it would be the more expensive
- * mistake (`SnapshotRestoreRejectedError`'s own docs).
+ * The error vocabulary. Every rejection is `WorkerSessionHost`'s, unchanged:
+ * `SnapshotRestoreRejectedError` only when a declared check refused the
+ * *snapshot*, so `SessionController` still demotes a generation only then;
+ * `SnapshotRestoreFaultError` when our own restore code threw and nothing
+ * declared a refusal (#431), which costs no generation because it is not the
+ * class the demotion decision reads. A worker that could not be constructed is
+ * an ordinary `Error` and costs no generation either: the save may be
+ * perfectly good and deleting it would be the more expensive mistake
+ * (`SnapshotRestoreRejectedError`'s own docs).
+ *
+ * The sentence above used to name only the first of those three, because only
+ * two existed. It is corrected rather than rewritten because the property it
+ * asserted is the one that still matters: this layer adds no vocabulary of its
+ * own and must not, or the two hosts would disagree about what costs a save.
  */
 export class WorkerPerSessionHost implements SessionRuntimeHost {
   private active: WorkerSessionHost | undefined;
@@ -95,9 +103,10 @@ export class WorkerPerSessionHost implements SessionRuntimeHost {
    *
    * Note what this costs the recovery walk in `SessionController.loadPrison`:
    * a refused generation is retried against a *new* worker rather than the one
-   * that refused it. That is a worker start per demoted generation -- at most
-   * three, since three is what the repository retains -- and it is the price
-   * of the rule being total. The worker that refused a snapshot is still
+   * that refused it. That is a worker start per *refused* generation -- at
+   * most three, since three is what the repository retains, and refusing one
+   * no longer retires it (#403 (d)) -- and it is the price of the rule being
+   * total. The worker that refused a snapshot is still
    * usable in principle (it installed no runtime and stays `uninitialized`,
    * which is why that fault is raised `recoverable`), but the main thread
    * cannot tell it apart from the one that faulted while restoring, and

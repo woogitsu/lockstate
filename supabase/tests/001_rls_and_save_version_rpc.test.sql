@@ -5,11 +5,14 @@
 -- 19/19 each. Everything added since has been run only the second way,
 -- because the stack run needs container images that were not reachable when
 -- they were written: the thirteen for issue #105 finding 11 (the
--- "storage_path" section), and the five for issue #194 (the
--- server-timestamp section at the end). `pnpm verify:sql` reports 37/37 for
--- this suite. That figure is what drifted before -- it read 32/32 for as
--- long as nobody re-ran it after #194 -- so treat it as a claim to check
--- rather than as a fact to trust.
+-- "storage_path" section), the five for issue #194's `created_at` half, the
+-- six for its `updated_at` half (the two server-timestamp sections), the eight
+-- for the scalar CHECKs suite 008 names and nothing exercised, the three
+-- pinning #340's two-branch refusal (the last two sections), and the two
+-- pinning the row an empty prison's conflict returns.
+-- `pnpm verify:sql` reports 56/56 for this suite. That figure is what drifted
+-- before -- it read 32/32 for as long as nobody re-ran it after #194 -- so
+-- treat it as a claim to check rather than as a fact to trust.
 --
 --   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
 --     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime
@@ -29,7 +32,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(37);
+select plan(56);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -217,6 +220,50 @@ select throws_ok(
   '42501',
   null,
   'save_versions has no direct client-facing insert path, only create_save_version()'
+);
+
+-- --- the conflict a prison with no saved version answers with ----------
+--
+-- The conflict branch reports `v_current_version_id`, `v_current_revision`
+-- and the checksum looked up from that id
+-- (20260822190300_create_save_version_rpc.sql:132-138). On a prison that
+-- has never been saved those are NULL, 0 and NULL -- `prisons` declares
+-- `current_version_id uuid` with no default and `current_revision int not
+-- null default 0` (20260822190100_create_prisons.sql:12-13). Nothing else
+-- in this suite produces that row, because every conflict above is against
+-- a prison that already holds versions.
+--
+-- Reaching it needs `p_new_revision >= 2`, since `<= 0` raises and 1 is the
+-- accepted next revision: a client that believes it is already synced and
+-- pushes revision N against a cloud that has nothing is precisely that
+-- call.
+--
+-- THE ROW SHAPE IS THE ASSERTION, NOT THE STATUS. A client that checks
+-- `version_id`/`checksum` for NULL before it reads `status` sees this
+-- answer as a missing row and reports a generic error, losing the one piece
+-- of information the caller needs -- that this is a conflict it can resolve
+-- by pushing revision 1. `src/persistence/cloud/supabase-client.ts` did
+-- exactly that until this row was written down.
+reset role;
+insert into public.prisons (id, owner_id, game_version, slot_index)
+values ('aaaaaaaa-0000-0000-0000-00000000000e', '11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 1);
+
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+set local role authenticated;
+
+select results_eq(
+  $$ select status, version_id, revision, checksum from public.create_save_version(
+       'aaaaaaaa-0000-0000-0000-00000000000e', 2, 1, 'checksum-empty-conflict', '{"tick": 0}'::jsonb, null, 10
+     ) $$,
+  $$ values ('conflict'::text, null::uuid, 0, null::text) $$,
+  'a conflict on a prison with no saved version reports revision 0 with a NULL version id and a NULL checksum'
+);
+
+select is(
+  (select current_version_id is null and current_revision = 0
+     from public.prisons where id = 'aaaaaaaa-0000-0000-0000-00000000000e'),
+  true,
+  'the refused save left the empty prison empty -- a conflict never advances the pointer'
 );
 
 -- --- storage_path: a shape, and a prefix it cannot escape --------------
@@ -424,6 +471,277 @@ select lives_ok(
   $$ insert into public.prisons (owner_id, game_version, slot_index)
      values ('11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 8) $$,
   'the same insert without created_at succeeds, so suite 004 still drives the slot cap through this grant'
+);
+
+-- --- ...nor its update timestamps, and the server keeps them current (#194) ---
+--
+-- #194's open half, decided in 20260826130000 and recorded as a rule in ADR
+-- 0008 section 2. Two properties, and the second is the one the decision turned
+-- on rather than the first.
+--
+-- The refusal is the same privilege boundary as `created_at` above: `42501`,
+-- because the column is out of every client grant. This schema refuses rather
+-- than silently corrects for the same reason it refuses `current_revision` at
+-- the top of this file -- a silently corrected value is one the client believes
+-- it set and the server did not.
+--
+-- The stamping is the half that makes the column mean anything. `default now()`
+-- fires on INSERT and never again, so before the trigger an UPDATE that did not
+-- name `updated_at` left it at the insert value: reproduced as `authenticated`,
+-- `payload` moved to `{"a": 2}` while `updated_at` stayed at 2020-01-01. The
+-- column was not merely untrustworthy, it was stale. The last two assertions
+-- below are what would fail if the trigger were dropped and the grants left as
+-- they are -- which would read as a tightening and would leave the column
+-- frozen at its insert value forever.
+select throws_ok(
+  $$ insert into public.user_settings (user_id, settings_schema_version, payload, updated_at)
+     values ('11111111-1111-1111-1111-111111111111', 1, '{}'::jsonb,
+             '4000-01-01T00:00:00Z') $$,
+  '42501',
+  null,
+  'a client naming user_settings.updated_at is refused on the privilege'
+);
+
+select lives_ok(
+  $$ insert into public.user_settings (user_id, settings_schema_version, payload)
+     values ('11111111-1111-1111-1111-111111111111', 1, '{"a": 1}'::jsonb) $$,
+  'the same insert without updated_at succeeds, so the revoke did not take the write path with it'
+);
+
+select throws_ok(
+  $$ update public.user_settings set updated_at = '1900-01-01T00:00:00Z'
+      where user_id = '11111111-1111-1111-1111-111111111111' $$,
+  '42501',
+  null,
+  'and a client cannot walk it backwards afterwards -- the reproduction in #194, now refused'
+);
+
+-- The stamp itself. `now()` is the transaction timestamp and this suite is one
+-- transaction, so no wall-clock comparison can say anything here; what is
+-- asserted is the property the trigger exists for -- an UPDATE that never
+-- mentions `updated_at` moves it off a value the row already held.
+--
+-- Getting a row into that state is itself the first assertion. The obvious way
+-- to plant a stale value is a privileged UPDATE, and it does not work: the
+-- trigger has no exempt path, so the table owner's write is stamped too. That
+-- is worth asserting rather than working around silently -- `entitlement_events`
+-- is append-only *including for the table owner* by the same mechanism, and a
+-- trigger that a privileged connection could route around would be a weaker
+-- control than the grants it sits beside.
+reset role;
+update public.user_settings set updated_at = '2020-01-01T00:00:00Z'
+  where user_id = '11111111-1111-1111-1111-111111111111';
+
+select is(
+  (select updated_at = now() from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  true,
+  'even the table owner cannot plant a stale updated_at: the trigger has no exempt write path'
+);
+
+-- So the trigger is disabled to plant it, which needs the table owner and is
+-- therefore unreachable from either client role.
+alter table public.user_settings disable trigger user_settings_stamp_updated_at;
+update public.user_settings set updated_at = '2020-01-01T00:00:00Z'
+  where user_id = '11111111-1111-1111-1111-111111111111';
+alter table public.user_settings enable trigger user_settings_stamp_updated_at;
+
+select is(
+  (select updated_at from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  '2020-01-01T00:00:00Z'::timestamptz,
+  'the stale value is planted, so the assertion below is not passing on a row that was already current'
+);
+
+set local role authenticated;
+update public.user_settings set payload = '{"a": 2}'::jsonb
+  where user_id = '11111111-1111-1111-1111-111111111111';
+
+select is(
+  (select updated_at = now() from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  true,
+  'an UPDATE that never names updated_at still moves it to now(): the column is the server''s, and current'
+);
+
+reset role;
+
+-- --- The four scalar CHECKs suite 008 names and nothing exercised ------
+--
+-- Suite 008 asserts that these constraint objects EXIST and cover the columns
+-- they claim to; its header used to add that "suites 001, 002, 004 and 006"
+-- assert what they refuse. They did not, for nine of the thirteen objects that
+-- suite names -- four of them on this suite's two tables. Measured: every CHECK
+-- in `public` was dropped and re-added under the same name over the same
+-- `conkey` with a predicate admitting everything
+-- (`check (num_nonnulls(<same columns>) >= 0)`), and all 287 assertions stayed
+-- green for these four. A coverage rule reads the catalog, and an in-place
+-- rewrite leaves the catalog entry looking identical -- so the gap is in this
+-- suite rather than in that one (#280 recorded it as a residual).
+--
+-- Both directions, the shape the storage_path section above already uses: one
+-- past the bound must be refused, and the value exactly at it must be admitted.
+-- The admitting half is what makes the refusing half non-vacuous -- a
+-- constraint rewritten to refuse *everything* would pass a `throws_ok` alone.
+--
+-- Probed as the privileged role, for the reason the storage_path section gives:
+-- no client role can write `current_revision` or reach `save_versions` at all,
+-- so the client tier cannot distinguish a bound that holds from one that is
+-- merely unreachable. A backfill or an importer is who these hold against.
+
+insert into auth.users (id, email) values
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'scalar-bounds@example.test');
+
+-- `prisons_slot_index_positive`. `slot_index >= 0`, so -1 is one past the bound
+-- and 0 is exactly at it. Zero is a real slot rather than a sentinel -- suite
+-- 004 creates prisons from `generate_series(0, 4)` -- which is why the floor is
+-- `>= 0` and not `> 0`, and why the admitting half is worth asserting.
+select throws_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index)
+     values ('bbbbbbbb-0000-0000-0000-000000000001',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', -1) $$,
+  '23514',
+  null,
+  'a negative slot index is refused: a slot that cannot be addressed is not a slot'
+);
+
+select lives_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index)
+     values ('bbbbbbbb-0000-0000-0000-000000000001',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 0) $$,
+  'slot index 0 is admitted: the floor is inclusive, which is what makes the first free slot usable'
+);
+
+-- `prisons_current_revision_non_negative`. `current_revision >= 0`, and 0 is
+-- the value a prison is created at -- the first assertion of the RPC section
+-- above depends on it ("first save at revision 1 succeeds when current_revision
+-- is 0"), so admitting 0 is not a formality.
+select throws_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index, current_revision)
+     values ('bbbbbbbb-0000-0000-0000-000000000002',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 1, -1) $$,
+  '23514',
+  null,
+  'a negative current_revision is refused: the pointer counts saves, and there is no save before the first'
+);
+
+select lives_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index, current_revision)
+     values ('bbbbbbbb-0000-0000-0000-000000000002',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 1, 0) $$,
+  'current_revision 0 is admitted: that is the state every new prison starts in'
+);
+
+-- `save_versions_revision_positive`. `revision > 0`, so 0 is one past the bound
+-- and 1 is exactly at it. This one is strict where the two above are not, and
+-- deliberately: revision 0 would collide with the `current_revision = 0` a
+-- prison holds before its first save, so "the cloud is at revision 0" has to
+-- keep meaning "there is nothing here".
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, payload, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 0, 1, 'scalar-probe-r0', '{"tick":0}'::jsonb, 10) $$,
+  '23514',
+  null,
+  'a save version at revision 0 is refused: revision 0 is the empty state, not a stored save'
+);
+
+select lives_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, payload, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 1, 1, 'scalar-probe-r1', '{"tick":0}'::jsonb, 10) $$,
+  'revision 1 is admitted, so the floor is exactly where the first save lands'
+);
+
+-- `save_versions_byte_size_non_negative`. Reachable only on the Storage-backed
+-- path, and that is a property of the schema rather than of this test:
+-- `enforce_save_version_size()` *measures* a JSONB payload and overwrites
+-- `byte_size` with the measurement, so a negative claim on a JSONB row is
+-- corrected before the CHECK ever sees it. A Storage-backed row has nothing to
+-- measure, so its `byte_size` stays the caller's figure -- which is exactly
+-- what 20260823100000's header says, and exactly why the claim still needs
+-- bounding. The path is the owner's own so the `LS004` prefix trigger passes
+-- and this constraint is what answers.
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 2, 1, 'scalar-probe-neg',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/probe.json', -1) $$,
+  '23514',
+  null,
+  'a negative byte_size is refused on the one path that keeps the caller''s figure rather than measuring it'
+);
+
+select lives_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 2, 1, 'scalar-probe-zero',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/probe.json', 0) $$,
+  'a byte_size of exactly 0 is admitted: an empty object is a legitimate size, and the floor is inclusive'
+);
+
+-- --- create_save_version()'s two refusals for one question (#340) ------
+--
+-- WHAT THIS SECTION PINS, AND WHY IT LOOKS BACKWARDS. `create_save_version()`
+-- answers "is this prison yours?" and "does this prison exist?" with two
+-- different SQLSTATEs and two different messages
+-- (20260822190300_create_save_version_rpc.sql:96 and :105), while the RLS
+-- policy on the same table refuses to answer the second question at all -- the
+-- foreign row simply is not visible. That is an existence oracle, it is filed
+-- as #340, and this suite could not see it: the assertion above uses
+-- `throws_ok(..., '42501', null, ...)`, which reads the SQLSTATE and leaves the
+-- message free, and no assertion in any of the eleven suites called this
+-- function with a prison id that does not exist. #340's proposed merged
+-- refusal applied verbatim left all 287 green.
+--
+-- Suite 002 pins the fixed version of exactly this shape for the challenge RPC
+-- ("a challenge id that does not exist is refused with a message that says
+-- nothing about existence"), and the honest thing here would be to assert that
+-- shape and let it fail until the migration lands. It is not asserted that way
+-- for one reason and it is worth stating: the fix is a migration, this agent
+-- may not write one, and a suite that is red on `main` is a gate nobody reads.
+-- pgTAP's `todo` is the idiom for exactly that and it does not survive this
+-- harness -- `select todo(...)` emits `not ok N - … # TODO`, and
+-- `scripts/verify-supabase-sql.mjs`'s TAP parser matches `/^not ok \d+/` with
+-- no TODO exemption, so the whole run goes red anyway (verified). Nor is there
+-- a precedent for it: `todo` appears in none of the eleven suites.
+--
+-- So today's two-branch behaviour is pinned instead, messages included. That is
+-- deliberately a pin on a DEFECT, and it is written to be impossible to
+-- misread as approval: the migration that merges these two branches MUST
+-- update these three assertions, and cannot land silently. The first two are
+-- what #340 fixes; the third is what makes it a disclosure rather than a
+-- cosmetic inconsistency, and it stays true either way.
+
+create function pg_temp.save_version_answer(p_prison_id uuid)
+returns text
+language plpgsql as $$
+declare
+  v_status text;
+begin
+  select status into v_status from public.create_save_version(
+    p_prison_id, 1, 1, 'oracle-probe-0001', '{"tick": 0}'::jsonb, null, 10);
+  return 'status=' || v_status;
+exception when others then
+  return sqlstate || ': ' || sqlerrm;
+end;
+$$;
+
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+set local role authenticated;
+
+select is(
+  pg_temp.save_version_answer('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  '42501: not authorized for prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+  'TODAY: a prison that exists and belongs to someone else is refused with 42501 and a message naming the prison (#340 -- this assertion must change when the two branches merge)'
+);
+
+select is(
+  pg_temp.save_version_answer('99999999-9999-9999-9999-999999999999'),
+  'P0001: prison 99999999-9999-9999-9999-999999999999 does not exist',
+  'TODAY: a prison that does not exist is refused with a DIFFERENT sqlstate and a message that says so -- the two answers together are the oracle #340 reports'
+);
+
+select is(
+  (select count(*)::int from public.prisons where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  0,
+  'and the same caller cannot see that prison through RLS at all, which is what makes the pair above a disclosure rather than a wording inconsistency'
 );
 
 reset role;

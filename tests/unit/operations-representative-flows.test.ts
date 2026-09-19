@@ -6,28 +6,10 @@ import type { RouteContext } from '../../src/simulation/navigation/route-context
 import type { TilePosition } from '../../src/simulation/world/coordinates';
 import { Container, ContainerMaterialsProvider, ContainerRegistry } from '../../src/simulation/operations/inventory';
 import { JobBoard } from '../../src/simulation/operations/job';
-import { JobSystem, JobWorkerPool, type JobWorkerAdapter } from '../../src/simulation/operations/job-system';
+import { CarryJobExecutor } from '../../src/simulation/operations/carry-executor';
+import { CarryCrew } from '../helpers/carry-executor-harness';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
-
-const STAFF: RouteContext = { role: 'staff', securityClearance: 5, permissions: ['medical-wing'] };
-
-class MapWorkerAdapter implements JobWorkerAdapter {
-  private readonly positions = new Map<number, TilePosition>();
-  public set(entityId: number, tile: TilePosition): void {
-    this.positions.set(entityId, tile);
-  }
-  public getPositionTile(entityId: number): TilePosition {
-    const tile = this.positions.get(entityId);
-    if (tile === undefined) throw new Error(`No position for worker ${entityId}`);
-    return tile;
-  }
-  public setPositionTile(entityId: number, tile: TilePosition): void {
-    this.positions.set(entityId, tile);
-  }
-  public getRouteContext(): RouteContext {
-    return STAFF;
-  }
-}
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #25's "representative flows prove extensibility; definitions
@@ -35,7 +17,7 @@ class MapWorkerAdapter implements JobWorkerAdapter {
  * operations share the same substrate" -- both proven in one scenario:
  * a two-hop food supply chain (delivery bay -> storage -> kitchen) and a
  * construction order's material delivery run concurrently through the
- * identical `JobBoard`/`ContainerRegistry`/`JobSystem`/`NavigationSystem`,
+ * identical `JobBoard`/`ContainerRegistry`/`CarryJobExecutor` substrate,
  * not two parallel implementations.
  */
 describe('representative operations flow: delivery -> storage -> kitchen, sharing the substrate with construction', () => {
@@ -55,22 +37,17 @@ describe('representative operations flow: delivery -> storage -> kitchen, sharin
     containers.register(constructionSite);
 
     const board = new JobBoard();
-    const workers = new JobWorkerPool();
-    const adapter = new MapWorkerAdapter();
-    const jobSystem = new JobSystem(board, containers, workers, adapter, navigation);
+    const executor = new CarryJobExecutor(board, containers);
+    // Three carriers: one per concurrent hop/order, deterministic and simple to
+    // reason about. `CarryCrew` plays the caller `prisoners.actions` is in a
+    // real session -- see its header for what that does and does not cover.
+    const crew = new CarryCrew(executor, [1, 2, 3]);
 
     const construction = new ConstructionSystem(cellBlock.world, new ContainerMaterialsProvider(constructionSite));
 
     const kernel = new Kernel();
     kernel.registerSystem(navigation);
-    kernel.registerSystem(jobSystem);
     kernel.registerSystem(construction);
-
-    // Three workers: one per concurrent hop/order, deterministic and simple to reason about.
-    workers.register(1);
-    workers.register(2);
-    workers.register(3);
-    [1, 2, 3].forEach((id) => adapter.set(id, cellBlock.canteenTiles[0]!));
 
     deliveryBay.deposit('item.food-ration', 20);
 
@@ -96,7 +73,8 @@ describe('representative operations flow: delivery -> storage -> kitchen, sharin
     // has no stock at tick 0); it must genuinely wait, not race ahead on faith.
     expect(board.getById('storage-to-kitchen')?.state).toBe('available');
 
-    for (let i = 0; i < 500; i += 1) kernel.step();
+    crew.run(20);
+    for (let i = 0; i < 100; i += 1) kernel.step();
 
     expect(board.getById('delivery-to-storage')?.state).toBe('completed');
     expect(board.getById('storage-to-kitchen')?.state).toBe('completed');
@@ -115,7 +93,7 @@ describe('representative operations flow: delivery -> storage -> kitchen, sharin
 /**
  * Issue #25 acceptance criteria explicitly names laundry and waste as
  * representative flows, not just delivery/storage/kitchen. Nothing in
- * `operations/` is specific to food -- `JobBoard`/`Container`/`JobSystem`
+ * `operations/` is specific to food -- `JobBoard`/`Container`/`CarryJobExecutor`
  * are generic over `itemId`, so proving these two flows is a matter of
  * exercising the *same* substrate with `item.dirty-linen`/`item.clean-linen`
  * and `item.waste` (from `src/content/item-catalog.ts`), not new production
@@ -138,16 +116,8 @@ describe('representative operations flow: laundry (cell -> laundry -> clean stor
     containers.register(cleanStorage);
 
     const board = new JobBoard();
-    const workers = new JobWorkerPool();
-    const adapter = new MapWorkerAdapter();
-    const jobSystem = new JobSystem(board, containers, workers, adapter, navigation);
-
-    const kernel = new Kernel();
-    kernel.registerSystem(navigation);
-    kernel.registerSystem(jobSystem);
-
-    workers.register(1);
-    adapter.set(1, cellBlock.canteenTiles[0]!);
+    const executor = new CarryJobExecutor(board, containers);
+    const crew = new CarryCrew(executor, [1]);
 
     cellHamper.deposit('item.dirty-linen', 8);
     // The laundry itself turns dirty stock into clean stock -- a session/
@@ -159,8 +129,7 @@ describe('representative operations flow: laundry (cell -> laundry -> clean stor
       0,
     );
 
-    let tick = 0;
-    for (; tick < 400 && board.getById('cell-to-laundry')?.state !== 'completed'; tick += 1) kernel.step();
+    expect(crew.runUntil(() => board.getById('cell-to-laundry')?.state === 'completed')).toBe(true);
     expect(board.getById('cell-to-laundry')?.state).toBe('completed');
     expect(laundry.quantityOf('item.dirty-linen')).toBe(8);
 
@@ -170,15 +139,15 @@ describe('representative operations flow: laundry (cell -> laundry -> clean stor
     // `Container` requires for any stock removal (its only removal path,
     // by design -- "auditable to prevent duplication/loss"), exactly like
     // a kitchen "cooking" step sits outside a food-delivery carry job.
-    expect(laundry.reserve('item.dirty-linen', 8).ok).toBe(true);
-    expect(laundry.withdrawReserved('item.dirty-linen', 8).ok).toBe(true);
+    expectOk(laundry.reserve('item.dirty-linen', 8), 'the wash claiming the delivered dirty linen');
+    expectOk(laundry.withdrawReserved('item.dirty-linen', 8), 'the wash taking the dirty linen off the shelf');
     expect(laundry.quantityOf('item.dirty-linen')).toBe(0);
     laundry.deposit('item.clean-linen', 8);
     board.submitCarryItem(
       { id: 'laundry-to-storage', priority: 1, itemId: 'item.clean-linen', quantity: 8, sourceContainerId: 'laundry-0', sourceTile: cellBlock.cellTiles[1]!, destinationContainerId: 'clean-linen-storage-0', destinationTile: cellBlock.cellTiles[2]! },
-      tick,
+      1,
     );
-    for (let i = 0; i < 400; i += 1) kernel.step();
+    crew.run(5);
 
     expect(board.getById('laundry-to-storage')?.state).toBe('completed');
     expect(cellHamper.quantityOf('item.dirty-linen')).toBe(0);
@@ -200,16 +169,8 @@ describe('representative operations flow: waste (cell -> collection -> disposal)
     containers.register(disposal);
 
     const board = new JobBoard();
-    const workers = new JobWorkerPool();
-    const adapter = new MapWorkerAdapter();
-    const jobSystem = new JobSystem(board, containers, workers, adapter, navigation);
-
-    const kernel = new Kernel();
-    kernel.registerSystem(navigation);
-    kernel.registerSystem(jobSystem);
-
-    workers.register(1);
-    adapter.set(1, cellBlock.canteenTiles[0]!);
+    const executor = new CarryJobExecutor(board, containers);
+    const crew = new CarryCrew(executor, [1]);
 
     cellBin.deposit('item.waste', 5);
 
@@ -217,14 +178,13 @@ describe('representative operations flow: waste (cell -> collection -> disposal)
       { id: 'cancelled-collection', priority: 1, itemId: 'item.waste', quantity: 5, sourceContainerId: 'cell-bin-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'waste-disposal-0', destinationTile: cellBlock.cellTiles[1]! },
       0,
     );
-    // One kernel step is enough to reserve+assign (assignAvailableJobs runs
-    // synchronously in JobSystem.update before travel begins) -- cancelling
-    // immediately after proves reservations release even when a job never
-    // reaches 'travelling', consistent with issue #25's "cancellation/
-    // failure releases reservations consistently" criterion.
-    kernel.step();
+    // One cycle is enough to reserve and assign (`claimAvailableJobFor` does
+    // both) -- cancelling immediately after proves reservations release even
+    // when a job never leaves the pickup leg, consistent with issue #25's
+    // "cancellation/failure releases reservations consistently" criterion.
+    crew.step();
     expect(cellBin.reservedOf('item.waste')).toBe(5);
-    expect(jobSystem.cancel('cancelled-collection')).toBe(true);
+    expect(executor.cancel('cancelled-collection')).toBe(true);
     expect(cellBin.reservedOf('item.waste')).toBe(0);
     expect(cellBin.quantityOf('item.waste')).toBe(5); // never withdrawn
 
@@ -232,7 +192,7 @@ describe('representative operations flow: waste (cell -> collection -> disposal)
       { id: 'real-collection', priority: 1, itemId: 'item.waste', quantity: 5, sourceContainerId: 'cell-bin-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'waste-disposal-0', destinationTile: cellBlock.cellTiles[1]! },
       1,
     );
-    for (let i = 0; i < 400; i += 1) kernel.step();
+    crew.run(5);
 
     expect(board.getById('real-collection')?.state).toBe('completed');
     expect(disposal.quantityOf('item.waste')).toBe(5);
