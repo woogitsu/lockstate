@@ -125,6 +125,11 @@ import {
   staffDailyWageMinorUnits,
 } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
+// The wire's own type for a regime block's categories. `src/main.ts` is the
+// composition root and not the HUD, so it may name it; `src/ui/**` may not,
+// which is why the intent carries `readonly string[]` and this is where the
+// two meet (#1167).
+import type { ActionCategory } from './simulation/prisoners/regime';
 import { freshUnfurnishedPrison, judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
 import { HostRefusalError } from './ui/host-refusal';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
@@ -3090,6 +3095,41 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'dismiss-staff':
           requireSimulation(commands).submit({ type: 'DismissStaff', staffId: intent.staffId });
+          return;
+
+        /*
+         * The player has changed what one group's running block allows
+         * (#1167, ADR 0113 slice 1's missing producer).
+         *
+         * **Straight through, with no pre-check**, and the reason is
+         * `dismiss-staff`'s one line above with a block instead of a person:
+         * whether that group still exists and whether a block still starts on
+         * that tick are not things this thread's cadence-old copy of the
+         * schedule may decide. The simulation refuses --
+         * `session-commands.ts` records `edit-regime-block.unknown-group` and
+         * `edit-regime-block.unknown-block` -- and the alerts list says so.
+         *
+         * **`allowedCategoryIds` is a `readonly string[]` on this side and
+         * `ActionCategory[]` on the wire, and the widening is deliberate.** The
+         * HUD may not import `src/simulation/**`, so it cannot hold the union;
+         * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` is what narrows
+         * it, and a member outside the vocabulary is rejected by `packCommand`
+         * inside `submit` -- on this thread, before anything is sent -- rather
+         * than reaching the registry. The cast is that parse's precondition,
+         * not a claim this thread has checked anything.
+         *
+         * Nothing can produce one today: the panel's toggles are built from
+         * `simulationEnumIds('action-category')`, which
+         * `tests/foundation/content-vocabulary-contract.test.ts` holds equal to
+         * `ACTION_CATEGORIES` exactly.
+         */
+        case 'edit-regime-block':
+          requireSimulation(commands).submit({
+            type: 'EditRegimeBlock',
+            classificationGroupId: intent.classificationGroupId,
+            startTickOfDay: intent.startTickOfDay,
+            allowedCategories: [...(intent.allowedCategoryIds as readonly ActionCategory[])],
+          });
           return;
 
         /*

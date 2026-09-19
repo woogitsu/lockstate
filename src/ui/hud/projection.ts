@@ -157,7 +157,7 @@ export type HudMetricId =
  * that actually matters (that the player sees words rather than a dotted id).
  *
  * The `'high-risk'` id is spelled here for the reason `describePrisonerRow`
- * spells it in `regime-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
+ * spells it in `roster-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
  * `src/simulation/prisoners/components.ts` and the HUD may not import the
  * simulation (`AGENTS.md` boundary 1). A wrong id would resolve to nothing and
  * render as the raw key, which `tests/browser/app-shell.spec.ts` asserts
@@ -200,7 +200,8 @@ export interface HudMetricText {
    * **The field this replaced took `MessageParameters` and rendered through
    * `String()`,** which is `interpolate`'s fallback: `hud.status.funds-remaining`
    * under a chip reading `-100` would have said `2400 left` where the chip said
-   * `-100`, and `{count} with no bed` said `1240` under a chip reading `1,240`.
+   * `-100`, and `{count} with no bed` -- the badge's text before issue #961 --
+   * said `1240` under a chip reading `1,240`.
    * Identical below a thousand in `en`, which is why the older of the two ran
    * for two issues without anybody seeing it. The old field is gone rather than
    * kept beside this one: after issue #703's ruling 21 shortened the coverage
@@ -333,7 +334,7 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
  * and nothing at all when everybody does (issue #609).
  *
- * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * **`undefined` rather than a badge reading "0 not housed"**, which is
  * `coverageTone`'s reasoning applied to a chip that has been badge-less until
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent
@@ -442,6 +443,14 @@ function roomsNotReadyBadge(roomNeeds: HudRoomNeedsViewModel | undefined): HudMe
  * colour alone.
  */
 function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  // Above the ladder, because it is the state the ladder cannot see (ADR 0117,
+  // accepted 2026-09-17). While a post cannot be reached, the three counts
+  // below alternate between *covered* and *unguarded* on the deployment
+  // cadence -- 100 ticks each over 200, seed `0x396` -- so reading them alone
+  // paints this chip green on half of all frames over a prison no guard is
+  // standing in. `coverageBadge` takes the same precedence for the same
+  // reason, so the colour and the word still come off one ladder read once.
+  if (counts.postUnreachable === true) return 'danger';
   if (counts.prisonersUnguarded > 0) return 'danger';
   if (counts.prisonersUnderstaffed > 0) return 'warning';
   return undefined;
@@ -489,6 +498,11 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
  */
 function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   const tone = coverageTone(counts);
+  // ADR 0117 §4's second decision, settled here: while this stands,
+  // `securityCoverageMet` -- "Covered" -- is false, and it is what this chip
+  // would otherwise read on half of all ticks (measured; see `coverageTone`).
+  // So the rung is displaced rather than annotated.
+  if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
   // One ladder, read once: the tone and the word come off the same two rungs in
   // the same order, so a rung that changes the colour cannot fail to change the
@@ -784,6 +798,34 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
 }
 
 /**
+ * What the `Earned today` chip is not paying, in a full sentence -- its
+ * tooltip and its screen-reader text (issue #890).
+ *
+ * **Nothing at all while nothing is withheld**, which is `overdraftBadge`'s
+ * rule: a chip that carries the same sentence in every screenshot is one
+ * nobody reads in the screenshot it matters in. Absent and `0` are different
+ * facts -- a payload written before the field existed against a prison
+ * meeting every need -- and both correctly draw nothing.
+ *
+ * **It reads the published figure and does not derive one.** The undiminished
+ * per-place rate is in `src/simulation/economy/income.ts`, which this module
+ * may not import (`tests/unit/ui-hud-messages.test.ts`), and subtracting
+ * before prorating would disagree with the chip's own value for most of every
+ * day -- the projection's field carries the measured tick counts. So the
+ * arithmetic stays where the rate is and this function only chooses whether
+ * there is a sentence.
+ *
+ * The figure rides `numberParameters` for `overdraftDescription`'s reason:
+ * this layer is pure and has no localizer, so it names the quantity and the
+ * strip formats it exactly as it formats the value it sits under.
+ */
+function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | undefined {
+  const withheld = counts.stateIncomeWithheldTodayMinorUnits;
+  if (withheld === undefined || withheld <= 0) return undefined;
+  return { textKey: HUD_MESSAGE_KEY.earnedWithheld, numberParameters: { withheld } };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -900,7 +942,7 @@ export function projectStatusMetrics(
        * the population the prison has -- and nobody has set the number at which
        * it becomes one, so a permanent amber chip on a mature prison would be
        * exactly the *"status strip where several things are always amber"*
-       * `coverageTone` refuses. `describePrisonerRow` in `regime-panel.ts`
+       * `coverageTone` refuses. `describePrisonerRow` in `roster-panel.ts`
        * already draws the line for the row badge: *"`warning` for high risk is
        * not a claim that the prisoner is a problem. It is that they are on the
        * restricted timetable"* -- a distinction a per-prisoner badge can carry
@@ -963,7 +1005,16 @@ export function projectStatusMetrics(
       capacity: undefined,
       tone: coverageTone(counts),
       badge: coverageBadge(counts),
-      description: undefined,
+      /**
+       * **The one sentence a stranded post gets** (ADR 0117, accepted by the
+       * owner on 2026-09-17), and `undefined` on every other prison.
+       *
+       * The chip's own `title` and screen-reader text, exactly as the `FUNDS`
+       * chip's is; the badge above carries the short form, so nothing is said
+       * only here -- see `HudMetricDescriptor.description`, which states that
+       * as a constraint rather than a remark.
+       */
+      description: counts.postUnreachable === true ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint } : undefined,
     },
     {
       id: 'rooms',
@@ -1193,7 +1244,16 @@ export function projectStatusMetrics(
 
       tone: undefined,
       badge: undefined,
-      description: undefined,
+      // **And a description, which is not a tone and not a badge** (issue
+      // #890). The two lines above refuse a threshold nobody has set; this
+      // states a figure the simulation already computes and the player has no
+      // other way to read -- what today's grant is not paying because
+      // residents have needs going unmet. `funds` above is the precedent for
+      // the placement as well as the shape: the owner's ruling of 2026-09-01
+      // put a sentence here rather than in a badge because `.ui-sr-only` and
+      // `title` cost no chip width, and this row's width is measured
+      // (`tests/browser/ui-strip-badged-width.spec.ts`).
+      description: earnedWithheldDescription(counts),
     },
   ];
 }

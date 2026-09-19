@@ -119,6 +119,10 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'records.intakeStage': intakeStageIndex('queued'),
   // `0` -- not sanctioned. Issue #80, ADR 00XX.
   'records.solitarySanctionEndTick': 0,
+  // `0` -- not injured. Issue #589, the owner's ruling of 2026-09-17. A
+  // recycled index must not hand its previous occupant's injury to the next
+  // prisoner, which is the whole of what this file is for.
+  'records.injured': 0,
   // Stated once for every need, the way `NeedsComponent.reset` itself loops
   // `NEED_IDS`: a seventh need is covered here with no second edit. The value
   // is `NEED_MAX` expressed in the units `levels` actually stores -- scaled by
@@ -140,12 +144,13 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
 };
 
 describe('per-prisoner component slot defaults', () => {
-  it('counts twenty-one per-slot arrays across the five index-keyed components', () => {
+  it('counts twenty-two per-slot arrays across the five index-keyed components', () => {
     const perComponent = componentsUnderTest().map((entry) => [entry.name, slotArraysOf(entry.make()).size] as const);
 
     // **The two numbers here are no longer one number, and that is the point.**
-    // `admitPrisoner` has to reset every array below -- twenty-one since #80
-    // added `solitarySanctionEndTick` (ADR 00XX) to the twenty #435 left --
+    // `admitPrisoner` has to reset every array below -- twenty-two since #589
+    // added `records.injured` to the twenty-one #80 left, which had added
+    // `solitarySanctionEndTick` (ADR 00XX) to the twenty #435 left --
     // while `session-systems.ts` and `docs/PERSISTENCE.md` say "nineteen
     // per-prisoner component arrays" about the *payload*, which is the same
     // list minus `SubstitutionRecordComponent`'s two: they are diagnostics, no
@@ -156,15 +161,17 @@ describe('per-prisoner component slot defaults', () => {
     // still fails here and the prompt is to say which of the two lists it
     // joins.
     expect(perComponent).toEqual([
-      ['PrisonerRecordComponent', 7],
+      ['PrisonerRecordComponent', 8],
       ['NeedsComponent', 6],
       ['CurrentActionComponent', 4],
       ['PositionComponent', 2],
       ['SubstitutionRecordComponent', 2],
     ]);
-    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(21);
+    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(22);
     const persisted = perComponent.filter(([name]) => name !== 'SubstitutionRecordComponent');
-    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(19);
+    // 20, not 19, since #589: `records.injured` is state a system reads back,
+    // so the codec writes it, exactly as it does `solitarySanctionEndTick`.
+    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(20);
   });
 
   it('pins the value of every default, not only that reset agrees with construction', () => {

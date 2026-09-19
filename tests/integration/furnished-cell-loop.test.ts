@@ -374,7 +374,8 @@ describe('what the toilet does and does not change in the running prison', () =>
     const furnished = prisonWithBedAndToiletOrdered();
     stepTo(furnished, 200);
 
-    // Seven, not six: `action.laundry-work` joined them in
+    // Eight, not six: `action.infirmary-treatment` joined them at #589, and
+    // `action.laundry-work` joined them in
     // [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
     // and `action.kitchen-work` at #532, and each is one more room this prison
     // has not built rather than a change to what this file measures. The list
@@ -389,6 +390,7 @@ describe('what the toilet does and does not change in the running prison', () =>
       'action.classroom-education',
       'action.laundry-work',
       'action.kitchen-work',
+      'action.infirmary-treatment',
     ]);
 
     /*

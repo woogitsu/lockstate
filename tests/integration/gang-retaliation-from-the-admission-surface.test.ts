@@ -254,5 +254,60 @@ describe('a gang retaliation from the admission the interface actually makes (#9
     expect(runtime.gangs.membersOf('gang.beta')).toEqual([1, 5]);
     expect(runtime.gangs.allGrudges()).toEqual([]);
     expect(incidentsOfType(runtime, 'gang-retaliation')).toEqual([]);
-  });
+    /*
+     * The only test in this file that advances a whole simulated season, and
+     * the only one with no headroom under the root config's 5 s default. It
+     * costs 1,121 ms in this container against 533 ms and 1 ms for its two
+     * siblings; CI's self-hosted runners have been measured at roughly four
+     * times this container's wall clock under load, which puts it over.
+     * It went over on run 35089456268 -- "Test timed out in 5000ms" at this
+     * `it`, in a job whose other 5,359 tests passed and whose diff was one
+     * regex in a foundation test. 30 s is the figure the neighbouring
+     * integration files already use for a run of this length --
+     * `contended-shower-fairness.test.ts` and `economy-loan-recovery.test.ts`
+     * carry `}, 30_000)`, and the runs that advance further carry 60_000,
+     * 120_000 and 300_000.
+     *
+     * **Re-measured 2026-09-18 after a top-up merge of `origin/main`, because
+     * raising a budget is the wrong fix for a test that got slower rather than
+     * one that was always long.** Three alternating runs of this test at the
+     * branch's original base `54adc87c` and at the merged tree, same
+     * container, same order: 1129/942/787 ms at the base against 965/988/796
+     * ms merged. The two are the same measurement inside the container's own
+     * noise, across some sixty intervening commits, so nothing regressed --
+     * the cost is the 90 simulated days themselves, and the 5 s it exceeds is
+     * a global default in `vitest.config.ts` chosen for tests that do not
+     * advance a clock at all.
+     *
+     * **That pair did not span `adad4f08` (#1291, the #961 resident ceiling),
+     * and re-measured across it the two are *not* the same number** -- which
+     * is recorded here rather than left under the sentence above, because the
+     * sentence above was true of the window it measured and is not true of
+     * this one. Three alternating pairs, `eeda2e53` against the tree merged
+     * with `23374859`, same container, same order, load average 28 because
+     * nine other agents were running suites in it: 3372/2620/2831 ms before
+     * against 4223/3972/3190 ms after -- means of 2941 and 3795, and the
+     * later tree is the slower one in all three pairs.
+     *
+     * **That is a measurement and not a diagnosis.** The ceiling makes
+     * `residentCapacity` a `min(sum, ceiling)` over every room and moves who
+     * is housed, so more work per admitted prisoner is what the feature is;
+     * nothing here establishes it as a defect, and the conclusion this comment
+     * draws does not depend on which it is. What it depends on is that the
+     * test does the same 90 simulated days it always did, and that at load
+     * this container reports it at 2.6-4.2 s against a 5 s budget -- a
+     * coin-flip rather than a margin. Measured the same afternoon on the same
+     * container, five unrelated tests that also advance a clock lost that
+     * coin-flip on `Test timed out in 5000ms` --
+     * `tests/determinism/contended-scan-order.test.ts`,
+     * `tests/integration/canteen-shape-hunger-comparison.test.ts`,
+     * `tests/integration/contraband-search-duty.test.ts`,
+     * `tests/integration/incident-trigger-reachability.test.ts` and
+     * `tests/integration/risk-tier-neglect-reachability.test.ts` -- on a tree
+     * that carries none of this branch's change, and passed when the load fell.
+     * This file is one instance of that class; the class is the 5 s default,
+     * and widening it is a decision about `vitest.config.ts` rather than about
+     * this test.
+     */
+  }, 30_000);
 });

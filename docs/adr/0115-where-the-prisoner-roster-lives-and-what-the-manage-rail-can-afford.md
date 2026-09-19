@@ -11,13 +11,106 @@
 
 ## Status
 
-**Proposed.** Nothing here is decided and no code implements it. It exists
-because `docs/IDENTITY_V5_ROLLOUT.md` stage 5 lists the Regime panel's split as
-something the stage *owes* — *"a code change rather than a mount move"* — and
-because the measurement taken while doing the rest of stage 5 says the split is
-not a code change with one obvious shape. `AGENTS.md`'s standing mandate is to
-decide rather than ask; this is the case it excepts, and the reason is set out
-in "Why this is not ours to decide" below.
+**Accepted, 2026-09-16, by the repository owner: option 4 — split the panel in
+code, and both halves stay on the Plan dnia (Regime) tab.** That is the whole of
+the question this document asks, so the Status moves; what it does not move is
+stated three paragraphs down rather than left to be inferred. **It is built, and
+has been since 2026-09-19**, when `3387b9f6` merged
+[#1280](https://github.com/woogitsu/lockstate/pull/1280); the "Built." paragraph
+below names the files and prices what the split cost.
+
+*The clause replaced here read:* **"Nothing under `src/` implements it, and the
+ruling does not by itself change that** — it settles which arrangement is right,
+not that it is built." *It was true for the three days between the ruling and
+the merge, and is quoted rather than deleted per `docs/AGENT_WORKFLOW.md` §4's
+rule about marking both directions. Correcting it was not a second ruling and
+did not touch the `Accepted` above, which is the owner's: a sentence about
+implementation state inside a Status block is a fact that goes stale, not a
+decision that has to be re-taken.*
+
+*The paragraph replaced here read:* **"Proposed.** Nothing here is decided and no
+code implements it. It exists because `docs/IDENTITY_V5_ROLLOUT.md` stage 5 lists
+the Regime panel's split as something the stage *owes* — *"a code change rather
+than a mount move"* — and because the measurement taken while doing the rest of
+stage 5 says the split is not a code change with one obvious shape. `AGENTS.md`'s
+standing mandate is to decide rather than ask; this is the case it excepts, and
+the reason is set out in "Why this is not ours to decide" below." *It is quoted
+rather than deleted, because every argument below it was written from a position
+this document no longer holds, and because the sentence naming this as the case
+the mandate excepts is what makes the ruling's provenance worth recording at
+all.*
+
+**The provenance is the weaker of the two kinds this repository distinguishes,
+and it is recorded here rather than left to be inferred.** The owner did not
+type a sentence. They were shown the options this document prices, in a
+clickable question an agent session had written, and chose the one labelled:
+
+> Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)
+
+("Option 4 — split the panel in code, both halves on Plan dnia (recommended).")
+That is the same provenance `CLAUDE.md` flags for the 2026-09-08, -09 and -10
+releases inside reservation 3, and the same
+[ADR 0091](./0091-what-clears-the-refusal-band.md) and
+[ADR 0116](./0116-whether-a-finished-object-is-an-event.md) record of themselves.
+It is weaker than a quoted instruction in exactly one way that matters here:
+**the option's own label is the whole of what was agreed.** What was agreed is
+the ARRANGEMENT — two panels in code, both mounted on Plan dnia — and not any of
+the implementation this document declines to write under it.
+
+**What was declined, and it was declined with a measurement in front of it.**
+Option 2, the roster as a third panel on Manage, was priced before the question
+was put: a stub of the roster's own measured height inserted into `.hud__side`
+above the Staff panel takes the Staff panel to **51.56 px at 375x812** and
+**14.88 px at 900x600** as `flex: 0 0 auto` — against `--tap-target`'s 44 px, one
+row or less of a panel carrying Hire, the coverage sentence, the payroll fold and
+three Dismiss controls. **That figure is not this document's and was not
+re-taken here**: it is the 2026-09-15 dossier's, filed as
+[#1242](https://github.com/woogitsu/lockstate/pull/1242), which also corrects
+three of the six columns of this document's own measurement table. Options 1 and
+3 were on the same list and were not chosen.
+
+**What this ruling does NOT settle, stated because the option this document
+wrote describes itself as provisional.** Below, option 4 is priced as the one
+where *"the placement stays one decision away"*, and §"Why this is not ours to
+decide" argues that the question is better answered **after**
+[#1167](https://github.com/woogitsu/lockstate/issues/1167) gives Plan dnia its
+first write surface. The label the owner chose names the placement — *obie
+połowy na Plan dnia* — so the placement is ruled and not deferred; the argument
+for re-opening it after #1167 is kept below rather than deleted, and re-opening
+it would be a fresh ruling rather than the discharge of this one. Nothing here
+authorises moving either half to Manage later without asking again.
+
+**AND THAT CLAUSE STOPPED BEING TRUE WHEN THE SPLIT LANDED. It is kept above
+rather than rewritten**, per `docs/AGENT_WORKFLOW.md` §4's rule about marking
+both directions, because it records the state the ruling sat in between being
+made and being built, and because a reader needs to see that the ruling and the
+implementation are two separate events.
+
+**Built.** `src/ui/hud/roster-panel.ts` carries the roster and the inspector as
+`.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the timetable;
+`hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+`tests/browser/ui-roster-panel-split.spec.ts` holds the three properties the
+split makes structural. **The placement is ruled and is not deferred**: moving
+the roster to Zarządzaj later is a fresh ruling, and nothing in what was built
+prepares one.
+
+**What it cost, measured on the same fixtures before and after** — the
+timetable, a four-row roster of a prison of nine, and a selected prisoner:
+**63 px** of panel chrome at every viewport (one panel 487.13 px at
+1440x900 / 1280x720 / 1024x768 / 900x600 and 456.75 px at 375x812; two panels
+169.75 + 380.38 = 550.13, and 156.56 + 347.44 = 504.00 at the phone), and an
+arrival overflow of **16 px at 375x812** and **46 px at 900x600** where the one
+panel arrived unscrolled. **What it did not buy is an independent scroll**: the
+single panel's own `scrollHeight - clientHeight` was **0 at all five
+viewports** in that same fullest state, so the scroll this ADR's §"The options"
+worried about was never actually reached. The Manage rail is untouched, which
+is what declining option 2 means: `.hud__side`, Intake and Staff measure
+identically before and after at all five viewports.
+
+**Those figures are this document's own and are NOT the 51.56 px / 14.88 px
+above.** Those two price **option 2**, which was declined; these price **option
+4**, which shipped and leaves the Manage rail alone. A reader comparing them
+would be comparing two different arrangements.
 
 ## Context
 
@@ -187,6 +280,11 @@ is not paid for.
 
 ## Why this is not ours to decide
 
+> **ANSWERED 2026-09-16, AND THIS SECTION IS KEPT RATHER THAN RETIRED WITH THE
+> QUESTION.** It is the argument that sent the question to the owner, and the
+> Status block above is only legible beside it. Read every sentence below as the
+> case for asking, made before the answer existed.
+
 `AGENTS.md`'s fourth reservation is about promises to a player, and its standing
 mandate is to decide rather than ask. Neither reaches this. What is open here is
 **what a section contains**, which is the same class of question the owner
@@ -216,12 +314,24 @@ rather than before it, and a reason not to spend a change on it now.
 
 ## The recommendation, and it is deliberately the smallest one
 
+> **RULED 2026-09-16: the owner chose option 4, which is what this section
+> recommends.** So this is a recommendation the ruling agreed with rather than
+> one it overrode, and the sentences below keep their tense deliberately — they
+> are what the owner was shown. The one clause the ruling narrows is *"let the
+> placement be a one-line mount change afterwards"*: the placement is now ruled,
+> and the one-line change it describes would need a fresh ruling to spend.
+
 **Option 4**, if anything is done before the owner answers: split the panel in
 code, keep both halves mounted on Plan dnia, and let the placement be a
 one-line mount change afterwards — the same shape the 2026-09-14 move's own
 commit sequence used for intake (§6 step 3 of the navigation-move record:
 *"Either is a one-line `setVisible`/gate change… so the sequencing cost of
 waiting for the answer is zero"*).
+
+**OVERTAKEN ON 2026-09-16: the owner ruled option 4 and it was built the same
+week.** The paragraph below is kept because it is the position this document
+argued from, and because its last sentence — *"a table that has never been
+ruled on"* — is exactly the clause the ruling closed. Read the Status block.
 
 **This document does not implement it.** Stage 5's own exit criterion is that
 nothing is unreachable, and every row of the Regime panel is reachable today at

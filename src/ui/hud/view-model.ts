@@ -133,7 +133,8 @@ export interface HudCountsViewModel {
   /**
    * How many prisoners are holding a residency place **that currently
    * exists** -- the count the state pays on, and the one the `PRISONERS`
-   * chip's *"N with no bed"* badge is subtracted from (issue #609).
+   * chip's *"N not housed"* badge is subtracted from (issue #609; the noun
+   * moved from "bed" to "place" with issue #961's resident ceiling).
    *
    * Published, never derived here: it is `counts.occupiedPlaces`
    * (`src/ui/simulation-counts.ts`), which the projection fills from
@@ -264,6 +265,41 @@ export interface HudCountsViewModel {
   readonly prisonersCovered: number;
   readonly prisonersUnderstaffed: number;
   readonly prisonersUnguarded: number;
+  /**
+   * **Whether a sector's guard post currently cannot be reached**, so the
+   * post is never manned however many guards the prison has hired
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it
+   * is `PrisonCondition`'s `'security.post-unreachable'` member on
+   * `counts.conditions`, read through `isPostUnreachable`
+   * (`src/ui/simulation-conditions.ts`) rather than compared to a literal
+   * here, and produced by `DeploymentSystem.hasUnreachablePost` -- which is
+   * the same object `assignUnassignedGuards` draws its claimable guards from,
+   * so the readout and the deployment cadence cannot come to disagree about
+   * whether anybody could take the post.
+   *
+   * **It is what stops the chip beside it saying something false.** The three
+   * coverage counts above flicker between *covered* and *unguarded* on a
+   * ten-tick cadence while a post is stranded -- measured over 200 consecutive
+   * ticks on seed `0x396`, exactly 100 each -- because `SafetyCoverageSystem`
+   * follows an assignment that is made and lost every deployment pair. So for
+   * half of all ticks `coverageBadge` reads **"Covered"** over a prison no
+   * guard is standing in. `projectStatusMetrics` gives this field precedence
+   * over that ladder for that reason, and ADR 0117 §4 names the choice as one
+   * that falls to whoever builds the condition.
+   *
+   * **Optional, the same shape as `roomCapacity` above and for its reason**:
+   * every fixture that built a `HudCountsViewModel` before this field existed
+   * stays valid, and absent reads as "no prison has said a post is stranded"
+   * -- which is the safe direction, since it leaves the coverage ladder
+   * exactly as it was.
+   *
+   * `false` is a real state and not "unknown": it is every prison whose posts
+   * can be walked to, which is every prison that has not walled one in.
+   */
+  readonly postUnreachable?: boolean;
   /**
    * How many prisoners are on the high-risk regime (issue #703, the owner's
    * fourth ruling of 2026-08-31).
@@ -444,6 +480,25 @@ export interface HudCountsViewModel {
    * what the prison has earned.
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * How much of today's grant has been withheld so far because residents have
+   * needs going unmet, in the same minor units -- or **absent because nothing
+   * has published it** (issue #890).
+   *
+   * Published, never computed here, and the reason is sharper than for the
+   * field above: the undiminished per-place rate lives in
+   * `src/simulation/economy/income.ts`, which `src/ui/hud/` may not import
+   * (`tests/unit/ui-hud-messages.test.ts`), and the subtraction has to happen
+   * after both sides are prorated or it disagrees with the chip it explains
+   * for most of every day.
+   *
+   * **Optional, and absent is not `0`.** Absent is a payload written before
+   * this field existed -- every fixture in `tests/browser/` is one -- and `0`
+   * is a prison meeting every resident's needs. `earnedWithheldDescription`
+   * draws nothing in either case, so the two agree on screen and are still
+   * different facts.
+   */
+  readonly stateIncomeWithheldTodayMinorUnits?: number;
   /**
    * What one in-game day of the current roster will cost, in the same minor
    * units -- or **absent because nothing has published counts yet** (issue
@@ -2004,6 +2059,44 @@ export interface HudRegimeBlockViewModel {
   readonly allowedCategoryLabelKeys: readonly LocalizationKey[];
   /** How far through the running block, `0`--`100`, floored. */
   readonly blockProgressPercent: number;
+  /**
+   * The tick of the day the running block starts on --
+   * `RegimeBlockViewModel.blockStartTickOfDay` verbatim.
+   *
+   * **Carried because it is the coordinate `EditRegimeBlock` names a block
+   * by**, and for the reason ADR 0113 §3 gives for the command naming a block
+   * that way rather than by index: an index is not stable across a save/load
+   * round trip, because `RegimeScheduleRegistry` reorders rows into a
+   * canonical order on restore, and a boundary is the one coordinate the
+   * player and the simulation can agree on without agreeing on array order
+   * first. A panel that sent an index would be sending the one number that
+   * can mean a different block after a reload.
+   *
+   * Never derived here from `blockProgressPercent` and the day length, which
+   * would be this layer computing a simulation figure: the projection already
+   * states it.
+   */
+  readonly startTickOfDay: number;
+  /**
+   * The same categories `allowedCategoryLabelKeys` above labels, as the ids
+   * themselves, in the schedule's own order.
+   *
+   * **Both, rather than one derived from the other, and the direction is why.**
+   * A label key is what the panel *renders* and an id is what the panel
+   * *sends*; `deriveSimulationMessageKey` maps an id to a key and nothing maps
+   * a key back, so a panel holding only keys could not name a category to
+   * `EditRegimeBlock` at all, and one holding only ids would have to spell the
+   * key itself -- the second spelling `simulation-regime.ts` already refuses
+   * to write.
+   *
+   * `readonly string[]` and not `ActionCategory[]`: this module imports
+   * nothing from `src/simulation/**` (see the file header), exactly as
+   * `classificationGroupId` above is a bare `string` for the same reason. The
+   * closed vocabulary is enforced where the command is decoded --
+   * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` -- rather than by a
+   * type this layer may not name.
+   */
+  readonly allowedCategoryIds: readonly string[];
 }
 
 export interface HudRegimeViewModel {
@@ -2114,7 +2207,7 @@ export interface HudPrisonerRosterViewModel {
    * carried unchanged from `PrisonerRosterPage.everAdmitted` (issue #506).
    * `total: 0` alone cannot say whether nobody has been admitted or whether
    * the whole population has since been discharged, and this is the fact
-   * that tells the two apart -- see `regime-panel.ts`'s roster-empty note
+   * that tells the two apart -- see `roster-panel.ts`'s roster-empty note
    * for what the panel does with it.
    */
   readonly everAdmitted: boolean;
@@ -2179,7 +2272,7 @@ export interface HudPrisonerDetailViewModel {
    *
    * Six today, and the count is the projection's rather than this file's: a
    * consumer that assumed six would be wrong the day a seventh need is
-   * declared, which is why `regime-panel.ts` spells its row budget out with a
+   * declared, which is why `roster-panel.ts` spells its row budget out with a
    * unit test holding it against `NEED_IDS.length`.
    */
   readonly needs: readonly HudPrisonerNeedViewModel[];

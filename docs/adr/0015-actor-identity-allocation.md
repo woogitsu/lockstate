@@ -444,7 +444,7 @@ inherited:
 
   > **False as of 2026-09-15, and it is the closing of this ADR's opening
   > sentence.** `grep -rn "givenName" src/ui/` is not empty. The consumer
-  > exists: `src/ui/hud/regime-panel.ts:672` renders a roster row as
+  > exists: `src/ui/hud/roster-panel.ts:623` renders a roster row as
   > `t(HUD_MESSAGE_KEY.regimeRosterName, { given: name.givenName, family: name.familyName })`
   > — a message key with the two parts passed separately, which is the shape
   > §"The name is not localizable content" asks for (*"The projections expose

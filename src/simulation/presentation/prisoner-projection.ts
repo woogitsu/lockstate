@@ -154,7 +154,7 @@ export interface PrisonerNeedViewModel {
    * module importing `src/simulation/economy/income.ts` to re-run the
    * comparison, which `AGENTS.md` boundary 1 forbids outright -- and because a
    * threshold the panel recomputed would be a second copy of a balance number
-   * on the thread that owns none. `regime-panel.ts` predicted exactly this
+   * on the thread that owns none. `roster-panel.ts` predicted exactly this
    * shape: *"what would make one is a projected threshold ... and both are
    * projection changes rather than panel ones."*
    */

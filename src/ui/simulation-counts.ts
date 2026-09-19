@@ -1,4 +1,5 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
+import { isPostUnreachable } from './simulation-conditions';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudCountsViewModel, HudOverviewViewModel } from './hud/view-model';
 
@@ -65,7 +66,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         prisonerCapacity: counts.accommodationCapacity,
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and
-         * it is the figure the `PRISONERS` chip's *"N with no bed"* badge is
+         * it is the figure the `PRISONERS` chip's *"N not housed"* badge is
          * built out of (issue #609).
          *
          * **`counts.roomOccupants` is on this payload and is deliberately not
@@ -77,7 +78,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * exist, which is what the income line pays for
          * (`src/simulation/economy/income.ts`,
          * `stateIncomeForCompletedDay`). A badge fed from `roomOccupants`
-         * would read *"0 with no bed"* for a prison the state has already
+         * would read *"0 not housed"* for a prison the state has already
          * stopped paying for.
          *
          * Issue #609's own second correction is the measurement: a 3x3
@@ -124,6 +125,31 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         // the HUD may not derive a simulation figure, and these are the rungs
         // `SafetyCoverageSystem` counted the population onto on the same walk
         // that provisioned its `safety` (issue #588).
+        /**
+         * Straight through the one reader `statusCountsSchema.conditions` has
+         * ([ADR 0117](../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+         * accepted by the owner on 2026-09-17).
+         *
+         * `isPostUnreachable` rather than
+         * `counts.conditions?.includes('security.post-unreachable')`: the
+         * exhaustive `Record` behind it is what makes a sixth
+         * `PrisonCondition` fail to compile until somebody has decided where
+         * it is painted, which is the whole price ADR 0117 §3 itemises for
+         * this change. Comparing to a literal here would buy nothing and
+         * would leave the id spelled in two places.
+         *
+         * **This is the first line in `src/ui/` ever to read `conditions`.**
+         * The field has been on the wire since ADR 0087 decision 2 and issue
+         * #930's re-measurement of 2026-09-15 recommended leaving it
+         * unread, because all four members were already painted elsewhere
+         * with a figure a set of names could never carry. The fifth is not
+         * painted anywhere else, which is what changed.
+         *
+         * Content-namespace composition at most, never derivation: this
+         * reads a published set and answers a boolean about it, the same
+         * distinction `activeIncidentTypeLabelKey` below draws.
+         */
+        postUnreachable: isPostUnreachable(counts.conditions),
         prisonersCovered: counts.prisonersCovered,
         prisonersUnderstaffed: counts.prisonersUnderstaffed,
         prisonersUnguarded: counts.prisonersUnguarded,
@@ -142,7 +168,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * appears anywhere. The grep that says something is
          * `grep -rni 'high.risk' src/ui/`; before this change every hit it
          * returned was a comment or the `classificationGroupId === 'high-risk'`
-         * tone rule in `hud/regime-panel.ts`, and none of them was this count.
+         * tone rule now in `hud/roster-panel.ts`, and none of them was this count.
          * No tally is given, because the point is the *spelling* of the grep and
          * a count of hits would rot on the next comment anybody writes.
          */
@@ -207,6 +233,15 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
           ? {}
           : { treasuryOverdraftFloorMinorUnits: counts.treasuryOverdraftFloorMinorUnits }),
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        /*
+         * Conditionally spread for `treasuryOverdraftFloorMinorUnits`'s exact
+         * reason above: optional on both sides, so an unguarded assignment
+         * would put a present-but-`undefined` key on the view model for every
+         * payload written before this field existed (issue #890).
+         */
+        ...(counts.stateIncomeWithheldTodayMinorUnits === undefined
+          ? {}
+          : { stateIncomeWithheldTodayMinorUnits: counts.stateIncomeWithheldTodayMinorUnits }),
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and it
          * is the figure the collapsed `On the payroll` header states (issue

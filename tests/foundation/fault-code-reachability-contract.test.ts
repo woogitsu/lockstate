@@ -114,20 +114,41 @@ const ROOT = join(__dirname, '../..');
  * the most effort on.
  */
 const UNEMITTED_CODES: Readonly<Record<string, string>> = {
-  'shutting-down':
-    'No producer, and no producer has been found in any revision this gate has run against. ' +
-    'It is in neither `COMMAND_REJECTION_FAULT_CODES` nor `PROTOCOL_DECODE_ERROR_CODES`, and ' +
-    '`grep -rn "fault(\'shutting-down\'" src` returns nothing. The three occurrences in ' +
-    '`src/simulation/worker/state-machine.ts` are the `WorkerState` of the same name: the union ' +
-    'member, the `handleSubmitCommand` guard and the `handleShutdown` transition. That guard is ' +
-    'what a producer would replace -- it reads `if (this._state === \'shutting-down\' || ' +
-    'this._state === \'faulted\') return;`, so a command sent during shutdown is answered with ' +
-    'silence rather than with this code, and the main thread waits out its own timeout. The ' +
-    'consumer side is already wired for a code nothing sends: `src/ui/simulation-alerts.ts` maps ' +
-    'it to `hud.alert.fault.shutting-down` and `src/content/default-locale-en.ts` has the string. ' +
-    'Whether that guard should fault instead of returning is #444 item 2. It changes session ' +
-    'lifetime, it is an ADR-level decision, and it is not made here: this entry records the ' +
-    'absence and claims nothing about how it should be resolved.',
+  /*
+   * **Empty again, and the entry that left is the point.**
+   *
+   * `'shutting-down'` sat here from #444 item 1 until the emitter it named was
+   * written. Its reason read: *"No producer, and no producer has been found in
+   * any revision this gate has run against ... That guard is what a producer
+   * would replace -- it reads `if (this._state === 'shutting-down' ||
+   * this._state === 'faulted') return;`, so a command sent during shutdown is
+   * answered with silence rather than with this code, and the main thread
+   * waits out its own timeout ... Whether that guard should fault instead of
+   * returning is #444 item 2. It changes session lifetime, it is an ADR-level
+   * decision, and it is not made here."*
+   *
+   * Every clause of that was true except the last two, and they are kept
+   * quoted rather than deleted because the correction is the useful part:
+   *
+   * - **It is #444 item *1*, not item 2.** That issue's item 1 offers the fix
+   *   in as many words -- *"either record the code in `UNEMITTED_CODES` with
+   *   its reason, **or give it the emitter that is missing**: after
+   *   `simulation/shutdown`, `handleSubmitCommand` returns with no reply at
+   *   all"*. Item 2 is a different change: the `recoverable` flag on the four
+   *   *premature* guards, which does move a worker between `faulted` and not.
+   * - **It changes no session's lifetime.**
+   *   `SimulationWorkerStateMachine.fault` transitions only when the fault is
+   *   **not** recoverable, and `refusedBecauseShuttingDown` passes
+   *   `RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND`. The worker is in
+   *   `shutting-down` before the refusal and in `shutting-down` after it;
+   *   `tests/unit/worker-state-machine.test.ts` asserts exactly that, because
+   *   it is the clause this entry got wrong.
+   * - **And the decision was already taken.** ADR 0024 §1 is Accepted and
+   *   says a request that reached no simulation state must not end the
+   *   session *and must be reported*; its own Context names this path's
+   *   symptom, *"`handleSubmitCommand` returns **without replying at all**"*.
+   *   Implementing an accepted ADR is not an ADR-level decision.
+   */
 };
 
 /** The producing surface. Everything else in `src/` is a consumer or a coincidence. */
@@ -338,6 +359,12 @@ describe('every protocol fault code can actually be emitted', () => {
       'invalid-state',
       'not-initialized',
       'sequence-gap',
+      // `refusedBecauseShuttingDown`'s `fault('shutting-down', ...)`, and the
+      // reason this list is written out rather than derived: it is the one
+      // code in this file whose bare literal also spells a `WorkerState`, so a
+      // reader has to be able to see that the census moved when the *emitter*
+      // arrived and not when the label did.
+      'shutting-down',
       'snapshot-incompatible',
     ]);
   });
@@ -452,14 +479,22 @@ describe('every protocol fault code can actually be emitted', () => {
     expect(Object.keys(FOREIGN_OCCURRENCES).length).toBe(4);
   });
 
-  it('measures a vocabulary that is reachable but for one recorded code', () => {
+  it('measures a vocabulary every member of which something can emit', () => {
     // The denominator, stated so the gate reports a fact and not only guards
     // one. It was 10 of 12 before #187 finding 2, read as 12 of 12 until #444
-    // item 1 stopped the `WorkerState` label counting, and is 11 of 12
-    // measured. Making it exact means a code that quietly loses its last
-    // producer cannot be fixed by adding a list entry alone -- the count has to
-    // be changed too, and a reviewer sees that the vocabulary got smaller.
-    expect(unemitted).toEqual(['shutting-down']);
-    expect(PROTOCOL_FAULT_CODES.filter((code) => emits(code)).length).toBe(11);
+    // item 1 stopped the `WorkerState` label counting, was 11 of 12 while
+    // `'shutting-down'` had no emitter, and is 12 of 12 now that
+    // `refusedBecauseShuttingDown` is one. Making it exact means a code that
+    // quietly loses its last producer cannot be fixed by adding a list entry
+    // alone -- the count has to be changed too, and a reviewer sees that the
+    // vocabulary got smaller.
+    //
+    // This is the *tightened* 12 of 12 and not the one #444 refuted: that
+    // reading came from a matcher that accepted the literal anywhere in the
+    // producing surface, and `'shutting-down'` cleared it on the `WorkerState`
+    // label alone. It now has to appear in an emitting position, and the
+    // negative controls below prove the label by itself no longer counts.
+    expect(unemitted).toEqual([]);
+    expect(PROTOCOL_FAULT_CODES.filter((code) => emits(code)).length).toBe(12);
   });
 });

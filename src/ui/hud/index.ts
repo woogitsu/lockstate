@@ -15,6 +15,7 @@ export * from './overview-panel';
 export * from './projection';
 export * from './regime-panel';
 export * from './rooms-panel';
+export * from './roster-panel';
 export * from './security-panel';
 export * from './staff-panel';
 export * from './status-strip';

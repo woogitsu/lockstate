@@ -48,7 +48,7 @@ import { expect, test } from './network-changed-fixture';
  * file's gap.** This paragraph read: *"That state draws no sentence today, it
  * is owed its own, and authoring one is the owner's under `AGENTS.md`'s fourth
  * exclusion."* The owner ruled it on 2026-09-03 -- *"This prison is empty.
- * Take somebody in to start again."* -- so `regime-panel.ts` no longer gates
+ * Take somebody in to start again."* -- so `roster-panel.ts` no longer gates
  * the box on `everAdmitted` at all; it gates the *wording* on it, and an empty
  * roster always draws a line. The companion gate is
  * `ui-shell.spec.ts`'s *"a prison everybody has left says so in its own

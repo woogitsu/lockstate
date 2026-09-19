@@ -872,7 +872,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
       numberParameters: { count: 9 },
     });
     // The same 9 the Intake panel already says out loud in this prison --
-    // "9 waiting with no bed to sleep in" -- which is why the strip uses the
+    // "9 waiting with no place to sleep" -- which is why the strip uses the
     // owner's matching wording rather than a second phrasing for one fact.
   });
 
@@ -896,7 +896,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     });
   });
 
-  it('draws no badge at all when everybody has a bed, rather than a permanent "0 with no bed"', () => {
+  it('draws no badge at all when everybody has a place, rather than a permanent "0 with no place"', () => {
     // `coverageTone`'s rule, applied to a chip that had no badge until now:
     // a status strip where several things are always on teaches players to
     // ignore the one that matters, and that note already extends it past
@@ -970,7 +970,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     // `assign` does not release a prisoner from a previous instance and
     // `residentIdsWithExistingPlace` does not de-duplicate, so this layer
     // cannot prove `occupiedPlaces <= prisoners` from the far side of a
-    // message channel. "-2 with no bed" is a sentence no player should ever
+    // message channel. "-2 with no place" is a sentence no player should ever
     // read; a badge that does not appear is the right worst case.
     expect(metric(counts({ prisoners: 3, occupiedPlaces: 5 }), 'prisoners').badge).toBeUndefined();
   });
@@ -1269,5 +1269,58 @@ describe('refusalMessageKey: what a refused control says', () => {
     expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).not.toBe(
       refusalMessageKey('admit-prisoner'),
     );
+  });
+});
+
+/**
+ * **What the `Earned today` chip says about the part of the grant it is not
+ * paying** (issue #890).
+ *
+ * #890 measured the state withholding 40% of a prison's grant at steady state
+ * with no minor-unit figure for it anywhere a player could read. The
+ * projection now publishes the figure and the chip carries it as a
+ * description -- the tooltip and screen-reader shape the owner's ruling of
+ * 2026-09-01 already chose for `funds`, because it costs no chip width on a
+ * row whose overflow is measured.
+ *
+ * **Three states, and only one of them draws a sentence**, which is what
+ * these cases pin: absent (a payload written before the field existed), `0`
+ * (a prison meeting every need) and a positive figure.
+ */
+describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
+  it('carries the withheld figure as a description, and never as a badge or a tone', () => {
+    const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
+
+    expect(chip.description).toEqual({
+      textKey: 'hud.status.earned-withheld',
+      numberParameters: { withheld: 640 },
+    });
+    // The two lines beside it are unchanged: no threshold has been set and no
+    // colour is painted, which is the half of this readout that is still the
+    // owner's (#890's re-measurement names loudness as their judgement).
+    expect(chip.badge).toBeUndefined();
+    expect(chip.tone).toBeUndefined();
+  });
+
+  it('says nothing when a prison is meeting every need, and nothing when no payload carried the field', () => {
+    expect(
+      metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }), 'earned-today')
+        .description,
+    ).toBeUndefined();
+    expect(metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today').description).toBeUndefined();
+  });
+
+  it('names the figure rather than formatting it, so the strip groups it exactly as it groups the value', () => {
+    // `numberParameters`, which is `overdraftBadge`'s rule: this layer is
+    // pure and has no localizer, so the quantity is named and the strip
+    // formats it. A six-figure value is carried as the integer itself rather
+    // than as a string this layer grouped, so it cannot be grouped
+    // differently from the chip value it sits under.
+    const chip = metric(
+      counts({ stateIncomeAccruedTodayMinorUnits: 284_500, stateIncomeWithheldTodayMinorUnits: 96_400 }),
+      'earned-today',
+    );
+    expect(chip.description?.numberParameters).toEqual({ withheld: 96_400 });
+    expect(typeof chip.description?.numberParameters?.['withheld']).toBe('number');
   });
 });

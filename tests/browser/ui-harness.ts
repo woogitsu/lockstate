@@ -403,7 +403,7 @@ const BASE_COUNTS: HudCountsViewModel = {
   // Everybody housed, which is what the accrual above already assumes: 142
   // occupied places is where `10_667` comes from. A fixture whose accrual
   // said 142 and whose place count said otherwise would put the strip's
-  // "N with no bed" badge (#609) on every spec in this file for a prison
+  // "N not housed" badge (#609, the noun since #961) on every spec in this file for a prison
   // the same fixture is paying full price for.
   occupiedPlaces: 142,
   staff: 27,
@@ -861,7 +861,11 @@ function staffCoverageProbe(): StaffCoverageProbe {
  * previous tick's prisoners as though they were still on the roster.
  */
 function regimeProbe(): RegimeProbe {
-  const panel = document.querySelector<HTMLElement>('.hud-regime');
+  // Two panels since ADR 0115, laid out together on the Plan dnia tab: the
+  // timetable's and the roster's. Every fold measurement below is the roster
+  // panel's, because every line those measurements are about is inside it.
+  const schedulePanel = document.querySelector<HTMLElement>('.hud-regime');
+  const panel = document.querySelector<HTMLElement>('.hud-roster');
   const blocks = document.querySelector<HTMLElement>('.hud-regime__blocks');
   const roster = document.querySelector<HTMLElement>('.hud-regime__roster');
   const empty = [...(roster?.querySelectorAll<HTMLElement>('.hud-regime__note') ?? [])].find(
@@ -879,7 +883,8 @@ function regimeProbe(): RegimeProbe {
     // `setVisible(false)` hides the panel's own element, so the answer has to
     // come from the ancestor chain the way `staffProbe` and `intakeProbe` take
     // it.
-    laidOut: panel !== null && panel.offsetParent !== null,
+    laidOut: schedulePanel !== null && schedulePanel.offsetParent !== null,
+    rosterPanelLaidOut: panel !== null && panel.offsetParent !== null,
     blocksLaidOut: drawn(blocks),
     blocks: [...(blocks?.querySelectorAll<HTMLElement>('.hud-regime__block-row') ?? [])].map(
       (row): RegimeBlockProbe => ({
@@ -930,11 +935,16 @@ function regimeProbe(): RegimeProbe {
     // `innerText`, so the answer is what was rendered: the pooled rows the
     // panel hid are left out of it, and a panel with no box at all reports
     // nothing rather than reporting its whole vocabulary.
-    text: panel === null ? '' : panel.innerText,
+    text: [schedulePanel, panel].map((box) => (box === null ? '' : box.innerText)).join('\n').trim(),
     panelVisibleBottom:
       panel === null ? 0 : panel.getBoundingClientRect().top + panel.clientTop + panel.clientHeight,
     panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
     panelScrollTop: panel?.scrollTop ?? 0,
+    scheduleBox: layoutBoxOf(schedulePanel),
+    scheduleOverflow: schedulePanel === null ? 0 : schedulePanel.scrollHeight - schedulePanel.clientHeight,
+    scheduleLastLineBottom: [...(blocks?.querySelectorAll<HTMLElement>('.hud-regime__block-row') ?? [])]
+      .filter((row) => drawn(row))
+      .reduce((lowest, row) => Math.max(lowest, row.getBoundingClientRect().bottom), 0),
     // The lowest edge the panel actually drew, whichever line that is: the last
     // roster row on a full window, the "and N more" line when the population
     // outgrew it, or the empty sentence in a prison that holds nobody.

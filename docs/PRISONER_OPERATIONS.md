@@ -13,7 +13,7 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **6 core needs** (hunger, sleep, hygiene, bladder, safety, recreation),
   not the full eventual need catalog.
-- **12 candidate actions**, **2 classification groups**
+- **13 candidate actions**, **2 classification groups**
   (general-population, high-risk) each with their own regime schedule --
   enough to prove the mechanism (data-driven actions, regime-gated
   eligibility, capacity/permission-aware routing), not a balanced,
@@ -25,7 +25,9 @@ Per the issue's explicit scope, this is deliberately bounded:
   decision 3, the eleventh is `action.kitchen-work`, appended for issue
   #532 (see *Actions* below for why appending is the load-bearing word), and
   the twelfth is `action.carry`, appended for
-  [ADR 0093](./adr/0093-a-carry-is-an-action.md).
+  [ADR 0093](./adr/0093-a-carry-is-an-action.md), and the thirteenth is
+  `action.infirmary-treatment`, appended for issue #589 (the owner's ruling of
+  2026-09-17).
   `action.kitchen-work` is `action.laundry-work`'s shape applied to
   `room.kitchen` with no new figure in it: `'food-preparation'`, `hunger` at 1
   against `action.eat-meal`'s 4, 120 ticks. It is a place to work and not a
@@ -35,7 +37,14 @@ Per the issue's explicit scope, this is deliberately bounded:
   third `ActionTarget` kind, `{ kind: 'job-board' }`, so the tiles come off the
   job rather than off a room instance -- no need effect, and a 5-tick
   `minDurationTicks` that means *the dwell at one end of one leg* rather than
-  the action's life, which is the job's.
+  the action's life, which is the job's. `action.infirmary-treatment` is the
+  other odd one: category `hygiene`, `room.infirmary`,
+  `'medical-treatment'`, **no need effect**, and a `minDurationTicks` of
+  **2,400** -- one whole in-game day, halved to 1,200 by a `medical-supply`
+  object in the room -- against the 120 of the next-longest entry. It exists to
+  clear `PrisonerRecordComponent.injured`, which is the one boolean #589 adds,
+  and what an injury costs is precisely that day: no income penalty, no speed
+  penalty and no health need is authored anywhere.
 
   **This bold figure read `10` and was wrong in two different ways; both are
   recorded rather than overwritten**, because a tally that disagrees with the
@@ -399,8 +408,9 @@ it is narrower than the question above:
 "earned today" chip: a player can see a bar go amber and can see the chip fall,
 and no surface connects the two. That is still open and still the owner's.
 
-**`action.free-association` and `action.carry` are the catalogue's two entries
-with no need effect, and in both cases that is deliberate.** `scoreAction` sums
+**`action.free-association`, `action.carry` and `action.infirmary-treatment`
+are the catalogue's three entries with no need effect, and in all three cases
+that is deliberate.** `scoreAction` sums
 `deficit x effect`, so an action with no effects scores exactly 0 -- the floor,
 since no authored effect is negative -- and it can therefore never displace a
 candidate addressing a need that is even slightly unmet. It is reached when
@@ -423,6 +433,18 @@ It is corrected rather than replaced because everything the paragraph goes on
 to argue is true of both entries, and because the reason the sentence rotted is
 the reason it was worth writing: a 0-score candidate cannot displace a need,
 which is what makes appending one to a live catalogue safe.
+
+**It then read "two" and that was true for a fortnight**, until issue #589 (the
+owner's ruling of 2026-09-17) appended `action.infirmary-treatment` with
+`needEffectsPerTick: {}` as well. The third entry is there for the same reason
+as the second rather than the first: it serves no need because the ruling bought
+a boolean and **no health need**, and it is reached by a rule and not by a score
+-- `planIdleSelection` promotes it to rank 0 for a prisoner whose `injured` flag
+is set and whose prison provides treatment, ahead of the carry's own promotion,
+because the institution does not hand a crate to somebody it has just been told
+is hurt. Unlike the carry's, that promotion is **not** bounded by
+`relievesAnUnmetNeed`: the owner's 2026-09-02 amendment is about work the
+institution chooses to hand out, and no ruling bounds treatment.
 
 **What is *not* the same about the two, and is why believing there is only one
 misleads a reader.** `action.carry` is not reached by scoring at all in the
@@ -520,10 +542,22 @@ phases 1 and 2 have landed: `PlacedObjectRegistry` holds the objects,
 `RoomCapacityResolver` derives a room's two capacities and its capability list
 from the ones inside its rectangle, and nothing authors any of the three.
 
+> **One clause of that stopped being true on 2026-09-17 and is kept rather than
+> rewritten, because it is the property that was given up.** The owner's ruling
+> on issue #961 lets a room type author a **resident ceiling** --
+> `maxResidents` in `src/content/room-catalog.ts`, `2` for `room.cell` and `1`
+> for `room.solitary-cell` -- so `residentCapacity` is now
+> `min(the summed footprint width of the sleep surfaces, that ceiling)` where
+> the room type authors one. Nothing else moved: the capability list and every
+> concurrent-use ceiling, including `'sleep-surface'`'s own, are still derived
+> with nothing authored anywhere. ADR 0028's amendment of the same date carries
+> the rule and the derivation of the two numbers.
+
 **Two capacities, not one** (ADR 0028 decision 3).
 `findAvailableResidence(roomCatalogId, capability?)` gates on
 `residentCapacity` -- the summed footprint width of the sleep surfaces in the
-room -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
+room, capped at the room type's authored `maxResidents` where it declares one
+(#961) -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
 `findAvailableForUse(roomCatalogId, capability?)` gates on that capability's own
 ceiling -- the summed footprint width of the objects in the room that carry it --
 and is what `ActionSystem` asks before a prisoner *uses* a room now. A canteen

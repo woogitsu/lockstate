@@ -425,6 +425,34 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     // array is still checked against `activeLength` below, exactly as every
     // required array is.
     solitarySanctionEndTick: z.array(uint32Schema).optional(),
+    /*
+     * **Optional, and `SAVE_SCHEMA_VERSION` is not bumped** -- the same rule
+     * and the same shape as `solitarySanctionEndTick` above (issue #589, the
+     * owner's ruling of 2026-09-17).
+     *
+     * **The ruling authorised a bump and it is not spent, which is a decision
+     * rather than an omission.** The option the owner approved said
+     * `SAVE_SCHEMA_VERSION` would move by one field; the repository's own
+     * accepted rule says it should not, and the rule wins because it is what
+     * makes the change safe rather than what makes it tidy. ADR 0038 decision
+     * 1, restating `docs/PERSISTENCE.md`'s "Adding an optional field without a
+     * version bump": *"Absence is a fact about the save's age and is honoured
+     * with the value the writing build would have held"*, with a bump required
+     * instead only where absence is ambiguous or an existing field changed
+     * meaning. All three of that section's conditions hold here -- the field is
+     * optional, absent means exactly what every earlier build meant ("nobody in
+     * this session has been hurt"), and no existing field moves -- and ADR 0038
+     * rejected a V6 bump for `masterSeed` on the ground that its only migration
+     * content would be fabricating a value the save does not record, which is
+     * precisely what a `false`-per-slot migration step would be here.
+     *
+     * `z.array(byteSchema)` rather than a boolean array because
+     * `PrisonerRecordComponent.injured` is a `Uint8Array` and the payload
+     * carries the stored units verbatim, the way every other component array
+     * here does; `0` and `1` are the only values written and
+     * `tests/unit/prisoners-injury.test.ts` is what pins that.
+     */
+    injured: z.array(byteSchema).optional(),
     // Named, not positional: reordering `NEED_IDS` in the simulation must not
     // silently reinterpret an existing save's levels as a different need.
     needs: z
@@ -462,6 +490,7 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     check('classificationGroupIndex', value.classificationGroupIndex);
     check('intakeStage', value.intakeStage);
     if (value.solitarySanctionEndTick !== undefined) check('solitarySanctionEndTick', value.solitarySanctionEndTick);
+    if (value.injured !== undefined) check('injured', value.injured);
     check('actionIndex', value.actionIndex);
     check('actionPhase', value.actionPhase);
     check('phaseStartedAtTick', value.phaseStartedAtTick);

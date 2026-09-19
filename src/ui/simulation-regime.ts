@@ -110,6 +110,15 @@ export function regimeFromProjection(view: StatusStripViewModel): HudRegimeViewM
           deriveSimulationMessageKey('action-category', category),
         ),
         blockProgressPercent: blockProgressPercent(group.blockProgress.permille),
+        // The two fields `EditRegimeBlock` is built out of, straight through
+        // and derived from nothing (ADR 0113 section 3): the block is named by
+        // the tick it starts on, and the categories are sent as the ids the
+        // command's own `z.enum(ACTION_CATEGORIES)` decodes. The ids are
+        // carried *as well as* the label keys above rather than instead of
+        // them -- `deriveSimulationMessageKey` has no inverse, so a panel
+        // handed only keys could render the block and never edit it.
+        startTickOfDay: group.blockStartTickOfDay,
+        allowedCategoryIds: group.allowedCategories,
       }),
     ),
   };

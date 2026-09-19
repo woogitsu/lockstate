@@ -54,6 +54,26 @@ running this tree. There is no external tier: ADR 0028 already did the
 comparable-game work this depends on, and this document decides the shape of
 three functions in it.
 
+> **That sentence is a global pin, it is advisory, and it has been broken twice
+> in this document by commits whose messages do not mention it (2026-09-15).**
+> `docs/adr/README.md`'s section on anchor pins carries the evidence that a pin
+> neither freezes the code nor is honoured by editors. Below this line:
+> `9e3727a0` (2026-09-05) added a correction to §*What is owed, and to whom*,
+> and `80b845cd` (2026-09-08) added a **new** `file:line`
+> (`src/persistence/save-schema.ts:36`, in the §*Decision 6* parenthetical) that
+> was read at `adb9ed00` and not at `84e247c` — the worse of the two shapes,
+> because a new anchor below an unchanged pin silently inherits a date nobody
+> read it at. That anchor has since drifted to `:38` and is corrected there.
+>
+> **PR #1231 excluded `80b845cd` from its evidence on the ground that it "moves
+> an anchor *above* its pin". That reading is half right and the conclusion is
+> wrong.** This document carries **two** pins: this one, covering the whole
+> document from line 51, and a second inside the 2026-08-26 amendment
+> (*"Read at `54418b6` … every `file:line` below was opened on that tree"*).
+> The hunk sits above the amendment's pin and **below this one**, so the commit
+> belongs in that evidence table rather than in the excluded pair. A document
+> with two pins needs checking against both.
+
 ---
 
 ## Context
@@ -386,7 +406,9 @@ save-schema key is added, and `SAVE_ENVELOPE_VERSION` does not move.
 
 (**`SAVE_ENVELOPE_VERSION` never existed, on this date or any other.** The
 constant this decision means is `SAVE_SCHEMA_VERSION`,
-`src/persistence/save-schema.ts:36`, which was already declared and already
+`src/persistence/save-schema.ts:38` (read 2026-09-15; the anchor this
+parenthetical carried when it was written on 2026-09-08 was `:36`, and the
+constant reads `6` today), which was already declared and already
 `5` in the tree this document was written against — so the sentence above is
 true and only its name is wrong. Marked rather than overwritten, per
 `docs/AGENT_WORKFLOW.md` §4: the decision is untouched, and
@@ -591,6 +613,14 @@ recorded beside it.*
 `54418b6` (v0.0.121); every `file:line` below was opened on that tree and every
 number was produced by running it.*
 
+> **Re-read 2026-09-15, every anchor opened. Fifteen of the eighteen
+> `file:line` citations below this line had moved, and two of the sentences
+> holding them have gone false.** They are re-aimed and marked below; the
+> sentence above is corrected rather than deleted because `54418b6` is the tree
+> it was true of, and per `docs/AGENT_WORKFLOW.md` §4 a correction marks both
+> directions. The two that still land exactly are `definition.ts:389-397` and
+> `tests/foundation/adr-status-reference-contract.test.ts:234-244`.
+
 ### The half that expired: a canteen a player builds now seats six
 
 The consequences section says:
@@ -604,11 +634,11 @@ The consequences section says:
 > objects become placeable.
 
 The last clause came true and the rest expired with it. ADR 0028 phase 4 shipped
-at `b097e70` (#384): `src/content/room-catalog.ts:98` finishes `room.canteen`
-with two dining tables and four benches, `src/content/object-catalog.ts:87`
+at `b097e70` (#384): `src/content/room-catalog.ts:182` finishes `room.canteen`
+with two dining tables and four benches, `src/content/object-catalog.ts:108`
 gives the `3x2` `object.dining-table` `capabilities: ['dining']`,
-`src/simulation/construction/definition.ts:441` makes `dining-table-wooden` a
-buildable row, and `src/simulation/prisoners/actions.ts:48-49` is the action
+`src/simulation/construction/definition.ts:466` makes `dining-table-wooden` a
+buildable row, and `src/simulation/prisoners/actions.ts:120-121` is the action
 that asks for `'dining'` in `room.canteen`.
 
 Measured on the real command path — `PurchaseMaterials`, `ZoneRoom`,
@@ -630,13 +660,28 @@ The same section says:
 
 That is the wrong direction, and it did not expire — it was **wrong on `main` on
 the day this document's status line moved**.
-`src/simulation/prisoners/room-instance-registry.ts:350` reads
+`RoomInstanceRegistry.concurrentUseCapacityFor` read
 `if (capability === undefined) return Number.POSITIVE_INFINITY;`, and
-`src/simulation/prisoners/actions.ts:63-66` gives `action.yard-recreation` no
-`requiredObjectCapability`. The yard's ceiling is therefore **infinite, not
-zero**, and `actions.ts:20-26` says so in its own words: *"Absent means any
-instance of the target room type qualifies, and no object-derived ceiling
-applies"*.
+`src/simulation/prisoners/actions.ts:165-166` gives `action.yard-recreation` no
+`requiredObjectCapability`. The yard's ceiling was therefore **infinite, not
+zero**, and the docblock on `ActionDefinition.requiredObjectCapability` said so
+in its own words: *"Absent means any instance of the target room type qualifies,
+and no object-derived ceiling applies"*.
+
+(**Both of the quoted lines are gone, and the finding they carried is not —
+2026-09-15.** The anchors this paragraph used to carry, `room-instance-registry.ts:350`
+and `actions.ts:20-26`, are demoted to their symbols above rather than re-aimed,
+because what they pointed at no longer exists. `concurrentUseCapacityFor`
+(`src/simulation/prisoners/room-instance-registry.ts:609`) now reads
+`if (capability === undefined) return openGroundCapacityOf(instance);` (`:610`,
+the helper at `:329`), so the yard's ceiling is **finite and derived from the
+room's own ground**, not infinite; and the docblock
+(`src/simulation/prisoners/actions.ts:32-36`) now reads *"Absent means any
+instance of the target room type qualifies, and the ceiling comes from the
+room's own ground rather than from its objects"* and keeps the older reading
+below it. **What this section is about is untouched by either change**: the
+consequences sentence said the yard derives `0` for ever, and `0` is exactly
+what it has never derived.)
 
 The change that did it is `8a5fdcc` (#335), recorded as ADR 0028's
 §*Amendment, 2026-08-26: the concurrent-use ceiling is scoped to the capability
@@ -662,14 +707,17 @@ Two clauses, and they have come apart.
 - **The premise has fired.** Phase 4 shipped at `b097e70`, per the section
   above.
 - **The trigger cannot fire, because the readout it names does not exist.**
-  `src/simulation/presentation/prisoner-projection.ts:197` builds `lowestNeed`
-  and `projectPrisonerDetail` carries all six need levels;
-  `src/simulation/worker/projection-catalog.ts:300` serves them on the
+  `src/simulation/presentation/prisoner-projection.ts:311` builds `lowestNeed`
+  (set on the row at `:366`) and `projectPrisonerDetail` (`:692`) carries all
+  six need levels;
+  `src/simulation/worker/projection-catalog.ts:316` serves them on the
   `hud/prisoner-detail` channel. **Nothing under `src/ui/` asks for that
   channel** — the only prisoner projection the HUD consumes is
   `projectPrisonerPopulationCounts`, through
-  `src/simulation/presentation/status-strip-projection.ts:15`, and it carries no
-  need. So a prisoner's hunger can sit at 0 for the length of a session with no
+  `src/simulation/presentation/status-strip-projection.ts:31` (called at `:843`,
+  `const population = projectPrisonerPopulationCounts(source.prisoners);`; this
+  branch wrote `:752`, which was a docblock line by the time it merged
+  `origin/main` on 2026-09-16), and it carries no need. So a prisoner's hunger can sit at 0 for the length of a session with no
   surface in the game reporting it.
 
 That is why this went unnoticed for the two merges above: the condition was
@@ -740,14 +788,46 @@ one index lower: 0–2 eat 40 each, 3–23 eat none.
 **`action.eat-in-cell` rescues nobody, and cannot.** Not one of the 24 prisoners
 performed it in 24,000 ticks. `beginNextAction` picks one action before it asks
 about a target — `selectBestAction`
-(`src/simulation/prisoners/utility-ai.ts:32`) scores `deficit × effect` with no
+(`src/simulation/prisoners/utility-ai.ts:63`) scores `deficit × effect` with no
 availability term — and `action.eat-meal`'s hunger effect is `4` against
-`action.eat-in-cell`'s `3` (`actions.ts:49` and `:53`), on the same need, in the
+`action.eat-in-cell`'s `3` (`actions.ts:121` and `:125`), on the same need, in the
 same `meal` category, so the canteen outscores the cell at every hunger level
-above zero deficit. When the target then fails to resolve,
-`action-system.ts:328-332` counts an unmet cycle and returns; there is no second
-candidate. The fallback §*What this decision does not settle* 1 leaves open is
-not merely unimplemented — under this scoring rule it is **unreachable**.
+above zero deficit. When the target then failed to resolve, `beginNextAction`
+counted an unmet cycle and returned; there was no second candidate. The fallback
+§*What this decision does not settle* 1 leaves open was not merely unimplemented
+— under that scoring rule it was **unreachable**.
+
+> **That paragraph's last two sentences are false as of
+> [ADR 0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
+> and they are kept in the past tense rather than deleted because the
+> measurement above them was taken under the rule they describe (2026-09-15).**
+> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1616`) no longer
+> takes one action. It walks `rankActions`' whole ordered list —
+> `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1624`) —
+> and `continue`s past any candidate whose target does not resolve (`:1627`,
+> `if (target === undefined) continue;`), counting `unmetDemandCycles` **once,
+> after every candidate has been tried** (`:1668`,
+> `this.unmetDemandCycles += 1;`, the last statement of the method) rather than
+> at the first that failed. So a prisoner refused a canteen
+> seat now falls through to `action.eat-in-cell`, which is precisely the
+> fallback this paragraph called unreachable, and `recordSubstitution` (`:1724`)
+> is a second counter for how often it happens.
+>
+> **Every one of those five anchors was written on 2026-09-15 and was dead by
+> 2026-09-16**, when this branch merged `origin/main`: they read `:1629`,
+> `:1638`, `:1640`, `:1681` and `:1737`, all thirteen or so lines high, and
+> `:1638` had landed on a blank line. `action-system.ts` is 1,838 lines and
+> among the most-edited files in `src/`, which is what makes a bare line number
+> into it the least durable citation this corpus writes
+> (`docs/AGENT_WORKFLOW.md` §4).
+>
+> **This document already names the ADR that did it and did not join the two
+> sentences up.** §*What this changes* below cites ADR 0041 as having *"took
+> decision 5's base half and deferred its fairness half as decision 2"*; the
+> paragraph above says the base half is unreachable. Both have stood since
+> 2026-08-27. **The 24-prisoner table above is therefore a measurement of a rule
+> the tree no longer runs**, and re-running it is decision 5's revisit, not this
+> correction's.
 
 **The mechanism is incumbency, not just index order**, and this is the part
 decision 5 did not foresee. One meal block traced tick by tick, prisoner 0 (a
@@ -766,7 +846,9 @@ tick   claims  p0                        p6
 
 Decision 2 puts the claim at arrival, so **a traveller holds nothing and a
 prisoner already standing on the anchor tile holds the `sameTile` fast path**
-(`action-system.ts:343`). A winner who finishes a meal stays in the room, and on
+(`action-system.ts:1636`, `const arrivesImmediately = sameTile(currentTile,
+destination);`; the predicate at `:291`. This branch wrote `:1649`, which was a
+bare ` */` by the time it merged `origin/main` on 2026-09-16). A winner who finishes a meal stays in the room, and on
 the next reconsideration takes the seat again without moving, while the loser is
 still walking. Half of every winner's meals are taken that way: of 40 meals
 each, **20 were entered from `idle` on the anchor tile and 20 after travelling**.
@@ -778,6 +860,26 @@ round after it, and the two point the same way. So the losing set is not merely
 (`src/simulation/prisoners/needs.ts`), and **no system in `src/` reads
 `hunger`** — the only need feeding a downstream consequence is `safety`, through
 `src/simulation/runtime/new-session.ts:598` into `IncidentTriggerSystem`.
+
+> **Both halves of that clause are false as of
+> [ADR 0048](0048-what-a-sectors-occupants-are.md) decision 2, and the anchor
+> that carried it points at nothing related (2026-09-15).** `needsPressure` is
+> now *"the mean deficit over all six needs, not `safety` alone"*: `needDeficitOf`
+> sums over `NEED_IDS` in declared order
+> (`src/simulation/runtime/new-session.ts:1387`) and the sector sample averages
+> it over the sector's occupants (`:1420`–`:1424`), which
+> `IncidentTriggerSystem` reads as `{ kind: 'needs-pressure' }`
+> (`src/simulation/incidents/trigger-system.ts:515`). So **`hunger` does have a
+> downstream reader**, and starving three quarters of a prison now raises its
+> riot risk. The old anchor `new-session.ts:598` is a constructor argument in an
+> unrelated block today.
+>
+> **What this does not do is make the paragraph's conclusion wrong in the
+> direction a reader would guess.** *"Real starvation with a bounded
+> consequence"* stays the right shape — nothing still kills, releases or
+> disciplines a starving prisoner, and #31 still owns the release path — but the
+> bound moved, and the sentence *"in a game that currently has no way to tell
+> the player"* was already answered by the 2026-08-29 amendment above.
 Nothing kills, releases or disciplines a starving prisoner (#31 still owns the
 release path). So this is **real starvation with a bounded consequence**, not a
 spiral: 75% of the population permanently pinned at a need level of zero, doing

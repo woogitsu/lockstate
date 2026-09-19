@@ -479,6 +479,79 @@ describe('the readout beside the balance says what the boundary will actually pa
     // not have said.
     expect(projectStatusCounts(neglected, boundary).roomOccupants).toBe(projectStatusCounts(served, boundary).roomOccupants);
   });
+
+  /**
+   * **The money the withholding costs, published (issue #890).**
+   *
+   * #890 measured a prison paying 40% under its headline grant at steady
+   * state with no minor-unit figure for the shortfall anywhere outside the
+   * worker: the *cause* reaches the player -- the Regime roster tones an
+   * unmet need -- and the *amount* reached nobody. The chip above shows what
+   * the day paid; nothing showed what it did not.
+   *
+   * **Asserted against the two prisons rather than against an arithmetic of
+   * its own**, which is the case above's method: the served prison is what
+   * the neglected one would have earned, so the withheld figure has to be the
+   * difference between the two accruals and is not allowed to be a second
+   * opinion about the rate. The figures follow that agreement rather than
+   * leading it, so this case survives the withheld rate moving -- and it has
+   * moved twice in one day before (ADR 0064's amendments).
+   */
+  it('publishes what unmet needs withheld, as the difference between the two prisons rather than a rate of its own', () => {
+    const neglected = run(NEGLECTED).runtime;
+    const served = run(SERVED).runtime;
+    const boundary = DAY_LENGTH_TICKS - 1;
+
+    const neglectedCounts = projectStatusCounts(neglected, boundary);
+    const servedCounts = projectStatusCounts(served, boundary);
+
+    expect(neglectedCounts.stateIncomeWithheldTodayMinorUnits).toBe(
+      servedCounts.stateIncomeAccruedTodayMinorUnits - neglectedCounts.stateIncomeAccruedTodayMinorUnits,
+    );
+    expect(neglectedCounts.stateIncomeWithheldTodayMinorUnits).toBe(640);
+
+    // A prison meeting every need withholds nothing, which is what lets the
+    // HUD draw the sentence only when there is one to draw.
+    expect(servedCounts.stateIncomeWithheldTodayMinorUnits).toBe(0);
+  });
+
+  /**
+   * **Why the subtraction cannot be left to the main thread**, measured
+   * rather than asserted (issue #890).
+   *
+   * The host holds both accruals only after this field exists; before it, the
+   * nearest thing available was the undiminished rate times the occupied
+   * places, prorated once and then subtracted. `stateIncomeAccruedByTick`
+   * floors, so that is a different number: this case walks a whole in-game
+   * day of the neglected prison and requires the published figure to equal
+   * the difference of the two *prorated* accruals at every tick, then counts
+   * the ticks at which the other ordering disagrees so the count is a
+   * measurement in the repository rather than a claim in a comment.
+   */
+  it('equals the difference of the two prorated accruals at every tick of a day, which subtracting first does not', () => {
+    const neglected = run(NEGLECTED).runtime;
+    const served = run(SERVED).runtime;
+    const day = DAY_LENGTH_TICKS;
+
+    let subtractFirstDisagreements = 0;
+    for (let tickOfDay = 0; tickOfDay < day; tickOfDay += 1) {
+      const neglectedCounts = projectStatusCounts(neglected, tickOfDay);
+      const servedCounts = projectStatusCounts(served, tickOfDay);
+      const withheld = neglectedCounts.stateIncomeWithheldTodayMinorUnits;
+      expect(withheld).toBe(
+        servedCounts.stateIncomeAccruedTodayMinorUnits - neglectedCounts.stateIncomeAccruedTodayMinorUnits,
+      );
+      // The ordering the host would have had to use: one proration of the
+      // whole shortfall, rather than the difference of two prorations.
+      const subtractFirst = Math.floor((640 * (tickOfDay + 1)) / day);
+      if (subtractFirst !== withheld) subtractFirstDisagreements += 1;
+    }
+
+    // Measured, not predicted: the two orderings agree on well under half of
+    // the day. A host-side derivation would have printed a number that
+    // disagrees with the chip beside it for most of every day.
+    expect(subtractFirstDisagreements).toBeGreaterThan(day / 2);
+  });
 });
 
 describe('determinism', () => {
