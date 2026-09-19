@@ -20190,7 +20190,7 @@ names, not offset from the diff.
 
 - **§5's ADR 0025 entry has carried *"`find src/ui -name "*.css"` still returns
   four … with `3.9` in none of them"* through every re-run, and `3.9` is in one
-  of them now.** `src/ui/hud/hud.css:2993`,
+  of them now.** `src/ui/hud/hud.css:3000`,
   `natural height is 361.6 against 365.5 of rail at 900x600 -- 3.9px from`, added by
   `4d8b00c5` inside #1280's ADR 0115 split. `git grep -c '3\.9' -- src/ui`
   returns **four files at `0bf1731d` and five at `b476fa3c`**. The file count
@@ -24338,7 +24338,7 @@ one direction.
   the half that broke is the half the previous re-run had just called *"the
   strongest evidence it has ever been offered"*. The file count is still
   **four** and the four are the same four. **`3.9` is in one of them now**:
-  `src/ui/hud/hud.css:2993`,
+  `src/ui/hud/hud.css:3000`,
   `natural height is 361.6 against 365.5 of rail at 900x600 -- 3.9px from`,
   a docblock line about the collapsed regime editor,
   added by `4d8b00c5` inside #1280's ADR 0115 split. `git grep -c '3\.9' --
