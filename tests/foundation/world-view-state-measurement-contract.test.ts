@@ -35,10 +35,22 @@ import { describe, expect, it } from 'vitest';
  * derived from the other.
  *
  * **What this file does NOT assert**, because it is not true yet: that the
- * world view carries room condition. It does not. ADR 0097's accepted option A
- * is unimplemented, and [ADR 0111](../../docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md)
- * -- the transport it assumed and did not have -- is still `Proposed`. This is
- * the measurement, kept honest and kept runnable, not the fix.
+ * world view carries room condition. It does not, at `68976de0`. ADR 0097's
+ * accepted option A is unimplemented, and the transport it assumed and did not
+ * have --
+ * [ADR 0111](../../docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md)
+ * -- is the thing that had been missing. This is the measurement, kept honest
+ * and kept runnable, not the fix.
+ *
+ * **This paragraph was written while that transport was unaccepted, and it
+ * said so; it no longer may.** The owner accepted ADR 0111 on 2026-09-19 --
+ * Option A, extend the geometry snapshot's `world` section -- and PR #1319
+ * carried that into its Status block, so the clause naming it unaccepted
+ * became false between this file being written and being merged. The number
+ * it was wrong about is left out of backticks here on purpose:
+ * `tests/foundation/adr-status-reference-contract.test.ts` reads a quoted
+ * status as a live claim and would count a verbatim requote as a second one.
+ * It caught this, which is the whole reason that gate exists.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
