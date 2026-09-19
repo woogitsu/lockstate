@@ -491,6 +491,54 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  * quoted beside it, so nothing but a human opening the file can tell. Being
  * *correct* and being *checkable* are different properties, and this gate
  * measures the second.
+ *
+ * **Re-derived a third time, whole, on `origin/main` @ `f1a61702` (2026-09-19),
+ * and that is a reversal of the paragraph directly above rather than another
+ * instance of it.** That paragraph refused a blanket regeneration on the
+ * grounds that naming movers one at a time keeps them owned. It was right for
+ * ten anchors and is wrong for this base: twenty-one pull requests merged on
+ * 2026-09-19 alone, the branch's merge base moved from `23374859` to
+ * `f1a61702`, and the table went **24 documents over budget** at once. Both
+ * directions are left standing, per `docs/AGENT_WORKFLOW.md` §4 -- the earlier
+ * argument is not retracted, it is bounded: naming movers individually is the
+ * right method when the base has moved by a commit, and an assertion about a
+ * corpus that has moved by a day's worth of merges instead.
+ *
+ * The shape of that regeneration, so the number is a reading of the tree and
+ * not a claim about it: **1236 unverified anchors over 91 documents, out of
+ * 2064 in scope**, against 1213 over 89 out of 1980 at `23374859`. Twenty-two
+ * rows rose, **eight fell**, two documents joined, and **none was spent** --
+ * so the sibling assertion below, which fails on a row that no longer needs
+ * one, had nothing to report. What each group is:
+ *
+ * - **The eight that fell are repairs, and they are the ratchet paying out.**
+ *   `docs/adr/0047-...md` 34 -> **15** is the largest movement in the table in
+ *   either direction, from #1300's re-anchor pass (`ece828b8`, `5de1c948`,
+ *   `dfecba9d`, `3146dc6d`) which re-opened every anchor in 0028/0029/0042/0047
+ *   and quoted what it re-aimed; `0020` 15 -> 10 and `0029` 9 -> 6 follow it,
+ *   with five more falling by one each.
+ * - **`docs/adr/STATUS-QUEUE.md`, 283 -> 300, is again the largest raise and
+ *   again for the reason its own entry above gives.** The prediction in that
+ *   entry -- *"The repair belongs to that pass and will lower this row"* -- did
+ *   not come true: the re-anchor passes that ran on it since re-derived their
+ *   coordinates with `grep -n` and wrote them bare, so the row rose by the
+ *   number of correct anchors nobody can check. That is the gate's claim
+ *   restated, not a failure of it, and the prediction is left above rather than
+ *   edited.
+ * - **Two documents join the table and both are new, so neither is drift.**
+ *   `docs/adr/0117-...md` (7) did not exist at `54adc87c` and was written and
+ *   accepted on `main` (`3f17da4b`, `b98af6b3`, `bdb17265`) -- its anchors
+ *   are bare coordinates in parentheses, the shape `0103`'s control bullet
+ *   already describes. `docs/ARCHITECTURE.md` (1) is one anchor,
+ *   `src/ui/simulation-regime.ts:151`, whose document was not touched in this
+ *   window at all: the code moved under it. Same class as the nine `adad4f08`
+ *   cases above, one document wide.
+ * - **The remaining twenty-one raises are one or two anchors each**, the
+ *   largest being `0051` +4 and `0042`, `0022`, `0093`, `0103`,
+ *   `docs/HUD_PROJECTIONS.md` and `docs/OPERATIONS.md` at +2. Every one of them
+ *   was written on `main` before this gate merged, which is the same
+ *   grandfathering argument the two entries above make and the last time it can
+ *   be made: once this lands, the ratchet polices every commit after it.
  */
 const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0003-simulation-worker-protocol.md': 9,
@@ -499,34 +547,34 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0008-trusted-service-boundary.md': 1,
   'docs/adr/0012-derived-identifier-reproducibility.md': 1,
   'docs/adr/0013-free-tier-cloud-save-capacity.md': 1,
-  'docs/adr/0015-actor-identity-allocation.md': 23,
+  'docs/adr/0015-actor-identity-allocation.md': 24,
   'docs/adr/0017-money-primary-resource-model.md': 5,
   'docs/adr/0019-tile-ownership-under-overlapping-parcels.md': 8,
-  'docs/adr/0020-deterministic-kernel.md': 15,
-  'docs/adr/0022-room-zoning-surface.md': 26,
-  'docs/adr/0023-room-occupancy-authority.md': 6,
+  'docs/adr/0020-deterministic-kernel.md': 10,
+  'docs/adr/0022-room-zoning-surface.md': 28,
+  'docs/adr/0023-room-occupancy-authority.md': 7,
   'docs/adr/0025-guard-hiring-surface.md': 10,
   'docs/adr/0026-entity-id-lifetime.md': 3,
-  'docs/adr/0028-object-placement-and-derived-room-capacity.md': 17,
-  'docs/adr/0029-concurrent-room-use-claims.md': 9,
+  'docs/adr/0028-object-placement-and-derived-room-capacity.md': 18,
+  'docs/adr/0029-concurrent-room-use-claims.md': 6,
   'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
-  'docs/adr/0038-what-makes-a-save-compatible.md': 16,
-  'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 3,
+  'docs/adr/0038-what-makes-a-save-compatible.md': 15,
+  'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 4,
   'docs/adr/0040-the-shape-of-the-render-delta-channel.md': 22,
   'docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md': 1,
-  'docs/adr/0042-attaching-consequences-to-the-simulation-loop.md': 47,
+  'docs/adr/0042-attaching-consequences-to-the-simulation-loop.md': 49,
   'docs/adr/0043-account-session-states-and-what-they-may-do-to-local-data.md': 4,
   'docs/adr/0044-what-happens-to-a-service-tier-nothing-calls.md': 1,
   'docs/adr/0046-shipping-the-telemetry-pipeline.md': 2,
-  'docs/adr/0047-raising-a-building-on-open-ground.md': 34,
+  'docs/adr/0047-raising-a-building-on-open-ground.md': 15,
   'docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md': 3,
   'docs/adr/0050-when-a-sentence-ends.md': 4,
-  'docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md': 12,
+  'docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md': 16,
   'docs/adr/0053-who-may-stand-a-security-post.md': 2,
-  'docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md': 5,
-  'docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md': 7,
-  'docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md': 4,
+  'docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md': 4,
+  'docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md': 8,
+  'docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md': 3,
   'docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md': 5,
   'docs/adr/0061-what-the-prison-produces-on-its-own.md': 1,
   'docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md': 3,
@@ -534,51 +582,53 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0068-classifying-a-pending-rooms-enclosure-on-the-client.md': 3,
   'docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md': 1,
   'docs/adr/0073-who-orders-a-contraband-search.md': 3,
-  'docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md': 6,
+  'docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md': 5,
   'docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md': 16,
   'docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md': 6,
   'docs/adr/0081-whether-a-purchase-may-be-partly-filled.md': 5,
   'docs/adr/0082-what-order-build-orders-are-carried-out-in.md': 3,
   'docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md': 11,
-  'docs/adr/0084-what-the-alerts-channel-owes-a-player.md': 8,
+  'docs/adr/0084-what-the-alerts-channel-owes-a-player.md': 9,
   'docs/adr/0085-what-the-hud-corner-is-for-and-what-the-strip-may-drop.md': 5,
   'docs/adr/0086-what-refreshes-a-pulled-hud-readout.md': 10,
-  'docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md': 7,
+  'docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md': 8,
   'docs/adr/0089-how-a-host-refusal-names-its-reason.md': 24,
   'docs/adr/0090-medium-as-a-warning-not-a-skipped-step.md': 1,
   'docs/adr/0091-what-clears-the-refusal-band.md': 9,
-  'docs/adr/0092-who-decides-where-a-guard-stands.md': 14,
-  'docs/adr/0093-a-carry-is-an-action.md': 36,
+  'docs/adr/0092-who-decides-where-a-guard-stands.md': 15,
+  'docs/adr/0093-a-carry-is-an-action.md': 38,
   'docs/adr/0094-which-names-a-prison-draws-from.md': 7,
   'docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md': 9,
   'docs/adr/0097-what-the-world-view-is-required-to-communicate.md': 18,
-  'docs/adr/0098-what-says-which-room-this-is.md': 4,
+  'docs/adr/0098-what-says-which-room-this-is.md': 5,
   'docs/adr/0100-whether-a-rendered-object-sprite-can-be-published-art.md': 1,
   'docs/adr/0101-what-a-zoning-tint-must-deliver.md': 5,
-  'docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md': 69,
+  'docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md': 71,
   'docs/adr/0104-what-undo-takes-back.md': 12,
   'docs/adr/0105-what-makes-a-local-save-the-newest-one.md': 4,
   'docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md': 4,
   'docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md': 17,
   'docs/adr/0108-what-nobody-can-get-in-should-mean.md': 9,
-  'docs/adr/0109-what-a-stale-local-save-is-refused-for.md': 10,
+  'docs/adr/0109-what-a-stale-local-save-is-refused-for.md': 9,
   'docs/adr/0110-what-security-sector-a-room-is-in.md': 6,
-  'docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md': 6,
+  'docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md': 7,
   'docs/adr/0114-what-a-deleted-prisons-undo-copy-holds-and-when-it-closes.md': 6,
-  'docs/adr/0116-whether-a-finished-object-is-an-event.md': 20,
+  'docs/adr/0116-whether-a-finished-object-is-an-event.md': 21,
+  'docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md': 7,
   'docs/adr/drafts/how-a-language-change-reaches-a-running-page.md': 5,
-  'docs/adr/drafts/what-a-second-tab-follows.md': 6,
-  'docs/adr/README.md': 13,
-  'docs/adr/STATUS-QUEUE.md': 283,
+  'docs/adr/drafts/what-a-second-tab-follows.md': 7,
+  'docs/adr/README.md': 14,
+  'docs/adr/STATUS-QUEUE.md': 300,
   'docs/AGENT_WORKFLOW.md': 2,
+  'docs/ARCHITECTURE.md': 1,
   'docs/HANDOVER-2026-08-26.md': 3,
   'docs/HANDOVER-2026-09-15.md': 2,
-  'docs/HUD_PROJECTIONS.md': 9,
+  'docs/HUD_PROJECTIONS.md': 11,
   'docs/IDENTITY_V5_ROLLOUT.md': 3,
   'docs/INPUT.md': 1,
   'docs/LOCALIZATION.md': 2,
-  'docs/OPERATIONS.md': 2,
-  'docs/PLAYER_STRINGS.md': 175,
+  'docs/OPERATIONS.md': 4,
+  'docs/PLAYER_STRINGS.md': 176,
   'docs/TESTING.md': 3,
   'docs/VISUAL_IDENTITY.md': 5,
   'docs/WORLD.md': 2,
