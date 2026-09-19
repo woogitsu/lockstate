@@ -135,6 +135,8 @@ export class DemoActorFeed implements RenderFeed {
         world: frame.world,
         structures: frame.structures,
         actors: this.actors as readonly RenderActor[],
+        rooms: frame.rooms,
+        roomConditions: frame.roomConditions,
       };
     }
     return this.composed;

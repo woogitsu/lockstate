@@ -5,6 +5,7 @@ import {
   RENDER_ACTOR_POPULATION_PRISONER,
   RenderActorsKeyframeWriter,
 } from '../protocol/render-actors-payload';
+import type { RoomConditionRow } from './room-conditions';
 
 /**
  * The worker's half of the render delta channel: one keyframe, read off the
@@ -156,6 +157,22 @@ export function encodeRenderActorsKeyframe(
   ticksPerWallSecond: number,
   worldRevision: number,
   guards?: RenderGuardSource,
+  /**
+   * ADR 0097's condition ordinals, one row per room the caller could answer
+   * about (`room-conditions.ts`).
+   *
+   * Handed in rather than derived here, and that is the same separation the
+   * `worldRevision` above keeps: this file's argument is that it costs one
+   * walk of the live component arrays per publication, and ADR 0108's
+   * exterior walk is not that. The caller computes the rows when the drawn
+   * world's marker moves and passes the same array back on every publication
+   * in between.
+   *
+   * Omitted is *"this caller has nothing to say about rooms"* -- a zero in the
+   * room-count word and no rows -- which is what every test that predates
+   * layout 4 means by leaving it off.
+   */
+  rooms?: readonly RoomConditionRow[],
 ): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
     throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
@@ -173,7 +190,7 @@ export function encodeRenderActorsKeyframe(
   }
 
   const guardIds = guards?.allGuardIds() ?? [];
-  const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length, worldRevision);
+  const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length, worldRevision, rooms?.length ?? 0);
   // One reading, refilled per actor: the whole cost argument for this encoder
   // is that it allocates nothing per actor, and `WalkReading` is documented as
   // filled in place for that reason.
@@ -214,6 +231,12 @@ export function encodeRenderActorsKeyframe(
         Math.round(reading.velocitySubY * ticksPerWallSecond),
       );
     }
+  }
+
+  // After both populations, because the buffer's room block sits after both
+  // record blocks; the writer enforces that order rather than trusting it.
+  if (rooms !== undefined) {
+    for (const room of rooms) writer.writeRoom(room.anchorTileX, room.anchorTileY, room.condition);
   }
 
   return writer.finish();

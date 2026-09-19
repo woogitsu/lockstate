@@ -31,8 +31,10 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * | `u32[2]` | `recordCount` |
  * | `u32[3]` | `removedCount` |
  * | `u32[4]` | the drawn world's marker (ADR 0099) |
+ * | `u32[5]` | `roomCount` |
  * | then `recordCount` x 5 words | `u32` entity id, `u32` packed fields, `i32` x, `i32` y, `i16` velocity x + `i16` velocity y |
  * | then `removedCount` x 1 word | `u32` entity id no longer live |
+ * | then `roomCount` x 3 words | `i32` anchor tile x, `i32` anchor tile y, `u32` condition ordinal |
  *
  * Twenty bytes per actor. `packEntityId` returns `>>> 0`
  * (`src/simulation/entity/entity-store.ts`), so an id is exactly one `u32`.
@@ -100,6 +102,29 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * about which artwork draws a population. Those are renderer decisions
  * (ADR 0014) and the payload names a population *ordinal*.
  *
+ * ### What layout 3 did not carry, and why layout 4 does
+ *
+ * Whether each room *works*. [ADR 0097](../../../docs/adr/0097-what-the-world-view-is-required-to-communicate.md)
+ * decision 1 requires the world view to answer *"whether what is here
+ * works"*, its decision 2 requires that answer to ride this channel rather
+ * than the geometry pull -- *"a 30-second-stale claim about whether a cell is
+ * working is a false claim"* -- and its accepted option A is exactly *"a
+ * per-room-instance condition ordinal published beside the actors"*.
+ * [ADR 0111](../../../docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md)
+ * decision 2 restates it and decision 1 sends the *rectangle* the other way,
+ * on the geometry pull, so this block is a key and an ordinal and carries no
+ * geometry at all.
+ *
+ * **Twelve bytes per room, and only for rooms the worker could answer about.**
+ * An instance with no recorded rectangle (a V4 save, `RoomInstance.width`'s
+ * own comment) has no perimeter to walk and contributes no row, which is the
+ * absent answer ADR 0111 §4 asks for rather than a guessed one.
+ *
+ * Still not carried, deliberately: which mark is drawn for an ordinal, what
+ * colour it is, and whether it is drawn at all. Those are renderer decisions,
+ * and ADR 0111 decision 3 says publishing the rectangle licenses nothing drawn
+ * with it.
+ *
  * The `flags` word and the removal list are in the layout from the start so
  * that the changed-only messages ADR 0040 puts in a later slice need no
  * version bump.
@@ -115,7 +140,7 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 3;
+export const RENDER_ACTORS_SCHEMA_VERSION = 4;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
@@ -138,13 +163,25 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * reader that trusted one while the other stood still would be trusting the
  * half it happened to have.
  */
-export const RENDER_ACTORS_LAYOUT_VERSION = 3;
+export const RENDER_ACTORS_LAYOUT_VERSION = 4;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
 
 /** Words before the first record. */
-export const RENDER_ACTORS_HEADER_WORDS = 5;
+export const RENDER_ACTORS_HEADER_WORDS = 6;
+
+/**
+ * `u32[5]`. How many room-condition rows follow the removal list.
+ *
+ * ADR 0097 decision 2's channel, ADR 0111 decision 2's payload: a per-room
+ * *condition* has to be refreshed at the delta's cadence rather than the
+ * geometry pull's, because a thirty-second-stale claim about whether a cell
+ * works is a false claim. The room's **rectangle** does not ride here -- it
+ * rides the geometry pull with the rest of the geometry (ADR 0111 decision 1),
+ * and this block carries only the key and the ordinal.
+ */
+export const RENDER_ACTORS_ROOM_COUNT_WORD = 5;
 
 /**
  * `u32[4]`. The drawn world's marker: ADR 0099 decision 3's monotone counter,
@@ -167,6 +204,51 @@ export const RENDER_ACTORS_WORLD_REVISION_WORD = 4;
 
 /** Words per record: entity id, packed fields, x, y, and the two packed velocity halves. */
 export const RENDER_ACTORS_RECORD_WORDS = 5;
+
+/**
+ * Words per room-condition row: `i32` anchor x, `i32` anchor y, `u32` ordinal.
+ *
+ * ### Why the anchor tile is the key and the instance id is not
+ *
+ * An instance id is a string (`roomInstanceIdFor` is `catalogId:x:y` of the
+ * room's north-west corner, `src/simulation/rooms/bounds-recovery.ts`), and a
+ * string in a fixed-width binary block is a length prefix, a UTF-8 walk and a
+ * padding rule for a key whose own two coordinates are already inside it.
+ * **Two live instances cannot share an anchor tile**: `RoomZoningService.zone`
+ * refuses `overlaps-existing-room` for any tile whose zoning value is
+ * non-zero (`src/simulation/rooms/zoning.ts`), so a second rectangle can never
+ * start on a tile the first one covers. The receiver joins these rows to the
+ * rectangles the geometry pull published, by anchor, and a row whose anchor
+ * matches no published room is dropped rather than drawn -- the
+ * degrade-to-absence discipline ADR 0111 §4 asks for.
+ */
+export const RENDER_ACTORS_ROOM_WORDS = 3;
+
+/**
+ * The per-room condition ordinal, and it is exactly ADR 0108's `RoomAccess`
+ * vocabulary rather than a second one.
+ *
+ * ADR 0097 decision 4 bounds this payload to *one* ordinal per room -- enough
+ * for the player to know which room to look at, with the Rooms panel owing the
+ * detail. `RoomAccess` is a vocabulary that already exists, is already
+ * computed for that panel, and answers the one clause of the ADR's obligation
+ * 2 that #1022's measurement is about: a sealed cell and a working one differ
+ * by a door. No precedence order is invented here, because there is only one
+ * question being answered -- ADR 0097 open question 3 (what the mark is for a
+ * room in more than one kind of trouble) stays open, and a later ordinal that
+ * answers more than access is a layout bump, not a re-reading of these values.
+ *
+ * `0` is written by nobody and means "no answer was published for this room".
+ */
+export const RENDER_ROOM_CONDITION_UNKNOWN = 0;
+/** `'gap'`: the rectangle's boundary is not closed. Not a fault -- a yard is drawn this way on purpose. */
+export const RENDER_ROOM_CONDITION_GAP = 1;
+/** `'doorway'`: somebody can get in. The working room. */
+export const RENDER_ROOM_CONDITION_DOORWAY = 2;
+/** `'unreachable'`: the room has a door and nobody can reach it from outside. */
+export const RENDER_ROOM_CONDITION_UNREACHABLE = 3;
+/** `'no-way-in'`: the room is sealed and has no door at all. #1022's cell. */
+export const RENDER_ROOM_CONDITION_NO_WAY_IN = 4;
 
 /**
  * Sub-tile units in one tile: the fixed-point scale a position and a velocity
@@ -299,11 +381,26 @@ export interface RenderActorsPayload {
   readonly velocitySubX: Int16Array;
   readonly velocitySubY: Int16Array;
   readonly removed: Uint32Array;
+  /**
+   * One entry per room the worker published a condition for, in the worker's
+   * canonical instance-id order.
+   *
+   * The anchor tile is the join key onto the rectangles the geometry pull
+   * carries (see `RENDER_ACTORS_ROOM_WORDS`), and the ordinal is one of the
+   * `RENDER_ROOM_CONDITION_*` values. Empty for a session with no zoned rooms
+   * and for every payload written at layout 3.
+   */
+  readonly roomAnchorX: Int32Array;
+  readonly roomAnchorY: Int32Array;
+  readonly roomConditions: Uint32Array;
 }
 
-export function renderActorsByteLength(recordCount: number, removedCount: number): number {
+export function renderActorsByteLength(recordCount: number, removedCount: number, roomCount = 0): number {
   return (
-    (RENDER_ACTORS_HEADER_WORDS + recordCount * RENDER_ACTORS_RECORD_WORDS + removedCount) *
+    (RENDER_ACTORS_HEADER_WORDS +
+      recordCount * RENDER_ACTORS_RECORD_WORDS +
+      removedCount +
+      roomCount * RENDER_ACTORS_ROOM_WORDS) *
     RENDER_ACTORS_WORD_BYTES
   );
 }
@@ -324,6 +421,7 @@ export function renderActorsByteLength(recordCount: number, removedCount: number
 export class RenderActorsKeyframeWriter {
   private readonly view: DataView;
   private written = 0;
+  private roomsWritten = 0;
 
   /**
    * `worldRevision` is required rather than defaulted, and that is the same
@@ -337,6 +435,13 @@ export class RenderActorsKeyframeWriter {
   public constructor(
     public readonly recordCount: number,
     worldRevision: number,
+    /**
+     * How many room-condition rows this keyframe will carry, fixed at
+     * construction for the reason `recordCount` is: it is part of the buffer's
+     * size. A caller with nothing to say about rooms passes nothing and writes
+     * a buffer byte-identical to the one layout 3 wrote plus one zero word.
+     */
+    public readonly roomCount = 0,
   ) {
     if (!Number.isInteger(recordCount) || recordCount < 0) {
       throw new Error(
@@ -348,7 +453,12 @@ export class RenderActorsKeyframeWriter {
         `A render-actors keyframe needs a non-negative integer world revision, got ${String(worldRevision)}.`,
       );
     }
-    this.view = new DataView(new ArrayBuffer(renderActorsByteLength(recordCount, 0)));
+    if (!Number.isInteger(roomCount) || roomCount < 0) {
+      throw new Error(
+        `A render-actors keyframe needs a non-negative integer room count, got ${String(roomCount)}.`,
+      );
+    }
+    this.view = new DataView(new ArrayBuffer(renderActorsByteLength(recordCount, 0, roomCount)));
     this.view.setUint32(0, RENDER_ACTORS_LAYOUT_VERSION, true);
     this.view.setUint32(RENDER_ACTORS_WORD_BYTES, RENDER_ACTORS_KEYFRAME_FLAG, true);
     this.view.setUint32(2 * RENDER_ACTORS_WORD_BYTES, recordCount, true);
@@ -360,6 +470,41 @@ export class RenderActorsKeyframeWriter {
     // wrap it anyway -- doing it here means the value written is the value
     // this line names.
     this.view.setUint32(RENDER_ACTORS_WORLD_REVISION_WORD * RENDER_ACTORS_WORD_BYTES, worldRevision >>> 0, true);
+    this.view.setUint32(RENDER_ACTORS_ROOM_COUNT_WORD * RENDER_ACTORS_WORD_BYTES, roomCount, true);
+  }
+
+  /**
+   * Writes one room-condition row: the room's anchor tile and its ordinal.
+   *
+   * Separate from `writeRecord` rather than another argument to it, because
+   * the two blocks are different lengths and are written by different walks --
+   * one over the live actor population, one over the registered room
+   * instances. The ordinal is range-checked here rather than masked: a value
+   * this build has no meaning for would be silently drawn as some other
+   * room's verdict, and a wrong verdict on the map is the exact failure
+   * `AGENTS.md` reservation 4 is about.
+   */
+  public writeRoom(anchorTileX: number, anchorTileY: number, condition: number): void {
+    if (this.roomsWritten >= this.roomCount) {
+      throw new Error(`A render-actors keyframe sized for ${String(this.roomCount)} rooms was handed another.`);
+    }
+    if (!Number.isInteger(anchorTileX) || !Number.isInteger(anchorTileY)) {
+      throw new Error(
+        `A room-condition row needs integer anchor tile coordinates, got ${String(anchorTileX)},${String(anchorTileY)}.`,
+      );
+    }
+    if (!Number.isInteger(condition) || condition < RENDER_ROOM_CONDITION_GAP || condition > RENDER_ROOM_CONDITION_NO_WAY_IN) {
+      throw new Error(`A room-condition row carries an unknown condition ordinal: ${String(condition)}.`);
+    }
+    const offset =
+      (RENDER_ACTORS_HEADER_WORDS +
+        this.recordCount * RENDER_ACTORS_RECORD_WORDS +
+        this.roomsWritten * RENDER_ACTORS_ROOM_WORDS) *
+      RENDER_ACTORS_WORD_BYTES;
+    this.view.setInt32(offset, anchorTileX, true);
+    this.view.setInt32(offset + RENDER_ACTORS_WORD_BYTES, anchorTileY, true);
+    this.view.setUint32(offset + 2 * RENDER_ACTORS_WORD_BYTES, condition, true);
+    this.roomsWritten += 1;
   }
 
   public writeRecord(
@@ -403,6 +548,14 @@ export class RenderActorsKeyframeWriter {
         `A render-actors keyframe sized for ${String(this.recordCount)} records received ${String(this.written)}.`,
       );
     }
+    // The same refusal, for the same reason: a zeroed room row is
+    // `{ anchor 0,0, condition 0 }`, and `RENDER_ROOM_CONDITION_UNKNOWN` at
+    // the origin is a well-formed row the receiver would try to join.
+    if (this.roomsWritten !== this.roomCount) {
+      throw new Error(
+        `A render-actors keyframe sized for ${String(this.roomCount)} rooms received ${String(this.roomsWritten)}.`,
+      );
+    }
     return this.view.buffer as ArrayBuffer;
   }
 }
@@ -430,11 +583,12 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
   const recordCount = view.getUint32(2 * RENDER_ACTORS_WORD_BYTES, true);
   const removedCount = view.getUint32(3 * RENDER_ACTORS_WORD_BYTES, true);
   const worldRevision = view.getUint32(RENDER_ACTORS_WORLD_REVISION_WORD * RENDER_ACTORS_WORD_BYTES, true);
+  const roomCount = view.getUint32(RENDER_ACTORS_ROOM_COUNT_WORD * RENDER_ACTORS_WORD_BYTES, true);
 
-  const expected = renderActorsByteLength(recordCount, removedCount);
+  const expected = renderActorsByteLength(recordCount, removedCount, roomCount);
   if (buffer.byteLength !== expected) {
     throw new Error(
-      `A render-actors payload declaring ${String(recordCount)} records and ${String(removedCount)} removals must be ${String(expected)} bytes, got ${String(buffer.byteLength)}.`,
+      `A render-actors payload declaring ${String(recordCount)} records, ${String(removedCount)} removals and ${String(roomCount)} rooms must be ${String(expected)} bytes, got ${String(buffer.byteLength)}.`,
     );
   }
 
@@ -452,6 +606,20 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
     subY[record] = view.getInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, true);
     velocitySubX[record] = view.getInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES, true);
     velocitySubY[record] = view.getInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES + 2, true);
+  }
+
+  const roomAnchorX = new Int32Array(roomCount);
+  const roomAnchorY = new Int32Array(roomCount);
+  const roomConditions = new Uint32Array(roomCount);
+  // After the records and the removals, which is where the writer put them.
+  const roomsAt =
+    (RENDER_ACTORS_HEADER_WORDS + recordCount * RENDER_ACTORS_RECORD_WORDS + removedCount) *
+    RENDER_ACTORS_WORD_BYTES;
+  for (let room = 0; room < roomCount; room += 1) {
+    const offset = roomsAt + room * RENDER_ACTORS_ROOM_WORDS * RENDER_ACTORS_WORD_BYTES;
+    roomAnchorX[room] = view.getInt32(offset, true);
+    roomAnchorY[room] = view.getInt32(offset + RENDER_ACTORS_WORD_BYTES, true);
+    roomConditions[room] = view.getUint32(offset + 2 * RENDER_ACTORS_WORD_BYTES, true);
   }
 
   const removed = new Uint32Array(removedCount);
@@ -473,5 +641,8 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
     velocitySubX,
     velocitySubY,
     removed,
+    roomAnchorX,
+    roomAnchorY,
+    roomConditions,
   };
 }
