@@ -1,6 +1,6 @@
 {
   "name": "lockstate",
-  "version": "0.0.687",
+  "version": "0.0.688",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.22.0",
