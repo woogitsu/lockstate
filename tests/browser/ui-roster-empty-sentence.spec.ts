@@ -5,9 +5,23 @@ import { expect, test } from './network-changed-fixture';
  * **What a brand-new prison's roster says, read off the page a player loads.**
  *
  * The owner ruled the sentence on 2026-09-03, choosing it among candidates put
- * to them, and their words are asserted here byte for byte:
+ * to them, and it is asserted here byte for byte:
  *
- * > No prisoners yet. Build a cell with a bed to take somebody in.
+ * > No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.
+ *
+ * **Corrected in place on 2026-09-19, on the owner's ruling, and the earlier
+ * wording is deliberately not kept beside it.** The owner's 2026-09-03
+ * sentence named one of `room.cell`'s four authored requirements -- the bed --
+ * and #933 measured the cost: a player who follows it literally is short a
+ * toilet, and the panel that would say so arrives selected on another room
+ * type. Offered a corrected sentence *beside* theirs or theirs *edited*, the
+ * owner chose *"Poprawić Twoje zdanie w miejscu"* ("correct your sentence in
+ * place"), knowing that this repository normally keeps a superseded text
+ * visible. The supersession is recorded in the commit and the pull request;
+ * the catalogue carries one sentence. The words are ours under `AGENTS.md`'s
+ * fourth reservation as narrowed on 2026-09-04, their **truth** is not, and
+ * `tests/foundation/cell-instruction-requirement-contract.test.ts` is what
+ * keeps them complete against the catalogue.
  *
  * ## Why this is a `.spec.ts` and not one more harness case
  *
@@ -64,12 +78,15 @@ import { expect, test } from './network-changed-fixture';
 const APP_URL = '/index.html';
 
 /**
- * The owner's ruling of 2026-09-03, verbatim.
+ * The ruled sentence, verbatim -- the owner's of 2026-09-03 as corrected in
+ * place on their 2026-09-19 ruling (#933).
  *
- * Two sentences in one string, as ruled: the state, then the one thing a
- * player can do about it.
+ * Two sentences in one string, and the shape the owner ruled is kept: the
+ * state, then the one thing a player can do about it. What the correction adds
+ * is the other three requirements `room.cell` authors, none of them as a
+ * figure that would rot when the catalogue moves.
  */
-const RULED_SENTENCE = 'No prisoners yet. Build a cell with a bed to take somebody in.';
+const RULED_SENTENCE = 'No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.';
 
 /** The key the panel is supposed to have resolved to reach that text. */
 const ROSTER_EMPTY_KEY = 'hud.regime.roster-empty';
