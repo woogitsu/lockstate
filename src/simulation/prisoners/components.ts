@@ -106,6 +106,34 @@ export class PrisonerRecordComponent {
    * disagree with the room registry it is about.
    */
   public readonly solitarySanctionEndTick: Uint32Array;
+  /**
+   * `1` for a prisoner hurt in an incident and not yet treated, `0` otherwise
+   * (issue #589, the owner's ruling of 2026-09-17).
+   *
+   * **A boolean and nothing else.** The ruling authorised *"sam boolean, bez
+   * medyka i bez potrzeby zdrowia"* -- the flag, no medic role, no health
+   * need, no death and no second flag -- so there is no severity, no health
+   * level and no treatment-progress counter here. How far a treatment has got
+   * is `CurrentActionComponent.phaseStartedAtTick`, which the save already
+   * carries, exactly as it is for every other action; this array holds only
+   * whether the prisoner still needs one.
+   *
+   * `Uint8Array` rather than a bitset for the same reason every other array in
+   * this component is a typed array: the payload codec slices it, the save
+   * schema validates it against `activeLength`, and a packed representation
+   * would be a second encoding to keep in step for 5,000 bytes at
+   * `DEFAULT_PRISONER_CAPACITY`.
+   *
+   * `0` is what a never-occupied slot already reads as and it means exactly
+   * what every build before this one meant -- "nobody in this session has been
+   * hurt" -- which is the property `docs/PERSISTENCE.md`'s
+   * "Adding an optional field without a version bump" requires, and the reason
+   * `SAVE_SCHEMA_VERSION` does not move for it. Written by
+   * `PrisonerOperationsRuntime.markInjured` (from `IncidentResponseSystem`'s
+   * `onPrisonerInjured` port) and cleared by `ActionSystem` when a course of
+   * `action.infirmary-treatment` completes.
+   */
+  public readonly injured: Uint8Array;
 
   private readonly slotDefaults: readonly SlotDefault[];
 
@@ -117,6 +145,7 @@ export class PrisonerRecordComponent {
     this.classificationGroupIndex = new Uint8Array(capacity);
     this.intakeStage = new Uint8Array(capacity);
     this.solitarySanctionEndTick = new Uint32Array(capacity);
+    this.injured = new Uint8Array(capacity);
     this.slotDefaults = [
       // Overwritten by `submitIntake` from the admission input.
       [this.sentenceLengthTicks, 0],
@@ -139,6 +168,10 @@ export class PrisonerRecordComponent {
       // previous occupant's sanction, and a never-sanctioned prisoner is
       // exactly what a fresh slot already reads as.
       [this.solitarySanctionEndTick, 0],
+      // `0` -- "not injured". A recycled index must not inherit its previous
+      // occupant's injury, and a never-injured prisoner is exactly what a
+      // fresh slot already reads as.
+      [this.injured, 0],
     ];
     fillEverySlot(this.slotDefaults);
   }
@@ -161,6 +194,7 @@ export class PrisonerRecordComponent {
       classificationGroupIndex: new Uint8Array(this.classificationGroupIndex),
       intakeStage: new Uint8Array(this.intakeStage),
       solitarySanctionEndTick: new Uint32Array(this.solitarySanctionEndTick),
+      injured: new Uint8Array(this.injured),
     };
   }
 
@@ -172,6 +206,7 @@ export class PrisonerRecordComponent {
     this.classificationGroupIndex.set(snapshot.classificationGroupIndex);
     this.intakeStage.set(snapshot.intakeStage);
     this.solitarySanctionEndTick.set(snapshot.solitarySanctionEndTick);
+    this.injured.set(snapshot.injured);
   }
 }
 

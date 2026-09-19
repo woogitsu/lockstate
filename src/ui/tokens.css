@@ -689,6 +689,15 @@
    * 291.14px and the tightest adjacent pair sits **5.11px** apart, which is
    * the gap `Strefy/Zarządzaj` already has today (5.14px). 0.04em buys 7.02px
    * and tracks the caps tighter for a pixel and a half nothing needs.
+   *
+   * **NOTHING APPLIES THIS TODAY, AND THE PARAGRAPHS ABOVE ARE KEPT RATHER
+   * THAN DELETED BECAUSE THEY ARE WHAT THE RULING THAT REMOVED IT WAS MADE
+   * AGAINST.** Its one rule was `hud.css`'s `.hud__tabs .ui-tab__label` inside
+   * `@media (max-width: 720px)`, and on 2026-09-16 the owner ruled that below
+   * that break a tab shows its icon and not its name (#1192), so there is no
+   * label there left to track. The token stays declared: the measurements
+   * above are the only record of what a phone bar full of uppercase Polish
+   * costs, and a tighter label is the obvious thing to reach for again.
    */
   --label-tracking-tight: 0.06em;
   /* The line-height every label-sized run of type is set in. A token rather
@@ -796,7 +805,20 @@
      are only correct while they agree. Equal to the Build panel's value today
      and deliberately not an alias of it -- the two panels have different floors
      to sum, so a change to one must not silently move the other. */
-  --hud-rooms-gutter: var(--space-2);}
+  --hud-rooms-gutter: var(--space-2);
+  /* The ceiling over the Regime panel's classification editor: the tallest its
+     toggle list may be laid out at before it scrolls inside its own box.
+     A *ceiling* where the two above are floors, because this list is the one
+     compressible block in a panel that is `flex: 0 0 auto`: it cannot hand its
+     excess to the rail, so what the rail cannot afford has to be refused here
+     rather than absorbed there. Three rows, and the number is measured rather
+     than chosen -- see `.hud-regime__editor-list` in `hud.css` for the rail
+     arithmetic at each of the five viewports the browser suite visits, and for
+     why the short-viewport block below drops it to one.
+     A token rather than a literal for `--hud-rooms-catalogue-floor`'s reason:
+     the rule that spends it and the `@media (max-height: 700px)` block that
+     overrides it are only correct while they name the same thing. */
+  --hud-regime-editor-ceiling: calc(3 * var(--tap-target));}
 
 /* ------------------------------------------------------------------ */
 /* Layer 1b: the four surfaces that keep the denser step               */

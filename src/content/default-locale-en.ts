@@ -503,6 +503,14 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   4) and is not done here. Named so that a reader does not take this
    *   sentence's absence for the split having happened.
    *
+   *   **The split happened on 2026-09-16 and the paragraph above is kept**
+   *   (`docs/AGENT_WORKFLOW.md` SS4): the roster and the inspector are
+   *   `src/ui/hud/roster-panel.ts` now, titled from `hud.regime.roster`. What
+   *   did **not** happen is the mount move the sentence anticipates -- the
+   *   owner ruled both halves stay on this tab and declined the option that
+   *   put the roster under Zarzadzaj -- so this label still names a section
+   *   that holds more than the delivery's table gives it.
+   *
    * Widths, because ADR 0022's measurement is what limits a label here. It
    * measured the tab bar at 375x812 spanning x = 1.8 .. 373.2 with a fifth tab
    * injected -- 1.8px of margin per side -- so a nine-character label such as
@@ -3006,6 +3014,37 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage-unguarded': 'Unguarded',
   'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
   /*
+   * The `COVERAGE` chip's two sentences for a post nothing can route to
+   * ([ADR 0117](../adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3).
+   *
+   * Authored under `AGENTS.md`'s fourth reservation as partly released on
+   * 2026-09-04 -- the choice of words is ours, the requirement that each be
+   * true is not -- so both are quoted verbatim in the commit that lands them
+   * and in the pull request, beside the code opened to prove them.
+   * `securityPostUnreachable` in `src/ui/hud/messages.ts` carries the
+   * clause-by-clause reading; in short: the predicate behind them
+   * (`DeploymentSystem.hasUnreachablePost`) requires a failed route **and** a
+   * claimable guard **and** nobody `'on-post'`, and the remedy sentence is
+   * measured in
+   * `tests/integration/security-post-unreachable-condition.test.ts` by
+   * removing one of the four walls through the real `RemoveWall` command.
+   *
+   * **Neither sentence says the prison is fixed, and that is deliberate.**
+   * Option 3 explicitly does not fix it: the guard still cycles, the walls
+   * stay where the player put them, and incident response stays broken (ADR
+   * 0117 §1e). What the player is owed here is knowing, and the action stays
+   * theirs -- so the first sentence states the fact and the second names what
+   * undoes it, and nothing claims it has been undone.
+   *
+   * *"the post"* rather than *"the guard post"*: the chip is labelled
+   * `hud.security.coverage` -- "Guard cover" -- and its icon is the security
+   * one, so the subject is already named by what the sentence is attached to.
+   */
+  'hud.security.post-unreachable': 'Post cut off',
+  'hud.security.post-unreachable-hint':
+    'No guard can reach the post, so nobody is on duty. Taking down a wall beside it opens the way back.',
+  /*
    * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
    * unguarded rung only.
    *
@@ -3075,6 +3114,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // A list separator, which is vocabulary rather than punctuation: it is `، `
   // in Arabic and `、` in Japanese.
   'hud.regime.category-separator': ', ',
+  // The regime editor (#1167, ADR 0113 slice 1's missing producer). Every
+  // word here is checked against the code that makes it true, per `AGENTS.md`
+  // reservation 4 as the owner released it on 2026-09-04.
+  //
+  // "the block running now" and not "a block": the panel's own readout is the
+  // block each group is inside at this tick -- `projectStatusStrip` publishes
+  // one `regime` row per group and each row is that group's *running* block --
+  // and `HudRegimeBlockViewModel.startTickOfDay` is that block's own start, so
+  // the tick the toggle sends names the block the row is already describing.
+  // Moving a boundary or editing a block that is not running is deliberately
+  // not built (ADR 0113 section 3), and this sentence must not imply either.
+  //
+  // "Change" and not "Set" or "Plan": a press sends `EditRegimeBlock`, whose
+  // one write is `RegimeScheduleRegistry.editBlock` --
+  // `src/simulation/prisoners/regime-registry.ts`, in its own words *"the one
+  // write ADR 0113 section 3 allows: one block's `allowedCategories`, in one
+  // group's schedule"*. Nothing else in the schedule moves.
+  'hud.regime.edit': 'Change the block running now',
+  // True because `editRegimeBlockSchema` puts `.min(1)` on
+  // `allowedCategories` (`src/simulation/protocol/commands.ts`), so a command
+  // switching the last one off is refused at decode time and never reaches the
+  // registry -- which is why the control is locked here rather than pressed
+  // and silently dropped. "at least one thing" rather than "at least one
+  // category" because the toggles are labelled with the things themselves --
+  // Sleep, Meal, Work -- and "category" is the protocol's word, not a
+  // player's.
+  'hud.regime.edit-last-category': 'A block has to allow at least one thing, so the last one cannot be switched off.',
   // #958: remaining ticks at the detail reply divided by the published day
   // length; a duration, not a real-world date or a promise of discharge now.
   'hud.regime.sentence-remaining': 'Sentence remaining (in-game days): {days}',
@@ -3114,7 +3180,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // naming a tab.
   //
   // **The state this sentence is not true of is a prison that emptied out**,
-  // and it does not have to be: `regime-panel.ts` draws this line only while
+  // and it does not have to be: `roster-panel.ts` draws this line only while
   // `everAdmitted` is false (issue #506), so a prison that admitted people and
   // has since discharged all of them draws no sentence here at all. That
   // second state still has none, and authoring one is the owner's under
@@ -3132,7 +3198,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and choosing it in their own words: *"This prison is empty. Take somebody
   // in to start again."* It is the sentence the key above has never been able
   // to carry: a prison that admitted people and discharged all of them drew
-  // **no line at all** before this, because `regime-panel.ts` gated the box on
+  // **no line at all** before this, because `roster-panel.ts` gated the box on
   // `everAdmitted` being false and there was no true thing to put there.
   //
   // Same two-part shape as the key above, as ruled -- the state, then the one

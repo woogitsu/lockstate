@@ -263,6 +263,41 @@ describe('every rooted file:line anchor in the documentation is in range', () =>
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:215-224: no such file',
       'docs/research/2026-09-05-does-the-game-say-there-is-no-door.md -> src/simulation/rooms/enclosure.ts:303: out of range, src/simulation/rooms/enclosure.ts has 294 lines',
+      /*
+       * **Four more of the first shape, and all four have one cause: ADR
+       * 0115's split.** The owner's ruling of 2026-09-16 moved the roster, the
+       * inspector and their pure helpers out of `src/ui/hud/regime-panel.ts`
+       * into `src/ui/hud/roster-panel.ts`, and that file went from 1,786 lines
+       * to 192 -- so every research anchor into its second half is out of
+       * range at once.
+       *
+       * **THIS LIST HELD EIGHT WHEN THE SPLIT WAS WRITTEN AND HOLDS FOUR NOW,
+       * AND THE HALVING IS NOT A REPAIR.** #1273 landed ADR 0113 slice 1's
+       * regime editor into the half that stayed, taking the file from 192
+       * lines back to 388, and four of the eight coordinates -- `:213`,
+       * `:196-201` and `:293` twice -- fell back inside that count. **They
+       * resolve again without naming what they named**: each was written about
+       * a roster or inspector line that is in `roster-panel.ts` now, and what
+       * sits at those numbers today is the timetable and the editor. So this
+       * gate stopped reporting them not because the citation was repaired but
+       * because an unrelated change made the file long enough to swallow it,
+       * which is the one failure shape a line-count gate cannot see. Recorded
+       * here rather than worked around: `docs/research/` is read-only, the
+       * four are no more or less accurate than the four below, and nothing is
+       * owed to them.
+       *
+       * They are listed rather than repaired for the reason the nine above
+       * are: `docs/research/README.md` keeps these records read-only, and a
+       * dated record of what the code looked like on the day it was read does
+       * not become wrong when the code moves. The live citations into the same
+       * file -- the ones in `docs/adr/` -- were repaired in that same commit,
+       * which is the difference between the two directories and the whole
+       * reason this test is split in two.
+       */
+      'docs/research/2026-08-31-what-a-reload-keeps-and-what-it-says.md -> src/ui/hud/regime-panel.ts:647: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-02-the-open-issue-backlog.md -> src/ui/hud/regime-panel.ts:647: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-03-what-the-owner-still-owes.md -> src/ui/hud/regime-panel.ts:700-712: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-05-where-the-shower-runs-out.md -> src/ui/hud/regime-panel.ts:1370-1372: out of range, src/ui/hud/regime-panel.ts has 405 lines',
     ].sort());
   });
 });

@@ -457,11 +457,18 @@
  *
  * `nowrap` alone is not the whole fix and was measured failing: the five
  * buttons are already flex-shrunk below their own `min-width` at that
- * viewport, so the unwrapped labels **overlap by 2.50px**. `hud.css`'s phone
- * block buys the width back with `--label-tracking-tight`, and that token's
- * docblock carries the measurement. The rail placement has had this
- * declaration (with an ellipsis) since the layout stage; this is the bar
- * placement catching up.
+ * viewport, so the unwrapped labels **overlap by 2.50px**. The rail placement
+ * has had this declaration (with an ellipsis) since the layout stage; this is
+ * the bar placement catching up.
+ *
+ * **THE SENTENCE REMOVED FROM THE PARAGRAPH ABOVE SAID `hud.css`'s phone block
+ * buys the width back with `--label-tracking-tight`, AND IT NO LONGER
+ * DESCRIBES THE STYLESHEET.** On 2026-09-16 the owner ruled that below 721px a
+ * tab shows its icon and not its name (#1192), so that block now hides this
+ * element instead of tracking it and the overlap it was paying for cannot
+ * happen there. `nowrap` stays and is not thereby decorative: it is what keeps
+ * a section name on one line at **every viewport above the break**, which is
+ * where the name is still drawn, and `.ui-sr-only` sets it too.
  */
 .ui-tab__label {
   font-family: var(--font-ui);
@@ -878,3 +885,67 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* ------------------------------------------------------------------ */
+/* Toggle group                                                        */
+/* ------------------------------------------------------------------ */
+
+/* The independent-state sibling of `.ui-choice` above, and it differs in the
+   two places the two questions differ. `.ui-choice__options` is one
+   non-wrapping row of equal cells, which is right for two or three options and
+   wrong for seven -- at 375px those cells are four characters wide. These wrap,
+   and each member is sized by its own label.
+
+   `overflow: hidden` on the row is deliberately absent for the same reason:
+   a wrapped row has no single seam to clip against, so each member carries its
+   own border and its own radius instead of borrowing the group's. That is also
+   why the focus ring here draws outside (the primitive default) rather than
+   inside the way `.ui-choice__option:focus-visible` has to. */
+.ui-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__legend { color: var(--text-muted); }
+.ui-toggles__reason { color: var(--text-muted); }
+
+.ui-toggles__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__option {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  background: var(--surface-overlay);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  color: var(--text-subtle);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-toggles__option:hover:not(:disabled) { background: var(--surface-active); color: var(--text-heading); }
+
+/* On is a background step *and* a colour change, for `.ui-choice__option`'s
+   own recorded reason: the state survives a display that renders the accent
+   hue poorly. */
+.ui-toggles__option[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* A locked member stays legible rather than fading out of contrast: what it
+   says is still the state of the block, and the sentence under the group is
+   what explains why it cannot be pressed. */
+.ui-toggles__option:disabled { cursor: not-allowed; opacity: 0.75; }
+
+.ui-toggles[hidden] { display: none; }

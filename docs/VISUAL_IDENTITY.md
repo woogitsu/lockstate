@@ -497,6 +497,24 @@ sentence.
    delivery puts them under Zarządzaj; and the eleven surfaces the direction
    does not place are still unplaced.
 
+   **The first half of that sentence stopped being literally true on
+   2026-09-16 and is kept rather than rewritten, because the *gap* it names is
+   intact.** The roster and the inspector are their own panel now —
+   `src/ui/hud/roster-panel.ts`, `.ui-panel.hud-roster` — and it is still laid
+   out on Day plan, beside the timetable, because that is what the owner ruled
+   that day: *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia"*
+   (split the panel in code, both halves on Plan dnia), with the option that
+   moved it to Zarządzaj declined. So the code no longer disagrees with itself
+   about what a panel is, and it still disagrees with the delivery's table
+   about which section inmates belong to — by ruling rather than by omission.
+   A UI change must not read this as groundwork for a later move: moving the
+   panel is a fresh ruling for the owner.
+
+   **The 63 px that cost, and the arrival scroll it bought at two viewports,
+   are in `hud.css`'s `.ui-panel.hud-roster` block** — the measurement any
+   further panel added to this rail should be read against, because it is what
+   a second panel header costs anywhere in it.
+
    **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
    2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in
    **two line boxes** -- 26.38px against every other label's 13.19 -- in the
@@ -537,6 +555,86 @@ sentence.
    `nowrap`, the overlap gate goes red without the tighter tracking, and on
    today's `main` -- neither declaration -- the wrap gate reports the 26.4px
    label.
+
+   > **RULED BY THE OWNER ON 2026-09-16: BELOW THE BREAKPOINT THE TABS SHOW
+   > THEIR ICONS AND NOT THEIR NAMES.** **This is a restatement of a ruling and
+   > binds**, under the first of the three kinds in §"How to read a sentence in
+   > this document"; the paragraphs above it, from *"The Polish name wrapped
+   > anyway"* to *"The limit"*, are a *reading of the code* and are kept exactly
+   > as they stand, because they are what the ruling was made against. The issue is
+   > [#1192](https://github.com/woogitsu/lockstate/issues/1192), and this block is
+   > the durable record: the dossier that priced the five options is held by an
+   > unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242)),
+   > and a GitHub comment is not a record.
+   >
+   > > **THE HALF OF THAT SENTENCE ABOUT #1242 WENT FALSE ON 2026-09-17 AND IS
+   > > KEPT RATHER THAN REWRITTEN.** #1242 merged as `bdf2fcfc`, so the dossier
+   > > is on `main` at
+   > > `docs/research/2026-09-15-three-decisions-that-have-been-waiting-on-the-owner.md`,
+   > > and its post-ruling table records this one as the single dossier
+   > > recommendation the owner **declined** — *"no — option 3, which this
+   > > dossier declined"*. **The conclusion is untouched and now rests on the
+   > > other half**: a research record is read-only history by
+   > > `docs/research/README.md`'s own rule, so a live identity document does
+   > > not read its rulings out of one. This block is still the durable record.
+   >
+   > **The provenance is the weaker of the two kinds this repository
+   > distinguishes**, the kind `CLAUDE.md` flags for the 2026-09-08, -09 and -10
+   > releases inside reservation 3 and the kind ADR 0091's Status block records
+   > of itself. The owner did not type a sentence; they chose a clickable option
+   > whose label an agent session had written:
+   >
+   > > Opcja 3 — zakładki tylko z ikonami poniżej progu
+   >
+   > ("Option 3 — icon-only tabs below the threshold.") **The option's own label
+   > is the whole of what was agreed**: which of the five options is right, and
+   > that it applies below the breakpoint. No `min-width` value, no accessible
+   > name and no icon is agreed with it — and an icon-only control still needs
+   > the section's name to reach a screen reader, which is article 7's business
+   > and not this ruling's.
+   >
+   > **What it costs, which is the reason this is a ruling and not a patch: the
+   > section name leaves the screen** below the break. That is tie-break rung 4,
+   > *"Spójność nazewnictwa i zachowania"*, and it undoes on the phone the one
+   > thing the 2026-09-14 navigation move worked hardest to settle — what each
+   > section is called. **The ruling was made with that in front of it.**
+   >
+   > **What it does NOT cost, and this is where the ruling overturns a priced
+   > objection rather than accepting one.** The option had been priced as also
+   > costing five authored and drawn icons — *"none exists"* — and that is false,
+   > which the owner was shown before choosing. Opened on this branch:
+   > `createIcon(options.icon, 'lg'),` `readonly icon: IconId;` (both verbatim in `src/ui/primitives/tab-button.ts`)
+   >
+   > — so every tab already draws an icon above its label and the id is required
+   > rather than optional.
+   > All five sections already name one, in `HUD_TABS` at `src/ui/hud/hud.ts`:
+   > `overview`, `build`, `rooms` (for the Zones tab), `security` (for Manage)
+   > and `regime` (for Day plan) — and all five are drawn as path lists in
+   > `src/ui/primitives/icon.ts`. **The authoring cost is zero.**
+   >
+   > **A DECLINED OPTION THAT HAD BEEN THE RECOMMENDATION, RECORDED BECAUSE A
+   > RULING MADE OVER A STATED OBJECTION IS A STRONGER RECORD THAN ONE THAT
+   > READS AS UNANIMOUS.** A horizontally scrolling tab bar was the
+   > recommendation put to the owner, and they declined it. **It had been
+   > recommended on the strength of the false pricing above** — the argument was
+   > that it is the only candidate costing *"neither rail height nor a name"*,
+   > which is an argument against an icon-only bar that was carrying five
+   > imaginary icons on its back. The objection to icon-only that survives the
+   > correction is the one stated two paragraphs up — the name leaves the screen
+   > — and it is a product position rather than a work estimate. The owner
+   > overruled it. **A second thing nobody has measured, and it belongs to the
+   > option that was chosen**: whether these five glyphs read as their sections
+   > *without* the name is a playtest and not a ruler, and it is unrun.
+   >
+   > **The paragraph above this block argues against the scrolling bar on a
+   > figure that is no longer the tree's** — *"380px of content in a 351px box"*
+   > was measured on the untracked bar, before `--label-tracking-tight` shipped.
+   > It is kept rather than corrected here because it is a dated reading, and
+   > because the ruling did not turn on it: the scrolling bar was declined on the
+   > owner's word, not on that number.
+   >
+   > **Nothing under `src/ui/` implements this**, and the ruling does not by
+   > itself change that.
 
    **What the move cost, measured, in two places:** the Manage tab is the first
    in this rail's life to lay out two panels at once, and at 900x600 the Intake

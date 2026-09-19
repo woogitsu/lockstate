@@ -472,9 +472,33 @@ test.describe('HUD shell', () => {
    * Every other tab's label box is 13.2px here, so the assertion is that no
    * label is taller than the shortest of them rather than a pinned pixel
    * count.
+   *
+   * **THE VIEWPORT MOVED FROM 375x812 TO 721x420 ON 2026-09-16, AND THE
+   * PARAGRAPHS ABOVE ARE KEPT BECAUSE THEY ARE THE MEASUREMENT THE RULE WAS
+   * BUILT ON.** The owner ruled that below 721px a tab shows its icon and not
+   * its name (#1192), so at 375x812 there is no drawn label left to wrap and
+   * this test would have been **vacuously green**: every label is a 1px
+   * `.ui-sr-only` box there. A wrap is still a defect wherever the name *is*
+   * drawn, which is every viewport above the break, so the test follows the
+   * label rather than being deleted with it. 721x420 is the narrowest width
+   * above the break, with a height short enough to keep the five sections in a
+   * horizontal bar rather than the column `navigationPlacement` gives them
+   * wherever one fits (it is a fit test on the height, not a breakpoint).
+   *
+   * **MEASURED 2026-09-16, AND IT IS A WEAKNESS THIS TEST NOW HAS TO DECLARE:
+   * MUTATING `white-space: nowrap` IN `primitives.css` NO LONGER TURNS THIS
+   * TEST RED.** With the label hidden below 721px, the only widths where the bar
+   * squeezed a tab below its own `min-width` are widths where the name is not
+   * drawn at all; above the break the bar is `fit-content` and settles at its
+   * max-content 387.16px from 414px up, so no label is ever compressed there.
+   * The declaration is kept because it is what makes the claim true, not because
+   * anything reaches it -- and this test is kept because *a wrap is still a
+   * defect wherever the name is drawn*, which is what it asserts. It is a
+   * regression gate on the layout, not a mutation gate on that one declaration,
+   * and saying so here is cheaper than the next reader re-deriving it.
    */
-  test('no section name wraps to a second line at 375x812', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test('no section name wraps to a second line at 721x420', async ({ page }) => {
+    await page.setViewportSize({ width: 721, height: 420 });
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
     const labels = await page.evaluate(() =>
@@ -495,6 +519,109 @@ test.describe('HUD shell', () => {
       'these section names wrap, and every line they wrap to comes off the rail',
     ).toEqual([]);
     expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
+  });
+
+  /**
+   * ICON-ONLY TABS BELOW THE BREAK -- the owner's ruling of 2026-09-16 on
+   * #1192, recorded in `docs/VISUAL_IDENTITY.md` item 5.
+   *
+   * Three claims, and they fail in three different ways, which is why they are
+   * three tests. The bar can fit and announce nothing; it can announce
+   * everything and overflow; and either can be bought by taking the names off
+   * the screen at widths the ruling did not reach.
+   *
+   * **The second is the one worth stating plainly**: the ruling's own record
+   * says *"an icon-only control still needs the section's name to reach a
+   * screen reader"*, and a tab a screen reader announces as nothing at all
+   * would be a worse defect than the overflow being fixed. It is asserted off
+   * the **accessibility tree** (`toHaveAccessibleName`), not off the
+   * stylesheet, so it stays true however the hiding is spelled -- and goes red
+   * on the one spelling that is wrong, `display: none`.
+   */
+  test.describe('icon-only tabs below the break (#1192)', () => {
+    const SECTION_NAMES = [
+      ['overview', 'Overview'],
+      ['build', 'Build'],
+      ['zones', 'Zones'],
+      ['manage', 'Manage'],
+      ['day-plan', 'Schedule'],
+    ] as const;
+
+    test('the five tabs fit at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const bar = await page.evaluate(() => {
+        const round = (value: number): number => Math.round(value * 100) / 100;
+        const inner = document.querySelector<HTMLElement>('.hud-tabs__inner')!.getBoundingClientRect();
+        const tabs = [...document.querySelectorAll<HTMLElement>('.hud__tabs [data-tab]')];
+        const boxes = tabs.map((tab) => tab.getBoundingClientRect());
+        return {
+          count: tabs.length,
+          rows: new Set(boxes.map((box) => round(box.top))).size,
+          left: round(inner.left),
+          right: round(inner.right),
+          narrowestTab: round(Math.min(...boxes.map((box) => box.width))),
+          // `.hud-tabs__inner` is `overflow: hidden` for its rounded corners,
+          // so a tab that does not fit is clipped away in silence -- the
+          // failure that element's own comment in `hud.css` describes. A tab
+          // outside its box is the thing to count, not the bar's own width.
+          outsideTheBar: boxes.filter((box) => box.left < inner.left - 0.5 || box.right > inner.right + 0.5).length,
+        };
+      });
+
+      // Not vacuous: five tabs, laid out, on one row.
+      expect(bar.count, 'the five sections were not found').toBe(5);
+      expect(bar.rows, 'the bar wrapped into rows at the default interface scale').toBe(1);
+      expect(bar.left, 'the tab bar starts off the left edge').toBeGreaterThanOrEqual(0);
+      expect(bar.right, 'the tab bar runs past the right edge of a 375px viewport').toBeLessThanOrEqual(375);
+      expect(bar.outsideTheBar, 'a tab is clipped by the bar it sits in, which happens silently').toBe(0);
+      // Constitution article 16's floor, and `--tap-target`'s own value: a tab
+      // narrower than this is a control a thumb cannot reliably hit.
+      expect(bar.narrowestTab, 'a tab is narrower than the 44px tap target').toBeGreaterThanOrEqual(44);
+    });
+
+    test('every tab still has an accessible name at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      for (const [id, name] of SECTION_NAMES) {
+        const tab = page.locator(`.hud__tabs .ui-tab[data-tab="${id}"]`);
+        await expect(tab, `the ${id} tab is not on screen`).toBeVisible();
+        await expect(tab, `the ${id} tab reaches a screen reader as nothing`).toHaveAccessibleName(name);
+      }
+
+      // And the name is genuinely off the screen, or this test would be
+      // asserting the accessibility tree of a bar that never changed.
+      const drawn = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map(
+          (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
+        ),
+      );
+      expect(drawn, 'the section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
+    });
+
+    test('the section names are still drawn above the break', async ({ page }) => {
+      // 721px: the first width the ruling does not reach, so the labels are
+      // back. The ruling is about a range and this is its edge.
+      await page.setViewportSize({ width: 721, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const labels = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map((label) => ({
+          text: (label.textContent ?? '').trim(),
+          width: Math.round(label.getBoundingClientRect().width * 100) / 100,
+          position: getComputedStyle(label).position,
+        })),
+      );
+
+      expect(labels.map((label) => label.text)).toEqual(SECTION_NAMES.map(([, name]) => name));
+      expect(
+        labels.filter((label) => label.width < 20),
+        'these section names are laid out at a screen-reader size above the break, where they should be drawn',
+      ).toEqual([]);
+      expect(labels.every((label) => label.position === 'static')).toBe(true);
+    });
   });
 
   test('transport controls report a clock intent without changing the clock themselves', async ({ page }) => {
@@ -1895,7 +2022,7 @@ test.describe('HUD shell', () => {
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
 
-    test('never shares the rail slot with the Overview, Build, Rooms or Regime panel', async ({ page }) => {
+    test('never shares the rail slot with the Overview, Build, Rooms, Regime or Prisoners panel', async ({ page }) => {
       // The whole reason this panel costs the measured budget nothing. If any
       // two were ever laid out together, one panel's height would have to pay
       // for the other's, which is the overflow ADR 0022 refused. All five
@@ -1915,18 +2042,22 @@ test.describe('HUD shell', () => {
         rooms: (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut,
         staff: (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible,
         regime: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).laidOut,
+        // The sixth occupant, and the second of a pair (ADR 0115). The comment
+        // above about the list having been wrong once is why it is here from
+        // the commit that adds the panel rather than afterwards.
+        roster: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).rosterPanelLaidOut,
       });
 
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       // Overview is the default tab, and since 2026-09-14 what it holds is the
       // readout rather than the Intake panel (issue #1183).
-      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: true, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: true, rooms: false, staff: false, regime: false, roster: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: true, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: true, staff: false, regime: false, roster: false });
 
       /*
        * **Manage is the one tab that lays out two panels**, and that is the
@@ -1937,17 +2068,21 @@ test.describe('HUD shell', () => {
        * exactly what this line stops.
        */
       await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
-      expect(await rail()).toEqual({ overview: false, intake: true, build: false, rooms: false, staff: true, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: true, build: false, rooms: false, staff: true, regime: false, roster: false });
 
-      // And the fifth tab is the Regime panel's, alone. This assertion used to
-      // read "And none is laid out on the one tab that still owns no panel",
-      // and pinned that emptiness deliberately; issue #451 spent it, so what is
-      // pinned now is that spending it bought exactly one panel.
+      // And the fifth tab is the Regime panel's -- and, since the owner's
+      // ruling of 2026-09-16 on ADR 0115, the Prisoners panel's beside it.
+      // This assertion used to read "And none is laid out on the one tab that
+      // still owns no panel", and pinned that emptiness deliberately; issue
+      // #451 spent it, and the ruling split what it bought into two panels
+      // that must be laid out **together** -- the roster's placement is what
+      // the ruling decided, so `roster: true` here is the ruling and
+      // `roster: false` on the Manage lines is the option that was declined.
       await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: false, staff: false, regime: true });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: false, staff: false, regime: true, roster: true });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
-      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
     });
 
     /**
@@ -5500,7 +5635,7 @@ test.describe('the Rooms panel', () => {
  * What is *not* here is the shape of it. Which word goes in which slot is
  * decided by four pure functions -- `describePrisonerRow`,
  * `formatPrisonerName`, `formatPrisonerActivity` and `formatRegimeAllowsText`
- * -- and every one of them is exported from `regime-panel.ts` precisely so
+ * -- and every one of them is exported from `roster-panel.ts` precisely so
  * `pnpm test` can own that decision at the lowest layer, which
  * `docs/TESTING.md` requires. Restating their answers here would buy nothing
  * and would go stale twice.
@@ -5581,12 +5716,16 @@ test.describe('the Regime panel (issue #451)', () => {
           'action-category.free-association.name',
         ],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['recreation', 'hygiene', 'free-association'],
       },
       {
         classificationGroupId: 'high-risk',
         labelKey: 'classification-group.high-risk.name',
         allowedCategoryLabelKeys: ['action-category.hygiene.name'],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['hygiene'],
       },
     ],
   };
@@ -5899,7 +6038,7 @@ test.describe('the Regime panel (issue #451)', () => {
    * page.**
    *
    * `describePrisonerRow`'s own tests own the decision -- that is what
-   * `regime-panel.ts` exports it for -- so what is left for a browser is the
+   * `roster-panel.ts` exports it for -- so what is left for a browser is the
    * half those cannot reach: **whether the tone is a colour**. A tone added to
    * `BadgeTone` with no `.ui-badge[data-tone=...]` rule beside it type-checks,
    * passes every node test, and paints `--badge-neutral-bg` on screen -- which
@@ -5987,7 +6126,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // population is back to
     // zero, and the empty-roster sentence would be false of it. There is
     // no shipped sentence that says the true thing instead (searched
-    // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),
+    // `default-locale-en.ts`; see `roster-panel.ts`'s `paintRoster` comment),
     // so the panel is required to draw *neither* box rather than the wrong
     // one.
     //
@@ -6185,7 +6324,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // Most of what `.hud__side` holds is a catalogue or a fixed set of
     // controls; this block's height tracks the *prisoner population*, bounded
     // by `PRISONER_ROSTER_ROW_LIMIT`. The Staff panel's held-guard list is the
-    // one precedent, and `regime-panel.ts` says outright that this bound was
+    // one precedent, and `roster-panel.ts` says outright that this bound was
     // taken as arithmetic off `HELD_GUARD_ROW_LIMIT`'s 219.0px rather than
     // measured -- three rows carrying a 44px control against four carrying
     // none. This is the measurement that was owed.
@@ -6762,7 +6901,12 @@ test.describe('the Regime panel (issue #451)', () => {
         await sentence.scrollIntoViewIfNeeded();
         await expect(sentence).toBeVisible();
         const readout = await sentence.evaluate((node) => {
-          const panel = node.closest('.hud-regime')!;
+          // `.ui-panel` rather than `.hud-regime`: ADR 0115 split the roster
+          // and its inspector into `.ui-panel.hud-roster`, so the panel this
+          // sentence has to fit inside is the one it is *in* rather than one
+          // named here. The generic class is also the more durable subject --
+          // the claim is "inside its panel's box", not "inside that panel".
+          const panel = node.closest('.ui-panel')!;
           const panelBox = panel.getBoundingClientRect();
           const range = document.createRange();
           range.selectNodeContents(node);

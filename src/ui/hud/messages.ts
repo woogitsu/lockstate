@@ -960,6 +960,59 @@ export const HUD_MESSAGE_KEY = {
   securityCoverageUnguardedConsequence: 'hud.security.coverage-unguarded-consequence',
 
   /**
+   * **What the `COVERAGE` chip says when the post itself cannot be reached**
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3 -- *"say it"*).
+   *
+   * Two keys rather than one, on the division `HudMetricDescriptor.description`
+   * already records for the `FUNDS` chip: a badge has a width and a sentence
+   * does not fit in it. `...PostUnreachable` is the badge -- two words, in the
+   * one-state-in-a-word register `securityCoverageShort` ("Understaffed") and
+   * `securityCoverageUnguarded` ("Unguarded") are written in -- and
+   * `...PostUnreachableHint` is the sentence, which goes into the chip's
+   * `title` **and** its screen-reader text.
+   *
+   * **Nothing is said only in the hint**, which is the constraint that field's
+   * own doc comment states as a rule rather than a remark: the badge states
+   * the condition in the chip itself, so a player who never hovers and a
+   * player on a touch device both see that something is wrong.
+   *
+   * ## Why the badge displaces "Covered" rather than sitting beside it
+   *
+   * Because "Covered" is false while this stands, and ADR 0117 §4 names
+   * settling that as the second decision this change owes. Measured on seed
+   * `0x396` over 200 consecutive ticks with the post sealed: the strip's own
+   * `prisonersCovered` / `prisonersUnguarded` pair alternates on the
+   * deployment cadence, 100 ticks reading *covered* and 100 reading
+   * *unguarded*, for a prison in which no guard has moved a tile. So the
+   * coverage ladder is not merely silent about this state, it asserts the
+   * opposite of it half the time, and a badge added beside it would have left
+   * that assertion standing.
+   *
+   * ## What makes each sentence true, opened rather than assumed
+   *
+   * - *"No guard can reach the post"* -- `DeploymentSystem.hasUnreachablePost`
+   *   requires the sector's most recent deployment route request to have come
+   *   back `ok: false` with nothing successful since, which is the branch in
+   *   `continueDeploymentTravel` that counts a `deploymentFailure`, and to
+   *   have a claimable guard that would take the post. So there is a guard,
+   *   and the route to the post failed for it.
+   * - *"nobody is on duty"* -- the same predicate requires that no guard of
+   *   the sector is in phase `'on-post'`. It deliberately does not lean on
+   *   `shortage` or on the coverage census, which are the figures ADR 0117
+   *   §1b measures as false half the time.
+   * - *"Taking down a wall beside it opens the way back"* -- measured through
+   *   the real kernel, the real `RemoveWall` command (ADR 0106) and the real
+   *   `NavigationSystem` in
+   *   `tests/integration/security-post-unreachable-condition.test.ts`: with
+   *   the post's four bounding edges built by real `PlaceBuildOrder` presses,
+   *   removing **one** of them puts the guard back `'on-post'` and clears this
+   *   condition.
+   */
+  securityPostUnreachable: 'hud.security.post-unreachable',
+  securityPostUnreachableHint: 'hud.security.post-unreachable-hint',
+
+  /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content
    * entry.
    *
@@ -1462,6 +1515,16 @@ export const HUD_MESSAGE_KEY = {
    * putting "Doing" in front of "Showering" would be a second sentence saying
    * what the first already said.
    *
+   * `regimeEdit` and `regimeEditLastCategory` are the two the regime *editor*
+   * needs (#1167, ADR 0113 slice 1's missing producer), and they are two
+   * rather than one because the second is the only thing standing between a
+   * locked control and the shape the owner's standing directive names -- a
+   * control that does nothing and does not say why. The editor needs no key
+   * for the categories themselves: they are `ACTION_CATEGORIES` members and
+   * `deriveSimulationMessageKey('action-category', id)` already labels every
+   * one of them, which is the same derivation the `Allows {categories}`
+   * sentence above renders.
+   *
    * There is deliberately no key for a need, a threshold or a warning about
    * one. `docs/HUD_PROJECTIONS.md` gap 7: the simulation defines no
    * warning or critical level for any need, so a row that called one low would
@@ -1472,6 +1535,8 @@ export const HUD_MESSAGE_KEY = {
   regimeBlockAllows: 'hud.regime.block-allows',
   regimeBlockProgress: 'hud.regime.block-progress',
   regimeCategorySeparator: 'hud.regime.category-separator',
+  regimeEdit: 'hud.regime.edit',
+  regimeEditLastCategory: 'hud.regime.edit-last-category',
   regimeSentenceRemaining: 'hud.regime.sentence-remaining',
   regimeRoster: 'hud.regime.roster',
   regimeRosterCount: 'hud.regime.roster-count',

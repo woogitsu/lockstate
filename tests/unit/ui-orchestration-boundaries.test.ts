@@ -370,6 +370,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       '**This entry read `type-only` until the owner\'s decisions of 2026-09-01 on [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)**, and the erased names it described are unchanged: `SimulationEvent`, `SimulationEventType` and `WorkerToMainMessage` from `src/simulation/protocol/types`. Its reason still holds and is kept: it reads a `simulation/event` publication into a HUD alert row and a band notice and does nothing else -- the same shape as `simulation-alerts.ts` beside it, and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. The `Record` over `SimulationEventType` is still what makes an event type added to the protocol fail to compile until somebody has decided what it says to a player and how loudly (#507). **Two values are now named, and both are pure functions the alternative to which is a second copy of a rule.** `simulationEventIdentity` decides when two arrivals are the same statement, and the worker resolves a dismissal by the same function -- two answers to that question is exactly how a row the player retired would come back holding the wrong arrivals. `projectClockPosition` turns an event\'s tick into the day a row says it happened on; it is *"the one piece of clock arithmetic in the codebase, so a caller cannot disagree with the status strip about which day it is"*, and `simulation-clock.ts`\'s entry above already names the same value for the same reason. Neither touches state: one stringifies an object, the other divides a number. A value import of a decoder, a runtime factory or a kernel would still be the erosion this entry exists to catch.',
   },
   {
+    file: 'src/ui/simulation-conditions.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonCondition` from `src/simulation/protocol/types`, so an exhaustive `Record` over the closed union can be checked at compile time -- exactly the use `simulation-alerts.ts` makes of `RefusalReason` and `simulation-events.ts` of `SimulationEventType`, and for the same purpose: a sixth member added to the protocol fails to compile here until somebody has decided whether and where the player is told about it ([ADR 0117](../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md), accepted by the owner on 2026-09-17). The module is a table and one `some` over it; it resolves no text, names no message key and holds no state, and the erasure means no simulation code runs because of it. It lives outside `src/ui/hud/` for that directory's standing reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know a protocol vocabulary sits beside `simulation-counts.ts`, which is its only caller.",
+  },
+  {
     file: 'src/ui/simulation-counts.ts',
     tree: 'content',
     kind: 'value',
@@ -640,6 +647,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-build-queue.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
+      'src/ui/simulation-conditions.ts',
       'src/ui/simulation-counts.ts',
       'src/ui/simulation-events.ts',
       'src/ui/simulation-held-guards.ts',
