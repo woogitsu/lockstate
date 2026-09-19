@@ -36,9 +36,10 @@ import { element, eyebrowText, nextUiId } from './dom';
  *
  * `disabled` on its own is the failure the owner's standing directive names:
  * a control that does nothing and does not say why is indistinguishable from
- * a broken one. So a locked member takes a sentence with it, put on the
- * button's `title` and its `aria-describedby` target, and the caller supplies
- * that sentence rather than this file inventing one -- a primitive that
+ * a broken one. So a locked member takes a sentence with it: one visible
+ * element under the group, which every locked member points at through
+ * `aria-describedby`. The caller supplies that sentence rather than this file
+ * inventing one -- a primitive that
  * authored player-facing text would be deciding a promise from inside the
  * vocabulary layer.
  */
