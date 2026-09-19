@@ -794,13 +794,26 @@ this one.
 
 Re-anchored at `main` @ `0bf1731d` (**v0.0.682**) by the delta method,
 from `6cb47704`. This is #1275's merge commit, the last merge on `main`;
-`package.json` ships **0.0.682** at it and **no release commit sits above it at
-all** — the bump for this merge had not been written when the pass opened — so
-the anchor's version and the tip's are the same string and the release
-assertion reads 682 − 682 = **zero**. It is the merge rather than a release
+`package.json` ships **0.0.682** at it. It is the merge rather than a release
 commit for the reason every anchor in this chain gives: a `chore(release)`
 commit starts no CI run and a reader who followed one out would have nothing to
 verify against.
+
+**THE SENTENCE THAT STOOD HERE WENT FALSE WHILE THIS PASS WAS BEING WRITTEN,
+AND IT IS CORRECTED RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4)
+**because the mechanism is the one this whole chain exists to watch.** It read:
+*"and **no release commit sits above it at all** — the bump for this merge had
+not been written when the pass opened — so the anchor's version and the tip's
+are the same string and the release assertion reads 682 − 682 = **zero**."*
+That was exact when the window was measured. `212ebe9d`
+(`chore(release): v0.0.683`) landed on `main` between the measurement and the
+push, sitting directly on `0bf1731d`, so `package.json` ships **0.0.683** at
+the tip and **the release assertion reads 683 − 682 = one**. Nothing about the
+anchor, the merge count or any coordinate below moved with it; what moved is a
+number written from a tree that had stopped being `main`'s tip a few minutes
+later. A `chore(release)` commit landing inside a pass is precisely the shape
+the gate's header spends a section on, and it is worth one paragraph to have
+caught it in the act rather than at the next anchor.
 
 **THE GATE WAS GREEN AT EIGHT OF TEN ON MERGES AND AT EIGHTY-EIGHT OF A
 HUNDRED ON COMMITS, WHICH IS THE FIRST TIME ON THIS CHAIN THAT THE SLACK UNIT
@@ -839,13 +852,17 @@ against eight merges, and the retired unit would have read **10 of 10 and
 fired** on a window the live unit reads at eight. That is the 2026-09-18
 divergence again, in the same direction and two wider.
 
-**The gate's commit count and this window's are the same number here, which the
-previous anchor's were not.** `6cb47704..0bf1731d`, anchor to anchor, is **88
-commits**, and the gate counts `6cb47704..`*`main`'s tip* — which **is**
-`0bf1731d`, because the tip is a merge with no release commit above it. So the
-distinction the previous pass got wrong and this file's header now states costs
-nothing to this reading; it is named anyway, because the coincidence is a
-property of when the pass opened rather than of the method.
+**The gate's commit count and this window's were the same number when this
+window was measured, and are one apart by the time it is pushed — which is the
+distinction the previous pass got wrong, demonstrating itself inside one pass.**
+`6cb47704..0bf1731d`, anchor to anchor, is **88 commits**, and that is the
+figure every commit count in §3 below uses. The gate counts
+`6cb47704..`*`main`'s tip*, and the tip **was** `0bf1731d` at measurement —
+a merge with no release commit above it — so the two agreed at 88. `212ebe9d`
+then landed and the gate's number is **89**. The paragraph that stood here said
+the coincidence was *"a property of when the pass opened rather than of the
+method"*; it lasted about as long as it took to write, which is the strongest
+form that claim could have been made in.
 
 **All eight merges landed inside forty-two minutes**, 10:10 to 10:52 on
 2026-09-19, three of them inside twenty-three seconds. That is what buys 11
@@ -19528,9 +19545,12 @@ of its four coordinate findings came from.
 **EIGHT at `0bf1731d` (v0.0.682), ten release numbers later.** The window is
 `6cb47704..0bf1731d`: **88 commits**, **8 merges** that are not
 `chore(release)` bumps, **10** release numbers, **22 changed paths**. The gate
-read **8 of 10** on merges and **88 of 100** on commits, both green. **This
-pass was dispatched on a held slot rather than on a red gate**, the third
-consecutive anchor opened before the budget could block a fleet. **Nothing here
+read **8 of 10** on merges and **88 of 100** on commits, both green — **89 of
+100 by the time this was pushed**, `212ebe9d`
+(`chore(release): v0.0.683`) having landed on `main` in between, which moves
+the gate's count and not this window's. **This pass was dispatched on a held
+slot rather than on a red gate**, the third consecutive anchor opened before
+the budget could block a fleet. **Nothing here
 asks for `ANCHOR_STALENESS_BUDGET_MERGES` to move**, in either direction, and
 nothing here asks for `ANCHOR_STALENESS_BUDGET_COMMITS` to move either.
 
