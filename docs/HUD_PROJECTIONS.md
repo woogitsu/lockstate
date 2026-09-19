@@ -147,12 +147,14 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twenty
+publishable on a timer: `simulation/status-counts` (section 8) carries twenty-one
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. *(Eighteen until issue #585 added `occupiedPlaces`,
 the residency places that currently exist, and nineteen until the owner's
 ruling 18 of 2026-08-31 added `treasuryOverdraftFloorMinorUnits`, how far below
-zero the balance may be taken — a tally in a sentence, so it is
+zero the balance may be taken, and twenty until issue #890 added
+`stateIncomeWithheldTodayMinorUnits`, how much of today's grant unmet needs
+have kept back — a tally in a sentence, so it is
 worth saying that the property being claimed is "a fixed set of scalars", not
 the number. `tests/unit/worker-status-counts.test.ts` pins the exact count and
 the bytes, which is where the number is actually enforced.)* A projection that carries rows must be paged

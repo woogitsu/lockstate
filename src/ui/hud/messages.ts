@@ -243,6 +243,28 @@ export const HUD_MESSAGE_KEY = {
    * admit a prisoner.
    */
   earnedToday: 'hud.status.earned-today',
+  /**
+   * The `Earned today` chip's tooltip and screen-reader text while some of
+   * today's grant is being withheld for unmet needs (issue #890).
+   *
+   * **The same shape as `fundsBeforeDeliveriesStop` above, and for the same
+   * reason.** A badge would cost chip width on a row whose overflow is
+   * already measured (`tests/browser/ui-strip-badged-width.spec.ts`), and
+   * #890's own re-measurement names loudness -- a badge visible without
+   * hovering -- as the one judgement on this readout worth the owner's rather
+   * than an agent's. A description costs no width, sets no threshold, and
+   * paints no colour, so it is the half that can ship without one.
+   *
+   * **It names a figure no other readout carries.** ADR 0064 withholds a
+   * whole number of minor units per unmet need, and #890 measured the result
+   * at 40% of the grant at steady state with the *cause* on screen -- the
+   * Regime roster tones a prisoner's unmet need -- and the *money* nowhere
+   * outside the worker. The figure rides `numberParameters` for
+   * `fundsBeforeDeliveriesStop`'s reason: this layer is pure and has no
+   * localizer, so it names the quantity and the strip formats it exactly as
+   * it formats the chip's own value.
+   */
+  earnedWithheld: 'hud.status.earned-withheld',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',
