@@ -14,9 +14,19 @@
 **Accepted, 2026-09-16, by the repository owner: option 4 — split the panel in
 code, and both halves stay on the Plan dnia (Regime) tab.** That is the whole of
 the question this document asks, so the Status moves; what it does not move is
-stated three paragraphs down rather than left to be inferred. **Nothing under
-`src/` implements it, and the ruling does not by itself change that** — it
-settles which arrangement is right, not that it is built.
+stated three paragraphs down rather than left to be inferred. **It is built, and
+has been since 2026-09-19**, when `3387b9f6` merged
+[#1280](https://github.com/woogitsu/lockstate/pull/1280); the "Built." paragraph
+below names the files and prices what the split cost.
+
+*The clause replaced here read:* **"Nothing under `src/` implements it, and the
+ruling does not by itself change that** — it settles which arrangement is right,
+not that it is built." *It was true for the three days between the ruling and
+the merge, and is quoted rather than deleted per `docs/AGENT_WORKFLOW.md` §4's
+rule about marking both directions. Correcting it was not a second ruling and
+did not touch the `Accepted` above, which is the owner's: a sentence about
+implementation state inside a Status block is a fact that goes stale, not a
+decision that has to be re-taken.*
 
 *The paragraph replaced here read:* **"Proposed.** Nothing here is decided and no
 code implements it. It exists because `docs/IDENTITY_V5_ROLLOUT.md` stage 5 lists
