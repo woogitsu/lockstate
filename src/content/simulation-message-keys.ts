@@ -215,6 +215,37 @@ export const SIMULATION_ENUM_GROUPS = [
       // will not always be a delivery once other producers arrive). Those were
       // the alternatives put to the owner beside the chosen word.
       'action.carry': 'Errand',
+      // The care, not the place: `room.infirmary.name` is already "Infirmary"
+      // two catalogs over, which is the rule `action.laundry-work`,
+      // `action.kitchen-work` and `action.carry` above already follow -- a
+      // roster cell says what the prisoner is *doing*.
+      //
+      // **This is the one new player-facing string issue #589 adds, and it is
+      // a draft for the owner's review** -- no existing string fits (the
+      // `hygiene` *category* label is "Hygiene", which is what a roster would
+      // say for a shower too). An entry has to exist the moment the catalogue
+      // holds the action: the group above declares `form: 'definition-id-field'`
+      // over `DEFAULT_ACTIONS` and `tests/unit/simulation-message-keys.test.ts`
+      // requires each namespace to label *exactly* the ids its declaration
+      // declares, so the choice is between a draft marked as one and a suite
+      // that cannot go green -- the same bind `action.carry`'s note records.
+      //
+      // **What makes it TRUE, which is the half `AGENTS.md`'s fourth
+      // reservation keeps.** The wording is this repository's since 2026-09-04;
+      // that the sentence be true is the owner's. This one is shown by
+      // `PrisonerActionViewModel` for the action a prisoner is *currently
+      // performing*, and an action is only ever current after
+      // `ActionSystem.resolveTargetInstance` answered it a real
+      // `room.infirmary` instance with a free `medical-treatment` place and
+      // `claimUseIfNeeded` took the claim. So "Treatment" appears exactly when
+      // a prisoner is on a medical bed in an infirmary that exists. A prison
+      // with no infirmary never shows it: the promotion in `planIdleSelection`
+      // is gated on `prisonProvides`, the injured prisoner picks their
+      // need-ranked candidate instead, and the cell says what they are really
+      // doing. **No string anywhere claims a prisoner is being treated, or is
+      // waiting to be, on the strength of the flag alone** -- which is why
+      // #589 needs one sentence and no refusal beside it.
+      'action.infirmary-treatment': 'Treatment',
     },
   },
   {

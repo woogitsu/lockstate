@@ -1487,6 +1487,15 @@ export type RefusalReason = (typeof REFUSAL_REASONS)[number];
  * `tick` is the tick the refusal happened on, which is not necessarily the
  * `tick` on the envelope around it: the publication reports the state as of a
  * later tick, and a refusal that is still the most recent one keeps its own.
+ *
+ * **Two documents enumerate this shape in prose and must be moved with it**:
+ * ADR 0003's 2026-08-24 amendment "`simulation/status-counts` also carries the
+ * last refusal", and `docs/HUD_PROJECTIONS.md`'s refusal section. Adding a
+ * member here without naming it there is issue #1263, and the pointer is
+ * written down in this direction because a grep from the schema is the one a
+ * person changing the schema actually runs.
+ * `tests/foundation/documented-wire-schema-membership-contract.test.ts` is the
+ * gate; it derives both sides rather than reading this comment.
  */
 const refusalSchema = z
   .object({

@@ -498,44 +498,44 @@ question rather than settling it: Plan dnia gains its first write surface under
 [#1167](https://github.com/woogitsu/lockstate/issues/1167), which is a reason to
 answer this after that lands.
 
-### The first owed thing was answered on 2026-09-16, and it was built
+> **RULED BY THE OWNER ON 2026-09-16, AND THE PARAGRAPH ABOVE IS KEPT AS THE
+> CASE FOR ASKING.** The panel is split in code and **both halves stay on Plan
+> dnia**; the roster does not move to Manage. ADR 0115's Status block is the
+> record — it carries the ruling, its weaker provenance (a clickable option
+> labelled *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia
+> (zalecane)"*, not a typed sentence), the measurement that declined the third
+> Manage panel, and what the ruling does not settle. **Nothing under `src/`
+> implements it**, so this stage's owed item is answered rather than
+> discharged.
 
-The paragraph above is left exactly as it stands, because it is what this
-document argued for two days and because the last clause of it — *"a reason to
-answer this after that lands"* — is the half the owner overruled. They answered
-before #1167 landed, choosing among clickable options the one labelled:
-
-> Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)
-
-("Option 4 — split the panel in code, both halves on Plan dnia (recommended).")
-Option 2, a third panel on the Manage rail, was **declined**. Provenance is the
-weaker of the two kinds `AGENTS.md` distinguishes: the label of an option this
-repository wrote and the owner chose, not a sentence they typed. **The
-placement is ruled and not deferred** — moving the roster to Manage later is a
-fresh ruling, and nothing in the built change prepares one.
-
-**Built the same week.** `src/ui/hud/roster-panel.ts` carries the roster and
-the inspector as `.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the
-timetable; `hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
-`.ui-panel.hud-regime` is `flex: 0 0 auto` and `.ui-panel.hud-roster` is
-`overflow-y: auto`, the division this stage already recorded for Intake and
-Staff on Manage.
-
-**What it cost, measured on the same fixtures before and after** — the
-timetable, a four-row roster of a prison of nine, and a selected prisoner:
-**63 px** of panel chrome at every viewport, and an arrival scroll of **16 px
-at 375x812 and 46 px at 900x600** where one panel arrived unscrolled. Nothing
-became unreachable, which is this stage's exit criterion. **What it did not buy
-is an independent scroll**, and that refutes the obvious argument for the
-split: the single panel's own overflow was **0 at all five viewports** in that
-same fullest state, so there was never a scroll for the timetable to be carried
-away by. The buys are an independent collapse, an independent height budget and
-a one-line mount. `tests/browser/ui-roster-panel-split.spec.ts` holds them and
-`hud.css`'s `.ui-panel.hud-roster` block carries the table.
-
-**The remaining gap is the delivery's table, not the code.** *osadzeni* sits
-under Zarządzaj in `DOKUMENTACJA/projekt.md`; the owner put the roster on Plan
-dnia. That disagreement is now a ruling rather than an omission.
+> **AND THE LAST CLAUSE OF THE BLOCK ABOVE STOPPED BEING TRUE WHEN THE SPLIT
+> LANDED. It is kept rather than rewritten, per `docs/AGENT_WORKFLOW.md` §4's
+> rule about marking both directions**, because what it records is the state
+> the ruling sat in for the days between being made and being built.
+>
+> **Built.** `src/ui/hud/roster-panel.ts` carries the roster and the inspector
+> as `.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the timetable;
+> `hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+> `.ui-panel.hud-regime` is `flex: 0 0 auto` and `.ui-panel.hud-roster` is
+> `overflow-y: auto`, the division this stage already recorded for Intake and
+> Staff on Manage. So the owed item is **discharged** as well as answered.
+>
+> **What it cost, measured on the same fixtures before and after** — the
+> timetable, a four-row roster of a prison of nine, and a selected prisoner:
+> **63 px** of panel chrome at every viewport, and an arrival scroll of **16 px
+> at 375x812 and 46 px at 900x600** where one panel arrived unscrolled. Nothing
+> became unreachable, which is this stage's exit criterion. **What it did not
+> buy is an independent scroll**, and that refutes the obvious argument for the
+> split: the single panel's own overflow was **0 at all five viewports** in that
+> same fullest state, so there was never a scroll for the timetable to be
+> carried away by. The buys are an independent collapse, an independent height
+> budget and a one-line mount.
+> `tests/browser/ui-roster-panel-split.spec.ts` holds them and `hud.css`'s
+> `.ui-panel.hud-roster` block carries the table.
+>
+> **The remaining gap is the delivery's table, not the code.** *osadzeni* sits
+> under Zarządzaj in `DOKUMENTACJA/projekt.md`; the owner put the roster on Plan
+> dnia. That disagreement is now a ruling rather than an omission.
 
 **The second owed thing — the eleven unplaced surfaces — is discharged as a
 check and produces one question.** Every one is still mounted, and a twelfth
@@ -550,6 +550,104 @@ phone width.** That is deliberate, documented three times in `hud.css` under
 one place where "keeps full function" and the measured page disagree, so it is
 the owner question this stage produces. The new spec records the state at all
 three tiers rather than asserting the phone one is right.
+
+> **ANSWERED BY THE OWNER ON 2026-09-16, AND THE PARAGRAPH ABOVE IS KEPT EXACTLY
+> AS IT STOOD.** It is the question, and the answer is only legible beside it.
+> **The alerts fold gets a route below 720 px: it is mounted in the rail, on the
+> Overview tab, at that breakpoint and no other.**
+> [#1201](https://github.com/woogitsu/lockstate/issues/1201) is the issue; this
+> paragraph is the durable record, because the dossier that priced the options
+> is held by an unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242))
+> and a GitHub comment is not a record.
+>
+> > **THE HALF OF THAT SENTENCE ABOUT #1242 WENT FALSE ON 2026-09-17 AND IS
+> > KEPT RATHER THAN REWRITTEN.** #1242 merged as `bdf2fcfc`, so the dossier is
+> > on `main` at
+> > `docs/research/2026-09-15-three-decisions-that-have-been-waiting-on-the-owner.md`
+> > and its own post-ruling section records this ruling beside the pricing it
+> > priced. **The conclusion is untouched and now rests on the other half**: a
+> > research record is read-only history by `docs/research/README.md`'s own
+> > rule, so it is not where a live rollout stage reads its ruling from. This
+> > block is still the durable record; the dossier is where the pricing the
+> > owner was shown is kept.
+>
+> **The provenance is the weaker of the two kinds this repository
+> distinguishes**, the same kind `CLAUDE.md` flags for the 2026-09-08, -09 and
+> -10 releases inside reservation 3 and the same kind ADR 0091's Status block
+> records of itself. The owner did not type a sentence; they chose a clickable
+> option whose label an agent session had written:
+>
+> > Zamontuj fold w szynie poniżej 720 px (zalecane)
+>
+> ("Mount the fold in the rail below 720 px (recommended).") **The option's own
+> label is the whole of what was agreed** — the mount, at that breakpoint. No
+> markup, no second issuing site and no change to `alertRowDismissal` is agreed
+> with it; the command stays on the row that names the alert, which is what
+> makes `tests/foundation/unconsumed-command-contract.test.ts`'s
+> `producersOf('DismissAlert')` pin survive the change unedited.
+>
+> **Why Overview and not "wherever the player is", measured rather than
+> reasoned.** The dossier mounted a 360 px worst-case stub inside `.hud__side`
+> at 375x812, one tab at a time: on Overview the Overview panel measured
+> **112.50 px before and 112.50 px after**, unchanged, while the same stub on
+> Zones took the Rooms panel from 457.13 to 144.00 and on Manage took the Staff
+> panel from 307.38 to 2.00, because the phone sheet is already at its 536 px
+> ceiling there. **Those figures are the dossier's and are not re-taken here.**
+> "Mount it everywhere" was therefore never on the table; the Overview-only
+> shape is the one that costs nothing measurable.
+>
+> **Two options were declined and both are worth keeping, because each is what
+> somebody will propose next.** Accepting the phone as a viewing tier — which
+> would have made the closing criterion's *"Każda obecna akcja ma osiągalną
+> drogę"* acquire a written phone carve-out in ADR 0112, and would have turned
+> `unplaced-surfaces.spec.ts`'s `'desktop: flex / tablet: flex / phone: none'`
+> from a recorded assertion into an endorsed one. And putting the fold in the
+> Layout menu, which is reachable today but files world state inside the one
+> menu constitution article 13 defines as *not* world state. Un-hiding
+> `.hud__corner` whole was already measured failing twice and `hud.css` carries
+> both runs.
+>
+> **The caveat the owner was shown before choosing, recorded because it runs
+> against the ruling.** The 360 px fold height was read at 1440x900, where
+> `.hud-alerts__list` is 372 px wide; at phone width the same sentences wrap to
+> more line boxes, so the real worst-case fold is **taller** than 360 px, not
+> shorter, and Overview's measured headroom over the stub is 150.31 px. One
+> measurement nobody has taken settles whether that headroom survives. The
+> ruling is the arrangement; if the re-wrap eats the headroom, what that costs
+> is a fresh question rather than a licence to mount it elsewhere.
+>
+> **Nothing under `src/` implements this**, and the ruling does not by itself
+> change that.
+>
+> **THAT SENTENCE WAS TRUE FOR ONE DAY AND IS KEPT RATHER THAN DELETED**
+> (`docs/AGENT_WORKFLOW.md` §4, *mark both directions*). #1279 merged as
+> `725aad40` on 2026-09-17 and builds exactly the arrangement the label names
+> and nothing wider: `placeAlertsFold` in `src/ui/hud/hud.ts` appends the one
+> existing `alertsSection.element` to `overviewPanel.foldSlot` below the
+> breakpoint and back to `minimapPanel.body` above it, wired as
+> `createHudLayoutShell`'s `onTierChange`. **One node moved, never a second one
+> built**, which is why `producersOf('DismissAlert')` is still one producer and
+> the pin above survived unedited, as this block said it would.
+> `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over the
+> press. The first entry ever retired from `app-shell.spec.ts`'s
+> `NEVER_LAID_OUT_BELOW_720` is the alerts fold's header, and the spec writes
+> the retired string out rather than deleting it, for the reason this rollout
+> keeps paragraphs: *"the reason it is gone is not the reason the block below
+> predicted would retire all of them"* -- `.hud__corner` is still
+> `display: none` at 720 px, and the three entries around it are still exempt
+> for that mechanical reason.
+>
+> **What is still not settled is the caveat above, not the mount.** The fold's
+> height at 375 px width has still not been measured, so whether Overview's
+> 150.31 px of headroom survives the re-wrap is open exactly as this block left
+> it.
+>
+> **One count in the kept paragraph is stale and is marked rather than
+> edited.** *"One of the seventeen commands"* is **eighteen**: opened on this
+> branch, `simulationCommandSchema` in `src/simulation/protocol/commands.ts`
+> lists eighteen member schemas, `editRegimeBlockSchema` among them. A tally,
+> rotting first, exactly as `docs/AGENT_WORKFLOW.md` §4 predicts — and the
+> subject of the sentence is unaffected, which is why the sentence stands.
 
 ---
 
@@ -725,6 +823,24 @@ the record says so wherever it quotes a number.
   which stage 8 does not answer. **What stage 8 adds is that the closing
   criterion above depends on it**: *"Każda obecna akcja ma osiągalną drogę"* is
   false at one of the three device tiers the delivery itself names.
+
+  > **The question was answered on 2026-09-16 and the row above is kept as the
+  > measurement it was.** The owner ruled that the alerts fold is mounted in the
+  > rail on Overview below 720 px — §"Stage 5" carries the ruling, its weaker
+  > provenance and the two declined options. **The row does not change**: the
+  > ruling settles the arrangement and nothing under `src/` implements it, so
+  > *"still has no route at 375×812"* is true of the tree today and stays PARTIAL
+  > until something ships.
+  >
+  > **Something shipped: #1279, `725aad40`, 2026-09-17.** The clause above is
+  > kept because it was the true reading for a day, and both directions are
+  > marked rather than one overwritten. The fold is mounted in the Overview
+  > rail below 720 px and `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts`
+  > presses the dismiss control there. **The row's verdict is not moved from
+  > PARTIAL here anyway**, and the reason is a rule rather than caution: a
+  > verdict in this table is a measurement, and no one has re-run the Touch row
+  > against the shipped tree. What changed is that the sentence blocking it is
+  > no longer *"nothing implements it"* but *"nobody has re-measured it"*.
 
 **So the closing criterion is six clauses satisfied, one satisfied only
 locally, and one false.** The record's §16 takes it apart clause by clause, and

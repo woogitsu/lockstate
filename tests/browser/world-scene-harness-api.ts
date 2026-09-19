@@ -95,6 +95,16 @@ export interface PointerCensus {
   readonly configuredActivePointers: number;
 }
 
+/**
+ * `WorldScene.homeIndicatorMark`, flattened so it crosses `page.evaluate`
+ * (issue #794).
+ */
+export interface HarnessHomeIndicator {
+  readonly x: number;
+  readonly y: number;
+  readonly angleRadians: number;
+}
+
 export interface LockstateWorldSceneHarness {
   /** Resolves once `WorldScene.create` has run and its listeners are registered. */
   readonly ready: Promise<void>;
@@ -245,6 +255,42 @@ export interface LockstateWorldSceneHarness {
    * carry no bug this file's subject has.
    */
   displaceCamera(scrollX: number, scrollY: number): void;
+  /**
+   * How many frames the scene has consumed from this harness's feed.
+   *
+   * The same counter `loadChunks` waits on, exposed so that a spec which moves
+   * the camera can wait on the same honest precondition: `WorldScene.update`
+   * calls `readFrame` and then, at the end of that *same synchronous call*,
+   * recomputes the home marker from `cameraState()`. So one increment observed
+   * from outside the engine's loop is exactly "an `update()` has run to
+   * completion since I looked", and nothing read afterwards can still answer
+   * for the camera the previous frame was drawn with.
+   *
+   * **Waiting on the marker's own presence is not a substitute, and issue
+   * #1285 is what that costs.** A displacement that moves the camera from one
+   * off-screen bearing to another leaves the marker present throughout, so a
+   * poll on presence is satisfied by the frame *before* the move and the read
+   * that follows returns the previous bearing. Measured on this harness, a
+   * frame failed to land between the `setScroll` and the read in 18 of 40
+   * attempts, and the run that ended CI's `browser` job on `46a8237f` read a
+   * mark of exactly `PI/2` after a displacement due west.
+   *
+   * Deliberately a count and not a boolean "is settled": a boolean would have
+   * to decide what settled means, which is the harness re-implementing the
+   * scene's own frame contract.
+   */
+  framesRead(): number;
+  /**
+   * The edge marker as the scene last drew it, or `undefined` when it drew
+   * none (issue #794).
+   *
+   * Read off the scene rather than recomputed here, for the reason
+   * `WorldScene.homeIndicatorMark`'s own docblock gives: a harness that called
+   * `offscreenHomeIndicator` itself would agree with a scene that handed it
+   * the wrong rectangle, which is the half of this feature the pure unit test
+   * cannot reach.
+   */
+  homeIndicator(): HarnessHomeIndicator | undefined;
 }
 
 declare global {

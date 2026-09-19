@@ -1,3 +1,4 @@
+import { TREATMENT_TICKS } from './injury';
 import type { NeedId } from './needs';
 import type { ActionCategory } from './regime';
 
@@ -406,5 +407,77 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   {
     id: 'action.carry', category: 'work', target: { kind: 'job-board' },
     needEffectsPerTick: {}, minDurationTicks: 5,
+  },
+
+  /*
+   * Treatment, and the first reader `room.infirmary` has ever had.
+   * **Appended, for the reason the paragraph above this array gives at
+   * length.**
+   *
+   * Issue [#589](https://github.com/woogitsu/lockstate/issues/589), the owner's
+   * ruling of 2026-09-17: a prisoner is `injured` or not, an incident sets it,
+   * and time in an infirmary clears it. `./injury.ts` carries the ruling's own
+   * words, what it excludes, and where the number below comes from.
+   *
+   * Every field, and the reason for each:
+   *
+   * - **`category: 'hygiene'`**, which is one of the two #589 names (*"prisoners
+   *   path there during `free-association` or `hygiene`"*) and the one that
+   *   works in both shipped schedules. `hygiene` is allowed for 500 of
+   *   `GENERAL_POPULATION_REGIME`'s 2,400 ticks and **2,200** of
+   *   `HIGH_RISK_REGIME`'s; `free-association` is allowed for 1,600 and **200**.
+   *   A high-risk prisoner -- the population an incident is likeliest to
+   *   involve -- would get one 200-tick window a day to begin a course under
+   *   the other choice. Nothing is added to `ACTION_CATEGORIES` and no schedule
+   *   moves.
+   *
+   *   **It also decides what happens during a riot, and the answer is the right
+   *   one rather than a convenient one.** `RIOT_ALLOWED_CATEGORIES` is
+   *   `['free-association', 'recreation']` (`../incidents/riot-regime.ts`), so
+   *   a prisoner whose riot is still open cannot begin a course: the prison
+   *   does not walk the injured across a live riot to a bed. Their flag waits,
+   *   which is what a flag is for. Under `free-association` the opposite would
+   *   have been true, and would have been true by accident.
+   * - **`target: { kind: 'room-catalog-id', roomCatalogId: 'room.infirmary' }`**
+   *   -- `tests/foundation/room-routing-contract.test.ts` is the ledger this
+   *   moves, and it moves it by the wide route: a room a player could zone and
+   *   furnish to no effect is now somewhere a prisoner is sent.
+   * - **`requiredObjectCapability: 'medical-treatment'`.** Declared by
+   *   `object.medical-bed` and required by `room.infirmary`, and read by
+   *   nothing until this line
+   *   (`tests/foundation/content-vocabulary-contract.test.ts`). It is the right
+   *   one of the room's two medical capabilities because it is the one attached
+   *   to a place to lie down: the ceiling it derives is the summed footprint
+   *   width of the beds, so an infirmary at its authored minimum treats
+   *   **one** prisoner at a time and a second bed buys a second. One action
+   *   consumes one capability (issue #326), which is why the cabinet's
+   *   `'medical-supply'` is *not* named here -- see `treatmentTicksFor`.
+   * - **`needEffectsPerTick: {}`.** Treatment serves no need, because the
+   *   ruling authorised no health need and giving it an effect on an existing
+   *   one would be a second authored route to that need (the convention
+   *   `action.laundry-work` argues at length two comments up). The consequence
+   *   for selection is a score of exactly **0** -- the floor -- which is
+   *   precisely why `ActionSystem.planIdleSelection` promotes this entry to
+   *   rank 0 on a *rule* about the flag rather than leaving it to scoring, the
+   *   same shape and for the same reason ADR 0093 decision 2 promotes
+   *   `action.carry`. It also means `ActionSystem` does not stamp
+   *   `needFulfilledLastTick` while it runs, the property
+   *   `action.free-association` and `action.carry` already have.
+   * - **`minDurationTicks: TREATMENT_TICKS`**, and this is the one balance
+   *   number the change owes. It is 2,400 -- one in-game day -- halved to 1,200
+   *   by a `medical-supply` object in the room. `./injury.ts` records where the
+   *   figure comes from (#589's own body and the two corpus sources behind it)
+   *   and what it is checked against. **This entry is the one place the base is
+   *   authored**; `treatmentTicksFor` takes it as an argument rather than
+   *   reading the constant again, so a change here changes the behaviour.
+   *
+   *   It is by an order of magnitude the longest entry in this catalogue
+   *   (`action.classroom-education`'s 120 is next), and that is the mechanic
+   *   rather than an oversight: what an injury costs is the day it takes off a
+   *   prisoner, and no other penalty is authored anywhere.
+   */
+  {
+    id: 'action.infirmary-treatment', category: 'hygiene', target: { kind: 'room-catalog-id', roomCatalogId: 'room.infirmary' },
+    requiredObjectCapability: 'medical-treatment', needEffectsPerTick: {}, minDurationTicks: TREATMENT_TICKS,
   },
 ];
