@@ -787,6 +787,45 @@ second, about a sector id on screen, was not asked and is not answered here.
 body reports red are still red, and the row-and-column budget above the 720 px
 break is still the open decision that body names.
 
+**A FIFTH RULING LANDED THE SAME DAY, AND THE HEADING ABOVE STILL SAYS FOUR
+BECAUSE IT WAS WRITTEN BEFORE THIS ONE.** It is left standing rather than
+corrected, on the habit `docs/AGENT_WORKFLOW.md` §4 asks for and which every
+block above follows; what a reader needs is that **five** rulings of
+2026-09-19 are recorded in this section, and that this one shares the weaker
+provenance the heading describes — a clickable option **written by the
+integrating session**, in Polish, which the owner picked. Not a sentence they
+typed. It authorises what its label says and nothing wider.
+
+**5. `docs/adr/STATUS-QUEUE.md`'s dated §3 pass accounts, excluded from the
+anchor-staleness counting.** The question put to the owner was what to do about
+a per-document budget that counts an append-only archive as if it were live
+prose. #1321 had established, with evidence, that roughly a third of that
+document's unverified anchors sit in §3 entries whose coordinates the file has
+itself ruled must not move — *"Neither points where it says any more, and
+neither should be moved"* — so the gate offered them no compliant remedy at all:
+quoting them is impossible, re-aiming them is forbidden by the record, and
+raising the budget is forbidden by the gate. Being per document did not keep the
+cost there either: #1308 and #1318 both went red on line arithmetic in a third
+file with nothing to do with their subject. They chose:
+
+> Wyłączyć datowaną sekcję 3 z liczenia
+
+("Exclude the dated section 3 from the counting.") **It is read as narrowly as
+it is written.** *Dated* §3 is what it names, so the undated
+`## 3. Still outstanding` section, the document's header and §§1-2, 4-6 stay
+counted, and no other document in the corpus is touched by it. It is not a
+licence to exclude a second document, a second section, or a whole file: the
+one precedent it rests on, `docs/research/`, was itself argued from that
+directory's own README rather than assumed.
+
+**No budget was raised to implement it, and the document's row was lowered.**
+`tests/foundation/documentation-anchor-quotation-contract.test.ts` carries the
+exclusion, keyed off the document's own heading shape rather than a line range,
+and that document's row falls from 300 to the exact measured count of its live
+sections. `ANCHOR_STALENESS_BUDGET_MERGES` and `ANCHOR_STALENESS_BUDGET_COMMITS`
+in the sibling gate are a different mechanism and were not touched: this ruling
+reaches what is *counted*, never how much is *allowed*.
+
 
 ## Required workflow for every issue
 Before coding:
