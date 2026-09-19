@@ -539,6 +539,29 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  *   was written on `main` before this gate merged, which is the same
  *   grandfathering argument the two entries above make and the last time it can
  *   be made: once this lands, the ratchet polices every commit after it.
+ *
+ * **Re-derived a fourth time on `origin/main` @ `89d05651` (2026-09-19) and it
+ * came back byte-identical, which is worth a paragraph because the prediction
+ * that it would move was reasonable and wrong.** #1301 added 102 lines to
+ * `docs/adr/STATUS-QUEUE.md` -- a `### What earns a row in this section`
+ * subsection in §2 and a closure blockquote in §3 -- and that document is this
+ * table's largest row at 300. The expectation, written into the brief that
+ * asked for the re-derivation and into this file's own account of the
+ * `adad4f08` cases, was that inserting text above existing anchors slides them
+ * and costs checkability. **It does not, and the reason is the direction the
+ * gate reads in.** `isVerified` opens the *cited* file and searches
+ * `[first - 3, last + 3]` of **its** lines; the citing document's line numbers
+ * are never read by anything here. So a row moves when the **code** moves
+ * under an anchor, or when the document gains or loses an anchor -- and #1301
+ * did neither: `git show` over its three files finds **no** rooted `src/` or
+ * `tests/` anchor added and **no** file under `src/` or `tests/` touched at
+ * all.
+ *
+ * The distinction is cheap to state and was not stated anywhere above: the
+ * nine `adad4f08` cases slid because **`src/content/room-catalog.ts` and two
+ * siblings** took inserted comment blocks, not because any ADR grew. Editing
+ * prose around an anchor is free here; editing the code the anchor points at
+ * is what this gate charges for.
  */
 const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0003-simulation-worker-protocol.md': 9,
