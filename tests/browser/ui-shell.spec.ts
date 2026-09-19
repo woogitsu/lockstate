@@ -6018,10 +6018,13 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.total).toBe('0');
     expect(probe.rows).toEqual([]);
     expect(probe.emptyLaidOut, 'the empty prison drew a blank box instead of the sentence').toBe(true);
-    // The owner's ruling of 2026-09-03, byte for byte. It read "Nobody has
-    // been admitted yet." until then; the state under test is unchanged.
-    expect(probe.emptyText).toBe('No prisoners yet. Build a cell with a bed to take somebody in.');
-    expect(probe.text).toContain('No prisoners yet. Build a cell with a bed to take somebody in.');
+    // The ruled sentence, byte for byte: the owner's of 2026-09-03, corrected
+    // in place on their ruling of 2026-09-19 so that it names all four of
+    // `room.cell`'s requirements rather than only the bed (#933). It read
+    // "Nobody has been admitted yet." before 2026-09-03; the state under test
+    // is unchanged by either move.
+    expect(probe.emptyText).toBe('No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.');
+    expect(probe.text).toContain('No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.');
     // Nothing is being withheld: "and N more" is about a population bigger than
     // the window, and there is no population.
     expect(probe.moreLaidOut).toBe(false);
@@ -6131,7 +6134,8 @@ test.describe('the Regime panel (issue #451)', () => {
     // one.
     //
     // **The sentence this refuses to draw is the owner's ruling of 2026-09-03,
-    // "No prisoners yet. Build a cell with a bed to take somebody in.", and
+    // corrected in place on 2026-09-19 to
+    // "No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.", and
     // was "Nobody has been admitted yet." when this test was written.** The
     // ruling makes this test's subject sharper rather than moving it: the new
     // sentence is false of this prison twice over -- it has held prisoners,

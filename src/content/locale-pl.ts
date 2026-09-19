@@ -1117,7 +1117,7 @@ const plMessages: Readonly<Record<string, string>> = {
   // needs neither.
   'hud.regime.roster-heading': 'W drodze: {activity}',
   'hud.regime.roster-more': 'i jeszcze {count}',
-  'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę z łóżkiem, aby kogoś przyjąć.',
+  'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę — dość dużą, zamkniętą ścianami ze wszystkich stron, z łóżkiem i toaletą w środku — aby kogoś przyjąć.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
 
