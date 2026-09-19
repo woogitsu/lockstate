@@ -1150,60 +1150,12 @@
  * injected as a control the Build panel fits perfectly and the save panel
  * becomes a 41.1px box over 240px of content. The `max-height: 700px` block at
  * the foot of this file is where that viewport is paid for instead (#174).
- *
- * **THE FLOOR IS A SHARE *OR* THIS SLOT'S OWN CONTENT, WHICHEVER IS LARGER,
- * AND THE SECOND TERM IS WHY #1312 EXISTS.** A quarter of the rail is a
- * generous floor while the rail is tall and it is not a floor at all once the
- * rail is short: under a 200 % browser page zoom the rail at a 1280x720 window
- * is 214px, a quarter of it is 54px, and the two things this slot holds are a
- * 46px chrome row of two 44px tap targets and the save panel's own 26px
- * header. So the slot sat 34px under its own content and spilled the
- * difference over the panel below at `overflow: visible`, where no gesture
- * reaches it -- content loss, which constitution article 8 forbids through
- * ADR 0112 decision 1 (`docs/VISUAL_IDENTITY.md`).
- *
- * **Bisected to `d4986dfa` (#1201), which moved the alerts fold into
- * `.hud__side` below 720px.** That commit priced the fold against this slot's
- * slack -- *"`.hud__aside`'s `flex: 1 1 0` slack pays for all of it, with
- * 277 px still above its own 25 % floor"* -- and that reading is correct at
- * the 375x812 it was measured at. At a halved viewport there is no slack: the
- * rail is unchanged across that commit (202.8px at 1280x720 halved, on both
- * sides of it) and `.hud__side` grows 108.2 -> 144.1, straight out of this
- * slot.
- *
- * **The second term is a length rather than `min-content`, which was tried and
- * rejected.** `flex-basis: min-content` on this slot resolves through the save
- * panel's whole prison list -- measured, the slot took 217px of a 214px rail
- * and left `.hud__side` 32px, which is the promise four paragraphs up,
- * inverted. So the floor is spelled out instead: **one tap target for the
- * chrome row, and one more for the save panel's header and this slot's two
- * gutters.** Both terms scale with `--ui-scale` (`tokens.css`), so the floor
- * tracks the interface scale that causes the squeeze. Measured against what it
- * has to cover: 96px of floor for 88px of content at 100 %, 72px for 67px at
- * 75 %.
- *
- * **The headroom in those two numbers is small, and a gate is what makes it
- * safe rather than lucky.** A save panel header that grew past it would put
- * this slot back over its box with nothing to say so, so
- * `tests/browser/ui-rail-aside-content-floor.spec.ts` asserts the slot does
- * not overflow at the three combinations #1312 names, and was watched going
- * red on this line put back to a bare `25%`.
- *
- * **What it costs where the rail is tall: nothing, and that is checkable
- * rather than argued.** `max()` picks the share wherever the share is the
- * larger, which is every rail at least 384px tall -- all five of
- * `app-shell.spec.ts`'s `HUD_LAYOUT_VIEWPORTS` at 100 %, including the 900x600
- * the paragraph above derives, where the floor stays 120.7px rather than
- * becoming 96px. The sweep says the same from the other side:
- * `playtest-1164`'s failing set after this line is a strict subset of its
- * failing set before -- 31 of 36 down to 16 of 36, fifteen cleared and none
- * added.
  */
 .hud__aside {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
-  min-height: max(25%, calc(2 * var(--tap-target) + var(--space-2)));
+  min-height: 25%;
   padding: var(--space-3) var(--space-3) 0;
   box-sizing: border-box;
 }

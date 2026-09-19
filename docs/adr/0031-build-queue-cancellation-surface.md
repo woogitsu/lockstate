@@ -525,7 +525,7 @@ through an integration pass that did not re-open it, and the next anchor's
 delta read is what found it —
 `MAX_RUN_SEGMENTS` (`src/rendering/build/edge-picking.ts:46`), the longest run one
 drag can place, so the pool holds a row for every order one gesture can produce.
-`.hud-build__queue-list` (`src/ui/hud/hud.css:2026`) now carries its own
+`.hud-build__queue-list` (`src/ui/hud/hud.css:1978`) now carries its own
 `max-height: calc(var(--tap-target) * 3 + var(--hud-build-map-gutter) * 2)` with
 `overflow-y: auto` and `flex: 0 0 auto` — the box stays exactly the height three
 rows already measured at, at every viewport, to the pixel, and rows past the
