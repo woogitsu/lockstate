@@ -8574,6 +8574,93 @@ landing and the status moving is the cost, and it is not zero.
 The account of why the queue was emptied the first time is kept below unchanged,
 because it is still the argument for why one row is worth reading.
 
+### What earns a row in this section, written down because it has now been asked three times
+
+**Written 2026-09-19 under `AGENTS.md`'s standing mandate, after two
+consecutive re-anchor passes declined to decide it and the owner handed it
+back.** The provenance is the weaker of the two kinds this repository
+distinguishes and is recorded here rather than left to be inferred: the owner
+chose a clickable option labelled *"Zdecyduj sam po zbadaniu"* ("decide
+yourself after researching"), rather than typing a rule. What that label
+authorises is a rule chosen **after** the research, so the research is set out
+before the rule.
+
+**The question, in the shape it kept arriving in.** ADR 0117 arrived
+`Accepted` and implemented in one merge (#1289), and `docs/adr/README.md`'s
+row for it closed *"Owes `STATUS-QUEUE.md` an entry it may not write"*. The
+anchor entry of 2026-09-19 put that to the owner rather than answering it, and
+the pass before it did the same. **ADR 0117 is not the question.** Counted on
+disk at `f1a61702` (v0.0.688) by the derivation §3 uses — whichever of
+`accepted`/`proposed` appears first in the document's own status statement,
+`## Status` heading or `- Status:` bullet alike — `docs/adr/` holds **41**
+`Proposed` against **69** `Accepted` across **110** documents, and five of the
+41 carry a row here (0056, 0059, 0071, 0074, 0077, each re-read on disk). So
+**thirty-six decisions carry no entry telling the owner they are waiting**,
+and until now nothing written down said whether that was a backlog or the
+correct state.
+
+**What the ADR 0101 precedent actually established, quoted rather than
+summarised.** It is one clause of one anchor entry, and it says that ADR
+0101's acceptance *"needed no queue row for the same class of reason ADR
+0098's did not: by the time the acceptance and its implementation are both
+readable together … there is no gap between decision and code for a row to
+name."* That is a **sufficient condition for declining** a row. It is not a
+definition of what earns one, it was written to dispose of one document, and
+the ADR 0103 entry that cites it next says so in its own words — *"the
+previous anchor's reason for declining one for ADR 0101 … does not apply"*.
+Both passes that cited it at ADR 0117 were right that it does not by itself
+answer the question.
+
+**The rule, derived from the nine entries rather than from this section's own
+opening.** The opening states the trigger as *"any commit that adds a
+`Proposed` ADR adds an entry here in the same commit"*. Practice has not
+followed that since it was written — it would owe thirty-six rows today — and
+this section elsewhere calls a rule of that width *"unsatisfiable under
+concurrency"*. What the nine entries actually share is narrower, and it is the
+rule to apply:
+
+> **A row is owed when the tree has already made a commitment the owner has
+> not, and no index row shows it.** Three things satisfy that and nothing else
+> in this section does: an unsigned decision that landed together with its own
+> implementing code (0056, 0059, 0074, 0077); a ruling or an amendment inside
+> a document whose index status reads `Accepted`, which every mechanical gate
+> in this repository is blind to (ADR 0008 §2, ADR 0008 §3, ADR 0071's
+> open-area amendment); and an approval owed outside `docs/adr/` altogether
+> (the first server-side entry point, and ADR 0093's two player-facing
+> sentences, which are `AGENTS.md`'s fourth reservation rather than a status).
+>
+> **A document that implements nothing is owed no row.** Its own `Proposed`
+> line in `docs/adr/README.md` *is* the request addressed to the owner, and a
+> row here would restate it one file further away. **A document whose
+> acceptance and its implementation are readable together on the tree is owed
+> no row either** — that is the ADR 0101 precedent, doing the work it was
+> written for and no more.
+
+**Applied to ADR 0117 rather than deferred.** #1289 lands the document, the
+fifth `PRISON_CONDITIONS` member, its two player-visible sentences in two
+locales and an integration test in one merge, so nothing in the tree leans on
+a decision the owner has not taken. Its player-facing sentences were authored
+under the ruling rather than left owing, which is the whole of what separates
+it from ADR 0093. **ADR 0117 owes this section nothing.**
+`docs/adr/README.md`'s 0117 row said otherwise and was corrected in the commit
+that wrote this rule; the sentence it said is kept there rather than deleted.
+
+**What this rule does not reach, named because that is where the next reader
+will test it.** It says nothing about an ADR's **open questions**. ADR 0117
+leaves option 2 open — whether a walled-in prison is ever repaired — and so do
+many of the thirty-six. An open question that nothing in the tree depends on
+is a question, not a commitment, and this section is not a list of questions;
+`docs/adr/README.md` and the issues are. An open question **does** earn a row
+the moment something is built on the answer it has not received.
+
+**The weakest claim here, named rather than left to a reader.** That the nine
+entries share the property stated above. They were written by different passes
+over three weeks, and at least one says in its own words that it is *"a
+different shape from every other one in this section"* (ADR 0093's). A tenth
+entry filed for a reason none of the nine had would not so much refute the
+rule as show it was a description of a habit; the honest repair then is to say
+so here, not to widen the rule until it fits.
+
 ### ADR 0008 §2's two rulings (#382) — awaiting approval
 
 **What is waiting.** Two rulings #382 wrote into
@@ -19474,6 +19561,21 @@ repair is made in §2 here, and that is the more useful half of this bullet.
   acceptance and the implementation are readable together on every tree, there
   is no gap between decision and code for a row to name. That precedent is
   cited rather than applied, because the row is the owner's to want.
+
+  > **ANSWERED 2026-09-19, AND THE BULLET IS KEPT ABOVE RATHER THAN REWRITTEN
+  > BECAUSE IT IS THE PASS THAT PUT THE QUESTION AND DECLINED IT CORRECTLY.**
+  > The owner handed the question back under `AGENTS.md`'s standing mandate,
+  > with the weaker, clickable-option provenance — *"Zdecyduj sam po zbadaniu"*
+  > ("decide yourself after researching"). The rule chosen after that research
+  > is written beside this file's §2, under *"What earns a row in this
+  > section"*, and it decides **that ADR 0117 owes no row**: #1289 lands the
+  > document, the condition member, both player-visible sentences and a test in
+  > one merge, so the tree leans on no decision the owner has not taken.
+  > `docs/adr/README.md`'s 0117 row was corrected in the same commit, with its
+  > *"an entry it may not write"* sentence kept as a quotation. **What the
+  > answer costs is stated where the rule is**: it is a reading of nine entries
+  > written by different passes, one of which calls itself a different shape
+  > from the rest.
 - **§6's `Amendment`/`Addendum` tally did NOT move, 54 across 32 documents**,
   run as `grep -RniE '^#{2,6}\s+[*_`]*(Amendment|Addendum)\b' docs/adr/*.md` at
   both ends rather than carried. ADR 0117 arrives with none, which is what an
