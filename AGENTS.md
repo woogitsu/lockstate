@@ -871,9 +871,10 @@ the diff it ships with.
 HEADING ABOVE HAS BEEN CORRECTED.** The first says four and the entry after it
 says five, each true when written and each left standing, because a count
 rewritten in place is a count whose earlier value nobody can see. `CLAUDE.md`'s
-preamble is this repository's standing demonstration of what that costs, twice
-over: two of the six mistakes it records against itself are miscounts of its
-own tally.
+preamble is this repository's standing demonstration of what that costs: of the
+six mistakes it records against itself it sorts them *"two on one side and four
+on the other"*, the four being wrong **numbers** rather than wrong claims about
+how wide a permission ran.
 
 **The numbering here is load-bearing and was nearly got wrong.** These two were
 drafted as the fifth and the sixth by a session that had checked this file and
