@@ -1150,6 +1150,13 @@
  * injected as a control the Build panel fits perfectly and the save panel
  * becomes a 41.1px box over 240px of content. The `max-height: 700px` block at
  * the foot of this file is where that viewport is paid for instead (#174).
+ *
+ * **A SHARE STOPS BEING A FLOOR ONCE THE RAIL IS SHORT, AND BELOW 720px THIS
+ * LINE IS RAISED FOR THAT REASON (#1312).** A quarter of a 214px rail is 54px
+ * and the two things this slot holds need 88 of them, so under a page zoom the
+ * slot was drawing over the panel below it. The raise, its derivation and why
+ * it is scoped to that tier rather than written here are at `.hud__aside` in
+ * the `max-width: 720px` block at the foot of this file.
  */
 .hud__aside {
   display: flex;
@@ -5918,12 +5925,60 @@
    * rail is tall enough for its content, which is every combination at 100 %,
    * nothing overlaps and this rule does nothing at all.
    */
+  /*
+   * **THE SLOT'S FLOOR BECOMES ITS OWN CONTENT WHERE A SHARE OF THE RAIL IS
+   * NO LONGER ONE (#1312).**
+   *
+   * `.hud__aside`'s `min-height: 25%` is derived one file up against a 482.8px
+   * rail at 900x600, where a quarter is 120.7px and generous. Under a 200 %
+   * browser page zoom the CSS viewport halves in each axis and the rail at a
+   * 1280x720 window is **214px**, a quarter of which is 54px -- against a 46px
+   * chrome row of two 44px tap targets and the save panel's own 26px header,
+   * neither of which can shrink. The slot has no `overflow` of its own, so the
+   * 34px difference was drawn over the sheet below it, where no gesture
+   * reaches it. That is loss of content, which constitution article 8 forbids
+   * through ADR 0112 decision 1 (`docs/VISUAL_IDENTITY.md`).
+   *
+   * **Bisected to `d4986dfa` (#1201)**, which moved the alerts fold into
+   * `.hud__side` at this very breakpoint and priced it against this slot's
+   * slack -- *"`.hud__aside`'s `flex: 1 1 0` slack pays for all of it, with
+   * 277 px still above its own 25 % floor"*. That is true at the 375x812 it
+   * was measured at. At a halved viewport there is no slack: across that
+   * commit the rail is unchanged at 202.8px and `.hud__side` goes 108.2 ->
+   * 144.1, straight out of this slot. `.ui-panel.hud-overview` above is
+   * `flex: 0 1 auto; min-height: 0` with its own `overflow-y: auto` **because
+   * of that same commit**, so what this raise takes back lands in a scrollport
+   * a finger can reach rather than in `.hud__rail`'s `overflow: hidden`.
+   *
+   * **A length, not `min-content`, and the rejected attempt is the reason.**
+   * `flex-basis: min-content` on this slot resolves through the save panel's
+   * whole prison list: measured, the slot took **217px of a 214px rail** and
+   * left `.hud__side` 32px -- the promise one file up, inverted. So the floor
+   * is spelled out: one tap target for the chrome row, one more for the save
+   * panel's header and this slot's two gutters. Both terms scale with
+   * `--ui-scale` (`tokens.css`), so the floor tracks the interface scale that
+   * causes the squeeze -- 96px of floor for 88px of content at 100 %, 72px for
+   * 67px at 75 %.
+   *
+   * **IN THIS BLOCK RATHER THAN ON THE BASE RULE, AND THAT IS MEASURED RATHER
+   * THAN TIDINESS.** Written on the base rule it reaches 900x600 at a **900px**
+   * width, which is not this tier, and at 200 % interface scale the floor there
+   * is 192px of a rail that cannot spare it: `app-shell.spec.ts`'s #545 sweep
+   * went red with *"the rail scrolls at 900x600 and 200%"*, 9px of
+   * `.hud__rail` overflow -- one overflow traded for another. Capping the floor
+   * at `min(..., 50%)` instead cleared #545 and cost eleven combinations of the
+   * #1312 sweep (16 of 36 failing became 27). Scoped here it costs neither:
+   * every one of the sweep's 36 combinations has a CSS width at or under 720px,
+   * because a page zoom halves it, and every viewport that failed #545 is
+   * wider.
+   */
   .hud__aside {
     position: relative;
     /* 2, not 1: the separator itself carries `z-index: 1`, and two positioned
        siblings at the same index are decided by document order -- which the
        sheet wins, because it comes after the aside. */
     z-index: 2;
+    min-height: max(25%, calc(2 * var(--tap-target) + var(--space-2)));
   }
 
   .hud[data-layout-inspector='collapsed'] .hud__side { max-height: none; }
