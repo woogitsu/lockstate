@@ -1570,6 +1570,23 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
        */
       recordGrudgeFromAdjudicatedAssault(gangs, incident);
     },
+    /*
+     * Issue #589, the owner's ruling of 2026-09-17: an incident that ran its
+     * course leaves the people caught in it injured, and the flag it sets is
+     * what sends them to an infirmary. `markInjured` is the one write;
+     * `ActionSystem` (registered by `PrisonerOperationsRuntime.registerOn`) is
+     * what carries them there and clears it.
+     *
+     * One call rather than the two the adjudication callback above makes,
+     * because one thing happens: nothing else in this session reads an injury.
+     * The tick is passed through unused by the current consumer and kept in the
+     * port's signature for the reason the two ports above keep theirs -- a
+     * consumer that wants to know *when* should not be the change that widens
+     * a signature.
+     */
+    (entityId) => {
+      prisoners.markInjured(entityId);
+    },
   );
 
   // After both `'on-search'` claimants, because it reads each of them live: a

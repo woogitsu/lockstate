@@ -485,9 +485,38 @@ test.describe('is there anything to do', () => {
     const controlsAfter = await controlCensus(page);
     console.log(`[act1] ${controlsAfter.length} control(s) now:\n${controlsAfter.join('\n')}`);
 
-    // The comparison the question turns on: which controls changed state?
-    const changed = controlsAfter.filter((line, index) => controlsBefore[index] !== line);
+    /*
+     * The comparison the question turns on: which controls changed state?
+     *
+     * **Keyed on the control's own `tag[class] "label"` rather than on its
+     * position in the census**, which is the correction of 2026-09-17 and is the
+     * same defect this repository has now found four times in the HUD's pooled
+     * rows and once in a gate: an index into a list is not a name for anything
+     * the list can grow or lose. This read used to be
+     * `controlsAfter.filter((line, index) => controlsBefore[index] !== line)`,
+     * and the whole point of the act is that three untouched days may *add* a
+     * control -- one insertion shifts every line after it, so that filter would
+     * report the entire tail as changed and would miss a control that really did
+     * change into whatever the line at its old position used to say. Arriving
+     * and departing controls are named separately, because "this control's state
+     * changed" and "this control was not here before" are different answers.
+     */
+    const stateOf = (lines: readonly string[]): ReadonlyMap<string, string> => {
+      const out = new Map<string, string>();
+      for (const line of lines) {
+        const at = line.lastIndexOf('" ');
+        out.set(at === -1 ? line : line.slice(0, at + 1), at === -1 ? '' : line.slice(at + 2));
+      }
+      return out;
+    };
+    const before = stateOf(controlsBefore);
+    const now = stateOf(controlsAfter);
+    const changed = [...now].filter(([key, state]) => before.has(key) && before.get(key) !== state).map(([key, state]) => `${key} ${String(before.get(key))} -> ${state}`);
+    const arrived = [...now.keys()].filter((key) => !before.has(key));
+    const departed = [...before.keys()].filter((key) => !now.has(key));
     console.log(`[act1] control lines that differ after three days: ${changed.length === 0 ? '(none)' : JSON.stringify(changed)}`);
+    console.log(`[act1] controls that arrived: ${arrived.length === 0 ? '(none)' : JSON.stringify(arrived)}`);
+    console.log(`[act1] controls that left: ${departed.length === 0 ? '(none)' : JSON.stringify(departed)}`);
 
     console.log(`[act1] ${await needsReadout(page, 'needs after three days')}`);
     for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {

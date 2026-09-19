@@ -193,6 +193,29 @@ export interface StatusStripSource {
    * construction economy cannot have an unfunded one.
    */
   readonly materialsFunding?: { readonly lastReport: { readonly unfunded: readonly unknown[] } };
+  /**
+   * The deployment system, read for one fact only: whether some sector's post
+   * tile currently cannot be routed to while the prison has guards that would
+   * take it ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3 -- `PrisonCondition`'s
+   * `'security.post-unreachable'` member).
+   *
+   * `DeploymentSystem` itself satisfies this shape, so
+   * `src/simulation/worker/status-counts.ts` passes it directly rather than a
+   * captured boolean -- the same live-read convention `coverage`, `payroll`
+   * and `materialsFunding` above take, so a wall taken down between two
+   * publications clears the condition without anything here having to notice.
+   *
+   * **`hasUnreachablePost` is a read and takes the tick**, because a sector's
+   * requirement varies by tick (`resolveRequiredGuardCount`) and this
+   * projection must ask about the tick it is reporting rather than about
+   * whatever the kernel has reached.
+   *
+   * Absent reports `false`, matching every other optional source's reading of
+   * "no such system in this runtime": a session with no deployment system has
+   * no post to strand.
+   */
+  readonly deployment?: { hasUnreachablePost(tick: number): boolean };
 }
 
 /**
@@ -200,7 +223,7 @@ export interface StatusStripSource {
  * the live facts the pulled read models this generalises already read --
  * never from a log, an ordinal or anything with memory of a previous call.
  *
- * **A pure function of its five arguments and nothing else**, which is what
+ * **A pure function of its arguments and nothing else**, which is what
  * lets `tests/determinism/status-counts-publication.test.ts` treat a
  * publication as a read: the same balance, the same shortfall and the same
  * intake backlog always produce the same set, in the same order, however many
@@ -256,6 +279,23 @@ export function computeStandingPrisonConditions(input: {
   readonly buildQueueUnfunded: boolean;
   readonly waitingWithoutPlace: number;
   readonly isFreshUnfurnishedPrison: boolean;
+  /**
+   * Whether some sector's post tile currently cannot be routed to while the
+   * prison holds guards that would take it -- `DeploymentSystem.hasUnreachablePost`,
+   * which is where the four conjuncts behind this boolean are argued (ADR
+   * 0117, accepted 2026-09-17).
+   *
+   * **Required rather than defaulted**, for `isFreshUnfurnishedPrison`'s
+   * reason immediately above: a caller that holds a deployment system and
+   * forgets to pass it through would silently get "nothing is stranded" back,
+   * which is the direction that reintroduces exactly the silence ADR 0117 §1b
+   * measures.
+   *
+   * **A boolean rather than the system**, so this function stays a pure
+   * function of its arguments: the read happens in `projectStatusStrip`,
+   * where every other live source is read.
+   */
+  readonly securityPostUnreachable: boolean;
 }): readonly PrisonCondition[] {
   const standing: PrisonCondition[] = [];
   for (const condition of PRISON_CONDITIONS) {
@@ -265,6 +305,8 @@ export function computeStandingPrisonConditions(input: {
           return input.buildQueueUnfunded;
         case 'intake.no-place':
           return input.waitingWithoutPlace > 0;
+        case 'security.post-unreachable':
+          return input.securityPostUnreachable;
         case 'treasury.construction-refused':
           return (
             input.treasuryMinorUnits <=
@@ -865,6 +907,12 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     buildQueueUnfunded: (source.materialsFunding?.lastReport.unfunded.length ?? 0) > 0,
     waitingWithoutPlace: population.waitingWithoutPlace,
     isFreshUnfurnishedPrison,
+    // Live, exactly as `coverage` and `materialsFunding` are read live above,
+    // and asked about `source.tick` rather than about the kernel's own: a
+    // sector's requirement varies by tick, so the condition has to be about
+    // the tick this readout is reporting. Absent source reports `false` --
+    // a runtime with no deployment system has no post to strand.
+    securityPostUnreachable: source.deployment?.hasUnreachablePost(source.tick) ?? false,
   });
 
   return {

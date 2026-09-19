@@ -90,18 +90,29 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Eight payload fields have been added since their section was first written --
+Nine payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
 `currentTransactionId` (#108), `masterSeed` (#412),
 `simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
 (ADR 0042 step 3), `construction.orders[].placementSequence`
 ([ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md), #722)
-and `simulation.alerts`
+`simulation.alerts`
 ([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
-decision of 2026-09-01)
+decision of 2026-09-01) and `simulation.prisoners.components.injured` (issue
+#589, the owner's ruling of 2026-09-17)
 -- and none of them bumped the schema version. **This sentence read "Six" until
-2026-08-31 and "Seven" until 2026-09-01, and the count is the part of it that
-rots**; the list is what to read. The conditions that make that correct, rather than merely
+2026-08-31, "Seven" until 2026-09-01 and "Eight" until 2026-09-17, and the
+count is the part of it that rots**; the list is what to read.
+
+**The ninth is the one whose bump was authorised and not spent, which is the
+case this section had not yet had.** The owner's #589 ruling said
+`SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three
+conditions below hold and because [ADR 0038](./adr/0038-what-makes-a-save-compatible.md)
+rejected a V6 bump for `masterSeed` on the ground that the migration step's only
+content would be fabricating a value the save does not record -- which is
+exactly what a `false`-per-slot step would be here. Doing less than was
+authorised, in the form this document prescribes, is the narrower change and
+the reversible one. The conditions that make that correct, rather than merely
 convenient, are:
 
 - **The field is optional, and absent means what the older build already
@@ -1432,16 +1443,16 @@ original `'open'`.
 
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
-`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are nineteen per-prisoner
-arrays *in the payload*. Writing them at capacity would cost ~308 KiB (315,360 bytes) in every
+`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are twenty per-prisoner
+arrays *in the payload*. Writing them at capacity would cost ~318 KiB (325,372 bytes) in every
 save regardless of population — the same mistake #50 removed from `entities`,
-at nineteen times the size. That is measured, not derived: the encoded arrays
+at twenty times the size. That is measured, not derived: the encoded arrays
 are `readonly number[]`, so the cost is digit widths rather than element sizes,
-and 308 KiB is the size at 5,000 slots with every array at its constructor
+and 318 KiB is the size at 5,000 slots with every array at its constructor
 default (needs at `NEED_MAX_SCALED` = 51,000, `actionIndex` at its `-1`
 sentinel, the rest zero) — the empty-prison case this claim is about. A
 populated mid-game prison, with seven-digit tick stamps in three of the arrays,
-measures ~435 KiB at the same capacity. They are written across the store's
+measures ~445 KiB at the same capacity. They are written across the store's
 **allocated prefix** (`maxActiveIndex + 1`) instead.
 
 Both figures moved with V4 (#259): a need level is stored scaled by
@@ -1450,7 +1461,9 @@ three, which is ~59 KiB across 30,000 elements at this capacity. Before that
 change the same two cases measured ~240 KiB (245,332 bytes) and ~337 KiB. Both
 moved again with issue #80 (ADR 00XX): a nineteenth persisted array,
 `solitarySanctionEndTick`, was added at zero -- the pre-#80 V5 figures were
-~298 KiB (305,332 bytes) and ~425 KiB.
+~298 KiB (305,332 bytes) and ~425 KiB. And again with issue #589 (the owner's
+ruling of 2026-09-17): a twentieth, `injured`, also at zero -- the pre-#589
+figures were ~308 KiB (315,360 bytes) and ~435 KiB.
 `tests/unit/session-component-payload-size.test.ts` is what keeps this
 paragraph and `session-systems.ts`'s copy of it from drifting apart again.
 

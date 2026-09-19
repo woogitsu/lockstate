@@ -196,6 +196,29 @@ export const STAFF_ROSTER_ROW_LIMIT = 3;
 export const STAFF_ROSTER_ROW_SETTLE_MS = 1_000;
 
 /**
+ * How long a place in the held-guards list stays blank after the guard it named
+ * is no longer held, before another guard may appear there.
+ *
+ * The same figure and the same argument as `STAFF_ROSTER_ROW_SETTLE_MS` above
+ * and `BUILD_QUEUE_ROW_SETTLE_MS` one panel over -- deliberately the same
+ * number rather than a fourth judgement, because all of them are the same claim
+ * about how long a person takes to read a short label and press the control
+ * beside it, and nothing measured here distinguishes the lists. Read
+ * `BUILD_QUEUE_ROW_SETTLE_MS`'s header for where the ~800ms lower bound comes
+ * from and for what about the figure is judgement rather than measurement.
+ *
+ * **Why this list needed it too**, which issue #877 named as the third
+ * index-bound pool and left unmeasured when it closed: a guard leaves this
+ * window without any press from the player -- a search or an incident response
+ * ends and the hold with it -- so the head of the list is replaced while the
+ * player is reading it, and every surviving guard used to slide up one row. A
+ * misfire releases a guard from a duty the player meant to leave standing. It is
+ * the least costly of the four, because a release is reversible in a way a
+ * dismissal is not; it is still a press landing on somebody it was not aimed at.
+ */
+export const HELD_GUARD_ROW_SETTLE_MS = STAFF_ROSTER_ROW_SETTLE_MS;
+
+/**
  * The block's own name, beside the held block's.
  *
  * `hud-staff__held-list` is what carries the layout -- one declaration in
@@ -1148,13 +1171,30 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * built, for the reason the Build panel's queue and delivery rows do it: the
    * row is pooled and names whichever guard the last publication put in it, so a
    * captured id would release whoever was in this row two seconds ago.
+   *
+   * **That was once the whole of this docblock and it was never enough**, which
+   * is the correction `RosterRow`'s docblock below records about itself in the
+   * same words and which was left unmade here when #877 closed. Reading at press
+   * time makes the id **current**, not **the one the player read**: this block
+   * bound `rows[i]` to `guards[i]`, and a hold ends on the simulation's own
+   * clock -- a search finishing, an incident response standing down -- so the
+   * head of the window is replaced with no press from the player and every
+   * surviving guard slid up one row. The `Release` under the pointer then freed
+   * somebody else, and `guardId` read at press time was that somebody, so
+   * nothing on the code path could detect it.
+   *
+   * `assignPooledRows` is what closes it, exactly as it closed #860 one panel
+   * over and #877 one block down, and `freedAtMs` is the state that rule needs
+   * from this row. Gated by `tests/browser/ui-pooled-rows-aim.spec.ts`.
    */
   interface HeldRow {
     readonly element: HTMLElement;
     readonly label: HTMLSpanElement;
     readonly release: ActionButton;
-    /** The guard this row currently names, or `undefined` while it is hidden. */
+    /** The guard this row currently names, or `undefined` while it names nobody. */
     guardId: number | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `HELD_GUARD_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const heldList = element('div', { className: 'hud-staff__held-list' });
@@ -1173,6 +1213,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         },
       }),
       guardId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(element('div', { className: 'hud-staff__held-text', children: [label] }), row.release.element);
     row.element.hidden = true;
@@ -1213,9 +1254,29 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       // Every pooled row emptied as well as hidden, so a press that somehow
       // reached a hidden button cannot name a guard from the last publication.
       for (const row of heldRows) {
+        /*
+         * **The settle window is forgotten here rather than stamped**, which is
+         * `emptyRosterRow`'s `forgetSettle` one block below and `paintQueue`'s
+         * correction one panel over, not a third decision. `src/main.ts:2542`
+         * calls `applyHeldGuards(undefined)` every time the player leaves the
+         * Staff tab -- *"leaving takes the block off, because from here on
+         * nothing is refreshing it"* -- so a stamp here puts every place inside
+         * its settle window and the publication that arrives when the player
+         * returns is refused by all of them. A held guard's list moves only
+         * when the simulation says so, so there may be no later publication to
+         * unstick it. Measured on this branch before the correction: three held
+         * guards, the block published away and published back, and
+         * `staffProbe().held.rows` is `[]`.
+         *
+         * A place with no box carries no settle window: the window exists so
+         * that a label the player may have read is not replaced under their
+         * pointer, and a place with no box had no label to read.
+         */
+        row.freedAtMs = undefined;
         row.guardId = undefined;
         row.element.hidden = true;
         row.release.setDisabled(true);
+        row.release.setUnavailable(true);
         delete row.element.dataset['guard'];
       }
       return;
@@ -1229,32 +1290,104 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     });
 
     const guards = held.guards.slice(0, HELD_GUARD_ROW_LIMIT);
-    heldRows.forEach((row, index) => {
-      const guard = guards[index];
-      if (guard === undefined) {
+
+    /*
+     * Which row names which guard -- `assignPooledRows`, not `guards[index]`,
+     * and the substitution is the one that closed #860 on the Build panel's
+     * queue and #877 on the roster below. This is the third of the four pools
+     * issue #877 named; it closed with only the roster fixed, and this list and
+     * the Build panel's deliveries were left explicitly unmeasured.
+     *
+     * The hazard needs no press from the player to fire: a hold ends when the
+     * search or the incident it belongs to does, on the simulation's clock, so
+     * the head of this window is replaced while the player is reading it and
+     * every surviving guard used to slide up one row. The `Release` beside the
+     * label then freed a different guard -- and `guardId` read at press time was
+     * that different guard, so nothing on the code path could detect it.
+     */
+    const byGuardId = new Map(guards.map((guard) => [String(guard.entityId), guard]));
+    const nowMs = performance.now();
+    const assignments = assignPooledRows(
+      heldRows.map((row) => ({
+        itemId: row.guardId === undefined ? undefined : String(row.guardId),
+        freedAtMs: row.freedAtMs,
+      })),
+      guards.map((guard) => String(guard.entityId)),
+      nowMs,
+      HELD_GUARD_ROW_SETTLE_MS,
+    );
+
+    let drawn = 0;
+    for (const [index, row] of heldRows.entries()) {
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        if (row.guardId !== undefined) row.freedAtMs = nowMs;
         row.guardId = undefined;
         row.element.hidden = true;
+        row.label.textContent = '';
         row.release.setDisabled(true);
+        row.release.setUnavailable(true);
         delete row.element.dataset['guard'];
-        return;
+        continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * This place names nobody: the guard it named is no longer held, or the
+         * place is still inside its settle window, or a row below it is occupied
+         * and giving this box up would slide that row up into whatever pointer
+         * is resting there. It keeps its box and loses everything else;
+         * `row.guardId === undefined` in the handler above is the authority that
+         * stops a press, and `setUnavailable` is the signal, for the reason the
+         * roster's own hold-open branch records about `createBusyGroup`.
+         */
+        if (row.guardId !== undefined) row.freedAtMs = nowMs;
+        row.guardId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        row.release.setUnavailable(true);
+        delete row.element.dataset['guard'];
+        continue;
+      }
+      const guard = byGuardId.get(assignment.itemId);
+      if (guard === undefined) continue;
+      drawn += 1;
       row.guardId = guard.entityId;
       row.label.textContent = formatHeldGuardText(t, guard);
       row.element.hidden = false;
       row.release.setDisabled(false);
+      row.release.setUnavailable(false);
       // The row's identity for a browser probe, so a spec can press the control
       // aimed at one guard and assert about the others -- the same handle
       // `data-delivery` gives the delivery rows, and needed for the same reason:
       // the rows are pooled, so "the second row" is not a stable name for a guard.
       row.element.dataset['guard'] = String(guard.entityId);
-    });
+    }
 
+    // Keyed on the window and not on `drawn`, deliberately, exactly as the
+    // roster's list is: a pass in which every place is holding itself open draws
+    // no rows and must still keep its boxes, or the list would collapse under
+    // the pointer the boxes are being held for.
     heldList.hidden = guards.length === 0;
     heldEmpty.hidden = guards.length > 0;
-    // Counted against `held.held` and not against `held.guards.length`: the
-    // reader asks for one row budget's worth of rows, so the window is what
-    // arrived and the total is what the prison holds.
-    const remaining = held.held - guards.length;
+    /*
+     * Counted against `held.held` and against the rows this pass actually
+     * **drew**, never against `held.guards.length`: the reader asks for one row
+     * budget's worth of rows, so the window is what arrived and the total is
+     * what the prison holds -- and a place holding its box open is a place the
+     * arriving guard could not have, so subtracting the window would understate
+     * what the player cannot reach.
+     *
+     * **And the honesty of this count is what stops the list moving**, which is
+     * the second way the same harm arrives and is measured rather than reasoned:
+     * `.hud__side` carries `margin-top: auto`, so this panel is anchored to the
+     * foot of the rail and anything that shortens it moves every row *down*.
+     * Counted against the window instead, this line goes from "and 1 more" to
+     * hidden across the publication `ui-pooled-rows-aim.spec.ts` drives, the
+     * block loses a line of `--font-size-eyebrow`, and the second place was
+     * measured **21.19px** from where it had been read. `paintRoster`'s overflow
+     * line is counted the same way, for the same two reasons.
+     */
+    const remaining = held.held - drawn;
     heldMore.hidden = remaining <= 0;
     if (remaining > 0) {
       heldMore.textContent = t(HUD_MESSAGE_KEY.securityHeldMore, { count: localizer.formatNumber(remaining) });

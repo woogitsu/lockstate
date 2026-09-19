@@ -286,6 +286,12 @@ const plMessages: Readonly<Record<string, string>> = {
   // closely and is twenty characters in a roster cell; the shorter noun is
   // chosen for that reason and the alternative is recorded here.
   'action.carry.name': 'Transport',
+  // "Treatment" is the care rather than the place, and *Leczenie* keeps that:
+  // *Izba chorych* is `room.infirmary.name` two catalogs over and would repeat
+  // the room in the column that is supposed to say the activity -- the same
+  // rule the two `Praca w ...` rows and *Transport* above follow. It is a
+  // verbal noun like every other row here, so it carries no gender.
+  'action.infirmary-treatment.name': 'Leczenie',
 
   // Action phases. Nouns, never adjectives: these stand beside the verbal
   // nouns above in the same roster column and must not carry a gender.
@@ -1072,6 +1078,17 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage-unguarded-hint': 'Nikt nie pełni służby. Zatrudnij {count}, aby obsadzić tę populację.',
   'hud.security.coverage-unguarded-consequence':
     'Nikt tu nie pełni służby, więc nikt w tym sektorze nie jest chroniony.',
+  // ADR 0117 (accepted 2026-09-17). *"Nikt nie pełni służby"* is lifted from
+  // `hud.security.coverage-unguarded-hint` two lines up rather than reworded:
+  // it is the same fact about the same prison, and a second Polish phrasing
+  // of it would be the drift this file's own preamble warns about. No
+  // reshape of the second sentence: a verbal noun subject
+  // (*"rozebranie ściany"*) keeps the imperative out of a sentence that is
+  // describing a consequence rather than issuing an order, which is how the
+  // English reads too.
+  'hud.security.post-unreachable': 'Posterunek odcięty',
+  'hud.security.post-unreachable-hint':
+    'Żaden strażnik nie dotrze na posterunek, więc nikt nie pełni służby. Rozebranie ściany obok otwiera drogę z powrotem.',
 
   // =====================================================================
   // Regime panel -- `hud.regime.*`.
