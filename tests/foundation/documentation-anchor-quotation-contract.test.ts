@@ -513,7 +513,7 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  *
  * - **The eight that fell are repairs, and they are the ratchet paying out.**
  *   `docs/adr/0047-...md` 34 -> **15** is the largest movement in the table in
- *   either direction, from #1300's re-anchor pass (`ece828b8`, `5de1c948`,
+ *   either direction, from #1240's re-anchor pass (`ece828b8`, `5de1c948`,
  *   `dfecba9d`, `3146dc6d`) which re-opened every anchor in 0028/0029/0042/0047
  *   and quoted what it re-aimed; `0020` 15 -> 10 and `0029` 9 -> 6 follow it,
  *   with five more falling by one each.
