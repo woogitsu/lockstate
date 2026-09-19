@@ -47,8 +47,22 @@ import { type Page, expect, test } from './network-changed-fixture';
  *
  * It deliberately does **not** assert the sweep's other four measurements, nor
  * the other 33 combinations. 16 of 36 still fail after this repair and pinning
- * that set would pin the defect in place -- which is the objection the playtest
- * itself raises to being turned into a gate. What is asserted here is one
+ * that set would pin the defect in place
+ *
+ * -- and **that "16 of 36" was written in the present tense and the head has
+ * since left it behind**, which is the one thing about this docblock both
+ * rollout documents single out. It is corrected here rather than overwritten
+ * (`docs/AGENT_WORKFLOW.md` §4): the figure is right about `a1c7f97d`, and the
+ * sweep returns **13 of 36** on `7b0f6f69`, where #1312's follow-up repaired
+ * the status strip's own height and the tab bar's wrap below 375 CSS pixels.
+ * Nothing about *this* file's repair or its three rows changed; what changed
+ * is the count beside it. The argument this paragraph makes is unchanged by
+ * the correction, and it is the objection the playtest itself raises to being
+ * turned into a gate. `ui-200-percent-zoom-sweep-ratchet.spec.ts` now holds
+ * the remaining set as a **ceiling** rather than as a target, which is the
+ * shape that forbids a regression without pinning the defect.
+ *
+ * What is asserted here is one
  * invariant that is never honestly false: **a box the player cannot scroll must
  * not be smaller than the content inside it.**
  *

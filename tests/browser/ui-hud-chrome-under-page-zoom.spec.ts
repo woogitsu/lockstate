@@ -57,11 +57,16 @@ import { type Page, expect, test } from './network-changed-fixture';
  * ## What this file does not assert
  *
  * Not the sweep. `playtest-1164-the-200-percent-sweep.playtest.ts` measures all
- * 36 combinations and 13 of them still fail after these two repairs, on a
- * vertical budget the tab bar and the rail cannot both have at the larger
- * scales. Pinning that set would pin the defect in place, which is the
- * objection the playtest itself raises to being made a gate. What is asserted
- * here is two sentences that are never honestly false: **a box the player
+ * 36 combinations and **13 of them failed on the branch that added this file**
+ * -- bound to that commit rather than stated in the present tense, because the
+ * sentence it replaces in `ui-rail-aside-content-floor.spec.ts` was not, and
+ * both rollout documents had to name it as the one figure in the chain a later
+ * reader cannot check. They fail on a vertical budget the strip, the tab bar
+ * and the rail cannot all have at the larger scales. Pinning that set would pin the defect in place, which is the
+ * objection the playtest itself raises to being made a gate --
+ * `ui-200-percent-zoom-sweep-ratchet.spec.ts` is what holds that set, as a
+ * ceiling rather than a target. What is asserted here is two sentences that
+ * are never honestly false: **a box the player
  * cannot scroll must not be smaller than the content inside it**, and **a tab
  * the interface draws must be where a finger can land on it**.
  *
