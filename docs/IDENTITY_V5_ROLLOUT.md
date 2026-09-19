@@ -373,6 +373,33 @@ again, and what clearing it would actually take.
 >
 > **What did not change: the row still fails.** 29 of 36 is a smaller debt, not
 > a cleared one.
+>
+> **AND THE "29 OF 36" IN THIS MARK IS A READING OF `2559eb14`, NOT OF `main`
+> (#1202).** It is right about the tree it names — re-run there a third time it
+> returns `29 of 36` and the same failing set — and it says nothing about any
+> later tree, which is the part a reader supplies for themselves. Same command,
+> same config, on `ab3bf7ba` (v0.0.693): **31 of 36**.
+>
+> **The three combinations this mark records as cleared are the three that came
+> back.** `1280x720@100%`, `1024x768@100%` and `900x600@75%` fail on
+> `ab3bf7ba`, each on `.hud__aside` overflow alone — 34 px, 32 px and 18 px of
+> spill — the same failure mode they had before they were fixed. One went the
+> other way: `390x844@75%` fails on `2559eb14` with two `.ui-tab` centres
+> belonging to the canvas, and passes on `ab3bf7ba`. So *"32 → 29, none
+> added"* is a true sentence about a window that has since closed, and the
+> rollout's one recorded repair to this row did not hold.
+>
+> **Why nothing said so, which is the reusable part.** The mark above exists
+> because an instrument was deleted; this one exists because the instrument
+> that replaced it is a `*.playtest.ts` and no gate collects it — deliberately,
+> and `tests/browser/browser-suites.ts` gives the reason. A number that moves
+> only when a person runs it by hand cannot announce that it has stopped being
+> true, and three combinations regressed inside that silence.
+>
+> **The Git LFS condition recorded above held for these runs as well**, and
+> identically on both trees: no LFS bytes, actor atlases undecodable. The three
+> regressed combinations fail on DOM overflow in `.hud__aside` rather than on
+> anything the canvas does.
 
 ---
 
@@ -801,6 +828,13 @@ the record says so wherever it quotes a number.
   reports, and **32 of 36** on a detached worktree at `d7aab8d8`. The 23 is now
   marked in place at §"Stage 3" and in `docs/VISUAL_IDENTITY.md`, kept rather
   than overwritten.
+
+  **That 29 has since been overtaken on a later tree, and the record is at
+  §"Stage 3" rather than repeated here (#1202).** The short of it: the same
+  committed sweep returns **31 of 36** on `ab3bf7ba` (v0.0.693); the three
+  combinations this row counts as fixed are the three that came back; and this
+  row's own reading is left alone, because it is what stage 8 measured on the
+  tree stage 8 measured.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
   repository does not have. The clause beside it *does* transfer, and was unmet

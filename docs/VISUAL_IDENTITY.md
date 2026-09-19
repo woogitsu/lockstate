@@ -718,6 +718,39 @@ sentence.
    > cleared debt, the delivery's *"Brak utraty treści i działań"* is unmet,
    > and constitution article 8's third element is unmet with it. `d7aab8d8`
    > still carries the price of clearing it.
+   >
+   > **AND THE "29 OF 36" IN THIS MARK IS A READING OF `2559eb14`, NOT OF
+   > `main` (#1202).** It is right about the tree it names: run there a third
+   > time it returns `29 of 36` with the same failing set. What it cannot say,
+   > and does not, is anything about a later tree — and the same committed
+   > sweep, same config, on `ab3bf7ba` (v0.0.693) returns **31 of 36**.
+   >
+   > **The three combinations this mark records as cleared are the three that
+   > came back.** `1280x720@100%`, `1024x768@100%` and `900x600@75%` fail on
+   > `ab3bf7ba`, each on `.hud__aside` overflow alone and nothing else — 34 px,
+   > 32 px and 18 px of spill — which is the failure mode they had before they
+   > were fixed. One went the other way: `390x844@75%` fails on `2559eb14`,
+   > where two `.ui-tab` centres belong to the canvas, and passes on
+   > `ab3bf7ba`. So *"32 → 29, three fixed, none added"* is a true sentence
+   > about a window that has since closed, and a later tree owes its own
+   > measurement rather than a subtraction from this one.
+   >
+   > **How this gap arose is the mark above's own shape, one turn on.** The 23
+   > stopped being re-derivable because its instrument was deleted. The 29
+   > stopped describing the head because the instrument that replaced it is a
+   > `*.playtest.ts`, which no gate collects — deliberately, and
+   > `tests/browser/browser-suites.ts` gives the reason. A figure that moves
+   > only when a person runs it by hand does not announce that it has stopped
+   > being true, and three combinations regressed inside that silence.
+   >
+   > **The Git LFS condition recorded just above held for these runs too**, and
+   > identically on both trees: no LFS bytes, actor atlases undecodable. The
+   > three regressed combinations fail on DOM overflow in `.hud__aside`, which
+   > is not the canvas.
+   >
+   > **What still does not change is that the row fails.** On every tree
+   > measured so far the delivery's *"Brak utraty treści i działań"* is unmet,
+   > and constitution article 8's third element is unmet with it.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked
