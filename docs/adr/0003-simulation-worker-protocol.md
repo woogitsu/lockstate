@@ -187,7 +187,7 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- twenty
+What the test *asserts* is the shape and not any of these numbers -- twenty-one
 integers of counts, every one of them an integer scalar rather than a list, a
 refusal of exactly three scalars, and a serialized payload under a byte
 ceiling -- because the shape is the

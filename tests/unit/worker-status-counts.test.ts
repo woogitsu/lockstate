@@ -332,6 +332,12 @@ describe('publishing the status counts', () => {
       // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
+      // Zero for a second reason, which is why it is asserted beside the line
+      // above rather than assumed to follow it (issue #890): withholding is
+      // per **occupied place**, and this scenario has none. A prison earning
+      // nothing is not a prison having something withheld -- the two are the
+      // same number here and come apart the moment anybody is housed.
+      stateIncomeWithheldTodayMinorUnits: 0,
       // Five guards at the catalogue's 80-a-day guard band (ADR 0042 step 3).
       // Not zero, and that is the point of asserting it here: the wage bill is
       // a fact about who is *employed*, not about who is housed or deployed --
@@ -882,7 +888,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        22 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        23 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -1062,7 +1068,33 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // and not a sample of it. 743 + 18 = **761**, the same headroom every
       // previous raise in this file left, so the next field breaches this one
       // too and the soft limit goes on being felt one field at a time.
-      expect(JSON.stringify(payload).length).toBeLessThan(761);
+      //
+      // **800 and not 761, and the raise is one new field** --
+      // `stateIncomeWithheldTodayMinorUnits`, issue #890's measurement of a
+      // prison paying 40% under its headline grant with no figure for the
+      // shortfall anywhere outside the worker. Re-measured on this tree at
+      // the same worst case every previous raise used:
+      // `payloadJsonBytes=780` at 250 actors and `782` at 1,000, 2,500 and
+      // 5,000 -- still the two-byte digit-count spread between the tiers
+      // rather than growth, which is the property this bound exists to
+      // protect and the one an integer keeps. 782 + 18 = **800**, the same
+      // headroom every previous raise in this file left, so the next field
+      // breaches this one too.
+      //
+      // **The 39 bytes are 38 of spelling and one of value, and that second
+      // number is not a worst case -- stated rather than implied, because
+      // every raise above could say the same and none of them did.**
+      // `"stateIncomeWithheldTodayMinorUnits":` is 36 + 1, the comma is one
+      // more, and this fixture houses nobody, so the value is the single
+      // digit `0`. The field is bounded by
+      // `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x occupied places`, so a
+      // populated prison spends more digits here -- exactly as
+      // `treasuryMinorUnits` and `stateIncomeAccruedTodayMinorUnits` beside
+      // it do, and exactly what the two-byte tier spread this paragraph keeps
+      // quoting already is. The 18 bytes of head room absorb it; a reader
+      // raising this bound next should know they are raising it from a
+      // measurement whose money fields are at their smallest.
+      expect(JSON.stringify(payload).length).toBeLessThan(800);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

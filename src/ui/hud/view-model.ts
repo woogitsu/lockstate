@@ -481,6 +481,25 @@ export interface HudCountsViewModel {
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
   /**
+   * How much of today's grant has been withheld so far because residents have
+   * needs going unmet, in the same minor units -- or **absent because nothing
+   * has published it** (issue #890).
+   *
+   * Published, never computed here, and the reason is sharper than for the
+   * field above: the undiminished per-place rate lives in
+   * `src/simulation/economy/income.ts`, which `src/ui/hud/` may not import
+   * (`tests/unit/ui-hud-messages.test.ts`), and the subtraction has to happen
+   * after both sides are prorated or it disagrees with the chip it explains
+   * for most of every day.
+   *
+   * **Optional, and absent is not `0`.** Absent is a payload written before
+   * this field existed -- every fixture in `tests/browser/` is one -- and `0`
+   * is a prison meeting every resident's needs. `earnedWithheldDescription`
+   * draws nothing in either case, so the two agree on screen and are still
+   * different facts.
+   */
+  readonly stateIncomeWithheldTodayMinorUnits?: number;
+  /**
    * What one in-game day of the current roster will cost, in the same minor
    * units -- or **absent because nothing has published counts yet** (issue
    * #639 ruling 2).

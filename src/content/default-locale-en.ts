@@ -428,6 +428,61 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // budget and no forecast behind it, and the same minor units as `funds`
   // above so the two chips can be read against each other.
   'hud.status.earned-today': 'Earned today',
+  /*
+   * The `Earned today` chip's tooltip and screen-reader text while some of
+   * today's grant is being withheld for unmet needs (issue #890). Drawn only
+   * when the published figure is above zero, so a prison meeting every need
+   * carries no sentence here at all -- `prisonersWithoutBedBadge`'s rule, and
+   * `overdraftBadge`'s: a sentence present in every screenshot is one nobody
+   * reads in the screenshot it matters in.
+   *
+   * **What each clause claims, and where it is true.**
+   *  - *"Unmet needs have withheld {withheld} of today's grant so far"*:
+   *    `{withheld}` is `counts.stateIncomeWithheldTodayMinorUnits`, which
+   *    `projectStatusStrip` computes as
+   *    `stateIncomeAccruedByTick(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
+   *    occupied places, tick)` less the accrual the chip itself shows
+   *    (`src/simulation/presentation/status-strip-projection.ts`). The first
+   *    term is what the day would have paid by now had no resident had an
+   *    unmet need -- `stateIncomeForPrisonerDayAt` subtracts
+   *    `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` per unmet need from
+   *    that same headline rate and nothing else touches it -- so unmet needs
+   *    are the whole of the difference, and "so far" is the proration both
+   *    terms carry. It can never be negative: the headline is the largest
+   *    value `stateIncomeForPrisonerDay` returns, and `floorDiv` is monotonic
+   *    in its numerator.
+   *  - *"the state pays less for a resident whose needs are going unmet"*:
+   *    `stateIncomeForOccupiedPlaces` folds `stateIncomeForPrisonerDay(
+   *    unmetNeedCount(needs, index))` over the occupied places, so the charge
+   *    is per resident and counted from that resident's own six needs
+   *    (`src/simulation/economy/income.ts`). The same predicate,
+   *    `isNeedUnmetForStateIncome`, is what the Regime roster already tones a
+   *    need with, so the sentence and the tone cannot disagree about which
+   *    needs count.
+   *  - *"and meeting one puts that share back"*: the accrual is **derived,
+   *    never accumulated** -- a pure function of the tick and the prison's
+   *    current state -- so the moment a need stops being unmet the whole
+   *    elapsed day is restated at the higher rate and this figure falls with
+   *    it. That is the same property `hud.status.earned-today`'s own key
+   *    records as its one honest caveat, read the other way round.
+   *
+   * **No rate and no threshold is quoted**, for
+   * `hud.status.funds-treasury-floor-exhausted`'s recorded reason:
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` has already moved
+   * twice in one day (ADR 0064's amendments of 2026-09-03 and 2026-09-04), so
+   * a figure written into this sentence would have been false within a day of
+   * being written.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04 (*"Sam
+   * decyduj zawsze, jak zacznę grać to ujednolicimy"*), so the voice is open
+   * to a unifying pass; the clauses above are not. **What is still the
+   * owner's is loudness** -- whether this should also be a badge visible
+   * without hovering, which #890's own re-measurement names as the judgement
+   * worth putting to them. Nothing here pre-empts that: a description costs
+   * no chip width and paints no colour.
+   */
+  'hud.status.earned-withheld':
+    "Unmet needs have withheld {withheld} of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',

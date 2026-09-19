@@ -1188,6 +1188,34 @@ export const statusCountsSchema = z
      */
     stateIncomeAccruedTodayMinorUnits: countSchema,
     /**
+     * How much of today's grant has been withheld so far because residents
+     * have needs going unmet, in the same minor units
+     * ([#890](https://github.com/woogitsu/lockstate/issues/890),
+     * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)).
+     *
+     * `stateIncomeAccruedTodayMinorUnits` above is what the day has paid;
+     * this is what the same day would have paid with every need met, minus
+     * that. #890 measured the withholding at **40% of the grant at steady
+     * state** with nothing outside the worker able to name a minor unit of
+     * it -- which is what this field is for.
+     *
+     * **Optional for the reason `treasuryOverdraftFloorMinorUnits` above is**:
+     * a required member would reject every payload written before this field
+     * existed, and the fixtures this channel is tested against are such
+     * payloads. `projectStatusStrip` always produces it.
+     *
+     * **It is not derivable from the figures beside it**, which is the
+     * finding that put it on the wire rather than leaving the host to
+     * subtract. The undiminished per-place rate lives in
+     * `src/simulation/economy/income.ts` and `src/ui/hud/` may not import the
+     * simulation; and `stateIncomeAccruedByTick` floors, so a host that had
+     * the rate and subtracted before prorating would print a number that
+     * disagrees with the chip beside it for most of every day. See
+     * `StatusStripViewModel.counts.stateIncomeWithheldTodayMinorUnits` for the
+     * measured tick counts.
+     */
+    stateIncomeWithheldTodayMinorUnits: countSchema.optional(),
+    /**
      * What one in-game day of the current roster costs, in the same minor
      * units ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
      * step 3).

@@ -233,6 +233,15 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
           ? {}
           : { treasuryOverdraftFloorMinorUnits: counts.treasuryOverdraftFloorMinorUnits }),
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        /*
+         * Conditionally spread for `treasuryOverdraftFloorMinorUnits`'s exact
+         * reason above: optional on both sides, so an unguarded assignment
+         * would put a present-but-`undefined` key on the view model for every
+         * payload written before this field existed (issue #890).
+         */
+        ...(counts.stateIncomeWithheldTodayMinorUnits === undefined
+          ? {}
+          : { stateIncomeWithheldTodayMinorUnits: counts.stateIncomeWithheldTodayMinorUnits }),
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and it
          * is the figure the collapsed `On the payroll` header states (issue

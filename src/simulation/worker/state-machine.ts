@@ -564,7 +564,7 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- twenty integers of counts beside at most one refusal record, which is
+   * -- twenty-one integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
    * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`
@@ -577,7 +577,10 @@ export class SimulationWorkerStateMachine {
    * nineteen until the owner's ruling 18 of 2026-08-31 added
    * `treasuryOverdraftFloorMinorUnits`, the treasury's own floor, without which
    * the strip could say the balance was negative and not how much of the
-   * facility was left. And
+   * facility was left, and twenty until issue #890 added
+   * `stateIncomeWithheldTodayMinorUnits` -- how much of today's grant unmet
+   * needs have kept back, which the prison's own roster showed the cause of
+   * and no readout anywhere showed the money of. And
    * the number is checked against the projection's own schema rather than
    * trusted (`tests/foundation/documentation-claims-contract.test.ts`).
    *

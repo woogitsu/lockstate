@@ -18,7 +18,11 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
-import { stateIncomeAccruedByTick, stateIncomeForOccupiedPlaces } from '../economy/income';
+import {
+  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  stateIncomeAccruedByTick,
+  stateIncomeForOccupiedPlaces,
+} from '../economy/income';
 import { rungFloorMinorUnits } from '../economy/treasury';
 import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
 import { PRISON_CONDITIONS, type PrisonCondition } from '../protocol/types';
@@ -603,6 +607,35 @@ export interface StatusStripViewModel {
      */
     readonly stateIncomeAccruedTodayMinorUnits: number;
     /**
+     * How much of today's grant the prison has *not* earned so far, in the
+     * same minor units, because residents have needs going unmet
+     * ([#890](https://github.com/woogitsu/lockstate/issues/890)).
+     *
+     * `stateIncomeAccruedByTick(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
+     * occupied places, tick) - stateIncomeAccruedTodayMinorUnits`: what the
+     * day would have paid by now had every resident's needs been met, less
+     * what it has paid. `0` exactly when no occupied place has an unmet need
+     * -- and `0` for the whole day whenever
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is suspended at `0`,
+     * which is a state this prison has actually been in (ADR 0064's
+     * amendments of 2026-09-03 and 2026-09-04).
+     *
+     * **Why the subtraction happens here and not on the main thread.** #890
+     * measured the withholding at 40% of the grant at steady state with no
+     * figure for it anywhere outside the worker, and the HUD cannot make one:
+     * `src/ui/hud/` may not import the simulation
+     * (`tests/unit/ui-hud-messages.test.ts`), so the undiminished rate is not
+     * reachable there, and even with it the arithmetic would be wrong --
+     * `stateIncomeAccruedByTick` floors, so subtracting before prorating
+     * disagrees with subtracting after for most of the day. The emit site
+     * carries the measured tick counts.
+     *
+     * Never negative: the headline rate is the largest value
+     * `stateIncomeForPrisonerDay` can return, and `floorDiv` is monotonic in
+     * its numerator.
+     */
+    readonly stateIncomeWithheldTodayMinorUnits: number;
+    /**
      * What one in-game day of the current roster costs, in the same minor
      * units (ADR 0042 step 3).
      *
@@ -901,6 +934,13 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   // `counts.isFreshUnfurnishedPrison` below is this value, and its schema
   // member carries the measurement.
   const isFreshUnfurnishedPrison = source.prisoners.roomInstances.totalResidentCapacity === 0;
+  // One accrual, read twice: `stateIncomeAccruedTodayMinorUnits` below is this
+  // value and `stateIncomeWithheldTodayMinorUnits` beside it is measured
+  // against it, so the two cannot disagree about what the day has paid.
+  const accruedTodayMinorUnits = stateIncomeAccruedByTick(
+    stateIncomeForOccupiedPlaces(source.prisoners, occupiedPlaceIds),
+    source.tick,
+  );
   const conditions = computeStandingPrisonConditions({
     treasuryMinorUnits,
     treasuryOverdraftFloorMinorUnits,
@@ -977,10 +1017,22 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // `PrisonerDayGrantSource`. The `source.rooms === undefined` guard is
       // kept because it is the *session's* statement that it has no rooms, and
       // it reports 0 for the same reason the treasury's absent case does.
-      stateIncomeAccruedTodayMinorUnits: stateIncomeAccruedByTick(
-        stateIncomeForOccupiedPlaces(source.prisoners, occupiedPlaceIds),
-        source.tick,
-      ),
+      stateIncomeAccruedTodayMinorUnits: accruedTodayMinorUnits,
+      // The same accrual run against the undiminished rate, minus the accrual
+      // above (issue #890). Both sides are prorated *before* the subtraction
+      // and that ordering is the whole of why this is computed here rather
+      // than on the main thread: `stateIncomeAccruedByTick` floors, so
+      // `accrued(headline) - accrued(paid)` and `accrued(headline - paid)`
+      // are different numbers for most of the day -- measured at 600 of a
+      // day's 2,400 ticks for ten places with three unmet needs each, and
+      // 1,260 of 2,400 for nine. Only the first form is the difference
+      // between the two figures a player can actually see, so only the first
+      // form can be published beside the chip it explains.
+      stateIncomeWithheldTodayMinorUnits:
+        stateIncomeAccruedByTick(
+          STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * occupiedPlaceIds.length,
+          source.tick,
+        ) - accruedTodayMinorUnits,
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
       conditions,
