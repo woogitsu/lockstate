@@ -805,7 +805,20 @@
      are only correct while they agree. Equal to the Build panel's value today
      and deliberately not an alias of it -- the two panels have different floors
      to sum, so a change to one must not silently move the other. */
-  --hud-rooms-gutter: var(--space-2);}
+  --hud-rooms-gutter: var(--space-2);
+  /* The ceiling over the Regime panel's classification editor: the tallest its
+     toggle list may be laid out at before it scrolls inside its own box.
+     A *ceiling* where the two above are floors, because this list is the one
+     compressible block in a panel that is `flex: 0 0 auto`: it cannot hand its
+     excess to the rail, so what the rail cannot afford has to be refused here
+     rather than absorbed there. Three rows, and the number is measured rather
+     than chosen -- see `.hud-regime__editor-list` in `hud.css` for the rail
+     arithmetic at each of the five viewports the browser suite visits, and for
+     why the short-viewport block below drops it to one.
+     A token rather than a literal for `--hud-rooms-catalogue-floor`'s reason:
+     the rule that spends it and the `@media (max-height: 700px)` block that
+     overrides it are only correct while they name the same thing. */
+  --hud-regime-editor-ceiling: calc(3 * var(--tap-target));}
 
 /* ------------------------------------------------------------------ */
 /* Layer 1b: the four surfaces that keep the denser step               */
