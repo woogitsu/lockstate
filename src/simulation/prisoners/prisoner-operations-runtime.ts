@@ -615,6 +615,36 @@ export class PrisonerOperationsRuntime {
     this.records.solitarySanctionEndTick[index] = Math.max(currentEnd, tick) + this.sanctionPolicy.solitaryTermTicks;
   }
 
+  /**
+   * Records that `entityId` was hurt in an incident (issue #589, the owner's
+   * ruling of 2026-09-17).
+   *
+   * Called from `IncidentResponseSystem`'s `onPrisonerInjured` port, once per
+   * id in a lapsed incident's `outcome.injuredEntityIds`. Idempotent: a
+   * prisoner hurt twice before a course of treatment completes is injured, not
+   * more injured, because the ruling bought a boolean and no severity.
+   *
+   * **Silently does nothing for an id that names nobody living**, the same
+   * guard and the same reason `imposeSolitarySanction` above carries -- and
+   * here it also does the work of a type test. `IncidentRecord.participantIds`
+   * is a list of `EntityId`s that this runtime's `EntityStore` may not hold at
+   * all: a save restored between an incident opening and closing, an escapee
+   * `lapse` released moments earlier on the same list, or an id belonging to
+   * some other population. `isAlive` answers the only question that matters --
+   * is this a prisoner this runtime still holds -- and answers it without this
+   * system having to know what else an entity id can be.
+   */
+  public markInjured(entityId: EntityId): void {
+    if (!this.entityStore.isAlive(entityId)) return;
+    this.records.injured[this.entityStore.getIndex(entityId)] = 1;
+  }
+
+  /** Whether `entityId` is hurt and not yet treated. `false` for an id that names nobody living, for `isServingSolitarySanction`'s reason: a stale reference must not answer for an entity this runtime no longer holds. */
+  public isInjured(entityId: EntityId): boolean {
+    if (!this.entityStore.isAlive(entityId)) return false;
+    return this.records.injured[this.entityStore.getIndex(entityId)] === 1;
+  }
+
   /** `CellSharingView` for one resident, read at the index the caller already has -- the same shape `SanctionSystem.sharingViewOf` and `IntakeSystem`'s own private helper build, extracted here because `relocateResidentsOutOf` is a third caller of the identical read. */
   private sharingViewOf(entityId: EntityId, index: number): CellSharingView {
     return { entityId, riskTier: this.records.riskTier[index]! };

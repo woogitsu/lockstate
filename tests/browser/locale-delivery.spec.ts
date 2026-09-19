@@ -148,11 +148,48 @@ test.describe('a browser that asks for Polish and cannot have it', () => {
  * second `it` in this block is the gate #1192 asks for: the wrap spec, run in
  * the locale that has the defect.
  */
+/**
+ * **RE-POINTED FROM 375x812 TO 768x812 ON 2026-09-16, AND EVERY MEASUREMENT
+ * ABOVE IS KEPT BECAUSE IT IS WHAT THE OWNER'S RULING WAS MADE AGAINST.**
+ *
+ * They ruled that below 721px a tab shows its icon and not its name (#1192,
+ * `docs/VISUAL_IDENTITY.md` item 5). At 375x812 every label is now a 1px
+ * `.ui-sr-only` box, so **both tests below would have stayed green and meant
+ * nothing** -- five 1px boxes never overlap and never wrap. That is the
+ * vacuous-green failure this file's own comments warn about elsewhere, and the
+ * answer is to follow the label to where it is still drawn rather than to
+ * delete the gate with it.
+ *
+ * **721x420, and the short height is not a typo.** Above 720px the navigation
+ * is laid out as a *column* wherever it fits (`navigationPlacement` in
+ * `src/ui/hud/hud-layout.ts` is a fit test, not a breakpoint), and a column
+ * cannot have two names side by side -- measured at 768x812 the five labels
+ * stack and every "gap" reads -46 to -76px, so the overlap test would have
+ * failed on its own arithmetic while nothing was wrong. 721px is the narrowest
+ * width above the break, and 420px is short enough that the five tabs do not
+ * fit a rail, which is the one state where Polish names sit beside each other
+ * above the break at all.
+ *
+ * **AND A WEAKNESS THAT HAS TO BE DECLARED RATHER THAN LEFT TO BE
+ * REDISCOVERED, MEASURED 2026-09-16: MUTATING `white-space: nowrap` IN
+ * `primitives.css` NO LONGER TURNS THE WRAP TEST BELOW RED.** At 721x420 the
+ * bar is `fit-content` and every tab is wider than its own name (103.41px
+ * against `Zarządzaj`'s 78.41), so nothing is squeezed and nothing wraps with
+ * or without that declaration. The widths where the bar *did* squeeze a tab
+ * are the widths where the name is no longer drawn. Both tests below are
+ * regression gates on the layout, not mutation gates on that declaration.
+ *
+ * What is no longer gated
+ * anywhere is the phone bar's *tracking*, because there is no phone label to
+ * track; what replaces it at 375x812 is
+ * `ui-shell.spec.ts`'s "every tab still has an accessible name", plus the
+ * Polish test at the foot of this block.
+ */
 test.describe('the Polish section names on a phone', () => {
   test.use({ locale: 'pl-PL' });
 
-  test('no two adjacent tab labels overlap at 375x812', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test('no two adjacent tab labels overlap at 721x420', async ({ page }) => {
+    await page.setViewportSize({ width: 721, height: 420 });
     await page.goto(APP_URL);
     await page.waitForSelector('.hud');
     // The bar is measured in Polish or the measurement is about nothing.
@@ -186,7 +223,7 @@ test.describe('the Polish section names on a phone', () => {
     ).toEqual([]);
   });
 
-  test('no section name wraps to a second line at 375x812 (#1192)', async ({ page }) => {
+  test('no section name wraps to a second line at 721x420 (#1192)', async ({ page }) => {
     /*
      * `ui-shell.spec.ts`'s wrap test, in the locale that finds the defect.
      *
@@ -204,7 +241,7 @@ test.describe('the Polish section names on a phone', () => {
      * rather than a pinned pixel count, for the reason the overlap test above
      * pins no gap floor.
      */
-    await page.setViewportSize({ width: 375, height: 812 });
+    await page.setViewportSize({ width: 721, height: 420 });
     await page.goto(APP_URL);
     await page.waitForSelector('.hud');
     await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
@@ -227,5 +264,45 @@ test.describe('the Polish section names on a phone', () => {
       'these Polish section names wrap, and every line they wrap to comes off the rail',
     ).toEqual([]);
     expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
+  });
+
+  /**
+   * **The Polish section names reach a screen reader on a phone, where they no
+   * longer reach the screen** (#1192, the owner's ruling of 2026-09-16).
+   *
+   * `ui-shell.spec.ts` asserts the same property in the default catalogue.
+   * This one exists for the same reason the two tests above it do: the default
+   * catalogue is not where a localisation defect shows. A tab whose accessible
+   * name fell back to English, or to nothing, would leave a Polish player with
+   * five unnamed glyphs and no other navigation surface on the device.
+   */
+  test('every tab is announced by its Polish name at 375x812', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(APP_URL);
+    await page.waitForSelector('.hud');
+    await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
+
+    const sections = [
+      ['overview', 'Przegląd'],
+      ['build', 'Buduj'],
+      ['zones', 'Strefy'],
+      ['manage', 'Zarządzaj'],
+      ['day-plan', 'Plan dnia'],
+    ] as const;
+    for (const [id, name] of sections) {
+      const tab = page.locator(`.hud__tabs .ui-tab[data-tab="${id}"]`);
+      await expect(tab, `the ${id} tab is not on screen`).toBeVisible();
+      await expect(tab, `the ${id} tab reaches a screen reader as nothing`).toHaveAccessibleName(name);
+    }
+
+    // Not vacuous the other way either: the names really are off the screen
+    // here, so what the assertions above read is the accessibility tree and
+    // not the drawn bar.
+    const drawn = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map(
+        (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
+      ),
+    );
+    expect(drawn, 'the Polish section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
   });
 });

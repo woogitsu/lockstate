@@ -165,8 +165,28 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   // above.** It read: *"... and names #99's salvage destination as what would
   // consume it."* #99 is still unbuilt; a different consumer arrived.
   'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. Still in no `DEFAULT_ACTIONS` entry and in no other room's requirements, as `src/simulation/construction/definition.ts` says -- but read since ADR 0093 by `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`, `STORAGE_ROOM_CAPABILITY`), which requires a storeroom to hold it before it will be the destination of a carry. #99's salvage destination is still unbuilt.",
-  'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
-  'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
+  // **Corrected the same way and for the same reason as `delivery-access` and
+  // `item-storage` above: the entry stays because this list is about *action*
+  // gating, and the clause that said nothing reads it is falsified.** It read:
+  // *"No action treats or medicates a prisoner; the health/treatment system
+  // that would gate on it does not exist."* Both halves are now false. #589
+  // (the owner's ruling of 2026-09-17) built the treatment half, and
+  // `ActionSystem.requiredDurationOf` reads this capability off the room
+  // instance a prisoner is being treated in.
+  'medical-supply': "Declared by `object.medicine-cabinet`, required by `room.infirmary`, so the containment join reads it; no action gates on it, because one action consumes one capability (#326) and `action.infirmary-treatment` consumes `'medical-treatment'` -- the beds are what bound how many may be treated at once and a cabinet is not a place to lie down. It is **not** unread: `ActionSystem.requiredDurationOf` (`src/simulation/prisoners/action-system.ts`, `MEDICAL_SUPPLY_CAPABILITY` in `src/simulation/prisoners/injury.ts`) halves a course of treatment in a room whose derived `objectCapabilities` hold it, so a stocked infirmary treats in 1,200 ticks and a bare one in 2,400.",
+  // `medical-treatment` left this list at #589 and its entry is removed rather
+  // than reworded, which is what the stale-entry gate below asks for.
+  // **Both directions, because the half of its reason that is not about action
+  // gating is untouched.** Its read was: *"Declared by `object.medical-bed`,
+  // required by `room.infirmary`. It is load-bearing in the containment join
+  // and `src/simulation/construction/definition.ts` explains the asymmetry it
+  // produces -- a plain `object.bed` cannot satisfy an infirmary's requirement
+  // while a medical bed can satisfy a cell's -- but no action names it, so
+  // nothing a prisoner does depends on it."* The containment join and the
+  // asymmetry are exactly as they were; what changed is the last clause --
+  // `action.infirmary-treatment` names it, so the summed footprint width of an
+  // infirmary's beds is now the ceiling on how many prisoners it treats at
+  // once.
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",
   // **This reason named an action that has never existed**, and the correction
   // is kept in both directions per `docs/AGENT_WORKFLOW.md` section 4. It read:
@@ -210,7 +230,16 @@ describe('an object capability is declared and gated on, or it is accounted for'
       // require `'food-preparation'`, so one capability crosses from the
       // declared-only side to the required side. `declared` does not move --
       // no object gained or lost a capability.
-    }).toEqual({ declared: 19, required: 8, declaredNotRequired: 11, requiredNotDeclared: 0 });
+      //
+      // `required` 8 -> 9 and `declaredNotRequired` 11 -> 10 at #589:
+      // `action.infirmary-treatment` is the first entry in `DEFAULT_ACTIONS` to
+      // require `'medical-treatment'`, so one capability crosses from the
+      // declared-only side to the required side. `declared` does not move --
+      // no object gained or lost a capability -- and `'medical-supply'` does
+      // not move either: it gained a *reader* rather than an action gate, so
+      // its entry above is corrected and kept, exactly as `delivery-access`
+      // and `item-storage` were.
+    }).toEqual({ declared: 19, required: 9, declaredNotRequired: 10, requiredNotDeclared: 0 });
   });
 
   it('cannot pass vacuously on an empty catalogue or an empty scan', () => {
@@ -453,6 +482,10 @@ describe('the message-key namespaces are counted, and no call site names one tha
       namespacesWithACallSite: declaredNamespaces.length - namespacesWithoutCallSite.length,
       namespacesWithoutACallSite: namespacesWithoutCallSite.length,
       labelsWithoutACallSite: labelsWithoutCallSite,
+      // 178 at #589: `action.infirmary-treatment` is one label added to the
+      // existing `action` namespace, so `namespaces` does not move, and the
+      // `action` namespace already has a call site so neither unreachable
+      // count moves either.
     }).toEqual({
       namespaces: 42,
       // 173 until ADR 0061 gave `ContrabandState` a third member,
@@ -483,7 +516,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // to label exactly the ids its declaration declares, so an entry has to
       // exist the moment the catalogue holds one. `action.kitchen-work`'s
       // label is still a draft; only the carry's was ruled on.
-      labels: 177,
+      labels: 178,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The
       // Staff panel's roster block labels what each staff member is doing, and

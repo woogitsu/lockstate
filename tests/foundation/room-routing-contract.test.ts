@@ -117,8 +117,26 @@ const UNROUTED: Readonly<Record<string, string>> = {
     '`object.waste-bin`\'s `waste-disposal` capability has no reader, and nothing in `src/simulation/` produces waste for it to take: there is no quantity a bin could hold and no job that empties one.',
   'room.holding-cell':
     'Its only authored object requirement is `object.bench`, which declares `seating` and `recreation` and not `sleep-surface` -- so `deriveRoomCapacity` gives every holding cell `residentCapacity: 0` and `findAvailableResidence` can never answer one. Naming it in an `AccommodationPolicy` alone would change nothing.',
-  'room.infirmary':
-    '`object.medical-bed`\'s `medical-treatment` capability has no reader, and nothing in `src/simulation/` models injury or illness -- `IncidentResponseSystem` records an assault\'s instigator and no victim state at all. Its `sleep-surface` beds do give it a `residentCapacity`, which no `AccommodationPolicy` names; `protocol/types.ts` records that asymmetry on `accommodationCapacity`.',
+  // `room.infirmary` left this list at #589 (the owner's ruling of
+  // 2026-09-17), and by the widest route this file has: `action.infirmary-treatment`
+  // names it in `src/simulation/prisoners/actions.ts`, so a prisoner is
+  // *routed into* it rather than merely named near it. Its entry is removed
+  // rather than reworded, which is what the stale-entry gate below asks for.
+  // **Both directions, because one clause of its reason is still true.** It
+  // read: *"`object.medical-bed`'s `medical-treatment` capability has no
+  // reader, and nothing in `src/simulation/` models injury or illness --
+  // `IncidentResponseSystem` records an assault's instigator and no victim
+  // state at all. Its `sleep-surface` beds do give it a `residentCapacity`,
+  // which no `AccommodationPolicy` names; `protocol/types.ts` records that
+  // asymmetry on `accommodationCapacity`."* The first sentence is falsified on
+  // both counts -- the capability is the new action's
+  // `requiredObjectCapability`, and `PrisonerRecordComponent.injured` is
+  // written from `IncidentResponseSystem`'s `onPrisonerInjured` port for every
+  // id in a lapsed incident's `injuredEntityIds`. **The second sentence is
+  // untouched**: nothing accommodates anybody in an infirmary, the residency
+  // its beds derive is still named by no `AccommodationPolicy`, and the
+  // asymmetry `protocol/types.ts` records still stands. Being routed into a
+  // room for an action is not living in it.
   'room.reception':
     "`INTAKE_STAGES`' `'reception'` is a stage of the arrival record rather than a place (`src/simulation/prisoners/components.ts`), and the only room ids `IntakeSystem` names are its accommodation targets.",
   'room.security-office':
@@ -184,10 +202,16 @@ describe('every catalogue room is either routed into a prisoner day or accounted
       unrouted,
     }).toEqual({
       declared: 18,
+      // `room.infirmary` is the eighth, at #589: `action.infirmary-treatment`
+      // targets it, so an injured prisoner is walked to a medical bed. It is
+      // the first room to arrive here for a reason that is not a need -- the
+      // action serves none -- which is why `ActionSystem` promotes it on a
+      // rule about the flag rather than on a score.
       routedByAction: [
         'room.canteen',
         'room.classroom',
         'room.common-room',
+        'room.infirmary',
         'room.kitchen',
         'room.laundry',
         'room.shower-room',
@@ -199,7 +223,6 @@ describe('every catalogue room is either routed into a prisoner day or accounted
         'room.delivery-bay',
         'room.garbage-room',
         'room.holding-cell',
-        'room.infirmary',
         'room.reception',
         'room.security-office',
         'room.staff-room',
@@ -287,6 +310,15 @@ describe('every catalogue room is either routed into a prisoner day or accounted
       'action.classroom-education': 2,
       'action.laundry-work': 4,
       'action.kitchen-work': 4,
+      // 1, at #589, and it is the smallest ceiling in this table by a factor of
+      // two: `room.infirmary` requires one `object.medical-bed`, whose
+      // `footprint.width` is 1, so an infirmary furnished exactly as the Rooms
+      // panel asks treats **one** prisoner at a time. A second bed buys a
+      // second place. That is the number the mechanic turns on -- a prison that
+      // riots often and builds one bed has a queue -- and it is asserted here
+      // so that a footprint or a `minQuantity` changing under it fails with the
+      // number it moved to.
+      'action.infirmary-treatment': 1,
     });
 
     for (const [actionId, ceiling] of Object.entries(ceilings)) {

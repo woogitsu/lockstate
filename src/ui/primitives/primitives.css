@@ -457,11 +457,18 @@
  *
  * `nowrap` alone is not the whole fix and was measured failing: the five
  * buttons are already flex-shrunk below their own `min-width` at that
- * viewport, so the unwrapped labels **overlap by 2.50px**. `hud.css`'s phone
- * block buys the width back with `--label-tracking-tight`, and that token's
- * docblock carries the measurement. The rail placement has had this
- * declaration (with an ellipsis) since the layout stage; this is the bar
- * placement catching up.
+ * viewport, so the unwrapped labels **overlap by 2.50px**. The rail placement
+ * has had this declaration (with an ellipsis) since the layout stage; this is
+ * the bar placement catching up.
+ *
+ * **THE SENTENCE REMOVED FROM THE PARAGRAPH ABOVE SAID `hud.css`'s phone block
+ * buys the width back with `--label-tracking-tight`, AND IT NO LONGER
+ * DESCRIBES THE STYLESHEET.** On 2026-09-16 the owner ruled that below 721px a
+ * tab shows its icon and not its name (#1192), so that block now hides this
+ * element instead of tracking it and the overlap it was paying for cannot
+ * happen there. `nowrap` stays and is not thereby decorative: it is what keeps
+ * a section name on one line at **every viewport above the break**, which is
+ * where the name is still drawn, and `.ui-sr-only` sets it too.
  */
 .ui-tab__label {
   font-family: var(--font-ui);

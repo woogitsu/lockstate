@@ -937,6 +937,26 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
 export const PENDING_DELIVERY_ROW_LIMIT = 3;
 
 /**
+ * How long a place in the pending-deliveries list stays blank after the
+ * purchase it named leaves, before another purchase may appear there.
+ *
+ * The same figure and the same argument as `BUILD_QUEUE_ROW_SETTLE_MS` one
+ * block over, and deliberately the same number rather than a second judgement:
+ * both are claims about how long a person takes to read a short label and press
+ * the control beside it, and nothing measured here distinguishes the two lists.
+ * Read that constant's header for where the ~800ms lower bound comes from and
+ * for what about the figure is judgement rather than measurement.
+ *
+ * **Why this list needed it too**, which issue #877 named and left unmeasured:
+ * a delivery leaves the window by *arriving*, `PROCUREMENT_DELIVERY_DELAY_TICKS`
+ * apart, and the rows are the three landing soonest -- so the head of this list
+ * is replaced on its own schedule with no press from the player, exactly as the
+ * queue's is when the crew finishes a wall. What a misfire costs here is a
+ * refund of the wrong amount on a purchase the player did not mean to cancel.
+ */
+export const PENDING_DELIVERY_ROW_SETTLE_MS = BUILD_QUEUE_ROW_SETTLE_MS;
+
+/**
  * What one pending delivery says it is, and what cancelling it gives back.
  *
  * Pure and exported for the reason `formatBuildQueueOrderText` is: the default
@@ -1895,13 +1915,29 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * busy group, and `createBusyGroup` has `add` and no `remove`, so a block that
    * built a row per delivery would grow that group without bound over a session
    * and keep every dead button in it.
+   *
+   * **`orderId` is read at press time, and that is necessary and was never
+   * sufficient** -- the same correction `RosterRow` in `staff-panel.ts` records
+   * about itself, left unmade here when #877 closed because that pass never
+   * reached this block. Reading at press time makes the id **current**, not
+   * **the one the player read**. This block bound `rows[i]` to
+   * `deliveries[i]`, and a delivery leaves the window by *landing*, on the
+   * procurement clock and with no press from the player, so the head of the list
+   * was replaced while the player was reading it and every surviving purchase
+   * slid up one row. The `Cancel` under the pointer then refunded a different
+   * purchase for a different amount.
+   *
+   * `assignPooledRows` is what closes it, and `freedAtMs` is the state that rule
+   * needs from this row. Gated by `tests/browser/ui-pooled-rows-aim.spec.ts`.
    */
   interface DeliveryRow {
     readonly element: HTMLElement;
     readonly label: HTMLSpanElement;
     readonly cancel: ActionButton;
-    /** The delivery this row currently names, or `undefined` while it is hidden. */
+    /** The delivery this row currently names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `PENDING_DELIVERY_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const deliveryRows: readonly DeliveryRow[] = Array.from({ length: PENDING_DELIVERY_ROW_LIMIT }, (): DeliveryRow => {
@@ -1923,6 +1959,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         },
       }),
       orderId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(element('div', { className: 'hud-build__delivery-text', children: [label] }), row.cancel.element);
     row.element.hidden = true;
@@ -2289,8 +2326,30 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     deliveriesBlock.hidden = shown === undefined;
     if (shown === undefined) {
       for (const row of deliveryRows) {
+        /*
+         * **The settle window is forgotten here rather than stamped, and that
+         * is `paintQueue`'s correction one block over rather than a new
+         * decision.** This branch is *"nothing has asked"* and *"nothing is on
+         * the way"*, and `src/main.ts:2538` reaches it every time the player
+         * leaves the Build tab, because nothing refreshes this list from
+         * another tab. Stamping here is what #860's first version shipped for
+         * the queue: every place came back inside its window, **refused the
+         * publication that arrives when the player returns**, and -- with
+         * nothing further to publish until a delivery lands -- left the block
+         * drawing no rows at all. Measured on this branch before the
+         * correction: three purchases out, tab away, tab back, and
+         * `probe().rows` is `[]`.
+         *
+         * The rule is `pooled-row-binding.ts`'s: a place with **no box** carries
+         * no settle window, because the window exists so that a label the
+         * player may have read is not replaced under their pointer, and a place
+         * with no box had no label to read.
+         */
+        row.freedAtMs = undefined;
         row.element.hidden = true;
         row.orderId = undefined;
+        row.cancel.setUnavailable(true);
+        delete row.element.dataset['delivery'];
       }
       deliveriesCount.textContent = '';
       deliveriesMore.textContent = '';
@@ -2314,15 +2373,71 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // translated text.
     deliveriesBlock.dataset['pending'] = String(shown.total);
 
+    /*
+     * Which row names which delivery -- `assignPooledRows`, not
+     * `shown.deliveries[index]`, and the substitution is #860's fix applied to
+     * the list issue #877 named beside the two in the Staff panel and left
+     * unmeasured.
+     *
+     * The hazard is the queue's, arriving by a different route. A delivery
+     * leaves this window by **landing**, on the procurement clock and with no
+     * press from the player, so the head of the list is replaced while the
+     * player is reading it and every surviving purchase used to slide up one
+     * row. The `Cancel` beside the label then refunded a different purchase for
+     * a different amount -- and the id read at press time was that different
+     * purchase, so nothing on the code path could detect it. The remedy is the
+     * one that module's header argues for: a *place* names one purchase for as
+     * long as that purchase is in the window, and a new one only appears in a
+     * place that has been visibly blank for `PENDING_DELIVERY_ROW_SETTLE_MS`.
+     */
+    const byOrderId = new Map(shown.deliveries.map((delivery) => [delivery.orderId, delivery]));
+    const nowMs = performance.now();
+    const assignments = assignPooledRows(
+      deliveryRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
+      shown.deliveries.map((delivery) => delivery.orderId),
+      nowMs,
+      PENDING_DELIVERY_ROW_SETTLE_MS,
+    );
+
+    let drawn = 0;
     for (const [index, row] of deliveryRows.entries()) {
-      const delivery = shown.deliveries[index];
-      if (delivery === undefined) {
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.element.hidden = true;
         row.orderId = undefined;
+        row.label.textContent = '';
+        row.cancel.setUnavailable(true);
+        delete row.element.dataset['delivery'];
         continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * This place names nothing: its delivery has just landed or been
+         * cancelled, or it is still inside its settle window, or a row below it
+         * is occupied and giving this box up would slide that row up into
+         * whatever pointer is resting there -- which is the same defect by
+         * geometry instead of by binding. It keeps its box and loses everything
+         * else, and `row.orderId === undefined` in the handler above is the
+         * authority that stops a press; `setUnavailable` is the signal, for the
+         * reason the queue's own hold-open branch records about
+         * `createBusyGroup`.
+         */
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
+        row.orderId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        row.cancel.setUnavailable(true);
+        row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildDeliveryCancel));
+        delete row.element.dataset['delivery'];
+        continue;
+      }
+      const delivery = byOrderId.get(assignment.itemId);
+      if (delivery === undefined) continue;
+      drawn += 1;
       row.orderId = delivery.orderId;
       row.element.hidden = false;
+      row.cancel.setUnavailable(false);
       row.label.textContent = formatPendingDeliveryText(
         t,
         delivery,
@@ -2344,10 +2459,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       );
     }
 
-    // How many are behind the last row, and no control to reach them: the rows
-    // are the deliveries landing soonest, so they are the ones whose refunds are
-    // about to stop being available, and the rest come into view as those land.
-    const unlisted = Math.max(0, shown.total - shown.deliveries.length);
+    /*
+     * How many are behind the last row, and no control to reach them: the rows
+     * are the deliveries landing soonest, so they are the ones whose refunds are
+     * about to stop being available, and the rest come into view as those land.
+     *
+     * Counted against the rows this pass actually **drew** rather than against
+     * `shown.deliveries.length`, for the reason the queue's own "and N more"
+     * line is: a place holding its box open for a publication is a place the
+     * arriving purchase could not have, so counting the window instead would
+     * understate what the player cannot reach.
+     */
+    const unlisted = Math.max(0, shown.total - drawn);
     deliveriesMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildDeliveriesMore, { count: unlisted });
     deliveriesMore.hidden = unlisted === 0;
   }
