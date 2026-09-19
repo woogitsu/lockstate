@@ -332,6 +332,12 @@ describe('publishing the status counts', () => {
       // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
+      // Zero for a second reason, which is why it is asserted beside the line
+      // above rather than assumed to follow it (issue #890): withholding is
+      // per **occupied place**, and this scenario has none. A prison earning
+      // nothing is not a prison having something withheld -- the two are the
+      // same number here and come apart the moment anybody is housed.
+      stateIncomeWithheldTodayMinorUnits: 0,
       // Five guards at the catalogue's 80-a-day guard band (ADR 0042 step 3).
       // Not zero, and that is the point of asserting it here: the wage bill is
       // a fact about who is *employed*, not about who is housed or deployed --
@@ -900,7 +906,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        22 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        23 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -1117,7 +1123,71 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // this one field and nothing else. **768 is over 761**, so the honest
       // largest declared payload had been breaching its own pinned bound by 7
       // bytes for two days and no run said so.
-      expect(JSON.stringify(payload).length).toBeLessThan(786);
+      //
+      // **800 and not 761, and the raise is one new field** --
+      // `stateIncomeWithheldTodayMinorUnits`, issue #890's measurement of a
+      // prison paying 40% under its headline grant with no figure for the
+      // shortfall anywhere outside the worker. Re-measured on this tree at
+      // the same worst case every previous raise used:
+      // `payloadJsonBytes=780` at 250 actors and `782` at 1,000, 2,500 and
+      // 5,000 -- still the two-byte digit-count spread between the tiers
+      // rather than growth, which is the property this bound exists to
+      // protect and the one an integer keeps. 782 + 18 = **800**, the same
+      // headroom every previous raise in this file left, so the next field
+      // breaches this one too.
+      //
+      // **The 39 bytes are 38 of spelling and one of value, and that second
+      // number is not a worst case -- stated rather than implied, because
+      // every raise above could say the same and none of them did.**
+      // `"stateIncomeWithheldTodayMinorUnits":` is 36 + 1, the comma is one
+      // more, and this fixture houses nobody, so the value is the single
+      // digit `0`. The field is bounded by
+      // `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x occupied places`, so a
+      // populated prison spends more digits here -- exactly as
+      // `treasuryMinorUnits` and `stateIncomeAccruedTodayMinorUnits` beside
+      // it do, and exactly what the two-byte tier spread this paragraph keeps
+      // quoting already is. The 18 bytes of head room absorb it; a reader
+      // raising this bound next should know they are raising it from a
+      // measurement whose money fields are at their smallest.
+      //
+      // **825, and neither 786 nor 800 -- the two figures above were measured
+      // on branches that could not see each other, and this is the merge that
+      // had to re-measure rather than pick.** Both paragraphs above raise
+      // *this* line from the same 761 base, for different fields, and both
+      // derivations are correct about their own field and wrong about the
+      // payload: with `routeDecidedSince` forced **and**
+      // `stateIncomeWithheldTodayMinorUnits` published, the worst case is
+      // larger than either was measured against. 786 would put the bound
+      // *below* a payload `main` already carries; 800 would silently discard
+      // the finding the paragraph before it is for. So both are kept above,
+      // unedited, and this third one replaces neither.
+      //
+      // Re-measured on the merged tree, at the same worst case every previous
+      // raise used: `payloadJsonBytes=805` at 250 actors and `807` at 1,000,
+      // 2,500 and 5,000 -- still the same two-byte digit-count spread between
+      // the tiers rather than growth, which is the property this bound exists
+      // to protect. 807 + 18 = **825**, the same headroom every previous
+      // raise in this file left.
+      //
+      // **The two fields are exactly additive, which is the check that makes
+      // this a measurement rather than a sum.** 741 + 25 + 39 = 805 and
+      // 743 + 25 + 39 = 807, against the 741/743 the 761 bound was derived
+      // from -- so neither field changes the other's cost, and the
+      // arithmetic each paragraph above gives for its own field survives
+      // being combined. Had the measured figure and the sum disagreed, this
+      // comment would say so and the bound would follow the measurement.
+      //
+      // **And the 7-byte breach the #1268 paragraph reports is not history:
+      // it is live on `main` as this is written, and it is the same 7
+      // bytes.** `main` pins 800 and its fixture measures 780/782, so `main`
+      // is green -- but `main`'s fixture still omits `routeDecidedSince`, and
+      // the honest largest payload `main` can publish is 807. 807 - 800 = 7,
+      // the identical figure, because #1302 left the same 18 bytes of head
+      // room and the missing field costs 25. The bound has now been breached
+      // by exactly 7 bytes twice in a row, by two unrelated raises, for the
+      // one reason #1304 exists to remove: nothing ties the fixture to the
+      // shape it claims to be the worst case of.
+      expect(JSON.stringify(payload).length).toBeLessThan(825);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
