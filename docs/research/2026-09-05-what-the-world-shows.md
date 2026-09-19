@@ -89,7 +89,7 @@ category of room, and its contents tell you nothing at all.
 **And to the third question — state or only the HUD — the answer is only the
 HUD, measured rather than asserted, twice.** A cell nobody can enter and a
 working cell, same tiles, same crop, same population, same `roomCapacity`:
-**6,061 differing pixels of 147,456, 4.11%**, thirty-two of the thirty-six
+**6,061 differing pixels of 147,456, 4.11%**, thirty of the thirty-six
 tiles pixel-identical, and the whole difference is the door the player built
 plus four prisoner sprites overlapping slightly differently in the same corner.
 A second, independent pair — a sealed cell at day 4 against a working one at day
@@ -392,7 +392,23 @@ y16:  0      0      0      0      0      0
 y17:  0      0      3072   0      0      0
 ```
 
-**Thirty-two of the thirty-six tiles are pixel-identical.** The 3,072 pixels at
+**Thirty of the thirty-six tiles are pixel-identical.**
+
+> **Corrected 2026-09-19 (issue #1022), and the map above is what refutes it.**
+> This sentence read *"Thirty-two"* from 2026-09-05 until then, in this section,
+> in the summary at the top of this record and in reading 0 at the bottom, and
+> from there into ADR 0097 §1. **Six tiles differ, not four** -- the five
+> non-zero entries across row y=12 and the door tile -- and `36 - 6 = 30`. The
+> per-tile table printed immediately above always said so; only the sentence
+> beside it did not, which is `docs/AGENT_WORKFLOW.md` §4's *"reading a file's
+> own headings against each other"* applied to a table and its caption.
+> **The pixel figures are untouched and were re-derived rather than trusted**:
+> decoding the two committed screenshots on 2026-09-19 returned `6,061` of
+> `147,456`, `4.11%`, and this map digit for digit.
+> `tests/foundation/world-view-state-measurement-contract.test.ts` now runs that
+> decode on every suite, so neither the figures nor the count is prose any more.
+
+The 3,072 pixels at
 (14,17) are the door itself. The 2,989 across row y=12 are the four prisoner
 sprites overlapping slightly differently in the same corner tile — same tile,
 same four orange figures, same pose family.
@@ -671,8 +687,8 @@ first because it is the one the brief asked for and the one that was measured
 rather than argued.
 
 0. **A working prison and a sealed one are the same picture apart from the door
-   the player built** — 4.11% of pixels, thirty-two of thirty-six tiles
-   identical (§4) — and at fifty prisoners, with a fight in the alerts column
+   the player built** — 4.11% of pixels, thirty of thirty-six tiles
+   identical (§4; the count is corrected there, the pixel figures are not) — and at fifty prisoners, with a fight in the alerts column
    and thirty-eight people with nowhere to sleep, the world view's whole report
    is two orange lumps that are pixel-identical to each other over the region
    that holds them (§5). **The world view carries no state. All of it is in the
