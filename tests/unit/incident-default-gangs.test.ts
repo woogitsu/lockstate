@@ -89,19 +89,86 @@ describe('applyDefaultGangs: decision 1', () => {
   });
 });
 
-describe('defaultGangIdForArrival: decision 6', () => {
-  it('assigns only high-risk arrivals, and alternates the two on entity id parity', () => {
-    expect(defaultGangIdForArrival(0, 'high-risk')).toBe('gang.alpha');
-    expect(defaultGangIdForArrival(1, 'high-risk')).toBe('gang.beta');
-    expect(defaultGangIdForArrival(2, 'high-risk')).toBe('gang.alpha');
-    expect(defaultGangIdForArrival(7, 'high-risk')).toBe('gang.beta');
+/**
+ * **Decision 6 as amended by the owner on 2026-09-19, and the three cases
+ * below are the amendment.**
+ *
+ * Until that date the rule was `DEFAULT_GANG_IDS[entityId % 2]`, and the tests
+ * here asserted that parity. The reason it moved is measured and is in the
+ * function's own docblock: in a neglected prison the only prisoners the
+ * disciplinary record carries to tier 3 are the one pair who keep fighting
+ * each other, so under parity three of the seven measured sessions that got
+ * that far produced a pair inside one gang and could never retaliate at all.
+ *
+ * **The provenance of the ruling is the weaker kind**, as `AGENTS.md` records
+ * of several: the owner chose a clickable option labelled *"Obie naraz"*, not
+ * a sentence they typed.
+ */
+describe('defaultGangIdForArrival: decision 6 as amended 2026-09-19', () => {
+  function seeded(): GangRegistry {
+    const gangs = new GangRegistry();
+    applyDefaultGangs(gangs, SECTOR);
+    return gangs;
+  }
 
-    expect(defaultGangIdForArrival(0, 'general-population')).toBeUndefined();
-    expect(defaultGangIdForArrival(1, 'general-population')).toBeUndefined();
+  it('assigns only high-risk arrivals, and fills the smaller gang', () => {
+    const gangs = seeded();
+
+    expect(defaultGangIdForArrival(gangs, 4, 'general-population')).toBeUndefined();
+    expect(defaultGangIdForArrival(gangs, 5, 'general-population')).toBeUndefined();
+
+    // Empty and empty: the tie goes to `DEFAULT_GANG_IDS` order.
+    expect(defaultGangIdForArrival(gangs, 4, 'high-risk')).toBe('gang.alpha');
+    gangs.addMember('gang.alpha', 4);
+    // Now alpha is the larger, so the next one goes the other way -- and the
+    // entity id is *even* again, which is the case parity got wrong.
+    expect(defaultGangIdForArrival(gangs, 6, 'high-risk')).toBe('gang.beta');
   });
 
-  it('splits a run of high-risk arrivals across both gangs rather than filling one', () => {
-    const assigned = Array.from({ length: 8 }, (_unused, entityId) => defaultGangIdForArrival(entityId, 'high-risk'));
+  /**
+   * **This is the case the amendment exists for**, and it is seed `0x0cca`'s
+   * pair written out: entities 4 and 6, both even, both `gang.alpha` under
+   * parity, 84 assaults and zero retaliations in ninety in-game days.
+   */
+  it('puts a same-parity pair in different gangs, which parity could not', () => {
+    const gangs = seeded();
+
+    for (const entityId of [4, 6]) {
+      const gangId = defaultGangIdForArrival(gangs, entityId, 'high-risk')!;
+      gangs.addMember(gangId, entityId);
+    }
+
+    expect(gangs.getGangOf(4)).not.toBe(gangs.getGangOf(6));
+    expect(gangs.membersOf('gang.alpha')).toEqual([4]);
+    expect(gangs.membersOf('gang.beta')).toEqual([6]);
+  });
+
+  /**
+   * The property that makes two write sites safe now that the answer is not a
+   * pure function of the entity id: ADR 0103 open question 5 puts this rule at
+   * intake *and* at the classification review, and a prisoner who is already a
+   * member must not be moved by the second call.
+   */
+  it('answers the gang a member is already in rather than re-reading the counts', () => {
+    const gangs = seeded();
+
+    gangs.addMember('gang.beta', 3);
+    gangs.addMember('gang.beta', 9);
+    // `gang.alpha` is empty and therefore the smaller, so a fresh arrival would
+    // go there -- but 3 is not a fresh arrival.
+    expect(defaultGangIdForArrival(gangs, 11, 'high-risk')).toBe('gang.alpha');
+    expect(defaultGangIdForArrival(gangs, 3, 'high-risk')).toBe('gang.beta');
+    expect(defaultGangIdForArrival(gangs, 3, 'high-risk')).toBe('gang.beta');
+  });
+
+  it('splits a run of high-risk arrivals evenly across both gangs', () => {
+    const gangs = seeded();
+    const assigned = Array.from({ length: 8 }, (_unused, entityId) => {
+      const gangId = defaultGangIdForArrival(gangs, entityId, 'high-risk')!;
+      gangs.addMember(gangId, entityId);
+      return gangId;
+    });
+
     expect(assigned.filter((gangId) => gangId === 'gang.alpha')).toHaveLength(4);
     expect(assigned.filter((gangId) => gangId === 'gang.beta')).toHaveLength(4);
   });

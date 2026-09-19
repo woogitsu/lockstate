@@ -484,7 +484,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 - `GangRegistry.register` / `.addMember` / `.addGrudge` — written only by
   `loadSnapshot` (`src/simulation/incidents/gangs.ts:123-124`), so a live
   session's registry is empty and `tryOpenRetaliation`
-  (`src/simulation/incidents/trigger-system.ts:535`; the anchor read `:108-137`)
+  (`src/simulation/incidents/trigger-system.ts:587`; the anchor read `:108-137`)
   iterates nothing.
 
 **Decided and unbuilt, rather than undecided:**
@@ -771,7 +771,7 @@ constrained by it identically:
   (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
   `src/simulation/runtime/new-session.ts:603`),
   `IncidentTriggerSystem.update` sorts its sector ids
-  (`src/simulation/incidents/trigger-system.ts:308`; the anchor read `:63`), and
+  (`src/simulation/incidents/trigger-system.ts:360`; the anchor read `:63`), and
   `SectorRiskTracker.getSnapshot` sorts
   (`src/simulation/incidents/sector-risk.ts:217`; the anchor read `:97-99`).
   A richer occupancy model replaces the *contents* of that list, never its

@@ -135,6 +135,56 @@ export const DEFAULT_SECTOR_QUIET_TICKS_AFTER_ASSAULT = 2_400;
  */
 export const DEFAULT_SECTOR_QUIET_TICKS_AFTER_ESCAPE_ATTEMPT = 12_000;
 
+/**
+ * How long a sector stays quiet after a **gang retaliation** opens in it -- ten
+ * in-game days, and the longest of the four.
+ *
+ * **Why it is a separate window at all, which is a measurement rather than a
+ * taste.** Until 2026-09-19 a retaliation shared `quietTicksAfterIncident`
+ * with the riot, and in the one prison shape where the mechanism is reachable
+ * that window is not a floor, it is the cadence: measured over twelve seeds
+ * `0x0cc0`-`0x0ccb`, ninety in-game days each, the four sessions that retaliate
+ * at all fire **34, 34, 11 and 11** times with a gap of **exactly 4,800 ticks**
+ * between consecutive ones -- `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT`, to
+ * the tick, every time. The window binds because the grudge refills faster than
+ * it: a retaliation clears the grudge it acted on, two cross-gang assaults
+ * refill it at `CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2` a key, and an assault's
+ * own window is 2,400.
+ *
+ * **What a retaliation costs, which is what sizes the window.** Every one of
+ * the 90 retaliations measured opened at **severity 6**, which is
+ * `IncidentResponseSystem`'s threshold for locking the **whole prison** down --
+ * not the sector. An escape attempt's five days are justified above by "a
+ * prison losing somebody every other day is not a stake, it is an emptying
+ * room"; a prison-wide lockdown every two in-game days for the rest of the
+ * session is the same defect one size larger, so this window is the escape
+ * attempt's doubled.
+ *
+ * **It cools an existing mechanism rather than gating a new one**, and the
+ * owner ruled it beside the split change on 2026-09-19 (option *"Obie naraz"*)
+ * precisely because cooling a rare mechanism alone would have made it rarer.
+ * Measured after both, on the same twelve seeds: those four sessions fire
+ * **7, 7, 3 and 3** times instead of 34, 34, 11 and 11, the gap between
+ * consecutive ones is exactly 24,000 in every case, and the **three sessions
+ * that could never retaliate at all now do** -- seven of seven qualifying
+ * sessions meet the mechanism where four of seven did.
+ *
+ * **What it costs, measured rather than assumed, because it is not free.** The
+ * grudge ledger goes on accruing through the quiet period and `addGrudge`
+ * clamps a key at 1, so a window long enough to saturate the ledger trades
+ * frequency for **severity**: on seed `0x0cc3` the seven retaliations read
+ * `6, 10, 10, 10, 10, 10, 10` where every one of the thirty-four before this
+ * change read 6. A severity-10 retaliation demands five unassigned guards to
+ * `respondersPerSeverityPoint`'s `ceil(10 * 0.5)` against three at severity 6.
+ * Fewer and harder is the trade, it is deliberate, and
+ * `tests/integration/gang-retaliation-from-the-admission-surface.test.ts`
+ * asserts that list so a later change to this number has to come past it.
+ *
+ * Directional default, not a balance decision -- the same disclaimer its three
+ * siblings carry, and the same reason: it is one number a balance pass moves.
+ */
+export const DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION = 24_000;
+
 export interface IncidentTriggerMetrics {
   readonly incidentsTriggered: number;
   readonly riotsTriggered: number;
@@ -286,6 +336,8 @@ export class IncidentTriggerSystem implements SystemRegistration {
     private readonly escapePolicy: EscapeAttemptPolicy = DEFAULT_ESCAPE_ATTEMPT_POLICY,
     private readonly quietTicksAfterAssault: number = DEFAULT_SECTOR_QUIET_TICKS_AFTER_ASSAULT,
     private readonly quietTicksAfterEscapeAttempt: number = DEFAULT_SECTOR_QUIET_TICKS_AFTER_ESCAPE_ATTEMPT,
+    /** How long after a gang retaliation opens this sector may not open another. See `DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION`. */
+    private readonly quietTicksAfterRetaliation: number = DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION,
   ) {}
 
   /**
@@ -341,7 +393,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
         if (this.tryOpenAssault(sectorId, sample, flashpoints, context.tick)) continue;
       }
 
-      if (this.isQuiet(sectorId, context.tick, 'gang-retaliation', this.quietTicksAfterIncident)) continue;
+      if (this.isQuiet(sectorId, context.tick, 'gang-retaliation', this.quietTicksAfterRetaliation)) continue;
       this.tryOpenRetaliation(sectorId, context.tick);
     }
   }

@@ -667,7 +667,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      */
     gangAssigner: {
       assign: (entityId, classificationGroupId) => {
-        const gangId = defaultGangIdForArrival(entityId, classificationGroupId);
+        const gangId = defaultGangIdForArrival(gangs, entityId, classificationGroupId);
         if (gangId !== undefined) gangs.addMember(gangId, entityId);
       },
     },
