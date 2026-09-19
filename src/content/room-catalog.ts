@@ -82,6 +82,66 @@ export const roomDefinitionSchema = z
      * direction the ruling exists to close.
      */
     openArea: z.boolean().optional(),
+    /**
+     * **The most prisoners who may *live* in one instance of this room type,
+     * whatever it is furnished with.**
+     *
+     * The owner's ruling of 2026-09-17 on
+     * [issue #961](https://github.com/woogitsu/lockstate/issues/961), choosing
+     * *"Sufit mieszkańców na typ pomieszczenia w katalogu"* ("a resident
+     * ceiling per room type in the catalogue") over a tiles-per-occupant term
+     * and over leaving the game a dormitory. It amends
+     * [ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+     * decision 2's `residentCapacity(R)` line, and nothing else in it: the
+     * per-capability concurrent-use ceilings, the orientation-blindness, the
+     * event-driven resolver and the "nobody is evicted" answer are untouched.
+     *
+     * ```
+     * residentCapacity(R) = min( Σ footprint.width over the sleep surfaces in R,
+     *                            maxResidents(type of R) )      -- when authored
+     *                     = Σ footprint.width over the sleep surfaces in R
+     *                                                           -- when absent
+     * ```
+     *
+     * **What #961 measured, and why a ceiling is the answer to it.** Nothing
+     * bounded a room's residents but the beds standing in it, so twelve
+     * prisoners went into the starter 6x6 cell with `rooms` still 1 and the
+     * rectangle deriving room for about seventeen. A second cell bought the
+     * player nothing, which took the only growth decision out of the mid-game.
+     *
+     * **Each number is read off this file rather than chosen.** The ceiling of
+     * a housing type is how many sleep surfaces its own authored
+     * `minimum-size` rectangle holds beside the other objects it requires --
+     * `object.bed` is 1x2 (two tiles), `object.toilet` 1x1:
+     *
+     * | type | authored minimum | required besides beds | beds that fit | ceiling |
+     * | --- | --- | --- | --- | --- |
+     * | `room.cell` | 2x3, 6 tiles | 1 toilet, 1 tile | `floor(5 / 2)` = 2 | **2** |
+     * | `room.solitary-cell` | 2x2, 4 tiles | 1 toilet, 1 tile | `floor(3 / 2)` = 1 | **1** |
+     *
+     * So `room.cell` keeps the pairing `rateCellSharing`
+     * (`src/simulation/prisoners/cell-sharing.ts`) exists to rate -- a ceiling
+     * of 1 would make that whole module unreachable -- and
+     * `room.solitary-cell` keeps the word it is named for, which
+     * `PrisonerOperationsRuntime.isServingSolitarySanction` asserts of anybody
+     * housed there.
+     *
+     * **Optional, and absent means no ceiling**, for the reason `openArea`
+     * above is optional: a default would author a balance decision for every
+     * room type added later by omission. Only the two types an
+     * `AccommodationPolicy` houses into carry one
+     * (`DEFAULT_ACCOMMODATION_POLICY`, `src/simulation/prisoners/intake-system.ts`);
+     * `room.infirmary`'s medical beds reach no arrival, so a ceiling there
+     * would move a HUD total and no gameplay, and that is a balance decision
+     * with no measurement behind it.
+     *
+     * Read through the room registry by `RoomCapacityResolver.deriveFor` and
+     * authored here and nowhere else. **Not persisted** -- capacity has been
+     * derived at restore since ADR 0028 decision 6, so `SAVE_SCHEMA_VERSION`
+     * does not move for this and a save written before it loads into the
+     * ceiling this build declares.
+     */
+    maxResidents: z.number().int().min(1).max(64).optional(),
     requirements: z.array(roomRequirementSchema).max(32),
   })
   .strict();
@@ -89,7 +149,7 @@ export const roomDefinitionSchema = z
 export type RoomCatalogDefinition = z.infer<typeof roomDefinitionSchema>;
 
 const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
-  { schemaVersion: 1, id: 'room.cell', numericId: 1, nameKey: 'room.cell.name', category: 'housing', requirements: [
+  { schemaVersion: 1, id: 'room.cell', numericId: 1, nameKey: 'room.cell.name', category: 'housing', maxResidents: 2, requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 2, minHeight: 3, minTiles: 6 },
     { type: 'object', objectId: 'object.bed', minQuantity: 1 },
@@ -100,7 +160,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 },
     { type: 'object', objectId: 'object.bench', minQuantity: 1 },
   ] },
-  { schemaVersion: 1, id: 'room.solitary-cell', numericId: 3, nameKey: 'room.solitary-cell.name', category: 'security', requirements: [
+  { schemaVersion: 1, id: 'room.solitary-cell', numericId: 3, nameKey: 'room.solitary-cell.name', category: 'security', maxResidents: 1, requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 },
     { type: 'object', objectId: 'object.bed', minQuantity: 1 },

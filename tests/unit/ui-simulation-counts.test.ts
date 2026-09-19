@@ -103,7 +103,7 @@ describe('the HUD counts are read from the worker', () => {
       // the case below for which is which and why it took a new field.
       prisonerCapacity: 44,
       // Straight through, and it is `occupiedPlaces` rather than
-      // `roomOccupants: 31` beside it: the strip's "N with no bed" badge is
+      // `roomOccupants: 31` beside it: the strip's "N not housed" badge is
       // this figure subtracted from the population, and residency outlives
       // the bed under it (ADR 0028 decision 2, issue #609).
       occupiedPlaces: 28,
@@ -122,6 +122,11 @@ describe('the HUD counts are read from the worker', () => {
       // Straight through, and deliberately not re-derived from the line above:
       // that derivation is the defect this field closed.
       isFreshUnfurnishedPrison: false,
+      // Read off `counts.conditions` through `isPostUnreachable`, which is
+      // the exhaustive `Record` over `PrisonCondition` ADR 0117 pays for --
+      // `false` here because this fixture's publication names no condition at
+      // all, which is what an ordinary prison publishes.
+      postUnreachable: false,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -300,6 +305,11 @@ describe('the HUD counts are read from the worker', () => {
       // `true` rather than staying absent, and absent would read as *not*
       // fresh, which is a different prison.
       isFreshUnfurnishedPrison: true,
+      // A fifth, and the second boolean: a prison reporting zeros has no
+      // stranded post, and `conditions` absent from the publication reads as
+      // "nothing is standing" rather than as "unknown" -- see
+      // `isPostUnreachable` (ADR 0117).
+      postUnreachable: false,
     });
   });
 
@@ -375,7 +385,14 @@ describe('the HUD counts are read from the worker', () => {
       // one from `roomCapacity`. Named here by name for the reason the comment
       // above gives, and checked as a boolean rather than waved through, so a
       // field that started arriving as `0`/`1` would still fail.
-      if (key === 'isFreshUnfurnishedPrison') {
+      // **The fourth, and the second boolean** (ADR 0117, accepted by the
+      // owner on 2026-09-17): `postUnreachable`, read off
+      // `statusCountsSchema.conditions` -- a set of NAMES, which is why the
+      // field that reaches the HUD is a boolean about one member and not a
+      // list this view model would have to re-declare. Checked as a boolean
+      // for `isFreshUnfurnishedPrison`'s reason, so a field that started
+      // arriving as `0`/`1` would still fail.
+      if (key === 'isFreshUnfurnishedPrison' || key === 'postUnreachable') {
         expect(typeof value, `counts.${key} is not a boolean`).toBe('boolean');
         continue;
       }

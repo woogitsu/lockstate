@@ -18,27 +18,41 @@ export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
   prisoners: 'hud.status.prisoners',
   /**
-   * How many prisoners have no bed, as a badge under the `PRISONERS` chip
-   * (issue #609).
+   * How many prisoners hold no residency place, as a badge under the
+   * `PRISONERS` chip (issue #609).
    *
-   * **The wording is the owner's and was signed off before it was built**:
-   * *"N with no bed"*. It counts what is **missing** rather than what is
-   * fine -- "N housed" was the rejected alternative -- and it deliberately
-   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
-   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
-   * fact in the same words in two places and connects them.
+   * **The SHAPE is the owner's and was signed off before it was built**:
+   * *"N with no bed"*. It counts what is **missing** rather than what is fine
+   * -- "N housed" was the rejected alternative -- and that is the part of the
+   * sign-off that still binds.
+   *
+   * **The noun is not the owner's and is ours under `AGENTS.md`'s fourth
+   * reservation, released 2026-09-04.** It reads *"N not housed"* since issue
+   * #961: a room type may author `maxResidents`, so residency capacity is
+   * `min(sleep surfaces, the ceiling)` and the badge could count somebody
+   * standing beside an empty bed. `src/content/default-locale-en.ts` carries
+   * the full derivation, including why the strip could not afford *"with no
+   * place"* -- the row is 8px over its width at 1280x800 before this badge is
+   * drawn.
+   *
+   * **The echo with the Intake panel is a casualty of that and is recorded
+   * rather than dropped quietly.** #609 made this the short form of
+   * `hud.intake.no-place` (*"{count} waiting with no place to sleep"*) so the
+   * same fact read in the same words in two places. They now report the same
+   * fact in different words, because the strip is short of room and the panel
+   * is not.
    *
    * The two counts are siblings rather than the same number, and the shorter
-   * wording is what says so. The Intake panel's is *arrivals a bed would
+   * wording is what says so. The Intake panel's is *arrivals a place would
    * house right now* -- prisoners standing at `accommodation-assignment` with
-   * no free place. This one is *every prisoner without a bed*, which also
+   * no free place. This one is *every prisoner holding no place*, which also
    * covers the prisoner whose bed was taken out from under them (ADR 0028
-   * decision 2). In the prison issue #609 measured -- twelve admitted into
-   * three beds -- both read 9.
+   * decision 2) and the one over a room type's ceiling (#961). In the prison
+   * issue #609 measured -- twelve admitted into three beds -- both read 9.
    *
    * **Not rendered when it is zero**, which is why it is a badge that comes
    * and goes rather than a permanent chip: `coverageTone` records the reason
-   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * and it applies to a "0 not housed" as much as to a green badge -- *"a
    * status strip where several things are always amber teaches players to
    * ignore amber"*.
    */
@@ -944,6 +958,59 @@ export const HUD_MESSAGE_KEY = {
    * authored.
    */
   securityCoverageUnguardedConsequence: 'hud.security.coverage-unguarded-consequence',
+
+  /**
+   * **What the `COVERAGE` chip says when the post itself cannot be reached**
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3 -- *"say it"*).
+   *
+   * Two keys rather than one, on the division `HudMetricDescriptor.description`
+   * already records for the `FUNDS` chip: a badge has a width and a sentence
+   * does not fit in it. `...PostUnreachable` is the badge -- two words, in the
+   * one-state-in-a-word register `securityCoverageShort` ("Understaffed") and
+   * `securityCoverageUnguarded` ("Unguarded") are written in -- and
+   * `...PostUnreachableHint` is the sentence, which goes into the chip's
+   * `title` **and** its screen-reader text.
+   *
+   * **Nothing is said only in the hint**, which is the constraint that field's
+   * own doc comment states as a rule rather than a remark: the badge states
+   * the condition in the chip itself, so a player who never hovers and a
+   * player on a touch device both see that something is wrong.
+   *
+   * ## Why the badge displaces "Covered" rather than sitting beside it
+   *
+   * Because "Covered" is false while this stands, and ADR 0117 §4 names
+   * settling that as the second decision this change owes. Measured on seed
+   * `0x396` over 200 consecutive ticks with the post sealed: the strip's own
+   * `prisonersCovered` / `prisonersUnguarded` pair alternates on the
+   * deployment cadence, 100 ticks reading *covered* and 100 reading
+   * *unguarded*, for a prison in which no guard has moved a tile. So the
+   * coverage ladder is not merely silent about this state, it asserts the
+   * opposite of it half the time, and a badge added beside it would have left
+   * that assertion standing.
+   *
+   * ## What makes each sentence true, opened rather than assumed
+   *
+   * - *"No guard can reach the post"* -- `DeploymentSystem.hasUnreachablePost`
+   *   requires the sector's most recent deployment route request to have come
+   *   back `ok: false` with nothing successful since, which is the branch in
+   *   `continueDeploymentTravel` that counts a `deploymentFailure`, and to
+   *   have a claimable guard that would take the post. So there is a guard,
+   *   and the route to the post failed for it.
+   * - *"nobody is on duty"* -- the same predicate requires that no guard of
+   *   the sector is in phase `'on-post'`. It deliberately does not lean on
+   *   `shortage` or on the coverage census, which are the figures ADR 0117
+   *   §1b measures as false half the time.
+   * - *"Taking down a wall beside it opens the way back"* -- measured through
+   *   the real kernel, the real `RemoveWall` command (ADR 0106) and the real
+   *   `NavigationSystem` in
+   *   `tests/integration/security-post-unreachable-condition.test.ts`: with
+   *   the post's four bounding edges built by real `PlaceBuildOrder` presses,
+   *   removing **one** of them puts the guard back `'on-post'` and clears this
+   *   condition.
+   */
+  securityPostUnreachable: 'hud.security.post-unreachable',
+  securityPostUnreachableHint: 'hud.security.post-unreachable-hint',
 
   /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content

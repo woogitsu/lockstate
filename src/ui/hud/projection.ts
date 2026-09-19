@@ -200,7 +200,8 @@ export interface HudMetricText {
    * **The field this replaced took `MessageParameters` and rendered through
    * `String()`,** which is `interpolate`'s fallback: `hud.status.funds-remaining`
    * under a chip reading `-100` would have said `2400 left` where the chip said
-   * `-100`, and `{count} with no bed` said `1240` under a chip reading `1,240`.
+   * `-100`, and `{count} with no bed` -- the badge's text before issue #961 --
+   * said `1240` under a chip reading `1,240`.
    * Identical below a thousand in `en`, which is why the older of the two ran
    * for two issues without anybody seeing it. The old field is gone rather than
    * kept beside this one: after issue #703's ruling 21 shortened the coverage
@@ -333,7 +334,7 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
  * and nothing at all when everybody does (issue #609).
  *
- * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * **`undefined` rather than a badge reading "0 not housed"**, which is
  * `coverageTone`'s reasoning applied to a chip that has been badge-less until
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent
@@ -442,6 +443,14 @@ function roomsNotReadyBadge(roomNeeds: HudRoomNeedsViewModel | undefined): HudMe
  * colour alone.
  */
 function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  // Above the ladder, because it is the state the ladder cannot see (ADR 0117,
+  // accepted 2026-09-17). While a post cannot be reached, the three counts
+  // below alternate between *covered* and *unguarded* on the deployment
+  // cadence -- 100 ticks each over 200, seed `0x396` -- so reading them alone
+  // paints this chip green on half of all frames over a prison no guard is
+  // standing in. `coverageBadge` takes the same precedence for the same
+  // reason, so the colour and the word still come off one ladder read once.
+  if (counts.postUnreachable === true) return 'danger';
   if (counts.prisonersUnguarded > 0) return 'danger';
   if (counts.prisonersUnderstaffed > 0) return 'warning';
   return undefined;
@@ -489,6 +498,11 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
  */
 function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   const tone = coverageTone(counts);
+  // ADR 0117 §4's second decision, settled here: while this stands,
+  // `securityCoverageMet` -- "Covered" -- is false, and it is what this chip
+  // would otherwise read on half of all ticks (measured; see `coverageTone`).
+  // So the rung is displaced rather than annotated.
+  if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
   // One ladder, read once: the tone and the word come off the same two rungs in
   // the same order, so a rung that changes the colour cannot fail to change the
@@ -963,7 +977,16 @@ export function projectStatusMetrics(
       capacity: undefined,
       tone: coverageTone(counts),
       badge: coverageBadge(counts),
-      description: undefined,
+      /**
+       * **The one sentence a stranded post gets** (ADR 0117, accepted by the
+       * owner on 2026-09-17), and `undefined` on every other prison.
+       *
+       * The chip's own `title` and screen-reader text, exactly as the `FUNDS`
+       * chip's is; the badge above carries the short form, so nothing is said
+       * only here -- see `HudMetricDescriptor.description`, which states that
+       * as a constraint rather than a remark.
+       */
+      description: counts.postUnreachable === true ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint } : undefined,
     },
     {
       id: 'rooms',
