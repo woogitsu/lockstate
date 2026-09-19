@@ -798,6 +798,34 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
 }
 
 /**
+ * What the `Earned today` chip is not paying, in a full sentence -- its
+ * tooltip and its screen-reader text (issue #890).
+ *
+ * **Nothing at all while nothing is withheld**, which is `overdraftBadge`'s
+ * rule: a chip that carries the same sentence in every screenshot is one
+ * nobody reads in the screenshot it matters in. Absent and `0` are different
+ * facts -- a payload written before the field existed against a prison
+ * meeting every need -- and both correctly draw nothing.
+ *
+ * **It reads the published figure and does not derive one.** The undiminished
+ * per-place rate is in `src/simulation/economy/income.ts`, which this module
+ * may not import (`tests/unit/ui-hud-messages.test.ts`), and subtracting
+ * before prorating would disagree with the chip's own value for most of every
+ * day -- the projection's field carries the measured tick counts. So the
+ * arithmetic stays where the rate is and this function only chooses whether
+ * there is a sentence.
+ *
+ * The figure rides `numberParameters` for `overdraftDescription`'s reason:
+ * this layer is pure and has no localizer, so it names the quantity and the
+ * strip formats it exactly as it formats the value it sits under.
+ */
+function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | undefined {
+  const withheld = counts.stateIncomeWithheldTodayMinorUnits;
+  if (withheld === undefined || withheld <= 0) return undefined;
+  return { textKey: HUD_MESSAGE_KEY.earnedWithheld, numberParameters: { withheld } };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -1216,7 +1244,16 @@ export function projectStatusMetrics(
 
       tone: undefined,
       badge: undefined,
-      description: undefined,
+      // **And a description, which is not a tone and not a badge** (issue
+      // #890). The two lines above refuse a threshold nobody has set; this
+      // states a figure the simulation already computes and the player has no
+      // other way to read -- what today's grant is not paying because
+      // residents have needs going unmet. `funds` above is the precedent for
+      // the placement as well as the shape: the owner's ruling of 2026-09-01
+      // put a sentence here rather than in a badge because `.ui-sr-only` and
+      // `title` cost no chip width, and this row's width is measured
+      // (`tests/browser/ui-strip-badged-width.spec.ts`).
+      description: earnedWithheldDescription(counts),
     },
   ];
 }
