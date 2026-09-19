@@ -703,6 +703,91 @@ carry `woogitsu-host-*`, `woogitsu-linux-*` and `lockstate-wsl-DOM-NEW-*`, each
 correct when written. A job pinned to a label nothing carries does not fail
 loudly — it queues.
 
+**FOUR RULINGS ON 2026-09-19, AND ALL FOUR SHARE THE WEAKER PROVENANCE.** They
+were put to the owner as clickable options **written by the integrating
+session**, in Polish, and the owner chose one from each. **What is recorded
+below is therefore the label of an option this session authored and the owner
+picked, not a sentence the owner typed** — the same distinction the 2026-09-08,
+2026-09-09 and 2026-09-10 entries above draw about themselves, and the same one
+ADR 0112's Status block draws about four of its five. Read each as authorising
+what its label says and nothing wider, and put anything wider to the owner on
+its own terms.
+
+None of the four is a release inside the four reservations, which is why they
+are here rather than above. Two of them accept or amend an ADR; where they do,
+the ADR carries the ruling in its own conventions and is the document to open.
+
+**1. ADR 0111 — how a room instance's rectangle reaches the render side.** The
+question was which of that document's four transport options to take: it was
+`Proposed`, its own Status block said *"Nothing below is accepted"*, and it
+blocked the Option A the owner had already accepted in ADR 0097 on 2026-09-05.
+They chose:
+
+> Rozszerzyć world w migawce geometrii (rekomendacja ADR-a)
+
+("Extend `world` in the geometry snapshot (the ADR's recommendation).") That is
+ADR 0111's Option A and the one its own Decision section recommends. **Recorded
+in that ADR's Status block**, which now carries an Accepted state above the
+`Proposed` one it keeps, on ADR 0112's pattern. It authorises the transport and
+nothing drawn with it: ADR 0111 decision 3 already says that publishing a
+rectangle licenses no mark, and that limit is part of what was accepted.
+
+**2. ADR 0103 decision 6 — the gang membership split, amended.** The finding put
+to the owner: whether a session ever sees gang retaliation is decided by the
+parity of two entity ids. Of 12 seeds, 7 reach a tier-3 pair; of those 7, 3 draw
+a same-gang pair and retaliate **never**, and the other 4 lock the whole prison
+down every 4,800 ticks **forever**. Both outcomes are the mechanism failing, in
+opposite directions. Decision 6 is one the owner accepted on 2026-09-08, so
+changing it is theirs. They chose:
+
+> Obie naraz
+
+("Both at once.") — that is, change the member split **and** cool the cadence,
+rather than either alone. **Recorded as an amendment in ADR 0103's decision 6**,
+dated, in that document's own in-section correction form. **No code changed
+with it.** The implementation is separate work and is deliberately not in the
+commit that records this, because a ruling and its implementation in one diff is
+a diff nobody can review as either.
+
+**3. Issue #933 — the first-cell instruction, corrected in place.** The sentence
+a newcomer is given names one of a Cell's four requirements and omits the
+toilet, which is the requirement that makes the room a Cell at all. The sentence
+is **the owner's own, written 2026-09-03**, and reservation 4's 2026-09-04
+release does not reach it in the way that matters: the choice of words has been
+ours since that date, but the requirement that the sentence be *true* is still
+theirs, and this sentence is theirs in both senses. Asked whether to correct it
+in place or to add a corrected sentence beside it, they chose:
+
+> Poprawić Twoje zdanie w miejscu
+
+("Correct your sentence in place.") **This is a deliberate departure from this
+repository's usual habit**, which is to keep a superseded text visible and mark
+it — the habit `docs/AGENT_WORKFLOW.md` §4 asks for and which this file follows
+in every block above that says "kept rather than rewritten". **The option said
+so before the owner chose it**, so the departure is what was authorised rather
+than a side effect of it. It is scoped to that one sentence: it is not a licence
+to overwrite a superseded text anywhere else, and the reservation's truth
+requirement is untouched — whatever replaces it is still verified against the
+room catalogue before it ships, and quoted verbatim in the commit and the pull
+request body under the 2026-09-04 release's terms.
+
+**4. The sixth navigation section — #1292 unparked.** #1292 had been a draft
+since 2026-09-17 waiting on one question its own body asks the owner: *"May the
+navigation carry a sixth section at all?"* — the 2026-09-13 delivery names five,
+ADR 0112 decision 3 ruled those five, and the ruling that authorised a sixth was
+recorded only in a source docblock. Asked directly, the owner chose:
+
+> Tak, szósta sekcja wchodzi
+
+("Yes, the sixth section goes in.") So the navigation may carry a section the
+delivery does not name, the five ruled titles being unchanged by it. **This
+answers only the first of the two questions #1292 puts to the owner**; the
+second, about a sector id on screen, was not asked and is not answered here.
+**It unparks the pull request and merges nothing** — the four browser specs its
+body reports red are still red, and the row-and-column budget above the 720 px
+break is still the open decision that body names.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
