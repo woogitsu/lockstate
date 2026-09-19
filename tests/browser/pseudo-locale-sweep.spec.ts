@@ -69,8 +69,23 @@ async function installPseudoLocale(page: Page): Promise<void> {
     const source = await response.text();
 
     const importPattern = /import \{ defaultMessageCatalogEn \} from "([^"]*localization\/index\.ts)";/;
+    /*
+     * `bundledLocalizer`, not `localizer`, since #662 wired the catalogue
+     * delivery route: `src/main.ts` builds the bundled English localizer under
+     * that name and then resolves the page's own `localizer` from it through
+     * `resolveStartupLocale`, which is what lets a Polish browser boot Polish.
+     *
+     * **The patch still works on the same one construction, and the reason is
+     * worth stating because it is a property of production code rather than of
+     * this rewrite.** `resolveStartupLocale` returns the caller's instance
+     * *untouched* when the browser's preferences resolve to the bundled
+     * default, rather than re-tagging it with `withLocale('en')` -- so the
+     * `en-XA` localizer patched in below survives the resolution this sweep's
+     * Chromium triggers. Its docblock names this spec as the caller that
+     * depends on it.
+     */
     const constructorPattern =
-      /const localizer = new Localizer\(\{\s*locale: DEFAULT_LOCALE,\s*catalogs: \[defaultMessageCatalogEn\]\s*\}\);/;
+      /const bundledLocalizer = new Localizer\(\{\s*locale: DEFAULT_LOCALE,\s*catalogs: \[defaultMessageCatalogEn\]\s*\}\);/;
     const ingestPattern =
       /typeof __LOCKSTATE_TELEMETRY_INGEST_PATH__ === "string" \? __LOCKSTATE_TELEMETRY_INGEST_PATH__ : undefined/;
     const environmentPattern =
@@ -88,7 +103,7 @@ async function installPseudoLocale(page: Page): Promise<void> {
       .replace(importPattern, 'import { defaultMessageCatalogEn, PSEUDO_LOCALE, buildPseudoLocaleCatalog } from "$1";')
       .replace(
         constructorPattern,
-        'const localizer = new Localizer({ locale: PSEUDO_LOCALE, ' +
+        'const bundledLocalizer = new Localizer({ locale: PSEUDO_LOCALE, ' +
           'catalogs: [defaultMessageCatalogEn, buildPseudoLocaleCatalog(defaultMessageCatalogEn)] });',
       )
       .replace(ingestPattern, '"/api/telemetry"')
@@ -335,7 +350,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     // Fast forward, so intake, wages and incidents have time to happen.
     await page.locator('.hud-strip__transport button').nth(2).click();
 
-    await page.locator('.ui-tab[data-tab="security"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
     await expandEverythingVisible(page);
     const hire = page.locator('.hud-staff__hire');
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -349,7 +364,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     console.log(
       `PSEUDO-LOCALE SWEEP :: staff roster rows = ${await page.locator('.hud-staff__roster .hud-staff__held-row[data-staff]').count()}`,
     );
-    await page.locator('.ui-tab[data-tab="regime"]').click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
     await expandEverythingVisible(page);
     await sweep(page, 'populated prison: regime, second pass');
   });
@@ -404,7 +419,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     );
 
     // A room waiting to be confirmed, through the panel's typed route.
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
     if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
     const roomFields = page.locator('.hud-rooms__coordinates .ui-number__input');
@@ -501,17 +516,24 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
    *   ruling that opened this change is explicit that the title stays exactly
    *   as it is -- `Lockstate.io` is the brand name, not player-facing prose,
    *   and routing it through the catalogue was never asked for.
-   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). There is no
-   *   runtime locale switch (`installPseudoLocale`'s comment above states why
-   *   the sweep has to rewrite the served module to reach `en-XA` at all), so
-   *   this attribute is always the literal document language and never a
-   *   string a translator would see -- it names no catalogue entry to be
-   *   missing from.
+   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). It is a BCP
+   *   47 tag rather than prose: it names no catalogue entry, so there is no
+   *   entry for it to be missing from, and no translator ever sees it.
+   *
+   *   **The reason given here used to be "there is no runtime locale switch",
+   *   and that half is out of date since #663 while the exemption is not.**
+   *   `src/main.ts` now writes this attribute from the locale that actually
+   *   resolved, so under this sweep it reads `en-XA` rather than `en` --
+   *   which is a fact about the page and still not a string a translator would
+   *   see. (There is still no *in-place* switch: a language change reloads,
+   *   see `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`,
+   *   and `installPseudoLocale`'s comment above is still why the sweep has to
+   *   rewrite the served module to reach `en-XA` at all.)
    *
    * Every other finding the sweep collects is either bracketed -- reached
    * through the catalogue, `Localizer.format` having produced it -- or it is
    * exactly the leak this test exists to catch. A generated prisoner or staff
-   * name is not a third exemption: `regime-panel.ts` interpolates it into
+   * name is not a third exemption: `roster-panel.ts` interpolates it into
    * `HUD_MESSAGE_KEY.regimeRosterName` via `t(...)`, so it arrives bracketed
    * (the template's `⟦ … ⟧` wraps the whole rendered string, name included --
    * the "second class" of finding this file's own docblock describes under

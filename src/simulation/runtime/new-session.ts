@@ -28,13 +28,17 @@ import {
   IncidentTriggerSystem,
   SectorRiskTracker,
   TunnelRegistry,
+  applyDefaultGangs,
   createRiotRegimeOverride,
+  defaultGangIdForArrival,
+  recordGrudgeFromAdjudicatedAssault,
   type PrisonerFlashpointSampler,
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
 import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
+import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
@@ -52,6 +56,7 @@ import {
   type DisciplinaryEvidenceSource,
 } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
+import { RoomNeedsClearedNoticeSystem } from '../rooms/room-needs-cleared-notice';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
@@ -593,6 +598,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     navigation,
     events,
     identity: actorIdentity,
+    /*
+     * Issue #966 site 3: what the player is told once a queued arrival gets a
+     * bed. Composed here rather than handed the raw registry and catalog,
+     * exactly as `createResidentRelocationNotice` below is for the identical
+     * reason -- `actorIdentity` is the same registry that adapter reads from,
+     * typed narrower here (`ActorIdentitySource`) than `identity:
+     * actorIdentity` above (`ActorIdentityLifecycle`) because this port only
+     * ever reads a name back, never mints or releases one.
+     */
+    housedNotice: createIntakeHousedNotice({ identity: actorIdentity, rooms: defaultRoomContentRegistry, events }),
     disciplinaryEvidence,
     /*
      * The riot's effect on its participants' day
@@ -627,6 +642,35 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       },
     },
     contrabandRngStreamName: CONTRABAND_INTRODUCTION_RNG_STREAM,
+    /*
+     * Who joins a gang
+     * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+     * decision 6), on the same terms as the introduction above: the rule is in
+     * `src/simulation/incidents/default-gangs.ts` and none of it is here.
+     *
+     * `defaultGangIdForArrival` answers `undefined` for everybody who is not
+     * `high-risk` at intake, so most prisons assign nobody at this seam. That
+     * is the decision as accepted and **not** a bug to route around here:
+     * ADR 0103's own Context 15 shows the population that becomes `high-risk`
+     * becomes so at `ClassificationReviewSystem`'s review rather than at the
+     * gate, and whether membership should also be assigned there is its **Open
+     * Question 5**, which the owner has not answered. Adding the second write
+     * site would be answering it in implementation code.
+     *
+     * **The owner answered it on 2026-09-09: assign at the review site too.**
+     * The paragraph above is kept because it is the reason this seam was left
+     * alone for a day, and its last sentence is exactly right about why —
+     * which is the point. The second site is not added *here*: this closure is
+     * handed unchanged to `ClassificationReviewSystem` as well, inside
+     * `PrisonerOperationsRuntime`, so the rule still lives in one place and
+     * two callers ask it.
+     */
+    gangAssigner: {
+      assign: (entityId, classificationGroupId) => {
+        const gangId = defaultGangIdForArrival(entityId, classificationGroupId);
+        if (gangId !== undefined) gangs.addMember(gangId, entityId);
+      },
+    },
   });
 
   /*
@@ -841,6 +885,25 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
         refusals.supersede(materialsFundingSupersessionKey());
       }
     },
+    /*
+     * ADR 0116, the owner's ruling of 2026-09-16: a finished build order is an
+     * event, graded `'info'`, routed to the log alone, and counted rather than
+     * repeated.
+     *
+     * **The whole of what a session does with it is append it.** There is no
+     * predicate here of the kind the report callback above needs, because
+     * `ConstructionSystem` already decided the only question there is -- an
+     * order reached `workRequired` -- and re-deciding it here would be the
+     * second, weaker copy that callback's own comment warns about.
+     *
+     * **This is where the decision lives that the system deliberately does not
+     * hold**: whether a completion is worth saying, and on which surface. The
+     * system hands out the fact; the answer is `SimulationEventLog`, which is
+     * the alerts channel, and `EVENT_PRESENTATION` in `src/ui/simulation-events.ts`
+     * is where `'info'` and `'log-only'` are stated. A bare `ConstructionSystem`
+     * -- a test, a determinism scenario -- passes nothing here and stays silent.
+     */
+    (tick) => events.recordBuildOrderCompleted(tick),
   );
   objectPlacement = new ObjectPlacementService(
     world,
@@ -880,6 +943,24 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       // system to serve a notice.
       tick: () => kernel.tick,
     }),
+    /*
+     * And what the player is told when a *standing* object is taken away
+     * ([#945](https://github.com/matmaxalez/lockstate/issues/945)): the log
+     * itself, not an adapter, because `RemovedObjectNoticePort` is one method
+     * taking a tick and `SimulationEventLog` satisfies it as written. The
+     * relocation notice above needs an adapter only because its sentence names
+     * a prisoner and a room, which `src/simulation/objects/` does not know
+     * about; this one names neither and carries no figure.
+     *
+     * **Passed to the service rather than recorded in the command handler**,
+     * which is where the other nine command successes are answered. A removal
+     * can raise the relocation sentence above as well, and the events band
+     * discards an `'info'` that an arriving `'warning'` displaces
+     * (`admitToEventBand`) -- so the two have to be recorded in severity order
+     * or the prisoner who moved is never named on screen. That ordering only
+     * exists inside `remove`. See `RemovedObjectNoticePort`.
+     */
+    events,
   );
 
   // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
@@ -976,7 +1057,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `GuardRoster` is the only staff store there is and this is where it exists;
    * registered below at order 130, immediately after `economy.state-income`.
    */
-  const payroll = new PayrollSystem(treasury, securityGuards, events);
+  /*
+   * `prisoners.roomInstances` since ADR 0096 decision 2 (2026-09-10) — the
+   * same registry `InsolvencyRungSystem` below and the `'deliveries'` press
+   * in `session-commands.ts` already read `totalResidentCapacity` off, live,
+   * so a fresh, unfurnished prison's payday gets the same starter reserve on
+   * `'wages'` that a press already gets on `'deliveries'`/`'hiring'`.
+   */
+  const payroll = new PayrollSystem(treasury, securityGuards, events, prisoners.roomInstances);
   /*
    * The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
    * amendment): the one-off notice at the moment the treasury crosses the
@@ -994,6 +1082,24 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * "The starter rung".
    */
   const insolvencyRungs = new InsolvencyRungSystem(treasury, events, prisoners.roomInstances);
+  /*
+   * Issue #1006 finding 3: the alerts column's confirmation that a repaired
+   * room stopped being short of anything the Rooms panel checks for. Reads
+   * live `world` edges and `navigation.doors` for the same reason
+   * `hud/room-list`'s own projection wiring does
+   * (`src/simulation/worker/projection-catalog.ts`) -- "`navigation.doors` is
+   * the registry the router, the caches and `doorsSnapshot` all read ...
+   * so the panel's answer and the walk's answer cannot disagree" -- and this
+   * system's own answer must not disagree with either.
+   */
+  const roomNeedsClearedNotice = new RoomNeedsClearedNoticeSystem(
+    prisoners,
+    placedObjects,
+    world,
+    navigation.doors,
+    navigation,
+    events,
+  );
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)
@@ -1184,7 +1290,31 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `applyDefaultSecuritySector` is idempotent and leaves anything already
    * present alone, for that reason.
    */
-  applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
+  const defaultSector = applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
+
+  /*
+   * The two gangs every prison has, on the sector it just derived
+   * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 1).
+   *
+   * **Here, immediately after the sector, because a gang with no territory is
+   * structurally inert.** ADR 0103 Context 2 is the finding:
+   * `tryOpenRetaliation` walks the *sector's claimants* first and only then
+   * filters grudges to those a claimant holds, so a gang that claims nothing is
+   * never selected as `offended` and can hold a grudge for ever without acting
+   * on it. Seeding one would be authored content that provably does nothing.
+   *
+   * `defaultSector.id` rather than `DEFAULT_SECURITY_SECTOR_ID` spelled a
+   * second time: the derivation is payload-wins and answers with whichever
+   * definition is now in the registry, so the gangs claim the sector that
+   * exists rather than the one this line assumed.
+   *
+   * The same second call site as the line above -- `restoreSessionSystems`
+   * re-applies both, because `GangRegistry.loadSnapshot` clears every
+   * definition and every save that exists was written before this change.
+   * `applyDefaultGangs` is idempotent and payload-wins for that reason.
+   */
+  applyDefaultGangs(gangs, defaultSector.id);
 
   /*
    * Who is in a sector, per
@@ -1408,9 +1538,54 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * confinement the moment the incident closes. `imposeSolitarySanction`
      * is the one write; `SanctionSystem` (registered by
      * `PrisonerOperationsRuntime.registerOn`) is what carries it out.
+     *
+     * **TWO CONSUMERS OF ONE ADJUDICATION SINCE
+     * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+     * and the port carries the record rather than the instigator for that
+     * reason** -- a directional grudge needs the second participant, which the
+     * old `(entityId, tick)` signature could not name (ADR 0103 Context 13
+     * point 3). `incident.instigatorId` is non-`undefined` on every call:
+     * `adjudicateAssaultIfAny` narrows to an `'assault'` that carries one
+     * before it calls, and that narrowing is stated in the port's own
+     * docblock.
+     *
+     * Two calls in one callback rather than two ports, because the
+     * *adjudication* is one event and this is the composition root's job:
+     * `IncidentResponseSystem` announces that an assault ended, and what the
+     * prison does about it -- a sanction, a grudge -- is decided here. Neither
+     * call reads the other's result.
      */
-    (entityId, tick) => {
-      prisoners.imposeSolitarySanction(entityId, tick);
+    (incident, tick) => {
+      prisoners.imposeSolitarySanction(incident.instigatorId!, tick);
+      /*
+       * The owner's ruling of 2026-09-08: *"A grudge forms from an adjudicated
+       * assault between members of different gangs -- one the player was
+       * actually shown."* The rule, the direction and the weight are all in
+       * `default-gangs.ts`; this is the wiring, and the weight is that
+       * module's default rather than a second number written here.
+       *
+       * **Silent for everything that is not a cross-gang assault**, which
+       * today is most of them: `recordGrudgeFromAdjudicatedAssault` writes
+       * nothing unless both participants are in gangs and the two differ.
+       */
+      recordGrudgeFromAdjudicatedAssault(gangs, incident);
+    },
+    /*
+     * Issue #589, the owner's ruling of 2026-09-17: an incident that ran its
+     * course leaves the people caught in it injured, and the flag it sets is
+     * what sends them to an infirmary. `markInjured` is the one write;
+     * `ActionSystem` (registered by `PrisonerOperationsRuntime.registerOn`) is
+     * what carries them there and clears it.
+     *
+     * One call rather than the two the adjudication callback above makes,
+     * because one thing happens: nothing else in this session reads an injury.
+     * The tick is passed through unused by the current consumer and kept in the
+     * port's signature for the reason the two ports above keep theirs -- a
+     * consumer that wants to know *when* should not be the change that widens
+     * a signature.
+     */
+    (entityId) => {
+      prisoners.markInjured(entityId);
     },
   );
 
@@ -1445,6 +1620,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
   kernel.registerSystem(insolvencyRungs);
+  kernel.registerSystem(roomNeedsClearedNotice);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(intelligenceSystem);

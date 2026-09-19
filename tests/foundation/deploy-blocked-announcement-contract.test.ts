@@ -244,10 +244,14 @@ describe('blocked deploy announcement contract', () => {
       `\`staging-blocked\` in ${DEPLOY} now asks for a hosted runner. \`ubuntu-latest\` has never worked in this repository -- version.yml's header measures run 32727713492 failing after four seconds with no step recorded -- so this job would fail to start rather than report anything, and its message would be lost.`,
     ).not.toContain('ubuntu-latest');
 
+    // All working jobs intentionally use the generic self-hosted selector.
+    // The assertion above about `ubuntu-latest` is untouched and still holds.
+    // The same string is pinned in ci-configuration-contract.test.ts so a
+    // workflow cannot silently diverge from the repository-wide policy.
     expect(
       body,
       `\`staging-blocked\` in ${DEPLOY} no longer runs on the self-hosted runner every working job in this repository uses.`,
-    ).toContain('runs-on: [self-hosted, Linux, X64, wsl2]');
+    ).toContain('runs-on: self-hosted');
   });
 
   it('cannot be cancelled by a later deploy joining the concurrency group', async () => {

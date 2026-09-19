@@ -1,6 +1,16 @@
+import type { LocalizationKey } from '../content/localization';
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
-import type { PrisonerRosterPage, PrisonerRosterRowViewModel } from '../simulation/presentation/prisoner-projection';
-import { PRISONER_ROSTER_ROW_LIMIT, type HudPrisonerRosterViewModel, type HudPrisonerRowViewModel } from './hud';
+import type {
+  PrisonerNeedViewModel,
+  PrisonerRosterPage,
+  PrisonerRosterRowViewModel,
+} from '../simulation/presentation/prisoner-projection';
+import {
+  PRISONER_ROSTER_ROW_LIMIT,
+  type HudPrisonerNeedViewModel,
+  type HudPrisonerRosterViewModel,
+  type HudPrisonerRowViewModel,
+} from './hud';
 import {
   SimulationProjectionRequester,
   type ProjectionMessageChannel,
@@ -47,9 +57,16 @@ import {
  * - `gangId` has no labelling mechanism at all -- `simulation-message-keys.ts`
  *   excludes runtime-registered ids by name and says why -- and nothing in
  *   `src/` registers a gang into a new session, so it is absent in every prison
- *   a player can start.
+ *   a player can start. **That last clause is false since
+ *   [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+ *   which seeds two gangs per session and assigns `high-risk` arrivals to one
+ *   at intake, and it is kept rather than overwritten**
+ *   (`docs/AGENT_WORKFLOW.md` §4). The reason this row still drops the field is
+ *   the clause before it, which did not move: `gang.alpha` is a machine name
+ *   with no locale key, and a roster cell reading it would be raw dotted text.
+ *   See `simulation-prisoner-detail.ts`, which carries the same correction.
  * - `lowestNeed` **was** dropped here for a different reason, which belonged to
- *   the panel: gap 7, no threshold. See `regime-panel.ts`. It is forwarded as
+ *   the panel: gap 7, no threshold. See `roster-panel.ts`. It is forwarded as
  *   of issue #535 decision 6, and the bullet is amended rather than deleted
  *   because the reason it gave was real and is only half spent: the *level* was
  *   always renderable and what was missing was a line to read it against. #488
@@ -88,6 +105,59 @@ type ProjectedActionPhase = PrisonerRosterRowViewModel['actionPhase'];
 const TRAVELLING_PHASE: ProjectedActionPhase = 'travelling';
 
 /**
+ * One need, from the projection's own shape to the HUD's.
+ *
+ * Exported and shared with `./simulation-prisoner-detail.ts` rather than
+ * written twice, because the mapping carries a *rule* and not only a copy: the
+ * word comes from `deriveSimulationMessageKey('need', needId)` and never from a
+ * table, and the level is the projection's `permille` rather than its raw
+ * level and maximum, which `BoundedValue`'s own header refuses to publish so
+ * that no HUD hard-codes `255`. Two declarations of that drift -- the roster
+ * would still be deriving a key while the inspector had grown a literal -- and
+ * the drift is invisible in any test that reads only one of them.
+ *
+ * Four fields out and nothing computed: `unmetForStateIncome` is carried, not
+ * compared. The threshold behind it is `STATE_INCOME_UNMET_NEED_LEVEL`, in
+ * `src/simulation/economy/income.ts`, which this thread may not import
+ * (`AGENTS.md` boundary 1) and must not restate.
+ */
+export function prisonerNeed(need: PrisonerNeedViewModel): HudPrisonerNeedViewModel {
+  return {
+    needId: need.needId,
+    labelKey: deriveSimulationMessageKey('need', need.needId),
+    permille: need.level.permille,
+    unmetForStateIncome: need.unmetForStateIncome,
+  };
+}
+
+/**
+ * The badge word for one prisoner: the risk tier once classification has run,
+ * and the intake stage before it.
+ *
+ * Exported and shared with `./simulation-prisoner-detail.ts` for
+ * `prisonerNeed`'s reason, and this one is the sharper of the two because it
+ * is a *decision* rather than a copy. `classified` exists on the projection
+ * precisely because `riskTier` is a zero-initialised `0` beforehand, which
+ * decodes as "Minimal" -- so a second copy of this rule that forgot the flag
+ * would show every queued arrival as an assessed low-risk prisoner, and would
+ * show it on one surface while the other was correct.
+ *
+ * The parameter is structural rather than either projection's row type, so the
+ * roster row and the detail can both pass themselves: the two view models
+ * declare these three fields identically and neither is a subtype of the
+ * other.
+ */
+export function prisonerStandingLabelKey(record: {
+  readonly classified: boolean;
+  readonly riskTier?: number;
+  readonly intakeStage: PrisonerRosterRowViewModel['intakeStage'];
+}): LocalizationKey {
+  return record.classified && record.riskTier !== undefined
+    ? deriveSimulationMessageKey('risk-tier', record.riskTier)
+    : deriveSimulationMessageKey('intake-stage', record.intakeStage);
+}
+
+/**
  * What one row says, from one projected row.
  *
  * Four decisions, and only the third carries a figure:
@@ -118,6 +188,13 @@ const TRAVELLING_PHASE: ProjectedActionPhase = 'travelling';
  *    assessed low-risk prisoner. The group id rides along unlabelled: the panel
  *    uses it for the badge's tone, and the group's *name* is on screen already
  *    in the block above the roster.
+ *
+ * **Decisions 3 and 4 are `prisonerNeed` and `prisonerStandingLabelKey` above
+ * as of issue #895**, unchanged in what they decide and moved because a second
+ * reader of the same prisoner arrived: `./simulation-prisoner-detail.ts` maps
+ * all six needs and the same badge word off `hud/prisoner-detail`. Both are
+ * rules rather than copies, so the alternative was two declarations that agree
+ * today.
  */
 function prisonerRow(row: PrisonerRosterRowViewModel): HudPrisonerRowViewModel {
   const actionId = row.currentActionId;
@@ -130,18 +207,10 @@ function prisonerRow(row: PrisonerRosterRowViewModel): HudPrisonerRowViewModel {
         ? deriveSimulationMessageKey('action-phase', row.actionPhase)
         : deriveSimulationMessageKey('action', actionId),
     travelling: actionId !== undefined && row.actionPhase === TRAVELLING_PHASE,
-    standingLabelKey:
-      row.classified && riskTier !== undefined
-        ? deriveSimulationMessageKey('risk-tier', riskTier)
-        : deriveSimulationMessageKey('intake-stage', row.intakeStage),
+    standingLabelKey: prisonerStandingLabelKey(row),
     ...(row.classificationGroupId === undefined ? {} : { classificationGroupId: row.classificationGroupId }),
     ...(riskTier === undefined ? {} : { riskTier }),
-    lowestNeed: {
-      needId: row.lowestNeed.needId,
-      labelKey: deriveSimulationMessageKey('need', row.lowestNeed.needId),
-      permille: row.lowestNeed.level.permille,
-      unmetForStateIncome: row.lowestNeed.unmetForStateIncome,
-    },
+    lowestNeed: prisonerNeed(row.lowestNeed),
   };
 }
 

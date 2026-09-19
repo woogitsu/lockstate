@@ -58,7 +58,7 @@ async function waitForAlertContaining(page: Page, fragment: string, timeoutMs: n
  * player scrolling the Staff panel during a live incident actually sees.
  */
 async function readStaffPanel(page: Page): Promise<{ held: string; roster: string }> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const rosterHeader = page.locator('.hud-staff__roster .ui-section__header');
   if ((await rosterHeader.getAttribute('aria-expanded')) !== 'true') await rosterHeader.click();
   await page.waitForTimeout(200);
@@ -69,7 +69,7 @@ async function readStaffPanel(page: Page): Promise<{ held: string; roster: strin
 }
 
 async function hireGuards(page: Page, count: number): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < count; index += 1) {

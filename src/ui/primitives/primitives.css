@@ -31,6 +31,16 @@
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: var(--label-line-height);
+  /* One line unless a placement says otherwise, and several placements do say
+     otherwise in `hud.css` by overriding this declaration by name
+     (`.hud-rooms__note`, `.hud-build__note`). It was removed here in passing by
+     #1192 -- a commit about `.ui-tab__label`, which is a different class -- and
+     the removal cost 13.19px of strip height: `.ui-stat__label` is an eyebrow,
+     so a chip squeezed by a badge broke its label into two line boxes and the
+     status strip pushed the world's top edge down with it
+     (`ui-strip-badged-width.spec.ts:221`, measured 93.88px against 80.69px at
+     1280x800). Restored, with the dependency named so the next removal has to
+     answer for it. */
   white-space: nowrap;
 }
 
@@ -429,10 +439,37 @@
   /* The active rule lives on the top edge; a transparent one at rest keeps
      the label from shifting by a pixel when a tab is selected. */
   border-top: 2px solid transparent;
-  color: var(--text-muted);
+  color: var(--text-subtle);
   cursor: pointer;
 }
 
+/*
+ * A section name is one line, in every locale (#1192).
+ *
+ * This element set no `white-space` until then, so a name with a space in it
+ * broke at the space when the tab was squeezed to its `min-width`: in Polish,
+ * *Plan dnia* at 375x812 laid out in two line boxes, 26.38px against every
+ * other label's 13.19, and the second line came off the rail. The default
+ * locale could not see it -- the English name for that section is the
+ * one-word *Schedule*, chosen for this reason
+ * (`docs/VISUAL_IDENTITY.md` item 5) -- so the wrap spec in
+ * `tests/browser/ui-shell.spec.ts` passed while the page it describes wrapped.
+ *
+ * `nowrap` alone is not the whole fix and was measured failing: the five
+ * buttons are already flex-shrunk below their own `min-width` at that
+ * viewport, so the unwrapped labels **overlap by 2.50px**. The rail placement
+ * has had this declaration (with an ellipsis) since the layout stage; this is
+ * the bar placement catching up.
+ *
+ * **THE SENTENCE REMOVED FROM THE PARAGRAPH ABOVE SAID `hud.css`'s phone block
+ * buys the width back with `--label-tracking-tight`, AND IT NO LONGER
+ * DESCRIBES THE STYLESHEET.** On 2026-09-16 the owner ruled that below 721px a
+ * tab shows its icon and not its name (#1192), so that block now hides this
+ * element instead of tracking it and the overlap it was paying for cannot
+ * happen there. `nowrap` stays and is not thereby decorative: it is what keeps
+ * a section name on one line at **every viewport above the break**, which is
+ * where the name is still drawn, and `.ui-sr-only` sets it too.
+ */
 .ui-tab__label {
   font-family: var(--font-ui);
   font-size: var(--text-size-label);
@@ -440,6 +477,7 @@
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   line-height: var(--label-line-height);
+  white-space: nowrap;
 }
 
 .ui-tab:hover { color: var(--text-body); background: var(--surface-overlay); }
@@ -449,6 +487,8 @@
   background: var(--accent-soft);
   border-top-color: var(--accent);
 }
+
+.ui-tab[data-active='true'] .ui-tab__label { font-weight: 600; }
 
 .ui-tab:disabled { color: var(--text-muted); cursor: default; }
 
@@ -474,8 +514,9 @@
   /* Tall enough that the collapse control inside it is a real tap target;
      a 24px chevron is not hittable on a touch screen. */
   min-height: var(--tap-target);
-  border-bottom: var(--hairline) solid var(--border-hairline);
-  color: var(--text-subtle);
+  border-bottom: var(--hairline) solid var(--border);
+  background: var(--surface-overlay);
+  color: var(--text-heading);
 }
 
 .ui-panel[data-collapsed='true'] .ui-panel__header { border-bottom-color: transparent; }
@@ -484,11 +525,11 @@
   flex: 1;
   margin: 0;
   font-family: var(--font-ui);
-  font-size: var(--text-size-label);
-  font-weight: 500;
-  letter-spacing: var(--label-tracking);
-  text-transform: uppercase;
-  color: var(--text-subtle);
+  font-size: var(--text-size-body);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-heading);
 }
 
 .ui-panel__toggle .ui-icon { transition: transform 120ms linear; }
@@ -513,12 +554,12 @@
   box-sizing: border-box;
   background: transparent;
   border: 0;
-  color: var(--text-muted);
+  color: var(--text-subtle);
   text-align: left;
   cursor: pointer;
 }
 
-.ui-section__header:hover { color: var(--text-subtle); }
+.ui-section__header:hover { color: var(--text-heading); }
 
 /*
  * A header that shares its row with a control (`headerAction`).
@@ -594,10 +635,25 @@
 
 .ui-action:hover { background: var(--surface-active); color: var(--text-heading); }
 
+/* `--accent-contrast` in BOTH states, and the resting one used to read
+ * `--text-heading` (#1157).
+ *
+ * A heading colour is by definition close to the theme's *text*, and a filled
+ * accent button is not the theme's background -- so that pairing was only ever
+ * legible because there was one theme and it was dark. Measured on the day
+ * palette: `--text-heading` `#122c3a` on `--accent-deep` `#005c5f` is
+ * **1.81:1**, against `--accent-contrast` `#ffffff`'s **7.79:1**. It was not
+ * free in the night theme either -- the old pairing measured 3.72:1 there,
+ * under the 4.5:1 floor for text, where the token pair now measures 5.51:1.
+ * `tests/unit/ui-design-tokens.test.ts` computes both states in both themes.
+ *
+ * `--accent-contrast` is the alias whose entire job is "the colour that reads
+ * on the accent", so the hover rule below already used it; this is the
+ * resting state catching up rather than a new idea. */
 .ui-action[data-tone='primary'] {
   background: var(--accent-deep);
   border-color: var(--accent);
-  color: var(--text-heading);
+  color: var(--accent-contrast);
 }
 
 .ui-action[data-tone='primary']:hover { background: var(--accent); color: var(--accent-contrast); }
@@ -615,7 +671,110 @@
 .ui-action:disabled,
 .ui-action[aria-disabled='true'] { cursor: not-allowed; opacity: 0.5; }
 
-.ui-action__label { white-space: nowrap; }
+/*
+ * A LABEL THAT CANNOT FIT ITS BUTTON REFLOWS RATHER THAN PAINTING OVER THE
+ * NEXT CONTROL (issue #926).
+ *
+ * ## What this rule said until 2026-09-04, and what it cost
+ *
+ * `white-space: nowrap`, with `.ui-action` above declaring no `overflow` --
+ * so the UA default `visible` applied. Put beside `hud.css`'s
+ * `.hud-build__actions > .hud-build__arm { flex: 1 1 auto; min-width: 0 }`
+ * those three facts produce a defect none of them is: `min-width: 0` lets the
+ * button box shrink to whatever the row can spare, `nowrap` forbids the text
+ * from reflowing into that smaller box, and nothing clips the remainder, so
+ * the label rendered at its full intrinsic width from a narrower box and
+ * painted onto its neighbour.
+ *
+ * **ADR 0022's cure for the row's overflow had relocated the overflow into
+ * the label**, and the gate that watches the row could not see where it went:
+ * `BuildProbe.actionsOverflowPx` reads `button.getBoundingClientRect()`, the
+ * box `min-width: 0` guarantees fits.
+ *
+ * Measured on the assembled page at every viewport the browser suite visits,
+ * with `.hud-build__arm`'s label against its own button:
+ *
+ *   | viewport | state    | button | label | label past button | over `Remove` |
+ *   | -------- | -------- | ------ | ----- | ----------------- | ------------- |
+ *   | 1280x720 | arrival  |   76.4 |  87.9 |          **17.8** |       **9.8** |
+ *   | 1280x720 | armed    |   76.4 |  80.8 |          **14.2** |       **6.2** |
+ *   | 1280x720 | removing |  100.8 |  87.9 |           **5.5** |          -2.5 |
+ *   | 375x812  | any      |  171.4 |  87.9 |             -29.7 |         -37.7 |
+ *
+ * 1440x900, 1024x768 and 900x600 read identically to 1280x720 -- the rail is
+ * 264px at all four -- and `actionsOverflowPx` read **-12 in every one of
+ * those cells**, which is the whole finding about the gate.
+ *
+ * **A second instance, in the row this pattern was copied from.**
+ * `.hud-rooms__arm` ("Draw on map", 87.3 in a 98.7 button) painted **6.3px**
+ * outside itself at the same four viewports. A sweep of every laid-out
+ * `.ui-action` label across all five tabs and five viewports found exactly
+ * those two, which is why this is fixed in the primitive rather than in the
+ * Build panel.
+ *
+ * ## Why wrap and not clip
+ *
+ * `overflow: hidden; text-overflow: ellipsis` was measured, not reasoned
+ * about: it leaves the arm label **18.4px** of box for a twelve-character
+ * control name at the four narrow-rail viewports. That does not truncate the
+ * name, it erases it. The owner's ruling of 2026-09-01 on `.hud-rooms__note`
+ * -- the same three ingredients, one element over -- chose readability over
+ * containment for a *sentence*; a control's own name is not the place to
+ * reverse that.
+ *
+ * `min-width: 0` is what makes the wrap reachable, and it is load-bearing
+ * rather than defensive. Without it this span is a flex item with the default
+ * `min-width: auto`, so it cannot shrink below its min-content width -- and
+ * for a single unbreakable token that *is* the whole token, measured at 200.4
+ * in a 90.4 box, spilling 58px with `overflow-wrap: break-word` already set.
+ * The pair is the guard; neither half is on its own.
+ *
+ * `overflow-wrap: break-word` and not `anywhere`: `break-word` offers the
+ * intra-word break only when the line has no other opportunity, so an
+ * ordinary label still breaks at its spaces. `anywhere` measured identically
+ * in all forty cells of the run above -- Chromium preferred the space -- but
+ * it earns that by adding a break opportunity between every character and
+ * letting them compete in normal line breaking, which is a behaviour to
+ * depend on rather than a rule to state.
+ *
+ * `text-wrap: balance` was tried and **is not shipped**: it changed no figure
+ * in any cell (the label is 66.4 wide with and without it), and a declaration
+ * that reads as a promise and does nothing is what the 2026-09-01 ruling
+ * removed from `.hud-rooms__note`.
+ *
+ * ## What pays for the wrap
+ *
+ * Nothing, in height -- and that is not luck, it is `.ui-action`'s
+ * `min-height: var(--tap-target)` above. Two 15px lines are 30px inside a
+ * 44px button, so `.hud-build__actions`, which is `align-items: stretch`,
+ * stays 44px tall and no control below it moves.
+ *
+ * Three lines would not fit, and both halves of the pair were measured
+ * against that: `white-space: normal` **alone** put the arm label on three
+ * lines and grew both rows to 47px, and the shipped rule with `min-width: 0`
+ * on it takes the arm button to **92px** if the room is not there. Which is
+ * why `hud.css` gives the two actions rows the horizontal room -- half the
+ * `.ui-action` padding, 48px of a 238px row -- for the wrap to land on two
+ * lines. `tests/browser/ui-build-arm-label-fit.spec.ts` asserts the height
+ * as well as the fit, so a future label that needs a third line fails there
+ * rather than silently pushing the panel down.
+ *
+ * ## The pair is not invented here
+ *
+ * `.ui-row--wrap .ui-row__label` in this file is `white-space: normal;
+ * overflow-wrap: break-word` already, for a HUD row's label, with its own
+ * measurement of what the wrap costs the rows around it -- and `.ui-row__label`
+ * above it carries `flex: 1; min-width: 0`. So all three declarations of this
+ * rule already sit on one label in this file, and this is the same decision
+ * one primitive over rather than a new one. What `.ui-action__label` did
+ * differently, and what #926 cost, is that it had the `nowrap` and none of
+ * the rest.
+ */
+.ui-action__label {
+  white-space: normal;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
 
 /* ------------------------------------------------------------------ */
 /* Number field                                                        */
@@ -726,3 +885,67 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* ------------------------------------------------------------------ */
+/* Toggle group                                                        */
+/* ------------------------------------------------------------------ */
+
+/* The independent-state sibling of `.ui-choice` above, and it differs in the
+   two places the two questions differ. `.ui-choice__options` is one
+   non-wrapping row of equal cells, which is right for two or three options and
+   wrong for seven -- at 375px those cells are four characters wide. These wrap,
+   and each member is sized by its own label.
+
+   `overflow: hidden` on the row is deliberately absent for the same reason:
+   a wrapped row has no single seam to clip against, so each member carries its
+   own border and its own radius instead of borrowing the group's. That is also
+   why the focus ring here draws outside (the primitive default) rather than
+   inside the way `.ui-choice__option:focus-visible` has to. */
+.ui-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__legend { color: var(--text-muted); }
+.ui-toggles__reason { color: var(--text-muted); }
+
+.ui-toggles__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__option {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  background: var(--surface-overlay);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  color: var(--text-subtle);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-toggles__option:hover:not(:disabled) { background: var(--surface-active); color: var(--text-heading); }
+
+/* On is a background step *and* a colour change, for `.ui-choice__option`'s
+   own recorded reason: the state survives a display that renders the accent
+   hue poorly. */
+.ui-toggles__option[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* A locked member stays legible rather than fading out of contrast: what it
+   says is still the state of the block, and the sentence under the group is
+   what explains why it cannot be pressed. */
+.ui-toggles__option:disabled { cursor: not-allowed; opacity: 0.75; }
+
+.ui-toggles[hidden] { display: none; }

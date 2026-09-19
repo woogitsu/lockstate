@@ -59,16 +59,50 @@ import './ui-harness-api';
 const HARNESS_URL = '/tests/browser/ui-harness.html';
 
 /**
+ * **What a session says about its rooms**, published as the pair the wire
+ * carries rather than as the one figure the host used to derive the other
+ * from.
+ *
+ * Both fields are set together and neither is optional here, because the
+ * cases below exist precisely to drive them *apart*:
+ * `isFreshUnfurnishedPrison` is the simulation's own
+ * `RoomInstanceRegistry.totalResidentCapacity === 0` (ADR 0017's "Amendment,
+ * 2026-09-01" §2), and `roomCapacity` is a sub-sum of that same figure over
+ * the room-catalogue fan-out (`collectRoomInstances` in
+ * `src/simulation/presentation/status-strip-projection.ts`, summing
+ * `instance.residentCapacity` for the ids the content registry defines). A
+ * helper that took one number and inferred the boolean would be the very
+ * derivation `freshUnfurnishedPrison` was extracted to delete.
+ */
+interface RoomsReading {
+  /** `statusCountsSchema.isFreshUnfurnishedPrison`, the predicate the worker judges with. */
+  readonly isFreshUnfurnishedPrison: boolean;
+  /** `statusCountsSchema.roomCapacity`, the catalogue sub-sum, published beside it. */
+  readonly roomCapacity: number;
+}
+
+/**
  * A populated prison, so the row is the width a player really sees -- the
  * same reasoning `ui-overdraft-badge.spec.ts`'s own `counts` helper gives.
- * Only the treasury and `roomCapacity` move between cases.
+ * Only the treasury and `rooms` move between cases.
+ *
+ * **`rooms` used to be a bare `roomCapacity?: number`, and a `0` in it was how
+ * every case below said "fresh, unfurnished" (corrected 2026-09-15).** That
+ * worked only for as long as the host derived the predicate itself; it now
+ * reads `counts.isFreshUnfurnishedPrison` through `freshUnfurnishedPrison`
+ * (`src/ui/affordability.ts`), so a fixture publishing `roomCapacity: 0` and
+ * nothing else describes a prison the worker calls *furnished* -- which is
+ * what this spec was asserting about, without saying so, until the reader
+ * landed. The pair is now stated rather than inferred, and the two cases at
+ * the foot of the test drive the fields apart in both directions.
  */
-function counts(treasuryMinorUnits: number, roomCapacity?: number): HudCountsViewModel {
+function counts(treasuryMinorUnits: number, rooms?: RoomsReading): HudCountsViewModel {
   return {
     prisoners: 42,
     prisonerCapacity: 48,
     occupiedPlaces: 42,
     staff: 11,
+    staffUnassigned: 0,
     rooms: 23,
     prisonersCovered: 42,
     prisonersUnderstaffed: 0,
@@ -77,14 +111,16 @@ function counts(treasuryMinorUnits: number, roomCapacity?: number): HudCountsVie
     activeIncidents: 0,
     contrabandFound: 3,
     treasuryMinorUnits,
-    ...(roomCapacity === undefined ? {} : { roomCapacity }),
+    ...(rooms === undefined
+      ? {}
+      : { roomCapacity: rooms.roomCapacity, isFreshUnfurnishedPrison: rooms.isFreshUnfurnishedPrison }),
     stateIncomeAccruedTodayMinorUnits: 10_667,
   };
 }
 
-function viewModelAt(treasuryMinorUnits: number, roomCapacity?: number): HudViewModel {
+function viewModelAt(treasuryMinorUnits: number, rooms?: RoomsReading): HudViewModel {
   return {
-    counts: counts(treasuryMinorUnits, roomCapacity),
+    counts: counts(treasuryMinorUnits, rooms),
     clock: { day: 9, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
     alerts: [],
   };
@@ -172,8 +208,10 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
      * **Past the mature deliveries rung** (-1,250): the same worked example
      * `HOST_PRESS_FLOOR_MINOR_UNITS`'s docblock and `overdraftRemaining`'s
      * cite -- a balance of -1,230 leaves 20 of spendable room, and 65 does
-     * not fit in 20. No `roomCapacity` published, which is "mature" by
-     * default (`pressFloorMinorUnits`'s own contract for an absent value).
+     * not fit in 20. Nothing published about the rooms, which
+     * `freshUnfurnishedPrison` reads as *not* fresh -- the mature,
+     * already-shipped rung (`src/ui/affordability.ts`'s contract for an
+     * absent value).
      */
     const refused = await push(page, viewModelAt(-1_230));
     expect(
@@ -249,7 +287,30 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
     const matureAtNinety = await push(page, viewModelAt(-1_160));
     expect(matureAtNinety.buyUnavailable, 'the mature floor leaves 90 of room for a 65 press').toBe(false);
 
-    const freshAtTwentyFive = await push(page, viewModelAt(-1_160, 0));
+    /*
+     * **Fresh, and it is the published predicate that says so -- against a
+     * `roomCapacity` of 48, which says the opposite.** Until 2026-09-15 this
+     * case was written `viewModelAt(-1_160, 0)`: a `roomCapacity` of zero,
+     * from which the panel derived its own freshness. It no longer derives
+     * anything -- `freshUnfurnishedPrison` reads
+     * `counts.isFreshUnfurnishedPrison`, the worker's
+     * `RoomInstanceRegistry.totalResidentCapacity === 0` -- so the fixture
+     * states it.
+     *
+     * The 48 beside it is not padding. It makes this case one no derivation
+     * from `roomCapacity` can pass: a panel that reached for that field again
+     * would call this prison furnished, take the mature -1,250, find 90 of
+     * room for the 65 press and leave the button available. The number the
+     * assertion turns on is unchanged -- the starter rung's -1,185 leaves 25,
+     * and 65 does not fit in 25 -- which is the pair
+     * `deliveriesRungFloorMinorUnits`'s docblock and `overdraftRemaining`'s
+     * cite as the defect PR #769 closed for the FUNDS badge and #771's
+     * starter-rung amendment closed again for a fresh prison.
+     */
+    const freshAtTwentyFive = await push(
+      page,
+      viewModelAt(-1_160, { isFreshUnfurnishedPrison: true, roomCapacity: 48 }),
+    );
     expect(
       freshAtTwentyFive.buyUnavailable,
       'a fresh, unfurnished prison’s starter rung leaves only 25 of room for a 65 press',
@@ -257,5 +318,32 @@ test.describe('the Buy button says whether it can act before it is pressed (#772
     // And the starter rung advises against the press without removing it
     // either, for the reason the mature-rung case above gives at length.
     expect(freshAtTwentyFive.buyDisabled, 'the starter rung took the press away').toBe(false);
+
+    /*
+     * **And the same pair the other way round, which is the prison the host's
+     * old derivation actually got wrong.** `roomCapacity` is a sub-sum of
+     * `totalResidentCapacity` over the room-catalogue fan-out, so a restored
+     * session holding a room instance registered under an id the content
+     * registry does not define publishes `roomCapacity: 0` while the worker
+     * goes on judging presses as furnished
+     * (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+     * builds exactly that prison). The measured symptom was the host refusing
+     * a press the command handler accepts.
+     *
+     * At -1,160 the mature -1,250 leaves 90 and the 65 press fits, so this
+     * button must be available. A panel that re-derived freshness from
+     * `roomCapacity === 0` reads this prison as fresh, takes -1,185, and turns
+     * it unavailable -- which makes this the assertion that fails if the
+     * derivation ever comes back, in the direction that no fixture publishing
+     * only the boolean could catch.
+     */
+    const offCatalogueRoom = await push(
+      page,
+      viewModelAt(-1_160, { isFreshUnfurnishedPrison: false, roomCapacity: 0 }),
+    );
+    expect(
+      offCatalogueRoom.buyUnavailable,
+      'a prison the worker calls furnished was judged against the starter rung because its catalogue sub-sum reads zero',
+    ).toBe(false);
   });
 });

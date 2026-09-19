@@ -1,0 +1,77 @@
+diff --git a/dist/app.js b/dist/app.js
+index 3b4d883..7852aa8 100644
+--- a/dist/app.js
++++ b/dist/app.js
+@@ -133,3 +133,17 @@ new MutationObserver(()=>{if(game.classList.contains('panel-hidden')){layout.rig
+ applyLayout();
+ const previousResearchChapter=researchChapter;
+ researchChapter=()=>`<section class="guide-card"><span class="eyebrow">ITERACJA 03 / PANELE</span><h2>Ustaw przestrzeń do pracy.</h2><p>Strzałki przy krawędziach zwijają lewą nawigację, prawy inspektor i górne metryki. Przeciągaj krawędzie paneli, aby zmienić rozmiar; dwuklik przywraca rozmiar domyślny. Na telefonie zmieniasz wysokość dolnego panelu.</p><p>Menu <b>Układ</b> zawiera suwak, przywracanie ustawień oraz tryb „Tylko mapa”. Preferencje są zapamiętywane lokalnie. Uchwyt rozmiaru obsługuje strzałki, Home/End i Enter; Shift zwiększa krok.</p><p>Inspiracje: <a href="https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/" target="_blank" rel="noreferrer">W3C — Window Splitter</a> i <a href="https://code.visualstudio.com/docs/configure/custom-layout" target="_blank" rel="noreferrer">VS Code — Custom Layout</a>. Zakres weryfikacji: składnia i kontrola limitów rozmiaru, bez browser QA.</p></section>`+previousResearchChapter();
++
++// Theme is a device preference; it never changes the simulation clock.
++const systemNight=matchMedia('(prefers-color-scheme: dark)');
++let themeChoice='system';
++try{const saved=localStorage.getItem('lockstate-theme-v1');if(['light','dark','system'].includes(saved))themeChoice=saved}catch{}
++const themeButton=document.createElement('button');themeButton.className='icon-btn theme-toggle';themeButton.dataset.action='toggle-theme';$('.top-actions').append(themeButton);
++function applyTheme(save=false){const dark=themeChoice==='dark'||(themeChoice==='system'&&systemNight.matches);document.documentElement.dataset.theme=dark?'dark':'light';themeButton.textContent=dark?'☀':'☾';themeButton.title=dark?'Włącz tryb dzienny':'Włącz tryb nocny';themeButton.setAttribute('aria-label',themeButton.title);themeButton.setAttribute('aria-pressed',String(dark));if(save)try{localStorage.setItem('lockstate-theme-v1',themeChoice)}catch{};}
++actions['toggle-theme']=()=>{themeChoice=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(true)};
++const originalSettings=actions.settings;
++actions.settings=()=>{originalSettings();const block=document.createElement('label');block.className='form-row';block.innerHTML=`Wygląd<select id="theme-choice"><option value="system">Zgodnie z urządzeniem</option><option value="light">Tryb dzienny</option><option value="dark">Tryb nocny</option></select>`;$('#modal-content').insertBefore(block,$('#modal-content').children[1]);$('#theme-choice').value=themeChoice;};
++document.addEventListener('change',e=>{if(e.target.id==='theme-choice'){themeChoice=e.target.value;applyTheme(true)}});
++systemNight.addEventListener('change',()=>{if(themeChoice==='system')applyTheme()});
++addEventListener('storage',e=>{if(e.key==='lockstate-theme-v1'){themeChoice=['light','dark','system'].includes(e.newValue)?e.newValue:'system';applyTheme()}});
++applyTheme();
+diff --git a/dist/projekt.md b/dist/projekt.md
+index c97b38a..596879f 100644
+--- a/dist/projekt.md
++++ b/dist/projekt.md
+@@ -189,3 +189,9 @@ Research:
+ - VS Code Custom Layout: https://code.visualstudio.com/docs/configure/custom-layout — ukrywanie paneli, zapamiętywanie układu, reset i tryb skupienia. Inspiracja zachowaniem, nie kopia wyglądu.
+ 
+ Weryfikacja: składnia JS i kontrola zakresów rozmiarów; nie wykonano browser QA. Nowy ZIP celowo odłożony do zakończenia poprawek przez właściciela.
++
++## Iteracja 04 — tryb nocny
++
++Przełącznik słońca/księżyca w nagłówku zmienia motyw. Ustawienia udostępniają trzy wybory: dzienny, nocny i zgodny z urządzeniem. Preferencja jest zapamiętywana lokalnie pod lockstate-theme-v1 oraz synchronizowana między kartami tego samego origin. Bez zapisanego wyboru obowiązuje motyw systemowy.
++
++Nocny wariant obejmuje panele, katalog, metryki, uchwyty, formularze, okna i księgę projektu. Tło mapy jest przygaszone, ale motyw NIE zmienia pory dnia w symulacji ani nie tworzy nocnego renderingu świata. Nowy ZIP nadal pozostaje odłożony.
+diff --git a/dist/style.css b/dist/style.css
+index 5ece974..b53d5f3 100644
+--- a/dist/style.css
++++ b/dist/style.css
+@@ -15,3 +15,36 @@
+ .layout-top-closed{--metrics-height:0px}.layout-top-closed .statusbar,.layout-left-closed .rail,.layout-right-closed .inspector{visibility:hidden;pointer-events:none;overflow:hidden}.layout-top-closed .statusbar{padding:0}.edge-toggle{position:absolute;z-index:12;display:grid;place-items:center;background:#f6fafb;color:#007477;border:1px solid #9fb9c3;box-shadow:0 2px 6px #122c3a22;border-radius:4px;font-size:26px;line-height:1;width:30px;height:48px;padding:0;touch-action:manipulation}.edge-left{left:var(--nav-width);top:53%;border-radius:0 5px 5px 0}.edge-right{right:var(--inspector-width);top:53%;border-radius:5px 0 0 5px}.edge-top{top:calc(var(--header-height) + var(--metrics-height));left:48%;width:48px;height:26px;border-radius:0 0 5px 5px}.pane-splitter{position:absolute;z-index:10;width:10px;top:calc(var(--header-height) + var(--metrics-height));bottom:32px;cursor:col-resize;touch-action:none;background:transparent}.pane-splitter:after{content:'';position:absolute;left:4px;top:0;bottom:0;width:2px;background:transparent}.pane-splitter:hover:after,.pane-splitter:focus-visible:after{background:#007477}.pane-splitter:focus-visible{outline:2px solid #007477;outline-offset:-2px}.splitter-left{left:calc(var(--nav-width) - 5px)}.splitter-right{right:calc(var(--inspector-width) - 5px)}.pane-splitter[hidden]{display:none}.resizing{user-select:none}.resizing .map{pointer-events:none}.layout-size input{width:100%}#layout-size{accent-color:#007477;width:100%;min-height:44px}.layout-menu{padding:10px;white-space:nowrap}.layout-right-closed .reopen-panel{display:none}.game.resizing *{transition:none!important}
+ @media(max-width:1100px){.game{--header-height:66px;--metrics-height:74px}.game.layout-top-closed{--metrics-height:0px}}
+ @media(max-width:720px){.game{--header-height:58px;--metrics-height:68px;--bottom-height:70px;grid-template-columns:1fr;grid-template-rows:var(--header-height) var(--metrics-height) minmax(0,1fr) var(--bottom-height)}.game.layout-top-closed{--metrics-height:0px}.game.layout-left-closed{--bottom-height:0px}.game .inspector,.game .inspector.expanded{height:var(--sheet-height);max-height:none;bottom:var(--bottom-height)}.game .edge-right{right:12px;top:auto;bottom:calc(var(--bottom-height) + var(--sheet-height));width:48px;height:30px;border-radius:5px 5px 0 0}.game.layout-right-closed .edge-right{bottom:calc(var(--bottom-height) + 8px)}.game .edge-left{left:10px;top:auto;bottom:var(--bottom-height);width:44px;height:28px;border-radius:4px 4px 0 0}.game .edge-top{left:48%;height:26px}.game .splitter-right{left:64px;right:70px;width:auto;top:auto;bottom:calc(var(--bottom-height) + var(--sheet-height) - 7px);height:15px;cursor:row-resize}.splitter-right:after{left:0;right:0;top:6px;height:3px;width:auto;bottom:auto;background:#9eb5be;border-radius:3px}.game .splitter-left{display:none}.game .map-bottom{bottom:calc(var(--sheet-height) + 12px)}.game .map-tools{bottom:calc(var(--sheet-height) + 22px)}.game.layout-right-closed .map-bottom{bottom:60px}.game.layout-right-closed .map-tools{bottom:70px}.game.layout-right-closed .tool-dock{display:flex}.game.layout-right-closed .map-caption{bottom:115px}.game .sheet-handle{visibility:hidden}.top-actions{gap:1px}.top-actions .text-btn{font-size:12px;padding-left:6px;padding-right:6px}.topbar{padding-left:10px;padding-right:6px}.topbar .brand{font-size:20px;gap:5px}.topbar .mark{width:24px}.edge-toggle{min-width:30px}.layout-left-closed .rail{padding:0}.layout-left-closed .edge-left{bottom:0}.top-actions .icon-btn{width:32px}}
++/* Night theme: role-based surfaces plus overrides for legacy literal colors. */
++.theme-toggle{font-size:24px;min-width:38px;width:38px;height:38px;border-radius:4px}.top-actions{gap:10px}
++:root[data-theme=dark]{color-scheme:dark;--ink:#0d202b;--ink-soft:#bdd4df;--paper:#162d39;--base:#10232e;--line:#36505e;--text:#e0edf2;--muted:#adc2cd;--accent:#8cdec9;--accent-light:#22473f;--mint:#89e0c3;--amber:#f0c77f;--amber-bg:#443522;--danger:#ffb3b9;--danger-bg:#482b35;--shadow:0 3px 12px #0005}
++[data-theme=dark] body,[data-theme=dark] .game{background:#10232e;color:var(--text)}
++[data-theme=dark] .topbar,[data-theme=dark] .guide-header{background:#0b1d27;border-color:#467f74}
++[data-theme=dark] .statusbar,[data-theme=dark] .inspector,[data-theme=dark] .footer{background:#132a36;color:var(--text);border-color:var(--line)}
++[data-theme=dark] .rail{background:#102530;border-color:var(--line)}
++[data-theme=dark] .rail button{color:#b7ccd5}[data-theme=dark] .rail button.active{background:#21453f;color:#a1ead6}
++[data-theme=dark] .metric small,[data-theme=dark] .panel-heading .eyebrow,[data-theme=dark] .catalog-card small,[data-theme=dark] .map-tools span{color:var(--muted)}
++[data-theme=dark] .panel-heading,[data-theme=dark] .pills,[data-theme=dark] .catalog,[data-theme=dark] .row-card,[data-theme=dark] .detail-card,[data-theme=dark] .room-register{border-color:var(--line)}
++[data-theme=dark] .search,[data-theme=dark] .catalog,[data-theme=dark] .catalog-card,[data-theme=dark] .secondary,[data-theme=dark] .schedule-row button{background:#193440;color:var(--text);border-color:var(--line)}
++[data-theme=dark] .catalog-card.selected,[data-theme=dark] .schedule-row.current{background:#22473f;color:#def7ed}
++[data-theme=dark] .catalog-card .item-icon{color:#a5d8d1}
++[data-theme=dark] .primary{background:#89dfc7;color:#102c2d;box-shadow:inset 0 -2px #4fa38f}
++[data-theme=dark] .avatar{background:#24414e;color:#d5e6ed;border-color:#496575}
++[data-theme=dark] .info-banner{background:#22473f;color:#ddf3eb}[data-theme=dark] .info-banner.warning{background:#443522;color:#f0c77f}
++[data-theme=dark] .location,[data-theme=dark] .layer-button,[data-theme=dark] .map-tools,[data-theme=dark] .tool-dock{background:#142e3bf5;color:#dbeaf0;border-color:#476572;box-shadow:var(--shadow)}
++[data-theme=dark] .tool-dock button.active,[data-theme=dark] .tool-dock button[aria-pressed=true]{background:#285047;color:#b5f2dc}
++[data-theme=dark] .edge-toggle{background:#1c3845;color:#a1ead6;border-color:#5f8591;box-shadow:0 2px 6px #0005}
++[data-theme=dark] .pane-splitter:hover:after,[data-theme=dark] .pane-splitter:focus-visible:after{background:#89e0c3}
++[data-theme=dark] .room-label{background:#0c2431f5;color:#e4f2f4;border-left-color:#89e0c3}
++[data-theme=dark] .room-label.inspected{background:#285047;color:#ddfff0;outline-color:#89e0c3}[data-theme=dark] .room-label.inspected span{color:#b4f3df}
++[data-theme=dark] .modal{background:#152e3b;color:var(--text)}[data-theme=dark] dialog::backdrop{background:#020e19bb}
++[data-theme=dark] .modal input,[data-theme=dark] .modal select{background:#213e4b;color:var(--text);border-color:#496572}
++[data-theme=dark] .guide{background:#10232e}[data-theme=dark] .guide-nav{background:#152e3b;border-color:var(--line)}
++[data-theme=dark] .guide-card{background:#193440;border-color:#456573}[data-theme=dark] .guide-table th{background:#254552;color:#e1eff3}
++[data-theme=dark] .guide-button{background:#89dfc7;color:#102c2d}[data-theme=dark] .device-stage{background:#203b47}
++[data-theme=dark] .device-switch button{background:#193440;color:#d7e7ee;border-color:#486774}[data-theme=dark] .device-switch button.active{background:#89dfc7;color:#102c2d}
++[data-theme=dark] .guide .swatch{color:#183442}[data-theme=dark] .guide .swatch:first-child,[data-theme=dark] .guide .swatch:nth-child(2){color:white}
++[data-theme=dark] .toast{background:#244853;color:#f0fafb;border:1px solid #719caa}
++[data-theme=dark] .map-world>img{opacity:.74}[data-theme=dark] .map{background:#102832}
++[data-theme=dark] .reopen-panel{background:#1c3845;color:#dbeaf0}
++@media(max-width:720px){.top-actions{gap:0}.topbar .theme-toggle{width:30px;min-width:30px;height:36px}.topbar .brand{font-size:18px}.top-actions .text-btn{padding-left:4px;padding-right:4px}.top-actions .text-btn span{display:none}}

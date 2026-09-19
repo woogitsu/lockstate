@@ -257,9 +257,14 @@ matter how understaffed the sector is.
 ## Response: real guards, real routes, real lockdown
 
 `IncidentResponseSystem` claims guards through `claimableGuardIds`
-(`src/simulation/security/post-eligibility.ts`) — the same finite shared pool
+(`src/simulation/security/post-eligibility.ts`) — the same finite roster
 `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
-response is a genuine staffing diversion. Since
+response is a genuine staffing diversion. **The traffic is one-way since issue
+#996**: a search claims from `claimableSearchGuardIds`, which withholds
+`INCIDENT_RESPONSE_GUARD_RESERVE` guards from it, while a response still claims
+from the whole free pool. A sweep in flight can no longer empty the pool this
+paragraph is about; an incident response can still empty the one a sweep draws
+on, and that is the priority order rather than an oversight. Since
 [ADR 0053](./adr/0053-who-may-stand-a-security-post.md) that pool is the
 *post-eligible* unassigned staff rather than every unassigned staff member: a
 nurse on the roster is not a responder, and a prison holding five of them lets a
@@ -344,10 +349,31 @@ question, with the unreachable one free to rot. The file was renamed
 **What a player is told about an incident *as it happens* is a different
 channel and is not this one.** `simulation/event` carries
 `incidents.riot-opened` and its three siblings the moment
-`IncidentTriggerSystem` opens one, and `incidents.all-clear` when the last
-one closes; those are occurrences and are pushed once, where everything
-above is a projection the HUD pulls. See `src/ui/simulation-events.ts` for
-which kind is graded `'danger'` and why.
+`IncidentTriggerSystem` opens one, and one of `incidents.all-clear` /
+`incidents.all-clear-after-lapse` when the last one closes; those are
+occurrences and are pushed once, where everything above is a projection the
+HUD pulls. See `src/ui/simulation-events.ts` for which kind is graded
+`'danger'` and why.
+
+**Which of the two closing rows is chosen is decided by the transition that
+emptied the log, and issue #914 is why there are two.** A contained incident
+injures nobody (`advanceResponse`'s `'resolved'` branch writes
+`injuredEntityIds: []`) and a lapsed one injures every participant, and until
+that issue both published the same sentence: measured over one prison shape
+played twice, **15 incidents resolved with zero injuries and 19 lapsed with
+114 prisoner-injuries and three escapes produced byte-identical alert
+columns** (`docs/research/2026-09-04-does-anyone-answer-an-incident.md`
+finding 4). The lapse row is graded `'warning'` rather than `'info'` for the
+same reason. Neither carries a figure, and the reason a *count* of injured is
+not on the wire is stated at the schema: the HUD localizer has no plural rule
+to render one with, and a lapsed escape attempt injures exactly one.
+
+**A per-incident accounting is still owed, and it is a panel rather than a
+row.** `projectIncidents` already answers `injuredCount` and `propertyDamage`,
+and nothing under `src/ui/` requests `hud/incidents` --
+`tests/foundation/projection-reachability-contract.test.ts` names it in
+`UNPAINTED_PROJECTION_IDS`. Until that panel exists, the closing row is the
+whole of what a player is told about how an incident ended.
 
 **This read "Every member of that set is about an incident *starting*, except
 the one that says the prison is calm again", and #683 is what ended it.** It
@@ -361,14 +387,15 @@ graded `danger`, and carrying the escapee's entity id and name so the sentence
 can say who. It is a distinct event kind rather than a field on one that exists,
 for a reason the research settled and the schemas restate: the opening event is
 published before an outcome exists and this channel never amends a published
-event, and `incidents.all-clear` refuses per-incident figures in its own comment
-and fires only when nothing is open anywhere.
+event, and the two `all-clear` members refuse per-incident figures in their own
+comments and fire only when nothing is open anywhere.
 
 The counting rule that survives all of it is not "every member is an opening"
 but the one that was doing the work underneath: **an event on this channel is an
 occurrence at a tick, and the incident members are one per transition worth
 telling the player about** — an opening, this one departure, and the return to
-calm. Why the outcome is worth a row, and what the alternatives cost, is in
+calm in whichever of its two shapes the ending had. Why the outcome is worth a
+row, and what the alternatives cost, is in
 `docs/research/2026-08-30-what-an-escape-says.md`; what the player reads is
 measured in `tests/integration/escape-outcome-visibility.test.ts`.
 
@@ -403,7 +430,7 @@ obstacle this paragraph claimed it was, because re-dispatch mounts a new
 response rather than returning the incident to `'active'`.
 
 The outcome is the **same terminal state, later by at most one scheduling
-interval**: `tests/integration/incident-response-restore.test.ts:392-404` runs a
+interval**: `tests/integration/incident-response-restore.test.ts:443-456` runs a
 restored session against a continuous one and asserts both reach `'resolved'`
 with equal outcomes, the restored one closing at tick 81 against the continuous
 run's 71. `docs/DETERMINISM.md` has carried that reading since the change.
@@ -572,6 +599,51 @@ exists.
 > `Proposed` and the replacement sentence is the owner's under `AGENTS.md`'s
 > fourth exclusion. What is settled is that this paragraph may not go on saying
 > the two conditions are the same condition.
+
+> **Two sentences in the paragraph above are false, and they are marked rather
+> than overwritten** (`docs/AGENT_WORKFLOW.md` §4) **because the false step is
+> the finding, not a typo.** Re-established 2026-09-15 on `2559eb14`.
+>
+> **First, the pool is named wrongly, and the wrong name is what makes the
+> rest read as plausible.** Neither system draws from `unassignedGuardIds()`
+> any more. Since ADR 0053 both draw from `claimableGuardIds` -- that pool
+> filtered to post-eligible roles -- `DeploymentSystem.assignUnassignedGuards`
+> at `src/simulation/security/deployment-system.ts` and
+> `IncidentResponseSystem` at `src/simulation/incidents/response-system.ts`,
+> each with a comment saying so in the same words. `unassignedGuardIds()` is
+> deliberately *not* narrowed (`src/simulation/security/post-eligibility.ts`:
+> *"A prison whose roster holds a nurse and no guard should read three staff,
+> one of them unassigned, and nobody available to guard"*), so the two counts
+> genuinely differ and the paragraph names the one neither system reads.
+>
+> **Second, *"exists exactly when"* is a biconditional and only one direction
+> of it holds.** A shortfall surviving a deployment pass does imply an empty
+> claimable pool -- `assignUnassignedGuards` fills posts until `shortage <= 0`
+> or the pool runs out. An empty pool does
+> **not** imply a shortfall, because `getCoverageReport` publishes
+> `shortage: Math.max(0, required - assigned)` and posting is what drives
+> `assigned` up: a prison that hires **exactly** its requirement reads
+> `shortage 0` and has **nothing left to claim**, both at once. Measured here,
+> seed `0x893`, twelve prisoners over one bed so the sector asks for two: two
+> hires publish `required: 2, assigned: 2, shortage: 0`, the Staff panel badges
+> the prison **`Covered`**, the claimable pool is **0**, and across sixteen
+> in-game days that prison **resolved 0 incidents, let 9 lapse, dispatched 0
+> responders and found 0 contraband, with `routeFailures: 0`** -- so nothing
+> failed to *reach* an incident; nothing was ever sent. Six hires at the same
+> seed resolve all ten and let none lapse. The ladder is on the unmerged branch
+> `measure/893-coverage-and-response-draw-from-one-pool`; read it as a draft,
+> and the figures above are the ones re-run on this commit.
+>
+> **So *"coherent play rather than a defect"* rested on a reader picturing a
+> prison that is visibly short, where the panel is already telling the player
+> to hire.** The prison above is being told the opposite. How many guards it
+> actually needs is stated nowhere a player can read -- the thresholds are
+> `required + 1` to search, `required + 2` to answer a severity-3 assault and
+> `required + 4` for a severity-8 riot. **Whether that should change is not
+> settled here**, and it cannot be: the replacement for a sentence the panel
+> says to a player is the owner's under `AGENTS.md`'s fourth exclusion. What is
+> settled is that this paragraph may not go on saying the two conditions are
+> the same condition.
 
 ## Scale
 

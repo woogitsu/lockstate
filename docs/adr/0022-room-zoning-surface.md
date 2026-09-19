@@ -39,6 +39,43 @@ branch.
 asserts — were re-verified against `origin/main` at v0.0.30 while writing this,
 and every `file:line` below resolves there unless the text says otherwise.
 
+> **That sentence is kept and it dates nothing below it** (`docs/AGENT_WORKFLOW.md`
+> §4: mark both directions). It was true of v0.0.30 and is not a warrant for
+> any number a reader meets further down. Two commits re-aimed anchors in this
+> file beneath it without touching it — `fbf4709b` (2026-08-28, `hud.ts:153` to
+> `:154`) and `907b4311` (2026-09-06, eleven more) — which is the ADR 0022 row
+> of the evidence table in `docs/adr/README.md`'s section *"A global anchor pin
+> in an ADR is advisory, and does not date what is below it"*.
+>
+> **This file is the corpus's hardest case for a sweep, and the reading taken
+> on 2026-09-15 is stated rather than assumed.** The Status block above says
+> *"Everything from *Decision* down to *Consequences* is left exactly as it was
+> written"* — so those anchors are offered as history and re-aiming them would
+> make a superseded decision look current, which is what pull request #1229
+> correctly declined to do to ADR 0040. But the body is **not** in fact
+> unchanged: §3 carries anchors re-pinned *"as of `83d9616`"*, §4 carries a
+> paragraph re-aiming five anchors *"on 2026-09-05"*, and the Context carries a
+> 2026-08-28 correction of its own. So the body is neither frozen nor current,
+> and no reader can tell from a number which of the two it is.
+>
+> **Measured, so the size of the gap is a figure rather than an impression.**
+> Of the **22** rooted `file:line` anchors between *Decision* and the end of
+> *Consequences*, **five** still land on what their sentence names
+> (`src/rendering/world/world-view.ts:117`,
+> `src/rendering/phaser/tile-layer.ts:358-366`,
+> `src/rendering/build/edge-picking.ts:26`,
+> `src/rendering/phaser/build-overlay.ts:30` and `src/ui/primitives/icon.ts:16`)
+> and **seventeen** do not. They are **left as they are and counted here** rather
+> than re-aimed, because the section they sit in is superseded by the amendment
+> below and a re-aimed anchor under a superseded decision reads as a current
+> one. **The 2026-09-05 re-aim in §4 is the argument for that policy rather
+> than against it**: it moved five anchors onto `appearance.ts:114` and `:99`,
+> and both had rotted again by 2026-09-15 — `zoningTint` is at
+> `src/rendering/world/appearance.ts:303` and `ZONING_TINT_ALPHA` at `:139`.
+> Ten days. What is corrected below is only the prose written in the present
+> tense **about today**: the Context's 2026-08-28 replacement anchors, and the
+> amendment's own.
+
 **Browser measurements** were taken on a local merge of PR #282 (the #89 buy
 surface) and PR #283 (the refusal-reporting route) on the assembled page, and have **not** been re-run
 on `main`. They are quoted as measured on that tree and attributed as such
@@ -58,14 +95,36 @@ stating rather than leaving to be discovered:
 This is the fact that makes the question worth an ADR rather than a panel
 sketch.
 
-`RoomZoningService.zone` (`src/simulation/rooms/zoning.ts:203`) is complete. It
+`RoomZoningService.zone` (`src/simulation/rooms/zoning.ts:489`) is complete. It
 validates the room type against `defaultRoomContentRegistry`, bounds both
-dimensions at `MAX_ZONE_DIMENSION_TILES` (`:101`), checks every tile for bounds,
-ownership and overlap *before* writing any tile (`:225-241`), paints the world's
-zoning plane with the room catalog's own `numericId` (`:243-251`), registers a
-`RoomInstance` and returns `{ kind: 'zoned', instance }` (`:252-263`). Refusals
-are typed — six reasons at `:140-146` — and kept in a bounded window because a
-command handler returns `void`.
+dimensions at `MAX_ZONE_DIMENSION_TILES` (`:142`), checks every tile for bounds,
+ownership and overlap *before* writing any tile (`:544-562`), paints the world's
+zoning plane with the room catalog's own `numericId` (`:619`), registers a
+`RoomInstance` and returns `{ kind: 'zoned', instance }` (`:650`, `:679-688`).
+Refusals are typed — eight reasons at `:209-217` — and kept in a bounded window
+because a command handler returns `void`.
+
+> **`:140-146` and *"six"* stood in that sentence until 2026-09-16, when this
+> branch merged `origin/main` and every anchor in it was opened**
+> (`docs/AGENT_WORKFLOW.md` §4). `:140-146` is the docblock over
+> `MAX_ZONE_DIMENSION_TILES`, which is the anchor the *previous* clause of the
+> same sentence already cites at `:142` — so the refusal anchor had drifted onto
+> its own neighbour, and pointing at a plausible-looking docblock is exactly
+> what hid it. The count was corrected in the note below and the coordinate was
+> not; a correction that repairs the prose and leaves the coordinate is the
+> failure this sweep exists for.
+
+> **Re-aimed 2026-09-15; those six anchors read `:203`, `:101`, `:225-241`,
+> `:243-251` and `:252-263` and every one of them had drifted, four of them
+> onto docblocks.** Two of the sentence's claims moved with them and are
+> corrected here rather than over the text (`docs/AGENT_WORKFLOW.md` §4).
+> **There are eight refusal reasons, not six** — `ZoneRoomRefusalReason` now
+> also carries `'below-minimum-size'` and `'not-enclosed'`, both of them the
+> amendment below reporting what the implementation found
+> (`src/simulation/rooms/zoning.ts:209-217`). And `zone` returns more than
+> `{ kind: 'zoned', instance }`: it carries `enclosure`, `enclosureRequirement`
+> and `roomNameKey` beside it. A count is the sentence shape §4 says rots
+> first, and this one rotted while the rest of the sentence stayed true.
 
 `src/simulation/runtime/session-commands.ts:46-72` already routes the command to
 it, and records why the schema's field is named `roomId` while the service's
@@ -88,7 +147,19 @@ carried is now actively misleading.** It cited `src/ui/hud/hud.ts:153-195`.
 members, three of them room-related — `zone-room`, `unzone-room` and
 `arm-room-tool`, which are this ADR's own decision having shipped. And
 `hud.ts:154` now declares **`HudRoomGesture`**, the room gesture this document
-introduced. So a reader following the old anchor to check *"none of them is a
+introduced.
+
+> **Both replacement anchors and the count have themselves rotted, which is the
+> third revision of this one sentence and is left visible for that reason**
+> (`docs/AGENT_WORKFLOW.md` §4: a correction is no more durable than the claim
+> it corrected). Read on 2026-09-15 at `origin/main` `e044a3e8`: `HudIntent` is
+> `src/ui/hud/hud.ts:365-738` and declares **twenty-two** members, still three
+> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:174`. Re-opened 2026-09-16 after this
+> branch merged `origin/main`: `HudIntent` still spans `:365-738`, still
+> declares twenty-two members, and `HudRoomGesture` is still `:174`. The
+> sentence the paragraph is checking — that none of `HudIntent`'s members was
+> about a room at v0.0.30 — is unaffected, and *"eighteen"* is the shape §4
+> names as rotting first. So a reader following the old anchor to check *"none of them is a
 room"* lands on a type that is about nothing else. **That replacement anchor
 said `:153` until 2026-08-28**, and was off by one when it was written -- the
 `export type HudRoomGesture` line is at `:154`, and `git show` at the previous
@@ -109,15 +180,17 @@ This ADR decides the one missing piece.
 
 The HUD may not import the simulation at all. That is `AGENTS.md` boundary 1 in
 its strongest form for `src/ui/hud/**` and `src/ui/primitives/**`, and
-`tests/unit/ui-hud-messages.test.ts:196-200` asserts it by scanning for the
-import. So the HUD cannot build a command; it emits a `HudIntent` and
+`tests/unit/ui-hud-messages.test.ts:471` (the anchor read `:196-200`) asserts
+it by scanning for the import. So the HUD cannot build a command; it emits a `HudIntent` and
 `src/main.ts` turns it into one, in the `onIntent` switch at `:458-459`. The
 build gesture already takes that route: `case 'place-build-order'` at `:511`.
 
 Text never crosses either ([ADR 0011](./0011-localization-architecture.md)):
 every rendered string is a message key, and a stable content id may never reach
 the player. The room catalog is unusually well placed for that — all 18 room
-definitions carry a real `nameKey` (`src/content/room-catalog.ts:66-159`) and
+definitions carry a real `nameKey` (`src/content/room-catalog.ts:92-189`; the
+anchor read `:66-159`, and the `:92-186` this branch re-aimed it to stopped
+three lines short of `room.utility-room`, the eighteenth) and
 all 18 `room.*.name` keys ship in the default catalog
 (`src/content/default-locale-en.ts:26-43`).
 
@@ -125,8 +198,9 @@ all 18 `room.*.name` keys ship in the default catalog
 
 The Build panel's body headroom is **not** the budget, and treating it as one
 would have made alternative C look merely tight instead of impossible.
-`.hud__side` is `flex: 0 1 auto` with `min-height: 0` (`src/ui/hud/hud.css:385-393`)
-and `.hud__aside` is `flex: 1 1 0` with a `min-height: 25%` floor (`:367-372`),
+`.hud__side` is `flex: 0 1 auto` with `min-height: 0` (`src/ui/hud/hud.css:1179-1187`)
+and `.hud__aside` is `flex: 1 1 0` with a `min-height: 25%` floor (`:1154-1158`;
+the anchors read `:385-393` and `:367-372`),
 so the Build panel grows into the aside's slack before it overflows anything.
 
 Always-visible pixels actually available, measured on the #282+#283 merge by
@@ -145,7 +219,7 @@ section's bottom edge crosses the panel's fold:
 | 1280×720 | 38.2 | 30.2 |
 | 900×600 | 12.2 | 7.8 |
 
-`--tap-target` is 44px (`src/ui/tokens.css:150`). So **a single always-visible
+`--tap-target` is 44px (`src/ui/tokens.css:709`; the anchor read `:150`). So **a single always-visible
 control fits at three of the five viewports and at neither 1280×720 nor
 900×600** — and the desktop 1280×720 is the second-tightest of the five,
 tighter than the phone. That inversion is why the number had to be measured
@@ -254,12 +328,29 @@ zone should be undoable at all is left open in §*What this does not settle*.
 **An accepted zone is visible with no renderer work at all.** The zoning plane
 is already projected, decoded and painted per tile with a per-category tint:
 `src/simulation/presentation/world-projection.ts:16,44` carries `zoning` in the
-chunk projection → `src/rendering/world/world-view.ts:116` decodes the RLE and
-`:179` reads it per tile → `src/rendering/phaser/tile-layer.ts:189-197` fills the
-tile with `zoningTint` (`src/rendering/world/appearance.ts:96`) at
-`ZONING_TINT_ALPHA` (`:93`). This is true of all three alternatives and is not
+chunk projection → `src/rendering/world/world-view.ts:117` decodes the RLE and
+`:180` reads it per tile → `src/rendering/phaser/tile-layer.ts:358-366` fills the
+tile with `zoningTint` (`src/rendering/world/appearance.ts:114`) at
+`ZONING_TINT_ALPHA` (`:99`). This is true of all three alternatives and is not
 an argument for any one of them; it is recorded because it is the largest piece
 of work that does *not* have to be done.
+
+**Five of those six anchors were re-aimed on 2026-09-05, and the split between
+them is worth more than the new numbers.** The chain read `world-view.ts:116`,
+`:179`, `tile-layer.ts:189-197`, `appearance.ts:96` and `:93`. **Every one of
+the five was already wrong at `c57f5fa8`**, the previous status-queue anchor,
+so no window found them and no delta pass could have:
+`tile-layer.ts:189-197` was the graphics-pool `acquire` helper there and had
+nothing to do with zoning; the two `world-view.ts` numbers were each one short,
+landing on the `leftEdge` line above the `zoning` one; `zoningTint` stood at
+`appearance.ts:113` against the `:96` cited, and `ZONING_TINT_ALPHA` at `:98`
+against `:93`. #1028's object-painter work then moved the last two by one
+apiece, which is the whole of what this window did to a sentence that had been
+carrying five false coordinates before it opened. Only
+`world-projection.ts:16,44` held. The claim the sentence makes — that an
+accepted zone is painted per tile with a per-category tint with no renderer
+work — was re-derived and is true; it was the coordinates that had rotted, in
+the direction this corpus records over and over.
 
 **A rectangle drag is a second gesture, not an edit to the wall drag**, and
 this is the honest cost of the decision. The build picking layer is edge-typed
@@ -665,6 +756,19 @@ asserted and the implementation had to correct.
    sixth tab is foreclosed at 375×812, and `Rooms` is short enough where a
    nine-character label would not be.
 
+   > **Still five members, and not the same five.** Kept rather than rewritten
+   > (`docs/AGENT_WORKFLOW.md` §4). `HUD_TAB_IDS` is today
+   > `['overview', 'build', 'zones', 'manage', 'day-plan']`
+   > (`src/ui/hud/hud-state.ts:77`) and the label this item calls `Rooms` is
+   > `'hud.tab.zones': 'Zones'` (`src/content/default-locale-en.ts:496`). The
+   > rename is [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)
+   > decision 3, ruled by the owner on 2026-09-13 and merged as `919d6b15`.
+   > **The count and the constraint are untouched** — five tabs, a sixth still
+   > foreclosed at 375×812 — and `Zones` is a shorter label than `Rooms`, so
+   > the nine-character clause is if anything safer. What moved is the tab's id
+   > and its word, and every *other* sentence in this document that says
+   > `Rooms`, `security` or `regime` of a live tab is reading the old bar.
+
 6. **The `test.slow()` estimate was in the right place.** B was also charged
    with widening the #88 tab sweep, estimated at "roughly 55s" for a fifth tab
    against a tripled 180s budget. Measured on this branch, with the sweep also
@@ -681,6 +785,18 @@ because "renders no panel" and "unclaimed" are different facts:
 - `security` is where the Staff panel lands — `claude/guard-hiring-surface`
   (PR #302) adds it on that tab, so it is claimed by work in flight.
 - `regime` is the schedule.
+
+> **Two of those three tab ids no longer exist**, and the list is kept as the
+> record of what was weighed. Under ADR 0112 decision 3 the Staff panel is on
+> `manage` — `staffPanel.setVisible(state.activeTab === 'manage')`
+> (`src/ui/hud/hud.ts:2611`; the anchor read `:2506` when this branch was
+> written, and was a bare `*/` by the time it merged `origin/main` on
+> 2026-09-16; `:2558` was the re-aim taken that day, and #1279 moved the call
+> again to `:2611` — three coordinates for one unchanged line of code, which is
+> `docs/AGENT_WORKFLOW.md` §4's *"a correction is no more durable than the
+> claim it corrected"* on its third turn here) — and the schedule on `day-plan`. The
+> argument the list makes — that a tab whose label names another feature is an
+> ADR 0011 problem rather than a layout one — is untouched by the rename.
 
 Each already carries its own label message key naming its own planned feature,
 so reusing one would have put a Rooms panel behind a tab whose label says
@@ -771,9 +887,10 @@ Left open deliberately, and none of them decided in code.
    **The second direction is no longer true, and the reason it was thought
    unfixable is the part that was wrong.** `dea529c` (#337, 2026-08-26 22:01
    UTC, on `main`) narrowed removal to the instance: `collectRemovableRegion`
-   (`src/simulation/rooms/zoning.ts:808`) resolves each covered tile through
-   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:811`;
-   `src/simulation/objects/room-capacity.ts:83`) and clears *that instance's*
+   (`src/simulation/rooms/zoning.ts:965`) resolves each covered tile through
+   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:968`;
+   `src/simulation/objects/room-capacity.ts:90`; those three anchors read
+   `:808`, `:811` and `:83`) and clears *that instance's*
    rectangle, so clipping one corner of one of two touching cells removes one
    cell. The same-type fill survives only for paint no rectangle claims — a
    restored V4 row records no `width`/`height` — and it now stops at any tile an

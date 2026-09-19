@@ -24,6 +24,7 @@ import {
 } from '../../src/simulation/runtime/new-session';
 import { chunkCoordinate, tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * **A completed `door-wooden` order produces a door the simulation can see.**
@@ -335,8 +336,7 @@ describe('a wall line with a door in it', () => {
     );
 
     const result = routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in');
-    expect(result.ok, 'a walker outside must be able to reach the room through its door').toBe(true);
-    if (!result.ok) return;
+    expectOk(result, 'the walk in from outside through the built door');
     // And it is *this* door they crossed, not a gap somewhere in the wall line.
     expect(result.route.segments.map((segment) => segment.enteredViaDoorId).filter((id) => id !== undefined)).toEqual([
       DOOR_ID,
@@ -463,8 +463,7 @@ describe('taking a built door back', () => {
     expect(topology.getTopologyId(INSIDE)).toBe(topology.getTopologyId(OUTSIDE));
 
     const result = routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-after-undo');
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expectOk(result, 'the walk in through the gap the undo left');
     // Through a hole, so no door was crossed -- the state before the door was
     // built, reached back exactly.
     expect(result.route.segments.every((segment) => segment.enteredViaDoorId === undefined)).toBe(true);
@@ -500,7 +499,7 @@ describe('taking a built door back', () => {
     expect(runtime.construction.getOrder('seg-99-wall-under-door')?.state).toBe('completed');
     // The door still crosses it: `DoorRegistry` is authoritative for the edge
     // whatever the world's own value there is.
-    expect(routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-two-claimants').ok).toBe(true);
+    expectOk(routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-two-claimants'), 'the walk in while a wall and a door claim the same edge');
 
     runtime.construction.cancelOrder(DOOR_ORDER_ID);
 
@@ -556,7 +555,7 @@ describe('taking a built door back', () => {
 
     expect(runtime.navigation.doors.all().map((door) => door.id)).toEqual([DOOR_ID]);
     expect(edgeValueAt(runtime, DOORWAY)).toBe(DOOR_EDGE_NUMERIC_ID);
-    expect(routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-second-door').ok).toBe(true);
+    expectOk(routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-second-door'), 'the walk in through the door the cancellation left standing');
   });
 });
 

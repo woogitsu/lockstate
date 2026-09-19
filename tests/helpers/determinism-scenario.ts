@@ -238,6 +238,28 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   ])) {
     runtime.gangs.register(gang);
   }
+  /*
+   * One member on each side, because since
+   * [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 4 `tryOpenRetaliation` refuses a pair whose members have gone --
+   * and until this line both of these gangs were empty, so the retaliation
+   * this scenario has always opened would silently stop opening and every
+   * assertion downstream of it would go on passing against a prison with no
+   * incidents in it.
+   *
+   * **ADR 0103 named two fixtures that needed members and this is a third**,
+   * in `tests/helpers/` rather than in `tests/unit/`, which is why it is worth
+   * a comment: the two it named are in `tests/unit/incident-trigger.test.ts`.
+   *
+   * Real prisoners of this scenario rather than invented ids -- the
+   * retaliation's participant list is `membersOf` both sides, and it feeds
+   * `IncidentResponseSystem.lapse`'s injured list, so ids nobody admitted
+   * would make that a fact about entities the prison does not hold. Written in
+   * ascending gang id and read out of `prisonerIds` by position, so the
+   * *scenario* still records who is in which gang rather than deriving it.
+   */
+  runtime.gangs.addMember('gang-a', prisonerIds[1]!);
+  runtime.gangs.addMember('gang-b', prisonerIds[3]!);
   runtime.gangs.addGrudge('gang-a', 'gang-b', 0.8);
 
   return runtime;

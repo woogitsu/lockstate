@@ -118,6 +118,16 @@ src/simulation/prisoners/job-worker-adapter.ts:12: * … `JobWorkerPool.register
 src/simulation/prisoners/release.ts:32:/** Dropping a departing prisoner from the job labour pool. …
 ```
 
+**No longer true, and the transcript above is left exactly as it was
+produced (marked 2026-09-08).** `JobWorkerPool` does not exist any more: ADR
+0093 decision 4 retired it the day after this record was taken — `cd41a1d6` —
+and `job-system.ts` was deleted with it, so the grep printed above cannot be
+re-run to the same output today.
+Recorded here rather than edited into the block, because a pasted command
+output is evidence of what a command printed on a date, and because this
+directory's rule is that *"a record here does not become wrong, it becomes
+older"* (`docs/research/README.md`).
+
 Every hit is a declaration, a wiring point inside `createNewSimulationRuntime`
 (which builds a `JobSystem`, an empty `JobBoard` and an empty `JobWorkerPool`
 into every session unconditionally — `new-session.ts:860`), or a comment.

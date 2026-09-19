@@ -261,6 +261,26 @@ export interface ZoneRoomAccepted {
    */
   readonly enclosure: RoomEnclosure;
   readonly enclosureRequirement: RoomEnclosureRequirement;
+  /**
+   * The room type's own word, as the catalog's `nameKey` -- what the
+   * acknowledgement of an accepted designation names
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * **A key and not a word, and it is read here rather than looked up again
+   * downstream.** `zone` has already resolved the definition in order to
+   * decide the request, so this is that definition's own `nameKey` handed
+   * over; deriving `${roomCatalogId}.name` at the call site instead would be a
+   * second answer to "what is this room called" that content could falsify
+   * without breaking a compile. ADR 0011 keeps translated text off the worker
+   * boundary, and a message key is exactly what `prisoners.relocated`'s
+   * `roomNameKey` already carries across it --
+   * `src/simulation/events/resident-relocation-notice.ts` reads it from the
+   * same registry field for the same reason.
+   *
+   * On the accepted outcome only. A refusal names no room type, because
+   * `unknown-room-type` is one of the reasons it can carry.
+   */
+  readonly roomNameKey: string;
 }
 
 export type ZoneRoomOutcome = ZoneRoomAccepted | ZoneRoomRefusal;
@@ -308,6 +328,25 @@ export interface UnzoneRoomAccepted {
   readonly kind: 'unzoned';
   /** Instance ids removed from the registry, ascending. */
   readonly removedInstanceIds: readonly string[];
+  /**
+   * Each removed instance's own room type, as the catalog's own `nameKey` --
+   * one entry per `removedInstanceIds`, in the same order
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+   *
+   * **A parallel array rather than a single array of pairs**, matching how
+   * `ZoneRoomAccepted` already carries its own `roomNameKey` beside `instance`
+   * rather than nested inside it -- a caller that wants only the ids (every
+   * existing caller, today) is unaffected, and `tests/unit/rooms-zoning.test.ts`
+   * asserts the two stay the same length and the same order.
+   *
+   * A drag can cover instances of different types at once, which
+   * `removedInstanceIds`'s own comment about issue #337 already establishes --
+   * so this is not always one name repeated. Resolved from the same
+   * `definition` this method already looked up to find each instance's
+   * registry id, never re-derived from `roomCatalogId` after the instance is
+   * gone.
+   */
+  readonly removedRoomNameKeys: readonly string[];
   /** How many tiles of the zoning plane were cleared. Always at least 1 on an accepted removal. */
   readonly clearedTiles: number;
 }
@@ -642,6 +681,10 @@ export class RoomZoningService {
       instance,
       enclosure: enclosure.enclosure,
       enclosureRequirement: requirement,
+      // The definition this whole function decided the request against, so the
+      // word the player reads and the type the world recorded cannot disagree:
+      // `registered.roomCatalogId` is `definition.id` twenty lines above.
+      roomNameKey: definition.nameKey,
     };
   }
 
@@ -823,6 +866,11 @@ export class RoomZoningService {
     // contract above.
     const removed: RoomInstance[] = [];
     const occupiedInstanceIds: string[] = [];
+    // One entry per instance in `removed`, keyed by instance id rather than
+    // carried on a parallel array in scan order: the return below re-sorts
+    // `removedInstanceIds`, and a map read back by the sorted id is what keeps
+    // `removedRoomNameKeys` aligned with it without a second sort of its own.
+    const roomNameKeyByInstanceId = new Map<string, string>();
     for (const tile of ordered) {
       const definition = this.rooms.getByNumericId(this.world.getZoning(tile));
       if (definition === undefined) continue;
@@ -833,6 +881,7 @@ export class RoomZoningService {
       }
       if (this.roomInstances.occupancyOf(instance.instanceId) > 0) occupiedInstanceIds.push(instance.instanceId);
       removed.push(instance);
+      roomNameKeyByInstanceId.set(instance.instanceId, definition.nameKey);
     }
 
     if (occupiedInstanceIds.length > 0) {
@@ -858,9 +907,11 @@ export class RoomZoningService {
     for (const tile of ordered) this.world.setZoning(tile, 0);
     for (const instance of removed) this.roomInstances.unregister(instance.instanceId);
 
+    const removedInstanceIds = removed.map((instance) => instance.instanceId).sort();
     return {
       kind: 'unzoned',
-      removedInstanceIds: removed.map((instance) => instance.instanceId).sort(),
+      removedInstanceIds,
+      removedRoomNameKeys: removedInstanceIds.map((instanceId) => roomNameKeyByInstanceId.get(instanceId)!),
       clearedTiles: tiles.size,
     };
   }

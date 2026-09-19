@@ -9,7 +9,29 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
 /**
  * The Intake panel: one control, which admits one prisoner (#261 step 4).
  *
- * ### Why it is a panel on the Overview tab and not a row in Build
+ * ### Where it is now, and why the section below says something else
+ *
+ * **It is on the Manage tab since 2026-09-14** (ADR 0112 decision 3, and the
+ * owner's ruling of that day). The delivery's own navigation table names
+ * *przyjęcia* -- admissions -- under Zarządzaj, beside staff and inmates, so
+ * the panel is placed by subject: every control on that section acts on a
+ * person.
+ *
+ * The section below is kept exactly as it was written, because it is the
+ * record of why this panel was on the Overview tab for the whole of its life
+ * until then, and the reason is the interesting part: it was **pixels, not
+ * subject**. Nothing in it has stopped being true about the Build panel's
+ * budget or about the tab bar; what stopped being true is its last paragraph's
+ * premise that the Overview tab shows nothing, which `overview-panel.ts` ended
+ * on the same day this panel left -- and the two had to land together, because
+ * moving this panel out of a section that held nothing else would have shipped
+ * a navigation entry that opens onto nothing (issue #1183).
+ *
+ * The panel is no longer the only thing laid out in `.hud__side` for its tab:
+ * the Staff panel is beside it on Manage. They stack in one flex column and
+ * cannot overlap.
+ *
+ * ### Why it was a panel on the Overview tab and not a row in Build
  *
  * The Build panel is measurably full, and the measurement is this
  * repository's own rather than a judgement made here.
@@ -31,7 +53,8 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * `HUD_TAB_IDS` holds five and there is no slot left to spend on a single
  * button.
  *
- * What is left costs nothing at all: **the Overview tab shows nothing.**
+ * What is left costs nothing at all: **the Overview tab shows nothing.** (True
+ * when this was written and not since 2026-09-14; see the section above.)
  * `hud.ts` binds one panel to `build`, one to `rooms` and, since ADR 0025, one
  * to `security`, so `overview` and `regime` are the two tabs bound to no panel
  * and on either of them `.hud__side` is an empty box. This panel takes that box
@@ -98,6 +121,32 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * accommodation is the term that pushes needs pressure past the line -- so
  * closing it would close the game's most interesting content. The player is
  * told; the button still works.
+ *
+ * **That sentence is kept and is now conditional**
+ * ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ * accepted 2026-09-07): a prisoner waiting for a bed may now eat, wash and
+ * take recreation, so the term pushes needs pressure past the line only in a
+ * prison that has not built those rooms. Measured on
+ * `tests/integration/incident-trigger-reachability.test.ts`'s ladder, an
+ * over-admitted prison with a canteen, a shower room and a yard, staffed to
+ * requirement, stops rioting where it opened three riots and ten assaults.
+ *
+ * **That sentence read "now opens nothing at all where it opened ten assaults
+ * and three riots" until 2026-09-07, and it is corrected rather than
+ * overwritten because it is what three files beside this one repeated.** Two
+ * things were over-general in it, both re-measured on that ladder: the
+ * *assaults* did not stop -- over 40 consecutive seeds the same prison one
+ * guard short opens assaults on 19 of them, and the empty log was seed
+ * `0x0cc0`'s -- and the *riots* stopping is bounded by population rather than
+ * general. Sixteen prisoners on one guard opens none where the tree before
+ * ADR 0102 opens four; a seventeenth opens one, because
+ * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8 and occupant 17 takes the sector's
+ * `required` from 2 to 3. What changed is the population an over-admitted
+ * prison rides out, not whether over-admission reaches the incident content.
+ *
+ * Nothing about this control changes either way -- the admission is still
+ * accepted and the player is still told -- which is why the decision above
+ * stands as written.
  *
  * It is folded away at `0`, which is every prison with a bed to spare, so it is
  * not furniture and a player who sees it has genuinely run out.

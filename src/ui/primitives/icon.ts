@@ -29,14 +29,28 @@ export const ICON_IDS = [
   'check',
   'brand',
   'ui-scale',
+  'theme',
+  'language',
   'dismiss',
+  'zoom-in',
+  'zoom-out',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
-const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
+/**
+ * The drawing of every icon, as SVG path data on a 24-unit grid.
+ *
+ * Exported because the shapes carry a contract a reviewer cannot hold in their
+ * head: below 720px the HUD tab bar drops its labels (#1192), so a tab's glyph
+ * is the only carrier of its section, and no two of them may share a
+ * silhouette. `tests/unit/ui-hud-tab-glyph-silhouettes.test.ts` asserts that
+ * against this record. Nothing outside a test should read it -- `createIcon`
+ * is the way to draw one.
+ */
+export const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   prisoners: ['M12 4.75a3.25 3.25 0 1 1 0 6.5 3.25 3.25 0 0 1 0-6.5Z', 'M4.75 19.75a7.25 7.25 0 0 1 14.5 0'],
   staff: [
     'M9.25 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z',
@@ -44,7 +58,20 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
     'M15.75 5.75a2.75 2.75 0 0 1 0 5.5',
     'M17 19.25a6 6 0 0 0-2.75-5.05',
   ],
-  rooms: ['M3.75 4.75h16.5v14.5H3.75z', 'M3.75 12h6.75', 'M10.5 12v7.25'],
+  // The floor plan the Zones tab shows (#1192's icon-only tab bar, and the
+  // silhouette audit that followed it). A stepped footprint -- a square with
+  // a square bite out of its top-right corner -- with one internal wall
+  // continuing the step across, so it reads as two adjoining zones rather
+  // than one room.
+  //
+  // Deliberately NOT the plain rectangle this used to be
+  // (`M3.75 4.75h16.5v14.5H3.75z` plus two interior strokes). Below 720px the
+  // tab bar drops its labels, which makes the glyph the only carrier of the
+  // section's meaning; `build`, `rooms` and `regime` were each a rectangle
+  // with internal lines, so three of the five tabs had one silhouette between
+  // them. Ink alone separated them -- they were distinct pixel sets -- and a
+  // player reads a shape before they read its ink.
+  rooms: ['M4.75 4.75h7v7h7.5v7.5H4.75z', 'M4.75 11.75h7'],
   incident: ['M12 4.5 20.75 19.5H3.25z', 'M12 10v3.75', 'M12 16.75h.01'],
   contraband: ['M8.25 8.25V6.5a3.75 3.75 0 0 1 7.5 0v1.75', 'M4.75 8.25h14.5v11h-14.5z'],
   clock: ['M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z', 'M12 7.75V12l2.75 1.75'],
@@ -54,7 +81,20 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   chevron: ['M6.5 9.75 12 15.25l5.5-5.5'],
   minimap: ['M9 4.75 3.75 7v12.25L9 17l6 2.25 5.25-2.25V4.75L15 7z', 'M9 4.75V17', 'M15 7v12.25'],
   overview: ['M4.25 4.25h6v6h-6z', 'M13.75 4.25h6v6h-6z', 'M4.25 13.75h6v6h-6z', 'M13.75 13.75h6v6h-6z'],
-  build: ['M3.75 5.75h16.5v12.5H3.75z', 'M3.75 12h16.5', 'M9.25 5.75V12', 'M14.75 12v6.25'],
+  // The Build tab and every build-catalogue row: a hammer, head and handle,
+  // on the same 24-unit grid and the same stroke-only rule as the rest.
+  //
+  // Deliberately NOT the divided rectangle this used to be
+  // (`M3.75 5.75h16.5v12.5H3.75z` plus three interior strokes) -- see `rooms`
+  // above for why a rectangle was no longer usable here. A tool is also what
+  // the 2026-09-13 delivery draws for this section: its own `icons.build` is
+  // `m14 3 7 7-4 4-3-3-9 10-3-3 10-9-3-3z`, a struck tool rather than a plan
+  // (`docs/design/2026-09-13-identity-v5/HISTORIA/ZMIANY/05-audyt-i-konstytucja.patch`,
+  // line 11). That material is the
+  // delivery's own and no ADR 0112 decision reaches it, so it binds nothing
+  // and is not copied; it is cited because moving this glyph to a tool moves
+  // toward the reference rather than away from it.
+  build: ['M13.17 3.91 20.24 10.98 15.43 15.79 8.36 8.72z', 'M9.91 7.16 16.99 14.24', 'M12.6 11.55 5.6 18.55'],
   security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
   regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
   check: ['M5.25 12.5 10 17.25 18.75 6.75'],
@@ -70,6 +110,38 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   // the glyph a player already reads as "text size" everywhere else. Strokes
   // only, like every other entry -- two strokes per letter, the stem pair and
   // the crossbar, so it stays legible at 16px.
+  // The theme (#1157): a circle with one half struck through, the glyph a
+  // player already reads as "contrast" or "appearance". Strokes only, like
+  // every other entry -- the outline plus three chords across one half, which
+  // reads as a filled half at 16px without needing a fill this icon set does
+  // not use. Not a sun and not a moon: the control offers three values and one
+  // of them is "follow the device", which neither of those glyphs can mean.
+  theme: [
+    'M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z',
+    'M12 4.25v15.5',
+    'M12 7.5h5.9',
+    'M12 12h7.7',
+    'M12 16.5h5.9',
+  ],
+  // The interface language (#663): a globe -- outline, one meridian drawn as a
+  // narrowed ellipse, two latitudes -- which is the glyph a player already
+  // reads as a language choice in every other application. That matters more
+  // here than elsewhere in this set: the legend beside it says "Language" in
+  // whatever language the page is currently in, so for exactly the player this
+  // control exists for, the icon is the only readable part of it.
+  //
+  // Strokes only and on the same 24-unit grid and 4.25/19.75 inset as `theme`
+  // beside it, so the two sit level in the chrome row. Deliberately not a flag
+  // and deliberately not two letterforms: a flag names a country rather than a
+  // language and gets the mapping wrong the moment a language has more than
+  // one, and letterforms would be text this icon set does not draw.
+  language: [
+    'M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z',
+    'M12 4.25c-2.2 2.1-3.3 4.7-3.3 7.75s1.1 5.65 3.3 7.75',
+    'M12 4.25c2.2 2.1 3.3 4.7 3.3 7.75s-1.1 5.65-3.3 7.75',
+    'M4.6 9.5h14.8',
+    'M4.6 14.5h14.8',
+  ],
   'ui-scale': [
     'M3.25 18.75 8 5.25l4.75 13.5',
     'M4.9 14.25h6.2',
@@ -85,6 +157,31 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   // pointing at one path would make a content sweep read the brand as a
   // contraband indicator, and the shapes want to diverge: `contraband` is a
   // closed lock and this one is the identity of the game.
+  // The camera zoom, in the HUD's bottom-left corner (issue #1023). A
+  // magnifier -- circle and handle -- with a plus or a minus across it, which
+  // is the glyph a player already reads as "zoom" in a map, a document viewer
+  // and a photo library.
+  //
+  // Strokes only and on the same 24-unit grid as every other entry, so the
+  // pair sits at `--icon-size-md` beside the transport controls' own glyphs.
+  // Deliberately not the characters `+` and `-`: `dismiss` above records why
+  // (a literal character is one a locale might not have and a screen reader
+  // would announce), and the two buttons carry their words in
+  // `screenReaderText` instead.
+  //
+  // The circle and the handle are byte-identical between the two, so the only
+  // difference on screen is the bar the player is being asked about.
+  'zoom-in': [
+    'M10.5 4.75a5.75 5.75 0 1 1 0 11.5 5.75 5.75 0 0 1 0-11.5Z',
+    'M14.85 14.85 19.25 19.25',
+    'M7.75 10.5h5.5',
+    'M10.5 7.75v5.5',
+  ],
+  'zoom-out': [
+    'M10.5 4.75a5.75 5.75 0 1 1 0 11.5 5.75 5.75 0 0 1 0-11.5Z',
+    'M14.85 14.85 19.25 19.25',
+    'M7.75 10.5h5.5',
+  ],
   brand: [
     'M8 10.25V7.5a4 4 0 0 1 8 0v2.75',
     'M5.75 10.25h12.5v9.5H5.75z',

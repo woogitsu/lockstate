@@ -41,9 +41,12 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'build.unknown-buildable': 'hud.alert.refusal.build.unknown-buildable',
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
+  'cancel-build-order.stale-cancellation': 'hud.alert.refusal.cancel-build-order.stale-cancellation',
   'cancel-purchase.not-pending': 'hud.alert.refusal.cancel-purchase.not-pending',
   'construction.materials-unfunded': 'hud.alert.refusal.construction.materials-unfunded',
   'dismiss.unknown-staff': 'hud.alert.refusal.dismiss.unknown-staff',
+  'edit-regime-block.unknown-block': 'hud.alert.refusal.edit-regime-block.unknown-block',
+  'edit-regime-block.unknown-group': 'hud.alert.refusal.edit-regime-block.unknown-group',
   'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
   'hire.no-duty-for-role': 'hud.alert.refusal.hire.no-duty-for-role',
   'hire.roster-full': 'hud.alert.refusal.hire.roster-full',
@@ -62,6 +65,10 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'release-guard.not-held': 'hud.alert.refusal.release-guard.not-held',
   'release-guard.unknown-guard': 'hud.alert.refusal.release-guard.unknown-guard',
   'remove-object.nothing-to-remove': 'hud.alert.refusal.remove-object.nothing-to-remove',
+  'remove-wall.nothing-to-remove': 'hud.alert.refusal.remove-wall.nothing-to-remove',
+  'sell.insufficient-stock': 'hud.alert.refusal.sell.insufficient-stock',
+  'sell.invalid-quantity': 'hud.alert.refusal.sell.invalid-quantity',
+  'sell.unknown-material': 'hud.alert.refusal.sell.unknown-material',
   'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',
@@ -311,7 +318,7 @@ const FAULT_ROW_PREFIX = 'fault-';
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
   previous: readonly HudAlertViewModel[] = [],
-): readonly HudAlertViewModel[] | undefined {
+): readonly HudAlertViewModel[] | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
@@ -363,11 +370,20 @@ export function hudAlertsFromWorkerMessage(
 
     // The session is over. A refusal by a simulation that no longer exists is
     // not something the player can act on, and neither is a fault raised by a
-    // worker that has stopped, so the list empties -- the same thing the
-    // counts do with `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+    // worker that has stopped, so the list comes off.
+    //
+    // **`'none'` rather than `[]` as of issue #1184, and the difference is the
+    // whole fix.** An empty array is what a prison *reporting nothing wrong*
+    // sends, and returning it here made the two indistinguishable: the HUD
+    // painted `'hud.alerts.empty'` -- "No active alerts" -- over a session
+    // that had ended, the same sentence it paints for a running prison with a
+    // clean log. This is now the tri-state `hudRefusalFromWorkerMessage`
+    // below has always had, and for the identical reason: `undefined` is a
+    // message that said nothing about alerts and the field must be left alone,
+    // `'none'` is a message that says there is no longer anything to report,
+    // and `src/main.ts` deletes the field for it.
     case 'simulation/stopped':
-      return [];
+      return 'none';
 
     default:
       return undefined;
@@ -426,7 +442,15 @@ export function hudRefusalFromWorkerMessage(
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
       if (refusal === undefined) return 'none';
-      return { sequence: refusal.sequence, labelKey: REFUSAL_LABEL_KEYS[refusal.reason] };
+      // `routeDecidedSince` is forwarded rather than acted on here: this
+      // function serves the band, and the band's rule is `hud.ts`'s to state.
+      // Spread rather than passed as `undefined`, because
+      // `exactOptionalPropertyTypes` is on and the field is `true`-or-absent.
+      return {
+        sequence: refusal.sequence,
+        labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
+        ...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as const } : {}),
+      };
     }
 
     // The session is over, so the band empties -- the same thing the list

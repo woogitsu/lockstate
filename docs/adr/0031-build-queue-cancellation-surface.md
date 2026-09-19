@@ -484,3 +484,88 @@ panel arrives inside its own fold, with nothing queued" in
 was the only assembled-page measurement of this panel, now queues six orders
 before its viewport loop and therefore no longer measures the arrival state at
 all.
+
+---
+
+## Amendment — 2026-09-11: decision 4's "row count is the price" step is
+withdrawn; the row limit is 64 and the fold still arrives shut (#862)
+
+**Decision 3 and its box measurements are untouched.** The catalogue is still
+the only donor, it still gives up nothing more than it did, and the panel's
+arrival state — nothing queued, coordinates folded — is unchanged to the pixel.
+What this amendment corrects is decision 4's own step from a height budget to a
+*row count*, which issue #862 measured as false: with fourteen orders queued, at
+every viewport the browser suite visits, opening the fold reached three of
+fourteen and the other eleven had no row in the DOM at all — not a row below the
+fold, no row. `Undo` is not the substitute decision 4 offered for them: it pops
+the whole transaction the run was drawn in, so getting one of fourteen back
+costs all fourteen.
+
+### What was wrong, and what it conflated
+
+Decision 4 said the block "draws at most `BUILD_QUEUE_ROW_LIMIT` rows —
+**three**" and argued the *number of rows* from the panel's height budget. Those
+are two different things pinned to one constant: what a list costs a flex-column
+panel is its **box**, not how many rows sit inside it, and a box can hold more
+rows than it shows if the box itself scrolls. `.hud-build__list` — the catalogue
+one section up in this same panel — has always done exactly that, and this ADR
+already relies on it (decision 3's own "the catalogue scrolls" language). The
+queue list never had the same treatment; `BUILD_QUEUE_ROW_LIMIT` bounded both the
+box and the pool at once, so raising the pool looked like it required raising the
+box.
+
+### What changed
+
+`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:740`) —
+**this read `:737` when it landed, which was wrong by three lines and is
+corrected here rather than quietly**: the declaration was opened at the end
+of the window and read 740, and a citation computed instead of opened is the
+one thing `docs/adr/STATUS-QUEUE.md`'s header forbids by name. It shipped
+through an integration pass that did not re-open it, and the next anchor's
+delta read is what found it —
+`MAX_RUN_SEGMENTS` (`src/rendering/build/edge-picking.ts:46`), the longest run one
+drag can place, so the pool holds a row for every order one gesture can produce.
+`.hud-build__queue-list` (`src/ui/hud/hud.css:1985`) now carries its own
+`max-height: calc(var(--tap-target) * 3 + var(--hud-build-map-gutter) * 2)` with
+`overflow-y: auto` and `flex: 0 0 auto` — the box stays exactly the height three
+rows already measured at, at every viewport, to the pixel, and rows past the
+third are reached by scrolling that box rather than by not existing. The pool
+itself is now built **on demand** (`ensureQueueRows`, same file) rather than up
+front, because an eagerly-built 64-row pool would have put fifty-eight never-laid-out
+`Cancel` buttons on `app-shell.spec.ts`'s #88 sweep's exempt list, which is a
+different thing from a genuine exemption. `tests/browser/ui-build-queue-reach.spec.ts`
+is the gate: fourteen orders, all six viewports, every row's cancel measured with
+an `offsetParent`, a real tap-target box, a centre inside the panel's *visible*
+box after its own list is scrolled to it, and a hit test that resolves to the
+button itself.
+
+**"There is deliberately no stepper, and this is the decision most open to being
+overruled"** — decision 4's own words — **is the sentence #862 overrules, on the
+trigger decision 4 itself named**: *"If that proves to be the common case rather
+than the rare one."* A batch is the common case; it is what one drag produces,
+and #348 (this same ADR's own decision 4) is why the batch then sits queued for
+hundreds of ticks rather than finishing before a player can look at it. The fix
+taken is not the window-offset stepper decision 4 sketched as the fallback — a
+scrollable, on-demand pool reaches every order in one gesture's worth without a
+second control, and 64 already covers what one gesture can produce.
+
+### What is unchanged
+
+**The fold still arrives collapsed.** Arriving open was measured and reverted:
+in the UI harness, with fourteen queued, an open arrival put the panel's own
+overflow at 0 at five of the six viewports by shrinking the catalogue's list from
+245px of 924px of rows to 89px — two rows of twenty-one — and at 12px over its
+box at 900x600 with nothing having scrolled, where the catalogue is already flat
+on its one-row floor with nothing left to give. Open question 4 is what this
+promotion to blocking is about, and an arrival that spends the same donor a
+second time is the thing this document's Status section already refused. So one
+press on the header is still required to see any row at all; what changed is
+that the press now reaches every order rather than three of them. Whether the
+fold should also default open is a trade between two player-visible surfaces —
+a two-row catalogue against a queue the player never has to open — and it is not
+this amendment's to make; the figures above are recorded so whoever takes that
+question next does not have to remeasure them.
+
+**Open question 4 is not reopened and not closed.** This change spends nothing
+further from the catalogue; it only stops a *second* constant (the row pool)
+from riding on the first (the box height) now that the two are pulled apart.

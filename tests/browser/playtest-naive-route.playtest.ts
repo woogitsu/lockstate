@@ -154,7 +154,7 @@ test.describe('playtest: the naive route', () => {
     const origin = await calibrate(page);
     log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     report(log, 'ACT 1a — Rooms tab, nothing selected yet', await hudDump(page));
 
     const roomsCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
@@ -269,7 +269,7 @@ test.describe('playtest: the naive route', () => {
     let zoned = false;
     for (; attempts < 12; ) {
       attempts += 1;
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -306,6 +306,24 @@ test.describe('playtest: the naive quantity', () => {
    * (`src/simulation/construction/definition.ts:89`), the catalogue row says
    * only "Brick wall", and the buy control says only
    * `Buy {count} × {material} · {total}`.
+   *
+   * **The first half of that is no longer true, and it is kept rather than
+   * corrected because it is what this test was written against.** Since #901
+   * the row states its own price and names the unit it is priced in --
+   * `wall-brick` renders as "Brick wall · 80 per segment" -- so a player
+   * reading the catalogue can now see that a wall costs 80 and that 80 buys
+   * one segment. What the row still does not state is the *material*
+   * requirement this paragraph is about: two bricks -- a price in minor units
+   * is not a quantity of bricks.
+   *
+   * **But it is now derivable, which is more than this paragraph claimed and
+   * is worth saying rather than glossing.** The buy control quotes the same
+   * material at `item.brick`'s own unit price, 40, and the row now quotes 80
+   * a segment; a player who puts the two figures side by side gets two bricks
+   * per wall by division. So the guess this test plays is still *available*
+   * -- nothing on screen states the requirement outright, and nothing invites
+   * the comparison -- but it is no longer the only route, and if this test is
+   * ever re-run its premise should be re-read rather than assumed.
    *
    * So the player guesses. The obvious guess is **one brick per wall**, and
    * this test plays that guess: buy 24 bricks for a 24-segment perimeter, wait
@@ -429,7 +447,7 @@ test.describe('playtest: the naive quantity', () => {
     );
 
     // And what the player gets for trying to use the half-built perimeter.
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -457,7 +475,7 @@ test.describe('playtest: the naive quantity', () => {
     }
     log(`RECOVERY: the queue drained at tick ${drainedAt}`);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const stillCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (stillCollapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

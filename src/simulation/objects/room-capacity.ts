@@ -113,7 +113,8 @@ export function roomInstanceContaining(
  * capabilities     = union over the objects of catalogue(objectId).capabilities,
  *                    deduplicated, ascending by code unit
  * residentCapacity = sum of footprint.width over the objects whose capabilities
- *                    include 'sleep-surface'
+ *                    include 'sleep-surface', capped at `maxResidents` when the
+ *                    room type authors one (issue #961; see below)
  * concurrentUse(c) = sum of footprint.width over the objects whose capabilities
  *                    include `c`, for each capability `c` in the union
  * concurrentUse    = sum of footprint.width over every object -- a total that
@@ -165,6 +166,43 @@ export function roomInstanceContaining(
  * `RoomListRowViewModel.objectCapabilities`, which is projected to the HUD --
  * and since capabilities are no longer persisted, no checksum depends on it.
  *
+ *
+ * ## The per-room-type resident ceiling, **as amended 2026-09-17** (issue #961)
+ *
+ * `maxResidents` is the fourth parameter of this arithmetic and the only one
+ * that is *authored*: `src/content/room-catalog.ts` declares it per room type,
+ * that file carries the derivation of each number, and `deriveFor` below is
+ * the one production caller that supplies it. Absent -- which is every room
+ * type but `room.cell` (2) and `room.solitary-cell` (1) -- and the sum stands
+ * unchanged, so this is `min(sum, ceiling)` and never a second rule.
+ *
+ * **It caps residency and nothing else.** `concurrentUseCapacity` and the
+ * per-capability breakdown are untouched, including `'sleep-surface'`'s: those
+ * bound *use* of an object, and the ceiling is a statement about who may live
+ * in the room. A bed above the ceiling therefore still stands, still cost
+ * money and still counts as an object; what it no longer does is house
+ * anybody, which is what #961 measured as missing.
+ *
+ * **What it does to a room already over it** is the state ADR 0028 decision 2
+ * already made legal and
+ * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
+ * already priced: the excess residents are exactly
+ * `residentsWithoutExistingPlace` and the state stops paying for them. A
+ * twelve-bed cell restored under this build is indistinguishable, to every one
+ * of those paths, from a twelve-bed cell with ten beds removed -- which is why
+ * no save format moves.
+ *
+ * **Except in one respect, measured rather than reasoned about**
+ * (`tests/integration/a-save-whose-cell-is-over-the-ceiling.test.ts`): ADR
+ * 0076's *relocation* is fired by the removal event and by nothing else --
+ * `relocateExcessResidentsOf` has one production caller,
+ * `ObjectPlacementService.relocateResidentsLeftWithoutAPlace`
+ * (`src/simulation/objects/object-placement-service.ts:873`) -- so a restore
+ * reaches the state without reaching the remedy. The excess stay where they
+ * are, unpaid, until the player touches that room; one `RemoveObject` on a
+ * surplus bed then moves them. Recorded here rather than fixed: making a
+ * restore relocate is a behaviour change ADR 0076 did not decide.
+ *
  * An object naming a catalogue id this build does not declare contributes
  * nothing, rather than throwing: the row can only come from a save, and one
  * unreadable row must not make a prison unloadable.
@@ -172,6 +210,7 @@ export function roomInstanceContaining(
 export function deriveRoomCapacity(
   objects: readonly PlacedObject[],
   catalogue: ContentRegistry<ObjectDefinition> = defaultObjectRegistry,
+  maxResidents?: number,
 ): RoomDerivedCapacity {
   let residentCapacity = 0;
   let concurrentUseCapacity = 0;
@@ -198,7 +237,7 @@ export function deriveRoomCapacity(
   const sorted = [...byCapability.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
   return {
-    residentCapacity,
+    residentCapacity: maxResidents === undefined ? residentCapacity : Math.min(residentCapacity, maxResidents),
     concurrentUseCapacity,
     concurrentUseCapacityByCapability: sorted.map((capability) => [capability, byCapability.get(capability)!] as const),
     objectCapabilities: sorted,
@@ -228,6 +267,29 @@ export function deriveRoomCapacity(
  * `snapshot() -> restore() -> run N ticks` land on the same state **by
  * construction** rather than by agreement, which is why neither capacity nor
  * the capability list is persisted any more.
+ *
+ * ## Moment one is *completion*, and that is now a ruling rather than a default
+ *
+ * **The owner ruled it on 2026-09-06, on issue #1031, in these words:**
+ *
+ * > Świat ma rację -- licz po ukończeniu
+ *
+ * ("The world is right -- count on completion.") An ordered-but-unbuilt object
+ * must not raise a capacity, so the moment above is `finalizeConstruction` and
+ * never `ObjectPlacementService.place`. The list happens to have said that
+ * since ADR 0028 phase 1 -- the ruling changed no line of this file -- but it
+ * was an implementation detail until that date and is a decision now, which is
+ * why it is recorded here beside the code rather than only in the issue.
+ *
+ * **It is also the only thing standing between a plausible edit and a defect.**
+ * Registering the object at order time is a two-line change in `place`, it
+ * reads like an improvement (the money is spent, the tile is claimed), and
+ * before #1031 nothing in this repository would have gone red for it.
+ * `tests/integration/capacity-counts-on-completion.test.ts` is what does now:
+ * it samples `roomCapacity`, `accommodationCapacity`, `residentCapacity`, the
+ * `concurrentUseCapacityFor` ceiling and `objectCapabilities` at every tick of
+ * a four-bed session and requires each to equal the number of bed orders that
+ * have reached `completed` at that tick.
  *
  * Idempotent and RNG-free: recomputation from the same objects gives the same
  * numbers, so running it twice is harmless and no named stream moves.
@@ -293,6 +355,10 @@ export class RoomCapacityResolver {
     if (bounds === undefined) {
       return { residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [] };
     }
-    return deriveRoomCapacity(this.placedObjects.inRect(bounds), this.objects);
+    return deriveRoomCapacity(
+      this.placedObjects.inRect(bounds),
+      this.objects,
+      this.rooms.getById(instance.roomCatalogId)?.maxResidents,
+    );
   }
 }

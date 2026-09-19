@@ -1,4 +1,5 @@
 import type { ObjectToolPort, TileRect } from '../rendering/build/area-picking';
+import type { BuildEdgeId } from '../rendering/build/edge-picking';
 import type { BuildPanelTarget, HudObjectGesture, HudWorldObjectSource } from './hud';
 
 /**
@@ -187,18 +188,30 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
    *
    * Which command is decided **here** and not in the scene, because this is the
    * layer that holds the mode and the scene may not decide what a press means.
-   * Removing reports the tile alone; placing reports the tile and the selected
-   * buildable.
+   * Removing reports the tile and, since ADR 0106, the edge the same press
+   * resolved to; placing reports the tile and the selected buildable.
+   *
+   * **`edge` is forwarded only while removing.** An object has no edge -- the
+   * gesture is one press on one tile -- so a `place` report carries none, and
+   * `tile.edge` is simply not read on that arm. `WorldScene` computes it
+   * unconditionally (its own comment says why: this call site cannot tell in
+   * advance which arm will read it), so this method is where the placing arm's
+   * "no edge" becomes true rather than the scene's.
    *
    * A disarmed tool reports nothing. A tool armed to place with no selection
    * also reports nothing, and that case is unreachable -- `setArmed` refuses to
    * arm to place without both halves -- so returning keeps it unreachable rather
    * than asserting it.
    */
-  public place(tile: { readonly tileX: number; readonly tileY: number }): void {
+  public place(tile: { readonly tileX: number; readonly tileY: number; readonly edge?: BuildEdgeId }): void {
     if (!this.armed) return;
     if (this.removing) {
-      this.gestures?.({ kind: 'remove', x: tile.tileX, y: tile.tileY });
+      this.gestures?.({
+        kind: 'remove',
+        x: tile.tileX,
+        y: tile.tileY,
+        ...(tile.edge === undefined ? {} : { edge: tile.edge }),
+      });
       return;
     }
     const definitionId = this.definitionId;

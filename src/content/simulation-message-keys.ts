@@ -215,6 +215,37 @@ export const SIMULATION_ENUM_GROUPS = [
       // will not always be a delivery once other producers arrive). Those were
       // the alternatives put to the owner beside the chosen word.
       'action.carry': 'Errand',
+      // The care, not the place: `room.infirmary.name` is already "Infirmary"
+      // two catalogs over, which is the rule `action.laundry-work`,
+      // `action.kitchen-work` and `action.carry` above already follow -- a
+      // roster cell says what the prisoner is *doing*.
+      //
+      // **This is the one new player-facing string issue #589 adds, and it is
+      // a draft for the owner's review** -- no existing string fits (the
+      // `hygiene` *category* label is "Hygiene", which is what a roster would
+      // say for a shower too). An entry has to exist the moment the catalogue
+      // holds the action: the group above declares `form: 'definition-id-field'`
+      // over `DEFAULT_ACTIONS` and `tests/unit/simulation-message-keys.test.ts`
+      // requires each namespace to label *exactly* the ids its declaration
+      // declares, so the choice is between a draft marked as one and a suite
+      // that cannot go green -- the same bind `action.carry`'s note records.
+      //
+      // **What makes it TRUE, which is the half `AGENTS.md`'s fourth
+      // reservation keeps.** The wording is this repository's since 2026-09-04;
+      // that the sentence be true is the owner's. This one is shown by
+      // `PrisonerActionViewModel` for the action a prisoner is *currently
+      // performing*, and an action is only ever current after
+      // `ActionSystem.resolveTargetInstance` answered it a real
+      // `room.infirmary` instance with a free `medical-treatment` place and
+      // `claimUseIfNeeded` took the claim. So "Treatment" appears exactly when
+      // a prisoner is on a medical bed in an infirmary that exists. A prison
+      // with no infirmary never shows it: the promotion in `planIdleSelection`
+      // is gated on `prisonProvides`, the injured prisoner picks their
+      // need-ranked candidate instead, and the cell says what they are really
+      // doing. **No string anywhere claims a prisoner is being treated, or is
+      // waiting to be, on the strength of the flag alone** -- which is why
+      // #589 needs one sentence and no refusal beside it.
+      'action.infirmary-treatment': 'Treatment',
     },
   },
   {
@@ -644,7 +675,8 @@ export const SIMULATION_ENUM_GROUPS = [
     // labels changed to match it -- not the other way round.** Three reasons,
     // in order of force:
     //
-    //  1. It is the family with a consumer. `src/main.ts:461` renders
+    //  1. It is the family with a consumer. `buildableCategory`
+    //     (`src/main.ts:845`) renders
     //     `OBJECT_CATEGORY_NAME_KEYS[category]` in the Build panel's category
     //     filter. Nothing anywhere calls
     //     `deriveSimulationMessageKey('object-category', …)` -- the string
@@ -751,6 +783,36 @@ export function simulationEnumMessages(): Readonly<Record<LocalizationKey, strin
 /** Every key this module declares, in derivation order. */
 export function simulationEnumMessageKeys(): readonly LocalizationKey[] {
   return Object.keys(simulationEnumMessages());
+}
+
+/**
+ * Every stable id in one namespace, in the order this catalogue declares them.
+ *
+ * **The point of it is which module may ask.** A HUD panel that offers the
+ * player a *choice* out of one of these vocabularies -- the Regime panel's
+ * regime editor is the first, offering the seven `ActionCategory` members --
+ * needs the whole vocabulary and not only the members the current projection
+ * happens to carry, and it may not import `ACTION_CATEGORIES` itself: the HUD
+ * imports nothing from `src/simulation/**` (`AGENTS.md` boundary 1, gated by
+ * `tests/unit/ui-hud-messages.test.ts`). This module is already on the HUD's
+ * side of that line and is already where the same panel derives each member's
+ * label from, so the ids and the words come from one source rather than two.
+ *
+ * **It is a safe source rather than a convenient one**, and the reason is
+ * `validateSimulationEnumGroups` below: a group's `labels` keys must agree
+ * *exactly* with its `sourceFile`'s own declaration -- containment is not
+ * enough, which is what `additionalIds` exists to make possible -- so a
+ * category added to `ACTION_CATEGORIES` and not to this catalogue fails
+ * `tests/foundation/content-vocabulary-contract.test.ts` rather than quietly
+ * leaving a toggle off the panel.
+ *
+ * `additionalIds` are deliberately **not** included: they are ids the source
+ * declaration does not hold, with a reason, and a control that offered one
+ * would be offering a value the simulation's own vocabulary does not contain.
+ */
+export function simulationEnumIds(namespace: SimulationEnumNamespace): readonly string[] {
+  const group = SIMULATION_ENUM_GROUPS.find((candidate) => candidate.namespace === namespace);
+  return group === undefined ? [] : Object.keys(group.labels);
 }
 
 export type SimulationEnumGroupError =

@@ -1,4 +1,9 @@
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, rungFloorMinorUnits } from '../simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  purchaseChargeMinorUnits,
+  rungFloorMinorUnits,
+  sellBackUnitPriceMinorUnits,
+} from '../simulation/economy';
 
 /**
  * **Whether the host should refuse a charge before it sends the command, and
@@ -263,6 +268,41 @@ export function deliveriesRungFloorMinorUnits(
  * is `statusCountsSchema`'s own field, already on the wire for the Rooms
  * panel, not a value minted for this call.
  *
+ * **That last sentence is wrong and is kept rather than rewritten, because
+ * reading `roomCapacity` here *is* the second definition (2026-09-15).** The
+ * simulation's own answer is `RoomInstanceRegistry.totalResidentCapacity === 0`
+ * — ADR 0017's "Amendment, 2026-09-01" §2 defines it that way, and
+ * `createSessionCommandHandler`, `PayrollSystem`, `InsolvencyRungSystem` and
+ * `computeStandingPrisonConditions` all read exactly that. `roomCapacity` is
+ * summed over `collectRoomInstances`, a fan-out over the *content* room
+ * registry's catalogue ids, so it cannot see an instance registered under an
+ * id that registry does not define (`docs/HUD_PROJECTIONS.md` gap 15, which
+ * `totalResidentCapacity`'s own docblock cites for this reason). The
+ * implication runs one way only: every prison the simulation calls fresh the
+ * host calls fresh, and not the reverse.
+ *
+ * Measured on a restored session with one off-catalogue room instance holding
+ * a bed: registry 1, published `roomCapacity` 0, so at a balance of −1,200 the
+ * badge reads `0 left` and this module refuses a 40-minor-unit press
+ * `past-the-floor` while the real command handler accepts it and lands at
+ * −1,240. The direction is the safe one — the host is stricter, never looser —
+ * and the case is unreachable by play (`RoomZoningService.zone` refuses
+ * `unknown-room-type`), which is why this is recorded here rather than fixed
+ * in place: the fix is to publish the predicate `projectStatusStrip` already
+ * computes and drops, which widens `statusCountsSchema` and changes what a
+ * press is judged against.
+ *
+ * **That last clause is now history: the fix was made on 2026-09-15, and this
+ * paragraph is kept rather than deleted because it is the state this module
+ * described for a day and every measurement in it still holds.**
+ * `projectStatusStrip` publishes the predicate it used to drop, as
+ * `statusCountsSchema.isFreshUnfurnishedPrison`, and every host site reads it
+ * through `freshUnfurnishedPrison` above rather than deriving one. What
+ * changed is the answer the host gives on that prison, which is now the
+ * worker's own.
+ * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+ * builds it and pins the two equal.
+ *
  * **Leaving `HOST_PRESS_FLOOR_MINOR_UNITS` as the mature constant, rather than
  * folding this into it, is deliberate.** The old constant is still what a
  * caller gets by omitting the third argument to `judgeAffordability`
@@ -275,6 +315,37 @@ export function deliveriesRungFloorMinorUnits(
  */
 export function pressFloorMinorUnits(overdraftFloorMinorUnits: number, isFreshUnfurnishedPrison: boolean): number {
   return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
+}
+
+/**
+ * **The host's one reading of "is this prison fresh and unfurnished".**
+ *
+ * It is the published predicate and nothing else:
+ * `statusCountsSchema.isFreshUnfurnishedPrison`, which is the simulation's own
+ * `RoomInstanceRegistry.totalResidentCapacity === 0` (ADR 0017's
+ * "Amendment, 2026-09-01" §2). It exists as a function rather than three
+ * `counts.isFreshUnfurnishedPrison === true` expressions because three
+ * `counts.roomCapacity === 0` expressions are exactly what went wrong: the
+ * defect was not that any one of them was written badly, it was that the host
+ * had a definition at all. There is now one line in `src/ui/` that answers
+ * this question, and it reads an answer rather than computing one.
+ *
+ * **`=== true`, so absence reads as "not fresh".** The field is required on
+ * the wire, so every real session supplies it; it is optional on
+ * `HudCountsViewModel` only for fixtures written before it existed, and
+ * `undefined` there means no session has said anything. Resolving that to
+ * *not* fresh selects the mature, already-shipped rung, which is what
+ * `roomCapacity`'s `undefined` already resolved to and is the conservative
+ * direction for a control that cannot be on screen before a session has
+ * published.
+ *
+ * Structurally typed rather than importing `HudCountsViewModel`, because
+ * `src/ui/hud/` imports *this* module (`AGENTS.md` boundary 1 forbids it
+ * importing the simulation, which this module may and does), and an import
+ * back the other way would close that loop.
+ */
+export function freshUnfurnishedPrison(counts: { readonly isFreshUnfurnishedPrison?: boolean }): boolean {
+  return counts.isFreshUnfurnishedPrison === true;
 }
 
 /**
@@ -378,4 +449,50 @@ export function pressAffordabilityVerdict(
     balanceMinorUnits,
     pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, isFreshUnfurnishedPrison),
   );
+}
+
+/**
+ * **What selling `quantity` units at `unitPriceMinorUnits` each would credit**
+ * (ADR 0075 decision 3, invoked by ADR 0096 decision 3(b)) -- the Sell
+ * control's own preview, composed the identical way
+ * `ProcurementSystem.previewSellStock` is so the label a player reads and the
+ * credit `sellStock` actually pays can never disagree.
+ *
+ * Exists here rather than in `src/ui/hud/build-panel.ts`, for
+ * `pressAffordabilityVerdict`'s own reason: `src/ui/hud/` may not import
+ * `src/simulation/**` (`AGENTS.md` boundary 1, pinned by
+ * `tests/unit/ui-hud-messages.test.ts`), and this module already may. There is
+ * no floor to cross here and therefore no verdict -- a sale is never refused
+ * for want of money, only for want of stock this thread has no published count
+ * of, so the Sell control previews a figure rather than an availability the
+ * way `pressAffordabilityVerdict` does for Buy.
+ */
+export function sellBackPreviewMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
+  return sellBackUnitPriceMinorUnits(unitPriceMinorUnits) * quantity;
+}
+
+/**
+ * **What buying `quantity` units at `unitPriceMinorUnits` each would charge**
+ * -- the Buy control's own preview, composed by calling the same function
+ * `ProcurementSystem.purchase` sets `paidMinorUnits` from, so the label a
+ * player reads and the money the press actually takes can never disagree.
+ *
+ * The buy half of the pair, and it is here for the reason its sell twin above
+ * gives: `src/ui/hud/` may not import `src/simulation/**` (`AGENTS.md`
+ * boundary 1, pinned by `tests/unit/ui-hud-messages.test.ts`), and this module
+ * already may.
+ *
+ * **It replaces a multiplication the panel did itself** (issue #1160,
+ * constitution article 4). `paintBuyTotal` in `src/ui/hud/build-panel.ts` read
+ * `material.unitPriceMinorUnits * quantity`, which is the same rule written
+ * twice, on two sides of the worker boundary, with nothing keeping them in
+ * step. No figure moves: the rule is linear today and this is what makes it
+ * one definition when it stops being.
+ *
+ * No verdict and no floor, exactly as the sell twin has none -- whether the
+ * prison can *afford* this charge is `pressAffordabilityVerdict`'s question and
+ * the Buy control already asks it separately.
+ */
+export function purchasePreviewMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
+  return purchaseChargeMinorUnits(unitPriceMinorUnits, quantity);
 }

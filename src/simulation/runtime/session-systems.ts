@@ -9,6 +9,7 @@ import type { SearchPolicyDefinition } from '../contraband/search-policy';
 import type { SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
 import { SnapshotRefusedError } from './restore-refusal';
+import { applyDefaultGangs } from '../incidents/default-gangs';
 import type { TunnelRecord } from '../incidents/escape';
 import type { GangRegistry } from '../incidents/gangs';
 import type { IncidentLog } from '../incidents/incident';
@@ -27,6 +28,7 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
+import type { EncodedRegimeSchedule } from '../prisoners/regime-registry';
 import type { PlacedObject } from '../objects';
 import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
 import { applyDefaultSecuritySector } from '../security/default-sector';
@@ -54,8 +56,8 @@ import type { SimulationRuntime } from './new-session';
  *    registry directly (doors, sector definitions, room instances, the
  *    runtime's mutable configuration arrays) it sorts explicitly.
  * 2. **Population-shaped, never capacity-shaped.** `DEFAULT_PRISONER_CAPACITY`
- *    is 5,000 slots; writing the nineteen *persisted* per-prisoner component
- *    arrays at that allocation would cost **~308 KiB (315,360 bytes) in every
+ *    is 5,000 slots; writing the twenty *persisted* per-prisoner component
+ *    arrays at that allocation would cost **~318 KiB (325,372 bytes) in every
  *    save even for a prison with no prisoners at all** — the exact mistake #50
  *    removed from the entity ledger. See `encodePrisonerComponents` for what is written
  *    instead.
@@ -65,7 +67,7 @@ import type { SimulationRuntime } from './new-session';
  *    51,000, `actionIndex` at its `-1` sentinel, the rest zero), measured
  *    rather than derived — the encoded arrays are `readonly number[]`, so the
  *    cost is digit widths and not element sizes. A populated mid-game prison,
- *    where three of the arrays hold seven-digit tick stamps, measures ~435 KiB
+ *    where three of the arrays hold seven-digit tick stamps, measures ~445 KiB
  *    at the same capacity. `docs/PERSISTENCE.md` states the same two figures
  *    for the same claims; this comment once said ~300 KiB for the first, which
  *    was neither figure (#169).
@@ -75,7 +77,10 @@ import type { SimulationRuntime } from './new-session';
  *    this capacity. The pre-V4 figures were ~240 KiB (245,332 bytes) and
  *    ~337 KiB. Both moved again with issue #80 (ADR 00XX): a nineteenth
  *    persisted array, `solitarySanctionEndTick`, was added at zero -- the
- *    pre-#80 V5 figures were ~298 KiB (305,332 bytes) and ~425 KiB.
+ *    pre-#80 V5 figures were ~298 KiB (305,332 bytes) and ~425 KiB. And again
+ *    with issue #589 (the owner's ruling of 2026-09-17): a **twentieth**,
+ *    `injured`, also at zero -- the pre-#589 figures were ~308 KiB
+ *    (315,360 bytes) and ~435 KiB.
  */
 
 // --- Prisoner components -----------------------------------------------
@@ -96,17 +101,19 @@ import type { SimulationRuntime } from './new-session';
  * Until #111 that residue was also future behaviour: `admitPrisoner` reset
  * five of the then eighteen arrays, so recycling a freed index handed the next
  * prisoner the previous one's needs, classification and action state. It now
- * resets **all twenty-one**, so a dead slot's contents can no longer become a
+ * resets **all twenty-two**, so a dead slot's contents can no longer become a
  * live prisoner's starting state. **This sentence read "all eighteen", then
- * "all twenty", and the payload's count and the reset's count are two
- * different sets**: #435 added `SubstitutionRecordComponent`'s two arrays,
+ * "all twenty", then "all twenty-one", and the payload's count and the
+ * reset's count are two different sets**: #435 added `SubstitutionRecordComponent`'s two arrays,
  * which `admitPrisoner` resets and this codec deliberately does not write --
  * they are diagnostics, not state any system reads back, and issue #435 puts a
  * save-schema change out of scope. #80 then added `solitarySanctionEndTick`
  * to `PrisonerRecordComponent`, which is state a system reads back, so this
- * codec does write it (see `solitarySanctionEndTick` above). The payload's
- * nineteen is the number the size claim above is about; the reset's
- * twenty-one is the number `tests/unit/prisoner-slot-recycling.test.ts` pins.
+ * codec does write it (see `solitarySanctionEndTick` above), and #589 then added
+ * `injured` to the same component for the same reason. The payload's
+ * **twenty** is the number the size claim above is about; the reset's
+ * **twenty-two** is the number `tests/unit/prisoner-slot-recycling.test.ts`
+ * pins.
  *
  * Whether the payload could therefore shrink to the live indices only is a
  * save-format change and a decision of its own; writing the prefix is correct
@@ -140,6 +147,19 @@ export interface EncodedPrisonerComponents {
    * this session's own output.
    */
   readonly solitarySanctionEndTick?: readonly number[];
+  /**
+   * Optional on decode only, for exactly the reason `solitarySanctionEndTick`
+   * above is (ADR 0038 §1, issue #589): a bundle written before this field
+   * existed is a bundle in which nobody was ever hurt, and
+   * `decodePrisonerComponents` leaves the fresh component's every-slot-zero
+   * default standing for it rather than writing zeros over zeros.
+   * `encodePrisonerComponents` always produces it for a live runtime.
+   *
+   * `0` or `1`. It is a byte array rather than a bitset because the payload is
+   * JSON either way and a packed form would be a second encoding to keep in
+   * step -- see `PrisonerRecordComponent.injured`.
+   */
+  readonly injured?: readonly number[];
   /**
    * Keyed by need id rather than positional, so reordering `NEED_IDS` cannot
    * silently swap two needs' levels in an existing save.
@@ -311,6 +331,25 @@ export interface EncodedIncidents {
  */
 export interface EncodedSessionSystems {
   readonly prisoners: EncodedPrisoners;
+  /**
+   * Every classification group's timetable, as the session is actually running
+   * it ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+   * §2).
+   *
+   * **Required, and that is why `SAVE_SCHEMA_VERSION` went to 6** rather than
+   * this being the optional-field pattern `objects`, `alerts` and `economy`
+   * below are instances of. That pattern's stated condition is that absence is
+   * unambiguous, and here it is not: a V5 save records no schedule at all, and
+   * "absent means `DEFAULT_REGIME_SCHEDULES`" is a sentence that is true only
+   * until the first edited save is written by a build that would then be
+   * indistinguishable from an unedited one. `migrateSaveEnvelopeV5ToV6` is what
+   * resolves it, by writing the two schedules every V5 session provably ran.
+   *
+   * Canonical order is `RegimeScheduleRegistry`'s, not the session's write
+   * history -- see that class for why an insertion-ordered array would put the
+   * sequence of a player's edits into the save's checksum.
+   */
+  readonly regimeSchedules: readonly EncodedRegimeSchedule[];
   readonly operations: EncodedOperations;
   readonly navigation: EncodedNavigation;
   readonly security: EncodedSecurity;
@@ -436,6 +475,7 @@ export function encodePrisonerComponents(prisoners: SimulationRuntime['prisoners
     classificationGroupIndex: sliceOf(prisoners.records.classificationGroupIndex, activeLength),
     intakeStage: sliceOf(prisoners.records.intakeStage, activeLength),
     solitarySanctionEndTick: sliceOf(prisoners.records.solitarySanctionEndTick, activeLength),
+    injured: sliceOf(prisoners.records.injured, activeLength),
     needs: needs as { readonly [Need in NeedId]: readonly number[] },
     actionIndex: sliceOf(prisoners.currentAction.actionIndex, activeLength),
     actionPhase: sliceOf(prisoners.currentAction.phase, activeLength),
@@ -493,6 +533,9 @@ export function decodePrisonerComponents(
   // 0038 §1) -- the fresh `PrisonerRecordComponent` above already holds that
   // value in every slot, so there is nothing to overwrite.
   if (encoded.solitarySanctionEndTick !== undefined) records.solitarySanctionEndTick.set(encoded.solitarySanctionEndTick);
+  // Absent means "nobody has ever been hurt in this session" (ADR 0038 §1,
+  // issue #589) -- the same shape and the same one meaning as the line above.
+  if (encoded.injured !== undefined) records.injured.set(encoded.injured);
 
   const needs = new NeedsComponent(capacity).getSnapshot();
   for (const needId of NEED_IDS) needs[needId].set(encoded.needs[needId]);
@@ -615,6 +658,12 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
   const coldState = runtime.prisoners.coldState.getSnapshot();
 
   return pruneUndefined({
+    // Emitted unconditionally by a live capture: every session has exactly the
+    // timetables its `RegimeScheduleRegistry` holds, which is `DEFAULT_REGIME_SCHEDULES`
+    // until an `EditRegimeBlock` says otherwise. There is no "this save does
+    // not know" state for a required section, which is what separates it from
+    // `objects` and `alerts` below.
+    regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -781,6 +830,17 @@ export function restoreSessionSystems(
     }
   }
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
+
+  // 1b. The timetables, before anything that could read one
+  //     ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+  //     §4). Ordering matters only in one direction and it is cheap to state:
+  //     `ActionSystem` reads a schedule per idle prisoner per reconsideration
+  //     cycle, and nothing in this function steps a system, so no read can
+  //     happen before the end of it -- but a future step that did would read
+  //     `DEFAULT_REGIME_SCHEDULES` rather than the save's if this line came
+  //     after it. `loadSnapshot` re-orders the rows into canonical order and
+  //     re-asserts each one gapless rather than trusting the file.
+  runtime.prisoners.regimes.loadSnapshot(systems.regimeSchedules);
 
   // 2. Definitions that other snapshots reference by id.
   //
@@ -989,12 +1049,34 @@ export function restoreSessionSystems(
    *    no migration** -- `SAVE_SCHEMA_VERSION` stays 5 and no persisted field is
    *    added, because derived state is recomputed rather than carried.
    */
-  applyDefaultSecuritySector({
+  const defaultSector = applyDefaultSecuritySector({
     world: runtime.world,
     sectors: runtime.securitySectors,
     schedules: runtime.securitySchedules,
     watchedSectorIds: runtime.incidentSectorIds,
   });
+
+  /*
+   * 8b. The two gangs, re-applied after the payload
+   *     ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   *     decision 1), and for exactly the reason 8 and 9 give.
+   *
+   *     Step 7 above called `GangRegistry.loadSnapshot`, which **clears every
+   *     definition** before it replays the payload's -- so a save written
+   *     before ADR 0103, which is every save that exists, restores a prison
+   *     with no gangs at all and a `'gang-retaliation'` producer that can
+   *     never fire again. Honouring that absence with the derived value rather
+   *     than a throw is ADR 0038 §1, the same reading step 9 makes about the
+   *     search policies.
+   *
+   *     `applyDefaultGangs` is idempotent and payload-wins per id: a save that
+   *     carries a gang under one of the two ids keeps its own definition and
+   *     its own territory, and the *members* and *grudges* the payload
+   *     restored are untouched either way -- this call registers definitions
+   *     and writes neither. So no persisted field is added,
+   *     `SAVE_SCHEMA_VERSION` does not move, and there is no migration.
+   */
+  applyDefaultGangs(runtime.gangs, defaultSector.id);
 
   /*
    * 9. The four default search policies, re-applied after the payload

@@ -3,6 +3,7 @@ import { SIMULATION_PROTOCOL_VERSION } from '../../simulation/protocol/types';
 import {
   SESSION_SNAPSHOT_SCHEMA_ID,
   SESSION_SNAPSHOT_SCHEMA_VERSION,
+  sessionSnapshotBundleFromTransport,
   type SessionSnapshotBundle,
 } from '../../simulation/runtime/restore-session';
 import {
@@ -44,7 +45,28 @@ import { EMPTY_RENDER_FRAME, type MutableRenderActor, type RenderFeed, type Rend
  *   for, which is when it actually changed any;
  * - when the clock *starts*, since that is when orders queued against a paused
  *   prison run;
+ * - **when a delta says the drawn world changed** -- the fifth header word of
+ *   `lockstate.render-actors`, ADR 0099's notification;
  * - on an interval only while the simulation clock is running.
+ *
+ * **The fifth of those is the one that is a fact about the simulation rather
+ * than about a message this thread already has**, and until it existed there
+ * was no such mark. A build order completing is not a command, not a clock
+ * transition and not the tick a command was scheduled for -- the command that
+ * created it was accepted hundreds of ticks earlier -- so a finished door was
+ * drawn as an unbuilt ghost until the thirty-second poll, measured at 22-28
+ * seconds in `docs/research/2026-09-06-what-a-finished-door-is-drawn-as.md`
+ * (issue #1037).
+ *
+ * **What arrives is a notification and not geometry, and that is what keeps
+ * the frame whole.** The marker carries no tile, no order id and no phase, so
+ * the only thing this feed can do with it is ask for the snapshot it already
+ * knows how to ask for -- and `apply` still builds `world` and `structures` in
+ * one object literal from one `SessionSnapshotBundle`. A notification cannot
+ * split what a single capture joins, which is why
+ * `tests/integration/completed-edge-structures-arrive-with-their-edge.test.ts`
+ * holds for exactly the reason it held before. Carrying chunk geometry on the
+ * delta channel is ADR 0040's slice 4 and is emphatically not this.
  *
  * A paused, idle session costs exactly one request. The interval is tens of
  * seconds precisely because the actors no longer ride on it; carrying chunk
@@ -160,6 +182,50 @@ export class SimulationSnapshotFeed implements RenderFeed {
    */
   private lastDeltaTick: number | undefined;
   /**
+   * The drawn world's marker as of the last delta applied, or `undefined`
+   * before this session has seen one.
+   *
+   * **`undefined` is a baseline and not a change**, which is the one judgement
+   * in this mechanism that is not forced by ADR 0099. Treating the first
+   * marker of a session as different from "nothing" would put a snapshot
+   * request on the first delta of every session -- and the session's opening
+   * request has already gone out, provoked by `simulation/ready`, so that
+   * request would ask again for a world nothing has touched. The window it
+   * leaves is between that opening capture and the first delta, and a paused
+   * session (which is how one starts) publishes no delta at all until the
+   * clock runs, at which point the clock *transition* has already set `dirty`.
+   *
+   * Cleared with a session for the reason `lastDeltaTick` is: the counter
+   * starts at zero in a new or restored world, so a marker carried across a
+   * session boundary would compare a number against a different simulation's.
+   *
+   * ### One redundant request per geometry-changing command, and why it stays
+   *
+   * ADR 0099 does not mention this and it is worth stating. A *command* that
+   * changes geometry -- zoning a room, buying land -- already sets `dirty`
+   * twice, at its acceptance and at the tick it was scheduled for, and the
+   * second of those fetches a world that already carries the write. But the
+   * write also moved the marker, and this field is still holding the value
+   * from before it, so the next delta fetches once more for a change the feed
+   * has already drawn.
+   *
+   * **Measured, not reasoned:** over a full run of
+   * `tests/browser/playtest-1037-when-the-renderer-learns.playtest.ts` the
+   * feed's snapshot count goes from 19 to 20 -- one request, for one command
+   * -- so the cost is bounded by how many geometry-changing commands a player
+   * presses and not by any clock.
+   *
+   * Removing it would need the snapshot *reply* to carry the marker so that
+   * `apply` could update this field, and that is a field on
+   * `simulation/snapshot`'s payload: a protocol change, which ADR 0099
+   * decision 2 explicitly declines ("no protocol version, no envelope
+   * change"). A redundant fetch of a world that is already correct is the
+   * safe direction to be wrong in, so it is documented rather than traded for
+   * a wider change. `tests/unit/rendering-feed.test.ts` pins the count so it
+   * cannot quietly become two.
+   */
+  private lastWorldRevision: number | undefined;
+  /**
    * The actors the last delta published, the positions it published them at,
    * and the presentation time that publication was first drawn at.
    *
@@ -252,6 +318,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // under the second one's name.
         this.lastAppliedTick = undefined;
         this.lastDeltaTick = undefined;
+        this.lastWorldRevision = undefined;
         this.awaitedCommandTick = undefined;
         break;
 
@@ -334,6 +401,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
         this.pendingMessageId = undefined;
         this.pendingForcesApply = false;
         this.lastDeltaTick = undefined;
+        this.lastWorldRevision = undefined;
         this.awaitedCommandTick = undefined;
         break;
 
@@ -413,6 +481,14 @@ export class SimulationSnapshotFeed implements RenderFeed {
    * the last good set is strictly better than blanking a prison over one bad
    * message.
    *
+   * ### It also reads the world's marker, and that is not "the actors"
+   *
+   * The fifth header word is a notification rather than data (ADR 0099): a
+   * change in it sets `dirty`, which makes `pump` send the snapshot request
+   * this feed already sends, and nothing about the frame is built from it. The
+   * marker is why a finished build order reaches the screen in well under a
+   * second instead of waiting up to thirty for the consistency poll.
+   *
    * A **non-keyframe** payload is dropped for a different reason: this build
    * sends only keyframes, so a diff is a message from a worker newer than this
    * receiver, and applying its record list as if it were the complete live set
@@ -458,6 +534,33 @@ export class SimulationSnapshotFeed implements RenderFeed {
       this.onError(new Error('Worker sent a changed-only render delta; this renderer applies keyframes only.'));
       return;
     }
+
+    /*
+     * THE SIXTH `dirty` MARK (ADR 0099).
+     *
+     * Read after both refusals above rather than before them: a payload this
+     * build will not apply is a payload from a worker it does not understand,
+     * and a marker taken out of one would be a number of unknown meaning
+     * provoking a snapshot request. Every version this build can pair with
+     * ships in the same bundle -- `src/main.ts` builds the worker through
+     * Vite's `?worker` import -- so there is no mixed-version case in which
+     * this costs a notification.
+     *
+     * Set rather than compared-and-applied: `dirty` is what `pump` reads on
+     * the next `readFrame`, and the request that goes out is the one this feed
+     * already sends. Nothing here touches `world`, `structures` or `revision`,
+     * so the notification adds no second source for either of the painter's
+     * operands.
+     *
+     * The unconditional form of this line -- marking dirty on every delta
+     * rather than on a marker that moved -- is a snapshot request at 10 Hz and
+     * is worse than the defect. `tests/unit/rendering-feed.test.ts` pins both
+     * halves for that reason.
+     */
+    if (this.lastWorldRevision !== undefined && decoded.worldRevision !== this.lastWorldRevision) {
+      this.dirty = true;
+    }
+    this.lastWorldRevision = decoded.worldRevision;
 
     const actors = actorsFromDelta(decoded);
     this.publishedActors = actors;
@@ -516,7 +619,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
     // Validated as JSON by the protocol decoder before it reached us; the
     // schema id above says which shape that JSON has. `WorldRenderView` still
     // fails closed on anything malformed inside it.
-    const bundle = snapshot.data as unknown as SessionSnapshotBundle;
+    const bundle = sessionSnapshotBundleFromTransport(snapshot.data);
     try {
       this.frame = {
         revision: this.frame.revision + 1,

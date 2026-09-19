@@ -20,13 +20,18 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   migrations in `supabase/migrations/` and the first four pgTAP suites in
   `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
   Storage and Realtime running. Everything after those postdates that run and
-  is not in it: **the twelve migrations dated `20260824`**, **the two dated
-  `20260826`** and **suites 005 to 011 in their entirety**, together with every assertion the first four suites
-  have gained since — among them the twenty-two suite 002 gained for #105
-  findings 1 and 2, the twenty-nine it gained for findings 6, 7 and 9, and the
-  thirteen suite 001 gained for finding 11. Stated as a date range and a suite
-  range rather than as a list of names because the list is what drifted: it
-  named seven migrations and one suite while twelve and four postdated the run.
+  is not in it: **every migration dated `20260824` or later** — twelve on
+  `20260824`, two on `20260826` and one on `20260904` — and **every suite
+  from 005 onwards, in its entirety**, together with every assertion the first
+  four suites have gained since — among them the twenty-two suite 002 gained
+  for #105 findings 1 and 2, the twenty-nine it gained for findings 6, 7 and 9,
+  and the thirteen suite 001 gained for finding 11. Stated as an open-ended
+  date range and an open-ended suite range rather than as a list of names
+  because the list is what drifted: it named seven migrations and one suite
+  while twelve and four postdated the run, **and the closed forms that replaced
+  it drifted the same way** — checked 2026-09-15, the `20260904` telemetry
+  migration and suite `012` both postdate the run and neither "the twelve
+  migrations dated `20260824`" nor "suites 005 to 011" reached them.
   Reproduce with:
   ```bash
   supabase start && supabase db reset && supabase test db
@@ -35,9 +40,12 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — **321** assertions (`pnpm verify:sql` prints the
+  migration and every suite — **412** assertions (`pnpm verify:sql` prints the
   total on its last line; it read 287 until the 2026-08-27 pass that closed nine
-  unguarded CHECK constraints and ADR 0008 T6's unasserted index), and the only path the #105
+  unguarded CHECK constraints and ADR 0008 T6's unasserted index, and **321
+  until 2026-09-04**, when the telemetry ingest destination and its retention
+  job arrived with suite 012 and extended five of the eleven suites that
+  existed), and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:

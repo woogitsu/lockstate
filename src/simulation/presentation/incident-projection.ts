@@ -9,7 +9,7 @@ import { INCIDENT_STATES } from '../incidents/incident';
 import {
   compareEntityIds,
   HUD_VIEW_MODEL_SCHEMA_VERSION,
-  pageOf,
+  resolvePageRequest,
   toBoundedValue,
   type BoundedValue,
   type HudViewModelSchemaVersion,
@@ -195,9 +195,31 @@ function projectRow(
  * **Cost.** `IncidentLog` indexes open incidents, so `active` is
  * `O(openIncidents)`. Terminal incidents are **not** indexed -- the only
  * accessor is `all()`, which materialises every incident ever recorded --
- * so `resolved.total` costs `O(allIncidentsEverRecorded)` regardless of
- * the requested window. That grows across a long session; it is reported
- * as a gap rather than worked around here.
+ * so the *walk* still costs `O(allIncidentsEverRecorded)` regardless of the
+ * requested window. That half is `docs/HUD_PROJECTIONS.md` gap 28 and is
+ * still open: closing it needs an index inside `IncidentLog`, which is a
+ * change to the log rather than to this function.
+ *
+ * **What is no longer paid here is the _allocation_.** This used to push a
+ * whole `IncidentRowViewModel` for every terminal incident ever recorded and
+ * then hand the array to `pageOf`, which kept `limit` of them and dropped the
+ * rest -- so a session with a thousand finished incidents built a thousand row
+ * objects, each with a bounded-value record, an optional outcome record and a
+ * `requiredResponderCount` call on the response source, to answer a request
+ * for four. The window is now decided by a terminal **ordinal** carried
+ * through the same single walk, and `projectRow` runs only for the records
+ * inside it.
+ *
+ * **It is the shape `projectPrisonerRoster` already uses** two files over
+ * (`prisoner-projection.ts`: *"give every prisoner its sorted position and
+ * materialise only the ones the window asked for"*), and this is the same
+ * trade with one walk instead of two, because the aggregate this projection
+ * has to report needs that walk anyway.
+ *
+ * **The page is byte-identical to what `pageOf` produced**, and deliberately
+ * so: `pageOf` slices an array already in `all()`'s canonical order, and the
+ * ordinal counts terminal records in that same order, so the same records land
+ * in the same positions. `total` is the terminal count this walk already had.
  */
 export function projectIncidents(
   source: IncidentProjectionSource,
@@ -208,7 +230,12 @@ export function projectIncidents(
 
   const countsByState = new Map<IncidentState, number>();
   const countsByType = new Map<IncidentType, number>();
+  // The window, resolved once: `pageOf` did this internally and the page this
+  // function returns still has to report the same `offset` and `limit` back.
+  const { offset, limit } = resolvePageRequest(request);
   const terminalRows: IncidentRowViewModel[] = [];
+  /** How many terminal records the walk has passed -- the ordinal `pageOf`'s `slice` used to index. */
+  let terminalSeen = 0;
   let stillOpen = 0;
   let resolved = 0;
   let lapsed = 0;
@@ -224,7 +251,17 @@ export function projectIncidents(
     else if (record.state === 'lapsed') lapsed += 1;
     else stillOpen += 1;
 
-    if (isTerminal(record.state)) terminalRows.push(projectRow(record, tick, source.response));
+    if (isTerminal(record.state)) {
+      // `>= offset` and `< offset + limit` is exactly `slice(offset, offset +
+      // limit)` over the terminal records in this order, evaluated one record
+      // at a time. A `limit` of 0 builds nothing, which is what an empty slice
+      // is, and `resolvePageRequest` has already floored both at 0 so neither
+      // bound can be negative.
+      if (terminalSeen >= offset && terminalSeen < offset + limit) {
+        terminalRows.push(projectRow(record, tick, source.response));
+      }
+      terminalSeen += 1;
+    }
 
     const outcome = record.outcome;
     if (outcome === undefined) continue;
@@ -239,7 +276,7 @@ export function projectIncidents(
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     active: source.incidents.openIncidents().map((record) => projectRow(record, tick, source.response)),
-    resolved: pageOf(terminalRows, request),
+    resolved: { total: terminalSeen, offset, limit, rows: terminalRows },
     summary: { total: all.length, stillOpen, resolved, lapsed, totalInjured, totalPropertyDamage, escapes },
     countsByState: INCIDENT_STATES.map((state) => ({ state, count: countsByState.get(state) ?? 0 })),
     countsByType: INCIDENT_TYPES.map((type) => ({ type, count: countsByType.get(type) ?? 0 })),

@@ -99,7 +99,9 @@ The four steps below describe the lifecycle in that shape:
    never a shortcut or parallel routing implementation. A `permission-denied`/
    `unreachable` outcome fails the job with that reason recorded on
    `job.failReason`.
-3. **Performing** (`continuePerforming`): a fixed dwell (`PICKUP_DROPOFF_DURATION_TICKS`)
+3. **Performing** (`continuePerforming`): a fixed dwell -- five ticks, held as
+   `minDurationTicks` on the `action.carry` row of the action catalogue
+   (`src/simulation/prisoners/actions.ts:406-408`) since ADR 0093 moved it there --
    at each leg's destination, then `withdrawReserved` (pickup) or `deposit`
    (dropoff) -- the only points where a job actually touches inventory.
    Both container lookups here are **lenient**, and a missing container fails
@@ -379,11 +381,21 @@ job stuck in `'travelling'` forever. `JobBoard.loadSnapshot` drops any
 restored `'travelling'` job back to `'assigned'` (clearing the stale id) so
 `JobSystem.beginLeg` re-requests routing on the next scheduled tick -- the
 same convention `PrisonerOperationsRuntime.loadSnapshot` uses for
-mid-travel prisoners. `JobSystem`'s own `performingSince` dwell-timer map is
-intentionally *not* part of any snapshot (session-scoped, like
-`IntakeSystem`'s counters) -- a restored `'performing'` job simply restarts
-its dwell timer, extending the pickup/dropoff wait by at most
-`PICKUP_DROPOFF_DURATION_TICKS`, never losing state.
+mid-travel prisoners. **`JobSystem` no longer exists**: ADR 0093 folded the
+carry into `ActionSystem` and deleted it
+(`src/simulation/prisoners/actions.ts:392`), so the two clauses above that name
+`JobSystem` describe the pre-0093 substrate and have not been re-verified
+against what replaced it. `JobBoard` and `PrisonerOperationsRuntime` are not
+affected: both are still here. The paragraph here used to end *"`JobSystem`'s own
+`performingSince` dwell-timer map is intentionally not part of any snapshot
+(session-scoped, like `IntakeSystem`'s counters) -- a restored `'performing'`
+job simply restarts its dwell timer"*, and **ADR 0093 retired both halves of
+that**: `performingSince` is deleted and the dwell timer is the prisoner's
+`phaseStartedAtTick`, which the save does carry (decision 5,
+`src/simulation/operations/carry-executor.ts:28` and
+`src/simulation/prisoners/action-system.ts:775`). A restored carry therefore
+resumes its dwell rather than restarting it, and nothing about the wait is
+session-scoped any more.
 
 A restored job may name a container the restored session does not hold:
 `restoreSessionSystems` registers a container per *container-snapshot* entry
@@ -450,9 +462,9 @@ production chains; detailed HVAC/CFD or electrical engineering simulation
 final UI/visual effects (a session UI does now exist -- the HUD and save
 panel mounted by `src/main.ts` -- and since `0e70f14` (#367) the Build queue
 surfaces an order in `'materials-pending'`, the state this document's
-`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:279` carries it,
-`src/content/simulation-message-keys.ts:456` labels it "Awaiting Materials" and
-`src/rendering/world/structures.ts:29` draws it. Nothing surfaces containers,
+`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:777` carries it,
+`src/content/simulation-message-keys.ts:510` labels it "Awaiting Materials" and
+`src/rendering/world/structures.ts:31` draws it. Nothing surfaces containers,
 jobs or the utility networks. **This clause read "nothing in it surfaces any of
 this"**,
 matching #19/#22/#24's precedent of shipping the system before the surface); a fully generic job-kind registry (this issue ships one

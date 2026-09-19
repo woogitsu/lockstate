@@ -20,10 +20,31 @@ import {
  * `SimulationWorkerStateMachine.fault`, on the same code path. It matters here
  * because these codes are reported verbatim as protocol faults by
  * `src/simulation/worker/worker.ts`, and a code the fault enum does not
- * contain does not survive the trip: `SimulationClient.handleMessage` decodes
- * every inbound message against `workerToMainMessageSchema` and, on failure,
- * logs to the console and notifies no listener. The diagnostic for a real
- * failure would itself fail, with the original cause gone.
+ * contain does not survive the trip: `SimulationClient.handleMessage`
+ * (`src/simulation/worker/client.ts:93-107`) decodes every inbound message
+ * against `workerToMainMessageSchema`, so a fault whose code the enum does not
+ * carry never reaches a listener *as the fault the worker sent*. The
+ * diagnostic for a real failure fails its own decode, and the original cause
+ * is gone with it.
+ *
+ * **That sentence used to end "logs to the console and notifies no listener",
+ * and the silence it described is history rather than the present flow.** It
+ * is named rather than dropped because it is the loss this `satisfies` clause
+ * was written against, and because it is still what `console.error` alone
+ * would buy. Since #301 the same method builds a `localFault`
+ * (`client.ts:140-152`) out of the decoder's `ProtocolDecodeError` and fans it
+ * out to every listener as a real, schema-valid `protocol/error` -- one
+ * classified by the codes above, uncorrelated (no `replyTo`) and
+ * `recoverable: false`. `tests/unit/simulation-worker-client.test.ts` pins
+ * that for each of the four codes.
+ *
+ * **What the delivery does not restore is what the code said.** The listener
+ * is told *that* the main thread could not read a message and how the decode
+ * failed; the worker's own statement -- the fault code it chose, its message,
+ * its `recoverable` -- is still unrecoverable, because the envelope carrying
+ * them never passed its schema. So the list below is still the thing keeping
+ * a real fault readable, and the fan-out is a floor under the failure rather
+ * than a substitute for it.
  *
  * `as const` keeps the literal tuple, so the type below is these four codes
  * and not all twelve fault codes.

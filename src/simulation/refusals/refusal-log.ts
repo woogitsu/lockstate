@@ -1,8 +1,10 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
-import type { PurchaseCancelRefusalReason, PurchaseRefusalReason } from '../economy/procurement';
+import type { CancelBuildOrderRefusalReason, RemoveWallRefusalReason } from '../construction/system';
+import type { PurchaseCancelRefusalReason, PurchaseRefusalReason, SellStockRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
+import type { EditRegimeBlockRefusalReason } from '../prisoners/regime-registry';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { GuardReleaseRefusalReason } from '../security/guard-release';
@@ -74,6 +76,13 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   `supersede` and read by nothing else, including nothing in
  *   `src/ui/`. It is what lets a later success withdraw the very refusal it
  *   answers without needing a tile on the public payload -- see `supersede`.
+ *   **The key itself still never reaches the wire, and since 2026-09-16 one
+ *   bit derived from it does**: `supersessionKeyRoute` reads the key's route
+ *   prefix, and `SimulationRefusal.routeDecidedSince` reports whether that
+ *   route has decided anything since (ADR 0091 decision 2, option F). A
+ *   route is a command name the protocol already spells out in every
+ *   `RefusalReason`, so this adds no target, no tile and no id to the
+ *   payload; the sentence above is narrowed rather than withdrawn.
  * - **It orders nothing.** There is exactly one record, so there is no
  *   iteration here for `docs/DETERMINISM.md`'s canonical-order rule to
  *   govern -- the rule is satisfied by there being no list, not by a sort.
@@ -84,6 +93,38 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * the same order. `supersede` is called from the same handler at the same
  * point, so a withdrawal is exactly as deterministic as a record.
  */
+/**
+ * The command route a supersession key names: everything before the first
+ * `:`, or the whole key where a route carries no target.
+ *
+ * ADR 0091 decision 2 (option F, ruled 2026-09-16) needs "the same route" as
+ * a comparison, and this is where that comparison is defined. It reads the
+ * keys this module already builds rather than introducing a second
+ * vocabulary: every `*SupersessionKey` below returns either `<route>:<target>`
+ * or a bare route (`admitSupersessionKey` -> `'admit'`,
+ * `materialsFundingSupersessionKey` -> `'materials-funding'`), so the prefix
+ * is already the thing, and a route added tomorrow gets one for free. A table
+ * mapping `RefusalReason` namespaces onto routes would be the alternative and
+ * it would be a second list to keep in step with this one -- and it would
+ * already be wrong for `construction.materials-unfunded`, whose key is
+ * `materials-funding`.
+ *
+ * **`zone` and `zone-area` are two prefixes for one route and this function
+ * does not merge them, deliberately.** Decision 1 of the same ADR made the
+ * `ZoneRoom` success path call `supersede` with *both* keys unconditionally
+ * (`session-commands.ts`), so a standing `zone.*` refusal filed under either
+ * shape sees a decided outcome of its own prefix on every successful zoning
+ * anyway. Merging them here would add an alias table -- the exact thing the
+ * paragraph above declines -- to buy nothing.
+ * `tests/unit/simulation-refusals.test.ts` pins the prefix of every key
+ * builder in this module, so a new route whose key does not follow the shape
+ * fails there rather than silently never retiring a band.
+ */
+export function supersessionKeyRoute(key: string): string {
+  const separator = key.indexOf(':');
+  return separator === -1 ? key : key.slice(0, separator);
+}
+
 export class RefusalLog {
   /**
    * The total number of refusals ever recorded. Monotonic -- `supersede`
@@ -116,6 +157,10 @@ export class RefusalLog {
    */
   public record(reason: RefusalReason, tick: number, key?: string): void {
     this._sequence += 1;
+    // No `routeDecidedSince`: a refusal decided *now* has by definition had
+    // nothing decided since. A replacement therefore also clears the flag the
+    // record it replaces may have carried, which is why this assigns a whole
+    // value rather than mutating the old one.
     this._current = { sequence: this._sequence, tick, reason };
     this._currentKey = key;
   }
@@ -146,11 +191,54 @@ export class RefusalLog {
    * `undefined` is not a match, so a caller may call this on every success
    * unconditionally rather than guarding it on "is anything currently
    * standing".
+   *
+   * **"Silent" narrowed on 2026-09-16 and the clause above is kept because it
+   * is the half that moved.** A miss still changes nothing this class
+   * reports as a refusal -- `last`'s `sequence`, `tick` and `reason`, and
+   * `count`, are all exactly what they were, and the withdrawal rule #492
+   * asked for is untouched. What a miss can now do is set
+   * `routeDecidedSince` on the standing record, and only when the key names
+   * the same **route** as the standing refusal's own; see
+   * `noteRouteDecided`. It is still cheap: one `indexOf` and one string
+   * comparison on a path that already did one.
    */
   public supersede(key: string): void {
-    if (this._currentKey === undefined || this._currentKey !== key) return;
-    this._current = undefined;
-    this._currentKey = undefined;
+    if (this._currentKey !== undefined && this._currentKey === key) {
+      this._current = undefined;
+      this._currentKey = undefined;
+      return;
+    }
+    this.noteRouteDecided(key);
+  }
+
+  /**
+   * Records that the standing refusal's own **route** has decided something
+   * else, without touching the refusal (ADR 0091 decision 2, option F).
+   *
+   * Reached only from `supersede`, and only on the path that used to `return`
+   * having done nothing -- a key that misses. The withdrawal rule above is
+   * untouched: a match still withdraws, a miss still leaves `_current`,
+   * `_currentKey`, `_sequence` and `count` exactly as they were. What is new
+   * is that a *near* miss -- the same route, a different target -- is now
+   * reported on the record instead of being silent, so the refusal band can
+   * retire a sentence about a subject the player has visibly moved on from
+   * while the alerts list keeps the entry. See `SimulationRefusal`'s
+   * `routeDecidedSince` for what a route is and why the key's own prefix is
+   * it.
+   *
+   * **This is not #492's wide reading arriving by another door.** The wide
+   * reading was about what the *log* withdraws, and the log withdraws exactly
+   * what it withdrew before. `tests/unit/simulation-refusals.test.ts`'s two
+   * guarding cases assert on `last?.reason` after a different rectangle and a
+   * different tile succeed, and both still read the standing refusal here.
+   */
+  private noteRouteDecided(key: string): void {
+    const current = this._current;
+    if (current === undefined || current.routeDecidedSince === true) return;
+    const standingRoute = this._currentKey;
+    if (standingRoute === undefined) return;
+    if (supersessionKeyRoute(standingRoute) !== supersessionKeyRoute(key)) return;
+    this._current = { ...current, routeDecidedSince: true };
   }
 
   /** The most recent refusal, or `undefined` while the session has refused nothing or the last one was superseded. */
@@ -306,12 +394,72 @@ export const REMOVE_OBJECT_REFUSAL_REASONS: Readonly<Record<RemoveObjectRefusalR
   'nothing-to-remove': 'remove-object.nothing-to-remove',
 };
 
+/**
+ * `RemoveWallRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (ADR 0106).
+ *
+ * **One entry, and the table exists anyway**, for the argument
+ * `REMOVE_OBJECT_REFUSAL_REASONS` records of its own single member.
+ *
+ * `nothing-to-remove` is spelled exactly like `REMOVE_OBJECT_REFUSAL_REASONS`'s
+ * and `UNZONE_REFUSAL_REASONS`'s members of the same name -- the same fact
+ * about a third gesture -- and namespaced apart from both for the reason every
+ * other collision in `REFUSAL_REASONS` is: a player who pressed the world
+ * expecting a wall to come down must not read a sentence about an object or a
+ * room.
+ */
+export const REMOVE_WALL_REFUSAL_REASONS: Readonly<Record<RemoveWallRefusalReason, RefusalReason>> = {
+  'nothing-to-remove': 'remove-wall.nothing-to-remove',
+};
+
+/**
+ * `CancelBuildOrderRefusalReason`, mapped onto the wire's. Exhaustive for the
+ * same reason as above (ADR 0107).
+ *
+ * **One entry, and the table exists anyway**, for the argument
+ * `REMOVE_WALL_REFUSAL_REASONS` records of its own single member.
+ *
+ * `stale-cancellation` is namespaced apart from `cancel-purchase.not-pending`
+ * (Context §8's nearest precedent -- a pure identity check, which this is not)
+ * and apart from the unrelated main-thread-only `hud.refusal.cancel-build-order`
+ * (Context §9 -- a different channel entirely, fired before any command reaches
+ * the wire) for the same reason every other collision in `REFUSAL_REASONS` is:
+ * a player who pressed a queue row's `Cancel` and lost the race described in
+ * ADR 0107 Context §3 must not read a sentence that could be confused with
+ * either.
+ */
+export const CANCEL_BUILD_ORDER_REFUSAL_REASONS: Readonly<Record<CancelBuildOrderRefusalReason, RefusalReason>> = {
+  'stale-cancellation': 'cancel-build-order.stale-cancellation',
+};
+
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */
 export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, RefusalReason>> = {
   'duplicate-order': 'purchase.duplicate-order',
   'insufficient-funds': 'purchase.insufficient-funds',
   'invalid-quantity': 'purchase.invalid-quantity',
   'unknown-material': 'purchase.unknown-material',
+};
+
+/**
+ * `SellStockRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (`SellMaterials`, ADR 0075 decision 3 / ADR 0096 decision
+ * 3(b)).
+ *
+ * Namespaced `sell.*` rather than folded into `purchase.*`, for the reason
+ * every such pair in this file is: buying and selling are opposite gestures on
+ * the same material, and somebody who pressed Sell must not read
+ * `purchase.unknown-material` and wonder whether a delivery they never asked
+ * for failed to arrive. `unknown-material` and `invalid-quantity` are spelled
+ * exactly like two of `PURCHASE_REFUSAL_REASONS`'s own members -- the same
+ * condition, read off the same catalogue lookup and the same integer guard,
+ * for the opposite direction of money -- which is precisely the shape the
+ * namespace exists to keep apart. `insufficient-stock` has no purchase-side
+ * twin: nothing about buying can ever be refused for want of stock.
+ */
+export const SELL_REFUSAL_REASONS: Readonly<Record<SellStockRefusalReason, RefusalReason>> = {
+  'insufficient-stock': 'sell.insufficient-stock',
+  'invalid-quantity': 'sell.invalid-quantity',
+  'unknown-material': 'sell.unknown-material',
 };
 
 /**
@@ -398,6 +546,30 @@ export const RELEASE_GUARD_REFUSAL_REASONS: Readonly<Record<GuardReleaseRefusalR
  */
 export const DISMISS_STAFF_REFUSAL_REASONS: Readonly<Record<StaffDismissRefusalReason, RefusalReason>> = {
   'unknown-staff': 'dismiss.unknown-staff',
+};
+
+/**
+ * `EditRegimeBlockRefusalReason`, mapped onto the wire's
+ * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §3). Exhaustive for the same reason as every table above.
+ *
+ * Namespaced `edit-regime-block.*` rather than folded into anything: no other
+ * command in the protocol names a classification group or a tick of the day,
+ * so there is nothing for these two to be confused with -- and that is an
+ * argument for a namespace rather than against one, on the reasoning
+ * `DISMISS_STAFF_REFUSAL_REASONS` records. A table over a two-member union is
+ * what makes a third refusal impossible to add without deciding what it says.
+ *
+ * Both are reachable only from a command composed against a stale reading of
+ * the schedule -- the group ids and the block boundaries the panel names come
+ * from `hud/status-strip`, which is published on a cadence. Neither can be
+ * provoked by a player pressing a control that is currently correct, which is
+ * exactly why neither may be silently absorbed: a press that quietly edited a
+ * *different* block would be the article 5 failure, not an inconvenience.
+ */
+export const EDIT_REGIME_BLOCK_REFUSAL_REASONS: Readonly<Record<EditRegimeBlockRefusalReason, RefusalReason>> = {
+  'unknown-block': 'edit-regime-block.unknown-block',
+  'unknown-group': 'edit-regime-block.unknown-group',
 };
 
 /**
@@ -515,7 +687,8 @@ export function zoneSupersessionKey(roomCatalogId: string, x: number, y: number,
  * and `not-enclosed` are all read straight off the rectangle and the world --
  * `RoomZoningService.zone` decides every one of them from `request.x/y/
  * width/height` and `this.world`, never from `definition` (`../rooms/
- * zoning.ts:505-576`). Folding the room type into their key anyway is what
+ * zoning.ts:489-689`, the whole of `zone`). Folding the room type into their
+ * key anyway is what
  * let a `room.cell` attempt's `not-enclosed` refusal outlive a `room.yard`
  * zoned successfully at the *identical* rectangle moments later: the yard
  * needs no enclosure (`enclosureRequirement`, `'outdoors'` rather than
@@ -591,6 +764,16 @@ export function purchaseSupersessionKey(itemId: string, quantity: number): strin
 }
 
 /**
+ * `sell.*`'s key: the item and the quantity, exactly as `purchase.*`'s is --
+ * `SellMaterials` carries no order id for `purchaseSupersessionKey`'s reason
+ * to key on instead. A fresh press of the same item and quantity is the same
+ * request landing, so it withdraws a still-standing refusal about it.
+ */
+export function sellSupersessionKey(itemId: string, quantity: number): string {
+  return `sell:${itemId}:${quantity}`;
+}
+
+/**
  * The key a just-in-time materials shortfall stands under (#627).
  *
  * **Domain-wide rather than per target**, which makes it the second key of
@@ -634,6 +817,46 @@ export function placeObjectSupersessionKey(definitionId: string, x: number, y: n
 /** `remove-object.*`'s key: the tile. `RemoveObject` names no order id at all. */
 export function removeObjectSupersessionKey(x: number, y: number): string {
   return `remove-object:${x}:${y}`;
+}
+
+/**
+ * `remove-wall.*`'s key: the tile edge, not the order id -- `RemoveWall` names
+ * no order id either (ADR 0106), and a wall's edge is the thing a player
+ * repeatedly presses, exactly as a tile is `removeObjectSupersessionKey`'s.
+ * Distinct from that key even for the same `x`/`y`, because the two commands'
+ * refusals are two different standing facts about one tile and neither
+ * answers the other -- a `remove-object.nothing-to-remove` there says nothing
+ * about whether a wall's edge is claimed, and a `remove-wall.nothing-to-remove`
+ * says nothing about whether an object is standing on it.
+ */
+export function removeWallSupersessionKey(x: number, y: number, edge: string): string {
+  return `remove-wall:${x}:${y}:${edge}`;
+}
+
+/**
+ * `cancel-build-order.*`'s key: the order id, mirroring
+ * `purchaseCancelSupersessionKey`'s own reasoning (ADR 0107 Decision §5) --
+ * `CancelBuildOrder` names one order id and a refusal about it must not be
+ * silenced by a cancellation of a different one.
+ */
+export function cancelBuildOrderSupersessionKey(orderId: string): string {
+  return `cancel-build-order:${orderId}`;
+}
+
+/**
+ * `edit-regime-block.*`'s key: the group and the block boundary together,
+ * which is the pair `EditRegimeBlock` names.
+ *
+ * Both halves, on issue #492's rule and on `zoneRefusalSupersessionKey`'s
+ * reading of it -- a successful edit of `high-risk`'s morning must not silence
+ * a standing `unknown-block` about `general-population`'s, and an edit of a
+ * different block within the same group must not either. The two refusals
+ * share one key shape because they are two answers about one coordinate: an
+ * `unknown-group` withdrawn by a later success at that coordinate is withdrawn
+ * correctly, since the group named in it is the group that just answered.
+ */
+export function editRegimeBlockSupersessionKey(classificationGroupId: string, startTickOfDay: number): string {
+  return `edit-regime-block:${classificationGroupId}:${startTickOfDay}`;
 }
 
 /** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */

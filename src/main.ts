@@ -1,9 +1,23 @@
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
+  loadLanguageSettings,
+  loadLayoutSettings,
+  loadThemeSettings,
   resolveBrowserKeyValueStore,
+  saveLanguageSettings,
+  saveLayoutSettings,
+  saveThemeSettings,
   saveAccessibilitySettings,
+  subscribeToSettingsChanges,
 } from './input';
+import {
+  type LanguagePreference,
+  type OfferedLocale,
+  LANGUAGE_PREFERENCE_VERSION,
+  OFFERED_LOCALES,
+  languagePreferenceRequest,
+} from './input/language-preference';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
 import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
 import { LifecycleSaveHandler } from './persistence/session/lifecycle';
@@ -22,6 +36,7 @@ import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-fee
 import { WorldScene } from './rendering/scene/world-scene';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
+import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -39,6 +54,7 @@ import {
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -58,7 +74,7 @@ import {
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from './ui/simulation-events';
-import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
+import { hudCountsFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
@@ -66,10 +82,11 @@ import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { StaffRosterReader } from './ui/simulation-staff-roster';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
 import { PrisonerRosterReader } from './ui/simulation-prisoner-roster';
+import { PrisonerDetailReader } from './ui/simulation-prisoner-detail';
 import { RegimeReader } from './ui/simulation-regime';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
-import { SimulationCommandSender } from './ui/simulation-commands';
+import { CANCEL_BUILD_ORDER_LEAD_TICKS, SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { ObjectTool } from './ui/object-tool';
 import { RoomTool } from './ui/room-tool';
@@ -94,9 +111,19 @@ import {
   minimumSizeRequirement,
   objectRequirements,
 } from './simulation/rooms/requirements';
-import { MAX_PURCHASE_QUANTITY, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, staffDailyWageMinorUnits } from './simulation/economy';
+import {
+  MAX_PURCHASE_QUANTITY,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  placementCostMinorUnits,
+  staffDailyWageMinorUnits,
+} from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
-import { judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
+// The wire's own type for a regime block's categories. `src/main.ts` is the
+// composition root and not the HUD, so it may name it; `src/ui/**` may not,
+// which is why the intent carries `readonly string[]` and this is where the
+// two meet (#1167).
+import type { ActionCategory } from './simulation/prisoners/regime';
+import { freshUnfurnishedPrison, judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
 import { HostRefusalError } from './ui/host-refusal';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
@@ -104,8 +131,14 @@ import { procurableMaterial } from './content/procurement-catalog';
 import type { LocalizationKey } from './content/localization';
 import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
+import {
+  type CatalogChunkImporter,
+  createChunkCatalogLoader,
+  resolveStartupLocale,
+} from './services/localization/chunk-catalog-loader';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
+import { createLanguageControl } from './ui/language';
 import { APP_SHELL_MESSAGE_KEY } from './ui/app-shell-messages';
 import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
 import { createTelemetryPipeline } from './services/telemetry/pipeline';
@@ -368,6 +401,185 @@ function objectFootprintOf(definitionId: string): { readonly width: number; read
   return { width: definition.footprint.width, height: definition.footprint.height };
 }
 
+/**
+ * The page's one localizer.
+ *
+ * Module scope rather than local to `mountInterface`, because two consumers now
+ * need the *same instance*: the HUD and the save panel.
+ *
+ * **Three consumers, and the third is why this sits above the world scene
+ * rather than beside `mountInterface` where it used to.** A room's name is
+ * written on the map (the owner's ruling of 2026-09-06), and the scene is
+ * handed a function that formats it -- so `WorldSceneOptions.roomName` closes
+ * over this const. Phaser's `DOMContentLoaded` helper calls back
+ * *synchronously* when `document.readyState` is already `interactive`, which is
+ * exactly what a deferred module script sees, so `new Phaser.Game(...)` boots
+ * inside its own constructor. The scene's `update` still waits for a frame, so
+ * the old ordering happened to work -- and "happened to" is a temporal
+ * dead-zone throw one Phaser release away. Declaring it before the scene makes
+ * the ordering a property of this file instead. `SavePanel` used to
+ * default to a localizer of its own over the same catalog -- equivalent while
+ * `en` is the only locale, and not equivalent the moment a second ships, when a
+ * panel holding its own default-locale localizer would keep rendering English
+ * while the rest of the interface changed language. Issue #208 recorded that as
+ * a seam with a known end; this is the end.
+ */
+/*
+ * `defaultMessageCatalogEn`, not a catalog built here from content alone.
+ *
+ * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
+ * the game always has text offline." This localizer was not complete. It was
+ * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
+ * trusted-services layer contributes twelve more strings of its own
+ * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
+ * product names, save-slot counts, entitlement notices, challenge results and
+ * the telemetry consent prompt). None of them was in the running page's
+ * localizer, so any of them would have rendered as its own key.
+ *
+ * `defaultMessageCatalogEn` is content merged under those service strings, and
+ * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
+ * every declared key against -- so the gate was proving completeness of a
+ * catalog the application did not use. `src/services/entitlements/products.ts`
+ * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
+ * resolves, and before this line it would have painted the raw key.
+ */
+const bundledLocalizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+/**
+ * Every locale published besides the bundled default, as a thunk each (#662,
+ * ADR 0011).
+ *
+ * **This registry is the one `import()` in the delivery route, and it is here
+ * rather than in `src/services/localization/` on purpose.** That layer performs
+ * no I/O, a dynamic `import()` is a network fetch in a browser, and
+ * `tests/unit/services-layer-boundaries.test.ts` has counted it as one since
+ * #664 -- so the port takes an injected thunk and the composition root writes
+ * the import. The same split `resolveBrowserKeyValueStore` above is an instance
+ * of.
+ *
+ * **A thunk, not a promise**, which is what makes the split a split:
+ * `createChunkCatalogLoader` never calls one until a locale is actually asked
+ * for, so a player who never reads Polish never downloads the 669 Polish
+ * strings. Measured on the production build of 2026-09-14: the main chunk
+ * moves 1,849,452 -> 1,850,436 raw bytes (481,322 -> 481,583 gzipped, +261) and
+ * the catalogue leaves in a chunk of its own that `dist/client/index.html`
+ * neither names nor preloads.
+ *
+ * `pl` resolves to the module holding the catalogue rather than to a `.json`
+ * file because the catalogue is authored as TypeScript beside its English
+ * counterpart (#661). `import()` of either code-splits identically; the chunk's
+ * `default` export is a plain object either way, and it goes through
+ * `decodeMessageCatalog` like any untrusted fetched body.
+ */
+const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = {
+  pl: () => import('./services/localization/pl-catalog'),
+};
+
+/**
+ * The page's one localizer, in the locale the player's own browser asks for.
+ *
+ * **Top-level `await`, and it is the cheap end of the trade.** `Localizer` is
+ * synchronous by contract -- "catalogs are loaded before a `Localizer` is
+ * constructed, so rendering never awaits a translation" -- and the HUD, the
+ * save panel and the world scene are all handed *this instance*. Resolving the
+ * locale here means none of them ever has to be re-rendered for the boot
+ * locale, which is the expensive machinery #663 needs for a live language
+ * change and which this issue deliberately does not build.
+ *
+ * For the overwhelming majority of players this awaits nothing at all:
+ * `resolveStartupLocale` returns the bundled localizer synchronously when no
+ * published locale matches the browser's preferences, so a player who reads
+ * English pays one microtask and no request.
+ *
+ * A failed load is silence rather than a crash, which is #662's third
+ * requirement: `switchLocale` hands back *this* localizer untouched, so the
+ * page comes up in complete English and the reason goes to the console beside
+ * every other boot-time degradation this file reports that way.
+ */
+/**
+ * The store the language preference is read from, and the preference itself
+ * (#663).
+ *
+ * **Read here, above the localizer, because this is the only place a language
+ * can be chosen.** Every mounted surface is handed the one `Localizer` built
+ * on the next few lines, and `Localizer`'s own contract is that catalogs are
+ * loaded before it is constructed -- so the preference has to be in hand
+ * before the boot locale is resolved, exactly as the theme preference has to
+ * be in hand before the first paint.
+ *
+ * `resolveBrowserKeyValueStore()` is called again below for the accessibility,
+ * theme and layout records rather than this handle being threaded down. That
+ * is the arrangement already in the file (`:2256` says so of the layout
+ * store): the call never throws, a second one is free, and a module-scope
+ * handle threaded into `mountInterface` would be a shared mutable this file
+ * does not otherwise have.
+ */
+const languageStore = resolveBrowserKeyValueStore();
+const languagePreference = loadLanguageSettings(languageStore).preference;
+
+/**
+ * The preference list to negotiate from: the browser's own when the player has
+ * expressed no preference, and a list of exactly one when they have.
+ *
+ * **The list of one is the whole point of storing `'auto'` as a real value.**
+ * A player who chose English keeps English when they later add Polish to their
+ * browser's language list, because `selectSupportedLocale` is only ever shown
+ * `['en']`; a player who chose nothing follows the browser on every load. A
+ * stored tag alone could not tell those two apart -- `en` would look identical
+ * whether the player picked it or their browser did.
+ *
+ * `navigator.languages` is the ordered preference list; `navigator.language`
+ * is the single fallback for a browser that does not publish the list.
+ */
+const startupLocale = await resolveStartupLocale(
+  bundledLocalizer,
+  createChunkCatalogLoader(CATALOG_CHUNKS),
+  languagePreferenceRequest(
+    languagePreference,
+    navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+  ),
+  {
+    onFailure: (failure) =>
+      console.warn(
+        `The "${failure.requestedLocale}" message catalogue could not be loaded; the interface stays in English.`,
+        failure.message,
+      ),
+  },
+);
+const localizer = startupLocale.localizer;
+
+/**
+ * Which **offered** locale the page ended up in, which is not the same
+ * question as `localizer.locale`.
+ *
+ * `Localizer.locale` is whatever tag was resolved, and that can be a tag the
+ * language control has no name for: `en-XA` when
+ * `tests/browser/pseudo-locale-sweep.spec.ts` patches the bundled localizer,
+ * or a region subtag if a future catalogue is published under one. The control
+ * renders an endonym, so it needs the offered locale -- and the fallback here
+ * is `en` for the reason ADR 0011 gives for every other fallback in this path:
+ * the bundled catalogue is the complete one, so naming it is never a lie about
+ * what the player can read.
+ */
+const resolvedOfferedLocale: OfferedLocale =
+  (OFFERED_LOCALES as readonly string[]).includes(startupLocale.locale)
+    ? (startupLocale.locale as OfferedLocale)
+    : 'en';
+
+/**
+ * The document's own language, which until now was whatever `index.html`
+ * declared and therefore always `en`.
+ *
+ * It is what a screen reader picks a voice and a pronunciation dictionary
+ * from, and what a browser offers to translate from; a Polish page announced
+ * as English is read aloud in an English accent. `startupLocale.locale` rather
+ * than `resolvedOfferedLocale`, because this attribute takes the real tag --
+ * the pseudo-locale included, which is a fact about the page rather than a
+ * string a translator would ever see. `tests/browser/pseudo-locale-sweep.spec.ts`
+ * exempts `<html lang>` for that reason and its exemption still holds.
+ */
+document.documentElement.lang = startupLocale.locale;
+
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
 // `window.localStorage` itself, in a class field initializer, so a browser that
@@ -388,6 +600,22 @@ const worldScene = new WorldScene({
   // Spread rather than passed as `undefined`, because `exactOptionalPropertyTypes`
   // is on.
   ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool }),
+  /*
+   * The same object a third time (#959): `Escape` with no gesture left to
+   * abandon is a request to put the armed tool down, and it leaves the
+   * renderer through the seam the gesture and the undo keys already use. The
+   * tool forwards it; the HUD decides what "the armed tool" currently is,
+   * because the panels are the only place that knows.
+   *
+   * A spread of its own rather than a third key inside the one above, and the
+   * reason is worth naming because it is a constraint on this file rather
+   * than a preference: `tests/foundation/composition-root-contract.test.ts`
+   * asserts the literal text `{ buildTool, editHistory: buildTool }` appears
+   * here, so folding a key into that object would fail a gate for a reformat
+   * rather than for a missing wiring -- the exact failure mode that file's own
+   * header warns about (#206). One seam, one line.
+   */
+  ...(buildTool === undefined ? {} : { toolStandDown: buildTool }),
   // The area tool and the colour to preview a pending room in. The tint is a
   // function rather than a value because the player can change the selected
   // room type without disarming, and the scene reads it on every paint --
@@ -410,6 +638,33 @@ const worldScene = new WorldScene({
   // without disarming -- and one colour for every object rather than a table:
   // `PLANNED_OBJECT_TINT` says what it is and why it is not the room's.
   ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number => PLANNED_OBJECT_TINT }),
+  /*
+   * The word written across a room's floor (the owner's ruling of 2026-09-06:
+   * *"Nazwa tekstem na mapie"*).
+   *
+   * Composed here and nowhere else, because this is the one place that holds
+   * both halves: `defaultRoomContentRegistry` says which room type a zoning
+   * numeric id is, and `localizer` says what that type is called in the
+   * player's language. The renderer is handed the finished text -- exactly the
+   * arrangement `roomTint` above documents for a colour, and for the stronger
+   * reason: a renderer that resolved `nameKey` itself would be a second
+   * localization site, and the second one is always the one that keeps
+   * rendering English after a locale change.
+   *
+   * **No string is authored here.** `nameKey` is the catalogue's own
+   * (`src/content/room-catalog.ts`), its text is
+   * `src/content/default-locale-en.ts`'s, and
+   * `tests/foundation/localization-key-completeness.test.ts` already resolves
+   * every declared key against the same merged catalogue this localizer holds.
+   * `undefined` for an id no catalogued room claims -- so an unnamed room is
+   * drawn with no name rather than with a word invented for it, which is the
+   * half of `AGENTS.md` reservation 4 that its 2026-09-04 release did not touch.
+   */
+  roomName: (zoningNumericId: number): string | undefined => {
+    const definition = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+    if (definition === undefined) return undefined;
+    return localizer.format(definition.nameKey);
+  },
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -729,6 +984,7 @@ function buildCatalogue(): HudBuildViewModel {
     const labelKey = buildableLabelKey(definition);
     if (labelKey === undefined) continue;
     const material = purchasableMaterialFor(definition.materialsRequired);
+    const placementCost = placementCostMinorUnits(definition.materialsRequired);
     buildables.push({
       definitionId: definition.id,
       labelKey,
@@ -758,6 +1014,14 @@ function buildCatalogue(): HudBuildViewModel {
       // property at all -- which is what makes the panel hide its buy control
       // rather than offer one that could only be refused.
       ...(material === undefined ? {} : { material }),
+      // What one placement costs, priced by the simulation over *every*
+      // requirement rather than by the panel over the first purchasable one
+      // (issue #1160, constitution article 4). Spread for the same
+      // `exactOptionalPropertyTypes` reason as `material` above, and absent for
+      // the different reason `HudBuildableViewModel.placementCostMinorUnits`
+      // gives: a requirement nothing sells leaves the placement with no total,
+      // and a partial sum would be a price that is not one.
+      ...(placementCost === undefined ? {} : { placementCostMinorUnits: placementCost }),
     });
   }
 
@@ -970,11 +1234,12 @@ function roomCatalogue(): HudRoomsViewModel {
     rooms.push({
       roomId: definition.id,
       labelKey: definition.nameKey,
-      // The category's tint is defined for every catalogued room, so the
-      // fallback is unreachable; `zoningTint` answers `undefined` only for an
-      // unzoned tile or an id no room claims, and this loop is over the rooms
-      // themselves. `0` rather than a colour picked here, so an unreachable
-      // branch cannot quietly invent a legend entry.
+      // The room's own tint is defined for every catalogued room (ADR 0098
+      // option A keys the table by id), so the fallback is unreachable;
+      // `zoningTint` answers `undefined` only for an unzoned tile or an id no
+      // room claims, and this loop is over the rooms themselves. `0` rather
+      // than a colour picked here, so an unreachable branch cannot quietly
+      // invent a legend entry.
       tint: zoningTint(definition.numericId) ?? 0,
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a room that authors no minimum has to have no property at
@@ -1064,38 +1329,6 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
 }
 
 /**
- * The page's one localizer.
- *
- * Module scope rather than local to `mountInterface`, because two consumers now
- * need the *same instance*: the HUD and the save panel. `SavePanel` used to
- * default to a localizer of its own over the same catalog -- equivalent while
- * `en` is the only locale, and not equivalent the moment a second ships, when a
- * panel holding its own default-locale localizer would keep rendering English
- * while the rest of the interface changed language. Issue #208 recorded that as
- * a seam with a known end; this is the end.
- */
-/*
- * `defaultMessageCatalogEn`, not a catalog built here from content alone.
- *
- * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
- * the game always has text offline." This localizer was not complete. It was
- * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
- * trusted-services layer contributes twelve more strings of its own
- * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
- * product names, save-slot counts, entitlement notices, challenge results and
- * the telemetry consent prompt). None of them was in the running page's
- * localizer, so any of them would have rendered as its own key.
- *
- * `defaultMessageCatalogEn` is content merged under those service strings, and
- * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
- * every declared key against -- so the gate was proving completeness of a
- * catalog the application did not use. `src/services/entitlements/products.ts`
- * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
- * resolves, and before this line it would have painted the raw key.
- */
-const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-
-/**
  * Without a worker there is no simulation and no session, so there is
  * genuinely nothing to save -- a save panel here would be a prop. What the
  * player is owed is being *told*, which the console message alone never did
@@ -1154,6 +1387,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * (`src/ui/simulation-projections.ts`: "a panel that is closed asks for
    * nothing"). `activeTab` is tracked from the `select-tab` intent rather than
    * read back off the HUD, because the HUD's shell state is chrome the HUD owns.
+   *
+   * **That paragraph is no longer true of this reader and is kept rather than
+   * rewritten, because it is the rule that was relaxed and why**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   * Its reasoning is untouched -- a closed panel still asks for nothing -- and
+   * its premise moved: the `ROOMS` chip's badge is drawn off this readout by
+   * `projectStatusMetrics`, and the status strip is laid out on all five tabs,
+   * so there is no tab on which nobody is reading it. `refreshRoomNeeds` below
+   * carries the gate that was removed and what it costs. `activeTab` is still
+   * tracked, and four other readers below still gate on it.
    *
    * **On a cadence that already exists, not on a timer of its own.** Placed
    * objects change what a room has without changing any count -- a completed bed
@@ -1403,8 +1646,42 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * to resolve.
    */
   const prisonerRosterReader = client === undefined ? undefined : new PrisonerRosterReader(client);
+  /**
+   * The ninth reader on #104's channel, and the first that asks about **one**
+   * named thing rather than about a window (issue #895).
+   *
+   * Every reader above it asks a question with no subject -- who is in the
+   * prison, what is queued, how many guards are missing -- and gets whatever
+   * the projection's own window holds. This one carries an `EntityId` the
+   * *player* chose, off the roster row they pressed, so it is the first place in
+   * this file where the interface's own state decides what the worker is asked.
+   *
+   * It is also the cheapest read on the channel: `projectPrisonerDetail` is
+   * `O(1)` in the prison -- one liveness check, one index, six needs -- where
+   * the roster's is `O(window)` and the room list's is `O(instances)`. So the
+   * inspector costs one extra message per refresh beside the roster's, which is
+   * why it rides that same cadence rather than a slower one of its own.
+   *
+   * No lookup is handed to it, exactly as none is handed to the roster reader:
+   * every word it produces is a message key derived from an id the simulation
+   * published, and `src/content/simulation-message-keys.ts` is where those ids
+   * are labelled.
+   */
+  const prisonerDetailReader = client === undefined ? undefined : new PrisonerDetailReader(client);
   const regimeReader = client === undefined ? undefined : new RegimeReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
+  /**
+   * Which prisoner the player selected, as the host's own copy of the panel's
+   * chrome (issue #895).
+   *
+   * The Regime panel owns the selection -- it applies a press immediately,
+   * which is what a player sees -- and this is the half of it the panel cannot
+   * own: *what to ask the worker on every refresh*. It is written only by the
+   * `select-prisoner` intent and by the released case below, so the two copies
+   * cannot drift in any direction the player can see: a press sets both, and
+   * only this side can discover that the prisoner is gone.
+   */
+  let selectedPrisonerId: number | undefined;
 
   /**
    * Puts a readout on the view model, or takes it off.
@@ -1530,7 +1807,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshStaffRoster = (): void => {
-    if (staffRosterReader === undefined || activeTab !== 'security') return;
+    if (staffRosterReader === undefined || activeTab !== 'manage') return;
     void staffRosterReader
       .read()
       .then((next) => {
@@ -1544,7 +1821,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshHeldGuards = (): void => {
-    if (heldGuardsReader === undefined || activeTab !== 'security') return;
+    if (heldGuardsReader === undefined || activeTab !== 'manage') return;
     void heldGuardsReader
       .read()
       .then((next) => {
@@ -1578,7 +1855,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshStaffCoverage = (): void => {
-    if (staffCoverageReader === undefined || activeTab !== 'security') return;
+    if (staffCoverageReader === undefined || activeTab !== 'manage') return;
     void staffCoverageReader
       .read()
       .then((next) => {
@@ -1614,7 +1891,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshRegime = (): void => {
-    if (regimeReader === undefined || activeTab !== 'regime') return;
+    if (regimeReader === undefined || activeTab !== 'day-plan') return;
     void regimeReader
       .read()
       .then((next) => {
@@ -1648,7 +1925,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshPrisonerRoster = (): void => {
-    if (prisonerRosterReader === undefined || activeTab !== 'regime') return;
+    if (prisonerRosterReader === undefined || activeTab !== 'day-plan') return;
     void prisonerRosterReader
       .read()
       .then((next) => {
@@ -1664,8 +1941,117 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       .catch(() => applyPrisonerRoster(undefined));
   };
 
+  /**
+   * Puts the selected prisoner on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "this is what the prisoner's needs are" are different facts, and
+   * only the second is a statement about somebody (issue #895).
+   */
+  const applyPrisonerDetail = (next: HudPrisonerDetailViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.prisonerDetail === undefined) return;
+      const { prisonerDetail: _cleared, ...withoutDetail } = viewModel;
+      viewModel = withoutDetail;
+    } else {
+      viewModel = { ...viewModel, prisonerDetail: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  /**
+   * Asks about the prisoner the player selected, and stops when there is
+   * nobody to ask about (issue #895).
+   *
+   * Three guards rather than the usual two, and the third is the point: no
+   * reader, not on the Regime tab, **and nobody selected**. The last is what
+   * makes this readout cost the worker nothing in the ordinary case -- a player
+   * on the Regime tab who has pressed no row sends no message at all, which is
+   * the property `src/ui/simulation-projections.ts` calls "a panel that is
+   * closed asks for nothing", one row deeper.
+   */
+  const refreshPrisonerDetail = (): void => {
+    const prisonerId = selectedPrisonerId;
+    if (prisonerDetailReader === undefined || activeTab !== 'day-plan' || prisonerId === undefined) return;
+    void prisonerDetailReader
+      .read(prisonerId)
+      .then((read) => {
+        // "A read was already in flight" is not an answer, so it leaves what is
+        // on screen alone rather than blanking it -- the rule every reader in
+        // this file follows, spelled as a `kind` here because this reader has a
+        // third case the others do not.
+        if (read.kind === 'busy') return;
+        if (read.kind === 'released') {
+          /*
+           * The worker says there is no such live prisoner, which is the one
+           * answer that makes the player's own selection false.
+           *
+           * `projectPrisonerDetail` returns nothing for exactly one reason --
+           * `!entityStore.isAlive(entityId)` -- so this is a discharge or a
+           * release (#441) and not a transport failure. Both copies of the
+           * selection are dropped: this one, so the next refresh asks nothing,
+           * and the panel's, so the block leaves and the roster's one tab stop
+           * goes back to the top of the list instead of to a row that no longer
+           * exists.
+           *
+           * The block leaves **without a sentence**, and that is deliberate
+           * rather than unfinished: what would go there -- "this prisoner has
+           * been released" -- is a new player-facing sentence, which is
+           * `AGENTS.md`'s fourth exclusion and the owner's. A placeholder would
+           * be a promise the code does not keep; silence is merely less than
+           * the player deserves, and it is reported as owed rather than filled
+           * in here.
+           */
+          selectedPrisonerId = undefined;
+          applyPrisonerDetail(undefined);
+          hud?.clearPrisonerSelection();
+          return;
+        }
+        // And a late answer about somebody the player has since moved off is
+        // dropped here as well as in the panel. Two guards for one race, on
+        // purpose: this one stops a stale reply reaching the view model at all,
+        // and the panel's `entityId` check is what makes the *painted* block
+        // provably about the checked row.
+        if (read.detail.entityId !== selectedPrisonerId) return;
+        applyPrisonerDetail(read.detail);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // and the selection stays: a prisoner nothing is currently answering for
+      // is still the prisoner the player chose, and the next refresh asks again.
+      // Blanking the block matters here for the roster's reason one readout up
+      // -- six needs under somebody's name, with nothing answering for them, is
+      // a claim about a person.
+      .catch(() => applyPrisonerDetail(undefined));
+  };
+
+  /*
+   * **Asked for on every tab, and that changed on 2026-09-05**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   *
+   * This read `if (roomNeedsReader === undefined || activeTab !== 'rooms')
+   * return;` (the tab's id when that was written; it is `zones` since
+   * 2026-09-14), and `roomNeedsReader`'s header above still carries the argument
+   * for it in full -- *"a room list is `O(instances)` to build and nobody is
+   * reading it from the Build tab, which is the whole argument for the channel
+   * being a pull"*. That argument is kept rather than deleted because it is
+   * still exactly right about panels, and the premise it rests on is what
+   * stopped being true: **somebody now reads this from every tab.** The `ROOMS`
+   * chip's badge is drawn by `projectStatusMetrics` off this readout, and the
+   * status strip is laid out on all five tabs.
+   *
+   * What that cost, stated rather than implied. `RoomNeedsReader.read` spends
+   * at most `1 + ROOM_NEEDS_ROOMS_LIMIT` messages -- two today -- per drive, and
+   * the drive is the clock heartbeat (255 ms on the harness, ~300 ms in a
+   * browser; see `roomNeedsReader`'s header for both measurements). So a
+   * session that used to spend those two messages on one tab of five now spends
+   * them on all five. It cannot stack: `read()` returns `undefined` while one is
+   * in flight, so a slow worker throttles this rather than queueing behind it.
+   * The alternative -- asking only for the list on the other four tabs -- would
+   * buy back one message of the two and cost a second code path through the
+   * same view-model field, which is the drift `roomNeedsFromProjections` is one
+   * function for.
+   */
   const refreshRoomNeeds = (): void => {
-    if (roomNeedsReader === undefined || activeTab !== 'rooms') return;
+    if (roomNeedsReader === undefined) return;
     void roomNeedsReader
       .read()
       .then((next) => {
@@ -1700,7 +2086,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshIntakePipeline = (): void => {
-    if (intakePipelineReader === undefined || activeTab !== 'overview') return;
+    if (intakePipelineReader === undefined || activeTab !== 'manage') return;
     void intakePipelineReader
       .read()
       .then((next) => {
@@ -1726,9 +2112,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * The worker publishes them unprompted while a session exists (ADR 0003's
    * "unsolicited ... do not pretend to be request responses"), which is what
    * makes the readouts move without this thread ever counting anything of its
-   * own. With no worker, no session, or a stopped one, the clock reads
-   * unknown, the counts read empty and the alerts list is empty -- see
-   * `EMPTY_HUD_VIEW_MODEL`.
+   * own. With no worker, no session, or a stopped one, the clock reads unknown
+   * and the counts and the alerts list are absent entirely rather than empty --
+   * see `EMPTY_HUD_VIEW_MODEL`, and `HudViewModel.counts` for why absence and a
+   * reported zero had to stop being the same value (#1184, #1191).
    *
    * **This line is what the alerts list is for.** The list, its severity
    * badges, its folding section, its empty-state row and the insertion
@@ -1782,7 +2169,32 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   client?.addListener((message) => {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
     const counts = hudCountsFromWorkerMessage(message);
-    const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
+    /*
+     * The Overview section's readout, off the same publication and on the same
+     * three-state contract `zoning`, `refusal` and `event` below use: a notice,
+     * `'none'` for a session that has ended, and `undefined` for a message that
+     * said nothing about it (issue #1183).
+     *
+     * It cannot be read off `counts` above, and the difference is the whole
+     * point of the field. `hudCountsFromWorkerMessage` answers
+     * `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session and the view model
+     * holds those same zeros before the first publication, so a readout keyed
+     * on it would state a balance of `0` for a prison that has never spoken --
+     * the defect #1184 recorded for `'hud.alerts.empty'`, now closed by giving
+     * the alerts log this same shape (below). Absent here means no prison is
+     * reporting, and the panel says so in words.
+     */
+    const overview = hudOverviewFromWorkerMessage(message);
+    /*
+     * The alerts log, on the same three-state contract as `overview` above and
+     * `zoning` and `refusal` below, as of issue #1184: a list, `'none'` for a
+     * session that has ended, and `undefined` for a message that said nothing
+     * about it. `viewModel.alerts` is absent before any prison has reported, so
+     * the list this one is *updating* is `[]` -- which is not the same value as
+     * the field, and that is the point: an empty list is what a prison with a
+     * clean log publishes, and absence is that no prison has published.
+     */
+    const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts ?? []);
     const zoning = hudZoningFromWorkerMessage(message);
     // The same refusal, read a second time for the surface that is actually
     // on screen. The list above is the log; this is the notice, and it goes
@@ -1801,10 +2213,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * list rebuilt from the stale field. `hudEventAlertsFromWorkerMessage`
      * answers `undefined` for every message but `simulation/event`, so on all
      * other messages this is exactly `alerts`.
+     *
+     * `'none'` collapses to `[]` here and nowhere else: it is only ever the
+     * answer to `simulation/stopped`, which this translator says nothing about,
+     * so the `[]` is a list no row is ever added to. The field itself is
+     * deleted below rather than set to it (#1184).
      */
     const eventAlerts = hudEventAlertsFromWorkerMessage(
       message,
-      alerts ?? viewModel.alerts,
+      alerts === 'none' ? [] : (alerts ?? viewModel.alerts ?? []),
       // How long an in-game day is, so a row can say **when** it happened (the
       // owner's decision 2 of 2026-09-01 on ADR 0084). Read from this
       // message's own clock where it carried one, and from the view model
@@ -1818,11 +2235,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // screen. The list is the log; this is the notice, and it goes to a band
     // laid out at every viewport with no section to open -- which the alerts
     // list is not, at any viewport (#220).
+    //
+    // **"The same event" stopped being true of every event on 2026-09-05.**
+    // `EVENT_PRESENTATION.surfaces` in `src/ui/simulation-events.ts` now lets a
+    // member reach the log and not the band, and `rooms.zoned` -- the
+    // acknowledgement of a designation -- is the one that does, by the owner's
+    // ruling. This translator answers `undefined` for it, which is the same
+    // answer it gives for a restored record and means the same thing here: the
+    // field below is left exactly as it was, so a sentence the player is still
+    // reading keeps the line.
     const event = hudEventNoticeFromWorkerMessage(message);
     const nextAlerts = eventAlerts ?? alerts;
     if (
       clock === undefined &&
       counts === undefined &&
+      overview === undefined &&
       nextAlerts === undefined &&
       zoning === undefined &&
       refusal === undefined &&
@@ -1832,8 +2259,24 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
-      ...(counts === undefined ? {} : { counts }),
-      ...(nextAlerts === undefined ? {} : { alerts: nextAlerts }),
+      // Three states as of issue #1191, exactly as `overview` below: `undefined`
+      // is a message that said nothing about the counts and leaves them as they
+      // were, `'none'` is `simulation/stopped` and takes them off (the deletion
+      // is below, for the `exactOptionalPropertyTypes` reason `zoning` states),
+      // and a row of figures is a prison reporting -- including a prison
+      // reporting zeros, which is a fact about a prison and stays on screen.
+      ...(counts === undefined ? {} : counts === 'none' ? {} : { counts }),
+      // Three states, exactly as `zoning` below: `undefined` leaves the field
+      // alone, `'none'` clears it (the deletion is below, because
+      // `exactOptionalPropertyTypes` is on and clearing an optional field has
+      // to remove the key rather than write `undefined`), and a readout is a
+      // prison that has reported.
+      ...(overview === undefined ? {} : overview === 'none' ? {} : { overview }),
+      // Three states, exactly as `overview` above (#1184): `undefined` leaves
+      // the log alone, `'none'` takes it off -- the deletion is below, for the
+      // `exactOptionalPropertyTypes` reason `zoning` states -- and a list is a
+      // prison reporting, however little it has to say.
+      ...(nextAlerts === undefined ? {} : nextAlerts === 'none' ? {} : { alerts: nextAlerts }),
       // Three states, not two, which is why the translator returns `'none'`
       // rather than `undefined` for "no room has been designated": `undefined`
       // means this message said nothing about zoning and the field must be left
@@ -1855,6 +2298,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // so clearing it deletes the key below rather than writing `undefined`.
       ...(event === undefined ? {} : event === 'none' ? {} : { event }),
     };
+    if (counts === 'none' && viewModel.counts !== undefined) {
+      const { counts: _stopped, ...withoutCounts } = viewModel;
+      viewModel = withoutCounts;
+    }
+    if (overview === 'none' && viewModel.overview !== undefined) {
+      const { overview: _stopped, ...withoutOverview } = viewModel;
+      viewModel = withoutOverview;
+    }
+    if (nextAlerts === 'none' && viewModel.alerts !== undefined) {
+      const { alerts: _ended, ...withoutAlerts } = viewModel;
+      viewModel = withoutAlerts;
+    }
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
       viewModel = withoutZoning;
@@ -1871,8 +2326,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
     // The room readout rides this cadence -- see `roomNeedsReader` above. A
     // stopped session takes it off instead of asking again, for the reason the
-    // clock reads unknown and the counts read empty: a statement about a prison
-    // that no longer exists is not something the player can act on.
+    // clock reads unknown and the counts come off entirely (#1191): a statement
+    // about a prison that no longer exists is not something the player can act
+    // on.
     if (message.kind === 'simulation/stopped') {
       applyRoomNeeds(undefined);
       applyBuildQueue(undefined);
@@ -1883,6 +2339,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyStaffCoverage(undefined);
       applyRegime(undefined);
       applyPrisonerRoster(undefined);
+      /*
+       * The inspector comes off with them, and the *selection* comes off with
+       * it -- which is the one place this readout differs from the eight above
+       * (issue #895).
+       *
+       * A stopped session is not a released prisoner, so it is not
+       * `clearPrisonerSelection`'s case; but an `EntityId` names a slot in the
+       * `EntityStore` of *that* session, and the next session's store starts
+       * empty and hands out its own ids from index zero. Keeping the id across a
+       * stop would mean asking a new prison about a number that once meant
+       * somebody, which is the only way this id can come to name a different
+       * person -- see the `select-prisoner` intent for why it cannot happen
+       * within one session. The panel is told, so the checked row goes with it.
+       */
+      selectedPrisonerId = undefined;
+      applyPrisonerDetail(undefined);
+      hud?.clearPrisonerSelection();
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
@@ -1893,11 +2366,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshStaffCoverage();
       refreshRegime();
       refreshPrisonerRoster();
+      refreshPrisonerDetail();
     }
   });
 
+  /*
+   * The HUD layout, read before the shell is built (#1159).
+   *
+   * Before rather than after, so the first paint is already at the player's
+   * layout rather than snapping to it a frame later -- the same sequencing the
+   * interface scale's block below states and for the same reason. Its own
+   * store call rather than a shared variable, because the store below is
+   * declared inside the chrome block and moving it would reorder a file
+   * `tests/foundation/composition-root-contract.test.ts` pins by text; a
+   * second call is free, and `resolveBrowserKeyValueStore` never throws.
+   *
+   * The layout is **not** part of any save. `lockstate.settings.layout` is its
+   * own key beside `lockstate.settings.theme` and
+   * `lockstate.settings.accessibility` (constitution article 13), and nothing
+   * here touches `SAVE_SCHEMA_VERSION`.
+   */
+  const layoutStore = resolveBrowserKeyValueStore();
+
   hud = mountHud(app, {
     localizer,
+    layout: loadLayoutSettings(layoutStore),
+    // Persisted first and painted second, exactly as the interface scale is:
+    // `saveLayoutSettings` swallows a refusal by design, so the write cannot
+    // fail the sequence, and the HUD has already applied what it is reporting.
+    onLayoutChange: (settings) => {
+      saveLayoutSettings(layoutStore, settings);
+    },
     viewModel,
     // Passed at mount rather than applied afterwards, because this failure is
     // known before the HUD exists: with no worker there is no snapshot coming
@@ -1937,6 +2436,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      */
     ...(tool === undefined ? {} : { worldBuild: tool, editHistory: tool }),
     /*
+     * The arming half of `Escape` (#959), on a line of its own for the reason
+     * the scene's own `toolStandDown` argument is: the composition-root gate
+     * pins the text of the object above.
+     */
+    ...(tool === undefined ? {} : { toolStandDown: tool }),
+    /*
      * The world's room gesture, joined to the Rooms panel's confirm step (ADR
      * 0022, amended).
      *
@@ -1968,6 +2473,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * whether a worker started, exactly like every other camera control.
      */
     onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    /*
+     * And the HUD's zoom pair, joined to the same camera on the same terms
+     * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
+     * scene was written and no control on the page named it; these buttons are
+     * that control, and `stepCameraZoom` is deliberately the *keyboard's* step
+     * through the keyboard's own code path, so pressing the button and pressing
+     * the key are one movement rather than two zooms that disagree.
+     *
+     * Passed unconditionally, exactly as `onMinimapNavigate` above is and for
+     * the reason it gives: `worldScene` exists from the top of this module
+     * whether or not a worker started, and zooming a camera is not something
+     * the simulation could refuse.
+     */
+    onCameraZoom: (direction) => {
+      worldScene.stepCameraZoom(direction);
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*
@@ -1984,11 +2505,29 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * on nothing is refreshing it. The panel clears its own copy when it is
          * hidden; this clears the view model, or the next publication would put
          * the stale one back.
+         *
+         * **The first sentence and the second direction stopped being true of
+         * the room readout on 2026-09-05** (#1006 finding 1) and both are kept,
+         * because every word of them still describes the four readouts below.
+         * The `ROOMS` chip reads this one on every tab, so no tab stops
+         * refreshing it and there is nothing to take off. The *first* direction
+         * is unchanged and is why the call below is still made here: arriving
+         * on the Rooms tab still asks at once rather than waiting a heartbeat
+         * for the panel's own lines.
          */
         case 'select-tab': {
           activeTab = intent.tab;
-          if (activeTab === 'rooms') refreshRoomNeeds();
-          else applyRoomNeeds(undefined);
+          /*
+           * **Asked for on arrival at every tab now, and never cleared on
+           * leaving** (#1006 finding 1). The paragraph above is the state this
+           * was in until 2026-09-05 and is kept for the reason
+           * `refreshRoomNeeds` keeps its own: leaving the Rooms tab used to
+           * mean nothing was refreshing the readout, so holding it would have
+           * been holding something stale. Nothing stops refreshing it now, so
+           * clearing it here would blank the `ROOMS` badge for one heartbeat on
+           * every tab change and put it straight back.
+           */
+          refreshRoomNeeds();
           // The build queue is the same arrangement one tab over: arriving asks
           // at once rather than waiting up to ~300ms in a browser for the next
           // clock heartbeat (255ms is the harness figure; see
@@ -2004,7 +2543,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           else applyPendingDeliveries(undefined);
           // And which guards are held, on the tab the Staff panel lives on, on
           // exactly the same terms (ADR 0034).
-          if (activeTab === 'security') refreshHeldGuards();
+          if (activeTab === 'manage') refreshHeldGuards();
           else applyHeldGuards(undefined);
           // And who is on the payroll, on the same tab and the same terms
           // (#533). Arriving asks at once for the coverage block's reason turned
@@ -2012,7 +2551,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // money must not have to wait up to ~300ms in a browser (255ms is
           // the harness figure; see roomNeedsReader's header, #765) to see the
           // control that stops it.
-          if (activeTab === 'security') refreshStaffRoster();
+          if (activeTab === 'manage') refreshStaffRoster();
           else applyStaffRoster(undefined);
           // And how many guards the prison asks for against how many it has, on
           // the same tab and the same terms (ADR 0048). Arriving asks at once:
@@ -2020,7 +2559,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // (255ms is the harness figure; see roomNeedsReader's header, #765)
           // would mean a player who opened this tab *because* they suspected
           // they were short sees an empty block first.
-          if (activeTab === 'security') refreshStaffCoverage();
+          if (activeTab === 'manage') refreshStaffCoverage();
           else applyStaffCoverage(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
@@ -2028,7 +2567,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // the harness figure; see roomNeedsReader's header, #765), and
           // leaving takes the block off, because from here on nothing is
           // refreshing it.
-          if (activeTab === 'overview') refreshIntakePipeline();
+          if (activeTab === 'manage') refreshIntakePipeline();
           else applyIntakePipeline(undefined);
           // And the two readouts on the fifth tab, on the same terms as every
           // one above (issue #451). Arriving asks at once rather than waiting
@@ -2037,16 +2576,44 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // this tab is the one a player opens to look at somebody in
           // particular and an empty panel is indistinguishable from a prison
           // holding nobody.
-          if (activeTab === 'regime') refreshRegime();
+          if (activeTab === 'day-plan') refreshRegime();
           else applyRegime(undefined);
-          if (activeTab === 'regime') refreshPrisonerRoster();
+          if (activeTab === 'day-plan') refreshPrisonerRoster();
           else applyPrisonerRoster(undefined);
+          // And the third readout on that tab, on the same terms with one
+          // difference: it asks only if the player has selected somebody, so
+          // arriving on the tab with nothing selected sends no message
+          // (`refreshPrisonerDetail`'s third guard). The selection itself
+          // survives the trip -- it is the panel's chrome, and the Build
+          // panel's selected buildable survives a tab change too -- so coming
+          // back resumes the same question rather than making the player press
+          // the row again (issue #895).
+          if (activeTab === 'day-plan') refreshPrisonerDetail();
+          else applyPrisonerDetail(undefined);
           return;
         }
 
         // Chrome: the HUD has already applied it locally and there is nothing
         // for a host to do.
         case 'toggle-panel':
+          return;
+
+        /*
+         * Chrome, with the same shape as `select-tab` above: the panel has
+         * already applied it, and the half that lives out here is *what the
+         * host asks the worker for* (issue #895).
+         *
+         * Both directions, for `select-tab`'s reason. A press asks immediately
+         * rather than leaving the player looking at an empty block for up to
+         * about 300 ms in a browser (see `roomNeedsReader`'s header for that
+         * measurement), and a clearing press takes the answer off at once --
+         * the panel has already stopped drawing it, and leaving it on the view
+         * model would let the next publication put it back.
+         */
+        case 'select-prisoner':
+          selectedPrisonerId = intent.prisonerId;
+          if (selectedPrisonerId === undefined) applyPrisonerDetail(undefined);
+          else refreshPrisonerDetail();
           return;
 
         case 'arm-build-tool': {
@@ -2077,11 +2644,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             // disarmed in the same call, so a player who armed a wall and then
             // pressed Remove gets one gesture rather than two layered ones.
             //
-            // There is no wall removal behind this and the control does not
-            // claim one: `hud.build.remove-hint` says "any tile of an object".
-            // Taking a *wall* down is `Undo` for a finished one, and -- since the
-            // Build panel's queue block -- a press on its row for one that is
-            // still queued, which is a per-order control the panel now has.
+            // A **finished** wall comes down through this same arming too,
+            // since ADR 0106: `hud.build.remove-hint` now says so ("or a
+            // finished wall"), and the `case 'remove-object':` producer below
+            // is where the press becomes `RemoveWall` rather than
+            // `RemoveObject`. A wall still being built is not reached by this
+            // control -- that is `Undo`, or -- since the Build panel's queue
+            // block -- a press on its row, which is a per-order control the
+            // panel already has.
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { removing: true });
             return;
@@ -2190,7 +2760,24 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * publication then shows the queue as it really is.
          */
         case 'cancel-build-order':
-          requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
+          /*
+           * `expectedRevision: intent.revision` is ADR 0107's half of this
+           * producer: the row's own last-read revision, carried unchanged
+           * from `BuildQueueOrderViewModel.revision` through the HUD intent
+           * to here, so `createConstructionCommandHandler` can tell a press
+           * aimed at the order this row still names from one aimed at an
+           * order that has since transitioned underneath it.
+           *
+           * `{ leadTicks: CANCEL_BUILD_ORDER_LEAD_TICKS }` is the other half:
+           * a narrower per-command margin than every other command in this
+           * file gets, so a running-clock press is scheduled closer to the
+           * tick the row was actually read at -- see that constant's own
+           * docblock for what it costs and how that cost was measured.
+           */
+          requireSimulation(commands).submit(
+            { type: 'CancelBuildOrder', orderId: intent.orderId, expectedRevision: intent.revision },
+            { leadTicks: CANCEL_BUILD_ORDER_LEAD_TICKS },
+          );
           return;
 
         /*
@@ -2290,6 +2877,41 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           return;
 
         /*
+         * The player has changed what one group's running block allows
+         * (#1167, ADR 0113 slice 1's missing producer).
+         *
+         * **Straight through, with no pre-check**, and the reason is
+         * `dismiss-staff`'s one line above with a block instead of a person:
+         * whether that group still exists and whether a block still starts on
+         * that tick are not things this thread's cadence-old copy of the
+         * schedule may decide. The simulation refuses --
+         * `session-commands.ts` records `edit-regime-block.unknown-group` and
+         * `edit-regime-block.unknown-block` -- and the alerts list says so.
+         *
+         * **`allowedCategoryIds` is a `readonly string[]` on this side and
+         * `ActionCategory[]` on the wire, and the widening is deliberate.** The
+         * HUD may not import `src/simulation/**`, so it cannot hold the union;
+         * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` is what narrows
+         * it, and a member outside the vocabulary is rejected by `packCommand`
+         * inside `submit` -- on this thread, before anything is sent -- rather
+         * than reaching the registry. The cast is that parse's precondition,
+         * not a claim this thread has checked anything.
+         *
+         * Nothing can produce one today: the panel's toggles are built from
+         * `simulationEnumIds('action-category')`, which
+         * `tests/foundation/content-vocabulary-contract.test.ts` holds equal to
+         * `ACTION_CATEGORIES` exactly.
+         */
+        case 'edit-regime-block':
+          requireSimulation(commands).submit({
+            type: 'EditRegimeBlock',
+            classificationGroupId: intent.classificationGroupId,
+            startTickOfDay: intent.startTickOfDay,
+            allowedCategories: [...(intent.allowedCategoryIds as readonly ActionCategory[])],
+          });
+          return;
+
+        /*
          * The player has read a row of the alerts log (the owner's decision 3
          * of 2026-09-01 on
          * [ADR 0084](../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
@@ -2316,9 +2938,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * `hud.refusal.*` for a gesture that did exactly what the player asked.
          */
         case 'dismiss-alert': {
-          const dismissal = alertRowDismissal(viewModel.alerts, intent.rowId);
+          // `?? []` is unreachable rather than defensive, and is spelled out
+          // rather than asserted away: a dismissal names a row the player
+          // pressed, and there are no rows to press while `alerts` is absent
+          // (#1184). An empty list resolves no row, so the guard below returns.
+          const rows = viewModel.alerts ?? [];
+          const dismissal = alertRowDismissal(rows, intent.rowId);
           if (dismissal === undefined) return;
-          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(viewModel.alerts, intent.rowId) };
+          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(rows, intent.rowId) };
           hud?.update(viewModel);
           commands?.submit({ type: 'DismissAlert', ...dismissal });
           return;
@@ -2434,7 +3061,32 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * every viewport -- which is what makes removal answerable on a phone
          * at all (#220, made structural).
          */
+        /*
+         * **Since ADR 0106, this branch also produces `RemoveWall`.** Which of
+         * the two commands a removal press becomes is decided by `intent.edge`,
+         * present only when the world gesture supplied one
+         * (`HudObjectGesture`'s own comment): the object tool's world press
+         * always resolves an edge from the raw pointer position and reports it,
+         * and the Build panel's numeric fields never do, having no sub-tile
+         * position for `pickEdgeAtWorld` to read.
+         *
+         * A finished wall's own reachability is therefore this `edge` field and
+         * nothing else in the stack: `RemoveWall`'s own session-command branch
+         * tries the object arm first (the exact call this file's `RemoveObject`
+         * line makes), so a bed pressed near its own cell's wall still removes
+         * the bed and not the wall, and only a press that finds no object falls
+         * through to the edge.
+         */
         case 'remove-object':
+          if (intent.edge !== undefined) {
+            requireSimulation(commands).submit({
+              type: 'RemoveWall',
+              x: intent.x,
+              y: intent.y,
+              edge: intent.edge,
+            });
+            return;
+          }
           requireSimulation(commands).submit({ type: 'RemoveObject', x: intent.x, y: intent.y });
           return;
 
@@ -2598,13 +3250,46 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * unfurnished" is read off `viewModel.counts.roomCapacity`, the same
            * published field the Rooms panel already renders, not a value
            * minted for this call -- see `pressFloorMinorUnits`.
+           *
+           * **The last sentence was the defect and is kept rather than
+           * rewritten (2026-09-15).** `roomCapacity` is not a value minted for
+           * this call and never was, which is what made it look safe -- but it
+           * is a *different question*, accumulated over `collectRoomInstances`
+           * and therefore a sub-sum of the registry figure the worker judges
+           * with (`docs/HUD_PROJECTIONS.md` gap 15). Reading it here answered
+           * "fresh" in strictly more cases than the worker did, so this
+           * pre-flight refused presses the worker accepts -- the #82/#207
+           * failure this paragraph warns about, wearing the opposite sign.
+           * The predicate is now published
+           * (`statusCountsSchema.isFreshUnfurnishedPrison`) and read through
+           * `freshUnfurnishedPrison`, the one reader in `src/ui/`.
            */
-          const verdict = judgeAffordability(
-            total,
-            viewModel.counts.treasuryMinorUnits,
-            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
-          );
-          if (verdict.refused) {
+          /*
+           * **Skipped entirely when no prison has reported a balance** (issue
+           * #1191, forced by `HudViewModel.counts` becoming optional).
+           *
+           * This pre-flight is a *mirror* of a rule the worker owns, kept here
+           * only so a doomed press is refused on the button that was pressed
+           * (#82/#207). A mirror needs something to reflect: before the first
+           * `simulation/status-counts` publication the balance is unknown, and
+           * judging a press against the zeros that used to stand in there would
+           * refuse a purchase a solvent prison can afford, with a sentence
+           * quoting a balance nobody published. So the press goes to the
+           * authority that does know, which refuses it with its own reason if
+           * it must -- the same division of labour as everywhere else on this
+           * thread, and the reason article 4 forbids the UI recomputing what a
+           * projection publishes.
+           */
+          const counts = viewModel.counts;
+          const verdict =
+            counts === undefined
+              ? undefined
+              : judgeAffordability(
+                  total,
+                  counts.treasuryMinorUnits,
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, freshUnfurnishedPrison(counts)),
+                );
+          if (verdict?.refused === true) {
             /*
              * **The refusal now says which kind it is** -- the owner's ruling
              * 18 of 2026-08-31.
@@ -2621,7 +3306,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
              * The message itself is diagnostic English and reaches the host
              * through `MountHudOptions.onError`, never the screen (ADR 0011).
              */
-            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`;
+            const message = `The last reported balance of ${counts?.treasuryMinorUnits} cannot cover ${total}.`;
             throw verdict.refusal === 'past-the-floor'
               ? new HostRefusalError('past-the-overdraft-floor', message)
               : new Error(message);
@@ -2638,6 +3323,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           });
           return;
         }
+
+        /*
+         * The `SellMaterials` producer -- ADR 0075 decision 3, invoked by ADR
+         * 0096 decision 3(b), and the last of the three things
+         * `ProcurementSystem.sellStock`'s own docblock named as missing: a
+         * command, a refusal reason and a HUD control. `tests/foundation/
+         * unconsumed-command-contract.test.ts` is the gate that measures this,
+         * exactly as it measured `PurchaseMaterials` for #89.
+         *
+         * **No pre-check, unlike `purchase-materials`.** A purchase is
+         * checked here against `viewModel.counts.treasuryMinorUnits`, a
+         * balance the worker publishes on a cadence -- there is no equivalent
+         * published count of what a container holds, so this thread has
+         * nothing honest to compare a quantity against. That is exactly
+         * `cancel-material-purchase`'s own reason for carrying no pre-check,
+         * applied to stock instead of to a delivery's flight status: the
+         * simulation decides, and `insufficient-stock` reaches the player
+         * through the refusal route every other command's refusal does.
+         *
+         * **No id minted here**, for `cancel-material-purchase`'s reason
+         * stated the other way round: a sale creates no record for a later
+         * command to name, so there is nothing to mint an id for in the first
+         * place.
+         */
+        case 'sell-materials':
+          requireSimulation(commands).submit({
+            type: 'SellMaterials',
+            itemId: intent.itemId,
+            quantity: intent.quantity,
+          });
+          return;
 
         case 'admit-prisoner': {
           const sender = requireSimulation(commands);
@@ -2743,7 +3459,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * (`hud.intake.hint`) rather than leaving the player to discover it
            * by pressing.
            */
-          if (viewModel.counts.rooms === 0) {
+          // `=== 0`, so an absent `counts` does not refuse: nothing has
+          // reported a room count, and this pre-flight may only refuse what it
+          // knows to be refusable (#1191). The worker applies the real rule.
+          if (viewModel.counts?.rooms === 0) {
             /*
              * `HostRefusalError`, not a plain `Error`: the owner ruled a
              * sentence for this refusal on 2026-09-03, so the reason now has
@@ -2820,14 +3539,26 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // same reason (ruling 18): a wage the facility cannot carry is a
           // limit, not the prison being out of money. The third argument is
           // the same starter-rung awareness the purchase case above carries --
-          // hiring shares the press's threshold, mature or starter alike.
-          const hireVerdict = judgeAffordability(
-            hireChargeMinorUnits,
-            viewModel.counts.treasuryMinorUnits,
-            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
-          );
-          if (hireVerdict.refused) {
-            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
+          // hiring shares the press's threshold, mature or starter alike. It
+          // read `hireCounts.roomCapacity === 0` until 2026-09-15; see the
+          // purchase pre-flight's own correction for why that was a second
+          // definition of "fresh" rather than the published one.
+          // Stood down when nothing has reported a balance, for the reason the
+          // purchase pre-flight above gives in full (#1191): a mirror of the
+          // worker's rule has nothing to reflect until the worker has spoken,
+          // and *"the last reported balance of 0"* would be a sentence about a
+          // publication that never happened.
+          const hireCounts = viewModel.counts;
+          const hireVerdict =
+            hireCounts === undefined
+              ? undefined
+              : judgeAffordability(
+                  hireChargeMinorUnits,
+                  hireCounts.treasuryMinorUnits,
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, freshUnfurnishedPrison(hireCounts)),
+                );
+          if (hireVerdict?.refused === true) {
+            const message = `The last reported balance of ${hireCounts?.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
             throw hireVerdict.refusal === 'past-the-floor'
               ? new HostRefusalError('past-the-overdraft-floor', message)
               : new Error(message);
@@ -2895,6 +3626,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const settingsStore = resolveBrowserKeyValueStore();
   let accessibility = loadAccessibilitySettings(settingsStore);
   applyAccessibilitySettings(document.documentElement, accessibility);
+  // The HUD mounted above this line, at whatever `--ui-scale` the document
+  // carried then -- which is the token's default, because this is the line that
+  // installs the player's. Its layout limits are all multiplied by it, so it is
+  // re-resolved once here as well as on every later change (#1159).
+  hud?.refreshLayout();
   const displayScale = createDisplayScaleControl({
     localizer,
     scale: accessibility.uiScale,
@@ -2903,6 +3639,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       saveAccessibilitySettings(settingsStore, accessibility);
       applyAccessibilitySettings(document.documentElement, accessibility);
       displayScale.setScale(uiScale);
+      // And the HUD's layout limits with it (#1159). `--ui-scale` multiplies
+      // every panel limit, and writing a custom property onto the root element
+      // fires no event and resizes nothing -- so the shell cannot hear this and
+      // is told. Without it a rail sized at 100 % keeps its 100 % pixels at
+      // 200 %, which measured as a 264px rail around two 130px controls.
+      hud?.refreshLayout();
     },
   });
   /*
@@ -2928,7 +3670,215 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * panels nothing at all, because `.hud__aside` takes its height from the
    * rail rather than from its contents (`hud.css`).
    */
-  hud.asideSlot.append(displayScale.element);
+  /*
+   * Both chrome controls in **one row**, side by side, and the reason is
+   * measured rather than aesthetic (#1157).
+   *
+   * `app-shell.spec.ts` refused a second row in this slot twice -- first with
+   * a three-option choice group, then with a one-button row of the same shape
+   * as the scale control's. The aside is a fixed budget the Build panel, the
+   * Rooms panel and the save panel are already sharing, and 52px of it is not
+   * spare: the second row put the HUD under the centre of a 375x812 viewport
+   * ("a click in the middle of the screen reaches the world"), covered **26**
+   * controls on the Build tab at 1280x720 (#88), scrolled the rail 57px at
+   * 375x812 and 200 % (#545), and pushed bare world onto the Rooms panel's
+   * arrival at 375x812 (112px against a 64px bound).
+   *
+   * Side by side costs **no** height at all -- one 44px row holds two 44px
+   * buttons -- and costs each legend some width, which is why
+   * `.display-scale__legend` was already written to ellipsis rather than wrap.
+   * Neither control knows it is in a row: the wrapper takes the box (border,
+   * background, rail width) and the two give theirs up inside it, in
+   * `src/styles.css`. That keeps `display-scale.ts` untouched by a change that
+   * is about where a control sits, which is the HUD's business and not its.
+   */
+  const chromeRow = document.createElement('div');
+  chromeRow.className = 'hud-chrome-prefs';
+  chromeRow.append(displayScale.element);
+
+  /*
+   * The theme, wired end to end (#1157, ADR 0112 decision 2).
+   *
+   * The same three moves as the interface scale above, and on the same
+   * `settingsStore`: read the preference, apply what it resolves to, build a
+   * controlled control that reports a choice and changes nothing itself.
+   *
+   * **`createThemeController` applies a theme before this line runs**, in its
+   * own constructor, so the page is already at the player's theme rather than
+   * flipping to it once the control exists. It is also the only thing in the
+   * tree that reads `prefers-color-scheme`; `tokens.css` has no media query,
+   * because a stylesheet that also decided would be a second decider.
+   *
+   * **Its own storage key, not a field of the accessibility record** --
+   * constitution article 13: a theme is a preference, it is not part of the
+   * save, and clearing it must not clear the interface scale beside it.
+   *
+   * `document.documentElement` is the element `:root` selects, read here in
+   * the composition root for the same reason the scale reads it here.
+   */
+  const themeControl = createThemeControl({
+    localizer,
+    preference: 'system',
+    onSelect: (preference) => {
+      themeController.select(preference);
+    },
+  });
+  const themeController = createThemeController({
+    root: document.documentElement,
+    // Read here and persisted here, not inside the control: the boundary gate
+    // `tests/unit/ui-orchestration-boundaries.test.ts` records, of the
+    // interface-scale control, that a UI module importing `src/input/storage`
+    // is "the erosion to catch". An earlier draft of `src/ui/theme.ts` did it
+    // and that gate found it.
+    preference: loadThemeSettings(settingsStore).preference,
+    persist: (preference) => {
+      saveThemeSettings(settingsStore, { version: 1, preference });
+    },
+    system: resolveSystemThemeQuery(),
+    // The device switching at sunset moves a `'system'` player's theme without
+    // anything being pressed, and the control has to follow that rather than
+    // keep showing the option it last saw pressed.
+    onChange: (_theme, preference) => {
+      themeControl.setPreference(preference);
+    },
+  });
+  themeControl.setPreference(themeController.preference);
+  chromeRow.append(themeControl.element);
+
+  /*
+   * The language, wired end to end (#663).
+   *
+   * **In the settings menu, not in the rail, and the rail was tried twice
+   * first.** The comments above record `app-shell.spec.ts` refusing a second
+   * row in this slot in #1157; that is a measurement of the rail as it was
+   * before #1159's layout shell, so it was re-run rather than inherited, in
+   * both of the shapes it leaves open. Both were refused, in Chromium, on this
+   * tree:
+   *
+   *   - **A third control in `.hud-chrome-prefs`.** 264px over three controls
+   *     is 87-88px each and 44 of that is the button's own
+   *     `min-width: var(--tap-target)` floor, so the readouts overflowed their
+   *     control's box -- the theme's spanning x=1137..1209 inside a control
+   *     ending at 1179 -- and #88's sweep reported the theme button covered on
+   *     the overview tab at 1280x720.
+   *   - **A line of its own under them.** That is 54px, and at 375x812 it put
+   *     the save panel's bottom edge at 423 with the viewport's centre at 406:
+   *     *a click in the middle of the screen reaches the world, not the HUD*
+   *     failed with the centre landing on `.save-panel`. At 900x600 on the
+   *     Build tab it covered **26 controls**, the save panel's `New prison`
+   *     and `Save now` among them, hit by the language control itself.
+   *
+   * So the rail has no room, and the settings menu does: it is a drawer that
+   * floats over the world, it is reachable on every tab and at every viewport,
+   * and a control a player uses once belongs behind a press. `hud.layout.title`
+   * moved from *Layout* to *Settings* with it, because a language picker filed
+   * under "layout" is one a player cannot find -- the drawer already held the
+   * clock, which is not layout either, and the owner's own delivery calls this
+   * surface *Ustawienia*.
+   *
+   * **A press reloads the page, and that is the decision rather than a
+   * shortcut.** `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`
+   * carries the reasoning and the count behind it; the short version is that
+   * every mounted surface in this interface holds the one `Localizer` built at
+   * boot, and `Localizer`'s own contract is that catalogs are loaded before it
+   * is constructed. There is no path that hands a new one to the sixteen
+   * modules that captured the old one, and a partial one would leave half the
+   * interface in the previous language -- worse than either whole answer.
+   *
+   * Three things happen in this order, and each is load-bearing:
+   *
+   *   1. **Persist, and read whether the write landed.** Every other control
+   *      here treats a refused write as "not remembered" and switches anyway.
+   *      This one cannot: the reload is what applies the change, so a refused
+   *      write would reload straight back into the language the player just
+   *      asked to leave -- a control that appears to do nothing. It declines
+   *      to reload instead, and `setPreference` is never called, so the
+   *      readout keeps naming the language actually on screen.
+   *   2. **Save the prison and await it.** A reload fires `pagehide`, and
+   *      `LifecycleSaveHandler` answers that with a save it explicitly does
+   *      *not* await -- "a lifecycle handler cannot hold the page open for an
+   *      async IndexedDB transaction, so the write may simply not complete".
+   *      That is the right design for a tab closing and the wrong one for a
+   *      navigation this code is itself about to cause, because here there is
+   *      somewhere to await. Without it a player who changed language between
+   *      two 30-second autosaves could lose the interval.
+   *   3. **Reload.** After the save has settled, whatever it reported: a
+   *      failure has already left the previous generation intact
+   *      (`PrisonSaveRepository.save`) and the next boot's recovery path
+   *      handles it, which is the same position every other save in this file
+   *      takes.
+   */
+  const languageControl = createLanguageControl({
+    localizer,
+    preference: languagePreference,
+    resolved: resolvedOfferedLocale,
+    onSelect: (preference: LanguagePreference) => {
+      const stored = saveLanguageSettings(languageStore, {
+        version: LANGUAGE_PREFERENCE_VERSION,
+        preference,
+      });
+      if (!stored) {
+        console.warn(
+          'The interface language could not be stored, so the page was not reloaded; it would have come back in the same language.',
+        );
+        return;
+      }
+      void (async () => {
+        await saveBeforeLanguageChange?.();
+        globalThis.location.reload();
+      })();
+    },
+  });
+  /*
+   * A second tab of the same prison follows this one (#1199).
+   *
+   * `storage` is the browser's own cross-document notification and it does not
+   * fire in the document that performed the write, so each of these three is
+   * the *other* half of a preference change: the tab that pressed the control
+   * has already persisted and painted it above, and this is every other tab
+   * being told. Nothing here persists, which is what stops two tabs writing
+   * the same key back and forth.
+   *
+   * **Three of the four preference keys, and the fourth is a decision rather
+   * than an omission.** `lockstate.settings.language` has no handler: the one
+   * `Localizer` this page owns was constructed before anything mounted and
+   * nineteen modules under `src/ui/` captured it, so there is no path that
+   * hands a running interface a different one -- which is the same finding
+   * that makes the local control reload the page
+   * (`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), and a
+   * reload is not something to do to a tab the player is not looking at.
+   * `docs/adr/drafts/what-a-second-tab-follows.md` carries the reasoning.
+   *
+   * Each handler is the same apply-path the control beside it uses, minus the
+   * write:
+   *
+   *   - the theme through `adopt` rather than `select`, so the controller
+   *     settles and `onChange` moves the button, and nothing is stored;
+   *   - the interface scale through `applyAccessibilitySettings` and
+   *     `setScale`, with `refreshLayout()` after it for the reason the local
+   *     path has one -- `--ui-scale` multiplies every panel limit and writing
+   *     a custom property fires no event the shell could hear;
+   *   - the layout through `HudHandle.setLayout`, which is documented as the
+   *     path for "a preference restored after mount" and deliberately does
+   *     *not* report back through `onLayoutChange`.
+   */
+  subscribeToSettingsChanges(globalThis.window, {
+    onThemeChange: (settings) => {
+      themeController.adopt(settings.preference);
+    },
+    onAccessibilityChange: (settings) => {
+      accessibility = settings;
+      applyAccessibilitySettings(document.documentElement, accessibility);
+      displayScale.setScale(accessibility.uiScale);
+      hud?.refreshLayout();
+    },
+    onLayoutChange: (settings) => {
+      hud?.setLayout(settings);
+    },
+  });
+
+  hud.asideSlot.append(chromeRow);
+  hud.preferencesSlot.append(languageControl.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;
@@ -2986,6 +3936,23 @@ function generateMasterSeed(): number {
  * constructed for a later session has to reach the HUD's standing notice
  * (issues #82, #149).
  */
+/**
+ * Saves the prison before the page is deliberately reloaded, or `undefined`
+ * when there is nothing to save (#663).
+ *
+ * A mutable module binding rather than a value threaded through
+ * `mountInterface`, because of the order this file already runs in:
+ * `mountInterface` mounts the language control, and `bootPersistence` --
+ * which is the only thing that ever holds a `SessionController` -- is called
+ * *after* it, and only when a simulation worker started and IndexedDB opened.
+ * So at the moment the control is built there is no controller to give it, and
+ * for a browser with no worker or no storage there never will be. `undefined`
+ * is that state, and the optional call at the press site is the whole of
+ * handling it: a page with no persistence reloads immediately, which is
+ * correct, because nothing was at risk.
+ */
+let saveBeforeLanguageChange: (() => Promise<void>) | undefined;
+
 async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle): Promise<void> {
   let controller: SessionController;
   let panel: SavePanel;
@@ -3060,6 +4027,18 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
    * built at module scope, before this function has a controller to give it.
    */
   commandSender?.onCommandAccepted(() => controller.markDirty());
+
+  /*
+   * And the awaited save a deliberate reload gets (#663), which the
+   * fire-and-forget lifecycle save below cannot provide.
+   *
+   * `saveNow` reports failure as a *value* rather than throwing, and answers
+   * "No active session" the same way, so this never rejects and the reload
+   * that awaits it is never blocked by a prison that does not exist yet.
+   */
+  saveBeforeLanguageChange = async () => {
+    await controller.saveNow();
+  };
 
   // Best-effort only -- see LifecycleSaveHandler's docs on why correctness
   // never depends on these events firing.

@@ -231,10 +231,22 @@ function spritesWithAsset(assetId: string): readonly SpritePosition[] {
     const image = child as Phaser.GameObjects.Image;
     if (typeof image.texture?.key !== 'string' || !image.texture.key.includes(assetId)) continue;
     if (image.visible !== true) continue;
-    found.push({ x: image.x, y: image.y });
+    found.push({ x: image.x, y: image.y, depth: image.depth });
   }
   return found;
 }
+
+/**
+ * The drawn world's marker every keyframe this harness publishes carries
+ * (ADR 0099).
+ *
+ * **Constant on purpose.** This harness drives the *actor* half of the delta
+ * channel, and a marker that moved between publications would make the feed
+ * ask the worker for a session snapshot -- which in these specs is a worker
+ * that does not exist. Holding it still is also the honest reading: nothing
+ * here builds anything, so the drawn world has not changed.
+ */
+const UNCHANGED_WORLD = 0;
 
 /** Wraps one keyframe buffer in the envelope `publishActor`/`publishGuard` both send, so neither repeats it. */
 function emitKeyframe(tick: number, data: ArrayBuffer): void {
@@ -260,7 +272,7 @@ function emitKeyframe(tick: number, data: ArrayBuffer): void {
 const harness: LockstateActorMotionHarness = {
   ready,
   publishActor: (tick, tile, tilesPerSecond) => {
-    const writer = new RenderActorsKeyframeWriter(1);
+    const writer = new RenderActorsKeyframeWriter(1, UNCHANGED_WORLD);
     writer.writeRecord(
       ACTOR_ENTITY_ID,
       packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, Math.sign(tilesPerSecond.x), Math.sign(tilesPerSecond.y)),
@@ -275,7 +287,7 @@ const harness: LockstateActorMotionHarness = {
     // Zero heading, zero velocity: exactly what `render-actors-keyframe.ts`
     // writes for a real `GuardRoster` entry, because a `GuardRecord` tile
     // updates only on arrival (ADR 0059).
-    const writer = new RenderActorsKeyframeWriter(1);
+    const writer = new RenderActorsKeyframeWriter(1, UNCHANGED_WORLD);
     writer.writeRecord(
       GUARD_ENTITY_ID,
       packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0),
@@ -284,6 +296,27 @@ const harness: LockstateActorMotionHarness = {
       0,
       0,
     );
+    emitKeyframe(tick, writer.finish());
+  },
+  publishCrowd: (tick, records) => {
+    const writer = new RenderActorsKeyframeWriter(records.length, UNCHANGED_WORLD);
+    for (const record of records) {
+      // Motionless, both populations: zero heading and zero velocity is what
+      // the worker writes for a guard whose tile updates only on arrival and
+      // for a prisoner holding no walk (`LocomotionStore.read`).
+      writer.writeRecord(
+        record.entityId,
+        packRenderActorFields(
+          record.population === 'guard' ? RENDER_ACTOR_POPULATION_GUARD : RENDER_ACTOR_POPULATION_PRISONER,
+          0,
+          0,
+        ),
+        Math.round(record.tile.x * LOCOMOTION_SUBTILE_UNITS),
+        Math.round(record.tile.y * LOCOMOTION_SUBTILE_UNITS),
+        0,
+        0,
+      );
+    }
     emitKeyframe(tick, writer.finish());
   },
   publishClock: (tick, mode) => {

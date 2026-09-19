@@ -184,6 +184,14 @@ function statusStripSource(runtime: SimulationRuntime, tick: number) {
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
     rooms: runtime.prisoners,
+    // The session's timetables rather than the module constant this source
+    // previously left `projectStatusStrip` to default to
+    // ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+    // §6). Without this line the panel would keep reporting
+    // `DEFAULT_REGIME_SCHEDULES` after an `EditRegimeBlock` had changed the day
+    // the prisoners actually run -- a projection stating something the
+    // simulation had stopped doing.
+    regimeSchedules: runtime.prisoners.regimes.all(),
     staff: runtime.securityGuards,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
@@ -327,6 +335,19 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const view = projectRoomList(runtime.prisoners, pageRequest(request), {
         placedObjects: runtime.placedObjects,
+        // The world's edge layers, the session's own door registry and the
+        // region partition built from both, so a row can say whether anybody
+        // can get into the room (#938, and ADR 0108 for the third). All three
+        // come from the runtime rather than from a copy: `navigation.doors` is
+        // the registry the router, the caches and `doorsSnapshot` all read
+        // (`runtime/new-session.ts` says why there is only one) and
+        // `getGraph()` is the graph the router routes over, so the panel's
+        // answer and the walk's answer cannot disagree.
+        perimeter: {
+          edges: runtime.world,
+          doors: runtime.navigation.doors,
+          regions: runtime.navigation.getGraph(),
+        },
       });
       return { view: view as unknown as JsonValue, page: pageOfView(view.rooms) };
     },
@@ -339,6 +360,15 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const detail = projectRoomDetail(runtime.prisoners, idTarget(request), {
         placedObjects: runtime.placedObjects,
+        // The list's reason, and it has to be all three: the needs readout
+        // asks for the list and then for one detail per unfinished room, so a
+        // detail that could not answer this would drop the fact between the
+        // two requests.
+        perimeter: {
+          edges: runtime.world,
+          doors: runtime.navigation.doors,
+          regions: runtime.navigation.getGraph(),
+        },
       });
       return detail === undefined ? {} : { view: detail as unknown as JsonValue };
     },

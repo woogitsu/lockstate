@@ -8,6 +8,7 @@ import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-chan
 import { IntakePipelineReader } from '../../src/ui/simulation-intake';
 import { BuildQueueReader } from '../../src/ui/simulation-build-queue';
 import { LoopbackWorker } from '../helpers/loopback-worker';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #680: one click on any `.ui-tab` before the first **New prison** made
@@ -94,7 +95,7 @@ describe('the first "New prison" after the player has touched the interface (#68
 
     const result = await controller.createPrison('prison-a', 'New Prison');
 
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the first creation after a panel read');
     // And it ran in the boot worker, which is the second half of the claim:
     // a fix that threw the poisoned worker away and started another would
     // also make the line above pass, while still costing a worker per stray
@@ -108,6 +109,6 @@ describe('the first "New prison" after the player has touched the interface (#68
 
     await expect(new BuildQueueReader(channel, () => undefined).read()).rejects.toThrow(/not-initialized/);
 
-    expect((await controller.createPrison('prison-a', 'New Prison')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-a', 'New Prison'), 'the creation of prison-a');
   });
 });

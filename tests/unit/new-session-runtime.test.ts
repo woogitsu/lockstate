@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { constantDeploymentSchedule, createGradedDoor } from '../../src/simulation/security';
+import { DEFAULT_SECURITY_SECTOR_ID } from '../../src/simulation/security/default-sector';
 import { useSearchPolicy } from '../helpers/search-policy';
 import {
   chunkCoordinate,
@@ -120,14 +121,47 @@ test('new-session runtime wires the incident pipeline through real sectors, guar
   expect(runtime.securitySectors.getControlState('sector-1')).toBe('normal');
 });
 
-test('new-session runtime starts with no fabricated incident, gang or contraband content', () => {
+test('new-session runtime starts with no fabricated incident or contraband content', () => {
   const runtime = createNewSimulationRuntime();
 
   expect(runtime.incidents.all()).toEqual([]);
-  expect(runtime.gangs.all()).toEqual([]);
   expect(runtime.tunnels.all()).toEqual([]);
   expect(runtime.contraband.all()).toEqual([]);
   expect(runtime.intelligence.all()).toEqual([]);
+});
+
+/**
+ * The third exception to the rule above, beside the derived sector and the
+ * four search policies below
+ * ([ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+ * decision 1, issue #979).
+ *
+ * **The test above used to read `expect(runtime.gangs.all()).toEqual([])` and
+ * was named "...incident, gang or contraband content"**, and the assertion is
+ * moved here rather than deleted for the reason the `searchPolicies` note
+ * below gives about its own: an empty gang registry was never "no fabricated
+ * content", it was `'gang-retaliation'` -- one of the four `IncidentType`s,
+ * with a persisted enum member, a protocol event, a census label, two
+ * projections and the sentence *"Two gangs are settling a score."* already
+ * written -- having no producer in any prison a player could start. Issue
+ * #979 is that finding and ADR 0103 is the decision that closes it.
+ *
+ * Two, both claiming the one watched sector, and **no member and no grudge**:
+ * a gang that claims nothing is structurally inert (ADR 0103 Context 2) and
+ * membership is intake's, not session creation's (decision 6). So a fresh
+ * runtime still fabricates no *state* -- what it now has is the two subjects
+ * the mechanism needs in order to have any.
+ */
+test('new-session runtime derives the two gangs the retaliation producer needs, and nothing else about them', () => {
+  const runtime = createNewSimulationRuntime();
+
+  expect(runtime.gangs.all()).toEqual([
+    { id: 'gang.alpha', territorySectorIds: [DEFAULT_SECURITY_SECTOR_ID] },
+    { id: 'gang.beta', territorySectorIds: [DEFAULT_SECURITY_SECTOR_ID] },
+  ]);
+  expect(runtime.gangs.membersOf('gang.alpha')).toEqual([]);
+  expect(runtime.gangs.membersOf('gang.beta')).toEqual([]);
+  expect(runtime.gangs.allGrudges()).toEqual([]);
 });
 
 /**

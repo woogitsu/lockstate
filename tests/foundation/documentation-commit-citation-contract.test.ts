@@ -256,6 +256,45 @@ const UNPUBLISHED_BY_ORIGIN: ReadonlyMap<string, string> = new Map([
   // the moment the coordinator picks it. `git branch -r --contains <sha>` is
   // the check. Add an entry only when the anchor genuinely cannot move -- and
   // say why it cannot, not merely that it does not.
+  //
+  // **IT IS NO LONGER EMPTY, AND THE FIVE ENTRIES BELOW ARE A CLASS THE
+  // PARAGRAPHS ABOVE DID NOT ANTICIPATE: SHAS OF A DIFFERENT REPOSITORY.**
+  // They are not this repository's history at all. `docs/design/` holds design
+  // material the owner delivered from outside, kept verbatim and never edited
+  // -- see `docs/design/README.md` for why an edited delivery stops being the
+  // evidence it was vendored to be. The 2026-09-13 delivery's own version
+  // register, `09-REJESTR-WERSJI.md`, anchors each of its five iterations at
+  // the commit it was taken at **in the private prototype repository that
+  // produced it**, which this repository cannot fetch and no reader here can
+  // resolve.
+  //
+  // So this is the one shape the map's own admission bar is cleared by
+  // trivially: the anchor genuinely cannot move, because moving it would mean
+  // editing somebody else's delivery to name a commit that does not describe
+  // it. The alternative -- excluding `docs/design/` from the scan -- was
+  // rejected as the worse trade: it would silence this gate over a whole tree
+  // forever, including over any future delivery that cites *this*
+  // repository's shas, which is exactly the citation the gate exists for.
+  [
+    '3e9e3f036c001f58afdf046e6f9fd64580698573',
+    'iteration 01 of the 2026-09-13 design delivery, in the private prototype repository that produced it',
+  ],
+  [
+    'f0d421d2d7ccf31031af73a27d7efc10fd8949ae',
+    'iteration 02 of the 2026-09-13 design delivery, in the private prototype repository that produced it',
+  ],
+  [
+    'a3356325424a096d62e834fad38e7236567f4b25',
+    'iteration 03 of the 2026-09-13 design delivery, in the private prototype repository that produced it',
+  ],
+  [
+    '6afbef8f47d02a2da74631a636dbe4f4d9a69756',
+    'iteration 04 of the 2026-09-13 design delivery, in the private prototype repository that produced it',
+  ],
+  [
+    '8f6d6616788a601c9fc58b48a7f81a99d7639d5d',
+    'iteration 05 of the 2026-09-13 design delivery, in the private prototype repository that produced it',
+  ],
 ]);
 
 /**

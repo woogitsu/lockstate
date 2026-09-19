@@ -1,11 +1,17 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
-import { deliveriesRungFloorMinorUnits } from '../affordability';
+import { deliveriesRungFloorMinorUnits, freshUnfurnishedPrison } from '../affordability';
 import type { HostRefusalReason } from '../host-refusal';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } from './view-model';
+import type {
+  HudClockViewModel,
+  HudCountsViewModel,
+  HudRoomNeedsViewModel,
+  HudSeverity,
+  HudSpeed,
+} from './view-model';
 
 /**
  * Pure view-model → display-descriptor mapping.
@@ -26,8 +32,15 @@ import type { HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } fro
  * Not a message key, and not an ADR 0011 exception: it is punctuation, the
  * same in every locale, and it says *nothing is known* rather than naming a
  * condition. The condition is named by the alerts region.
+ *
+ * **This used to be called `CLOCK_UNKNOWN_TEXT`, and that name no longer
+ * exists anywhere in the tree** (issue #1191). The docblock above was already
+ * general when the name was not: the metric chips paint this now too, for the
+ * state the clock has always painted it for -- which is the whole of that
+ * issue, since the two halves of one strip used to disagree about whether
+ * anything was known.
  */
-export const CLOCK_UNKNOWN_TEXT = '--';
+export const UNKNOWN_READOUT_TEXT = '--';
 
 /**
  * The 1-based in-game day, or `undefined` when no session has reported one.
@@ -144,7 +157,7 @@ export type HudMetricId =
  * that actually matters (that the player sees words rather than a dotted id).
  *
  * The `'high-risk'` id is spelled here for the reason `describePrisonerRow`
- * spells it in `regime-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
+ * spells it in `roster-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
  * `src/simulation/prisoners/components.ts` and the HUD may not import the
  * simulation (`AGENTS.md` boundary 1). A wrong id would resolve to nothing and
  * render as the raw key, which `tests/browser/app-shell.spec.ts` asserts
@@ -187,7 +200,8 @@ export interface HudMetricText {
    * **The field this replaced took `MessageParameters` and rendered through
    * `String()`,** which is `interpolate`'s fallback: `hud.status.funds-remaining`
    * under a chip reading `-100` would have said `2400 left` where the chip said
-   * `-100`, and `{count} with no bed` said `1240` under a chip reading `1,240`.
+   * `-100`, and `{count} with no bed` -- the badge's text before issue #961 --
+   * said `1240` under a chip reading `1,240`.
    * Identical below a thousand in `en`, which is why the older of the two ran
    * for two issues without anybody seeing it. The old field is gone rather than
    * kept beside this one: after issue #703's ruling 21 shortened the coverage
@@ -206,7 +220,22 @@ export interface HudMetricDescriptor {
   readonly id: HudMetricId;
   readonly icon: IconId;
   readonly labelKey: LocalizationKey;
-  readonly value: number;
+  /**
+   * The number this chip states, or `undefined` because **no prison has
+   * reported one** (issue #1191).
+   *
+   * `undefined` is a real state and not a defensive default, in exactly the
+   * sense `displayDay` above already says it for the clock: before the first
+   * `simulation/status-counts` publication, and after `simulation/stopped`,
+   * there is nothing to count, and `0` there is a claim about a prison rather
+   * than the absence of one. `status-strip.ts` paints `UNKNOWN_READOUT_TEXT`
+   * for it -- the `--` the clock in the same strip has always painted.
+   *
+   * Every chip's value is absent together or present together, because they
+   * come off one publication; the field is per-descriptor because that is
+   * where the strip reads it.
+   */
+  readonly value: number | undefined;
   /** Present only for a bounded metric; drives the segmented bar. */
   readonly capacity: number | undefined;
   readonly tone: BadgeTone | undefined;
@@ -305,7 +334,7 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
  * and nothing at all when everybody does (issue #609).
  *
- * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * **`undefined` rather than a badge reading "0 not housed"**, which is
  * `coverageTone`'s reasoning applied to a chip that has been badge-less until
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent
@@ -343,6 +372,64 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
 }
 
 /**
+ * The badge under the `ROOMS` chip: how many of the rooms it counts cannot yet
+ * do the job they were designated for
+ * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ *
+ * ## Why the strip carries this at all
+ *
+ * Because the warning had exactly one render site and it was behind a tab. A
+ * play-test on 2026-09-05 zoned a cell with no door, sat on OVERVIEW for
+ * **eight game days**, and the two messages it saw in that time were
+ * *"Contraband found: Tool."* and *"Cell designated. Day 2"* -- while
+ * `.hud-rooms` (never laid out on that tab) held `NOT READY 1 of 1` and the
+ * strip read `1 ROOMS` with no qualifier at all. The sentence
+ * `hud.rooms.needs-doorway` is true, immediate and durable, and a player on the
+ * tab the game opens on cannot see it. This badge is the qualifier that says
+ * the panel has something to say; it does not try to be the panel.
+ *
+ * ## Why it is not derived from `counts`
+ *
+ * Every other badge on this strip is, and this one cannot be: whether a room is
+ * ready is `projectRoomList`/`projectRoomDetail`'s verdict, pulled over the
+ * projection channel, and `simulation/status-counts` carries no such figure.
+ * `HudRoomNeedsViewModel` is the answer that already exists, already crosses
+ * the boundary and is already what the Rooms panel prints -- so reading it here
+ * means the badge and the panel state one number from one source. Recomputing
+ * "unfinished" on this side would be the second definition that drifts, which
+ * is the rule `HudRoomNeedViewModel` states for the panel and it does not stop
+ * applying because the reader moved to the strip.
+ *
+ * ## The three states, and why two of them draw nothing
+ *
+ * - **Nothing has asked** (`undefined`) -- no session, or a session that has
+ *   stopped. Absent, because a badge reading `0 not ready` would be a claim
+ *   about a prison nothing is answering for.
+ * - **Every room is ready** (`unfinishedRooms === 0`) -- absent, and this is
+ *   `prisonersWithoutBedBadge`'s rule rather than a second opinion: *"a status
+ *   strip where several things are always amber teaches players to ignore
+ *   amber"*, and the note there already extends it to reassurance. A prison
+ *   whose rooms all work is described by the count above the badge.
+ * - **Something is not ready** -- the count, toned `warning`.
+ *
+ * `warning` and not `danger`: an unfinished room is the ordinary state of a
+ * room a player has just drawn, and the chip's own `tone` is left alone so this
+ * is one signal rather than two for one fact.
+ *
+ * `numberParameters`, not `parameters`, for the reason `prisonersWithoutBedBadge`
+ * records: a badge that states a quantity must group it the way the chip above
+ * it groups its own.
+ */
+function roomsNotReadyBadge(roomNeeds: HudRoomNeedsViewModel | undefined): HudMetricBadge | undefined {
+  if (roomNeeds === undefined || roomNeeds.unfinishedRooms <= 0) return undefined;
+  return {
+    tone: 'warning',
+    textKey: HUD_MESSAGE_KEY.roomsNotReady,
+    numberParameters: { count: roomNeeds.unfinishedRooms },
+  };
+}
+
+/**
  * The worst rung anybody is standing on, as a tone (issue #588).
  *
  * Three steps for one metric, in `occupancyTone`'s shape and for
@@ -356,6 +443,14 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
  * colour alone.
  */
 function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  // Above the ladder, because it is the state the ladder cannot see (ADR 0117,
+  // accepted 2026-09-17). While a post cannot be reached, the three counts
+  // below alternate between *covered* and *unguarded* on the deployment
+  // cadence -- 100 ticks each over 200, seed `0x396` -- so reading them alone
+  // paints this chip green on half of all frames over a prison no guard is
+  // standing in. `coverageBadge` takes the same precedence for the same
+  // reason, so the colour and the word still come off one ladder read once.
+  if (counts.postUnreachable === true) return 'danger';
   if (counts.prisonersUnguarded > 0) return 'danger';
   if (counts.prisonersUnderstaffed > 0) return 'warning';
   return undefined;
@@ -403,6 +498,11 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
  */
 function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   const tone = coverageTone(counts);
+  // ADR 0117 §4's second decision, settled here: while this stands,
+  // `securityCoverageMet` -- "Covered" -- is false, and it is what this chip
+  // would otherwise read on half of all ticks (measured; see `coverageTone`).
+  // So the rung is displaced rather than annotated.
+  if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
   // One ladder, read once: the tone and the word come off the same two rungs in
   // the same order, so a rung that changes the colour cannot fail to change the
@@ -465,6 +565,17 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * are computed from the one boolean rather than two things that can drift
  * apart.
  *
+ * **`counts.roomCapacity === 0` was itself the wrong reading, and the clause
+ * above is kept rather than rewritten because its *argument* is what survived
+ * and its *source* is what did not (2026-09-15).** One boolean shared with the
+ * press is still the property; the boolean is now
+ * `counts.isFreshUnfurnishedPrison`, the registry figure the worker judges
+ * with, read through `freshUnfurnishedPrison`. `roomCapacity` is a sub-sum of
+ * that figure over the catalogue fan-out (`docs/HUD_PROJECTIONS.md` gap 15),
+ * so it answered "fresh" in strictly more cases than the worker did -- and on
+ * a restored prison holding an off-catalogue room this badge read `0 left` at
+ * -1,200 while the worker went on accepting presses to -1,250.
+ *
  * The rung comes through `deliveriesRungFloorMinorUnits` in
  * `src/ui/affordability.ts` rather than from `rungFloorMinorUnits` directly,
  * because `src/ui/hud/` may not import the simulation -- `AGENTS.md` boundary 1,
@@ -504,7 +615,7 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
 function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
   const floor = counts.treasuryOverdraftFloorMinorUnits;
   if (floor === undefined || floor >= 0) return undefined;
-  const isFreshUnfurnishedPrison = counts.roomCapacity === 0;
+  const isFreshUnfurnishedPrison = freshUnfurnishedPrison(counts);
   return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor, isFreshUnfurnishedPrison));
 }
 
@@ -535,7 +646,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * and a prison at -1,300 are not the same state told louder: the first can
  * still buy the plank that finishes the cell, and the second can buy nothing
  * at all -- every press that costs money is refused, and none of them will
- * stop being refused until the state pays. That is exactly the distinction the
+ * stop being refused until the prison earns some. That is exactly the distinction the
  * coverage ladder draws between understaffed and unguarded, *"the rung where
  * the cheapest possible action changes the outcome"*.
  *
@@ -566,7 +677,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * #771 (2026-09-01, ADR 0017's equalisation amendment) moved the construction
  * rung onto the same -1,250 this tone already keys off.** `danger` now means
  * exactly what it reads as: no discretionary spend of any kind, player-pressed
- * or scheduled, moves the balance again until the state pays what it owes.
+ * or scheduled, moves the balance again until the prison earns the money.
  * Only the payday exception survives, and it is named above rather than
  * implied. **And it does not mean "the deepest a prison can go" either** --
  * that is `critical` now, the ruling on issue #768's own boundary.
@@ -687,12 +798,61 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
 }
 
 /**
+ * What the `Earned today` chip is not paying, in a full sentence -- its
+ * tooltip and its screen-reader text (issue #890).
+ *
+ * **Nothing at all while nothing is withheld**, which is `overdraftBadge`'s
+ * rule: a chip that carries the same sentence in every screenshot is one
+ * nobody reads in the screenshot it matters in. Absent and `0` are different
+ * facts -- a payload written before the field existed against a prison
+ * meeting every need -- and both correctly draw nothing.
+ *
+ * **It reads the published figure and does not derive one.** The undiminished
+ * per-place rate is in `src/simulation/economy/income.ts`, which this module
+ * may not import (`tests/unit/ui-hud-messages.test.ts`), and subtracting
+ * before prorating would disagree with the chip's own value for most of every
+ * day -- the projection's field carries the measured tick counts. So the
+ * arithmetic stays where the rate is and this function only chooses whether
+ * there is a sentence.
+ *
+ * The figure rides `numberParameters` for `overdraftDescription`'s reason:
+ * this layer is pure and has no localizer, so it names the quantity and the
+ * strip formats it exactly as it formats the value it sits under.
+ */
+function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | undefined {
+  const withheld = counts.stateIncomeWithheldTodayMinorUnits;
+  if (withheld === undefined || withheld <= 0) return undefined;
+  return { textKey: HUD_MESSAGE_KEY.earnedWithheld, numberParameters: { withheld } };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
  * one a player has to re-read every time.
+ *
+ * **`roomNeeds` is the one input that is not a count, and it is optional**
+ * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ * It is the Rooms panel's own readout, pulled over the projection channel
+ * rather than published on `simulation/status-counts`, so it is absent whenever
+ * nothing has asked -- before a session exists, and after one stops. Optional
+ * rather than defaulted for `roomsNotReadyBadge`'s reason: "nobody asked" and
+ * "every room is ready" are different facts and only the second is a statement
+ * about the prison, so neither may be spelled `0`.
+ *
+ * **`counts` is optional as of issue #1191, and absent means no prison has
+ * reported.** Every descriptor then carries `value: undefined` and no badge,
+ * tone, capacity or description, and the strip paints `UNKNOWN_READOUT_TEXT`
+ * in each chip -- the `--` its clock has always painted in the same state.
+ * Which chips exist, in what order, with which icon and label, is unchanged by
+ * absence: that is the same list either way, and the paragraph on
+ * `UNREPORTED_CHIP_ENUMERATION` below says how it stays one list.
  */
-export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMetricDescriptor[] {
+export function projectStatusMetrics(
+  counts?: HudCountsViewModel,
+  roomNeeds?: HudRoomNeedsViewModel,
+): readonly HudMetricDescriptor[] {
+  if (counts === undefined) return UNREPORTED_STATUS_METRICS;
   const hasIncidents = counts.activeIncidents > 0;
   const capacity = counts.prisonerCapacity > 0 ? counts.prisonerCapacity : undefined;
 
@@ -782,7 +942,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
        * the population the prison has -- and nobody has set the number at which
        * it becomes one, so a permanent amber chip on a mature prison would be
        * exactly the *"status strip where several things are always amber"*
-       * `coverageTone` refuses. `describePrisonerRow` in `regime-panel.ts`
+       * `coverageTone` refuses. `describePrisonerRow` in `roster-panel.ts`
        * already draws the line for the row badge: *"`warning` for high risk is
        * not a claim that the prisoner is a problem. It is that they are on the
        * restricted timetable"* -- a distinction a per-prisoner badge can carry
@@ -845,7 +1005,16 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       tone: coverageTone(counts),
       badge: coverageBadge(counts),
-      description: undefined,
+      /**
+       * **The one sentence a stranded post gets** (ADR 0117, accepted by the
+       * owner on 2026-09-17), and `undefined` on every other prison.
+       *
+       * The chip's own `title` and screen-reader text, exactly as the `FUNDS`
+       * chip's is; the badge above carries the short form, so nothing is said
+       * only here -- see `HudMetricDescriptor.description`, which states that
+       * as a constraint rather than a remark.
+       */
+      description: counts.postUnreachable === true ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint } : undefined,
     },
     {
       id: 'rooms',
@@ -853,8 +1022,31 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       labelKey: HUD_MESSAGE_KEY.rooms,
       value: counts.rooms,
       capacity: undefined,
+      /**
+       * **The chip's own tone is deliberately left alone** while the badge
+       * beside it carries the warning (#1006 finding 1).
+       *
+       * `prisonersWithoutBedBadge` states the rule this follows in the other
+       * direction: there the chip already had `occupancyTone` as its escalation
+       * channel, so the badge was not painted red as well. Here the chip has no
+       * tone at all and the badge is the only signal, which keeps one fact to
+       * one channel either way -- and keeps the strip from turning amber the
+       * moment a player draws their first rectangle, which is the ordinary
+       * state of a room that has just been designated.
+       */
       tone: undefined,
-      badge: undefined,
+      /**
+       * **How many of the rooms this chip counts are not ready** (#1006
+       * finding 1), or nothing when they all are and nothing when nobody has
+       * asked.
+       *
+       * The chip keeps the raw count -- how many rooms the prison has is what a
+       * player asks it for -- and the badge names the part of it that does not
+       * work yet, which is `prisonersWithoutBedBadge`'s arrangement two chips
+       * over. See `roomsNotReadyBadge` for why the answer comes from the
+       * projection channel rather than from `counts`.
+       */
+      badge: roomsNotReadyBadge(roomNeeds),
       description: undefined,
     },
     {
@@ -1052,7 +1244,16 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
 
       tone: undefined,
       badge: undefined,
-      description: undefined,
+      // **And a description, which is not a tone and not a badge** (issue
+      // #890). The two lines above refuse a threshold nobody has set; this
+      // states a figure the simulation already computes and the player has no
+      // other way to read -- what today's grant is not paying because
+      // residents have needs going unmet. `funds` above is the precedent for
+      // the placement as well as the shape: the owner's ruling of 2026-09-01
+      // put a sentence here rather than in a badge because `.ui-sr-only` and
+      // `title` cost no chip width, and this row's width is measured
+      // (`tests/browser/ui-strip-badged-width.spec.ts`).
+      description: earnedWithheldDescription(counts),
     },
   ];
 }
@@ -1157,9 +1358,65 @@ export function refusalMessageKey(actionId: string, reason?: HostRefusalReason):
       return HUD_MESSAGE_KEY.refusalCancelBuildOrder;
     case 'cancel-material-purchase':
       return HUD_MESSAGE_KEY.refusalCancelMaterialPurchase;
+    case 'sell-materials':
+      return HUD_MESSAGE_KEY.refusalSellMaterials;
     case 'release-guard':
       return HUD_MESSAGE_KEY.refusalReleaseGuard;
     default:
       return undefined;
   }
 }
+
+/**
+ * A row of zeros that never reaches a screen, used to enumerate the chips.
+ *
+ * It exists so that "which chips the strip has" has exactly one definition
+ * (issue #1191). The alternative -- a second table of ids, icons and label
+ * keys for the unreported state -- is the drift this file refuses everywhere
+ * else: a tenth chip added to `projectStatusMetrics` and not to that table
+ * would simply vanish from the strip until a prison reported, and no type
+ * would notice.
+ *
+ * **Every number it produces is discarded** by the mapping below, which keeps
+ * `id`, `icon` and `labelKey` and blanks the rest.
+ * `tests/unit/ui-hud-projection.test.ts` pins that: no descriptor of
+ * `projectStatusMetrics()` carries a value, a badge, a tone, a capacity or a
+ * description, and the ids match the reported list one for one.
+ */
+const UNREPORTED_CHIP_ENUMERATION: HudCountsViewModel = {
+  prisoners: 0,
+  prisonerCapacity: 0,
+  occupiedPlaces: 0,
+  staff: 0,
+  staffUnassigned: 0,
+  rooms: 0,
+  prisonersCovered: 0,
+  prisonersUnderstaffed: 0,
+  prisonersUnguarded: 0,
+  prisonersHighRisk: 0,
+  activeIncidents: 0,
+  contrabandFound: 0,
+  treasuryMinorUnits: 0,
+  stateIncomeAccruedTodayMinorUnits: 0,
+};
+
+/**
+ * What the strip is told to show when no prison has reported (issue #1191):
+ * the same chips in the same order, each with nothing in it.
+ *
+ * Computed once at module load, from the enumeration above, and frozen by
+ * being a `const` of `readonly` descriptors -- the strip walks it on first
+ * paint and on every message that carries no counts.
+ */
+const UNREPORTED_STATUS_METRICS: readonly HudMetricDescriptor[] = projectStatusMetrics(
+  UNREPORTED_CHIP_ENUMERATION,
+).map((descriptor) => ({
+  id: descriptor.id,
+  icon: descriptor.icon,
+  labelKey: descriptor.labelKey,
+  value: undefined,
+  capacity: undefined,
+  tone: undefined,
+  badge: undefined,
+  description: undefined,
+}));

@@ -238,3 +238,61 @@ describe("the Rooms panel's arm control routes through the shared reducer", () =
     expect(code, `${ROOMS_PANEL} is not the panel it claims to be`).toContain('HUD_MESSAGE_KEY');
   });
 });
+
+/**
+ * `Escape`'s arming half, at the only layer this suite can reach it (#959).
+ *
+ * `mountHud` and both panels are DOM, and `vitest.config.ts` is
+ * `environment: 'node'` with no jsdom, so the transition itself is asserted in
+ * a browser (`tests/browser/world-scene-input.spec.ts` for the scene's side of
+ * the seam, and the running application for the panels'). What is left for
+ * this layer is the failure that layer cannot see: **the seam written and
+ * joined to nothing.**
+ *
+ * That is not hypothetical here, it is the shape
+ * `tests/foundation/composition-root-contract.test.ts` exists for and the one
+ * it has caught three times. Deleting `attachStandDown` from `mountHud`
+ * type-checks, and the world-scene spec goes on passing because its harness
+ * supplies a port double of its own -- exactly the "green for the wrong
+ * reason" that file's header describes. Measured: with the attachment removed,
+ * `tsc` is clean, the browser world-scene suite is 27 passed, and only the
+ * first assertion below fails.
+ *
+ * Textual, with that bound stated rather than implied: it proves the wiring is
+ * *written*. What each panel's `standDown` then does is the browser's to say.
+ */
+describe("Escape's request reaches both panels", () => {
+  const codeOf = async (relative: string): Promise<string> =>
+    stripComments(await readFile(path.join(REPOSITORY_ROOT, relative), 'utf8'));
+
+  it('has the HUD attach to the stand-down source and stand both panels down', async () => {
+    const code = (await codeOf('src/ui/hud/hud.ts')).replace(/\s+/g, ' ');
+    expect(code, 'src/ui/hud/hud.ts never attaches to the stand-down source, so the key reaches nothing').toContain(
+      'options.toolStandDown?.attachStandDown(',
+    );
+    // Both, not whichever tab is showing: one key means "put down whatever I
+    // am holding", and at most one of the two is ever armed.
+    expect(code, 'the Build panel is left armed by a key that says it is not').toContain('buildPanel.standDown();');
+    expect(code, 'the Rooms panel is left armed by a key that says it is not').toContain('roomsPanel.standDown();');
+  });
+
+  it('has both panels offer the transition the HUD asks them for', async () => {
+    for (const panel of ['src/ui/hud/build-panel.ts', 'src/ui/hud/rooms-panel.ts'] as const) {
+      const code = (await codeOf(panel)).replace(/\s+/g, ' ');
+      expect(code, `${panel} has no standDown for the world's Escape to reach`).toContain('standDown(): void {');
+    }
+  });
+
+  /** Non-vacuity, for the reason every scanner in this file states it. */
+  it('read real module source, not an empty file', async () => {
+    for (const module of [
+      'src/ui/hud/hud.ts',
+      'src/ui/hud/build-panel.ts',
+      'src/ui/hud/rooms-panel.ts',
+    ] as const) {
+      const code = await codeOf(module);
+      expect(code.length, `${module} stripped to nothing`).toBeGreaterThan(10_000);
+      expect(code, `${module} is not the module it claims to be`).toContain('HUD_MESSAGE_KEY');
+    }
+  });
+});

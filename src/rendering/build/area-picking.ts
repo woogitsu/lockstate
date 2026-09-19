@@ -1,6 +1,6 @@
 import { type TileRange, worldToTile } from '../tile-metrics';
 import type { WorldRenderView } from '../world/world-view';
-import type { WorldPoint } from './edge-picking';
+import type { BuildEdgeId, WorldPoint } from './edge-picking';
 
 /**
  * Turning a drag across the world into the rectangle of tiles a player meant.
@@ -229,8 +229,18 @@ export interface ObjectToolPort {
    * mean.
    */
   footprint(): { readonly width: number; readonly height: number } | undefined;
-  /** The player pressed and released. One tile: one object placed, or one removed. */
-  place(tile: { readonly tileX: number; readonly tileY: number }): void;
+  /**
+   * The player pressed and released. One tile: one object placed, or one
+   * removed.
+   *
+   * **`edge`, added by ADR 0106, is the tile edge `pickEdgeAtWorld` resolved
+   * the same press to.** It is meaningless while placing -- an object has no
+   * edge -- and it is what lets a removal fall through to a completed wall or
+   * door when the tile holds no object: see `ObjectTool.place`'s own comment
+   * for the fallback rule, and `removeWallSchema`'s for why that fallback
+   * lives in the session command handler rather than being decided here.
+   */
+  place(tile: { readonly tileX: number; readonly tileY: number; readonly edge?: BuildEdgeId }): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;
 }

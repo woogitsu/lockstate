@@ -24,9 +24,11 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ## Why this needs no save-version bump, asserted rather than claimed
  *
- * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 5 now, and
- * **neither number is this system's**: the bump belongs to ADR 0028 phase 1,
- * which took `capacity` off a room instance and put a rectangle on it. What
+ * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 6 now, and
+ * **no number in that sequence is this system's**: 5 belongs to ADR 0028 phase
+ * 1, which took `capacity` off a room instance and put a rectangle on it, and 6
+ * to ADR 0113, which put each classification group's timetable in the save so a
+ * command could edit it. What
  * this file asserts is unchanged and is the part that matters --
  * `StateIncomeSystem` holds no state at all
  * -- no accumulator, no last-paid tick -- so it adds no field to the payload,
@@ -94,12 +96,12 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   ).toBe(SAVE_SCHEMA_VERSION);
   // V5 since ADR 0028 phase 1, and the assertion is kept pinned rather than
   // deleted: what it guards is that a bump has a *reason*, not that the number
-  // never moves. The reason for this one is object placement -- a room instance
-  // stops carrying its capacity and starts carrying its rectangle -- and it is
-  // nothing to do with the income line, which still adds no field to the
-  // payload. The two paragraphs below the version check are what actually
-  // enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(5);
+  // never moves. The reason for the latest one is ADR 0113 -- `simulation`
+  // gains a required `regimeSchedules` section, because a timetable that can be
+  // edited cannot be recovered from an absent field -- and it is nothing to do
+  // with the income line, which still adds no field to the payload. The two
+  // paragraphs below the version check are what actually enforce that.
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(6);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);
@@ -156,7 +158,7 @@ const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLA
  * ADR 0042 step 3.
  *
  * `buildDeterminismScenario` hires five guards straight onto the roster
- * (`tests/helpers/determinism-scenario.ts:160`) rather than through
+ * (`tests/helpers/determinism-scenario.ts:180`) rather than through
  * `StaffHiringService`, so no engagement charge is taken -- but `PayrollSystem`
  * reads the roster and bills all five at the catalogue's 80 a day on the same
  * boundary tick this file's income lands on. **Both figures are written out

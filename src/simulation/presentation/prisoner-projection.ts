@@ -127,9 +127,21 @@ export interface PrisonerNeedViewModel {
   /** `permille: 0` is a fully unmet need; `1000` is fully satisfied. */
   readonly level: BoundedValue;
   /**
-   * Whether the state withholds part of this prisoner's day of the operating
-   * grant because of this need -- `isNeedUnmetForStateIncome`, the same
-   * predicate `unmetNeedCount` sums to compute the money.
+   * Whether the state counts this need as unmet when it settles this
+   * prisoner's day of the operating grant -- `isNeedUnmetForStateIncome`, the
+   * same predicate `unmetNeedCount` sums to compute the money.
+   *
+   * **This read "whether the state withholds part of this prisoner's day of
+   * the operating grant because of this need", it stopped being true on
+   * 2026-09-03**, when the owner suspended
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they
+   * played, **and it is true again since they restored it to `40` on
+   * 2026-09-04** (both rulings are in that constant's docblock). The flag
+   * itself did not move a bit across either: it is the same predicate over the
+   * same threshold, and it is what the money is computed from at any rate.
+   * Every wording is kept rather than replaced (`docs/AGENT_WORKFLOW.md` §4),
+   * because the pair of them is what shows the flag is about the threshold and
+   * never about the rate.
    *
    * **A fact about what the state pays, not a claim about what a player should
    * be alarmed by**, and the two are deliberately separate:
@@ -142,7 +154,7 @@ export interface PrisonerNeedViewModel {
    * module importing `src/simulation/economy/income.ts` to re-run the
    * comparison, which `AGENTS.md` boundary 1 forbids outright -- and because a
    * threshold the panel recomputed would be a second copy of a balance number
-   * on the thread that owns none. `regime-panel.ts` predicted exactly this
+   * on the thread that owns none. `roster-panel.ts` predicted exactly this
    * shape: *"what would make one is a projected threshold ... and both are
    * projection changes rather than panel ones."*
    */

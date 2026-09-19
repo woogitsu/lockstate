@@ -1,6 +1,12 @@
 import { type Page, expect, test } from './network-changed-fixture';
 import { expectNotClipped, probeClipping } from './clipping';
-import type { HudPrisonerRosterViewModel, HudRegimeViewModel, HudViewModel } from '../../src/ui/hud';
+import type {
+  HudPrisonerDetailViewModel,
+  HudPrisonerRosterViewModel,
+  HudRegimeViewModel,
+  HudViewModel,
+} from '../../src/ui/hud';
+import { EVENT_BAND_DWELL_FLOOR_MS, EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
@@ -408,10 +414,20 @@ test.describe('HUD shell', () => {
     // variant, which is why this assertion lives here and not in a unit test.
     expect(probe.valueCount).toBeGreaterThan(5);
     expect(probe.nonMonospaceValues).toEqual([]);
-    // `getComputedStyle` answers for a `display: none` element too, so the
-    // count above and the filter behind it would both survive a strip that
-    // was never laid out. "Every number" means every number on screen.
-    await expectLaidOut(page, '.hud-strip .ui-value', 'the strip values');
+    /*
+     * `getComputedStyle` answers for a `display: none` element too, so the
+     * count above and the filter behind it would both survive a strip that was
+     * never laid out. "Every number" means every number on screen.
+     *
+     * `:not(.hud-layout__body *)` excludes the Layout menu's drawer (#1159),
+     * matching the selector `hudProbe` counts over -- the drawer hangs from the
+     * strip and carries a clock readout, and it is `hidden` until a player
+     * opens it, so it is not a number on screen until then. That claim is not
+     * dropped: `tests/browser/hud-layout-shell.spec.ts` asserts the drawer's
+     * own readouts are monospace with tabular figures, in the one state where
+     * they are also laid out.
+     */
+    await expectLaidOut(page, '.hud-strip .ui-value:not(.hud-layout__body *)', 'the strip values');
   });
 
   test('tabs respond, moving both the selection and the reported intent', async ({ page }) => {
@@ -422,11 +438,190 @@ test.describe('HUD shell', () => {
     expect(await page.locator('.ui-tab[data-tab="build"]').getAttribute('aria-current')).toBe('true');
     expect(await page.locator('.ui-tab[data-tab="overview"]').getAttribute('aria-current')).toBeNull();
 
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
     expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toEqual([
       JSON.stringify({ kind: 'select-tab', tab: 'build' }),
-      JSON.stringify({ kind: 'select-tab', tab: 'security' }),
+      JSON.stringify({ kind: 'select-tab', tab: 'manage' }),
     ]);
+  });
+
+  /**
+   * **No section name wraps to a second line at the narrowest viewport**, and
+   * this exists because one did, on the day the sections were renamed.
+   *
+   * ADR 0022's own measurement is about *width* -- a nine-character label puts
+   * `.hud-tabs__inner` outside the 375px viewport -- and the section names
+   * were chosen against it: the longest went from 8 characters (`Overview`,
+   * `Security`) to 8 (`Overview`, `Day plan`), which passed every width
+   * assertion in this file. It cost height instead, because `.ui-tab__label`
+   * sets no `white-space` and a label with a **space in it** breaks at the
+   * space when the tab is squeezed to its `min-width`.
+   *
+   * Measured at 375x812 on 2026-09-14, with `Day plan` and then with the
+   * one-word `Schedule` that replaced it:
+   *
+   * | label | its label box | the tab bar |
+   * |---|---|---|
+   * | `Day plan` | 26.4px — two line boxes | 82.4px |
+   * | `Schedule` | 13.2px — one, like every other tab | 69.2px |
+   *
+   * Those 13.2px come off the rail, and they were enough to put a delivery
+   * row's Cancel outside the Build panel's visible box:
+   * `build-deliveries-outside-the-fold.spec.ts` went red on this branch at
+   * 375x812 and is green on `2e5cac4e`, which is how the wrap was found.
+   * Every other tab's label box is 13.2px here, so the assertion is that no
+   * label is taller than the shortest of them rather than a pinned pixel
+   * count.
+   *
+   * **THE VIEWPORT MOVED FROM 375x812 TO 721x420 ON 2026-09-16, AND THE
+   * PARAGRAPHS ABOVE ARE KEPT BECAUSE THEY ARE THE MEASUREMENT THE RULE WAS
+   * BUILT ON.** The owner ruled that below 721px a tab shows its icon and not
+   * its name (#1192), so at 375x812 there is no drawn label left to wrap and
+   * this test would have been **vacuously green**: every label is a 1px
+   * `.ui-sr-only` box there. A wrap is still a defect wherever the name *is*
+   * drawn, which is every viewport above the break, so the test follows the
+   * label rather than being deleted with it. 721x420 is the narrowest width
+   * above the break, with a height short enough to keep the five sections in a
+   * horizontal bar rather than the column `navigationPlacement` gives them
+   * wherever one fits (it is a fit test on the height, not a breakpoint).
+   *
+   * **MEASURED 2026-09-16, AND IT IS A WEAKNESS THIS TEST NOW HAS TO DECLARE:
+   * MUTATING `white-space: nowrap` IN `primitives.css` NO LONGER TURNS THIS
+   * TEST RED.** With the label hidden below 721px, the only widths where the bar
+   * squeezed a tab below its own `min-width` are widths where the name is not
+   * drawn at all; above the break the bar is `fit-content` and settles at its
+   * max-content 387.16px from 414px up, so no label is ever compressed there.
+   * The declaration is kept because it is what makes the claim true, not because
+   * anything reaches it -- and this test is kept because *a wrap is still a
+   * defect wherever the name is drawn*, which is what it asserts. It is a
+   * regression gate on the layout, not a mutation gate on that one declaration,
+   * and saying so here is cheaper than the next reader re-deriving it.
+   */
+  test('no section name wraps to a second line at 721x420', async ({ page }) => {
+    await page.setViewportSize({ width: 721, height: 420 });
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+    const labels = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.ui-tab')].map((tab) => ({
+        id: tab.dataset['tab'] ?? '',
+        text: (tab.textContent ?? '').trim(),
+        lineBoxes: (tab.querySelector('.ui-tab__label') as HTMLElement).getClientRects().length,
+        height: Math.round((tab.querySelector('.ui-tab__label') as HTMLElement).getBoundingClientRect().height * 10) / 10,
+      })),
+    );
+
+    // Not vacuous: five tabs, each with a label that was actually found.
+    expect(labels).toHaveLength(5);
+    const shortest = Math.min(...labels.map((label) => label.height));
+    expect(shortest, 'no tab label was laid out at all').toBeGreaterThan(0);
+    expect(
+      labels.filter((label) => label.height > shortest + 1),
+      'these section names wrap, and every line they wrap to comes off the rail',
+    ).toEqual([]);
+    expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
+  });
+
+  /**
+   * ICON-ONLY TABS BELOW THE BREAK -- the owner's ruling of 2026-09-16 on
+   * #1192, recorded in `docs/VISUAL_IDENTITY.md` item 5.
+   *
+   * Three claims, and they fail in three different ways, which is why they are
+   * three tests. The bar can fit and announce nothing; it can announce
+   * everything and overflow; and either can be bought by taking the names off
+   * the screen at widths the ruling did not reach.
+   *
+   * **The second is the one worth stating plainly**: the ruling's own record
+   * says *"an icon-only control still needs the section's name to reach a
+   * screen reader"*, and a tab a screen reader announces as nothing at all
+   * would be a worse defect than the overflow being fixed. It is asserted off
+   * the **accessibility tree** (`toHaveAccessibleName`), not off the
+   * stylesheet, so it stays true however the hiding is spelled -- and goes red
+   * on the one spelling that is wrong, `display: none`.
+   */
+  test.describe('icon-only tabs below the break (#1192)', () => {
+    const SECTION_NAMES = [
+      ['overview', 'Overview'],
+      ['build', 'Build'],
+      ['zones', 'Zones'],
+      ['manage', 'Manage'],
+      ['day-plan', 'Schedule'],
+    ] as const;
+
+    test('the five tabs fit at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const bar = await page.evaluate(() => {
+        const round = (value: number): number => Math.round(value * 100) / 100;
+        const inner = document.querySelector<HTMLElement>('.hud-tabs__inner')!.getBoundingClientRect();
+        const tabs = [...document.querySelectorAll<HTMLElement>('.hud__tabs [data-tab]')];
+        const boxes = tabs.map((tab) => tab.getBoundingClientRect());
+        return {
+          count: tabs.length,
+          rows: new Set(boxes.map((box) => round(box.top))).size,
+          left: round(inner.left),
+          right: round(inner.right),
+          narrowestTab: round(Math.min(...boxes.map((box) => box.width))),
+          // `.hud-tabs__inner` is `overflow: hidden` for its rounded corners,
+          // so a tab that does not fit is clipped away in silence -- the
+          // failure that element's own comment in `hud.css` describes. A tab
+          // outside its box is the thing to count, not the bar's own width.
+          outsideTheBar: boxes.filter((box) => box.left < inner.left - 0.5 || box.right > inner.right + 0.5).length,
+        };
+      });
+
+      // Not vacuous: five tabs, laid out, on one row.
+      expect(bar.count, 'the five sections were not found').toBe(5);
+      expect(bar.rows, 'the bar wrapped into rows at the default interface scale').toBe(1);
+      expect(bar.left, 'the tab bar starts off the left edge').toBeGreaterThanOrEqual(0);
+      expect(bar.right, 'the tab bar runs past the right edge of a 375px viewport').toBeLessThanOrEqual(375);
+      expect(bar.outsideTheBar, 'a tab is clipped by the bar it sits in, which happens silently').toBe(0);
+      // Constitution article 16's floor, and `--tap-target`'s own value: a tab
+      // narrower than this is a control a thumb cannot reliably hit.
+      expect(bar.narrowestTab, 'a tab is narrower than the 44px tap target').toBeGreaterThanOrEqual(44);
+    });
+
+    test('every tab still has an accessible name at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      for (const [id, name] of SECTION_NAMES) {
+        const tab = page.locator(`.hud__tabs .ui-tab[data-tab="${id}"]`);
+        await expect(tab, `the ${id} tab is not on screen`).toBeVisible();
+        await expect(tab, `the ${id} tab reaches a screen reader as nothing`).toHaveAccessibleName(name);
+      }
+
+      // And the name is genuinely off the screen, or this test would be
+      // asserting the accessibility tree of a bar that never changed.
+      const drawn = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map(
+          (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
+        ),
+      );
+      expect(drawn, 'the section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
+    });
+
+    test('the section names are still drawn above the break', async ({ page }) => {
+      // 721px: the first width the ruling does not reach, so the labels are
+      // back. The ruling is about a range and this is its edge.
+      await page.setViewportSize({ width: 721, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const labels = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map((label) => ({
+          text: (label.textContent ?? '').trim(),
+          width: Math.round(label.getBoundingClientRect().width * 100) / 100,
+          position: getComputedStyle(label).position,
+        })),
+      );
+
+      expect(labels.map((label) => label.text)).toEqual(SECTION_NAMES.map(([, name]) => name));
+      expect(
+        labels.filter((label) => label.width < 20),
+        'these section names are laid out at a screen-reader size above the break, where they should be drawn',
+      ).toEqual([]);
+      expect(labels.every((label) => label.position === 'static')).toBe(true);
+    });
   });
 
   test('transport controls report a clock intent without changing the clock themselves', async ({ page }) => {
@@ -451,6 +646,7 @@ test.describe('HUD shell', () => {
           // the chip it reads `metricValues[0]` off.
           occupiedPlaces: 179,
           staff: 27,
+          staffUnassigned: 0,
           rooms: 61,
           prisonersCovered: 140,
           prisonersUnderstaffed: 27,
@@ -472,6 +668,48 @@ test.describe('HUD shell', () => {
     expect(updated.clockDayProgress).toBe('75%');
     await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
     await expectLaidOut(page, '.hud-clock__day-progress', 'the clock day progress');
+  });
+
+  test('states no metric at all until a prison reports, and states a reported zero (issue #1191)', async ({
+    page,
+  }) => {
+    /*
+     * The other half of the strip the test below pins.
+     *
+     * `EMPTY_HUD_VIEW_MODEL` is what the real app paints before a session
+     * exists, and what a browser that cannot start the worker keeps painting.
+     * Until #1191 it carried a complete row of zeros, so this same paint said
+     * *Prisoners 0, Rooms 0, Funds 0* -- confident figures about a prison it
+     * had never heard of -- **beside the `--` clock the test below asserts, in
+     * the same paint**. One strip, two answers to "is anything known".
+     *
+     * Asserted here rather than only in the unit test because the projection
+     * saying "no value" and the chip painting `--` are two claims: the strip
+     * formats the number itself, and a `localizer.formatNumber(undefined)`
+     * reading `NaN` would satisfy the projection test and fail a player.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+    const silent = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
+
+    // All nine, so nothing is fixed chip by chip: the row is the unit here.
+    expect(silent.metricValues).toEqual(['--', '--', '--', '--', '--', '--', '--', '--', '--']);
+    // The same `--` the clock two elements over has always painted, which is
+    // the point of the fix rather than a coincidence of formatting.
+    expect(silent.clockDay).toBe('--');
+    // Visible, for the reason the clock's own test gives: an unknown a player
+    // cannot see says nothing at all.
+    await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
+
+    /*
+     * And the state this must not have cost: a prison that has reported.
+     * `BASE_VIEW_MODEL` publishes `prisonersHighRisk: 0` and
+     * `activeIncidents: 0`, and those two `0`s are facts about a prison rather
+     * than the absence of one, so they stay numbers.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    const reported = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
+
+    expect(reported.metricValues).toEqual(['142', '0', '27', '100', '61', '0', '4', '24,920', '10,667']);
   });
 
   test('shows the clock as unknown until a session reports one', async ({ page }) => {
@@ -806,9 +1044,18 @@ test.describe('HUD shell', () => {
       ]);
     });
 
-    test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
+    test('the refusal line is there at 375px, where the map corner is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.
+      //
+      // **THE SECOND HALF OF THAT SENTENCE STOPPED BEING TRUE ON 2026-09-16
+      // AND THE TEST'S SUBJECT DID NOT** (#1201). The corner is still dropped
+      // -- which is what the one assertion below measures, and is why this test
+      // was renamed rather than retired -- but the alerts fold itself is now
+      // mounted in the rail at this width, so "the alerts list would not exist
+      // on a phone" is history. The band is still the right home for a refusal
+      // for the reason the block above this one gives: it is on screen at every
+      // viewport without anything being opened, and a log is not a notice.
       //
       // **An attempt to remove that breakpoint was made and withdrawn on
       // 2026-08-31 (#703, ruling 5), and the rule now carries the measurement
@@ -867,6 +1114,7 @@ test.describe('HUD shell', () => {
         prisonerCapacity: 0,
         occupiedPlaces: 0,
         staff: 0,
+        staffUnassigned: 0,
         rooms: 0,
         prisonersCovered: 0,
         prisonersUnderstaffed: 0,
@@ -977,17 +1225,31 @@ test.describe('HUD shell', () => {
          * the notice and the list is the log"* -- and #701 measured why both are
          * needed, the band having lost a message to another from the same tick.
          */
+        /*
+         * **THE SPLIT CLOSED ON 2026-09-16 AND THE PARAGRAPH ABOVE IS KEPT
+         * RATHER THAN EDITED** (issue #1201), because it is the case for the
+         * owner question that produced the ruling and is only legible beside
+         * it.
+         *
+         * Its second bullet still holds exactly as written: the 720px
+         * breakpoint stays, `.hud__corner` is still `display: none` below it,
+         * and the Intake-panel collision it records is still why un-hiding the
+         * corner is not the fix. What changed is not the breakpoint but the
+         * fold's **mount**: below 720px `hud.ts` moves the alerts section into
+         * the Overview panel's `foldSlot`, in the rail, on the owner's ruling
+         * of 2026-09-16 (*"Zamontuj fold w szynie poniżej 720 px"*). So the row
+         * has a real box at both sizes, by two different routes, and #220's
+         * defect is closed on a phone as well as on a desktop.
+         *
+         * `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over
+         * the thing that actually matters about that -- that `DismissAlert` can
+         * be *pressed* at 375x812 -- and this stays a geometry assertion.
+         */
         const row = await page.evaluate(() => window.lockstateUiHarness.alertRowProbe());
         expect(row.present).toBe(true);
-        if (width > 720) {
-          expect(row.visible, `the alerts row is laid out at ${width}px as of #703 ruling 1`).toBe(true);
-          expect(row.width).toBeGreaterThan(0);
-          expect(row.height).toBeGreaterThan(0);
-        } else {
-          expect(row.visible, `.hud__corner is display:none at ${width}px, so the row has no box`).toBe(false);
-          expect(row.width).toBe(0);
-          expect(row.height).toBe(0);
-        }
+        expect(row.visible, `the alerts row is laid out at ${width}px (#703 ruling 1, #1201)`).toBe(true);
+        expect(row.width).toBeGreaterThan(0);
+        expect(row.height).toBeGreaterThan(0);
       });
     }
 
@@ -1146,6 +1408,148 @@ test.describe('HUD shell', () => {
   });
 
   /**
+   * **The events band gives its grid row back once nothing has replaced its
+   * sentence ([#985](https://github.com/matmaxalez/lockstate/issues/985)).**
+   *
+   * `.hud__event` is `grid-area: event` on `.hud`, whose rows are
+   * `auto auto auto auto minmax(0, 1fr) auto` -- the fourth is this band's, the
+   * fifth is the middle where the rail lives. `hud.css` gives the band
+   * `display: none` while `[hidden]`, so the row is worth exactly zero until
+   * something raises it and exactly 32px afterwards, and every one of those
+   * pixels comes out of the middle row.
+   *
+   * Until 2026-09-05 nothing ever put them back: `event-band-dwell.ts` replaced
+   * an incumbent and never released one, so a single event cost the rail 32px
+   * for the rest of the session. This is the assertion that it now lets go, and
+   * it is here rather than in a unit test because **`hud.ts` is unreachable from
+   * `pnpm test`** -- `vitest.config.ts` is `environment: 'node'` with no jsdom,
+   * and the timer, the paint and the grid are all DOM. Measured directly: a
+   * mutation of `hud.ts`'s timer callback back to `releaseEventBandFloor`, which
+   * is what it called before this change, passes all nineteen cases in
+   * `tests/unit/event-band-dwell.test.ts` and fails here.
+   *
+   * **What this layer does not measure**, stated so nobody reads more into it:
+   * what the 32px is worth to a *panel*. The harness leaves the rail's aside
+   * slot empty and `.hud__aside:empty { display: none }` then hands the panel
+   * the whole rail, which is the same reason the Build and Rooms panels' fold
+   * measurements live in `app-shell.spec.ts`. The panel arithmetic -- 291px of
+   * body back from 267, the Build panel back inside its own fold -- is asserted
+   * there, on the assembled page, in *"a pending delivery is on the panel with
+   * the fold shut..."*.
+   *
+   * 900x600 because that is the viewport #985 is measured at, and the one where
+   * the 24px this row costs the rail's panel is more than the panel has.
+   */
+  test.describe('the events band lets go of its grid row (#985)', () => {
+    /** Which of `.hud`'s six rows is which, so the assertions read as the grid does. */
+    const EVENT_ROW = 3;
+    const MIDDLE_ROW = 4;
+
+    /** What `src/main.ts` publishes when the worker has recorded an event. */
+    const withEvent = (sequence: number): HudViewModel => ({
+      counts: {
+        prisoners: 0,
+        prisonerCapacity: 0,
+        occupiedPlaces: 0,
+        staff: 0,
+        staffUnassigned: 0,
+        rooms: 0,
+        prisonersCovered: 0,
+        prisonersUnderstaffed: 0,
+        prisonersUnguarded: 0,
+        prisonersHighRisk: 0,
+        activeIncidents: 0,
+        contrabandFound: 0,
+        treasuryMinorUnits: 0,
+        stateIncomeAccruedTodayMinorUnits: 0,
+      },
+      clock: { day: 1, tickOfDay: 0, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+      alerts: [],
+      // The longest sentence the band can carry, which is the one
+      // `EVENT_BAND_HOLD_CEILING_MS` is derived from.
+      event: { sequence, labelKey: 'hud.alert.event.economy.construction-refused', severity: 'warning' },
+    });
+
+    /** `.hud`'s rows as numbers, in grid order. */
+    const rows = async (page: Page): Promise<readonly number[]> =>
+      page.evaluate(() => {
+        const hud = document.querySelector('.hud');
+        if (hud === null) throw new Error('the harness mounted no HUD');
+        return getComputedStyle(hud)
+          .gridTemplateRows.split(' ')
+          .map((row) => Math.round(Number.parseFloat(row) * 10) / 10);
+      });
+
+    test('takes 32px of the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 600 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const band = page.locator('.hud__event');
+
+      // The page really laid out, before a single number below is trusted.
+      const before = await rows(page);
+      expect(before, '`.hud` is not the six-row grid this test is about').toHaveLength(6);
+      expect(before[EVENT_ROW], 'the band already had a row before anything raised it').toBe(0);
+      await expect(band).toBeHidden();
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+
+      await expect(band, 'the event never reached the band at all').toBeVisible();
+      const raised = await rows(page);
+      expect(raised[EVENT_ROW], 'the band is on screen and costing the grid nothing, which cannot both be true').toBe(
+        32,
+      );
+      expect(
+        (raised[MIDDLE_ROW] ?? 0) + 32,
+        'the 32px did not come out of the middle row, so it came from somewhere this test cannot see',
+      ).toBe(before[MIDDLE_ROW]);
+
+      // The floor first: the band owes this sentence its dwell, so a ceiling
+      // that fired early would be the floor's defect wearing this fix's name.
+      // `EVENT_BAND_DWELL_FLOOR_MS` is read from the module rather than
+      // restated, so lowering the ceiling under the floor fails here as well as
+      // in the unit suite.
+      await page.waitForTimeout(EVENT_BAND_DWELL_FLOOR_MS);
+      await expect(band, 'the band dropped the sentence inside its own dwell floor').toBeVisible();
+
+      // And then it lets go. `toBeHidden` waits, so this is one-directional: a
+      // band still up after twice its ceiling is the defect, and a slow machine
+      // costs wall-clock time rather than a false red.
+      await expect(band, 'the band never let go of its row').toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
+
+      const after = await rows(page);
+      expect(after[EVENT_ROW], 'the band went quiet and kept its row, which is #985 exactly').toBe(0);
+      expect(after, 'the grid did not return to the shape it had before anything happened').toEqual(before);
+    });
+
+    test('does not raise the same sentence again when the view model republishes it', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 600 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const band = page.locator('.hud__event');
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+      await expect(band).toBeVisible();
+      await expect(band).toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
+
+      // `HudViewModel.event` is sticky in `src/main.ts` -- the field stands on
+      // every message after the one that carried the event -- and the counts
+      // channel republishes up to twice a second. Four republications stand in
+      // for that here; without `EventBandDwellState.retired` the first of them
+      // puts the row straight back.
+      for (const _ of [1, 2, 3, 4]) {
+        await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+      }
+      await expect(band, 'a republication of the same event raised the band again').toBeHidden();
+      expect((await rows(page))[EVENT_ROW]).toBe(0);
+
+      // A *new* event still speaks, which is what makes the assertion above a
+      // release rather than a band that has stopped working.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(2));
+      await expect(band, 'the band was retired rather than released: a newer event could not raise it').toBeVisible();
+      expect((await rows(page))[EVENT_ROW]).toBe(32);
+    });
+  });
+
+  /**
    * The alerts list draws `viewModel.alerts` in the order the view model gives
    * them (issue #209's residual-risk note).
    *
@@ -1186,6 +1590,7 @@ test.describe('HUD shell', () => {
         prisonerCapacity: 180,
         occupiedPlaces: 142,
         staff: 27,
+        staffUnassigned: 0,
         rooms: 61,
         prisonersCovered: 100,
         prisonersUnderstaffed: 30,
@@ -1259,6 +1664,56 @@ test.describe('HUD shell', () => {
       await expect(page.locator('.hud-alerts__list [data-alert="empty"]')).toBeVisible();
     });
 
+    /**
+     * **"No alerts" and "no data" are two states and now say two things**
+     * (issue #1184, `konstytucja.md` article 5's third named anti-pattern).
+     *
+     * Until this landed the section painted *"No active alerts"* from the same
+     * `alerts: []` the view model held before any worker snapshot had arrived,
+     * so a page with no simulation behind it made a confident claim about a
+     * prison it had never heard of -- while the sibling `clock` field in that
+     * very object carried `UNKNOWN_HUD_CLOCK` precisely so it could not.
+     *
+     * Both halves are asserted against each other rather than one alone,
+     * exactly as the Overview section's own sentinel test does, because the
+     * cheap way to pass the first assertion is to stop saying "no active
+     * alerts" at all -- and a prison genuinely reporting nothing wrong must
+     * still say so. The sentences are quoted verbatim: a swap that left both
+     * states rendering the same words would satisfy every structural
+     * assertion.
+     */
+    test('says no prison is reporting before one has, and says the prison is clear once one does (#1184)', async ({
+      page,
+    }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+
+      const sentinel = page.locator('.hud-alerts__none');
+      const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+      // A box, not an attribute: a stylesheet whose guard has been lost paints
+      // the sentence at full height with `hidden` still set, and a spec reading
+      // the attribute would agree with it.
+      await expect(sentinel).toBeVisible();
+      await expect(sentinel).toHaveText('No prison is reporting.');
+      // Not merely hidden -- the row is not built at all, because the list it
+      // belongs to is not on screen.
+      await expect(emptyRow).toHaveCount(0);
+      await expect(page.locator('.hud-alerts__list')).toBeHidden();
+
+      // A prison that has reported, and has nothing wrong to report. This is
+      // the state `hud.alerts.empty` was always true of, and it keeps it.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts([]));
+      await expect(sentinel).toBeHidden();
+      await expect(emptyRow).toBeVisible();
+      await expect(emptyRow).toHaveText('No active alerts');
+
+      // And a prison with something to say puts it in the list, with neither
+      // sentence standing beside it.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['a']));
+      await expect(sentinel).toBeHidden();
+      await expect(emptyRow).toHaveCount(0);
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['a']);
+    });
+
     test('the rows are on screen once the section is open, not merely in the DOM', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a', 'b']));
@@ -1320,6 +1775,7 @@ test.describe('HUD shell', () => {
         prisonerCapacity: 180,
         occupiedPlaces: 142,
         staff: 27,
+        staffUnassigned: 0,
         rooms: 61,
         prisonersCovered: 100,
         prisonersUnderstaffed: 30,
@@ -1520,14 +1976,27 @@ test.describe('HUD shell', () => {
    * tests are about two things a unit test cannot answer: that the browser
    * actually lays the panel out on the tab it belongs to, and that it and the
    * Build panel never occupy the shared rail slot at the same time.
+   *
+   * **The tab it belongs to changed on 2026-09-14 and the paragraph above is
+   * kept rather than rewritten**, because it is the record of why this panel
+   * was on Overview and the reason was pixels rather than subject. ADR 0112
+   * decision 3 moved the navigation to the delivery's five sections and the
+   * owner ruled that admissions belong under Zarządzaj, so the panel is on
+   * **Manage** now, beside the Staff panel. Both claims above still hold:
+   * the browser still has to lay it out on the tab it belongs to, and the rail
+   * slot is still shared -- with the difference, pinned below, that Manage is
+   * the one tab that lays out two panels rather than one.
    */
   test.describe('intake panel (issue #261 step 4)', () => {
-    test('is laid out on the Overview tab, which is where a player arrives', async ({ page }) => {
+    test('is laid out on the Manage tab, beside the staff it admits people into', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
-      // Overview is the default tab (`hud-state.ts`), so no click is needed:
-      // this is the arrival state.
+      // Overview is the default tab (`hud-state.ts`) and is no longer this
+      // panel's, so unlike every version of this test before 2026-09-14 the
+      // click is the point rather than an omission.
       expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).activeTab).toBe('overview');
+      expect(await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).toMatchObject({ laidOut: false });
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
 
       // Laid out, not merely present: a control inside a `hidden` panel is
@@ -1553,7 +2022,7 @@ test.describe('HUD shell', () => {
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
 
-    test('never shares the rail slot with the Build, Rooms, Staff or Regime panel', async ({ page }) => {
+    test('never shares the rail slot with the Overview, Build, Rooms, Regime or Prisoners panel', async ({ page }) => {
       // The whole reason this panel costs the measured budget nothing. If any
       // two were ever laid out together, one panel's height would have to pay
       // for the other's, which is the overflow ADR 0022 refused. All five
@@ -1567,40 +2036,110 @@ test.describe('HUD shell', () => {
       // the other four and every assertion here would still have passed
       // (issue #451).
       const rail = async (): Promise<Record<string, boolean>> => ({
+        overview: (await page.evaluate(() => window.lockstateUiHarness.overviewProbe())).laidOut,
         intake: (await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut,
         build: (await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible,
         rooms: (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut,
         staff: (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible,
         regime: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).laidOut,
+        // The sixth occupant, and the second of a pair (ADR 0115). The comment
+        // above about the list having been wrong once is why it is here from
+        // the commit that adds the panel rather than afterwards.
+        roster: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).rosterPanelLaidOut,
       });
 
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      // Overview is the default tab, so the Intake panel is the one with a box.
-      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false, regime: false });
+      // Overview is the default tab, and since 2026-09-14 what it holds is the
+      // readout rather than the Intake panel (issue #1183).
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
-      expect(await rail()).toEqual({ intake: false, build: true, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: true, rooms: false, staff: false, regime: false, roster: false });
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
-      expect(await rail()).toEqual({ intake: false, build: false, rooms: true, staff: false, regime: false });
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: true, staff: false, regime: false, roster: false });
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
-      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: true, regime: false });
+      /*
+       * **Manage is the one tab that lays out two panels**, and that is the
+       * assertion this test exists to carry now. Every tab held exactly one
+       * until the owner's ruling of 2026-09-14 moved admissions in beside the
+       * staff; the pair is what ADR 0022's budget argument has to be read
+       * against from here, and a third panel arriving on this tab silently is
+       * exactly what this line stops.
+       */
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
+      expect(await rail()).toEqual({ overview: false, intake: true, build: false, rooms: false, staff: true, regime: false, roster: false });
 
-      // And the fifth tab is the Regime panel's, alone. This assertion used to
-      // read "And none is laid out on the one tab that still owns no panel",
-      // and pinned that emptiness deliberately; issue #451 spent it, so what is
-      // pinned now is that spending it bought exactly one panel.
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
-      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: false, regime: true });
+      // And the fifth tab is the Regime panel's -- and, since the owner's
+      // ruling of 2026-09-16 on ADR 0115, the Prisoners panel's beside it.
+      // This assertion used to read "And none is laid out on the one tab that
+      // still owns no panel", and pinned that emptiness deliberately; issue
+      // #451 spent it, and the ruling split what it bought into two panels
+      // that must be laid out **together** -- the roster's placement is what
+      // the ruling decided, so `roster: true` here is the ruling and
+      // `roster: false` on the Manage lines is the option that was declined.
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: false, staff: false, regime: true, roster: true });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
-      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
+    });
+
+    /**
+     * The Overview section's own readout (issue #1183), and the one property it
+     * was specified before it was written for: **empty must not be able to mean
+     * two things.**
+     *
+     * `'hud.alerts.empty'` was the live counter-example (#1184): it rendered
+     * from the same empty literal that stood in before the first worker
+     * snapshot, so *"No active alerts"* was what a page with no simulation
+     * behind it said about a prison it had never heard of. That issue is
+     * closed -- the alerts list took this panel's shape and this panel's
+     * sentence, and the block above asserts it. A balance is worse, and
+     * `EMPTY_HUD_VIEW_MODEL.counts` used to carry a confident
+     * `treasuryMinorUnits: 0` -- a readout keyed on it told a player their
+     * prison was broke before the worker had spoken, which is what the status
+     * strip itself did until #1191 took the whole row off. So the two states
+     * are asserted against each other here rather than one of them being
+     * checked alone.
+     */
+    test('states published figures for a prison that has reported, and says so when none has', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const reported = await page.evaluate(() => window.lockstateUiHarness.overviewProbe());
+      expect(reported.laidOut).toBe(true);
+      expect(reported.figuresLaidOut).toBe(true);
+      // A box, not an attribute: a stylesheet whose guard has been lost paints
+      // the sentence at full height with `hidden` still set, and a spec reading
+      // the attribute would agree with it.
+      expect(reported.noneLaidOut).toBe(false);
+      // The three figures the fixture published, each read off its own field --
+      // no two are equal, so a row wired to the wrong one is visible here.
+      expect(reported.figures).toEqual({ funds: '24920', 'earned-today': '10667', wages: '4800' });
+      // The strip's own two words for the two figures the strip also shows,
+      // plus the rate's own label. An unresolved key renders as itself
+      // (ADR 0011), so a raw `hud.` prefix here is a missing catalog entry.
+      expect(reported.rowTexts).toEqual(['Funds24,920', 'Earned today10,667', 'Wages a day4,800']);
+
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+      const silent = await page.evaluate(() => window.lockstateUiHarness.overviewProbe());
+      expect(silent.laidOut).toBe(true);
+      // Not a zero, and not a blank box either: a sentence, with the figures
+      // taken off entirely.
+      expect(silent.figuresLaidOut).toBe(false);
+      expect(silent.noneLaidOut).toBe(true);
+      expect(silent.noneText).toBe('No prison is reporting.');
+      expect(silent.noneText.startsWith('hud.')).toBe(false);
+      expect(silent.figures).toEqual({ funds: '', 'earned-today': '', wages: '' });
     });
 
     test('one press is one gated intent carrying nothing', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
+      // On the tab that now owns the panel, so the press is one a player could
+      // actually make: `clickAdmitPrisoner` reaches the button through the DOM
+      // and would fire it inside a `hidden` panel, which is not a gesture.
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await page.evaluate(() => window.lockstateUiHarness.clickAdmitPrisoner())).toBe(true);
 
       // Payload-free by design: the sentence length, the prior-incident count
@@ -1608,7 +2147,12 @@ test.describe('HUD shell', () => {
       // simulation's seeded business.
       await expect
         .poll(() => page.evaluate(() => window.lockstateUiHarness.hudIntents()))
-        .toEqual([JSON.stringify({ kind: 'admit-prisoner' })]);
+        // Two intents, and the first is the tab press that reached the panel --
+        // the section move of 2026-09-14 is why it is here. It carries no
+        // command (`dispatchShell`, not `dispatchCommand`), which is exactly
+        // why it can sit in front of the assertion without weakening it: what
+        // is still pinned is that the *admission* carries nothing.
+        .toEqual([JSON.stringify({ kind: 'select-tab', tab: 'manage' }), JSON.stringify({ kind: 'admit-prisoner' })]);
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
 
@@ -1630,6 +2174,7 @@ test.describe('HUD shell', () => {
         failedControls: [],
       });
 
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       await page.evaluate(() => window.lockstateUiHarness.clickAdmitPrisoner());
 
       await expect
@@ -1680,6 +2225,25 @@ test.describe('HUD shell', () => {
      * five rail panels -- so it grows *upward* into an otherwise empty rail
      * rather than competing with a catalogue for a fixed body:
      *
+     * **THE PREMISE OF THAT PARAGRAPH ENDED ON 2026-09-14 AND THE TABLE BELOW
+     * IS THE OLD ARRANGEMENT'S, KEPT BECAUSE IT IS WHAT THE NEW ONE WAS
+     * MEASURED AGAINST.** The owner's ruling of that day moved this panel to
+     * the Manage tab (ADR 0112 decision 3), where the Staff panel already was,
+     * so it is not alone any more and the spare below is not its own. Measured
+     * immediately after the move, with the same `FULLEST` readout: 1280x720 and
+     * 375x812 were unaffected, and at **900x600 `.hud-intake` came out 42px
+     * shorter than its own content** -- this assertion failing on exactly the
+     * overflow ADR 0022 refused.
+     *
+     * `hud.css` carries what was done about it, and what was tried first and
+     * did not work: `overflow-y: auto`, the remedy the four panels beside it
+     * use, left the 42px exactly where it was, because what this test states is
+     * that the panel never has to scroll at all. What fits is `flex: 0 0 auto`
+     * on this panel -- its height is bounded by `INTAKE_STAGES` and cannot grow
+     * with the prison, while the Staff panel's grows with the roster and is
+     * already a scroll container with a two-row floor, so the one built to
+     * absorb a squeeze absorbs it.
+     *
      * | viewport | panel ceiling | fullest real readout | spare |
      * |---|---|---|---|
      * | 1280x720 | 579px | 275px | 304px |
@@ -1711,6 +2275,8 @@ test.describe('HUD shell', () => {
 
       test('says nothing at all until the prison runs out of beds', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        // The tab that holds this panel since 2026-09-14 (ADR 0112 decision 3).
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         // Nothing has answered for this prison yet.
         expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).toBeNull();
@@ -1726,20 +2292,22 @@ test.describe('HUD shell', () => {
         expect(quiet.pipelineStages).toEqual([{ stage: 'accommodation-assignment', text: '11 at Cell Assignment' }]);
         expect(quiet.noPlaceBox, 'no warning while every arrival has somewhere to go').toBeNull();
         expect(quiet.noPlaceText).toBe('');
-        expect(quiet.text).not.toContain('no bed to sleep in');
+        expect(quiet.text).not.toContain('no place to sleep');
       });
 
       test('tells the player how many people have nowhere to sleep, beside the control that admitted them', async ({
         page,
       }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        // The tab that holds this panel since 2026-09-14 (ADR 0112 decision 3).
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
 
         const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
         const admit = await page.locator('.hud-intake__admit').boundingBox();
 
         expect(probe.noPlaceBox, 'the warning must have a real box, not merely a text node').not.toBeNull();
-        expect(probe.noPlaceText).toBe('11 waiting with no bed to sleep in');
+        expect(probe.noPlaceText).toBe('11 waiting with no place to sleep');
         expect(probe.noPlaceCount).toBe('11');
         // ADR 0011: an unresolved key renders as itself.
         expect(probe.noPlaceText.startsWith('hud.')).toBe(false);
@@ -1765,6 +2333,8 @@ test.describe('HUD shell', () => {
         page,
       }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        // The tab that holds this panel since 2026-09-14 (ADR 0112 decision 3).
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
         expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).not.toBeNull();
 
@@ -1780,7 +2350,7 @@ test.describe('HUD shell', () => {
         await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
         expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).not.toBeNull();
         await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).noPlaceBox).toBeNull();
       });
 
@@ -1811,6 +2381,8 @@ test.describe('HUD shell', () => {
         ] as const) {
           await page.setViewportSize({ width, height });
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+          // The tab that holds this panel since 2026-09-14 (ADR 0112 decision 3).
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
           await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), FULLEST);
 
           const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
@@ -1858,9 +2430,14 @@ test.describe('HUD shell', () => {
       // ADR 0011: an unresolved key renders as itself. Nothing on this panel
       // may be a raw `hud.*` identifier.
       expect(probe.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
-      expect(probe.texts).toContain('Brick wall');
+      // Since issue #901 the row's own label carries its price -- this
+      // fixture's `wall-brick` is a per-segment row (`placesObject: false`),
+      // priced at 40 minor units × 2 bricks (`BUILD_MODEL` in
+      // `tests/browser/ui-harness.ts`), so "Brick wall" alone is no longer
+      // this row's whole text and would falsely pass if it still were.
+      expect(probe.texts).toContain('Brick wall · 80 per segment');
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
     });
 
@@ -2159,7 +2736,7 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).removing).toBe(true);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
         JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
       );
@@ -2222,7 +2799,7 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).armed).toBe(true);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
       // The disarm rides out with the tab change itself, so the host never
       // sees a window where the panel is hidden and the pointer is still ours.
@@ -2772,7 +3349,7 @@ test.describe('HUD shell', () => {
       // mount and must not be laid out here.
       expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible).toBe(false);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
 
       expect(probe.visible).toBe(true);
@@ -2797,7 +3374,7 @@ test.describe('HUD shell', () => {
 
     test('hiring dispatches one gated intent, and a refusal is reported on the button', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await page.evaluate(() => window.lockstateUiHarness.clickHireStaff())).toBe(true);
 
       // One stable id and nothing else. The HUD does not know a `HireStaff`
@@ -2863,7 +3440,7 @@ test.describe('HUD shell', () => {
 
       test('paints what the host reports, which is the pass-through no headless test can reach', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         await page.evaluate(() =>
           window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
@@ -2890,7 +3467,7 @@ test.describe('HUD shell', () => {
 
       test('draws nothing at all before the first reply, rather than a green badge', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         // The distinction the probe was built for: "no answer yet" and "the
         // prison is covered" are different states, and a block that read
@@ -2907,7 +3484,7 @@ test.describe('HUD shell', () => {
 
       test('says the word beside the colour, so the state does not depend on seeing it', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         await page.evaluate(() =>
           window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
         );
@@ -2950,7 +3527,7 @@ test.describe('HUD shell', () => {
         for (const [width, height] of COVERAGE_VIEWPORTS) {
           await page.setViewportSize({ width, height });
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
           await page.evaluate(() =>
             window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
@@ -3010,7 +3587,7 @@ test.describe('HUD shell', () => {
         for (const [width, height] of COVERAGE_VIEWPORTS) {
           await page.setViewportSize({ width, height });
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
           await page.evaluate(() =>
             window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
           );
@@ -3060,7 +3637,7 @@ test.describe('HUD shell', () => {
 
   test('the HUD leaks no unhandled rejection while being driven', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
     await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     await page.waitForTimeout(200);
@@ -3098,7 +3675,7 @@ test.describe('the Rooms panel', () => {
   // harness; this only mounts and opens the tab.
   test.beforeEach(async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
   });
 
   /**
@@ -3146,6 +3723,55 @@ test.describe('the Rooms panel', () => {
     expect(probe.areaText, 'nothing is selected yet').toBe('Nothing selected');
     expect(probe.enclosureText, 'nothing has been designated yet').toBe('Not evaluated yet');
     await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
+  });
+
+  /**
+   * The swatch (#1021). Two prior passes (ADR 0098/#1032, #1038's playtest)
+   * had found `HudRoomViewModel.tint` computed and read by nothing at all --
+   * the catalogue row and the tile `WorldScene` paints could disagree and no
+   * assertion anywhere would notice, because there was no reader to be wrong.
+   *
+   * `ROOMS_MODEL` in `ui-harness.ts` carries three distinct tints copied from
+   * the real category table (`0x4f7fd0`, `0xd0854f`, `0x76d04f`), converted
+   * here to the `rgb()` string form `getComputedStyle` reports, so a swatch
+   * painted from the wrong field or a stale copy would show as the wrong
+   * triple rather than passing by coincidence.
+   *
+   * The second half is #1038's own constraint: colour may only ever be the
+   * *extra* channel on a row that already names itself. `aria-hidden` is
+   * asserted directly rather than inferred, and the row's own text is checked
+   * unchanged -- a swatch that had, say, swallowed the label into itself
+   * would fail here even though the colours above would still be right.
+   */
+  test('paints each catalogue row with its own tint, decoration beside the name rather than instead of it (#1021)', async ({
+    page,
+  }) => {
+    const rows = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')].map((row) => {
+        const swatch = row.querySelector<HTMLElement>('.hud-rooms__row-swatch');
+        const label = row.querySelector<HTMLElement>('.ui-row__label');
+        return {
+          room: row.dataset['room'] ?? null,
+          swatchColor: swatch === null ? null : getComputedStyle(swatch).backgroundColor,
+          swatchAriaHidden: swatch?.getAttribute('aria-hidden') ?? null,
+          // The label specifically, not the row's whole `textContent`: the
+          // default-selected row also carries a "Selected" badge (a second,
+          // later child), and this assertion is about the *name*, not about
+          // which row happens to be chosen when the tab opens.
+          labelText: label?.textContent ?? null,
+        };
+      }),
+    );
+
+    expect(rows).toEqual([
+      { room: 'room.cell', swatchColor: 'rgb(79, 127, 208)', swatchAriaHidden: 'true', labelText: 'Cell' },
+      { room: 'room.canteen', swatchColor: 'rgb(208, 133, 79)', swatchAriaHidden: 'true', labelText: 'Canteen' },
+      { room: 'room.yard', swatchColor: 'rgb(118, 208, 79)', swatchAriaHidden: 'true', labelText: 'Yard' },
+    ]);
+
+    // Every row's swatch is laid out -- not `display: none`, not a 0x0 box --
+    // the same guarantee `expectLaidOut` gives the row itself two lines above.
+    await expectLaidOut(page, '.hud-rooms__row-swatch', 'the catalogue swatch');
   });
 
   test('follows the selection, so the rule shown is the rule of the room picked', async ({ page }) => {
@@ -4269,8 +4895,66 @@ test.describe('the Rooms panel', () => {
       window.lockstateUiHarness.reportZoning({ sequence: 3, enclosure: 'sealed', requirement: 'enclosed' }),
     );
     const sealed = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
-    expect(sealed.enclosureText).toBe('Walled in on every side');
+    /*
+     * **This read `'Walled in on every side'` until #1006 finding 2.** Those
+     * words are the pass half of a pass/fail pair sitting two lines under
+     * `MUST BE ENCLOSED`, and a play-test read the three together as "this room
+     * is finished" while the block above them said *"a door — nobody can get
+     * in"*. `roomPerimeterEnclosure` never reads the door registry -- that is
+     * why `roomPerimeterAccess` exists beside it -- so the readout now states
+     * its own scope instead of leaving a player to infer it.
+     */
+    expect(sealed.enclosureText).toBe('Walled in — not a door check');
     expect(sealed.noteTone).toBe('');
+  });
+
+  test('the enclosure readout is drawn whole rather than clipped (#1006 finding 4)', async ({ page }) => {
+    /*
+     * Measured on the assembled page at 900x600 before the fix: `scrollWidth`
+     * **268** against `clientWidth` **238**, with `overflow-x: visible` and
+     * `text-overflow: clip` -- 30px of the sentence outside the panel, cut off
+     * mid-word. The fix is `flex-wrap: wrap` on the block, so a value that does
+     * not fit beside its label takes its own line instead of hanging off the
+     * edge; see `.hud-rooms__enclosure` in `hud.css` for why that rather than
+     * an ellipsis or a shorter sentence.
+     *
+     * Asserted as a measurement rather than against a pixel figure, because the
+     * claim is "nothing overflows", not "the block is 238px wide" -- a figure
+     * would go stale the day a gutter moved and would say nothing about any
+     * other locale's wording.
+     */
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'sealed', requirement: 'enclosed' }),
+    );
+
+    const measured = await page.evaluate(() => {
+      const block = document.querySelector<HTMLElement>('.hud-rooms__enclosure');
+      const value = document.querySelector<HTMLElement>('.hud-rooms__enclosure-value');
+      if (block === null || value === null) return null;
+      return {
+        laidOut: block.getClientRects().length > 0,
+        scrollWidth: block.scrollWidth,
+        clientWidth: block.clientWidth,
+        // The value's own box against the text inside it: a block that no
+        // longer overflows because the *value* was truncated would still be
+        // the defect, one element down.
+        valueScrollWidth: value.scrollWidth,
+        valueClientWidth: value.clientWidth,
+        text: value.textContent?.trim() ?? '',
+      };
+    });
+
+    expect(measured).not.toBeNull();
+    expect(measured!.laidOut, 'the readout has no box to measure').toBe(true);
+    expect(measured!.text).toBe('Walled in — not a door check');
+    expect(
+      measured!.scrollWidth,
+      `the enclosure block overflows its panel by ${measured!.scrollWidth - measured!.clientWidth}px`,
+    ).toBeLessThanOrEqual(measured!.clientWidth);
+    expect(measured!.valueScrollWidth, 'the sentence itself is clipped inside its own box').toBeLessThanOrEqual(
+      measured!.valueClientWidth,
+    );
   });
 
   test('says what a designated room is missing, and says nothing when nothing is (#331)', async ({ page }) => {
@@ -4295,6 +4979,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 0,
         totalRooms: 4,
         totalNeeds: 0,
+        atCapacity: [],
         needs: [],
       }),
     );
@@ -4311,8 +4996,10 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 4,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
@@ -4353,8 +5040,10 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 4,
         totalNeeds: 5,
+        atCapacity: [],
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4362,6 +5051,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 1,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4369,6 +5059,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 2,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4397,6 +5088,14 @@ test.describe('the Rooms panel', () => {
      * `app-shell.spec.ts` answers that one, on the real page.
      */
     expect(many.needsHeight, 'the readout is too short to hold its four lines').toBeGreaterThan(60);
+    /*
+     * And the three chips are **one row**, which is the compression
+     * `.hud-rooms__needs-items` exists for and is 13px of what pays for this
+     * block. Asserted beside the height because the height alone cannot tell a
+     * compressed row from a restyled one, and because the doorway case below
+     * asserts the opposite of it (#938).
+     */
+    expect(many.needsItemRows, 'the object chips no longer share a row').toBe(1);
 
     /*
      * 5. **A shortfall the simulation could not count.** `missingQuantity` is
@@ -4410,8 +5109,10 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:0:0',
             roomLabelKey: 'room.cell.name',
             tile: { x: 0, y: 0 },
@@ -4432,25 +5133,312 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
-          { instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
+          { kind: 'object', instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
         ],
       }),
     );
     expect((await probe()).needsItemText).toEqual(['1 × something this build cannot name']);
 
-    // 7. And it goes away again when the answer changes back, rather than
+    /*
+     * 7. **A room nobody can get into** -- issue #938, and the one line in this
+     *    block that is not about an object.
+     *
+     *    The state it renders was invisible to every readout a player had: the
+     *    room's object requirements were satisfied, so this block drew nothing,
+     *    and the enclosure readout above said "Walled in on every side" for a
+     *    working room and a dead one alike. The integration measurement is
+     *    `tests/integration/dead-room-no-doorway.test.ts` -- hygiene 0 against
+     *    the ceiling, on the same seed with one edge different.
+     *
+     *    Asserted three ways because each could be wrong on its own: the
+     *    sentence, so the wording is pinned where the harmonising pass can find
+     *    it; `data-kind`, so the branch is proven rather than the text; and the
+     *    header's own figures, so a doorway counts as one thing the room is
+     *    short exactly as an object does.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 1,
+        atCapacity: [],
+        needs: [
+          {
+            kind: 'doorway',
+            instanceId: 'room.shower-room:26:1',
+            roomLabelKey: 'room.shower-room.name',
+            tile: { x: 26, y: 1 },
+          },
+        ],
+      }),
+    );
+    const doorway = await probe();
+    expect(doorway.needsLaidOut, 'a room nobody can enter must earn the block').toBe(true);
+    expect(doorway.needsLineText).toBe('Shower Room at 26, 1 is missing');
+    expect(doorway.needsItemText).toEqual(['a door — nobody can get in']);
+    expect(doorway.needsItemKinds).toEqual(['doorway']);
+    expect(doorway.needsUnfinished).toBe('1');
+    expect(doorway.needsTotal).toBe('1');
+    expect(doorway.needsCountText).toBe('1 of 3');
+    await expectLaidOut(page, '.hud-rooms__needs', 'the readout for a room with no way in');
+
+    /*
+     * 8. **The doorway line and the object lines in one room**, which is the
+     *    ordering `roomNeedsFromProjections` chooses and the reason it does:
+     *    `ROOM_NEEDS_NAMED_LIMIT` is 4, and the door is the line that makes the
+     *    others pointless, because nothing can be carried into a room nobody
+     *    can enter.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 2,
+        atCapacity: [],
+        needs: [
+          { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
+          {
+            kind: 'object',
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
+          },
+        ],
+      }),
+    );
+    const both = await probe();
+    expect(both.needsItemText).toEqual(['a door — nobody can get in', '1 × Bed']);
+    expect(both.needsItemKinds).toEqual(['doorway', 'object']);
+    expect(both.needsTotal).toBe('2');
+    /*
+     * **Two rows, and the sentence has the first to itself.** Both of these
+     * lines fit one row at this panel's width -- 152.5px and 44.5px in a 238px
+     * box -- so nothing about the text forces the break;
+     * `.hud-rooms__needs-item[data-kind='doorway']`'s `flex-basis: 100%` does,
+     * and that is the point. Without it the readout drew
+     * "a door — nobody can get in   1 × Bed" as one line and pushed the *last*
+     * chip onto a row of its own, which is a list broken in the middle rather
+     * than a sentence over a list. Measured on the assembled page in the #331
+     * fixture: both items reported the same top of 413.4 and `1 × Toilet` sat
+     * alone at 426.6.
+     *
+     * It is also what bounds the block: with the sentence on its own row the
+     * chips compress under it, so every shape the shipped catalogue can
+     * produce is exactly two rows -- which is the figure `hud.css`'s catalogue
+     * donation is sized against.
+     */
+    expect(both.needsItemRows, 'the doorway sentence shares a row with an object chip').toBe(2);
+
+    // 9. And it goes away again when the answer changes back, rather than
     // leaving the last sentence standing over a prison it no longer describes.
     // The item lines go with it: they are rebuilt from the model on every paint,
     // so a stale one left behind would be a readout describing a finished room.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     const cleared = await probe();
     expect(cleared.needsLaidOut).toBe(false);
     expect(cleared.needsLineText).toBe('');
     expect(cleared.needsItemText).toEqual([]);
     expect(cleared.needsUnfinished).toBe('');
+  });
+
+  test('says when a finished room is full, and says it in the same block (ADR 0028 phase 5)', async ({ page }) => {
+    // The other thing a room can be wrong about, and the one no readout could
+    // say before: it holds every object its definition asks for and it is
+    // refusing arrivals, because the concurrent-use ceiling ADR 0028 derives
+    // from those objects has been reached. Issue #1003 measured it on a shower
+    // room -- two heads is a ceiling of two, whatever the floor area.
+    //
+    // The verdict is `projectRoomList`'s, carried by
+    // `HudRoomNeedsViewModel.atCapacity`; what is proven here is the panel's
+    // half, which is which subject the one block draws and what it then says.
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    const FULL_SHOWER = {
+      instanceId: 'room.shower-room:4:6',
+      roomLabelKey: 'room.shower-room.name',
+      tile: { x: 4, y: 6 },
+      places: 2,
+      inUse: 2,
+    } as const;
+
+    // 1. Every room finished, one of them full. The block that would otherwise
+    // be absent draws its second subject.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 0,
+          totalRooms: 3,
+          totalNeeds: 0,
+          needs: [],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const full = await probe();
+    expect(full.needsLaidOut, 'a room turning prisoners away must earn the block').toBe(true);
+    expect(full.needsLabelText).toBe('At capacity');
+    expect(full.needsCountText).toBe('1 of 3');
+    expect(full.needsLineText).toBe('Shower Room at 4, 6 is full');
+    expect(full.needsItemText).toEqual(['places in use: 2 of 2']);
+    // Read as data as well as as text, so telling this line from `1 × Bed`
+    // does not depend on the English locale.
+    expect(full.needsItemKinds).toEqual(['at-capacity']);
+    expect(full.needsFull).toBe('1');
+    // The unfinished subject's own figures must be absent rather than zero: a
+    // finished room may not be counted as unfinished anywhere.
+    expect(full.needsUnfinished).toBe('');
+    expect(full.needsTotal).toBe('');
+    // And the catalogue's floor is donated on this subject too, which is what
+    // keeps the block inside the panel's fold.
+    expect(full.panelFull).toBe('1');
+    expect(full.panelNeeds).toBe('');
+
+    // 2. One room unfinished as well. The block goes back to the unfinished
+    // subject, which is the priority `roomNeedsSubjectOf` documents and the
+    // cost it names: the shower room says nothing until the cell is finished.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 1,
+          totalRooms: 3,
+          totalNeeds: 1,
+          needs: [
+            {
+              kind: 'object',
+              instanceId: 'room.cell:2:2',
+              roomLabelKey: 'room.cell.name',
+              tile: { x: 2, y: 2 },
+              objectLabelKey: 'object.bed.name',
+              missingQuantity: 1,
+            },
+          ],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const both = await probe();
+    expect(both.needsLabelText).toBe('Not ready');
+    expect(both.needsLineText).toBe('Cell at 2, 2 is missing');
+    expect(both.needsItemKinds).toEqual(['object']);
+    expect(both.needsFull, 'the two subjects must not be drawn together').toBe('');
+    expect(both.panelFull).toBe('');
+    expect(both.panelNeeds).toBe('1');
+
+    /*
+     * The layout claim, measured rather than argued: the at-capacity shape is a
+     * header, a room line and **one** item line, so it can never cost the panel
+     * more than the unfinished shape, which reaches three item lines. That is
+     * the whole of why `hud.css`'s donation rule could take a second attribute
+     * without the fold moving, and `roomNeedsSubjectOf` is what keeps the two
+     * from being added together.
+     */
+    expect(full.needsHeight).toBeLessThanOrEqual(both.needsHeight);
+    expect(full.needsHeight, 'the block drew nothing at all, so this comparison is empty').toBeGreaterThan(0);
+
+    // 3. Nothing unfinished and nothing full: the block goes away entirely,
+    // and takes the header it was last drawing with it.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 0,
+        totalRooms: 3,
+        totalNeeds: 0,
+        needs: [],
+        atCapacity: [],
+      }),
+    );
+    const calm = await probe();
+    expect(calm.needsLaidOut).toBe(false);
+    expect(calm.needsItemText).toEqual([]);
+    expect(calm.needsFull).toBe('');
+    expect(calm.panelFull).toBe('');
+    expect(await page.locator('.hud-rooms').innerText()).not.toContain('At capacity');
+  });
+
+  test('says on the status strip that a room is not ready, on the tab the game opens on (#1006 finding 1)', async ({
+    page,
+  }) => {
+    /*
+     * The defect, measured by play-test on 2026-09-05: `hud.rooms.needs-doorway`
+     * is true, fires at the earliest possible moment and survives a reload --
+     * and it has exactly one render site, `.hud-rooms`, which is not laid out at
+     * all while any other tab is showing. Eight game days sat on OVERVIEW
+     * produced two messages, neither about the door, while the strip read
+     * `1 ROOMS` with no qualifier and the panel behind the tab read
+     * `NOT READY 1 of 1`.
+     *
+     * This is asserted in a browser and not only in `ui-hud-projection.test.ts`
+     * because the projection is only half of the claim. The other half is that
+     * the element is *laid out* on a tab where `.hud-rooms` is not -- which is
+     * the whole finding, and which no `node`-environment test can see.
+     */
+    const badge = page.locator('.ui-stat[data-metric="rooms"] .ui-badge');
+    const roomsPanel = page.locator('.hud-rooms');
+
+    // 1. Nothing has been asked: no badge. A chip reading `0 not ready` would be
+    //    a claim about a prison nothing is answering for.
+    await page.evaluate(() => window.lockstateUiHarness.reportRoomNeeds(undefined));
+    await expect(badge).toHaveCount(0);
+
+    // 2. Every room is ready: still no badge, and a different fact from the one
+    //    above -- `prisonersWithoutBedBadge`'s rule, that a strip which is
+    //    always amber teaches players to ignore amber.
+    await page.evaluate(() =>
+      // `totalRooms` matches the strip's own room count in this fixture (61),
+      // so the two readouts describe one prison rather than two.
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 61, totalNeeds: 0, needs: [], atCapacity: [] }),
+    );
+    await expect(badge).toHaveCount(0);
+
+    /*
+     * 3. A room with no way into it. The needs entry is the doorway one on
+     *    purpose: it is the state the play-test was in, and the state every
+     *    other readout a player has is silent about.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 61,
+        totalNeeds: 1,
+        needs: [
+          { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
+        ],
+        atCapacity: [],
+      }),
+    );
+    await expect(badge).toHaveCount(1);
+    await expect(badge).toHaveAttribute('data-tone', 'warning');
+    await expect(badge.locator('.ui-badge__text')).toHaveText('1 not ready');
+
+    /*
+     * 4. **And now the finding.** Leave the Rooms tab for the one the game
+     *    opens on. The panel loses its box entirely -- which is the defect --
+     *    and the badge keeps its own, on the strip, where it is laid out at
+     *    every tab and every viewport.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
+    // Measured rather than read off `hidden`: `.hud-rooms` carries the
+    // attribute, and what the play-test recorded is that the panel has no box
+    // -- so nothing inside it can reach a player, whatever the DOM holds.
+    expect(
+      await roomsPanel.evaluate((node) => node.getClientRects().length),
+      'the Rooms panel still has a box on OVERVIEW, so this test is not measuring the defect',
+    ).toBe(0);
+    await expect(badge).toHaveCount(1);
+    await expect(badge.locator('.ui-badge__text')).toHaveText('1 not ready');
+    expect(
+      await badge.evaluate((node) => node.getClientRects().length > 0),
+      'the badge is in the DOM on OVERVIEW and has no box, which is the defect one element over',
+    ).toBe(true);
+
+    // 5. The chip itself is untouched: it still counts rooms, and it is not
+    //    toned as well, so one fact reaches the player through one channel.
+    await expect(page.locator('.ui-stat[data-metric="rooms"] .ui-stat__value')).toHaveText('61');
+    expect(await page.locator('.ui-stat[data-metric="rooms"]').getAttribute('data-tone')).toBeNull();
   });
 
   test('hands the pointer back when the player leaves the tab', async ({ page }) => {
@@ -4542,7 +5530,9 @@ test.describe('the Rooms panel', () => {
     );
     const evaluated = await probe();
     expect(evaluated.enclosureLaidOut).toBe(true);
-    expect(evaluated.enclosureText).toBe('Walled in on every side');
+    // The wording changed in #1006 finding 2; what this case is about is that
+    // a verdict brings the block back, which is unaffected.
+    expect(evaluated.enclosureText).toBe('Walled in — not a door check');
 
     // 4. `data-needs` follows the readout and carries the figure, so the
     //    stylesheet spends the catalogue's floor on a block that is really
@@ -4552,8 +5542,10 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 2,
         totalNeeds: 4,
+        atCapacity: [],
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
@@ -4570,7 +5562,7 @@ test.describe('the Rooms panel', () => {
     // A prison with nothing missing draws no readout, so it must donate
     // nothing either -- the catalogue's row comes back with the last cell.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     expect((await probe()).panelNeeds, 'a finished prison still spends the catalogue floor').toBe('');
   });
@@ -4605,7 +5597,7 @@ test.describe('the Rooms panel', () => {
     for (const [width, height] of ROOMS_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.roomsLayoutProbe());
       const panel = probe.panel;
@@ -4643,7 +5635,7 @@ test.describe('the Rooms panel', () => {
  * What is *not* here is the shape of it. Which word goes in which slot is
  * decided by four pure functions -- `describePrisonerRow`,
  * `formatPrisonerName`, `formatPrisonerActivity` and `formatRegimeAllowsText`
- * -- and every one of them is exported from `regime-panel.ts` precisely so
+ * -- and every one of them is exported from `roster-panel.ts` precisely so
  * `pnpm test` can own that decision at the lowest layer, which
  * `docs/TESTING.md` requires. Restating their answers here would buy nothing
  * and would go stale twice.
@@ -4651,10 +5643,14 @@ test.describe('the Rooms panel', () => {
  * Four questions are left over, and a real browser is the only thing that can
  * answer any of them:
  *
- * 1. **Which of the five rail panels has a box.** `.hud__side` holds five
- *    panels in one slot and `setVisible` swaps them with `hidden`; if two were
- *    ever laid out together one panel's height would pay for the other's, which
- *    is the overflow ADR 0022 refused. That claim is asserted on every tab in
+ * 1. **Which of the rail panels has a box.** `.hud__side` holds six panels in
+ *    one slot and `setVisible` swaps them with `hidden`; if two were ever laid
+ *    out together one panel's height would pay for the other's, which is the
+ *    overflow ADR 0022 refused. **Since 2026-09-14 exactly one pair is laid
+ *    out together on purpose** -- the Intake and Staff panels, on the Manage
+ *    tab -- and that pair cost the 42px `hud.css`'s `.ui-panel.hud-intake`
+ *    rule records, which is what the sentence before it predicted would
+ *    happen and did. That claim is asserted on every tab in
  *    "never shares the rail slot ..." above, where the list of occupants lives.
  *    Here it is only the arrival condition each test below needs.
  * 2. **Whether a line the panel hid is on screen anyway.** Under
@@ -4720,12 +5716,16 @@ test.describe('the Regime panel (issue #451)', () => {
           'action-category.free-association.name',
         ],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['recreation', 'hygiene', 'free-association'],
       },
       {
         classificationGroupId: 'high-risk',
         labelKey: 'classification-group.high-risk.name',
         allowedCategoryLabelKeys: ['action-category.hygiene.name'],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['hygiene'],
       },
     ],
   };
@@ -4871,15 +5871,95 @@ test.describe('the Regime panel (issue #451)', () => {
   };
 
   /**
+   * The window that does **not** hold the prisoner `ROSTER`'s first row names
+   * (issue #895).
+   *
+   * The same prison of nine, three rows of it, and prisoner 3 is not among
+   * them -- which is the state a selected prisoner reaches without being
+   * released: somebody riskier arrives, and the four-row window is the four
+   * *highest tier* prisoners since #703. The projection will still answer about
+   * them, so the inspector must not go away with the row.
+   */
+  const WITHOUT_FIRST_ROSTER: HudPrisonerRosterViewModel = {
+    total: 9,
+    everAdmitted: true,
+    rows: ROSTER.rows.slice(1),
+  };
+
+  /**
+   * All six needs of one prisoner, as `prisonerDetailFromProjection` builds
+   * them (issue #895).
+   *
+   * `NEED_IDS` order, which is the projection's own and is not re-sorted by the
+   * reader -- and the six values are six branches of the bar rather than
+   * filler, on the same reasoning `ROSTER`'s four are: `permille: 200` is the
+   * level the state's line sits on exactly
+   * (`STATE_INCOME_UNMET_NEED_LEVEL` is 51 of `NEED_MAX` 255, and 51/255 is a
+   * fifth to the digit) with `unmetForStateIncome: true`, and 204 -- the very
+   * next level -- is `false`. A panel that drew a tone off the wrong side of
+   * the comparison would repaint one of the pair and be caught.
+   *
+   * **Four of the six are unmet, which is the whole point of the block.** The
+   * roster row for this prisoner shows `hunger` alone; the state withholds per
+   * unmet need, so the row cannot distinguish this prisoner from one costing
+   * the prison a single need's worth and these six lines can.
+   *
+   * Supplied rather than derived, and that is the limit of what this file can
+   * prove: whether the flags agree with the money is a question about
+   * `projectPrisonerDetail`, asked where it can be run
+   * (`tests/unit/ui-simulation-prisoner-detail.test.ts`, against the real
+   * projection over a real runtime). What this file proves is that the panel
+   * renders the six it was given.
+   */
+  const DETAIL_FIRST: HudPrisonerDetailViewModel = {
+    entityId: 3,
+    remainingSentenceTicks: 3600,
+    name: { givenName: 'Mara', familyName: 'Ostrowska' },
+    standingLabelKey: 'risk-tier.1.name',
+    classificationGroupId: 'general-population',
+    riskTier: 1,
+    needs: [
+      { needId: 'hunger', labelKey: 'need.hunger.name', permille: 200, unmetForStateIncome: true },
+      { needId: 'sleep', labelKey: 'need.sleep.name', permille: 204, unmetForStateIncome: false },
+      { needId: 'hygiene', labelKey: 'need.hygiene.name', permille: 0, unmetForStateIncome: true },
+      { needId: 'bladder', labelKey: 'need.bladder.name', permille: 120, unmetForStateIncome: true },
+      { needId: 'safety', labelKey: 'need.safety.name', permille: 1000, unmetForStateIncome: false },
+      { needId: 'recreation', labelKey: 'need.recreation.name', permille: 40, unmetForStateIncome: true },
+    ],
+  };
+
+  /**
+   * The same shape about a **different** prisoner, for the race the panel is
+   * required to refuse: a reply that was in flight while the player moved to
+   * another row.
+   */
+  const DETAIL_SECOND: HudPrisonerDetailViewModel = {
+    ...DETAIL_FIRST,
+    entityId: 5,
+    remainingSentenceTicks: 7200,
+    name: { givenName: 'Delphine', familyName: 'Vanderweghe' },
+    standingLabelKey: 'risk-tier.3.name',
+    classificationGroupId: 'high-risk',
+    riskTier: 3,
+  };
+
+  /**
    * Every message namespace the panel can paint a raw key out of.
    *
    * ADR 0011 resolves an unknown key to the key itself, so a missing catalog
    * entry is on screen as `risk-tier.2.name` rather than as a blank. Seven
-   * namespaces reach this panel: `hud` for its own vocabulary, and the six the
+   * namespaces reach this panel: `hud` for its own vocabulary, and the seven the
    * projection derives an id into (`action`, `action-category`, `action-phase`,
-   * `classification-group`, `intake-stage`, `risk-tier`) -- the panel renders
-   * every one of them and authors none of them, which is exactly the seam a
-   * label can go missing at.
+   * `classification-group`, `intake-stage`, `need`, `risk-tier`) -- the panel
+   * renders every one of them and authors none of them, which is exactly the
+   * seam a label can go missing at.
+   *
+   * **`need` was missing from this pattern and the count read "seven
+   * namespaces" while it listed six** (issue #895). The gap predates the
+   * inspector: the roster row has drawn its worst need's word since #535
+   * decision 6, so an unresolved `need.hunger.name` has been renderable and
+   * unmatched here since then. Adding it extends the pattern rather than
+   * weakening it, and it is the namespace the inspector draws six of.
    *
    * Case-insensitive, and that is not caution. Half this panel's slots are
    * eyebrows, which `.ui-eyebrow` in `primitives.css` renders
@@ -4889,11 +5969,11 @@ test.describe('the Regime panel (issue #451)', () => {
    * would walk straight past it.
    */
   const RAW_KEY =
-    /\b(?:hud|action|action-category|action-phase|classification-group|intake-stage|risk-tier)\.[a-z0-9.-]+/i;
+    /\b(?:hud|action|action-category|action-phase|classification-group|intake-stage|need|risk-tier)\.[a-z0-9.-]+/i;
 
   test.beforeEach(async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
   });
 
   test('arrives with a box and two empty blocks, because nothing has asked yet', async ({ page }) => {
@@ -4938,10 +6018,13 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.total).toBe('0');
     expect(probe.rows).toEqual([]);
     expect(probe.emptyLaidOut, 'the empty prison drew a blank box instead of the sentence').toBe(true);
-    // The owner's ruling of 2026-09-03, byte for byte. It read "Nobody has
-    // been admitted yet." until then; the state under test is unchanged.
-    expect(probe.emptyText).toBe('No prisoners yet. Build a cell with a bed to take somebody in.');
-    expect(probe.text).toContain('No prisoners yet. Build a cell with a bed to take somebody in.');
+    // The ruled sentence, byte for byte: the owner's of 2026-09-03, corrected
+    // in place on their ruling of 2026-09-19 so that it names all four of
+    // `room.cell`'s requirements rather than only the bed (#933). It read
+    // "Nobody has been admitted yet." before 2026-09-03; the state under test
+    // is unchanged by either move.
+    expect(probe.emptyText).toBe('No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.');
+    expect(probe.text).toContain('No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.');
     // Nothing is being withheld: "and N more" is about a population bigger than
     // the window, and there is no population.
     expect(probe.moreLaidOut).toBe(false);
@@ -4958,7 +6041,7 @@ test.describe('the Regime panel (issue #451)', () => {
    * page.**
    *
    * `describePrisonerRow`'s own tests own the decision -- that is what
-   * `regime-panel.ts` exports it for -- so what is left for a browser is the
+   * `roster-panel.ts` exports it for -- so what is left for a browser is the
    * half those cannot reach: **whether the tone is a colour**. A tone added to
    * `BadgeTone` with no `.ui-badge[data-tone=...]` rule beside it type-checks,
    * passes every node test, and paints `--badge-neutral-bg` on screen -- which
@@ -5046,12 +6129,13 @@ test.describe('the Regime panel (issue #451)', () => {
     // population is back to
     // zero, and the empty-roster sentence would be false of it. There is
     // no shipped sentence that says the true thing instead (searched
-    // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),
+    // `default-locale-en.ts`; see `roster-panel.ts`'s `paintRoster` comment),
     // so the panel is required to draw *neither* box rather than the wrong
     // one.
     //
     // **The sentence this refuses to draw is the owner's ruling of 2026-09-03,
-    // "No prisoners yet. Build a cell with a bed to take somebody in.", and
+    // corrected in place on 2026-09-19 to
+    // "No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.", and
     // was "Nobody has been admitted yet." when this test was written.** The
     // ruling makes this test's subject sharper rather than moving it: the new
     // sentence is false of this prison twice over -- it has held prisoners,
@@ -5244,7 +6328,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // Most of what `.hud__side` holds is a catalogue or a fixed set of
     // controls; this block's height tracks the *prisoner population*, bounded
     // by `PRISONER_ROSTER_ROW_LIMIT`. The Staff panel's held-guard list is the
-    // one precedent, and `regime-panel.ts` says outright that this bound was
+    // one precedent, and `roster-panel.ts` says outright that this bound was
     // taken as arithmetic off `HELD_GUARD_ROW_LIMIT`'s 219.0px rather than
     // measured -- three rows carrying a 44px control against four carrying
     // none. This is the measurement that was owed.
@@ -5265,7 +6349,7 @@ test.describe('the Regime panel (issue #451)', () => {
     for (const [width, height] of REGIME_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
       await page.evaluate(
         ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
         [TIMETABLE, ROSTER] as const,
@@ -5314,5 +6398,541 @@ test.describe('the Regime panel (issue #451)', () => {
       // `.hud-regime__roster-name` is why. `hud.css` has been corrected to say
       // the declaration is defensive here rather than load-bearing.
     }
+  });
+  /**
+   * **A prisoner can be looked at** (issue #895).
+   *
+   * `hud/prisoner-detail` was answered by the worker and read by nobody, so
+   * these are the assertions about the surface that closed it. Which words the
+   * inspector uses is decided headlessly and asserted where it can be --
+   * `describePrisonerRow`, `formatPrisonerName` and `describeNeed` are pure and
+   * exported, and `tests/unit/ui-simulation-prisoner-detail.test.ts` drives
+   * them against the real projection over a real runtime.
+   *
+   * Four things are left over and a real browser is the only thing that can
+   * answer any of them:
+   *
+   * 1. **Whether a row is a control, and whether a vacated one stops being
+   *    one.** `role`, `tabindex` and `aria-checked` are written by
+   *    `paintRoster` and removed by `clearRowData`, and the removal is what
+   *    keeps `app-shell.spec.ts`'s #88 control sweep honest -- it asserts that
+   *    the controls it can never lay out are exactly its written exemption
+   *    list, and four pooled rows that stayed focusable while empty would fail
+   *    it in a prison holding nobody, which is the state that sweep runs in.
+   * 2. **Whether the keyboard can actually reach the selection.** A roving
+   *    `tabindex` is arithmetic (`rovingTabStop`, unit-tested) until something
+   *    presses a key: what is asserted here is `document.activeElement` after a
+   *    real `ArrowDown` and a real `Enter`, which is the same split
+   *    `app-shell.spec.ts` makes for the Build catalogue's own ring.
+   * 3. **Whether a block the panel hid is on screen anyway.** `.hud-regime__detail`
+   *    carries an author `display: flex`, which beats the user agent's
+   *    `[hidden] { display: none }` -- the trap `.hud-build__deliveries-more`
+   *    is named for. Nobody selected is the arrival state of this tab for every
+   *    player, so the attribute has to win, and only a layout can say it does.
+   * 4. **Where the bottom of it ends up.** The inspector is a block that only
+   *    exists after a press, on the one panel in this rail that is
+   *    `overflow-y: auto` -- so it is pushed below the fold rather than clipped
+   *    visibly, and a screenshot would not show it.
+   */
+  test.describe('the inspector under the roster (issue #895)', () => {
+    /** Every row the browser drew, keyed by prisoner, so an assertion names a person rather than a position. */
+    const rowsByPrisoner = async (page: Page) => {
+      const probe = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
+      return { probe, rows: new Map(probe.rows.map((row) => [row.prisoner, row])) };
+    };
+
+    const focusedPrisoner = async (page: Page): Promise<string | null> =>
+      page.evaluate(() => {
+        const active = document.activeElement;
+        return active instanceof HTMLElement ? (active.dataset['prisoner'] ?? null) : null;
+      });
+
+    test('arrives with no selection and no block, because nobody has pressed anything', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, ROSTER] as const,
+      );
+      const { probe, rows } = await rowsByPrisoner(page);
+
+      // The block has an author `display: flex`, so this is the assertion that
+      // its `[hidden]` guard is what a player actually gets.
+      expect(probe.detail.laidOut, 'the inspector drew a box before anything was selected').toBe(false);
+      expect(probe.detail.prisoner).toBeNull();
+      expect(probe.detail.needs).toEqual([]);
+
+      // Every drawn row is a control and none of them is chosen. `aria-checked`
+      // present and `"false"` is the state a radio group announces as "not
+      // checked, 1 of 4"; absent would mean the row is not a member at all.
+      expect([...rows.keys()]).toEqual(['3', '5', '8', '11']);
+      for (const row of rows.values()) {
+        expect(row.role, `row ${row.prisoner} is not a member of the choice`).toBe('radio');
+        expect(row.ariaChecked, `row ${row.prisoner} is checked before anything was pressed`).toBe('false');
+        expect(row.selected).toBe('false');
+      }
+      // One tab stop for the whole group, which is what makes four rows one
+      // `Tab` rather than four (`rovingTabStop`, and the WAI-ARIA
+      // composite-widget rule the two catalogue panels already follow).
+      expect(probe.rows.filter((row) => row.tabIndex === 0)).toHaveLength(1);
+      expect(probe.rows[0]?.tabIndex, 'the tab stop is not on the first row of an unchosen group').toBe(0);
+      expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
+    });
+
+    test('a pointer press chooses a prisoner, and the worker\'s answer is the block', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, ROSTER] as const,
+      );
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+
+      // The press is applied locally and at once -- it does not wait for a
+      // round trip, which in the real app is up to roughly 300ms in a browser.
+      const chosen = await rowsByPrisoner(page);
+      expect(chosen.rows.get('3')?.ariaChecked).toBe('true');
+      expect(chosen.rows.get('3')?.selected).toBe('true');
+      expect(chosen.rows.get('5')?.ariaChecked).toBe('false');
+      // The tab stop follows the choice, so tabbing back in lands on the
+      // player's own row rather than at the top of a list they have answered.
+      expect(chosen.probe.rows.find((row) => row.tabIndex === 0)?.prisoner).toBe('3');
+      // And nothing is drawn yet: the panel holds the question, not an answer.
+      expect(chosen.probe.detail.laidOut, 'the inspector drew a block before the worker answered').toBe(false);
+
+      // The host is told, because the host is the only thing that can ask
+      // `hud/prisoner-detail` about them.
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'select-prisoner', prisonerId: 3 }),
+      );
+
+      // The answer arrives on the view model, exactly as the roster's does.
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      const { probe } = await rowsByPrisoner(page);
+
+      expect(probe.detail.laidOut).toBe(true);
+      expect(probe.detail.prisoner).toBe('3');
+      // The heading is the prisoner's name, which is why this block needs no
+      // authored heading of its own (ADR 0015: a name is state, not copy).
+      expect(probe.detail.nameText).toBe('Mara Ostrowska');
+      // The same word the row's badge carries, through the same decision.
+      expect(probe.detail.badgeText).toBe(chosen.rows.get('3')?.badgeText);
+      expect(probe.detail.badgeTone).toBe('neutral');
+
+      // **All six needs, in the projection's order** -- the whole of what this
+      // block adds over the row above it, which shows one.
+      expect(probe.detail.needs.map((need) => need.need)).toEqual([
+        'hunger',
+        'sleep',
+        'hygiene',
+        'bladder',
+        'safety',
+        'recreation',
+      ]);
+      expect(probe.detail.needs.map((need) => need.permille)).toEqual(['200', '204', '0', '120', '1000', '40']);
+      // The composition of `unmetNeedCount`, which is the figure
+      // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` multiplies. The
+      // roster row for this prisoner can only say that it is at least one.
+      expect(probe.detail.needs.map((need) => need.unmet)).toEqual([
+        'true',
+        'false',
+        'true',
+        'true',
+        'false',
+        'true',
+      ]);
+      // The tone is the state's line and the pair straddling it is the
+      // assertion: 200 is at `STATE_INCOME_UNMET_NEED_LEVEL` and 204 is the
+      // very next level above it.
+      expect(probe.detail.needs.map((need) => need.tone)).toEqual([
+        'warning',
+        'neutral',
+        'warning',
+        'warning',
+        'neutral',
+        'warning',
+      ]);
+      // The colour never stands alone: every line carries the need's word and
+      // the bar carries the figure as an accessible value.
+      expect(probe.detail.needs.map((need) => need.nameText)).toEqual([
+        'Hunger',
+        'Sleep',
+        'Hygiene',
+        'Bladder',
+        'Safety',
+        'Recreation',
+      ]);
+      expect(probe.detail.needs[0]?.valueText).toBe('20%');
+      expect(probe.detail.needs[4]?.valueText).toBe('100%');
+      expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
+    });
+
+    test('the choice is reachable by keyboard alone, arrows and Enter', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, ROSTER] as const,
+      );
+
+      // Into the group at its one tab stop, the way `Tab` would arrive.
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').focus();
+      expect(await focusedPrisoner(page)).toBe('3');
+
+      // Arrows move focus and do **not** select: choosing a row is an explicit
+      // act with a pointer, so it is an explicit act with a key too, which is
+      // the ruling both catalogue panels made for their own rings.
+      await page.keyboard.press('ArrowDown');
+      expect(await focusedPrisoner(page)).toBe('5');
+      const moved = await rowsByPrisoner(page);
+      expect(moved.rows.get('5')?.ariaChecked, 'arrowing onto a row selected it').toBe('false');
+      // No *selection* intent, rather than no intent at all: `beforeEach`
+      // clicked the tab, so `select-tab` is legitimately in the list and an
+      // `toEqual([])` here asserted the harness had done nothing.
+      expect(
+        (await page.evaluate(() => window.lockstateUiHarness.hudIntents())).filter((intent) =>
+          intent.includes('select-prisoner'),
+        ),
+        'arrowing onto a row told the host to fetch it',
+      ).toEqual([]);
+      // The `0` moves with the focus, or tabbing out and back would return the
+      // player to the row they arrowed away from.
+      expect(moved.probe.rows.find((row) => row.tabIndex === 0)?.prisoner).toBe('5');
+
+      // `End` and `Home`, because a ring is a ring.
+      await page.keyboard.press('End');
+      expect(await focusedPrisoner(page)).toBe('11');
+      await page.keyboard.press('Home');
+      expect(await focusedPrisoner(page)).toBe('3');
+
+      // And `Enter` chooses, on the row focus is on.
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      const chosen = await rowsByPrisoner(page);
+      expect(chosen.rows.get('5')?.ariaChecked).toBe('true');
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'select-prisoner', prisonerId: 5 }),
+      );
+
+      // `Space` is the radio's other activation key, and pressing it on the row
+      // already chosen is the way back out -- the toggle that exists instead of
+      // a Close control, which would need a word the owner has not written.
+      await page.keyboard.press(' ');
+      const cleared = await rowsByPrisoner(page);
+      expect(cleared.rows.get('5')?.ariaChecked).toBe('false');
+      expect(cleared.probe.detail.laidOut).toBe(false);
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'select-prisoner', prisonerId: undefined }),
+      );
+    });
+
+    test('a reply about somebody else is not painted under the chosen prisoner\'s name', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, ROSTER] as const,
+      );
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+
+      // The race: a request for prisoner 5 was in flight when the player moved
+      // to prisoner 3. The channel correlates by `messageId` (ADR 0003 decision
+      // 2) and the *player* is not correlated at all, so this is the guard.
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_SECOND] as const,
+      );
+      const stale = await rowsByPrisoner(page);
+      expect(stale.probe.detail.laidOut, "a reply about prisoner 5 was painted under prisoner 3's name").toBe(false);
+      // Read off the block and not off the panel's text: prisoner 5 is on the
+      // roster in their own right, four rows up, so `probe.text` names them
+      // whatever the block does. The first version of this assertion looked for
+      // their surname in the whole panel and failed on the row.
+      expect(stale.probe.detail.prisoner).toBeNull();
+      expect(stale.probe.detail.nameText).toBe('');
+      expect(stale.probe.detail.needs).toEqual([]);
+      const sentence = page.locator('[data-sentence-remaining]');
+      await expect(sentence).toBeHidden();
+      await expect(sentence).toHaveText('');
+      expect(await sentence.getAttribute('data-remaining-days')).toBeNull();
+
+      // And the right answer still lands.
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      const settled = await rowsByPrisoner(page);
+      expect(settled.probe.detail.laidOut).toBe(true);
+      expect(settled.probe.detail.prisoner).toBe('3');
+      await expect(sentence).toHaveText('Sentence remaining (in-game days): 1.5');
+      // A later detail observation carries less time; repeating it while
+      // paused must not invent wall-time progress between replies.
+      for (let refresh = 0; refresh < 2; refresh += 1) {
+        await page.evaluate(
+          ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+          [TIMETABLE, ROSTER, { ...DETAIL_FIRST, remainingSentenceTicks: 1200 }] as const,
+        );
+        await expect(sentence).toHaveText('Sentence remaining (in-game days): 0.5');
+      }
+      // A subsequent choice must replace this prisoner's duration too.
+      await page.locator('.hud-regime__roster-row[data-prisoner="5"]').click();
+      await expect(sentence).toBeHidden();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_SECOND] as const,
+      );
+      await expect(sentence).toHaveText('Sentence remaining (in-game days): 3');
+    });
+
+    test('a prisoner who drops out of the four-row window is still the prisoner on screen', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      expect((await rowsByPrisoner(page)).probe.detail.prisoner).toBe('3');
+
+      /*
+       * The window moves off them without them leaving the prison. Since #703
+       * the four rows are the four highest-tier prisoners, so somebody being
+       * reclassified upward pushes the row a player is reading out of the
+       * window -- and the projection will still answer about them by id.
+       *
+       * The block staying is what makes the inspector reach further than four
+       * people at a time: the roster is where a prisoner can be *chosen*, and
+       * the answer outlives their row.
+       */
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, WITHOUT_FIRST_ROSTER, DETAIL_FIRST] as const,
+      );
+      const { probe, rows } = await rowsByPrisoner(page);
+
+      expect([...rows.keys()], 'the window still holds the prisoner it was supposed to drop').toEqual(['5', '8', '11']);
+      expect(probe.detail.laidOut, 'the inspector left with the row rather than with the prisoner').toBe(true);
+      expect(probe.detail.prisoner).toBe('3');
+      expect(probe.detail.nameText).toBe('Mara Ostrowska');
+      // No row is checked, because no row is theirs -- and the group still has
+      // exactly one way in, which falls back to the top of the list.
+      for (const row of rows.values()) expect(row.ariaChecked).toBe('false');
+      expect(probe.rows.filter((row) => row.tabIndex === 0)).toHaveLength(1);
+      expect(probe.rows[0]?.tabIndex).toBe(0);
+    });
+
+    test('a released prisoner takes the block and the selection with them', async ({ page }) => {
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+      );
+      expect((await rowsByPrisoner(page)).probe.detail.laidOut).toBe(true);
+
+      /*
+       * What the host does when `PrisonerDetailReader.read` answers
+       * `'released'` -- `projectPrisonerDetail` returning nothing, which
+       * happens for exactly one reason, `!entityStore.isAlive(entityId)`.
+       *
+       * **It draws no sentence, and that is deliberate rather than
+       * unfinished.** The words that would go there -- "this prisoner has been
+       * released" -- are a new player-facing sentence, which is `AGENTS.md`'s
+       * fourth exclusion and the owner's. A placeholder would be a promise the
+       * code does not keep; this asserts the honest gap so that the day the
+       * owner rules a sentence, the test that has to change is this one.
+       */
+      await page.evaluate(() => window.lockstateUiHarness.clearPrisonerSelection());
+      const { probe, rows } = await rowsByPrisoner(page);
+
+      const sentence = page.locator('[data-sentence-remaining]');
+      await expect(sentence).toBeHidden();
+      await expect(sentence).toHaveText('');
+      expect(await sentence.getAttribute('data-remaining-days')).toBeNull();
+
+      expect(probe.detail.laidOut).toBe(false);
+      expect(probe.detail.prisoner).toBeNull();
+      expect(probe.detail.needs).toEqual([]);
+      for (const row of rows.values()) expect(row.ariaChecked).toBe('false');
+      // The tab stop is back at the top of the list, not on a prisoner who is
+      // not in the prison.
+      expect(probe.rows[0]?.tabIndex).toBe(0);
+      // Nothing was authored to fill the gap: no new sentence reached the
+      // screen, and the two the panel does own are about an *empty* roster,
+      // which this prison is not.
+      //
+      // Measured on the *block* rather than on the panel's text, for the reason
+      // the stale-reply case above gives: this prisoner is still on the roster
+      // in a real session -- what the host discovered is that the worker will
+      // not answer about them -- so the panel's text still names them from the
+      // row. The first version of this assertion looked for the name anywhere
+      // in the panel and failed on the row above.
+      expect(probe.detail.nameText).toBe('');
+      expect(probe.text).not.toContain('released');
+      expect(probe.text, `an unresolved message key is on screen: ${probe.text}`).not.toMatch(RAW_KEY);
+    });
+
+    test('a vacated pooled row is not a control at all', async ({ page }) => {
+      /*
+       * The half of this change that keeps a *different* test honest.
+       * `app-shell.spec.ts`'s #88 sweep enumerates the page with
+       * `button, [role="button"], a[href], input, select, textarea,
+       * [tabindex]:not([tabindex="-1"])` and asserts that the controls it could
+       * never lay out are **exactly** its written exemption list -- whose own
+       * comment calls each entry a tripwire. The sweep admits nobody, so a
+       * pooled roster row that stayed focusable while empty would be a control
+       * it can never hit-test, and it would fail and name all four.
+       *
+       * That is why the row is a `div` carrying `role="radio"` rather than the
+       * real `<button>` the two catalogue panels use: a `<button>` matches that
+       * selector whatever its attributes say.
+       */
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, SOLO_ROSTER] as const,
+      );
+
+      const vacated = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
+          .filter((row) => row.getClientRects().length === 0)
+          .map((row) => [row.getAttribute('role'), row.getAttribute('tabindex'), row.getAttribute('aria-checked')]),
+      );
+      // Three of the four, and every attribute gone rather than set to a
+      // falsy-looking value.
+      expect(vacated).toEqual([
+        [null, null, null],
+        [null, null, null],
+        [null, null, null],
+      ]);
+
+      // And the surviving row is still a control, so the assertion above is
+      // about vacancy rather than about the roster having stopped working.
+      const { rows } = await rowsByPrisoner(page);
+      expect(rows.get('3')?.role).toBe('radio');
+      expect(rows.get('3')?.tabIndex).toBe(0);
+
+      // A prison holding nobody is the state the #88 sweep runs in: no row is
+      // drawn, so the group is not announced as a choice either -- a
+      // `radiogroup` whose only member is a sentence would say "one of one" for
+      // something there is no way to select.
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, EMPTY_ROSTER] as const,
+      );
+      const empty = await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-regime__roster-list');
+        return {
+          role: list?.getAttribute('role') ?? null,
+          focusable: document.querySelectorAll('.hud-regime__roster-row[tabindex]:not([tabindex="-1"])').length,
+        };
+      });
+      expect(empty.role).toBeNull();
+      expect(empty.focusable, 'an empty roster left a focusable row for the #88 sweep to find').toBe(0);
+    });
+
+    test('the chosen prisoner is reachable inside the panel at every viewport', async ({ page }) => {
+      /*
+       * **The measurement ADR 0022's layout budget requires of any new block.**
+       *
+       * The inspector is not in `RegimeProbe.lastLineBottom` on purpose -- that
+       * figure is the roster's own reachability number, asserted in the state
+       * where nobody is selected and this block has no box at all. This is the
+       * same question asked of the block a press creates.
+       *
+       * What is asserted is the block's **top** rather than its bottom, and the
+       * difference is the honest claim: `.ui-panel.hud-regime` is
+       * `overflow-y: auto` by design ("whatever the rail cannot give it is its
+       * own to scroll"), and six need lines plus a heading do not fit under the
+       * timetable and four roster rows at 900x600. `revealDetail` scrolls the
+       * panel so the block starts inside the fold, which puts the name, the
+       * badge and the first needs on screen and the last of them one short
+       * scroll away. Asserting the bottom instead would be asserting that this
+       * panel never scrolls, which it is documented to do and which the roster's
+       * own fold test already pins for the *arrival* state.
+       *
+       * The numbers are printed as well as asserted, because what a later pass
+       * will want is the figure and not the verdict.
+       */
+      const measured: string[] = [];
+      for (const [width, height] of REGIME_VIEWPORTS) {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
+        await page.evaluate(
+          ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+          [TIMETABLE, ROSTER] as const,
+        );
+        await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+        await page.evaluate(
+          ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+          [TIMETABLE, ROSTER, DETAIL_FIRST] as const,
+        );
+
+        const probe = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
+        const box = probe.detail.box;
+        expect(box, `the inspector has no box at ${width}x${height}`).not.toBeNull();
+        if (box === null) continue;
+        expect(probe.detail.needs, `the inspector drew no need lines at ${width}x${height}`).toHaveLength(6);
+        measured.push(
+          `${width}x${height}: block ${box.height.toFixed(1)}px at y=${box.y.toFixed(1)}..${(box.y + box.height).toFixed(1)}, ` +
+            `panel fold y=${probe.panelVisibleBottom.toFixed(1)}, overflow ${probe.panelOverflow.toFixed(1)}px, ` +
+            `scrollTop ${probe.panelScrollTop.toFixed(1)}`,
+        );
+
+        // The block starts inside the panel's own fold, which is what
+        // `revealDetail` is for: a block a press created and the panel never
+        // scrolled to would be a readout below its own fold, which is #174's
+        // defect wearing a different hat.
+        expect(
+          box.y,
+          `the inspector starts below the Regime panel's fold at ${width}x${height}: y=${box.y} in a panel clipped at y=${probe.panelVisibleBottom}`,
+        ).toBeLessThan(probe.panelVisibleBottom);
+        // And its heading is on screen rather than off the bottom of the
+        // window.
+        expect(box.y, `the inspector starts off the bottom of the viewport at ${width}x${height}`).toBeLessThan(height);
+        // The roster it sits under is untouched: four rows, and the "and N
+        // more" line still inside the fold. A block that pushed the roster past
+        // the fold would have spent a budget that was measured for the roster.
+        expect(probe.rows, `the roster lost a row at ${width}x${height}`).toHaveLength(4);
+        expect(
+          probe.lastLineBottom,
+          `the roster's last line is below the fold at ${width}x${height} once a prisoner is chosen`,
+        ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+
+        // #958: measure the text itself, not just its wrapping container.
+        const sentence = page.locator('[data-sentence-remaining]');
+        await expect(sentence).toHaveText('Sentence remaining (in-game days): 1.5');
+        await sentence.scrollIntoViewIfNeeded();
+        await expect(sentence).toBeVisible();
+        const readout = await sentence.evaluate((node) => {
+          // `.ui-panel` rather than `.hud-regime`: ADR 0115 split the roster
+          // and its inspector into `.ui-panel.hud-roster`, so the panel this
+          // sentence has to fit inside is the one it is *in* rather than one
+          // named here. The generic class is also the more durable subject --
+          // the claim is "inside its panel's box", not "inside that panel".
+          const panel = node.closest('.ui-panel')!;
+          const panelBox = panel.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          return {
+            left: panelBox.left, right: panelBox.right,
+            top: panelBox.top, bottom: panelBox.bottom,
+            text: [...range.getClientRects()].map((rect) => ({
+              left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            })),
+          };
+        });
+        expect(readout.text.length).toBeGreaterThan(0);
+        for (const line of readout.text) {
+          expect(line.left).toBeGreaterThanOrEqual(readout.left);
+          expect(line.right).toBeLessThanOrEqual(readout.right);
+          expect(line.top).toBeGreaterThanOrEqual(readout.top);
+          expect(line.bottom).toBeLessThanOrEqual(readout.bottom);
+        }
+      }
+      // Printed for the next change to this panel: the figures, not the verdict.
+      console.log(`[#895 inspector] ${JSON.stringify(measured)}`);
+      expect(measured, 'no viewport measured the inspector').toHaveLength(REGIME_VIEWPORTS.length);
+    });
   });
 });

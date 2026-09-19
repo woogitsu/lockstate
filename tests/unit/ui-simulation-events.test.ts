@@ -53,12 +53,33 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // the envelope and the discriminant.
   'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
   'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
+  // ADR 0104 option 2 (#956): the press found a transaction and declined it,
+  // because the player's latest action was not a change to the build queue.
+  // Carries nothing, for the same #749 ruling the four above carry nothing.
+  'construction.undo-refused-newer-action': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'construction.undo-refused-newer-action',
+  }),
   'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
+  'construction.undone-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'construction.undone-spend-destroyed',
+  }),
   'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
+  'objects.removed-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'objects.removed-spend-destroyed',
+  }),
   'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
   'economy.construction-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-refused' }),
+  // #966 site 1's recovery mirror of the two crossings above.
+  'economy.deliveries-restored': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-restored' }),
+  'economy.construction-restored': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-restored' }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
@@ -72,6 +93,7 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
+  'incidents.all-clear-after-lapse': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear-after-lapse' }),
   'prisoners.relocated': (sequence) => ({
     sequence,
     tick: 100,
@@ -80,6 +102,25 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
     name: { givenName: 'Ada', familyName: 'Bell' },
     roomNameKey: 'room.cell.name',
   }),
+  // #966 site 3's housing mirror of `prisoners.relocated` above.
+  'prisoners.housed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'prisoners.housed',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+    roomNameKey: 'room.cell.name',
+  }),
+  // #966 site 2's acknowledgement. `room.yard.name` and not the
+  // `room.cell.name` above it, so the two members carrying a `{room}` cannot
+  // agree by accident about which key a renderer resolved -- and the yard is
+  // the one room type that authors no object requirement, which is the room a
+  // sentence promising *function* would have been true of and false for the
+  // other seventeen.
+  'rooms.needs-cleared': (sequence) => ({ sequence, tick: 100, type: 'rooms.needs-cleared', roomNameKey: 'room.yard.name' }),
+  'rooms.unzoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.unzoned', roomNameKey: 'room.yard.name' }),
+  'rooms.zoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.zoned', roomNameKey: 'room.yard.name' }),
+  'construction.order-completed': (sequence) => ({ sequence, tick: 100, type: 'construction.order-completed' }),
 };
 
 /**
@@ -106,6 +147,28 @@ function stopped(): WorkerToMainMessage {
   }) as WorkerToMainMessage;
 }
 
+/**
+ * The one surface every event on this channel reaches, and therefore the one a
+ * sweep over the whole union can be driven from.
+ *
+ * **Introduced on 2026-09-05.** These sweeps used to read
+ * `hudEventNoticeFromWorkerMessage` and throw on `undefined`, which was exact
+ * while every event raised the band. The owner's ruling of that date sends
+ * `rooms.zoned` to the log and not to the band, so reading the band would have
+ * made the sweep skip -- or fail on -- the newest member, and the sentence it
+ * skipped is the one a player reads. Reading the log instead keeps the sweep
+ * total: `eventAlertRow` and `hudEventNoticeFromWorkerMessage` build their
+ * label, parameters and severity from the same table and the same two
+ * functions, so nothing about the sentence goes unchecked by the move, and one
+ * more member is now checked than before.
+ */
+function loggedRow(event: SimulationEvent): HudAlertViewModel {
+  const rows = hudEventAlertsFromWorkerMessage(publication(event), []);
+  const row = rows?.at(-1);
+  if (row === undefined) throw new Error(`${event.type} produced no row in the alerts log`);
+  return row;
+}
+
 describe('what the prison says when nothing went wrong', () => {
   it('gives every event type a sentence a player can actually read', () => {
     const missing: string[] = [];
@@ -119,15 +182,14 @@ describe('what the prison says when nothing went wrong', () => {
     // here, so an event type added to the union and forgotten here fails
     // rather than going unchecked.
     for (const type of SIMULATION_EVENT_TYPES) {
-      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
-      if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
+      const row = loggedRow(SAMPLE[type](1));
       // Through `resolveHudLabelParameters`, which is what `hud.ts` renders
       // with: since ADR 0076's relocation notice a sentence's parameters are
       // not all plain values, and formatting from `labelParameters` alone
       // would leave `{name}` and `{room}` on screen while this test passed.
       const sentence = localizer.format(
-        notice.labelKey,
-        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+        row.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
       );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
@@ -174,6 +236,234 @@ describe('what the prison says when nothing went wrong', () => {
     );
     expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
     expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
+  /**
+   * The housing mirror of the case above, for `prisoners.housed`
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+   * same optional `name`, same fallback, same reason: a session wired without
+   * an identity registry mints nobody, and `createIntakeHousedNotice` never
+   * invents one.
+   */
+  it('names a newly housed prisoner by their entity id when nobody minted a name (#966)', () => {
+    const anonymous = { ...SAMPLE['prisoners.housed'](1) } as Record<string, unknown>;
+    delete anonymous['name'];
+    const notice = hudEventNoticeFromWorkerMessage(publication(anonymous as never));
+    if (notice === undefined || notice === 'none') throw new Error('an unnamed prisoner was still housed');
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+    expect(sentence).toBe('Prisoner 3 has a place in Cell.');
+    expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
+  /**
+   * The exact sentences `EVENT_PRESENTATION`'s two new members back
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1),
+   * pinned word for word for the reason the designation sentence above is:
+   * under `AGENTS.md` reservation 4 the wording is ours and its truth is not,
+   * so every clause is a claim to prove rather than a string to skim past.
+   */
+  it('names which rung recovered, and claims nothing about what a purchase would now cost (#966)', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentenceFor = (type: 'economy.deliveries-restored' | 'economy.construction-restored'): string => {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
+      return localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
+    };
+
+    expect(sentenceFor('economy.deliveries-restored')).toBe('The treasury has climbed back above the deliveries floor.');
+    expect(sentenceFor('economy.construction-restored')).toBe('The treasury has climbed back above the construction floor.');
+  });
+
+  /**
+   * **The first sentence this game says when a player gets something right**
+   * (issue [#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * The sweep at the top of this file already proves it resolves and leaves no
+   * `{` behind, which a row reading *"Cell designated."* and a row reading
+   * *"Cell designated — prisoners can use it now."* both satisfy identically.
+   * What is pinned here is the sentence **word for word**, because under
+   * `AGENTS.md` reservation 4's release of 2026-09-04 the wording is ours and
+   * its *truth* is not, and every clause of it is a claim about code:
+   *
+   * - **`{room}` is the type the press named**, resolved from the key the
+   *   event carried rather than from a word anybody wrote here -- which is why
+   *   both types are formatted and why the sample carries the yard.
+   * - **"designated" and nothing further.** The accepted outcome also holds the
+   *   rectangle, the anchor tile and an `enclosure` reading, and a sentence
+   *   mentioning any of them would claim more than the world has confirmed: a
+   *   `'sealed'` perimeter is #938's trap (identical for a reachable room and a
+   *   doorless one), and a registered instance has `residentCapacity: 0` until
+   *   an object stands in it.
+   *
+   * So this is a `toBe` rather than a `toContain`: any clause added to that
+   * sentence is a claim that has to be proved here first.
+   */
+  it('says which type was designated, and claims nothing further (#966)', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentenceFor = (roomNameKey: string): string => {
+      // Off the alerts row and not the band notice, since 2026-09-05 the band
+      // is not where this sentence goes -- see `loggedRow` above.
+      const row = loggedRow({ sequence: 1, tick: 100, type: 'rooms.zoned', roomNameKey });
+      return localizer.format(
+        row.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
+      );
+    };
+
+    expect(sentenceFor('room.cell.name')).toBe('Cell designated.');
+    // The room type whose designation is complete on the tick it is created --
+    // `room.yard` authors no `object` requirement -- and still the same
+    // sentence, because "designated" is all either of them has earned.
+    expect(sentenceFor('room.yard.name')).toBe('Yard designated.');
+  });
+
+  /**
+   * **Where each sentence goes, decided per event type** (issue #966 site 2,
+   * and the owner's ruling of 2026-09-05).
+   *
+   * This channel paints two surfaces -- the alerts list, which is the log, and
+   * `.hud__event`, the one line laid out at every viewport -- and until that
+   * ruling every event reached both by construction. The ruling sends the
+   * acknowledgement of a designation to the log **only**, so the routing is now
+   * a decision somebody has to take per member, and this is where it is
+   * checked.
+   *
+   * **Exhaustive, and the list of exceptions is written here rather than read
+   * from the code under test.** `LOG_ONLY` is this file's own statement of the
+   * ruling; every other member of `SIMULATION_EVENT_TYPES` must produce a
+   * notice. So a member added to the union and quietly given `'log-only'` fails
+   * here, and so does `rooms.zoned` being put back on the band.
+   *
+   * `rooms.needs-cleared` and `rooms.unzoned` joined `rooms.zoned` here under
+   * issue #1006, for the same reason stated at their own `EVENT_PRESENTATION`
+   * entries: a repair or a removal the player already knows about belongs in
+   * the record, not fighting for the band's one line.
+   */
+  it('sends the acknowledgement to the log alone and every other event to both surfaces (#966)', () => {
+    const LOG_ONLY = new Set<SimulationEvent['type']>([
+      // ADR 0116, the owner's ruling of 2026-09-16, and the fourth member to
+      // be written into this set by hand. Its reason is not the other three's:
+      // they are things the player just did and already knows about, while a
+      // completion is the prison finishing a job on its own clock. What routes
+      // it here is ADR 0116 section 4d's arithmetic -- 625 ms between
+      // completions at x4 against a 600 ms dwell floor, so the band would
+      // become a progress meter for the length of a building programme.
+      'construction.order-completed',
+      'rooms.needs-cleared',
+      'rooms.unzoned',
+      'rooms.zoned',
+    ]);
+
+    for (const type of SIMULATION_EVENT_TYPES) {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (LOG_ONLY.has(type)) {
+        /*
+         * **`undefined`, and `toBeUndefined` is what separates the two wrong
+         * answers.** A notice would put the sentence back on the band, which is
+         * the ruling reversed. `'none'` would be worse than the band ever was:
+         * it means *there is no event*, and `src/main.ts` deletes
+         * `HudViewModel.event` on it -- so designating a room would **empty**
+         * the band and delete an escape-attempt sentence outright, rather than
+         * merely displacing it. `undefined` is *this message says nothing about
+         * the band*, and the field is left exactly as it was. Both wrong
+         * answers fail this one assertion.
+         */
+        expect(notice, `${type} is log-only and must not reach the band`).toBeUndefined();
+      } else {
+        expect(notice, `${type} must still reach the band`).not.toBeUndefined();
+        expect(notice, `${type} must not empty the band`).not.toBe('none');
+      }
+      // Either way it is in the log. The routing decides one surface, never
+      // both, and an event that reached neither would be a silent event --
+      // which is the defect the acknowledgement census (#960, #966) is about.
+      expect(loggedRow(SAMPLE[type](1)).labelKey, `${type} must be in the log whatever the band does`).toBe(
+        `hud.alert.event.${type}`,
+      );
+    }
+  });
+
+  /**
+   * **The grade, pinned where the grade still bites: the list's cap** (issue
+   * #966 site 2, the owner's ruling of 2026-09-05).
+   *
+   * **This case replaces one that pinned the grade on the band, and the reason
+   * it is replaced rather than kept is the whole of the ruling.** That case
+   * asserted that a `'warning'` acknowledgement would take the line from
+   * `prisoners.relocated` and `admitToEventBand` would discard it. Every word
+   * of it was a true description of `admitToEventBand` and none of it is a
+   * description of this member any more: an event that never reaches the band
+   * is never offered to that function, so the case would have passed for a
+   * reason that had stopped existing.
+   *
+   * What still reads the grade is `SEVERITY_EVICTION_ORDER` at the cap, and it
+   * is a claim a player can see: **a run of designations must give up its own
+   * confirmations before it gives up a warning.** The unpaid payday goes in
+   * first, so it is the oldest row in the list -- which is what makes the two
+   * grades separable. At `'info'` the designations are evicted and the payday
+   * survives; at `'warning'` they tie with it, the age rule breaks the tie, and
+   * the payday -- the oldest of the band -- is the row that goes.
+   *
+   * **Different room types on purpose.** `simulationEventIdentity` collapses
+   * repeats of one statement into a single counted row, and the payload here is
+   * the room type alone, so eight designations of a cell are one row and could
+   * never reach the cap. A player working through a prison designates a cell,
+   * a yard, a canteen -- that is the run this measures, and it is the only
+   * shape in which an acknowledgement can crowd the list at all.
+   */
+  it('gives up its own confirmations before it gives up a warning (#966)', () => {
+    // Real catalogue keys, and more of them than the cap, so the list is
+    // genuinely over budget rather than exactly at it.
+    const ROOM_NAME_KEYS = [
+      'room.cell.name',
+      'room.yard.name',
+      'room.canteen.name',
+      'room.kitchen.name',
+      'room.holding-cell.name',
+      'room.shower-room.name',
+      'room.laundry.name',
+      'room.infirmary.name',
+      'room.classroom.name',
+      'room.common-room.name',
+      'room.storage-room.name',
+      'room.staff-room.name',
+    ] as const;
+    expect(ROOM_NAME_KEYS.length, 'the run has to overflow the cap for the cap to choose anything').toBeGreaterThan(
+      MAX_EVENT_ALERT_ROWS,
+    );
+
+    let rows: readonly HudAlertViewModel[] = [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['economy.wages-unpaid'](1)), rows) ?? rows;
+    ROOM_NAME_KEYS.forEach((roomNameKey, index) => {
+      rows =
+        hudEventAlertsFromWorkerMessage(
+          publication({ sequence: index + 2, tick: 100 + index, type: 'rooms.zoned', roomNameKey }),
+          rows,
+        ) ?? rows;
+    });
+
+    expect(rows.length, 'the cap still holds').toBe(MAX_EVENT_ALERT_ROWS);
+
+    // The payday is the oldest row in the list and it is still there. This is
+    // the assertion a `'warning'` acknowledgement fails.
+    const payday = rows.find((row) => row.id === 'event-1');
+    expect(payday, 'the unpaid payday outlives a dozen designations that arrived after it').toBeDefined();
+    expect(payday?.severity, 'and it is there as the warning it is').toBe('warning');
+
+    // And what went are the oldest designations, so the age rule still governs
+    // inside the band the acknowledgement belongs to.
+    const survivors = rows.map((row) => row.id);
+    expect(survivors, 'the oldest designation is the one sacrificed').not.toContain('event-2');
+    expect(survivors.at(-1), 'the newest row is always kept').toBe(`event-${String(ROOM_NAME_KEYS.length + 1)}`);
+    expect(survivors[0], 'and position is preserved: the payday arrived first and is still drawn first').toBe(
+      'event-1',
+    );
   });
 
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {
@@ -291,6 +581,17 @@ describe('what the prison says when nothing went wrong', () => {
     // so without an `'info'` counterpart the three rows above would leave the
     // band red over a prison that is calm again.
     expect(severityOf('incidents.all-clear')).toBe('info');
+    /*
+     * **And the lapse's closing row is a step louder** (issue #914's finding
+     * 4). The two rows say the same thing about `openIncidentCount` and
+     * different things about the prison: a containment injures nobody
+     * (`IncidentResponseSystem`'s `'resolved'` branch writes
+     * `injuredEntityIds: []`) and a lapse injures every participant, so
+     * grading them the same is what let a prison with 114 prisoner-injuries
+     * read like one with none. `'warning'` and not `'danger'`: nothing is
+     * still running.
+     */
+    expect(severityOf('incidents.all-clear-after-lapse')).toBe('warning');
 
     /*
      * The one member about an outcome rather than an opening (#683), and the
@@ -435,6 +736,72 @@ describe('what a control says when it works (#749)', () => {
     expect(sentenceOf(SAMPLE['construction.redone'](1)), 'no count').not.toMatch(/\d/);
   });
 
+  it('says what an undo destroyed, in the sentence that says the undo happened (#927)', () => {
+    /*
+     * Issue [#927](https://github.com/matmaxalez/lockstate/issues/927): `Z` on a
+     * finished wall takes the wall down, refunds nothing and destroys the
+     * materials, and the only thing the game said was *"The last change to the
+     * build queue was undone."* -- true, and not the part that mattered.
+     *
+     * **Asserted as a whole sentence and as its difference from the plain
+     * undo**, the shape ruling 2's pair is asserted in above and for the same
+     * reason: a presentation table mapping both types onto one key satisfies any
+     * assertion made about either alone.
+     *
+     * **And asserted as containing the plain undo's own clause**, which is the
+     * assertion that would catch the near-miss this fix was nearly built as:
+     * reusing `order-cancelled-underway` on this channel would have said *"The
+     * order was cancelled"* over a press that cancelled no single order and was
+     * not the Cancel control. The player has to be told the change was undone
+     * *and* what it cost, in one sentence, because the band shows one.
+     */
+    const destroyed = sentenceOf(SAMPLE['construction.undone-spend-destroyed'](1));
+
+    expect(destroyed).toBe(
+      'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
+    );
+    expect(destroyed, 'the two outcomes must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.undone'](1)),
+    );
+    expect(destroyed, 'it still says the undo happened').toContain('The last change to the build queue was undone');
+    expect(destroyed, 'and it does not claim a control the player did not press').not.toContain('The order was cancelled');
+    expect(destroyed, 'no count, which is ruling 4').not.toMatch(/\d/);
+  });
+
+  it('says a removed object took its cost with it, and does not call it an order (#945)', () => {
+    /*
+     * Issue [#945](https://github.com/matmaxalez/lockstate/issues/945): removing
+     * a standing bed destroyed the 65 it cost -- `25,000 -> 24,935` on placement,
+     * `24,935 -> 24,935` on removal -- and put **nothing** on screen. The band
+     * was `hidden`, so it was an absence and not a collision, and it survived
+     * #932 because a standing object reaches neither channel #932 fixed.
+     *
+     * **The two `not` assertions are the ones that fail against the near-miss
+     * this fix was nearly built as.** The obvious cheap fix is to raise
+     * `construction.order-cancelled-underway` from the removal branch, which
+     * needs no new key at all -- and it would say *"The order was cancelled"*
+     * over a press that cancelled no order: the order that built the bed is
+     * still `'completed'` afterwards, which
+     * `tests/integration/object-removal-loop.test.ts` asserts. The other
+     * direction is just as wrong: it must not read as a refund, because the
+     * whole finding is that a player cannot tell this press from one.
+     *
+     * **Asserted as a whole sentence, and as its difference from the refund
+     * sentence it is deliberately shaped to mirror.** A presentation table
+     * mapping two types onto one key satisfies any assertion made about either
+     * alone, which is the reason #927's case above asserts the same way.
+     */
+    const removed = sentenceOf(SAMPLE['objects.removed-spend-destroyed'](1));
+
+    expect(removed).toBe('The object was removed — the money it cost does not come back.');
+    expect(removed, 'a standing object is not an order any more').not.toContain('The order was cancelled');
+    expect(removed, 'and it must not read as a refund').not.toContain('refunded');
+    expect(removed, 'the pair must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.order-cancelled'](1)),
+    );
+    expect(removed, 'no figure -- `PlacedObjectRegistry.remove` answers `boolean`').not.toMatch(/\d/);
+  });
+
   it('paints the one that reports a loss differently from the three that do not', () => {
     /*
      * The band's severity is the only thing separating "you got your money
@@ -453,6 +820,16 @@ describe('what a control says when it works (#749)', () => {
     expect(severityOf(SAMPLE['construction.undone'](1))).toBe('info');
     expect(severityOf(SAMPLE['construction.redone'](1))).toBe('info');
     expect(severityOf(SAMPLE['economy.delivery-cancelled'](1))).toBe('info');
+    // #927's row, graded by the same rule as the cancellation that reports a
+    // loss: an undo that destroyed a finished order's materials is not the loop
+    // working quietly, and `'info'` beside the plain undo would take back in
+    // the tone what the second sentence exists to distinguish.
+    expect(severityOf(SAMPLE['construction.undone-spend-destroyed'](1))).toBe('warning');
+    // #945's row, graded by that same rule on a third route. Taking a standing
+    // object away credits no treasury and fills no container, so it reports
+    // value destroyed -- and `'info'` here would put the one press that
+    // *destroys* money in the same colour as the two that give it back.
+    expect(severityOf(SAMPLE['objects.removed-spend-destroyed'](1))).toBe('warning');
   });
 
   it('refuses a refund that is not a whole non-negative number of minor units', () => {

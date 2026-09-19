@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { stateIncomeForCompletedDay, STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS, unmetNeedCount } from '../../src/simulation/economy/income';
+import {
+  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  stateIncomeForCompletedDay,
+  stateIncomeForPrisonerDayAt,
+  unmetNeedCount,
+} from '../../src/simulation/economy/income';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -7,6 +12,17 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 /**
  * Issue #535 decision 5, end to end: **a sentence is drawn at admission, and
  * the grant-withholding schedule that could never fire now fires.**
+ *
+ * **Suspended 2026-09-03, restored 2026-09-04, and the sentence above was
+ * true on both sides of that.** From 2026-09-03 this paragraph read: *"The
+ * owner set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0` for now
+ * ... so the schedule fires and withholds nothing."* The owner restored the
+ * rate to `40` after the measurement they made it conditional on, so the
+ * schedule fires and withholds again (`docs/AGENT_WORKFLOW.md` §4: mark both
+ * directions; both rulings are in that constant's docblock). Neither move
+ * touched what this file is for -- reachability: the prisoner is in the prison
+ * when the boundaries arrive. That is why the unmet counts below are asserted
+ * separately from the money, and why they did not move on either date.
  *
  * Everything below goes through the real kernel, the real `ZoneRoom` and
  * `AdmitPrisoner` commands and the real `StateIncomeSystem` arithmetic, in the
@@ -269,7 +285,7 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(namedRuntime.prisoners.classificationReviewSystem.assess(namedId, namedRuntime.kernel.tick)?.factors.sentence).toBe(0);
   });
 
-  it('is what makes the state withhold a grant for a neglected prisoner, which the old fixed sentence never could', () => {
+  it('is what keeps a neglected prisoner in the prison long enough for the state to see them at all, which the old fixed sentence never could', () => {
     // The boundaries the two room-gated needs cross, derived in this file's
     // header and written out rather than computed here.
     const HYGIENE_BOUNDARY = 11_999;
@@ -294,15 +310,34 @@ describe('a sentence drawn at admission (#535 decision 5)', () => {
     expect(grantAt(2_399)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
     expect(grantAt(9_599)).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
 
-    // Day 5: `hygiene` has fallen through the threshold and one term of the
-    // schedule is withheld. Written as literals -- 300 less 40 -- and not as
-    // `RATE - WITHHELD`, which would hold for any pair of numbers.
-    expect(grantAt(HYGIENE_BOUNDARY)).toBe(260);
-    expect(unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId))).toBe(1);
+    // Day 5: `hygiene` has fallen through the threshold, and day 6:
+    // `recreation` follows.
+    //
+    // **These two assertions read 260 and 220 at the rate ADR 0064 shipped,
+    // then `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` -- the flat 300 --
+    // between the owner's ruling of 2026-09-03** (*"usuń na razie kary,
+    // zobaczymy jak pogram i ocenię łatwość"*, which set
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`) **and their
+    // restoration of it to `40` on 2026-09-04. They read 260 and 220 again.**
+    // Both directions are marked rather than overwritten
+    // (`docs/AGENT_WORKFLOW.md` §4).
+    //
+    // What this file measures is that the *prisoner is still there* when those
+    // boundaries arrive, which is decision 5's whole point and did not move on
+    // either date; the unmet counts below are that measurement and they have
+    // read 1 and 2 throughout. Each boundary asserts the count, then the money
+    // -- and the money is written as literals, 300 less 40 and then less 80,
+    // rather than as `RATE - WITHHELD`, which would hold for any pair of
+    // numbers.
+    const unmetAt = (): number => unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId));
 
-    // Day 6: `recreation` follows, and two terms are withheld.
+    expect(grantAt(HYGIENE_BOUNDARY)).toBe(260);
+    expect(unmetAt()).toBe(1);
+    expect(stateIncomeForPrisonerDayAt(40, unmetAt())).toBe(260);
+
     expect(grantAt(RECREATION_BOUNDARY)).toBe(220);
-    expect(unmetNeedCount(runtime.prisoners.needs, runtime.prisoners.entityStore.getIndex(entityId))).toBe(2);
+    expect(unmetAt()).toBe(2);
+    expect(stateIncomeForPrisonerDayAt(40, unmetAt())).toBe(220);
     expect(runtime.prisoners.entityStore.isAlive(entityId), 'the prisoner must still be holding the place they are being underpaid for').toBe(true);
 
     // And the counterfactual, on the same prison and the same seed: the

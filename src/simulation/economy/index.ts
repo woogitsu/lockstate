@@ -7,17 +7,21 @@ export {
   stateIncomeForCompletedDay,
   stateIncomeForOccupiedPlaces,
   stateIncomeForPrisonerDay,
+  stateIncomeForPrisonerDayAt,
   unmetNeedCount,
   type OccupiedPlaceSource,
   type PrisonerDayGrantSource,
 } from './income';
 export {
+  ARREARS_BOUND_MINOR_UNITS,
   PayrollSystem,
   dailyWageBillMinorUnits,
+  type PayrollResidencySource,
   type PayrollSnapshot,
   type PayrollStaffSource,
 } from './payroll';
 export { InsolvencyRungSystem } from './insolvency-rung-system';
+export { placementCostMinorUnits } from './placement-cost';
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
@@ -34,6 +38,7 @@ export {
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   Treasury,
+  WAGES_STARTER_RESERVE_MINOR_UNITS,
   rungFloorMinorUnits,
   type SpendClass,
   type TreasurySnapshot,
@@ -42,6 +47,10 @@ export { staffDailyWageMinorUnits } from './wages';
 export {
   MAX_PURCHASE_QUANTITY,
   ProcurementSystem,
+  SELL_BACK_RATIO_DENOMINATOR,
+  SELL_BACK_RATIO_NUMERATOR,
+  purchaseChargeMinorUnits,
+  sellBackUnitPriceMinorUnits,
   type PendingDelivery,
   type ProcurementSnapshot,
   type PurchaseCancelOutcome,
@@ -49,4 +58,6 @@ export {
   type PurchaseOutcome,
   type PurchaseRefusalReason,
   type PurchaseSpendClass,
+  type SellStockOutcome,
+  type SellStockRefusalReason,
 } from './procurement';

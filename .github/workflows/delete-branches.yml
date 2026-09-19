@@ -52,7 +52,7 @@ jobs:
     # DIAGNOSIS, not the tally: the four-second no-step-no-log signature is
     # gone, and with it the last reason to suspect the runner. Everything from
     # `runs-on:` to the script is now known to work on this label.
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     steps:
       # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
       # THAT MATTERS MOST.

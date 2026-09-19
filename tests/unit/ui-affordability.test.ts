@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { Container } from '../../src/simulation/operations/inventory';
 import {
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
+  ProcurementSystem,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  Treasury,
 } from '../../src/simulation/economy';
-import { HOST_PRESS_FLOOR_MINOR_UNITS, judgeAffordability } from '../../src/ui/affordability';
+import {
+  HOST_PRESS_FLOOR_MINOR_UNITS,
+  judgeAffordability,
+  purchasePreviewMinorUnits,
+  sellBackPreviewMinorUnits,
+} from '../../src/ui/affordability';
 
 /**
  * **The host's pre-flight on the two intents that cost money.**
@@ -296,5 +305,49 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
       expect(judgeAffordability(charge, 25_000).refused, `charge ${String(charge)}`).toBe(true);
     }
     expect(judgeAffordability(-1, 25_000, 0).refused, 'and at a floor of zero as well').toBe(true);
+  });
+});
+
+/**
+ * **The two figures the Build panel's Buy and Sell controls state, and the two
+ * code paths they have to agree with** (issue #1160, constitution article 4).
+ *
+ * Neither had a test of its own before 2026-09-14, and the buy half did not
+ * exist: `paintBuyTotal` in `src/ui/hud/build-panel.ts` composed
+ * `material.unitPriceMinorUnits * quantity` itself, which is the same rule
+ * written twice on two sides of the worker boundary. The assertions below are
+ * therefore about *agreement* rather than about arithmetic -- each preview is
+ * checked against the system that moves the money, which is what "the label a
+ * player reads and the charge the press makes can never disagree" means when
+ * it is a test rather than a sentence in a docblock.
+ */
+describe('what the Buy and Sell controls promise, against what the simulation does', () => {
+  const treasury = (): Treasury => new Treasury(1_000_000);
+
+  it('previews the exact charge ProcurementSystem.purchase makes', () => {
+    const material = procurableMaterial('item.brick');
+    if (material === undefined) throw new Error('item.brick must be procurable');
+    const system = new ProcurementSystem(treasury(), new Container('stock'));
+    const outcome = system.purchase('order-1', 'item.brick', 7, 0, 'construction');
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(purchasePreviewMinorUnits(material.unitPriceMinorUnits, 7)).toBe(outcome.paidMinorUnits);
+  });
+
+  it('previews the exact credit ProcurementSystem.previewSellStock gives', () => {
+    const material = procurableMaterial('item.wood-plank');
+    if (material === undefined) throw new Error('item.wood-plank must be procurable');
+    const system = new ProcurementSystem(treasury(), new Container('stock'));
+    expect(sellBackPreviewMinorUnits(material.unitPriceMinorUnits, 4)).toBe(
+      system.previewSellStock('item.wood-plank', 4),
+    );
+  });
+
+  it('does not answer the affordability question, which is a separate one', () => {
+    // A preview states a figure; whether the prison can pay it is
+    // `judgeAffordability`'s subject and the Buy control asks it separately.
+    // A preview that refused would put a second treasury in the interface.
+    expect(purchasePreviewMinorUnits(10, 3)).toBe(30);
+    expect(purchasePreviewMinorUnits(10, 0)).toBe(0);
   });
 });

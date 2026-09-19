@@ -1,3 +1,4 @@
+import type { JsonValue } from '../../shared/json';
 import type { ConstructionSnapshot } from '../construction/system';
 import type { ActorIdentitySnapshot } from '../identity';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
@@ -433,4 +434,41 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
   runtime.safetyCoverage.takeCensus(runtime.kernel.tick);
 
   return { runtime, scope: restoredScopeFor(bundle) };
+}
+
+/**
+ * The one place a transport payload becomes a `SessionSnapshotBundle`.
+ *
+ * **This is a declared unsafe step, not a check**, and the point of giving it
+ * a name and a signature is that the unsafety stops being invisible. Three
+ * call sites used to spell `snapshot.data as unknown as SessionSnapshotBundle`
+ * inline -- `src/ui/simulation-commands.ts`,
+ * `src/rendering/feed/simulation-snapshot-feed.ts` and
+ * `src/simulation/worker/state-machine.ts` -- and all three now call this. The
+ * fourth site of the same seam is the save reader, which has a typed payload
+ * rather than a transport one and goes through `bundleFromSavePayload` in
+ * `src/persistence/session/session-controller.ts` instead.
+ *
+ * `as unknown as` erases the argument's type as well as the result's, so those
+ * three sites would have accepted *any* expression at all, including one that
+ * had stopped being a snapshot payload. Here the argument is typed, so the
+ * compiler checks that what is handed over is at least a `JsonValue`.
+ *
+ * **Why the cast cannot be removed.** `JsonValue` is a recursive union that
+ * carries no structural information about the object inside it, so TypeScript
+ * refuses even a single-step `as` here (TS2352, *"neither type sufficiently
+ * overlaps"*) and names `unknown` as the required intermediate. The type-level
+ * relationship that *is* checkable is the one between the save schema's
+ * inferred payload type and this interface, and
+ * `tests/foundation/save-payload-snapshot-bundle-shape-contract.test.ts` pins
+ * it.
+ *
+ * **What makes the claim true at runtime, per call site.** Every caller has
+ * already validated the value: the worker protocol decoder re-validates a
+ * `structured-clone` snapshot against `versionedPayloadSchema`, and the save
+ * reader validates against `decodeSaveEnvelope` and its checksum. This
+ * function adds nothing to that and must not be read as if it did.
+ */
+export function sessionSnapshotBundleFromTransport(data: JsonValue): SessionSnapshotBundle {
+  return data as unknown as SessionSnapshotBundle;
 }

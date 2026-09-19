@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
-import { unmetNeedCount, stateIncomeForPrisonerDay } from '../../src/simulation/economy/income';
+import { stateIncomeForPrisonerDay, stateIncomeForPrisonerDayAt, unmetNeedCount } from '../../src/simulation/economy/income';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -106,7 +106,7 @@ function accommodationCatalogIdOf(runtime: SimulationRuntime, entityId: number):
 }
 
 describe('an assault sanctions its instigator, not both participants, and follows through on it', () => {
-  it('names one instigator of the pair, sanctions only them, relocates them, costs the state grant, and releases them on schedule', () => {
+  it('names one instigator of the pair, sanctions only them, relocates them, moves the count the state grant is priced from, and releases them on schedule', () => {
     const runtime = buildPrison();
 
     // Measured: the first terminal, adjudicated assault in this exact fixture
@@ -182,9 +182,24 @@ describe('an assault sanctions its instigator, not both participants, and follow
     // or any figure `income.ts` declares; this is `HIGH_RISK_REGIME`
     // restricting the day, read back through the same functions
     // `StateIncomeSystem` calls at every day boundary.
+    //
+    // **The 220 was suspended on 2026-09-03 and is back on 2026-09-04**, and
+    // the measurement was never either. Both directions are marked rather than
+    // overwritten (`docs/AGENT_WORKFLOW.md` §4). From 2026-09-03 the owner had
+    // the withheld rate at `0`, so this place paid the flat 300 with two needs
+    // unmet and the assertion below read `income: 300`; they restored the rate
+    // to `40` on 2026-09-04 after the measurement they made it conditional on,
+    // and both rulings are in
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s docblock. The
+    // paragraph above stood through both, because the fact it measures is
+    // `unmet: 2` -- what `HIGH_RISK_REGIME` does to this prisoner's day -- and
+    // that did not move on either date. The count is asserted beside the money
+    // for exactly that reason, and the literal `40` line below keeps "down by
+    // 80, from 300 to 220" checkable at any shipped rate.
     stepTo(runtime, endTick - 500);
     expect(accommodationCatalogIdOf(runtime, instigatorId)).toBe('room.solitary-cell');
     expect(unmetAndIncomeOf(runtime, instigatorId)).toEqual({ unmet: 2, income: 220 });
+    expect(stateIncomeForPrisonerDayAt(40, 2)).toBe(220);
 
     // The term ends and this prisoner is moved back to an ordinary cell --
     // measured one tick after `endTick`, `SanctionSystem`'s own schedule

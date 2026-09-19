@@ -28,18 +28,48 @@ condition **cannot fire on its own terms** — it is anchored on a need readout 
 HUD surface requests. It also carries the measurement. What follows is what that
 measurement, plus one further reading, decides.
 
-### What the code does today
+### What the code does today — the tree decision 1 removed, dated 2026-08-26
 
-`ActionSystem.beginNextAction` (`src/simulation/prisoners/action-system.ts:316-332`)
+> **This is a diagnosis of the tree this ADR replaced, so it is dated rather
+> than re-aimed** (`docs/AGENT_WORKFLOW.md` §4, mark both directions). Decision
+> 1 shipped, and the sentence *"There is no second candidate"* is the thing it
+> removed. Re-pointing these anchors at today's `beginNextAction` would make a
+> dead diagnosis read as current; they are demoted to bare basenames instead,
+> and the live state is given here.
+>
+> **`beginNextAction` is `action-system.ts:1629-1682` today, and it is a
+> loop.** `for (let rank = 0; rank < plan.candidates.length; rank += 1)`
+> (`:1637`), `if (target === undefined) continue;` (`:1640`), and
+> `this.unmetDemandCycles += 1;` once at `:1681` after every candidate has been
+> tried rather than at the first that failed. Its docblock (`:1565-1628`)
+> carries the whole of what changed in its own words, including the amendment
+> for issue #434 and the answers ADR 0054 and issue #435 gave to two of the open
+> questions below.
+>
+> **All three numbered steps have moved out of the method, and step 2 has left
+> `src/` altogether.** The category filter and the ranking now happen in the
+> planning pass that builds `PlannedSelection`, so `beginNextAction` is handed
+> `plan.candidates` already ordered; `rankActions` (`utility-ai.ts:46`) is what
+> produces them. **`selectBestAction` still exists (`utility-ai.ts:63`) and
+> `grep -rn selectBestAction src/` finds no caller** — the only live references
+> are the docblock at `action-system.ts:1571` recording that it used to be one,
+> and `tests/unit/prisoners-utility-ai.test.ts`. The one anchor in this list
+> that still lands exactly is `utility-ai.ts:16-24`, `scoreAction`, still
+> `deficit × effect` and still with no availability term. That is deliberate:
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+> needs the ranking to say what a prisoner *wants*, and this walk to say what
+> they can *have* (`action-system.ts:1693-1698`).
+
+`ActionSystem.beginNextAction` (`action-system.ts`)
 does three things in order:
 
-1. `DEFAULT_ACTIONS.filter(...)` by **regime category only** (`:320`) — not by
+1. `DEFAULT_ACTIONS.filter(...)` by **regime category only** — not by
    whether the action's target can resolve.
-2. `selectBestAction(this.needs, index, legalActions)` (`:322`) returns **one**
+2. `selectBestAction(this.needs, index, legalActions)` returns **one**
    answer. It scores `deficit × effect` (`utility-ai.ts:16-24`) with **no
    availability term**.
 3. `const target = this.resolveTargetInstance(entityId, chosen); if (target ===
-   undefined) { this.unmetDemandCycles += 1; return; }` (`:328-332`).
+   undefined) { this.unmetDemandCycles += 1; return; }`.
 
 **There is no second candidate.** A prisoner whose best action cannot resolve a
 target does nothing that cycle and reconsiders from the same state next cycle,
@@ -49,7 +79,7 @@ which produces the same answer.
 
 `action.eat-meal` targets `room.canteen` and gains `hunger: 4` per tick;
 `action.eat-in-cell` targets `own-accommodation` and gains `hunger: 3`
-(`src/simulation/prisoners/actions.ts:48-54`). Both are category `meal`. On the
+(`src/simulation/prisoners/actions.ts:120-126`). Both are category `meal`. On the
 same need with the same deficit, **`eat-meal` outscores `eat-in-cell` always**.
 
 So `eat-meal` is chosen whether or not a canteen exists, and when none does, the
@@ -67,35 +97,88 @@ independent lines converge on that:
   "action.use-toilet"]`. Eighteen prisoners ate nothing and **not one of them
   fell back to a cell meal**, though every one of them had a bed and therefore an
   `own-accommodation` target.
-- `tests/integration/furnished-prison-loop.test.ts:410` asserts
+- `tests/integration/furnished-prison-loop.test.ts` asserts
   `expect(performingTicks['action.eat-in-cell']).toBeUndefined()` outright, and
   calls it "the interesting absence".
 - The repository's own cell-only measurement, arithmetically. New prisoners start
-  at `NEED_MAX` (`needs.ts:103`, `reset` sets every need to the scaled maximum)
-  and hunger decays at `0.05` per tick (`needs.ts:52`).
-  `tests/integration/furnished-cell-loop.test.ts:296-298` measures hunger at
+  at `NEED_MAX` (`needs.ts:240-244`, `reset` sets every need to the scaled
+  maximum) and hunger decays at `0.05` per tick (`needs.ts:113`).
+  `tests/integration/furnished-cell-loop.test.ts` measures hunger at
   **25.0** at tick 4,800 in a prison with **no canteen**. 255 − 25.0 = 230
   levels, which is exactly 4,600 ticks of pure decay — admission at tick 200 and
   **not one tick of eating**. A single `eat-in-cell` block is `minDurationTicks:
   40` × 3 = 120 levels; there is no room in that number for even one.
 
 **That last one is a defect in a comment, and it is the reason this went
-unnoticed for so long.** `furnished-cell-loop.test.ts:298` explains the 25.0 by
+unnoticed for so long.** `furnished-cell-loop.test.ts` explains the 25.0 by
 saying *"hunger is nearly exhausted because `action.eat-in-cell` gains 3 a tick
 against a canteen's 4"* — attributing the number to a mechanism that never ran.
 That file records no per-action performing ticks, so nothing in it could have
 caught the difference. A measurement explained by a mechanism nobody checked had
 run is the same shape this repository keeps finding, one layer further in.
 
+> **The comment was corrected, and the correction is in the file rather than
+> only in this document.** `furnished-cell-loop.test.ts:334-341` now opens
+> *"This paragraph used to read hunger 25.0 and bladder 212.6, and it explained
+> the 25.0 by saying …"* and states the arithmetic this bullet gave — pure decay
+> from admission, not a weaker meal. The Consequences bullet below that asked
+> for exactly this is therefore discharged; the anchors are demoted here because
+> the sentence they pointed at is gone, and `:296-298` is a `safety` /
+> `STATE_INCOME_UNMET_NEED_LEVEL` argument from issue #588 today.
+>
+> **`furnished-prison-loop.test.ts`'s absence assertion was *not* inverted, and
+> that is right rather than an omission.** It still reads
+> `expect(performingTicks['action.eat-in-cell']).toBeUndefined()` (`:564`), now
+> under a paragraph at `:539-547` explaining that a canteen prison genuinely
+> never falls back — *"a fallback, not a replacement"*, as the amendment to
+> alternative A below puts it. The inversion the Consequences bullet demanded
+> landed in the *cell* case instead: `:598` pins `'action.eat-in-cell': 560`.
+> `:410` is `readonly finalHunger: number;` today.
+
 ### Why nothing surfaces any of it
 
 `hunger` has no consumer. Grepping `src/` for it returns the save schema, a
 migration note, a locale label and the decay table. **`safety` is the only need
-with a downstream reader** (`new-session.ts:616` → `IncidentTriggerSystem`).
+with a downstream reader** (`new-session.ts` → `IncidentTriggerSystem`).
 Nothing kills, disciplines or reports a starving prisoner, and no HUD surface
 requests the projection that carries need levels. The starvation is total and
 currently invisible — which is why it is a decision about correctness rather than
 an incident.
+
+> **Every sentence in that paragraph is false today, and this document already
+> said so somewhere else — which is the part worth recording.** The amendment
+> under open question 3 below reads *"ADR 0048 gave an unmet need a downstream
+> reader in between, so the 'requirement the game never enforces' this document
+> refused no longer describes the state."* That was written on 2026-08-28 and
+> this section was never amended with it, so the two halves of one file have
+> disagreed since. Found by reading the document's own sections against each
+> other (`docs/AGENT_WORKFLOW.md` §4), not by any diff.
+>
+> Measured against today's tree, three readers rather than none:
+>
+> - **Riots.** `needsPressureWeight` is `1` and *"neglect alone can cause a
+>   riot"* (`src/simulation/incidents/sector-risk.ts:50`), over a pressure term
+>   that counts all six needs — `hunger` named at `:60` and `:88` — feeding
+>   `IncidentTriggerSystem`.
+> - **Money.** [ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md) prices an
+>   unmet need: `src/simulation/economy/income.ts` imports `NEED_IDS` and
+>   `NeedsComponent` (`:4`) and holds the whole six-need sample
+>   (`:268`, `:285-290`). Read its own amendment before relying on the size of
+>   that price.
+> - **A readout.** The regime panel draws a bar per prisoner carrying **that
+>   prisoner's lowest need** — its word, its level in permille, and a `warning`
+>   tone when the need is unmet for state income
+>   (`src/ui/hud/roster-panel.ts:572-574`, `:1184-1197`; `:1190-1192` says the
+>   subject of the bar changes with which of the six is now lowest). **That is
+>   ADR 0029
+>   decision 5's revisit condition — *"the readout that shows a starving need"* —
+>   arriving after this document was written**, so the trigger that could not
+>   fire on its own terms now can.
+>
+> **What this does not change is the decision.** The paragraph was an argument
+> that starvation was a *correctness* problem and not an incident, and the
+> fallback shipped on 2026-08-26 before any of these readers existed. It is kept
+> whole because it is why decision 1 was taken without waiting for a readout.
 
 ## Decision
 
@@ -259,6 +342,11 @@ all, so this option no longer describes a defensible position.
 - `furnished-prison-loop.test.ts:410`'s deliberate absence assertion inverts, and
   `furnished-cell-loop.test.ts:298`'s explanatory comment must be corrected: its
   number was pure decay, not a weaker meal.
+  *Both were settled, and only one the way this bullet predicted — see the note
+  under "The consequence" above. The comment was corrected
+  (`furnished-cell-loop.test.ts:334-341`); the absence assertion still stands at
+  `furnished-prison-loop.test.ts:564`, because a prison with a canteen really
+  does not fall back, and the inversion landed in the cell case at `:598`.*
 - Determinism is unaffected by construction — same population order, same
   candidate order, no new randomness — and must be shown so, not asserted.
 

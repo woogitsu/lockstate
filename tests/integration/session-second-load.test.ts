@@ -10,6 +10,7 @@ import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-chan
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
 import { LoopbackWorker } from '../helpers/loopback-worker';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #149: a second load in the same tab, through the composition that
@@ -158,8 +159,8 @@ describe('a second session in the same tab (#149)', () => {
   it('loads a second prison through the host that already created one', async () => {
     const { controller, repository, workers } = buildFixture();
 
-    expect((await controller.createPrison(PRISON_A, 'A')).ok).toBe(true);
-    expect((await controller.createPrison(PRISON_B, 'B')).ok).toBe(true);
+    expectOk(await controller.createPrison(PRISON_A, 'A'), 'the creation of PRISON_A');
+    expectOk(await controller.createPrison(PRISON_B, 'B'), 'the creation of PRISON_B');
 
     const outcome = await controller.loadPrison(PRISON_A);
 
@@ -176,9 +177,18 @@ describe('a second session in the same tab (#149)', () => {
 
     // And the save the second load restored is intact: no generation was
     // demoted on the way, so the prison is no worse off for having been
-    // loaded.
+    // loaded. `gen-1` being first is that claim, and it is the one this case
+    // has always made.
+    //
+    // The two behind it are #943's, and this assertion read `['gen-1']` until
+    // it landed: prison A is *saved on its way out* now, once by the
+    // `createPrison(PRISON_B)` above and once by the `loadPrison(PRISON_B)`,
+    // because until that change asking for a second prison threw the first
+    // one's unsaved play away silently (measured: kernel tick 211 back as 0,
+    // zero dialogs). Written out rather than loosened to a length or a
+    // `toContain`, so a capture that stopped happening still fails here.
     const [a] = (await repository.list()).filter((slot) => slot.prisonId === PRISON_A);
-    expect(a?.generationIds).toEqual(['gen-1']);
+    expect(a?.generationIds).toEqual(['gen-1', 'gen-2', 'gen-5']);
 
     // Four sessions, four workers, and every one of them was sent exactly one
     // `simulation/initialize`: that is the rule that makes the defect
@@ -211,8 +221,8 @@ describe('a second session in the same tab (#149)', () => {
   it('still demotes and recovers across the fresh workers', async () => {
     const { controller, repository, workers } = buildFixture();
     await repository.create({ prisonId: PRISON_A, gameVersion: 'test-version' });
-    expect((await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 4242))).ok).toBe(true);
-    expect((await repository.save(PRISON_A, unrestorableEnvelope(PRISON_A, 2))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 4242)), 'the good generation 1');
+    expectOk(await repository.save(PRISON_A, unrestorableEnvelope(PRISON_A, 2)), 'the unrestorable generation 2');
 
     const outcome = await controller.loadPrison(PRISON_A);
 
@@ -236,8 +246,8 @@ describe('a second session in the same tab (#149)', () => {
     // long after boot.
     const { controller, repository, workerUnavailableReports } = buildFixture({ failWorkerAfter: 1 });
     await repository.create({ prisonId: PRISON_A, gameVersion: 'test-version' });
-    expect((await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 1))).ok).toBe(true);
-    expect((await controller.createPrison(PRISON_B, 'B')).ok).toBe(true);
+    expectOk(await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 1)), 'the good generation 1');
+    expectOk(await controller.createPrison(PRISON_B, 'B'), 'the creation of PRISON_B');
 
     await expect(controller.loadPrison(PRISON_A)).rejects.toThrow(
       /The simulation worker for this session could not be started: Worker construction is blocked\./,

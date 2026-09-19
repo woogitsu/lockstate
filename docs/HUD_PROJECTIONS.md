@@ -147,12 +147,14 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twenty
+publishable on a timer: `simulation/status-counts` (section 8) carries twenty-one
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. *(Eighteen until issue #585 added `occupiedPlaces`,
 the residency places that currently exist, and nineteen until the owner's
 ruling 18 of 2026-08-31 added `treasuryOverdraftFloorMinorUnits`, how far below
-zero the balance may be taken — a tally in a sentence, so it is
+zero the balance may be taken, and twenty until issue #890 added
+`stateIncomeWithheldTodayMinorUnits`, how much of today's grant unmet needs
+have kept back — a tally in a sentence, so it is
 worth saying that the property being claimed is "a fixed set of scalars", not
 the number. `tests/unit/worker-status-counts.test.ts` pins the exact count and
 the bytes, which is where the number is actually enforced.)* A projection that carries rows must be paged
@@ -354,6 +356,15 @@ that reached a bounded in-worker window and stopped there.
   one that was never sent, and its length would grow with the session, which
   is exactly what contract 5 forbids on a cadence. `RefusalLog`
   (`src/simulation/refusals/`) argues this in full.
+  **A fourth member joined it on 2026-09-16 and the three above are kept as
+  written, because they are still the whole of the *record*.**
+  `routeDecidedSince` is `true`-or-absent and is not part of the refusal: it
+  says whether the **same command route** has decided another outcome since,
+  which is a fact about the session rather than about the refusal. Only the
+  band reads it (ADR 0091 decision 2, option F, ruled by the owner); the
+  alerts list ignores it, and the row is unchanged. It carries no target and
+  no coordinates, so the "nothing here grows and nothing here locates" rule
+  is untouched.
 - **A stable id, never a sentence** (ADR 0011).
   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
   reason onto a `hud.alert.refusal.*` message key through a `Record` over the
@@ -371,6 +382,22 @@ that reached a bounded in-worker window and stopped there.
   succeeds — a wall built at the tile it was refused for, a room zoned over
   the rectangle it was refused for. Recorded as gap 34 below, amended rather
   than invented here.
+
+  **That sentence is still true of the alerts list and is no longer the whole
+  truth about the band, and it is kept rather than rewritten because the band
+  is what moved.** ADR 0091 decision 2 was ruled by the owner on 2026-09-16 as
+  **option F**: `.hud__refusal` also retires on a **decided outcome of the
+  same route** — the player zones something else, removes something else,
+  hires somebody else. The refusal itself is *not* withdrawn (that is #492's
+  rule and it decides exactly what it decided before), the alerts list keeps
+  the row, and the two surfaces therefore disagree here **on purpose**. That
+  divergence is the cost the ruling bought, and it is the split
+  `src/ui/simulation-alerts.ts` has claimed in prose since #507 without
+  anything making it true. Options D (any route retires it) and B/C (widening
+  `supersede` itself) were rejected, the second pair because they turn #492's
+  two guarding tests red. The provenance of the ruling is the weaker kind —
+  the label of a clickable option, not a typed sentence — and the ADR's Status
+  block says so.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
 
 #### The zoning notice it also carries (ADR 0022, amended)
@@ -479,7 +506,10 @@ Two things deliberately do **not** cross:
   did. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`) credits
   `residentCapacity` only for an object whose capabilities include
   `'sleep-surface'`; a bench, a dining table and a shower head declare none, so
-  a 40-seat canteen adds 0. The *conclusion* was right for the reason the
+  a 40-seat canteen adds 0. **Since issue #961 that sum is also capped** at the
+  room type's authored `maxResidents` where it declares one -- `room.cell` 2,
+  `room.solitary-cell` 1 -- so a cell with four beds in it contributes 2 rather
+  than 4. The *conclusion* was right for the reason the
   bullet's own last clause named: `object.medical-bed` declares
   `'sleep-surface'` too, so `roomCapacity` counts a furnished infirmary's beds
   while `IntakeSystem` will never house anybody in one.
@@ -536,14 +566,16 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:1781` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:1822-1830`) fires only when all
+  written.** `src/main.ts:2164` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:2244-2253`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
-  those falls through to the nine-call refresh block at
-  `src/main.ts:1886-1894`. (**Those three citations read `1702`, `1735-1740`
-  and `1795-1804` until 2026-09-02** and all three had rotted; the quoted
+  those falls through to the refresh block at `src/main.ts:2355-2364`, which
+  calls ten refreshers. (**Those three citations read `1702`, `1735-1740` and
+  `1795-1804` until 2026-09-02 and `1781`, `1822-1830` and `1886-1894` until
+  2026-09-15, and the block this sentence called "nine-call" at both of those
+  readings now makes ten calls** — every one of them had rotted; the quoted
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
@@ -805,8 +837,8 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
-**Six** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **nine are read, by nine modules.** Both numbers are stated
+**Five** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **ten are read, by ten modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.
 An older one said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
@@ -823,15 +855,29 @@ to coincide at nine because `simulation-room-needs.ts` reads two models and
 than overwritten because the *shape* of the old sentence was right and only its
 arithmetic rotted — exactly what `docs/AGENT_WORKFLOW.md` §4 says a tally does.
 
-The nine with a reader are `hud/status-strip`, `hud/build-queue`,
+**And it read "**Six** … **nine are read, by nine modules**" until 2026-09-03,
+overtaken the same way by the reader under the roster.**
+`src/ui/simulation-prisoner-detail.ts` reads `hud/prisoner-detail` (issue #895,
+the inspector), which is +1 read and −1 unread, and the two counts stay
+coincidentally equal because it is one module asking for one id. The direction
+is marked rather than overwritten for the reason the correction above gives,
+and because this is the first of the five that #157 found *waiting on a
+selection model* to actually get a reader — the entry blocking it named "no
+selection state, no highlight and no inspector", and a panel-local selection
+answered two of those three. There is still no highlight: nothing in
+`src/rendering/` marks the selected prisoner in the world, and nothing anywhere
+maps a world position to an entity.
+
+The ten with a reader are `hud/status-strip`, `hud/build-queue`,
 `hud/pending-deliveries`, `hud/held-guards`, `hud/prisoner-population`,
-`hud/prisoner-roster`, `hud/room-list`, `hud/room-detail` and `hud/staff`; a
-`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The six without
-one are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+`hud/prisoner-roster`, `hud/prisoner-detail`, `hud/room-list`, `hud/room-detail`
+and `hud/staff`; a
+`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The five without
+one are `hud/security`, `hud/contraband`,
 `hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
 last of which is worth naming rather than assumed read, because the world is
 plainly on screen: `SimulationSnapshotFeed` reaches it through
-`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:383`)
+`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:450`)
 and not through this channel at all, which is why it has a cadence of its own
 and why that cadence is the only worked precedent this repository has for
 [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md)'s question.
@@ -920,6 +966,63 @@ decision about what to build next.
    (`PrisonerDetailViewModel.needs`), the second is derivable from figures the
    status strip already carries, and the third exists nowhere.
 
+   **The middle clause is false, and it is kept rather than rewritten because
+   it is an instruction to the next implementer and the instruction is the
+   defect** (`docs/AGENT_WORKFLOW.md` §4). *"the second is derivable from
+   figures the status strip already carries"* tells a reader to subtract one
+   grant from another in the HUD. Re-measured 2026-09-15 on `2559eb14` it fails
+   for two independent reasons, and either one alone is enough.
+
+   1. **The strip does not carry the headline rate, and the HUD may not go and
+      fetch it.** What `projectStatusStrip` publishes is the *prorated* grant --
+      `stateIncomeAccruedTodayMinorUnits`, which is
+      `stateIncomeForOccupiedPlaces` folded through `stateIncomeAccruedByTick`,
+      so the withholding is already inside it -- and the count,
+      `occupiedPlaces`. `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` is declared
+      in `src/simulation/economy/income.ts` and reaches no payload in
+      `src/simulation/protocol/types.ts`, and
+      `tests/unit/ui-hud-messages.test.ts`'s *"imports nothing from the
+      simulation"* forbids every module under `src/ui/hud/` from importing it
+      (`AGENTS.md` boundary 1). Hard-coding 300 beside the projection is the
+      drift `status-strip-projection.ts`'s own comment refuses in the
+      neighbouring case: *"Deriving it from the count instead would be a chip
+      that promises money the day boundary then does not pay."*
+   2. **The subtraction is not exact, so even given the rate it is the wrong
+      arithmetic.** `stateIncomeAccruedByTick` floors --
+      `floorDiv(dailyGrantMinorUnits * ticksServed, DAY_LENGTH_TICKS)` -- and
+      flooring does not distribute over subtraction. For the smallest prison
+      that can show it, one occupied place with one unmet need, a 300 headline
+      against the 260 actually accrued: `accrued(300) - accrued(260)` differs
+      from `accrued(300 - 260)` at **1,320 of the day's 2,400 ticks**, computed
+      on today's constants. The discrepancy is exactly one minor unit, and it
+      is **zero at the payment tick** (`tickOfDay === DAY_LENGTH_TICKS - 1`,
+      where the numerator divides by 2,400 exactly) -- which is what makes it
+      dangerous rather than obvious, because a test written at a day boundary
+      agrees with it and the chip is still wrong for 1,320 ticks of every day.
+
+   So the second of ADR 0064's three is **not** derivable from what the channel
+   carries: it is a figure the simulation would have to project beside the two
+   it already does, computed where the withholding is computed.
+
+   **It now does, and the paragraph above is kept rather than rewritten
+   because the instruction in it is still the one a reader needs**
+   (`docs/AGENT_WORKFLOW.md` §4). `stateIncomeWithheldTodayMinorUnits` is
+   published from `projectStatusStrip` as of issue #890 —
+   `stateIncomeAccruedByTick(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
+   occupied places, tick)` less `stateIncomeAccruedTodayMinorUnits` — and the
+   `Earned today` chip carries it as a description, so ADR 0064's second of
+   three reaches a player. Reason 2 above was re-derived on the two prisons
+   `tests/integration/needs-state-grant-loop.test.ts` builds rather than on
+   the smallest case: at eight occupied places with three unmet needs each the
+   two orderings disagree at **2,240 of 2,400 ticks**, and a mutation using
+   the wrong one goes red at tick 0 while the day-boundary case stays green —
+   which is the trap this entry predicted, reproduced.
+
+   **The third of the three — which room would fix it — still exists
+   nowhere**, and what is *not* settled is loudness: whether the withheld
+   figure should also be a badge visible without hovering is the owner's, and
+   #890 holds it.
+
    **Half-answered by #535 decision 6, and the half that moved is the first
    one.** `PrisonerNeedViewModel` now carries `unmetForStateIncome` — computed
    by `isNeedUnmetForStateIncome`, the same predicate `unmetNeedCount` sums to
@@ -936,6 +1039,19 @@ decision about what to build next.
    owner's, and so is still whether it should be this one. The second and third
    items above are untouched: nothing says what neglect is costing per day in
    the prison's own money, and nothing names the room that would fix it.
+
+   **The first item is now answered for a whole prisoner rather than for their
+   worst need (issue #895), and the sentence above that called it "already
+   projected" is what changed.** `PrisonerDetailViewModel.needs` was projected
+   and read by nobody; `src/ui/simulation-prisoner-detail.ts` reads it, and the
+   Regime panel draws all six needs of a selected prisoner with the same flag
+   per need. That matters to *this* gap specifically, because the state
+   withholds **per unmet need** — `unmetNeedCount` is the multiplier — so the
+   roster's single bar could only ever say whether that count was at least one,
+   and the inspector shows the count's composition. What is still owed is
+   unchanged and is unchanged deliberately: no threshold is decided, no need is
+   called critical, and neither the per-day money nor the room that would fix it
+   is anywhere on screen.
 8. **No need trend.** Only the current level exists; nothing records recent
    history, so a panel cannot show rising/falling.
 9. **No health, injury or medical status.** Incidents produce
@@ -996,10 +1112,11 @@ decision about what to build next.
     0050 "What this does not decide"), and the Regime panel's roster-empty
     sentence, "Nobody has been admitted yet", was shown over that prison as
     though nobody ever had been. **That sentence reads "No prisoners yet.
-    Build a cell with a bed to take somebody in." since the owner's ruling of
-    2026-09-03**; the wording quoted above is what was measured and is kept as
-    the record, and the two states this gap is about are unmoved by the
-    change. `projectPrisonerRoster` now carries
+    Build a cell — big enough, walled all round, with a bed and a toilet in
+    it — to take somebody in." since the owner's ruling of 2026-09-03 as
+    corrected in place on their ruling of 2026-09-19 (#933)**; the wording
+    quoted above is what was measured and is kept as the record, and the two
+    states this gap is about are unmoved by either change. `projectPrisonerRoster` now carries
     `everAdmitted` (`PrisonerOperationsRuntime.admittedCount > 0`,
     `prisoner-projection.ts`), read at the one door every real admission
     passes through, so the two states are distinguishable at the projection
@@ -1017,10 +1134,10 @@ decision about what to build next.
     replacement there, because the sentence that should replace it is a new
     player-facing string and `AGENTS.md`'s fourth exclusion keeps that the
     owner's. **The owner's ruling of 2026-09-03 settled the sentence for the
-    *never admitted* state and not this one** -- "No prisoners yet. Build a
-    cell with a bed to take somebody in." is false of a prison that emptied
-    out for one more reason than its predecessor was, because the cell it tells
-    the player to build is already standing. So this half of the gap is
+    *never admitted* state and not this one** -- the sentence quoted above is
+    false of a prison that emptied out for one more reason than its
+    predecessor was, because the cell it tells the player to build is already
+    standing. So this half of the gap is
     unclosed and is owed to the owner as its own sentence.
 
 ### Rooms
@@ -1111,6 +1228,22 @@ decision about what to build next.
     `free` clamps at zero and `utilization` clamps at 1. Only the first has
     landed. The other two are changes to what the projection publishes, not to
     what the panel asks for.
+
+    **Two corrections to the paragraph above, 2026-09-05, and it is kept
+    because its list is what the phase is measured against.** First, the list
+    is short by one item: phase 5 also owes the **concurrent-use** figure, which
+    ADR 0028's phase 5 section names in the same breath and which
+    `room-projection.ts` recorded against itself as *"not projected at all
+    yet"*. That one has now landed — `RoomListRowViewModel.concurrentUse`
+    publishes one ceiling per capability with `useOccupancyOf`'s live count
+    against each, and the Rooms panel reads the full rooms out under an "At
+    capacity" header (#997, #1003). Second, *"`RoomOccupancyViewModel` still
+    cannot express"* over-capacity does not follow from the clamping it cites:
+    `current` and `capacity` are both published raw, so `current > capacity` is
+    derivable by any reader, and only `free` and `utilization` clamp. The gap
+    is a **surface**, not a field — which changes who owes it. So of the four
+    items, two have landed (the surface, the concurrent-use figure) and two have
+    not (the room-level verdict, an over-capacity readout).
 
     The per-requirement quantity is now *evaluated* but still not *read out*,
     and the sentence that stood here denied both halves — it read *"The
@@ -1214,6 +1347,22 @@ decision about what to build next.
     fans out over catalog room ids, so an instance registered under a
     room-catalog id the catalog does not define is invisible to the room
     list and to the status strip's room count.
+
+    > **The last clause under-states what this reaches, corrected
+    > 2026-09-15 and marked rather than rewritten.** "The room list and the
+    > status strip's room count" are readouts, and the sentence reads as if a
+    > blind spot here only costs a display. It also costs a **decision**:
+    > `counts.roomCapacity` is summed over the same fan-out, and
+    > `src/ui/hud/projection.ts`, `src/ui/hud/build-panel.ts` and
+    > `src/ui/hud/staff-panel.ts` each derive "is this prison fresh and
+    > unfurnished" from `roomCapacity === 0` — the predicate ADR 0017's
+    > "Amendment, 2026-09-01" defines as
+    > `RoomInstanceRegistry.totalResidentCapacity === 0`, which is a different
+    > question with a different answer. The registry's own docblock already
+    > names this gap as the reason a structural gate asks the registry
+    > directly; the host cannot, because the registry figure is never put on
+    > the wire. Measured consequence and the reason it is not fixed in place
+    > are in that amendment's §2.
 16. **No room-to-sector mapping.** A room's security grade requires a
     caller-supplied `sectorIdByRoomInstanceId`; without it the projection
     omits security rather than guessing a spatial containment rule.
@@ -1279,7 +1428,12 @@ decision about what to build next.
     the income line: ADR 0017 decision 3, on decision 6's basis — the state
     pays per prisoner-day, accrued per occupied place — at 300 minor units a
     prisoner-day less what unmet needs withhold, credited once per in-game day
-    on its last tick. The second is a cancelled purchase's refund
+    on its last tick. **Unmet needs withhold nothing as of 2026-09-03**, the
+    repository owner having suspended the share at `0` while they play and
+    judge difficulty ([ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+    amendment of that date carries their words); the clause is kept rather than
+    cut because the arithmetic it describes is unchanged and only its rate is
+    (`docs/AGENT_WORKFLOW.md` §4). The second is a cancelled purchase's refund
     (`ProcurementSystem.cancel`), which is not an income line and never was.
 
     **The third arrived with [ADR 0075](./adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
@@ -1301,6 +1455,39 @@ decision about what to build next.
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names all three.
 
+    **Unmet needs withhold 40 again, and have since 2026-09-04.** The sentence
+    three paragraphs up -- *"**Unmet needs withhold nothing as of
+    2026-09-03**"* -- is the state of the game for one day and not a standing
+    fact: the owner restored
+    `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04,
+    after the two measurements they had made the restoration conditional on.
+    Both rulings are in that constant's own docblock in
+    `src/simulation/economy/income.ts`, and the restoration reached the source
+    at `3134a78e`. The suspended reading is kept rather than cut for exactly
+    the §4 reason it was itself written under: it happened, and a document that
+    erases it cannot show that this rate is a dial the owner turns rather than
+    a constant of the design.
+
+    **That correction reached `src/` on the day and did not reach this file for
+    eleven days, and the asymmetry is worth naming because it is where this
+    repository's documentation rot actually comes from.** Three consumers of
+    that constant mark both directions in their own comments --
+    `src/simulation/protocol/types.ts` (*"There were no 40s to attribute
+    between 2026-09-03 and 2026-09-04, and there are again"*),
+    `src/ui/hud/regime-panel.ts`, and
+    `src/simulation/presentation/prisoner-projection.ts` (*"it stopped being
+    true on 2026-09-03 ... and it is true again since they restored it to `40`
+    on 2026-09-04"*) -- as does
+    `tests/integration/economy-bed-recycling.test.ts`, which numbers the moves
+    of its own literal and calls the restoration *"the fifth move ... the first
+    that is a return rather than a step"*. Every one of those is a file the
+    restoring change had to open. Nothing made that change open a document.
+    **A ruling recorded in a code comment is carried by the next edit of that
+    code; a ruling recorded in `docs/` is carried by nobody** -- so a change
+    that moves an authored constant should be assumed to have left every
+    document naming its value behind, and `grep` for the value is the whole of
+    the check.
+
     **A fourth crediting *event* arrived with the owner's ruling 20 of
     2026-08-31, and it does not move the file list that gate checks, which is
     why it is written out here by hand.**
@@ -1311,7 +1498,21 @@ decision about what to build next.
     `src/simulation/economy/procurement.ts`: `ProcurementSystem.cancel`, for a
     just-in-time delivery the cancellation made surplus, and
     `ProcurementSystem.refundMaterials`, which is new and sells an allocated
-    order's materials back at the catalogue price. **Neither is an income
+    order's materials back at the catalogue price. **The second of those gained
+    a second caller with
+    [#717](https://github.com/matmaxalez/lockstate/issues/717), and the
+    sentence above is kept because it is what ruling 20 shipped.** The owner
+    took ADR 0076's own open question -- *"whether surplus stock can be sold
+    back"* -- on **2026-09-02**, in the broad reading and with the measured
+    cost in front of them, so `refundMaterials` now also sells back the stock a
+    cancelled `'approved'` or `'materials-pending'` order's demand left on the
+    shelf, bounded by that order's own requirement
+    (`JustInTimeMaterialsService.refundSurplusStock`). **No file and no count
+    moved**: it is the same call in the same file, so *three sites* and *four
+    events* stand, which is why this is a marked sentence rather than a new
+    bullet. `ProcurementSystem.previewRefundMaterials` is not a fifth of
+    anything either -- it is the pure formula `refundMaterials` is built on and
+    credits nothing, which is the whole reason a projection may ask it. **Neither is an income
     line** -- both are the prison's own money coming back, exactly as a
     cancelled purchase's refund is -- so neither is diverted to a loan under
     ADR 0075 decision 2, and neither may be added to a readout that shows
@@ -1481,6 +1682,25 @@ decision about what to build next.
     incidents only; history is reachable solely through `all()`, which
     materialises every incident ever recorded. An incident-history panel is
     `O(all)` per projection and unbounded over a long session.
+
+    **Half of that sentence stopped being true and the half that did is the
+    cheaper half, which is why the entry is amended rather than closed.**
+    `projectIncidents` used to build a whole `IncidentRowViewModel` for every
+    terminal incident and then hand the array to `pageOf`, which kept `limit`
+    of them and dropped the rest — so a request showing four rows built one
+    per finished incident, each with a bounded-value record, an optional
+    outcome record and a `requiredResponderCount` call on the response source.
+    It now carries a terminal **ordinal** through the same walk and calls
+    `projectRow` only inside the window, which is the shape
+    `projectPrisonerRoster` already used (*"materialise only the ones the
+    window asked for"*). The page is unchanged: same records, same order, same
+    `total`/`offset`/`limit`.
+
+    **What is still open is the walk itself**, and it is the part that needs
+    the index this entry is named for: the aggregate `projectIncidents`
+    reports — `summary`, `countsByState`, `countsByType` — is a fold over
+    every record, so `all()` is still called and still materialises the log.
+    Closing that is a change to `IncidentLog`, not to the projection.
 29. **~~`assault` and `escape-attempt` are declared but never triggered.~~
     Closed by [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md).**
     `IncidentTriggerSystem` opened only `riot` and `gang-retaliation`, so two
@@ -1586,7 +1806,11 @@ decision about what to build next.
     `RefusalReason` member, `construction.materials-unfunded`, a new
     `REFUSAL_LABEL_KEYS` entry and a new key,
     `hud.alert.refusal.construction.materials-unfunded`, reading *"The build
-    queue is stalled — no more materials until the state pays what it owes."*
+    queue is stalled — no more materials until the prison earns the money."*
+    (that tail read *"until the state pays what it owes"* until 2026-09-04,
+    when issue #913 measured the state owing nothing to a prison that is not
+    earning; ruling 19's requirement — name what stops, not the number it
+    stops at — is what the replacement keeps)
     `reportMaterialsFunding` records that instead of
     `purchase.insufficient-funds`, so rung 2's event no longer reports rung
     1's sentence. What is **still** owed is the other half: the sentence names
@@ -1885,6 +2109,25 @@ decision about what to build next.
     open question this gap always named, and still needs a decision about how
     the HUD would render it (highlight the tile? move the camera?).
 
+    **Amended again, 2026-09-16, and the clause about the key is narrowed
+    rather than withdrawn.** ADR 0091 decision 2 was ruled by the owner as
+    option F: **the band** — not the log, and not the alerts list — retires its
+    sentence on a **decided outcome of the same command route**. The key is
+    still purely in-worker and still never reaches `src/ui/`; what does reach
+    it is one boolean derived from the key's route prefix,
+    `SimulationRefusal.routeDecidedSince`, which names a command and not a
+    place. So the *where* this gap is about is exactly as absent as it was, and
+    that is also the reason the ruling was needed: a corner that cannot say
+    where it is about cannot be read beside a room the player has just
+    successfully zoned. The measured form of that was two adjacent grid rows
+    making opposite claims about one press.
+
+    **What this does not close.** #780's plain different-location case for a
+    route the player never repeats: a `zone.not-enclosed` refusal about a
+    rectangle they abandon stands until they zone or refuse something else. And
+    there is still no player gesture — a refusal is a level, not an occurrence
+    run, and ADR 0084's `×` deliberately does not reach it.
+
     **The placement half of this gap is closed, and this is the answer it
     named.** It used to record that the alerts section starts *folded*
     (`INITIAL_HUD_SHELL_STATE`) and that `hud.css` drops `.hud__corner` — the
@@ -1935,3 +2178,187 @@ decision about what to build next.
     different question from the one answered above — a fault is not a refusal
     and does not belong on a band that says a command was declined — and it is
     deliberately still open here rather than settled as a side effect.
+
+    **A third half opened on 2026-09-15, and it is not a placement question:
+    a refusal a player never saw is not retained anywhere, and constitution
+    article 6 appears to forbid that.** The article is
+    `docs/design/2026-09-13-identity-v5/DOKUMENTACJA/konstytucja.md:35`, and
+    ADR 0112 decision 1 accepted the constitution as a product contract under
+    `AGENTS.md`:
+
+    > *"Ostrzeżenia nie znikają dlatego, że przyszło nowsze zdarzenie.
+    > Historia zdarzeń pozostaje dostępna."*
+
+    ("Warnings do not disappear because a newer event arrived. The event
+    history remains available.")
+
+    **Measured rather than argued**, with a throwaway `vitest` probe against
+    `RefusalLog`, `hudAlertsFromWorkerMessage` and `hudRefusalFromWorkerMessage`
+    directly (deleted before commit, `docs/AGENT_WORKFLOW.md` §2; the four
+    assertions and their output are in the report that accompanies this
+    change):
+
+    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:158-166`).
+      Two refusals leave `count === 2` and `last` holding only the second; the
+      first is unreachable from the object.
+    - The alerts list keeps exactly one refusal row, keyed by ordinal, and
+      the previous one is filtered out before the new one is appended
+      (`src/ui/simulation-alerts.ts:325-338`). Probe: after
+      `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
+      is `[{"id":"refusal-2", …}]` — length 1.
+    - The band carries the newest ordinal and nothing else
+      (`src/ui/simulation-alerts.ts:449-453`, `src/ui/hud/hud.ts:1730-1745`).
+    - Neither surface shows the count. The row literal carries `id`,
+      `labelKey` and `severity` only, and `sequence` reaches a player only as
+      an opaque row id.
+
+    **Four of the five code coordinates above were repinned on 2026-09-16, and
+    one of the four sentences is now false. Both are #1261's doing** — ADR 0091
+    decision 2, option F, ruled by the owner on 2026-09-16 — and the sentence is
+    kept rather than rewritten (`docs/AGENT_WORKFLOW.md` §4: mark both
+    directions).
+
+    - **The repins are citation maintenance and change no finding.** `record`
+      is `refusal-log.ts:158-166`, `supersessionKeyRoute` having been added
+      above it; the band's notice is built at `simulation-alerts.ts:449-453`;
+      the band's rule is `hud.ts:1730-1745`; and the publisher's single read of
+      `refusals.last` is `state-machine.ts:597`, called from `onTickLoop` at
+      `:407`. Each measurement re-reads the same at its new coordinate.
+    - **"The band carries the newest ordinal and nothing else" is false in both
+      directions since #1261.** It carries one thing *more*: the notice now
+      forwards `routeDecidedSince` as well
+      (`src/ui/simulation-alerts.ts:452`). And on that flag it carries *less*
+      than the newest ordinal — a notice marked `routeDecidedSince` is treated
+      as no notice at all, so the corner is cleared while the refusal still
+      stands in `RefusalLog` and still holds its row in the alerts list
+      (`src/ui/hud/hud.ts:1731-1735`). The band is therefore no longer even a
+      lossy copy of the newest refusal; it is a copy that retires itself when
+      the same command route decides something else.
+    - **What that does not touch is the retention finding this section is
+      about.** Option F makes the band hold *less* of the history, never more,
+      so a refusal a player never saw is if anything less retained after #1261
+      than before it. The other three bullets are unchanged and were re-read at
+      their new coordinates: `record` still replaces, the alerts list still
+      keeps exactly one refusal row keyed by ordinal, and neither surface shows
+      the count. So is the twelve-refusal measurement below — `supersede` on a
+      *different* target now marks the standing record instead of doing nothing
+      at all, but a `record` on a failed order still replaces outright, which is
+      the reduction that measurement is about.
+    - **And #1261 is not this section's question being answered by the back
+      door.** It moved `src/` for ADR 0091 decision 2 — when the *band* retires
+      a sentence — not for article 6, which the owner answered separately below
+      on 2026-09-15 by ruling that article 6 does not reach a refusal at all.
+
+    **Eleven of twelve refusals from one gesture never cross the worker
+    boundary at all**, which is stronger than "overwritten fast". One build
+    drag submits one `PlaceBuildOrder` per edge (`src/main.ts:2934-2949`) and
+    the handler records one refusal per failed order
+    (`src/simulation/construction/handler.ts:113-115`); the publisher reads
+    `this._runtime.refusals.last` once per wake
+    (`src/simulation/worker/state-machine.ts:597`, called from `onTickLoop` at
+    `:407`), so a burst decided inside one dispatch pass is reduced to its last
+    member before anything is posted. Probe: twelve recorded refusals across
+    three reasons leave one row, `refusal-12`, `build.out-of-bounds`; the
+    `build.water-blocked` and `build.unowned-land` sentences are gone from both
+    surfaces with no trace. **What was not done: the gesture was not reproduced
+    in a browser.** The reduction is established from the call graph and from
+    the probe against the three pure functions; that a twelve-edge drag across
+    a shoreline is a first-ten-minutes gesture is an inference from
+    `build-tool.ts`'s one-gesture-many-edges contract, not a measurement.
+
+    **Why this is not fixable here and is the owner's.** Every route out
+    changes something reserved or already ruled on: carrying more than one
+    refusal changes `SimulationRefusal` and the `simulation/status-counts`
+    payload (the worker boundary); routing refusals into
+    `SIMULATION_EVENT_TYPES` gives them a save section
+    (`simulation.alerts`) and an `EVENT_PRESENTATION` row whose severity and
+    `surfaces` value has been an owner's ruling every previous time
+    (ADR 0084 ruling 11, #1006, #998); and re-announcing a standing refusal is
+    the unbounded inflation ADR 0087 cost 1 measured at 240 rows in twelve
+    seconds. ADR 0087 is `Proposed, not self-approved` for exactly decision 1,
+    and ADR 0084 says in terms that it does not reopen this gap.
+
+    **And the reading itself is not settled.** Article 3 gives *odmowa* (a
+    refusal) its own vocabulary, distinct from a *komunikat* (a message), so
+    article 6's *ostrzeżenia* may mean a warning about a condition of the
+    prison rather than the decline of a press the player has just made. The
+    literal reading is unusually easy to reach here only because every refusal
+    row is graded `severity: 'warning'` uniformly — and that grading was chosen
+    for an unrelated reason, stated at `src/ui/simulation-alerts.ts:262-268`:
+    grading one refusal above another is a balance judgement this layer has no
+    basis for. **The question, in one sentence: does article 6's
+    *"ostrzeżenia"* reach a refusal of a player's own command, or only a
+    warning about a condition of the prison?** Nothing in `src/` moves until
+    that is answered.
+
+    > **ANSWERED BY THE OWNER ON 2026-09-15: ONLY A CONDITION OF THE PRISON.**
+    > Put to them as the sentence above, they ruled that article 6 governs
+    > arrears, missing beds, an open incident — the state of the prison — and
+    > **not** the decline of a press. That is article 3's *odmowa*, which has
+    > its own vocabulary in the same document. **This records the repository
+    > owner's own ruling, dated. It is not a recommendation of this
+    > repository's and it was not self-approved** — the terms
+    > [ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s two
+    > amendments are recorded under, and for the same reason
+    > (`docs/AGENT_WORKFLOW.md` §3).
+    >
+    > **So this is not a constitutional conflict, and the paragraphs above are
+    > kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4: mark both
+    > directions). Everything they measure is still true and still worth
+    > having — the refusal channel does replace rather than accumulate, eleven
+    > of twelve refusals from one wall drag are reduced before anything
+    > crosses the worker boundary, and no refusal is a `SimulationEventType`
+    > so the event scrollback never holds one. **What changed is what those
+    > measurements mean**: they describe how the refusal channel works, not a
+    > promise the code fails to keep. A future reader weighing whether to
+    > carry more than one refusal should read them as the cost side of that
+    > question rather than as a defect report.
+    >
+    > **And the reading the ruling rejects is the one the code's own word
+    > invites**, which is the part worth carrying: every refusal row is graded
+    > `severity: 'warning'` for a reason that has nothing to do with the
+    > constitution, so *"warning"* in `src/` and *ostrzeżenie* in
+    > `konstytucja.md` are now known to be different words. Nothing enforces
+    > that distinction; this paragraph is the only place it is written down.
+
+    > **Every coordinate in this section was re-opened on 2026-09-17 against
+    > `main` at `33c02a12`, and none of them moved.** Recorded with the commit
+    > rather than with the date alone, per `docs/AGENT_WORKFLOW.md` §4 — a
+    > "checked recently" with no commit on it is a claim a reader cannot
+    > re-run. The eleven read back, verbatim at the line cited:
+    > `konstytucja.md:35` *"Ostrzeżenia nie znikają dlatego, że przyszło nowsze
+    > zdarzenie."*; `refusal-log.ts:158` *"public record(reason: RefusalReason,
+    > tick: number, key?: string): void {"*; `simulation-alerts.ts:325`
+    > *"const standing = previous.filter((row) =>
+    > !row.id.startsWith(REFUSAL_ROW_PREFIX));"*; `simulation-alerts.ts:452`
+    > *"...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as
+    > const } : {}),"*; `simulation-alerts.ts:262` the `severity` paragraph;
+    > `hud.ts:1731` *"if (notice === undefined || notice.routeDecidedSince ===
+    > true) {"*; `main.ts:2935` *"for (const edge of intent.edges) {"*;
+    > `handler.ts:114` *"refusals.record(BUILD_REFUSAL_REASONS[order.failReason],
+    > context.tick, buildKey);"*; `state-machine.ts:597` *"const refusal =
+    > this._runtime.refusals.last;"*; and `state-machine.ts:407`
+    > *"this.publishStatusCounts(now);"*, inside `onTickLoop` (`:392`).
+    >
+    > **What the re-check was looking for and did not find.** Between the
+    > 2026-09-16 repin above and `33c02a12`, `main` took #1266, #1264, #1276,
+    > #1271, #1269 and #1265, and the owner ruled on ADR 0091 decision 2
+    > (option F, already carried above), ADR 0112 decision 4, ADR 0116 and
+    > ADR 0115. None of those touched a line this section cites, and none of
+    > them touches the refusal channel's retention. **The ruling that could
+    > have is ADR 0116** — a construction-completion event, `'info'`,
+    > `'log-only'`, counted rather than repeated, Accepted on `main` — because
+    > it adds a `SimulationEventType` and so bears on the paragraph above that
+    > prices routing refusals into `SIMULATION_EVENT_TYPES`. It does not
+    > change that price: it is a *completion*, not a refusal, and the
+    > `EVENT_PRESENTATION` row it needs was an owner's ruling exactly as that
+    > paragraph says every previous one was. The paragraph is therefore
+    > confirmed by the new ruling rather than falsified by it.
+    >
+    > **Re-run once more at `725aad40`**, after #1279 (*"fix(hud): mount the
+    > alerts fold in the rail below 720px (#1201)"*) merged the same day and
+    > added 53 lines to `src/ui/hud/hud.ts` — the file two of these coordinates
+    > point into. **All ten still read back verbatim**, because #1279's hunks
+    > are the layout-tier plumbing and `placeAlertsFold`, none of it above
+    > `applySimulationRefusal`. Stated because a merge touching a cited file is
+    > the case a reader would assume breaks something, and here it did not.

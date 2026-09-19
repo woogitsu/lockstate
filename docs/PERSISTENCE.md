@@ -14,8 +14,8 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   saveSchemaVersion: 5,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
-  revision: number,        // caller-managed monotonic counter; optimistic-concurrency
-                            // enforcement belongs to the storage backend (#20), not this schema
+  revision: number,        // allocated by the local store at write time, inside the
+                            // transaction that compares it (ADR 0109); see below
   createdAt: number,       // unix ms
   updatedAt: number,       // unix ms, must not precede createdAt
   checksum: string,        // 16 hex chars, see "Checksum" below
@@ -51,6 +51,27 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
 }
 ```
 
+**The `revision` comment above used to say something else, and ADR 0109 made
+it false.** It read:
+
+> `revision: number,  // caller-managed monotonic counter; optimistic-concurrency
+> enforcement belongs to the storage backend (#20), not this schema`
+
+Both halves are now wrong, and the second is the one worth naming: it deferred
+enforcement to "the storage backend (#20)", i.e. to Supabase, which left the
+**local** store — the one every offline player actually writes to — with no
+enforcement at all, and `docs/CLOUD_SAVE.md` holding the only copy of a rule
+this document said belonged elsewhere. `PrisonSaveRepository` now enforces it
+too, so both sides of the boundary hold one position rather than two. The old
+comment is kept here rather than deleted because ADR 0105 quotes this
+document's exclusion as evidence that the asymmetry was deliberate.
+
+**`revision` is still outside the checksum**, which is what makes write-time
+allocation cost nothing: `createSaveEnvelope` hashes the payload only
+(`checksum: computeSaveChecksum(payload as JsonValue)`), so re-stamping the
+number invalidates no checksum and moves no schema version. See "What is out of
+scope here" below for the mechanism and its one fail-open case.
+
 `payload` is exactly the union of the existing per-subsystem snapshot
 contracts (Issues #5, #12, #16/#17 and, since V3, #24–#28), re-validated at
 the save boundary with Zod (`src/persistence/save-schema.ts`), not a new shape
@@ -69,18 +90,29 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Eight payload fields have been added since their section was first written --
+Nine payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
 `currentTransactionId` (#108), `masterSeed` (#412),
 `simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
 (ADR 0042 step 3), `construction.orders[].placementSequence`
 ([ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md), #722)
-and `simulation.alerts`
+`simulation.alerts`
 ([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
-decision of 2026-09-01)
+decision of 2026-09-01) and `simulation.prisoners.components.injured` (issue
+#589, the owner's ruling of 2026-09-17)
 -- and none of them bumped the schema version. **This sentence read "Six" until
-2026-08-31 and "Seven" until 2026-09-01, and the count is the part of it that
-rots**; the list is what to read. The conditions that make that correct, rather than merely
+2026-08-31, "Seven" until 2026-09-01 and "Eight" until 2026-09-17, and the
+count is the part of it that rots**; the list is what to read.
+
+**The ninth is the one whose bump was authorised and not spent, which is the
+case this section had not yet had.** The owner's #589 ruling said
+`SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three
+conditions below hold and because [ADR 0038](./adr/0038-what-makes-a-save-compatible.md)
+rejected a V6 bump for `masterSeed` on the ground that the migration step's only
+content would be fabricating a value the save does not record -- which is
+exactly what a `false`-per-slot step would be here. Doing less than was
+authorised, in the form this document prescribes, is the narrower change and
+the reversible one. The conditions that make that correct, rather than merely
 convenient, are:
 
 - **The field is optional, and absent means what the older build already
@@ -921,8 +953,23 @@ const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredC
 ```
 
 and `queuedCommandSchema.payload` uses it. One line closes both trust entry
-points across all four payload versions and the V1 → V2 → V3 → V4 migration
-chain, because `kernelSnapshotSchema` is shared by all of them.
+points across **every** payload version and the whole migration chain, because
+`kernelSnapshotSchema` is shared by all of them — `grep -c kernelSnapshotSchema
+src/persistence/save-schema.ts` counts one use per version and
+`grep -nE '^export function migrateSaveEnvelopeV' src/persistence/save-migrations.ts`
+is the chain.
+
+**Three different numbers stood for this one fact, two of them in this file.**
+This sentence said "all four payload versions and the V1 → V2 → V3 → V4
+migration chain"; the bullet under "Two further things decided it" below said
+"all three payload versions"; and `src/persistence/save-schema.ts`'s own
+docblock said "all three payload versions and the V1 -> V2 -> V3 migration
+chain". Re-derived 2026-09-15 there are **six** payload schemas and five
+migration functions, so all three were stale and no diff could have found the
+pair in this file, because neither half moved on the day the other did. The
+number is deleted rather than set to six for the reason
+`docs/AGENT_WORKFLOW.md` §4 gives: the sentence's subject is that the schema is
+*shared*, and "every version" is true of any number of them.
 
 `tests/unit/persistence-save-schema-aliasing.test.ts` pins the detachment from
 both entry points, and also pins a rule about the *module*: no object-literal
@@ -993,8 +1040,9 @@ to the envelope's own holder is a separate concern the module doc never claimed.
 Two further things decided it, both from #106:
 
 - **A comment cannot close a hole that widens.** The alias was reachable
-  through `kernelSnapshotSchema` from all three payload versions and the
-  migration chain, and any future `jsonValue`-typed payload section would have
+  through `kernelSnapshotSchema` from every payload version and the whole
+  migration chain (this read "all three" while the paragraph above it read
+  "all four" — see there), and any future `jsonValue`-typed payload section would have
   widened one field into a subtree. That is a code hole, and it is now closed
   by the module rule above.
 - **The cost is 0.01–0.29 ms.** A queued command payload is the *pending
@@ -1395,16 +1443,16 @@ original `'open'`.
 
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
-`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are nineteen per-prisoner
-arrays *in the payload*. Writing them at capacity would cost ~308 KiB (315,360 bytes) in every
+`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are twenty per-prisoner
+arrays *in the payload*. Writing them at capacity would cost ~318 KiB (325,372 bytes) in every
 save regardless of population — the same mistake #50 removed from `entities`,
-at nineteen times the size. That is measured, not derived: the encoded arrays
+at twenty times the size. That is measured, not derived: the encoded arrays
 are `readonly number[]`, so the cost is digit widths rather than element sizes,
-and 308 KiB is the size at 5,000 slots with every array at its constructor
+and 318 KiB is the size at 5,000 slots with every array at its constructor
 default (needs at `NEED_MAX_SCALED` = 51,000, `actionIndex` at its `-1`
 sentinel, the rest zero) — the empty-prison case this claim is about. A
 populated mid-game prison, with seven-digit tick stamps in three of the arrays,
-measures ~435 KiB at the same capacity. They are written across the store's
+measures ~445 KiB at the same capacity. They are written across the store's
 **allocated prefix** (`maxActiveIndex + 1`) instead.
 
 Both figures moved with V4 (#259): a need level is stored scaled by
@@ -1413,7 +1461,9 @@ three, which is ~59 KiB across 30,000 elements at this capacity. Before that
 change the same two cases measured ~240 KiB (245,332 bytes) and ~337 KiB. Both
 moved again with issue #80 (ADR 00XX): a nineteenth persisted array,
 `solitarySanctionEndTick`, was added at zero -- the pre-#80 V5 figures were
-~298 KiB (305,332 bytes) and ~425 KiB.
+~298 KiB (305,332 bytes) and ~425 KiB. And again with issue #589 (the owner's
+ruling of 2026-09-17): a twentieth, `injured`, also at zero -- the pre-#589
+figures were ~308 KiB (315,360 bytes) and ~435 KiB.
 `tests/unit/session-component-payload-size.test.ts` is what keeps this
 paragraph and `session-systems.ts`'s copy of it from drifting apart again.
 
@@ -1879,14 +1929,85 @@ where `idb`'s helpers would materially reduce risk.
 
 ### Schema
 
-Database `lockstate-saves`, version 1, two object stores:
+Database `lockstate-saves`, version 2, three object stores.
+
+> **This read "version 1, two object stores" until 2026-09-14**, when ADR 0114's
+> undo window added the third. The version moved 1 → 2 in the same change;
+> `SAVE_SCHEMA_VERSION` did **not** move and no save envelope changed shape.
+> Those are two persisted formats one layer apart, each with its own number and
+> its own migration mechanism — `onupgradeneeded` in `indexeddb-store.ts` for
+> this one, the step functions in `save-schema.ts` for the other — and the ADR
+> spends a section heading on not conflating them.
 
 - `prisons` (keyPath `prisonId`) — one `PrisonSlotMetadata` record per slot:
   game version, display name, `currentGenerationId`, the ordered
-  (oldest-first) `generationIds` window, timestamps, optional
-  `pendingSync`.
+  (oldest-first) `generationIds` window, timestamps, optional `pendingSync`,
+  optional `currentRevision` (#1097 — the revision of the generation
+  `currentGenerationId` points at, written by every durable save including
+  the interval autosave; see "Adding an optional field without a version
+  bump" below and that field's doc comment in `store.ts`).
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
   validated `SaveEnvelope` per generation.
+- `tombstones` (keyPath `prisonId`) — one `TombstoneRecord` per prison the
+  player has deleted and can still bring back (ADR 0114): the slot record
+  verbatim, every generation `generationIds` named, `deletedAt`, and the
+  `expiresAt` the undo closes at.
+
+#### The `tombstones` store, and why deletion is a move (ADR 0114)
+
+`PrisonSaveRepository.delete` no longer destroys a prison. It reads the slot and
+every generation it references, writes one `TombstoneRecord`, then deletes the
+originals — **all inside the single `readwrite` transaction it already
+opened**, never a second one. That is the property the whole feature rests on,
+and it is why the copy lives in this database rather than in one of its own: a
+real IndexedDB transaction cannot span two databases, so a copy held elsewhere
+would need a second transaction with no way to commit both as one unit, and a
+crash between them either leaves a prison and a spurious copy or — the defect
+the feature exists to prevent — deletes the prison with the copy unwritten.
+
+`list()`'s observable contract is untouched: the slot is gone from `prisons`,
+so the prison leaves the list exactly as it did before.
+
+**The migration is forward-only and pure.** The upgrade creates an empty object
+store and reads, rewrites and deletes nothing; the new store starts empty for
+every existing player, because nothing could have written a tombstone under a
+schema with nowhere to put one. That is the same "absence is unambiguous"
+argument this document makes for `masterSeed` under "Adding an optional field
+without a version bump", one layer below where that rule is stated.
+`tests/integration/persistence-local-indexeddb.test.ts` builds a real v1
+database, writes a prison into it, and opens it through
+`openLockstateDatabase`: the slot record comes back field for field including
+its timestamps, the generation still decodes to the same envelope, and
+`tombstones` exists and is empty.
+
+**Expiry is lazy and read-time, because this application has no scheduler.**
+`listTombstones()` deletes every copy past its `expiresAt` in the transaction
+that reads them, and `SavePanel.refresh()` — awaited once at startup in
+`src/main.ts` and run after every action — is what calls it. The gate on a
+restore is `restoreFromTombstone`'s own clock reading against the stored
+`expiresAt`, inside the transaction that would do the writing, never a
+displayed countdown; a refusal for a closed window deletes the copy as it
+refuses. The cost, named rather than hidden: **a copy can physically outlive
+its window by as long as the player goes between sessions.** It is never
+*offered* late, which is the half that reaches the player, and a
+`setTimeout`-based window would be strictly worse — it dies with the tab,
+taking the sweep with it.
+
+**A tombstone that fails validation is swept, where a slot record is refused.**
+The opposite treatment, for three reasons `src/persistence/local/tombstone-schema.ts`
+states in full: a tombstone indexes nothing the player still has, it expires by
+construction, and a copy this build cannot read is a copy it can never restore.
+Holding bytes that can serve no undo is exactly the quota cost the "Free its
+space now" control exists to keep off a player's disk.
+
+**Quota.** An undo window holds bytes, and `save.status.quota-exceeded` already
+tells the player that deleting a prison is how space is freed. ADR 0114 §6
+named that as an open trade-off and the owner closed it on 2026-09-14 with a
+visible control in the saves panel — `forgetTombstone` — that frees a held copy
+immediately, rather than by shortening the window near quota or skipping the
+copy. Production still has no proactive `navigator.storage.estimate()` check
+anywhere in `src/`; quota is discovered reactively, by `classifyStoreError`,
+exactly as it was.
 
 #### Slot metadata is validated, and what happens when it is not valid
 
@@ -2554,12 +2675,96 @@ end of this document.
 
 ### What is out of scope here
 
-Supabase execution (#20); full service-worker asset caching; simulating
-elapsed time while the browser was closed; and any cross-tab/multi-writer
-concurrency control beyond the single-process autosave/manual-save
-coalescing above — `revision` is caller-managed and this repository does
-not yet enforce optimistic concurrency on it, matching the "not this issue"
-scope in `save-schema.ts`'s own documentation.
+Supabase execution (#20); full service-worker asset caching; and simulating
+elapsed time while the browser was closed.
+
+**This list used to end with a fourth exclusion, and ADR 0109 made it false.**
+It read:
+
+> and any cross-tab/multi-writer concurrency control beyond the
+> single-process autosave/manual-save coalescing above — `revision` is
+> caller-managed and this repository does not yet enforce optimistic
+> concurrency on it, matching the "not this issue" scope in
+> `save-schema.ts`'s own documentation.
+
+It is kept above rather than deleted because it is the position that changed,
+and because a reader of ADR 0105 will meet it quoted there as the reason
+FINAL-006 was a documented exclusion rather than a defect.
+
+**What is true now.** `PrisonSaveRepository.writeGeneration` enforces
+optimistic concurrency on `revision`, and `revision` is no longer
+caller-managed: the caller submits an envelope and the revision it *last saw*,
+and the repository compares that against `metadata.currentRevision` inside the
+`readwrite` transaction it already opens, refuses with `'stale-revision'` on
+mismatch, and stamps `currentRevision + 1` on the record it writes. Two tabs
+over one IndexedDB are ordered by that comparison; the second is refused rather
+than told it succeeded. See "Two writers, and what each token answers" below.
+
+**One sub-clause of the old sentence was wrong about this repository when it
+was written, and is not merely out of date.** There is no "not this issue"
+scope in `save-schema.ts`'s documentation and there never has been:
+`git log -S` over that file finds no such note and no occurrence of
+"optimistic". The sentence it was pointing at is the one in this document's own
+"Envelope shape" block, one level up rather than one level down. Both have now
+been rewritten.
+
+### Two writers, and what each token answers
+
+Two different questions are asked on the way into a durable write, and neither
+subsumes the other (ADR 0109 Decision 2):
+
+| question | token | durable? | what it closes |
+| --- | --- | --- | --- |
+| what did the writer last see? | `currentRevision` on the slot | **yes** | #582 FINAL-005, FINAL-006 |
+| is the writer still the authorised session? | the `ActiveSession` object itself | **no** | #582 FINAL-004 |
+
+**The session epoch is deliberately not durable, and that is a load-bearing
+claim rather than a convenience.** Both parties to "is this writer still
+current?" are live objects in one process at the moment it is asked: the stale
+capture is an in-flight promise inside one `SessionController`, and the session
+that replaced it is the one in its field. Object identity rather than an id,
+because `prisonId` cannot prove the session in the field is the one the capture
+began against — a same-slot reload does not change one. `SessionController`
+compares by identity, exactly as `deletePrison` already does across its own
+`await`.
+
+That claim has a named falsifier and it was run: a capture that survives its
+own *page* would leave nothing live to compare against and would force a
+durable lease, i.e. a slot-schema change. Against the real
+`WorkerPerSessionHost`, a `pagehide` during genuine page teardown issues **no
+write at all** — `saveNow` cannot reach `repository.save` without first
+awaiting `host.capture()`, a round trip to the simulation worker, and the page
+dies long before the worker answers. A capture cannot outlive its own page,
+because the capture is the part that dies first.
+`tests/browser/lifecycle-save-epoch.spec.ts` keeps that measurement as a
+standing gate.
+
+### What a refusal does
+
+- **A refused manual save tells the player**, through
+  `describeSaveResult`'s `'stale-revision'` arm:
+  *"Could not save: this prison was changed elsewhere."* It is reached only
+  after the one retry below has been tried and refused.
+- **A refused autosave says nothing.** It fires on a timer the player did not
+  press, and a periodic warning about a condition they cannot influence is
+  noise.
+- **A writer whose session is gone is dropped without a write, a retry or a
+  report**, because it belongs to a session that no longer exists and has
+  nobody to tell.
+- **A writer that lost the race to its own session retries exactly once**,
+  re-capturing rather than re-submitting what was refused. It retries only when
+  the slot moved to exactly where its own bookkeeping already stands — proof
+  that the write that beat it was its own. A writer that lost to *another tab*
+  is refused and surfaced, never retried: its state is not the newest there is,
+  and retrying it would re-open FINAL-006 through a slower route.
+
+**A slot with no `currentRevision` fails open exactly once**, in both the
+comparison and the allocation. The field is optional, nothing repairs it
+retroactively, and a slot written before #1097 can hold generations at revision
+40 — so the first write to such a slot carries the caller's sequence forward
+instead of restarting it at 1, and every write after that is allocated by the
+transaction. Refusing there instead would make every pre-#1097 prison
+unsaveable.
 
 ## Session wiring (`src/persistence/session/`)
 

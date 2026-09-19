@@ -120,6 +120,15 @@ export interface BuildOrderSource {
    * its own, only the call.
    */
   previewCancelRefundMinorUnits(orderId: string): number;
+  /**
+   * The order's own revision counter, read the same unchanged way
+   * `previewCancelRefundMinorUnits` already is -- ADR 0107's answer to "what
+   * did this row see", carried across the worker boundary so a later
+   * `CancelBuildOrder` can name it as `expectedRevision`. See
+   * `ConstructionSystem.revisionOf`, which this is read from unchanged: never
+   * throws, `0` for an id that names nothing.
+   */
+  revisionOf(orderId: string): number;
 }
 
 /**
@@ -245,6 +254,18 @@ export interface BuildQueueOrderViewModel {
    * (`tests/integration/economy-cancel-what-comes-back.test.ts`).
    */
   readonly cancelRefundMinorUnits: number;
+  /**
+   * The order's revision as of this publication (ADR 0107), for a later
+   * `CancelBuildOrder` press to carry back as `expectedRevision`.
+   *
+   * Read from `BuildOrderSource.revisionOf` unchanged, exactly as
+   * `cancelRefundMinorUnits` is read from `previewCancelRefundMinorUnits`:
+   * this module adds no arithmetic of its own, only the call. A press that
+   * carries the value this row shows always matches, because a match is
+   * exactly "the order has not been mutated since this row was published" --
+   * the whole reason the counter exists.
+   */
+  readonly revision: number;
 }
 
 export interface BuildQueueViewModel {
@@ -357,6 +378,7 @@ export function projectBuildQueue(
       edge: resolveBuildEdge(order),
       state: order.state as PendingBuildOrderState,
       cancelRefundMinorUnits: source.previewCancelRefundMinorUnits(order.id),
+      revision: source.revisionOf(order.id),
     }),
   );
 

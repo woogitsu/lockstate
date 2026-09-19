@@ -44,6 +44,8 @@ checked against its imports by
 | `navigation.production.single-request-budget` | one `findRoute` against `DEFAULT_NAVIGATION_SYSTEM_OPTIONS.workBudgetPerTick` | **production** |
 | `navigation.production.yard-crossing` | a population crossing one open 64×64 region, where one search is worth a large fraction of the whole budget; reports `tickOvershootRatio` | **production** |
 | `actors.production.render-publication` | `LocomotionStore` + `encodeRenderActorsKeyframe` + `decodeRenderActorsPayload` + `actorsFromDelta` over one render-delta publication; the counted work behind ADR 0059's cost table | **production** |
+| `regime.production.schedule-lookup-2/-4/-8/-16` | `findRegimeSchedule` over a real `RegimeScheduleRegistry`, swept over the group count ADR 0113 §5 names; reports comparisons performed inside the shipped `.find()` | **production** |
+| `regime.production.schedule-lookup-idle-session` | `createNewSimulationRuntime` + the real `AdmitPrisoner` path, counting how often a session asks whose day it is; reports **zero**, because a prisoner with no accommodation never reaches an action-eligible intake stage | **production** |
 
 For the same 250-request meal rush, the modelled scenario reports 4,780 work
 units and the production one 16,087. Three mutations of real navigation code
@@ -53,9 +55,9 @@ checksum bit-identical. Measured on the smoke profile:
 
 | mutation of `src/` | `production.meal-rush` | `production.lockdown-return` | `production.single-request-budget` |
 | --- | --- | --- | --- |
-| `heuristic()` returns `0` (`local-search.ts:99`) | `totalExpansions` 24,195 > 16,900 | 27,672 > 20,900 | `expansionsForGuidedRequest` 2,077 > 70 |
+| `heuristic()` returns `0` (`local-search.ts:107`) | `totalExpansions` 24,195 > 16,900 | 27,672 > 20,900 | `expansionsForGuidedRequest` 2,077 > 70 |
 | region-Dijkstra early exit removed (`region-dijkstra.ts:81`) | 19,415 > 16,900 | 21,472 > 20,900 | passes, structurally |
-| `workBudgetPerTick` 2,000 → 8,000 (`new-session.ts:66`) | `maxExpansionsInOneTick` 8,035 > 2,400 | 8,063 > 2,400 | `workBudgetPerTick` 8,000 ≠ 2,000 |
+| `workBudgetPerTick` 2,000 → 8,000 (`new-session.ts:118`) | `maxExpansionsInOneTick` 8,035 > 2,400 | 8,063 > 2,400 | `workBudgetPerTick` 8,000 ≠ 2,000 |
 
 `navigation.production.single-request-budget` answers two of the three, and the
 third is a property of its layout rather than a gap in its bounds: it builds a
@@ -392,6 +394,39 @@ request is worth 2,667 expansions and the busiest tick spends 2.04× (smoke) to
 2.46× (full) what it budgeted. That ratio is bounded from **below**, so the
 scenario's subject cannot quietly disappear, and `ticksToDrain` is bounded from
 above so a re-calibration of the budget has to arrive with its cost re-measured.
+
+## Delivered: the regime lookup ADR 0113 argued rather than measured (#1167)
+
+ADR 0113 §5 claims the per-group regime lookup costs nothing measurable,
+because slice 1 keeps exactly the two groups the game already has, and its own
+"weakest claim" section says the benchmark that would produce a number does not
+exist. The owner was offered an option making that benchmark a precondition of
+building and chose to build first, so `regime.production.schedule-lookup-*`
+lands beside the implementation.
+
+**The number.** `findRegimeSchedule` is a linear `.find()`, so a lookup for the
+group at index *i* of the canonical order costs *i + 1* comparisons, and a
+sweep over every group costs `(N + 1) / 2` on average. Measured on the smoke
+profile, driving the real function over a real `RegimeScheduleRegistry`:
+
+| groups | comparisons per lookup | worst case (last group) |
+| --- | --- | --- |
+| **2 (today)** | **1.5** | **2** |
+| 4 | 2.5 | 4 |
+| 8 | 4.5 | 8 |
+| 16 | 8.5 | 16 |
+
+**So ADR 0113 §5's claim survives measurement at the size it is about, and the
+number that matters is not this one.** Two groups cost at most two string
+comparisons per lookup; sixteen cost at most sixteen. What no scenario here
+supplies is *how often* the lookup happens, and
+`regime.production.schedule-lookup-idle-session` is registered to say why: six
+prisoners admitted through the real command path into a prison with no
+accommodation produce **zero** lookups in 480 ticks, because
+`ACTION_ELIGIBLE_INTAKE_STAGE_INDICES` gates `ActionSystem` on an intake stage
+they never reach. It is pinned at `equals: 0` so that the day it stops being
+zero, this gate goes red and whoever made it non-zero measures the call
+frequency the cost argument actually rests on.
 
 **These three are modelled** (see the table above), and #410 replaced them as
 the gate rather than deleting them: `navigation.production.meal-rush` and

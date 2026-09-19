@@ -2,7 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { describeBy, element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, screenReaderText, valueText } from '../primitives/dom';
 import { ambientFocusOwner, handOffFocus, holdsFocus } from '../primitives/focus-handoff';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
@@ -14,6 +14,7 @@ import { pressArm, toggleRemovalMode } from './tool-arming';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
+  HudRoomNeedViewModel,
   HudRoomNeedsViewModel,
   HudRoomViewModel,
   HudRoomsViewModel,
@@ -248,6 +249,18 @@ export interface RoomsPanel {
    * they draw no block for different reasons -- see `HudRoomNeedsViewModel`.
    */
   setRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
+  /**
+   * Puts the panel's tool down, as `Escape` on the world asks (issue #959).
+   *
+   * The Build panel's `standDown` in every respect that matters, including
+   * doing nothing when the panel is holding nothing. What it does **not**
+   * touch is the pending rectangle: a drag that has been released is a
+   * proposal the player still has a Confirm button for, and taking it away
+   * would make one key undo a decision they made with the pointer. Leaving
+   * the tab does take it, and for a reason that does not apply here -- the
+   * Confirm would be off screen.
+   */
+  standDown(): void;
   setVisible(visible: boolean): void;
 }
 
@@ -406,6 +419,49 @@ export const ROOM_NEEDS_NAMED_LIMIT = 4;
 export const ROOM_NEEDS_ROOMS_LIMIT = 1;
 
 /**
+ * Which of the two things the "not ready" block can be about, or neither
+ * (ADR 0028 phase 5).
+ *
+ * - `'none'` -- nothing has been asked, or the projection says every room is
+ *   finished and none is full. The block is not drawn at all, which is what
+ *   keeps it from becoming furniture in a panel whose always-visible budget
+ *   ADR 0022 measured at 7.9px.
+ * - `'unfinished'` -- at least one designated room is short something the
+ *   player has not built. `HudRoomNeedsViewModel.unfinishedRooms`.
+ * - `'at-capacity'` -- every room is finished and at least one of them cannot
+ *   take another user right now. `HudRoomNeedsViewModel.atCapacity`.
+ *
+ * ## Why one block and never both, which is a measurement and not taste
+ *
+ * `ROOM_NEEDS_NAMED_LIMIT` above carries the figures: the readout's deepest
+ * shipped shape -- header, room line and three object lines -- **measures
+ * 100px**, and the panel's slack at its binding viewport is **7.89px**. A
+ * second subject drawn beside the first is a second header, a second room line
+ * and at least one more item line on top of that 100px, so it does not fit and
+ * no donation is left to pay for it. Given the choice, the block shows the
+ * unfinished rooms: a room the player has not finished building is the cheaper
+ * thing to act on, and it is also the state a player reaches first.
+ *
+ * **What that costs, stated rather than discovered.** A prison with one
+ * unfinished cell and a chronically full shower room shows the cell and says
+ * nothing about the shower room until the cell is finished. That is a real
+ * loss, and the alternative -- a second block -- is a layout change whose only
+ * gate is a browser test. Whether the panel should grow to hold both is a
+ * question for whoever next measures this panel.
+ *
+ * A pure function, exported, and called by `paintNeeds` rather than inlined
+ * there, for the reason `docs/AGENT_WORKFLOW.md` §2 gives: `vitest.config.ts`
+ * runs in `node` with no jsdom, so a decision taken inside a function that
+ * touches `document` is unreachable from `pnpm test` *at all* -- a mutation of
+ * it would survive because nothing could observe it. This one is observable.
+ */
+export function roomNeedsSubjectOf(needs: HudRoomNeedsViewModel | undefined): 'none' | 'unfinished' | 'at-capacity' {
+  if (needs === undefined) return 'none';
+  if (needs.unfinishedRooms > 0) return 'unfinished';
+  return needs.atCapacity.length > 0 ? 'at-capacity' : 'none';
+}
+
+/**
  * The largest side a *typed* rectangle may name, per axis.
  *
  * A second declaration of the simulation's `MAX_ZONE_DIMENSION_TILES`, and it
@@ -424,6 +480,25 @@ export const ROOM_NEEDS_ROOMS_LIMIT = 1;
  * set of rectangles.
  */
 export const MAX_ROOM_SIDE_TILES = 64;
+
+/**
+ * `HudRoomViewModel.tint` (#1021, ADR 0098 option A) as a CSS colour.
+ *
+ * The value is a Phaser-style 24-bit `0xRRGGBB` number -- the same one
+ * `WorldScene` tints a zoned room's tiles with -- so this is arithmetic, not a
+ * second colour table: `zoningTint` in `src/rendering/world/appearance.ts` is
+ * the one place a room's hue is chosen, `src/main.ts`'s `roomCatalogue()`
+ * reads it onto every row's `tint` field, and this converts the same number
+ * to the string form CSS wants. Nothing here could drift from the map,
+ * because nothing here decides a colour.
+ *
+ * Exported and module-scoped rather than a closure inside `createRoomsPanel`,
+ * so the conversion has a headless test of its own
+ * (`tests/unit/ui-hud-rooms-panel.test.ts`) rather than only the browser spec
+ * that exercises it end to end -- `vitest.config.ts` runs with no DOM, but a
+ * pure arithmetic function does not need one.
+ */
+export const tintToCssColor = (tint: number): string => `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
 
 function requirementLabelKey(requirement: HudRoomEnclosureRequirement): LocalizationKey {
   switch (requirement) {
@@ -627,6 +702,37 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     // press reaches. No second path -- the same rule #411's second acceptance
     // criterion puts on the rectangle applies to the choice of room.
     row.element.setAttribute('role', 'radio');
+
+    /*
+     * The swatch (#1021): the one thing this row was missing that the map
+     * already had. Two passes had confirmed `HudRoomViewModel.tint` was
+     * computed and read by nothing, so the catalogue and the map could name
+     * the same room in two different colours and no test would notice; this
+     * is that reader.
+     *
+     * `aria-hidden` and no text of its own -- it is decoration *beside* an
+     * accessible name the row already has (`t(room.labelKey)`, on the label
+     * span this is inserted next to), never instead of one. #1038 measured
+     * that this palette cannot carry identity on its own at any spacing --
+     * the worst pair of the 18 catalogue hues is 5.30 delivered units apart
+     * against a per-pixel sigma of 15.54 -- so a colour-blind player, or any
+     * player, gets exactly what they had before: the name. What the swatch
+     * adds is for the player who *can* resolve hue: the same accent they will
+     * see painted on the tile the moment they designate it, so the two no
+     * longer have to be taken on faith.
+     *
+     * Inserted before the label rather than appended, so reading order stays
+     * icon, swatch, name -- a trailing badge or the roving-focus selection
+     * marker still lands after the name, unmoved.
+     */
+    const swatch = element('span', {
+      className: 'hud-rooms__row-swatch',
+      attributes: { 'aria-hidden': 'true' },
+    });
+    swatch.style.backgroundColor = tintToCssColor(room.tint);
+    const labelElement = row.element.querySelector('.ui-row__label');
+    row.element.insertBefore(swatch, labelElement);
+
     rows.set(room.roomId, row);
     catalogueRows.append(row.element);
   }
@@ -1340,9 +1446,45 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * which is why nothing here is toned as a warning any more.
    */
   const enclosureValue = valueText(t(HUD_MESSAGE_KEY.roomsEnclosureNone), 'hud-rooms__enclosure-value');
+  /*
+   * **The label is `.ui-sr-only` since #1006 finding 4, and it was a visible
+   * eyebrow before.** The reason is arithmetic and the alternative was worse.
+   *
+   * Measured on the assembled panel at 900x600: the box is 238px, the eyebrow
+   * `Enclosure` is 80.8px, the gap 8px -- so a value has **149px** and every
+   * sentence this readout can render is wider than that. `Walled in on every
+   * side` is 179.4px and `Open on at least one side` is 195px, both of them
+   * shipped, and the block's `scrollWidth` was 268 against a `clientWidth` of
+   * 238 with the sentence cut off mid-word. Wrapping the value onto its own
+   * line draws it whole and costs the block 13.2px, and the panel body at that
+   * viewport has **5.9px** of slack with a needs readout showing -- measured
+   * by `app-shell.spec.ts`, which failed on exactly that: *".hud-rooms >
+   * .ui-panel__body is 7px shorter than its own content"*. The catalogue's
+   * floor is where a block in this panel borrows height from and #529 already
+   * halved it; there are 8px left there and this needs 13.2.
+   *
+   * So the three options were an ellipsis (keeps the height, throws away the
+   * end of the sentence), a shorter sentence (impossible -- 149px is under
+   * every string in the pair, including the one nobody is changing), or this.
+   *
+   * **`.ui-sr-only` costs no width at all** (`position: absolute`, 1px), so
+   * the sentence gets the whole 238px and fits on one line with 19.6px to
+   * spare. What is given up is the word `ENCLOSURE` on screen -- and the
+   * sentence does not need it: `Walled in ...` and `Open on at least one
+   * side ...` name their own subject, which is exactly how the three
+   * `.hud-rooms__rule` lines immediately above this block read
+   * (`NEEDS AT LEAST 2 x 3 TILES`, `MUST BE ENCLOSED`, `NEEDS 1 x BED`). This
+   * block was the only label/value pair in that section.
+   *
+   * **The counter-precedent is in `hud.css` and it does not reach this.**
+   * `.hud-regime__roster-need-value` records issue #909 -- a figure that was
+   * `.ui-sr-only` "told a screen reader the need was at 20% and left a sighted
+   * player an unlabelled bar". That is a *number*, which is meaningless
+   * without its label. This is a sentence.
+   */
   const enclosureBlock = element('div', {
     className: 'hud-rooms__enclosure',
-    children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
+    children: [screenReaderText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
   });
 
   function paintEnclosure(): void {
@@ -1383,7 +1525,18 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * **That last clause stopped being true on 2026-08-31 (#703, rulings 1 and
    * 5)**: the section starts open and `.hud__corner` is no longer hidden below
    * 720px, so a row in the list is laid out at every width -- see
-   * `INITIAL_HUD_SHELL_STATE`. **The placement does not change**, because the
+   * `INITIAL_HUD_SHELL_STATE`.   *
+   * **AND `.hud__corner` IS hidden below 720px -- that clause is false and is
+   * corrected here rather than deleted (#1117).** The rule
+   * `.hud__corner { display: none; }` sits inside `@media (max-width: 720px)`
+   * in `hud.css`, measured `display: none` at 375x812 in the DOM harness, and
+   * `tests/browser/app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` exists to
+   * exempt the controls that fall with it. **Nothing above changes**: this
+   * paragraph already says the clause was the weaker of its two reasons and
+   * that the placement stands on the other one. `event-band-dwell.ts` has
+   * carried the same correction since before this file was read; the
+   * contradiction was known and had simply not reached the places that state
+   * it. **The placement does not change**, because the
    * clause was the weaker of the two reasons given: the load-bearing one is the
    * sentence above it, that this is a fact about the room the player made and
    * belongs beside the control that made it. A list of refusals is still the
@@ -1416,6 +1569,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * laid out and empty still takes its gap and its border.
    */
   const needsCount = valueText('', 'hud-rooms__needs-count');
+  /*
+   * The header's eyebrow, held rather than inlined, because the block has two
+   * subjects and they do not share a heading -- see `roomNeedsSubjectOf`. It is
+   * built with the unfinished-rooms text so that a paint which draws nothing
+   * leaves the block in the state it mounts in rather than in whichever state
+   * it was last drawn in.
+   */
+  const needsLabel = eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds), 'hud-rooms__needs-label');
   const needsLine = eyebrowText('', 'hud-rooms__needs-line');
   /*
    * The object lines, in a box of their own with no gap between them.
@@ -1434,7 +1595,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     children: [
       element('div', {
         className: 'hud-rooms__needs-header',
-        children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds)), needsCount],
+        children: [needsLabel, needsCount],
       }),
       needsLine,
       needsItems,
@@ -1447,6 +1608,93 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * measured, by deleting it and watching every assertion stay green.
    */
 
+  /**
+   * The sentence for one shortfall.
+   *
+   * Three forms and one rule: every word is a message key resolved through
+   * `t`, and nothing here interpolates text this layer authored (ADR 0011).
+   *
+   * - `kind: 'doorway'` -- the room's walls hold no door, so nothing can get
+   *   in (#938). No placeholder: there is one door to be short of, and the
+   *   locale entry carries the proof of each clause.
+   * - `kind: 'unreachable'` -- the room has a door and nothing outside can
+   *   reach it (ADR 0108). A second key rather than the same one reworded,
+   *   because the two states send the player to different walls, and one
+   *   sentence covering both would be the readout-that-renders-identically
+   *   defect #938 records, one value further along.
+   * - an object with a count -- the shortfall, which is what the player has
+   *   to build, under the object's own name or the stand-in for one the
+   *   catalogue does not define.
+   * - an object with none -- `missingQuantity` is absent exactly when the
+   *   projection was handed nothing to count with, and the sentence then has
+   *   to be the one without a figure in it. Choosing between two keys rather
+   *   than substituting an invented `1` is the whole point: the alternative
+   *   dresses an uncounted answer as a counted one, on the same line, in the
+   *   same words, where nothing distinguishes them.
+   */
+  function needSentence(need: HudRoomNeedViewModel): string {
+    if (need.kind === 'doorway') return t(HUD_MESSAGE_KEY.roomsNeedsDoorway);
+    if (need.kind === 'unreachable') return t(HUD_MESSAGE_KEY.roomsNeedsUnreachable);
+    const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
+    return need.missingQuantity === undefined
+      ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })
+      : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object });
+  }
+
+  /**
+   * The block, drawing the other subject: rooms that are finished and full
+   * (ADR 0028 phase 5).
+   *
+   * The same three slots the unfinished subject uses -- header eyebrow and
+   * figure, a room line, then item lines -- with the room line taken from the
+   * first entry exactly as `paintNeeds` takes it from the first need, and for
+   * the same reason: this block names one room, and `roomsAtCapacityRoom` is
+   * that room's heading.
+   *
+   * **One line under it and not one per full ceiling.** A room can be full for
+   * two things at once, and two lines reading `places in use: 2 of 2` and
+   * `places in use: 6 of 6` with nothing to tell them apart would be a readout
+   * whose two states look the same -- the defect #938 records. The list the
+   * boundary carries already names one ceiling per room and says why
+   * (`fullestUseOf`), so this draws that one.
+   */
+  function paintAtCapacity(full: HudRoomNeedsViewModel): void {
+    needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacity);
+    needsCount.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacityCount, {
+      full: full.atCapacity.length,
+      total: full.totalRooms,
+    });
+    needsBlock.dataset['full'] = String(full.atCapacity.length);
+    needsItems.replaceChildren();
+
+    // Non-empty by `roomNeedsSubjectOf`, which is the only route here; read
+    // through the index rather than asserted, so a caller that reached this
+    // with an empty list draws a header and no room instead of throwing out of
+    // a paint.
+    const first = full.atCapacity[0];
+    if (first === undefined) {
+      needsLine.textContent = '';
+      return;
+    }
+    needsLine.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacityRoom, {
+      room: t(first.roomLabelKey),
+      x: first.tile.x,
+      y: first.tile.y,
+    });
+    const line = eyebrowText(
+      t(HUD_MESSAGE_KEY.roomsAtCapacityPlaces, { inUse: first.inUse, capacity: first.places }),
+      'hud-rooms__needs-item',
+    );
+    line.dataset['room'] = first.instanceId;
+    // The same two attributes the unfinished lines carry, for the same reason:
+    // a test that had to tell this line from `1 × Bed` by reading the sentence
+    // would be a test of the English locale.
+    line.dataset['kind'] = 'at-capacity';
+    line.dataset['places'] = String(first.places);
+    line.dataset['inUse'] = String(first.inUse);
+    needsItems.append(line);
+  }
+
   function paintNeeds(): void {
     /*
      * Two states draw nothing and stay two facts: `undefined` is "nothing has
@@ -1454,26 +1702,55 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
      * is finished". Collapsing them here is correct -- neither earns a line --
      * and collapsing them *upstream* would not be, which is why the view model
      * keeps them apart.
+     *
+     * **Zero unfinished rooms no longer means the block draws nothing** (ADR
+     * 0028 phase 5): a prison whose rooms are all finished can still hold one
+     * that cannot take another user, and that is the state issue #1003
+     * measured as invisible. `roomNeedsSubjectOf` is the decision and carries
+     * the reason the two subjects are never drawn together.
      */
-    const shown = needs !== undefined && needs.unfinishedRooms > 0 ? needs : undefined;
-    needsBlock.hidden = shown === undefined;
+    const subject = roomNeedsSubjectOf(needs);
+    needsBlock.hidden = subject === 'none';
     /*
      * The block's presence, on the panel, because a stylesheet cannot ask
      * whether a descendant has a box -- and `hud.css` has to, to donate the
      * catalogue's floor to this readout exactly as `.hud-build[data-queued]`
      * donates to the build queue. See that rule for the argument; the numbers
      * for this one are in `.hud-rooms[data-needs]`.
+     *
+     * Two attributes and not one, because the value of each is a figure a test
+     * reads: `data-needs` is how many things the unfinished rooms are short and
+     * `data-full` is how many rooms are at a ceiling. The stylesheet donates on
+     * either.
      */
-    if (shown === undefined) delete panel.element.dataset['needs'];
-    else panel.element.dataset['needs'] = String(shown.totalNeeds);
-    if (shown === undefined) {
+    // `needs === undefined` is unreachable for either drawing subject --
+    // `roomNeedsSubjectOf` answers `'none'` for it -- and the guard is written
+    // as a pair rather than asserted, so a subject added without a branch
+    // clears the block instead of drawing a stale one.
+    const full = subject === 'at-capacity' ? needs : undefined;
+    if (subject !== 'unfinished' || needs === undefined) {
+      if (full === undefined) delete panel.element.dataset['full'];
+      else panel.element.dataset['full'] = String(full.atCapacity.length);
+      delete panel.element.dataset['needs'];
+      needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsNeeds);
       needsCount.textContent = '';
       needsLine.textContent = '';
       needsItems.replaceChildren();
       delete needsBlock.dataset['unfinished'];
       delete needsBlock.dataset['needs'];
+      delete needsBlock.dataset['full'];
+      if (full !== undefined) paintAtCapacity(full);
       return;
     }
+    const shown = needs;
+    panel.element.dataset['needs'] = String(shown.totalNeeds);
+    // Both `full` attributes, and the header, because the previous paint may
+    // have drawn the other subject into this same box: a `data-full` left
+    // standing beside `data-unfinished` would say the two were drawn together,
+    // which is the one thing `roomNeedsSubjectOf` guarantees never happens.
+    delete panel.element.dataset['full'];
+    delete needsBlock.dataset['full'];
+    needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsNeeds);
 
     needsCount.textContent = t(HUD_MESSAGE_KEY.roomsNeedsCount, {
       unfinished: shown.unfinishedRooms,
@@ -1529,27 +1806,17 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     let drawn = 0;
     for (const need of named) {
       if (need.instanceId !== first.instanceId) continue;
-      // The object's own name, or the stand-in for one the catalogue does not
-      // define. A key either way: nothing here interpolates text this layer
-      // authored (ADR 0011).
-      const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
-      /*
-       * The numeral, or deliberately none.
-       *
-       * `missingQuantity` is absent exactly when the projection was handed
-       * nothing to count with, and the sentence then has to be the one without a
-       * figure in it. Choosing between two keys rather than substituting an
-       * invented `1` is the whole point: the alternative dresses an uncounted
-       * answer as a counted one, on the same line, in the same words, where
-       * nothing distinguishes them.
-       */
-      const line = eyebrowText(
-        need.missingQuantity === undefined
-          ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })
-          : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object }),
-        'hud-rooms__needs-item',
-      );
+      const line = eyebrowText(needSentence(need), 'hud-rooms__needs-item');
       line.dataset['room'] = need.instanceId;
+      /*
+       * Which kind of shortfall this line is, as data as well as as text
+       * (#938), for the reason `data-enclosure` and `data-missing` are both
+       * here: a test that had to tell "a door — nobody can get in" from
+       * "1 × Bed" by reading the sentence would be a test of the English
+       * locale, and the defect #938 records is precisely a readout whose two
+       * states could not be told apart.
+       */
+      line.dataset['kind'] = need.kind;
       // The figure as data as well as as text, for the header's reason. Absent
       // rather than `0` when nothing was counted, so a test can tell the two
       // states apart exactly as the view model does.
@@ -1823,6 +2090,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     setRoomNeeds(next: HudRoomNeedsViewModel | undefined): void {
       needs = next;
       paintNeeds();
+    },
+    standDown(): void {
+      // The arming half of `setVisible(false)` below, and only that half: see
+      // the handle's own note on why the pending rectangle stays.
+      if (!armed) return;
+      armed = false;
+      removing = false;
+      options.onArm(false, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
+      paintActions();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

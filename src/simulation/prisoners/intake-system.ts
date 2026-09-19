@@ -36,6 +36,53 @@ export interface IntakeContrabandIntroducer {
   introduce(entityId: EntityId, riskTier: number, tick: number, rng: Xoshiro128StarStar): void;
 }
 
+/**
+ * Which gang an arrival joins, if any --
+ * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+ * decision 6.
+ *
+ * Optional and port-shaped for exactly the reasons
+ * `IntakeContrabandIntroducer` above is: `GangRegistry` is session state that
+ * outlives the prisoner slice, and a fixture that stands up prisoners alone
+ * has no registry to hand over. Absent, intake assigns nobody and behaves
+ * exactly as it did before ADR 0103.
+ *
+ * **No `rng` parameter, and that is the difference from the port above.**
+ * ADR 0103 decision 5 adds no RNG stream, so the rule behind this port is a
+ * function of recorded input; a session that wires it registers no seventh
+ * stream and no existing seed's classification draw moves.
+ */
+export interface IntakeGangAssigner {
+  /** Called once per arrival, at the tick their `classificationGroupIndex` is written and from the stage that writes it. */
+  assign(entityId: EntityId, classificationGroupId: string, tick: number): void;
+}
+
+/**
+ * What the player is told when a queued arrival finally gets a bed
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * `IntakeSystem`'s mirror of `ResidentRelocationNotice`
+ * (`src/simulation/events/resident-relocation-notice.ts`), and optional and
+ * port-shaped for the same two reasons `IntakeContrabandIntroducer` above is:
+ * the identity registry and the room catalog are session state that outlives
+ * the prisoner slice, and a fixture that stands up prisoners alone has neither
+ * to hand over. Absent, intake houses people exactly as it did before this
+ * port existed and simply says nothing about it.
+ *
+ * **A port rather than `SimulationEventLog` and `ActorIdentityMinter` taken
+ * directly**, because naming this prisoner needs a *read* of an already-minted
+ * name and `ActorIdentityMinter`'s own comment says it is narrow "so that
+ * `IntakeSystem` cannot rename or release, only name a new arrival" -- read
+ * access is a different capability than mint access, and this system is not
+ * the place to widen it. `createIntakeHousedNotice`
+ * (`src/simulation/events/intake-housed-notice.ts`) is where the identity
+ * registry's read side, the room catalog and the event log meet, composed at
+ * the session root exactly as `createResidentRelocationNotice` is.
+ */
+export interface IntakeHousedNotice {
+  /** Called once per arrival, at the tick their `RoomInstanceRegistry.assign` succeeds and from the stage that calls it. */
+  announce(entityId: EntityId, roomCatalogId: string, tick: number): void;
+}
+
 export interface IntakeMetrics {
   readonly completedCount: number;
   readonly failedCount: number;
@@ -254,6 +301,25 @@ export class IntakeSystem implements SystemRegistration {
      * before this parameter existed: never.
      */
     private readonly sentenceRngStreamName: string = PRISONER_SENTENCE_RNG_STREAM,
+    /**
+     * Gang membership for this arrival
+     * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+     * decision 6). Absent, intake assigns nobody to a gang -- which is what it
+     * did before ADR 0103 and what every fixture predating it expects.
+     *
+     * Last in the list, after the four optional collaborators above, so no
+     * existing call site's positional arguments move.
+     */
+    private readonly gangAssigner?: IntakeGangAssigner,
+    /**
+     * What the player is told once this arrival gets a bed
+     * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3).
+     * Absent, intake houses people exactly as it always has and says nothing.
+     *
+     * Last in the list, after the five optional collaborators above, so no
+     * existing call site's positional arguments move.
+     */
+    private readonly housedNotice?: IntakeHousedNotice,
   ) {}
 
   /**
@@ -515,6 +581,21 @@ export class IntakeSystem implements SystemRegistration {
           this.contrabandIntroducer.introduce(entityId, result.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
         }
 
+        // Beside the introduction above and for the same reason it is here
+        // rather than at `'reception'`: the classification is what decides it
+        // and it does not exist one line earlier
+        // ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+        // decision 6). Inside the same ascending-entity-id walk, and after the
+        // record writes, so the registry and the record agree the moment
+        // either is read. `result.classificationGroupId` rather than a second
+        // derivation from the index just written -- one of the two spellings
+        // would eventually be the stale one.
+        //
+        // **Draws nothing.** Unlike the introduction above it is handed no
+        // stream, so wiring it moves no existing seed's screening variance
+        // (ADR 0103 decision 5).
+        this.gangAssigner?.assign(entityId, result.classificationGroupId, context.tick);
+
         this.records.intakeStage[index] = intakeStageIndex('accommodation-assignment');
         continue;
       }
@@ -569,6 +650,12 @@ export class IntakeSystem implements SystemRegistration {
         this.coldState.setAccommodation(entityId, instance.instanceId);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
+        // Issue #966 site 3: the tick a queued arrival stops waiting is the
+        // tick a bed exists to say so about -- `target.roomCatalogId` is the
+        // type `findBestAvailable` just matched `instance` against, so this
+        // names the room the assignment above actually claimed rather than
+        // re-deriving it from the instance afterwards.
+        this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
       }
     }
   }

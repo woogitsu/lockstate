@@ -56,8 +56,11 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *   about the two that were not pressed. A release cannot be undone -- there is
  *   no inverse command -- so a control that released "the next one" would be
  *   wrong in a way nothing else could compensate for.
- * - **Pooled rows re-aim.** The row that named guard 4 must release guard 9 once
- *   a publication puts guard 9 in it.
+ * - **Pooled rows never re-aim.** A place in this list names one guard for as
+ *   long as that guard is held, and a new one only appears in a place that has
+ *   been visibly blank for `HELD_GUARD_ROW_SETTLE_MS`. This block asserted the
+ *   opposite until 2026-09-17; `src/ui/hud/pooled-row-binding.ts` carries why,
+ *   and the test below carries the inversion.
  * - **Reachability at every viewport**, including 375x812, which is the viewport
  *   this repository has shipped laid-out-but-unreachable controls at.
  */
@@ -108,7 +111,7 @@ function heldGuards(held = 5): HudHeldGuardsViewModel {
 
 async function openSecurityTab(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 }
 
 const probe = (page: Page) => page.evaluate(() => window.lockstateUiHarness.staffProbe());
@@ -227,24 +230,186 @@ test.describe('the Staff panel held-guards block', () => {
     expect(release).not.toContain('guardId=2');
   });
 
-  test('re-aims a pooled row at the guard that is in it now, not the one that was', async ({ page }) => {
-    // The rows are pooled -- `HELD_GUARD_ROW_LIMIT` of them, reused -- because
-    // each Release joins the HUD's busy group and `createBusyGroup` has `add`
-    // and no `remove`. So the id has to be read at press time, and this is the
-    // measurement that says it is.
+  test('never re-aims a pooled row, so a press cannot reach a guard the row never named (#877)', async ({
+    page,
+  }) => {
+    /*
+     * **The gate for the Staff panel's half of #877, and it replaces a test
+     * that asserted the opposite** -- the same inversion
+     * `ui-build-queue.spec.ts` records for the Build panel's queue under #860,
+     * arriving here fourteen days later because #877 closed with this block
+     * *"not yet measured"*.
+     *
+     * The replaced test was called *"re-aims a pooled row at the guard that is
+     * in it now, not the one that was"*, and the defect it guarded was real:
+     * the rows are pooled -- `HELD_GUARD_ROW_LIMIT` of them, reused, because
+     * each Release joins the HUD's busy group and `createBusyGroup` has `add`
+     * and no `remove` -- so a handler that captured its guard id at
+     * construction would release whoever sat in that row two publications ago.
+     * Reading the id at press time closed that, and this file proved it.
+     *
+     * It did not close the other direction, and the other direction is worse.
+     * Reading at press time makes the id **current**; it does not make it the
+     * id the player read. The label and the id are written in the same
+     * synchronous paint, so a press on a row the list has re-pointed submits
+     * precisely the new id and nothing on the code path can tell. And this list
+     * re-points **with no press from the player at all**: a hold ends when the
+     * search or the incident response that owns the guard does. So the row must
+     * not be re-pointed, and both halves are asserted here -- the press reaches
+     * the guard the row names, and the place a guard left names nobody until it
+     * has been blank for `HELD_GUARD_ROW_SETTLE_MS`.
+     *
+     * **What this test deliberately does not assert, measured 2026-09-17.**
+     * `ui-pending-deliveries.spec.ts`' twin asserts that the surviving rows keep
+     * their boxes to the pixel; this one cannot, and the reason is worth having
+     * in writing rather than as a missing line. `.hud__side` carries
+     * `margin-top: auto`, so this rail is anchored to the **bottom** of the
+     * viewport and a block that changes height moves its own rows rather than
+     * the space below them. A held row's sentence is two lines where a delivery
+     * row's is one, so blanking the label makes the row shorter, and the block
+     * shrinks under it: measured here, the three Release boxes sat at y=602,
+     * y=656 and y=711 before the publication and at y=599, y=651 and y=706
+     * after. Three to five pixels under a 44px control is not what #877 is
+     * about, but it is not nothing either, and the same anchoring produces a
+     * **full row** of movement in the one-held-guard state -- see #1294, which
+     * carries that measurement and is not this pull request's subject.
+     */
     await page.setViewportSize({ width: 1280, height: 800 });
     await openSecurityTab(page);
-    await report(page, { held: 1, unassigned: 5, guards: [guard(4, 'search')] });
-    expect((await probe(page)).held.rows[0]?.guardId).toBe('4');
+    await report(page, {
+      held: 4,
+      unassigned: 4,
+      guards: [guard(4, 'search'), guard(5, 'deployment'), guard(6, 'incident-response')],
+    });
 
-    await report(page, { held: 1, unassigned: 5, guards: [guard(9, 'incident-response')] });
-    expect((await probe(page)).held.rows[0]?.guardId).toBe('9');
+    const before = await probe(page);
+    expect(before.held.rows.map((row) => row.guardId)).toEqual(['4', '5', '6']);
+    expect(before.held.moreText).toContain('1');
 
-    // The old id is gone from the DOM, so a press cannot reach it.
+    /*
+     * Guard 4's search ends and guard 9 is claimed by an incident response,
+     * between two publications and with no press from the player. Under
+     * `rows[i] = guards[i]` this moved guard 5 up into the place guard 4's
+     * label was in, guard 6 into guard 5's, and guard 9 into guard 6's -- three
+     * Release controls, all of them now aimed at somebody the player never read
+     * there.
+     */
+    await report(page, {
+      held: 4,
+      unassigned: 4,
+      guards: [guard(5, 'deployment'), guard(6, 'incident-response'), guard(9, 'incident-response')],
+    });
+    const advanced = await probe(page);
+    expect(advanced.held.rows.map((row) => row.guardId)).toEqual(['', '5', '6']);
+    // The freed place keeps its box rather than collapsing, because collapsing
+    // it would slide the two rows below it up a row's height into whatever
+    // pointer is resting there -- the same defect by geometry instead of by
+    // binding.
+    expect(advanced.held.rows).toHaveLength(3);
+    // It names nobody and says so: no label, and `aria-disabled` rather than
+    // `disabled`, because `createBusyGroup` assigns `disabled` to every member
+    // on every busy transition and would clear it. The authority that stops a
+    // press is `row.guardId === undefined` in the panel, not this attribute.
+    expect(advanced.held.rows[0]?.labelText).toBe('');
+    expect(
+      await page.evaluate(
+        () =>
+          document
+            .querySelectorAll('.hud-staff__held-row')[0]
+            ?.querySelector('.ui-action')
+            ?.getAttribute('aria-disabled') ?? null,
+      ),
+    ).toBe('true');
+    // Guard 9 could not be drawn, so guard 9 is counted behind the line rather
+    // than put in a place a pointer may be resting on: two of four are drawn.
+    expect(advanced.held.moreText).toContain('2');
+
+    /*
+     * The settle window, which is the half a first version of this rule shipped
+     * without. A publication arriving inside it does not fill the place guard 4
+     * left, even though it carries a guard with no row of his own.
+     */
+    await report(page, {
+      held: 4,
+      unassigned: 4,
+      guards: [guard(5, 'deployment'), guard(6, 'incident-response'), guard(9, 'incident-response')],
+    });
+    expect((await probe(page)).held.rows.map((row) => row.guardId)).toEqual(['', '5', '6']);
+
+    // Past the window the waiting guard takes it, so the block does not go on
+    // drawing two rows for four held guards for ever.
+    await page.waitForTimeout(1_200);
+    await report(page, {
+      held: 4,
+      unassigned: 4,
+      guards: [guard(5, 'deployment'), guard(6, 'incident-response'), guard(9, 'incident-response')],
+    });
+    const refilled = await probe(page);
+    expect(refilled.held.rows.map((row) => row.guardId)).toEqual(['9', '5', '6']);
+    expect(refilled.held.moreText).toContain('1');
+
+    /*
+     * And a press reaches the guard the row names, throughout. Guard 4 is gone
+     * from the DOM entirely -- a re-aiming pool would have put a live control
+     * where his label was -- and guard 6, whom the player has been reading in
+     * the same place since the first publication, is who the press releases.
+     */
     expect(await page.evaluate(() => window.lockstateUiHarness.pressGuardRelease(4))).toBe(false);
-    expect(await page.evaluate(() => window.lockstateUiHarness.pressGuardRelease(9))).toBe(true);
-    const release = (await intents(page)).find((intent) => intent.includes('release-guard'));
-    expect(release).toContain('9');
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressGuardRelease(6))).toBe(true);
+    const dispatched = (await intents(page)).filter((intent) => intent.includes('release-guard'));
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0]).toContain('6');
+  });
+
+  test('draws its rows again after the tab has been away, with no publication to unstick it (#877, #88)', async ({
+    page,
+  }) => {
+    /*
+     * The Staff panel's half of the same regression the Build panel's queue
+     * shipped under #860 and this block nearly shipped again: nothing refreshes
+     * this list from another tab, so leaving the Staff tab publishes
+     * `undefined` and `paintHeld` empties every pooled place. A `freedAtMs`
+     * stamped there puts every place inside its settle window, and the
+     * publication that arrives when the player comes back is refused by all
+     * three -- with no later publication to unstick them once the window
+     * expires, because a held guard's list only moves when the simulation says
+     * so. `app-shell.spec.ts`'s #88 sweep is where that is otherwise found.
+     *
+     * A place with no box carries no settle window: see `pooled-row-binding.ts`.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openSecurityTab(page);
+    await report(page, heldGuards(3));
+    expect((await probe(page)).held.rows).toHaveLength(3);
+
+    /*
+     * `report(page, undefined)` and not only a tab click, because the two are
+     * different facts and only the first is the one under test. Leaving the tab
+     * hides the whole Staff panel, which takes this block's box away without
+     * `paintHeld` running at all; what `src/main.ts:2542` does beside that is
+     * `applyHeldGuards(undefined)` -- *"leaving takes the block off, because
+     * from here on nothing is refreshing it"* -- and that is the call that
+     * empties the pooled places. A tab click through this harness does not make
+     * it, so a test that only clicked would pass whatever `paintHeld` did with
+     * `freedAtMs` and prove nothing.
+     */
+    await report(page, undefined);
+    expect((await probe(page)).held.blockLaidOut).toBe(false);
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
+    await report(page, heldGuards(3));
+
+    const returned = await probe(page);
+    expect(returned.held.rows.map((row) => row.guardId)).toEqual(['0', '1', '2']);
+    for (const row of returned.held.rows) {
+      expect(row.releaseHasOffsetParent, `guard ${row.guardId}'s Release has no offsetParent`).toBe(true);
+      expect(row.releaseDisabled, `guard ${row.guardId}'s Release is disabled`).toBe(false);
+      expect(row.releaseBox?.height ?? 0, `guard ${row.guardId}'s Release has no height`).toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressGuardRelease(2))).toBe(true);
+    const dispatched = (await intents(page)).filter((intent) => intent.includes('release-guard'));
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0]).toContain('2');
   });
 
   test('leaves every Release inside the panel at every viewport, scrolling to the ones that need it', async ({ page }) => {

@@ -36,8 +36,10 @@ import { stripComments } from '../helpers/canonical-iteration';
  *
  * ## What it reads
  *
- * Every backticked token in every **comment** under `src/` and `tests/`, where
- * the token is one of two shapes that are unambiguously repository vocabulary:
+ * Every backticked token in three corpora — every **comment** in a `.ts` file
+ * under `src/` and `tests/`, every **guide** at the top level of `docs/`, and
+ * every **comment** in a `.css` file under `src/` and `tests/` — where the
+ * token is one of two shapes that are unambiguously repository vocabulary:
  *
  * - a **member path** whose root is PascalCase (`Foo.bar`, `Foo.bar.baz`), and
  * - a **screaming constant** of three or more segments
@@ -46,11 +48,82 @@ import { stripComments } from '../helpers/canonical-iteration';
  * Two-segment constants (`NEED_MAX`, `ROOM_GATED`) are deliberately out of
  * scope: they collide with prose acronyms and with external vocabulary often
  * enough that admitting them would need an allowlist, and an allowlist is what
- * this file is built to avoid. Bare camelCase functions are out for the same
- * reason and cost more — `advanceTunnel`, `createNewSession` and
- * `dismissStaffCompletely` were all real findings of this shape and none of
- * them is reachable from a rule that does not also flag the word `roomsPanel`
- * in a sentence about a panel.
+ * this file is built to avoid. **#991 asked for that sentence to be revisited
+ * and it survived a measurement, which is the only reason it is still here** —
+ * see "What #991 asked for, and what measuring it changed" below. Bare
+ * camelCase functions are out for the same reason and cost more —
+ * `advanceTunnel`, `createNewSession` and `dismissStaffCompletely` were all
+ * real findings of this shape and none of them is reachable from a rule that
+ * does not also flag the word `roomsPanel` in a sentence about a panel.
+ *
+ * ## The second corpus: the guides, and deliberately not the records
+ *
+ * Added for #991. Until then this gate read `src/` and `tests/` only, and
+ * `docs/PRISONER_OPERATIONS.md` carried `STARTING_ORIGIN_TILE` — a
+ * three-segment screaming constant inside a backticked token, precisely the
+ * shape matched here — with **one occurrence in the whole tree** and no
+ * declaration anywhere in it. The constant that sentence means is
+ * `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:869`), which `src/main.ts:3437` and
+ * `:3516` do fill `AdmitPrisoner`'s `x`/`y` from and `src/main.ts:1023` does hand the
+ * Build panel as its `origin`. It survived only because it was in Markdown.
+ *
+ * **`docs/adr/` and `docs/research/` are not read, and that is a rule about
+ * the corpus rather than a list of sentences.** An ADR names rejected
+ * alternatives and proposed symbols by design; a research report is a
+ * measurement taken on a date and must not be edited to agree with today's
+ * tree — `docs/AGENT_WORKFLOW.md` section 4 says *"Mark both directions rather
+ * than overwriting"*, and rewriting a dated report to satisfy a linter is the
+ * opposite of that. The guides at `docs/`'s top level are present-tense and
+ * are the documents this repository maintains as true today. So the rule grows
+ * when a guide is added — automatically, into scope — and never when somebody
+ * declines to fix a sentence, which is the distinction that separates it from
+ * an allowlist.
+ *
+ * Measured on `main` at v0.0.541, same extractor and same two shapes over both
+ * halves:
+ *
+ * - **the guides: 28 files, 1,086,638 characters of prose, 513 citations
+ *   parsed, 0 unresolved** after the four corrections #991 forced.
+ * - **`docs/adr/` and `docs/research/`: 213 files, 7,011,027 characters, 1,978
+ *   citations parsed, 53 unresolved across 32 distinct tokens.** All 53 were
+ *   opened and classified, because the first draft of this bullet asserted
+ *   "not one of them is a defect" from a sample and that was wrong:
+ *   - **27** are another game's code, cited correctly in competitive research
+ *     — `ThoughtDefOf.SleptOnGround`, `BedUtility.GetSleepingSlotsCount`,
+ *     `RoomType.isSatisfactory`, `MAXIMUM_SIZE_64` and its siblings,
+ *     `LUXURY_BED_SINGLE`, `GenericGameSettings.instance.disableGameOver`.
+ *   - **2** are this gate's own fixtures, quoted in a report about this gate
+ *     (`ZzProbeThing.zzMember`, `NoSuchThing.doesNotExist`).
+ *   - **4** are names deliberately proposed and said not to exist
+ *     (`PLANNED_PROJECTION_IDS`, `LOCKSTATE_REQUIRE_BLENDER`,
+ *     `DEFAULT_TILE_CHUNK_SIZE` twice, the last as *"still not shipped"*).
+ *   - **10** are deletion records and dated measurements that were true when
+ *     written (`JobWorkerPool.register`, `ZONING_TINT_BY_CATEGORY` *"was at"*).
+ *   - **10 are this gate's own class, and they are real.**
+ *     `docs/adr/0012:179` cites `JobRegistry.loadSnapshot` with a `file:line`
+ *     beside it and the class is `JobBoard`; `docs/adr/0034:422` says
+ *     `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` *"names the three controls"*
+ *     in the present tense and `tests/browser/app-shell.spec.ts:2596` says
+ *     *"This constant **was**"* that, now `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`
+ *     at `:2712`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
+ *     *"load-bearing for both decisions"* and
+ *     `tests/unit/appearance-zoning-tint.test.ts:11` says it *"no longer
+ *     exists"* and is `ZONING_TINT_BY_ROOM_ID`; `SAVE_ENVELOPE_VERSION` names
+ *     nothing at all and two ADRs decide that it *"does not move"*.
+ *
+ *   **So the records are not clean, and the reason they are still out of scope
+ *   is the 27 rather than the 53**: no prefix or root exclusion can cover
+ *   another game's constant table, so gating them needs an allowlist of
+ *   sentences, which is the one thing this file refuses. The 10 are a finding
+ *   for their own issue, not an argument for widening the walk. And #991's
+ *   estimate that extending to `docs/**` was "the cheap half" is still the
+ *   half of that issue this file does not follow — for a better reason than
+ *   the first draft had.
+ *
+ * A guide needs no extraction, which is the one mechanical difference between
+ * the corpora: the whole Markdown file is prose, so it is handed to
+ * `citationsIn` directly. Nothing in a guide enters the vocabulary either way,
+ * so the self-vouching rule below holds over it unchanged.
  *
  * Comments are extracted by taking the difference between a file and
  * `stripComments(file)`. That helper is the repository's single pinned
@@ -100,12 +173,21 @@ import { stripComments } from '../helpers/canonical-iteration';
  *
  * The substantive assertion is `toEqual([])`, so the failure this file is most
  * exposed to is finding nothing for the wrong reason. Four floors and two
- * controls stand against that: the walk (>600 files), the extracted comment
- * volume (>3,000,000 characters), the number of citations actually parsed and
- * compared (>1,500; 1,990 as this was written), and the size of the vocabulary
- * (>12,000; 17,088). A stripper that blanked whole files, a regex that stopped
- * matching, or a vocabulary built from an empty walk each fails a floor rather
- * than passing quietly, and all three were measured doing so.
+ * controls stand against that on the comment corpus: the walk (>600 files),
+ * the extracted comment volume (>3,000,000 characters), the number of
+ * citations actually parsed and compared (>1,500; 1,990 as this was written),
+ * and the size of the vocabulary (>12,000; 17,088 then, 24,761 at v0.0.541). A
+ * stripper that blanked whole files, a regex that stopped matching, or a
+ * vocabulary built from an empty walk each fails a floor rather than passing
+ * quietly, and all three were measured doing so.
+ *
+ * The guide corpus carries three of its own, for the same reason and to the
+ * same shape: the walk (>20 files; 28), the prose read (>700,000 characters;
+ * 1,086,638) and the citations parsed (>350; 513). It shares the vocabulary
+ * floor, because it resolves against the same vocabulary — a guide scan over
+ * an empty vocabulary would flag all 513 rather than none, but a guide scan
+ * that read no guides would flag none, and that is the direction these floors
+ * are for.
  *
  * The floors move with the corpus and are deliberately loose -- they are
  * "the scan still works" and not "the corpus is this size".
@@ -151,6 +233,103 @@ import { stripComments } from '../helpers/canonical-iteration';
  * exemption that has become too generous is invisible from a corpus with
  * nothing to exempt. Only a control can see it, so the controls carry the
  * exemption rules and the corpus carries the finding.
+ *
+ * ### Added for the guide corpus (#991), same discipline
+ *
+ * - `NEW_PRISON_ORIGIN_TILE` reverted to `STARTING_ORIGIN_TILE` in
+ *   `docs/PRISONER_OPERATIONS.md`: **1 failed**, naming
+ *   `docs/PRISONER_OPERATIONS.md:1335`. That is the live case #991 reports,
+ *   and it is the red this corpus was added to produce.
+ * - the guide filter changed to `.mdx`, so the walk matches nothing: **1
+ *   failed**, the guide-count floor, at 0 against 20. A walk that stopped
+ *   finding the corpus fails rather than reporting it clean.
+ * - the guide walk pointed at `docs/adr/` instead: **1 failed with 29
+ *   unresolved**, which is not the result predicted for it here before it was
+ *   run — the prediction was the count floor, on the reasoning that `docs/adr/`
+ *   holds directories. It holds 100 Markdown files. The bullet is kept in this
+ *   corrected form rather than deleted because the mutation turned out to be
+ *   the more useful one: it is the records corpus arriving through the front
+ *   door, and 29 of its 53 findings are visible in one failure message —
+ *   `ThoughtDefOf.SleptOnGround`, `MAXIMUM_SIZE_64`, `RoomType.isSatisfactory`
+ *   and the rest of another game's vocabulary, none of them a defect. That is
+ *   the argument for the corpus rule above, measured instead of asserted.
+ * - `SUPABASE_` and `PLAYWRIGHT_` removed from `EXTERNAL_CONSTANT_PREFIXES`:
+ *   **2 failed**, naming all seven `docs/DEPLOYMENT.md` sites and
+ *   `docs/TESTING.md:133`, plus the control below. Load-bearing, and measured
+ *   as such rather than asserted.
+ *
+ * ## What #991 asked for, and what measuring it changed
+ *
+ * #991 reports two documented scope boundaries, each letting a live instance
+ * through. **The first is real and is closed above.** The second is not, and
+ * the correction is recorded here rather than in the issue because the next
+ * reader of this docblock is who needs it.
+ *
+ * #991 says of the five comments claiming a two-entry Build catalogue: *"And
+ * `BUILDABLE_REGISTRY` is not a symbol either. It has six occurrences in
+ * `src/`, all inside comments."* **It is a symbol.** It is declared at
+ * `src/simulation/construction/definition.ts:83` and has been since `b5f2fd21`
+ * (2026-08-22), including at `376b48bf` (v0.0.477), the commit the issue's own
+ * audit names; `src/main.ts:947`, `src/rendering/world/appearance.ts:413` and
+ * `src/simulation/construction/system.ts:545` are three of the code sites. So
+ * the root resolves, and **no rule about two-segment constants would have
+ * flagged those five comments.** What is false in them is a *number* — "has
+ * two entries" against a registry of twenty-one — and a count is the
+ * behavioural half this file says at the top it does not attempt.
+ *
+ * Admitting two-segment constants was measured anyway, because a decision
+ * refusing something should be refusing it for the right reason:
+ *
+ * - over `src/` and `tests/` comments: **515 citations of 134 distinct
+ *   two-segment tokens, 1 unresolved** — `UNPAINTED_ROUTE`, at five sites, all
+ *   of them deliberate deletion records of an entry `projection-reachability-contract.test.ts`
+ *   removed at #331. Three of the five miss a phrase from
+ *   `ABSENCE_MARKERS` and would be flagged; none of them is a defect.
+ * - over the guides: **2 unresolved, and both are correct prose**.
+ *   `docs/DEPLOYMENT.md:481` says *"A name containing `SECRET`,
+ *   `SERVICE_ROLE`, `PRIVATE_KEY`, `PASSWORD` or `CREDENTIAL` is refused on
+ *   the name alone"*, describing the five shell globs at
+ *   `scripts/check-deploy-secrets.sh:93`. Three of the five are single-segment
+ *   and invisible; two are two-segment and become citations of symbols that do
+ *   not exist, because they are **fragments of a variable name**, not names.
+ *
+ * So the docblock's original reason survives its first real test: two-segment
+ * constants do collide with vocabulary that is not this repository's, the very
+ * first corpus they meet produces the collision, and the token they buy is one
+ * whose sites are already documented deletions. #991's own narrower variant —
+ * *"admit a two-segment constant that ... appears in >=3 comments"* — would
+ * thread this particular needle, and is rejected for a different reason: it
+ * makes the gate weakest on the freshest rot, since a stale name cited once is
+ * exactly the case it declines to look at.
+ *
+ * **A third boundary, which #991 does not name and which is the one its own
+ * examples actually fall through: the walk is `.ts`-only.** `collectFiles(src,
+ * ['.ts'])` is what excludes `src/ui/tokens.css:454` and the four `hud.css`
+ * comments the issue lists — not the two-segment rule — and the sentence at the
+ * top of this docblock, *"every comment under `src/` and `tests/`"*, overstates
+ * that. Measured: 5 CSS files under `src/` and `tests/`, 188,512 characters of
+ * comment, 20 citations parsed, and **one live finding** —
+ * `src/ui/hud/hud.css:3812` cites `RoomsNeedsProbe.needsItemRows`, which has
+ * one occurrence in the tree; the interface is `RoomsProbe`
+ * (`tests/browser/ui-harness-api.ts:963`, the member at `:1112`), and
+ * `ui-shell.spec.ts:4668` and `:4804` do make the assertion the comment
+ * claims. `stripComments` handles a CSS block comment unchanged (the same
+ * delimiters) and no CSS file in the
+ * tree contains a bare `//`, so the extension costs one line.
+ *
+ * **That boundary is closed, and this paragraph is what closed it.** It read
+ * *"It is not taken here because the one-token correction it needs is in
+ * `src/ui/`, which another agent held while this landed — it is reported
+ * instead, with the red above reproducible by adding `'.css'` to both walks."*
+ * Both halves are spent: the third `it(...)` below walks the stylesheets,
+ * `src/ui/hud/hud.css:4143` now cites `RoomsProbe.needsItemRows`, and the
+ * reproduction was taken in that order — the scan added first and run red
+ * against the unfixed comment, then the token corrected. The clause is
+ * corrected rather than deleted because it is the reason this measurement sat
+ * unspent for a day, and because the sentence at the top of this docblock is
+ * accurate only from this commit onward. What the extension deliberately does
+ * **not** do is let a stylesheet donate vocabulary — the third `it(...)`
+ * carries that reason.
  */
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -177,6 +356,22 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  *   a textual check rather than a tidy-up: any file that quotes a
  *   non-existent symbol inside a string literal silently widens the
  *   vocabulary. This is the only such file in the tree today.
+ *
+ * **The last sentence above is false and is kept rather than corrected,
+ * because it is the claim and the measurement that refutes it is the point.**
+ * Measured at v0.0.541 while #991 was being worked: the only file whose
+ * *stripped* text contains `JobSystem` is
+ * `tests/unit/simulation-message-keys.test.ts:184`, where the name sits inside
+ * a single-quoted justification sentence in an exemption table. `JobSystem` is
+ * a class ADR 0093 deleted -- `src/simulation/prisoners/actions.ts:392` says
+ * so in its own words, *"neither the constant nor the system exists any
+ * longer"* -- so a second file is silently vouching for a second dead name,
+ * and `docs/OPERATIONS.md`'s *"`JobSystem.beginLeg` re-requests routing on the
+ * next scheduled tick"* resolves through it.
+ * That citation is stale and this gate cannot see it. The limit is therefore
+ * wider than one file and grows with every prose sentence written into a
+ * string literal; closing it needs a string-aware vocabulary, which
+ * `stripComments` is not and which is a decision rather than a patch.
  */
 const SELF = path.join(repositoryRoot, 'tests', 'foundation', 'comment-symbol-existence-contract.test.ts');
 
@@ -192,9 +387,28 @@ const SELF = path.join(repositoryRoot, 'tests', 'foundation', 'comment-symbol-ex
  * Extending this is a real decision, not a formality: an entry here has to be
  * a name that **cannot** exist in this repository, never one that merely does
  * not exist yet.
+ *
+ * **`PLAYWRIGHT_` and `SUPABASE_` were added when the guides came into scope,
+ * and both are environment-variable namespaces belonging to a tool rather than
+ * to this tree.** `PLAYWRIGHT_BROWSERS_PATH` is Playwright's own variable,
+ * cited in `docs/TESTING.md` where it says where the browser unpacks to.
+ * `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`
+ * are the Supabase CLI's, and in this repository they exist only as GitHub
+ * Actions secrets and workflow environment in
+ * `.github/workflows/migrate-database.yml:119-149` — deploy configuration,
+ * which `AGENTS.md` reservation 3 says nothing here can read back. A gate
+ * demanding they resolve to a repository symbol asks for something that cannot
+ * be true.
+ *
+ * **The property that makes `SUPABASE_` safe rather than a hole is that it does
+ * not shadow this repository's own Supabase vocabulary**, which is `VITE_`-
+ * prefixed: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` do not
+ * start with `SUPABASE_` and stay checked. The control below asserts both
+ * directions of that, because a prefix exclusion is exactly the kind of entry
+ * that quietly grows to cover what it was not meant to.
  */
 const EXTERNAL_ROOTS: readonly string[] = ['TypedArray'];
-const EXTERNAL_CONSTANT_PREFIXES: readonly string[] = ['ERR_'];
+const EXTERNAL_CONSTANT_PREFIXES: readonly string[] = ['ERR_', 'PLAYWRIGHT_', 'SUPABASE_'];
 
 /**
  * Suffixes that make a dotted token a filename rather than a member path.
@@ -400,11 +614,22 @@ describe('a comment that names a symbol names one that exists', () => {
    * untouched. The global stays tight so a genuinely hung test still fails in
    * five seconds.
    *
-   * Two more are the next candidates and are deliberately left alone until
-   * they exceed it: `documentation-source-anchor-contract`'s anchor
+   * Two more were named here as the next candidates, deliberately left alone
+   * until they exceeded it: `documentation-source-anchor-contract`'s anchor
    * resolution and `documentation-claims-contract`'s treasury-credit census,
    * both observed over 5,000 ms under heavier contention and both comfortably
    * under it in the measurement above.
+   *
+   * **The first of the two did exceed it, and the remedy was not this one.**
+   * Under 12 busy loops on four cores its anchor resolution timed out at
+   * 5,000 ms on an unmodified `main` -- the red seven agents hit in one day.
+   * It turned out to be reading the cited file once per anchor: 4,017 anchors
+   * over 479 distinct files, 387 MB read where the distinct set is 15 MB.
+   * Memoising the line count per path took it to 892 ms and 391 ms under the
+   * same synthetic load, so it now clears the global with five-fold margin
+   * and needs no timeout of its own. Prefer that order -- find the repeated
+   * work first, and reach for this escape hatch only when the walk really is
+   * the whole cost, as it is here: this test reads its corpus once already.
    */
   it('resolves every member path and screaming constant cited in src/ and tests/', async () => {
     const vocabularyFiles = [
@@ -445,6 +670,134 @@ describe('a comment that names a symbol names one that exists', () => {
     expect(
       unresolved,
       'a comment names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same comment, as this tree already does for `RoomSystem.validateRoom` and `NEVER_LAID_OUT_AT_375`',
+    ).toEqual([]);
+  }, 60_000);
+
+  /**
+   * The second corpus, added for #991: the guides at the top level of `docs/`.
+   *
+   * The header records what this reads, what it deliberately does not
+   * (`docs/adr/` and `docs/research/`, which are dated records rather than
+   * present-tense guides) and the measurement behind both. The vocabulary is
+   * built exactly as the comment scan builds it, from **stripped code**, so a
+   * name that exists only in a guide cannot vouch for itself either.
+   */
+  it('resolves every member path and screaming constant cited in the docs guides', async () => {
+    const vocabularyFiles = [
+      ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'tests'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'scripts'), ['.ts', '.mjs', '.js'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'benchmarks'), ['.ts'])),
+    ];
+    const sources = new Map<string, string>();
+    for (const file of vocabularyFiles) {
+      if (file === SELF) continue;
+      sources.set(path.relative(repositoryRoot, file), await readFile(file, 'utf8'));
+    }
+    const { vocabulary } = scanCorpus(sources);
+    expect(vocabulary.size, 'the identifier scan produced almost nothing; the stripper or the regex is broken').toBeGreaterThan(12_000);
+
+    const guides = (await readdir(path.join(repositoryRoot, 'docs'), { withFileTypes: true }))
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+      .map((entry) => entry.name)
+      .sort();
+
+    expect(guides.length, 'the guide walk is broken; docs/ holds no top-level Markdown').toBeGreaterThan(20);
+
+    let proseCharacters = 0;
+    let citationsChecked = 0;
+    const unresolved: string[] = [];
+    for (const name of guides) {
+      const prose = await readFile(path.join(repositoryRoot, 'docs', name), 'utf8');
+      proseCharacters += prose.replace(/[ \n]/gu, '').length;
+      citationsChecked += citationsIn(prose).length;
+      for (const citation of unresolvedCitations(prose, vocabulary)) {
+        unresolved.push(`docs/${name}:${citation.line} cites \`${citation.token}\`, and \`${citation.token.split('.')[0]!}\` is declared nowhere in the repository`);
+      }
+    }
+
+    expect(proseCharacters, 'almost no guide prose was read; the guide walk is empty').toBeGreaterThan(1_000_000);
+    expect(citationsChecked, 'almost no citations matched; the token shapes no longer fit the guides').toBeGreaterThan(400);
+
+    expect(
+      unresolved,
+      'a guide names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same paragraph, as this tree already does in code',
+    ).toEqual([]);
+  }, 60_000);
+
+  /**
+   * The third corpus: the stylesheets under `src/` and `tests/`.
+   *
+   * The header's third boundary is what this closes. `collectFiles(src,
+   * ['.ts'])` is what kept `src/ui/tokens.css` and the `hud.css` comments #991
+   * lists out of the scan -- not the two-segment rule -- and the sentence at
+   * the top of this file, *"every comment under `src/` and `tests/`"*, was
+   * therefore an overstatement rather than a claim. It is one now.
+   *
+   * **A stylesheet donates no vocabulary.** The `.ts` walk above builds the
+   * vocabulary and this one only spends it, which is deliberate and not an
+   * economy: CSS custom-property names and class names are `kebab-case`, so
+   * `IDENTIFIER` would take `hud` and `rooms` out of `--hud-rooms-gap` and seed
+   * the set with lowercase fragments that vouch for prose no code declares.
+   * Every rule this file rests on -- a vocabulary from **stripped code**, a
+   * corpus of **comments only** -- is kept exactly as the two scans above have
+   * it.
+   *
+   * `stripComments` needs no CSS mode: a CSS block comment has the same
+   * delimiters as a TypeScript one. It does treat a bare `//` as a line
+   * comment, which CSS does not have; no stylesheet in the tree contains one
+   * today (measured), and the failure direction is safe either way -- a
+   * mistaken `//` blanks the rest of that line out of the *scanned* text, which
+   * can only lose a citation, never invent one.
+   */
+  it('resolves every member path and screaming constant cited in the stylesheets', async () => {
+    const vocabularyFiles = [
+      ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'tests'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'scripts'), ['.ts', '.mjs', '.js'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'benchmarks'), ['.ts'])),
+    ];
+    const sources = new Map<string, string>();
+    for (const file of vocabularyFiles) {
+      if (file === SELF) continue;
+      sources.set(path.relative(repositoryRoot, file), await readFile(file, 'utf8'));
+    }
+    const { vocabulary } = scanCorpus(sources);
+    expect(vocabulary.size, 'the identifier scan produced almost nothing; the stripper or the regex is broken').toBeGreaterThan(12_000);
+
+    const stylesheets = [
+      ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.css'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'tests'), ['.css'])),
+    ].sort();
+
+    // Vacuity guard: the stylesheet walk found the corpus. Five files at
+    // v0.0.541, so this is the same ~65% of actual the floors above are set at.
+    expect(stylesheets.length, 'the stylesheet walk is broken; src/ and tests/ hold no CSS').toBeGreaterThan(3);
+
+    let commentCharacters = 0;
+    let citationsChecked = 0;
+    const unresolved: string[] = [];
+    for (const file of stylesheets) {
+      const source = await readFile(file, 'utf8');
+      const comments = commentTextOf(source, stripComments(source));
+      commentCharacters += comments.replace(/[ \n]/gu, '').length;
+      citationsChecked += citationsIn(comments).length;
+      for (const citation of unresolvedCitations(comments, vocabulary)) {
+        unresolved.push(`${path.relative(repositoryRoot, file)}:${citation.line} cites \`${citation.token}\`, and \`${citation.token.split('.')[0]!}\` is declared nowhere in the repository`);
+      }
+    }
+
+    // Measured on this tree: 188,507 characters and 20 citations. (The header's
+    // 188,512 was taken before the correction below it -- `RoomsNeedsProbe` is
+    // five characters longer than `RoomsProbe`, and that is the whole
+    // difference.) The floors are below both, and a walk that read the code
+    // instead of the comments would clear neither.
+    expect(commentCharacters, 'almost no stylesheet comment text was extracted; the comment/code difference is inverted or empty').toBeGreaterThan(120_000);
+    expect(citationsChecked, 'almost no citations matched; the token shapes no longer fit the stylesheets').toBeGreaterThan(12);
+
+    expect(
+      unresolved,
+      'a stylesheet comment names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same comment, as this tree already does in code',
     ).toEqual([]);
   }, 60_000);
 
@@ -508,6 +861,19 @@ describe('a comment that names a symbol names one that exists', () => {
 
     const external = `/**\n * Let \`TypedArray.fill\` coerce it.\n */`;
     expect(unresolvedCitations(commentTextOf(external, stripComments(external)), vocabulary)).toEqual([]);
+
+    // The `SUPABASE_` exclusion is the Supabase CLI's environment namespace and
+    // has to stop there: this repository's own Supabase vocabulary is
+    // `VITE_`-prefixed and must stay checked. Both directions, because a prefix
+    // exclusion is the entry most likely to quietly cover more than it was for.
+    const cliEnvironment = `/**\n * \`SUPABASE_ACCESS_TOKEN\` is a repository secret.\n */`;
+    expect(unresolvedCitations(commentTextOf(cliEnvironment, stripComments(cliEnvironment)), vocabulary)).toEqual([]);
+
+    const ourEnvironment = `/**\n * \`VITE_SUPABASE_PUBLISHABLE_KEY\` is the required one.\n */`;
+    expect(
+      unresolvedCitations(commentTextOf(ourEnvironment, stripComments(ourEnvironment)), vocabulary).map((c) => c.token),
+      'the `SUPABASE_` exclusion must not reach this repository\'s own `VITE_`-prefixed names',
+    ).toEqual(['VITE_SUPABASE_PUBLISHABLE_KEY']);
 
     // A name that appears only inside a comment must not vouch for itself: this
     // is the case that fails if the vocabulary is built from raw source.

@@ -4,6 +4,7 @@ import {
   buildResilientCell,
 } from './playtest-2026-09-01-the-people.playtest';
 import {
+  countsSeries,
   currentClock,
   currentTick,
   installTee,
@@ -13,8 +14,8 @@ import {
   press,
   reportBoundary,
   runUntilTick,
+  showPanel,
   tab,
-  countsSeries,
 } from './playtest-harness';
 
 /**
@@ -278,12 +279,12 @@ test('act 3: at the moment a day turns, does the player see anything besides the
   const cell = await buildResilientCell(page, 2, act);
   log(act, `cell built: ${JSON.stringify(cell)}`);
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1_500);
   log(act, `after one admission: ${await panelText(page, '.hud-intake')}`);
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   await page.locator('.hud-staff__hire').click();
@@ -392,7 +393,7 @@ test('act 4: every remaining paused gesture, checked for the #774 shape', async 
   await page.locator('.hud-build__remove').click();
 
   // ---- UnzoneRoom then ZoneRoom while paused ------------------------------
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   }
@@ -416,7 +417,7 @@ test('act 4: every remaining paused gesture, checked for the #774 shape', async 
   );
 
   // ---- AdmitPrisoner while paused ------------------------------------------
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   const rosterBefore = (await latestCounts(page))?.prisoners;
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(400);
@@ -428,7 +429,7 @@ test('act 4: every remaining paused gesture, checked for the #774 shape', async 
   );
 
   // ---- HireStaff while paused ------------------------------------------
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const staffBefore = (await latestCounts(page))?.staff;
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
@@ -464,7 +465,7 @@ test('act 5: an organic run at x4, watched for close event pairs by tick, not by
 
   const cell = await buildResilientCell(page, 2, act);
   log(act, `cell built: ${JSON.stringify(cell)}`);
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let i = 0; i < 2; i += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(200);

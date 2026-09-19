@@ -12,7 +12,9 @@ import {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
+import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
+import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -299,7 +301,9 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
-        /** The anchor tile a `PlaceObject` or `RemoveObject` names (ADR 0028). */
+        /** The role a `HireStaff` names (ADR 0025), read by `hiresSent`. */
+        readonly staffRoleId?: string;
+        /** The anchor tile a `PlaceObject`, `RemoveObject` or `RemoveWall` names (ADR 0028, ADR 0106). */
         readonly x?: number;
         readonly y?: number;
       };
@@ -312,7 +316,7 @@ interface StatusCountsPublication {
   readonly payload: {
     readonly tick: number;
     readonly schemaVersion: number;
-    readonly counts: Record<string, number>;
+    readonly counts: Record<string, number | boolean>;
   };
 }
 
@@ -345,6 +349,20 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
+      // The twenty-second count (2026-09-15), and the first boolean on this
+      // channel: `RoomInstanceRegistry.totalResidentCapacity === 0`, ADR 0017's
+      // "Amendment, 2026-09-01" §2. Required for the same `.strict()` reason
+      // as the fields around it.
+      //
+      // **Deliberately `false` against a `roomCapacity` of 48, and the pair is
+      // the fixture's own idiom.** The host derived this predicate from
+      // `roomCapacity === 0` until 2026-09-15, and that derivation cannot see a
+      // room instance registered under a room-catalog id the content registry
+      // does not define -- so a host that reached for `roomCapacity` again
+      // would be visible on the prison where they come apart
+      // (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`)
+      // rather than plausible. This prison is furnished on both readings.
+      isFreshUnfurnishedPrison: false,
       // Required, not optional, for the reason the paragraph above and the
       // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
       // counts payload is `.strict()`, so a fixture missing this field is
@@ -578,7 +596,7 @@ function unitPriceOf(itemId: string): number {
  */
 async function objectCommandsSent(
   page: Page,
-  type: 'PlaceObject' | 'RemoveObject',
+  type: 'PlaceObject' | 'RemoveObject' | 'RemoveWall',
 ): Promise<readonly { x: number; y: number }[]> {
   return page.evaluate(
     (commandType) =>
@@ -672,6 +690,21 @@ async function purchasesSent(page: Page): Promise<readonly { itemId: string; qua
         itemId: message.payload?.command?.data?.itemId ?? '',
         quantity: message.payload?.command?.data?.quantity ?? 0,
       })),
+  );
+}
+
+/**
+ * Every `HireStaff` the page has posted, the sibling of `purchasesSent` above
+ * and for the same reason: the `hire-staff` pre-flight throws *instead of*
+ * submitting, so "nothing left this thread" is a claim only the tee can settle.
+ */
+async function hiresSent(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() =>
+    ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+      .map((message) => message as SubmittedCommand)
+      .filter((message) => message.kind === 'simulation/submit-command')
+      .filter((message) => message.payload?.command?.data?.type === 'HireStaff')
+      .map((message) => message.payload?.command?.data?.staffRoleId ?? ''),
   );
 }
 
@@ -885,6 +918,63 @@ async function dragOnWorld(page: Page): Promise<void> {
 const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
 
 /**
+ * The side a caller uses when the *number of wall segments* is what it is
+ * paying for, rather than the rectangle.
+ *
+ * 128px is the second entry above, so this is a preference and not a new
+ * pixel figure: `tileSpanOfGesture` makes it a 3x3 room where 192px makes a
+ * 4x4 one, and `drawRoomRectangle` asserts that against the panel either way.
+ *
+ * ### Why a smaller room is worth a constant of its own
+ *
+ * `perimeterSegments` is a perimeter, so it grows with the side and the orders
+ * grow with it: two 4x4 cells a tile apart are **32** segments and two 3x3
+ * cells are **23** (12 + 12, less the one they share when the second lands on
+ * the first's south row -- measured, `6,11 3x3` and `8,14 3x3` at 1280x800).
+ * Each of those orders is fourteen or four keyboard hops through a page whose
+ * renderer every press queues behind, which is the cost `#1008` measured and
+ * `wallRectanglesFromTheKeyboard` records above: on a host without a GPU an
+ * order costs ~3.1 s, so nine fewer of them is ~28 s of a 180 s test.
+ *
+ * **Measured on this container, 2026-09-08, `-g "#331"` with one worker and
+ * nothing else running.** The whole test, end to end, as Playwright reports
+ * it: **174 s at 4x4 against `test.slow()`'s 180 s cap, and 132 s at 3x3.** The
+ * wall phase alone is 139.3 s and 100.4 s of that, with the order loop 99.0 s
+ * and 67.9 s -- the crew is 30.0 s and 22.2 s and was never the wait. Six
+ * seconds of margin becomes forty-eight.
+ *
+ * ### What it does not buy back
+ *
+ * The margin, not the cost. A press still costs what the renderer costs, and a
+ * host slow enough to spend 180 s on 23 orders would fail this the same way --
+ * see `#1008`, which is about the budget and stays open for it. This constant
+ * stops `#331` being the first test to run out on an ordinary CI host; it does
+ * not make the keyboard route cheap.
+ *
+ * **The last clause held for four days and no longer does, and the paragraph
+ * is kept because its first clause is the part that was tested and failed.**
+ * `5a761322` was not enough: the first `browser` job on this runner pool ever
+ * allowed to finish (run 34215508642, `422 passed, 1 failed`) had this test
+ * exceed the 180 s cap with the smaller rooms already in place. What the
+ * route's cost turned out to be made of is two things this constant cannot
+ * touch -- Shift's own key events, and the number of pixels a software
+ * rasteriser repaints between one press and the next -- and both are now cut,
+ * by `withTabKey` and by `WallOrderOptions.orderAt`. The rooms are still 3x3
+ * and the perimeter is still 23: this constant is not withdrawn, it is simply
+ * no longer the only cut in the test.
+ *
+ * ### Why only the one caller uses it
+ *
+ * The other `wallRectanglesFromTheKeyboard` callers wall a **single** cell --
+ * 16 segments at 4x4 -- and the two other `dragRectangleOnWorld` callers never
+ * build walls at all and run at 375x812, where what a drag can find is a
+ * different question (see `wholeSquare`'s note). Nothing is gained by making
+ * their rectangles smaller and their measurements would move, so
+ * `ROOM_DRAG_DELTAS_PX` stays the default and this is asked for by name.
+ */
+const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
+
+/**
  * The panel's arrival height, per viewport, so "the phone was not fixed by
  * moving the desktop" is a number rather than a hope.
  *
@@ -941,11 +1031,101 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  * The sentence above is left standing rather than rewritten because its
  * *reason* is still the reason, and a reader who meets only the correction
  * would not know what 900x600 is still exempt from.
+ *
+ * **`1280x720` moved 397.3 -> 395.6 and `375x812` 441 -> 439.3 in #1158, and
+ * both 1.7px are the strip's again.** Stage 2 of the identity rollout took
+ * body and value type from 13px to 15px (ADR 0112 decision 4, the owner's
+ * ruling of 2026-09-13). This panel is **not** one of the surfaces that took
+ * it -- `tokens.css` pins `.hud-rooms` to the denser step, because at 15px
+ * its own body measured 15px shorter than its content at 900x600 -- so every
+ * pixel here arrives from upstream, exactly as the 375x812 entry above
+ * describes for #545.
+ *
+ * The arithmetic, measured on this page and this prison in two worktrees, the
+ * unmodified base at `a6565239` against the branch:
+ *
+ *     viewport    strip           rail            aside          this panel
+ *     1280x720    78.5 -> 80.7    572.3 -> 570.1  143.1 -> 142.5  397.3 -> 395.6
+ *     900x600     48.0 -> 48.0    482.8 -> 482.8  120.7 -> 120.7  338.1 -> 338.1
+ *     375x812    101.5 -> 103.7   641.3 -> 639.1  160.3 -> 159.8  441.0 -> 439.3
+ *
+ * The strip grows 2.2px wherever it grows at all, because its rows are one
+ * line of body type taller; the middle grid row loses the same 2.2; and the
+ * aside slot's `min-height: 25%` keeps taking its quarter, so 1.7 of the 2.2
+ * lands here. **900x600 does not move at all**, because `--hud-strip-height`'s
+ * 48px floor is still above the strip's content there -- the same reason that
+ * viewport sat out #634.
+ *
+ * So this is a budget being spent rather than a defect being paid off, which
+ * is the other of the two cases the paragraph at the top of this block names,
+ * and it comes with the measurement that caused it as that paragraph requires.
+ *
+ * **`1280x720` moved 395.6 -> 447.5 and `900x600` 338.1 -> 390 in #1159, and
+ * `375x812` did not move at all. Every one of those 51.9px is the tab bar's,
+ * and this is the first entry here where the panel is *given* height rather
+ * than lending it.**
+ *
+ * Stage 3 of the identity rollout moves the five sections from the bottom row
+ * to a left column at tablet and desktop widths -- the delivery's own layout
+ * for those tiers, *"tablet/desktop mają mapę między bokami"*. `.hud__tabs`
+ * stops being `grid-area: tabs` and becomes a second occupant of `middle`
+ * beside `.hud__corner` and `.hud__rail`, so the `tabs` row is `auto` around
+ * nothing and costs 0 instead of 69.2px. The middle row gains all of it and
+ * the rail passes it down by the same `min-height: 25%` route every entry
+ * above describes.
+ *
+ * The chain, measured on this page and this prison in one worktree, the base
+ * commit `5e1a96de` against the branch:
+ *
+ *     viewport    strip            rail             aside            this panel
+ *     1280x720    80.7 -> 80.7     570.1 -> 639.3   142.5 -> 159.8   395.6 -> 447.5
+ *     900x600     48.0 -> 80.7     482.8 -> 519.3   120.7 -> 129.8   338.1 -> 365.5
+ *     375x812    103.7 -> 103.7    639.1 -> 639.1   159.8 -> 159.8   439.3 -> 439.3
+ *
+ * **375x812 sits it out because a phone keeps its bottom bar**, which is the
+ * delivery's layout for that tier and `navigationPlacement`'s answer for it --
+ * so the `tabs` row is still 69.2px there and nothing upstream moved.
+ *
+ * **900x600 gains less than the other desktop width, because it spends some of
+ * it, and that is the interesting row.** Its strip takes a second line here for
+ * the first time: `hud.css`'s metrics-row query carried `(min-height: 701px)`
+ * under a comment saying a short viewport could not pay for the 30.5px a
+ * second row costs, and with 69.2px of tab bar handed back it can. That buys
+ * what #634 is about -- the Layout menu's 52px gutter had left the metrics
+ * 83.7px of a single-row strip, too narrow for one chip, and a row of their own
+ * gives them the strip's full width. Net at that viewport: 36.5px more rail
+ * than before this stage and every chip that fits on screen.
+ *
+ * The phone row is also a correction this branch made to itself and is worth
+ * the sentence. It first measured 103.7 -> 124.2, because the same gutter
+ * rewrapped the phone strip's three rows -- 20.5px out of the rail and 15.3px
+ * off this panel. The gutter is dropped below 720px, where the strip's first
+ * row ends at x = 233 and the slot's 52px start at 323, so it overlays empty
+ * strip instead of taking a reservation nobody needed.
+ *
+ * **`375x812` MOVED 439.3 -> 447.7 ON 2026-09-16, AND IT IS THE PHONE'S TURN
+ * TO BE GIVEN HEIGHT RATHER THAN TO LEND IT.** The entry above says the phone
+ * *"sits it out because a phone keeps its bottom bar"*; it keeps the bar and
+ * the bar got shorter. The owner ruled that below 721px a tab shows its icon
+ * and not its name (#1192), so `.ui-tab__label` is `.ui-sr-only` there and the
+ * `.ui-tab` floor drops 64px -> 56px.
+ *
+ * The chain, measured on this page in one worktree, both arms of one run
+ * (`tests/browser/playtest-1192-icon-only-tabs.playtest.ts`):
+ *
+ *     viewport    tab bar          rail             this panel
+ *     375x812     69.2 -> 58.0     639.1 -> 650.3   439.3 -> 447.7
+ *
+ * 11.2px comes off the `tabs` row, the middle row takes all of it, and
+ * `.hud__aside`'s `min-height: 25%` keeps 2.8 of it (159.8 -> 162.6) exactly
+ * as every entry above describes -- which leaves the 8.4 this number moved by.
+ * The other two viewports do not move, because the rule is inside
+ * `@media (max-width: 720px)`.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 397.3,
-  '900x600': 338.1,
-  '375x812': 441,
+  '1280x720': 447.5,
+  '900x600': 365.5,
+  '375x812': 447.7,
 };
 
 /**
@@ -958,6 +1138,19 @@ const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
  * `TILE_SIZE_PX` is 64 at zoom 1, so this is five tiles and a bit.
  */
 const BARE_WORLD_SCAN_MAX_PX = 336;
+
+/**
+ * How finely `dragRectangleOnWorld`'s `wholeSquare` scan samples a candidate
+ * gesture, in CSS pixels.
+ *
+ * 16, which is the same step the scan itself walks the page in, so the lattice
+ * is the scan's own grid rather than a second number -- and it is a quarter of
+ * `TILE_SIZE_PX`, so no tile of a candidate rectangle goes unsampled on either
+ * axis. Nothing this is aimed against is anywhere near that small: the HUD
+ * islands that swallow a pointer are whole panels, the narrowest of them
+ * `.hud-rooms` at 264px wide (measured at 1280x800).
+ */
+const BARE_SQUARE_SAMPLE_STEP_PX = 16;
 
 /** One pending-rectangle control, measured as a tap target and hit-tested. */
 interface RoomControlHit {
@@ -1108,10 +1301,52 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  *
  * `null` still means what `false` meant: there was no square of bare world to
  * draw in, which is a measurement and not a failure -- see the paragraph above.
+ *
+ * ### `wholeSquare`, and the measurement that made it necessary
+ *
+ * The scan's default is three points on a diagonal -- press, midpoint, release
+ * -- and the paragraph below calls that coarse on purpose. It is coarse in a
+ * direction that matters to any caller which draws the *same* rectangle twice:
+ * a square whose three diagonal points are canvas may still lie mostly under a
+ * HUD island, and an island that later grows takes the aim point with it.
+ *
+ * **Measured on 2026-09-05, at 1280x800, on the branch that added the first
+ * acknowledgement (#966 site 2).** The second room drag of the `#331` spec
+ * aimed at `(328,344)`, which was bare canvas by **3.8px** -- the bottom-left
+ * minimap panel's top edge was at `347.8`. Designating the first room put a row
+ * in the alerts list inside that panel, the list went `32px -> 60px`, and
+ * `.hud__corner` grew upward from `y=334.8` to `y=306.8` (its bottom pinned at
+ * `730.8`). `elementFromPoint(328,344)` then returned `h2.ui-panel__title`, the
+ * scan slid right to `(424,344)`, and the drag drew `12,15 4x4` where its walls
+ * had been built around `11,15 4x4`.
+ *
+ * The canvas did not move: `0,0 1280x800`, attributes `1280x800`, identical
+ * before and after. What moved was how much world a HUD island covers.
+ *
+ * So `wholeSquare` asks the question the caller actually has -- *is this square
+ * world?* -- by sampling the whole gesture on a 16px lattice instead of three
+ * points on its diagonal. The aim it returns is then bounded by the islands'
+ * horizontal extent rather than by an island's top edge, and a panel that grows
+ * upward by a row cannot slide it. That is a stronger property than the default
+ * and not a proof: nothing here can promise a square stays bare, which is why
+ * `drawRoomRectangle` still asserts the rectangle it drew rather than trusting
+ * the aim.
+ *
+ * **Off by default, and the two other callers are the reason.** Both drag once,
+ * never redraw, assert only `not.toBeNull()`, and run at 375x812 where
+ * `.hud-minimap`'s `calc(396px * var(--ui-scale))` is wider than the viewport --
+ * so a strictly bare square is a different and much scarcer thing there, and
+ * tightening what they aim with would change what they measure. Only a caller
+ * that has to hit the same tiles twice needs this.
  */
 async function dragRectangleOnWorld(
   page: Page,
-  options: { readonly minY?: number } = {},
+  options: {
+    readonly minY?: number;
+    readonly wholeSquare?: boolean;
+    /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
+    readonly deltas?: readonly number[];
+  } = {},
 ): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
@@ -1120,14 +1355,39 @@ async function dragRectangleOnWorld(
   // midpoint and release -- lands on the canvas wins. Coarse on purpose; this is
   // aiming at open ground, not measuring a boundary, and a fine grid would spend
   // hundreds of round trips to find the same point.
+  //
+  // `wholeSquare` trades that coarseness for a lattice over the whole square,
+  // for the reason recorded above. Both forms are one `evaluate` -- the cost is
+  // `elementFromPoint` calls in the page, not round trips -- and both stop at
+  // the first point that is not canvas, so a candidate under an island is
+  // rejected on its first or second sample.
   const aim = await page.evaluate(
-    ({ width, height, deltas, minY }) => {
+    ({ width, height, deltas, minY, wholeSquare, step }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
+      // Inclusive on both axes, and the last offset is the exact far edge rather
+      // than the last multiple of `step` below it: the release point is a corner
+      // of the square and is exactly where a drag ends.
+      const offsetsWithin = (delta: number): number[] => {
+        const offsets: number[] = [];
+        for (let d = 0; d < delta; d += step) offsets.push(d);
+        offsets.push(delta);
+        return offsets;
+      };
+      const bare = (x: number, y: number, delta: number): boolean => {
+        if (!wholeSquare) return free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta);
+        const offsets = offsetsWithin(delta);
+        for (const dy of offsets) {
+          for (const dx of offsets) {
+            if (!free(x + dx, y + dy)) return false;
+          }
+        }
+        return true;
+      };
       for (const delta of deltas) {
         for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
           for (let x = 8; x + delta < width - 8; x += 16) {
-            if (free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta)) {
+            if (bare(x, y, delta)) {
               return { x, y, delta };
             }
           }
@@ -1135,7 +1395,14 @@ async function dragRectangleOnWorld(
       }
       return null;
     },
-    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
+    {
+      width: viewport.width,
+      height: viewport.height,
+      deltas: [...(options.deltas ?? ROOM_DRAG_DELTAS_PX)],
+      minY: options.minY ?? 8,
+      wholeSquare: options.wholeSquare ?? false,
+      step: BARE_SQUARE_SAMPLE_STEP_PX,
+    },
   );
 
   if (aim === null) return null;
@@ -1287,13 +1554,30 @@ function describeTileRectangle(rectangle: TileRectangle): string {
 async function drawRoomRectangle(
   page: Page,
   what: string,
-  options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
+  options: {
+    readonly roomCatalogId: string;
+    readonly minY?: number;
+    readonly clearOf?: readonly TileRectangle[];
+    /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
+    readonly deltas?: readonly number[];
+  },
 ): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
-  const gesture = await dragRectangleOnWorld(page, options.minY === undefined ? {} : { minY: options.minY });
+  const deltas = options.deltas ?? ROOM_DRAG_DELTAS_PX;
+  const gesture = await dragRectangleOnWorld(page, {
+    deltas: [...deltas],
+    // Every drag through this helper is one half of a pair: a probe that
+    // decides where a perimeter's worth of wall segments go, and the real drag
+    // that has to land
+    // on the same tiles once they are up. `wholeSquare` is what stops a HUD
+    // island that grew in between from moving the second one -- see
+    // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
+    wholeSquare: true,
+    ...(options.minY === undefined ? {} : { minY: options.minY }),
+  });
   if (gesture === null) {
     throw new Error(
       `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
-        ` (deltas ${ROOM_DRAG_DELTAS_PX.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
+        ` (deltas ${deltas.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
     );
   }
 
@@ -1477,9 +1761,129 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  *
  * It is deliberately the same function with the same bound, so a control that
  * is unreachable in one direction fails the same way in the other.
+ *
+ * ### Which way round a *between-panel* hop goes is a budget, not a claim
+ *
+ * The paragraph above is about one form. The same arithmetic decides the cost
+ * of the two `#411` keyboard-only specs, and there it is most of the test:
+ * measured on this container on 2026-09-08 with one worker, a press and the
+ * `page.evaluate` that follows it cost **~250 ms together** on the assembled
+ * page, and `zones a room and admits a prisoner` spent **52.4 s of 98.6 s
+ * walking, over 205 presses**.
+ *
+ * Four of its hops were most of that, because they cross the HUD rather than a
+ * form -- and the tab bar is the **last child of `.hud`**
+ * (`src/ui/hud/hud.ts:2441`), so forwards from a panel to a tab is nearly a lap
+ * of the page. Both directions, measured at 1280x800 on the same runs:
+ *
+ * | Hop | `Tab` | `Shift+Tab` |
+ * | --- | --- | --- |
+ * | the Pause control -> the Rooms tab | 24 | **4** |
+ * | the Rooms tab -> the room catalogue | 20 | **6** |
+ * | the Play control -> the Overview tab | 33 | **7** |
+ * | the Overview tab -> the Admit control | 22 | **1** |
+ * | the Play control -> the removal toggle (`takes a room back`) | 32 | **8** |
+ * | the removal toggle -> the coordinates disclosure (same) | 25 | **15** |
+ *
+ * **No assertion moves when one of those turns round**, and that is why these
+ * six and not others. #411's bound is `MAX_TAB_PRESSES_PER_HOP`, which this
+ * function shares; the *tighter* bound the spec places is on the typed route --
+ * the disclosure, the four fields, the form control and the confirm control --
+ * and every one of those is still walked forwards, including the exact `1` the
+ * spec asserts for the disclosure. The spec says so itself where it lists
+ * `routeHops`: the hops *between* panels are deliberately unbounded, because
+ * their length is a fact about the page's document order and says nothing
+ * about the route under test.
+ *
+ * **"What it does not buy is a cheaper press" is how this block used to end,
+ * and half of it is now false -- marked rather than deleted, because the
+ * other half is still the thing to understand.** A *backwards* press did get
+ * cheaper: `withTabKey` below holds Shift down across a run instead of tapping
+ * it once per hop, which takes a `Shift+Tab` hop from four key events to two
+ * and, measured on the container `#1008` is about, from 222 ms to 155 ms. A
+ * *forwards* press costs exactly what it always did, and what every press
+ * queues behind is still the renderer's frame -- which is what the sentence
+ * was really about and is what `WallOrderOptions.orderAt` reaches instead.
  */
 async function shiftTabTo(page: Page, description: string, target: FocusTarget): Promise<number> {
   return walkFocus(page, 'Shift+Tab', description, target);
+}
+
+/**
+ * Runs a sequence of hops with `Shift` held down across the run, rather than
+ * tapped once per hop.
+ *
+ * ### Why this is a cut and not a trick
+ *
+ * `page.keyboard.press('Shift+Tab')` dispatches **four** key events -- Shift
+ * down, Tab down, Tab up, Shift up -- where `press('Tab')` dispatches two, and
+ * on this page every one of them queues behind the renderer's frame. So a
+ * backwards hop costs about twice a forwards one of the same length, which is
+ * not a fact about the tab order at all.
+ *
+ * Both sides measured on the container `#1008` is about -- four cores, no GPU,
+ * Chromium rasterising WebGL through SwiftShader, one worker.
+ *
+ * **From the CI trace of the failing run** (run 34215508642, the first
+ * `browser` job on that pool ever allowed to finish): 140 `Tab` presses at a
+ * mean of **154 ms** beside 131 `Shift+Tab` at **267 ms**, in one test.
+ *
+ * **From a probe on the assembled page**, 60 presses of each, three rounds in
+ * one run at 1280x800 with a prison loaded, load average 2.5-3.3:
+ *
+ * | round | `Shift+Tab` | `Tab`, Shift held | plain `Tab` |
+ * | --- | --- | --- | --- |
+ * | 0 | 219.4 ms | **143.9 ms** | 144.3 ms |
+ * | 1 | 220.3 ms | **153.8 ms** | 154.5 ms |
+ * | 2 | 219.7 ms | **145.7 ms** | 146.5 ms |
+ *
+ * The two right-hand columns agree to under a millisecond in all three rounds:
+ * **a backwards hop with the modifier already down costs exactly what a
+ * forwards hop costs**, and the ~75 ms between them is Shift's own two events
+ * and nothing else. So a run of `k` hops costs `145k + 75` where it used to
+ * cost `220k`, and the saving is `75(k - 1)` -- nothing at all for a run of
+ * one, and about 7-8 s across the ~102 hops-beyond-the-first this file's
+ * heaviest test makes.
+ *
+ * **That is under the resolution of the thing it is trying to speed up, and
+ * the run that says so is recorded rather than left out.** Three repeats of
+ * the `#331` spec with this cut and nothing else, back to back against three
+ * of `origin/main` on an idle box, reported **2.3 / 2.3 / 2.3 m either way** --
+ * Playwright prints tenths of a minute, so anything under ~6 s hides inside
+ * one bucket. The arithmetic above and the table it rests on are why this is
+ * kept anyway; an end-to-end figure for it alone is not available from here
+ * and is not claimed.
+ *
+ * ### Why no assertion moves
+ *
+ * The page cannot tell the difference where it matters: every `Tab` keydown
+ * still carries `shiftKey: true`, focus still travels one stop per tap, and the
+ * hop counts `walkFocus` discovers and `#411` bounds are unchanged. What is no
+ * longer repeated is Shift's own down/up between taps -- and **nothing under
+ * `src/` reads `shiftKey`, listens for the Shift key, or names it at all**,
+ * checked by grep across the tree, so there is nothing there to observe the
+ * difference. It is also what a hand does: a player reaching backwards through
+ * a form holds Shift and taps Tab.
+ *
+ * `Tab` runs go through here too and hold nothing, so both directions stay one
+ * code path.
+ */
+async function withTabKey<T>(
+  page: Page,
+  key: 'Tab' | 'Shift+Tab',
+  body: (tap: () => Promise<void>) => Promise<T>,
+): Promise<T> {
+  const tap = async (): Promise<void> => page.keyboard.press('Tab');
+  if (key === 'Tab') return body(tap);
+  await page.keyboard.down('Shift');
+  try {
+    return await body(tap);
+  } finally {
+    // Released whatever happened, including on the throw below: a modifier
+    // left down would reach the caller's next press as a chord it never asked
+    // for, and the failure would land somewhere else entirely.
+    await page.keyboard.up('Shift');
+  }
 }
 
 async function walkFocus(
@@ -1488,19 +1892,25 @@ async function walkFocus(
   description: string,
   target: FocusTarget,
 ): Promise<number> {
-  for (let presses = 1; presses <= MAX_TAB_PRESSES_PER_HOP; presses += 1) {
-    await page.keyboard.press(key);
-    const reached = await page.evaluate(
-      ({ selector, text }) => {
-        const active = document.activeElement;
-        if (!(active instanceof HTMLElement)) return false;
-        if (!active.matches(selector)) return false;
-        return text === null || (active.textContent ?? '').trim() === text;
-      },
-      { selector: target.selector, text: target.text ?? null },
-    );
-    if (reached) return presses;
-  }
+  const reached = await withTabKey(page, key, async (tap) => {
+    for (let presses = 1; presses <= MAX_TAB_PRESSES_PER_HOP; presses += 1) {
+      await tap();
+      const landed = await page.evaluate(
+        ({ selector, text }) => {
+          const active = document.activeElement;
+          if (!(active instanceof HTMLElement)) return false;
+          if (!active.matches(selector)) return false;
+          return text === null || (active.textContent ?? '').trim() === text;
+        },
+        { selector: target.selector, text: target.text ?? null },
+      );
+      if (landed) return presses;
+    }
+    return undefined;
+  });
+  if (reached !== undefined) return reached;
+  // Outside the held run, so the control this names is read with no modifier
+  // down and the message says what a reader would see.
   throw new Error(
     `${MAX_TAB_PRESSES_PER_HOP} ${key} presses never reached ${description} (${target.selector}${
       target.text === undefined ? '' : ` labelled "${target.text}"`
@@ -1547,9 +1957,24 @@ async function typeCoordinate(
  * the catalogue, which is not a fact about the keyboard route. What is
  * reported, and what the callers bound, is the `Tab` cost -- because that is
  * the number the roving tab stop changed.
+ *
+ * `backwards` asks for the walk *in* to be `Shift+Tab`, and it is a preference
+ * about cost rather than a different claim: the group is one tab stop either
+ * way, so the roving stop is what focus lands on from either side and the
+ * arrows below are unchanged. Measured at 1280x800 on 2026-09-08, from the
+ * Rooms tab: **20 presses forwards, 6 backwards** -- see `shiftTabTo` for the
+ * table and for why turning a between-panel hop round costs no assertion. It
+ * is off by default so the third caller, `every command hands the keyboard
+ * back to the control that issued it`, keeps the numbers its own comment
+ * records.
  */
-async function chooseRoomTypeFromTheKeyboard(page: Page, roomId: string): Promise<number> {
-  const presses = await tabTo(page, 'the room catalogue', { selector: '.hud-rooms__rows [data-room]' });
+async function chooseRoomTypeFromTheKeyboard(
+  page: Page,
+  roomId: string,
+  options: { readonly backwards?: boolean } = {},
+): Promise<number> {
+  const reach = options.backwards === true ? shiftTabTo : tabTo;
+  const presses = await reach(page, 'the room catalogue', { selector: '.hud-rooms__rows [data-room]' });
   const rowCount = await page.locator('.hud-rooms__rows [data-room]').count();
   const focusedRoom = async (): Promise<string> =>
     page.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.['room'] ?? '');
@@ -1632,10 +2057,21 @@ interface WallSegment {
  * helper below has to think in north and west.
  *
  * Deduplicated across rectangles, because two rooms that share a boundary share
- * the stored edge: the Rooms panel's second drag lands directly below the first
- * and the two overlap on two segments, and ordering a wall twice on one edge is
- * an order that builds nothing while the crew is busy. Deduplicating is also
- * what makes the count this returns the number the build queue will show.
+ * the stored edge: the Rooms panel's second drag lands directly below the first,
+ * and ordering a wall twice on one edge is an order that builds nothing while
+ * the crew is busy. Deduplicating is also what makes the count this returns the
+ * number the build queue will show.
+ *
+ * **That sentence read "the two overlap on two segments", and how many they
+ * overlap on is a property of where the drags land rather than of this
+ * function.** Measured at 1280x800 on 2026-09-08, both readings taken from the
+ * `#331` spec's own two drags: at 4x4 they land `6,11` and `12,15`, share no
+ * edge at all, and this returns **32**; at 3x3 they land `6,11` and `8,14`, the
+ * second's north row *is* the first's south row, and they share exactly **one**
+ * -- `8,14 north` -- for **23**. So the dedupe is load-bearing at one size and
+ * idle at the other, and neither number is a constant a reader should carry.
+ * The claim is corrected rather than deleted because the *reason* to dedupe is
+ * unchanged: nothing here may assume the drags stay clear of each other.
  *
  * North first, then west, so the edge chooser is pressed twice for a whole
  * prison rather than once per segment.
@@ -1680,6 +2116,71 @@ function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallS
 const BUILD_TILE_X_FIELD = '.hud-build__coords > .ui-number:nth-child(1) .ui-number__input';
 const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-number__input';
 
+interface WallOrderOptions {
+  /**
+   * A viewport to type the orders at, restored before this returns.
+   *
+   * ### What it is for
+   *
+   * Every `keyboard.press`, `page.evaluate` and `getAttribute` in this helper
+   * queues behind the renderer's frame, and on a host with no GPU that frame
+   * is a software rasteriser painting the whole viewport. So the cost of the
+   * route is a function of the canvas's area, which no caller had a way to
+   * say anything about.
+   *
+   * Measured on the container `#1008` is about -- four cores, Chromium
+   * rasterising WebGL through SwiftShader -- with the assembled page up and a
+   * prison loaded, 40 presses of each in one run, 1280x800 then 640x480 then
+   * 1280x800 again so drift is visible:
+   *
+   * | | `Tab` | `Shift+Tab` | `page.evaluate` |
+   * | --- | --- | --- | --- |
+   * | 1280x800 (canvas 1280x800) | 164 ms | 222 ms | 115 ms |
+   * | 640x480 (canvas 640x480) | **28 ms** | **30 ms** | **22 ms** |
+   * | 1280x800 again | 180 ms | 397 ms | 173 ms |
+   *
+   * A third of the pixels, about a sixth of the cost -- superlinear, which is
+   * what leaving a saturated rasteriser looks like rather than a proportion.
+   * The third row is the control and it is also the warning: it is worse than
+   * the first, because another agent's suite started during the run. Treat the
+   * ratio as the finding and none of the absolutes as a figure.
+   *
+   * ### What it is worth end to end
+   *
+   * Three repeats of the `#331` spec on `origin/main` and three on this
+   * change, the two blocks run back to back on the same box with nothing else
+   * on it -- load average 2.86 at the start of the first and 3.39 at the end
+   * of the second:
+   *
+   * | | repeats | each |
+   * | --- | --- | --- |
+   * | `origin/main` | 3 | 2.3 / 2.3 / 2.3 m |
+   * | with `orderAt: 375x812` | 3 | **1.4 / 1.4 / 1.4 m** |
+   *
+   * 138 s to 84 s, and the margin against `test.slow()`'s 180 s cap goes from
+   * 42 s to 96 s. **Effectively all of that is this option**: the same block
+   * run with `withTabKey` and no `orderAt` returned 2.3 / 2.3 / 2.3 m, which
+   * `withTabKey` records in full.
+   *
+   * ### Why it costs no coverage
+   *
+   * This helper asserts nothing about layout, geometry or a viewport. It
+   * asserts that the catalogue arrived with `wall-brick` selected, that the
+   * buy control offers the bricks the perimeter needs, that nothing was
+   * refused, that the worker received one order per segment, that the clock
+   * reached x4, and that the crew finished -- and it types the orders as
+   * **tile** coordinates, which no viewport can move. The rectangles it walls
+   * were discovered by the caller before this ran and are not touched here.
+   *
+   * The caller names the size, so a spec whose subject *is* the keyboard route
+   * keeps the viewport it was written against: `#411`'s two keyboard-only
+   * specs and `#703` do not pass this and do not move. Asked for by name for
+   * the same reason `SMALL_ROOM_DRAG_DELTAS_PX` and
+   * `chooseRoomTypeFromTheKeyboard`'s `backwards` are.
+   */
+  readonly orderAt?: { readonly width: number; readonly height: number };
+}
+
 /**
  * Builds the walls these rectangles need, through the application, with the
  * keyboard alone -- and leaves the session paused, as a new one arrives.
@@ -1710,6 +2211,23 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * ~64 s of clicking against ~3 s of typing. One helper, the cheaper route, and
  * the route the panel's own hint calls "the keyboard route".
  *
+ * The third caller does pass `orderAt`, which is a statement about the
+ * *viewport* and not about the route: see `WallOrderOptions` for what a
+ * software rasteriser charges per pixel and why a spec whose subject is the
+ * keyboard route must not ask for it.
+ *
+ * **The `~3 s` is a per-press figure multiplied as though a segment were one
+ * press, and a segment is four or fourteen hops.** Measured on this container
+ * on 2026-09-08, instrumented at the two ends of the order loop below: the 32
+ * segments of the `#331` spec cost **99.0 s**, or ~3.1 s each -- thirty times
+ * the number this paragraph gives for thirty of them. The comparison it was
+ * making survives, because the pointer route's presses scale by the same hop
+ * count and cost ~870 ms each on this host (#1008): the keyboard is still the
+ * cheaper route by roughly four to one, and that ratio is the part worth
+ * keeping. What the wrong absolute figure hid is that this loop, not the crew,
+ * is where `test.slow()`'s allowance goes -- which is what
+ * `SMALL_ROOM_DRAG_DELTAS_PX` exists for.
+ *
  * ### What it costs, measured
  *
  * `wall-brick` is `workRequired: 50` and `ConstructionSystem` advances **one**
@@ -1717,9 +2235,32 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * scheduled ticks -- 60 kernel ticks, 3 s of wall time at x1 and 0.75 s at x4.
  * That is why this presses *Fast forward* twice: at x1 a thirty-segment prison
  * would spend 90 s inside a 60 s test budget. It is the player's own control,
- * pressed for the reason a player presses it.
+ * pressed for the reason a player presses it. Measured at x4 with the clock
+ * actually running, the crew's own phase is **30.0 s for 32 segments and
+ * 22.2 s for 23** -- 0.94 s and 0.97 s a segment against the 0.75 s predicted
+ * above, so the prediction is right to within the poll's own sampling and the
+ * crew has never been what this helper waits on.
  */
 async function wallRectanglesFromTheKeyboard(
+  page: Page,
+  rectangles: readonly TileRectangle[],
+  options: WallOrderOptions = {},
+): Promise<readonly WallSegment[]> {
+  const orderAt = options.orderAt;
+  if (orderAt === undefined) return orderWallRectangles(page, rectangles);
+  const entered = page.viewportSize();
+  await page.setViewportSize({ width: orderAt.width, height: orderAt.height });
+  try {
+    return await orderWallRectangles(page, rectangles);
+  } finally {
+    // Restored on the way out however this ended, so a caller inherits the
+    // viewport it had and a failure's snapshot is taken at the size the caller
+    // is reasoning about rather than at the one the orders were typed at.
+    if (entered !== null) await page.setViewportSize(entered);
+  }
+}
+
+async function orderWallRectangles(
   page: Page,
   rectangles: readonly TileRectangle[],
 ): Promise<readonly WallSegment[]> {
@@ -1819,6 +2360,48 @@ async function wallRectanglesFromTheKeyboard(
    * At fourteen presses per segment that is the difference between ~1 s and
    * ~2.1 s a wall, and this loop runs it ten to thirty times.
    *
+   * **THOSE TWO FIGURES ARE PROPERTIES OF THE HOST THEY WERE TAKEN ON, AND
+   * THIS FILE DOES NOT SAY WHICH -- ON A HOST WITHOUT A GPU THEY ARE OUT BY
+   * TWO TO FOUR TIMES.** Both readings are kept rather than one overwritten,
+   * because the ratio between them is the useful part. Measured 2026-09-08 on
+   * `origin/main` for issue #1008, instrumented at the two ends of this loop:
+   * ordering the thirty-two segments of the `#331` spec's two cells cost
+   * **138-164 s** across five runs, against the ~67 s the worst case above
+   * predicts. The Playwright trace of one of them -- `retain-on-failure` keeps
+   * one for every red run -- puts **407 `keyboard.press` calls at a mean of
+   * 221 ms and a median of 207 ms**, or 90.1 s of a 180 s test in that one
+   * call, beside 113 `page.evaluate` at 129 ms.
+   *
+   * That container has four cores and no GPU: Chromium rasterises WebGL
+   * through SwiftShader, and its GPU process takes ~280% CPU while a single
+   * test runs. So a press costs what the renderer it queues behind costs,
+   * which is a property of the machine rather than of this loop -- and a
+   * pointer press there costs ~870 ms against this route's 221 ms, so the
+   * choice of the keyboard above is still the cheaper one and is not what to
+   * reopen. What the slowdown does reach is the budget: on such a host this
+   * helper spends the whole of `test.slow()`'s allowance before the crew is
+   * asked to build anything, and the poll at the end of it then reports a crew
+   * that is in fact laying a segment every 0.75 s -- x4's nominal rate exactly,
+   * measured off the HUD's own day progress at 81.5 ticks per second.
+   * `docs/AGENT_WORKFLOW.md` carries the pass and the options.
+   *
+   * **THE 407 PRESSES ARE NOT ONE PRICE, AND SPLITTING THEM IS WHERE THE
+   * REMAINING CUT CAME FROM.** The same trace, read by key rather than by
+   * count: **140 `Tab` at a mean of 154 ms beside 131 `Shift+Tab` at 267 ms**,
+   * and 33 `Control+a` at 256 ms. A backwards hop is not slower because it is
+   * backwards -- it is slower because `press('Shift+Tab')` dispatches four key
+   * events where `press('Tab')` dispatches two, and every one of them queues
+   * behind the same frame. `withTabKey` holds the modifier down across a run
+   * instead, which is what a hand does and what the page cannot tell apart.
+   *
+   * And the frame itself is a *size*, which nothing here had treated as
+   * anything but a constant: at 640x480 the same presses cost 28 ms and 30 ms
+   * against 164 ms and 222 ms at 1280x800, on the same page in the same run.
+   * `WallOrderOptions.orderAt` is that, offered to the one caller whose
+   * subject is not the keyboard route. Neither of those is a cheaper press in
+   * the sense this block meant -- the renderer is still what a press waits
+   * for -- and both are fewer things for it to wait on.
+   *
    * So each *kind* of hop is discovered once, with the walk, and repeated
    * blindly after that -- then checked. The check is not decoration: if the
    * count no longer lands on the control, the walk runs again and re-learns
@@ -1830,7 +2413,12 @@ async function wallRectanglesFromTheKeyboard(
   const hopTo = async (name: string, key: 'Tab' | 'Shift+Tab', target: FocusTarget): Promise<void> => {
     const learned = strides.get(name);
     if (learned !== undefined) {
-      for (let press = 0; press < learned; press += 1) await page.keyboard.press(key);
+      // One held run for the whole stride, then the check outside it -- see
+      // `withTabKey` for what that is worth on a backwards hop and why the
+      // page cannot tell.
+      await withTabKey(page, key, async (tap) => {
+        for (let press = 0; press < learned; press += 1) await tap();
+      });
       if (await focusIs(page, target)) return;
     }
     strides.set(name, await walkFocus(page, key, name, target));
@@ -2031,6 +2619,11 @@ const INTERACTIVE_SELECTOR =
  * `hud.css` drops `.hud__corner` there: the minimap and the alerts section go
  * away entirely rather than compete with the Build panel for a phone's width.
  *
+ * **Since 2026-09-05 the camera zoom pair goes with them (#1023), and it is
+ * not the same kind of entry.** The two originals have a second route on a
+ * phone or nothing to show yet; the zoom has neither. See the comment on those
+ * two entries below, which is where the argument is kept.
+ *
  * Written out rather than inferred. A reachability check that skips whatever
  * happens not to be laid out cannot tell a considered responsive decision from
  * a control that has quietly collapsed to nothing, and the second is the shape
@@ -2102,7 +2695,7 @@ const INTERACTIVE_SELECTOR =
  * stay here while the four the roster adds do not. **Hiring is not what holds a
  * guard.** `DeploymentSystem.assignUnassignedGuards` is called from that
  * system's `update` and from nowhere else
- * (`src/simulation/security/deployment-system.ts:130`); the sweep pauses the
+ * (`src/simulation/security/deployment-system.ts:128`); the sweep pauses the
  * clock before its viewport loop and never restarts it; and ADR 0051's paused
  * drain dispatches the `HireStaff` command *without* running a tick. So three
  * guards are hired, no system ever looks at them, all three stay `'unassigned'`,
@@ -2149,7 +2742,7 @@ const INTERACTIVE_SELECTOR =
  * **And none of that could have reached the assertions anyway**, which is the
  * half the old sentence got wrong rather than merely imprecise. The Staff panel
  * shares `.hud__side` with the Build panel by *swapping* with it -- `hud.ts`
- * calls `staffPanel.setVisible(activeTab === 'security')`, which sets `hidden`,
+ * calls `staffPanel.setVisible(activeTab === 'manage')`, which sets `hidden`,
  * and `primitives.css` gives `.ui-panel[hidden]` `display: none`. Every
  * arrival-state measurement in this loop is taken on the **build** tab, where
  * `.hud-staff` has no box at all; measured from the security tab, the same is
@@ -2179,8 +2772,120 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
-  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
-    'button.ui-section__header "Alerts"',
+  /*
+   * **THE ALERTS FOLD'S HEADER LEFT THIS LIST ON 2026-09-16 (#1201), AND IT IS
+   * THE FIRST ENTRY EVER RETIRED FROM IT.** It read
+   *
+   *     'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
+   *       'button.ui-section__header "Alerts"',
+   *
+   * and it is written out here rather than deleted because the reason it is
+   * gone is *not* the reason the block below predicted would retire all of
+   * them. `.hud__corner` is still `display: none` at 720px and below -- the
+   * three entries around this one are still exempt for exactly that mechanical
+   * reason, and the accounting assertion at the foot of the sweep still fails
+   * the moment the corner comes back.
+   *
+   * What moved is the fold's **mount**. On the owner's ruling of 2026-09-16
+   * (*"Zamontuj fold w szynie poniżej 720 px (zalecane)"*, the weaker of the
+   * two provenances) `hud.ts` puts the alerts section in the Overview panel's
+   * `foldSlot`, in the rail, at this breakpoint and no other -- so below 720px
+   * this control is laid out, has a chain of ancestors that does not contain
+   * `hud__corner`, and is required by the sweep like any other. The defect that
+   * bought it is that the alerts log is the only surface that issues
+   * `DismissAlert`, so a phone player was offered a command they could not
+   * press; `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over
+   * the press itself.
+   */
+  /*
+   * AND THE MINIMAP SURFACE ITSELF, ADDED 2026-09-10 (#903). **This entry is
+   * not a control that stopped being reachable. It is a control that did not
+   * exist**, and the distinction is the whole reason it is written out.
+   *
+   * Until #903 the surface was a `div` with an implicit `tabIndex -1` and no
+   * `role`, so the sweep below did not count it as a control at any viewport --
+   * which was itself the defect #903 fixed: a keyboard player could never
+   * press the one surface whose own sentence denied that pressing it did
+   * anything. It is a real `<button>` now, so it enters the inventory, and at
+   * 720px and below it enters it inside a region `hud.css` sets to
+   * `display: none` -- the same mechanical reason as the two entries above.
+   *
+   * **So #903's fix does not reach a phone, and that is what this line
+   * records.** It is the honest limit, stated the way the zoom pair below
+   * states its own: a keyboard player at a desktop width can now reach the
+   * minimap; a keyboard player at 375px still cannot reach it, because nobody
+   * can. Retiring this entry is the mobile layout pass's job, not an
+   * implementing agent's -- the accounting assertion at the foot of the sweep
+   * fails the moment the corner comes back, which is what will retire all
+   * three of these together.
+   *
+   * **Its label is the authored sentence, truncated to 32 characters by the
+   * inventory's own `textContent.slice(0, 32)` -- and it is stable across the
+   * latch, which is luck worth naming rather than relying on silently.** The
+   * two strings the surface can carry are
+   * `'No map is drawn here yet — pressing may move the camera'` before a press
+   * has proved the camera moves and
+   * `'No map is drawn here yet — press to jump the camera there'` after, and
+   * their first 32 characters are identical, so this entry does not depend on
+   * which state the sweep happens to find. Reword either sentence past that
+   * 32nd character and nothing here moves; reword the shared prefix and this
+   * line has to move with it.
+   */
+  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ' +
+    'button.hud-minimap__surface "No map is drawn here yet — press"',
+  /*
+   * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
+   * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
+   *
+   * They are here for the same mechanical reason -- `.hud__corner` is
+   * `display: none` at 720px and below, and these two buttons are in it -- and
+   * that is where the similarity stops. The minimap draws nothing yet and the
+   * alerts log has a second route on a phone (`.hud__event`, and the refusal
+   * and unavailable bands, all of which `hud.ts` documents as existing because
+   * this corner does not). **The zoom has no second route on a phone at all**:
+   * there is no wheel, there are no `+`/`-` keys, and the one gesture that
+   * zooms -- a pinch -- has no affordance anywhere, which is the exact defect
+   * #1023 was filed about, surviving at one viewport.
+   *
+   * It is exempted rather than fixed because the fix is not a breakpoint edit.
+   * `hud.css`'s own comment on that rule records two attempts at removing it,
+   * the diagnosis they produced (the corner collides with the **stretched
+   * rail**, and this very test is what caught it), and the owner's steer that
+   * the desktop browser comes first and mobile is refined later. This test also
+   * pins the rule directly, at "still mounts the interface when the simulation
+   * worker cannot start (#82)", so bringing the corner back is a decision with
+   * an owner and not a line for an implementing agent to change on its way past.
+   *
+   * So this pair belongs on the mobile layout pass's list, and these two
+   * entries are how it stays on it: the accounting assertion below fails the
+   * moment they become reachable, which is what will retire them.
+   */
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
+  /*
+   * AND THE NAVIGATION'S WIDTH CONTROLS, ADDED 2026-09-14 (#1159), WHICH ARE A
+   * BETTER ENTRY THAN ANY OF THE FIVE ABOVE AND SHOULD BE READ AS ONE.
+   *
+   * The five above record a surface a phone cannot reach at all. These two
+   * record a surface a phone **does not have**: below 720px the five sections
+   * are a bottom bar, which is the delivery's own layout for the tier --
+   * *"Telefon ma dolną nawigację i panel"* -- and a bar has no width to drag.
+   * `sizeFieldFor('navigation', phone)` answers `undefined` for exactly that
+   * reason and `tests/unit/hud-layout.test.ts` pins it, so the separator and
+   * the slider are `hidden` rather than merely unreachable.
+   *
+   * The accounting assertion at the foot of the sweep is still what keeps this
+   * honest in the other direction: if a phone ever grows a width drag these
+   * two stop being exempt and this list fails until somebody says so.
+   *
+   * The inspector's own separator and slider are **not** here, and that is the
+   * check that makes these two mean something: a phone resizes the bottom sheet
+   * by height, so both of those are laid out at 375x812 and are hit-tested like
+   * any other control.
+   */
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--quiet hud-layout__arrow "Hide the sections"',
+  'hud > hud__tabs > div.ui-separator hud-layout__separator hud-layout__separator--navigation "Resize the sections"',
+  'hud > hud-strip > hud-strip__layout > hud-layout > hud-layout__body > hud-layout__row > input.hud-layout__slider #1',
 ] as const;
 
 /*
@@ -2211,18 +2916,56 @@ interface UnreachableControl {
 
 interface ControlReachability {
   /**
-   * Every control the selector matched, in document order, named. The index
-   * into this list is the control's identity for the run: tab switching and
-   * resizing hide and show controls but never add or remove them, so index
-   * `n` is the same element in every state the test visits.
-   *
-   * The *names* are unique too, which the accounting assertion below depends
-   * on: each is the control's chain of classed ancestors followed by the
-   * control itself, and a numeric suffix breaks the remaining ties (the two
+   * Every control the selector matched, in document order, named. Each name is
+   * the control's chain of classed ancestors followed by the control itself,
+   * with a numeric suffix breaking the remaining ties (the two
    * `ui-number__input` boxes in the Build panel's coordinate grid are
    * identical all the way up). See `NEVER_LAID_OUT_BELOW_720`.
+   *
+   * **THE INDEX IS NOT THE CONTROL'S IDENTITY, AND THIS COMMENT USED TO SAY IT
+   * WAS.** It read: *"The index into this list is the control's identity for
+   * the run: tab switching and resizing hide and show controls but never add
+   * or remove them, so index `n` is the same element in every state the test
+   * visits."* It is kept here rather than deleted because the accounting
+   * assertion at the foot of `everyControlAt` was written on it, and a reader
+   * needs to see what was assumed.
+   *
+   * It is false, and #1167's regime editor is what proved it. That editor
+   * builds one toggle group per classification group **on the first paint that
+   * has a schedule to paint**, and the schedule only arrives while the
+   * `day-plan` tab is the one showing. Measured at 1024x768 on `143d77eb`, the
+   * sweep's first four tab states saw **137** controls and every state from the
+   * fifth on saw **151**: fourteen controls *added*, in the middle of the
+   * document, by visiting a tab. The figures are a reading of that tree rather
+   * than a property of this one; what does not change is that a tab visit can
+   * grow the list.
+   *
+   * What that cost was silence rather than a red. `everMeasured` was a set of
+   * **indices**, so the eight indices 129-136 -- marked measured while the
+   * document held 137 controls, where they named the last eight controls on
+   * the page -- were still in the set when the final inventory held 151 and
+   * those same indices named toggles. Eight of the editor's fourteen buttons
+   * were certified reachable by other controls' measurements; the sweep
+   * reported six. At 375x812 it reported eight, because two of that last
+   * group are `.hud__corner`'s own and are not laid out there either, so two
+   * fewer aliases were available to inherit -- which is why the extra two were
+   * a `#1` and a different category and looked like a layout asymmetry.
+   *
+   * `everMeasured` is keyed by `ids` now -- an attribute minted on the element
+   * itself. The name was tried first and is not good enough either: it carries
+   * the control's own text and classes, so the Rooms panel's `Designate 0 x 0`
+   * and the Build queue's rows change identity when the state does, and the
+   * first run of the name-keyed version reported eight controls never laid out
+   * that plainly had been.
    */
   readonly controls: readonly string[];
+  /**
+   * The identity of each control in `controls`, at the same index: the
+   * `data-sweep-control` attribute minted on the element the first time any
+   * state saw it. Stable where the index and the name are not -- see the
+   * block in `controlReachability` that mints them.
+   */
+  readonly ids: readonly string[];
   /** Indices of the controls that were laid out, and so actually measured. */
   readonly measured: readonly number[];
   readonly unreachable: readonly UnreachableControl[];
@@ -2254,9 +2997,32 @@ interface ControlReachability {
  *   reaches it by scrolling. Scrolling it into view and re-measuring asks the
  *   real question — "once it is on screen, can it be pressed" — instead of
  *   flagging every list that is longer than its box.
+ *
+ *   **But only the scrolls a player has, which this did not check until
+ *   2026-09-15.** It called `control.scrollIntoView({ block: 'nearest' })`,
+ *   and `scrollIntoView` scrolls every scrollport on the way up, including
+ *   `overflow: hidden` ones — which are scrollable by script and by nothing
+ *   a player can do. So the gesture that made the measurement possible was
+ *   also a gesture the player cannot make, and a control clipped out of a
+ *   hidden box was certified as pressable. `revealTheWayAPlayerCan` below
+ *   walks the same chain and moves only the boxes whose own computed
+ *   `overflow` is `auto` or `scroll`.
  * - **A `null` hit is a failure, not a skip.** `elementFromPoint` returns
  *   `null` for a point outside the viewport, so a control pushed off the
  *   edge by an overflowing layout reports here rather than silently passing.
+ *
+ *   **That sentence was false for as long as the one above it was**, and in
+ *   the same way: `src/styles.css:6` makes the window itself an
+ *   `overflow: hidden` box, and `scrollIntoView` scrolled *it* too. A control
+ *   carried off the bottom of the viewport was scrolled back on before it was
+ *   hit-tested, so it answered its own element and passed. The reveal now
+ *   reads the viewport's propagated overflow like any other box, finds
+ *   `hidden`, and leaves the window where it is.
+ * - **The selector is a parameter, defaulting to every interactive element.**
+ *   One caller narrows it to `.save-panel__button`, which used to be its own
+ *   inline sweep with its own `scrollIntoView` and one sample point. A
+ *   narrowed selector makes an empty match possible, so that caller asserts
+ *   the match is non-empty and wholly measured; the default never can be.
  * - **Zero-area elements are reported, not swallowed.** An inactive tab's
  *   panel and the corner the responsive rules drop are not laid out, so there
  *   is nothing to hit-test; but "skipped" has to be a fact the caller can
@@ -2264,7 +3030,7 @@ interface ControlReachability {
  *   out in *any* state the test visits has silently escaped the check, and
  *   the caller fails on exactly that.
  */
-async function controlReachability(page: Page): Promise<ControlReachability> {
+async function controlReachability(page: Page, selector: string = INTERACTIVE_SELECTOR): Promise<ControlReachability> {
   return page.evaluate((selector: string) => {
     const describe = (node: Element): string => {
       const label =
@@ -2306,6 +3072,85 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       return `${name} #${ordinal}`;
     });
 
+    /**
+     * Whether a box with this computed `overflow` on one axis is one a player
+     * can scroll on that axis. `hidden` and `clip` are not: the content is
+     * outside the box and no gesture brings it in. `visible` is not either --
+     * there is nothing to scroll, the content is painted outside the box
+     * already, and the first clipping ancestor above it decides whether the
+     * player ever sees it.
+     */
+    const playerScrollable = (overflow: string): boolean => overflow === 'auto' || overflow === 'scroll';
+
+    /**
+     * Bring `node` into view using only the scrolls a player has.
+     *
+     * This is `scrollIntoView({ block: 'nearest', inline: 'nearest' })` with
+     * one thing taken away: `scrollIntoView` scrolls **every** scrollport
+     * between the node and the viewport, `overflow: hidden` ones included,
+     * because the specification tells it to. A hidden box is programmatically
+     * scrollable and is not scrollable by a finger, a wheel or a key -- so a
+     * control clipped out of one is certified reachable by a gesture the
+     * player cannot make. This walks the same chain and moves only the boxes
+     * whose own `overflow` says the player could have moved them.
+     *
+     * Innermost outwards, re-reading the node's rect at each step, because
+     * scrolling an inner box is what puts the node where the outer box has to
+     * judge it.
+     */
+    const revealTheWayAPlayerCan = (node: Element): void => {
+      for (let ancestor = node.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const border = ancestor.getBoundingClientRect();
+        // The *client* box, which is what `scrollTop` moves content through:
+        // the border box less its borders and any scrollbar gutter.
+        const top = border.top + ancestor.clientTop;
+        const left = border.left + ancestor.clientLeft;
+        const bottom = top + ancestor.clientHeight;
+        const right = left + ancestor.clientWidth;
+
+        if (playerScrollable(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom > bottom) ancestor.scrollTop += rect.bottom - bottom;
+          else if (rect.top < top) ancestor.scrollTop += rect.top - top;
+        }
+        if (playerScrollable(style.overflowX) && ancestor.scrollWidth > ancestor.clientWidth) {
+          const rect = node.getBoundingClientRect();
+          if (rect.right > right) ancestor.scrollLeft += rect.right - right;
+          else if (rect.left < left) ancestor.scrollLeft += rect.left - left;
+        }
+      }
+
+      // And the viewport itself, on the same rule. The root's `overflow`
+      // propagates to the viewport, and falls through to `body` only when the
+      // root is `visible`; `src/styles.css:6` sets both to `hidden`, so on
+      // this page the window is a box the player cannot scroll either and
+      // nothing below this line moves. It is written out rather than assumed,
+      // because the assumption is exactly the kind that rots when a stylesheet
+      // changes.
+      const root = document.documentElement;
+      const rootOverflowY = getComputedStyle(root).overflowY;
+      const rootOverflowX = getComputedStyle(root).overflowX;
+      const bodyStyle = document.body === null ? null : getComputedStyle(document.body);
+      const viewportOverflowY = rootOverflowY === 'visible' ? (bodyStyle?.overflowY ?? 'visible') : rootOverflowY;
+      const viewportOverflowX = rootOverflowX === 'visible' ? (bodyStyle?.overflowX ?? 'visible') : rootOverflowX;
+      // `visible` on the viewport is the ordinary scrolling page: it scrolls.
+      const viewportScrollsY = viewportOverflowY !== 'hidden' && viewportOverflowY !== 'clip';
+      const viewportScrollsX = viewportOverflowX !== 'hidden' && viewportOverflowX !== 'clip';
+      const rect = node.getBoundingClientRect();
+      let byX = 0;
+      let byY = 0;
+      if (viewportScrollsY) {
+        if (rect.bottom > window.innerHeight) byY = rect.bottom - window.innerHeight;
+        else if (rect.top < 0) byY = rect.top;
+      }
+      if (viewportScrollsX) {
+        if (rect.right > window.innerWidth) byX = rect.right - window.innerWidth;
+        else if (rect.left < 0) byX = rect.left;
+      }
+      if (byX !== 0 || byY !== 0) window.scrollBy(byX, byY);
+    };
+
     const measured: number[] = [];
     const unreachable: { control: string; hit: string }[] = [];
 
@@ -2314,7 +3159,7 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       if (initial.width === 0 || initial.height === 0) return;
       measured.push(index);
 
-      control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      revealTheWayAPlayerCan(control);
 
       // Re-read after the scroll: that is where the control now is.
       const rect = control.getBoundingClientRect();
@@ -2337,8 +3182,37 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       }
     });
 
-    return { controls: names, measured, unreachable };
-  }, INTERACTIVE_SELECTOR);
+    /**
+     * A stable identity per *element*, minted on first sight and left on the
+     * node.
+     *
+     * The sweep visits a dozen states and has to remember, across all of them,
+     * which controls it managed to measure. Neither obvious key works: an
+     * index moves when a state adds a control to the middle of the document,
+     * and a name moves when a control's own text or classes change -- the
+     * Rooms panel's `Designate 0 x 0` becomes `Designate 3 x 4` with a
+     * rectangle dragged, and the Build queue's rows carry a state class. The
+     * element is the thing that does not move, so the key is written on it.
+     *
+     * `data-sweep-control` is inert: nothing in `src/**` reads it, `describe`
+     * above names controls by class and text, and a `data-` attribute is not
+     * part of `className`. The counter hangs off `window` so the ids survive
+     * one `page.evaluate` to the next and are re-minted from zero by the one
+     * thing that also drops the attributes, a navigation.
+     */
+    const scope = window as unknown as { __lockstateSweepControlId?: number };
+    const ids = controls.map((control) => {
+      const existing = control.dataset['sweepControl'];
+      if (existing !== undefined) return existing;
+      const next = (scope.__lockstateSweepControlId ?? 0) + 1;
+      scope.__lockstateSweepControlId = next;
+      const id = `c${next}`;
+      control.dataset['sweepControl'] = id;
+      return id;
+    });
+
+    return { controls: names, ids, measured, unreachable };
+  }, selector);
 }
 
 /**
@@ -2381,6 +3255,17 @@ interface RailIntegrity {
  * that: a rail 81px over its budget at 1280x720 in the *default* state, whose
  * gutter hit-tested to the world canvas, its clipped content reachable only
  * because a wheel event over a panel chain-scrolled the panel's ancestor.
+ *
+ * **Half of that stopped being true on 2026-09-15 and the paragraph is kept as
+ * it stood, because it is the reading this function was built on.** The sweep
+ * no longer scrolls an `overflow: hidden` box: `revealTheWayAPlayerCan` moves
+ * only boxes whose own computed `overflow` on that axis is `auto` or `scroll`,
+ * and the window — `html, body { overflow: hidden }` at `src/styles.css:6` —
+ * is one of the boxes it now leaves alone. The **gutter** half is untouched
+ * and is still this function's alone: a container that really is `auto` but
+ * whose scrollbar lies where no pointer can land is scrollable by the sweep's
+ * reveal and by nothing a player does, and no hit test on the *control* can
+ * see that.
  *
  * So three separate claims, none of which the sweep can make:
  *
@@ -2643,18 +3528,187 @@ test.describe('the assembled application', () => {
    * because `scrollIntoView` found it. Position, unscrolled, on this page --
    * the harness in `ui-shell.spec.ts` cannot see this defect, because nothing
    * there occupies the rail's aside slot.
+   *
+   * **Both paragraphs above are history and stay history.** Since 2026-09-15
+   * the sweep scrolls only what a player can scroll, so the first of those two
+   * defects -- content reachable only because a hidden box was scrolled -- is
+   * one it would now catch itself. The second is not: a panel that really is
+   * `overflow-y: auto` and holds its last section below its own fold is
+   * *reachable*, correctly, and the reason these two measurements exist beside
+   * the sweep is that reachable is not the whole claim. Neither is removed.
+   *
+   * **This was one test until 2026-09-14 and is five now, one per viewport
+   * (#1181).** Nothing above changed: the same states, the same sweep, the
+   * same per-viewport accounting. What changed is that the 3.0-minute cap is
+   * now spent on one viewport rather than on five, because the whole was
+   * passing at 2.9 m against it and one extra IndexedDB read per panel refresh
+   * was enough to tip it -- three sessions in a row had to prove a timeout
+   * here was not theirs. The comments below carry the traced reason there was
+   * nothing to make cheaper instead, and `everyControlAt` is the body all five
+   * share.
    */
-  test('every control can actually be pressed, on every tab and at every viewport (#88)', async ({ page }) => {
-    // The most expensive test in the suite by a wide margin, and the only one
-    // that needs more than the 60 s default: five viewports x five layout
-    // states, each a real relayout of the whole page followed by a hit-test
-    // sweep over every control and a check on the rail. Measured between 14 s
-    // and 28 s on this machine against that 60 s -- close enough that a slower
-    // CI runner would fail it for being slow rather than for finding anything,
-    // which is the worst kind of red. `test.slow()` triples the budget; it
-    // does not make the test do less.
-    test.slow();
-
+  /*
+   * ---- what this cost when it was one test (#1008, 2026-09-08) --------
+   *
+   * Kept whole, and in the present tense it was written in, because every
+   * figure in it is still this sweep's: it is five viewports' worth of work
+   * and the work did not change when #1181 made it five tests. Only the
+   * budget each part is measured against did.
+   */
+  // The most expensive test in the suite by a wide margin, and the only one
+  // that needs more than the 60 s default: five viewports x five layout
+  // states, each a real relayout of the whole page followed by a hit-test
+  // sweep over every control and a check on the rail. Measured between 14 s
+  // and 28 s on this machine against that 60 s -- close enough that a slower
+  // CI runner would fail it for being slow rather than for finding anything,
+  // which is the worst kind of red. `test.slow()` triples the budget; it
+  // does not make the test do less.
+  /*
+   * ---- where the three minutes actually go, measured (#1008) -------------
+   *
+   * The paragraph above says 14-28 s, and the dismissal loop below says
+   * 2.9 m against 3.0 m on a box running other suites. Both are kept; this is
+   * the third reading and it is the one that was taken apart, because #1008
+   * needed to know whether there is a phase here to cut. **There is not.**
+   *
+   * Measured on the container #1008 is about -- four cores, no GPU, Chromium
+   * rasterising WebGL through SwiftShader, one worker, nothing else of this
+   * suite running -- on 2026-09-08, with a timestamp at every phase boundary
+   * of this test and then removed again. Seconds, per viewport, in the order
+   * the loop visits them:
+   *
+   * | Phase | 1280x720 | 1440x900 | 1024x768 | 900x600 | 375x812 | all |
+   * | --- | --- | --- | --- | --- | --- | --- |
+   * | the resize itself | 0.2 | 0.3 | 0.2 | 0.2 | 0.1 | 1.0 |
+   * | five tabs, five sweeps | 2.8 | 3.8 | 2.5 | 2.4 | 0.8 | 12.3 |
+   * | the save panel from Build | 0.6 | 0.8 | 0.5 | 0.4 | 0.2 | 2.5 |
+   * | folded rail, headers, box chain | 0.3 | 0.3 | 0.3 | 0.3 | 0.1 | 1.3 |
+   * | the coordinates expanded | 0.9 | 1.1 | 0.7 | 0.5 | 0.2 | 3.4 |
+   * | the wheel gesture | 0.9 | 1.2 | 0.7 | 0.5 | 0.3 | 3.6 |
+   * | the buy row | 1.5 | 2.1 | 1.3 | 0.9 | 0.5 | 6.3 |
+   * | the queue fold | 1.6 | 2.8 | 1.3 | 1.0 | 0.5 | 7.2 |
+   * | the Rooms typed route | 1.8 | 2.5 | 1.4 | 1.1 | 0.8 | 7.6 |
+   * | arm, then a real world drag | 2.7 | 3.8 | 2.3 | 2.1 | 1.5 | 12.4 |
+   * | a room pending, then cancel | 0.7 | 1.0 | 0.6 | 0.7 | 0.4 | 3.4 |
+   * | the Security tab | 0.9 | 0.9 | 0.5 | 0.5 | 0.4 | 3.2 |
+   * | three hires | 1.9 | 2.4 | 1.5 | 1.1 | 0.8 | 7.7 |
+   * | the roster fold | 0.7 | 0.4 | 0.3 | 0.2 | 0.1 | 1.7 |
+   * | the payroll sweep | 0.2 | 0.3 | 0.2 | 0.1 | 0.1 | 0.9 |
+   * | three dismissals | 4.0 | 5.5 | 3.7 | 2.5 | 1.1 | 16.8 |
+   * | **the viewport, end to end** | **21.6** | **29.2** | **18.0** | **14.3** | **7.6** | **90.7** |
+   *
+   * Plus 16.2 s of setup before the loop: **106.9 s end to end**.
+   *
+   * **Two things that table says which no single figure can.** The cost is
+   * spread -- the largest phase is 19 % of the loop and every individual
+   * state is a few seconds -- and it scales with the viewport's *area*
+   * rather than with anything this test does: 29.2 s at 1440x900 against
+   * 7.6 s at 375x812 for identical work, because every Playwright action
+   * here queues behind a frame SwiftShader rasterises on the CPU. The same
+   * commit, same container, run again while other agents' suites were
+   * live: **151.7 s**. So what puts this test at the cap on a CI runner is
+   * the host, and the 42 % spread between those two runs is wider than any
+   * phase a cut could remove.
+   *
+   * **What was considered and refused, so that it is not proposed again.**
+   *
+   *  - *A viewport, or a tab.* That is the coverage, not the cost:
+   *    `HUD_LAYOUT_VIEWPORTS` exists because #88 was invisible at 1440x900
+   *    and fatal at 1280x720.
+   *  - *Hiring once for the whole sweep instead of once per viewport*, which
+   *    is the biggest saving the table offers: the hires and dismissals are
+   *    24.5 s of it, and doing them once would leave about 5 s -- an
+   *    arithmetic estimate off the table above, not a measurement of a
+   *    changed test. It is refused because the accounting assertion at the
+   *    foot of this loop is **per viewport**: hiring is the gesture that lays
+   *    the roster's `Dismiss` controls out at all, and pressing them is the
+   *    only way to empty it again. Doing it once would prove `Dismiss` works
+   *    at one viewport and certify it at five.
+   *  - *Three setup orders instead of six.* The comment that asks for six
+   *    gives a reason ADR 0051's paused drain has since retired, so this
+   *    looked free. It is worth ~4 s, and the queue's depth is the state five
+   *    viewports' worth of recorded pixel figures were measured in --
+   *    `.hud-build[data-queued]` pays for the queue block out of the
+   *    catalogue's floor, and this file quotes those numbers to 0.1px. Four
+   *    seconds is not worth invalidating them.
+   *  - *A smaller square for the drag* (`SMALL_ROOM_DRAG_DELTAS_PX`). The arm
+   *    and the drag together are 12.4 s and the drag alone 7.5 s of that; the
+   *    split between the one `evaluate` that aims it and the fifteen pointer
+   *    events that make it was **not measured**, so the saving is unknown and
+   *    bounded above by 7.5 s across five viewports. Not taken.
+   *
+   * The two `#411` keyboard specs below *were* cut, in the same pass on the
+   * same day, and the difference is the useful part: half of each of them was
+   * walking focus, which is a *route*, and a route has a cheaper direction.
+   * This test presses a pointer at a *state* it has to be in, five times over
+   * at five sizes, and there is no cheaper direction to take.
+   */
+  /*
+   * ---- and what that bought, and what it did not (#1181, 2026-09-14) -----
+   *
+   * The comment above is #1008's reading and it is kept whole, because
+   * everything in it still holds. What #1181 adds is the **mechanism** behind
+   * its last two paragraphs -- why the cost scales with viewport area, and why
+   * every cut it considered came out of the coverage rather than out of the
+   * overhead.
+   *
+   * A retained trace of one passing run on an idle container (`--trace on`,
+   * 538 calls, 175.7 s of wall span, matched `before`/`after` by `callId`):
+   *
+   * | Call | Total | Count | Mean |
+   * | --- | --- | --- | --- |
+   * | `click` | **97.1 s** | 168 | 578 ms |
+   * | `evaluateExpression` | 12.8 s | 148 | 86 ms |
+   * | `expect` | 12.0 s | 128 | 94 ms |
+   * | `mouseMove` | 8.3 s | 20 | 415 ms |
+   * | `goto` | 5.9 s | 1 | 5.9 s |
+   * | everything else | 12.6 s | 73 | -- |
+   *
+   * **55 % of this test is `click`, and no individual press is interesting:**
+   * the spread across targets is 508-1023 ms and the mean is 578 ms, so a
+   * press costs about the same whatever it presses. The hit-test sweep that
+   * gives the test its name -- `controlReachability`, one `page.evaluate` over
+   * ~200 controls with five `elementFromPoint` samples each -- is inside the
+   * 12.8 s of `evaluateExpression`, under 9 % of the run.
+   *
+   * What sets the price of a press is not this test at all. Measured on the
+   * same page at 1440x900 with no trace: the mean `requestAnimationFrame`
+   * interval is **104.7 ms** as the app ships and **16.7 ms** with
+   * `#game-root canvas` not being rasterised, and twenty real presses cost
+   * **27.8 s against 1.5 s** -- 1390 ms a press against 75 ms, **18.5x**.
+   * SwiftShader rasterising a full-viewport WebGL canvas saturates the
+   * renderer's main thread and every Playwright call queues behind a frame.
+   * `click({ force: true })` cost 25.1 s for the same twenty presses, so
+   * actionability checks are not where the time is either.
+   *
+   * So the 18x is real and it is **not available**: `visibility: hidden` takes
+   * the canvas out of hit-testing, and the canvas is precisely one of the
+   * elements this test has to be able to catch sitting on top of a control.
+   * Stopping Phaser's loop instead would need a handle `src/main.ts` does not
+   * expose, and would stop it processing the real world drag below.
+   * `docs/research/2026-09-14-where-88s-three-minutes-go.md` carries both runs.
+   *
+   * **Which is why this is five tests and not one.** Nothing here got cheaper;
+   * the sweep was cut where it was already cut -- `HUD_LAYOUT_VIEWPORTS` -- so
+   * that a viewport's 15-45 s is measured against the cap instead of the
+   * sum of five. `test.slow()` stays on each part and is not "buying budget
+   * again" (#1181 rules that out and is right to): the cap is the same 3.0
+   * minutes it always was, and what changed is that a part now does a fifth of
+   * the work under it.
+   */
+  /**
+   * The state every part of the sweep below starts from: the assembled page,
+   * one prison, six orders queued and nine deliveries on their way, clock
+   * stopped.
+   *
+   * It was the head of one long test until #1181 split it (2026-09-14) and it
+   * is unchanged line for line; it is a function now because each part runs
+   * it, on its own page, from its own fixture. That repetition is what the
+   * split costs -- 30.8 s a part, traced -- and it is the price of every part
+   * being independently runnable, independently traceable and independently
+   * red.
+   */
+  async function aLoadedShell(page: Page): Promise<void> {
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
 
@@ -2858,867 +3912,1143 @@ test.describe('the assembled application', () => {
       await page.locator('.hud-build__queue').boundingBox(),
       'the queue is gone, so there is no queue block for the sweep to reach',
     ).not.toBeNull();
+  }
 
-    /** Every viewport where the loaded panel's body spills, and by how much. */
+  /**
+   * One viewport of the sweep: every tab, then every layout state the Build
+   * panel and the Security tab can be put into, hit-testing every control in
+   * the shell at each of them and accounting for every control at the end.
+   *
+   * The body is #88's original loop body, unchanged apart from taking its
+   * viewport as a parameter instead of reading it from a `for` header.
+   */
+  async function everyControlAt(page: Page, width: number, height: number): Promise<void> {
+    /** Whether this viewport's loaded panel spills, and by how much. */
     const spilled: string[] = [];
 
-    for (const [width, height] of HUD_LAYOUT_VIEWPORTS) {
-      await page.setViewportSize({ width, height });
-      await expect
-        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
-        .toBe(width);
+    await page.setViewportSize({ width, height });
+    await expect
+      .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+      .toBe(width);
 
-      // Which controls this viewport managed to hit-test at all, across every
-      // state it visits. Accumulated so the "never laid out anywhere" check
-      // below is about the viewport, not about one tab: the Build panel is
-      // legitimately absent on four of the five tabs, and the Rooms panel on
-      // the other four.
-      const everMeasured = new Set<number>();
-      let inventory: readonly string[] = [];
+    // Which controls this viewport managed to hit-test at all, across every
+    // state it visits. Accumulated so the "never laid out anywhere" check
+    // below is about the viewport, not about one tab: the Build panel is
+    // legitimately absent on four of the five tabs, and the Rooms panel on
+    // the other four.
+    const everMeasured = new Set<string>();
+    /**
+     * The last state's reading, whole. It used to be that state's `controls`
+     * alone; it is the pair now, because the accounting below has to line each
+     * name up with the identity the sweep remembered it by.
+     */
+    let inventory: ControlReachability = { controls: [], ids: [], measured: [], unreachable: [] };
 
-      // Every tab, and the list is  rather than a copy of it: this
-      // loop was a hard-coded four when the Rooms tab landed, so the whole Rooms
-      // panel was outside the sweep and the "never laid out anywhere" check
-      // below reported all 26 of its controls as unreachable -- correctly, since
-      // nothing had opened the tab they live on. Reading the real list means a
-      // sixth tab cannot repeat that.
-      for (const tab of HUD_TAB_IDS) {
-        await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
-        const reachability = await controlReachability(page);
-        inventory = reachability.controls;
-        for (const index of reachability.measured) everMeasured.add(index);
-        expect(
-          reachability.unreachable,
-          `controls covered by something else on the ${tab} tab at ${width}x${height}`,
-        ).toEqual([]);
+    /**
+     * Mark everything this state managed to hit-test, by the element's own
+     * `ids` entry.
+     *
+     * Not by index: `ControlReachability.controls` carries the reason in full,
+     * and the short version is that a state can add controls to the middle of
+     * the document -- the regime editor's toggle groups are built on the first
+     * paint that has a schedule -- so an index measured in one state names a
+     * different control in the next.
+     */
+    const record = (reachability: ControlReachability): void => {
+      for (const index of reachability.measured) {
+        const id = reachability.ids[index];
+        if (id !== undefined) everMeasured.add(id);
       }
+    };
 
-      // Saving is not a Build-tab activity, and the Build tab is where the
-      // player spends their time. Named separately so a regression says so.
-      await page.locator('.ui-tab[data-tab="build"]').click();
+    // Every tab, and the list is  rather than a copy of it: this
+    // loop was a hard-coded four when the Rooms tab landed, so the whole Rooms
+    // panel was outside the sweep and the "never laid out anywhere" check
+    // below reported all 26 of its controls as unreachable -- correctly, since
+    // nothing had opened the tab they live on. Reading the real list means a
+    // sixth tab cannot repeat that.
+    for (const tab of HUD_TAB_IDS) {
+      await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
+      const reachability = await controlReachability(page);
+      inventory = reachability;
+      record(reachability);
       expect(
-        await page.evaluate(() =>
-          [...document.querySelectorAll<HTMLElement>('.save-panel__button')]
-            .map((button) => {
-              button.scrollIntoView({ block: 'nearest' });
-              const rect = button.getBoundingClientRect();
-              const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-              return hit !== null && button.contains(hit) ? null : (button.textContent?.trim() ?? '');
-            })
-            .filter((label) => label !== null),
-        ),
-        `save-panel buttons unreachable from the Build tab at ${width}x${height}`,
+        reachability.unreachable,
+        `controls covered by something else on the ${tab} tab at ${width}x${height}`,
       ).toEqual([]);
-
-      // The rail in its default state, which is the state the first #88 fix
-      // got wrong: it clipped the Build panel at 1280x720 on arrival.
-      const foldedRail = await railIntegrity(page);
-      expect(railInvariants(foldedRail), `the rail in its default state at ${width}x${height}`).toEqual({
-        railOverflow: 0,
-        offScreen: [],
-        stuck: [],
-      });
-      expect(
-        [...new Set(foldedRail.widths)],
-        `the rail's panels are not all one width at ${width}x${height}`,
-      ).toHaveLength(1);
-      // The Build panel gets its whole content height in the default state at
-      // every viewport here -- no exception, and 900x600 used to be one. The
-      // rail there is 483px and the panel wanted 398px of it, which left less
-      // than the save panel's floor, so the panel arrived already scrolled by
-      // 52px. `hud.css`'s `max-height: 700px` block trims the panel's fixed
-      // blocks and its gutters until it fits, and measured there today the
-      // panel is 338.1px of content in a 338.1px slot with nothing scrolled
-      // (issue #174). The catalogue *section* donates nothing any more: the 8px
-      // it used to "donate" was the gutter under its own list, and donating it
-      // meant laying that gutter over the map block's hairline, which is what
-      // the next assertion but one is about.
-      //
-      // The catalogue *list* inside it donates a great deal, and the sentence
-      // above used to say otherwise ("the catalogue itself donates nothing any
-      // more"). That was true of a two-entry `BUILDABLE_REGISTRY` and stopped
-      // being true when ADR 0028 phase 2 made it four: the list holds 176px of
-      // rows, and in the state this test is in -- six orders queued, so
-      // `.hud-build[data-queued]` has dropped the floor under it to one row
-      // (ADR 0031 decision 3) -- it hands back 111px at 1280x720, 0 at
-      // 1440x900, 75px at 1024x768, 132px at 900x600 and 66px at 375x812. The
-      // panel fits at 900x600 because three of the four buildables are behind
-      // that scroll, which is a price the ADR argues for and this line does not
-      // measure; the arrival-state test below is where the list's own
-      // scrollability is asserted.
-      //
-      // The first #88 fix clipped the panel at 1280x720 too, on arrival, and
-      // nothing said so -- which is what this line is for.
-      //
-      // **This is where that line used to be, and 2026-08-31 moved it.** It read
-      // `expect(foldedRail.buildPanelScrolls, ...).toBe(false)` and it was true
-      // of this loaded state until issue #703 ruling 2 gave the deliveries block
-      // a box of its own: nine deliveries on their way put three 44px rows and a
-      // header on a panel whose always-visible budget at 1280x720 is 8px, so it
-      // scrolls, measured. The claim lives in `the Build panel arrives inside
-      // its own fold, with nothing queued (#174)`, in the state #174 is about,
-      // over the same `HUD_LAYOUT_VIEWPORTS` -- and what is asserted here
-      // instead is that the panel is
-      // *scrolling* rather than *clipping*: the rail invariants above, the
-      // box-chain check below, and both headers reachable from the panel's own
-      // scroll.
-
-      // Not "does the panel scroll" -- where the last section actually is, with
-      // the panel folded and unscrolled, in a rail that really holds the save
-      // panel. #174: at 900x600 this ended at y=569.5 in a panel clipped at
-      // y=517.7 while every other assertion here stayed green. It has to live
-      // on this page rather than in `ui-shell.spec.ts`'s harness, whose aside
-      // slot is empty -- `.hud__aside:empty { display: none }` then hands the
-      // Build panel 128.7px more rail than the application ever gives it, and
-      // the defect cannot be reproduced there at all.
-      //
-      // Two separate claims, and the order matters. `scrollTop` is read
-      // *before* the header is measured and then reset, because the sweep
-      // above reaches controls with `scrollIntoView`: with the defect present
-      // it left this panel scrolled 52px, which is enough to carry the header
-      // back inside the fold and make the measurement below pass for exactly
-      // the reason the defect is a defect. So the first assertion is that
-      // nothing had to scroll the panel to reach a control, and the second is
-      // where the header sits once it is unscrolled -- each red on its own.
-      // Two headers, not one, and the second is the addition rather than a
-      // replacement. This used to reach "the panel's last `.ui-section`" by
-      // position and check that it read "Enter coordinates". The queue block
-      // (#348) is a `.ui-section` appended after the numeric fallback and laid
-      // out whenever something is queued -- which is now this test's state -- so
-      // position no longer identifies the numeric fallback. It is named instead
-      // (`.hud-build__coordinates`), and the *last visible* section is measured
-      // as well, because "the panel's last section is above its fold" is the
-      // property #174 is about and it has to hold for whichever section that is.
-      //
-      // **Corrected 2026-08-31 (issue #703 ruling 2), and the two claims part
-      // company.** The paragraph above holds in the arrival state and is asserted
-      // there, over the same `HUD_LAYOUT_VIEWPORTS`, by `the Build panel arrives
-      // inside its own fold, with nothing queued (#174)`. In *this* state -- nine
-      // deliveries on their way, six orders queued -- the panel scrolls, so "the
-      // header sits above the unscrolled fold" is no longer a property this state
-      // has, and `scrollTop` after the sweep is not zero either: reaching a
-      // delivery Cancel below the fold is exactly what `scrollIntoView` is for.
-      // What is asserted here is the claim that survives, and it is the one the
-      // first #88 fix failed -- **the scroll reaches them** -- computed from the
-      // panel's scroll content so that where the sweep left the scroll cannot
-      // flatter it.
-      /*
-       * Both headers, and the question asked of each is whether the panel's own
-       * scroll reaches it -- computed from the scroll content rather than by
-       * performing a scroll, for the reason written inside the loop.
-       *
-       * The second of them is whatever *is* last. With a queue that is the queue
-       * block's own header, and it is the header that says a queue exists at all
-       * -- so a player who cannot reach it has not been told. Measured before an
-       * assertion existed for it: the collapsed block is 45px and the rail had
-       * 8px to spare at 1280x720 and none at 900x600, so the header ended **14px
-       * and 37px below this fold** with nothing scrolled and no scroll that
-       * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
-       * out of the catalogue's floor.
-       */
-      const reach = await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        if (panel === null) return null;
-        const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
-        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
-          (section) => section.getClientRects().length > 0,
-        );
-        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
-        const panelTop = panel.getBoundingClientRect().top + panel.clientTop;
-        const scrollTop = panel.scrollTop;
-        const round = (value: number): number => Math.round(value * 100) / 100;
-        /*
-         * Where a header sits in the panel's **scroll content**, not on the
-         * screen: its distance from the top of everything the panel can scroll
-         * through.
-         *
-         * Arithmetic rather than a performed scroll, and that is a correction of
-         * this block's own first draft. It called
-         * `scrollIntoView({ block: 'nearest' })` and measured the box against
-         * the fold with half a pixel of tolerance -- and the browser's scroll
-         * arithmetic overshot by 0.047px on one run and 0.609px on the next,
-         * from the same page at the same viewport, because where
-         * `scrollIntoView` lands depends on the fractional scroll position it
-         * starts from. A tolerance that has to be widened per run is not
-         * measuring the layout. What is measured instead says the same thing
-         * without moving anything: the header lies inside the scrollable
-         * content, and it is shorter than the box that has to show it, so some
-         * scroll position shows all of it.
-         *
-         * One `evaluate` for both headers and the spill below, because this test
-         * spends 174s of its 180s budget and a round trip is not free.
-         */
-        const place = (header: Element | null) => {
-          if (header === null) return null;
-          const rect = header.getBoundingClientRect();
-          const top = rect.top - panelTop + scrollTop;
-          return {
-            text: header.textContent?.trim() ?? '',
-            top: round(top),
-            bottom: round(top + rect.height),
-            height: round(rect.height),
-          };
-        };
-        const block = document.querySelector('.hud-build__deliveries');
-        const headers = [place(named), place(last)];
-        // Back to the top before anything else in this loop measures: the sweep
-        // above reaches controls with `scrollIntoView` and leaves the panel
-        // wherever the last one was. The arithmetic in `place` does not care,
-        // and the states below this line do.
-        panel.scrollTop = 0;
-        return {
-          headers,
-          scrollContent: panel.scrollHeight,
-          visible: panel.clientHeight,
-          panelOverflow: panel.scrollHeight - panel.clientHeight,
-          bodyShortfall: (() => {
-            const body = document.querySelector('.hud-build > .ui-panel__body');
-            return body === null ? -1 : body.scrollHeight - body.clientHeight;
-          })(),
-          blockHeight: round(block?.getBoundingClientRect().height ?? 0),
-        };
-      });
-      expect(reach, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
-      // The numeric fallback is still the section this names, read from the
-      // bundled catalog rather than typed as English (ADR 0011), and it is the
-      // first of the two headers below.
-      expect(reach?.headers[0]?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
-        localeText('hud.build.coordinates'),
-      );
-      /*
-       * Both headers, and the question asked of each is whether the panel's own
-       * scroll reaches it.
-       *
-       * The second of them is whatever *is* last. With a queue that is the queue
-       * block's own header, and it is the header that says a queue exists at all
-       * -- so a player who cannot reach it has not been told. Measured before an
-       * assertion existed for it: the collapsed block is 45px and the rail had
-       * 8px to spare at 1280x720 and none at 900x600, so the header ended **14px
-       * and 37px below the fold** with nothing scrolled and no scroll that
-       * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
-       * out of the catalogue's floor.
-       */
-      for (const header of reach?.headers ?? []) {
-        expect(header, `a Build panel section header has no box at ${width}x${height}`).not.toBeNull();
-        expect(
-          header?.top ?? -1,
-          `"${header?.text ?? ''}" starts above the Build panel's scroll content at ${width}x${height}`,
-        ).toBeGreaterThanOrEqual(0);
-        // One pixel, and it is a units conversion rather than a tolerance:
-        // `scrollHeight` is an integer and `getBoundingClientRect` is not, so a
-        // box that ends exactly at the end of the scroll content reads as a
-        // fraction past it. Measured at 375x812, where the queue header ends at
-        // 597.23 in 597px of scroll content.
-        expect(
-          header?.bottom ?? Number.POSITIVE_INFINITY,
-          `the Build panel's scroll does not reach "${header?.text ?? ''}" at ${width}x${height}: it ends ${Math.round((header?.bottom ?? 0) - (reach?.scrollContent ?? 0))}px past the ${reach?.scrollContent ?? 0}px the panel can scroll through`,
-        ).toBeLessThanOrEqual((reach?.scrollContent ?? 0) + 1);
-        expect(
-          header?.height ?? Number.POSITIVE_INFINITY,
-          `"${header?.text ?? ''}" is taller than the Build panel's visible box at ${width}x${height}, so no scroll position shows all of it`,
-        ).toBeLessThanOrEqual(reach?.visible ?? 0);
-      }
-
-      // And no box that carries the Build panel's height is shorter than its
-      // own content *in the state the panel arrives in* -- every box in the
-      // shrink chain, not only the one that was measured first.
-      //
-      // "In this state", and that scope is the honest half of the claim rather
-      // than a hedge. This line used to say "ever", and measurement says
-      // otherwise: open one of the panel's three folds and the body is shorter
-      // than its content again, because its floor is a sum of the blocks in
-      // the *arrival* state and an opened fold is taller than the block the sum
-      // counted. Measured on the assembled page with nothing queued, body box
-      // against body content: the numeric fallback expanded costs 195px at
-      // 1280x720, 60px at 1440x900, 159px at 1024x768, 200px at 900x600 and
-      // 135px at 375x812; the buy row open costs 127px, 0, 91px, 125px and
-      // 83px. The queue fold is the third and needs a queue to open, so it is
-      // measured in this test's own state instead: 157px, 22px, 121px, 154px
-      // and 98px. Nothing clips and every control opened is measured inside the
-      // panel's visible box further down, so this is #174 item 2's "harmless by
-      // coincidence" exactly as that issue frames it -- still open, and closing
-      // it is the layout decision the issue names (which box yields, and what
-      // happens when the sum exceeds the rail), not a number this file can
-      // pick.
-      //
-      // The body was 283px of box over 335px of content at 900x600 (#174) and
-      // got a summed floor for it. The catalogue section then turned out to
-      // have the identical defect one box lower and for the identical reason:
-      // its floor and the body's are both sums of a header plus a two-row
-      // list, and neither counted the gutter `primitives.css` puts under the
-      // list, so both were 8px light. At 900x600 the section sat 4.1px into
-      // that gap -- 135.9px of box holding 140px of content, the difference
-      // laid outside the box and over the hairline the map block draws --
-      // while every assertion here, including the body's own, stayed green.
-      // Asserting one box of a chain is asserting the box somebody happened to
-      // measure; this is the property.
-      //
-      // Both are "harmless" only because the one ancestor between them and
-      // the viewport that clips also scrolls, which is a property of today's
-      // box chain rather than a guarantee.
-      //
-      // Be exact about what makes this green. Today it is the layout in
-      // `hud.css`, and at 900x600 the boxes sit on the floors it sums. In the
-      // arrival state they sit on them exactly -- the catalogue 136px on a
-      // 136px floor, the body's 275.2px content box on a 275.2px floor -- which
-      // is the pair of numbers the arrival-state test below records. In *this*
-      // test's state, six orders queued, `.hud-build[data-queued]` has taken a
-      // row off the catalogue's floor to pay for the queue block: the catalogue
-      // is 92px on a 92px floor and the body's 275.2px content box now has 44px
-      // of slack over a 231.2px floor, because the floor lost 44px and the
-      // content gained a 45px collapsed section. Either way any term dropped
-      // from either sum shows up here as a number rather than as a panel
-      // quietly clipping again. That is why this assertion matters more than
-      // the sums it is guarding: the sums cannot be derived (see `hud.css` for the
-      // `min-content` and grid-track attempts, both measured failing), so
-      // something has to check them.
-      //
-      // `.hud-build__list` is deliberately absent: it is the one box here that
-      // is *meant* to hold more than it shows, and `ui-shell.spec.ts` asserts
-      // it absorbs the excess at twelve entries. Everything above it must
-      // contain what it holds.
-      /*
-       * **Corrected 2026-08-31 (issue #703 ruling 2), and the body leaves this
-       * list.** `.hud-build > .ui-panel__body` was the first of the three
-       * selectors below and it is shorter than its own content in this state
-       * now, at every viewport. Panel overflow, body shortfall and the
-       * deliveries block's own height, measured in this test's state (nine
-       * deliveries on their way, six orders queued, nothing opened):
-       *
-       * | Viewport | overflow | shortfall | block |
-       * | --- | --- | --- | --- |
-       * | 1280x720 | 229px | 229px | 226.86px |
-       * | 1440x900 | 94px | 94px | 226.86px |
-       * | 1024x768 | 193px | 193px | 226.86px |
-       * | 900x600 | 178px | 178px | 180.48px |
-       * | 375x812 | 158px | 158px | 213.67px |
-       *
-       * The first two columns are equal at all five and the third bounds them,
-       * which is what the two assertions below say: **the panel can scroll
-       * everything the body spills**, and **the spill is this block** rather than
-       * some other box quietly clipping. They are written as `>=` and as "within
-       * one gutter" rather than as those figures, because the figures move with
-       * the catalogue, the queue and the "and N more" line -- 1440x900 has enough
-       * slack that only 94px of a 226.86px block spills at all.
-       *
-       * That is the "harmless by coincidence" the paragraph above already
-       * records for an opened fold, reached now without the player opening
-       * anything -- which makes #174 item 2 a live question rather than a
-       * documented curiosity, and its answer (which box yields when the sum
-       * exceeds the rail) a layout decision this file cannot make. **What is
-       * asserted instead is the part that keeps it harmless**: the spill is
-       * scrollable, and it is this block rather than some other box quietly
-       * clipping. The two catalogue boxes stay on the strict check, because
-       * nothing about the ruling touches them.
-       */
-      expect(
-        await page.evaluate(() =>
-          ['.hud-build__catalogue', '.hud-build__catalogue > .ui-section__body']
-            .map((selector) => {
-              const box = document.querySelector(selector);
-              if (box === null) return `${selector} has no box`;
-              const shortfall = box.scrollHeight - box.clientHeight;
-              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
-            })
-            .filter((entry) => entry !== null),
-        ),
-        `boxes in the Build panel shorter than their own content at ${width}x${height}`,
-      ).toEqual([]);
-
-      expect(reach?.bodyShortfall ?? -1, `the Build panel's body has no box at ${width}x${height}`).toBeGreaterThanOrEqual(0);
-      if ((reach?.bodyShortfall ?? 0) > 0) {
-        spilled.push(
-          `${width}x${height} overflow=${reach?.panelOverflow ?? 0} spill=${reach?.bodyShortfall ?? 0} block=${reach?.blockHeight ?? 0}`,
-        );
-        expect(
-          reach?.panelOverflow ?? 0,
-          `the Build panel cannot scroll everything its body spills at ${width}x${height}`,
-        ).toBeGreaterThanOrEqual(reach?.bodyShortfall ?? 0);
-        // One gutter of slack: `--hud-build-map-gutter` is what sits between the
-        // block and the hint above it, and it is 8px at the tall viewports and
-        // `--space-1` under `max-height: 700px`.
-        expect(
-          reach?.bodyShortfall ?? 0,
-          `the Build panel's body spills more than the deliveries block at ${width}x${height}: ${reach?.bodyShortfall ?? 0}px against a ${reach?.blockHeight ?? 0}px block`,
-        ).toBeLessThanOrEqual(Math.ceil(reach?.blockHeight ?? 0) + 8);
-      }
-
-      // The numeric fallback expanded: the tallest the Build panel gets, and
-      // the state issue #88 was measured in.
-      //
-      // Named, not positional. All three of this file's reaches for this header
-      // used to be `.hud-build .ui-section__header').last()`, and the queue
-      // block (#348) is a `.ui-section` appended after the numeric fallback --
-      // `hidden` while nothing is queued, so `.last()` resolved to an invisible
-      // button and the click waited out the whole 60s timeout. `.hud-build__coordinates`
-      // exists so a selector can say which section it means.
-      const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
-      if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
-      const expanded = await controlReachability(page);
-      for (const index of expanded.measured) everMeasured.add(index);
-      expect(
-        expanded.unreachable,
-        `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
-      ).toEqual([]);
-      const expandedRail = await railIntegrity(page);
-      expect(
-        railInvariants(expandedRail),
-        `the rail with the Build coordinates expanded at ${width}x${height}`,
-      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
-      expect(
-        [...new Set(expandedRail.widths)],
-        `the rail's panels are not all one width with the coordinates expanded at ${width}x${height}`,
-      ).toHaveLength(1);
-
-      // A real wheel gesture, because "the panel is a scroll container" and
-      // "rolling the wheel over the panel scrolls it" are different claims and
-      // only the second is what a player does. Expanded, the Build panel has
-      // more content than box at every viewport here, so this state is where
-      // the gesture can be demanded rather than merely offered.
-      const buildBox = await page.locator('.hud-build').boundingBox();
-      expect(buildBox, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
-      if (buildBox !== null) {
-        await page.mouse.move(buildBox.x + buildBox.width / 2, buildBox.y + buildBox.height / 2);
-        const scrolled = await page.evaluate(() => {
-          const panel = document.querySelector<HTMLElement>('.hud-build');
-          const rail = document.querySelector<HTMLElement>('.hud__rail');
-          if (panel === null || rail === null) return null;
-          panel.scrollTop = 0;
-          rail.scrollTop = 0;
-          return { overflow: panel.scrollHeight - panel.clientHeight };
-        });
-        expect(scrolled?.overflow ?? 0, `the expanded Build panel fits its box at ${width}x${height}`).toBeGreaterThan(
-          0,
-        );
-        await page.mouse.wheel(0, 200);
-        await expect
-          .poll(async () => page.evaluate(() => document.querySelector('.hud-build')?.scrollTop ?? 0), {
-            message: `the wheel did not scroll the Build panel at ${width}x${height}`,
-          })
-          .toBeGreaterThan(0);
-        expect(
-          await page.evaluate(() => document.querySelector('.hud__rail')?.scrollTop ?? -1),
-          `the wheel scrolled the rail rather than the panel at ${width}x${height}`,
-        ).toBe(0);
-      }
-
-      // Folded away again, so the next viewport starts from the same state.
-      if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
-
-      // The buy row open (#89), which is the panel's other player-opened
-      // state and the one whose controls exist in the DOM at every moment and
-      // are laid out at none of the ones above. Without this state the
-      // `neverLaidOut` check below is not merely weaker -- it fails, naming
-      // the quantity stepper and the buy button, which is the gate doing
-      // exactly its job: a control the sweep can never see is a control this
-      // test cannot claim is reachable.
-      const buyToggle = page.locator('.hud-build__buy-toggle');
-      await expect(buyToggle, `the buy disclosure is missing at ${width}x${height}`).toBeVisible();
-      await buyToggle.click();
-      await expect(page.locator('.hud-build__buy')).toBeVisible();
-
-      // The row the player just opened is inside the panel's *visible* box,
-      // measured before anything below scrolls anything. It is about 150px
-      // and the panel is sized to its arrival content, so at four of these
-      // five viewports the panel now has more content than box -- and without
-      // the panel scrolling to the row, the disclosure would reveal a control
-      // below its own fold, which is #174's defect wearing a different hat.
-      // Measured the way #174 measures it: the control's rectangle against
-      // the panel's client box. `controlReachability` below cannot make this
-      // claim, because it calls `scrollIntoView` first.
-      const buyBox = await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        const control = document.querySelector('.hud-build__buy-submit');
-        if (panel === null || control === null) return null;
-        const p = panel.getBoundingClientRect();
-        const c = control.getBoundingClientRect();
-        return {
-          above: c.top - (p.top + panel.clientTop),
-          below: p.top + panel.clientTop + panel.clientHeight - c.bottom,
-        };
-      });
-      expect(buyBox, `the buy button has no box once the row is open at ${width}x${height}`).not.toBeNull();
-      expect(
-        buyBox?.above ?? -1,
-        `the buy button is above the Build panel's visible box at ${width}x${height}`,
-      ).toBeGreaterThanOrEqual(0);
-      expect(
-        buyBox?.below ?? -1,
-        `the buy button is below the Build panel's visible box at ${width}x${height}: opening the row revealed a control the player cannot see`,
-      ).toBeGreaterThanOrEqual(0);
-
-      const buying = await controlReachability(page);
-      for (const index of buying.measured) everMeasured.add(index);
-      expect(
-        buying.unreachable,
-        `controls covered by something else with the buy row open at ${width}x${height}`,
-      ).toEqual([]);
-      // The rail still holds, in a state that overflows the panel at four of
-      // these five viewports: the panel absorbs its own excess and the player
-      // can scroll it, which is what separates this from #174's defect --
-      // there the panel arrived clipped, here the player opened it.
-      expect(
-        railInvariants(await railIntegrity(page)),
-        `the rail with the buy row open at ${width}x${height}`,
-      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
-      await buyToggle.click();
-      await expect(page.locator('.hud-build__buy')).toBeHidden();
-      // Closed again, the panel fits, so a scroll left over from reaching a
-      // control in that state cannot survive into the next viewport's
-      // measurement of where the last section is.
-      await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        if (panel !== null) panel.scrollTop = 0;
-      });
-
-      /*
-       * The queue block open (#348), which is this panel's third player-opened
-       * state and the buy row's argument one block down.
-       *
-       * Its three Cancel controls exist in the DOM at every moment -- the rows
-       * are pooled, so the HUD's busy group, which has `add` and no `remove`,
-       * cannot grow over a session -- and are laid out in none of the states
-       * above. Without this the `neverLaidOut` check below fails and names them,
-       * which is the gate working: a control the sweep can never see is a control
-       * this test cannot claim is reachable. Six orders are queued and the clock
-       * is stopped, from before the loop.
-       */
-      const queueFold = page.locator('.hud-build__queue > .ui-section__header');
-      await expect(queueFold, `the queue fold is missing at ${width}x${height}`).toBeVisible();
-      await queueFold.click();
-      await expect(page.locator('.hud-build__queue-list')).toBeVisible();
-
-      // Every revealed control is inside the panel's *visible* box, measured
-      // the way #174 measures it and for the reason the buy row's own check
-      // above gives: opening a fold that reveals controls below the panel's own
-      // fold has not revealed them. `controlReachability` below cannot make this
-      // claim, because it calls `scrollIntoView` first. Measured over all three
-      // rows rather than one, because they are stacked and only the last is at
-      // risk -- 38px, 90px and 142px of clearance at 1280x720 today.
-      const queueBoxes = await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        if (panel === null) return null;
-        const p = panel.getBoundingClientRect();
-        const top = p.top + panel.clientTop;
-        return [...document.querySelectorAll('.hud-build__queue-row')]
-          .filter((row) => row.getClientRects().length > 0)
-          .map((row) => {
-            const control = row.querySelector('.ui-action');
-            if (control === null) return { order: row.getAttribute('data-order') ?? '', above: -1, below: -1 };
-            const c = control.getBoundingClientRect();
-            return {
-              order: row.getAttribute('data-order') ?? '',
-              above: Math.round(c.top - top),
-              below: Math.round(top + panel.clientHeight - c.bottom),
-            };
-          });
-      });
-      expect(queueBoxes, `the queue rows have no boxes once the fold is open at ${width}x${height}`).not.toBeNull();
-      expect(queueBoxes?.length ?? 0, `the open queue drew no rows at ${width}x${height}`).toBeGreaterThan(0);
-      for (const row of queueBoxes ?? []) {
-        expect(
-          row.above,
-          `the cancel for ${row.order} is above the Build panel's visible box at ${width}x${height}`,
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-          row.below,
-          `the cancel for ${row.order} is below the Build panel's visible box at ${width}x${height}: opening the fold revealed a control the player cannot see`,
-        ).toBeGreaterThanOrEqual(0);
-      }
-
-      const queued = await controlReachability(page);
-      inventory = queued.controls;
-      for (const index of queued.measured) everMeasured.add(index);
-      expect(
-        queued.unreachable,
-        `controls covered by something else with the build queue open at ${width}x${height}`,
-      ).toEqual([]);
-      // The rail still holds in a state that overflows the panel at every
-      // viewport here: the panel absorbs its own excess and the player scrolls
-      // it, which is what separates this from #174's defect -- there the panel
-      // arrived clipped, here the player opened a fold.
-      expect(
-        railInvariants(await railIntegrity(page)),
-        `the rail with the build queue open at ${width}x${height}`,
-      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
-
-      await queueFold.click();
-      await expect(page.locator('.hud-build__queue-list')).toBeHidden();
-      await page.evaluate(() => {
-        const panel = document.querySelector('.hud-build');
-        if (panel !== null) panel.scrollTop = 0;
-      });
-
-      /*
-       * The Rooms panel's confirm state, which is that panel's equivalent of
-       * the buy row above and reached the same way: explicitly, because the
-       * two controls in it exist in the DOM at every moment and are laid out at
-       * none of the states visited so far.
-       *
-       * It is driven through the *world* rather than through a harness hook,
-       * because this file drives the assembled application -- so this is also
-       * the only place the whole room gesture is exercised end to end: a real
-       * drag on a real Phaser canvas, arbitrated by the real scene, reported
-       * through the real `RoomTool`, held by the real panel.
-       *
-       * Without this state the `neverLaidOut` check below does not merely get
-       * weaker -- it fails, naming the confirm and discard controls, which is
-       * the gate doing its job: a control the sweep can never see is a control
-       * this test cannot claim is reachable.
-       *
-       * At 375x812 it *did* fail, and the exemption that made it pass is gone:
-       * arming folds the panel to its header, so the drag below has world to
-       * happen in at every viewport this loop visits. The band it uncovers is
-       * measured in "the Rooms panel yields the world it is drawn on" below.
-       */
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
-
-      /*
-       * The Rooms panel's typed route (#411, ADR 0038), expanded for exactly
-       * the reason the Build panel's coordinates are expanded above: its
-       * thirteen controls are in the DOM at every moment and laid out at none
-       * of the states visited so far, so without this state the accounting
-       * assertion at the foot of the sweep fails and names all thirteen --
-       * which is the gate doing its job rather than a reason to exempt them.
-       *
-       * They live inside `.hud-rooms__list`, which is a scroll container at
-       * every viewport, so most of them are out of view when the form opens.
-       * That is not a collision and `controlReachability` scrolls each control
-       * into view before hit-testing it, which is the question worth asking:
-       * once it is on screen, can it be pressed.
-       *
-       * Folded again afterwards, because an open form ends the drawing pass --
-       * the panel stays out of the world's way only while the form is closed,
-       * and the drag below needs that fold at 375x812.
-       */
-      const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
-      if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
-      const typedRoute = await controlReachability(page);
-      inventory = typedRoute.controls;
-      for (const index of typedRoute.measured) everMeasured.add(index);
-      expect(
-        typedRoute.unreachable,
-        `controls covered by something else with the Rooms coordinates expanded at ${width}x${height}`,
-      ).toEqual([]);
-      if ((await roomCoordinates.getAttribute('aria-expanded')) === 'true') await roomCoordinates.click();
-
-      const roomArm = page.locator('.hud-rooms__arm');
-      await expect(roomArm, `the Rooms panel's arm control is missing at ${width}x${height}`).toBeVisible();
-      await roomArm.click();
-      const dragged = await dragRectangleOnWorld(page);
-      // Every viewport, 375x812 included, and that last one is the change:
-      // arming folds the panel to its header, so the world it is drawn on is
-      // there to be drawn on. Asserted rather than tolerated, so a layout change
-      // that took the world away again -- at any viewport -- fails here instead
-      // of quietly changing what this test covers.
-      expect(dragged, `a room drag found no bare world at ${width}x${height}`).not.toBeNull();
-
-      const roomConfirm = page.locator('.hud-rooms__confirm');
-      await expect(
-        roomConfirm,
-        `a rectangle dragged on the world did not reach the Rooms panel at ${width}x${height}`,
-      ).toBeVisible();
-      // Both axes survived the gesture, which is the property `dragOnWorld`'s
-      // one-axis run cannot show: a square drag committed to an axis would read
-      // `3 x 1` or `1 x 3` here.
-      await expect(
-        page.locator('.hud-rooms__area'),
-        `the dragged area is not a rectangle at ${width}x${height}`,
-      ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
-
-      const roomsReachability = await controlReachability(page);
-      inventory = roomsReachability.controls;
-      for (const index of roomsReachability.measured) everMeasured.add(index);
-      expect(
-        roomsReachability.unreachable,
-        `controls covered by something else with a room pending at ${width}x${height}`,
-      ).toEqual([]);
-
-      // Discarded, so the next viewport starts from the state this one did.
-      await page.locator('.hud-rooms__cancel').click();
-
-      /*
-       * Somebody on the payroll (#533), which is the Staff panel's equivalent of
-       * the buy row and the queue fold above and is here for the identical
-       * reason: the roster section's own header and its three `Dismiss` controls
-       * exist in the DOM at every moment -- the rows are pooled, so the HUD's
-       * busy group, which has `add` and no `remove`, cannot grow over a session
-       * -- and are laid out in none of the states above, because nothing above
-       * hires anybody. Without this state the accounting assertion at the foot of
-       * the sweep fails and names all four, which is the gate doing its job.
-       *
-       * **Driven rather than exempted, and that is the point of it.** `Dismiss`
-       * is the control issue #533 adds; putting it on
-       * `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` would have certified every control
-       * on this page except the one the change is about. It is reachable by a
-       * gesture this sweep can make -- somebody has to be *hired*, which is one
-       * press -- where the three `Release` rows on that constant need a guard to
-       * be *held*, which nothing here can arrange. That difference is the whole
-       * of why those three stay exempt and these four do not, and the constant's
-       * comment carries the measurement.
-       *
-       * **Last in the viewport's body rather than first.** Every pixel assertion
-       * in this loop is measured in the arrival state, and a hired roster adds a
-       * section to a panel that shares `.hud__side` with the ones being measured.
-       * So the hires happen after all of them and the dismissals below put the
-       * panel back before the next viewport measures anything. That ordering is
-       * belt and braces rather than the thing that makes it safe: the panels in
-       * `.hud__side` swap by tab, so the Staff panel has no box at all while
-       * those assertions are taken. `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` above
-       * carries the ten measurements.
-       *
-       * **The clock is paused, from before the loop, and both halves of this
-       * block rest on it.** ADR 0051's paused drain dispatches a command given
-       * against a stopped clock immediately, so the hires and the dismissals land
-       * with no tick; and because no tick runs, `DeploymentSystem`'s
-       * `assignUnassignedGuards` -- called only from its `update`
-       * (`src/simulation/security/deployment-system.ts:130`) -- never claims any
-       * of them, so all three stay `'unassigned'` and not one becomes a held
-       * guard. That is exactly the state issue #533 was measured in, and it is
-       * why hiring here does not shorten the constant below.
-       */
-      await page.locator('.ui-tab[data-tab="security"]').click();
-      const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
-      await expect(staffMetric, `the prison already has staff at ${width}x${height}`).toHaveText('0');
-      // Enabled on arrival, because `createStaffPanel` preselects
-      // `model.roles[0]` -- so this is one press and not a two-step gesture.
-      // Asserted rather than assumed: a Hire button that arrived disabled would
-      // otherwise reach the loop below as three silent no-ops.
-      const hireStaff = page.locator('.hud-staff__hire');
-      await expect(hireStaff, `the Hire control is not pressable at ${width}x${height}`).toBeEnabled();
-      for (let hired = 1; hired <= STAFF_ROSTER_ROW_LIMIT; hired += 1) {
-        await hireStaff.click();
-        // The metric after every press, so a *refused* hire fails here and says
-        // so. Insufficient funds is the only reason this panel can provoke and
-        // the balance is nowhere near it, but a refusal that went unasserted
-        // would arrive at the reachability call below as a roster one row short
-        // -- i.e. as a control reported never laid out, which is the same red
-        // for a different reason and would read as a layout defect.
-        await expect(
-          staffMetric,
-          `hire ${hired} of ${STAFF_ROSTER_ROW_LIMIT} did not reach the payroll at ${width}x${height}`,
-        ).toHaveText(String(hired));
-      }
-
-      // The section is created `collapsed: true`, so its body has no box until
-      // the player opens it. The same `aria-expanded` handshake the Rooms
-      // panel's typed route above uses, and read rather than toggled blind
-      // because the flag survives the section being hidden between viewports.
-      const rosterFold = page.locator('.hud-staff__roster > .ui-section__header');
-      await expect(rosterFold, `the roster fold is missing at ${width}x${height}`).toBeVisible();
-      if ((await rosterFold.getAttribute('aria-expanded')) === 'false') await rosterFold.click();
-      // `[data-staff]` and not `:not([hidden])`: it is the attribute the panel
-      // writes when a row actually names somebody, so this waits for the
-      // projection to have answered rather than for the row to have a box.
-      const rosterRows = page.locator('.hud-staff__roster .hud-staff__held-row[data-staff]');
-      await expect(rosterRows, `the open roster drew no rows at ${width}x${height}`).toHaveCount(
-        STAFF_ROSTER_ROW_LIMIT,
-      );
-
-
-      const payroll = await controlReachability(page);
-      inventory = payroll.controls;
-      for (const index of payroll.measured) everMeasured.add(index);
-      expect(
-        payroll.unreachable,
-        `controls covered by something else with the payroll open at ${width}x${height}`,
-      ).toEqual([]);
-      // The rail still holds with a section the arrival state does not have. The
-      // Staff panel is `overflow-y: auto` (`hud.css`, `.ui-panel.hud-staff`), so
-      // the excess is the panel's own to scroll and never the rail's to hang off
-      // its edge -- which is the claim that makes the placement above safe, so it
-      // is asserted here rather than argued in the comment.
-      expect(
-        railInvariants(await railIntegrity(page)),
-        `the rail with the payroll open at ${width}x${height}`,
-      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
-
-      /*
-       * Emptied again, so the next viewport starts from the state this one did
-       * -- and pressing `Dismiss` is the only way to empty it, which makes the
-       * restoration and the proof that the control does what it says the same
-       * three presses.
-       *
-       * The *first* row every time rather than one row each: the rows are pooled
-       * and republished, so "the second row" is not a stable name for a person --
-       * `staff-panel.ts` says so where it writes `data-staff`. Both the metric
-       * and the row count are waited for between presses, and the second is not
-       * redundant: the metric moves on the counts publication while the rows move
-       * on the projection read that publication triggers, so a press timed
-       * between the two would name somebody already dismissed and be refused as
-       * `dismiss.unknown-staff`.
-       */
-      for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
-        await rosterRows.first().locator('.ui-action').click();
-        await expect(
-          staffMetric,
-          `a dismissal did not take somebody off the payroll at ${width}x${height}`,
-        ).toHaveText(String(remaining));
-        await expect(
-          rosterRows,
-          `the roster still names ${remaining + 1} people after a dismissal at ${width}x${height}`,
-        ).toHaveCount(remaining);
-      }
-      // And with nobody hired the section is gone entirely, which is what the
-      // arrival state is: `paintRoster` hides it on `roster.hired === 0` rather
-      // than leave a header promising a list that cannot exist. Asserted, because
-      // it is the state every pixel assertion at the next viewport is measured
-      // against -- and it is also why the fold is not clicked shut again. A
-      // hidden section has no box, so its `aria-expanded` flag is not a state
-      // anything in this loop can measure, and it cannot be clicked shut while
-      // hidden; the read above reopens it at the next viewport either way.
-      await expect(
-        page.locator('.hud-staff__roster'),
-        `the roster section outlived the last dismissal at ${width}x${height}`,
-      ).toBeHidden();
-
-      await page.locator('.ui-tab[data-tab="build"]').click();
-
-      // Nothing got a free pass by never being laid out. At desktop widths the
-      // Build tab with its coordinates expanded shows every control there is,
-      // so the list is empty; at 720px and below the responsive rules drop
-      // `.hud__corner` outright — the minimap and the alerts section — and
-      // those two controls genuinely cannot be reached at any tab. That is a
-      // deliberate responsive decision (see `hud.css`), named here so it stays
-      // one: it is the honest limit of what this test can claim about a phone.
-      //
-      // `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` is added at *every* viewport, and
-      // for a different kind of reason: not a responsive decision but a state
-      // this sweep cannot put the simulation into, measured and recorded on that
-      // constant. Those three sentences used to read "a gesture this sweep does
-      // not make [...] which since ADR 0036 is a weaker claim than the
-      // simulation gap it used to record", and both halves are now wrong: the
-      // sweep does make the hiring gesture (see "Somebody on the payroll (#533)"
-      // above), and what those rows need is not a gesture but a *tick*, which is
-      // the stronger claim again. Sorted together because the assertion compares
-      // the sweep's document order.
-      const exempt = [
-        ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
-        ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
-      ];
-      const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
-      expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
-        [...exempt].sort(),
-      );
-      expect(
-        everMeasured.size,
-        `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
-      ).toBe(inventory.length - exempt.length);
     }
 
+    /*
+     * The Layout menu, opened (#1159).
+     *
+     * A state of its own rather than a row in the exemption list below,
+     * because the four controls inside it -- two sliders, "Map only" and
+     * "Reset layout" -- are genuinely reachable at every viewport and simply
+     * live behind a press, exactly as the Build panel's coordinates section
+     * does. Exempting them would say the opposite: that a phone cannot reach
+     * them, which `hud.css` makes true of the minimap and is not true of
+     * these.
+     *
+     * It is opened and shut again inside this block, so every later state in
+     * this sweep measures the same page it measured before the menu existed.
+     * The menu floats over the world (`.hud-layout__body` is
+     * `position: absolute`), so an open one would cover whatever is under it
+     * and the covering checks further down would be about the menu rather
+     * than about the panel they name.
+     */
+    await page.locator('.hud-layout__button').click();
+    const withLayoutMenu = await controlReachability(page);
+    inventory = withLayoutMenu;
+    record(withLayoutMenu);
+    /*
+     * Only the menu's **own** controls are required to be reachable here,
+     * and that narrowing is the honest one rather than a convenience.
+     *
+     * `.hud-layout__body` floats over the world by design -- it is the one
+     * surface in this HUD that is meant to, and `docs/VISUAL_IDENTITY.md`
+     * says so -- so an open menu covers the top of the rail underneath it,
+     * exactly as any menu covers what it opens over. Asserting that nothing
+     * on the page is covered while a menu is open would be asserting that
+     * the menu is not a menu. What must hold is that **the menu itself is
+     * usable when open**, which is what this says, and that **nothing is
+     * covered when it is shut**, which every other state in this sweep
+     * already says.
+     */
+    expect(
+      withLayoutMenu.unreachable.filter((entry) => entry.control.includes('hud-layout__body')),
+      `the Layout menu's own controls are unreachable while it is open at ${width}x${height}`,
+    ).toEqual([]);
+    await page.locator('.hud-layout__button').click();
+    await expect(page.locator('.hud-layout__body')).toBeHidden();
+
+    /*
+     * Saving is not a Build-tab activity, and the Build tab is where the
+     * player spends their time. Named separately so a regression says so.
+     *
+     * **This was its own inline `page.evaluate` until 2026-09-15**, with its
+     * own `scrollIntoView` and its own single centre sample -- so it carried
+     * the hole `controlReachability` had, plus a weaker sample set, and would
+     * have had to be fixed twice. It is the same sweep narrowed to one
+     * selector instead, which also gains it the five sample points and a
+     * failure that names what covered the button rather than only which
+     * button it was.
+     *
+     * Two assertions rather than one, because narrowing the selector makes an
+     * empty match possible in a way `INTERACTIVE_SELECTOR` never was: a save
+     * panel that stopped rendering buttons, or a button collapsed to a zero
+     * box, would leave nothing for the sweep to skip *and nothing to report*.
+     * The count is the guard against a vacuous pass.
+     */
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    const saveButtons = await controlReachability(page, '.save-panel__button');
+    expect(
+      saveButtons.measured.length,
+      `save-panel buttons with a box to hit-test at ${width}x${height}, of ${saveButtons.controls.length} matched`,
+    ).toBe(saveButtons.controls.length);
+    expect(saveButtons.controls.length, `the save panel drew no buttons at all at ${width}x${height}`).toBeGreaterThan(
+      0,
+    );
+    expect(
+      saveButtons.unreachable,
+      `save-panel buttons unreachable from the Build tab at ${width}x${height}`,
+    ).toEqual([]);
+
+    // The rail in its default state, which is the state the first #88 fix
+    // got wrong: it clipped the Build panel at 1280x720 on arrival.
+    const foldedRail = await railIntegrity(page);
+    expect(railInvariants(foldedRail), `the rail in its default state at ${width}x${height}`).toEqual({
+      railOverflow: 0,
+      offScreen: [],
+      stuck: [],
+    });
+    expect(
+      [...new Set(foldedRail.widths)],
+      `the rail's panels are not all one width at ${width}x${height}`,
+    ).toHaveLength(1);
+    // The Build panel gets its whole content height in the default state at
+    // every viewport here -- no exception, and 900x600 used to be one. The
+    // rail there is 483px and the panel wanted 398px of it, which left less
+    // than the save panel's floor, so the panel arrived already scrolled by
+    // 52px. `hud.css`'s `max-height: 700px` block trims the panel's fixed
+    // blocks and its gutters until it fits, and measured there today the
+    // panel is 338.1px of content in a 338.1px slot with nothing scrolled
+    // (issue #174). The catalogue *section* donates nothing any more: the 8px
+    // it used to "donate" was the gutter under its own list, and donating it
+    // meant laying that gutter over the map block's hairline, which is what
+    // the next assertion but one is about.
+    //
+    // The catalogue *list* inside it donates a great deal, and the sentence
+    // above used to say otherwise ("the catalogue itself donates nothing any
+    // more"). That was true of a two-entry `BUILDABLE_REGISTRY` and stopped
+    // being true when ADR 0028 phase 2 made it four: the list holds 176px of
+    // rows, and in the state this test is in -- six orders queued, so
+    // `.hud-build[data-queued]` has dropped the floor under it to one row
+    // (ADR 0031 decision 3) -- it hands back 111px at 1280x720, 0 at
+    // 1440x900, 75px at 1024x768, 132px at 900x600 and 66px at 375x812. The
+    // panel fits at 900x600 because three of the four buildables are behind
+    // that scroll, which is a price the ADR argues for and this line does not
+    // measure; the arrival-state test below is where the list's own
+    // scrollability is asserted.
+    //
+    // The first #88 fix clipped the panel at 1280x720 too, on arrival, and
+    // nothing said so -- which is what this line is for.
+    //
+    // **This is where that line used to be, and 2026-08-31 moved it.** It read
+    // `expect(foldedRail.buildPanelScrolls, ...).toBe(false)` and it was true
+    // of this loaded state until issue #703 ruling 2 gave the deliveries block
+    // a box of its own: nine deliveries on their way put three 44px rows and a
+    // header on a panel whose always-visible budget at 1280x720 is 8px, so it
+    // scrolls, measured. The claim lives in `the Build panel arrives inside
+    // its own fold, with nothing queued (#174)`, in the state #174 is about,
+    // over the same `HUD_LAYOUT_VIEWPORTS` -- and what is asserted here
+    // instead is that the panel is
+    // *scrolling* rather than *clipping*: the rail invariants above, the
+    // box-chain check below, and both headers reachable from the panel's own
+    // scroll.
+
+    // Not "does the panel scroll" -- where the last section actually is, with
+    // the panel folded and unscrolled, in a rail that really holds the save
+    // panel. #174: at 900x600 this ended at y=569.5 in a panel clipped at
+    // y=517.7 while every other assertion here stayed green. It has to live
+    // on this page rather than in `ui-shell.spec.ts`'s harness, whose aside
+    // slot is empty -- `.hud__aside:empty { display: none }` then hands the
+    // Build panel 128.7px more rail than the application ever gives it, and
+    // the defect cannot be reproduced there at all.
+    //
+    // Two separate claims, and the order matters. `scrollTop` is read
+    // *before* the header is measured and then reset, because the sweep
+    // above reaches controls with `scrollIntoView`: with the defect present
+    // it left this panel scrolled 52px, which is enough to carry the header
+    // back inside the fold and make the measurement below pass for exactly
+    // the reason the defect is a defect. So the first assertion is that
+    // nothing had to scroll the panel to reach a control, and the second is
+    // where the header sits once it is unscrolled -- each red on its own.
+    // Two headers, not one, and the second is the addition rather than a
+    // replacement. This used to reach "the panel's last `.ui-section`" by
+    // position and check that it read "Enter coordinates". The queue block
+    // (#348) is a `.ui-section` appended after the numeric fallback and laid
+    // out whenever something is queued -- which is now this test's state -- so
+    // position no longer identifies the numeric fallback. It is named instead
+    // (`.hud-build__coordinates`), and the *last visible* section is measured
+    // as well, because "the panel's last section is above its fold" is the
+    // property #174 is about and it has to hold for whichever section that is.
+    //
+    // **Corrected 2026-08-31 (issue #703 ruling 2), and the two claims part
+    // company.** The paragraph above holds in the arrival state and is asserted
+    // there, over the same `HUD_LAYOUT_VIEWPORTS`, by `the Build panel arrives
+    // inside its own fold, with nothing queued (#174)`. In *this* state -- nine
+    // deliveries on their way, six orders queued -- the panel scrolls, so "the
+    // header sits above the unscrolled fold" is no longer a property this state
+    // has, and `scrollTop` after the sweep is not zero either: reaching a
+    // delivery Cancel below the fold is exactly what `scrollIntoView` is for.
+    // What is asserted here is the claim that survives, and it is the one the
+    // first #88 fix failed -- **the scroll reaches them** -- computed from the
+    // panel's scroll content so that where the sweep left the scroll cannot
+    // flatter it.
+    /*
+     * Both headers, and the question asked of each is whether the panel's own
+     * scroll reaches it -- computed from the scroll content rather than by
+     * performing a scroll, for the reason written inside the loop.
+     *
+     * The second of them is whatever *is* last. With a queue that is the queue
+     * block's own header, and it is the header that says a queue exists at all
+     * -- so a player who cannot reach it has not been told. Measured before an
+     * assertion existed for it: the collapsed block is 45px and the rail had
+     * 8px to spare at 1280x720 and none at 900x600, so the header ended **14px
+     * and 37px below this fold** with nothing scrolled and no scroll that
+     * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
+     * out of the catalogue's floor.
+     */
+    const reach = await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      if (panel === null) return null;
+      const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
+      const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+        (section) => section.getClientRects().length > 0,
+      );
+      const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+      const panelTop = panel.getBoundingClientRect().top + panel.clientTop;
+      const scrollTop = panel.scrollTop;
+      const round = (value: number): number => Math.round(value * 100) / 100;
+      /*
+       * Where a header sits in the panel's **scroll content**, not on the
+       * screen: its distance from the top of everything the panel can scroll
+       * through.
+       *
+       * Arithmetic rather than a performed scroll, and that is a correction of
+       * this block's own first draft. It called
+       * `scrollIntoView({ block: 'nearest' })` and measured the box against
+       * the fold with half a pixel of tolerance -- and the browser's scroll
+       * arithmetic overshot by 0.047px on one run and 0.609px on the next,
+       * from the same page at the same viewport, because where
+       * `scrollIntoView` lands depends on the fractional scroll position it
+       * starts from. A tolerance that has to be widened per run is not
+       * measuring the layout. What is measured instead says the same thing
+       * without moving anything: the header lies inside the scrollable
+       * content, and it is shorter than the box that has to show it, so some
+       * scroll position shows all of it.
+       *
+       * One `evaluate` for both headers and the spill below, because this test
+       * spends 174s of its 180s budget and a round trip is not free.
+       */
+      const place = (header: Element | null) => {
+        if (header === null) return null;
+        const rect = header.getBoundingClientRect();
+        const top = rect.top - panelTop + scrollTop;
+        return {
+          text: header.textContent?.trim() ?? '',
+          top: round(top),
+          bottom: round(top + rect.height),
+          height: round(rect.height),
+        };
+      };
+      const block = document.querySelector('.hud-build__deliveries');
+      const headers = [place(named), place(last)];
+      // Back to the top before anything else in this loop measures: the sweep
+      // above reaches controls with `scrollIntoView` and leaves the panel
+      // wherever the last one was. The arithmetic in `place` does not care,
+      // and the states below this line do.
+      panel.scrollTop = 0;
+      return {
+        headers,
+        scrollContent: panel.scrollHeight,
+        visible: panel.clientHeight,
+        panelOverflow: panel.scrollHeight - panel.clientHeight,
+        bodyShortfall: (() => {
+          const body = document.querySelector('.hud-build > .ui-panel__body');
+          return body === null ? -1 : body.scrollHeight - body.clientHeight;
+        })(),
+        blockHeight: round(block?.getBoundingClientRect().height ?? 0),
+      };
+    });
+    expect(reach, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
+    // The numeric fallback is still the section this names, read from the
+    // bundled catalog rather than typed as English (ADR 0011), and it is the
+    // first of the two headers below.
+    expect(reach?.headers[0]?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
+      localeText('hud.build.coordinates'),
+    );
+    /*
+     * Both headers, and the question asked of each is whether the panel's own
+     * scroll reaches it.
+     *
+     * The second of them is whatever *is* last. With a queue that is the queue
+     * block's own header, and it is the header that says a queue exists at all
+     * -- so a player who cannot reach it has not been told. Measured before an
+     * assertion existed for it: the collapsed block is 45px and the rail had
+     * 8px to spare at 1280x720 and none at 900x600, so the header ended **14px
+     * and 37px below the fold** with nothing scrolled and no scroll that
+     * reached it. `hud.css`'s `.hud-build[data-queued]` is what pays for it,
+     * out of the catalogue's floor.
+     */
+    for (const header of reach?.headers ?? []) {
+      expect(header, `a Build panel section header has no box at ${width}x${height}`).not.toBeNull();
+      expect(
+        header?.top ?? -1,
+        `"${header?.text ?? ''}" starts above the Build panel's scroll content at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(0);
+      // One pixel, and it is a units conversion rather than a tolerance:
+      // `scrollHeight` is an integer and `getBoundingClientRect` is not, so a
+      // box that ends exactly at the end of the scroll content reads as a
+      // fraction past it. Measured at 375x812, where the queue header ends at
+      // 597.23 in 597px of scroll content.
+      expect(
+        header?.bottom ?? Number.POSITIVE_INFINITY,
+        `the Build panel's scroll does not reach "${header?.text ?? ''}" at ${width}x${height}: it ends ${Math.round((header?.bottom ?? 0) - (reach?.scrollContent ?? 0))}px past the ${reach?.scrollContent ?? 0}px the panel can scroll through`,
+      ).toBeLessThanOrEqual((reach?.scrollContent ?? 0) + 1);
+      expect(
+        header?.height ?? Number.POSITIVE_INFINITY,
+        `"${header?.text ?? ''}" is taller than the Build panel's visible box at ${width}x${height}, so no scroll position shows all of it`,
+      ).toBeLessThanOrEqual(reach?.visible ?? 0);
+    }
+
+    // And no box that carries the Build panel's height is shorter than its
+    // own content *in the state the panel arrives in* -- every box in the
+    // shrink chain, not only the one that was measured first.
+    //
+    // "In this state", and that scope is the honest half of the claim rather
+    // than a hedge. This line used to say "ever", and measurement says
+    // otherwise: open one of the panel's three folds and the body is shorter
+    // than its content again, because its floor is a sum of the blocks in
+    // the *arrival* state and an opened fold is taller than the block the sum
+    // counted. Measured on the assembled page with nothing queued, body box
+    // against body content: the numeric fallback expanded costs 195px at
+    // 1280x720, 60px at 1440x900, 159px at 1024x768, 200px at 900x600 and
+    // 135px at 375x812; the buy row open costs 127px, 0, 91px, 125px and
+    // 83px. The queue fold is the third and needs a queue to open, so it is
+    // measured in this test's own state instead: 157px, 22px, 121px, 154px
+    // and 98px. Nothing clips and every control opened is measured inside the
+    // panel's visible box further down, so this is #174 item 2's "harmless by
+    // coincidence" exactly as that issue frames it -- still open, and closing
+    // it is the layout decision the issue names (which box yields, and what
+    // happens when the sum exceeds the rail), not a number this file can
+    // pick.
+    //
+    // The body was 283px of box over 335px of content at 900x600 (#174) and
+    // got a summed floor for it. The catalogue section then turned out to
+    // have the identical defect one box lower and for the identical reason:
+    // its floor and the body's are both sums of a header plus a two-row
+    // list, and neither counted the gutter `primitives.css` puts under the
+    // list, so both were 8px light. At 900x600 the section sat 4.1px into
+    // that gap -- 135.9px of box holding 140px of content, the difference
+    // laid outside the box and over the hairline the map block draws --
+    // while every assertion here, including the body's own, stayed green.
+    // Asserting one box of a chain is asserting the box somebody happened to
+    // measure; this is the property.
+    //
+    // Both are "harmless" only because the one ancestor between them and
+    // the viewport that clips also scrolls, which is a property of today's
+    // box chain rather than a guarantee.
+    //
+    // Be exact about what makes this green. Today it is the layout in
+    // `hud.css`, and at 900x600 the boxes sit on the floors it sums. In the
+    // arrival state they sit on them exactly -- the catalogue 136px on a
+    // 136px floor, the body's 275.2px content box on a 275.2px floor -- which
+    // is the pair of numbers the arrival-state test below records. In *this*
+    // test's state, six orders queued, `.hud-build[data-queued]` has taken a
+    // row off the catalogue's floor to pay for the queue block: the catalogue
+    // is 92px on a 92px floor and the body's 275.2px content box now has 44px
+    // of slack over a 231.2px floor, because the floor lost 44px and the
+    // content gained a 45px collapsed section. Either way any term dropped
+    // from either sum shows up here as a number rather than as a panel
+    // quietly clipping again. That is why this assertion matters more than
+    // the sums it is guarding: the sums cannot be derived (see `hud.css` for the
+    // `min-content` and grid-track attempts, both measured failing), so
+    // something has to check them.
+    //
+    // `.hud-build__list` is deliberately absent: it is the one box here that
+    // is *meant* to hold more than it shows, and `ui-shell.spec.ts` asserts
+    // it absorbs the excess at twelve entries. Everything above it must
+    // contain what it holds.
+    /*
+     * **Corrected 2026-08-31 (issue #703 ruling 2), and the body leaves this
+     * list.** `.hud-build > .ui-panel__body` was the first of the three
+     * selectors below and it is shorter than its own content in this state
+     * now, at every viewport. Panel overflow, body shortfall and the
+     * deliveries block's own height, measured in this test's state (nine
+     * deliveries on their way, six orders queued, nothing opened):
+     *
+     * | Viewport | overflow | shortfall | block |
+     * | --- | --- | --- | --- |
+     * | 1280x720 | 229px | 229px | 226.86px |
+     * | 1440x900 | 94px | 94px | 226.86px |
+     * | 1024x768 | 193px | 193px | 226.86px |
+     * | 900x600 | 178px | 178px | 180.48px |
+     * | 375x812 | 158px | 158px | 213.67px |
+     *
+     * The first two columns are equal at all five and the third bounds them,
+     * which is what the two assertions below say: **the panel can scroll
+     * everything the body spills**, and **the spill is this block** rather than
+     * some other box quietly clipping. They are written as `>=` and as "within
+     * one gutter" rather than as those figures, because the figures move with
+     * the catalogue, the queue and the "and N more" line -- 1440x900 has enough
+     * slack that only 94px of a 226.86px block spills at all.
+     *
+     * That is the "harmless by coincidence" the paragraph above already
+     * records for an opened fold, reached now without the player opening
+     * anything -- which makes #174 item 2 a live question rather than a
+     * documented curiosity, and its answer (which box yields when the sum
+     * exceeds the rail) a layout decision this file cannot make. **What is
+     * asserted instead is the part that keeps it harmless**: the spill is
+     * scrollable, and it is this block rather than some other box quietly
+     * clipping. The two catalogue boxes stay on the strict check, because
+     * nothing about the ruling touches them.
+     */
+    expect(
+      await page.evaluate(() =>
+        ['.hud-build__catalogue', '.hud-build__catalogue > .ui-section__body']
+          .map((selector) => {
+            const box = document.querySelector(selector);
+            if (box === null) return `${selector} has no box`;
+            const shortfall = box.scrollHeight - box.clientHeight;
+            return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+          })
+          .filter((entry) => entry !== null),
+      ),
+      `boxes in the Build panel shorter than their own content at ${width}x${height}`,
+    ).toEqual([]);
+
+    expect(reach?.bodyShortfall ?? -1, `the Build panel's body has no box at ${width}x${height}`).toBeGreaterThanOrEqual(0);
+    if ((reach?.bodyShortfall ?? 0) > 0) {
+      spilled.push(
+        `${width}x${height} overflow=${reach?.panelOverflow ?? 0} spill=${reach?.bodyShortfall ?? 0} block=${reach?.blockHeight ?? 0}`,
+      );
+      expect(
+        reach?.panelOverflow ?? 0,
+        `the Build panel cannot scroll everything its body spills at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(reach?.bodyShortfall ?? 0);
+      // One gutter of slack: `--hud-build-map-gutter` is what sits between the
+      // block and the hint above it, and it is 8px at the tall viewports and
+      // `--space-1` under `max-height: 700px`.
+      expect(
+        reach?.bodyShortfall ?? 0,
+        `the Build panel's body spills more than the deliveries block at ${width}x${height}: ${reach?.bodyShortfall ?? 0}px against a ${reach?.blockHeight ?? 0}px block`,
+      ).toBeLessThanOrEqual(Math.ceil(reach?.blockHeight ?? 0) + 8);
+    }
+
+    // The numeric fallback expanded: the tallest the Build panel gets, and
+    // the state issue #88 was measured in.
+    //
+    // Named, not positional. All three of this file's reaches for this header
+    // used to be `.hud-build .ui-section__header').last()`, and the queue
+    // block (#348) is a `.ui-section` appended after the numeric fallback --
+    // `hidden` while nothing is queued, so `.last()` resolved to an invisible
+    // button and the click waited out the whole 60s timeout. `.hud-build__coordinates`
+    // exists so a selector can say which section it means.
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+    const expanded = await controlReachability(page);
+    record(expanded);
+    expect(
+      expanded.unreachable,
+      `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
+    ).toEqual([]);
+    const expandedRail = await railIntegrity(page);
+    expect(
+      railInvariants(expandedRail),
+      `the rail with the Build coordinates expanded at ${width}x${height}`,
+    ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+    expect(
+      [...new Set(expandedRail.widths)],
+      `the rail's panels are not all one width with the coordinates expanded at ${width}x${height}`,
+    ).toHaveLength(1);
+
+    // A real wheel gesture, because "the panel is a scroll container" and
+    // "rolling the wheel over the panel scrolls it" are different claims and
+    // only the second is what a player does. Expanded, the Build panel has
+    // more content than box at every viewport here, so this state is where
+    // the gesture can be demanded rather than merely offered.
+    const buildBox = await page.locator('.hud-build').boundingBox();
+    expect(buildBox, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
+    if (buildBox !== null) {
+      await page.mouse.move(buildBox.x + buildBox.width / 2, buildBox.y + buildBox.height / 2);
+      const scrolled = await page.evaluate(() => {
+        const panel = document.querySelector<HTMLElement>('.hud-build');
+        const rail = document.querySelector<HTMLElement>('.hud__rail');
+        if (panel === null || rail === null) return null;
+        panel.scrollTop = 0;
+        rail.scrollTop = 0;
+        return { overflow: panel.scrollHeight - panel.clientHeight };
+      });
+      expect(scrolled?.overflow ?? 0, `the expanded Build panel fits its box at ${width}x${height}`).toBeGreaterThan(
+        0,
+      );
+      await page.mouse.wheel(0, 200);
+      await expect
+        .poll(async () => page.evaluate(() => document.querySelector('.hud-build')?.scrollTop ?? 0), {
+          message: `the wheel did not scroll the Build panel at ${width}x${height}`,
+        })
+        .toBeGreaterThan(0);
+      expect(
+        await page.evaluate(() => document.querySelector('.hud__rail')?.scrollTop ?? -1),
+        `the wheel scrolled the rail rather than the panel at ${width}x${height}`,
+      ).toBe(0);
+    }
+
+    // Folded away again, so the next viewport starts from the same state.
+    if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
+
+    // The buy row open (#89), which is the panel's other player-opened
+    // state and the one whose controls exist in the DOM at every moment and
+    // are laid out at none of the ones above. Without this state the
+    // `neverLaidOut` check below is not merely weaker -- it fails, naming
+    // the quantity stepper and the buy button, which is the gate doing
+    // exactly its job: a control the sweep can never see is a control this
+    // test cannot claim is reachable.
+    const buyToggle = page.locator('.hud-build__buy-toggle');
+    await expect(buyToggle, `the buy disclosure is missing at ${width}x${height}`).toBeVisible();
+    await buyToggle.click();
+    await expect(page.locator('.hud-build__buy')).toBeVisible();
+
+    // The row the player just opened is inside the panel's *visible* box,
+    // measured before anything below scrolls anything. It is about 150px
+    // and the panel is sized to its arrival content, so at four of these
+    // five viewports the panel now has more content than box -- and without
+    // the panel scrolling to the row, the disclosure would reveal a control
+    // below its own fold, which is #174's defect wearing a different hat.
+    // Measured the way #174 measures it: the control's rectangle against
+    // the panel's client box. `controlReachability` below cannot make this
+    // claim, because it calls `scrollIntoView` first.
+    const buyBox = await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      const control = document.querySelector('.hud-build__buy-submit');
+      if (panel === null || control === null) return null;
+      const p = panel.getBoundingClientRect();
+      const c = control.getBoundingClientRect();
+      return {
+        above: c.top - (p.top + panel.clientTop),
+        below: p.top + panel.clientTop + panel.clientHeight - c.bottom,
+      };
+    });
+    expect(buyBox, `the buy button has no box once the row is open at ${width}x${height}`).not.toBeNull();
+    expect(
+      buyBox?.above ?? -1,
+      `the buy button is above the Build panel's visible box at ${width}x${height}`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      buyBox?.below ?? -1,
+      `the buy button is below the Build panel's visible box at ${width}x${height}: opening the row revealed a control the player cannot see`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const buying = await controlReachability(page);
+    record(buying);
+    expect(
+      buying.unreachable,
+      `controls covered by something else with the buy row open at ${width}x${height}`,
+    ).toEqual([]);
+    // The rail still holds, in a state that overflows the panel at four of
+    // these five viewports: the panel absorbs its own excess and the player
+    // can scroll it, which is what separates this from #174's defect --
+    // there the panel arrived clipped, here the player opened it.
+    expect(
+      railInvariants(await railIntegrity(page)),
+      `the rail with the buy row open at ${width}x${height}`,
+    ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+    await buyToggle.click();
+    await expect(page.locator('.hud-build__buy')).toBeHidden();
+    // Closed again, the panel fits, so a scroll left over from reaching a
+    // control in that state cannot survive into the next viewport's
+    // measurement of where the last section is.
+    await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      if (panel !== null) panel.scrollTop = 0;
+    });
+
+    /*
+     * The queue block open (#348), which is this panel's third player-opened
+     * state and the buy row's argument one block down.
+     *
+     * Its Cancel controls are laid out in none of the states above. Without
+     * this the `neverLaidOut` check below fails and names them, which is the
+     * gate working: a control the sweep can never see is a control this test
+     * cannot claim is reachable. Six orders are queued and the clock is
+     * stopped, from before the loop, so there are six of them.
+     *
+     * **"Its three Cancel controls exist in the DOM at every moment" is
+     * withdrawn as of #862, and both halves of it moved.** The rows are still
+     * pooled -- the HUD's busy group has `add` and no `remove`, and a row per
+     * order would grow it without bound over a session -- but the pool's
+     * ceiling is now `BUILD_QUEUE_ROW_LIMIT` = 64 rather than 3, and it is
+     * filled *on demand*: a panel that has never seen a queue holds no rows,
+     * and this one holds exactly the six the orders below need. That is why
+     * the count in this sweep follows the orders rather than the constant, and
+     * it is why the ceiling could move at all -- what the busy group depends
+     * on is that the pool has a ceiling, not that it is built up front.
+     */
+    const queueFold = page.locator('.hud-build__queue > .ui-section__header');
+    await expect(queueFold, `the queue fold is missing at ${width}x${height}`).toBeVisible();
+    await queueFold.click();
+    await expect(page.locator('.hud-build__queue-list')).toBeVisible();
+
+    /*
+     * Every revealed control is inside the panel's *visible* box, measured
+     * the way #174 measures it and for the reason the buy row's own check
+     * above gives: opening a fold that reveals controls below the panel's own
+     * fold has not revealed them.
+     *
+     * **Each row is scrolled to before it is measured, and that is new with
+     * #862.** The sentence this replaces said the opposite -- *"`controlReachability`
+     * below cannot make this claim, because it calls `scrollIntoView` first.
+     * Measured over all three rows rather than one, because they are stacked
+     * and only the last is at risk -- 38px, 90px and 142px of clearance at
+     * 1280x720 today"* -- and it was right about a list whose box held every
+     * row it drew. `.hud-build__queue-list` is now a scroll container capped
+     * at three rows, because the queue's own height is bought out of the
+     * catalogue's floor and there is nothing to buy it a second time, so a
+     * sixth row is *clipped by the list* rather than laid out below the
+     * panel's fold. Those are different defects and only the second is #174:
+     * the first is a list longer than its box, which `controlReachability`'s
+     * own docblock already calls *"not a defect"*.
+     *
+     * So the claim this block still makes, and it is the one worth making, is
+     * that no row is reachable **only** by scrolling something the player
+     * cannot: after the row's own list has been scrolled to it, the control is
+     * inside the panel's visible box at both edges. `railIntegrity` below
+     * carries the other half -- that a box with more content than room is one
+     * a pointer can actually scroll.
+     */
+    const queueBoxes = await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      if (panel === null) return null;
+      const p = panel.getBoundingClientRect();
+      const top = p.top + panel.clientTop;
+      return [...document.querySelectorAll('.hud-build__queue-row')]
+        .filter((row) => row.getClientRects().length > 0)
+        .map((row) => {
+          const control = row.querySelector('.ui-action');
+          if (control === null) return { order: row.getAttribute('data-order') ?? '', above: -1, below: -1 };
+          control.scrollIntoView({ block: 'nearest' });
+          const c = control.getBoundingClientRect();
+          return {
+            order: row.getAttribute('data-order') ?? '',
+            above: Math.round(c.top - top),
+            below: Math.round(top + panel.clientHeight - c.bottom),
+          };
+        });
+    });
+    expect(queueBoxes, `the queue rows have no boxes once the fold is open at ${width}x${height}`).not.toBeNull();
+    expect(queueBoxes?.length ?? 0, `the open queue drew no rows at ${width}x${height}`).toBeGreaterThan(0);
+    for (const row of queueBoxes ?? []) {
+      expect(
+        row.above,
+        `the cancel for ${row.order} is above the Build panel's visible box at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        row.below,
+        `the cancel for ${row.order} is below the Build panel's visible box at ${width}x${height}: opening the fold revealed a control the player cannot see`,
+      ).toBeGreaterThanOrEqual(0);
+    }
+
+    const queued = await controlReachability(page);
+    inventory = queued;
+    record(queued);
+    expect(
+      queued.unreachable,
+      `controls covered by something else with the build queue open at ${width}x${height}`,
+    ).toEqual([]);
+    // The rail still holds in a state that overflows the panel at every
+    // viewport here: the panel absorbs its own excess and the player scrolls
+    // it, which is what separates this from #174's defect -- there the panel
+    // arrived clipped, here the player opened a fold.
+    expect(
+      railInvariants(await railIntegrity(page)),
+      `the rail with the build queue open at ${width}x${height}`,
+    ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+
+    await queueFold.click();
+    await expect(page.locator('.hud-build__queue-list')).toBeHidden();
+    await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      if (panel !== null) panel.scrollTop = 0;
+    });
+
+    /*
+     * The Rooms panel's confirm state, which is that panel's equivalent of
+     * the buy row above and reached the same way: explicitly, because the
+     * two controls in it exist in the DOM at every moment and are laid out at
+     * none of the states visited so far.
+     *
+     * It is driven through the *world* rather than through a harness hook,
+     * because this file drives the assembled application -- so this is also
+     * the only place the whole room gesture is exercised end to end: a real
+     * drag on a real Phaser canvas, arbitrated by the real scene, reported
+     * through the real `RoomTool`, held by the real panel.
+     *
+     * Without this state the `neverLaidOut` check below does not merely get
+     * weaker -- it fails, naming the confirm and discard controls, which is
+     * the gate doing its job: a control the sweep can never see is a control
+     * this test cannot claim is reachable.
+     *
+     * At 375x812 it *did* fail, and the exemption that made it pass is gone:
+     * arming folds the panel to its header, so the drag below has world to
+     * happen in at every viewport this loop visits. The band it uncovers is
+     * measured in "the Rooms panel yields the world it is drawn on" below.
+     */
+    await page.locator('.ui-tab[data-tab="zones"]').click();
+
+    /*
+     * The Rooms panel's typed route (#411, ADR 0038), expanded for exactly
+     * the reason the Build panel's coordinates are expanded above: its
+     * thirteen controls are in the DOM at every moment and laid out at none
+     * of the states visited so far, so without this state the accounting
+     * assertion at the foot of the sweep fails and names all thirteen --
+     * which is the gate doing its job rather than a reason to exempt them.
+     *
+     * They live inside `.hud-rooms__list`, which is a scroll container at
+     * every viewport, so most of them are out of view when the form opens.
+     * That is not a collision and `controlReachability` scrolls each control
+     * into view before hit-testing it, which is the question worth asking:
+     * once it is on screen, can it be pressed.
+     *
+     * Folded again afterwards, because an open form ends the drawing pass --
+     * the panel stays out of the world's way only while the form is closed,
+     * and the drag below needs that fold at 375x812.
+     */
+    const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
+    if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
+    const typedRoute = await controlReachability(page);
+    inventory = typedRoute;
+    record(typedRoute);
+    expect(
+      typedRoute.unreachable,
+      `controls covered by something else with the Rooms coordinates expanded at ${width}x${height}`,
+    ).toEqual([]);
+    if ((await roomCoordinates.getAttribute('aria-expanded')) === 'true') await roomCoordinates.click();
+
+    const roomArm = page.locator('.hud-rooms__arm');
+    await expect(roomArm, `the Rooms panel's arm control is missing at ${width}x${height}`).toBeVisible();
+    await roomArm.click();
+    const dragged = await dragRectangleOnWorld(page);
+    // Every viewport, 375x812 included, and that last one is the change:
+    // arming folds the panel to its header, so the world it is drawn on is
+    // there to be drawn on. Asserted rather than tolerated, so a layout change
+    // that took the world away again -- at any viewport -- fails here instead
+    // of quietly changing what this test covers.
+    expect(dragged, `a room drag found no bare world at ${width}x${height}`).not.toBeNull();
+
+    const roomConfirm = page.locator('.hud-rooms__confirm');
+    await expect(
+      roomConfirm,
+      `a rectangle dragged on the world did not reach the Rooms panel at ${width}x${height}`,
+    ).toBeVisible();
+    // Both axes survived the gesture, which is the property `dragOnWorld`'s
+    // one-axis run cannot show: a square drag committed to an axis would read
+    // `3 x 1` or `1 x 3` here.
+    await expect(
+      page.locator('.hud-rooms__area'),
+      `the dragged area is not a rectangle at ${width}x${height}`,
+    ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
+
+    const roomsReachability = await controlReachability(page);
+    inventory = roomsReachability;
+    record(roomsReachability);
+    expect(
+      roomsReachability.unreachable,
+      `controls covered by something else with a room pending at ${width}x${height}`,
+    ).toEqual([]);
+
+    // Discarded, so the next viewport starts from the state this one did.
+    await page.locator('.hud-rooms__cancel').click();
+
+    /*
+     * The regime editor, opened (#1167, ADR 0113 slice 1).
+     *
+     * **A state of its own rather than a row in the exemption list**, on
+     * exactly the reading the Layout menu's block above states: these toggles
+     * are offered to a player at every viewport and simply live behind a
+     * press, like the Build panel's coordinates and the Rooms panel's typed
+     * route. `NEVER_LAID_OUT_BELOW_720` is for a control that is mechanically
+     * absent -- `.hud__corner` is `display: none` there -- and no rule in
+     * `hud.css` touches this section at any width. Exempting it would have
+     * said a player cannot reach it, which is false, and would have said it
+     * about the only controls the change under test adds, which is the shape
+     * #533's block calls certifying every control on the page except the one
+     * the change is about. (#1201 is the same ruling one step further on: the
+     * alerts fold left that constant because its control was *made* reachable,
+     * not because a state was added. Nothing here needed making.)
+     *
+     * **The day-plan tab first, because the editor is only populated there.**
+     * `regimePanel.setVisible(false)` clears the schedule on the way out
+     * (`src/ui/hud/regime-panel.ts`), and `paintEditor` hides the section with
+     * no schedule to paint; the toggle groups themselves are pooled, so they
+     * stay in the document once built and stay in the inventory for every
+     * later state. That asymmetry -- a control that is in the document from
+     * the fifth state and not from the first -- is what `ControlReachability`
+     * records above.
+     *
+     * `aria-expanded` is read rather than the header clicked blind, the same
+     * handshake the Rooms coordinates and the staff roster use: the section is
+     * created `collapsed: true`, and the flag survives the panel being hidden
+     * and shown again by a tab change, so a blind click is a claim about the
+     * arrival state rather than a reading of it.
+     */
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
+    const regimeEditor = page.locator('.hud-regime__editor > .ui-section__header');
+    await expect(regimeEditor, `the regime editor is missing at ${width}x${height}`).toBeVisible();
+    if ((await regimeEditor.getAttribute('aria-expanded')) === 'false') await regimeEditor.click();
+    /*
+     * Non-vacuity, and it is not ceremony: the editor draws one group per
+     * classification group and draws nothing at all when the schedule has not
+     * arrived, so an empty body would sail through `record` below and leave
+     * the toggles in exactly the state this block exists to end -- laid out in
+     * no state, but with the block present to suggest otherwise.
+     */
+    const editorShape = await page.evaluate(() => {
+      const groups = [...document.querySelectorAll('.hud-regime__editor-list .ui-toggles')];
+      return {
+        groups: groups.length,
+        rows: document.querySelectorAll('.hud-regime__block-list .hud-regime__block-row').length,
+        smallest: Math.min(...groups.map((group) => group.querySelectorAll('.ui-toggles__option').length)),
+      };
+    });
+    // Read off the page rather than compared against a written-down fourteen:
+    // the counts are a classification vocabulary and an action-category
+    // vocabulary, both of which are meant to grow, and a tally in a test is
+    // the sentence that rots first. What is asserted is the *relation* -- one
+    // group per block the panel drew, and more than one category in each, so
+    // `lockedCategoryIdsFor` has something to lock.
+    expect(editorShape.groups, `the open regime editor drew no toggle groups at ${width}x${height}`).toBe(
+      editorShape.rows,
+    );
+    expect(editorShape.groups, `the regime panel drew no blocks at ${width}x${height}`).toBeGreaterThan(0);
+    expect(
+      editorShape.smallest,
+      `a regime editor group offers fewer than two categories at ${width}x${height}`,
+    ).toBeGreaterThan(1);
+    const regimeEditing = await controlReachability(page);
+    inventory = regimeEditing;
+    record(regimeEditing);
+    expect(
+      regimeEditing.unreachable,
+      `controls covered by something else with the regime editor open at ${width}x${height}`,
+    ).toEqual([]);
+    // Shut again, so the next viewport's pixel assertions are taken against
+    // the arrival state the ones in this one were.
+    if ((await regimeEditor.getAttribute('aria-expanded')) === 'true') await regimeEditor.click();
+
+    /*
+     * Somebody on the payroll (#533), which is the Staff panel's equivalent of
+     * the buy row and the queue fold above and is here for the identical
+     * reason: the roster section's own header and its three `Dismiss` controls
+     * exist in the DOM at every moment -- the rows are pooled, so the HUD's
+     * busy group, which has `add` and no `remove`, cannot grow over a session
+     * -- and are laid out in none of the states above, because nothing above
+     * hires anybody. Without this state the accounting assertion at the foot of
+     * the sweep fails and names all four, which is the gate doing its job.
+     *
+     * **Driven rather than exempted, and that is the point of it.** `Dismiss`
+     * is the control issue #533 adds; putting it on
+     * `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` would have certified every control
+     * on this page except the one the change is about. It is reachable by a
+     * gesture this sweep can make -- somebody has to be *hired*, which is one
+     * press -- where the three `Release` rows on that constant need a guard to
+     * be *held*, which nothing here can arrange. That difference is the whole
+     * of why those three stay exempt and these four do not, and the constant's
+     * comment carries the measurement.
+     *
+     * **Last in the viewport's body rather than first.** Every pixel assertion
+     * in this loop is measured in the arrival state, and a hired roster adds a
+     * section to a panel that shares `.hud__side` with the ones being measured.
+     * So the hires happen after all of them and the dismissals below put the
+     * panel back before the next viewport measures anything. That ordering is
+     * belt and braces rather than the thing that makes it safe: the panels in
+     * `.hud__side` swap by tab, so the Staff panel has no box at all while
+     * those assertions are taken. `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` above
+     * carries the ten measurements.
+     *
+     * **The clock is paused, from before the loop, and both halves of this
+     * block rest on it.** ADR 0051's paused drain dispatches a command given
+     * against a stopped clock immediately, so the hires and the dismissals land
+     * with no tick; and because no tick runs, `DeploymentSystem`'s
+     * `assignUnassignedGuards` -- called only from its `update`
+     * (`src/simulation/security/deployment-system.ts:130`) -- never claims any
+     * of them, so all three stay `'unassigned'` and not one becomes a held
+     * guard. That is exactly the state issue #533 was measured in, and it is
+     * why hiring here does not shorten the constant below.
+     */
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
+    await expect(staffMetric, `the prison already has staff at ${width}x${height}`).toHaveText('0');
+    // Enabled on arrival, because `createStaffPanel` preselects
+    // `model.roles[0]` -- so this is one press and not a two-step gesture.
+    // Asserted rather than assumed: a Hire button that arrived disabled would
+    // otherwise reach the loop below as three silent no-ops.
+    const hireStaff = page.locator('.hud-staff__hire');
+    await expect(hireStaff, `the Hire control is not pressable at ${width}x${height}`).toBeEnabled();
+    for (let hired = 1; hired <= STAFF_ROSTER_ROW_LIMIT; hired += 1) {
+      await hireStaff.click();
+      // The metric after every press, so a *refused* hire fails here and says
+      // so. Insufficient funds is the only reason this panel can provoke and
+      // the balance is nowhere near it, but a refusal that went unasserted
+      // would arrive at the reachability call below as a roster one row short
+      // -- i.e. as a control reported never laid out, which is the same red
+      // for a different reason and would read as a layout defect.
+      await expect(
+        staffMetric,
+        `hire ${hired} of ${STAFF_ROSTER_ROW_LIMIT} did not reach the payroll at ${width}x${height}`,
+      ).toHaveText(String(hired));
+    }
+
+    // The section is created `collapsed: true`, so its body has no box until
+    // the player opens it. The same `aria-expanded` handshake the Rooms
+    // panel's typed route above uses, and read rather than toggled blind
+    // because the flag survives the section being hidden between viewports.
+    const rosterFold = page.locator('.hud-staff__roster > .ui-section__header');
+    await expect(rosterFold, `the roster fold is missing at ${width}x${height}`).toBeVisible();
+    if ((await rosterFold.getAttribute('aria-expanded')) === 'false') await rosterFold.click();
+    // `[data-staff]` and not `:not([hidden])`: it is the attribute the panel
+    // writes when a row actually names somebody, so this waits for the
+    // projection to have answered rather than for the row to have a box.
+    const rosterRows = page.locator('.hud-staff__roster .hud-staff__held-row[data-staff]');
+    await expect(rosterRows, `the open roster drew no rows at ${width}x${height}`).toHaveCount(
+      STAFF_ROSTER_ROW_LIMIT,
+    );
+
+
+    const payroll = await controlReachability(page);
+    inventory = payroll;
+    record(payroll);
+    expect(
+      payroll.unreachable,
+      `controls covered by something else with the payroll open at ${width}x${height}`,
+    ).toEqual([]);
+    // The rail still holds with a section the arrival state does not have. The
+    // Staff panel is `overflow-y: auto` (`hud.css`, `.ui-panel.hud-staff`), so
+    // the excess is the panel's own to scroll and never the rail's to hang off
+    // its edge -- which is the claim that makes the placement above safe, so it
+    // is asserted here rather than argued in the comment.
+    expect(
+      railInvariants(await railIntegrity(page)),
+      `the rail with the payroll open at ${width}x${height}`,
+    ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+
+    /*
+     * Emptied again, so the next viewport starts from the state this one did
+     * -- and pressing `Dismiss` is the only way to empty it, which makes the
+     * restoration and the proof that the control does what it says the same
+     * three presses.
+     *
+     * The *first* row every time rather than one row each: the rows are pooled
+     * and republished, so "the second row" is not a stable name for a person --
+     * `staff-panel.ts` says so where it writes `data-staff`. Both the metric
+     * and the row count are waited for between presses, and the second is not
+     * redundant: the metric moves on the counts publication while the rows move
+     * on the projection read that publication triggers, so a press timed
+     * between the two would name somebody already dismissed and be refused as
+     * `dismiss.unknown-staff`.
+     *
+     * **Two presses per dismissal, and this loop used to make one** (issue
+     * #877, the owner's ruling of 2026-09-03). A dismissal is confirmed now:
+     * the first press arms the row and states who is about to be sacked, the
+     * second sends the command. Nothing else about the gesture changed -- same
+     * control, no modal, no second button -- so the count assertions below are
+     * untouched and still fail if either press stops working.
+     *
+     * `.first()` is re-resolved for the second press deliberately rather than
+     * held: it selects `[data-staff]`, the arm publishes nothing, and a
+     * re-resolution that found a different row would mean the roster moved
+     * between the two presses, which is exactly what #877's fix forbids. If
+     * that ever happens the confirmed press lands on a row the arm was not on
+     * and `pressDismiss` arms *that* row instead of sending anything -- so the
+     * metric below does not move and this sweep goes red rather than quiet.
+     */
+    for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
+      await rosterRows.first().locator('.ui-action').click();
+      /*
+       * Armed, not sent -- asserted rather than assumed, so a confirm step
+       * that silently stopped arming would fail here instead of leaving the
+       * dismissals below to pass for the wrong reason.
+       *
+       * **Once per viewport, on the first of the three, and the reason is this
+       * test's budget rather than tidiness.** It is the most expensive test in
+       * the suite, `test.slow()` triples its 60 s and its own comment above
+       * records 14-28 s on an idle machine -- but it has been measured at
+       * **2.9 m against that 3.0 m** on a box running other suites
+       * (`docs/AGENT_WORKFLOW.md`, the contention canaries). The confirm step
+       * already doubles this block's presses from 15 to 30 across the sweep,
+       * which is irreducible; a poll per press is not, so it is spent where it
+       * proves the same thing.
+       */
+      if (remaining === STAFF_ROSTER_ROW_LIMIT - 1) {
+        await expect(
+          page.locator('.hud-staff__roster .hud-staff__held-row[data-dismiss="armed"]'),
+          `the first press did not arm a roster row at ${width}x${height}`,
+        ).toHaveCount(1);
+      }
+      await rosterRows.first().locator('.ui-action').click();
+      await expect(
+        staffMetric,
+        `a dismissal did not take somebody off the payroll at ${width}x${height}`,
+      ).toHaveText(String(remaining));
+      await expect(
+        rosterRows,
+        `the roster still names ${remaining + 1} people after a dismissal at ${width}x${height}`,
+      ).toHaveCount(remaining);
+    }
+    // And with nobody hired the section is gone entirely, which is what the
+    // arrival state is: `paintRoster` hides it on `roster.hired === 0` rather
+    // than leave a header promising a list that cannot exist. Asserted, because
+    // it is the state every pixel assertion at the next viewport is measured
+    // against -- and it is also why the fold is not clicked shut again. A
+    // hidden section has no box, so its `aria-expanded` flag is not a state
+    // anything in this loop can measure, and it cannot be clicked shut while
+    // hidden; the read above reopens it at the next viewport either way.
+    await expect(
+      page.locator('.hud-staff__roster'),
+      `the roster section outlived the last dismissal at ${width}x${height}`,
+    ).toBeHidden();
+
+    await page.locator('.ui-tab[data-tab="build"]').click();
+
+    // Nothing got a free pass by never being laid out. At desktop widths the
+    // Build tab with its coordinates expanded shows every control there is,
+    // so the list is empty; at 720px and below the responsive rules drop
+    // `.hud__corner` outright — the minimap and the alerts section — and
+    // those two controls genuinely cannot be reached at any tab. That is a
+    // deliberate responsive decision (see `hud.css`), named here so it stays
+    // one: it is the honest limit of what this test can claim about a phone.
+    //
+    // `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` is added at *every* viewport, and
+    // for a different kind of reason: not a responsive decision but a state
+    // this sweep cannot put the simulation into, measured and recorded on that
+    // constant. Those three sentences used to read "a gesture this sweep does
+    // not make [...] which since ADR 0036 is a weaker claim than the
+    // simulation gap it used to record", and both halves are now wrong: the
+    // sweep does make the hiring gesture (see "Somebody on the payroll (#533)"
+    // above), and what those rows need is not a gesture but a *tick*, which is
+    // the stronger claim again. Sorted together because the assertion compares
+    // the sweep's document order.
+    const exempt = [
+      ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
+      ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+    ];
+    const neverLaidOut = inventory.controls.filter(
+      (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
+    );
+    expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
+      [...exempt].sort(),
+    );
+    /*
+     * The same fact as a tally, and it is counted over the inventory rather
+     * than over `everMeasured` itself: the set also holds names that existed
+     * in an earlier state and do not survive into the final one, so its raw
+     * size is not a statement about this inventory. Kept although the check
+     * above now implies it, because the number is what a reader checks a
+     * changed shell against.
+     */
+    const measuredInInventory = inventory.ids.filter((id) => everMeasured.has(id)).length;
+    expect(
+      measuredInInventory,
+      `hit-tested only ${measuredInInventory} of ${inventory.controls.length} controls at ${width}x${height}`,
+    ).toBe(inventory.controls.length - exempt.length);
     /*
      * Non-vacuity for the spill assertions above: they sit behind a condition,
      * so a build where the body never spills would satisfy them by never
      * running them -- and that build is the one where the deliveries block has
-     * no box, which is what this ruling is about. Printed as well as asserted,
-     * because the figures are what a later mobile pass will want.
+     * no box, which is what #703 ruling 2 is about. Printed as well as
+     * asserted, because the figures are what a later mobile pass will want.
+     *
+     * **This was one check over all five viewports and is now one per
+     * viewport**, which is the only assertion the #1181 split changed, and it
+     * changed in the direction of more teeth: "somewhere" became "here". It is
+     * safe to demand because every viewport does spill and not marginally --
+     * measured on `e221e927`, in the traced run the split is justified by:
+     * 179px at 1280x720, 44 at 1440x900, 143 at 1024x768, 151 at 900x600 and
+     * 160 at 375x812, against a deliveries block of 180.48-226.86px. A
+     * viewport that stops spilling is a finding about the block's height, not
+     * a flake, and it now says which viewport.
      */
-    console.log(`[703] viewports where the loaded Build panel's body spills: ${JSON.stringify(spilled)}`);
+    console.log(`[703] the loaded Build panel's body at ${width}x${height} spills: ${JSON.stringify(spilled)}`);
     expect(
       spilled.length,
-      "no viewport put the loaded Build panel's body over its box, so the deliveries block has no height and the spill assertions never ran",
+      `the loaded Build panel's body did not go over its box at ${width}x${height}, so the deliveries block has no height there and the spill assertions never ran`,
     ).toBeGreaterThan(0);
-  });
+  }
+
+
+  /**
+   * Five tests, generated from `HUD_LAYOUT_VIEWPORTS` rather than written out,
+   * and that is how the reach of the assertion is kept exactly what it was.
+   *
+   * The whole was `for (const [width, height] of HUD_LAYOUT_VIEWPORTS)` around
+   * the body `everyControlAt` now holds; the parts are `for (const [width,
+   * height] of HUD_LAYOUT_VIEWPORTS)` around a `test` that calls it with the
+   * same pair. The union of the parts is therefore the same iteration of the
+   * same constant, by construction rather than by care, and a sixth viewport
+   * added to that constant grows a sixth test instead of being silently
+   * missed. Per-control coverage did not move either: the accounting pair at
+   * the foot of `everyControlAt` -- `neverLaidOut` against the exemption list,
+   * and `everMeasured.size` against the inventory -- was always **per
+   * viewport**, so each part still proves that every control in the shell was
+   * hit-tested at its own size.
+   */
+  for (const [width, height] of HUD_LAYOUT_VIEWPORTS) {
+    test(`every control can actually be pressed, on every tab at ${width}x${height} (#88)`, async ({ page }) => {
+      test.slow();
+      await aLoadedShell(page);
+      await everyControlAt(page, width, height);
+    });
+  }
 
   /**
    * The Build panel in the state a player *arrives* in, on the assembled page
@@ -4479,10 +5809,11 @@ test.describe('the assembled application', () => {
    * page (`window.lockstateWorldSceneHarness` exists only on the isolated
    * world-scene harness), so this reads the world the same way the playtest
    * did: arm Remove once, as a read-only probe, and press the same fixed
-   * screen point before and after the arrow keys. `RemoveObject`'s own report
-   * names the world tile under wherever the press landed -- if the camera
-   * moved between the two presses, the same screen point names a different
-   * tile, and if it did not, the same tile comes back twice.
+   * screen point before and after the arrow keys. `RemoveWall`'s own report
+   * (`RemoveObject` before ADR 0106 taught the world press to always resolve
+   * an edge) names the world tile under wherever the press landed -- if the
+   * camera moved between the two presses, the same screen point names a
+   * different tile, and if it did not, the same tile comes back twice.
    */
   test('the Build catalogue arrow keys move the catalogue, not the world camera', async ({ page }) => {
     await installCommandTee(page);
@@ -4494,7 +5825,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-build')).toBeVisible();
 
     // Armed once and left alone -- a toggle re-pressed mid-test would un-arm
-    // it, and a probe that fires no `RemoveObject` at all reads as "nothing
+    // it, and a probe that fires no `RemoveWall` at all reads as "nothing
     // moved" rather than as a defect, which is the test bug the 2026-09-01
     // playtest's own script recorded catching in itself.
     await page.locator('.hud-build__remove').click();
@@ -4521,15 +5852,15 @@ test.describe('the assembled application', () => {
     if (aim === null) return;
 
     const probeAt = async (): Promise<{ x: number; y: number } | undefined> => {
-      const already = (await objectCommandsSent(page, 'RemoveObject')).length;
+      const already = (await objectCommandsSent(page, 'RemoveWall')).length;
       await page.mouse.move(aim.x, aim.y);
       await page.mouse.down({ button: 'left' });
       await page.mouse.up({ button: 'left' });
-      return (await objectCommandsSent(page, 'RemoveObject')).slice(already)[0];
+      return (await objectCommandsSent(page, 'RemoveWall')).slice(already)[0];
     };
 
     const before = await probeAt();
-    expect(before, 'the first probe produced no RemoveObject to read a tile from').not.toBeUndefined();
+    expect(before, 'the first probe produced no RemoveWall to read a tile from').not.toBeUndefined();
 
     // Re-focus a catalogue row: arming Remove above, and the world press just
     // taken, both move DOM focus off the catalogue.
@@ -4655,16 +5986,44 @@ test.describe('the assembled application', () => {
     // meaningless numbers and every comparison below would hold.
     expect(before?.panelHeight ?? 0).toBeGreaterThan(150);
     expect(before?.lastText).toBe(localeText('hud.build.coordinates'));
-    // The two figures this panel's whole design rests on, at the viewport they
-    // were measured at. Written out because they are what a reader has to be able
-    // to check the argument against: 291.2px of content in a 291.2px box, and
-    // 7.8px between the last section and the fold.
-    expect(before?.bodyHeight).toBe(291.2);
-    expect(before?.foldSlack).toBe(7.8);
+    /*
+     * The figures this panel's whole design rests on, at the viewport they were
+     * measured at -- written out because they are what a reader has to be able
+     * to check the argument against.
+     *
+     * **All three moved in #1159, and the same 51.8px moved all of them.** The
+     * five sections left the bottom row for a left column at this width (stage
+     * 3 of the identity rollout, the delivery's layout for tablet and desktop),
+     * so the `tabs` grid row is `auto` around nothing and the middle row gains
+     * its 69.2px; `ARRIVAL_PANEL_HEIGHT_PX`'s own block carries the chain from
+     * the strip down. What that does here:
+     *
+     *     body height   291.2 -> 318.5
+     *     fold slack      7.8 ->   7.5
+     *     catalogue      88.0 -> 115.3   (and it leaves its floor)
+     *     catalogue rows  924 ->   924   (unchanged: the registry did not move)
+     *
+     * The rail gains 69.2px here and the strip spends 32.7 of it on a metrics
+     * row of its own (see `hud.css`, and `ARRIVAL_PANEL_HEIGHT_PX` above for
+     * the chain), so what reaches this panel is 27.3px rather than the whole
+     * 69.2.
+     *
+     * **The catalogue line is the one that changed in kind rather than in
+     * degree, and the comment it replaces said so.** It read *"the catalogue is
+     * on its two-row floor over twenty-one rows of content, which is the number
+     * ADR 0031's open question 4 is about"*: at 900x600 the panel used to be
+     * squeezed hard enough that the list sat exactly on
+     * `--hud-build-catalogue-floor`. With 51.8px more rail it does not -- 139.8
+     * is the list's own share of a panel that fits, not a floor. ADR 0031's
+     * open question 4 is about one row of twenty-one being visible and is
+     * **less** pressing at this viewport than it was, not settled: the floor is
+     * still what holds at the viewports that press, and nothing here changes
+     * what happens when the panel is squeezed again.
+     */
+    expect(before?.bodyHeight).toBe(318.5);
+    expect(before?.foldSlack).toBe(7.5);
     expect(before?.panelOverflow).toBe(0);
-    // And the catalogue is on its two-row floor over twenty-one rows of content,
-    // which is the number ADR 0031's open question 4 is about.
-    expect(before?.listHeight).toBe(88);
+    expect(before?.listHeight).toBe(115.3);
     expect(before?.listContent).toBe(924);
 
     const buy = page.locator('.hud-build__buy-submit');
@@ -4803,17 +6162,44 @@ test.describe('the assembled application', () => {
 
       /*
        * And what it costs the panel, stated rather than asserted away. The
-       * catalogue is the panel's only donor and this block is still not allowed
-       * to take from it: the list keeps the same box and the same content it had
-       * with nothing bought, and the numeric fallback is still the last section a
-       * player can see. What absorbs the block is the panel's own scroll, which
-       * is what `overflow-y: auto` on `.ui-panel.hud-build` is for and what the
-       * expanded numeric fallback already produces.
+       * catalogue is the panel's only donor, the list keeps every row it had
+       * with nothing bought, and the numeric fallback is still the last section
+       * a player can see. What absorbs the block is the panel's own scroll,
+       * which is what `overflow-y: auto` on `.ui-panel.hud-build` is for and
+       * what the expanded numeric fallback already produces.
+       *
+       * **The first claim used to be an identity and is a floor now, and the
+       * sentence it replaces is kept because what it rested on is the
+       * interesting part.** It read *"this block is still not allowed to take
+       * from it: the list keeps the same box ... it had with nothing bought"*,
+       * and it was asserted as `toBe(baseline.listHeight)` -- which held
+       * because at 900x600 the panel was squeezed hard enough that the list was
+       * **already on its floor in the arrival state**. That is the "harmless by
+       * coincidence" this file keeps flagging elsewhere, met here in its own
+       * assertion: the identity was true of the geometry rather than of the
+       * rule, and #1159's 51.8px of extra rail (see `before`'s own block above)
+       * ended the coincidence. The arrival catalogue is 139.8px now; with five
+       * deliveries outstanding it is 88px.
+       *
+       * 88px is `--hud-build-catalogue-floor`, which `tokens.css` defines as
+       * `2 * var(--tap-target)` -- two rows, because "one row plus a scrollbar
+       * is not a list you can choose from". So this is pinned as the exact
+       * number the floor resolves to rather than as a `>=`, and the rule it
+       * guards is unchanged and is the one #174 is about: the block may take
+       * the catalogue's slack and may not take its floor.
        */
       await page.setViewportSize({ width, height });
       const baseline = width === 900 && height === 600 ? before : null;
       if (baseline !== null) {
-        expect(withPending?.listHeight, 'the catalogue donated height at 900x600').toBe(baseline.listHeight);
+        // `2 * --tap-target` at this scale. Written as the number rather than
+        // derived, for the reason every other figure in this file is: a
+        // `calc()` that agreed with the stylesheet by construction would prove
+        // nothing about what the browser laid out.
+        expect(withPending?.listHeight, 'the catalogue went below its own two-row floor at 900x600').toBe(88);
+        expect(
+          baseline.listHeight,
+          'the arrival catalogue is on its floor again, so the assertion above no longer distinguishes anything',
+        ).toBeGreaterThan(88);
         expect(withPending?.listContent, 'the catalogue lost rows at 900x600').toBe(baseline.listContent);
         expect(withPending?.panelHeight, 'the panel changed height at 900x600').toBe(baseline.panelHeight);
         expect(
@@ -4976,52 +6362,62 @@ test.describe('the assembled application', () => {
     expect(await deliveries.boundingBox(), 'an empty deliveries block kept its box').toBeNull();
 
     /*
-     * **The identity above is no longer the whole story, as of #749.** The
-     * `Cancel` pressed earlier in this test is one of the four presses that
-     * issue put a success sentence on `.hud__event` for, and `hud.ts`'s
-     * `applyEventNotice` documents that band as never auto-dismissing: it
-     * "is replaced by the next event or emptied when the session ends", and
-     * nothing that happens between the cancel and here -- the remaining
-     * deliveries landing, the fold opening and shutting again -- is either.
-     * So the band is still showing "The delivery was cancelled -- {total}
-     * back." at the point this test measures its final geometry, and that
-     * is a fourth row `.hud` (`grid-template-rows: auto auto auto auto
-     * minmax(0, 1fr) auto`) never had to give space to at the top of this
-     * test, where nothing had happened yet.
+     * **The identity above stopped being the whole story with #749, and is the
+     * whole story again as of #985.** Both directions are recorded rather than
+     * one overwritten (`docs/AGENT_WORKFLOW.md` section 4), because the middle
+     * state is what #985 was filed about.
      *
-     * Asserted directly, so the arithmetic below is traceable to its cause
-     * rather than four re-pinned numbers a reader has to take on faith.
+     * The `Cancel` pressed earlier in this test is one of the four presses
+     * #749 put a success sentence on `.hud__event` for. That band is
+     * `grid-area: event`, an `auto` row of `.hud`
+     * (`grid-template-rows: auto auto auto auto minmax(0, 1fr) auto`), so
+     * while it is up it costs the middle row 32px and the Build panel 24px of
+     * that -- and `hud.ts`'s `applyEventNotice` documented the band as never
+     * auto-dismissing, so nothing between the cancel and here would ever have
+     * taken it back. This block therefore read:
+     *
+     * > `await expect(event, 'the cancellation this test drove should still be
+     * > the band`s last word').toBeVisible();`
+     *
+     * and pinned `panelHeight: 314.1`, `panelOverflow: 24`, `foldSlack: -16.2`
+     * -- a Build panel whose last section, "Enter coordinates", sat 16.2px
+     * *below its own fold on arrival*, with `scrollTop` 0. That is #174's
+     * defect, reproduced here as an expectation because it was what the code
+     * did.
+     *
+     * #985's repair is `EVENT_BAND_HOLD_CEILING_MS`: the band lets go of the
+     * row when nothing has replaced its sentence. So the two surfaces part
+     * company here, and both halves are asserted --
+     *
+     *  - **the alerts list keeps the sentence** (ADR 0084 decisions 1 to 3),
+     *    which is also this block's vacuity guard: without it, a band that had
+     *    never been raised at all would satisfy the assertion below;
+     *  - **the band has let the row go**, and the panel is byte-identical to
+     *    the arrival geometry measured at the top of this test.
+     *
+     * `toBeHidden` waits, so what this asserts is one-directional and not a
+     * race: a band still up after twice its own ceiling is the defect, and a
+     * slow machine costs wall-clock time rather than a false red.
      */
-    const event = page.locator('.hud__event');
-    await expect(event, 'the cancellation this test drove should still be the band`s last word').toBeVisible();
-    await expect(event).toHaveAttribute('data-severity', 'info');
-    await expect(event).toHaveText(
-      localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)),
-    );
+    await expect(
+      page.locator('.hud-alerts__list'),
+      'the cancellation never reached the alerts log, so the band assertion below would be vacuous',
+    ).toContainText(localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)));
+    await expect(
+      page.locator('.hud__event'),
+      'the events band is still holding its grid row long after its hold ceiling (#985)',
+    ).toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
 
     /*
-     * The band is an `auto` row and everything below it shares the grid's one
-     * `minmax(0, 1fr)` row, so 24px of band is 24px the Build panel's own box
-     * no longer has: `panelHeight` and `foldSlack` both fall by exactly that
-     * (338.1 -> 314.1, 7.8 -> -16.2 -- the last section now sits 16.2px past
-     * the fold), and because the panel's *content* did not shrink to match,
-     * `panelOverflow` opens up by the same 24px it used to be flush at. Every
-     * other field -- both catalogue figures, the body's own content height,
-     * the last section's text, the scroll position -- is untouched, which is
-     * the rest of the #703 identity still holding: this block still donates
-     * nothing of its own, on top of or under the fold.
+     * And with the row given back, every field is `before`'s again -- the
+     * panel's height, its fold slack, both catalogue figures, the body's own
+     * content height, the last section's text and the scroll position. That is
+     * *"a pending delivery costs the Build panel nothing"* restored whole,
+     * rather than the seven-of-nine version #749 left it as.
      */
-    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual({
-      panelHeight: 314.1,
-      panelOverflow: 24,
-      panelScrollTop: before?.panelScrollTop,
-      bodyHeight: before?.bodyHeight,
-      bodyContent: before?.bodyContent,
-      listHeight: before?.listHeight,
-      listContent: before?.listContent,
-      lastText: before?.lastText,
-      foldSlack: -16.2,
-    });
+    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual(
+      before,
+    );
   });
 
   /**
@@ -5067,7 +6463,7 @@ test.describe('the assembled application', () => {
       [375, 812],
     ] as const) {
       await page.setViewportSize({ width, height });
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
 
       const geometry = await page.evaluate(() => {
@@ -5179,11 +6575,39 @@ test.describe('the assembled application', () => {
    * quantity, because both sides of that comparison are hand-written.
    */
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
+    /*
+     * `test.slow()` triples the 60 s budget, and unlike its three siblings this
+     * sweep was left without it -- which made it a test that could not pass
+     * rather than a test that sometimes did not.
+     *
+     * Measured 2026-09-04 on an idle machine (no `playwright` or `vitest`
+     * process running, load average **1.55**): at the bare 60 s it failed
+     * `Test timeout of 60000ms exceeded` on the `locator.click` below, and the
+     * call log had already reported the row *resolved*, *"visible, enabled and
+     * stable"* and *"done scrolling"* -- so nothing was being waited on, the
+     * budget had simply run out mid-sweep. The same commit, the same idle
+     * machine, run with `--timeout 180000`: **`1 passed (1.9m)`**, the test
+     * itself 1.8 m. It needs about 108 s and was being given 60.
+     *
+     * The budget is arithmetic here and not a race, which is why raising it
+     * hides nothing: the sweep is 18 rooms x 5 viewports, every step is
+     * awaited, and the work does not vary with timing. Nothing about the
+     * assertions changes -- a mutation of the production code this measures
+     * (`ROOM_NEEDS_NAMED_LIMIT` 4 -> 8) is still red inside the raised budget,
+     * on the fold assertion rather than on the clock.
+     *
+     * `main`'s CI runner does the whole browser suite in about 14 minutes and
+     * has never been red on this test, so the 60 s fitted there and only there.
+     * A canary entry in `docs/AGENT_WORKFLOW.md` recorded that asymmetry for
+     * one afternoon; the budget is the fix and the entry was the workaround.
+     */
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
     const roomIds = await page
@@ -5358,7 +6782,7 @@ test.describe('the assembled application', () => {
       await expect
         .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
         .toBe(width);
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
 
       // Vacuity guard, before a single pixel is trusted: the page really is
@@ -5381,13 +6805,31 @@ test.describe('the assembled application', () => {
         `the Rooms panel's arrival height changed at ${width}x${height}`,
       ).toBe(ARRIVAL_PANEL_HEIGHT_PX[`${width}x${height}`]);
       if (width === 375) {
-        // The recording #312 shipped, kept as an assertion. `TILE_SIZE_PX` is 64
-        // at zoom 1, so "under 64" is "not even one tile", and every authored
-        // room needs at least 2x2 of them.
+        /*
+         * The recording #312 shipped, kept as an assertion. `TILE_SIZE_PX` is
+         * 64 at zoom 1, and every authored room needs at least 2x2 of them, so
+         * what keeps the fold below necessary is that no 128px square of bare
+         * world is reachable on arrival.
+         *
+         * **THIS READ `toBeLessThan(64)` UNTIL 2026-09-16 AND THE SENTENCE
+         * ABOVE IS WHY IT COULD MOVE.** That threshold was "not even one
+         * tile", which is stricter than the reason it was given in the same
+         * comment, and it went red at exactly 64 when the owner's #1192 ruling
+         * took 11.2px off the phone's tab bar (`hud.css`'s
+         * `@media (max-width: 720px)` block; `ARRIVAL_PANEL_HEIGHT_PX` above
+         * carries that chain). One tile of bare world is not a room, and the
+         * scan steps in 16px, so the number is pinned exactly rather than
+         * bounded -- a second gain would show up here rather than being
+         * absorbed by a looser ceiling.
+         */
         expect(
           arrival.largestBareSquare,
           `bare world appeared on arrival at ${width}x${height}, so the fold below may no longer be needed`,
-        ).toBeLessThan(64);
+        ).toBe(64);
+        expect(
+          arrival.largestBareSquare,
+          `a 2x2 room fits in the bare world on arrival at ${width}x${height}, so the fold below is not needed`,
+        ).toBeLessThan(128);
         expect(arrival.gapsBetweenPanels, `the rail's gaps changed at ${width}x${height}`).toEqual([8, 16, 24]);
       }
 
@@ -5495,15 +6937,25 @@ test.describe('the assembled application', () => {
     page,
   }) => {
     // Slow, and the ADR is the reason: two `enclosed` cells cannot be zoned
-    // until their thirty wall segments are built, and this test measures the
-    // readout for *two* rooms because two are what make it report more needs
-    // than it has rows for. See the keyboard specs below for the arithmetic.
+    // until their wall segments are built -- 23 of them, because both drags ask
+    // for `SMALL_ROOM_DRAG_DELTAS_PX` and 3x3 cells are what this test can
+    // afford; see that constant for the 174 s -> 132 s this bought. It measures
+    // the readout for *two* rooms because two are what make it report more
+    // needs than it has rows for, and two 3x3 cells still do: what the panel
+    // reports is `room.cell`'s two missing objects per room, which its
+    // authored requirements decide and its size does not. See the keyboard
+    // specs below for the arithmetic.
+    //
+    // **"their thirty wall segments" was the count before this, and it was
+    // wrong in both directions at once**: the perimeter of two 4x4 cells is 32
+    // and never was 30, and it is 23 now. Recorded because thirty is the number
+    // three other comments in this file were written against.
     test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
     // Vacuity guard, before a single pixel is trusted: this is the shipped
@@ -5582,7 +7034,7 @@ test.describe('the assembled application', () => {
     ] as const) {
       await page.setViewportSize({ width, height });
       await page.locator('.ui-tab[data-tab="build"]').click();
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
       const empty = await needsProbe();
       expect(empty.present, `the readout block is not in the DOM at all at ${width}x${height}`).toBe(true);
@@ -5638,11 +7090,12 @@ test.describe('the assembled application', () => {
      * measured against a strip one row tall and #658 makes the strip two.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
       roomCatalogId: 'room.cell',
+      deltas: SMALL_ROOM_DRAG_DELTAS_PX,
     });
     const firstCell = firstProbe.rectangle;
     await page.locator('.hud-rooms__cancel').click();
@@ -5655,6 +7108,7 @@ test.describe('the assembled application', () => {
         roomCatalogId: 'room.cell',
         minY: secondCellFloor,
         clearOf: [firstCell],
+        deltas: SMALL_ROOM_DRAG_DELTAS_PX,
       })
     ).rectangle;
     await page.locator('.hud-rooms__cancel').click();
@@ -5663,14 +7117,33 @@ test.describe('the assembled application', () => {
     // below would be refused `overlaps-existing-room`.
     expect(secondCell, 'both room drags found the same rectangle').not.toEqual(firstCell);
 
-    await wallRectanglesFromTheKeyboard(page, [firstCell, secondCell]);
+    /*
+     * Typed at the phone viewport, and restored to 1280x800 before the drag
+     * below -- see `WallOrderOptions.orderAt` for the measurement and for why
+     * this is the one caller that asks for it.
+     *
+     * 375x812 is not an arbitrary small box: it is one of the two viewports
+     * the block above just asserted the empty readout at, and one of the three
+     * the block below asserts the filled one at. Nothing between here and
+     * there is measured in pixels, and the two things that are -- the
+     * rectangle this drag has to land on again, and the fold assertions at the
+     * end -- both happen at 1280x800 with the viewport back.
+     */
+    await wallRectanglesFromTheKeyboard(page, [firstCell, secondCell], {
+      orderAt: { width: 375, height: 812 },
+    });
 
     // ---- two cells zoned, and nothing standing in either -------------
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     expect(
-      (await drawRoomRectangle(page, 'the drag for the first cell', { roomCatalogId: 'room.cell' })).rectangle,
+      (
+        await drawRoomRectangle(page, 'the drag for the first cell', {
+          roomCatalogId: 'room.cell',
+          deltas: SMALL_ROOM_DRAG_DELTAS_PX,
+        })
+      ).rectangle,
       'the drag no longer lands on the rectangle its walls were built around',
     ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
@@ -5740,6 +7213,7 @@ test.describe('the assembled application', () => {
           roomCatalogId: 'room.cell',
           minY: secondCellFloor,
           clearOf: [firstCell],
+          deltas: SMALL_ROOM_DRAG_DELTAS_PX,
         })
       ).rectangle,
       'the second drag no longer lands on the rectangle its walls were built around',
@@ -5756,6 +7230,32 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
+    /*
+     * **And neither designation raised the events band** -- the owner's ruling
+     * of 2026-09-05 on issue #966 site 2, measured on the assembled page rather
+     * than at the translator.
+     *
+     * An accepted `ZoneRoom` is acknowledged: it puts a row in the alerts list
+     * in the bottom-left corner, which is what a player reads. It does **not**
+     * take `.hud__event`, and this is the assertion that says so where it
+     * matters -- that band is a grid row, it costs the middle row 32px whatever
+     * raised it, and `event-band-dwell.ts` replaces an incumbent rather than
+     * releasing the row, so once raised the cost stands for the session. Issue
+     * #985 is where that clip is measured and owned; nothing here fixes it, and
+     * the loop below passing at 900x600 is this line's consequence rather than
+     * a repair.
+     *
+     * `toBeHidden` and not "does not say `{room} designated`": nothing else in
+     * this fixture can raise the band -- no prisoner is admitted, no incident
+     * producer has anybody to open one about, and the ladder rungs need a
+     * treasury this prison has not spent -- so hidden is the state, and a
+     * weaker assertion would pass on the band showing something else.
+     */
+    await expect(
+      page.locator('.hud__event'),
+      'a designation raised the events band, which the ruling of 2026-09-05 says it must not',
+    ).toBeHidden();
+
     for (const [width, height] of [
       [1280, 800],
       [375, 812],
@@ -5766,7 +7266,7 @@ test.describe('the assembled application', () => {
       // off, so what is measured is a fresh pull into an unfolded panel --
       // which is also the state a player is in when they come back to look.
       await page.locator('.ui-tab[data-tab="build"]').click();
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
       await expect(page.locator('.hud-rooms__needs')).toBeVisible();
 
@@ -5847,13 +7347,31 @@ test.describe('the assembled application', () => {
       );
       const expectedItem = (objectKey: string, count: string): string =>
         localeText('hud.rooms.needs-object').replace('{count}', count).replace('{object}', localeText(objectKey));
+      /*
+       * **The doorway line came first, and finding it here is what #938 is.**
+       *
+       * This assertion read `[bed, toilet]` and `data-needs` `'4'` until then,
+       * and both were true of what the panel drew and false of the prison:
+       * `wallRectanglesFromTheKeyboard` builds a `wall-brick` on **every**
+       * perimeter segment and no door anywhere, so the two cells this test
+       * zones are rooms no prisoner can ever walk into -- which is the exact
+       * state #938 measured, sitting inside this suite's own fixture, green,
+       * for as long as the readout had no way to say it.
+       *
+       * So this is the fix arriving on the assembled page rather than a
+       * fixture repaired to suit it: three lines per cell now, six unmet
+       * things across the two, and the door named before the furniture because
+       * nothing can be carried into a room nobody can enter.
+       */
       expect(shown.items, `the readout does not enumerate what the room needs at ${width}x${height}`).toEqual([
+        localeText('hud.rooms.needs-doorway'),
         expectedItem('object.bed.name', '1'),
         expectedItem('object.toilet.name', '1'),
       ]);
       // The same figure as a number rather than as prose, so the count above is
-      // not being read off the sentence it is meant to be checking.
-      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');
+      // not being read off the sentence it is meant to be checking. Six: a
+      // door, a bed and a toilet, twice over.
+      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('6');
 
       // 5. Nothing else in the panel was pushed out to make room. The
       // catalogue list is deliberately absent: it is the one box here that is
@@ -5876,6 +7394,80 @@ test.describe('the assembled application', () => {
         `the rail with the room readout showing at ${width}x${height}`,
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
+
+    /*
+     * 6. **And the player is told on the tab the game opens on**
+     *    ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+     *    finding 1).
+     *
+     * Everything above this line is drawn inside `.hud-rooms`, and the
+     * play-test that filed #1006 measured what that costs: this fixture's own
+     * state -- two cells, no door in either, six unmet things -- read as
+     * `1 ROOMS` with no qualifier on OVERVIEW, and eight game days there
+     * produced two messages and not a word about the door. The panel is one
+     * click away and a player who does not click never learns.
+     *
+     * So the assertion is not that the badge exists; it is that the badge is
+     * **laid out on a tab where `.hud-rooms` is not**, off a readout this
+     * thread has to keep pulling for it. That is why it is measured here and
+     * not in `ui-shell.spec.ts`: the harness never runs `src/main.ts`, which is
+     * where the tab gate lives. **The assertion that actually distinguishes the
+     * two behaviours is the second tab hop below**, and the block there says
+     * why the three immediately following this paragraph do not.
+     *
+     * The number is the panel's own: `2` unfinished rooms is `shown.unfinished`
+     * asserted at every viewport above, off the same `HudRoomNeedsViewModel`.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+
+    const notReady = page.locator('.ui-stat[data-metric="rooms"] .ui-badge');
+    // Built from the bundled catalogue rather than typed, for the reason the
+    // room line above is: ADR 0011 puts the key on one side of that boundary
+    // and the text on the other.
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
+    await expect(notReady).toHaveAttribute('data-tone', 'warning');
+    expect(
+      await notReady.evaluate((node) => node.getClientRects().length > 0),
+      'the badge has no box on OVERVIEW, so it says nothing a player can read',
+    ).toBe(true);
+    expect(
+      await page.evaluate(() => document.querySelector('.hud-rooms')?.getClientRects().length ?? -1),
+      'the Rooms panel still has a box on OVERVIEW, so this assertion is not measuring the finding',
+    ).toBe(0);
+
+    /*
+     * **A second hop, and it is the assertion that actually bites.**
+     *
+     * The three above pass on `origin/main`'s `src/main.ts` as well, and the
+     * reason is worth writing down because it is a race rather than a bug in
+     * this test: leaving the Rooms tab used to call `applyRoomNeeds(undefined)`,
+     * but the `read()` started on the Rooms tab resolves *after* that and puts
+     * the readout back with no tab check. The badge is then on screen and
+     * **frozen** -- nothing refreshes it again for the rest of the session --
+     * which is a state the assertions above cannot tell from a live one.
+     *
+     * A second tab change is what separates them. On the old behaviour there is
+     * no read in flight this time, so the clear stands and the badge never
+     * comes back; on this one every tab asks, so it is there on BUILD and still
+     * there on the way back. Both directions are checked, because "it survived
+     * one hop" is exactly the weaker claim the paragraph above describes.
+     */
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+    await expect(
+      notReady.locator('.ui-badge__text'),
+      'the badge went away on a tab nothing refreshes the room readout from',
+    ).toHaveText(localeText('hud.status.rooms-not-ready').replace('{count}', '2'));
+
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
   });
 
   /**
@@ -5926,6 +7518,39 @@ test.describe('the assembled application', () => {
      * (~1.5 ms on a blank page: it is the renderer's frame, not Playwright),
      * which puts the ten orders alone at ~30 s. Measured end to end at ~65 s.
      *
+     * **THE ~65 s WAS TAKEN ON A HOST THIS PARAGRAPH DOES NOT NAME, AND ON THE
+     * ONE `#1008` IS ABOUT IT IS BOTH TOO SMALL AND ABOUT THE WRONG THING.**
+     * Both readings are kept, because the ratio between them is what a reader
+     * needs -- see `wallRectanglesFromTheKeyboard`, which makes the same
+     * correction about the same two figures. Measured on that container -- four
+     * cores, no GPU, Chromium rasterising WebGL through SwiftShader, one worker
+     * -- on 2026-09-08, instrumented at every phase boundary of this test and
+     * then removed again:
+     *
+     * | | before | after |
+     * | --- | --- | --- |
+     * | `Tab`/`Shift+Tab` presses | 205 | **124** |
+     * | time inside those presses | 52.4 s | -- |
+     * | the ten wall orders | 28.5 s | unchanged |
+     * | the crew, at x4 | 10.3 s | unchanged |
+     * | whole test, instrumented | 98.6 s | -- |
+     * | whole test, three repeats | 1.7 / 1.7 / 1.6 m | **1.4 / 1.4 / 1.3 m** |
+     *
+     * So the sentence above is right about *where* the work is and wrong about
+     * what a press costs: here a press and the `page.evaluate` that reads where
+     * it landed are **~250 ms together**, not ~130 ms, and walking focus is
+     * more of this test than the walls and the crew put together. The repeats
+     * are un-instrumented and are the honest comparison; the two blocks ran
+     * back to back at load average 3.4 and 1.7 respectively, and the same
+     * commit measured twice on this box can differ by 40 % (see `#88` above),
+     * so read the *press counts* as the durable number and the minutes as the
+     * effect they had on this host on this day.
+     *
+     * Four hops are the whole of the difference, and every one of them crosses
+     * the HUD rather than walking the typed route -- so `shiftTabTo` takes them
+     * the short way round: 99 presses become 18. That table, and the argument
+     * that no assertion moves, is on `shiftTabTo`.
+     *
      * It is not a timeout raised over a flaky assertion. Nothing below is
      * weakened, nothing polls for longer, and the wall-building itself is
      * asserted at every step -- the purchase, the order count the worker
@@ -5937,15 +7562,31 @@ test.describe('the assembled application', () => {
     await openApp(page);
 
     const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
-    const hops: { target: string; presses: number }[] = [];
+    const hops: { target: string; presses: number; backwards?: boolean }[] = [];
     const hop = async (description: string, target: FocusTarget): Promise<void> => {
       hops.push({ target: description, presses: await tabTo(page, description, target) });
     };
+    /*
+     * The same hop the short way round, recorded the same way.
+     *
+     * Only ever used for a hop *between* panels, which is the set this test
+     * deliberately does not bound -- see `routeHops` at the foot of the test
+     * for why, and `shiftTabTo` for the measured table. Every hop on the typed
+     * route stays forwards, so the numbers this test asserts are the numbers
+     * it asserted before.
+     */
+    const hopBack = async (description: string, target: FocusTarget): Promise<void> => {
+      hops.push({ target: description, presses: await shiftTabTo(page, description, target), backwards: true });
+    };
 
-    // Pre-state: nothing is zoned and nobody is admitted, so the two numbers
-    // this test moves both start where it can see them start.
-    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
-    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('0');
+    // Pre-state: no prison has been created, so no prison has reported, and
+    // the strip says exactly that -- `--`, the clock's own unknown readout
+    // (#1191). Both assertions read `'0'` until then and both are strictly
+    // stronger this way round: a leaked prison publishes counts, and a
+    // published count is never `--`, so the guard still catches everything it
+    // caught and no longer passes on a strip that has heard nothing.
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('--');
+    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('--');
 
     // ---- a prison ----------------------------------------------------
     await hop('the New prison button', {
@@ -5978,7 +7619,11 @@ test.describe('the assembled application', () => {
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
     // ---- the Rooms tab, and what the room is for ----------------------
-    await hop('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
+    // transport's *Pause*, and the tab bar is the last child of `.hud`
+    // (`src/ui/hud/hud.ts:2441`), so forwards is 24 presses and backwards is 4.
+    // `shiftTabTo` carries the table and the argument.
+    await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
@@ -5994,7 +7639,8 @@ test.describe('the assembled application', () => {
      */
     hops.push({
       target: 'the room catalogue',
-      presses: await chooseRoomTypeFromTheKeyboard(page, 'room.cell'),
+      presses: await chooseRoomTypeFromTheKeyboard(page, 'room.cell', { backwards: true }),
+      backwards: true,
     });
     await expect(page.locator('.hud-rooms__list [data-room="room.cell"]')).toHaveAttribute(
       'data-selected',
@@ -6050,9 +7696,16 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
 
     // ---- and the loop the room unblocks -------------------------------
-    await hop('the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    // Both backwards, and these two were the most expensive hops in the test:
+    // 33 presses forwards from the transport to the tab bar and 22 more from
+    // the tab bar down to the Admit control, against 7 and 1 the other way.
+    // The tab is Manage since 2026-09-14 (ADR 0112 decision 3): admissions
+    // moved to the section that holds the staff, so the walk that used to end
+    // on Overview ends one tab further along and the hop counts above are a
+    // record of the route as it was measured, not of this one.
+    await hopBack('the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
-    await hop('the Admit control', { selector: '.hud-intake__admit' });
+    await hopBack('the Admit control', { selector: '.hud-intake__admit' });
     await page.keyboard.press('Enter');
     await expect(metric('prisoners'), 'the admission was refused, so the loop is still broken').toHaveText(
       '1',
@@ -6090,7 +7743,12 @@ test.describe('the assembled application', () => {
       'the form control',
       'the confirm control',
     ]);
-    const summary = hops.map((entry) => `${entry.target}: ${entry.presses}`).join(', ');
+    // The direction is printed, because half of these hops are `Shift+Tab`
+    // now and a bare number beside a message that says "Tab presses" would
+    // read as the wrong thing at the one moment anybody reads it.
+    const summary = hops
+      .map((entry) => `${entry.target}: ${entry.presses}${entry.backwards === true ? ' back' : ''}`)
+      .join(', ');
     expect(
       hops.filter((entry) => routeHops.has(entry.target) && entry.presses > 20).map((entry) => entry.target),
       `a control on the typed route took more than 20 Tab presses to reach (${summary})`,
@@ -6163,14 +7821,24 @@ test.describe('the assembled application', () => {
     page,
   }) => {
     // Slow for the reason the test above is, and the same ten wall segments
-    // behind it: see that comment.
+    // behind it: see that comment, which also carries the measurement of where
+    // the budget goes and the correction to the ~130 ms a press was said to
+    // cost. This test's own numbers on the same container on 2026-09-08:
+    // **221 `Tab`/`Shift+Tab` presses before and 153 after**, 56.3 s of the
+    // 104.3 s instrumented run spent inside them, and three un-instrumented
+    // repeats of each version back to back -- **1.7 / 1.7 / 1.8 m before,
+    // 1.5 / 1.5 / 1.5 m after**. Two hops are most of it and both are
+    // between-panel walks turned round (`shiftTabTo`).
     test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
     await openApp(page);
 
     const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
-    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
+    // `--` rather than `0` for the reason the test above records: nothing has
+    // been created, so nothing has reported (#1191), and a leaked prison would
+    // have published a count rather than left the chip unreported.
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('--');
 
     /*
      * The rectangle, and the walls it now needs before `zone` will take it
@@ -6187,9 +7855,22 @@ test.describe('the assembled application', () => {
      */
     const cell: TileRectangle = { x: 6, y: 6, width: 2, height: 3 };
 
-    /** Type one rectangle and confirm it, whichever mode the panel is in. */
-    const typeRectangleAndConfirm = async (): Promise<void> => {
-      await tabTo(page, 'the coordinates disclosure', {
+    /**
+     * Type one rectangle and confirm it, whichever mode the panel is in.
+     *
+     * `reachBackwards` is which way the *first* hop of the pair goes, and it is
+     * a cost rather than a claim (`shiftTabTo` carries the table). This helper
+     * is called twice from two different places: the first time from the chosen
+     * room type, where the disclosure is the very next tab stop, and the second
+     * from the removal toggle at the other end of the panel, where forwards is
+     * 25 presses and backwards is 15. Nothing after that first hop changes
+     * direction -- the four fields, the form control and the confirm control
+     * are walked forwards both times.
+     */
+    const typeRectangleAndConfirm = async (
+      options: { readonly reachBackwards?: boolean } = {},
+    ): Promise<void> => {
+      await (options.reachBackwards === true ? shiftTabTo : tabTo)(page, 'the coordinates disclosure', {
         selector: '.hud-rooms__coordinates > .ui-section__header',
       });
       if ((await page.locator('.hud-rooms__coordinates').getAttribute('data-collapsed')) === 'true') {
@@ -6218,10 +7899,13 @@ test.describe('the assembled application', () => {
 
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
-    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    // Backwards, for the reason the test above gives at the same point: the
+    // wall helper leaves the keyboard on *Pause* and the tab bar is the last
+    // child of `.hud`, so this is 4 presses instead of 24.
+    await shiftTabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
-    await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
+    await chooseRoomTypeFromTheKeyboard(page, 'room.cell', { backwards: true });
 
     await typeRectangleAndConfirm();
     await tabTo(page, 'the Play control', {
@@ -6232,10 +7916,11 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
 
     // ---- and back out again -------------------------------------------
-    await tabTo(page, 'the removal toggle', { selector: '.hud-rooms__remove' });
+    // Backwards from the transport, 8 presses against 32.
+    await shiftTabTo(page, 'the removal toggle', { selector: '.hud-rooms__remove' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms__remove')).toHaveAttribute('aria-pressed', 'true');
-    await typeRectangleAndConfirm();
+    await typeRectangleAndConfirm({ reachBackwards: true });
     await expect(metric('rooms'), 'the typed rectangle never reached UnzoneRoom').toHaveText('0');
 
     expect(
@@ -6509,7 +8194,7 @@ test.describe('the assembled application', () => {
     /*
      * ---- Designate, the one that is not the busy group's to give back ----
      */
-    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
     await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
@@ -6559,7 +8244,7 @@ test.describe('the assembled application', () => {
     );
 
     // ---- Hire ------------------------------------------------------------
-    await tabTo(page, 'the Security tab', { selector: '.ui-tab[data-tab="security"]' });
+    await tabTo(page, 'the Security tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-staff')).toBeVisible();
     await tabTo(page, 'a staff role row', { selector: '.hud-staff__list [data-staff-role]' });
@@ -6595,7 +8280,13 @@ test.describe('the assembled application', () => {
     });
 
     // ---- Admit -----------------------------------------------------------
-    await tabTo(page, 'the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    // The same tab the Hire control above is on, since the owner's ruling of
+    // 2026-09-14 put admissions beside the staff. The tab press is kept rather
+    // than dropped: re-selecting the active tab is idempotent
+    // (`hudShellReducer`), and what this walk measures is the route a keyboard
+    // takes from the tab bar to a control, not how few presses the test can
+    // get away with.
+    await tabTo(page, 'the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
     const admit: FocusTarget = { selector: '.hud-intake__admit' };
     await tabTo(page, 'the Admit control', admit);
@@ -7091,10 +8782,21 @@ test.describe('the assembled application', () => {
           .map((message) => ({ kind: message.kind, payload: message.payload }));
       });
 
-    // No session, so nothing has been published and the strip shows an empty
-    // prison.
+    // No session, so nothing has been published and the strip says so: `--`,
+    // the clock's own unknown readout, rather than a zero.
+    //
+    // **This assertion read `'0'` until #1191 and moving it makes this test
+    // stronger rather than weaker, which is why it moved.** The subject of
+    // this test is that the counts come from the worker and not from zeros
+    // baked into the page, and a strip reading `0` before any publication is
+    // exactly what a baked-in zero looks like -- the old assertion was
+    // satisfied by the defect it was written to exclude. `--` cannot be
+    // produced by a hardcoded count, so the pre-publication state now
+    // discriminates. The published zero is still asserted twenty lines below,
+    // against the worker's own `counts.prisoners === 0`: a prison that really
+    // reports nothing in it still states that.
     expect(await publications()).toEqual([]);
-    await expect(metric('prisoners')).toHaveText('0');
+    await expect(metric('prisoners')).toHaveText('--');
 
     // A session exists from the moment a prison is created, and the worker
     // publishes its counts without being asked.
@@ -7560,7 +9262,7 @@ test.describe('the assembled application', () => {
 
     // Nothing has been sent yet, so the press below is the only thing that can
     // have produced what is asserted after it.
-    expect(await objectCommandsSent(page, 'RemoveObject')).toEqual([]);
+    expect(await objectCommandsSent(page, 'RemoveWall')).toEqual([]);
 
     await remove.click();
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
@@ -7568,7 +9270,10 @@ test.describe('the assembled application', () => {
     expect(pressed, 'the HUD left no bare world to press at 375x812').toBe(true);
 
     // **One press, one removal command, and no keyboard anywhere in this test.**
-    const removals = await objectCommandsSent(page, 'RemoveObject');
+    // `RemoveWall`, not `RemoveObject`, since ADR 0106: a world press with
+    // Remove armed always resolves an edge and reaches the object arm from
+    // inside that command's own session-command branch.
+    const removals = await objectCommandsSent(page, 'RemoveWall');
     expect(removals).toHaveLength(1);
     expect(Number.isInteger(removals[0]?.x)).toBe(true);
     expect(Number.isInteger(removals[0]?.y)).toBe(true);
@@ -7599,7 +9304,7 @@ test.describe('the assembled application', () => {
     await expect(remove).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
     expect(await pressOnWorld(page)).toBe(true);
-    expect(await objectCommandsSent(page, 'RemoveObject')).toHaveLength(1);
+    expect(await objectCommandsSent(page, 'RemoveWall')).toHaveLength(1);
     // And nothing was placed either, which is the half the old shape could not
     // assert: it had just disarmed a tool that #689 left armed to place.
     expect(await objectCommandsSent(page, 'PlaceObject')).toEqual([]);
@@ -7670,7 +9375,7 @@ test.describe('the assembled application', () => {
       })
       .toBe('simulation');
     await expect(band).toBeVisible();
-    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
     // No control is marked: the press was on the world, and the command was
     // accepted before the simulation refused it several ticks later.
     await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
@@ -7702,9 +9407,9 @@ test.describe('the assembled application', () => {
     // of that catalogue rather than typed here: ADR 0011 puts the key on one
     // side of the boundary and the text on the other, so a test that hard-coded
     // the English would stay green while the player read something else.
-    await expect(alertRow).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    await expect(alertRow).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
     // A localized sentence, not the wire vocabulary (ADR 0011).
-    await expect(alertRow).not.toContainText('remove-object.');
+    await expect(alertRow).not.toContainText('remove-wall.');
     await expect(alertRow).not.toContainText('nothing-to-remove');
     // The log keeps its job. The band holds one sentence; the list holds this
     // row beside any standing `protocol/error` row, which is why it is not
@@ -7829,8 +9534,8 @@ test.describe('the assembled application', () => {
     expect(measured.alertRowPresent).toBe(true);
     expect(measured.alertRowLaidOut, 'the corner is display:none at 375px, so the row has no box').toBe(false);
 
-    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
-    await expect(band).not.toContainText('remove-object.');
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
+    await expect(band).not.toContainText('remove-wall.');
     await expect(band).not.toContainText('nothing-to-remove');
   });
 
@@ -8524,6 +10229,301 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText(
       localeText('hud.alert.refusal.purchase.insufficient-funds'),
     );
+  });
+
+  /**
+   * **The one press that is refused only because the prison is fresh and
+   * unfurnished — the starter rung, measured at its own boundary (#1257).**
+   *
+   * ## What was not covered, and how that was established
+   *
+   * `src/main.ts` judges a purchase against
+   * `pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+   * freshUnfurnishedPrison(counts))`, and that third argument is the whole of
+   * the owner's starter-rung ruling of 2026-09-01 on this thread: a fresh,
+   * unfurnished prison's press meets **-1,185** where a furnished one meets
+   * **-1,250**. Before this test the argument could be replaced with a literal
+   * `false` at both call sites in `src/main.ts` and the entire suite stayed
+   * green — so the rung existed in the tree and nothing measured it where it
+   * decides anything.
+   *
+   * Neither of the two places that look like they cover it does.
+   * `ui-buy-button-affordability.spec.ts` and
+   * `ui-hire-button-affordability.spec.ts` mount `ui-harness.html` and push a
+   * view model through `setHudViewModel`, so `src/main.ts` is never loaded by
+   * them at all; and no unit test can take it, because `vitest.config.ts` is
+   * `environment: 'node'` and `src/main.ts` touches `document` — which is the
+   * stated reason `src/ui/affordability.ts` exists as a separate module.
+   * The three sibling tests here that *do* drive real presses through this
+   * pre-flight work nowhere near either rung: a charge of 13,160 against a
+   * balance of 11,840, and one of 26,280 against 25,000 -- 1,320 and 30 past
+   * the *mature* floor respectively, and the second one is the closest any of
+   * them comes. Every one of them is therefore refused, or accepted, by both
+   * rungs alike.
+   *
+   * ## Why 655 bricks, and why one brick fewer
+   *
+   * The two rungs are 65 minor units apart — one plank, which is
+   * `STARTER_RUNG_MARGIN_MINOR_UNITS`'s own derivation — so a press is
+   * mutation-sensitive only if its total lands **inside that gap**. At 40 a
+   * brick, 655 bricks is 26,200 against 26,185 of starter room and 26,250 of
+   * mature room: the starter rung refuses it by 15 and the mature rung would
+   * accept it by 50. Both bounds are asserted below rather than left to the
+   * reader, so a later move of either constant that closes the gap fails on
+   * the arithmetic instead of quietly returning this test to the
+   * insensitivity it was written to end.
+   *
+   * 654 bricks is then pressed and **accepted**, which is what makes the
+   * refusal above a statement about the boundary rather than about a control
+   * that had latched: one brick either side of one threshold, in one session,
+   * with nothing else changed.
+   *
+   * ## "Fresh, unfurnished" is the worker's answer, not a re-derived one
+   *
+   * This session presses `New prison` and zones nothing, so
+   * `RoomInstanceRegistry.totalResidentCapacity` is `0` for its whole life and
+   * `projectStatusStrip` publishes `isFreshUnfurnishedPrison: true` — which
+   * `freshUnfurnishedPrison` reads straight through. That is asserted from the
+   * page rather than assumed: the FUNDS badge counts room to the same rung
+   * (`overdraftRemaining`, `src/ui/hud/projection.ts`), so after the accepted
+   * press it reads `25 left` — the distance from -1,160 to **-1,185**, and a
+   * figure the mature rung cannot produce.
+   */
+  test('a fresh, unfurnished prison is refused one brick past the starter rung that a furnished one would be sold (#771, #1257)', async ({
+    page,
+  }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison, and no room is ever zoned in it: that is what keeps
+    // `totalResidentCapacity` at 0 and the published predicate `true`.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    const unitPrice = unitPriceOf('item.brick');
+    // The two rungs, composed from the same function the host and the worker
+    // both compose theirs from, so this moves with the constants rather than
+    // restating them.
+    const starterSpendable =
+      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
+    const matureSpendable =
+      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
+    // The starter rung is the *shallower* one, so being fresh makes the host
+    // stricter and not more generous. Stated as an assertion because the
+    // direction is the thing a reader gets wrong.
+    expect(starterSpendable).toBeLessThan(matureSpendable);
+
+    const refusedQuantity = Math.floor(starterSpendable / unitPrice) + 1;
+    const acceptedQuantity = refusedQuantity - 1;
+    // **The arithmetic this test is made of.** The refused press must sit
+    // strictly inside the 65-minor-unit gap between the rungs -- past the
+    // starter one and within the mature one -- or it is another press that
+    // both rungs answer the same way, which is the gap this test exists to
+    // close.
+    expect(refusedQuantity * unitPrice).toBeGreaterThan(starterSpendable);
+    expect(refusedQuantity * unitPrice).toBeLessThanOrEqual(matureSpendable);
+    expect(acceptedQuantity * unitPrice).toBeLessThanOrEqual(starterSpendable);
+
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeHidden();
+
+    await openBuyRow(page);
+    const buy = page.locator('.hud-build__buy-submit');
+
+    // ---- one brick past the starter rung: refused, and never sent ----------
+    await setBuyQuantity(page, refusedQuantity);
+    // `hud.build.buy-submit` interpolates the count raw and formats only the
+    // total -- the same shape the sibling tests above assert literally.
+    await expect(buy).toHaveText(`Buy ${refusedQuantity} × Brick · ${fundsText(refusedQuantity * unitPrice)}`);
+    await pressBuyExpectingRefusal(page);
+
+    await expect(refusal).toBeVisible();
+    // **This thread refused it, and the assertion is written as the negative
+    // because that is the shape the failure takes.** With the freshness
+    // argument replaced by `false` the pre-flight accepts 26,200, the command
+    // is sent, and the worker -- which reads `totalResidentCapacity === 0`
+    // itself and is therefore never fooled -- refuses it and paints its own
+    // line here with `data-source="simulation"`. A refusal on the band is
+    // then still visible, which is exactly why "visible" is not the claim.
+    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
+    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
+    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials-past-floor'));
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    await expect(buy).toHaveAttribute('data-action-failed', 'true');
+    // **The load-bearing assertion.** The pre-flight threw instead of
+    // submitting, so nothing left this thread -- which is exactly what stops
+    // being true if the freshness argument is replaced with `false`: the
+    // mature rung accepts 26,200 and this press becomes a command.
+    expect(await purchasesSent(page)).toEqual([]);
+    // And no money moved on the strip either.
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    // ---- one brick fewer: accepted, spent, and the rung is on the badge ----
+    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - acceptedQuantity * unitPrice;
+    expect(settled).toBeLessThan(0);
+    await setBuyQuantity(page, acceptedQuantity);
+    expect(
+      await readBuyAvailability(page),
+      'the Buy button went on advising against a press the starter rung accepts',
+    ).toEqual({ saysItCannotAct: false, pressable: true });
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await buy.click();
+
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the affordable press was never dispatched, so the balance never moved',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(settled));
+    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: acceptedQuantity }]);
+
+    // The badge counts room to the rung the press was judged against, so this
+    // is the worker's own `isFreshUnfurnishedPrison` read back off the page:
+    // 25 to the starter floor, where the mature one would say 90.
+    await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
+      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
+    );
+  });
+
+  /**
+   * **The same boundary on the other call site: a hire (#771, #1257).**
+   *
+   * `src/main.ts` has two pre-flights that read the starter rung, and the test
+   * above only presses one of them. This presses the other, and it is not a
+   * copy — a hire has no quantity field, so the boundary cannot be dialled in
+   * on the control. The prison is walked to the balance instead: 654 bricks
+   * settles it at **-1,160**, twenty-five short of the starter rung, and the
+   * cheapest role in `src/content/staff-role-catalog.ts` charges **60** — one
+   * day of `wageBand.minPerDay`, which is what `staffHireCostMinorUnits`
+   * returns. -1,220 is past -1,185 and inside -1,250, so the starter rung
+   * refuses the hire and the mature rung would sell it.
+   *
+   * Both bounds are asserted from the constants rather than written out, and
+   * the role is chosen by price rather than by name for the same reason: a
+   * later change to the catalogue that moves the cheapest hire out of the
+   * 65-unit gap fails here on the arithmetic instead of turning this back into
+   * a press both rungs answer alike.
+   *
+   * **The clock is stopped again before the hire.** ADR 0051 dispatches a
+   * command given against a paused clock at once, so the purchase still
+   * settles — and a running clock past that point is a second thing that could
+   * move the balance the hire is judged against.
+   */
+  test('a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)', async ({
+    page,
+  }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // No room is zoned here either, so `totalResidentCapacity` is 0 and the
+    // published `isFreshUnfurnishedPrison` is `true` for the whole test.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
+    const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
+    const unitPrice = unitPriceOf('item.brick');
+    // The largest purchase the starter rung allows, which is also the balance
+    // that puts the cheapest hire inside the gap between the two rungs.
+    const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
+    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
+
+    /*
+     * **The role is `staff-role.guard` because it is the only one the HUD can
+     * hire**, not because it is the cheapest in the catalogue: `src/main.ts`
+     * projects `HIREABLE_STAFF_ROLE_IDS`, one entry long, into the view model
+     * the Staff panel lists. The catalogue declares eight roles and seven of
+     * them have no control on the page, so choosing by price would pick
+     * `staff-role.kitchen-staff` and press a row that does not exist --
+     * measured, and the reason this comment is here.
+     *
+     * The charge is still read rather than written down:
+     * `staffHireCostMinorUnits` is one day of `wageBand.minPerDay`, which is
+     * 80 for this role.
+     */
+    const staffRoleId = 'staff-role.guard';
+    const hireCharge = staffHireCostMinorUnits(staffRoleId);
+    expect(hireCharge, `${staffRoleId} is not in the staff catalogue, so no hire can be driven`).toBeDefined();
+    // **The arithmetic this test is made of**: the hire must land past the
+    // starter rung and within the mature one, or it is a press both rungs
+    // answer the same way.
+    expect(settled - hireCharge!).toBeLessThan(starterFloor);
+    expect(settled - hireCharge!).toBeGreaterThanOrEqual(matureFloor);
+
+    // ---- walk the prison to -1,160 ----------------------------------------
+    await openBuyRow(page);
+    await setBuyQuantity(page, quantity);
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await page.locator('.hud-build__buy-submit').click();
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the purchase that walks the balance to the rung was never dispatched',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(settled));
+    // Stopped again, so nothing else can move the balance under the hire.
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // ---- the hire: refused here, and never sent ---------------------------
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
+    await expect(staffMetric).toHaveText('0');
+    // The panel preselects `model.roles[0]`, and this is the one role in it --
+    // so the click is a no-op on the selection and an assertion that the row
+    // the hire below charges for is the row on the page.
+    await expect(page.locator(`[data-staff-role="${staffRoleId}"]`)).toHaveCount(1);
+    await page.locator(`[data-staff-role="${staffRoleId}"]`).click();
+
+    const hire = page.locator('.hud-staff__hire');
+    // The same pair `pressBuyExpectingRefusal` asserts of the Buy button, and
+    // for the same reason (#772, #799): the control has to say it cannot act
+    // and still be pressable, or the sentence that explains the limit is
+    // unreachable.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const button = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+            return {
+              saysItCannotAct: button?.getAttribute('aria-disabled') === 'true',
+              pressable: button !== null && !button.disabled,
+            };
+          }),
+        {
+          message:
+            'before a hire the starter rung refuses, the Hire control must say it cannot act and must still be pressable',
+        },
+      )
+      .toEqual({ saysItCannotAct: true, pressable: true });
+    await hire.click({ force: true });
+
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    // This thread refused it. Under the mutation the pre-flight accepts the
+    // hire, the command is sent, and the worker -- which is never fooled --
+    // refuses it and paints its own line with `data-source="simulation"`.
+    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
+    await expect(refusal).toHaveAttribute('data-action', 'hire-staff');
+    await expect(refusal).toContainText(localeText('hud.refusal.hire-staff-past-floor'));
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    await expect(hire).toHaveAttribute('data-action-failed', 'true');
+    // Nothing left this thread, and nobody reached the payroll.
+    expect(await hiresSent(page)).toEqual([]);
+    await expect(staffMetric).toHaveText('0');
+    await expect(funds).toHaveText(fundsText(settled));
   });
 
   /*
@@ -9876,7 +11876,13 @@ test.describe('the assembled application', () => {
     // `toContain`: a label that still carried its key would contain the words.
     expect(chip!.label).toBe(localeText('classification-group.high-risk.name'));
     expect(chip!.label).toBe('High Risk');
-    expect(chip!.value, 'no prison exists, so nobody is on the restricted regime').toBe('0');
+    // `--` and not `0`: no prison exists, so none has reported, and since
+    // #1191 the strip states the absence rather than a count it was never
+    // given. The chip's *number* is proven from a real publication in *the HUD
+    // counts come from the worker rather than from zeros baked into the page*
+    // above, which is where a 9 arrives over the real decoder; what this line
+    // is for is that the chip is on screen and carries a readout at all.
+    expect(chip!.value, 'no prison has reported, so the high-risk chip has no number to show').toBe('--');
 
     /*
      * And no raw key anywhere in the strip, which is the check that makes the
@@ -9911,7 +11917,7 @@ test.describe('the assembled application', () => {
     const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__coordinates > .ui-section__header').click();
     await expect(page.locator('.hud-rooms__coordinates')).toHaveAttribute('data-collapsed', 'false');
@@ -9943,7 +11949,9 @@ test.describe('the assembled application', () => {
      * puts eight prisoners outside the window instead of four.
      */
     const ADMISSIONS = 12;
-    await page.locator('.ui-tab[data-tab="overview"]').click();
+    // Manage since 2026-09-14: the Admit control moved to the section that
+    // holds the staff (ADR 0112 decision 3).
+    await page.locator('.ui-tab[data-tab="manage"]').click();
     for (let admission = 0; admission < ADMISSIONS; admission += 1) {
       await page.locator('.hud-intake__admit').click();
     }
@@ -9978,7 +11986,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
 
     // ---- and the four rows the Regime panel draws ----------------------
-    await page.locator('.ui-tab[data-tab="regime"]').click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
     const roster = page.locator('.hud-regime__roster');
     await expect(roster).toBeVisible();
 
@@ -10005,7 +12013,7 @@ test.describe('the assembled application', () => {
      */
     const rereadRoster = async (): Promise<void> => {
       await page.locator('.ui-tab[data-tab="overview"]').click();
-      await page.locator('.ui-tab[data-tab="regime"]').click();
+      await page.locator('.ui-tab[data-tab="day-plan"]').click();
     };
 
     // The whole population reached the projection's `total`, so the four rows

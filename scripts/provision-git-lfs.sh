@@ -20,8 +20,15 @@
 # `.github/workflows/ci.yml` for why an explicit pull is the better shape
 # regardless.
 #
-# IDEMPOTENT. It checks before it acts, so a re-run does no apt work and exits
-# in well under a second.
+# IDEMPOTENT, AND UNLIKE `provision-postgres.sh` IT ALWAYS WAS. It checks before
+# it acts, so a re-run does no apt work and exits in well under a second -- and
+# the check is `command -v git-lfs` with the whole elevation block INSIDE it, so
+# a host that already has the binary never asks for root and never fails for
+# want of it. That is the shape `provision-postgres.sh` was given on 2026-09-07
+# after its own top-level root gate turned `main` red on a runner that needed
+# nothing installed. Recorded here because this file is the example that was
+# already right, and the next person to move an elevation check should copy it
+# rather than rediscover it.
 #
 # NO THIRD-PARTY APT REPOSITORY. `git-lfs` is in the distribution archive
 # (3.7.1-1 on Ubuntu 26.04); nothing here adds an external source or pins a
@@ -48,7 +55,9 @@ if ! command -v git-lfs >/dev/null 2>&1; then
   elif sudo -n true >/dev/null 2>&1; then
     as_root() { sudo -n "$@"; }
   else
-    fail "git-lfs is missing and this needs root or passwordless sudo to install it"
+    fail "git-lfs is missing and this shell has neither root nor passwordless sudo to install it.
+[provision-git-lfs] This repository cannot fix that -- it is the machine's state. Either grant the runner user passwordless sudo, or pre-provision the host so this script has nothing to do, as root: apt-get install -y git-lfs
+[provision-git-lfs] It is in the distribution archive; no third-party apt source is needed."
   fi
 
   command -v apt-get >/dev/null 2>&1 \

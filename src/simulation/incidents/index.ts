@@ -1,3 +1,4 @@
+export * from './default-gangs';
 export * from './escape';
 export * from './flashpoint';
 export * from './gangs';

@@ -203,6 +203,45 @@ function watched(shape: CanteenShape): WatchedRun {
   };
 }
 
+/**
+ * **The first run of each shape, computed once for the whole file.**
+ *
+ * `watched` is a 14,000-tick, six-prisoner simulation sampled every tick, and
+ * three of the four cases below want the same three of them. Before this memo
+ * the file ran twelve of those simulations where the distinct set is three:
+ * the unmet-threshold case and the travel-time case build `none`, `small` and
+ * `large` each, from the same seed and the same commands, and throw both sets
+ * away -- and the determinism case below built a *third* copy of each as its
+ * `first` before building the second it actually compares against.
+ *
+ * Measured on this tree, this file alone on an idle four-core container, two
+ * runs each way: **1.50s / 1.34s of test time before, 0.81s / 0.79s after**,
+ * and the determinism case itself **580ms / 549ms before, 313ms / 307ms
+ * after**. The travel-time case, which was three whole duplicate simulations,
+ * now reports 1ms. Nothing here is a timeout accommodation --
+ * the work is not being given more room, it is not being done a second time.
+ *
+ * **Lazy and keyed, so no case depends on another having run.** Each entry is
+ * built by whichever case asks for it first; running any single case with
+ * `-t` builds exactly what that case needs and nothing else. What the memo
+ * hands back is a plain `WatchedRun` record of numbers -- no `SimulationRuntime`
+ * escapes it and nothing downstream can step or mutate a shared simulation.
+ *
+ * **The determinism case does not use it for both halves**, which is the one
+ * place that would have been a weakened assertion rather than a saved run: its
+ * `second` is still a genuine fresh `watched(shape)`, so the comparison is
+ * still between two independently executed simulations.
+ */
+const FIRST_RUNS = new Map<CanteenShape, WatchedRun>();
+
+function firstRun(shape: CanteenShape): WatchedRun {
+  const cached = FIRST_RUNS.get(shape);
+  if (cached !== undefined) return cached;
+  const fresh = watched(shape);
+  FIRST_RUNS.set(shape, fresh);
+  return fresh;
+}
+
 describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen that seats everybody', () => {
   it('confirms the three prisons really differ only by the canteen, and that the meal actions themselves rank as the catalogue says', () => {
     const meals = DEFAULT_ACTIONS.filter((action) => action.category === 'meal');
@@ -218,9 +257,9 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
   });
 
   it('never crosses the ADR 0064 unmet-need threshold in any of the three -- the hypothesis is false by the cost the game actually charges', () => {
-    const none = watched('none');
-    const small = watched('small');
-    const large = watched('large');
+    const none = firstRun('none');
+    const small = firstRun('small');
+    const large = firstRun('large');
 
     expect(small.diningCeiling, 'one 3-wide dining table against six prisoners').toBe(3);
     expect(large.diningCeiling, 'two 3-wide dining tables, six seats for six prisoners').toBe(6);
@@ -251,15 +290,32 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     // Exact, deterministic measurements (one seed, one command order, no RNG
     // on this path) -- pinned so a re-baseline has to explain the new numbers.
     expect(none.lowestHunger).toEqual([178.5, 178.5, 178.5, 178.5, 178.5, 178.5]);
-    // 173.5 in the fifth slot until issue #588's hire; see `watched`.
-    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 176.5, 178.5]);
-    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 178.5]);
+    /*
+     * **173.5 in the fifth slot until issue #588's hire; see `watched`. Both
+     * canteen shapes moved again with
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md).**
+     * All six prisoners here are housed, so what that decision reaches is the
+     * *window before* each of them is: an arrival at intake stage
+     * `accommodation-assignment` is now considered by `ActionSystem` and asks
+     * for a canteen seat it previously could not ask for, so the six reach
+     * their first meals in a slightly different order.
+     *
+     * **A first attempt at this note claimed `none` and `large` were both
+     * unchanged, and the run refuted half of it** -- `large`'s sixth slot moved
+     * from 178.5 to 176.5 too. The correction is kept rather than smoothed
+     * because it is the useful half: `none` is the shape with **no canteen at
+     * all**, and it is the only one that did not move by a single level, which
+     * is what says the whole effect is contention for a seat rather than
+     * anything about the decision reaching a housed prisoner's day.
+     */
+    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 173.5, 176.5]);
+    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 176.5]);
   });
 
   it('finds the real effect is travel time, not capacity: `large` travels more and finishes lower than `small`', () => {
-    const none = watched('none');
-    const small = watched('small');
-    const large = watched('large');
+    const none = firstRun('none');
+    const small = firstRun('small');
+    const large = firstRun('large');
 
     // Any canteen at all inserts round-trip travel a cell-only prison never
     // pays: `action.eat-in-cell` resolves by instance id and a resident
@@ -292,13 +348,19 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     expect(large.travellingPhaseTicks).toBe(8_140);
     // 2,098,577 until issue #588's hire; see `watched`.
     expect(none.hungerDeficitLevelTicks).toBe(2_096_320);
-    expect(small.hungerDeficitLevelTicks).toBe(2_221_400);
-    expect(large.hungerDeficitLevelTicks).toBe(2_233_320);
+    // 2,221,400 and 2,233,320 until ADR 0102, for the reason the case above
+    // gives: the two shapes that have a canteen moved, by 1,700 and 8,760
+    // level-ticks out of 2.2 million, and the shape with no canteen did not
+    // move at all.
+    expect(small.hungerDeficitLevelTicks).toBe(2_223_100);
+    expect(large.hungerDeficitLevelTicks).toBe(2_242_080);
   });
 
   it('produces the identical loop on a second run of each shape, so nothing here is nondeterministic', () => {
     for (const shape of ['none', 'small', 'large'] as const) {
-      const first = watched(shape);
+      const first = firstRun(shape);
+      // Deliberately not `firstRun`: this is the one case whose whole subject
+      // is that a second, independently executed run agrees with the first.
       const second = watched(shape);
       expect(second.lowestHunger).toEqual(first.lowestHunger);
       expect(second.hungerDeficitLevelTicks).toBe(first.hungerDeficitLevelTicks);

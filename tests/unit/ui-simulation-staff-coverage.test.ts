@@ -185,6 +185,77 @@ describe('every sentence the block can render is real text with its placeholders
     expect(met.trim().length).toBeGreaterThan(0);
   });
 
+  /**
+   * **The sentence the top rung says, verbatim, and the assertion it is no
+   * longer allowed to make** (issue
+   * [#941](https://github.com/matmaxalez/lockstate/issues/941)).
+   *
+   * **The expectation this replaces, quoted rather than deleted**
+   * (`docs/AGENT_WORKFLOW.md` §4): nothing in this repository pinned the
+   * covered rung's *content* at all -- the test directly above asserts only
+   * that it has no placeholder and is not a raw key, and it passed unchanged
+   * across this fix. The sentence it passed against was *"This prison has the
+   * guards it asks for."*, and that absence of any content assertion is what
+   * #941 §4 means by nothing having caught it.
+   *
+   * Pinned verbatim, because the owner's release of `AGENTS.md` reservation 4
+   * on 2026-09-04 buys the harmonising pass in exchange for every authored
+   * string being findable: a test that matched loosely would let the words
+   * drift out from under that promise.
+   *
+   * `not.toContain('asks for')` is the half that would go red on a
+   * *restoration* rather than on a typo -- the old sentence's own phrase, which
+   * is what made the requirement read as the whole bill. See
+   * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
+   * exactly the requirement the responder pool is empty, and the panel's
+   * figures are identical to a prison one hire past it.
+   *
+   * ## Widened on 2026-09-05 (issue #989), and the sentence it pinned is kept
+   *
+   * **This pinned *"Only free guards answer incidents."*, and that sentence was
+   * true.** What retired it is that the free pool has two consumers and it
+   * named one: `SearchSystem` staffs a contraband sweep from the same
+   * `claimableGuardIds`, so the prison #941 measured could not search either.
+   * The rung now reads *"Incidents and searches need free guards."* -- both
+   * duties, no number, no outcome. The clause-by-clause proof and the clamp it
+   * was measured against are in `hud.security.coverage-met-hint`'s own entry.
+   *
+   * **`not.toContain('only')` is deliberately absent**, and the omission is
+   * worth stating: the replacement drops that word, but a future wording that
+   * carried it would not be wrong, so pinning its absence would be pinning a
+   * preference rather than a truth. The two duty words below are the truth
+   * condition -- the sentence enumerates, and
+   * `tests/foundation/claimable-guard-pool-contract.test.ts` is what fails when
+   * the enumeration goes stale.
+   */
+  it('says what a free guard is for, and no longer that the prison is finished hiring', () => {
+    const met = render({ required: 3, assigned: 3, shortage: 0 });
+
+    expect(met).toBe('Incidents and searches need free guards.');
+    // Both duties that draw on the pool, named. The verbatim assertion above
+    // already covers this; these two are what a reviewer reads as the *reason*
+    // the sentence is this long, and they survive a reworded fix.
+    expect(met.toLowerCase()).toContain('incidents');
+    expect(met.toLowerCase()).toContain('searches');
+    // The phrase the sentence #941 replaced turned on. A regression to it fails
+    // here even if the assertion above were relaxed one day.
+    expect(met).not.toContain('asks for');
+    // It promises no outcome: `describeStaffCoverage`'s docblock refuses "a
+    // riot is coming" on measured grounds, and PR #854 refused an owner's
+    // wording that said guards stop incidents.
+    expect(met.toLowerCase()).not.toContain('riot');
+    expect(met.toLowerCase()).not.toContain('safe');
+
+    // Three sentences for three prisons, not one sentence with three badges --
+    // and this is what fails if the branch is repointed at another rung's hint.
+    const sentences = [
+      met,
+      render({ required: 3, assigned: 2, shortage: 1 }),
+      render({ required: 3, assigned: 0, shortage: 3 }),
+    ];
+    expect(new Set(sentences).size).toBe(3);
+  });
+
   it('renders the header pair the way the panel renders it', () => {
     // `{assigned} of {required}` -- the shape `hud.status.occupancy-value`
     // already set for a figure against its ceiling.

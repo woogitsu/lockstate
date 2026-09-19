@@ -10,6 +10,7 @@ import type { RouteResult } from '../../src/simulation/navigation/route';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { findRoute } from '../../src/simulation/navigation/router';
 import { buildCellBlockFixture, buildFixtureGraph, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * A cache must not change any answer. Navigation's caches are deliberately not
@@ -112,7 +113,7 @@ describe('RouteCache: an answer computed under a lockdown does not outlive it (#
     cold.doors.setState('door-medical', 'open');
     const fromCold = resolveOne(cold, 'probe', LEFT_TILE, RIGHT_TILE);
 
-    expect(fromCold.ok).toBe(true); // a route exists in this door state
+    expectOk(fromCold, 'the route resolved by the cold harness'); // a route exists in this door state
     expect(fingerprint(afterUnlock)).toBe(fingerprint(fromCold));
     expect(fingerprint(afterUnlock)).toBe(fingerprint(warm.freshAnswer(LEFT_TILE, RIGHT_TILE)));
     // The entry was evicted rather than never stored: `size` counts what is

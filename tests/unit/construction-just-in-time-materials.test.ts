@@ -10,6 +10,7 @@ import {
 } from '../../src/simulation/economy';
 import { identifierSchema } from '../../src/simulation/protocol/types';
 import { Container } from '../../src/simulation/operations/inventory';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The deficit arithmetic behind ADR 0017 decision 7, on its own (#627).
@@ -105,7 +106,7 @@ describe('what a just-in-time pass buys', () => {
      */
     const { stock, service } = fixture();
     stock.deposit(BRICK, 6);
-    expect(stock.reserve(BRICK, 4).ok).toBe(true);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on four of the six bricks");
 
     expect(service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0).purchased).toEqual([
       { itemId: BRICK, quantity: 6, costMinorUnits: 240 },
@@ -638,7 +639,7 @@ describe('a cancel at the same tick used to make the next purchase look like a r
       'jit:7:item.brick:2',
     ]);
 
-    expect(procurement.cancel('jit:7:item.brick:0').ok).toBe(true);
+    expectOk(procurement.cancel('jit:7:item.brick:0'), "the first brick order's cancellation");
     const afterCancel = treasury.balanceMinorUnits;
 
     const collided = service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 7);
@@ -717,7 +718,7 @@ describe('a cancel at the same tick used to make the next purchase look like a r
     const { treasury, procurement } = fixture();
 
     const first = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
-    expect(first.ok).toBe(true);
+    expectOk(first, 'the first purchase under the pressed order id');
     const afterFirst = treasury.balanceMinorUnits;
 
     const repeat = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
@@ -746,5 +747,120 @@ describe('the report the queue is read through', () => {
 
     service.procureForPendingOrders([], 10);
     expect(service.lastReport).toEqual({ tick: 10, purchased: [], unfunded: [], unprocurable: [], nextOrderShortfallMinorUnits: 0 });
+  });
+});
+
+/**
+ * The arithmetic of `refundSurplusStock` (#717), in the two states that are
+ * cheap here and expensive or unreachable through the kernel.
+ *
+ * `tests/integration/economy-cancel-into-the-overdraft.test.ts` and
+ * `tests/integration/economy-money-conservation.test.ts` drive the press a
+ * player makes and are what say the fix works. These are the edges behind it:
+ * an item nobody sells, and stock a carry job has already claimed. Neither is
+ * reachable from content -- every `BuildableDefinition` in
+ * `src/simulation/construction/definition.ts` requires exactly one line, and it
+ * is always `item.brick` or `item.wood-plank`, both priced -- so a case that
+ * tried to reach them through a session would have to invent a buildable.
+ */
+describe('what a cancelled order can sell back off the shelf', () => {
+  it('sells the surplus at the catalogue price and takes the goods with it', () => {
+    const { stock, service, treasury } = fixture();
+    stock.deposit(BRICK, 10);
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    // Two bricks demanded by what is left of the queue, and two the cancelled
+    // order is allowed to sell: 6 stay on the shelf either way.
+    expect(service.refundSurplusStock(BRICK, 2, 2)).toBe(80);
+
+    expect(treasury.balanceMinorUnits).toBe(balanceBefore + 80);
+    expect(stock.quantityOf(BRICK)).toBe(8);
+  });
+
+  it('sells nothing the rest of the queue still wants, whatever the limit says', () => {
+    const { stock, service, treasury } = fixture();
+    stock.deposit(BRICK, 4);
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    expect(service.refundSurplusStock(BRICK, 4, 2), 'demand covers the whole shelf').toBe(0);
+    expect(service.refundSurplusStock(BRICK, 6, 2), 'and a queue short of stock is not a surplus').toBe(0);
+
+    expect(treasury.balanceMinorUnits).toBe(balanceBefore);
+    expect(stock.quantityOf(BRICK)).toBe(4);
+  });
+
+  it('leaves an item the catalogue cannot price on the shelf rather than destroying it', () => {
+    /*
+     * `refundMaterials` answers `0` for an item nobody sells, and there is no
+     * honest money figure for such a line. The rule is
+     * `refundAllocatedMaterials`' rule: hand it back rather than destroy it.
+     * The mutation this catches is dropping the deposit that puts it back,
+     * which withdraws the goods and pays nothing for them.
+     */
+    const { stock, service, treasury } = fixture();
+    stock.deposit(SINK, 3);
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    expect(service.refundSurplusStock(SINK, 0, 3)).toBe(0);
+
+    expect(treasury.balanceMinorUnits, 'nothing was credited').toBe(balanceBefore);
+    expect(stock.quantityOf(SINK), 'and nothing was destroyed').toBe(3);
+  });
+
+  it('will not sell stock a carry job has already reserved', () => {
+    /*
+     * `Container.availableOf` nets reservations off, and `heldOrInFlightOf`
+     * reads the same figure -- so material a `JobSystem` transfer has claimed
+     * and not yet picked up is not surplus. Selling it would leave that job
+     * withdrawing goods the prison has been paid for.
+     */
+    const { stock, service, treasury } = fixture();
+    stock.deposit(BRICK, 4);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on all four bricks");
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    expect(service.refundSurplusStock(BRICK, 0, 4)).toBe(0);
+
+    expect(treasury.balanceMinorUnits).toBe(balanceBefore);
+    expect(stock.quantityOf(BRICK)).toBe(4);
+    expect(stock.reservedOf(BRICK)).toBe(4);
+  });
+
+  it('sells what is on the shelf and not what a reservation has left of it', () => {
+    /*
+     * The clamp on the sale is `availableOf` and **not** `quantityOf`, and the
+     * difference only shows when a delivery is in flight: the surplus counts
+     * in-flight goods, so it can exceed what is actually sellable today.
+     * Reading the shelf gross would pick a quantity `reserve` then refuses,
+     * and the press would give back nothing where it could honestly have given
+     * back the two bricks that are free.
+     *
+     * 2 free of 6 on the shelf, 10 more on the road, no demand left: the
+     * cancelled order's limit is 4 and only 2 of it can be sold.
+     */
+    const { stock, service, treasury, procurement } = fixture();
+    stock.deposit(BRICK, 6);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on four of the six on the shelf");
+    expectOk(procurement.purchase('jit:probe', BRICK, 10, 0, 'construction'), 'the ten further bricks put on the road');
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    expect(service.refundSurplusStock(BRICK, 0, 4)).toBe(80);
+
+    expect(treasury.balanceMinorUnits).toBe(balanceBefore + 80);
+    expect(stock.quantityOf(BRICK), 'the two free ones left, the four reserved ones stayed').toBe(4);
+    expect(stock.reservedOf(BRICK)).toBe(4);
+  });
+
+  it('refuses a limit that is not a positive safe integer', () => {
+    const { stock, service, treasury } = fixture();
+    stock.deposit(BRICK, 4);
+    const balanceBefore = treasury.balanceMinorUnits;
+
+    for (const limit of [0, -2, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(service.refundSurplusStock(BRICK, 0, limit), `limit ${String(limit)}`).toBe(0);
+    }
+
+    expect(treasury.balanceMinorUnits).toBe(balanceBefore);
+    expect(stock.quantityOf(BRICK)).toBe(4);
   });
 });

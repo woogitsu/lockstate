@@ -128,7 +128,10 @@ function refreshesTheReadouts(message: WorkerToMainMessage): boolean {
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
   const refusal = hudRefusalFromWorkerMessage(message);
-  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? []);
+  // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
+  // the view model rather than being emptied -- and this translator says nothing
+  // about that message, so the list it is handed is one no row is added to.
+  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts === 'none' ? [] : (alerts ?? []));
   const event = hudEventNoticeFromWorkerMessage(message);
   const nextAlerts = eventAlerts ?? alerts;
   return !(
@@ -147,7 +150,10 @@ function refreshesWithoutTheClock(message: WorkerToMainMessage): boolean {
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
   const refusal = hudRefusalFromWorkerMessage(message);
-  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? []);
+  // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
+  // the view model rather than being emptied -- and this translator says nothing
+  // about that message, so the list it is handed is one no row is added to.
+  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts === 'none' ? [] : (alerts ?? []));
   const event = hudEventNoticeFromWorkerMessage(message);
   const nextAlerts = eventAlerts ?? alerts;
   return !(
@@ -351,7 +357,28 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
     // Left as an exact figure rather than loosened to a bound, deliberately: a
     // bound would absorb the next such change in silence, and this number
     // moving is exactly the news a reader of this file wants.
-    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(2);
+    //
+    // **And it moved again, 2 -> 4, on 2026-09-04 (#966 site 2), by the same
+    // mechanism the paragraph above records.** An accepted `ZoneRoom` now
+    // records an event, `prisonWithNobodyHoused` presses two of them to build
+    // its cells, and ADR 0084's restore republishes both records -- so the
+    // counts-only predicate accepts two more messages in this window. Both
+    // figures are kept, because the news is that this number tracks *what the
+    // prison has said*, and neither 2 nor 4 is a cadence: the contrast with the
+    // 120 the assertions above measure is what the case is for, and the gap
+    // below is still the whole window.
+    //
+    // **And again, 4 -> 6, on 2026-09-17 (ADR 0116, the owner's ruling of
+    // 2026-09-16), by the same mechanism a third time.** A build order that
+    // finishes now records an event, and `prisonWithNobodyHoused` places two
+    // of them -- the two beds its own comment already calls out as *"the two
+    // build orders"*, run to completion before the snapshot is captured -- so
+    // ADR 0084's restore republishes two more records the counts-only
+    // predicate accepts. Every figure this number has worn is kept for the
+    // reason the paragraphs above keep theirs: 1, 2, 4 and 6 are all the same
+    // news, which is that this tracks what the prison has said and none of
+    // them is a cadence.
+    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(6);
     expect(worstGapMs(trace, refreshesWithoutTheClock)).toBeGreaterThanOrEqual(WINDOW_MS - WAKE_MS);
   });
 

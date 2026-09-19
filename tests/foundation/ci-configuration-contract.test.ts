@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 // The resolver the *build* uses, imported rather than re-described, so the
 // assertion that a version bump reaches a player is a behavioural one. See
 // "version bump workflow contract" at the foot of this file.
+import { environmentRenderedArtIds } from '../../src/rendering/assets/environment-sprites';
+
 import { packageVersion } from '../../tooling/build-identity.mjs';
 
 /**
@@ -1098,8 +1100,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: [self-hosted, Linux, X64, wsl2]':
-      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all.',
+    'runs-on: self-hosted':
+      'the self-hosted runner pool. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. This exact selector is pinned in tests/foundation/deploy-blocked-announcement-contract.test.ts so every working workflow follows the repository-wide runner policy.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
@@ -1108,6 +1110,8 @@ describe('version bump workflow contract', () => {
       "the tag spelling, stated rather than inherited from npm's default. `v0.0.7` is what the badge puts on screen, so it is what a bug report quotes.",
     'git reset --quiet --hard "origin/$branch"':
       'every retry recomputes the next patch from what the branch holds now. Without it a run that lost a race would re-propose the version the winner just took, and all three attempts would be rejected for the same reason.',
+    'run: node tooling/anchor-budget-spend.mjs':
+      'the annotation that reports the STATUS-QUEUE.md anchor budget\'s spend at the one moment (a version bump) `ci.yml` never runs a check on its own release commit. See tooling/anchor-budget-spend.mjs and tests/foundation/anchor-budget-spend-annotation.test.ts.',
   };
 
   it('runs on a push to main, and on nothing that carries no commit', async () => {
@@ -1233,6 +1237,52 @@ describe('version bump workflow contract', () => {
       await readRepositoryFile('src/content/default-locale-en.ts'),
       "the `brand.build` catalog entry no longer renders the version with a leading `v`. The tags .github/workflows/version.yml publishes are `v0.0.N` precisely so that the string on screen and the string in the tag list are the same string. Change one and you have to change the other, and say so in the workflow header's tag section.",
     ).toContain("'brand.build': 'v{version}");
+  });
+
+  it('reports the anchor budget spend only after the bump step, from the script that computation actually lives in', async () => {
+    const workflow = withoutComments(await readRepositoryFile(WORKFLOW));
+
+    const bumpStepIndex = workflow.indexOf('git push --atomic origin');
+    const reportStepIndex = workflow.indexOf('node tooling/anchor-budget-spend.mjs');
+
+    expect(
+      bumpStepIndex,
+      `${WORKFLOW} no longer contains the atomic push this ordering assertion anchors on; see the "keeps the settings..." test above for that step's own gate.`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      reportStepIndex,
+      `${WORKFLOW} no longer runs tooling/anchor-budget-spend.mjs; see the REQUIRED_SETTINGS entry above.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    expect(
+      reportStepIndex,
+      `the anchor budget spend annotation in ${WORKFLOW} must run AFTER the bump step's atomic push, not before it -- it reports the version package.json now holds, and that value does not exist until the bump has already landed.`,
+    ).toBeGreaterThan(bumpStepIndex);
+
+    // The script itself must exist and export what version.yml's step and
+    // tests/foundation/anchor-budget-spend-annotation.test.ts both depend on --
+    // a workflow step naming a script that was never committed would parse,
+    // "keeps the settings" above would still pass (it only checks the workflow
+    // text), and CI would only discover the mistake by failing at runtime on
+    // `main`, after a merge, which is exactly the silent-failure shape this
+    // annotation exists to avoid for the anchor budget itself.
+    const script = await readRepositoryFile('tooling/anchor-budget-spend.mjs');
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs is referenced from .github/workflows/version.yml but is empty or missing.',
+    ).toMatch(/export function computeAnchorSpend/u);
+    expect(script).toMatch(/export function formatAnchorSpendAnnotation/u);
+
+    // Non-blocking by construction: the CLI's only path to a non-zero exit
+    // would be `process.exit`/an uncaught throw escaping the top-level
+    // try/catch its own header commits to. Asserting the shape here means a
+    // future edit that removes that guard fails a fast, textual check instead
+    // of only being discoverable by a real failing merge on `main`.
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs no longer wraps its CLI entry point in a try/catch. This annotation runs from a workflow that has already merged -- a failing step here blocks nothing and would only be noise, so the script must never let an unexpected error escape as a non-zero exit.',
+    ).toMatch(/try\s*\{[\s\S]*\}\s*catch/u);
+    expect(script).not.toMatch(/process\.exit\(\s*[1-9]/u);
   });
 });
 
@@ -2353,6 +2403,46 @@ describe('checkout credential persistence contract', () => {
 });
 
 /**
+ * The steps of one top-level job of one workflow, by line range rather than by
+ * re-parsing the job structure: `parseWorkflowSteps` above already reads every
+ * step of every job, and a second structural parser would be a second thing to
+ * keep right.
+ *
+ * Module scope rather than inside one contract, because two contracts below
+ * now ask the same question of two different jobs.
+ */
+function jobSteps(workflow: string, contents: string, job: string): readonly WorkflowStep[] {
+  const lines = contents.split(/\r?\n/u);
+  const header = `  ${job}:`;
+  const start = lines.indexOf(header);
+
+  expect(
+    start,
+    `${workflow} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
+  ).toBeGreaterThanOrEqual(0);
+
+  // The next thing at job indentation or shallower ends the block. Comments
+  // are skipped rather than treated as the end: in this file a paragraph at
+  // two-space indentation introduces the job *after* it, and stopping there
+  // would be right for the range but wrong the moment the paragraph moves.
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index] ?? '';
+    if (line.trim().length === 0 || /^\s*#/u.test(line)) {
+      continue;
+    }
+    if (/^ {0,2}\S/u.test(line)) {
+      end = index;
+      break;
+    }
+  }
+
+  // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
+  // from 0, so the open interval below is `(start, end]` in 1-based terms.
+  return parseWorkflowSteps(workflow, contents).filter((step) => step.line > start + 1 && step.line <= end);
+}
+
+/**
  * The `browser` job keeps the evidence of its own failures.
  *
  * ## The defect
@@ -2403,43 +2493,6 @@ describe('browser failure evidence contract', () => {
    */
   const DEFAULT_OUTPUT_DIR = 'test-results/';
 
-  /**
-   * The steps of one top-level job, by line range rather than by re-parsing
-   * the job structure: `parseWorkflowSteps` above already reads every step of
-   * every job, and a second structural parser would be a second thing to keep
-   * right.
-   */
-  function jobSteps(contents: string, job: string): readonly WorkflowStep[] {
-    const lines = contents.split(/\r?\n/u);
-    const header = `  ${job}:`;
-    const start = lines.indexOf(header);
-
-    expect(
-      start,
-      `${CI} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
-    ).toBeGreaterThanOrEqual(0);
-
-    // The next thing at job indentation or shallower ends the block. Comments
-    // are skipped rather than treated as the end: in this file a paragraph at
-    // two-space indentation introduces the job *after* it, and stopping there
-    // would be right for the range but wrong the moment the paragraph moves.
-    let end = lines.length;
-    for (let index = start + 1; index < lines.length; index += 1) {
-      const line = lines[index] ?? '';
-      if (line.trim().length === 0 || /^\s*#/u.test(line)) {
-        continue;
-      }
-      if (/^ {0,2}\S/u.test(line)) {
-        end = index;
-        break;
-      }
-    }
-
-    // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
-    // from 0, so the open interval below is `(start, end]` in 1-based terms.
-    return parseWorkflowSteps(CI, contents).filter((step) => step.line > start + 1 && step.line <= end);
-  }
-
   /** The lines of a step's `path: |` block, trimmed, comments dropped. */
   function pathEntries(step: WorkflowStep): readonly string[] {
     const start = step.lines.findIndex((line) => /^path:\s*\|-?\s*$/u.test(line.trim()));
@@ -2467,7 +2520,7 @@ describe('browser failure evidence contract', () => {
 
   it('uploads, on failure, exactly the two things the browser suite leaves behind', async () => {
     const contents = await readRepositoryFile(CI);
-    const steps = jobSteps(contents, 'browser');
+    const steps = jobSteps(CI, contents, 'browser');
 
     // Vacuity guard, in the shape the two contracts above use: every
     // assertion below is about a step found in this list, and a list of none
@@ -2554,6 +2607,398 @@ describe('browser failure evidence contract', () => {
         .filter((line) => /^\s*outputDir\s*:/u.test(line))
         .map((line) => line.trim()),
       `${PLAYWRIGHT_CONFIG} now sets \`outputDir\`, and ${CI}'s failure-evidence upload still collects the default \`${DEFAULT_OUTPUT_DIR}\`. One of the two has to move: point the upload at the configured directory and update DEFAULT_OUTPUT_DIR here, in this commit. Playwright resolves an unset \`outputDir\` to \`<package.json dir>/test-results\`, which for this config is the repository root -- that is the only reason the literal in the workflow is right.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The measurement harness is invoked by something.
+ *
+ * ## The defect
+ *
+ * Issue #1083. `tests/perf/` carries three files and 35 tests behind its own
+ * Vitest config, `docs/TESTING.md` documented the command, and **nothing in
+ * the repository ran it**: no `package.json` script, no CI step. The root
+ * `vitest.config.ts` collects `*.test.ts` and every file there is named
+ * `*.perf.ts` on purpose, so `pnpm test` could not reach them either. They
+ * were read by `tsc` and executed by nobody, and they passed -- which is the
+ * whole point of the issue rather than a mitigation of it, because nothing
+ * would have said if they had stopped.
+ *
+ * ## Why the config is asserted and not merely the path
+ *
+ * Running these files on the root config's budget is not a slower version of
+ * the same check, it is a red one: that config sets `testTimeout: 5_000`
+ * against the harness's `900_000`, and #1083 records **six** `Test timed out
+ * in 5000ms` failures produced that way, none of them a defect. Re-measured
+ * with `--testTimeout=5000` and nothing else changed, **12 of the 35** failed
+ * that way -- the count follows the machine, which is why this contract
+ * asserts the config rather than a number. So a script that pointed
+ * `vitest run` at `tests/perf/` without `--config` would satisfy "the harness
+ * is invoked" and fail every run.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the harness asserts anything worth asserting, or that it is fast.
+ * `docs/BENCHMARKING.md` owns the first and forbids timing assertions
+ * outright; the second is a runner property that changes under this repository
+ * without a commit, as the `browser` job's budget comments in the workflow
+ * record at length. What is checked is that the gate is *reachable*, which is
+ * the one property #1083 found missing.
+ *
+ * ## The reserved file
+ *
+ * The CI step this asserts is inside `.github/workflows/ci.yml`, which is
+ * `AGENTS.md` reservation 3. The owner released one step for it on 2026-09-09,
+ * and that entry records both what was authorised and that its provenance is a
+ * clicked option label rather than the owner's own words. Widening this
+ * contract to require a second step would be requiring a change nobody has
+ * authorised.
+ */
+describe('measurement harness reachability contract', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SCRIPT = 'test:perf';
+  const CONFIG = 'tests/perf/vitest.perf.config.ts';
+
+  it('gives the harness a script that runs it through its own config', async () => {
+    const manifest = JSON.parse(await readRepositoryFile('package.json')) as {
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    const script = manifest.scripts?.[SCRIPT];
+
+    expect(
+      script,
+      `package.json no longer declares a \`${SCRIPT}\` script. #1083 is the state where \`${CONFIG}\` exists and nothing invokes it: the harness is typechecked and never run, and its 35 assertions report nothing when they break. The CI step below runs this script by name, so removing it empties that step too.`,
+    ).toBeDefined();
+
+    expect(
+      script,
+      `\`pnpm ${SCRIPT}\` must pass \`--config ${CONFIG}\`. Without it these files inherit the root \`vitest.config.ts\`'s \`testTimeout: 5_000\` against the harness's own \`900_000\`: #1083 measured six \`Test timed out in 5000ms\` failures that way and a re-measurement with \`--testTimeout=5000\` produced 12 of 35. A run of this harness without its config is red for a reason that is not about the code.`,
+    ).toContain(`--config ${CONFIG}`);
+  });
+
+  it('runs that script from the `verify` job, so the harness is a gate and not a habit', async () => {
+    const contents = await readRepositoryFile(CI);
+    const steps = jobSteps(CI, contents, 'verify');
+
+    // Vacuity guard, in the shape the contracts above use: every assertion
+    // below is about a step found in this list, and a list of none satisfies
+    // nothing rather than failing.
+    expect(
+      steps.length,
+      `no steps were parsed out of the \`verify\` job in ${CI}. The line-range filter or \`parseWorkflowSteps\` is broken; fix it rather than the workflow.`,
+    ).toBeGreaterThan(0);
+
+    const commands = steps
+      .map((step) => stepScalar(step, 'run')?.value)
+      .filter((value): value is string => value !== undefined)
+      .map((value) => value.trim());
+
+    expect(
+      commands,
+      `${CI}'s \`verify\` job no longer runs \`pnpm ${SCRIPT}\`. That step is the whole of what the owner authorised on 2026-09-09 (\`AGENTS.md\`, reservation 3), and without it \`tests/perf/\` is back in the state #1083 filed: a harness with a config, a script, documentation and no runner. Steps found: ${commands.join(' | ') || '(none)'}`,
+    ).toContain(`pnpm ${SCRIPT}`);
+  });
+
+  it('leaves the harness out of the default suite, which is what hid it and is still right', async () => {
+    const root = await readRepositoryFile('vitest.config.ts');
+    const include = root.split(/\r?\n/u).filter((line) => /^\s*include\s*:/u.test(line));
+
+    // Vacuity guard: the assertion below is about what `include` names, and a
+    // config this filter cannot find an `include` in would satisfy it with
+    // nothing read at all.
+    expect(
+      include,
+      'vitest.config.ts declares no `include:` on a line of its own, so the assertion below reads nothing. Fix this filter rather than the config.',
+    ).toHaveLength(1);
+
+    /*
+     * The other direction of the contract above. #1083's answer is a gate, not
+     * a fold-in: collecting `*.perf.ts` from the root config would give these
+     * files a runner and a five-second budget in the same move, and `pnpm test`
+     * would start paying for multi-hundred-chunk fixtures on every run.
+     */
+    expect(
+      include[0],
+      `vitest.config.ts's \`include\` now reaches the measurement harness. It must not: this config's \`testTimeout\` is \`5_000\` where the harness's own is \`900_000\`, and its fixtures are expensive enough that \`pnpm test\` would stop being the fast gate. The harness is reached through \`pnpm ${SCRIPT}\` and its own config instead.`,
+    ).not.toContain('perf');
+  });
+});
+
+/**
+ * Two jobs reach for `python3` and nothing in this repository provisions it
+ * (#1089's audit). Installing it needs root, and the `woogitsu-linux-*` pool
+ * has no passwordless sudo -- proved on job 101846181533, 2026-09-07 -- so
+ * what the repository can add is a diagnosis rather than a fix: a guard that
+ * names the host step instead of dying on a bare `python3: command not found`
+ * and exit 127.
+ *
+ * **This contract exists because that guard is otherwise ungated.** Both jobs
+ * are `workflow_dispatch`-only and neither has run since the pool changed
+ * (`branch-gc.yml` 2026-09-03, `delete-branches.yml` 2026-08-30), so nothing
+ * in CI executes either line. A future edit could delete the guard and every
+ * other gate in this repository would stay green -- which is precisely the
+ * case #1089 was written about, one level up: an assumption nobody can see
+ * until the day it matters.
+ *
+ * **What it does NOT claim.** It does not assert that `python3` is present on
+ * any runner; nothing here can read the host, and `AGENTS.md` reservation 3
+ * makes the same point about dashboards. It asserts only that the two call
+ * sites still say what to do when it is absent.
+ *
+ * The `delete-branches.yml` half deliberately reads `deletebranches.sh` and
+ * not the workflow. The workflow names no interpreter at all -- it runs
+ * `bash deletebranches.sh` -- and the audit row that cites `python3` for this
+ * job cites `deletebranches.sh:107`. A guard written into the workflow would
+ * be guarding the wrong file.
+ */
+describe('python3 availability diagnosis contract (#1089)', () => {
+  it('branch-gc names the host step when python3 is missing, rather than exiting 127', async () => {
+    const source = await readRepositoryFile('.github/workflows/branch-gc.yml');
+
+    // Vacuity guard: the assertion below is about the guard sitting in front
+    // of a real use, so establish the use is still there. If `branch-gc.yml`
+    // stops running python3 this test should be deleted, not satisfied.
+    expect(
+      source,
+      '`branch-gc.yml` no longer invokes python3; this contract is guarding a call site that has gone.',
+    ).toContain('python3 - <<');
+
+    expect(
+      source,
+      '`branch-gc.yml` invokes python3 with no `command -v` guard in front of it. Nothing here can install python3 -- that needs root and this pool has no passwordless sudo -- so the guard is the whole remedy: without it the job dies on a bare `python3: command not found` in a run whose next act is deleting branches on a shared remote.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('python3 - <<');
+    expect(
+      guardIndex,
+      '`branch-gc.yml` has a `command -v python3` guard, but it sits after the heredoc it is supposed to protect, so the bare 127 happens first.',
+    ).toBeLessThan(useIndex);
+  });
+
+  it('deletebranches.sh says what is missing before it reaches the interpreter', async () => {
+    const source = await readRepositoryFile('deletebranches.sh');
+
+    expect(
+      source,
+      '`deletebranches.sh` no longer pipes through python3; this contract is guarding a call site that has gone.',
+    ).toContain('| python3 -c');
+
+    expect(
+      source,
+      '`deletebranches.sh` reaches python3 with no `command -v` guard. `set -euo pipefail` already makes the failure safe -- an empty `open_heads` would leave every open pull request unprotected, and the script exits instead -- so what the guard adds is the sentence, not the safety.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('| python3 -c');
+    expect(
+      guardIndex,
+      '`deletebranches.sh` guards python3 after the pipeline that uses it.',
+    ).toBeLessThan(useIndex);
+  });
+});
+
+/**
+ * Every job in every workflow asks for the bare `self-hosted` pool, and nothing
+ * else.
+ *
+ * ## Why this is a repository-wide gate rather than two spot checks
+ *
+ * The selector was already pinned in exactly two places -- `version.yml`'s job
+ * in this file's "version bump workflow contract", and `deploy.yml`'s
+ * `staging-blocked` in `tests/foundation/deploy-blocked-announcement-contract.test.ts`
+ * -- each with the same argument attached: `ubuntu-latest` has never worked in
+ * this repository, and the two workflows that asked for it failed in four
+ * seconds with no step recorded and no log. Both comments say they pin the
+ * policy; neither could see the other seven jobs.
+ *
+ * The gap that leaves is not hypothetical in the other direction either. Until
+ * `80b54a97` every `runs-on:` here was a **label list** -- `[self-hosted,
+ * Linux, X64, wsl2]` and similar -- and a label list is a claim about which
+ * machines exist. Those claims rot: `AGENTS.md` and `CLAUDE.md` between them
+ * carry three generations of runner names (`woogitsu-host-*`,
+ * `woogitsu-linux-*`, `lockstate-wsl-DOM-NEW-*`), each correct when written and
+ * each wrong now, and a job pinned to a label that no longer exists does not
+ * fail loudly -- it queues forever.
+ *
+ * ## The instruction
+ *
+ * Recorded 2026-09-13, in the owner's own words, when they were told what the
+ * workflows currently ask for:
+ *
+ * > runnery to po prostu self hosted i tak ustaw wszędzie
+ *
+ * ("the runners are just self-hosted, so set it that way everywhere.") Every
+ * `runs-on:` on disk already read `self-hosted` when that was said, so this
+ * test changes no workflow and is not a release inside `AGENTS.md`'s third
+ * reservation. It is the instruction written down where a future change has to
+ * walk past it: a label list, a matrix, or a hosted runner added to any
+ * workflow now fails here and names the sentence above.
+ */
+describe('runner selector contract', () => {
+  it('asks for the bare self-hosted pool in every job of every workflow', async () => {
+    const workflows = await readWorkflows();
+    const selectors: string[] = [];
+    const wrong: string[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      const lines = contents.split(/\r?\n/u);
+      for (const [index, line] of lines.entries()) {
+        const match = /^\s*runs-on:\s*(?<value>.*?)\s*$/u.exec(line);
+        if (match === null) continue;
+        const value = match.groups?.['value'] ?? '';
+        selectors.push(`${workflow}:${index + 1}`);
+        if (value !== 'self-hosted') wrong.push(`${workflow}:${index + 1} -> ${value}`);
+      }
+    }
+
+    // Not vacuous: six workflows, and every one of them has at least one job.
+    expect(
+      selectors.length,
+      'no `runs-on:` was found in any workflow, so this contract is checking nothing',
+    ).toBeGreaterThanOrEqual(6);
+
+    expect(
+      wrong,
+      'these jobs do not ask for the bare `self-hosted` pool. The owner\'s instruction of 2026-09-13 is that the runners are just self-hosted and that it be set that way everywhere; a label list additionally pins the job to machine names that have already changed three times in this repository, and a job pinned to a label nothing carries queues forever rather than failing',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The `browser` job's `git lfs pull --include=` list and
+ * `src/rendering/assets/environment-sprites.ts` must name the same rendered
+ * art, in both directions. Only one of those directions was ever checked.
+ *
+ * ## The half that was already checked, and the half that was not
+ *
+ * `ci.yml`'s *"Assert the environment sheets decoded"* step greps
+ * `renderedArtId` out of `environment-sprites.ts` and requires each id it
+ * finds to exist on disk as image data, failing closed with its own
+ * instruction `add '<id>' to the --include filter above`. That covers
+ * **declared and unfetched**: a sprite wired without its glob turns the job
+ * red. It is generic and needs no edit, ever.
+ *
+ * It says nothing about **listed and undeclared**. A glob that outlives the
+ * sprite it was added for is invisible to every gate in this repository, and
+ * `AGENTS.md` reservation 3 means an agent cannot simply delete one: the
+ * `--include=` line is the owner's, released to them three times and never for
+ * a removal.
+ *
+ * ## The finding that produced this contract, and the audit claim it refutes
+ *
+ * `furniture.cell.locker.variants` is that glob. Dated, because the interval
+ * is the point: the sprite `env.object.storage-rack` was wired to it in
+ * `67b3429e` (2026-09-06 21:15:39Z), the owner authorised the three glob
+ * segments in `a98d4001` (2026-09-07 05:24:36Z), and a playtest got the sprite
+ * reverted in `bb7dc40a` (2026-09-07 09:50:44Z) -- **four hours and
+ * twenty-six minutes** after the authorisation. The glob stayed.
+ *
+ * A repository-wide freshness audit reported in 2026-09-12 that the surviving
+ * glob *"now fetches art nothing draws -- the exact cost the wildcard
+ * alternative was refused for"*, priced it at **1,672,608 bytes pulled from
+ * LFS on every `browser` job**, and proposed a reservation-3 release to remove
+ * it. **That is refuted, and the glob costs nothing.** `bb7dc40a` also
+ * `git rm`'d the only file that could match it,
+ * `rendered.furniture.cell.locker.variants.10a6c751ad5c.png` (11.27 KiB), so
+ * the glob has matched **zero files** since the same commit that orphaned it.
+ * The only locker file left is the owner's sheet
+ * `furniture.cell.locker.variants.89a3cfd67726.png`, **without** the
+ * `rendered.` prefix, and that prefix is load-bearing exactly so that the
+ * owner's sheet and the render the game draws can sit under one id. The audit
+ * named this as its own weakest claim and was right to: it had never watched
+ * CI fetch the file, and the file was in its worktree because the tree is
+ * materialised, not because a glob pulled it. `docs/ART_PIPELINE.md` carries
+ * the same correction against the sentence that started it.
+ *
+ * So the removal is tidiness rather than a violated decision, and it stays the
+ * owner's. **What is ours is the gate**, and the allowance below is what lets
+ * it land before the removal instead of after: the one segment is permitted by
+ * name, a second one is not, and the allowance is checked to be still dead --
+ * the moment a `rendered.` locker file is published again, the premise that
+ * this glob costs nothing is false and this contract says so.
+ */
+describe('LFS include filter contract (#1149 §1)', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SOURCE_ART = 'public/game-content/source-art';
+  const RENDERED_GLOB = new RegExp(`^${SOURCE_ART}/rendered\\.(?<id>.+)\\.\\*\\.png$`, 'u');
+
+  /**
+   * Rendered ids the `--include=` list may name while nothing declares them.
+   * An **upper bound**, not a requirement: removing a segment listed here
+   * keeps this contract green, which is what lets the owner delete one without
+   * a test change riding along in a reserved file's commit. Adding to this
+   * list is how a future glob escapes the gate, so each entry needs the same
+   * evidence the one below has -- a named commit, and no file on disk.
+   */
+  const ALLOWED_UNDECLARED: readonly string[] = ['furniture.cell.locker.variants'];
+
+  async function listedRenderedIds(): Promise<readonly string[]> {
+    const contents = await readRepositoryFile(CI);
+    const ids: string[] = [];
+
+    for (const line of contents.split(/\r?\n/u)) {
+      const match = /git lfs pull --include="(?<list>[^"]*)"/u.exec(line);
+      if (match === null) continue;
+      for (const entry of (match.groups?.['list'] ?? '').split(',')) {
+        const glob = RENDERED_GLOB.exec(entry.trim());
+        if (glob !== null) ids.push(glob.groups?.['id'] ?? '');
+      }
+    }
+
+    return [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
+
+  it('names every rendered art id the sprite table declares', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+
+    // Vacuity guards. A parser that finds nothing satisfies a subset assertion
+    // rather than failing it, which is the failure mode this whole file's
+    // other contracts guard against in the same shape.
+    expect(
+      declared.length,
+      '`environmentRenderedArtIds()` returned nothing, so there is no declaration to check the filter against. Fix the sprite table or this helper, not the workflow.',
+    ).toBeGreaterThan(0);
+    expect(
+      listed.length,
+      `no \`${SOURCE_ART}/rendered.*.png\` segment was parsed out of any \`git lfs pull --include=\` line in ${CI}. Either the filter was rewritten into a shape this parser does not read, or it no longer fetches rendered art at all; fix the parser rather than the workflow, because a contract that parses nothing checks nothing.`,
+    ).toBeGreaterThanOrEqual(3);
+
+    const missing = declared.filter((id) => !listed.includes(id));
+
+    expect(
+      missing,
+      `these rendered art ids are declared in \`src/rendering/assets/environment-sprites.ts\` but named by no segment of ${CI}'s \`git lfs pull --include=\` list. That filter is a literal comma-separated list of globs, not a \`rendered.*\` wildcard over them (the owner was offered the wildcard on 2026-09-07 and refused it), so an unnamed id's file is never fetched in CI's pointer-only checkout and the \`Assert the environment sheets decoded\` step then fails closed on it. This contract exists so that failure arrives in a three-second unit run rather than forty minutes into the \`browser\` job. The filter line is \`AGENTS.md\` reservation 3 and needs the owner's authorisation to extend, which is why this is reported here rather than fixed.`,
+    ).toEqual([]);
+  });
+
+  it('names nothing the sprite table does not declare, beyond the one dead segment', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+    const unexpected = undeclared.filter((id) => !ALLOWED_UNDECLARED.includes(id));
+
+    expect(
+      unexpected,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list and declared by no sprite in \`src/rendering/assets/environment-sprites.ts\`. Nothing else in this repository checks this direction: the decode assertion fails closed on an id that is *declared and unfetched* and is silent about one that is *listed and undeclared*, which is how \`furniture.cell.locker.variants\` outlived its sprite by five days before an audit noticed. A glob whose published file still exists fetches bytes nothing draws on every \`browser\` job, which is the exact cost the \`rendered.*\` wildcard was refused for on 2026-09-07. Removing a segment is \`AGENTS.md\` reservation 3 and therefore the owner's; report it rather than widening the allowance list.`,
+    ).toEqual([]);
+  });
+
+  it('keeps the allowance honest: a permitted segment must still match no published file', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+
+    const published = await readdir(path.join(repositoryRoot, SOURCE_ART));
+    const paying = undeclared.filter((id) =>
+      published.some((name) => name.startsWith(`rendered.${id}.`) && name.endsWith('.png')),
+    );
+
+    expect(
+      paying,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list, declared by no sprite, and **do** have a published file under \`${SOURCE_ART}/\`. The whole justification for tolerating an undeclared segment is that it matches nothing and therefore costs nothing -- refuting the 2026-09-12 audit's claim that the locker glob pulled 1,672,608 bytes per job, because \`bb7dc40a\` had deleted the only file it could match. A published file makes that justification false and turns the segment into a real per-job download of art nothing draws. Either the sprite is being re-wired (declare it, and this passes by the other route) or the file should not have been published.`,
     ).toEqual([]);
   });
 });

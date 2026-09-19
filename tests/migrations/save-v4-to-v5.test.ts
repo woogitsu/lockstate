@@ -5,6 +5,7 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from '../../src/persistence/save-migrations';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 import {
@@ -103,7 +104,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   // (the owner's decisions of 2026-09-01 on ADR 0084 added it beside `objects`
   // under the same optional-field rule), and a room instance carried a
   // capacity and a capability list instead of a rectangle.
-  const { objects: _objects, alerts: _alerts, ...simulation } = bundle.simulation;
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -187,7 +188,14 @@ describe('save-schema V4 -> V5 migration', () => {
     // The other half of "lossless": what the restore *writes* for a migrated row
     // equals what V4 carried. Zero and empty in, zero and empty out.
     const migrated = migrateSaveEnvelopeV4ToV5(v4EnvelopeWithARoom());
-    const restored = restoreSimulationRuntime(migrated.payload as unknown as SessionSnapshotBundle, 0).runtime;
+    // Walked one step further before restoring, since ADR 0113 made
+    // `simulation.regimeSchedules` required at V6: `restoreSimulationRuntime`
+    // takes a current-version bundle, and handing it a V5 payload directly
+    // would be this test asserting about a shape no decode path produces.
+    const restored = restoreSimulationRuntime(
+      migrateSaveEnvelopeV5ToV6(migrated).payload as unknown as SessionSnapshotBundle,
+      0,
+    ).runtime;
 
     expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toMatchObject({
       residentCapacity: 0,
@@ -263,7 +271,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(5);
+      expect(SAVE_SCHEMA_VERSION).toBe(6);
     }
   });
 

@@ -31,6 +31,34 @@
 # exactly which library `ldd` says is missing, which is actionable in a way that
 # "try it with sudo" is not.
 #
+# THAT ARGUMENT HELD AND WAS HALF AN ANSWER, MEASURED 2026-09-07. CI's `browser`
+# job died here on runner `woogitsu-linux-04` -- an Ubuntu 26.04 host, so the
+# fallback above was taken -- and this script reported, correctly and by design:
+#
+#   ERROR: Chromium at ~/.cache/ms-playwright/chromium-1194/chrome-linux/chrome
+#   is missing shared libraries: libasound.so.2 libnspr4.so libnss3.so
+#   libnssutil3.so libsmime3.so
+#
+# Every word of that is true and none of it can be typed at apt, because those
+# are FILE names and apt takes PACKAGE names -- and the two are not the same
+# string: `libasound.so.2` is in `libasound2t64`, `libnss3.so` and
+# `libnssutil3.so` and `libsmime3.so` are all in `libnss3`. Whoever provisions
+# the machine has to reconstruct that mapping by hand, per library, and the
+# `t64` suffix means guessing from the file name is wrong as often as right.
+#
+# So the failure now also prints the apt line, and PLAYWRIGHT IS ASKED FOR IT
+# RATHER THAN IT BEING WRITTEN DOWN HERE: `playwright install-deps chromium
+# --dry-run` prints the command for the host it is run on, from the same
+# dependency table `--with-deps` would use, and it needs no root and installs
+# nothing. A list authored in this file would be a sentence about a distribution
+# this repository cannot see, and it would rot the first time a package was
+# renamed -- which on Ubuntu's `t64` transition is exactly what happened.
+#
+# The script still does not run it. It needs root, this script has none, and
+# `docs/DEPLOYMENT.md`'s rule about state this repository cannot read applies to
+# a runner's installed packages: what is missing on that machine is a question
+# for whoever owns it, and printing the answer is the most this side can do.
+#
 # UNSUPPORTED-HOST FALLBACK. Playwright publishes per-distribution builds and
 # refuses outright on a release it has no listing for:
 #
@@ -160,8 +188,25 @@ console.log(chromium.executablePath());
 NODE
 )" || fail "Chromium did not launch and its path could not be resolved"
 
+# Playwright's dependency table for THIS host, asked for rather than authored --
+# see the header. `--dry-run` prints the command and installs nothing, so this
+# needs no root and is safe on the failure path. Empty (rather than fatal) when
+# the sub-command is unavailable: a missing hint must not replace the library
+# names, which are the finding.
+chromium_apt_command() {
+  pnpm exec playwright install-deps chromium --dry-run 2>/dev/null | head -1 || true
+}
+
 missing_libraries="$(ldd "$executable" 2>/dev/null | awk '/not found/ { print $1 }' | sort -u || true)"
-[ -z "$missing_libraries" ] \
-  || fail "Chromium at ${executable} is missing shared libraries: $(echo "$missing_libraries" | tr '\n' ' ')"
+if [ -n "$missing_libraries" ]; then
+  apt_command="$(chromium_apt_command)"
+  if [ -n "$apt_command" ]; then
+    fail "Chromium at ${executable} is missing shared libraries: $(echo "$missing_libraries" | tr '\n' ' ')
+[provision-playwright] Those are file names; apt takes package names and they differ (libasound.so.2 is in libasound2t64, libnss3.so is in libnss3).
+[provision-playwright] Playwright's own table for this host wants, as root, on the machine that runs this job:
+[provision-playwright]   ${apt_command}"
+  fi
+  fail "Chromium at ${executable} is missing shared libraries: $(echo "$missing_libraries" | tr '\n' ' ')"
+fi
 
 fail "Chromium is installed at ${executable} with every shared library present, but Playwright could not launch it"

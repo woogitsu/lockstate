@@ -57,11 +57,12 @@ async function setOccupancy(page: Page, prisoners: number, prisonerCapacity: num
           // The places a prison of this shape could actually have: a place is
           // a bed that exists, so it is bounded by the accommodation capacity
           // this bar is drawn against. The over-capacity cases therefore also
-          // carry #609's "N with no bed" badge on the same chip -- which is
+          // carry #609's "N not housed" badge on the same chip -- which is
           // deliberate here, because the width assertions below are what prove
           // that badge does not move the bar it sits beside.
           occupiedPlaces: Math.min(value as number, capacity as number),
           staff: 27,
+          staffUnassigned: 0,
           rooms: 61,
           prisonersCovered: 0,
           prisonersUnderstaffed: 0,

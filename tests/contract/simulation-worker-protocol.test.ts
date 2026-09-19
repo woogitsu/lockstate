@@ -13,6 +13,7 @@ import {
   type ProtocolDecodeErrorCode,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol';
+import { expectOk } from '../helpers/expect-ok';
 
 const requestEnvelope = {
   protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -200,6 +201,16 @@ describe('simulation worker protocol', () => {
             // to name (issue #506 finding 2).
             activeIncidentType: undefined,
             contrabandDiscovered: 7,
+            // Deliberately `false` against a `roomCapacity` of 158 above, and
+            // the pair is the point: the two used to be asked the same
+            // question on two sides of the boundary and a fixture where they
+            // agreed could not tell a host that re-derived the predicate from
+            // `roomCapacity === 0` apart from one that read it
+            // (`statusCountsSchema.isFreshUnfurnishedPrison`). This prison is
+            // furnished on both readings, which is the ordinary case; the
+            // prison where they come apart is
+            // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`.
+            isFreshUnfurnishedPrison: false,
             treasuryMinorUnits: 24_920,
             // Derived from this payload's own `tick` and `occupiedPlaces`
             // rather than picked: two occupied places, thirteen ticks of the
@@ -546,6 +557,11 @@ describe('simulation worker protocol', () => {
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 0,
+      // A prison at tick 0 has furnished nothing, so it is fresh -- the same
+      // reading as `roomCapacity: 0` above, which is the one case in which the
+      // registry figure and the catalogue fan-out cannot disagree
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`).
+      isFreshUnfurnishedPrison: true,
       treasuryMinorUnits: 25_000,
       stateIncomeAccruedTodayMinorUnits: 0,
       // A session that has hired nobody: the whole of this fixture is a prison
@@ -561,7 +577,7 @@ describe('simulation worker protocol', () => {
     });
 
     const accepted = decodeWorkerToMainMessage(withRefusal({ sequence: 3, tick: 9, reason: 'build.unowned-land' }));
-    expect(accepted.ok, accepted.ok ? '' : JSON.stringify(accepted.error)).toBe(true);
+    expectOk(accepted, 'the status-counts publication that carries a refusal');
 
     // Absent is valid and is what a session that has refused nothing sends.
     const withoutRefusal = decodeWorkerToMainMessage({
@@ -569,13 +585,13 @@ describe('simulation worker protocol', () => {
       kind: 'simulation/status-counts',
       payload: { tick: 12, schemaVersion: 1, counts },
     });
-    expect(withoutRefusal.ok, withoutRefusal.ok ? '' : JSON.stringify(withoutRefusal.error)).toBe(true);
+    expectOk(withoutRefusal, 'the publication a session that has refused nothing sends');
 
     // Every declared reason is accepted, so the enum on the wire and the
     // reasons the two systems produce cannot drift apart silently.
     for (const reason of REFUSAL_REASONS) {
       const decoded = decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason }));
-      expect(decoded.ok, `${reason} was rejected by the decoder`).toBe(true);
+      expectOk(decoded, `the wire form of the declared reason ${reason}`);
     }
 
     // A reason nobody declared. This is the case that matters: the mapping

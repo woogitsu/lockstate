@@ -61,23 +61,33 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; **six of the
+ * of it. It still does not claim that every projection is painted; **five of the
  * fifteen catalogued read models have a route and no reader.**
  *
  * That number is stated with the way to re-derive it, because it is a tally and
  * this file's whole subject is claims that rot. `PROJECTION_IDS`
  * (`src/simulation/protocol/types.ts`, the tuple `PROJECTION_IDS`) has fifteen
  * members; grepping all fifteen as string literals across `src/ui/` and
- * `src/rendering/` returns **nine**, so fifteen minus nine is six. The nine
+ * `src/rendering/` returns **ten**, so fifteen minus ten is five. The ten
  * are `hud/room-list` and `hud/room-detail` (`simulation-room-needs.ts`),
  * `hud/held-guards` (`simulation-held-guards.ts`), `hud/pending-deliveries`
  * (`simulation-pending-deliveries.ts`), `hud/prisoner-population`
  * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`),
  * `hud/staff` (`simulation-staff-coverage.ts`), `hud/prisoner-roster`
- * (`simulation-prisoner-roster.ts`) and `hud/status-strip`
- * (`simulation-regime.ts`). `src/rendering/` matches none. The six with a route
- * and nobody on it are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+ * (`simulation-prisoner-roster.ts`), `hud/prisoner-detail`
+ * (`simulation-prisoner-detail.ts`) and `hud/status-strip`
+ * (`simulation-regime.ts`). `src/rendering/` matches none. The five with a
+ * route and nobody on it are `hud/security`, `hud/contraband`,
  * `hud/incidents`, `hud/incident-detail` and `world/render-snapshot`.
+ *
+ * **This paragraph said "nine" and "six" until issue #895, and both were right
+ * when written.** `src/ui/simulation-prisoner-detail.ts` is the tenth reader
+ * and `hud/prisoner-detail` is the read model that moved between the two lists
+ * -- the *first* of the five that #157 found waiting on a selection model to
+ * get one. The pair still moves together only by coincidence, for the reason
+ * the amendment below this one gives: `simulation-room-needs.ts` reads two ids,
+ * so a count of reader files and a count of read models are different numbers
+ * and stop agreeing whenever one module requests two projections.
  *
  * **Added 2026-08-29 (#157), reinstating the `UNPAINTED_ROUTE` idiom this file
  * deleted at #331 -- named per id this time rather than as one entry, because
@@ -87,6 +97,16 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * decision (`tests/foundation/unconsumed-action-contract.test.ts`'s
  * `AWAITING_CONSUMER['selection.primary']`: *"there is no selection state, no
  * highlight and no inspector"*) and the sixth (`world/render-snapshot`)
+ * -- **and one of that five stopped waiting at issue #895, which is the
+ * finding rather than the digit.** The quoted sentence had three clauses and
+ * only the middle one still holds: the Regime panel's roster rows are now a
+ * selection (`role="radio"`, `aria-checked`, a roving tab stop) and the block
+ * under them is an inspector, so `hud/prisoner-detail` had its blocker
+ * removed by a panel rather than by the world-pointer selection model
+ * `selection.primary` names. There is still no *highlight* -- nothing in
+ * `src/rendering/` marks the selected prisoner in the world -- and
+ * `selection.primary` still has no consumer at all, which is why that entry
+ * stands, amended, rather than being deleted; and
  * superseded by `simulation-snapshot-feed.ts`'s session-snapshot bundle, an
  * open question ADR 0040 already records and defers to its slice 4. Neither is
  * an accident this gate should paper over, and neither should be allowed to
@@ -109,7 +129,9 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * the seventh reader (ADR 0048 consequence 1); the eighth and ninth are
  * `src/ui/simulation-prisoner-roster.ts` and `src/ui/simulation-regime.ts`
  * (issue #451), which are counted here as *two* modules reading two projections
- * so the two counts happen to move together this time. The `file:line`
+ * so the two counts happen to move together this time. The tenth is
+ * `src/ui/simulation-prisoner-detail.ts` (issue #895), one module reading one
+ * id, so they move together again -- which is luck and not a rule. The `file:line`
  * citations that used to sit beside each reader are gone rather than
  * renumbered, for `docs/AGENT_WORKFLOW.md` §4's reason: a line number into a file
  * under active edit is the least durable citation here, and every one of these
@@ -199,6 +221,22 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * difference between an admission that is waiting for a cell and one that can
  * never be housed at all. Neither state had a surface, although the strip
  * counted both among the population.
+ *
+ * The tenth is `src/ui/simulation-prisoner-detail.ts`, over
+ * `hud/prisoner-detail` (issue #895), and it is the first reader on this
+ * channel whose request names **one row**: every one above it asks a question
+ * with no subject and takes whatever window the projection holds, while this
+ * one carries an `EntityId` the player chose by pressing a roster row. What
+ * sat unreachable behind it was neither a control nor a credit nor a warning
+ * but a **composition**: the state withholds part of a prisoner's day of the
+ * operating grant per unmet need, and the roster row shows the worst need of
+ * six -- so a prisoner costing the prison four needs' worth and one costing it
+ * a single need were indistinguishable in every surface the application had.
+ * It is also the first route this gate has seen leave
+ * `UNPAINTED_PROJECTION_IDS` by having its stated blocker removed rather than
+ * by that blocker being re-argued: the entry named "no selection state, no
+ * highlight and no inspector", and a panel-local selection answered two thirds
+ * of it.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -259,6 +297,14 @@ const PAINTERS = [
   'simulation-held-guards.ts',
   'simulation-intake.ts',
   'simulation-pending-deliveries.ts',
+  // Issue #895. The first reader on this channel whose request names **one**
+  // row: `hud/prisoner-detail` is `target: 'entity'`, and the id is the one the
+  // player pressed on a roster row. Named here for the reason this list gives,
+  // and it is the direction that matters most for a detail route -- the id is
+  // quoted in exactly one file, so a rename that moved it out of `src/ui/`
+  // would take the last reader of that projection with it and the per-id check
+  // below would report the route unpainted again.
+  'simulation-prisoner-detail.ts',
   'simulation-prisoner-roster.ts',
   'simulation-regime.ts',
   'simulation-room-needs.ts',
@@ -315,16 +361,14 @@ const readersOf = (id: string): readonly string[] => READER_SURFACE.filter((file
  * today, with a citation, and must not merely restate a plan.
  */
 const UNPAINTED_PROJECTION_IDS: Readonly<Partial<Record<ProjectionId, string>>> = {
-  'hud/prisoner-detail':
-    "No reader in `src/ui/` or `src/rendering/`. Blocked on a selection model that does not exist yet: `tests/foundation/unconsumed-action-contract.test.ts`'s `AWAITING_CONSUMER['selection.primary']` records \"there is no selection state, no highlight and no inspector.\" `docs/research/audit-2026-08-26/10-product-roadmap.md:327` names the missing panel this route waits on, \"Selection + one generic inspector panel\" -- a product feature, not this issue's protocol-channel fix.",
   'hud/incident-detail':
-    "No reader. The `-detail` half of the incidents pair waits on the same blocker as `hud/prisoner-detail`: no selection model exists (`tests/foundation/unconsumed-action-contract.test.ts`'s `AWAITING_CONSUMER['selection.primary']`), and `docs/research/audit-2026-08-26/10-product-roadmap.md:327` names the same generic-inspector panel as its route out.",
+    "No reader. The `-detail` half of the incidents pair, and it waits on the *list* half rather than on a selection model: `hud/incidents` below has no reader and no panel, so there is no row for a player to press. **This entry said it \"waits on the same blocker as `hud/prisoner-detail`\" and that sentence is spent** -- issue #895 gave that route a reader by making the Regime panel's roster rows selectable, which is a per-panel selection rather than the world-pointer `selection.primary` both entries used to point at, and the shape it took is the one an incidents panel would copy: a row carrying the id, `role=\"radio\"` on the row, and a detail block beneath. `docs/research/audit-2026-08-26/10-product-roadmap.md:327` still names the generic inspector panel this family was expected to arrive with.",
   'hud/incidents':
-    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` names the panel this waits on, "Incident notification + response controls," and it is not built. Separately, `projectIncidents` (`src/simulation/presentation/incident-projection.ts`) calls `IncidentLog.all()` and pages in memory, so each request costs `O(all incidents ever recorded)` regardless of the requested window -- tracked at `docs/HUD_PROJECTIONS.md:1130-1133` as a gap this route does not yet have a panel to hit.',
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` names the panel this waits on, "Incident notification + response controls," and it is not built. **The cost clause this entry carried was wrong in its coordinate and is now half wrong in its claim, so both are corrected in place.** It read: *"`projectIncidents` ... calls `IncidentLog.all()` and pages in memory, so each request costs `O(all incidents ever recorded)` regardless of the requested window -- tracked at `docs/HUD_PROJECTIONS.md:1613-1616`"*. Those lines are gap **22**, about a guard\'s deployment phase; the incidents gap is **28**. And "pages in memory" stopped being true: `projectIncidents` carries a terminal ordinal through its one walk and builds a row only inside the window, so the allocation is `O(limit)`. The **walk** is still `O(allIncidentsEverRecorded)`, because the aggregate this projection reports is a fold over every record -- that is the half gap 28 is named for and it needs an index inside `IncidentLog`.',
   'hud/contraband':
-    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists this as unbuilt, after the incidents panel ("then hud/contraband and hud/security"). `ConfiscationLedger.all()` (`src/simulation/contraband/confiscation.ts`) is unbounded over a session for the reason `docs/HUD_PROJECTIONS.md:1117-1120` gives, and `drain()` still has no caller anywhere in `src/` or `tests/`.',
+    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists this as unbuilt, after the incidents panel ("then hud/contraband and hud/security"). `ConfiscationLedger.all()` (`src/simulation/contraband/confiscation.ts`) is unbounded over a session for the reason `docs/HUD_PROJECTIONS.md:1600-1603` gives, and `drain()` still has no caller anywhere in `src/` or `tests/`.',
   'hud/security':
-    'No reader. `docs/adr/0036-a-derived-default-security-sector.md:490` says plainly "no panel reads `hud/security` at all," and `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists it as the last of this family\'s unbuilt panels.',
+    'No reader. `docs/adr/0036-a-derived-default-security-sector.md:508` says plainly "no panel reads `hud/security` at all," and `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists it as the last of this family\'s unbuilt panels.',
   'world/render-snapshot':
     "No reader. `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`) has no caller outside its own module and `tests/`; the render path gets world chunks through `src/rendering/feed/simulation-snapshot-feed.ts`'s session-snapshot bundle instead of pulling this projection. ADR 0040 open question 4 (`docs/adr/0040-the-shape-of-the-render-delta-channel.md:522`) leaves reuse-versus-delete to slice 4 and deliberately does not decide it here.",
 };

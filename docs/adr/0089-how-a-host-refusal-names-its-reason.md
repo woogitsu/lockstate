@@ -33,6 +33,32 @@
 
 **Proposed, 2026-09-02. Not self-approved.**
 
+> **Citation re-anchor, 2026-09-06 (`docs/AGENT_WORKFLOW.md` §4): the H4/#791
+> example this document argues from has since been fixed, and not in this
+> document's shape.** The owner ruled directly on #791 on 2026-09-03 — *"Nobody
+> was admitted — this prison has no room to hold anybody"* — and the fix that
+> shipped is **Option 1**, the "cheap fix" this document argues against as a
+> class remedy: `HostRefusalReason` gained a second member,
+> `'no-room-to-hold-anybody'` (`src/ui/host-refusal.ts:69`, not the one member
+> `:57` cited below), and `refusalMessageKey` grew a second `if` narrowing by
+> reason (`src/ui/hud/projection.ts:1335`,
+> `if (reason === 'no-room-to-hold-anybody' && actionId === 'admit-prisoner') {`),
+> not the `Record` Option 2
+> recommends. So: H4 is no longer a miss (the "genuinely player-actionable...
+> **No**" cells below are false), the sentence is shipped
+> (`src/content/default-locale-en.ts:2369`, key `hud.refusal.admit-prisoner-no-room`,
+> "Nobody was admitted — this prison has no room to hold anybody."), and the
+> "What it costs to implement" table's H4/`messages.ts`/`default-locale-en.ts`
+> rows describe work already done, differently named and NOT compiler-checked.
+> **What this does not touch: the Recommendation.** Option 2's argument —
+> that a plain `if`/`switch` lets an eighth reason compile silently unmapped,
+> exactly as H4 itself did — is undamaged by H4's patch; if anything the
+> ordinary-`if` shape the fix took is a second data point for it, not against
+> it. This paragraph is kept and marked rather than rewritten, and the
+> individual citations below are re-aimed to today's code rather than deleted,
+> so a reader can see both what this document argued and what has since
+> happened to the example it argued from.
+
 This document recommends a shape and prices it. It authors no new
 player-facing sentence — `AGENTS.md`'s fourth exclusion reserves that to the
 owner, and every quotation of English text below is transcribed verbatim from
@@ -48,18 +74,21 @@ line. Nothing under `src/` is changed by this document.
 
 > "Nobody was admitted — the request was refused."
 
-(`src/content/default-locale-en.ts:1462`, key `hud.refusal.admit-prisoner`).
+(`src/content/default-locale-en.ts:2353`, key `hud.refusal.admit-prisoner`).
 That is very likely the first refusal a new player ever meets, and it says
-nothing about what to do. The throw behind it is specific —
-`src/main.ts:2710`:
+nothing about what to do. **At the commit this document was drafted from, the
+throw behind it read** (re-anchored 2026-09-06; the throw now lives at
+`src/main.ts:2998-3001` and is no longer a plain `Error` — see the status note
+above):
 
 > `throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');`
 
 — but `src/ui/host-refusal.ts` deliberately never shows that string to a
-player (ADR 0011, and correctly — see below), and `HostRefusalReason` carries
-exactly one member (`src/ui/host-refusal.ts:57`), for an unrelated overdraft
-ruling. The throw at `main.ts:2710` therefore has no reason to attach, and the
-generic per-control sentence is all that is left to say.
+player (ADR 0011, and correctly — see below), and `HostRefusalReason` **carried**
+exactly one member (`src/ui/host-refusal.ts:69`, now two — see the status
+note), for an unrelated overdraft ruling. The throw, at the time, therefore had
+no reason to attach, and the generic per-control sentence was all that was
+left to say.
 
 The cheap fix — give `HostRefusalReason` a second member for this one case —
 was offered to the owner in #791 itself and declined. Their instruction, tying
@@ -86,22 +115,28 @@ command it already accepted — is ADR 0087's subject, not this one; see
 
 Six `throw` statements in `src/main.ts` are reachable from a command's
 dispatch and land in the HUD's gate (`AsyncActionGate`, read by `reportError`
-at `src/ui/hud/hud.ts:1294-1309`). No other file throws a host refusal —
-`place-build-order` (`src/main.ts:2290-2329`), `place-object`
-(`src/main.ts:2365-2373`), `zone-room` and `unzone-room` submit without any
-pre-check at all, refusing only from the worker's side, by the composition
-root's own account of why (`src/main.ts:2354-2364`: "every one of the seven
+at `src/ui/hud/hud.ts:1476-1491`). No other file throws a host refusal —
+`place-build-order` (`src/main.ts:2570-2609`), `place-object`
+(`src/main.ts:2645-2653`), `zone-room` and `unzone-room` submit without any
+pre-check at all, refusing only from the worker's side. **Re-anchored
+2026-09-06: the quoted line below is `place-object`'s own docblock, not
+`zone-room`/`unzone-room`'s — it was already misattributed to the zoning pair
+at the commit this document was cut from, a pre-existing error this window's
+insertions only moved.** No comment beside `zone-room` or `unzone-room`
+themselves states the reason in these words; the closest is `place-object`'s
+neighbouring account of why *it* has no pre-check, which reasons identically
+for the same structural cause (`src/main.ts:2637-2640`: "every one of the seven
 refusal reasons is about the zoning plane, the objects already standing or the
 orders in flight, and this thread holds none of them").
 
 | # | Site | Actioned by | Carries a reason today? | What it could say if it could |
 | --- | --- | --- | --- | --- |
-| H1 | `src/main.ts:1058-1063`, `requireSimulation` — shared by every command case that reaches it (at least eight: `purchase-materials`, `admit-prisoner`, `hire-staff`, `place-build-order`, `place-object`, `zone-room`, `unzone-room`, and every other case calling `requireSimulation(commands)`) | no session at all | No — plain `Error` | Nothing control-specific: "no session" is a cross-cutting fault, not a fact about the control pressed, and the per-`actionId` generic key (`refusalMessageKey`'s `undefined`-reason branch, `src/ui/hud/projection.ts:1116-1146`) is already the right sentence for it |
-| H2 | `src/main.ts:2549-2551`, `purchase-materials` — unknown `itemId` | a schema-shaped defect: the requested material does not exist | No — plain `Error` | Nothing a player caused: nothing on the Build panel can name an item the catalogue does not carry, so this is the "malformed charge" case `host-refusal.ts:52-55` already reasons about for the sibling affordability check — a defect on this thread, and the generic sentence is the true one |
-| H3 | `src/main.ts:2565-2591`, `purchase-materials` — affordability | one of two: the standing overdraft floor (`verdict.refusal === 'past-the-floor'`), or a malformed charge | **Half of it.** `'past-the-floor'` throws `HostRefusalError('past-the-overdraft-floor', message)` (`main.ts:2588-2590`); the other branch throws a plain `Error` deliberately, for the same "malformed charge is a defect" reason as H2 | Already reaches `hud.refusal.purchase-materials-past-floor` (`src/content/default-locale-en.ts:1456`) |
-| H4 | `src/main.ts:2710`, `admit-prisoner` — no room instance exists | genuinely player-actionable: nothing is zoned yet | **No** — plain `Error`, the #791 defect | `hud.alert.refusal.admit.no-accommodation`'s sentence, or its equivalent — see "Why the existing key is the wrong destination" below |
-| H5 | `src/main.ts:2769`, `hire-staff` — unknown `staffRoleId` | a schema-shaped defect, same shape as H2 | No — plain `Error` | Nothing a player caused, for the same reason as H2 |
-| H6 | `src/main.ts:2783-2785`, `hire-staff` — affordability | same two-way split as H3 | **Half of it**, same mechanism as H3 | Already reaches `hud.refusal.hire-staff-past-floor` (`src/content/default-locale-en.ts:1457`) |
+| H1 | `src/main.ts:1061-1065`, `requireSimulation` — shared by every command case that reaches it (at least eight: `purchase-materials`, `admit-prisoner`, `hire-staff`, `place-build-order`, `place-object`, `zone-room`, `unzone-room`, and every other case calling `requireSimulation(commands)`) | no session at all | No — plain `Error` | Nothing control-specific: "no session" is a cross-cutting fault, not a fact about the control pressed, and the per-`actionId` generic key (`refusalMessageKey`'s `undefined`-reason branch, `src/ui/hud/projection.ts:1236-1264`) is already the right sentence for it |
+| H2 | `src/main.ts:2829-2831`, `purchase-materials` — unknown `itemId` | a schema-shaped defect: the requested material does not exist | No — plain `Error` | Nothing a player caused: nothing on the Build panel can name an item the catalogue does not carry, so this is the "malformed charge" case `host-refusal.ts:63-67` already reasons about for the sibling affordability check — a defect on this thread, and the generic sentence is the true one |
+| H3 | `src/main.ts:2845-2871`, `purchase-materials` — affordability | one of two: the standing overdraft floor (`verdict.refusal === 'past-the-floor'`), or a malformed charge | **Half of it.** `'past-the-floor'` throws `HostRefusalError('past-the-overdraft-floor', message)` (`main.ts:2868-2870`); the other branch throws a plain `Error` deliberately, for the same "malformed charge is a defect" reason as H2 | Already reaches `hud.refusal.purchase-materials-past-floor` (`src/content/default-locale-en.ts:2347`) |
+| H4 | `src/main.ts:2998-3001`, `admit-prisoner` — no room instance exists | genuinely player-actionable: nothing is zoned yet | **At the time, no — plain `Error`, the #791 defect. Fixed 2026-09-03, Option-1-shaped — see the status note.** | `hud.refusal.admit-prisoner-no-room` (`src/content/default-locale-en.ts:2369`): "Nobody was admitted — this prison has no room to hold anybody." — shipped, not `hud.alert.refusal.admit.no-accommodation`'s wording as guessed below |
+| H5 | `src/main.ts:3060`, `hire-staff` — unknown `staffRoleId` | a schema-shaped defect, same shape as H2 | No — plain `Error` | Nothing a player caused, for the same reason as H2 |
+| H6 | `src/main.ts:3074-3076`, `hire-staff` — affordability | same two-way split as H3 | **Half of it**, same mechanism as H3 | Already reaches `hud.refusal.hire-staff-past-floor` (`src/content/default-locale-en.ts:2348`) |
 
 Two things this table makes precise that the issue's framing does not:
 
@@ -125,12 +160,14 @@ would reopen one case at a time if it is patched rather than redesigned.
 `src/ui/host-refusal.ts:35-46` gives the concrete reason `Error.message` is
 never player text: the value behind `AsyncActionFailure.error` is `unknown`,
 so the reader has to decide from the value itself, and an `Error` thrown for a
-programmer's benefit is authored for a programmer. `main.ts:2710`'s own
-message — "This prison has no room to hold a prisoner, so nobody can be
-admitted into it" — is a perfectly good *diagnostic* sentence and a poor
-*player* one for a reason specific to this codebase: it describes the
+programmer's benefit is authored for a programmer. `main.ts:3000`'s (then
+`:2710`'s) own diagnostic string — "This prison has no room to hold a
+prisoner, so nobody can be admitted into it" — is still carried today as the
+`HostRefusalError`'s `message` argument (`main.ts:2998-3001`), which is a
+perfectly good *diagnostic* sentence and a poor *player* one for a reason
+specific to this codebase: it describes the
 mechanism (`IntakeSystem` marking an arrival `'failed'`, per the comment
-immediately above the throw at `main.ts:2617-2626`) rather than the action
+immediately above the throw at `main.ts:2897-2908`) rather than the action
 `hud.intake.hint` already told the player to take ("A prison needs a cell
 before it can admit anyone," per #791's own playtest). Showing the thrown
 string would trade a wrong sentence for a differently wrong one — accurate
@@ -163,15 +200,19 @@ two sections down (`simulation-alerts.ts:104-117`) is the same shape for a
 different closed union. Both are exhaustive **by construction**: TypeScript
 refuses to compile a `Record<ClosedUnion, X>` missing a member, so a producer
 naming a fortieth `RefusalReason` breaks the build until somebody has decided
-its sentence — which is the property the current host-side switch
-(`src/ui/hud/projection.ts:1116-1146`) does not have. Nothing there stops a
-seventh `HostRefusalReason` member from compiling while `refusalMessageKey`
+its sentence — which is the property the current host-side function
+(`src/ui/hud/projection.ts:1215-1264`) does not have. **Re-anchored
+2026-09-06: it is no longer a plain `switch` alone — the 2026-09-03 ruling gave
+it a second `if (reason === …)` narrowing ahead of the switch, the same shape
+as the first, which is the point rather than a rebuttal of it.** Nothing there
+stops a third reason-carrying member from compiling while `refusalMessageKey`
 quietly keeps falling through to the generic key for it, because the function
-is an ordinary `switch`, not a lookup the compiler can check for completeness.
+is an ordinary chain of `if`s, not a lookup the compiler can check for
+completeness.
 
 A second precedent, from the same file, answers a question option 2 below has
 to face: whether a host sentence and a worker sentence covering the same fact
-may share one key. `src/content/default-locale-en.ts:560-577` argues no, at
+may share one key. `src/content/default-locale-en.ts:735-751` argues no, at
 length, for the money-floor pair ruling 18 and ruling 23 produced:
 
 > Four call sites, and two vocabularies that ADR 0011 keeps apart... Making
@@ -181,9 +222,11 @@ length, for the money-floor pair ruling 18 and ruling 23 produced:
 > identical text, because a key here is a *call site* and never a string pool.
 > What keeps identical text identical is a test, not a shared key.
 
-And `default-locale-en.ts:419-424` states the same rule from the other
+And `default-locale-en.ts:594-598` states the same rule from the other
 namespace's side, specifically about the sentence #791 names as "already
-written":
+written" (**re-anchored 2026-09-06: `:419-424` was already the tab-bar-width
+comment, not this passage, before this window opened — a pre-existing
+misaim this pass corrects rather than a drift**):
 
 > Namespaced `hud.alert.refusal.*` and not `hud.refusal.*`: the two keys in
 > that older namespace label the always-laid-out band under the status
@@ -193,18 +236,20 @@ written":
 ### Why the existing key is the wrong destination, even though the sentence is right
 
 #791 frames the fix as reaching `hud.alert.refusal.admit.no-accommodation`
-(`default-locale-en.ts:433`: "Nobody was admitted — there is no room to put a
+(`default-locale-en.ts:608`: "Nobody was admitted — there is no room to put a
 prisoner in yet."). Per the rule just quoted, that specific key is reserved
 for the alerts-list row a *worker* refusal produces, with no control attached
 — and a host refusal is bound to a control (`refusal.dataset['action']`,
-`markControl`, `aria-describedby`; `src/ui/hud/hud.ts:1298-1309`). Wiring H4 to
+`markControl`, `aria-describedby`; `src/ui/hud/hud.ts:1476-1491`). Wiring H4 to
 reach that literal key would be the exact cross-namespace reuse
-`default-locale-en.ts:560-577` already argued against for the money pair, one
-producer over. The right destination is a *new* `hud.refusal.*` key, and the
-established convention is that its wording may be identical to
-`admit.no-accommodation`'s without becoming the same key — exactly as
+`default-locale-en.ts:735-751` already argued against for the money pair, one
+producer over. **It was not, in the event: the shipped key is
+`hud.refusal.admit-prisoner-no-room` (see the status note), a new key exactly
+as this section recommends.** The established convention is that its wording
+may be identical to `admit.no-accommodation`'s without becoming the same key —
+exactly as
 `hud.refusal.hire-staff-past-floor` and `hud.alert.refusal.hire.insufficient-funds`
-already do for money (`default-locale-en.ts:1456-1457` beside
+already do for money (`default-locale-en.ts:2347-2348` beside
 `REFUSAL_LABEL_KEYS['hire.insufficient-funds']`, `simulation-alerts.ts:47`).
 That new key is copy, and it is the owner's; this document names where it
 goes and does not write it.
@@ -227,11 +272,11 @@ goes and does not write it.
   landed. It has no `HostRefusalReason` in it anywhere.
 - **#780** — a refusal outliving its subject. This is a *lifecycle* defect in
   `RefusalLog.supersede`'s per-target keying (`src/simulation/runtime/session-commands.ts`)
-  and in `hud.ts`'s clearing rules (`src/ui/hud/hud.ts:1211-1259` per the
+  and in `hud.ts`'s clearing rules (`src/ui/hud/hud.ts:1496-1559` per the
   issue) — when a standing refusal stops being shown, not what it says while
   it stands. A host refusal already clears on the narrower, and already
   correct, rule `hud.ts`'s `clearRefusal` states: the same `actionId`
-  succeeding retires it (`src/ui/hud/hud.ts:1317-1324`). Nothing about
+  succeeding retires it (`src/ui/hud/hud.ts:1504-1507`). Nothing about
   widening `HostRefusalReason` touches when a refusal is retired.
 
 All three sit in the family #791 belongs to — "the game knows something and
@@ -319,8 +364,8 @@ sentence, not that every refusal must acquire a reason.
 
 Instead of a reason travelling as data, `src/main.ts` resolves the final
 translated string itself at the point of the throw — it already holds the
-shared `Localizer` instance (imported at `main.ts:104-107`; instantiated at
-`main.ts:1066`, "The page's one localizer.") —
+shared `Localizer` instance (imported at `main.ts:109`; instantiated at
+`main.ts:1098`, "The page's one localizer.") —
 and either throws that string for `reportError` to display verbatim, or calls
 into the HUD's rendering state directly.
 
@@ -332,7 +377,7 @@ never become a source of truth," policed by scanning `src/ui/hud/` and
 `src/main.ts`, which is not under either directory and already imports
 `src/simulation/**` freely as the composition root (e.g.
 `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` from `src/simulation/economy`, used at
-`main.ts:2568,2779`). So the literal test this repository has for that
+`main.ts:2848,3070`). So the literal test this repository has for that
 boundary would not fire on option 3, and asserting that it does would be the
 "measurement is not a diagnosis" failure `docs/AGENT_WORKFLOW.md` §3 warns
 against.
@@ -356,13 +401,13 @@ hypothetical: it is this repository's own recorded failure mode
 keeps that decision in `projection.ts`, which carries no DOM dependency and is
 already exercised by `tests/unit/ui-hud-projection.test.ts`.
 
-It also duplicates a call site `default-locale-en.ts:560-577` argues against
+It also duplicates a call site `default-locale-en.ts:735-751` argues against
 duplicating for a different reason: two places in the codebase already resolve
-`t()` for refusal text — `hud.ts:1305`'s `reportError`, for a host refusal, and
-`hud.ts:1355`'s `applySimulationRefusal`, for a worker one — and option 3 would
+`t()` for refusal text — `hud.ts:1476`'s `reportError`, for a host refusal, and
+`hud.ts:1543`'s `applySimulationRefusal`, for a worker one — and option 3 would
 make it three, with `main.ts` resolving its own. `main.ts` would also need to
 re-derive the "is this a chrome intent that already applied locally" judgement
-`reportError` itself encodes (`hud.ts:1300-1302`, `messageKey !== undefined`)
+`reportError` itself encodes (`hud.ts:1480-1483`, `messageKey !== undefined`)
 in order to decide whether to say anything at all, which today is
 knowledge the HUD layer holds by construction (`dispatchCommand` gates on the
 control; `dispatchShell` never shows a line) rather than knowledge `main.ts`
@@ -399,11 +444,11 @@ Priced against the tree at `main` @ `5aef4301` (v0.0.348).
 
 | File | Change | Size | Risk |
 | --- | --- | --- | --- |
-| `src/ui/host-refusal.ts` | Widen `HostRefusalReason` from 1 to 3 members (`admit.no-accommodation`, `purchase.past-overdraft-floor`, `hire.past-overdraft-floor`); rewrite the docblock's "one member, and that is not an oversight" paragraph (`host-refusal.ts:48-56`) to state the real membership rule ("a reason belongs here once some sentence differs because of it and the condition is player-actionable, not a defect on this thread") | ~15 lines changed, no new imports | None — a type and a comment |
-| `src/main.ts` | H3/H6 (`main.ts:2588-2590`, `:2783-2785`): rename `'past-the-overdraft-floor'` to the two namespaced members. H4 (`main.ts:2710`): change `throw new Error(...)` to `throw new HostRefusalError('admit.no-accommodation', message)`, keeping the existing diagnostic string as the `Error`'s message argument | 3 call sites, ~6 lines | Low — each site already has a passing test on the generic fallback; unreachable from `pnpm test` directly (DOM), so correctness of the *reason chosen* rests on review and the browser suite, exactly as it does today for H3/H6 |
-| `src/ui/hud/projection.ts` | Replace `refusalMessageKey`'s reason-`switch` (`projection.ts:1116-1123`) with a `Record<HostRefusalReason, LocalizationKey>` lookup of the same three entries, falling back to the unchanged `actionId`-only switch (`projection.ts:1124-1146`) when the reason is absent or unmapped; rewrite the function's docblock (`projection.ts:1080-1115`) to state the new contract | ~30 lines net, in a file with no DOM dependency | Low — `tests/unit/ui-hud-projection.test.ts` already exercises this function directly |
-| `src/ui/hud/messages.ts` | Add one `HUD_MESSAGE_KEY` member (`refusalAdmitPrisonerNoAccommodation` or similar) beside the existing eleven refusal keys (`messages.ts:1058-1130`); rename the two existing `...PastFloor` keys' *values* only if the namespacing choice above is taken literally (the key **names** in `messages.ts` need not change, only what `HostRefusalReason` string they are keyed from in `projection.ts`) | ~5 lines | None |
-| `src/content/default-locale-en.ts` | **One new authored sentence**, under `hud.refusal.admit.no-accommodation` or an equivalent new key in the `hud.refusal.*` namespace (not the existing `hud.alert.refusal.admit.no-accommodation` — see "Why the existing key is the wrong destination"). **This is the owner's**, per `AGENTS.md`'s fourth exclusion; this document does not write it. The nearest already-shipped sentence, offered only as evidence a sentence of this shape is reachable and not as a proposal, is `default-locale-en.ts:433`'s "Nobody was admitted — there is no room to put a prisoner in yet." | 1 line, once authored | — |
+| `src/ui/host-refusal.ts` | Widen `HostRefusalReason` from 1 to 3 members (`admit.no-accommodation`, `purchase.past-overdraft-floor`, `hire.past-overdraft-floor`); rewrite the docblock's "one member, and that is not an oversight" paragraph (`host-refusal.ts:62-68`, re-anchored) to state the real membership rule ("a reason belongs here once some sentence differs because of it and the condition is player-actionable, not a defect on this thread") | ~15 lines changed, no new imports | None — a type and a comment. **Overtaken for H4 specifically, 2026-09-03: see the status note — `HostRefusalReason` is 2 members today (`'past-the-overdraft-floor'` \| `'no-room-to-hold-anybody'`, `host-refusal.ts:69`), not the 3 namespaced ones this row prices, and the docblock already carries its own "this was one member" correction (`host-refusal.ts:62-68`).** |
+| `src/main.ts` | H3/H6 (`main.ts:2868-2870`, `:3074-3076`, re-anchored): rename `'past-the-overdraft-floor'` to the two namespaced members. H4 (`main.ts:2998-3001`, re-anchored — **and already done, differently: see the status note**): change `throw new Error(...)` to `throw new HostRefusalError('admit.no-accommodation', message)`, keeping the existing diagnostic string as the `Error`'s message argument | 3 call sites, ~6 lines | Low — each site already has a passing test on the generic fallback; unreachable from `pnpm test` directly (DOM), so correctness of the *reason chosen* rests on review and the browser suite, exactly as it does today for H3/H6 |
+| `src/ui/hud/projection.ts` | Replace `refusalMessageKey`'s reason-`switch` with a `Record<HostRefusalReason, LocalizationKey>` lookup of the same three entries, falling back to the unchanged `actionId`-only switch when the reason is absent or unmapped; rewrite the function's docblock to state the new contract (function re-anchored to `projection.ts:1215-1264`, its docblock immediately above) | ~30 lines net, in a file with no DOM dependency | Low — `tests/unit/ui-hud-projection.test.ts` already exercises this function directly. **Not done this way for H4: `host-refusal.ts:69` widened to 2 members and `projection.ts:1233-1235` added an `if`, not a `Record` — see the status note.** |
+| `src/ui/hud/messages.ts` | Add one `HUD_MESSAGE_KEY` member (`refusalAdmitPrisonerNoAccommodation` or similar) beside the existing eleven refusal keys (re-anchored to `messages.ts:1297-1373`); rename the two existing `...PastFloor` keys' *values* only if the namespacing choice above is taken literally (the key **names** in `messages.ts` need not change, only what `HostRefusalReason` string they are keyed from in `projection.ts`) | ~5 lines | None. **Done for H4 as `refusalAdmitPrisonerNoRoom` (`messages.ts:1372`), one of twelve refusal keys now, not eleven.** |
+| `src/content/default-locale-en.ts` | **One new authored sentence**, under `hud.refusal.admit.no-accommodation` or an equivalent new key in the `hud.refusal.*` namespace (not the existing `hud.alert.refusal.admit.no-accommodation` — see "Why the existing key is the wrong destination"). **This is the owner's**, per `AGENTS.md`'s fourth exclusion; this document does not write it. The nearest already-shipped sentence, offered only as evidence a sentence of this shape is reachable and not as a proposal, is `default-locale-en.ts:608`'s (re-anchored) "Nobody was admitted — there is no room to put a prisoner in yet." | 1 line, once authored | — . **Authored 2026-09-03 as `hud.refusal.admit-prisoner-no-room` (`default-locale-en.ts:2369`): "Nobody was admitted — this prison has no room to hold anybody." — see the status note.** |
 | `tests/unit/ui-hud-projection.test.ts` | Six call sites in the `refusalMessageKey` describe block (`:1038`, `:1041`, `:1049-1050`, `:1067-1069`) reference the literal `'past-the-overdraft-floor'` and move to the two namespaced strings; one new case for `'admit.no-accommodation'` | ~10 lines changed, ~5 added | Low — mechanical rename plus one new assertion, run red-then-green per `docs/AGENT_WORKFLOW.md` §3 |
 | `tests/unit/ui-hud-funds-threshold-named.test.ts` | References the *message key* names (`:85,87,156`), not the `HostRefusalReason` string values — unaffected if the `HUD_MESSAGE_KEY` constant names are kept stable while only their `HostRefusalReason` source is renamed | 0 lines expected, verify by running | None expected |
 
@@ -438,7 +483,10 @@ main-thread-only value that never crosses `sender.submit` and never persists.
 **The weakest claim in this document is the size of the inventory.** Six
 `throw` sites in `src/main.ts` were found by grep for `throw new Error(` and
 `throw ` at the commit named throughout
-(`main.ts:1060,2551,2588,2710,2769,2783`), and each was opened and read. A
+(re-anchored 2026-09-06: `main.ts:1063,2831,2869,2999,3060,3075` — H4 at
+`:2999` no longer matches `throw new Error(` at all since the 2026-09-03 ruling,
+having become `throw new HostRefusalError(`; see the status note), and each
+site was opened and read at the time. A
 seventh site added on a branch this pass could not see would not change the
 argument — the argument is about the *shape* of the fix, and one more instance
 of a defect-shaped or player-actionable throw is still one of the two kinds

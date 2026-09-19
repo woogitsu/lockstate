@@ -135,6 +135,24 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  *   here (`-1,185 - (-2,500)`). Eight paydays at 160 take 1,280 of it,
  *   leaving 35 at the ninth, which pays 35 of its 160 and **owes 125**.
  *
+ * **Superseded by [ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 2 (accepted 2026-09-10), and this is a sharper case than
+ * `tests/integration/economy-liquidity-hard-lock.test.ts`'s -- here the
+ * *press* alone already lands below the new wages rung, before payroll ever
+ * runs.** `'wages'` while fresh is now
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS`
+ * = -1,250 + 1,195 = **-55**, and this fixture's own press already lands the
+ * balance at **-1,185** — deeper than -55 before a single payday. So
+ * `Math.max(0, balance - floorFor('wages', true))` is `Math.max(0, -1,185 -
+ * (-55)) = Math.max(0, -1,130) = 0` from the very first payday: nothing is
+ * paid, ever, while this prison stays unfurnished, and the balance never
+ * moves past -1,185 again. Measured through the real kernel: **arrears is
+ * 160 a day, flat, with no draw on the balance at all** — 1,440 after nine
+ * days, not 125. This is decision 2 working exactly as intended, not a
+ * regression: the reserve exists precisely so a payday cannot draw the
+ * balance any deeper than a press already has, and a press that has already
+ * spent past the reserve leaves payday nothing left to spend either.
+ *
  * Nothing here reads the catalogue except `GUARD_WAGE`, which is restated as a
  * literal.
  */
@@ -151,8 +169,12 @@ function insolventSession(): SimulationRuntime {
   expect(runtime.payroll.dailyWageBillMinorUnits()).toBe(2 * GUARD_WAGE);
 
   stepTo(runtime, DAY_LENGTH_TICKS * 9);
-  expect(runtime.treasury.balanceMinorUnits, 'at the wage rung, not floored at zero').toBe(-2_500);
-  expect(runtime.payroll.unpaidWagesMinorUnits, '160 billed against the 35 the rung left').toBe(125);
+  // ADR 0096 decision 2: the press already sits below the wages starter rung
+  // (-55), so payroll draws nothing from day one -- the balance never moves
+  // past the press's own -1,185, and the whole nine days of bills become
+  // arrears: 9 x 160.
+  expect(runtime.treasury.balanceMinorUnits, 'the press`s own rung, not the mature wage rung').toBe(-1_185);
+  expect(runtime.payroll.unpaidWagesMinorUnits, 'nine paydays, none of them paid at all').toBe(1_440);
   return runtime;
 }
 
@@ -206,16 +228,18 @@ describe('the arrears field is in the save, and it is what makes a debt survive 
     if (!decoded.ok) throw new Error('the envelope must decode for this test to mean anything');
 
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(125);
-    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(1_440);
+    expect(restored.treasury.balanceMinorUnits).toBe(-1_185);
 
     // And the restored debt is charged forward rather than merely remembered:
-    // 125 owed plus 160 for the next day, against a treasury already at the
-    // wage rung and no room left to pay any of it. Before ruling 19 this read
-    // 120 owed against an empty treasury, ending at 280; before the starter
-    // rung it read 30 owed, ending at 190.
+    // 1,440 owed plus 160 for the next day, against a treasury the wages
+    // starter rung already refuses to draw on at all. Before ADR 0096
+    // decision 2 this read 125 owed against a treasury at the mature wage
+    // rung, ending at 285; before ruling 19 it read 120 owed against an empty
+    // treasury, ending at 280; before the starter rung it read 30 owed,
+    // ending at 190.
     stepTo(restored, DAY_LENGTH_TICKS * 10);
-    expect(restored.payroll.unpaidWagesMinorUnits).toBe(285);
+    expect(restored.payroll.unpaidWagesMinorUnits).toBe(1_600);
   });
 
   it('writes the section unconditionally, so a solvent prison says "nothing owed" rather than "unknown"', () => {
@@ -239,7 +263,7 @@ describe('a save written before the payroll existed still loads, which is why no
     const captured = capturedSystems(insolventSession());
     const { payroll: dropped, ...economy } = captured.economy;
     expect(dropped, 'the positive control: the key must be there before this function removes it').toEqual({
-      unpaidWagesMinorUnits: 125,
+      unpaidWagesMinorUnits: 1_440,
     });
     const envelope = envelopeOf({ ...captured.bundle, simulation: { ...captured.simulation, economy } });
     return JSON.parse(JSON.stringify(envelope)) as unknown;
@@ -266,8 +290,9 @@ describe('a save written before the payroll existed still loads, which is why no
     expect(createNewSimulationRuntime(0).payroll.unpaidWagesMinorUnits).toBe(0);
 
     // The rest of the save is untouched by the absence: the treasury the older
-    // build wrote is the treasury that comes back.
-    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
+    // build wrote is the treasury that comes back -- ADR 0096 decision 2's
+    // wages starter rung, since this fixture's press already lands below it.
+    expect(restored.treasury.balanceMinorUnits).toBe(-1_185);
   });
 
   it('is refused if it carries the key with a value the field cannot hold', () => {
@@ -336,7 +361,9 @@ describe('the historical chain still walks a save older than the field', () => {
     // for exactly that reason.
     const captured = capturedSystems(insolventSession());
     const { bundle } = captured;
-    const { objects: _objects, alerts: _alerts, ...simulation } = captured.simulation;
+    // `regimeSchedules` removed beside them for the same reason, since ADR
+    // 0113: it is V6's required section and no V4 build wrote one.
+    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
@@ -376,19 +403,23 @@ describe('the historical chain still walks a save older than the field', () => {
 
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
     // The treasury the V4 save recorded, and no debt -- because a V4 build had
-    // no way to owe one.
-    expect(restored.treasury.balanceMinorUnits).toBe(-2_500);
+    // no way to owe one. ADR 0096 decision 2's wages starter rung, since this
+    // fixture's own press already lands below it (see `insolventSession`).
+    expect(restored.treasury.balanceMinorUnits).toBe(-1_185);
     expect(restored.payroll.unpaidWagesMinorUnits).toBe(0);
   });
 });
 
 describe('the version this all rests on', () => {
-  it('is still 5, and a bump would need its own reason', () => {
+  it('is 6, and the bump that took it there is not payroll\'s', () => {
     // Pinned rather than deleted, for the reason
     // `economy-state-income-persistence.test.ts` gives about the same number:
     // what this guards is that a bump has a reason, not that the number never
     // moves. Payroll is not one -- it adds an optional field whose absence is
-    // unambiguous, which is the pattern five fields took before it.
-    expect(SAVE_SCHEMA_VERSION).toBe(5);
+    // unambiguous, which is the pattern five fields took before it. The reason
+    // for 6 is ADR 0113's `simulation.regimeSchedules`, which is required
+    // precisely because its absence is *not* unambiguous once a schedule can be
+    // edited -- the distinction this assertion exists to keep visible.
+    expect(SAVE_SCHEMA_VERSION).toBe(6);
   });
 });

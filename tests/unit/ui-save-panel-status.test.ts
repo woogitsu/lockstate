@@ -41,7 +41,7 @@ function resolve(message: SaveMessage): string {
 }
 describe('describeSaveResult: distinct, actionable recovery states', () => {
   it('reports a successful save with its generation id', () => {
-    const status = describeSaveResult({ ok: true, generationId: 'gen-abc' });
+    const status = describeSaveResult({ ok: true, generationId: 'gen-abc', revision: 3 });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusSaved);
     expect(resolve(status)).toBe('Saved (generation gen-abc).');
@@ -262,19 +262,25 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'display-scale-messages.ts',
     'display-scale.ts',
     'host-refusal.ts',
+    'language-messages.ts',
+    'language.ts',
     'object-tool.ts',
+    'prisoner-sentence.ts',
     'room-tool.ts',
     'save-panel.ts',
+    'save-panel-delete.ts',
     'save-panel-messages.ts',
     'simulation-alerts.ts',
   'simulation-build-queue.ts',
     'simulation-clock.ts',
     'simulation-commands.ts',
+    'simulation-conditions.ts',
     'simulation-counts.ts',
     'simulation-events.ts',
     'simulation-held-guards.ts',
     'simulation-intake.ts',
     'simulation-pending-deliveries.ts',
+    'simulation-prisoner-detail.ts',
     'simulation-prisoner-roster.ts',
     'simulation-projections.ts',
     'simulation-regime.ts',
@@ -283,6 +289,8 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
   'simulation-staff-roster.ts',
     'simulation-zoning.ts',
     'telemetry-consent-prompt.ts',
+    'theme-messages.ts',
+    'theme.ts',
   ] as const;
 
   /** Source with comments removed, so prose about a rule cannot trip the rule. */
@@ -401,7 +409,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   } as const;
 
   it('reports a completed import with the generation it wrote', () => {
-    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', migrated: false });
+    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', revision: 4, migrated: false });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImported);
     expect(resolve(status)).toBe('Imported the save file into this prison (generation gen-xyz).');
@@ -410,7 +418,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   it('says so when the file it imported came from an older version', () => {
     // The player-visible evidence that the migration chain ran. Nothing else
     // in the interface can tell them.
-    const status = describeImportResult({ ok: true, generationId: 'gen-old', migrated: true });
+    const status = describeImportResult({ ok: true, generationId: 'gen-old', revision: 5, migrated: true });
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportedMigrated);
     expect(resolve(status)).toContain('older version');
     expect(resolve(status)).toContain('gen-old');

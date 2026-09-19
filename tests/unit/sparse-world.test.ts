@@ -322,3 +322,104 @@ describe('chunk size is bounded, and the bound is checked before anything is all
     expect(bytes).toBeLessThan(ALLOCATION_HEADROOM_BYTES);
   });
 });
+
+/**
+ * ADR 0099 decision 3: the drawn world's marker, at the write sites that are
+ * this class's own.
+ *
+ * The marker is what tells the renderer that what it draws is out of date
+ * (issue #1037), and decision 3 requires it to move on **every write to a
+ * layer `WorldRenderView.readTile` reads** and on **every change of tile or
+ * parcel ownership**. Two of the three sources it names live here; the third
+ * is a build order's drawn phase and lives in `ConstructionSystem`.
+ *
+ * These are the cases that say the marker is not derived from the chunk
+ * revisions. `setOwned` and `setParcelOwned` move no chunk counter at all --
+ * that is ADR 0099 §4's second hole, and it is why summing
+ * `geometryRevision`/`contentRevision` per publication would have been wrong
+ * rather than merely slower.
+ */
+describe("the drawn world's marker moves for everything a renderer draws", () => {
+  const tile = { x: tileCoordinate(3), y: tileCoordinate(4) };
+
+  function loadedWorld(): SparseWorld {
+    const world = new SparseWorld(32);
+    world.load(origin);
+    return world;
+  }
+
+  it('starts at zero and only ever counts upward', () => {
+    const world = new SparseWorld(32);
+    expect(world.drawnWorldRevision).toBe(0);
+    world.markDrawnWorldChanged();
+    world.markDrawnWorldChanged();
+    expect(world.drawnWorldRevision).toBe(2);
+  });
+
+  it('moves for each of the four layers a tile sample is read from', () => {
+    const world = loadedWorld();
+    const seen: number[] = [world.drawnWorldRevision];
+
+    world.setTerrain(tile, 'concrete');
+    seen.push(world.drawnWorldRevision);
+    world.setTopEdge(tile, 1);
+    seen.push(world.drawnWorldRevision);
+    world.setLeftEdge(tile, 1);
+    seen.push(world.drawnWorldRevision);
+    world.setZoning(tile, 1);
+    seen.push(world.drawnWorldRevision);
+
+    // Strictly increasing, once per write. `TileSample`'s four chunk-layer
+    // fields are `terrainNumericId`, `topEdge`, `leftEdge` and `zoning`, and
+    // this is one write to each of them.
+    expect(seen).toEqual([seen[0], seen[0]! + 1, seen[0]! + 2, seen[0]! + 3, seen[0]! + 4]);
+  });
+
+  it('moves for chunk ownership, which no chunk revision records', () => {
+    const world = new SparseWorld(32);
+    const before = world.drawnWorldRevision;
+
+    world.setOwned(origin, true);
+    expect(world.drawnWorldRevision).toBe(before + 1);
+    // `TileSample.owned` is read from this set and from no chunk layer, so
+    // neither `geometryRevision` nor `contentRevision` moved for that write.
+    expect(world.getChunk(origin)?.geometryRevision).toBe(0);
+    expect(world.getChunk(origin)?.contentRevision).toBe(0);
+
+    // Re-asserting ownership already held changes no pixel, so it must not
+    // spend a snapshot request.
+    world.setOwned(origin, true);
+    expect(world.drawnWorldRevision).toBe(before + 1);
+
+    world.setOwned(origin, false);
+    expect(world.drawnWorldRevision).toBe(before + 2);
+    world.setOwned(origin, false);
+    expect(world.drawnWorldRevision).toBe(before + 2);
+  });
+
+  it('moves for parcel ownership, which is the owned-land outline', () => {
+    const world = new SparseWorld(32);
+    world.registerParcel({ id: 'plot', bounds: createParcelRect(0, 0, 8, 8), basePrice: 100 });
+    const before = world.drawnWorldRevision;
+
+    world.setParcelOwned('plot', true);
+    expect(world.drawnWorldRevision).toBe(before + 1);
+    world.setParcelOwned('plot', true);
+    expect(world.drawnWorldRevision).toBe(before + 1);
+    world.setParcelOwned('plot', false);
+    expect(world.drawnWorldRevision).toBe(before + 2);
+  });
+
+  it('is not carried by a snapshot, because it is a statement about one session', () => {
+    const world = loadedWorld();
+    world.setTopEdge(tile, 1);
+    expect(world.drawnWorldRevision).toBeGreaterThan(0);
+
+    // A restored world starts the count again, which is why the receiver
+    // treats the first marker it sees in a session as a baseline rather than
+    // as a change (`simulation-snapshot-feed.ts`).
+    const restored = SparseWorld.fromSnapshot(world.snapshot());
+    expect(restored.drawnWorldRevision).toBe(0);
+    expect(restored.getTopEdge(tile)).toBe(1);
+  });
+});

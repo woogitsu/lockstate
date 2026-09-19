@@ -8,7 +8,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { reportedCounts } from '../helpers/hud-counts';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -35,9 +35,26 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * `HudCountsViewModel` is built the one way it is ever built outside a
  * fixture: a real command through the real kernel, the real treasury, the
  * real `simulation/status-counts` publication and `hudCountsFromWorkerMessage`
- * -- so `roomCapacity` is the live `RoomInstanceRegistry.totalResidentCapacity`
- * a played session would actually publish, not a value chosen to make the
- * case land. `docs/TESTING.md`'s rule against a fixture supplying both sides
+ * -- so `roomCapacity` is the live figure a played session would actually
+ * publish, not a value chosen to make the case land.
+ *
+ * That clause read *"`roomCapacity` is the live
+ * `RoomInstanceRegistry.totalResidentCapacity` a played session would actually
+ * publish"* until 2026-09-15, and the identification is false in general even
+ * though it holds for this fixture. `roomCapacity` is summed over
+ * `collectRoomInstances`, a fan-out over the content room registry's catalogue
+ * ids (`docs/HUD_PROJECTIONS.md` gap 15); `totalResidentCapacity` walks the
+ * registry's own map. They coincide here because every instance this fixture
+ * registers is a `room.cell`. **So this file does not gate the divergence**:
+ * both assertions below read `0`, on a prison that is fresh under either
+ * definition, which is the one case where they cannot disagree. The gate that
+ * would notice was described in ADR 0017's "Amendment, 2026-09-01" §2 and is
+ * now built:
+ * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`,
+ * which registers a room instance under an id this build's catalogue does not
+ * define. This file is unchanged by that fix and is meant to be -- it is the
+ * shipped-catalogue case, where the two definitions coincide, and the `0`
+ * below still comes off the same live wire message. `docs/TESTING.md`'s rule against a fixture supplying both sides
  * of a comparison holds here for the same reason it holds in
  * `tests/integration/construction-just-in-time-materials.test.ts`, whose own
  * `-1,160` this file's setup is drawn from (`654 bricks, not 656 ... 25,000 -
@@ -97,11 +114,12 @@ describe('the FUNDS badge during the starter exemption (#771, fixed 2026-09-01)'
 
     // Read the badge the same way the strip does: through the real wire
     // message and the real translator, never a hand-built view model.
-    const counts = hudCountsFromWorkerMessage(publication(runtime));
-    expect(counts, 'a status-counts publication must translate').toBeDefined();
-    expect(counts!.roomCapacity, 'published live, and it is what "fresh, unfurnished" means on the wire').toBe(0);
+    // `reportedCounts` rather than `!`: the translator has answered three
+    // things since #1191, and this assertion is about the one that is a row.
+    const counts = reportedCounts(publication(runtime));
+    expect(counts.roomCapacity, 'published live, and it is what "fresh, unfurnished" means to the host -- see the header, it is not the registry figure').toBe(0);
 
-    const fundsMetric = projectStatusMetrics(counts!).find((descriptor) => descriptor.id === 'funds');
+    const fundsMetric = projectStatusMetrics(counts).find((descriptor) => descriptor.id === 'funds');
     expect(fundsMetric, 'no funds metric in the strip').toBeDefined();
 
     /*

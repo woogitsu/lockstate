@@ -1,6 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -14,7 +13,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -292,7 +293,7 @@ async function buildSealedCell(page: Page, label: string): Promise<SealedCellRes
   let zoned = false;
   let attempts = 0;
   for (; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -333,7 +334,7 @@ async function buildSealedCell(page: Page, label: string): Promise<SealedCellRes
 }
 
 async function admit(page: Page, count: number, act: string): Promise<number> {
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   let pressed = 0;
   for (let index = 0; index < count; index += 1) {
     if ((await page.locator('.hud-intake__admit').getAttribute('disabled')) !== null) {
@@ -350,7 +351,7 @@ async function admit(page: Page, count: number, act: string): Promise<number> {
 }
 
 async function hireGuards(page: Page, count: number, act: string): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < count; index += 1) {
@@ -362,7 +363,7 @@ async function hireGuards(page: Page, count: number, act: string): Promise<void>
 }
 
 async function openRosterFold(page: Page): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const section = page.locator('.hud-staff__roster');
   if ((await section.getAttribute('data-collapsed')) === 'true') {
     await section.locator('> .ui-section__header').click();
@@ -517,7 +518,7 @@ test('does a genuinely off-post guard walk when Released, and if not, does anyth
   // panel is not the active tab) -- read here on the first run and it produced
   // an empty timeline and "not laid out" for the whole window, which is an
   // instrument bug, not a finding. Switch back before sampling.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await openRosterFold(page);
 
   const fromB = await currentTick(page);

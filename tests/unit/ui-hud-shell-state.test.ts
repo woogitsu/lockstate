@@ -41,10 +41,18 @@ describe('initial shell state', () => {
   it('exposes five tabs and the panels the shell owns', () => {
     // Five, and the bar is now full: ADR 0022 measured a sixth as foreclosed at
     // 375x812, where the five-tab bar already leaves 1.8px of margin per side.
-    // `rooms` sits after `build` rather than at the end because the order is the
+    // `zones` sits after `build` rather than at the end because the order is the
     // order a player reaches for them -- look, build the walls, say what the
     // rooms inside them are for.
-    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
+    //
+    // These are the 2026-09-13 delivery's own five sections, in its own order
+    // (ADR 0112 decision 3, ruled by the owner on 2026-09-13 and implemented
+    // 2026-09-14): Przeglad / Buduj / Strefy / Zarzadzaj / Plan dnia. This
+    // assertion is the fact being changed on purpose -- it and
+    // `tests/unit/ui-hud-messages.test.ts`'s `HUD_TABS` assertion are the only
+    // two places that name the array verbatim, and either one going stale
+    // without the other is what they exist to catch.
+    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan']);
     expect([...HUD_PANEL_IDS]).toEqual(['minimap', 'alerts']);
   });
 });
@@ -59,9 +67,9 @@ describe('tab selection', () => {
   it('re-selecting the active tab is idempotent, not a toggle', () => {
     // A bar that closes itself when you tap the tab you are already on is a
     // trap on touch, where a stray second tap is routine.
-    const state = hudShellReducer(INITIAL_HUD_SHELL_STATE, { kind: 'select-tab', tab: 'security' });
-    const again = hudShellReducer(state, { kind: 'select-tab', tab: 'security' });
-    expect(again.activeTab).toBe('security');
+    const state = hudShellReducer(INITIAL_HUD_SHELL_STATE, { kind: 'select-tab', tab: 'manage' });
+    const again = hudShellReducer(state, { kind: 'select-tab', tab: 'manage' });
+    expect(again.activeTab).toBe('manage');
     // Identity, not just equality: the shell skips a repaint on a no-op.
     expect(again).toBe(state);
   });
@@ -151,7 +159,7 @@ describe('panel collapse', () => {
     const before = INITIAL_HUD_SHELL_STATE;
     const snapshot = { activeTab: before.activeTab, collapsedPanels: [...before.collapsedPanels] };
     hudShellReducer(before, { kind: 'toggle-panel', panel: 'minimap' });
-    hudShellReducer(before, { kind: 'select-tab', tab: 'regime' });
+    hudShellReducer(before, { kind: 'select-tab', tab: 'day-plan' });
     expect({ activeTab: before.activeTab, collapsedPanels: [...before.collapsedPanels] }).toEqual(snapshot);
   });
 });

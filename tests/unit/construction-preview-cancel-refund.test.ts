@@ -6,6 +6,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { CONSTRUCTION_MATERIALS_CONTAINER_ID, createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * `ConstructionSystem.previewCancelRefundMinorUnits`, the figure the Build
@@ -195,5 +196,78 @@ describe('previewCancelRefundMinorUnits, the states a full session cannot easily
     expect(runtime.construction.getOrder('order-b')?.state).toBe('materials-pending');
     const container = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     expect(container.quantityOf(WALL_REQUIREMENT.itemId), 'order-a took no bricks with it').toBe(0);
+  });
+
+  it('cancels the delivery before it sells the shelf, which is the whole of why the two arms are ordered (M6)', () => {
+    /*
+     * **The mutation this exists to kill, named M6 on the branch that built
+     * the sell-back and reported as *surviving* there.** The report's reason
+     * was that swapping `refundSurplusDeliveries` and `refundSurplusStock` in
+     * `refundSurplusOf` is unobservable while `PROCURABLE_MATERIALS` is a
+     * static table with no producer, so a delivery's recorded
+     * `paidMinorUnits` and the catalogue price are always the same number.
+     * **That reason is sound and the conclusion drawn from it was too narrow**:
+     * the arms differ in what they take as well as in what they pay, so the
+     * order is observable at equal prices too.
+     *
+     * A delivery is **indivisible** -- `largestSurplusDelivery` takes a whole
+     * one or none -- and the stock arm is clamped by the cancelled order's own
+     * requirement. So selling the shelf first can shrink the surplus below the
+     * size of a delivery that would otherwise have fitted, and the delivery
+     * then stays on the road:
+     *
+     * | | delivery arm first (the code) | stock arm first (M6) |
+     * | --- | --- | --- |
+     * | credited | 80, the delivery's own paid price | 40, one brick at catalogue |
+     * | shelf after | 1 brick, which is exactly what the remaining order needs | 0 |
+     * | on the road after | nothing | a 2-brick delivery for a 1-brick demand |
+     *
+     * `refundSurplusOf`'s own comment gives the intent -- *"Selling the shelf
+     * while a delivery for the same item was still refundable would prefer the
+     * weaker figure for no reason"* -- and this is that sentence with a
+     * number under it.
+     *
+     * **Why this file and not the integration suite.** The shape needs an odd
+     * residual demand (one `toilet-brick`, one brick), a shelf holding exactly
+     * one brick and a two-brick delivery still in flight, all at once. A drag
+     * through the command boundary buys per order against the shelf it finds,
+     * so it cannot be steered into that arrangement; `restore()` plus a direct
+     * `ProcurementSystem.purchase` is the only way to reach it, which is this
+     * file's stated subject.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    const brick = WALL_REQUIREMENT.itemId;
+    const brickPrice = UNIT_PRICE.get(brick)!;
+    // One brick, not two: `toilet-brick` is the buildable that leaves an odd
+    // residual demand, which is what makes the two arms disagree at all.
+    expect(BUILDABLE_REGISTRY.get('toilet-brick')?.materialsRequired).toEqual([{ itemId: brick, quantity: 1 }]);
+
+    const snapshot: ConstructionSnapshot = {
+      orders: [
+        { id: 'order-wall', definitionId: WALL, location: tile(3, 3), state: 'materials-pending', progress: 0, materialsAllocated: [] },
+        { id: 'order-toilet', definitionId: 'toilet-brick', location: tile(8, 8), state: 'materials-pending', progress: 0, materialsAllocated: [] },
+      ],
+      undoStack: [],
+      redoStack: [],
+    };
+    runtime.construction.restore(snapshot);
+
+    const container = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
+    container.deposit(brick, 1);
+    expectOk(
+      runtime.procurement.purchase('jit:m6-probe', brick, 2, runtime.kernel.tick, 'construction'),
+      'the two-brick delivery put on the road at the price the shelf would sell at',
+    );
+    expect(runtime.procurement.pendingDeliveries).toHaveLength(1);
+
+    const balanceBefore = runtime.treasury.balanceMinorUnits;
+    const previewed = runtime.construction.previewCancelRefundMinorUnits('order-wall');
+    runtime.construction.cancelOrder('order-wall');
+    const movedBy = runtime.treasury.balanceMinorUnits - balanceBefore;
+
+    expect(movedBy, 'the delivery came back whole, at its own paid price').toBe(2 * brickPrice);
+    expect(previewed, 'and the row said so before the press').toBe(movedBy);
+    expect(runtime.procurement.pendingDeliveries, 'the road is clear').toHaveLength(0);
+    expect(container.quantityOf(brick), "the brick the toilet still needs was not sold out from under it").toBe(1);
   });
 });

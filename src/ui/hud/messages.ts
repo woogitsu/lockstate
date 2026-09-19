@@ -18,33 +18,62 @@ export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
   prisoners: 'hud.status.prisoners',
   /**
-   * How many prisoners have no bed, as a badge under the `PRISONERS` chip
-   * (issue #609).
+   * How many prisoners hold no residency place, as a badge under the
+   * `PRISONERS` chip (issue #609).
    *
-   * **The wording is the owner's and was signed off before it was built**:
-   * *"N with no bed"*. It counts what is **missing** rather than what is
-   * fine -- "N housed" was the rejected alternative -- and it deliberately
-   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
-   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
-   * fact in the same words in two places and connects them.
+   * **The SHAPE is the owner's and was signed off before it was built**:
+   * *"N with no bed"*. It counts what is **missing** rather than what is fine
+   * -- "N housed" was the rejected alternative -- and that is the part of the
+   * sign-off that still binds.
+   *
+   * **The noun is not the owner's and is ours under `AGENTS.md`'s fourth
+   * reservation, released 2026-09-04.** It reads *"N not housed"* since issue
+   * #961: a room type may author `maxResidents`, so residency capacity is
+   * `min(sleep surfaces, the ceiling)` and the badge could count somebody
+   * standing beside an empty bed. `src/content/default-locale-en.ts` carries
+   * the full derivation, including why the strip could not afford *"with no
+   * place"* -- the row is 8px over its width at 1280x800 before this badge is
+   * drawn.
+   *
+   * **The echo with the Intake panel is a casualty of that and is recorded
+   * rather than dropped quietly.** #609 made this the short form of
+   * `hud.intake.no-place` (*"{count} waiting with no place to sleep"*) so the
+   * same fact read in the same words in two places. They now report the same
+   * fact in different words, because the strip is short of room and the panel
+   * is not.
    *
    * The two counts are siblings rather than the same number, and the shorter
-   * wording is what says so. The Intake panel's is *arrivals a bed would
+   * wording is what says so. The Intake panel's is *arrivals a place would
    * house right now* -- prisoners standing at `accommodation-assignment` with
-   * no free place. This one is *every prisoner without a bed*, which also
+   * no free place. This one is *every prisoner holding no place*, which also
    * covers the prisoner whose bed was taken out from under them (ADR 0028
-   * decision 2). In the prison issue #609 measured -- twelve admitted into
-   * three beds -- both read 9.
+   * decision 2) and the one over a room type's ceiling (#961). In the prison
+   * issue #609 measured -- twelve admitted into three beds -- both read 9.
    *
    * **Not rendered when it is zero**, which is why it is a badge that comes
    * and goes rather than a permanent chip: `coverageTone` records the reason
-   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * and it applies to a "0 not housed" as much as to a green badge -- *"a
    * status strip where several things are always amber teaches players to
    * ignore amber"*.
    */
   prisonersWithoutBed: 'hud.status.prisoners-without-bed',
   staff: 'hud.status.staff',
   rooms: 'hud.status.rooms',
+  /**
+   * The badge under the rooms chip: how many of the rooms it counts are not
+   * ready ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+   * finding 1).
+   *
+   * `prisonersWithoutBed`'s arrangement one chip over, and for the reason that
+   * one gives: the chip keeps the raw count a player asks it for, and the badge
+   * names the part of it that is not working yet. What is new here is *where
+   * the answer comes from* -- every other badge on this strip is derived from
+   * `HudCountsViewModel`, and this one is derived from `HudRoomNeedsViewModel`,
+   * which is the Rooms panel's own readout. That is the whole point of it: the
+   * warning existed and had exactly one render site, `.hud-rooms`, which is not
+   * laid out at all while any other tab is showing.
+   */
+  roomsNotReady: 'hud.status.rooms-not-ready',
   incidents: 'hud.status.incidents',
   /**
    * The guard-coverage chip (issue #588).
@@ -178,14 +207,20 @@ export const HUD_MESSAGE_KEY = {
    * `counts.treasuryOverdraftFloorMinorUnits`), not a new judgement -- see
    * `overdraftDescription`.
    *
-   * **The words are player-facing copy and are owner-pending**
-   * (`AGENTS.md`'s fourth exclusion): written to be the clearest available
-   * sentence rather than a placeholder, but subject to the owner's revision.
-   * It says two things `fundsDeliveriesStopped` does not: that the *overdraft
-   * itself*, not only deliveries, is exhausted, and that nothing at all --
-   * not construction, not hiring, not even the wage payment the ladder's
-   * other two rungs still let through -- can spend from this balance until
-   * the state pays what it owes.
+   * **The words are player-facing copy, authored by an agent under the
+   * owner's release of 2026-09-04** (*"Sam decyduj zawsze, jak zaczne grac to
+   * ujednolicimy"* -- decide yourself, and the style is unified later), so the
+   * voice is open to a unifying pass. It says two things
+   * `fundsDeliveriesStopped` does not: that the *overdraft itself*, not only
+   * deliveries, is spent, and that nothing at all -- not construction, not
+   * hiring, not even the wage payment the ladder's other two rungs still let
+   * through -- can spend from this balance until the prison earns the money.
+   *
+   * **It also no longer says the state owes this prison anything, which is
+   * the defect it was rewritten for** (issue #913): a prison holding nobody
+   * accrues nothing, so the old tail described a wait that could not end.
+   * `src/content/default-locale-en.ts` carries the clause-by-clause proof at
+   * the key itself.
    */
   fundsTreasuryFloorExhausted: 'hud.status.funds-treasury-floor-exhausted',
   /**
@@ -208,6 +243,28 @@ export const HUD_MESSAGE_KEY = {
    * admit a prisoner.
    */
   earnedToday: 'hud.status.earned-today',
+  /**
+   * The `Earned today` chip's tooltip and screen-reader text while some of
+   * today's grant is being withheld for unmet needs (issue #890).
+   *
+   * **The same shape as `fundsBeforeDeliveriesStop` above, and for the same
+   * reason.** A badge would cost chip width on a row whose overflow is
+   * already measured (`tests/browser/ui-strip-badged-width.spec.ts`), and
+   * #890's own re-measurement names loudness -- a badge visible without
+   * hovering -- as the one judgement on this readout worth the owner's rather
+   * than an agent's. A description costs no width, sets no threshold, and
+   * paints no colour, so it is the half that can ship without one.
+   *
+   * **It names a figure no other readout carries.** ADR 0064 withholds a
+   * whole number of minor units per unmet need, and #890 measured the result
+   * at 40% of the grant at steady state with the *cause* on screen -- the
+   * Regime roster tones a prisoner's unmet need -- and the *money* nowhere
+   * outside the worker. The figure rides `numberParameters` for
+   * `fundsBeforeDeliveriesStop`'s reason: this layer is pure and has no
+   * localizer, so it names the quantity and the strip formats it exactly as
+   * it formats the chip's own value.
+   */
+  earnedWithheld: 'hud.status.earned-withheld',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',
@@ -241,29 +298,124 @@ export const HUD_MESSAGE_KEY = {
   transportFastForward: 'hud.transport.fast-forward',
 
   tabsRegion: 'hud.tabs.title',
+  /*
+   * The five section names, moved to the 2026-09-13 delivery's own five on
+   * 2026-09-14 (ADR 0112 decision 3): Przeglad / Buduj / Strefy / Zarzadzaj /
+   * Plan dnia. `tabSecurity`, `tabRegime` and `tabRooms` were the three that
+   * went, along with the keys behind them -- a key is renamed rather than
+   * repointed so that a catalogue which still carries `hud.tab.rooms` fails
+   * `tests/foundation/second-locale-contract.test.ts`'s `unknown-key` audit
+   * instead of shipping a section name nothing renders.
+   */
   tabOverview: 'hud.tab.overview',
   tabBuild: 'hud.tab.build',
-  tabSecurity: 'hud.tab.security',
-  tabRegime: 'hud.tab.regime',
-  tabRooms: 'hud.tab.rooms',
+  tabZones: 'hud.tab.zones',
+  tabManage: 'hud.tab.manage',
+  tabDayPlan: 'hud.tab.day-plan',
+
+  /**
+   * The Layout menu and the three collapse arrows beside it (#1159, stage 3
+   * of the 2026-09-13 identity rollout).
+   *
+   * Every one of these sentences is a claim about what a control does, and
+   * each was written from the code that does it rather than from the
+   * direction's own wording -- `AGENTS.md`'s fourth reservation released the
+   * CHOICE of words on 2026-09-04 and did not release the requirement that the
+   * sentence be true. The default locale carries the verification beside each
+   * string; read that file rather than this one for why each is worded the way
+   * it is.
+   *
+   * The two toggle pairs are **two keys each, not one key plus a state**,
+   * because a button whose accessible name is "Navigation" and whose meaning
+   * is carried only by `aria-expanded` reads as a heading to half the screen
+   * readers that meet it. The same arrangement `createCollapsibleSection`
+   * already uses for its own fold header.
+   */
+  layoutRegion: 'hud.layout.title',
+  layoutMenu: 'hud.layout.menu',
+  layoutNavigationWidth: 'hud.layout.navigation-width',
+  layoutInspectorWidth: 'hud.layout.inspector-width',
+  layoutInspectorHeight: 'hud.layout.inspector-height',
+  layoutReset: 'hud.layout.reset',
+  layoutMapOnly: 'hud.layout.map-only',
+  layoutHideNavigation: 'hud.layout.hide-navigation',
+  layoutShowNavigation: 'hud.layout.show-navigation',
+  layoutHideInspector: 'hud.layout.hide-inspector',
+  layoutShowInspector: 'hud.layout.show-inspector',
+  layoutHideMetrics: 'hud.layout.hide-metrics',
+  layoutShowMetrics: 'hud.layout.show-metrics',
+  layoutResizeNavigation: 'hud.layout.resize-navigation',
+  layoutResizeInspector: 'hud.layout.resize-inspector',
+
+  /**
+   * The camera zoom control in the bottom-left corner (issue #1023).
+   *
+   * The capability was finished, deliberate and documented -- `ZOOM_BOUNDS`
+   * in `src/rendering/scene/world-scene.ts:71` is `{ min: 0.2, max: 3 }`, a
+   * fifteen-fold range reachable on the wheel, on a pinch and on `+`/`-` --
+   * and no control named it anywhere. Measured on the assembled page at
+   * 1280x800 before this landed: the substring `zoom` appeared **nowhere** in
+   * `document.body.innerHTML`.
+   *
+   * `zoomRegion` is both the group's accessible name and the visible legend
+   * above the two buttons, which is `createDisplayScaleControl`'s own
+   * arrangement (`src/ui/display-scale.ts`) and is there for the reason that
+   * control records: this game has an interface scale *and* a camera zoom, so
+   * a pair of glyphs that named neither would be ambiguous between them.
+   *
+   * `zoomIn`/`zoomOut` are the buttons' `screenReaderText` and `title`, and
+   * they name a direction rather than a range -- a press at the clamp changes
+   * nothing, exactly as the keyboard's does, and a string promising a range
+   * would be a claim the code does not keep. See the default locale's own
+   * comment above `hud.zoom.title` for the verification these three were
+   * written from.
+   */
+  zoomRegion: 'hud.zoom.title',
+  zoomIn: 'hud.zoom.in',
+  zoomOut: 'hud.zoom.out',
 
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
   /**
-   * Replaces `minimapPlaceholder` the first time a click on the surface
-   * actually moves the camera (issue #793): the surface still draws no map
-   * (`hud.ts`'s own comment on it is unchanged and still true -- rendering
-   * belongs to the renderer and does not exist yet), so "not available yet"
-   * stops being the honest sentence the moment the surface has visibly *done*
-   * something, and this is what replaces it. Never reverts: once a session
-   * has a world the surface can navigate within, later clicks always find
-   * one too (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365`
-   * -- and a stopped session keeps its last one -- `simulation-snapshot-feed.ts`
+   * Replaces `minimapPlaceholder` the first time a click OR a keyboard
+   * activation on the surface actually moves the camera (issue #793, keyboard
+   * reachability added by #903): the surface still draws no map (`hud.ts`'s
+   * own comment on it is unchanged and still true -- rendering belongs to the
+   * renderer and does not exist yet), so `minimapPlaceholder`'s own hedge --
+   * "pressing MAY move the camera" -- stops being the honest sentence the
+   * moment the surface has visibly *done* something, and this is what
+   * replaces it. Never reverts: once a session has a world the surface can
+   * navigate within, later presses always find one too
+   * (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365` -- and a
+   * stopped session keeps its last one -- `simulation-snapshot-feed.ts`
    * preserves `frame.world` across `simulation/stopped`).
+   *
+   * Both sentences are quoted verbatim, against the code that proves each
+   * true, in the comment above `hud.minimap.navigable` in
+   * `src/content/default-locale-en.ts` -- read that rather than this file for
+   * the wording's own justification; this comment is about when the swap
+   * happens, not about the words.
    */
   minimapNavigable: 'hud.minimap.navigable',
   alertsTitle: 'hud.alerts.title',
+  /**
+   * The two things an alerts list with no rows can mean, which until issue
+   * #1184 were one string.
+   *
+   * - `alertsEmpty` -- *"No active alerts"* -- is a claim about a **prison**,
+   *   and it is now only ever painted for one: `HudViewModel.alerts` is a
+   *   list, so a session has published and has nothing wrong to report.
+   * - `alertsUnknown` is a claim about the **screen**, painted exactly when
+   *   that field is absent -- before any publication has arrived, and after
+   *   `simulation/stopped` takes it off. That is `overviewNone`'s job one
+   *   panel over, and it borrows that panel's sentence rather than inventing a
+   *   second one for the same state, for the naming-consistency reason
+   *   `overviewNone`'s own comment gives: two words for one state on one
+   *   screen is a vocabulary split, and this state is reachable on both
+   *   surfaces at the same moment.
+   */
   alertsEmpty: 'hud.alerts.empty',
+  alertsUnknown: 'hud.alerts.unknown',
   /**
    * What a row of the alerts log adds to its sentence: how many times, and when
    * (the owner's decisions 1 and 2 of 2026-09-01 on ADR 0084).
@@ -335,6 +487,47 @@ export const HUD_MESSAGE_KEY = {
   buildCatalogue: 'hud.build.catalogue',
   buildCatalogueEmpty: 'hud.build.catalogue-empty',
   buildSelected: 'hud.build.selected',
+  /**
+   * What one catalogue row costs, before it is armed (issue #901).
+   *
+   * **Every one of the 21 rows used to show zero digits** -- not in the
+   * visible label, not in any `title`, `aria-label` or `aria-description`,
+   * because none of those existed for a catalogue row at all. The price was
+   * reachable only behind a press on the buy disclosure's own control
+   * (`hud.build.buy-submit`, below). `AGENTS.md`'s fourth reservation --
+   * "anything that reaches a player as a promise the code does not keep" --
+   * was released on 2026-09-04 for exactly this string: the choice of words is
+   * ours, the truth of the sentence is not, so it ships only once the number
+   * it quotes is verified against the code that produces it.
+   *
+   * **`hud.security.hire`, `'Hire {role} · {total}'`, is the shipped
+   * precedent** -- a price folded into a control's own label rather than
+   * hidden behind a second press. This is the same shape, minus the verb: a
+   * catalogue row's press *selects* the row rather than spending anything (the
+   * spend happens at a placement press, issue #640), so there is no "Buy" or
+   * "Place" to put in front of the name.
+   *
+   * **Two keys rather than one**, because one wording cannot stay true across
+   * every row. `buildCatalogueRowPrice` is safe for the nineteen rows whose
+   * press places one discrete object (`buildable.placesObject === true`):
+   * `ObjectTool.place` (`src/ui/object-tool.ts`) is one press, one tile, one
+   * command, so the quoted total is what that one press will spend, always.
+   * `buildCatalogueRowPriceSegment` is for the two rows that do not
+   * (`wall-brick`, `door-wooden`): both occupy a tile edge and both reach
+   * `BuildTool.place` (`src/ui/build-tool.ts`) through the `place-build-order`
+   * route `hud.ts` sends for `placesObject === false`, and that route drags a
+   * *run* of segments in one gesture -- a drag of seven costs seven times the
+   * quoted number. Naming the unit is what keeps the sentence true of a drag
+   * as well as of a tap; the flat wording above would not be.
+   *
+   * Branched on `buildable.placesObject`, the same shape fact `armedHintKey`
+   * (issue #904, `build-panel.ts`) already branches its own two sentences on
+   * -- one boolean, one architectural fact, never two rules that can
+   * disagree.
+   */
+  buildCatalogueRowPrice: 'hud.build.catalogue-row-price',
+  /** The per-segment twin of `buildCatalogueRowPrice` above; see its comment. */
+  buildCatalogueRowPriceSegment: 'hud.build.catalogue-row-price-segment',
   buildPlacement: 'hud.build.placement',
   buildTileX: 'hud.build.tile-x',
   buildTileY: 'hud.build.tile-y',
@@ -347,6 +540,21 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  /**
+   * The armed-tool hint for a row that stands on a tile rather than on an edge
+   * (issue #904).
+   *
+   * `buildArmHint` above describes an edge click and a dragged run, which is
+   * the wall gesture and the only gesture it has ever described; a tile object
+   * has neither. `paintArmed` chooses between the two on the selected row's
+   * `placesObject`, which is the same shape fact the panel already uses to
+   * decide which command the numeric route sends -- so the sentence and the
+   * command can never disagree about what the press does.
+   *
+   * Three keys reach that one line, not two: `buildRemoveHint` wins over both
+   * while removal is on, because a removal names no row.
+   */
+  buildArmHintObject: 'hud.build.arm-hint-object',
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',
@@ -407,6 +615,23 @@ export const HUD_MESSAGE_KEY = {
   buildBuyQuantity: 'hud.build.buy-quantity',
   buildBuySubmit: 'hud.build.buy-submit',
   buildBuyHint: 'hud.build.buy-hint',
+  /**
+   * The Sell control (ADR 0075 decision 3, invoked by ADR 0096 decision
+   * 3(b)), on `buildBuy`/`buildBuySubmit`'s own two-key shape: a placeholder
+   * label overwritten the moment a material is selected, and the sentence
+   * stating what a press would credit. See `src/content/default-locale-en.ts`
+   * for the wording and the arithmetic that proves it.
+   *
+   * **No third, hint, key** -- unlike `buildBuyHint`. One was authored and
+   * removed in the same pass that put Sell beside Buy rather than under it:
+   * `tests/browser/app-shell.spec.ts`'s "a pending delivery is on the panel
+   * with the fold shut … (#285, #703)" measured a hint line's worth of extra
+   * height pushing the deliveries block's third Cancel control outside
+   * `.hud-build`'s visible box at 900x600, and the button's own label
+   * already states what selling credits.
+   */
+  buildSell: 'hud.build.sell',
+  buildSellSubmit: 'hud.build.sell-submit',
   /**
    * **What stops a Buy press, and what would lift it** -- the wording half of
    * issue #772, authored by the owner on 2026-09-03.
@@ -469,11 +694,15 @@ export const HUD_MESSAGE_KEY = {
    * reachable with the shipped catalogue. The row is still drawn, because an
    * order nobody can name is still an order a player may want to withdraw.
    *
-   * `buildQueueMore` states how many orders are queued behind the last row
-   * shown, and the reason there is no control to reach them is in
-   * `BUILD_QUEUE_ROW_LIMIT`: the list is the crew's schedule, so the rows are
-   * the orders that are about to happen, and taking a whole run back is what
-   * `Undo` is for.
+   * `buildQueueMore` states how many orders are queued behind the last row the
+   * block holds, and the reason there is no control to reach them is in
+   * `BUILD_QUEUE_ROW_LIMIT`. **What that reason is changed with #862**: it used
+   * to be that the list is the crew's schedule, so three rows were the orders
+   * about to happen and taking a whole run back was what `Undo` is for --
+   * measured, that left eleven of fourteen orders with no control at all. The
+   * pool is now sixty-four, the longest queue one gesture can place, so this
+   * line speaks to a player who has placed more than one such gesture's worth,
+   * and `Undo` is still the control it points them at.
    *
    * `buildQueueShortfall` is the queue's one sentence about **money**, and it
    * is the only member of this group that is not a fact about rows (#627,
@@ -663,6 +892,26 @@ export const HUD_MESSAGE_KEY = {
    */
   securityRosterWageBill: 'hud.security.roster-wage-bill',
   securityRosterDismiss: 'hud.security.roster-dismiss',
+  /**
+   * The question the armed dismiss control asks, and the consequence it states
+   * (the owner's ruling of 2026-09-03, issue #877).
+   *
+   * The **fourth** key in this block, so the count two docblocks up -- "three
+   * keys, and the count is deliberate" -- is no longer three. That sentence is
+   * left standing rather than corrected away, because the rule it records is
+   * what produced this one: every string the roster block adds is the owner's,
+   * and this is the owner's own sentence, supplied with the ruling that asked
+   * for a confirmation step at all.
+   *
+   * `{name}` is the point of it and not decoration. #877 is that the dismiss
+   * row fired at somebody other than the person its label named, four times out
+   * of four; a confirmation that named nobody would be a second press bought
+   * with none of the safety a confirmation is for. What fills it is the row's
+   * own label, verbatim -- see `DismissArming` in `hud/dismiss-arming.ts` for
+   * why it is quoted from the press rather than re-read every publication, and
+   * `formatStaffRosterText` for what the row can say about a person today.
+   */
+  securityRosterDismissConfirm: 'hud.security.roster-dismiss-confirm',
   securityRosterHint: 'hud.security.roster-hint',
 
   /**
@@ -731,6 +980,59 @@ export const HUD_MESSAGE_KEY = {
    * authored.
    */
   securityCoverageUnguardedConsequence: 'hud.security.coverage-unguarded-consequence',
+
+  /**
+   * **What the `COVERAGE` chip says when the post itself cannot be reached**
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3 -- *"say it"*).
+   *
+   * Two keys rather than one, on the division `HudMetricDescriptor.description`
+   * already records for the `FUNDS` chip: a badge has a width and a sentence
+   * does not fit in it. `...PostUnreachable` is the badge -- two words, in the
+   * one-state-in-a-word register `securityCoverageShort` ("Understaffed") and
+   * `securityCoverageUnguarded` ("Unguarded") are written in -- and
+   * `...PostUnreachableHint` is the sentence, which goes into the chip's
+   * `title` **and** its screen-reader text.
+   *
+   * **Nothing is said only in the hint**, which is the constraint that field's
+   * own doc comment states as a rule rather than a remark: the badge states
+   * the condition in the chip itself, so a player who never hovers and a
+   * player on a touch device both see that something is wrong.
+   *
+   * ## Why the badge displaces "Covered" rather than sitting beside it
+   *
+   * Because "Covered" is false while this stands, and ADR 0117 §4 names
+   * settling that as the second decision this change owes. Measured on seed
+   * `0x396` over 200 consecutive ticks with the post sealed: the strip's own
+   * `prisonersCovered` / `prisonersUnguarded` pair alternates on the
+   * deployment cadence, 100 ticks reading *covered* and 100 reading
+   * *unguarded*, for a prison in which no guard has moved a tile. So the
+   * coverage ladder is not merely silent about this state, it asserts the
+   * opposite of it half the time, and a badge added beside it would have left
+   * that assertion standing.
+   *
+   * ## What makes each sentence true, opened rather than assumed
+   *
+   * - *"No guard can reach the post"* -- `DeploymentSystem.hasUnreachablePost`
+   *   requires the sector's most recent deployment route request to have come
+   *   back `ok: false` with nothing successful since, which is the branch in
+   *   `continueDeploymentTravel` that counts a `deploymentFailure`, and to
+   *   have a claimable guard that would take the post. So there is a guard,
+   *   and the route to the post failed for it.
+   * - *"nobody is on duty"* -- the same predicate requires that no guard of
+   *   the sector is in phase `'on-post'`. It deliberately does not lean on
+   *   `shortage` or on the coverage census, which are the figures ADR 0117
+   *   §1b measures as false half the time.
+   * - *"Taking down a wall beside it opens the way back"* -- measured through
+   *   the real kernel, the real `RemoveWall` command (ADR 0106) and the real
+   *   `NavigationSystem` in
+   *   `tests/integration/security-post-unreachable-condition.test.ts`: with
+   *   the post's four bounding edges built by real `PlaceBuildOrder` presses,
+   *   removing **one** of them puts the guard back `'on-post'` and clears this
+   *   condition.
+   */
+  securityPostUnreachable: 'hud.security.post-unreachable',
+  securityPostUnreachableHint: 'hud.security.post-unreachable-hint',
 
   /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content
@@ -812,6 +1114,38 @@ export const HUD_MESSAGE_KEY = {
    * `HudIntakePipelineViewModel.waitingWithoutPlace` for why that is not the
    * `accommodation-assignment` stage count.
    */
+  /**
+   * The Overview section's own readout (issue #1183).
+   *
+   * Three keys, and the middle one is the one that matters. The two figures
+   * the panel states beside it reuse the status strip's own labels --
+   * `funds` and `earnedToday` above -- deliberately rather than for economy:
+   * the same number under two different words in two places on one screen is
+   * the vocabulary split constitution article 12 (naming consistency) exists
+   * to prevent, and the staff panel's `securityHeldRow` records the same
+   * decision for the same reason.
+   *
+   * - `overviewTitle` names a panel of three money figures, so it is
+   *   *Finances* rather than a second copy of the section's own name. The
+   *   section is Overview and this is what it holds today; a panel titled
+   *   "Overview" inside a section titled "Overview" would name nothing.
+   * - `overviewNone` is the sentinel, and it is the reason this readout is
+   *   not simply fed from `counts`. It is rendered exactly when
+   *   `HudViewModel.overview` is absent -- before any
+   *   `simulation/status-counts` publication, and after `simulation/stopped`
+   *   -- and it is a sentence rather than a zero, because a zero is a claim
+   *   about a prison's money and there is no prison. #1184 was the live
+   *   instance of the opposite choice; `alertsUnknown` above is that issue
+   *   closed, and it took this sentinel's shape and its sentence.
+   * - `overviewWages` names a *rate*, which is why the period is in the label
+   *   rather than in the value: `dailyWageBillMinorUnits` is what one in-game
+   *   day of the current roster costs, and a bare number under "Wages" would
+   *   read as money already spent.
+   */
+  overviewTitle: 'hud.overview.title',
+  overviewNone: 'hud.overview.none',
+  overviewWages: 'hud.overview.wages',
+
   intakeTitle: 'hud.intake.title',
   intakeAdmit: 'hud.intake.admit',
   intakeHint: 'hud.intake.hint',
@@ -1078,6 +1412,24 @@ export const HUD_MESSAGE_KEY = {
    * the placed objects -- and it is a real key rather than a blank because
    * "unreachable" and "handled" are different claims.
    *
+   * **`roomsNeedsDoorway` is the one entry in this block that is not about an
+   * object** (#938), and it is here rather than in the enclosure readout
+   * above because of *when* each of those two is true. The enclosure notice
+   * is a statement about the moment a room was designated -- the worker
+   * freezes it with the tick it was zoned on (`zoningNoticeSchema`) and
+   * republishes it unchanged -- so a third state there would keep saying
+   * "no way in" after the player built the door, which is the promise
+   * `AGENTS.md` reservation 4 is actually about. This block is pulled fresh
+   * off the projection (on every tab since #1006; it was "while the Rooms tab
+   * is showing" until then, and the correction is why the `ROOMS` chip can
+   * carry a badge off the same readout), so it corrects itself the moment the
+   * door order completes.
+   *
+   * It takes no placeholder: there is one door to be short of and no count
+   * that would make the sentence more actionable. It sits under the same
+   * `roomsNeedsRoom` header as the object lines, which reads
+   * "{room} at {x}, {y} is missing", so the line completes that sentence.
+   *
    * `roomsNeedsObjectUnknown` stands in for the object's name when the object
    * catalogue defines nothing under the id the requirement names -- which is
    * the *reason* the projection calls that requirement unmet. Substituted as
@@ -1097,6 +1449,61 @@ export const HUD_MESSAGE_KEY = {
   roomsNeedsObjectUncounted: 'hud.rooms.needs-object-uncounted',
   roomsNeedsItemMore: 'hud.rooms.needs-item-more',
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
+  roomsNeedsDoorway: 'hud.rooms.needs-doorway',
+  /*
+   * The second entry in this block that is not about an object (ADR 0108),
+   * and it exists because `roomsNeedsDoorway` above became unable to cover
+   * both states once `RoomAccess` could tell them apart. That line says the
+   * room has no door; this one says it has one and nothing outside can reach
+   * it. Same header, same shape, same absence of a placeholder -- there is one
+   * way in to be short of either way -- and two sentences because a player
+   * shown the wrong one goes and builds the wrong thing.
+   */
+  roomsNeedsUnreachable: 'hud.rooms.needs-unreachable',
+  /*
+   * The same block, saying the other thing a room can be wrong about: it is
+   * finished, and it is full (ADR 0028 phase 5, issues #997 and #1003).
+   *
+   * **A different subject, not a fourth kind of need**, and the distinction is
+   * what these four keys exist for. Every key above describes something the
+   * player has not built. These describe a room that holds every object its
+   * definition asks for and is nonetheless refusing arrivals, because ADR 0028
+   * derives a concurrent-use ceiling from the objects standing in the room and
+   * the prison has outgrown it. #1003 measured the sharp case: a shower room's
+   * capacity is its **shower heads**, not its floor -- two heads is a ceiling
+   * of two -- so a fifty-prisoner prison in which nobody washes is reachable
+   * with every room reading complete and the only signal a need sitting at zero
+   * in the Regime panel.
+   *
+   * That is the hidden mechanic this readout exists to remove. The owner's
+   * standing brief is a game with none.
+   *
+   * `roomsAtCapacity` and `roomsAtCapacityCount` replace `roomsNeeds` and
+   * `roomsNeedsCount` in the block's header when the block is drawing this
+   * subject, and `roomsAtCapacityRoom` replaces `roomsNeedsRoom` under it.
+   * `roomsAtCapacityPlaces` is the one line beneath, and it carries both
+   * figures rather than a verdict: how many may use the room at once and how
+   * many are. A player who reads "places: 2 of 2 in use" under a shower room
+   * has been told the mechanism, which "full" alone would not do.
+   *
+   * **Why the header is replaced rather than joined.** The two subjects are
+   * never drawn together -- `paintNeeds` carries the reason and the
+   * measurement -- so one header is enough, and a block that showed both would
+   * be a second block in a panel whose deepest measured shape already sits on
+   * its fold (`ROOM_NEEDS_NAMED_LIMIT`).
+   *
+   * **No count placeholder is spelled `{count}`** in any of these, deliberately:
+   * `tests/foundation/second-locale-contract.test.ts` pins every flat message
+   * that interpolates `{count}`, because such a message can never be given
+   * plural forms by a translator. These interpolate named figures instead, so
+   * they add nothing to that debt -- and `roomsAtCapacityPlaces` puts its noun
+   * in front of the numerals rather than after them, so no number makes it
+   * ungrammatical.
+   */
+  roomsAtCapacity: 'hud.rooms.at-capacity',
+  roomsAtCapacityCount: 'hud.rooms.at-capacity-count',
+  roomsAtCapacityRoom: 'hud.rooms.at-capacity-room',
+  roomsAtCapacityPlaces: 'hud.rooms.at-capacity-places',
 
   /*
    * The Regime panel, on the fifth tab (issue #451).
@@ -1114,7 +1521,8 @@ export const HUD_MESSAGE_KEY = {
    * words with no verb in front of it does not say whether they are what the
    * group *may* do or what it is doing. `regimeCategorySeparator` is what
    * joins them: a list separator is locale vocabulary (`، ` in Arabic, `、` in
-   * Japanese) and `src/ui/save-panel.ts:217` hard-codes `', '` for the same
+   * Japanese) and `joinScopeLabels` (`src/ui/save-panel.ts:340`) hard-codes
+   * `', '` for the same
    * job, which is the one place in the tree that does.
    *
    * `regimeRosterName` exists because the *order* of a person's two names is a
@@ -1129,6 +1537,16 @@ export const HUD_MESSAGE_KEY = {
    * putting "Doing" in front of "Showering" would be a second sentence saying
    * what the first already said.
    *
+   * `regimeEdit` and `regimeEditLastCategory` are the two the regime *editor*
+   * needs (#1167, ADR 0113 slice 1's missing producer), and they are two
+   * rather than one because the second is the only thing standing between a
+   * locked control and the shape the owner's standing directive names -- a
+   * control that does nothing and does not say why. The editor needs no key
+   * for the categories themselves: they are `ACTION_CATEGORIES` members and
+   * `deriveSimulationMessageKey('action-category', id)` already labels every
+   * one of them, which is the same derivation the `Allows {categories}`
+   * sentence above renders.
+   *
    * There is deliberately no key for a need, a threshold or a warning about
    * one. `docs/HUD_PROJECTIONS.md` gap 7: the simulation defines no
    * warning or critical level for any need, so a row that called one low would
@@ -1139,6 +1557,9 @@ export const HUD_MESSAGE_KEY = {
   regimeBlockAllows: 'hud.regime.block-allows',
   regimeBlockProgress: 'hud.regime.block-progress',
   regimeCategorySeparator: 'hud.regime.category-separator',
+  regimeEdit: 'hud.regime.edit',
+  regimeEditLastCategory: 'hud.regime.edit-last-category',
+  regimeSentenceRemaining: 'hud.regime.sentence-remaining',
   regimeRoster: 'hud.regime.roster',
   regimeRosterCount: 'hud.regime.roster-count',
   regimeRosterName: 'hud.regime.roster-name',
@@ -1241,6 +1662,20 @@ export const HUD_MESSAGE_KEY = {
    * produces exactly one of them and never both.
    */
   refusalCancelMaterialPurchase: 'hud.refusal.cancel-material-purchase',
+  /**
+   * A sale the host refused before it was sent -- which here means only
+   * "there is no session", exactly as `refusalCancelMaterialPurchase`'s does:
+   * `SellMaterials` has no pre-flight check of its own, because there is no
+   * live stock projection this thread could honestly check a quantity
+   * against (ADR 0075 decision 3, invoked by ADR 0096 decision 3(b)).
+   *
+   * It is **not** the sentence a player sees when the simulation itself
+   * refuses the sale -- that is `hud.alert.refusal.sell.*`, decided at the
+   * tick the command executes, and it arrives in the alerts list. The two sit
+   * on opposite sides of `sender.submit`, so one press produces exactly one
+   * of them and never both.
+   */
+  refusalSellMaterials: 'hud.refusal.sell-materials',
 
   /**
    * What a refused *dispatch* of a release says, on the control that was pressed
@@ -1267,3 +1702,4 @@ export const HUD_MESSAGE_KEY = {
 export type HudMessageKey = (typeof HUD_MESSAGE_KEY)[keyof typeof HUD_MESSAGE_KEY];
 
 export const HUD_MESSAGE_KEYS: readonly HudMessageKey[] = Object.values(HUD_MESSAGE_KEY);
+

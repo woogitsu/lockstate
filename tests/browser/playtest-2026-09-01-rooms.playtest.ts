@@ -74,7 +74,7 @@ async function armingReadout(page: Page): Promise<string> {
 
 /** Opens the Rooms tab and pulls the panel open if it folded itself shut. */
 async function openRooms(page: Page): Promise<void> {
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
   if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
 }
@@ -474,7 +474,7 @@ test.describe('playing the rooms surface, 2026-09-01', () => {
     // refreshed).
     let zonedRooms = 0;
     for (let attempt = 1; attempt <= 10 && zonedRooms === 0; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

@@ -42,6 +42,53 @@ This is the tier almost everything load-bearing here sits in, which is different
 from ADR 0023 and deliberate: this ADR decides the shape of code in this tree,
 not what other games do.
 
+> **That sentence is a global pin; it is advisory, and the commit that broke it
+> here was a re-anchoring pass (2026-09-15).** `docs/adr/README.md`'s section on
+> anchor pins carries the evidence that such a pin neither freezes the code nor
+> is honoured by editors. In this document the offender is `e6557d2a`
+> (2026-08-27) — *"Re-anchor ten ADRs' rotted code citations, and name what
+> actually rotted them"* — which moved
+> `src/simulation/runtime/new-session.ts:156-158` to `:244-246` at `§Two things
+> the single capacity field is being asked to be`, **below this line**, leaving
+> the pin untouched. Its own message names the rot and does not name the pin.
+> The replacement it installed has itself drifted: `:244-246` is
+> `ActorIdentityRegistry` today, and `DEFAULT_PRISONER_CAPACITY` /
+> `DEFAULT_GUARD_CAPACITY` are elsewhere again — **a re-anchor is no more
+> durable than the anchor it replaced**, which is `docs/AGENT_WORKFLOW.md` §4's
+> *"a correction is no more durable than the claim it corrected"* in its own
+> right. `9e3727a0` and `08d3e620` also edit below this line, and add no
+> anchors.
+>
+> **Re-read 2026-09-15, all 34 `file:line` citations below this line opened.
+> Five still land on what their sentence names**: `components.ts:19`
+> (`INTAKE_STAGES`), `fixed-step-clock.ts:29`, `build-overlay.ts:30-39`,
+> `room-instance-registry.ts:8-19` and `zoning.ts:48-65`. The remaining
+> twenty-nine do not, and **they are deliberately left where they are.** This
+> ADR's §*Context* is a diagnosis of the tree **before** its own decisions
+> landed — *"`RoomZoningService.zone` registers every instance with
+> `capacity: 0`"*, *"`RoomInstance.capacity` gates intake's residency question
+> and actions' concurrent use question"* — and all six phases shipped. Decision
+> 3 split that one field, so `RoomInstance` now carries `residentCapacity` and
+> `concurrentUseCapacity` (`room-instance-registry.ts:84`, `:97`) and there
+> is no single `capacity` to re-aim an anchor at. **Re-aiming a dead diagnosis
+> makes it read as current**, which is why #1229 left ADR 0040's twenty anchors
+> standing. Read every anchor below as of `f3ffe6d`.
+> **That count is as of that date, and it has already moved.** Issue #961's
+> amendment of 2026-09-17 landed below this line after this paragraph was
+> written and carries one further anchor,
+> `tests/browser/ui-staff-wage.spec.ts:377`, which this re-read never opened.
+>
+> **Two of the five that still land carry a claim that has inverted, and both
+> inversions are this ADR's own doing.** §*What this decision does not settle*
+> says `room-instance-registry.ts:8-19` *"currently states that
+> `objectCapabilities` are 'stated up front rather than derived from a placement
+> system that doesn't exist'; phase 1 falsifies that sentence and owes it an
+> edit"*, and that `zoning.ts:48-65` *"is owed an edit in phase 1"*. **Both
+> edits were paid.** That docblock now opens *"What changed, and what the
+> previous version of this comment claimed"* and records the falsification; the
+> zoning one now documents the persisted rectangle decision 6 pays for. The
+> anchors are exact and the debt is discharged.
+
 **Tier E — external, and second-hand.** The comparable-game findings are used
 in three places and only three: RimWorld's bed-width rule, Prison Architect's
 `NumSlots`, and the "degrade, never hard-fail" pattern. They come from the
@@ -285,11 +332,15 @@ which tile each was on — information the nested shape has no reason to have ke
 #### Against a tile plane. Rejected, and this is the expensive-to-reverse one.
 
 Every world plane today is a `Uint8Array` — `chunkTerrain`, `chunkTopEdge`,
-`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:268-271`)
+`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:284-287`;
+the anchor read `:268-271`, four fields of an unrelated rectangle literal)
 — RLE-encoded per chunk, with a decode contract that validates values against
 the *terrain* registry (`:141-169`). `objectDefinitionSchema` bounds `numericId`
 at 65,535, so an objects plane is a fifth plane, a `Uint16Array`, a new RLE
-contract, and a **`WORLD_SNAPSHOT_VERSION` bump from 1 to 2** (`:30`) — the world
+contract, and a **`WORLD_SNAPSHOT_VERSION` bump from 1 to 2** (`:31`; the anchor
+read `:30`, a blank line one above the constant — the same off-by-one shape ADR
+0029's `:1669` carried on this branch, and it lands on nothing rather than on
+plausible code) — the world
 snapshot that sits inside the save payload. That is the save consequence, and it
 is the largest of the three.
 
@@ -871,6 +922,38 @@ Depends on the Rooms tab existing. Sequenced last among the surfaces because it
 is a readout: it makes an existing working loop legible rather than making
 anything work.
 
+> **What has landed of it, 2026-09-05, and what has not.** *Ships* above is
+> left exactly as written, because it is the list this phase is measured
+> against and a reader needs to see which items moved.
+>
+> - **The surface, and the verdict on it: landed** (#331, then #529 and #938).
+>   The Rooms panel's "Not ready" block names one room and everything it is
+>   short, a missing doorway included.
+> - **The concurrent-use figure: landed.** `RoomListRowViewModel.concurrentUse`
+>   publishes one ceiling per capability with the live claim count against it,
+>   and `HudRoomNeedsViewModel.atCapacity` carries the full rooms to the panel,
+>   which says so in the same block under an "At capacity" header. It is a
+>   sibling field and not a reinterpretation of the occupancy figure, for the
+>   reason `RoomOccupancyViewModel`'s docblock gives. Issues #997 and #1003 are
+>   what measured the gap: a `room.shower-room` built to its authored two heads
+>   is a ceiling of **two**, and fifty prisoners in which nobody washes was
+>   reachable with every room reading complete.
+> - **The room-level verdict ADR 0023 §4 argues for: not landed.** The panel
+>   still reads `requirementSummary`'s counts; one answer per room is still
+>   owed.
+> - **"Over capacity": not landed, and the reason it was owed has changed.**
+>   This section and `room-projection.ts` both said the projection *could not
+>   say* it. It can: `RoomOccupancyViewModel` publishes `current` and
+>   `capacity` unclamped, so `current > capacity` is derivable by any reader --
+>   only `free` and `utilization` clamp. What is missing is a *surface*, not a
+>   field.
+> - **The yard's ceiling: not landed.** A room whose action names no capability
+>   is bounded by its ground (ADR 0071) and that ceiling is keyed by no
+>   capability, so it has no entry in `concurrentUse`. Publishing it needs a
+>   claim count scoped to capability-less claims, which `useOccupancyOf` does
+>   not offer -- a change in `RoomInstanceRegistry` rather than in a
+>   projection.
+
 ### Phase 6 — concurrent use starts being counted
 
 **Ships:** `ActionSystem` calling `assign`/`release` around a performed action in
@@ -1233,6 +1316,20 @@ type in `src/content/room-catalog.ts` that requires no object at all, and
 therefore the only genuinely unbounded room. Nothing is authored to make that
 true; it falls out.
 
+(**"Unbounded" expired and the derivation it names did not — marked rather than
+overwritten, 2026-09-15.** The code this paragraph describes read
+`if (capability === undefined) return Number.POSITIVE_INFINITY;`. It now reads
+`if (capability === undefined) return openGroundCapacityOf(instance);`
+(`src/simulation/prisoners/room-instance-registry.ts:610`, the helper at
+`:329`), so a capability-free action is bounded by **the room's own ground**
+rather than by nothing. That is this section's own argument carried one step
+further — *"the honest reading of an undefined ceiling is 'this rule does not
+bound it'"* became *"this rule does not bound it; the floor does"* — and the
+sentence it refutes is *"the only genuinely unbounded room"*, not the
+exemption-to-derivation move the heading is about.
+[ADR 0029](./0029-concurrent-room-use-claims.md)'s 2026-08-26 amendment quotes
+the old line and is corrected in the same pass.)
+
 Two other `room-catalog-id` actions named no capability and were **not**
 unbounded rooms at all, so leaving them unnamed would have handed them the
 yard's answer by accident:
@@ -1364,3 +1461,169 @@ Decision 4's material-cost half, its placeholder-quantity rule and its
 order and all seven open questions are as the previous two amendments left them.
 No save format moves: the rule is derived entirely from `state`, `progress` and
 `assignedWorkerId`, which a v0.0.76 save already carries.
+
+## Amendment, 2026-09-17: a room type may author a resident ceiling (issue #961)
+
+*This changes **one line decision 2 states verbatim** and nothing else. Decisions
+1 and 3 through 8 and the phase order stay approved as written; so do decision
+2's `objects(R)` and `capabilities(R)` lines, its orientation-blindness, its
+event-driven resolver, its "nobody is evicted" answer and the capability-scoped
+`concurrentUse(R, c)` the 2026-08-26 amendment above put in place. What is
+replaced is the single line
+`residentCapacity(R) = Σ over objects(R) declaring 'sleep-surface' of catalogue(objectId).footprint.width`.*
+
+### The ruling, and its provenance
+
+The owner ruled on issue #961 on 2026-09-17, choosing from options put to them
+the one labelled:
+
+> Sufit mieszkańców na typ pomieszczenia w katalogu (zalecane)
+
+("A resident ceiling per room type in the catalogue (recommended).")
+
+**The provenance is the weaker kind and is recorded as such**, in the same terms
+`AGENTS.md`'s entries of 2026-09-08, -09 and -10 use about themselves: this
+quotes the label of a clickable option an agent wrote and the owner chose, not a
+sentence they typed. It was chosen against a **tiles-per-occupant** term — which
+models crowding properly and needs an ADR of its own — and against **leaving the
+prison a dormitory**, and it was put to them as content-only: a number in the
+catalogue, no save-format change, reversible by changing that number. That
+premise was verified before it was spent; see *What it cost* below.
+
+**It authorises the mechanism, not the values.** The two numbers are this
+repository's and are derived rather than chosen.
+
+### The rule, restated
+
+For a room instance `R` whose catalogue definition is `D`, replacing decision
+2's `residentCapacity(R)`:
+
+```
+residentCapacity(R) = min( Σ over objects(R) declaring 'sleep-surface'
+                             of catalogue(objectId).footprint.width,
+                           D.maxResidents )        -- when D authors one
+                    = Σ over objects(R) declaring 'sleep-surface'
+                             of catalogue(objectId).footprint.width
+                                                   -- when it does not
+```
+
+`maxResidents` is optional in `roomDefinitionSchema`, absence means no ceiling,
+and it is authored in `src/content/room-catalog.ts` and read in exactly one
+place: `RoomCapacityResolver.deriveFor`, which hands it to `deriveRoomCapacity`.
+It is **not persisted** — capacity has been derived at restore since decision 6
+— so `SAVE_SCHEMA_VERSION` does not move and a save written before this loads
+into whatever ceiling the build declares.
+
+**Residency only.** `concurrentUseCapacity` and every per-capability ceiling,
+including `'sleep-surface'`'s own, are untouched: those bound *use* of an
+object, and this bounds who may live in the room. A bed above the ceiling still
+stands, still cost its plank, and still raises the use ceiling; what it no
+longer does is house anybody.
+
+### The two numbers, and how each was derived
+
+A ceiling is authored only for a room type an `AccommodationPolicy` houses into
+— under `DEFAULT_ACCOMMODATION_POLICY` that is `room.cell` and
+`room.solitary-cell` — and its value is how many sleep surfaces that type's own
+authored `minimum-size` rectangle holds beside the other objects it requires.
+`object.bed` and `object.medical-bed` are both `1x2`; `object.toilet` is `1x1`:
+
+| type | authored minimum | required besides beds | beds that fit | ceiling |
+| --- | --- | --- | --- | --- |
+| `room.cell` | 2x3, 6 tiles | 1 toilet, 1 tile | `floor(5 / 2)` = 2 | **2** |
+| `room.solitary-cell` | 2x2, 4 tiles | 1 toilet, 1 tile | `floor(3 / 2)` = 1 | **1** |
+
+Two further facts in the tree agree with those numbers and would have been
+falsified by others. `rateCellSharing`
+(`src/simulation/prisoners/cell-sharing.ts`) rates how badly an arrival and a
+cell's current occupants go together, which is a module a ceiling of 1 on
+`room.cell` would make unreachable. And
+`PrisonerOperationsRuntime.isServingSolitarySanction` asserts of a sanctioned
+prisoner that they are *"housed in `room.solitary-cell` right now"* — a solitary
+cell holding two is a sentence the code would be saying falsely.
+
+`room.infirmary` authors none, deliberately: `object.medical-bed` declares
+`'sleep-surface'` so an infirmary does derive residency, but no arrival is ever
+assigned there, so a ceiling would move a HUD total and no gameplay. That is a
+balance decision with no measurement behind it and it stays unauthored.
+
+### What it cost, measured rather than predicted
+
+- **The save format: nothing.** Capacity and capabilities stopped being
+  persisted in decision 6, `roomInstanceSchemaV5` carries identity, anchor and
+  the rectangle, and `resolveAll` recomputes at restore. The content-only
+  premise the ruling was priced on therefore survives, and it was checked
+  against the schema rather than assumed.
+- **A save whose cell is over the new ceiling: the state ADR 0076 already
+  prices, and one half of the remedy it does not reach.** The excess residents
+  are exactly `residentsWithoutExistingPlace` and the state stops paying for
+  them, so a twelve-bed cell restored under this build is indistinguishable, on
+  those paths, from a twelve-bed cell with ten beds taken out. **Relocation is
+  the exception, and it was measured rather than assumed**
+  (`tests/integration/a-save-whose-cell-is-over-the-ceiling.test.ts`):
+  `relocateExcessResidentsOf` has exactly one production caller,
+  `ObjectPlacementService.relocateResidentsLeftWithoutAPlace`, reached from a
+  removal and an undo -- because ADR 0076 was written about a bed being *taken
+  away*. A restore fires no such event, so the excess sit where they are,
+  unpaid, until the player touches the room; a single `RemoveObject` on a
+  surplus bed then moves them next door and announces it with the sentence the
+  owner approved on 2026-08-30 (`hud.alert.event.prisoners.relocated`).
+  **Whether a restore should relocate is left open here** rather than decided
+  in implementation code: it is ADR 0076's subject, not this amendment's.
+- **Six player-visible sentences became false and were rewritten**, each
+  because it named a *bed* where the code counts a residency *place*. Wording
+  has been ours since 2026-09-04 and truth has not. `hud.intake.hint` promised
+  that *"an arrival with none waits until a bed is free"*, and with a ceiling a
+  bed can be free while the arrival waits; it now reads *"waits for a place"*,
+  the condition `findBestAvailable` retries on
+  (`occupancyOf(instance) < instance.residentCapacity`). `hud.intake.no-place`
+  reads *"{count} waiting with no place to sleep"*, and the three FUNDS
+  sentences (`hud.status.funds-before-deliveries-stop`, `-deliveries-stopped`,
+  `-treasury-floor-exhausted`) now say the state pays *"for prisoners who have
+  a place to sleep"* -- which is literally `stateIncomeForOccupiedPlaces`
+  folding over `residentIdsWithExistingPlace()`. The Polish copies moved too.
+- **The sixth is the status-strip badge, and it cost two browser specs before
+  it settled.** `hud.status.prisoners-without-bed` read *"{count} with no
+  bed"*; the first rewording made it *"{count} with no place"* and asserted, in
+  its own comment, that this "stays the same length as the word it replaces" --
+  false, since "bed" is three characters and "place" is five. The strip is
+  where that was paid for: `tests/browser/ui-contraband-name.spec.ts` records
+  the metrics row at `scrollWidth` 1264 against `clientWidth` 1256 at 1280x800
+  **driven by this badge**, so the row was already 8px over before the ceiling
+  existed and a wider badge widens a measured overflow. The badge reads
+  **`{count} not housed`**: one character shorter than the pre-ceiling text,
+  and true in this repository's own established sense of the word --
+  `hud.alert.event.prisoners.housed` is *"{name} has a place in {room}."* and
+  `hud.intake.pipeline-failed` is *"{count} cannot be housed at all"*.
+  **What that gives up is recorded rather than dropped quietly**: issue #609
+  made the badge the short form of `hud.intake.no-place` *in the same words*,
+  and the two now report the same fact in different words, because the strip is
+  short of room and the panel is not. The first `hud.intake.hint` rewording
+  cost a line too -- nine characters longer than the clause it replaced, it
+  wrapped the panel and pushed the Staff panel's payroll figure below its own
+  fold (`tests/browser/ui-staff-wage.spec.ts:377`), which is why the shipped
+  wording is shorter than the pre-ceiling one rather than merely truer.
+- **Two integration fixtures housed 24 prisoners in one 24-bed `room.cell`**,
+  which the ruling makes illegal. Both now zone twelve two-resident cells over
+  the same corner of the world with the same 24 beds, 24 toilets and the same
+  bill, and both were re-measured. What moved is recorded in those files;
+  the two findings worth carrying out of them are that a prison of cells is
+  **harder to keep clean** than a dormitory (the worst hygiene floor in
+  `contended-shower-fairness.test.ts` fell from 97.2 to 3.2 of 255, with the
+  claim that nobody reaches the floor still holding), and that the **perfect
+  dining caste** `contended-canteen-substitution-cost.test.ts` recorded
+  dissolved — 24 prisoners in one room have identical travel, so the scan's
+  entity-index tie-break decided everything; two to a cell they no longer share
+  a route.
+
+### What the ruling does not settle
+
+The tiles-per-occupant term is **not** rejected by this, it is not taken: the
+owner was offered it, it needs an ADR, and a ceiling and a floor-area term are
+compatible rather than alternative. Issue #961's other three options — crowding
+consequences instead of a cap (#586, #590), and doing nothing — are equally
+untouched. And `room.holding-cell` still derives `residentCapacity: 0` because
+`object.bench` declares `seating`/`recreation` rather than `sleep-surface`: that
+is #590's subject, it is balance and content, and nothing here changes it. A
+ceiling on a room whose residency is zero would be a number with no domain,
+which is why that type authors none.

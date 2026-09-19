@@ -27,6 +27,7 @@ import {
   openApp,
   panelText,
   runUntilTick,
+  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -201,7 +202,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
       await log(label, 'alerts after New prison', await alertsReport(page));
       await log(label, 'strip text', (await panelText(page, '.hud-strip')).replace(/\n/g, ' | '));
 
-      await tab(page, 'regime').click();
+      await tab(page, 'day-plan').click();
       await page.waitForTimeout(500);
       await log(label, 'regime roster on an empty prison', await regimeReport(page));
       await page.screenshot({ path: `${SHOTS}/act1-new-prison-${String(size.width)}x${String(size.height)}.png` });
@@ -231,7 +232,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await log(label, 'alerts once populated', await alertsReport(page));
     await page.screenshot({ path: `${SHOTS}/act2-populated-1280x800.png`, fullPage: false });
 
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(1000);
     await log(label, 'regime roster on tab select', await regimeReport(page));
     await page.screenshot({ path: `${SHOTS}/act2-regime-1280x800.png` });
@@ -277,7 +278,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await log(label, 'alerts after five in-game days', await alertsReport(page));
     await page.screenshot({ path: `${SHOTS}/act2-after-five-days-1280x800.png` });
 
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(800);
     await log(label, 'regime roster after five days', await regimeReport(page));
 
@@ -308,7 +309,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await log(label, 'strip after loading the save', await stripReport(page));
     await log(label, 'alerts after loading the save', await alertsReport(page));
     await log(label, 'clock after loading the save', await currentClock(page));
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(800);
     await log(label, 'regime roster after loading the save', await regimeReport(page));
     await page.screenshot({ path: `${SHOTS}/act2-after-load-1280x800.png` });
@@ -332,7 +333,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
 
     await log(label, 'strip once populated', await stripReport(page));
     await page.screenshot({ path: `${SHOTS}/act3-populated-1920x1080.png` });
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(1000);
     await log(label, 'regime roster on tab select', await regimeReport(page));
     await page.screenshot({ path: `${SHOTS}/act3-regime-1920x1080.png` });
@@ -368,7 +369,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await log(label, 'strip at the end', await stripReport(page));
     await log(label, 'alerts at the end', await alertsReport(page));
     await page.screenshot({ path: `${SHOTS}/act3-end-1920x1080.png` });
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(800);
     await log(label, 'regime roster at the end', await regimeReport(page));
     await page.screenshot({ path: `${SHOTS}/act3-regime-end-1920x1080.png` });
@@ -376,7 +377,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     // The roster's refresh channel: does it move without a tab select?
     await tab(page, 'overview').click();
     await page.waitForTimeout(200);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(300);
     const before = await regimeReport(page);
     await page.waitForTimeout(20_000);
@@ -400,7 +401,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     // accepts an admission.
     await buildAndPopulate(page, { beds: 4, admits: 0, guards: 0, label });
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     const admit = page.locator('.hud-intake__admit');
     const cycles: Record<string, number>[] = [];
     for (let index = 0; index < 12; index += 1) {
@@ -438,7 +439,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
     await buildAndPopulate(page, { beds: 4, admits: 0, guards: 0, label });
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
 
     await page.evaluate(() => {
       const button = document.querySelector<HTMLButtonElement>('.hud-intake__admit');
@@ -561,7 +562,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
       await page.getByRole('button', { name: 'New prison' }).click();
       await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-      for (const which of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+      for (const which of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
         await tab(page, which).click();
         await page.waitForTimeout(400);
         const report = await page.evaluate(() => {
@@ -835,10 +836,10 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await page.locator('.hud-strip__transport button').nth(2).click();
     await page.waitForTimeout(15_000);
     await probe('after fifteen seconds at x4, Overview selected');
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     await page.waitForTimeout(500);
     await probe('with Rooms selected');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await page.waitForTimeout(500);
     await probe('with Security selected');
     await page.screenshot({ path: `${SHOTS}/act6-security-1280x800.png` });
@@ -855,7 +856,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await log(label, 'intake panel before pressing', await panelText(page, '.hud-intake'));
     await log(label, 'refusal band before pressing', await panelText(page, '.hud__refusal'));
     for (let index = 0; index < 3; index += 1) {

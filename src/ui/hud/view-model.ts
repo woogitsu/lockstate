@@ -133,7 +133,8 @@ export interface HudCountsViewModel {
   /**
    * How many prisoners are holding a residency place **that currently
    * exists** -- the count the state pays on, and the one the `PRISONERS`
-   * chip's *"N with no bed"* badge is subtracted from (issue #609).
+   * chip's *"N not housed"* badge is subtracted from (issue #609; the noun
+   * moved from "bed" to "place" with issue #961's resident ceiling).
    *
    * Published, never derived here: it is `counts.occupiedPlaces`
    * (`src/ui/simulation-counts.ts`), which the projection fills from
@@ -154,6 +155,36 @@ export interface HudCountsViewModel {
    */
   readonly occupiedPlaces: number;
   readonly staff: number;
+  /**
+   * How many hired guards are standing in deployment phase `'unassigned'` --
+   * hired, and posted nowhere (issue #870).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it
+   * is `counts.staffUnassigned`, which `projectStatusStrip` counts on the
+   * same walk over `allGuardIds()` that counts `staff` above
+   * (`src/simulation/presentation/status-strip-projection.ts`), so the two
+   * cannot come to disagree about who is on the roster.
+   *
+   * **It has been on `statusCountsSchema` since `staffUnassigned` was added
+   * and until this line nothing in `src/ui/` or `src/main.ts` read it** --
+   * `grep -rn 'staffUnassigned' src/ui/ src/main.ts` returned nothing, which
+   * is issue #629's class rather than a missing feature: every guard hired
+   * and posted nowhere was counted, published twice a second, and shown to
+   * nobody.
+   *
+   * **The number stops here, deliberately.** Nothing paints this field yet:
+   * the Security panel's coverage hint is the surface issue #870 names as the
+   * one this number belongs on, but the *sentence* that hint would say about
+   * an unassigned guard is a player-visible promise, and #868 is the open
+   * question about exactly that sentence -- `AGENTS.md`'s fourth exclusion,
+   * the owner's rather than an implementing agent's. #870 is scoped to the
+   * number reaching this view model, not to authoring the copy that would
+   * read it out.
+   *
+   * `0` is a real state, not "unknown": it is every prison that has hired
+   * nobody, and every prison whose whole roster is posted.
+   */
+  readonly staffUnassigned: number;
   readonly rooms: number;
   /**
    * The summed `residentCapacity` of **every** registered room instance --
@@ -190,6 +221,33 @@ export interface HudCountsViewModel {
    */
   readonly roomCapacity?: number;
   /**
+   * **Whether the prison is "fresh, unfurnished"** --
+   * `counts.isFreshUnfurnishedPrison`, straight through: the simulation's own
+   * `RoomInstanceRegistry.totalResidentCapacity === 0` (ADR 0017's
+   * "Amendment, 2026-09-01" §2), not anything derived on this side.
+   *
+   * **It replaces `roomCapacity === 0` as the host's predicate, and the field
+   * above is left standing because it is a different true fact.** Three sites
+   * derived freshness from `roomCapacity` -- `src/ui/hud/projection.ts`,
+   * `build-panel.ts`, `staff-panel.ts` -- and `roomCapacity` is a sub-sum of
+   * the registry figure over the catalogue fan-out
+   * (`docs/HUD_PROJECTIONS.md` gap 15), so it read "fresh" in strictly more
+   * cases than the worker did and judged presses against the shallower
+   * starter rung where the worker used the mature one. Read it through
+   * `freshUnfurnishedPrison` in `src/ui/affordability.ts` rather than off this
+   * field, so the host keeps one definition rather than three.
+   *
+   * **Optional, the same shape as `roomCapacity` above and for its reason**:
+   * every fixture that built a `HudCountsViewModel` before this field existed
+   * stays valid. Absent reads as *not* fresh -- the mature, already-shipped
+   * rung -- which is the reading `roomCapacity`'s own comment above gives for
+   * its `undefined`, and the safe direction: a session that has published
+   * nothing cannot have a `PurchaseMaterials` or `HireStaff` control on screen
+   * to press. It is required on the wire (`statusCountsSchema`), so no real
+   * session reaches a reader without it.
+   */
+  readonly isFreshUnfurnishedPrison?: boolean;
+  /**
    * How many prisoners are standing in a sector on each rung of the guard
    * coverage ladder (issue #588): all the guards it asks for, some of them,
    * none of them.
@@ -207,6 +265,41 @@ export interface HudCountsViewModel {
   readonly prisonersCovered: number;
   readonly prisonersUnderstaffed: number;
   readonly prisonersUnguarded: number;
+  /**
+   * **Whether a sector's guard post currently cannot be reached**, so the
+   * post is never manned however many guards the prison has hired
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it
+   * is `PrisonCondition`'s `'security.post-unreachable'` member on
+   * `counts.conditions`, read through `isPostUnreachable`
+   * (`src/ui/simulation-conditions.ts`) rather than compared to a literal
+   * here, and produced by `DeploymentSystem.hasUnreachablePost` -- which is
+   * the same object `assignUnassignedGuards` draws its claimable guards from,
+   * so the readout and the deployment cadence cannot come to disagree about
+   * whether anybody could take the post.
+   *
+   * **It is what stops the chip beside it saying something false.** The three
+   * coverage counts above flicker between *covered* and *unguarded* on a
+   * ten-tick cadence while a post is stranded -- measured over 200 consecutive
+   * ticks on seed `0x396`, exactly 100 each -- because `SafetyCoverageSystem`
+   * follows an assignment that is made and lost every deployment pair. So for
+   * half of all ticks `coverageBadge` reads **"Covered"** over a prison no
+   * guard is standing in. `projectStatusMetrics` gives this field precedence
+   * over that ladder for that reason, and ADR 0117 §4 names the choice as one
+   * that falls to whoever builds the condition.
+   *
+   * **Optional, the same shape as `roomCapacity` above and for its reason**:
+   * every fixture that built a `HudCountsViewModel` before this field existed
+   * stays valid, and absent reads as "no prison has said a post is stranded"
+   * -- which is the safe direction, since it leaves the coverage ladder
+   * exactly as it was.
+   *
+   * `false` is a real state and not "unknown": it is every prison whose posts
+   * can be walked to, which is every prison that has not walled one in.
+   */
+  readonly postUnreachable?: boolean;
   /**
    * How many prisoners are on the high-risk regime (issue #703, the owner's
    * fourth ruling of 2026-08-31).
@@ -334,7 +427,7 @@ export interface HudCountsViewModel {
    * both strings**, so neither is empty any more. The chip takes a tone and a
    * `{remaining} left` badge whenever the balance is negative (`overdraftTone`
    * and `overdraftBadge` in `./projection.ts`), and a charge the rung cannot
-   * carry reads *"deliveries are refused until the state pays what it owes"*
+   * carry reads *"deliveries are refused until the prison earns the money"*
    * rather than the generic refusal
    * (`hud.refusal.purchase-materials-past-floor`).
    *
@@ -387,6 +480,25 @@ export interface HudCountsViewModel {
    * what the prison has earned.
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * How much of today's grant has been withheld so far because residents have
+   * needs going unmet, in the same minor units -- or **absent because nothing
+   * has published it** (issue #890).
+   *
+   * Published, never computed here, and the reason is sharper than for the
+   * field above: the undiminished per-place rate lives in
+   * `src/simulation/economy/income.ts`, which `src/ui/hud/` may not import
+   * (`tests/unit/ui-hud-messages.test.ts`), and the subtraction has to happen
+   * after both sides are prorated or it disagrees with the chip it explains
+   * for most of every day.
+   *
+   * **Optional, and absent is not `0`.** Absent is a payload written before
+   * this field existed -- every fixture in `tests/browser/` is one -- and `0`
+   * is a prison meeting every resident's needs. `earnedWithheldDescription`
+   * draws nothing in either case, so the two agree on screen and are still
+   * different facts.
+   */
+  readonly stateIncomeWithheldTodayMinorUnits?: number;
   /**
    * What one in-game day of the current roster will cost, in the same minor
    * units -- or **absent because nothing has published counts yet** (issue
@@ -686,6 +798,29 @@ export interface HudBuildableViewModel {
   readonly categoryLabelKey: LocalizationKey;
   /** Absent when nothing this buildable is made of can be bought. */
   readonly material?: HudBuildMaterialViewModel;
+  /**
+   * What one placement of this buildable costs at catalogue price, in the same
+   * minor units `HudCountsViewModel.treasuryMinorUnits` is counted in.
+   *
+   * **The panel renders this and multiplies nothing** (issue #1160's first exit
+   * criterion, constitution article 4). It used to compute the row's price as
+   * `material.unitPriceMinorUnits * material.quantityPerPlacement`, which is
+   * the interface recomputing finances, and over the *first purchasable*
+   * requirement rather than all of them. `placementCostMinorUnits` in
+   * `src/simulation/economy/placement-cost.ts` is where that arithmetic now
+   * lives, beside `ProcurementSystem.purchase`'s own, and the composition root
+   * calls it.
+   *
+   * **Absent is a real answer and is not the same as `material` being absent.**
+   * It means at least one of this buildable's requirements names a material
+   * nothing sells, so the placement has no total to state -- a partial sum
+   * would be a number that reads like a price and is not one. A buildable with
+   * no purchasable material at all has no `material` *and* no cost here, which
+   * is the state the panel already rendered as "no price to state"; the two
+   * fields coincide for every row in today's registry and are separate
+   * questions.
+   */
+  readonly placementCostMinorUnits?: number;
 }
 
 /**
@@ -776,6 +911,13 @@ export interface HudBuildOrderViewModel {
    * all read it -- never "unknown".
    */
   readonly cancelRefundMinorUnits: number;
+  /**
+   * This order's revision as of this publication (ADR 0107), carried
+   * unchanged from `BuildQueueOrderViewModel.revision` so a later
+   * `CancelBuildOrder` press can name it as `expectedRevision` -- the row's
+   * own read of what it last saw, not a value this thread invents.
+   */
+  readonly revision: number;
 }
 
 /**
@@ -1062,6 +1204,18 @@ export interface HudRoomViewModel {
    * A number, not a class name: the tint lives in
    * `src/rendering/world/appearance.ts` and is keyed on the room's *category*,
    * so a stylesheet copy of it would be a second table to drift.
+   *
+   * **Read by `rooms-panel.ts`'s `.hud-rooms__row-swatch` since #1021.** Two
+   * earlier passes (#1032/ADR 0098, #1038's playtest) had found this field
+   * computed and read by nothing -- the doc comment above described an intent
+   * `main.ts` and this type both carried out and no third place consumed, so
+   * the row and the map could name the same room in two different colours and
+   * nothing would notice. It is decoration on a row that already has an
+   * accessible name (`labelKey`), never a replacement for one: #1038 measured
+   * that this palette cannot carry identity alone at any spacing the 18-hue
+   * table can afford (worst pair 5.30 delivered units against a per-pixel
+   * sigma of 15.54), so a colour-blind player reads exactly the same row a
+   * sighted one does, and the swatch is the extra rather than the message.
    */
   readonly tint: number;
   /** Absent when the definition authors no minimum, which is content's statement and not a default. */
@@ -1164,7 +1318,44 @@ export interface HudRoomsViewModel {
  * Unreachable with the shipped catalogues -- all 18 room definitions name
  * catalogued objects -- and reachable the moment one does not.
  */
+/**
+ * Which kind of thing a room is missing (#938).
+ *
+ * - `'object'` -- an unmet `object` requirement, which is every entry this
+ *   readout could carry before #938: a cell short of a bed, a canteen short
+ *   of three benches.
+ * - `'doorway'` -- the room's perimeter is closed and holds no door at all,
+ *   so no prisoner can ever get into it. `RoomAccess`' `'no-way-in'` carried
+ *   across the boundary, and it is a fact about the *walls* rather than about
+ *   anything standing inside them.
+ * - `'unreachable'` -- the room has a door and **nothing outside can reach
+ *   it** (ADR 0108): the space beyond that door is itself closed off.
+ *   `RoomAccess`' `'unreachable'`, and it is a third kind rather than a second
+ *   spelling of `'doorway'` because the two want different repairs -- one
+ *   player has to build a door, the other has to take down a wall they built
+ *   somewhere else. #1001 measured what the second costs while the panel was
+ *   silent about it: 11,558 route failures and 2,000 a day.
+ *
+ * A discriminator rather than two separate lists, because the two are the
+ * same kind of sentence in the same block -- "this room is not ready, and
+ * here is what it is short" -- and every rule the block already has applies
+ * unchanged to both: how many rooms are unfinished, how many things they are
+ * short between them, which room gets named when only one fits, and the
+ * remainder line when a room is short more than the panel may draw. A second
+ * list beside `needs` would need its own copy of all four.
+ *
+ * **Required, not optional, and for `HudRoomViewModel.objectRequirements`'
+ * recorded reason**: an optional discriminator would let a producer stay
+ * silent, the panel fall back to the object sentence, and a green assertion
+ * mean only that the fixture agreed with it. That is the exact shape of
+ * defect #938 is -- a readout that renders the same for two different states
+ * -- so this field may not be able to default.
+ */
+export type HudRoomNeedKind = 'object' | 'doorway' | 'unreachable';
+
 export interface HudRoomNeedViewModel {
+  /** Which kind of shortfall this entry is. See `HudRoomNeedKind`. */
+  readonly kind: HudRoomNeedKind;
   /**
    * The room instance this is about (`room.cell:12:4`).
    *
@@ -1177,7 +1368,11 @@ export interface HudRoomNeedViewModel {
   readonly roomLabelKey: LocalizationKey;
   /** Where the room is, so a player with four cells knows which one this is. */
   readonly tile: { readonly x: number; readonly y: number };
-  /** The missing object's `nameKey`, absent when the object catalogue names none. */
+  /**
+   * The missing object's `nameKey`, absent when the object catalogue names
+   * none -- and always absent on a `kind: 'doorway'` or `kind: 'unreachable'`
+   * entry, which is about the room's walls and names no object at all.
+   */
   readonly objectLabelKey?: LocalizationKey;
   /**
    * How many **more** of that object the room needs (#529).
@@ -1208,6 +1403,52 @@ export interface HudRoomNeedViewModel {
 }
 
 /**
+ * One room that cannot take another user right now, and the ceiling it is
+ * against (ADR 0028 phase 5).
+ *
+ * **Not a `HudRoomNeedViewModel`, and the distinction is the whole point.** A
+ * need is something the player has not built yet: a cell short of a bed, a
+ * room with no door in its wall line. A room here is *finished* -- it holds
+ * every object its catalogue definition asks for -- and is nonetheless
+ * refusing arrivals, because ADR 0028 derives a concurrent-use ceiling from
+ * the objects standing in it and the prison has outgrown it. Issue #1003
+ * measured the sharp case: `room.shower-room` asks for two shower heads, two
+ * heads is a ceiling of two, and a fifty-prisoner prison in which nobody
+ * washes is reachable with every room reading complete.
+ *
+ * Folding that into `needs` would have made `unfinishedRooms` count a finished
+ * room, which is a false figure in a sentence the player reads. Two lists,
+ * two counts, one block -- see `rooms-panel.ts`'s `paintNeeds` for which of
+ * them the block draws and why it is never both.
+ *
+ * ## What `places` and `inUse` are, and what they are not
+ *
+ * They are `RoomConcurrentUseViewModel.capacity` and `.inUse` for **one**
+ * capability of this room: the first, in the projection's ascending capability
+ * order, whose ceiling is fully claimed. A room can be full for one use and
+ * free for another -- a canteen's dining places and its bench seating are
+ * different ceilings -- so this names one of them rather than a total, and
+ * `src/ui/simulation-room-needs.ts` records why it does not try to name which.
+ *
+ * `inUse` may exceed `places`: a claim reinstated at restore, or an object
+ * removed under a performing actor, stands above a dropped ceiling (ADR 0028
+ * decision 2). Neither figure is clamped anywhere between the registry and
+ * this type.
+ */
+export interface HudRoomAtCapacityViewModel {
+  /** The room instance this is about (`room.shower-room:4:6`). A row identity, never rendered. */
+  readonly instanceId: string;
+  /** The room type's `nameKey`. A key, never text. */
+  readonly roomLabelKey: LocalizationKey;
+  /** Where the room is, so a player with three shower rooms knows which one this is. */
+  readonly tile: { readonly x: number; readonly y: number };
+  /** How many may use the room at once for the thing it is full for. At least 1: a ceiling of zero cannot be reached. */
+  readonly places: number;
+  /** How many are using it for that right now. At least `places`. */
+  readonly inUse: number;
+}
+
+/**
  * What the rooms the player has designated are still missing (#331 milestone).
  *
  * Session state that arrives on a **pull**, unlike everything else on
@@ -1217,6 +1458,15 @@ export interface HudRoomNeedViewModel {
  * zeroed one -- "nothing has been asked" and "every room is finished" must not
  * render the same, because the second is a statement about the prison and the
  * first is a statement about this thread.
+ *
+ * **The tab clause is no longer true and is kept for the reason `src/main.ts`
+ * keeps its own copy of it** ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+ * finding 1): this is now read on every tab, because it has a second reader
+ * that is always on screen -- `projectStatusMetrics` draws the `ROOMS` chip's
+ * `not ready` badge from `unfinishedRooms`. **The sentence after it is
+ * untouched and matters more than before**: absent still means nothing has
+ * asked, which is now only true before a session exists and after one stops,
+ * and the badge must draw nothing in that state rather than a zero.
  *
  * `unfinishedRooms === 0` is the case the readout must stay silent for. A room
  * that is fine earns no line: the block is not drawn at all, which is what
@@ -1239,6 +1489,21 @@ export interface HudRoomNeedsViewModel {
   readonly totalNeeds: number;
   /** The ones there is room to name, in the projection's canonical order. */
   readonly needs: readonly HudRoomNeedViewModel[];
+  /**
+   * Every room in the projected page that cannot take another user right now,
+   * in the projection's canonical order (ADR 0028 phase 5).
+   *
+   * **Complete over that page, unlike `needs`**, and the difference is where
+   * each comes from: a need is read off a per-room *detail* projection, so
+   * only `ROOM_NEEDS_ROOMS_LIMIT` rooms are ever asked about, while this is
+   * read off the one *list* reply every drive already fetches. So its length
+   * is the count -- there is no second figure beside it for the same reason
+   * `unfinishedRooms` needs one: nothing truncated it.
+   *
+   * Empty is the ordinary state and is not silence: it means the projection
+   * was read and no room's ceiling was fully claimed at that moment.
+   */
+  readonly atCapacity: readonly HudRoomAtCapacityViewModel[];
 }
 
 /**
@@ -1445,14 +1710,34 @@ export interface HudStaffViewModel {
  * host-side refusal alone and stealing the line back from it.
  *
  * Absent means the session has refused nothing -- or has ended, which empties
- * it for the reason `EMPTY_HUD_VIEW_MODEL.counts` zeroes the counts: a
- * refusal by a simulation that no longer exists is not something the player
- * can act on.
+ * it for the reason the counts channel comes off on a stop (#1191): a refusal
+ * by a simulation that no longer exists is not something the player can act
+ * on.
  */
 export interface HudRefusalNoticeViewModel {
   readonly sequence: number;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
+  /**
+   * Present once the simulation reports that the **same command route** has
+   * decided another outcome since this refusal was recorded -- the player
+   * zoned something else, removed a wall somewhere else, hired somebody else
+   * (ADR 0091 decision 2, option F, ruled by the owner 2026-09-16).
+   *
+   * **Only the band reads it.** `mountHud`'s `applySimulationRefusal` retires
+   * the corner on it; `hudAlertsFromWorkerMessage` does not look at it, so the
+   * alerts list keeps the row. That divergence is the whole of what option F
+   * buys and it is deliberate: the band is what is happening now, the list is
+   * the record. `src/ui/simulation-alerts.ts` has claimed that split in prose
+   * since #507 and this is the first thing that makes the two surfaces
+   * actually differ.
+   *
+   * It carries no route and no target, exactly as the rest of this interface
+   * carries no coordinates: the comparison is made where the key lives, in
+   * `RefusalLog`, and what crosses the boundary is its answer. See
+   * `SimulationRefusal.routeDecidedSince`.
+   */
+  readonly routeDecidedSince?: true;
 }
 
 /**
@@ -1518,9 +1803,69 @@ export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
 }
 
 export interface HudViewModel {
-  readonly counts: HudCountsViewModel;
+  /**
+   * The status strip's nine numbers, or **absent because no prison is
+   * reporting** (issue #1191).
+   *
+   * Three states rather than two, and the third is the whole of that issue.
+   * This field used to be required and `EMPTY_HUD_VIEW_MODEL` carried a
+   * complete row of zeros, which stood in twice: before the first worker
+   * snapshot, and after `simulation/stopped`, for which
+   * `hudCountsFromWorkerMessage` answered that same object. So *"Prisoners 0,
+   * Rooms 0, Funds 0"* was what a page with no simulation behind it said about
+   * a prison it had never heard of -- **beside a clock reading `--` in the same
+   * paint**, because `clock` has had `UNKNOWN_HUD_CLOCK` for that state all
+   * along. Two halves of one strip disagreeing about whether anything is known
+   * is `konstytucja.md` article 5's third named anti-pattern
+   * (*"'Brak incydentów' i 'brak danych' to różne stany"*) standing in the one
+   * place a player reads first.
+   *
+   * **Absence rather than a sentinel row**, which is `alerts`' shape (#1184)
+   * and `overview`'s (#1183) rather than the clock's: a row of zeros cannot be
+   * mistaken for "nobody has spoken" if "nobody has spoken" is not a row. A
+   * sentinel inside `HudCountsViewModel` would have had to be nine sentinels,
+   * one per number, each of which some reader could still add up. The optional
+   * field makes the compiler ask every reader what it does when nothing has
+   * been reported, and the answers are recorded where they are given:
+   * `projectStatusMetrics` returns descriptors with no `value`, the strip
+   * paints `--` in each of them, `hud.ts` withholds the treasury from the buy
+   * and hire buttons, and `src/main.ts`'s press pre-flights stand down rather
+   * than judge a press against a balance nobody published.
+   *
+   * **A prison genuinely reporting zeros still says so**: a
+   * `simulation/status-counts` publication whose figures are all `0` sets this
+   * field, and the strip states those zeros with no hedge. That is the
+   * distinction the whole shape exists to keep -- a reported `0` is a fact
+   * about a prison, and the absent field is the absence of a prison.
+   */
+  readonly counts?: HudCountsViewModel;
   readonly clock: HudClockViewModel;
-  readonly alerts: readonly HudAlertViewModel[];
+  /**
+   * The alerts log, or **absent because no prison is reporting** (issue #1184).
+   *
+   * Three states rather than two, and the third is the whole of that issue.
+   * This field used to be required and `EMPTY_HUD_VIEW_MODEL` carried the
+   * literal `[]`, so *"No active alerts"* -- `'hud.alerts.empty'` -- was what a
+   * page with no simulation behind it said about a prison it had never heard
+   * of, and what it went on saying after `simulation/stopped` emptied the list.
+   * That is `konstytucja.md` article 5's third named anti-pattern standing in
+   * the tree: *"'Brak incydentów' i 'brak danych' to różne stany"* ("'no
+   * incidents' and 'no data' are different states").
+   *
+   * The sibling `clock` field had a fix for exactly this state already --
+   * `UNKNOWN_HUD_CLOCK`, *"there is no simulation clock to report"* -- and
+   * `overview` above has the better version of it, which is the one taken
+   * here: **absence by construction, rather than a sentinel value inside the
+   * list.** An empty array cannot be mistaken for "nobody has spoken" if
+   * "nobody has spoken" is not an array. So `src/main.ts` sets this only from a
+   * message that carries alerts and deletes it on `simulation/stopped`,
+   * `hudAlertsFromWorkerMessage` answers `'none'` for that message exactly as
+   * `hudRefusalFromWorkerMessage` does, and the HUD paints
+   * `'hud.alerts.unknown'` for absence while keeping `'hud.alerts.empty'` for
+   * the state it was always true of: **a prison that is reporting, and
+   * reporting nothing wrong.**
+   */
+  readonly alerts?: readonly HudAlertViewModel[];
   /** Absent until this session has had something to say. See the interface. */
   readonly event?: HudEventNoticeViewModel;
   /** Absent until this session has designated a room. Not zeroed -- see the interface. */
@@ -1550,6 +1895,37 @@ export interface HudViewModel {
    * with", and the two must not render the same.
    */
   readonly intakePipeline?: HudIntakePipelineViewModel;
+  /**
+   * What the Overview section states, or **absent because no prison has
+   * reported** (issue #1183).
+   *
+   * The field exists so that "no session has said anything" cannot be spelled
+   * with the same zeros a poor prison publishes. `counts` above cannot answer
+   * that question: `EMPTY_HUD_VIEW_MODEL.counts` is a confident
+   * `treasuryMinorUnits: 0` and is what a first paint holds *and* what
+   * `hudCountsFromWorkerMessage` returns for `simulation/stopped`, so a readout
+   * keyed on it would state a balance of zero for a prison that has never
+   * spoken. That is exactly the defect #1184 found in `'hud.alerts.empty'`,
+   * which rendered from the same empty literal that stands in before the first
+   * worker snapshot, beside a `clock` field that was deliberately given
+   * `UNKNOWN_HUD_CLOCK` for that state. **That issue is closed and `alerts`
+   * below took this field's shape**; `counts` is still the confident row of
+   * zeros, which is #1191.
+   *
+   * So this readout gets the `clock`'s treatment rather than the alerts list's,
+   * and gets it by construction: the host sets it only from a
+   * `simulation/status-counts` publication and deletes it on
+   * `simulation/stopped`, and the panel says so in words rather than drawing a
+   * figure.
+   *
+   * **Published, never computed.** Its three figures are copied out of the
+   * publication one for one. The HUD may not derive a simulation figure
+   * (`AGENTS.md` boundary 1, and constitution article 4 from the other side),
+   * and a finance readout is where that is most tempting: a net-for-today line
+   * would be one subtraction and a second, drifting authority on what the
+   * prison is making.
+   */
+  readonly overview?: HudOverviewViewModel;
   /**
    * What has been bought and has not arrived, or absent because nothing asked.
    *
@@ -1600,6 +1976,22 @@ export interface HudViewModel {
    * empty prison on behalf of a session that has said nothing.
    */
   readonly prisonerRoster?: HudPrisonerRosterViewModel;
+  /**
+   * The one prisoner the player selected, in as much detail as the simulation
+   * will say and this layer can render honestly -- or absent because nothing
+   * asked (issue #895).
+   *
+   * The ninth pulled field, and the first whose absence has **two** causes that
+   * are both "nothing is answering for this": nobody is selected, and the
+   * selected prisoner has since been released. Neither is drawn as a claim
+   * about the prison, which is why this field says nothing about *which*
+   * prisoner is selected -- that is chrome the Regime panel owns, exactly as
+   * which buildable is selected is chrome the Build panel owns. What crosses
+   * here is only the answer, and it carries its own `entityId` so that a reply
+   * about somebody the player has since moved off cannot be painted as though
+   * it were about their current choice.
+   */
+  readonly prisonerDetail?: HudPrisonerDetailViewModel;
 }
 
 /**
@@ -1644,6 +2036,44 @@ export interface HudRegimeBlockViewModel {
   readonly allowedCategoryLabelKeys: readonly LocalizationKey[];
   /** How far through the running block, `0`--`100`, floored. */
   readonly blockProgressPercent: number;
+  /**
+   * The tick of the day the running block starts on --
+   * `RegimeBlockViewModel.blockStartTickOfDay` verbatim.
+   *
+   * **Carried because it is the coordinate `EditRegimeBlock` names a block
+   * by**, and for the reason ADR 0113 §3 gives for the command naming a block
+   * that way rather than by index: an index is not stable across a save/load
+   * round trip, because `RegimeScheduleRegistry` reorders rows into a
+   * canonical order on restore, and a boundary is the one coordinate the
+   * player and the simulation can agree on without agreeing on array order
+   * first. A panel that sent an index would be sending the one number that
+   * can mean a different block after a reload.
+   *
+   * Never derived here from `blockProgressPercent` and the day length, which
+   * would be this layer computing a simulation figure: the projection already
+   * states it.
+   */
+  readonly startTickOfDay: number;
+  /**
+   * The same categories `allowedCategoryLabelKeys` above labels, as the ids
+   * themselves, in the schedule's own order.
+   *
+   * **Both, rather than one derived from the other, and the direction is why.**
+   * A label key is what the panel *renders* and an id is what the panel
+   * *sends*; `deriveSimulationMessageKey` maps an id to a key and nothing maps
+   * a key back, so a panel holding only keys could not name a category to
+   * `EditRegimeBlock` at all, and one holding only ids would have to spell the
+   * key itself -- the second spelling `simulation-regime.ts` already refuses
+   * to write.
+   *
+   * `readonly string[]` and not `ActionCategory[]`: this module imports
+   * nothing from `src/simulation/**` (see the file header), exactly as
+   * `classificationGroupId` above is a bare `string` for the same reason. The
+   * closed vocabulary is enforced where the command is decoded --
+   * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` -- rather than by a
+   * type this layer may not name.
+   */
+  readonly allowedCategoryIds: readonly string[];
 }
 
 export interface HudRegimeViewModel {
@@ -1754,10 +2184,116 @@ export interface HudPrisonerRosterViewModel {
    * carried unchanged from `PrisonerRosterPage.everAdmitted` (issue #506).
    * `total: 0` alone cannot say whether nobody has been admitted or whether
    * the whole population has since been discharged, and this is the fact
-   * that tells the two apart -- see `regime-panel.ts`'s roster-empty note
+   * that tells the two apart -- see `roster-panel.ts`'s roster-empty note
    * for what the panel does with it.
    */
   readonly everAdmitted: boolean;
+}
+
+/**
+ * One prisoner, as the inspector says them (issue #895).
+ *
+ * Four of these five fields are the roster row's own, declared identically and
+ * deliberately: the inspector is the same person read at a second scale, so the
+ * name, the badge word, the group and the tier are the same facts and are
+ * rendered by the same pure functions -- `formatPrisonerName` and
+ * `describePrisonerRow` take a structural parameter for exactly that reason.
+ * Redeclaring them as a different shape would mean two ways of saying that a
+ * prisoner is `high-risk`, and the panel would have to choose one per surface.
+ *
+ * The fifth is what the inspector exists for. `needs` is **all six**, where a
+ * row carries the one that happens to be lowest -- and the difference is money
+ * rather than detail: the state withholds part of a prisoner's day of the
+ * operating grant *per unmet need* (`unmetNeedCount`, the sum
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` multiplies), so a prisoner
+ * costing the prison four needs' worth and one costing it one look the same on
+ * the roster and different here.
+ *
+ * **What is not here is not missing**, and `src/ui/simulation-prisoner-detail.ts`
+ * carries the list with a reason for each: the tile and the accommodation
+ * because neither answers "where is this person" (`docs/HUD_PROJECTIONS.md`
+ * gaps 10 and 11), the gang because no gang id has a word (it had no producer
+ * either until ADR 0103 gave it one; the missing word is what still keeps it
+ * off the screen), and
+ * the sentence and the current action because every sentence that would frame
+ * either figure is new player-facing copy -- `AGENTS.md`'s fourth exclusion,
+ * the owner's.
+ */
+/** #958 corrects the historical sentence refusal above: wording is released;
+ * the existing detail reply and clock now provide an in-game-day readout. */
+export interface HudPrisonerDetailViewModel {
+  /** Remaining ticks at the detail reply's tick; absent before classification or for an unreadable deadline. */
+  readonly remainingSentenceTicks?: number;
+  /**
+   * The prisoner this answer is about, so a panel can refuse to paint a reply
+   * about somebody the player has since moved off. It is the projection's
+   * `EntityId`, which packs an index with a generation and is never reissued
+   * (`packEntityId`, and ADR 0026 question 1's retirement at generation
+   * 4,095) -- so it names this prisoner or nobody, and never somebody else.
+   */
+  readonly entityId: number;
+  /**
+   * Absent until the intake pipeline's `reception` stage mints one, and absent
+   * for every prisoner when the session supplies no identity registry -- the
+   * same two cases the roster row's own `name` is absent for.
+   */
+  readonly name?: HudActorNameViewModel;
+  /** The badge word: the tier once classification has run, the intake stage before it. */
+  readonly standingLabelKey: LocalizationKey;
+  /** The stable classification-group id, absent until classification has run. It decides the badge's tone. */
+  readonly classificationGroupId?: string;
+  /** `0` (minimal) to `3` (high risk); absent until classification has run. */
+  readonly riskTier?: number;
+  /**
+   * Every need, in the projection's own `NEED_IDS` order and not re-sorted.
+   *
+   * Six today, and the count is the projection's rather than this file's: a
+   * consumer that assumed six would be wrong the day a seventh need is
+   * declared, which is why `roster-panel.ts` spells its row budget out with a
+   * unit test holding it against `NEED_IDS.length`.
+   */
+  readonly needs: readonly HudPrisonerNeedViewModel[];
+}
+
+/**
+ * The three figures the Overview section states (issue #1183).
+ *
+ * Every one of them already crosses the worker boundary on
+ * `simulation/status-counts` and is read off `HudCountsViewModel` unchanged --
+ * this is a *narrowing* of that payload to what one panel states, not a second
+ * copy of it. The narrowing is the point: a panel handed the whole counts
+ * object is a panel that can compute with it, and the one thing a finance
+ * readout must not do is become a second authority on the money
+ * (`AGENTS.md` boundary 1; constitution article 4).
+ *
+ * All three are required, deliberately. The only absence this readout has is
+ * the whole of it -- see `HudViewModel.overview` -- because
+ * `status-strip-projection.ts` publishes all three on every publication, so an
+ * optional field here would be a branch the running game cannot reach and a
+ * sentence nothing proves (ADR 0044).
+ */
+export interface HudOverviewViewModel {
+  /**
+   * The balance, in the minor units the simulation holds it in, exactly as the
+   * status strip's `FUNDS` chip states it. Not divided into a major unit and
+   * given no symbol, for that chip's recorded reason: #96 named no currency and
+   * ADR 0017 is Accepted without naming one, so dividing by a hundred would
+   * decide one in a readout.
+   */
+  readonly treasuryMinorUnits: number;
+  /**
+   * What the in-game day in progress has earned so far, in the same units
+   * (#29) -- `stateIncomeAccruedByTick`, derived by the simulation from the
+   * tick and the occupied-place count and published, never recomputed here.
+   */
+  readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * What one in-game day of the current roster costs, in the same units
+   * (issue #639 ruling 2) -- `PayrollSystem`'s own `dailyWageBillMinorUnits`.
+   * Which end of an authored wage band is money owed is a simulation fact, and
+   * a HUD that decided it again would be a second definition of the charge.
+   */
+  readonly dailyWageBillMinorUnits: number;
 }
 
 /**
@@ -1828,26 +2364,28 @@ export interface HudLocalizer {
  * confident readout of a clock that is not running is the exact failure the
  * transport controls used to have: something on screen that looks like
  * state and is not.
+ *
+ * **`alerts` is absent here as of issue #1184, and used to be `[]`.** That
+ * literal was the same failure one field over: the alerts list painted *"No
+ * active alerts"* from it, so the screen that had heard from nobody and the
+ * prison with nothing wrong said the same sentence. There is no key to read
+ * now, and `HudViewModel.alerts` carries the reasoning.
+ *
+ * **`counts` is absent here as of issue #1191, and used to be a complete row
+ * of zeros.** That row was the same failure in the place a player reads first:
+ * the status strip painted *"Prisoners 0, Rooms 0, Funds 0"* from it, beside a
+ * clock reading `--` in the same paint, so one strip said both *nothing is
+ * known* and *the prison is empty and broke*. There is no row to read now, and
+ * `HudViewModel.counts` carries the reasoning -- including why this is absence
+ * rather than the clock's sentinel, and why a prison genuinely reporting zeros
+ * still states them.
+ *
+ * **What is left here is one field and a sentinel**, which is the shape this
+ * constant should keep: every channel whose emptiness is a *sentence* is
+ * absent, and `clock` is a value because a clock is one reading rather than a
+ * list, with `UNKNOWN_HUD_CLOCK`'s own docblock giving that argument.
  */
 export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
-  counts: {
-    prisoners: 0,
-    prisonerCapacity: 0,
-    occupiedPlaces: 0,
-    staff: 0,
-    rooms: 0,
-    prisonersCovered: 0,
-    prisonersUnderstaffed: 0,
-    prisonersUnguarded: 0,
-    prisonersHighRisk: 0,
-    activeIncidents: 0,
-    // No key at all -- an empty prison has nothing to name (issue #506
-    // finding 2), and this field's own doc comment says why `undefined` is
-    // never assigned to it explicitly.
-    contrabandFound: 0,
-    treasuryMinorUnits: 0,
-    stateIncomeAccruedTodayMinorUnits: 0,
-  },
   clock: UNKNOWN_HUD_CLOCK,
-  alerts: [],
 };
+

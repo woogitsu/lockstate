@@ -255,6 +255,26 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   // three in one change (ADR 0034). A fourteenth added with no producer belongs
   // here with a reason, and fails the count below until it is either wired or
   // written down.
+  //
+  // **It stopped being empty on 2026-09-14 and is empty again since
+  // 2026-09-16**, and the entry that stood here for those two days is recorded
+  // rather than only its absence, because it said what it expected to happen
+  // to it and that is what happened. It read: ADR 0113 slice 1 (#1167) landed
+  // the command, its consumer in `session-commands.ts`, its two refusals and
+  // the V6 save section together, and not the producer, because the Day-plan
+  // panel that would send it is stage 3 of the identity-v5 rollout (epic
+  // #1155) and `src/ui/` was held by two other agents -- so "a producer
+  // written here would have been written blind against a panel being
+  // rewritten". It ended: "this entry is expected to be deleted by the panel
+  // change, not by a second thought about the command."
+  //
+  // The panel change is #1167's editor: seven toggles per classification
+  // group under `.hud-regime__editor`, sending the categories the block would
+  // then allow. Nothing about the command was reconsidered, and the three
+  // facts that entry offered an implementer all held -- the integration test
+  // drives the real kernel path, both refusals reach `RefusalLog`, and
+  // `hud/status-strip` already reported the edited schedule, so the panel had
+  // something to read and something to send.
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -296,7 +316,7 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all fifteen in `src/main.ts`, which is the composition
+    // where it is -- all sixteen in `src/main.ts`, which is the composition
     // root and the only place in `src/` that builds a command object.
     //
     // **This read `all eleven` until this change**, and it was right when #367
@@ -309,7 +329,7 @@ describe('every declared simulation command either has a producer or is accounte
     // Corrected rather than overwritten, because the number is not the finding
     // and the assertion below is: `COMMAND_TYPES.length` is pinned two lines
     // down, so the *comment* could rot for three additions while the *gate*
-    // could not rot for one. Fourteen of the fifteen are named in this block;
+    // could not rot for one. Fourteen of the fifteen were named in this block;
     // `Undo` is named at the `case 'Undo':` case below, for the reason given
     // there.
     //
@@ -318,11 +338,26 @@ describe('every declared simulation command either has a producer or is accounte
     // which added `DismissAlert` -- with its producer, from the alerts list's
     // own rows. The correction is the fifth of exactly the shape the paragraph
     // above describes, which is why the paragraph is kept.
+    //
+    // **And it read `all fifteen` until ADR 0106**, which added `RemoveWall`
+    // -- with its producer, in the same `case 'remove-object':` branch
+    // `RemoveObject` already had, distinguished by whether the intent carries
+    // an `edge`. The sixth correction of the same shape.
+    // **And it read `all sixteen` until `SellMaterials`** (ADR 0075 decision
+    // 3, invoked by ADR 0096 decision 3(b)), which arrived with its producer
+    // in the same change -- `case 'sell-materials':` beside
+    // `case 'purchase-materials':` -- rather than spending time on the list
+    // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(15);
+    expect(COMMAND_TYPES.length).toBe(18);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    // The seventeenth, which made an unreachable *credit path* reachable a
+    // second time (#285 made the first, for a cancelled delivery): the only
+    // caller of `ProcurementSystem.sellStock` and `previewSellStock` in the
+    // repository was a test.
+    expect(producersOf('SellMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('HireStaff')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
@@ -340,6 +375,14 @@ describe('every declared simulation command either has a producer or is accounte
     // whole purpose is that a *gesture* reaches it, so a producer that existed
     // only in a test would be the exact defect this gate is named after.
     expect(producersOf('RemoveObject')).toEqual(['src/main.ts']);
+    // The sixteenth, added by ADR 0106 beside `RemoveObject` in the same
+    // branch (ADR 0106): the completed-wall arm of the same removal gesture,
+    // reached only when the object arm this gate already named finds
+    // nothing. Named separately for `RemoveObject`'s own reason: a producer
+    // that existed only in a test would be exactly the defect this gate is
+    // named after, and this is the command whose whole point is that a
+    // touch player's *press* reaches a finished wall at all.
+    expect(producersOf('RemoveWall')).toEqual(['src/main.ts']);
     expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
     // The tenth and eleventh, added by ADR 0028 phases 1 and 3 by the same
     // route: arriving *with* their producers rather than spending time on the
@@ -374,6 +417,7 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'UnzoneRoom'`);
     expect(main!.text).toContain(`type: 'PlaceObject'`);
     expect(main!.text).toContain(`type: 'RemoveObject'`);
+    expect(main!.text).toContain(`type: 'RemoveWall'`);
     expect(main!.text).toContain(`type: 'CancelBuildOrder'`);
     expect(main!.text).toContain(`type: 'CancelMaterialPurchase'`);
     expect(main!.text).toContain(`type: 'ReleaseGuardAssignment'`);
@@ -445,7 +489,14 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures fourteen produced and none unproduced, which this file has now been able to say four times', () => {
+  // **This name read "measures seventeen produced and one unproduced, the
+  // first entry this list has held in six passes", and both halves of it went
+  // false in the same commit that moved the two assertions below to 0 and
+  // 18** (#1167). A test name is what a reader of a CI log is shown, so it is
+  // corrected here rather than left describing the state the body had just
+  // stopped asserting -- and it is kept quoted, because this file's whole
+  // subject is a count that means something.
+  it('measures eighteen produced and none unproduced, the list empty again after its one entry', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -477,12 +528,30 @@ describe('every declared simulation command either has a producer or is accounte
     // existing path but a path that did not exist, and **zero and fifteen**
     // once `DismissAlert` arrived the same way (ADR 0084 decision 3, the
     // owner's, 2026-09-01) and gave the alerts log the player gesture two
-    // modules in `src/ui/` had each recorded as missing.
+    // modules in `src/ui/` had each recorded as missing, and **zero and
+    // sixteen** once `RemoveWall` arrived the same way (ADR 0106) and put a
+    // pointer route in front of `ConstructionSystem.completedOrderClaimingEdge`
+    // for a finished wall, which until then had none, and **zero and
+    // seventeen** once `SellMaterials` arrived the same way (ADR 0075
+    // decision 3, invoked by ADR 0096 decision 3(b)) and put the first
+    // caller in `src/` in front of `ProcurementSystem.sellStock` and
+    // `previewSellStock`.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a sixteenth command added
-    // with no producer fails here as well as failing the accounting above.
+    // stay green. Note the denominator moves too, so an eighteenth command
+    // added with no producer fails here as well as failing the accounting
+    // above.
+    // **One and seventeen from 2026-09-14 to 2026-09-16**, and the streak of
+    // zeroes above ended deliberately for those two days: ADR 0113's
+    // `EditRegimeBlock` landed with its consumer, its refusals and its save
+    // section and without its panel, for the reason `AWAITING_PRODUCER`
+    // recorded. **Zero and eighteen again since the Regime panel's editor
+    // shipped** (#1167) -- `regime-panel.ts`'s toggle group sends it, `hud.ts`
+    // dispatches it and `src/main.ts` submits it, which is the three-file route
+    // every other command takes. Both numbers still move together, which is
+    // what this pair of assertions is for -- a nineteenth command added with no
+    // producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(15);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
   });
 });

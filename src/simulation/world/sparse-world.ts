@@ -287,6 +287,7 @@ export class SparseWorld {
   private readonly chunkZoning = new Map<string, Uint8Array>();
   private readonly parcels = new Map<string, ParcelDefinition>();
   private readonly ownedParcels = new Set<string>();
+  private drawnWorldChanges = 0;
 
   public constructor(
     public readonly tileChunkSize: number,
@@ -337,11 +338,19 @@ export class SparseWorld {
     const key = chunkKey(position);
     if (owned) {
       this.ensureMetadata(position);
-      this.owned.add(key);
+      // Only when it is news. `TileSample.owned` is read from this set
+      // (`world-view.ts`), so a change to it changes a pixel and ADR 0099
+      // decision 3's third bullet asks for the marker to move -- but a
+      // re-assertion of ownership already held changes nothing drawn, and a
+      // marker that moved for it would spend a snapshot request on a no-op.
+      if (!this.owned.has(key)) {
+        this.owned.add(key);
+        this.markDrawnWorldChanged();
+      }
       return;
     }
 
-    this.owned.delete(key);
+    if (this.owned.delete(key)) this.markDrawnWorldChanged();
   }
 
   public ensureMetadata(position: ChunkPosition): ChunkState {
@@ -380,6 +389,72 @@ export class SparseWorld {
     }
 
     return this.getChunk(position) as ChunkState;
+  }
+
+  /**
+   * How many times anything the renderer draws has changed in this world, and
+   * nothing more precise than that
+   * ([ADR 0099](../../../docs/adr/0099-how-the-renderer-learns-the-world-changed.md)
+   * decision 3).
+   *
+   * ### What it is for
+   *
+   * `SimulationSnapshotFeed`'s five `dirty` marks are every one of them a fact
+   * about a message the main thread already has -- a session becoming ready, a
+   * clock transition, an accepted command, the tick that command was scheduled
+   * for, a lost request. A build order *finishing* is a fact about the
+   * simulation and about nothing else, so before this counter existed the
+   * drawn world advanced only on the thirty-second consistency poll, and issue
+   * #1037 measured a finished door drawn as an unbuilt ghost for 22-28
+   * seconds. This is published as the fifth header word of
+   * `lockstate.render-actors` and the feed treats a change in it as a sixth
+   * mark.
+   *
+   * ### Why a counter of its own rather than a sum of the chunk revisions
+   *
+   * `geometryRevision` and `contentRevision` are per-chunk and already
+   * published, and summing them would have been free -- and wrong twice. ADR
+   * 0099 §4 opens both holes: **neither counter moves when a build order
+   * changes drawn phase**, because only `finalizeConstruction` bumps one and
+   * that runs on completion alone; and **neither moves for ownership**,
+   * because `setOwned` and `setParcelOwned` add to a set and return. A derived
+   * signal would be silent for the two things #1037 is actually about and
+   * correct for the third only by coincidence, since buying land is a command
+   * and a command already sets `dirty`.
+   *
+   * ### What it is not
+   *
+   * Not simulation state: it is not snapshotted, not restored, and nothing in
+   * the kernel reads it, so it cannot change what a tick computes and
+   * `tests/determinism/` has nothing new to hold. Not a tick, not a count of
+   * anything a player could be shown, and deliberately not a description of
+   * *what* changed -- decision 3 bounds the marker to inequality precisely so
+   * that no partial refresh can be built on it. A restored session starts it
+   * at zero for the same reason `SimulationSnapshotFeed.lastAppliedTick` is
+   * cleared with a session: a number carried across a session boundary is a
+   * statement about a different simulation, and the receiver treats the first
+   * marker it sees in a session as a baseline rather than as a change.
+   */
+  public get drawnWorldRevision(): number {
+    return this.drawnWorldChanges;
+  }
+
+  /**
+   * Says that something the renderer draws changed, for a change this class
+   * cannot see for itself.
+   *
+   * The two write paths below -- `markChanged` and the ownership setters --
+   * call this themselves. The caller this exists for is `ConstructionSystem`,
+   * whose orders change what is drawn twice over their life (`planned` ->
+   * `building` -> `built`) while touching no chunk layer at either transition.
+   */
+  public markDrawnWorldChanged(): void {
+    // `>>> 0` so the counter is the `u32` the wire carries rather than a
+    // number that would eventually stop being one. It wraps after 2**32
+    // changes, which is what the payload's own docblock prices; equality after
+    // a wrap would cost one missed notification and the consistency poll
+    // remains the net under it.
+    this.drawnWorldChanges = (this.drawnWorldChanges + 1) >>> 0;
   }
 
   public markGeometryChanged(position: ChunkPosition): ChunkState {
@@ -551,10 +626,16 @@ export class SparseWorld {
     if (!this.parcels.has(id)) {
       throw new RangeError(`Unknown parcel id: "${id}".`);
     }
+    // As in `setOwned`, and for the same reason: the owned-land outline and
+    // `WorldRenderView`'s per-tile ownership are drawn from these two sets, so
+    // a real change moves ADR 0099's marker and a restatement does not.
     if (owned) {
-      this.ownedParcels.add(id);
-    } else {
-      this.ownedParcels.delete(id);
+      if (!this.ownedParcels.has(id)) {
+        this.ownedParcels.add(id);
+        this.markDrawnWorldChanged();
+      }
+    } else if (this.ownedParcels.delete(id)) {
+      this.markDrawnWorldChanged();
     }
   }
 
@@ -820,6 +901,11 @@ export class SparseWorld {
     const nextRevision = state[revision] + 1;
     if (!Number.isSafeInteger(nextRevision)) throw new RangeError('Chunk revision overflow.');
     this.chunks.set(chunkKey(position), { ...state, [revision]: nextRevision, dirty: true });
+    // Every caller of this method writes a layer `WorldRenderView.readTile`
+    // reads -- `terrainNumericId`, `topEdge`, `leftEdge`, `zoning` -- which is
+    // ADR 0099 decision 3's first bullet, met at the one place all four of
+    // them already converge.
+    this.markDrawnWorldChanged();
     return this.getChunk(position) as ChunkState;
   }
 }

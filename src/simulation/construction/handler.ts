@@ -3,15 +3,17 @@ import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
   BUILD_REFUSAL_REASONS,
+  CANCEL_BUILD_ORDER_REFUSAL_REASONS,
   CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   buildSupersessionKey,
+  cancelBuildOrderSupersessionKey,
   materialsFundingSupersessionKey,
   type RefusalLog,
 } from '../refusals';
 import { tileCoordinate } from '../world/coordinates';
 import { createBuildOrder, resolveBuildEdge } from './build-order';
 import type { MaterialsProcurementReport } from './materials-procurement';
-import type { ConstructionSystem } from './system';
+import { isCancellable, type ConstructionSystem } from './system';
 
 /**
  * @param refusals Where an order the construction system fails is recorded so
@@ -143,6 +145,31 @@ export function createConstructionCommandHandler(
          * fixed.
          */
         const stateAtCancellation = constructionSystem.getOrder(simCommand.orderId)?.state;
+        /*
+         * ADR 0107's stale-cancellation check, read **before** `cancelOrder`
+         * so a mismatch never mutates the order.
+         *
+         * Only for an order that is both found and still cancellable: an
+         * unknown or already-terminal id falls straight through to the
+         * `try`/`catch` below exactly as it did before this document, which
+         * is the pre-existing idempotency the comment above it argues for at
+         * length and this document does not touch (Decision §4 item 1). A
+         * found, cancellable order whose revision no longer matches what the
+         * press was aimed at is refused instead of cancelled -- the order,
+         * its state, its allocation and its revision are left exactly as
+         * they were the instant before the press, so the queue's next
+         * publication reads the order's honest current state and honest
+         * current `previewCancelRefundMinorUnits` figure.
+         */
+        const cancelKey = cancelBuildOrderSupersessionKey(simCommand.orderId);
+        if (
+          stateAtCancellation !== undefined &&
+          isCancellable(stateAtCancellation) &&
+          constructionSystem.revisionOf(simCommand.orderId) !== simCommand.expectedRevision
+        ) {
+          refusals.record(CANCEL_BUILD_ORDER_REFUSAL_REASONS['stale-cancellation'], context.tick, cancelKey);
+          break;
+        }
         try {
           constructionSystem.cancelOrder(simCommand.orderId);
         } catch {
@@ -154,6 +181,13 @@ export function createConstructionCommandHandler(
         // construction -- `cancelOrder` throws for an id it cannot find -- and
         // the guard states that to the compiler rather than doubting it.
         if (stateAtCancellation !== undefined) events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
+        // Issue #492's shape, mirrored from every other refusal family in
+        // this handler: a cancellation that just succeeded must not leave a
+        // standing `stale-cancellation` about this same order on screen --
+        // the press that follows it, aimed at the row's own honest republish,
+        // is a different press against the same id and deserves to be read
+        // without yesterday's refusal still hanging under it.
+        refusals.supersede(cancelKey);
         break;
       }
 
@@ -161,7 +195,7 @@ export function createConstructionCommandHandler(
        * Undo and Redo say so when they worked, and say nothing when they did
        * not (#749).
        *
-       * The `boolean` is the whole reason those methods now answer one: a press
+       * The return value is the whole reason those methods answer one: a press
        * against an empty history reverses nothing, and confirming a reversal
        * that did not happen is the promise the code does not keep that
        * `AGENTS.md`'s fourth exclusion reserves. Neither sentence names a count
@@ -169,10 +203,55 @@ export function createConstructionCommandHandler(
        * naming one order would be a small lie whenever a run of several was
        * taken back. The transaction size is known inside `ConstructionSystem`
        * and is deliberately left there.
+       *
+       * **Undo now says *which* of two things it did, which is
+       * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+       * reason it needed fixing is visible right here in the table of two
+       * branches**: `CancelBuildOrder` above reads the state and picks its
+       * sentence from it, and this branch recorded one sentence for a press that
+       * can destroy strictly more. A `Z` on a finished wall took the wall down,
+       * refunded nothing, destroyed the materials, and said *"the last change to
+       * the build queue was undone."*
+       *
+       * `spendDestroyed` is read off the outcome rather than recomputed here,
+       * for the reason `stateAtCancellation` above is read *before* the call:
+       * every order is `'cancelled'` by the time this line runs and the
+       * distinction is gone. It is one bit and not the transaction size the
+       * ruling declined -- see `ConstructionUndoOutcome`.
        */
-      case 'Undo':
-        if (constructionSystem.undo()) events.recordConstructionUndone(context.tick);
+      case 'Undo': {
+        /*
+         * **The press is entitled to the newest transaction only while that
+         * transaction is the player's own latest action**
+         * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2,
+         * accepted by the owner on 2026-09-09, against
+         * [#956](https://github.com/woogitsu/lockstate/issues/956)).
+         *
+         * Here rather than inside `ConstructionSystem.undo()`, and the
+         * difference is not cosmetic: `undo()` means *"reverse the newest
+         * transaction"*, which is what every other caller wants and gets. What
+         * changes is what one **command** may ask for. The first draft put the
+         * branch in the history itself and eight existing tests refuted it in
+         * one run -- their subject is what a cancellation costs, reached
+         * through `undo()` directly, and a history that refuses its own method
+         * had made that unreachable.
+         *
+         * The emptiness test is first and is not decoration: without it a press
+         * against a prison that has never had a build order would answer
+         * *"something else has happened since the last one"*, which is a false
+         * sentence about a change that never existed. An empty history says
+         * nothing, which is what it has always done.
+         */
+        if (constructionSystem.hasSomethingToUndo && constructionSystem.undoWouldReachPastTheLatestAction) {
+          events.recordConstructionUndoRefused(context.tick);
+          break;
+        }
+        const undone = constructionSystem.undo();
+        if (undone.reversed) {
+          events.recordConstructionUndone(undone.spendDestroyed ? 'spend-destroyed' : 'nothing-destroyed', context.tick);
+        }
         break;
+      }
 
       case 'Redo':
         if (constructionSystem.redo()) events.recordConstructionRedone(context.tick);
@@ -307,7 +386,7 @@ export function createConstructionCommandHandler(
  *
  * **The 2026-09-01 ruling did not close it either, and it is worth being
  * precise about which half moved.** This route's sentence is now *"The build
- * queue is stalled — no more materials until the state pays what it owes."*
+ * queue is stalled — no more materials until the prison earns the money."*
  * The subject changed from a purchase to the queue, which removes the "nothing
  * was bought" denial the paragraphs above are about -- a stalled queue is a
  * true description of a pass that funded four orders and not the fifth. What

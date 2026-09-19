@@ -133,11 +133,20 @@ function relocationThrough(route: 'remove-object' | 'undo'): Relocation {
   const name = runtime.actorIdentity.getName('prisoner', prisoner);
   if (name === undefined) throw new Error('a housed prisoner has been through reception and has a name');
 
-  submit(
-    runtime,
-    'take-the-bed',
-    packCommand(route === 'undo' ? { type: 'Undo' } : { type: 'RemoveObject', ...BED_TILE }),
-  );
+  if (route === 'undo') {
+    // Called on the system rather than submitted as a command. ADR 0104 option
+    // 2 ([#956](https://github.com/woogitsu/lockstate/issues/956), accepted by
+    // the owner on 2026-09-09) refuses a router-level `Undo` whose newest
+    // transaction is not the player's own latest action, and the admission
+    // above is a later one -- so the press this line used to model now answers
+    // a refusal and reaches no order. The refusal itself is covered in
+    // `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`;
+    // what this file is about is the sentence the relocation puts on screen,
+    // which is the same call on the same order either way.
+    runtime.construction.undo();
+  } else {
+    submit(runtime, 'take-the-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
+  }
   expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'rehoused, which is what there is to say').toBe(
     secondCellInstanceId,
   );
@@ -176,6 +185,7 @@ function viewModelWith(parts: {
       prisonerCapacity: 2,
       occupiedPlaces: 1,
       staff: 0,
+      staffUnassigned: 0,
       rooms: 2,
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,

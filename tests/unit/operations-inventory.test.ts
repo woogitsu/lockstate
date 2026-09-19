@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Container, ContainerRegistry } from '../../src/simulation/operations/inventory';
+import { expectOk } from '../helpers/expect-ok';
 
 describe('Container: transactional reserve/withdraw/deposit', () => {
   it('deposit adds stock; quantityOf/availableOf reflect it', () => {
@@ -14,7 +15,7 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
     const container = new Container('c1');
     container.deposit('item.brick', 10);
     const result = container.reserve('item.brick', 4);
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the reservation of four of the ten bricks');
     expect(container.quantityOf('item.brick')).toBe(10); // still on hand
     expect(container.reservedOf('item.brick')).toBe(4);
     expect(container.availableOf('item.brick')).toBe(6);
@@ -30,7 +31,7 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
   it('two reservations cannot both claim the same over-subscribed stock', () => {
     const container = new Container('c1');
     container.deposit('item.brick', 5);
-    expect(container.reserve('item.brick', 5).ok).toBe(true);
+    expectOk(container.reserve('item.brick', 5), 'the first claim, on all five bricks');
     expect(container.reserve('item.brick', 1).ok).toBe(false);
   });
 
@@ -39,7 +40,7 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
     container.deposit('item.brick', 10);
     container.reserve('item.brick', 4);
     const result = container.withdrawReserved('item.brick', 4);
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the pickup of the four reserved bricks');
     expect(container.quantityOf('item.brick')).toBe(6);
     expect(container.reservedOf('item.brick')).toBe(0);
   });
@@ -96,7 +97,7 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
     const container = new Container('c1');
     container.deposit('item.brick', 4);
     container.reserve('item.brick', 4);
-    expect(container.withdrawReserved('item.brick', 4).ok).toBe(true);
+    expectOk(container.withdrawReserved('item.brick', 4), 'the pickup that empties the container');
     // The state that used to break the round trip: the key is still in `stock`,
     // holding 0. Asserted through the public reading, so this does not depend
     // on the private map.

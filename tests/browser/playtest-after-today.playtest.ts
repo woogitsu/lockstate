@@ -1,6 +1,5 @@
 import { test, type Page } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buildAndPopulate,
   buy,
@@ -16,7 +15,9 @@ import {
   openApp,
   panelText,
   press,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -206,7 +207,7 @@ async function hudText(page: Page): Promise<string> {
 
 /** Opens the Regime tab, unfolds it, and returns the roster block whole. */
 async function rosterText(page: Page): Promise<string> {
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   const collapsed = await page.locator('.hud-regime').getAttribute('data-collapsed');
   if (collapsed === 'true') await page.locator('.hud-regime > .ui-panel__header > .ui-panel__toggle').click();
   await page.waitForTimeout(700);
@@ -379,7 +380,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
      */
     const designate = async (label: string, a: [number, number], b: [number, number], want: number): Promise<number> => {
       for (let attempt = 1; attempt <= 10; attempt += 1) {
-        await tab(page, 'rooms').click();
+        await tab(page, 'zones').click();
         const panelCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
         if (panelCollapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
         const catalogue = page.locator('.hud-rooms__catalogue');
@@ -439,7 +440,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     await page.waitForTimeout(2_000);
     log(`north furnished at tick ${await currentTick(page)}: ${JSON.stringify(await latestCounts(page))}`);
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await page.locator('.hud-intake__admit').click();
     const startedAt = Date.now();
     let housed = false;

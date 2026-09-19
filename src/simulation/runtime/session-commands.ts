@@ -2,26 +2,32 @@ import { createConstructionCommandHandler, reportMaterialsFunding } from '../con
 import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
 import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
-import { unpackCommand } from '../protocol/commands';
+import { type SimulationCommand, unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
+  EDIT_REGIME_BLOCK_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
+  REMOVE_WALL_REFUSAL_REASONS,
+  SELL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
   dismissStaffSupersessionKey,
+  editRegimeBlockSupersessionKey,
   hireSupersessionKey,
   placeObjectSupersessionKey,
   purchaseCancelSupersessionKey,
   purchaseSupersessionKey,
   releaseGuardSupersessionKey,
   removeObjectSupersessionKey,
+  removeWallSupersessionKey,
+  sellSupersessionKey,
   unzoneSupersessionKey,
   zoneAreaSupersessionKey,
   zoneRefusalSupersessionKey,
@@ -87,13 +93,20 @@ import { tileCoordinate } from '../world/coordinates';
  * reaches knows about search jobs and incident responses as well as about
  * deployment. Beside the hire would have implied it was the opposite of one.
  *
- * `refusals` is the session's `RefusalLog`, and all ten routes write to the
+ * `refusals` is the session's `RefusalLog`, and all eleven routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
  * refused un-zoning, a refused hire, a refused admission, a refused object
- * placement, a refused object removal, a cancellation with nothing left to
- * refund and a release of a guard nothing was holding are the same kind of fact
- * about the session -- the kernel took the command and a system then declined to
- * carry it out -- and they reach the player down one channel (#261).
+ * placement, a refused object removal, a refused wall removal, a cancellation
+ * with nothing left to refund and a release of a guard nothing was holding are
+ * the same kind of fact about the session -- the kernel took the command and a
+ * system then declined to carry it out -- and they reach the player down one
+ * channel (#261).
+ *
+ * **`RemoveWall` is the eleventh, added by ADR 0106, and it writes to this log
+ * from inside `objectPlacement.remove`'s own outcome handling as well as from
+ * its own edge resolver** -- see that branch below for why: it tries the
+ * object arm `RemoveObject` tries before ever reaching a wall, and only its
+ * own final refusal, `remove-wall.nothing-to-remove`, is recorded.
  *
  * Every branch below also calls `refusals.supersede` on its success path
  * (issue #492): a refusal outlives the thing it refused otherwise, because
@@ -101,21 +114,106 @@ import { tileCoordinate } from '../world/coordinates';
  * it once declined. Each call passes the same key its own `record` call would
  * have used had the command been refused instead, built by that route's own
  * `*SupersessionKey` function in `../refusals`; see those functions for why
- * nine of the ten compare a target (a rectangle, a tile, an order id, a
- * guard id) and one -- `admit` -- compares nothing but the domain, and for
- * why a role, an item or a tile that does not match the standing refusal's
- * own leaves that refusal exactly as it was.
+ * ten of the eleven compare a target (a rectangle, a tile, a tile edge, an
+ * order id, a guard id) and one -- `admit` -- compares nothing but the domain,
+ * and for why a role, an item or a tile that does not match the standing
+ * refusal's own leaves that refusal exactly as it was.
  *
  * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
  * for the case that log could never carry: a command that **worked** (the
  * owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)). Only two of the
- * ten routes write to it today -- this file's `CancelMaterialPurchase`, and
- * `CancelBuildOrder`/`Undo`/`Redo` inside the construction handler it
- * constructs -- because those are the four controls #749 measured saying
- * nothing when they succeeded. The other six are outside that ruling's scope
- * and are left silent rather than given sentences nobody has written.
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * **Three of the ten routes write to it, and the third was not in #749's scope
+ * -- it is [#945](https://github.com/matmaxalez/lockstate/issues/945), a
+ * command that destroys money.** The paragraph below is kept as it stood
+ * because its reasoning is what left the third one silent, and the reasoning
+ * was about *scope* rather than about whether the silence was defensible. It
+ * read:
+ *
+ * > Only two of the ten routes write to it today -- this file's
+ * > `CancelMaterialPurchase`, and `CancelBuildOrder`/`Undo`/`Redo` inside the
+ * > construction handler it constructs -- because those are the four controls
+ * > #749 measured saying nothing when they succeeded. The other six are outside
+ * > that ruling's scope and are left silent rather than given sentences nobody
+ * > has written.
+ *
+ * `RemoveObject` was one of those six, and it is not like the other five.
+ * Un-zoning a room, hiring, admitting, placing and releasing a guard either
+ * move no money or produce something the player can see arrive. Removing a
+ * *standing* object destroys what it cost and leaves nothing on screen at all:
+ * #945 measured a bed costing 65 to place (`25,000 -> 24,935`) and the removal
+ * moving the treasury not at all, with the sentence band `hidden`. So this
+ * route now speaks on its standing-object success, and the remaining five stay
+ * silent -- whether *every* success should speak is the design question #945
+ * declines to settle here and marks as needing an ADR.
+ *
+ * The wording is ours under the owner's release of `AGENTS.md` reservation 4 on
+ * 2026-09-04; the truth is not, which is why the sentence is authored against
+ * `ObjectPlacementService.remove`'s standing-object arm and quoted in the commit
+ * that landed it.
+ *
+ * **A fourth route writes to it since #966 site 2, and it is the first one that
+ * moves no money: `ZoneRoom`.** The paragraph above is left exactly as it stood,
+ * for the reason it kept #749's -- its reasoning is the thing that changed. It
+ * grouped zoning with the presses that *"produce something the player can see
+ * arrive"*, which is true and is not the whole truth: a designated rectangle is
+ * tinted on the map by `zoningTint`, and that tint is keyed by the room's
+ * **category**, so the paint cannot tell a `room.cell` from a
+ * `room.holding-cell`, or a `room.kitchen` from a `room.canteen`. The type --
+ * the thing the player chose -- is what no surface stated, while all eight
+ * `zone.*` refusal sentences state their reason when the press fails.
+ *
+ * **Six routes are still silent** -- un-zoning, hiring, admitting, placing an
+ * object, releasing a guard, dismissing staff -- and whether every success
+ * should speak is still the design question #945 marks as needing an ADR. This
+ * is not that decision. It is one site the acknowledgement census (#960, #966)
+ * established as a place where a true claim was available and nothing was
+ * published.
+ *
+ * **A fifth route writes to `events` since ADR 0106: `RemoveWall`, and it is
+ * the first to do so with no new sentence of its own.** Its object arm, on a
+ * win, records the same event `RemoveObject`'s own branch does for the same
+ * outcome (a cancelled pending order) -- it is the identical call, reused, not
+ * a second one. Its wall arm records `recordBuildOrderCancelled` too, and for
+ * the reason no new locale key exists for it: `cancelOrder`'s own state
+ * decides the sentence, `'completed'` is the only state this branch's resolver
+ * ever returns, and that state already answers "anything already spent past
+ * the point of no return stays spent" -- the same sentence `Undo` produces for
+ * the same wall today, which is the positive control ADR 0106 §2 records.
  */
+/**
+ * The command types after which `ConstructionSystem`'s undo history still
+ * describes the player's latest action.
+ *
+ * Two of them **write** it -- `PlaceBuildOrder` and `PlaceObject` are the only
+ * two producers `ConstructionSystem.registerTransactionOrder` has, checked
+ * rather than assumed: `src/simulation/construction/handler.ts` and
+ * `src/simulation/objects/object-placement-service.ts` are its only callers in
+ * `src/`. The other two **are** the history controls, and counting `Undo` or
+ * `Redo` as "something else the player did" would make the second press of a
+ * multi-step undo refuse the transaction the first press exposed.
+ *
+ * Everything else is in the complement on purpose, including the two that look
+ * like near misses. `CancelBuildOrder` touches the build queue and writes no
+ * transaction, so a cancel followed by `Z` is exactly the shape
+ * [#956](https://github.com/woogitsu/lockstate/issues/956) measured. And
+ * `DismissAlert` is housekeeping rather than a change to the prison -- the
+ * judgement is that a player who dismisses a banner and presses `Z` is better
+ * served by a refusal that says why than by a finished wall coming down, and it
+ * is a judgement rather than a derivation, so it is written here where it can
+ * be argued with.
+ *
+ * [ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2, accepted
+ * by the owner on 2026-09-09.
+ */
+const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = new Set([
+  'PlaceBuildOrder',
+  'PlaceObject',
+  'Undo',
+  'Redo',
+]);
+
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
@@ -132,6 +230,9 @@ export function createSessionCommandHandler(
 
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
+    if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type)) {
+      construction.noteActionThatDoesNotWriteTheUndoStack();
+    }
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
       // The outcome is not dropped and it now reaches the player. It used to
       // reach only `RoomZoningService.recentRefusals`, a bounded window kept
@@ -189,6 +290,28 @@ export function createSessionCommandHandler(
         // and cheap, and there is no reading of "this rectangle is not
         // enclosed" that survives a room having just been zoned inside it.
         refusals.supersede(zoneAreaSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height));
+        // Issue #966 site 2: and now it says so. Until this line the only word
+        // a player got for a designation that *worked* was red text
+        // disappearing -- eight `zone.*` refusal sentences speak when the press
+        // fails, and the branch above withdraws two of them on the grounds that
+        // this rectangle is "a fact the world just confirmed" while confirming
+        // it to nobody. That is the asymmetry #749's ruling already closed for
+        // construction, never applied to zoning.
+        //
+        // Here rather than inside `RoomZoningService.zone`, which is where the
+        // other nine command successes in this function are answered -- and
+        // note that #945 had to make the opposite choice for the opposite
+        // reason: it raised its notice inside `ObjectPlacementService.remove`
+        // because a removal *cascades* into a relocation that also speaks, and
+        // the order of the two decides which one the band keeps. Zoning
+        // cascades into nothing: `zone` returns, this branch returns.
+        //
+        // `outcome.roomNameKey` and not `outcome.instance.roomCatalogId`,
+        // because the sentence names the room *type* and the catalog's
+        // `nameKey` is the word for it. The schema in `../protocol/types.ts`
+        // says why the rest of the instance -- the rectangle, the anchor tile,
+        // the enclosure reading -- is deliberately not carried.
+        events.recordRoomZoned(outcome.roomNameKey, context.tick);
       }
       return;
     }
@@ -237,6 +360,21 @@ export function createSessionCommandHandler(
         // occupants have gone -- is withdrawn rather than left to answer a
         // request that has since succeeded.
         refusals.supersede(unzoneKey);
+        // Issue #1006 finding 5: the other half of `rooms.zoned`'s
+        // acknowledgement, on the command that undoes it. Before this line a
+        // room zoned and then immediately removed left "{room} designated."
+        // standing in the alerts column with nothing to say it had gone --
+        // `rooms=0` on the strip, a stale lifecycle line in the log. One call
+        // per removed instance, exactly as `outcome.removedRoomNameKeys` lists
+        // them (ascending by instance id, the same order `removedInstanceIds`
+        // is in), for the reason `prisoners.relocated` is one event per
+        // resident rather than one per command: a drag that clears several
+        // rooms at once removed several distinct facts, and
+        // `simulationEventIdentity` already collapses a run of same-type
+        // removals into one counted row exactly as it does for `rooms.zoned`.
+        for (const roomNameKey of outcome.removedRoomNameKeys) {
+          events.recordRoomUnzoned(roomNameKey, context.tick);
+        }
       }
       return;
     }
@@ -517,6 +655,41 @@ export function createSessionCommandHandler(
       return;
     }
 
+    if (simCommand !== null && simCommand.type === 'SellMaterials') {
+      /*
+       * `SellMaterials`, the command `ProcurementSystem.sellStock` had been
+       * waiting for since #1127 (ADR 0075 decision 3, invoked by ADR 0096
+       * decision 3(b)). The method already withdrew through
+       * `reserve`/`withdrawReserved` against the container this system
+       * deposits into and credited the treasury at
+       * `SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` of the
+       * catalogue price -- nothing about the economics changes here, only
+       * that a command now reaches it.
+       *
+       * **No pre-check on the main thread**, for `CancelMaterialPurchase`'s
+       * own reason: whether the container holds enough unreserved stock to
+       * sell is not something this thread's cadence-stale copy may decide --
+       * there is no live stock projection to check it against at all (unlike
+       * a purchase's balance, which `simulation/status-counts` publishes).
+       * So this line is the only route a refused sale reaches the player by,
+       * and the whole `SellStockRefusalReason` union is mapped rather than
+       * the subset a panel press can provoke.
+       *
+       * Keyed on the item and the quantity, exactly as `PurchaseMaterials`
+       * is and for the same reason: `SellMaterials` carries no id of its own,
+       * and a fresh press of the same item and quantity is the same request
+       * landing.
+       */
+      const outcome = procurement.sellStock(simCommand.itemId, simCommand.quantity);
+      const sellKey = sellSupersessionKey(simCommand.itemId, simCommand.quantity);
+      if (!outcome.ok) {
+        refusals.record(SELL_REFUSAL_REASONS[outcome.reason], context.tick, sellKey);
+      } else {
+        refusals.supersede(sellKey);
+      }
+      return;
+    }
+
     if (simCommand !== null && simCommand.type === 'HireStaff') {
       // The `GuardRoster.hire` producer (ADR 0025). Until this branch
       // existed, `hire` had zero callers anywhere in `src/` and every call in
@@ -670,7 +843,138 @@ export function createSessionCommandHandler(
         // Issue #492: the tile. A removal elsewhere must not silence a
         // standing `nothing-to-remove` about this one.
         refusals.supersede(removeKey);
+        /*
+         * **A removal that destroyed a purchase says so, and this branch is not
+         * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+         *
+         * The notice is raised inside `ObjectPlacementService.remove`, on the
+         * line that drops the registry row, through
+         * `RemovedObjectNoticePort` -- which is wired to this session's
+         * `SimulationEventLog` in `createNewSimulationRuntime`. **Not here**,
+         * for a reason that is about the band and not about layering: a removal
+         * can also raise `prisoners.relocated`, `admitToEventBand` discards an
+         * `'info'` incumbent that a `'warning'` displaces, and a `'warning'`
+         * recorded *after* the relocation would paint over the sentence naming
+         * the prisoner who moved and lose it. Recorded before, both are read.
+         * That port's docblock carries the whole argument.
+         *
+         * Left as a comment rather than as nothing, because the other nine
+         * routes' successes are answered in this file and a reader looking for
+         * the tenth would otherwise conclude it is still silent.
+         */
+        /*
+         * **The other success this press can be, and it says the opposite
+         * thing** ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+         *
+         * A `RemoveObject` aimed at a tile whose object is still being built
+         * cancels that order instead, and a cancellation *refunds* -- so the
+         * `'warning'` above is false of it and `ObjectPlacementService.remove`
+         * has always refused to raise it there. What it did instead was say
+         * nothing, and on a band that holds exactly one sentence that is not
+         * neutral: `HudViewModel.event` is replaced by a newer event and by
+         * nothing else, and `refusals.supersede(removeKey)` two lines up
+         * supersedes a *refusal*. With the clock paused, a removal followed by
+         * a cancellation therefore left *"The object was removed -- the money
+         * it cost does not come back."* standing over the press that refunded.
+         *
+         * **`events.recordBuildOrderCancelled`, which is the event
+         * `CancelBuildOrder` already records, and no new sentence.** This press
+         * and that command reach the same `ConstructionSystem.cancelOrder`, so
+         * the same state decides the same truth: the four states before the
+         * crew starts get *"the money it cost is refunded"* and `'in-progress'`
+         * gets *"anything already spent past the point of no return stays
+         * spent"*. #945's brief called this arm *"the channel #932 fixed"* and
+         * it was not -- the route never enters that branch -- which is why the
+         * sibling arm was fixed and this one was left; that correction is
+         * `tests/integration/command-success-notices.test.ts`'s and is what
+         * this line finally acts on.
+         *
+         * **Here and not inside `remove`, which is the opposite of where #945's
+         * notice sits, and the difference is the band-ordering hazard rather
+         * than a change of mind.** That notice had to be raised before
+         * `relocateResidentsLeftWithoutAPlace` so a `'warning'` could not paint
+         * over the relocation's `'info'`; this arm relocates nobody, raises
+         * nothing else, and returns immediately -- so there is no order to get
+         * right, and the sentence belongs with the other command successes this
+         * file answers. It also keeps `ObjectPlacementService` free of a second
+         * notice port: the state travels out on the outcome, which is a fact
+         * about what happened rather than a dependency on the events channel.
+         */
+        if (outcome.kind === 'order-cancelled') {
+          events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
+        }
       }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'RemoveWall') {
+      /*
+       * The demolition gesture's other arm
+       * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)):
+       * a completed wall or door, reached the same way `RemoveObject`'s tile
+       * is -- one world press, one command, no order id on the wire.
+       *
+       * **Tries the object arm first, calling the exact method `RemoveObject`'s
+       * own branch above calls, with the exact same two arguments.** A world
+       * press armed to remove is one gesture and an object standing on the
+       * pressed tile has to win it -- `removeWallSchema`'s own comment argues
+       * why submitting both `RemoveObject` and `RemoveWall` unconditionally
+       * was rejected (a bed pressed near its own cell's wall would then remove
+       * the bed *and* cancel the wall from one press). Only when the object
+       * arm answers `nothing-to-remove` does this branch try the edge.
+       *
+       * The object arm's own refusal is not recorded here: it is not the
+       * press's final answer, so recording it would put a sentence about an
+       * object on a press that is about to also fail to find a wall, or
+       * succeed at finding one. The refusal this press can stand under is
+       * `remove-wall.nothing-to-remove`, below, and it is the only one this
+       * branch ever records.
+       */
+      const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
+      if (outcome.kind !== 'refused') {
+        // The object arm won. Handled exactly as `RemoveObject`'s own branch
+        // handles the same two outcomes above -- same supersession key
+        // (issue #492: the tile, which is the fact this press changed),
+        // same notice port already wired inside `objectPlacement.remove`,
+        // same event for a cancelled pending order.
+        refusals.supersede(removeObjectSupersessionKey(simCommand.x, simCommand.y));
+        if (outcome.kind === 'order-cancelled') {
+          events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
+        }
+        return;
+      }
+
+      /*
+       * Nothing to remove as an object. Try the edge the press resolved to
+       * (ADR 0106 §5): only a *completed* order counts --
+       * `completedOrderClaimingEdge`'s own comment argues why an in-flight
+       * wall or door is not this branch's concern, because the queue's
+       * per-row cancel already reaches it.
+       */
+      const wallOrder = construction.completedOrderClaimingEdge(
+        { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
+        simCommand.edge,
+      );
+      const wallKey = removeWallSupersessionKey(simCommand.x, simCommand.y, simCommand.edge);
+      if (wallOrder === undefined) {
+        refusals.record(REMOVE_WALL_REFUSAL_REASONS['nothing-to-remove'], context.tick, wallKey);
+        return;
+      }
+
+      // Read before cancelling, for `RemoveObjectOrderCancelled
+      // .stateAtCancellation`'s own reason: `cancelOrder` writes `'cancelled'`
+      // onto the order before this branch could read the distinction back.
+      const stateAtCancellation = wallOrder.state;
+      construction.cancelOrder(wallOrder.id);
+      refusals.supersede(wallKey);
+      // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
+      // arm already record, reused rather than a new sentence: the state this
+      // order was cancelled from decides the same truth for a wall that it
+      // does for anything else `cancelOrder` accepts, and `'completed'`
+      // (the only state this branch's own resolver ever returns) answers with
+      // the same "stays spent" sentence `Undo` already produces for the same
+      // wall today (§2's positive control).
+      events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
       return;
     }
 
@@ -793,6 +1097,50 @@ export function createSessionCommandHandler(
        * the prison's history and has no tick of its own.
        */
       events.dismiss(simCommand.fromSequence, simCommand.throughSequence);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'EditRegimeBlock') {
+      /*
+       * The twelfth route, and the first that edits the prison's *rules*
+       * rather than its contents
+       * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+       * §3, on the owner's ruling of 2026-09-13).
+       *
+       * **No pre-check on the main thread**, for `CancelBuildOrder`'s,
+       * `ReleaseGuardAssignment`'s and `DismissStaff`'s reason: which groups
+       * the session has and where their block boundaries fall reach the main
+       * thread through `hud/status-strip`, which is published on a cadence, so
+       * this thread's copy may be one edit stale. This line is the only route
+       * a refused edit reaches the player by.
+       *
+       * **Both arms are the whole point, and the `else` is not boilerplate.**
+       * `RegimeScheduleRegistry.editBlock` refuses rather than snapping to the
+       * nearest block or inserting a boundary at the named tick; either of
+       * those would move a block the player did not name and report success,
+       * which is the failure `AGENTS.md` article 5 names. The lookup is
+       * exhaustive over `EditRegimeBlockRefusalReason`, so a third reason fails
+       * to compile until it has a wire id and a message key.
+       *
+       * **The tick is not passed to the edit and is passed to the refusal.**
+       * A timetable is not a thing that happens at a tick -- it is what the
+       * clock is read against, and every future tick reads the edited one --
+       * so nothing is stamped. A refusal is stamped, because `RefusalLog`
+       * records when the player was told.
+       */
+      const outcome = runtimePrisoners.regimes.editBlock(
+        simCommand.classificationGroupId,
+        simCommand.startTickOfDay,
+        simCommand.allowedCategories,
+      );
+      const regimeKey = editRegimeBlockSupersessionKey(simCommand.classificationGroupId, simCommand.startTickOfDay);
+      if (outcome.kind === 'refused') {
+        refusals.record(EDIT_REGIME_BLOCK_REFUSAL_REASONS[outcome.reason], context.tick, regimeKey);
+      } else {
+        // Issue #492: this group and this block. An edit that landed elsewhere
+        // in the day must not silence a standing refusal about this boundary.
+        refusals.supersede(regimeKey);
+      }
       return;
     }
 

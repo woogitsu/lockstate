@@ -3,6 +3,7 @@ import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
 import { MAX_PRIOR_INCIDENTS, MAX_SENTENCE_LENGTH_TICKS } from '../prisoners/components';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../prisoners/regime';
 import { MAX_ZONE_DIMENSION_TILES } from '../rooms/zoning';
 import { identifierSchema, sequenceSchema, type VersionedPayload } from './types';
 
@@ -62,6 +63,18 @@ export const placeBuildOrderSchema = z.object({
 export const cancelBuildOrderSchema = z.object({
   type: z.literal('CancelBuildOrder'),
   orderId: z.string(),
+  /**
+   * The order's own revision counter (`ConstructionSystem.revisionOf`) as it
+   * read when the row that produced this press was painted.
+   *
+   * ADR 0107: `ConstructionSystem` bumps a private, unpersisted counter on
+   * every `order.state` write, so a value that no longer matches the order's
+   * current one means the order has transitioned since the row was read --
+   * deterministically, in the ~2 seconds of simulation time a running-clock
+   * command's lead can cost (Context §3). The handler refuses rather than
+   * cancelling on a mismatch, leaving the order untouched.
+   */
+  expectedRevision: z.number().int().nonnegative(),
 }).strict();
 
 export const zoneRoomSchema = z.object({
@@ -193,6 +206,61 @@ export const purchaseMaterialsSchema = z.object({
 export const cancelMaterialPurchaseSchema = z.object({
   type: z.literal('CancelMaterialPurchase'),
   orderId: identifierSchema,
+}).strict();
+
+/**
+ * Sell stock back to the depot at a loss
+ * ([ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 3, invoked by
+ * [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 3(b)). `ProcurementSystem.sellStock` had the arithmetic and the
+ * container mutation since #1127; this is the command that reaches it,
+ * closing the gap that method's own docblock named -- "no `SellMaterials` (or
+ * similarly named) entry in `simulationCommandSchema`".
+ *
+ * ## Why it is a command of its own and not a negative `PurchaseMaterials`
+ *
+ * Because the two name different treasury directions and different container
+ * operations -- `purchase` spends and queues a delivery, `sellStock` withdraws
+ * through `reserve`/`withdrawReserved` and credits at once, no delivery and no
+ * delay -- and folding them into one schema keyed by the sign of a field would
+ * be exactly the ambiguity `PurchaseSpendClass` exists to keep out of
+ * `Treasury`, one layer up. `hud.alert.refusal.sell.*` also has to be a
+ * namespace of its own against `purchase.*` for the reason every such pair in
+ * this file is: buying and selling are opposite gestures on the same
+ * material, and somebody who pressed Sell must not read that a delivery was
+ * not ordered.
+ *
+ * ## What it carries, and what it deliberately does not
+ *
+ * `itemId` and `quantity`, and nothing else.
+ *
+ * `itemId` is `identifierSchema` rather than `z.string()`, matching
+ * `PurchaseMaterials.itemId`: a malformed id refused here never reaches the
+ * kernel, which is the only place a fix can sit next to its cause. There is no
+ * save-side counterpart to disagree with -- a sale writes nothing to a save,
+ * unlike a purchase's pending delivery -- so this is a plain adoption of the
+ * sibling command's convention rather than the closing of a window.
+ *
+ * `quantity` is bounded by `MAX_PURCHASE_QUANTITY`, the same ceiling
+ * `PurchaseMaterials.quantity` uses: it is `ProcurementSystem`'s own overflow
+ * guard against `unitPriceMinorUnits * quantity`, and that arithmetic runs
+ * whichever direction the money moves.
+ *
+ * **No `orderId`, unlike `PurchaseMaterials`.** A purchase mints one because
+ * something downstream is keyed by it: `ProcurementSystem.purchase` refuses a
+ * duplicate, and `CancelMaterialPurchase` names the pending delivery to
+ * reverse. A sale creates no pending record for a later command to name or a
+ * replay to duplicate -- `sellStock` withdraws from the container and credits
+ * the treasury in the same tick, nothing is queued, and two identical sales in
+ * a row are simply two sales, not a duplicate of one. An id here would be a
+ * field with no reader, the same argument `AdmitPrisoner`'s own comment makes
+ * for carrying none.
+ */
+export const sellMaterialsSchema = z.object({
+  type: z.literal('SellMaterials'),
+  itemId: identifierSchema,
+  quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
 }).strict();
 
 /**
@@ -434,6 +502,73 @@ export const removeObjectSchema = z.object({
 }).strict();
 
 /**
+ * Take down whatever a world press on the removal gesture resolves to: the
+ * object standing on the pressed tile, the object order still building one
+ * there, or -- new here -- the completed wall or door claiming the tile edge
+ * the press landed nearest
+ * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+ *
+ * ## Why a sibling command rather than a wider `RemoveObject`
+ *
+ * Because a wall is not an object. `RemoveObject` reaches
+ * `ObjectPlacementService.remove`, whose whole contract is a *tile-to-object*
+ * lookup (`placedObjects.objectAt`, `orderBuildingObjectAt`); a wall is
+ * written by `ConstructionSystem.writeEdge` and reversed only by
+ * `revertConstruction`, which `ObjectPlacementService` does not import and
+ * must not start importing -- doing so would mean a service whose contract is
+ * about objects also holding a copy of the edge model, or reaching into
+ * `ConstructionSystem` for it, and either weakens a boundary
+ * `session-commands.ts`'s own routing comment states on purpose. ADR 0106 §4
+ * carries the argument in full.
+ *
+ * ## What it carries, and why it is a superset of `RemoveObject`'s shape
+ * rather than a second, edge-only command
+ *
+ * `x`/`y`/`edge`, where `RemoveObject` carries only `x`/`y`. **This command's
+ * own session-command branch tries the object arm first, calling
+ * `ObjectPlacementService.remove` unchanged, and falls to the edge arm only
+ * when that answers `nothing-to-remove`.** The alternative -- sending
+ * `RemoveObject` and `RemoveWall` as two independent commands from one press
+ * -- was rejected: neither this thread nor the world press can know whether
+ * the pressed tile holds an object (`src/main.ts` holds no copy of the placed
+ * objects, exactly as `RemoveObject`'s own comment says), so firing both
+ * unconditionally would, on a bed built against its own cell's wall, remove
+ * the bed **and** cancel the neighbouring wall from one press -- destroying
+ * two things the player meant to press once. Trying the object arm first and
+ * falling through only on its refusal is what keeps one press one outcome.
+ *
+ * `edge` is `BuildEdge` (`'north' | 'west'`), required rather than optional:
+ * every press this command is built for has a resolved edge --
+ * `pickEdgeAtWorld` (`src/rendering/build/edge-picking.ts`) always answers one
+ * for a finite point, tying towards north then west -- and a command with no
+ * edge to fall back on would have nothing for the wall arm to try. The
+ * numeric Build panel route stays on plain `RemoveObject`: a typed tile has no
+ * sub-tile position for `pickEdgeAtWorld` to resolve, and `edgeChooserShown`
+ * already hides the edge control while removing for exactly that reason.
+ *
+ * ## Scope, deliberately narrow
+ *
+ * Only a **completed** order claiming the edge is eligible
+ * (`ConstructionSystem.completedOrderClaimingEdge`). A wall or door still
+ * being built already has a pointer route -- the queue's per-row cancel,
+ * since `PENDING_BUILD_ORDER_STATES` excludes only `'completed'` -- so this
+ * command does not widen that gesture's reach; it closes the one gap
+ * boundary 10 names, a **finished** wall with no way back but `Undo`.
+ *
+ * No `orderId` and no `transactionId`, for `RemoveObject`'s own reasons: the
+ * order id is found from the tile and the edge rather than named on the wire,
+ * and cancelling it is not itself undoable -- `ConstructionSystem.cancelOrder`
+ * is called directly, exactly as `RemoveObject`'s pending-order arm already
+ * calls it, and neither push a transaction onto the undo stack.
+ */
+export const removeWallSchema = z.object({
+  type: z.literal('RemoveWall'),
+  x: z.number().int(),
+  y: z.number().int(),
+  edge: z.enum(BUILD_EDGES),
+}).strict();
+
+/**
  * Release one guard from whatever is holding it
  * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md), answering
  * [ADR 0033](../../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)
@@ -569,7 +704,7 @@ export const dismissStaffSchema = z.object({
  * deliberately **not** cross-validated here: this schema is a member of a
  * discriminated union whose options every consumer reads `.shape.type` off
  * (`tests/foundation/unconsumed-command-contract.test.ts`), and a `.refine`
- * would make this one a different kind of schema than its thirteen siblings
+ * would make this one a different kind of schema than its sixteen siblings
  * for a rule that costs nothing anyway -- a `throughSequence` below its
  * `fromSequence` names an empty range, so `SimulationEventLog.dismiss` marks
  * nothing and reports it, which is the same outcome the check would have
@@ -594,6 +729,52 @@ export const redoCommandSchema = z.object({
   type: z.literal('Redo'),
 }).strict();
 
+/**
+ * Rewrite what one block of one group's day allows
+ * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §3).
+ *
+ * ## `startTickOfDay` identifies the block; it does not move it
+ *
+ * The tick a block already starts on, not an index into the schedule's array.
+ * An index is not stable across a save/load round trip in the way a boundary
+ * is -- `RegimeScheduleRegistry` reorders rows into a canonical order on
+ * restore -- and a boundary is the one coordinate the player and the
+ * simulation can agree on without agreeing on array order first.
+ *
+ * The command changes `allowedCategories` and nothing else. Moving a boundary
+ * would reopen `assertGaplessSchedule`'s proof over the whole schedule
+ * mid-edit, and ADR 0113 §3 defers that deliberately rather than leaving it
+ * out by accident.
+ *
+ * ## What the schema refuses, and what it deliberately leaves to a refusal
+ *
+ * `identifierSchema` and not `z.enum(CLASSIFICATION_GROUP_IDS)`, on
+ * `HireStaff.staffRoleId`'s reasoning: once ADR 0113 lands, which groups exist
+ * is a property of the **session's own** `regimeSchedules` array rather than
+ * of a build-time constant, so a group the session does not have is an
+ * existence miss (`edit-regime-block.unknown-group`) rather than a shape
+ * defect. The same split puts a tick naming no block's start at
+ * `edit-regime-block.unknown-block`.
+ *
+ * `.min(1)` on `allowedCategories` is the one business-shaped rule that *is*
+ * enforced here, because it is a shape defect rather than a state question: an
+ * empty array names nothing in `ACTION_CATEGORIES` at all, and it would
+ * produce the block ADR 0054 exists to rule out -- one an idle prisoner can
+ * never act in. Nothing about the session is needed to see that, so it is
+ * refused at decode time and `unpackCommand` returns `null`.
+ *
+ * `.max(DAY_LENGTH_TICKS - 1)` because a block that started on the last tick
+ * of the day is the last legal start; `DAY_LENGTH_TICKS` itself is the
+ * exclusive end of the day and no block begins there.
+ */
+export const editRegimeBlockSchema = z.object({
+  type: z.literal('EditRegimeBlock'),
+  classificationGroupId: identifierSchema,
+  startTickOfDay: z.number().int().min(0).max(DAY_LENGTH_TICKS - 1),
+  allowedCategories: z.array(z.enum(ACTION_CATEGORIES)).min(1),
+}).strict();
+
 export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
   cancelBuildOrderSchema,
@@ -601,13 +782,16 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   unzoneRoomSchema,
   purchaseMaterialsSchema,
   cancelMaterialPurchaseSchema,
+  sellMaterialsSchema,
   admitPrisonerSchema,
   hireStaffSchema,
   placeObjectSchema,
   removeObjectSchema,
+  removeWallSchema,
   releaseGuardAssignmentSchema,
   dismissStaffSchema,
   dismissAlertSchema,
+  editRegimeBlockSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -630,7 +814,7 @@ function commandJson(command: SimulationCommand): JsonValue {
       };
 
     case 'CancelBuildOrder':
-      return { type: command.type, orderId: command.orderId };
+      return { type: command.type, orderId: command.orderId, expectedRevision: command.expectedRevision };
 
     case 'ZoneRoom':
       return {
@@ -665,6 +849,9 @@ function commandJson(command: SimulationCommand): JsonValue {
     case 'CancelMaterialPurchase':
       return { type: command.type, orderId: command.orderId };
 
+    case 'SellMaterials':
+      return { type: command.type, itemId: command.itemId, quantity: command.quantity };
+
     case 'AdmitPrisoner':
       return {
         type: command.type,
@@ -693,6 +880,9 @@ function commandJson(command: SimulationCommand): JsonValue {
     case 'RemoveObject':
       return { type: command.type, x: command.x, y: command.y };
 
+    case 'RemoveWall':
+      return { type: command.type, x: command.x, y: command.y, edge: command.edge };
+
     case 'ReleaseGuardAssignment':
       return { type: command.type, guardId: command.guardId };
 
@@ -701,6 +891,17 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'DismissAlert':
       return { type: command.type, fromSequence: command.fromSequence, throughSequence: command.throughSequence };
+
+    case 'EditRegimeBlock':
+      return {
+        type: command.type,
+        classificationGroupId: command.classificationGroupId,
+        startTickOfDay: command.startTickOfDay,
+        // Copied rather than passed through: `commandJson`'s result is the
+        // structured-clone payload, and handing the caller's own array across
+        // would let a later mutation of it change a command already submitted.
+        allowedCategories: [...command.allowedCategories],
+      };
 
     case 'Undo':
     case 'Redo':

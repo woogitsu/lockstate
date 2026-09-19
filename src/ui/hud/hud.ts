@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
 import {
@@ -9,13 +10,16 @@ import {
 } from '../primitives/async-action';
 import { describeBy, element, eyebrowText, nextUiId, undescribeBy } from '../primitives/dom';
 import type { IconId } from '../primitives/icon';
+import { createIconButton } from '../primitives/icon-button';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
+import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
+import { type RosterPanel, createRosterPanel } from './roster-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
   HUD_PANEL_IDS,
@@ -27,6 +31,7 @@ import {
   hudShellReducer,
   isPanelCollapsed,
 } from './hud-state';
+import { type HudLayoutShell, createHudLayoutShell } from './layout-shell';
 import { HUD_MESSAGE_KEY } from './messages';
 import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
 import { createStaffPanel, type StaffPanel } from './staff-panel';
@@ -48,7 +53,7 @@ import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
 import {
   EMPTY_EVENT_BAND_DWELL_STATE,
   admitToEventBand,
-  releaseEventBandFloor,
+  advanceEventBand,
   type EventBandDwellDecision,
   type EventBandDwellState,
 } from './event-band-dwell';
@@ -85,9 +90,14 @@ export interface HudTabDefinition {
 export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },
   { id: 'build', icon: 'build', labelKey: HUD_MESSAGE_KEY.tabBuild },
-  { id: 'rooms', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabRooms },
-  { id: 'security', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabSecurity },
-  { id: 'regime', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabRegime },
+  // The icons keep their own ids. `IconId` is a drawing's name, not a
+  // section's: the shape the `zones` tab shows is still the floor-plan glyph
+  // `rooms` names in `src/ui/primitives/icon.ts`, and renaming a path set to
+  // follow a navigation change would be a second, unrelated diff over every
+  // other consumer of the same glyph.
+  { id: 'zones', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabZones },
+  { id: 'manage', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabManage },
+  { id: 'day-plan', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabDayPlan },
 ];
 
 /**
@@ -241,10 +251,17 @@ export interface HudObjectPlacement {
  *
  * Discriminated rather than "a placement with an optional definition id", so
  * `tsc` and not a reader decides which fields each arm has.
+ *
+ * **`remove`'s `edge`, added by ADR 0106, is optional for the reason `place`
+ * carries no edge at all: it is set only by a world press, which always has
+ * one to give (`pickEdgeAtWorld` resolves any finite point), and absent from
+ * a source that has no sub-tile position -- none exists today, but the type
+ * does not assume the object tool is the only producer forever. `hud.ts`
+ * reads its presence to decide between `RemoveObject` and `RemoveWall`.
  */
 export type HudObjectGesture =
   | ({ readonly kind: 'place' } & HudObjectPlacement)
-  | { readonly kind: 'remove'; readonly x: number; readonly y: number };
+  | { readonly kind: 'remove'; readonly x: number; readonly y: number; readonly edge?: HudBuildEdge };
 
 /**
  * The world's object gesture, as the HUD is willing to know it (ADR 0028).
@@ -318,6 +335,34 @@ export interface HudEditHistorySource {
   attachHistory(request: (direction: HudHistoryDirection) => void): void;
 }
 
+/**
+ * The world's "put the tool down" key, as the HUD is willing to know it
+ * (issue #959).
+ *
+ * The same shape as `HudWorldBuildSource` and `HudEditHistorySource`, and a
+ * source rather than a callback the HUD hands out for the same reason: the
+ * thing that carries this exists before the HUD does.
+ *
+ * **It carries no direction, no tool and no id, and that is the contract
+ * rather than an omission.** The renderer knows a key was pressed on the
+ * world; which tool is in the player's hand is *this* module's own state,
+ * held on whichever panel armed it. A source that named a tool would be the
+ * renderer answering a question the HUD is the only place that can, and the
+ * two would then be able to disagree about which pointer the player is
+ * holding -- which is the class of defect #550 and #689 are both instances
+ * of.
+ *
+ * Unlike `attachOrders` and `attachHistory` this dispatches **no intent**.
+ * Arming is chrome (`tool-arming.ts`: *"The pair is chrome, not simulation
+ * state"*), so putting a tool down issues no command, can be refused by
+ * nothing, and needs no gate -- it repaints two panels and tells the host
+ * through the `onArm` callback those panels already own.
+ */
+export interface HudToolStandDownSource {
+  /** Points the "put the tool down" report at the HUD. Called once, at mount. */
+  attachStandDown(request: () => void): void;
+}
+
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
@@ -370,8 +415,20 @@ export type HudIntent =
    * is bound to `KeyZ` and nothing else, so on a touch device a misplaced object
    * was permanent for the session. That is the trap the Rooms tab shipped with
    * and had to fix in a follow-up, and it is not worth repeating.
+   *
+   * **`edge`, added by ADR 0106, is optional and carries the same asymmetry as
+   * `HudObjectGesture`'s own `remove` arm.** Present only when the world
+   * gesture supplied one -- `pickEdgeAtWorld` always resolves a press to an
+   * edge, so the object tool's world press always sets it -- and absent from
+   * the Build panel's numeric route, which names a typed tile with no sub-tile
+   * position for an edge to come from. `src/main.ts` reads its presence to
+   * decide which command a press becomes: `RemoveWall` when present, plain
+   * `RemoveObject` (this intent's original, edge-less shape) when not. A
+   * finished wall therefore has no keyboard route through this field alone --
+   * the numeric route stays exactly what it was, which is what
+   * `edgeChooserShown` already documents for the removing mode.
    */
-  | { readonly kind: 'remove-object'; readonly x: number; readonly y: number }
+  | { readonly kind: 'remove-object'; readonly x: number; readonly y: number; readonly edge?: HudBuildEdge }
   /**
    * The player asked to buy materials (#89). Ids and numbers only -- the host
    * turns this into a `PurchaseMaterials` command and mints the order id it
@@ -388,6 +445,19 @@ export type HudIntent =
    * control's action did not happen" for every command (issue #207).
    */
   | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
+  /**
+   * Sell stock back to the depot at a loss (ADR 0075 decision 3, invoked by
+   * ADR 0096 decision 3(b)).
+   *
+   * A *command*, on `purchase-materials`'s own reasons: a second tap while
+   * one is in flight must not hand a busy host two sales, and a refusal has
+   * to reach the player rather than being discarded. Unlike a purchase it
+   * needs no pre-flight balance check -- the host holds no live count of what
+   * is in the container to check a quantity against -- so every refusal this
+   * intent can provoke is the simulation's own, reached the way
+   * `cancel-material-purchase`'s is.
+   */
+  | { readonly kind: 'sell-materials'; readonly itemId: string; readonly quantity: number }
   /**
    * The player asked for a prisoner to be admitted (#261 step 4).
    *
@@ -472,10 +542,12 @@ export type HudIntent =
   /**
    * The player asked for **one particular** queued order to be withdrawn.
    *
-   * One id and nothing else -- the host turns this into a `CancelBuildOrder`
-   * command; the HUD does not know that such a command exists, and the id is not
-   * one it could mint. It came *in*, on the build-queue view model, from the
-   * projection that names the pending orders.
+   * One id, one revision and nothing else -- the host turns this into a
+   * `CancelBuildOrder` command carrying both; the HUD does not know that such
+   * a command exists, that it carries `expectedRevision`, or what that field
+   * is compared against (ADR 0107). Both came *in*, on the build-queue view
+   * model, from the projection that names the pending orders -- `revision` is
+   * the row's own `BuildQueueOrderViewModel.revision`, carried out unchanged.
    *
    * **Why this is not `undo`.** Both take a wall back, and that is where the
    * resemblance stops. `Undo` is payload-free by protocol and reverses the last
@@ -493,7 +565,7 @@ export type HudIntent =
    * swallowed -- so the refusal this can paint is about *this thread* (no worker,
    * no session), which is what `hud.refusal.cancel-build-order` says.
    */
-  | { readonly kind: 'cancel-build-order'; readonly orderId: string }
+  | { readonly kind: 'cancel-build-order'; readonly orderId: string; readonly revision: number }
   /**
    * The player asked for **one particular** purchase to be cancelled and its
    * money returned (#285).
@@ -566,6 +638,31 @@ export type HudIntent =
    */
   | { readonly kind: 'dismiss-staff'; readonly staffId: number }
   /**
+   * The player has changed what one group's running regime block allows
+   * (#1167, ADR 0113 slice 1's missing producer).
+   *
+   * A *command*, on `hire-staff`'s terms: it asks the simulation to change,
+   * and a second press while one is in flight must not hand a busy host two
+   * edits of the same block.
+   *
+   * **The block is named by the tick it starts on, not by an index**, which is
+   * ADR 0113 section 3's own choice and the reason
+   * `HudRegimeBlockViewModel.startTickOfDay` is carried at all: the registry
+   * reorders schedules into a canonical order on restore, so an index can mean
+   * a different block after a reload and a boundary cannot.
+   *
+   * **The whole new category list travels, not a delta.** `EditRegimeBlock`
+   * replaces `allowedCategories` wholesale, so a diff would have to be applied
+   * against a copy of the schedule this thread holds on a cadence -- the same
+   * reason `onCancelPurchase` one panel over does not send a position.
+   */
+  | {
+      readonly kind: 'edit-regime-block';
+      readonly classificationGroupId: string;
+      readonly startTickOfDay: number;
+      readonly allowedCategoryIds: readonly string[];
+    }
+  /**
    * The player has read a row of the alerts log and wants it gone (the owner's
    * decision 3 of 2026-09-01 on
    * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
@@ -637,7 +734,34 @@ export type HudIntent =
       readonly armed: boolean;
       readonly roomId: string | undefined;
       readonly removing: boolean;
-    };
+    }
+  /**
+   * The player chose one prisoner to look at, or cleared their choice
+   * (issue #895).
+   *
+   * *Chrome*, exactly like the two arming intents above: the Regime panel has
+   * already applied it -- the row is checked and the inspector is waiting for an
+   * answer -- and it asks the simulation to change nothing, so it is never
+   * gated. Blocking it while a clock command was in flight would drop an
+   * interaction that costs the prison nothing.
+   *
+   * **An entity id and nothing else, and `undefined` is a value rather than an
+   * absent field.** The host turns an id into a `hud/prisoner-detail` request
+   * and `undefined` into "stop asking"; the HUD does not know that such a
+   * projection exists, and could not have minted the id -- it came *in*, on the
+   * roster view model, from the projection that names the window.
+   *
+   * **Why an id is a safe name for a person where a roster *offset* is not.**
+   * `src/ui/simulation-prisoner-roster.ts` refuses paging because `EntityStore`
+   * recycles an index behind a wrapping generation, so "page 3" would silently
+   * be a different three prisoners after a release. An `EntityId` is not that
+   * index: it packs the index *with* the generation, and ADR 0026 question 1's
+   * answer retires a slot at generation 4,095 rather than reissuing the id its
+   * first life carried. So this names the prisoner the player pressed or names
+   * nobody -- a state both the host and the panel handle -- and it can never
+   * quietly name somebody else.
+   */
+  | { readonly kind: 'select-prisoner'; readonly prisonerId: number | undefined };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -658,6 +782,23 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  /**
+   * The player's stored layout: which regions are folded and how wide or tall
+   * the two resizable ones are (#1159).
+   *
+   * Passed in rather than read here, exactly as the interface scale and the
+   * theme are: the composition root owns `lockstate.settings.layout`, because
+   * choosing the environment is its job and because a HUD that reached for
+   * `localStorage` itself is issue #199's blank page. Omitted, the shell opens
+   * at the layout this repository has always drawn.
+   */
+  readonly layout?: LayoutSettings;
+  /**
+   * Reports a **settled** layout for the host to persist -- a fold, a keyboard
+   * or slider resize, a reset, or the end of a pointer drag. Never a frame of
+   * one: see `HudLayoutShellOptions.onChange`.
+   */
+  readonly onLayoutChange?: (layout: LayoutSettings) => void;
   /** First paint. Defaults to an empty prison so the shell renders before any snapshot arrives. */
   readonly viewModel?: HudViewModel;
   readonly initialState?: HudShellState;
@@ -733,6 +874,21 @@ export interface MountHudOptions {
    */
   readonly editHistory?: HudEditHistorySource;
   /**
+   * The world's `Escape`, as far as *arming* is concerned (issue #959).
+   *
+   * Supplied, the HUD attaches to it once at mount and a press with no
+   * gesture to abandon stands both map tools down -- the same transition
+   * leaving a tab already makes, reaching the same `onArm` report and the same
+   * repaint, so a player who presses the key and a player who switches tabs
+   * end up in one state rather than two.
+   *
+   * Omitted, nothing at all happens and the HUD never hears about the key:
+   * the state of every harness in `tests/browser/` and of a page whose
+   * `Worker` never started, because `src/main.ts` builds no build tool for one
+   * either.
+   */
+  readonly toolStandDown?: HudToolStandDownSource;
+  /**
    * The world's room gesture, routed into the HUD's own intent path (ADR 0022).
    *
    * Supplied, the HUD attaches to it once at mount: each finished rectangle
@@ -764,23 +920,27 @@ export interface MountHudOptions {
    */
   readonly worldObjects?: HudWorldObjectSource;
   /**
-   * Where a click on `.hud-minimap__surface` asks the camera to go (issue
-   * #793): a point normalized to the surface's own box, `0,0` at its
-   * top-left corner and `1,1` at its bottom-right, exactly as the caller
-   * reads it off `getBoundingClientRect()`. The mapping from that point to a
-   * world position is not this module's to make -- it belongs with the
-   * camera and the loaded-world bounds, both of which are the renderer's
-   * (`AGENTS.md` boundary 1; this file may not import `src/rendering/**`,
+   * Where a press on `.hud-minimap__surface` asks the camera to go (issue
+   * #793; keyboard-reachable since #903): a point normalized to the surface's
+   * own box, `0,0` at its top-left corner and `1,1` at its bottom-right. A
+   * pointer press reads it off `getBoundingClientRect()`; a keyboard
+   * activation (Enter/Space on the now-real `<button>`) has no such point and
+   * names the surface's own centre, `0.5, 0.5`, instead -- see the `click`
+   * listener's own comment in this module for why `event.detail` is what
+   * distinguishes the two. The mapping from that point to a world position is
+   * not this module's to make -- it belongs with the camera and the
+   * loaded-world bounds, both of which are the renderer's (`AGENTS.md`
+   * boundary 1; this file may not import `src/rendering/**`,
    * `tests/unit/ui-hud-messages.test.ts`) -- so this is a plain callback
    * rather than a port object like `worldBuild`/`worldRooms`/`worldObjects`:
    * there is no shared mutable state for a port to carry, only one gesture
    * translated into one call.
    *
-   * Returns whether the camera actually moved. A click that lands while no
+   * Returns whether the camera actually moved. A press that lands while no
    * world has ever been loaded (before a session exists, or on a page whose
    * `Worker` never started) has nowhere to go, and `false` is how the HUD
    * finds that out and says so -- swapping `hud.minimap.placeholder` for
-   * `hud.minimap.navigable` only once a click has actually landed somewhere,
+   * `hud.minimap.navigable` only once a press has actually landed somewhere,
    * rather than leaving the surface's one sentence claiming "not available"
    * forever once it demonstrably is. This is deliberately not on the gated
    * `dispatchCommand`/`dispatchShell` paths every other control here uses:
@@ -791,6 +951,34 @@ export interface MountHudOptions {
    * state of every harness in `tests/browser/` that does not pass it.
    */
   readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
+  /**
+   * One zoom step, in the direction the player pressed (issue #1023).
+   *
+   * A plain callback rather than a port object, on exactly the grounds
+   * `onMinimapNavigate` above states: moving the camera is the renderer's, the
+   * HUD may not import `src/rendering/**`, and there is no shared mutable
+   * state for a port to carry -- one press, one call. In the running app the
+   * composition root hands this to `WorldScene.stepCameraZoom`, which takes the
+   * keyboard's own step through the keyboard's own code path, so a button and
+   * a key are the same movement.
+   *
+   * Not on the gated `dispatchCommand`/`dispatchShell` paths every other
+   * control here uses, and for the same reason a minimap click is not: zooming
+   * never reaches the simulation (`AGENTS.md` boundary 1), so there is nothing
+   * to gate and nothing for a host to refuse.
+   *
+   * **Returns nothing, deliberately, where `onMinimapNavigate` returns
+   * whether it worked.** That boolean exists because the minimap has a
+   * *sentence* to correct -- it says it is not available yet and has to stop
+   * once it demonstrably is. Zoom has no such sentence: the two buttons name a
+   * direction, and a press at the clamp changing nothing is what the keyboard
+   * already does. Reporting it would only let the HUD invent a claim about the
+   * bounds, which live in the renderer and are not the HUD's to state.
+   *
+   * Omitted, the buttons are laid out and do nothing at all -- the state of
+   * every harness in `tests/browser/` that does not pass it.
+   */
+  readonly onCameraZoom?: (direction: 'in' | 'out') => void;
   /**
    * Receives every player action, and may be async.
    *
@@ -852,6 +1040,16 @@ export interface HudHandle {
    * HUD supplies a box in its own layout and never looks inside it.
    */
   readonly brandSlot: HTMLElement;
+  /**
+   * The settings menu's own box for host-owned preference controls (#663).
+   *
+   * `HudLayoutShell.preferencesSlot` passed straight through, exactly as
+   * `brandSlot` passes the strip's through. It is where a preference goes when
+   * the rail cannot afford it: measured, `--hud-rail-panel-width` holds two
+   * chrome controls and a second line costs 54px the aside does not have at
+   * 900x600 or at 375x812.
+   */
+  readonly preferencesSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
@@ -875,7 +1073,42 @@ export interface HudHandle {
    * page after every attempt to obtain a worker, not only the transitions.
    */
   setUnavailable(notice: HudUnavailableNotice | undefined): void;
+  /**
+   * Tells the HUD that the prisoner the player selected is not in the prison
+   * any more (issue #895).
+   *
+   * Deliberately not part of `HudViewModel`, for the reason `setBuildTarget`
+   * above is not: the view model is snapshot-shaped, and this is an *event* --
+   * the one reply `hud/prisoner-detail` gives for a released prisoner, which
+   * `PrisonerDetailReader` answers as `'released'`. Folding it in would need a
+   * field that means "the last thing I asked about is gone", which the next
+   * snapshot would then have to carry or contradict.
+   *
+   * `HudViewModel.prisonerDetail` going absent is the *other* half and cannot
+   * stand in for this one: it covers nothing-asked, a read in flight and a
+   * failed read, none of which makes the player's choice false.
+   */
+  clearPrisonerSelection(): void;
   getState(): HudShellState;
+  /** The layout the shell currently holds, which is what a host persists (#1159). */
+  getLayout(): LayoutSettings;
+  /**
+   * Re-resolves the layout against the viewport and the interface scale.
+   *
+   * The shell watches the window's own `resize` and needs no help with it.
+   * What it cannot hear is `--ui-scale` changing: the composition root writes
+   * that custom property onto `document.documentElement`, which fires no event
+   * and resizes nothing -- and every panel limit is multiplied by it
+   * (`src/ui/hud/hud-layout.ts`). So the one caller that changes the scale
+   * says so, on the line that changes it.
+   */
+  refreshLayout(): void;
+  /**
+   * Applies a layout programmatically -- a preference restored after mount, or
+   * a test. Repaints; does **not** report back through `onLayoutChange`, so a
+   * host writing a value it just read cannot loop.
+   */
+  setLayout(settings: LayoutSettings): void;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
   destroy(): void;
@@ -932,7 +1165,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -993,7 +1243,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1053,6 +1320,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * acknowledge it -- so a host refusal stays until the same action later
    * succeeds, and a simulation refusal until another replaces it or the
    * session ends, which are the first moments each sentence stops being true.
+   *
+   * **The last clause was the whole of the rule until 2026-09-16 and is now
+   * one of three, and it is kept rather than rewritten because it is the rule
+   * that moved.** ADR 0091 decision 2 added a fourth moment and the owner
+   * ruled it: a **decided outcome of the same command route**. A
+   * `remove-wall.nothing-to-remove` refusal is retired by the player's next
+   * removal, whatever tile it names; it is left alone by a wall drag, a hire
+   * or an admission. That is not the timer this paragraph declines -- nothing
+   * here runs on a clock, and a player who refuses a press and then does
+   * something unrelated still reads the sentence. See
+   * `applySimulationRefusal` for the measurement that separates "same route"
+   * from "any route", and `SimulationRefusal.routeDecidedSince` for where the
+   * comparison is made, which is in the simulation and not here.
    */
   const refusalId = nextUiId('hud-refusal');
   const refusalText = element('span', { className: 'hud-refusal__text' });
@@ -1084,7 +1364,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1111,10 +1408,31 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `data-severity` attribute rather than by swapping class names, so the
    * band's identity in the DOM does not change under a player mid-sentence.
    *
-   * It does **not** auto-dismiss, for the reason the refusal band does not: a
+   * It did **not** auto-dismiss, for the reason the refusal band does not: a
    * message that clears itself on a timer is a race against how fast the
-   * player reads. It is replaced by the next event or emptied when the session
+   * player reads. It was replaced by the next event or emptied when the session
    * ends, and it is in the log either way.
+   *
+   * **That paragraph is past tense as of 2026-09-05 (#985), and it is left
+   * standing rather than rewritten because it is the decision that was
+   * reversed** (`docs/AGENT_WORKFLOW.md` section 4). Its last clause is why it
+   * could be: the sentence *is* in the log, and since ADR 0084's decisions 1 to
+   * 3 that log counts repeats, dates them and survives a reload. What the band
+   * does not say, and never said, is anything about the row it occupies -- and
+   * that row is `grid-area: event` on `.hud`, so a band held for the session
+   * costs the rail 32px and the panel in `.hud__side` 24px of it for the
+   * session too, measured on the assembled page at 900x600. So the band now
+   * lets go after `EVENT_BAND_HOLD_CEILING_MS`, which is derived from the
+   * longest sentence it can carry rather than chosen; that constant's docblock
+   * carries the measurement, the derivation and what the change costs a player
+   * on a phone.
+   *
+   * The reversal itself is a ruling rather than an implementation choice, and
+   * it is recorded where rulings are: **"Amendment, 2026-09-05: the band lets
+   * go of its grid row"** in
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).
+   * That amendment also records the owner's separate ruling on the phone cost
+   * -- it stands, and the deferred mobile layout pass is its repair.
    */
   const eventText = element('span', { className: 'hud-event__text' });
   const eventNotice = element('div', {
@@ -1198,9 +1516,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * a held all-clear would sit in `EventBandDwellState.waiting` until the next
    * event of any kind -- which is the defect running the other way round.
    *
+   * **It now serves a second deadline as well, and deliberately stays one
+   * timer**: the hold ceiling that gives the grid row back (#985). Which of the
+   * two a firing is for is `advanceEventBand`'s decision and not this
+   * function's -- the same division this module already keeps, where
+   * `event-band-dwell.ts` holds the arithmetic and this holds the paint.
+   *
    * Re-armed rather than left running, because every decision carries the wake
    * it needs from the state it produced, and a stale timer would release a
-   * sentence the band has since moved past.
+   * sentence the band has since moved past. That re-arming is also what makes
+   * the ceiling survive a busy channel: the counts publication rebuilds the view
+   * model up to twice a second, each rebuild repaints the same sentence through
+   * `admitToEventBand`'s ordinal guard, and each repaint asks for what is *left*
+   * of the hold rather than restarting it, because `shownAt` does not move.
    */
   function applyEventBandDecision(decision: EventBandDwellDecision): void {
     eventBandDwell = decision.state;
@@ -1212,7 +1540,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     if (decision.wakeInMs === undefined) return;
     eventBandFloorTimer = setTimeout(() => {
       eventBandFloorTimer = undefined;
-      applyEventBandDecision(releaseEventBandFloor(eventBandDwell, hudNowMs()));
+      applyEventBandDecision(advanceEventBand(eventBandDwell, hudNowMs()));
     }, decision.wakeInMs);
   }
 
@@ -1345,7 +1673,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * says nothing about a refusal the simulation decided -- that command was
    * accepted too, and was refused on its content several ticks later -- so a
    * later success may not clear it. What clears a simulation refusal is
-   * another one, or the session ending; see `applySimulationRefusal`.
+   * another one, the session ending, or -- since ADR 0091 decision 2 was
+   * ruled on 2026-09-16 -- a decided outcome of the *same simulation route*,
+   * which the simulation reports on the record and this thread never infers;
+   * see `applySimulationRefusal`.
    */
   const clearRefusal = (actionId: string): void => {
     if (refusalSource !== 'host' || refusedAction !== actionId) return;
@@ -1385,9 +1716,45 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     with no memory of what it last painted -- so the two surfaces
    *     disagreed about the identical fact until this. See
    *     `docs/adr/0091-what-clears-the-refusal-band.md`.
+   *
+   * ## The band retires on a decided outcome of the same route (ADR 0091
+   * decision 2, option F, ruled by the owner 2026-09-16)
+   *
+   * The first case above has a second door into it, and the whole of option F
+   * is that door: a notice carrying `routeDecidedSince` is treated exactly as
+   * no notice at all. The player refused a wall removal and has since removed
+   * a wall somewhere else; refused a rectangle and has since zoned another.
+   * The sentence in the corner is still *true* -- #492's rule, untouched, and
+   * the reason the simulation has not withdrawn the record -- but it is no
+   * longer about anything the player is looking at, and the corner names no
+   * location, so a player reading it beside the thing they just did has no way
+   * to tell the two apart. ADR 0091's own measurement of that is a screen
+   * contradicting itself about one press: the event band reading "The order
+   * was cancelled" while this line still read "Nothing was removed".
+   *
+   * **Same route, not any route.** Option D -- any decided outcome retires it
+   * -- was measured at a band lifetime of 2 ms, because the eight commands of
+   * one wall drag are submitted 2 ms apart, against the 600 ms floor
+   * `EVENT_BAND_DWELL_FLOOR_MS` records as the minimum an event needs to be
+   * readable. That is the timer the paragraph in `mountHud`'s refusal element
+   * declines to have, with the player's hand as the clock. Under F an
+   * unrelated gesture leaves the sentence alone, which is when it is most
+   * likely to be read.
+   *
+   * **The list does not do this.** `hudAlertsFromWorkerMessage` never reads
+   * the flag, so the refusal keeps its row. The band and the list therefore
+   * disagree here on purpose, which is the split
+   * `src/ui/simulation-alerts.ts` has described in prose since #507 without
+   * anything making it true.
+   *
+   * **Nothing is restored.** `simulationRefusalSequence` is cleared with the
+   * line, exactly as it is when the worker withdraws a refusal outright, so
+   * the next *new* ordinal takes the band normally. The flag is monotone per
+   * record -- a route cannot un-decide -- so a retired sentence never comes
+   * back on a later republication of the same refusal.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined) {
+    if (notice === undefined || notice.routeDecidedSince === true) {
       simulationRefusalSequence = undefined;
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
@@ -1462,17 +1829,54 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // real click target, and every point on it maps to a world position
   // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
   // mapping -- see its own comment for what the surface represents and why).
+  //
+  // **A real `<button>`, not a `div`, since issue #903.** It used to be a
+  // `div` with no `role` and no way into the keyboard's focus order at all --
+  // `tabIndex` reads `-1` by default on an element nobody opted in -- so a
+  // keyboard player could never fire the swap below and only ever read
+  // `minimapPlaceholder`'s denial, against `AGENTS.md` boundary 10 (input
+  // must support touch/pointer *and* remapping/keyboard). A real `<button>`
+  // gives the correct role and a correct accessible name for free rather than
+  // reinventing either with ARIA: it is in the tab order by default, its
+  // accessible name is computed from its own text content -- exactly the
+  // sentence a sighted player reads, kept as the one source of truth instead
+  // of a second, divergent `aria-label` -- and, load-bearing for the handler
+  // below, it dispatches a `click` event for an Enter/Space activation just
+  // as it does for a pointer click, so the one listener already here needed
+  // no second, keyboard-only code path. `hud.css` resets the button chrome a
+  // `<button>` would otherwise add; see its comment on `.hud-minimap__surface`
+  // for what that costs and why each reset is there.
   const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
-  const minimapSurface = element('div', {
+  const minimapSurface = element('button', {
     className: 'hud-minimap__surface',
+    attributes: { type: 'button' },
     children: [minimapPlaceholder],
   });
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
     const rect = minimapSurface.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
-    const point = { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
+    /*
+     * `event.detail` is the DOM's own count of the click -- 1 for an
+     * ordinary click, 2/3 for a double/triple click, and **0 for a `click`
+     * a `<button>` dispatches from a non-pointer activation** (Enter, Space,
+     * or an assistive technology's virtual "activate"), because nothing was
+     * actually clicked to be counted. That is the one reliable way to tell a
+     * keyboard press from a pointer click on this event, rather than reading
+     * `clientX`/`clientY`: browsers are not required to place those at any
+     * particular point for a synthetic activation, so trusting them here
+     * would make the keyboard path's target point an implementation detail
+     * of whichever engine is running rather than a decision this file makes.
+     * A keyboard press names the surface's own centre (`0.5, 0.5`) --
+     * consistent with `frameCameraOnFirstWorld`'s own choice of the loaded
+     * bounds' midpoint (`world-scene.ts`) for "no particular point given" --
+     * rather than any point a mouse could have chosen.
+     */
+    const point =
+      event.detail === 0
+        ? { fx: 0.5, fy: 0.5 }
+        : { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
     const navigated = options.onMinimapNavigate?.(point) ?? false;
-    // Only ever moves *toward* "navigable" -- a click that fails today still
+    // Only ever moves *toward* "navigable" -- a press that fails today still
     // leaves the accurate `minimapPlaceholder` sentence standing, and a
     // session's loaded world never disappears once one exists (see the
     // message key's own comment), so this never has to move back.
@@ -1490,7 +1894,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
   });
-  alertsSection.body.append(alertList);
+  /*
+   * The sentinel sentence for "no prison is reporting" (issue #1184), and it is
+   * a sibling of the list rather than a row in it -- `paintAlerts` states why,
+   * and `overview-panel.ts` made the same call for the same reason one panel
+   * over. Built here, painted there: `paintAlerts` runs on the first `update`
+   * and is the only thing that ever sets either element's `hidden`.
+   */
+  const alertsNone = eyebrowText(t(HUD_MESSAGE_KEY.alertsUnknown), 'hud-alerts__none');
+  alertsSection.body.append(alertList, alertsNone);
 
   const minimapPanel: Panel = createPanel({
     title: t(HUD_MESSAGE_KEY.minimapTitle),
@@ -1511,7 +1923,97 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
   minimapPanel.body.append(minimapSurface, alertsSection.element);
 
-  const corner = element('div', { className: 'hud__corner', children: [minimapPanel.element] });
+  /**
+   * Puts the alerts fold where the current tier can show it (issue #1201).
+   *
+   * Above 720 px it is the last thing in the minimap panel, where it has been
+   * since the corner was built; at 720 px and below it is the last thing in
+   * the Overview panel, which is the rail slot the owner's ruling names. The
+   * element is the same in both, so this is a move and never a copy -- see the
+   * `onTierChange` handler's own block below for what that buys.
+   *
+   * Passed to `createHudLayoutShell` as `onTierChange`, which calls it once
+   * during construction with the tier it resolved, so there is no separate
+   * initial placement to keep in step with this one. It therefore may not
+   * close over `layout`, which does not exist yet when it first runs.
+   */
+  function placeAlertsFold(phone: boolean): void {
+    (phone ? overviewPanel.foldSlot : minimapPanel.body).append(alertsSection.element);
+  }
+
+  /*
+   * ---- the camera zoom, on screen (issue #1023) ----------------------
+   *
+   * `WorldScene` has zoomed over `ZOOM_BOUNDS` -- `{ min: 0.2, max: 3 }`, a
+   * deliberate fifteen-fold range with a docblock explaining the two ends --
+   * since it was written, on the wheel, on a pinch and on `+`/`-`, and until
+   * this block **no control anywhere in the DOM named it**. Measured on the
+   * assembled page at 1280x800 rather than inferred from this file: the
+   * substring `zoom` did not occur once in `document.body.innerHTML`, and the
+   * only sentence about moving the view is the Build panel's arm hint, which
+   * names panning. The owner's standing brief is a game with no hidden
+   * features; that was one.
+   *
+   * **In `.hud__corner` beside the minimap and NOT inside its panel**, which
+   * is the one layout decision here and is about what a collapse does. The
+   * minimap panel is collapsible and starts expanded; a zoom pair in its body
+   * would vanish with one press on `Collapse` and take the only visible
+   * mention of zoom in the game with it. As a sibling it survives that, and it
+   * is still in the corner a player looks in for the view controls, next to
+   * the surface that already moves the camera.
+   *
+   * The corner is a flex column with `justify-content: flex-end`, so this row
+   * sits directly above the minimap frame and the pair stays anchored to the
+   * bottom-left. **Its two buttons need `pointer-events: auto` of their own**
+   * (`hud.css`, `.hud__corner .hud-zoom__out, .hud__corner .hud-zoom__in`) --
+   * `.hud__corner` stopped opting whole panels back in wholesale on issue
+   * #1054, because the pill's own background and its legend carry no handler
+   * and were swallowing presses meant for the world underneath.
+   *
+   * `createIconButton` rather than hand-built buttons: it gives each one the
+   * `--tap-target` box `app-shell.spec.ts` measures at 1280x800 and 375x812,
+   * and it puts the label in `screenReaderText` as well as `title`, so the
+   * meaning never depends on a hover a touch player does not have.
+   */
+  const zoomLegend = eyebrowText(t(HUD_MESSAGE_KEY.zoomRegion), 'hud-zoom__legend');
+  // The group below already carries the same words as its accessible name, so
+  // exposing the visible copy too would have a screen reader read them twice --
+  // `createDisplayScaleControl`'s own arrangement, for its own reason.
+  zoomLegend.setAttribute('aria-hidden', 'true');
+  const zoomOut = createIconButton({
+    icon: 'zoom-out',
+    label: t(HUD_MESSAGE_KEY.zoomOut),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('out');
+    },
+  });
+  zoomOut.element.classList.add('hud-zoom__out');
+  const zoomIn = createIconButton({
+    icon: 'zoom-in',
+    label: t(HUD_MESSAGE_KEY.zoomIn),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('in');
+    },
+  });
+  zoomIn.element.classList.add('hud-zoom__in');
+  const zoomControl = element('div', {
+    className: 'hud-zoom',
+    attributes: {
+      role: 'group',
+      // Names the pair "zoom" rather than leaving two glyphs beside a game
+      // that also has an interface scale. The same word is on screen in the
+      // legend, so this is a machine-readable copy of a visible label rather
+      // than the only place the meaning exists.
+      'aria-label': t(HUD_MESSAGE_KEY.zoomRegion),
+    },
+    // Out before in, so the pair reads left to right the way a range does and
+    // the way the keys do on the row they are bound to.
+    children: [zoomLegend, zoomOut.element, zoomIn.element],
+  });
+
+  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -1587,6 +2089,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
     /*
+     * Selling is a *command* for the same reasons buying is: it asks the host
+     * to change the simulation, the credit lands immediately, and a second
+     * tap while one is in flight would sell twice. The button is passed so a
+     * refusal lands on it as well as on the refusal line (issue #207), on
+     * `onPurchase`'s own pattern.
+     */
+    onSell: (intent) => {
+      dispatchCommand(
+        { kind: 'sell-materials', itemId: intent.itemId, quantity: intent.quantity },
+        buildPanel.sellControl,
+      );
+    },
+    /*
      * Withdrawing one queued order, which is the surface `CancelBuildOrder` had
      * been waiting for.
      *
@@ -1601,8 +2116,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * which is the surface #220 established as the one that is on screen at
      * every viewport.
      */
-    onCancelOrder: (orderId) => {
-      dispatchCommand({ kind: 'cancel-build-order', orderId });
+    onCancelOrder: (orderId, revision) => {
+      dispatchCommand({ kind: 'cancel-build-order', orderId, revision });
     },
     /*
      * Cancelling one purchase, which is the surface `ProcurementSystem.cancel`
@@ -1742,28 +2257,63 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * The refusal line still says what did not happen, and it is on screen at
      * every viewport.
      *
-     * **No confirmation step**, and that is a decision rather than an omission.
-     * A dismissal cannot be undone -- it destroys an entity -- so a confirm
-     * would be defensible; but this repository has no confirmation primitive,
-     * inventing a modal here would be a UI pattern decided inside one panel, and
-     * the control the player is reaching for is the way *out* of a trap they
-     * cannot otherwise escape. `hud.security.roster-hint` states the
-     * consequence beside the button instead. A confirm step is worth proposing
-     * once there is a pattern for one.
+     * **There is a confirmation step now, and this paragraph used to say there
+     * was not.** It read: *"**No confirmation step**, and that is a decision
+     * rather than an omission. A dismissal cannot be undone -- it destroys an
+     * entity -- so a confirm would be defensible; but this repository has no
+     * confirmation primitive, inventing a modal here would be a UI pattern
+     * decided inside one panel, and the control the player is reaching for is
+     * the way *out* of a trap they cannot otherwise escape.
+     * `hud.security.roster-hint` states the consequence beside the button
+     * instead. A confirm step is worth proposing once there is a pattern for
+     * one."*
+     *
+     * It is quoted rather than deleted because the proposal it asked for is what
+     * happened: issue #877 measured the dismiss row firing at the wrong person 4
+     * times out of 4, and the owner ruled on 2026-09-03 that a dismissal gets
+     * both a settle window on the row and a confirmation step -- *"Jedno i
+     * drugie"* -- and supplied the sentence the confirmation says. Every
+     * constraint that paragraph named still binds and the step is built to them:
+     * no modal, no second control, and the press that gets a player out of the
+     * trap is the first of the two rather than a new one. It lives in the panel
+     * that owns the rows, because what it has to name is the row's own label --
+     * `staff-panel.ts`'s `paintDismissConfirmation` and `hud/dismiss-arming.ts`.
+     * Nothing on this side of the boundary changed: this handler is still handed
+     * a staff id by a press that has already been confirmed.
      */
     onDismiss: (intent) => {
       dispatchCommand({ kind: 'dismiss-staff', staffId: intent.staffId });
     },
   });
 
-  // ---- bottom-right intake panel (Overview tab) ---------------------
-  // Shares `.hud__side` with the Build, Rooms, Staff and Regime panels and is
-  // never laid out beside any of them: exactly one of the five is visible,
-  // keyed on the active tab, so the always-visible budget ADR 0022 measured for
-  // the Build tab is unchanged. No tab is bound to no panel any more -- the
-  // Regime panel below took the last one (issue #451). See `intake-panel.ts`
-  // for why the Overview tab rather than a Build-panel row or a tab of its own,
-  // with the measurements behind it.
+  // ---- bottom-right intake panel (Manage tab) -----------------------
+  /*
+   * Shares `.hud__side` with the Overview, Build, Rooms, Staff and Regime
+   * panels. Six panels and five tabs, and that is the one thing about this
+   * column that changed on 2026-09-14: the Manage tab lays out **two** of them
+   * -- this one and the Staff panel -- where every tab before showed exactly
+   * one. They stack in the same flex column and cannot overlap, and the
+   * always-visible budget ADR 0022 measured for the Build tab is untouched,
+   * because that budget is about the *Build* tab and no tab gained a panel it
+   * did not have except this one.
+   *
+   * `intake-panel.ts`'s own header explains why this panel was on the Overview
+   * tab from #261 until now, and the reason was pixels rather than subject:
+   * the Build panel had no room and the Overview tab showed nothing. The
+   * owner's ruling of 2026-09-14 places it by subject instead -- the delivery's
+   * navigation table names *przyjęcia* (admissions) under Zarządzaj, beside
+   * staff and inmates -- and every control on the Manage tab now acts on a
+   * person.
+   */
+  // ---- bottom-right overview panel (Overview tab) -------------------
+  /*
+   * What the Overview section holds now that intake has left it (issue #1183).
+   * It issues no command, so it joins no busy group; it is fed from
+   * `simulation/status-counts` rather than pulled per tab, which is why it is
+   * the one panel here that does not clear itself when its tab is left.
+   */
+  const overviewPanel: OverviewPanel = createOverviewPanel({ localizer });
+
   const intakePanel: IntakePanel = createIntakePanel({
     localizer,
     // Admitting is a *command*: it asks the host to change the simulation,
@@ -1778,15 +2328,95 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // ---- bottom-right regime panel (Regime tab) -----------------------
   /*
    * The fifth occupant of `.hud__side`, and the one that retires the last tab
-   * bound to no panel (issue #451). It issues no command and takes no
-   * selection, so it joins no busy group: everything it holds is a readout
-   * pulled while this tab is the one showing.
+   * bound to no panel (issue #451). It issues no command, so it joins no busy
+   * group: everything it holds is a readout pulled while this tab is the one
+   * showing.
+   *
+   * **"and takes no selection" was true until issue #895 and is corrected
+   * rather than deleted**, because the half that matters is unchanged: it takes
+   * one selection -- which prisoner the inspector is about -- and that
+   * selection is *chrome*, so it still issues no command and still joins no
+   * busy group. `runReported` rather than `dispatchCommand` is what says so
+   * below, exactly as it does for the two arming intents.
+   *
+   * **"It issues no command" stopped being true on 2026-09-16 and the sentence
+   * is kept rather than rewritten**, because what it described is the state
+   * `EditRegimeBlock` spent two days in: consumer, refusals and save section
+   * built, and nothing on any panel able to send one (#1167, ADR 0113
+   * slice 1). The selection is still chrome and still ungated; the regime edit
+   * below is a command and goes through `dispatchCommand` like every other,
+   * which is what puts this panel in the busy group for the first time.
+   *
+   * **AND THE TWO PARAGRAPHS ABOVE NOW DESCRIBE TWO DIFFERENT PANELS, WHICH IS
+   * WHY BOTH ARE KEPT.** The owner's ADR 0115 ruling split this panel in code:
+   * the roster, the inspector and the selection the middle paragraph is about
+   * are `rosterPanel` below, and `runReported('select-prisoner', ...)` is in
+   * that call rather than this one -- so *"`runReported` rather than
+   * `dispatchCommand` is what says so below"* is true of the next mount down
+   * and not of this one. What is left here is the timetable and the one
+   * command, so the first paragraph's *"it issues no command"* is false of
+   * this panel and true of the other, and the third paragraph's correction is
+   * the only one that still lands on the panel it was written about.
    */
-  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+  const regimePanel: RegimePanel = createRegimePanel({
+    localizer,
+    /*
+     * Editing the day is a *command* on `onHire`'s terms, and the button that
+     * was pressed is deliberately **not** passed as the refusal's control, for
+     * the reason `onRelease` and `onDismiss` give: the toggles are repainted
+     * from every `hud/status-strip` reply, so a mark left on a toggle would end
+     * up on whichever category the next reply put there. The refusal line still
+     * says what did not happen, and it is on screen at every viewport.
+     */
+    onEditBlock: (intent) => {
+      dispatchCommand({
+        kind: 'edit-regime-block',
+        classificationGroupId: intent.classificationGroupId,
+        startTickOfDay: intent.startTickOfDay,
+        allowedCategoryIds: intent.allowedCategoryIds,
+      });
+    },
+  });
+
+  // ---- bottom-right roster panel (Plan dnia tab) --------------------
+  /*
+   * The sixth occupant of `.hud__side`, and the second panel laid out on the
+   * Plan dnia tab -- the owner's ruling of 2026-09-16 on ADR 0115, which split
+   * the Regime panel in code and kept **both halves on that tab**. The option
+   * that moved the roster to the Manage rail was declined, so this mount is the
+   * decision rather than a step towards one.
+   *
+   * Appended **after** `regimePanel` and so laid out under it, which is the
+   * reading order the one panel had: what the day allows, then who is in it.
+   * `hud.css` gives the schedule panel `flex: 0 0 auto` and this one
+   * `overflow-y: auto`, the same division of labour the Intake and Staff panels
+   * have made on the Manage tab since 2026-09-14 -- the panel bounded by a
+   * closed catalogue keeps its natural height and the panel that grows with the
+   * population absorbs a short rail.
+   *
+   * It issues no command, so it joins no busy group: it takes one selection --
+   * which prisoner the inspector is about -- and that selection is *chrome*,
+   * which `runReported` rather than `dispatchCommand` is what says so, exactly
+   * as it does for the two arming intents.
+   */
+  const rosterPanel: RosterPanel = createRosterPanel({
+    localizer,
+    onSelectPrisoner: (prisonerId) => {
+      runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
+    },
+  });
 
   const side = element('div', {
     className: 'hud__side',
-    children: [intakePanel.element, buildPanel.element, roomsPanel.element, staffPanel.element, regimePanel.element],
+    children: [
+      overviewPanel.element,
+      intakePanel.element,
+      buildPanel.element,
+      roomsPanel.element,
+      staffPanel.element,
+      regimePanel.element,
+      rosterPanel.element,
+    ],
   });
 
   /**
@@ -1829,7 +2459,17 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   options.worldObjects?.attachGestures((gesture) => {
     if (gesture.kind === 'remove') {
-      dispatchCommand({ kind: 'remove-object', x: gesture.x, y: gesture.y });
+      // `edge` (ADR 0106) travels through unchanged when the gesture carried
+      // one and is omitted entirely otherwise -- `exactOptionalPropertyTypes`
+      // is on, so `edge: undefined` and no key at all are different things,
+      // and `src/main.ts` reads absence, not `undefined`, to choose
+      // `RemoveObject` over `RemoveWall`.
+      dispatchCommand({
+        kind: 'remove-object',
+        x: gesture.x,
+        y: gesture.y,
+        ...(gesture.edge === undefined ? {} : { edge: gesture.edge }),
+      });
       return;
     }
     dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y });
@@ -1868,6 +2508,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   /**
+   * `Escape`, once there is no gesture left for it to take (issue #959).
+   *
+   * **Both panels, unconditionally, and neither asked first.** One key means
+   * "put down whatever I am holding", and at most one of the two tools is
+   * ever armed -- they are armed from panels on different tabs and
+   * `setVisible(false)` disarms the panel's tool as it leaves -- so standing
+   * both down is exactly as safe as standing the armed one down, and it needs
+   * no arbitration that could be wrong. Each panel's `standDown` returns
+   * immediately when it is holding nothing.
+   *
+   * **No `dispatchCommand`, deliberately**, unlike the three attachments
+   * above. Nothing is asked of the simulation: this is the same chrome
+   * transition the arm control itself performs, so there is no command to
+   * refuse and no control for a refusal to land on.
+   */
+  options.toolStandDown?.attachStandDown(() => {
+    buildPanel.standDown();
+    roomsPanel.standDown();
+  });
+
+  /**
    * The right rail: one column, holding the host's aside slot at the top and
    * the Build panel at the bottom.
    *
@@ -1897,11 +2558,37 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     }),
   );
 
+  const tabsInner = element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) });
   const tabBar = element('nav', {
     className: 'hud__tabs',
     attributes: { 'aria-label': t(HUD_MESSAGE_KEY.tabsRegion) },
-    children: [element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) })],
+    children: [tabsInner],
   });
+
+  /**
+   * The layout shell: three collapse arrows, two separators and the Layout
+   * menu (#1159, stage 3).
+   *
+   * Built here, after every region it manages exists and before the `.hud`
+   * root, because it appends its controls **into** those regions: the
+   * navigation's arrow and separator into the tab bar's own container, the
+   * inspector's into the rail's, and the metric strip's into the slot
+   * `StatusStrip` keeps outside everything that folds. That is constitution
+   * article 16 enforced by construction rather than by a rule somebody has to
+   * remember -- an arrow cannot be inside what it hides if it is a sibling of
+   * it.
+   *
+   * The root it writes geometry onto is the `.hud` element, so the shell
+   * itself is constructed a few lines below that -- this object only names the
+   * three regions, beside the code that built them, where a reader can check
+   * that each `content` really is a child of its own `container` and not of
+   * something else.
+   */
+  const layoutRegions = {
+    navigation: { container: tabBar, content: [tabsInner] },
+    inspector: { container: rail, content: [aside, side] },
+    metrics: { container: strip.layoutSlot, content: strip.foldable },
+  };
 
   const hud = element('div', {
     className: 'hud',
@@ -1910,6 +2597,67 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // refusal line about the last press, then the world's furniture.
     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
   });
+
+  /**
+   * `onChange` reports upward and nothing more: the HUD never writes to
+   * storage, so a host that passes no handler gets a layout that works for the
+   * page load and is not remembered -- which is exactly what a browser with
+   * site data blocked gets anyway (`src/input/storage.ts`).
+   *
+   * The layout controls are deliberately **not** added to `busy`. They issue
+   * no command: folding a panel changes no simulation state, which is the
+   * distinction `dispatchShell` already draws for the tab bar, and a player
+   * must be able to fold a panel away while a build order is in flight.
+   */
+  const layout: HudLayoutShell = createHudLayoutShell({
+    localizer,
+    root: hud,
+    settings: options.layout ?? DEFAULT_LAYOUT_SETTINGS,
+    strip: strip.element,
+    inspectorSheet: side,
+    navigation: layoutRegions.navigation,
+    inspector: layoutRegions.inspector,
+    metrics: layoutRegions.metrics,
+    onChange: (next) => {
+      options.onLayoutChange?.(next);
+    },
+    /*
+     * THE ALERTS FOLD'S HOME, WHICH IS A FUNCTION OF THE TIER (issue #1201).
+     *
+     * `.hud__corner` is `display: none` at 720 px and below -- `hud.css` says
+     * so under #1117, three times, with the measurement -- and the alerts log
+     * is the only surface that issues `DismissAlert`. So on a phone the game
+     * offered a command the player could not press: measured at 375x812 on
+     * `57cffa10`, the dismiss control on a row with a run of occurrences had
+     * **0 client rects**.
+     *
+     * The owner ruled on 2026-09-16 that the fold moves into the rail on the
+     * Overview tab at that breakpoint and no other. The provenance is the
+     * weaker of the two kinds this repository distinguishes -- the label of a
+     * clickable option this session wrote, *"Zamontuj fold w szynie poniżej
+     * 720 px (zalecane)"*, rather than a sentence the owner typed -- and
+     * `docs/IDENTITY_V5_ROLLOUT.md` §"Stage 5" is the durable record.
+     *
+     * **One node, moved, rather than a second one built**, and that is the
+     * whole reason this is a callback and not markup: a second alerts list
+     * would be a second issuing site for `DismissAlert`, and
+     * `tests/foundation/unconsumed-command-contract.test.ts`'s
+     * `producersOf('DismissAlert')` pin survives this change unedited because
+     * there is still exactly one. It also means the fold's collapsed state,
+     * its scroll position and every row in it cross the breakpoint intact --
+     * they are the same elements.
+     *
+     * **Why Overview and not "wherever the player is", measured rather than
+     * reasoned.** The rail's sheet is capped at `--hud-inspector-height` below
+     * this breakpoint, and on Zones and Manage the panels there are already at
+     * that ceiling -- the dossier that priced this measured the same stub
+     * taking the Rooms panel from 457.13 to 144.00 px and the Staff panel from
+     * 307.38 to 2.00. Overview is the one tab with room, which is why the
+     * ruling names it.
+     */
+    onTierChange: placeAlertsFold,
+  });
+  strip.layoutSlot.append(layout.menu);
 
   // Only the controls that issue a *command* are disabled while one is in
   // flight. One busy signal for the three of them, so they can never
@@ -1946,16 +2694,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
-    roomsPanel.setVisible(state.activeTab === 'rooms');
-    staffPanel.setVisible(state.activeTab === 'security');
+    roomsPanel.setVisible(state.activeTab === 'zones');
+    staffPanel.setVisible(state.activeTab === 'manage');
     // The fourth occupant of `.hud__side`, and the reason the five can share
     // one box: the conditions are mutually exclusive, so exactly one panel is
     // ever laid out there and none pays for the others' height.
-    intakePanel.setVisible(state.activeTab === 'overview');
+    overviewPanel.setVisible(state.activeTab === 'overview');
+    intakePanel.setVisible(state.activeTab === 'manage');
     // The fifth, on the tab that had none (issue #451). With this line every
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
-    regimePanel.setVisible(state.activeTab === 'regime');
+    regimePanel.setVisible(state.activeTab === 'day-plan');
+    // And its other half, on the same tab and by the same condition (ADR 0115).
+    // Two panels and one tab, so the two are laid out together or neither is --
+    // the pairing the Manage tab already makes with Intake and Staff.
+    rosterPanel.setVisible(state.activeTab === 'day-plan');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
@@ -1968,12 +2721,43 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   let emptyRow: ListRow | undefined;
 
   function paintAlerts(): void {
+    /*
+     * Three states, and the first of them is issue #1184 (see
+     * `HudViewModel.alerts`).
+     *
+     * `undefined` is **no prison reporting** -- before the first publication,
+     * and after `simulation/stopped` takes the field off -- and it gets the
+     * sentence, not a row. The sentence is a sibling of the list rather than a
+     * row in it for the reason `overview-panel.ts` gives for the same choice:
+     * a row here is an alert, drawn with an icon beside a severity badge, and
+     * "no prison is reporting" rendered as one would look like an alert that
+     * says everything is fine -- which is the failure this issue is about,
+     * reintroduced one level down. The list comes off with it, so the two can
+     * never be on screen together.
+     */
+    const rows = viewModel.alerts;
+    alertList.hidden = rows === undefined;
+    alertsNone.hidden = rows !== undefined;
+    if (rows === undefined) {
+      // The rows go with the list rather than being left hidden inside it: the
+      // next prison to report is a different session, and a row it never sent
+      // must not be able to reappear when one does.
+      for (const [id, row] of alertRows) {
+        row.element.remove();
+        alertRows.delete(id);
+      }
+      if (emptyRow !== undefined) {
+        emptyRow.element.remove();
+        emptyRow = undefined;
+      }
+      return;
+    }
     const seen = new Set<string>();
     // One resolution per paint rather than one per row: every dismissable row's
     // control is called the same thing, and the sentence does not depend on
     // which row it is on.
     const dismissLabel = hudAlertDismissLabel(t);
-    for (const [index, alert] of viewModel.alerts.entries()) {
+    for (const [index, alert] of rows.entries()) {
       seen.add(alert.id);
       // The sentence, and -- since the owner's decisions 1 and 2 of 2026-09-01
       // on ADR 0084 -- how many times it has been said and when the newest of
@@ -2093,7 +2877,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
     // An empty list must say it is empty. A blank rectangle is indistinguishable
     // from a broken one.
-    if (viewModel.alerts.length === 0 && emptyRow === undefined) {
+    if (rows.length === 0 && emptyRow === undefined) {
       // Wrapped for the same reason as the rows above, though today's
       // sentence fits on one line: the empty-list row is a row of this list,
       // and a locale whose "no active alerts" is longer should not be the
@@ -2101,7 +2885,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       emptyRow = createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.alertsEmpty), wrap: true });
       emptyRow.element.dataset['alert'] = 'empty';
       alertList.append(emptyRow.element);
-    } else if (viewModel.alerts.length > 0 && emptyRow !== undefined) {
+    } else if (rows.length > 0 && emptyRow !== undefined) {
       emptyRow.element.remove();
       emptyRow = undefined;
     }
@@ -2110,6 +2894,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const update = (next: HudViewModel): void => {
     viewModel = next;
     strip.update(next);
+    // The Layout menu's own clock readout (#1159). It exists because folding
+    // the metric strip takes the strip's clock with it, and constitution
+    // article 10 makes the pace the player's -- a layout preference may not
+    // cost them the ability to read the time. Fed from the same view model on
+    // the same tick, so the two can never disagree.
+    layout.setClock(next.clock);
     paintAlerts();
     // The enclosure readout is session state, so it arrives here rather than at
     // mount. Passed straight through: the panel decides what to render and this
@@ -2137,7 +2927,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // the selected purchase is affordable, and this line decides nothing --
     // it is the same `next.counts` `strip.update` above already read the
     // balance out of.
-    buildPanel.setTreasury(next.counts);
+    /*
+     * Withheld when no prison has reported (issue #1191). `next.counts` is
+     * optional now, and the two treasury setters below are the same case: a
+     * panel handed nothing keeps the figures it was last given, which before
+     * the first publication are its own zeroed defaults -- the state its
+     * docblock already describes as never rendered, because the buy row cannot
+     * be open before a session exists. What it must not be handed is a
+     * fabricated `0` balance presented as a reading, which is what
+     * `EMPTY_HUD_VIEW_MODEL.counts` used to pass through this line.
+     *
+     * The narrower fix -- `BuildPanel.setTreasury` and `StaffPanel.setTreasury`
+     * taking `HudCountsViewModel | undefined` and disclosing "no balance
+     * reported" on the button itself -- is those panels' own decision and is
+     * filed separately; this line decides nothing, as the comment above says.
+     */
+    if (next.counts !== undefined) buildPanel.setTreasury(next.counts);
     // And which guards are held and by what, on identical terms (ADR 0034). The
     // projection resolved every claim -- through the same rule the release
     // itself uses -- the panel decides the sentences, and this line decides
@@ -2158,18 +2963,31 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // the counts stream since ADR 0042 step 3 and read by nothing in `src/ui/`
     // until this line; the panel decides whether a shut fold states it, and
     // this line decides nothing.
-    staffPanel.setDailyWageBill(next.counts.dailyWageBillMinorUnits);
+    // `undefined` when no prison has reported (#1191), which is a state this
+    // setter already takes: the panel's own signature is `number | undefined`
+    // and it draws no figure for it, because "nobody has published a wage bill"
+    // and "the wage bill is zero" are different facts.
+    staffPanel.setDailyWageBill(next.counts?.dailyWageBillMinorUnits);
     // And the two treasury figures the hire button's availability is judged
     // against, on the terms `buildPanel.setTreasury` above is passed the same
     // `next.counts` on: the panel decides whether the selected role is
     // affordable -- through the same `pressAffordabilityVerdict` `src/main.ts`
     // judges the `hire-staff` press with -- and this line decides nothing.
-    staffPanel.setTreasury(next.counts);
+    // Withheld on absence, for the reason `buildPanel.setTreasury` above gives.
+    if (next.counts !== undefined) staffPanel.setTreasury(next.counts);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the
     // sentences; this line decides nothing.
     intakePanel.setPipeline(next.intakePipeline);
+    // And what the prison is worth, on terms that are *not* identical to the
+    // eight lines above it, which is the point of the field rather than an
+    // inconsistency (issue #1183). Those are pulled per tab and absent when
+    // nothing asked; this rides the counts publication and is absent when no
+    // prison has reported at all. The projection decided all three figures, the
+    // panel decides whether to draw them or to say nobody is reporting, and
+    // this line decides nothing.
+    overviewPanel.setReadout(next.overview);
     // And what each classification group's day allows at this tick, on
     // identical terms (issue #451). `resolveActiveRegimeBlock` picked the
     // block, the schedule decided what it permits, the panel decides the
@@ -2179,7 +2997,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // terms. Every word on a row is a message key the projection's ids were
     // turned into; the total is the projection's own count of the live
     // population, not the length of the window; this line decides nothing.
-    regimePanel.setRoster(next.prisonerRoster);
+    rosterPanel.setRoster(next.prisonerRoster);
+    // And the one prisoner the player selected, on identical terms (issue #895).
+    // The projection read the six needs off the store it owns and computed
+    // which of them the state is withholding grant over; the panel decides the
+    // tone and the order of the lines; this line decides nothing.
+    //
+    // After the roster deliberately, so that a snapshot carrying both leaves the
+    // checked row and the block below it agreeing about the same prisoner rather
+    // than one tick apart.
+    rosterPanel.setPrisonerDetail(next.prisonerDetail, next.clock.dayLengthTicks);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -2197,15 +3024,28 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     element: hud,
     asideSlot: aside,
     brandSlot: strip.brandSlot,
+    preferencesSlot: layout.preferencesSlot,
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
+    clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
     getState: () => state,
+    getLayout: () => layout.getSettings(),
+    refreshLayout: () => {
+      layout.refresh();
+    },
+    setLayout: (settings: LayoutSettings) => {
+      layout.setSettings(settings);
+    },
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));
     },
     destroy: () => {
       gate.dispose();
+      // Tearing the layout down is also what ends a drag that was still live:
+      // `ResizeSeparator.destroy` reports `'abandoned'` and removes the
+      // document-level listeners a live drag installs.
+      layout.destroy();
       // The floor's timer outlives the element it paints unless it is cleared:
       // a HUD torn down inside the 600 ms would otherwise wake up and write to
       // a detached band.
@@ -2292,3 +3132,4 @@ export function transportIntent(kind: TransportIntentKind, viewModel: HudViewMod
       return { kind: 'set-clock', mode: 'running', speed: nextFastForwardSpeed(viewModel.clock.speed) };
   }
 }
+

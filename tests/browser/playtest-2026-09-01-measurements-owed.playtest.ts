@@ -40,6 +40,7 @@ const POPULATED: HudCountsViewModel = {
   prisonerCapacity: 180,
   occupiedPlaces: 178,
   staff: 27,
+  staffUnassigned: 0,
   rooms: 61,
   prisonersCovered: 178,
   prisonersUnderstaffed: 0,
@@ -643,7 +644,7 @@ test.describe("5: ADR 0086 §2's browser prediction", () => {
     await page.getByRole('button', { name: 'Play at normal speed' }).click();
     await expect(page.locator('.hud-clock__speed')).toHaveText('×1');
 
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await expect(page.locator('.hud-regime__roster')).toBeVisible();
 
     // Let the tab-select pull and anything it chains settle, then start the

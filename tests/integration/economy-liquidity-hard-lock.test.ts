@@ -327,17 +327,82 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     ]);
   });
 
-  it('offers no command that turns stock, or anything else, back into money', () => {
+  it('now offers exactly one command that turns stock back into money, at a loss the class does not reopen from empty', () => {
     /*
-     * The exhaustive half of "there is no escape". `simulationCommandSchema` is
-     * the whole of what a session can be told to do, so enumerating its members
-     * is the one assertion that cannot be defeated by a route nobody thought
-     * of: a `SellMaterials`, a `ProduceItem` or a `RequestGrant` added later
-     * fails this line and sends its author here.
+     * **This test's own title used to be "offers no command that turns stock,
+     * or anything else, back into money", and that claim is the one this
+     * change falsifies on purpose.** ADR 0075 decision 3 named the day this
+     * would happen before it did: "A `SellMaterials` added by decision 3
+     * below fails that assertion and sends its author here, deliberately."
+     * This is that day. The title is corrected rather than the old one kept
+     * silently wrong, per `docs/AGENT_WORKFLOW.md` §4 -- a reader who meets
+     * the retired claim elsewhere needs to see which half of it survived.
      *
-     * Of these fifteen, exactly one credits the treasury --
-     * `CancelMaterialPurchase` -- and the test below measures that it refuses
-     * once the delivery has landed.
+     * **What survives.** The exhaustive half of "there is no escape" is still
+     * the enumeration below: `simulationCommandSchema` is the whole of what a
+     * session can be told to do, so a `ProduceItem` or a `RequestGrant` added
+     * later still fails this line and sends its author here. What no longer
+     * survives is "exactly one credits the treasury" -- `SellMaterials` is a
+     * second, and deliberately so (ADR 0075 decision 3, invoked by ADR 0096
+     * decision 3(b)): it sells stock a container holds back at
+     * `SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` (1/2) of the
+     * catalogue price, floored per unit (`ProcurementSystem.sellStock`).
+     *
+     * **Why no assertion below moves, stated from measurement rather than
+     * assumed -- and the first draft of this comment assumed wrong.** It
+     * read that neither fixture in this file ever holds a saleable surplus,
+     * on the theory that a `wallRoomPerimeter` call must have spent what a
+     * `PurchaseMaterials` press bought. Instrumented rather than trusted:
+     * the payroll-route case below buys 616 bricks and 1 plank and builds
+     * nothing with either -- `residentCapacity` stays `0` for the whole
+     * case by its own comment, and no `PlaceBuildOrder`, `ZoneRoom` or
+     * `PlaceObject` is ever sent -- so the container holds all 616 bricks
+     * and the 1 plank, unconsumed, at every point in the case including its
+     * final assertions (measured: `final brick stock 616`, `final plank
+     * stock 1`, beside `final balance -55`). That is a real, reachable
+     * surplus, and `SellMaterials` reaches it: 616 bricks at
+     * `Math.floor(40 * 1/2) = 20` each is 12,320 minor units, over four
+     * times the 2,500 the arrears bound bounds *and* enough on its own to
+     * clear the entire capped debt this case ends holding.
+     *
+     * **None of that turns the payroll-route case's own assertions false,
+     * which is the reason this file's numbers are untouched even though the
+     * premise above was wrong.** ADR 0096 decision 2's reserve and decision
+     * 3(c)'s arrears bound are read passively here -- nothing in this file
+     * presses `SellMaterials`, so nothing about the mechanism existing
+     * changes what a session that never presses it does. And the case was
+     * never locked to begin with, on its own text: *"The player is not
+     * locked either way, which is the finding this route exists to
+     * report."* `SellMaterials` reaching a real surplus in an unlocked case
+     * is not the class ECON-002 names reopening -- it is decision 3 doing
+     * exactly what ADR 0075 built it for, "the general answer to 'the money
+     * is in the wrong shape'", faster than the income line the case is
+     * shown recovering by instead. Recorded here because a comment that
+     * measured wrong stays wrong until somebody re-measures it, which is
+     * `docs/AGENT_WORKFLOW.md` §4's whole argument for marking a correction
+     * rather than silently fixing the number.
+     *
+     * The 654-brick case above it is the true instance of the theory that
+     * prompted the wrong first draft: it walls a room, places a bed and a
+     * toilet, and the bricks the wall and the toilet consume really do come
+     * out of what was bought, leaving no comparable surplus at the point its
+     * own assertions run. The two cases are not the same shape, and treating
+     * them as though they were is exactly the mistake this correction fixes.
+     *
+     * **What this does not settle.** Whether a position combining a floor
+     * this deep with a surplus large enough to matter is reachable *while a
+     * session is actually locked* (rather than merely deep and unpressed,
+     * as here) is a real question, and this file does not construct that
+     * case either way -- named per `docs/AGENT_WORKFLOW.md` §3's "name your
+     * weakest claim" rather than assumed shut in either direction.
+     *
+     * Of these seventeen, two credit the treasury --
+     * `CancelMaterialPurchase` and `SellMaterials` -- and the test below
+     * measures the first refusing once the delivery has landed.
+     * `tests/unit/economy-procurement-sellback.test.ts` pins the second's
+     * economics at the `ProcurementSystem` layer and
+     * `tests/integration/economy-sellback-command.test.ts` drives the command
+     * itself through the real kernel, which this file does not re-do.
      *
      * **This said "fourteen" until the owner's decisions of 2026-09-01 on
      * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).**
@@ -346,6 +411,24 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * changes nothing about the prison. The tally is what rots here and the
      * list is what to read, so both are corrected together rather than the
      * number alone.
+     *
+     * **And it said "fifteen" until ADR 0106.** `RemoveWall` is the sixteenth
+     * and it moves no money either in the sense this test is about: it takes
+     * geometry away and, for a `'completed'` order, destroys whatever was
+     * spent on it -- `destroysSpendOnCancel` -- which is a loss, not a route
+     * back into money.
+     *
+     * **And it said "sixteen" until `SellMaterials`.** `SellMaterials` is the
+     * seventeenth, and it is the first in this list that both moves money
+     * *and* credits the treasury -- see the correction above.
+     *
+     * **And it said "seventeen" until ADR 0113.** `EditRegimeBlock` is the
+     * eighteenth and it is the second in this list that moves no money at all,
+     * beside `DismissAlert` -- it rewrites what one block of one classification
+     * group's day allows. It is in this list for the same reason `DismissAlert`
+     * is: the list is every command the protocol declares, and the claim this
+     * test defends is about which of them can turn stock back into money.
+     * Editing a timetable cannot, in either direction.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
@@ -354,6 +437,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'CancelMaterialPurchase',
       'DismissAlert',
       'DismissStaff',
+      'EditRegimeBlock',
       'HireStaff',
       'PlaceBuildOrder',
       'PlaceObject',
@@ -361,6 +445,8 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'Redo',
       'ReleaseGuardAssignment',
       'RemoveObject',
+      'RemoveWall',
+      'SellMaterials',
       'Undo',
       'UnzoneRoom',
       'ZoneRoom',
@@ -649,7 +735,7 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * `PayrollSystem` bills every employee's `wageBand.minPerDay` at the end of
    * every in-game day -- a guard is 80 (`src/content/staff-role-catalog.ts:150`)
    * -- and `HireStaff` charges one day's wage up front
-   * (`src/simulation/staff/hiring.ts:198`). A prison that spends most of its
+   * (`src/simulation/staff/hiring.ts:202`). A prison that spends most of its
    * money on walls and hires one guard is then losing 80 a day against an
    * income line that cannot start until it buys a 65 plank. The balance walks
    * itself below 65 with no further press, and every press after that is
@@ -704,8 +790,22 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * exists to report: the plank is bought at -25 and the bed is buildable, so
    * the income line can start. What ruling 19 changes is that the prison spends
    * its facility on wages while it waits, instead of holding it.
+   *
+   * **[ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+   * decision 2 (accepted 2026-09-10) moves where this walk stops, a second
+   * time, and this is the case that measured it.** This prison never places
+   * the plank it bought into a bed -- `residentCapacity` stays `0` for the
+   * whole of this case, so it is fresh and unfurnished throughout, and
+   * `'wages'` now has a rung of its own while that holds:
+   * `STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS` in `src/simulation/economy/treasury.ts`,
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS`
+   * = -1,250 + 1,195 = **-55**, shallower than -745, so the walk this case
+   * used to measure is intercepted long before it gets there. Every balance
+   * and arrears figure below this point moves with the release named above
+   * it; the text above it is left standing because it is the record of what
+   * ruling 19 alone did, one release before this one.
    */
-  it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wage rung', () => {
+  it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
     const runtime = createNewSimulationRuntime(SEED);
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
@@ -731,47 +831,63 @@ describe('the same lock reached by a charge the player cannot decline', () => {
     expect(stockOf(runtime, 'item.wood-plank'), 'and a bed is now buildable, which is the way out').toBe(1);
 
     /*
-     * **And payroll now follows it down, which is the half ruling 19 reversed.**
+     * **And payroll now follows it down, only as far as the reserve --
+     * ADR 0096 decision 2, measured through the real kernel rather than only
+     * in `treasury.ts`'s own arithmetic.**
      *
-     * This block read:
+     * This block asserted, for the whole life of ruling 19 alone:
      *
-     * > And payroll still cannot follow it down. Nine more in-game days of an 80
-     * > wage against a balance of -25: not one minor unit is paid, the balance
-     * > does not move, and the whole bill becomes arrears -- ADR 0049's third
-     * > rung, which ADR 0083 §(a) predicted survives an open floor and which this
-     * > measures at a balance that is already negative.
+     * > Nine more in-game days of an 80 wage against a balance of -25 …
+     * > `expect(runtime.treasury.balanceMinorUnits).toBe(-745)`
+     * > `expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0)`
      *
-     * > ```
-     * > expect(runtime.treasury.balanceMinorUnits, 'wages are bounded by the balance, not by the floor')
-     * >   .toBe(balanceBeforeTheWages);
-     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBeGreaterThan(0);
-     * > ```
-     *
-     * Nine days at 80 out of -25 is **-745**, and nothing is owed: the room is
-     * the payroll's now, down to the wage rung.
+     * That reading is overtaken here rather than merely re-valued: -745 is
+     * deeper than the new starter wages rung (-55), so the eight more days
+     * this case used to measure never happen -- the very first payday after
+     * the plank purchase already has only 30 of room left before -55 (`-25 -
+     * (-55) = 30`), pays that much and no more, and every payday after it
+     * pays nothing at all while the arrears bound (ADR 0096 decision 3(c),
+     * `ARREARS_BOUND_MINOR_UNITS`) has not yet been reached.
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(-25);
+    stepTo(runtime, 4 * 2_400);
+    expect(runtime.treasury.balanceMinorUnits, 'one payday: 30 of room to the reserve, not the whole 80').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, '80 due, 30 paid').toBe(50);
+
     stepTo(runtime, 12 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'nine paydays at 80, out of the overdraft').toBe(-745);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'and not a minor unit is owed while the room lasts').toBe(0);
+    expect(runtime.treasury.balanceMinorUnits, 'pinned at the reserve, not walking on to -745').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'eight more whole paydays owed in full: 50 + 8 x 80').toBe(690);
 
     /*
-     * **The third rung, watched firing.** From -745 the wage rung is 1,755 away,
-     * which is twenty-one whole paydays at 80 with 75 left over. The
-     * twenty-second takes the 75, lands the balance exactly on -2,500 and owes
-     * the other 5 -- ADR 0049's arrears, at the threshold ruling 19 gives them.
-     * Every payday after that owes the whole 80.
+     * **The arrears bound, watched firing -- ADR 0096 decision 3(c), not the
+     * third rung ruling 19 gave `'wages'` alone.** From 690 owed, 80 a day,
+     * `ARREARS_BOUND_MINOR_UNITS` (2,500) is crossed on the twenty-third
+     * payday after day 12: 690 + 22 x 80 = 2,450, one short; the
+     * twenty-third would add the 24th multiple and land on 2,530, capped to
+     * exactly 2,500 instead -- forgiven, per decision 3(c)'s own words,
+     * rather than deferred.
      */
     stepTo(runtime, 34 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'exactly the wage rung, which is the floor').toBe(
-      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-    );
-    expect(runtime.payroll.unpaidWagesMinorUnits, '80 due against the 75 the rung left').toBe(5);
+    expect(runtime.treasury.balanceMinorUnits, 'the reserve holds: no payday may pass it while unfurnished').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, '690 + 22 whole paydays at 80').toBe(2_450);
 
     stepTo(runtime, 35 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'and the rung holds: no payday may pass it').toBe(
+    expect(runtime.treasury.balanceMinorUnits).toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the bound: 2,450 + 80 would be 2,530, forgiven down to 2,500').toBe(
+      2_500,
+    );
+
+    stepTo(runtime, 40 * 2_400);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'and it stays there -- nothing past the bound is ever remembered').toBe(
+      2_500,
+    );
+
+    // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (-2,500) is cited here rather than
+    // silently dropped: it is what this same fixture reached under ruling 19
+    // alone, and it is now unreachable for as long as this prison stays
+    // unfurnished, which is exactly ADR 0096 decision 2's point.
+    expect(runtime.treasury.balanceMinorUnits, 'nowhere near the treasury`s own floor').toBeGreaterThan(
       TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
     );
-    expect(runtime.payroll.unpaidWagesMinorUnits, '5 owed plus the next whole 80').toBe(85);
   });
 });

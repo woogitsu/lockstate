@@ -17,20 +17,26 @@ import {
  * **What cancelling a build order actually gives back, in the window ADR 0076
  * left open** — [#717](https://github.com/matmaxalez/lockstate/issues/717).
  *
- * ## These are controls, not expectations
+ * ## These were controls; the question they were waiting on has been answered
  *
- * Every case below **records what happens** and does not claim it is right,
- * which is the shape #717 asked for in its own words: *"It is written as a
- * control rather than an expectation — it records what happens, it does not
- * claim it is right."* Whether a prison may sell surplus material back to the
- * catalogue is
+ * Every case below was written to **record what happens** without claiming it
+ * was right, which is the shape #717 asked for in its own words: *"It is
+ * written as a control rather than an expectation — it records what happens,
+ * it does not claim it is right."* What they were waiting on was
  * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
  * own open question — *"**Not decided either: whether surplus stock can be sold
  * back.** […] That is a new economic surface and a price question (ADR 0017
  * decision 5 reserves prices with the rest of #29), so it is named and not
- * taken"* — and it is the owner's. The branch
- * `fix/717-cancel-returns-what-it-took` implements taking it and prices what
- * taking it costs; this file is what survives either way.
+ * taken"* — and **the repository owner took it on 2026-09-02, in the broad
+ * reading, with the measured cost in front of them.** ADR 0076's amendment
+ * carries the ruling and its price; `refundSurplusStock` is the arm that
+ * implements it.
+ *
+ * **So two of the three cases below record a different number than they did,
+ * and each says so at its own assertion rather than only here.** The figures
+ * they used to record are kept in the prose beside them: they are the
+ * measurement the owner priced the decision from, and deleting them would
+ * delete the evidence the ruling was made on.
  *
  * ## What #717 claimed, and which half of it survived the reading
  *
@@ -65,11 +71,14 @@ import {
  *
  * **And it is not one plank.** A drag buys on the placing tick, so every
  * delivery in it lands within a tick of every other and the whole drag occupies
- * the window at once. Measured: 328 walls put **26,240** — the opening facility
- * plus 1,240 of the standing overdraft — into it, and cancelling all 328 there
- * returns **nothing**, in either currency. ADR 0076's *"a player who cancels in
- * this window keeps the material and does not get the money"* reads as a small
- * asymmetry about one plank; at drag scale it is the whole prison's liquidity.
+ * the window at once. Measured *before* the ruling: 328 walls put **26,240** —
+ * the opening facility plus 1,240 of the standing overdraft — into it, and
+ * cancelling all 328 there returned **nothing**, in either currency. ADR 0076's
+ * *"a player who cancels in this window keeps the material and does not get the
+ * money"* read as a small asymmetry about one plank; at drag scale it was the
+ * whole prison's liquidity, and that is the measurement the owner ruled on.
+ * With the sell-back the same gesture returns the whole 26,240 and leaves the
+ * shelf empty — the second case below measures that now.
  *
  * ## Why the overdraft is what makes the scale matter
  *
@@ -80,9 +89,10 @@ import {
  * is refused at, and 55 short of the 65 one plank costs. The prison cannot buy
  * the door its first cell needs, cannot zone the cell, cannot admit a prisoner
  * and cannot earn — ADR 0075's locked position, reached by a gesture rather than
- * by arithmetic — and the undo leaves it there holding 26,240 of value as 656
- * bricks. That is #717's *"an undo now keeps the debt"*, and it is the second
- * case below.
+ * by arithmetic — and before the ruling the undo left it there holding 26,240
+ * of value as 656 bricks. That was #717's *"an undo now keeps the debt"*. The
+ * second case below is where it was recorded, and it now records the undo
+ * getting the prison back out, which is what the ruling bought.
  *
  * Every command goes through `packCommand` and the real kernel:
  * `tests/unit/simulation-refusals.test.ts` states the rule this file follows —
@@ -165,6 +175,20 @@ function placements(orderIds: readonly string[]): readonly SimulationCommand[] {
   }));
 }
 
+/**
+ * A `CancelBuildOrder` aimed at `orderId`'s true current revision (ADR 0107),
+ * read off `runtime` at the moment this is called -- this file's subject is
+ * what a cancellation gives back, not whether a press is stale, so every
+ * press here is built to succeed rather than risk `stale-cancellation`.
+ */
+function cancelOrder(runtime: SimulationRuntime, orderId: string): SimulationCommand {
+  return { type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) };
+}
+
+function cancels(runtime: SimulationRuntime, orderIds: readonly string[]): readonly SimulationCommand[] {
+  return orderIds.map((orderId) => cancelOrder(runtime, orderId));
+}
+
 /** The 328 walls the overdraft funds: 26,240 out of a 25,000 facility, ending at −1,240. */
 const DRAG = 328;
 
@@ -185,27 +209,37 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     );
     expect(session.runtime.procurement.pendingDeliveries, 'one delivery per funded order').toHaveLength(DRAG);
 
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
 
-  it('gives back nothing once the bricks have landed, and the prison stays locked out of its own door', () => {
+  it('gives the whole facility back once the bricks have landed, and unlocks the door the drag locked', () => {
     /*
-     * **The control #717 is about, and it records rather than judges.** The
-     * only difference from the case above is a hundred ticks of clock. Every
-     * order is still `'materials-pending'`, every brick is on the shelf, and
-     * `refundSurplusOf` has no delivery to cancel — so the press moves neither
-     * the balance nor the shelf, and the prison is left at −1,240 holding
-     * 26,240 of value it cannot spend on a 65 plank.
+     * **The case #717 is about.** The only difference from the case above is a
+     * hundred ticks of clock: every order is still `'materials-pending'`,
+     * every brick is on the shelf, and `refundSurplusOf` has no delivery left
+     * to cancel.
      *
-     * ADR 0076's amendment is where the *reason* lives, and it is not an
-     * oversight: paying for a brick that is still in the container as well
-     * would be the one-press value creation ruling 20 exists to forbid. What
-     * the amendment leaves open is the remedy — selling the surplus back — and
-     * that is a new economic surface it declines to take.
+     * **What this recorded until 2026-09-02, kept because it is the
+     * measurement the owner ruled on:** the press moved neither the balance
+     * nor the shelf, and the prison was left at −1,240 holding 26,240 of value
+     * it could not spend on a 65 plank — ADR 0075's locked position, reached
+     * by one gesture, with the undo keeping the debt.
+     *
+     * **What it records now.** The owner took ADR 0076's reserved question in
+     * the broad reading, so `refundSurplusStock` sells the stock the
+     * cancellation left surplus back at the catalogue price, bounded by each
+     * cancelled order's own requirement. The facility comes back whole, the
+     * shelf empties, and the plank the prison could not buy a moment ago is
+     * bought. That is the remedy ADR 0076's case 3 named and declined, taken.
+     *
+     * The plank press is kept on both sides of the undo for the same reason it
+     * was there before: it is the locked position pressed rather than argued.
+     * Before the undo it is still refused — nothing about the ruling changes
+     * what a prison at −1,240 can afford — and after it, it is not.
      */
     const session = createSession();
     const orderIds = Array.from({ length: DRAG }, (unused, index) => `wall-${String(index)}`);
@@ -233,43 +267,50 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     );
     expect(session.stock(PLANK), 'and no plank arrived').toBe(0);
 
-    // The undo. Recorded, not endorsed: it moves neither figure.
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    // The undo. This moved neither figure until the ruling of 2026-09-02; it
+    // now moves both.
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.stateCounts(orderIds), 'every order really was cancelled').toEqual(
       new Map([['cancelled', DRAG]]),
     );
-    expect(session.runtime.treasury.balanceMinorUnits, 'and the debt is exactly where it was').toBe(
-      strandedBalance,
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240 back — it read −1,240 before the ruling').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
-    expect(session.stock(WALL_REQUIREMENT.itemId), 'with the bricks still on the shelf').toBe(
-      DRAG * WALL_REQUIREMENT.quantity,
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and the shelf is empty — it held 656 bricks before the ruling').toBe(
+      0,
     );
 
-    // Still locked, which is the half of the title that is true today.
+    // No longer locked, which is the whole of what the ruling bought.
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
-    expect(session.runtime.treasury.balanceMinorUnits, 'the undo bought no door either').toBe(strandedBalance);
+    expect(session.runtime.treasury.balanceMinorUnits, 'and the door its first cell needs is affordable again').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+    );
   }, 60_000);
 
-  it('is ten ticks wide for one wall, not one, and the currency changes twice inside it', () => {
+  it('is ten ticks wide for one wall, not one, and the three presses inside it now answer alike', () => {
     /*
      * The window measured at the granularity ADR 0076 describes it at, because
      * *"one scheduled construction tick wide"* and *"ten ticks"* are the same
      * fact in two clocks and only one of them is the player's. Three presses of
-     * the same gesture at three moments, and the middle one is the odd one out:
+     * the same gesture at three moments:
      *
-     * | pressed at | what comes back |
-     * | --- | --- |
-     * | delivery on the road | 80, in money |
-     * | bricks landed, order still `materials-pending` | nothing, and two bricks stay |
-     * | `assigned` | 80, in money, and the bricks go |
+     * | pressed at | before the ruling | now |
+     * | --- | --- | --- |
+     * | delivery on the road | 80, in money | unchanged: 80, in money |
+     * | bricks landed, order still `materials-pending` | **nothing, and two bricks stay** | **80, in money, and the bricks go** |
+     * | `assigned` | 80, in money, and the bricks go | unchanged |
      *
-     * That is the shape of inversion the ruling of 2026-09-01 closed for
-     * `'completed'`, still open one state earlier.
+     * The middle row was the odd one out — the same shape of inversion the
+     * ruling of 2026-09-01 closed for `'completed'`, still open one state
+     * earlier — and the ruling of 2026-09-02 closed it. **The width of the
+     * window is unchanged and is still measured below**: nothing in the
+     * sell-back touches the schedule, so the ten ticks are still there. What
+     * changed is that they no longer cost the player anything.
      */
     const onTheRoad = createSession();
     onTheRoad.atOneTick(placements(['wall-0']));
     expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
-    onTheRoad.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
+    onTheRoad.atOneTick([cancelOrder(onTheRoad.runtime, 'wall-0')]);
     expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(onTheRoad.stock(WALL_REQUIREMENT.itemId)).toBe(0);
 
@@ -284,11 +325,11 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(landed.stock(WALL_REQUIREMENT.itemId), 'on the shelf, allocated to nothing').toBe(
       WALL_REQUIREMENT.quantity,
     );
-    landed.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
-    expect(landed.runtime.treasury.balanceMinorUnits, 'bricks, not money').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST,
+    landed.atOneTick([cancelOrder(landed.runtime, 'wall-0')]);
+    expect(landed.runtime.treasury.balanceMinorUnits, 'money — this read 24,920, bricks and no money, before the ruling').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
-    expect(landed.stock(WALL_REQUIREMENT.itemId), 'and the player keeps them').toBe(WALL_REQUIREMENT.quantity);
+    expect(landed.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it, as they do one state later').toBe(0);
 
     /*
      * How wide the window is, counted rather than asserted from the schedules:
@@ -308,7 +349,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(ticksHolding, 'ten ticks of holding bricks nothing has claimed').toBe(10);
 
     expect(measured.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
-    measured.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
+    measured.atOneTick([cancelOrder(measured.runtime, 'wall-0')]);
     expect(measured.runtime.treasury.balanceMinorUnits, 'money again, one state later').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );

@@ -292,6 +292,28 @@ describe('the walk this gate rules on reaches a real graph', () => {
       'src/persistence/save-schema.ts',
       'src/services/localization/localizer.ts',
       'src/services/localization/default-catalog.ts',
+      /*
+       * The Polish catalogue, and it is here because this gate's reverse
+       * direction fired on the commit that wired it (#662, 2026-09-14) --
+       * exactly as it did for `src/services/telemetry/`.
+       *
+       * `UNREACHABLE_MODULES` carried `src/services/localization/pl-catalog.ts`
+       * from 2026-09-14 with a discharge condition written into its own reason:
+       * *"the first `pl` entry in a chunk loader, at which point this gate
+       * fails in its reverse direction and the entry is deleted in the same
+       * change"*. `src/main.ts`'s `CATALOG_CHUNKS` is that entry --
+       * `pl: () => import('./services/localization/pl-catalog')` -- and a
+       * dynamic `import()` is a value import the walk follows
+       * (`tests/helpers/module-boundaries.ts`, `DYNAMIC_IMPORT`), so the module
+       * is in the production graph. Asserting it here rather than merely
+       * deleting the row is what makes the discharge a gate: un-registering the
+       * thunk fails this line instead of quietly restoring the parked state.
+       */
+      'src/services/localization/pl-catalog.ts',
+      // The chunk's own content half. It is outside `SCANNED_ROOTS`, so nothing
+      // above would notice it leaving the graph; the catalogue is only
+      // *delivered* if both halves arrive.
+      'src/content/locale-pl.ts',
       // The tree that left PARKED_TREES. Asserting it reachable is what makes
       // `WIRED_TREES` a gate: un-wiring telemetry fails here rather than
       // quietly restoring the state three inventories kept re-measuring.

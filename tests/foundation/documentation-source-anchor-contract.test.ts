@@ -169,14 +169,44 @@ function lineCount(path: string): number {
   return lines.length;
 }
 
+/**
+ * How long a cited file is, or `null` when it is not there -- computed once per
+ * distinct path rather than once per anchor.
+ *
+ * This is a memo and nothing else: every anchor is still checked, against the
+ * same number it would have been checked against, so the assertions below are
+ * unchanged in what they can catch. It is here because the corpus made the
+ * difference large. The 789 rooted anchors the docblock above counted are 4017
+ * today and point at 479 distinct files, so reading the target per anchor read
+ * **387 MB** where the distinct set is **15 MB** -- a 25-fold multiplier paid
+ * entirely for re-reading `kernel.ts` a hundred times. Measured on this branch,
+ * that multiplier is the whole of this file's runtime: the two checking tests
+ * cost 791-1081 ms and 528-543 ms before the memo and 45-48 ms and 14-15 ms
+ * after, over three runs each on an idle container, so the file
+ * stopped sitting on the root config's 5 s `testTimeout` under container load,
+ * which is what made it go red on a loaded machine and green on an idle one.
+ *
+ * `null` for an absent file is cached too: `existsSync` on a path cited 40
+ * times is 40 syscalls for one answer that cannot change mid-run.
+ */
+const lineCounts = new Map<string, number | null>();
+
+function lineCountOf(path: string): number | null {
+  const cached = lineCounts.get(path);
+  if (cached !== undefined) return cached;
+  const target = join(ROOT, path);
+  const count = existsSync(target) ? lineCount(target) : null;
+  lineCounts.set(path, count);
+  return count;
+}
+
 /** The complaint an anchor earns, or `undefined` if it resolves. */
 function faultOf(anchor: Anchor): string | undefined {
-  const target = join(ROOT, anchor.path);
-  if (!existsSync(target)) return `${anchor.source} -> ${anchor.token}: no such file`;
+  const lines = lineCountOf(anchor.path);
+  if (lines === null) return `${anchor.source} -> ${anchor.token}: no such file`;
   if (anchor.first < 1 || anchor.last < anchor.first) {
     return `${anchor.source} -> ${anchor.token}: not a line range`;
   }
-  const lines = lineCount(target);
   if (anchor.last > lines) {
     return `${anchor.source} -> ${anchor.token}: out of range, ${anchor.path} has ${lines} lines`;
   }
@@ -232,6 +262,42 @@ describe('every rooted file:line anchor in the documentation is in range', () =>
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:215-224: no such file',
-    ]);
+      'docs/research/2026-09-05-does-the-game-say-there-is-no-door.md -> src/simulation/rooms/enclosure.ts:303: out of range, src/simulation/rooms/enclosure.ts has 294 lines',
+      /*
+       * **Four more of the first shape, and all four have one cause: ADR
+       * 0115's split.** The owner's ruling of 2026-09-16 moved the roster, the
+       * inspector and their pure helpers out of `src/ui/hud/regime-panel.ts`
+       * into `src/ui/hud/roster-panel.ts`, and that file went from 1,786 lines
+       * to 192 -- so every research anchor into its second half is out of
+       * range at once.
+       *
+       * **THIS LIST HELD EIGHT WHEN THE SPLIT WAS WRITTEN AND HOLDS FOUR NOW,
+       * AND THE HALVING IS NOT A REPAIR.** #1273 landed ADR 0113 slice 1's
+       * regime editor into the half that stayed, taking the file from 192
+       * lines back to 388, and four of the eight coordinates -- `:213`,
+       * `:196-201` and `:293` twice -- fell back inside that count. **They
+       * resolve again without naming what they named**: each was written about
+       * a roster or inspector line that is in `roster-panel.ts` now, and what
+       * sits at those numbers today is the timetable and the editor. So this
+       * gate stopped reporting them not because the citation was repaired but
+       * because an unrelated change made the file long enough to swallow it,
+       * which is the one failure shape a line-count gate cannot see. Recorded
+       * here rather than worked around: `docs/research/` is read-only, the
+       * four are no more or less accurate than the four below, and nothing is
+       * owed to them.
+       *
+       * They are listed rather than repaired for the reason the nine above
+       * are: `docs/research/README.md` keeps these records read-only, and a
+       * dated record of what the code looked like on the day it was read does
+       * not become wrong when the code moves. The live citations into the same
+       * file -- the ones in `docs/adr/` -- were repaired in that same commit,
+       * which is the difference between the two directories and the whole
+       * reason this test is split in two.
+       */
+      'docs/research/2026-08-31-what-a-reload-keeps-and-what-it-says.md -> src/ui/hud/regime-panel.ts:647: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-02-the-open-issue-backlog.md -> src/ui/hud/regime-panel.ts:647: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-03-what-the-owner-still-owes.md -> src/ui/hud/regime-panel.ts:700-712: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+      'docs/research/2026-09-05-where-the-shower-runs-out.md -> src/ui/hud/regime-panel.ts:1370-1372: out of range, src/ui/hud/regime-panel.ts has 405 lines',
+    ].sort());
   });
 });

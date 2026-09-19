@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
-import { EMPTY_HUD_VIEW_MODEL } from '../../src/ui/hud/view-model';
+import { ZEROED_COUNTS, reportedCounts } from '../helpers/hud-counts';
 import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
 
 /**
@@ -22,6 +22,12 @@ const COUNTS = {
   staffUnassigned: 2,
   rooms: 9,
   roomCapacity: 60,
+  // `false` beside a `roomCapacity` of 60: a furnished prison on either
+  // reading, which is the ordinary case. The two are no longer asked the same
+  // question -- the host read `roomCapacity === 0` until 2026-09-15 and got a
+  // different answer from the worker on a prison holding a room the content
+  // catalogue does not define (`statusCountsSchema.isFreshUnfurnishedPrison`).
+  isFreshUnfurnishedPrison: false,
   // Deliberately smaller than `roomCapacity`, and deliberately not a round
   // fraction of it: the two are different sums over the same registry, and a
   // mapping that reached for the wrong one would still look plausible. Read as
@@ -80,7 +86,7 @@ const COUNTS = {
   dailyWageBillMinorUnits: 4_800,
 } as const;
 
-function statusCounts(counts: Record<string, number | string | undefined> = { ...COUNTS }): WorkerToMainMessage {
+function statusCounts(counts: Record<string, number | string | boolean | undefined> = { ...COUNTS }): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
@@ -97,11 +103,15 @@ describe('the HUD counts are read from the worker', () => {
       // the case below for which is which and why it took a new field.
       prisonerCapacity: 44,
       // Straight through, and it is `occupiedPlaces` rather than
-      // `roomOccupants: 31` beside it: the strip's "N with no bed" badge is
+      // `roomOccupants: 31` beside it: the strip's "N not housed" badge is
       // this figure subtracted from the population, and residency outlives
       // the bed under it (ADR 0028 decision 2, issue #609).
       occupiedPlaces: 28,
       staff: 11,
+      // Straight through, and it is the count the Security panel's coverage
+      // hint needs and does not have -- computed and published since the
+      // field existed, and read by nothing in `src/ui/` until issue #870.
+      staffUnassigned: 2,
       rooms: 9,
       // Straight through, and deliberately the field beside it in `COUNTS`
       // (60) rather than `accommodationCapacity` (44) again -- see
@@ -109,6 +119,14 @@ describe('the HUD counts are read from the worker', () => {
       // are different sums over the same registry and why the host's
       // starter-rung pre-flight needs this one.
       roomCapacity: 60,
+      // Straight through, and deliberately not re-derived from the line above:
+      // that derivation is the defect this field closed.
+      isFreshUnfurnishedPrison: false,
+      // Read off `counts.conditions` through `isPostUnreachable`, which is
+      // the exhaustive `Record` over `PrisonCondition` ADR 0117 pays for --
+      // `false` here because this fixture's publication names no condition at
+      // all, which is what an ordinary prison publishes.
+      postUnreachable: false,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -212,11 +230,9 @@ describe('the HUD counts are read from the worker', () => {
      * projection over the room types the session's `AccommodationPolicy`
      * names. The HUD reads it and derives nothing.
      */
-    const counts = hudCountsFromWorkerMessage(
-      statusCounts({ ...COUNTS, roomCapacity: 500, accommodationCapacity: 44 }),
-    );
+    const counts = reportedCounts(statusCounts({ ...COUNTS, roomCapacity: 500, accommodationCapacity: 44 }));
 
-    expect(counts?.prisonerCapacity).toBe(44);
+    expect(counts.prisonerCapacity).toBe(44);
   });
 
   it('reports zero counts as zero, so an empty prison is not mistaken for an unknown one', () => {
@@ -238,22 +254,29 @@ describe('the HUD counts are read from the worker', () => {
       ...Object.fromEntries(Object.keys(COUNTS).map((key) => [key, 0])),
       activeIncidentType: undefined,
       contrabandNameKey: undefined,
+      // **The third non-numeric count, and the case above predicted it.** A
+      // prison that has registered nothing has `totalResidentCapacity === 0`,
+      // so it is fresh -- `true` rather than the zero-fill's `0`, which the
+      // wire schema would reject outright
+      // (`statusCountsSchema.isFreshUnfurnishedPrison` is `z.boolean()`).
+      isFreshUnfurnishedPrison: true,
     };
 
     /*
-     * **Not `EMPTY_HUD_VIEW_MODEL.counts` on its own**, since issue #639
+     * **Not `ZEROED_COUNTS` on its own**, since issue #639
      * ruling 2, and the difference is the point rather than an accommodation.
      *
      * `dailyWageBillMinorUnits` is optional on `HudCountsViewModel`, and its
      * two states are different facts: **absent** is "no session has said
-     * anything", which is what `EMPTY_HUD_VIEW_MODEL` holds and what a first
-     * paint and a stopped session get; **`0`** is a running prison that has
+     * anything", which is what a first paint and a stopped session get -- and
+     * as of #1191 they get it by carrying no `counts` at all; **`0`** is a
+     * running prison that has
      * published a payroll of nothing. The Staff panel draws those differently
      * -- a header badge stating `0` against no badge at all -- so a translator
      * that dropped the published zero to match the empty model would erase the
      * distinction at the one moment it is observable.
      *
-     * Spelled out here rather than folded into `EMPTY_HUD_VIEW_MODEL`, so that
+     * Spelled out here rather than folded into `ZEROED_COUNTS` above, so that
      * moving the field into that constant fails this case instead of passing
      * silently.
      *
@@ -268,7 +291,7 @@ describe('the HUD counts are read from the worker', () => {
      * absent case.
      */
     expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual({
-      ...EMPTY_HUD_VIEW_MODEL.counts,
+      ...ZEROED_COUNTS,
       dailyWageBillMinorUnits: 0,
       treasuryOverdraftFloorMinorUnits: 0,
       // A third field of the same shape, added by ADR 0017's "starter rung"
@@ -276,13 +299,32 @@ describe('the HUD counts are read from the worker', () => {
       // `treasuryOverdraftFloorMinorUnits` is, and a running session that has
       // registered nothing publishes a real `0` rather than staying absent.
       roomCapacity: 0,
+      // A fourth, and the first that is not a number. Optional on
+      // `HudCountsViewModel` for `roomCapacity`'s reason and required on the
+      // wire; a running session that has registered nothing publishes a real
+      // `true` rather than staying absent, and absent would read as *not*
+      // fresh, which is a different prison.
+      isFreshUnfurnishedPrison: true,
+      // A fifth, and the second boolean: a prison reporting zeros has no
+      // stranded post, and `conditions` absent from the publication reads as
+      // "nothing is standing" rather than as "unknown" -- see
+      // `isPostUnreachable` (ADR 0117).
+      postUnreachable: false,
     });
   });
 
-  it('forgets the counts when the session stops', () => {
-    // What is on screen would otherwise be the last reading from a
-    // simulation that no longer exists -- the same thing the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+  it('takes the counts off the view model when the session stops', () => {
+    /*
+     * What is on screen would otherwise be the last reading from a simulation
+     * that no longer exists.
+     *
+     * **`'none'`, not a row of zeros** (issue #1191). This used to answer
+     * `EMPTY_HUD_VIEW_MODEL.counts`, so a stopped session stated *Prisoners 0,
+     * Rooms 0, Funds 0* about a prison that no longer existed, beside a clock
+     * reading `--`. `'none'` is the same three-state contract the overview,
+     * alerts, zoning and refusal channels use: `src/main.ts` deletes the field
+     * for it, and the strip paints `--` in every chip.
+     */
     const stopped: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: 'stopped-1',
@@ -291,7 +333,7 @@ describe('the HUD counts are read from the worker', () => {
       payload: { tick: 5_000, reason: 'shutdown-requested' },
     };
 
-    expect(hudCountsFromWorkerMessage(stopped)).toEqual(EMPTY_HUD_VIEW_MODEL.counts);
+    expect(hudCountsFromWorkerMessage(stopped)).toBe('none');
   });
 
   it('says nothing about the counts for a message that is not about the counts', () => {
@@ -337,6 +379,23 @@ describe('the HUD counts are read from the worker', () => {
 
     expect(counts).toBeDefined();
     for (const [key, value] of Object.entries(counts ?? {})) {
+      // **The third one, and it is not a string** (2026-09-15):
+      // `isFreshUnfurnishedPrison`, the predicate ADR 0017's amendment of
+      // 2026-09-01 §2 defines and the host now reads instead of re-deriving
+      // one from `roomCapacity`. Named here by name for the reason the comment
+      // above gives, and checked as a boolean rather than waved through, so a
+      // field that started arriving as `0`/`1` would still fail.
+      // **The fourth, and the second boolean** (ADR 0117, accepted by the
+      // owner on 2026-09-17): `postUnreachable`, read off
+      // `statusCountsSchema.conditions` -- a set of NAMES, which is why the
+      // field that reaches the HUD is a boolean about one member and not a
+      // list this view model would have to re-declare. Checked as a boolean
+      // for `isFreshUnfurnishedPrison`'s reason, so a field that started
+      // arriving as `0`/`1` would still fail.
+      if (key === 'isFreshUnfurnishedPrison' || key === 'postUnreachable') {
+        expect(typeof value, `counts.${key} is not a boolean`).toBe('boolean');
+        continue;
+      }
       if (key === 'activeIncidentTypeLabelKey' || key === 'contrabandNameKey') {
         expect(typeof value === 'string' || value === undefined, `counts.${key} is not a string or undefined`).toBe(
           true,

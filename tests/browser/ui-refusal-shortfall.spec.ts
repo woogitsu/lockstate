@@ -28,7 +28,7 @@ import './ui-harness-api';
  *   - the press sent no command, and the balance did not move;
  *   - **~750-860ms later** the refusal band appeared, `data-source="host"`,
  *     reading `hud.refusal.hire-staff-past-floor` -- *"Nobody was hired —
- *     hiring is refused until the state pays what it owes."*;
+ *     hiring is refused until the prison earns the money."*;
  *   - and the FUNDS chip already carried `25 left` with a tooltip naming the
  *     same cause.
  *
@@ -256,13 +256,15 @@ test.describe('a refused press says how much more money the prison needs (#772, 
     await expect(refusal, 'the press was not refused on this thread').toBeVisible();
     await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
     /*
-     * **The band's own sentence is untouched.** It is the owner's, from ruling
-     * 18 of 2026-08-31, and it says *why* the press is refused; the line on the
-     * control says *how much more*. Two sentences about one refusal, and this
-     * assertion is what pins that this change added a fact rather than
-     * re-worded an existing one.
+     * **The band's own sentence is not this change's.** It says *why* the
+     * press is refused; the line on the control says *how much more*. Two
+     * sentences about one refusal, and this assertion is what pins that this
+     * change added a fact rather than re-worded an existing one. (The band's
+     * tail was itself rewritten on 2026-09-04 -- issue #913, the state owes
+     * nothing to a prison that is not earning -- which is a different change
+     * and is transcribed in `tests/unit/ui-simulation-alerts.test.ts`.)
      */
-    await expect(refusal).toContainText('deliveries are refused until the state pays what it owes');
+    await expect(refusal).toContainText('deliveries are refused until the prison earns the money');
     await expect(refusal).not.toContainText('Not enough money');
 
     /*
@@ -326,6 +328,7 @@ test.describe('a refused press says how much more money the prison needs (#772, 
       prisonerCapacity: 48,
       occupiedPlaces: 42,
       staff: 11,
+      staffUnassigned: 0,
       rooms: 23,
       roomCapacity: 48,
       prisonersCovered: 42,
@@ -352,7 +355,7 @@ test.describe('a refused press says how much more money the prison needs (#772, 
   }) => {
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 
     const push = async (treasuryMinorUnits: number) => {
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), viewModelAt(treasuryMinorUnits));

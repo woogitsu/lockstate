@@ -24,6 +24,7 @@ import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coor
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { RefusalLog } from '../../src/simulation/refusals';
 import { SimulationEventLog } from '../../src/simulation/events/event-log';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #74: completing a build order must change the world.
@@ -573,8 +574,7 @@ describe('a build order with an edge survives the save envelope', () => {
     // a load actually takes. Round-tripped through JSON first, because that
     // is what IndexedDB gives back.
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
-    if (!decoded.ok) return;
+    expectOk(decoded, 'the round-tripped envelope carrying the wall edge');
 
     expect(decoded.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(decoded.migrated).toBe(false); // written at the current version, so nothing had to be upgraded
@@ -594,7 +594,7 @@ describe('a build order with an edge survives the save envelope', () => {
     expect(envelope.payload.construction.orders[0]).not.toHaveProperty('edge');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope that carries no edge');
   });
 
   it('rejects an edge the world has no slot for', () => {
@@ -674,8 +674,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
-    if (!decoded.ok) return;
+    expectOk(decoded, 'the round-tripped envelope carrying the open gesture');
 
     expect(decoded.migrated).toBe(false);
     expect(decoded.value.payload.construction.undoStack).toEqual([['wall-a']]);
@@ -705,7 +704,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(snapshot).not.toHaveProperty('currentTransactionId');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope written with nothing left open');
   });
 
   it('emits the buffer with no id when the gesture has none, rather than a key holding undefined', () => {
@@ -722,7 +721,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(snapshot).not.toHaveProperty('currentTransactionId');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope whose buffer carries no gesture id');
   });
 
   it('still loads a save written before the open gesture was persisted, with no migration step', () => {
@@ -763,6 +762,79 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(construction.getOrder('wall-b')?.state).toBe('approved');
 
     const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
-    expect(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown).ok).toBe(true);
+    expectOk(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown), 'the envelope written back after the legacy undo');
+  });
+});
+
+/**
+ * ADR 0099 decision 3's second bullet: **every build-order transition into
+ * `in-progress` or `completed` moves the drawn world's marker**, and neither
+ * of those is a chunk-layer write.
+ *
+ * This is the source the marker exists for. `structuresFromConstruction`
+ * collapses eight lifecycle states onto three drawn phases, so an order
+ * changes a pixel exactly twice over its life, and until issue #1037 nothing
+ * told the renderer about either: the command that created the order was
+ * accepted hundreds of ticks earlier, so none of `SimulationSnapshotFeed`'s
+ * five original `dirty` marks fires at the moment a crew starts or finishes.
+ */
+describe("a build order's drawn phase moves the world's marker (ADR 0099)", () => {
+  function orderedWall(world: SparseWorld): { kernel: Kernel; construction: ConstructionSystem } {
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
+    kernel.submitCommand(
+      'cmd-0',
+      0,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-0', definitionId: 'wall-brick', x: 4, y: 6, edge: 'north' }),
+    );
+    return { kernel, construction };
+  }
+
+  it('moves once when the crew starts, at a tick that writes no chunk layer', () => {
+    const world = loadedWorld();
+    const { kernel, construction } = orderedWall(world);
+
+    // Step to the first tick on which the order is `in-progress`, recording
+    // the marker on the tick before it.
+    let markerBefore = world.drawnWorldRevision;
+    let geometryBefore = world.getChunk(CHUNK_0)?.geometryRevision ?? -1;
+    for (let step = 0; step < 900; step += 1) {
+      if (construction.getOrder('wall-0')?.state === 'in-progress') break;
+      markerBefore = world.drawnWorldRevision;
+      geometryBefore = world.getChunk(CHUNK_0)?.geometryRevision ?? -1;
+      kernel.step();
+    }
+    expect(construction.getOrder('wall-0')?.state, 'the walk must reach a build in progress').toBe('in-progress');
+
+    expect(world.drawnWorldRevision).toBe(markerBefore + 1);
+    // The whole argument for a counter of its own rather than a sum over the
+    // chunk revisions: nothing was written to the world on this tick, so a
+    // derived marker would have said the drawn world was unchanged while the
+    // tile went from a `planned` ghost to a `building` one.
+    expect(world.getChunk(CHUNK_0)?.geometryRevision).toBe(geometryBefore);
+  });
+
+  it('moves again when the order completes', () => {
+    const world = loadedWorld();
+    const { kernel, construction } = orderedWall(world);
+
+    let markerBefore = world.drawnWorldRevision;
+    for (let step = 0; step < 900; step += 1) {
+      if (construction.getOrder('wall-0')?.state === 'completed') break;
+      markerBefore = world.drawnWorldRevision;
+      kernel.step();
+    }
+    expect(construction.getOrder('wall-0')?.state).toBe('completed');
+
+    // Twice on this tick: `finalizeConstruction` writes the edge, which moves
+    // it through `markChanged`, and the state change moves it in its own
+    // right. Counting one change twice costs nothing -- the marker means "not
+    // what it was" -- and the state bump is what would still fire for a
+    // buildable whose finalisation wrote no layer at all.
+    expect(world.drawnWorldRevision).toBe(markerBefore + 2);
+    expect(world.getTopEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
   });
 });

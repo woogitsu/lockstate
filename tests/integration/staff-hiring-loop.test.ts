@@ -19,7 +19,8 @@ import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { alertRows } from '../helpers/alert-rows';
+import { reportedCounts } from '../helpers/hud-counts';
 
 /**
  * Hiring a guard through the real command path
@@ -168,7 +169,7 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     ]);
 
     // 2. The view model the status strip actually renders, off the wire.
-    expect(hudCountsFromWorkerMessage(publication(runtime))?.staff).toBe(1);
+    expect(reportedCounts(publication(runtime)).staff).toBe(1);
 
     // 3. The staff projection's own row, which carries who they are rather
     //    than how many. It is the only place the role survives the hire.
@@ -261,13 +262,13 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // sentence (ADR 0011) -- with the bundled locale resolving that key to
     // real text rather than to its own dotted self, which is the failure a
     // `Record` value can ship as.
-    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    const alerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
     expect(alerts).toEqual([
       { id: 'refusal-1', labelKey: 'hud.alert.refusal.hire.insufficient-funds', severity: 'warning' },
     ]);
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-    const sentence = localizer.format(alerts![0]!.labelKey);
-    expect(sentence).not.toBe(alerts![0]!.labelKey);
+    const sentence = localizer.format(alerts[0]!.labelKey);
+    expect(sentence).not.toBe(alerts[0]!.labelKey);
     expect(sentence.trim().length).toBeGreaterThan(0);
     // Not the purchase sentence. The two refusals share a condition and must
     // not share a message, or a player who pressed Hire is sent to the Build

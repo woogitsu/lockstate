@@ -13,6 +13,7 @@ import { projectStaff } from '../../src/simulation/presentation/staff-projection
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
+import { alertRows } from '../helpers/alert-rows';
 import { hashFullRuntime } from '../helpers/determinism-state';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -186,14 +187,14 @@ describe('a hire the prison has no duty for is refused, and the player is told w
     const runtime = createNewSimulationRuntime(SEED);
     hire(runtime, 'cmd-hire-cook', KITCHEN, ORIGIN);
 
-    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    const alerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
     expect(alerts).toEqual([{ id: 'refusal-1', labelKey: 'hud.alert.refusal.hire.no-duty-for-role', severity: 'warning' }]);
 
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-    const sentence = localizer.format(alerts![0]!.labelKey);
+    const sentence = localizer.format(alerts[0]!.labelKey);
     // The failure a `Record` value can ship as: a key with no authored text
     // resolves to its own dotted self, which is what a player would read.
-    expect(sentence).not.toBe(alerts![0]!.labelKey);
+    expect(sentence).not.toBe(alerts[0]!.labelKey);
     expect(sentence.trim().length).toBeGreaterThan(0);
     // Not the "no such role" sentence. The two are different facts about a
     // role id -- never heard of it, versus nothing for it to do -- and a

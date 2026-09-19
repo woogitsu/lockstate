@@ -7,6 +7,7 @@ import {
   Treasury,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  WAGES_STARTER_RESERVE_MINOR_UNITS,
   rungFloorMinorUnits,
   type SpendClass,
 } from '../../src/simulation/economy';
@@ -476,7 +477,19 @@ describe('Treasury: the starter rung for a fresh, unfurnished prison (#771 remed
     expect(INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS, 'shallower, not deeper').toBe(-1_185);
   });
 
-  it('only moves deliveries and hiring -- construction and wages are exactly what a mature prison sees', () => {
+  it('moves deliveries, hiring and, since ADR 0096 decision 2, wages -- construction alone is exactly what a mature prison sees', () => {
+    /*
+     * **This case was titled *"only moves deliveries and hiring -- construction
+     * and wages are exactly what a mature prison sees"* and asserted
+     * `fresh.floorFor('wages', true)` at `-2_500`, unaffected by freshness.**
+     * [ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+     * decision 2, accepted by the owner 2026-09-10, is exactly the amendment
+     * that moves it: `'wages'` was the one spend class ADR 0017's "Amendment,
+     * 2026-09-01" left with no rung of its own, and that amendment's own §6
+     * named the gap and reserved it to the owner rather than deciding it. The
+     * quote is kept because it is what this case asserted for the whole life
+     * of the starter rung before that release.
+     */
     const fresh = new Treasury(0);
     fresh.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
 
@@ -487,13 +500,48 @@ describe('Treasury: the starter rung for a fresh, unfurnished prison (#771 remed
     expect(fresh.floorFor('construction', true), 'unaffected -- this is the room the starter rung reserves').toBe(
       -1_250,
     );
-    expect(fresh.floorFor('wages', true), 'unaffected -- the floor is the floor, fresh or not').toBe(-2_500);
+    expect(
+      fresh.floorFor('wages', true),
+      'ADR 0096 decision 2: shallower while fresh, anchored to the construction rung rather than the treasury floor',
+    ).toBe(-55);
 
     // And the flag is what moves it: the same treasury, the same balance,
     // asked without it, reads the mature rungs exactly as every test above
     // this describe already pins.
     expect(fresh.floorFor('deliveries', false)).toBe(-1_250);
     expect(fresh.floorFor('hiring', false)).toBe(-1_250);
+    expect(fresh.floorFor('wages', false), 'mature: still the sentinel that clamps to the overdraft floor').toBe(-2_500);
+  });
+
+  /**
+   * [ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+   * decision 2's own arithmetic, pinned the same way the deliveries starter
+   * rung's is above: written out rather than trusted as a name.
+   *
+   * **Anchored to `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`, not to
+   * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, and this is a correction this
+   * implementation made against its own first reading of the ADR** — see
+   * `STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS`'s own comment in `treasury.ts` for
+   * the real-kernel measurement that found the treasury-floor reading does
+   * not make a queued build order's materials affordable at all (a balance
+   * pinned at −1,305 is already below the −1,250 rung that purchase is judged
+   * against), and this repository's report for ADR 0096 for the same
+   * measurement repeated for both readings side by side.
+   */
+  it('the wages starter rung is the construction rung, shallower by the whole-earning-unit reserve (ADR 0096 decision 2)', () => {
+    expect(WAGES_STARTER_RESERVE_MINOR_UNITS, 'the measured candidate ADR 0096 names, #10a with the queue cancelled').toBe(
+      1_195,
+    );
+    const fresh = new Treasury(0);
+    fresh.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(fresh.floorFor('wages', true)).toBe(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS);
+    expect(fresh.floorFor('wages', true)).toBe(-55);
+    // And the whole reserve is exactly the room a queued order has left down
+    // to the construction rung, from the worst balance payroll alone can
+    // reach while fresh -- the inequality this rung exists to hold.
+    expect(fresh.floorFor('wages', true) - WAGES_STARTER_RESERVE_MINOR_UNITS).toBe(
+      INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
+    );
   });
 
   it('defaults to the mature rungs when the flag is omitted, on every class', () => {

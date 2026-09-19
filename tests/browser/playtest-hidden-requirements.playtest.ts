@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -15,7 +14,9 @@ import {
   panelText,
   runUntilTick,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -356,7 +357,7 @@ test.describe('playtest: what the game requires and never says', () => {
 
     // The player then tries the other tab, which is what #625 measured as
     // erasing the queue block.
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -421,7 +422,7 @@ test.describe('playtest: what the game requires and never says', () => {
     await page.getByRole('button', { name: 'New prison' }).click();
     await page.waitForTimeout(1500);
 
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await page.waitForTimeout(500);
     report(log, 'ACT 2a — the Security tab, before anything is hired', await hudDump(page));
     log(`.hud-staff verbatim: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
@@ -472,7 +473,7 @@ test.describe('playtest: what the game requires and never says', () => {
     // Now the other half of the question: what an unpayable bill looks like.
     // A guard is 80/day (`staff-role-catalog.ts:150`, wageBand.minPerDay), so
     // sixty guards bill 4,800/day against a treasury of roughly 20,000.
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const beforeMass = await latestCounts(page);
     log(`ACT 2e hiring 59 more guards. funds before: ${beforeMass?.treasuryMinorUnits}`);
     for (let index = 0; index < 59; index += 1) {
@@ -570,7 +571,7 @@ test.describe('playtest: what the game requires and never says', () => {
 
     let zoned = false;
     for (let attempt = 1; attempt <= 12 && !zoned; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -599,7 +600,7 @@ test.describe('playtest: what the game requires and never says', () => {
     const furnished = await latestCounts(page);
     log(`furnished: ${JSON.stringify(furnished)}`);
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await page.waitForTimeout(800);
     report(log, 'ACT 3a — one cell, one bed, nobody admitted', await hudDump(page));
     log(`.hud-intake verbatim: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
@@ -627,7 +628,7 @@ test.describe('playtest: what the game requires and never says', () => {
     report(log, `ACT 3d — a day later, tick ${await currentTick(page)}`, await hudDump(page));
     log(`counts a day later: ${JSON.stringify(await latestCounts(page))}`);
     log(`.hud-intake a day later: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     await page.waitForTimeout(600);
     log(`.hud-rooms a day later: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
     log(`ALERTS fold a day later: ${JSON.stringify(await alertsFold(page))}`);

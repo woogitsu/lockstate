@@ -58,13 +58,69 @@
 
 /* Every interactive island opts back in. */
 .hud-strip,
-.hud__corner > *,
 .hud__aside > *,
 .hud__side > *,
 .hud-tabs__inner {
   pointer-events: auto;
   /* The page sets `touch-action: none` for the world; HUD surfaces need
      normal touch behaviour so a control can be tapped and a list scrolled. */
+  touch-action: auto;
+}
+
+/*
+ * `.hud__corner` used to be in the list above as `.hud__corner > *`, and issue
+ * #1054 is why it no longer is.
+ *
+ * Every selector still above opts in a *whole panel* because each one is, at
+ * the panel's own root, a scroll container: `.ui-panel.hud-build`,
+ * `.ui-panel.hud-staff`, `.ui-panel.hud-rooms` and `.ui-panel.hud-regime` are
+ * each `overflow-y: auto` on the panel element itself (see that rule's own
+ * comment -- "the outer scroll container... this one is what catches whatever
+ * the catalogue's floor will not let it absorb"), and `.save-panel`
+ * (`src/styles.css`) is the same shape for the same reason ("a long prison
+ * list or a short window scrolls *here* instead of pushing the Build panel
+ * past the rail's edge"). A wheel turn or a touch drag over any pixel of one
+ * of those panels -- blank padding and the gaps between rows included -- has
+ * to reach the scrolling element itself, or the gesture falls through to
+ * whatever this file makes transparent underneath it: the world. So those
+ * four selectors stay opted in whole, on purpose. `.hud-tabs__inner` is
+ * `gap: 0` with every `.ui-tab` stretched to the bar's own height, so it has
+ * no blank interior to begin with and narrowing it would change nothing.
+ *
+ * `.hud__corner`'s two panels, `.hud-zoom` and `.hud-minimap`, are neither.
+ * Nothing in either one scrolls except `.hud-alerts__list`, opted in by name
+ * below, so opting the whole panel in bought nothing the four scroll panels
+ * buy and cost exactly what issue #1054 measured: a real press on
+ * `.hud-minimap`'s own `<h2>` title, with the removal tool armed, produced no
+ * command at all --
+ *
+ *     elementFromPoint -> H2.ui-panel__title (pointer-events: auto)
+ *     commands: []
+ *
+ * -- because the title carries no click handler in `hud.ts` and never will; a
+ * panel's name is not a button. The same was true of `.hud-zoom`'s own
+ * background around its legend. Both are opted OUT here by omission, and only
+ * their actual controls are opted back in below: the collapse toggle, the two
+ * zoom buttons, the surface issue #793 already wired, the alerts section's own
+ * fold header (itself a `<button>` per `createCollapsibleSection`, so its
+ * whole row is legitimately a control and not chrome) and the alerts list
+ * itself, which is the one scroll container `.hud__corner` actually holds.
+ *
+ * `tests/browser/hud-corner-chrome-passthrough.spec.ts` is the gate: one test
+ * presses the blank chrome this comment describes and asserts the world
+ * receives it, a second presses every real control in the corner and asserts
+ * none of them lost its press to this narrowing, and a third presses the foot
+ * of the alerts list and asserts the list, not the canvas, still receives it
+ * -- the two mirror-image checks, because an opt-in that overshot would be a
+ * worse defect than #1054's.
+ */
+.hud__corner .ui-panel__toggle,
+.hud__corner .hud-zoom__out,
+.hud__corner .hud-zoom__in,
+.hud__corner .hud-minimap__surface,
+.hud__corner .ui-section__header,
+.hud__corner .hud-alerts__list {
+  pointer-events: auto;
   touch-action: auto;
 }
 
@@ -261,6 +317,17 @@
   max-height: 100%;
   min-height: 0;
   box-sizing: border-box;
+  /*
+   * Exactly what the zoom island below costs this column, named once so the
+   * minimap square can give back exactly it (#1023).
+   *
+   * It is a sum of the island's own parts rather than a number: the tap
+   * target, its top and bottom hairlines, and the gap to the frame under it.
+   * `--tap-target` and `--space-2` both scale with `--ui-scale` and
+   * `--hairline` deliberately does not, so this tracks the island at every
+   * interface scale instead of being right at 100 % and wrong at 175 %.
+   */
+  --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
 }
 
 /* Both `min-height: 0`s are the shrink the block above depends on: a flex
@@ -268,6 +335,48 @@
    keep the square square and the corner too tall. */
 .hud-minimap { min-height: 0; }
 .hud-minimap__surface { min-height: 0; }
+
+/*
+ * The camera zoom pair, above the minimap frame (issue #1023).
+ *
+ * `flex: none` is the load-bearing declaration in this block, and it is the
+ * other half of the shrink the two lines above buy. The corner is a bounded
+ * flex column: whatever this row does not give up comes out of the minimap
+ * frame below it, which is exactly the direction that is wanted -- the square
+ * has a documented cap and a `min-height: 0` chain built to let it shrink,
+ * and a 44px tap target that shrank would stop being one. So the pair keeps
+ * its height and the frame absorbs it.
+ *
+ * `align-self: flex-start` so the row is only as wide as the two buttons and
+ * their legend, rather than stretching to the frame's 396px and putting a
+ * band of surface across the corner. Its own background and border make it
+ * read as an island rather than as part of the frame under it, which is what
+ * it is: the minimap panel can be collapsed and this cannot.
+ */
+.hud-zoom {
+  display: flex;
+  flex: none;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  /*
+   * No vertical padding, and that is arithmetic rather than taste: the row is
+   * exactly one tap target plus its two hairlines, which is what
+   * `--hud-zoom-block` above says it is and what the minimap square gives
+   * back. Padding here would put the two numbers a few pixels apart, and the
+   * corner would grow by the difference at the one viewport that cannot
+   * afford it.
+   */
+  padding: 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+/* The legend never shrinks and never wraps: it is one short word, and a
+   wrapped one would take the row past the tap targets beside it. */
+.hud-zoom__legend { flex: none; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
@@ -334,6 +443,37 @@
    * points back to.
    */
   max-width: calc(224px * var(--ui-scale));
+  /*
+   * AND SHORTER THAN IT IS WIDE BY EXACTLY THE ZOOM ISLAND, SINCE 2026-09-05
+   * (#1023). THE FRAME STOPS BEING SQUARE, ON PURPOSE.
+   *
+   * The corner is a bottom-anchored column with `max-height: 100%` of a grid
+   * row, so everything in it shares one bounded height -- and the block above
+   * this one records what that costs when the bound bites: the square shrinks
+   * *and so does the alerts list under it*, because both are flex children
+   * with `min-height: 0`. Measured on the `ui-harness` at 900x600, which is
+   * the viewport where the row is shortest: adding the zoom island took the
+   * corner's wanted height from 440px to 502px against 482.8px of row, and
+   * the alerts list went 76px -> 68px against a 76px alert row --
+   * `tests/browser/ui-alerts-column.spec.ts`'s *"a single alert never measures
+   * taller than the list box that holds it"*, red at exactly that viewport and
+   * green at the other four.
+   *
+   * **So the square gives the height back, rather than the list.** That is
+   * this file's own order of preference, stated one block up for a different
+   * pressure: *"the frame stops being square before it stops being on screen,
+   * which is the right way round for a placeholder whose whole content is one
+   * centred line of text"* -- and the minimap still draws nothing at all,
+   * while the alerts list is the only place on a desktop viewport an escape is
+   * reported. A `max-height` and not a smaller `max-width`, so the frame keeps
+   * the 224px footprint ADR 0085's discussion settled and loses only what the
+   * control above it takes: 224x224 becomes 224x170 at 100 %.
+   *
+   * The corner's wanted height is therefore exactly what it was before the
+   * island existed -- 440px at 100 % -- and the alerts list is back to 76px at
+   * all five viewports.
+   */
+  max-height: calc(224px * var(--ui-scale) - var(--hud-zoom-block));
   align-self: center;
   /* Square: the renderer will draw a square region of the world here. */
   aspect-ratio: 1 / 1;
@@ -351,6 +491,30 @@
    * it, which is the defect this file exists to fix).
    */
   cursor: pointer;
+  /*
+   * `hud.ts` builds this as a real `<button>`, not a `div`, since issue #903
+   * (a keyboard player could not reach a `div` at all). Every declaration
+   * above this point was already an explicit override of the UA button
+   * stylesheet -- `background`, `border`, `padding`, `box-sizing`,
+   * `text-align`, `width`/`max-width` all name their own value rather than
+   * inheriting one -- so becoming a `<button>` changed nothing about how this
+   * box paints except the three resets below, which is why the diff that
+   * added them is this short:
+   */
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
+
+/*
+ * The one visual change a real `<button>` needed: its own focus ring, on the
+ * same terms `.hud-build__category:focus-visible` already states for a select
+ * standing in for a HUD control -- keyboard only (`:focus-visible`, not
+ * `:focus`), so a pointer press or a touch tap never leaves a ring behind.
+ */
+.hud-minimap__surface:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* The placeholder says so in words. An empty dark square is indistinguishable
@@ -400,6 +564,37 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Spends the denser step `tokens.css` pins for this list (#1158, #739).
+     Load-bearing rather than tidy: nothing inside the list declares a
+     `font-size`, so without this the rows would inherit the 15px `body`
+     carries and the pin beside it would be inert. */
+  font-size: var(--text-size-body);
+}
+
+/*
+ * THE TWO STATES OF AN ALERTS SECTION WITH NO ROWS (issue #1184).
+ *
+ * `display: flex` above beats the `hidden` attribute's own `display: none`, so
+ * the list needs this line to be able to come off at all -- the same pairing
+ * `.hud-overview__figures[hidden]` carries one panel down, and for the same
+ * reason: the sentinel sentence and the list it replaces must never be on
+ * screen together.
+ */
+.hud-alerts__list[hidden] { display: none; }
+
+/* The sentinel sentence itself. An eyebrow's default single-line uppercase
+   treatment would clip it, so it wraps and keeps its case -- copied from
+   `.hud-overview__none`, which paints the same sentence in the same state and
+   had the same problem. `padding` rather than none, because this box replaces a
+   list whose rows carry their own and a sentence flush against the fold header
+   reads as part of it. */
+.hud-alerts__none:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: var(--space-2);
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -600,7 +795,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is
@@ -651,7 +874,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is
@@ -701,7 +952,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is
@@ -871,6 +1150,13 @@
  * injected as a control the Build panel fits perfectly and the save panel
  * becomes a 41.1px box over 240px of content. The `max-height: 700px` block at
  * the foot of this file is where that viewport is paid for instead (#174).
+ *
+ * **A SHARE STOPS BEING A FLOOR ONCE THE RAIL IS SHORT, AND BELOW 720px THIS
+ * LINE IS RAISED FOR THAT REASON (#1312).** A quarter of a 214px rail is 54px
+ * and the two things this slot holds need 88 of them, so under a page zoom the
+ * slot was drawing over the panel below it. The raise, its derivation and why
+ * it is scoped to that tier rather than written here are at `.hud__aside` in
+ * the `max-width: 720px` block at the foot of this file.
  */
 .hud__aside {
   display: flex;
@@ -969,6 +1255,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
+  /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
+     bearing rather than tidy: nothing inside the panel declares a
+     `font-size`, so without this the arm label and the queue rows would
+     inherit the 15px `body` carries and the pin beside it would be inert --
+     which is measurably three red assertions at 1280x720. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -1261,6 +1553,15 @@
   overflow-y: auto;
 }
 
+/* Keep the current building or room choice visible across the whole row,
+   using the same selected-state tokens as tabs and choice buttons. The badge
+   and aria-checked remain the non-colour carriers; no row geometry changes. */
+.hud-build__list > .ui-row[aria-checked='true'],
+.hud-rooms__rows > .ui-row[aria-checked='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* ------------------------------------------------------------------ */
 /* Staff panel (ADR 0025)                                              */
 /* ------------------------------------------------------------------ */
@@ -1513,6 +1814,22 @@
  * widest state of this row is the arrival one -- arm plus remove plus buy.
  * Measured on the assembled page at all five viewports the browser suite
  * visits; `tests/browser/app-shell.spec.ts` holds the assertions.
+ *
+ * **AMENDED 2026-09-04 (issue #926), and the paragraph above is left as it
+ * stands because it is the claim that was wrong.** Every measurement in it is
+ * real and the declarations below are still the right ones -- but "the label
+ * that shortens under pressure" is an intent this file never implemented.
+ * `min-width: 0` shortens the *box*; nothing shortened the *label*, which is
+ * `white-space: nowrap` in `primitives.css` with no `overflow` above it. So
+ * the third button did fit, and the arm label paid for it by painting 17.8px
+ * outside its own button and 9.8px over `Remove` at every viewport 900px wide
+ * or wider. **The row's overflow was not removed by these two declarations, it
+ * was moved into the label** -- where `BuildProbe.actionsOverflowPx`, which
+ * reads the button's own box, reported -12px throughout.
+ *
+ * What implements the intent is `.ui-action__label`'s wrap in
+ * `primitives.css` (which carries the full measurement) plus the padding rule
+ * below, which is what keeps the wrap free. Nothing here changed.
  */
 .hud-build__actions > .hud-build__arm {
   flex: 1 1 auto;
@@ -1522,6 +1839,59 @@
 .hud-build__actions > .hud-build__remove,
 .hud-build__actions > .hud-build__buy-toggle {
   flex: 0 0 auto;
+}
+
+/*
+ * THE HORIZONTAL ROOM THE WRAPPED ARM LABEL LANDS IN, FOR BOTH ROWS THAT HAVE
+ * ONE (issue #926).
+ *
+ * `.ui-action`'s own padding is `0 var(--space-4)`. In a row that is already
+ * over-subscribed that padding buys nothing: measured on the assembled page
+ * at the rail's 238px of block width, the three controls want
+ * 145.9 + 86.8 + 58.9 plus two 8px gaps -- **307.6px of a 238px row**, a
+ * deficit of 69.6px -- and the arm button, as the only member allowed to
+ * shrink, absorbed all of it and came out 76.4px wide with an 87.9px label.
+ * Halving the padding on the row's members returns 48px of that: the arm
+ * button becomes 108.4px, its label gets 66.4px, and "Place on map" lands on
+ * two 15px lines inside the 44px tap target instead of three.
+ *
+ * **The height is the point, and this rule is load-bearing for it.**
+ * `.hud-build__actions` is `align-items: stretch`, so the row is as tall as
+ * its tallest member and everything below it moves when that grows. Measured
+ * at all five viewports in the arrival, armed and removing states: both rows
+ * are **44px with this rule**. Deleting it while leaving
+ * `primitives.css`'s label rule in place -- measured, as the mutation that
+ * proves this rule is guarded -- takes the arm button to **92px tall at
+ * 1280x720 in the arrival state**, because `min-width: 0` on the label then
+ * lets the span shrink to the 18.4px the padding leaves it and
+ * `overflow-wrap: break-word` breaks the words to fit that. So the label stops
+ * painting outside its button either way, and without this rule it does so by
+ * turning a 44px row into a 92px one.
+ *
+ * (An earlier reading of this said "47px without it". That figure is real but
+ * it belongs to a different tree: it was measured with `white-space: normal`
+ * alone, before `min-width: 0` and `overflow-wrap: break-word` joined it, and
+ * it is kept in `primitives.css`'s block where it is true. Corrected here
+ * rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)
+ *
+ * So this rule is not what fixes #926 -- `primitives.css`'s
+ * `.ui-action__label` is -- it is what makes that fix cost the panel's height
+ * budget nothing, which for the most height-constrained surface in the game
+ * (#174, #143, ADR 0022, ADR 0028) is the difference between a fix and a
+ * trade.
+ *
+ * Both rows, in one rule, because they are one pattern: `.hud-rooms__actions`
+ * is where `min-width: 0` above was copied from, and the sweep that found the
+ * Build panel's 17.8px overrun found 6.3px on `.hud-rooms__arm` in the same
+ * pass. A rule that fixed only the row the issue was filed about would leave
+ * the other to be found again.
+ *
+ * The tap target is untouched: `min-height: var(--tap-target)` is vertical,
+ * and every button in both rows still measures 44px tall at every viewport.
+ */
+.hud-build__actions > .ui-action,
+.hud-rooms__actions > .ui-action {
+  padding: 0 var(--space-2);
 }
 
 /*
@@ -1551,7 +1921,40 @@
   gap: var(--hud-build-map-gutter);
 }
 
-.hud-build__buy > .ui-action { width: 100%; }
+/*
+ * Buy and Sell, side by side inside one row (ADR 0075 decision 3, invoked by
+ * ADR 0096 decision 3(b)) -- `.hud-build__actions`'s own pattern (two
+ * buttons, `flex: 1 1 0`, `min-width: 0` so a long label can still shrink),
+ * reused here rather than invented.
+ *
+ * **This replaces `.hud-build__buy > .ui-action { width: 100%; }`, which
+ * this row makes dead rather than merely unused.** That rule sized the Buy
+ * button alone to the row's full width; `quantityField.element` is
+ * `.ui-number`, never `.ui-action`, so nothing else in this column ever
+ * matched it. Buy now lives inside `.hud-build__buy-sell` instead of
+ * directly under `.hud-build__buy`, so the old selector matches nothing at
+ * all -- removed rather than left beside a rule with an empty match, which
+ * is exactly the kind of declaration a later reader would waste time
+ * explaining.
+ *
+ * **Why a row rather than a second stacked button, measured rather than
+ * assumed.** A second full-height row here is a second full-height row
+ * `deliveriesBlock` -- a *sibling* of `.hud-build__buy`, not a child of it --
+ * gets pushed down by, and `tests/browser/app-shell.spec.ts`'s "a pending
+ * delivery is on the panel with the fold shut … (#285, #703)" measures that
+ * block's third delivery row's Cancel control against `.hud-build`'s visible
+ * box at 900x600. Stacking Sell under Buy pushed it below that box; this
+ * layout, taking the same height Buy alone always took, does not.
+ */
+.hud-build__buy-sell {
+  display: flex;
+  gap: var(--hud-build-map-gutter);
+}
+
+.hud-build__buy-sell > .ui-action {
+  flex: 1 1 0;
+  min-width: 0;
+}
 
 /*
  * Armed is a state, not a moment: the control has to keep saying so while the
@@ -1629,6 +2032,49 @@
   display: flex;
   flex-direction: column;
   gap: var(--hud-build-map-gutter);
+  /*
+   * The list is the scroll region and its box is three rows tall, which is the
+   * whole of what let `BUILD_QUEUE_ROW_LIMIT` stop being three (#862).
+   *
+   * **The number is last change's measurement, not a new one.** Measured in the
+   * UI harness at all six viewports the browser suite visits, with the fold
+   * opened over a three-row window: the list box was **148px** at 1440x900,
+   * 1280x800, 1280x720, 1024x768 and 375x812, and **140px** at 900x600 -- which
+   * is `--tap-target` three times plus this gutter twice, and 140 rather than
+   * 148 there only because the `max-height: 700px` block at the foot of this
+   * file halves the gutter. So this `max-height` reproduces the height the
+   * opened block already had, to the pixel, at every one of them: what the
+   * queue costs this panel is unchanged by the pool behind it, and the rows
+   * past the third are reached by scrolling this box rather than by not
+   * existing at all.
+   *
+   * That matters because the queue's height is the one thing in this panel that
+   * was never affordable. `.hud-build[data-queued]` below buys the collapsed
+   * 45px header out of the catalogue's floor and there is nothing left to buy a
+   * second time, so a list that grew with the queue would put rows below the
+   * panel's fold -- which is exactly what #174, #220 and #625 each cost, and
+   * what a list of fourteen 44px rows in a 465px panel would have re-bought.
+   *
+   * `flex: 0 0 auto` rather than the `0 1 auto` the catalogue's list carries,
+   * and the difference is deliberate. `overflow-y: auto` sets a flex item's
+   * automatic minimum size to zero, so a shrinkable list under a panel holding
+   * more content than box has no floor of its own and can be squeezed to a
+   * sliver -- and this list is *always* over-full once the queue passes three,
+   * so that pressure is the normal state here rather than the exceptional one.
+   * The catalogue can afford `0 1 auto` because it carries an explicit
+   * `min-height` floor (`--hud-build-catalogue-floor`); refusing to shrink at
+   * all reaches the same guarantee here without a second floor to keep in step
+   * with this ceiling.
+   *
+   * `overflow-y` is the whole of what makes the rows past the box reachable, and
+   * it is the same mechanism `.hud-build__list` uses for the catalogue one
+   * section up in this same panel -- where `tests/browser/app-shell.spec.ts`
+   * asserts the list is *scrollable* in the arrival state for exactly this
+   * reason: rows a player cannot reach are what a donation costs (#174).
+   */
+  flex: 0 0 auto;
+  max-height: calc(var(--tap-target) * 3 + var(--hud-build-map-gutter) * 2);
+  overflow-y: auto;
 }
 
 /*
@@ -1739,6 +2185,111 @@
  */
 .hud-build[data-queued] { --hud-build-catalogue-floor: var(--tap-target); }
 
+/*
+ * What the queued-order sentence costs, and the line it takes it from (#920).
+ *
+ * `.hud-build__order-note` is laid out only while something is queued, and it
+ * goes in `.hud-build__map` under the arm hint -- the one home a player can
+ * read it from without scrolling. **And in the queued state this panel has no
+ * spare height at all, at any viewport.** Three separate pinned assertions say
+ * so, and each one caught a version of this change that had not paid for
+ * itself:
+ *
+ *   - `tests/browser/build-deliveries-outside-the-fold.spec.ts` -- the owner's
+ *     ruling of 2026-08-31 (#703 ruling 2): the spend line and the **first
+ *     refund** are on screen with nothing opened and nothing scrolled. In the
+ *     loaded state the deliveries block sits right against the panel's fold, so
+ *     an unpaid note pushed the refund's Cancel out: y=607..651 against a fold
+ *     at 637.6 at 1280x720, y=478.6..522.6 against 521.7 at 900x600.
+ *   - `app-shell.spec.ts`'s #88 sweep -- the body's spill must be *this* block
+ *     and not some other box quietly clipping: `bodyShortfall` within one
+ *     gutter of the deliveries block's own height. An unpaid note read 242px
+ *     against a 235px bound at 1280x720.
+ *   - `app-shell.spec.ts`'s #390 filter test -- `panelOverflow === 0` with a
+ *     queue and **no** pending delivery, which is a state the game reaches once
+ *     the lorries have landed and the orders have not been built. An unpaid
+ *     note read 7px there.
+ *
+ * So the requirement is not "small". It is **net zero**: the sentence has to
+ * cost the queued panel nothing at all, or one of those three fails and is
+ * right to.
+ *
+ * ### Where the height comes from
+ *
+ * The arm hint's third and fourth lines. That hint is three sentences: two
+ * about the gesture, then *"Two fingers, the middle button or the arrow keys
+ * still move the camera."* At the rail's 238px it is four lines -- measured,
+ * `scrollHeight` 53 against a 13.2px `line-height` -- and at 375px's 333px it
+ * is three. Clamping it to two frees 26.4px at the rail and 13.2px on the
+ * phone; the note costs exactly 26.4px and 13.2px there, plus one map-block
+ * gutter that the negative margin below cancels. **The arithmetic is exact
+ * rather than approximate**, which is why the measurement below reads
+ * *identical* and not *within tolerance*.
+ *
+ * Two rather than three, and this is the cost to state plainly: three lines
+ * would keep both gesture sentences of both hints intact -- 62 characters of
+ * the wall hint and 73 of `hud.build.arm-hint-object`, against about 34 per
+ * line -- but it frees only 13.2px, and 13.2px is what the #88 and #390
+ * assertions above went red on. At two lines the wall hint keeps both gesture
+ * sentences and loses the camera one; the object hint loses *"one object"* from
+ * *"One press, one object"* (#904's clause), reading *"One press, o…"*. That is
+ * a hint's clarifying clause against the sentence that is the exit from the
+ * game's one measured dead end, and only while a queue exists.
+ *
+ * Scoped to `.hud-build[data-queued]`, so nothing about the arrival state
+ * moves. Scoped above 700px tall, because the block at the foot of this file
+ * already clamps every `.hud-build__note` to one line below that and a
+ * `-webkit-line-clamp: 2` here would *loosen* it -- measured, that put the
+ * panel 39px over instead of 26px and pushed the first refund out again. 701 is
+ * the same paired boundary `.hud-build__list`'s own note cites.
+ *
+ * The text is untouched: `-webkit-line-clamp` clips the box, the full sentence
+ * stays in the DOM for a screen reader, and the ellipsis is the signal that
+ * there is more. That is the same trade the `max-height: 700px` block already
+ * makes for this hint, and it is a *hint's* tail rather than the readout a
+ * player is looking for.
+ *
+ * ### What it comes to
+ *
+ * Assembled page, six orders queued and six deliveries pending, nothing opened,
+ * nothing scrolled. `.hud-build`'s `scrollHeight - clientHeight`, and the first
+ * refund's Cancel against the panel's fold, without the sentence and with it:
+ *
+ * | viewport | overflow | first refund | fold |
+ * | --- | --- | --- | --- |
+ * | 1920x1080 | 0 -> 0 | ..740.3 -> ..740.3 | 997.6 |
+ * | 1440x900 | 94 -> 94 | ..661.6 -> ..661.6 | 817.6 |
+ * | 1280x800 | 169 -> 169 | ..636.6 -> ..636.6 | 717.6 |
+ * | 1024x768 | 193 -> 193 | ..628.6 -> ..628.6 | 685.6 |
+ * | 375x812 | 158 -> 158 | ..639.7 -> ..639.7 | 717.8 |
+ * | 1280x720 | 229 -> 229 | ..616.6 -> ..616.6 | 637.6 |
+ *
+ * Every measured box identical, with the sentence added inside the fold. That
+ * is what "net zero" bought and it is the whole argument for taking the height
+ * from a line rather than from nowhere.
+ *
+ * **900x600 is not in that table, and it is the honest gap in this fix.** See
+ * `.hud-build__order-note` in the `max-height: 700px` block at the foot of this
+ * file for why the sentence is not shown there at all.
+ */
+@media (min-height: 701px) {
+  .hud-build[data-queued] .hud-build__arm-hint {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
+/* The clamped hint and the sentence under it are one paragraph now, so the
+   gutter between them is decorative -- and it is also 8px this block does not
+   have. Cancelling it is the difference between the arithmetic above coming to
+   zero and coming to 8px, which is what the #390 assertion went red on. The
+   token, not a literal: the map block's gap and this margin have to move
+   together or that block's own comment about summing one token four times stops
+   being true. */
+.hud-build__order-note { margin-top: calc(-1 * var(--hud-build-map-gutter)); }
+
 /* `[hidden]` on the "and N more" line has to win, and it does not win on its
    own: that line also carries `.hud-build__note`, which the `max-height: 700px`
    block at the foot of this file gives `display: -webkit-box` in order to clamp
@@ -1755,6 +2306,28 @@
    empty line under the queue at every short viewport, which is the height this
    panel has least of. */
 .hud-build__queue-shortfall[hidden] { display: none; }
+
+/*
+ * And once more, for the sentence that says a queue waits on the clock
+ * (`hud.build.note`, #920 and the owner's first ruling of 2026-08-30 in #639).
+ *
+ * Same trap, same shape: `.hud-build__note` takes an author
+ * `display: -webkit-box` from the `max-height: 700px` block at the foot of this
+ * file in order to clamp the arm hint, and an author `display` beats the user
+ * agent's `[hidden] { display: none }`. A class and an attribute beats one
+ * class, which is what makes one rule enough.
+ *
+ * It does **not** have to beat that block's own `.hud-build__order-note
+ * { display: none }`, and does not try to: below 701px tall the sentence is not
+ * shown in any state, so the two rules agree there rather than compete.
+ *
+ * It is hidden in the arrival state, which is every state a player loads the
+ * game into, and that is exactly the state this panel has no height for: an
+ * always-laid-out line measured 27px of panel overflow at 1280x720 and 9px at
+ * 900x600 against 0 without it. See `orderNote` in `build-panel.ts` for the
+ * whole table and for what replaced PR #647's.
+ */
+.hud-build__order-note[hidden] { display: none; }
 
 /* The same trap once more, for the line that says what stops a Buy press (the
    owner's sentence of 2026-09-03, `hud.build.buy-shortfall`). It is hidden in
@@ -1934,10 +2507,105 @@
  * wraps like `.hud-build__note` does, because an eyebrow's default
  * single-line uppercase treatment would clip a sentence.
  */
-.hud-intake {
+/*
+ * The Overview section's readout (issue #1183).
+ *
+ * Three rules, and all three are borrowed rather than invented, for the reason
+ * `.hud-intake` below states: it is the same rail panel, in the same column,
+ * at the same fixed width, and a readout of three label/value pairs needs no
+ * geometry of its own beyond a row.
+ *
+ * The row is `space-between` rather than a grid, because the label is
+ * translated and the value is a number whose width grows with the treasury --
+ * `hud.css` already records `FUNDS` growing 85.8px -> 110.2px on a seven-figure
+ * balance in the status strip -- so a fixed label column would either clip a
+ * long label or strand a short one. `flex-wrap` lets the value drop under its
+ * own label rather than overflow the panel, which is what a nine-character
+ * locale label plus a seven-figure number does at the rail's narrowest.
+ */
+.ui-panel.hud-overview {
   width: var(--hud-rail-panel-width);
   max-width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
+.hud-overview__figures[hidden] { display: none; }
+
+/*
+ * The host's box at the foot of the panel (`OverviewPanel.foldSlot`, #1201).
+ *
+ * `:empty` is what makes it free above 720 px: the alerts fold is in
+ * `.hud__corner` there and this box has no child, so it has no box either and
+ * the panel is byte-for-byte the panel it was. The same shape `.hud__aside:empty`
+ * already carries one file up, for the same reason.
+ */
+.hud-overview__fold:empty { display: none; }
+
+.hud-overview__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Tabular figures, because three money rows read as a column and a
+   proportional font makes them ragged -- the treatment
+   `.hud-intake__pipeline-count` already takes for the same reason. */
+.hud-overview__value { font-variant-numeric: tabular-nums; }
+
+/* The sentinel sentence. An eyebrow's default single-line uppercase treatment
+   would clip it, so it wraps and keeps its case, exactly as
+   `.hud-intake__note` does one panel down. */
+.hud-overview__none:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+ * **`flex: 0 0 auto` and the two-class selector arrived on 2026-09-14, and the
+ * 42px that bought them is the whole reason.**
+ *
+ * This panel was alone in `.hud__side` for its tab from #261 until then, so
+ * whatever the rail had, it had. The owner's ruling of that day put the
+ * admission control on the Manage tab beside the Staff panel, and two panels in
+ * one bottom-anchored flex column share a height that used to be one panel's:
+ * measured immediately after the move, at 900x600, with the fullest readout
+ * this panel can draw, `.hud-intake` came out **42px shorter than its own
+ * content** -- which is `tests/browser/ui-shell.spec.ts`'s
+ * "is a line the panel can afford at every viewport" failing on exactly the
+ * overflow ADR 0022 refused. 1280x720 and 375x812 were unaffected.
+ *
+ * **The remedy is not the `overflow-y: auto` the four panels beside it use, and
+ * that was tried first and measured.** Scrolling makes a panel responsible for
+ * its own excess, which is the right answer for a panel whose height grows with
+ * a catalogue or a roster; it does not make the content fit, and the 42px was
+ * unchanged by it, because what the assertion states is that this panel never
+ * has to scroll at all. A player pressing Admit must not have to scroll to read
+ * how many people have nowhere to sleep.
+ *
+ * What fits instead is a decision about *which* of the two panels on the Manage
+ * tab gives way, and the answer is not this one. This panel's height is bounded
+ * by `INTAKE_STAGES` -- six stages, two terminal, so four lines plus a warning,
+ * and it cannot grow past that however big the prison gets. The Staff panel's
+ * grows with the roster, is already `overflow-y: auto`, and already carries a
+ * two-row floor under the list it scrolls. So this one keeps its natural height
+ * and the one built to absorb a squeeze absorbs it.
+ *
+ * Written `.ui-panel.hud-intake` for `.ui-panel.hud-staff`'s reason -- the
+ * bare class ties `.ui-panel`'s own rules on specificity and leaves the winner
+ * to the order `styles.css` happens to import the two files in (issue #143).
+ */
+.ui-panel.hud-intake {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
 }
 
 .hud-intake__actions {
@@ -2056,6 +2724,151 @@
      `tests/browser/app-shell.spec.ts` asserts. */
   box-sizing: border-box;
   overflow-x: hidden;
+  background: var(--surface-raised);
+  /*
+   * **`flex: 0 0 auto` where this rule said `overflow-y: auto` until ADR 0115's
+   * split, and the swap is the whole point of the split.**
+   *
+   * The paragraph above described one panel holding the timetable *and* the
+   * roster, and it gave the right reason for the wrong panel: "this panel's
+   * height grows with the population" was true of the roster half only. Now
+   * that the roster is `.ui-panel.hud-roster` below, what is left here is
+   * bounded by the classification-group catalogue -- two rows today, and a
+   * closed vocabulary rather than a prison -- so this is the panel that keeps
+   * its natural height and the one below is the panel that absorbs a short
+   * rail.
+   *
+   * That is the division `.ui-panel.hud-intake` and `.ui-panel.hud-staff`
+   * already record for the pair on the Manage tab, taken for the same measured
+   * reason: two panels in one bottom-anchored flex column share a height that
+   * used to be one panel's, and *which of them gives way* is a decision rather
+   * than a default.
+   *
+   * **What that is worth today is nothing, and the measurement says so.** One
+   * panel *could* have carried the timetable out of view while a player
+   * scrolled for the last roster row -- but it never had to: measured on
+   * `a3a9e7f3` with the browser suite's own full-roster fixture and a prisoner
+   * selected, the single panel's `scrollHeight - clientHeight` was **0 at all
+   * five viewports** that suite visits (456.8px of box at 375x812, 487.1px at
+   * the other four), so there was no scroll for the timetable to be carried by.
+   * What this rule buys is therefore a *property* rather than a repair: the
+   * timetable cannot be scrolled away by a roster that grows, whatever a later
+   * `PRISONER_ROSTER_ROW_LIMIT` or a taller inspector does to the panel below.
+   * `tests/browser/ui-roster-panel-split.spec.ts` is what holds it.
+   */
+  flex: 0 0 auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Prisoners panel (Plan dnia tab, ADR 0115)                           */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The other half of what was one panel until the owner's ruling of 2026-09-16:
+ * the roster and the inspector under it, on the same tab as the timetable
+ * above and laid out with it.
+ *
+ * Written `.ui-panel.hud-roster` rather than `.hud-roster` for the reason
+ * `.ui-panel.hud-staff` and `.ui-panel.hud-build` are: `.ui-panel` sets
+ * `overflow: hidden` and this overrides it on one axis, and two single-class
+ * selectors would leave the winner to the order `styles.css` happens to import
+ * the two files in (issue #143).
+ *
+ * `overflow-y: auto` because this is the panel whose height grows with the
+ * *population* -- `PRISONER_ROSTER_ROW_LIMIT` bounds the rows, so it grows to a
+ * ceiling and stops -- and whatever the rail cannot give it is its own to
+ * scroll rather than the rail's to hang off its edge.
+ *
+ * **What the second panel costs, measured rather than estimated**, with the
+ * browser suite's `ROSTER` fixture, `TIMETABLE` and a prisoner selected -- the
+ * fullest state this tab can draw. One panel read on `a3a9e7f3`, two on this
+ * tree, same fixtures, same command:
+ *
+ * | viewport | one panel | two panels | content grew by | arrival scroll, before -> after |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 1280x720 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 1024x768 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 375x812 | 456.8 | 156.6 + 347.4 = 504.0 | 63.3 | 0 -> **16** |
+ * | 900x600 | 487.1 | 169.8 + 333.6 = 503.3 | 63.0 | 0 -> **46** |
+ *
+ * All in CSS px. The 63px is this panel's header, its border pair and the
+ * column gap -- chrome rather than content, and it is what a second panel
+ * costs anywhere in this rail.
+ *
+ * **Two of the five now scroll on arrival where nothing did before, and that
+ * is a cost rather than the affordance this rule's `overflow-y` describes.**
+ * At 375x812 and 900x600 the rail cannot afford the extra header, so 16px and
+ * 46px of this panel's content sit below its fold and `revealDetail` scrolls
+ * to the inspector rather than finding it already in view (`scrollTop` 8 and
+ * 38 respectively). Nothing is unreachable -- every row, the "and N more"
+ * line and all six need lines are laid out and scrollable, which is stage
+ * 5's exit criterion and what `ui-shell.spec.ts`'s two fold assertions
+ * measure -- and the arrival state *without* a prisoner selected still
+ * overflows by 0 at every viewport, which is the state those assertions pin.
+ *
+ * The honest summary is in `roster-panel.ts`'s header: the split buys an
+ * independent collapse, an independent height budget and a one-line mount,
+ * and it does not today buy an independent scroll, because the one panel it
+ * replaced never scrolled.
+ *
+ * **EVERY FIGURE IN THE TABLE ABOVE WAS TAKEN BEFORE #1273, AND EVERY ROW OF
+ * IT NOW READS LOW. The table is kept rather than rewritten**, per
+ * `docs/AGENT_WORKFLOW.md` SS4's rule about marking both directions: it is
+ * what the split cost *on its own*, which is the number the owner's ruling was
+ * priced against, and separating it from what the two changes cost *together*
+ * is the whole reason both are here.
+ *
+ * ADR 0113 slice 1's regime editor (#1167, #1273) hangs a collapsed
+ * `.ui-section` inside `.hud-regime__blocks`, and `regime-panel.ts` priced it
+ * at *"one 44px header"* with the arrival height *"unchanged"*. Re-measured
+ * with the two changes composed, same fixtures and same command as the table
+ * above, all five viewports:
+ *
+ * | viewport | timetable | roster | pair | roster overflow |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 219 | 380 | 599 | 0 |
+ * | 1280x720 | 219 | 380 | 599 | 0 |
+ * | 1024x768 | 219 | 380 | 599 | 0 |
+ * | 900x600 | 219 | 285 | 504 | 95 |
+ * | 375x812 | 206 | 298 | 504 | 65 |
+ *
+ * **The collapsed editor is a flat +49px on `.ui-panel.hud-regime` at every
+ * one of the five**, not 44 and not nothing: the 44px header plus the column
+ * gap above it. So *"the arrival height is unchanged"* is false of the rail,
+ * and the correction is in `regime-panel.ts` beside the sentence that says it.
+ *
+ * **Which column of the table above that falsifies, stated exactly.** Both
+ * per-panel heights move at **all five** viewports. The `two panels` total
+ * moves at **three** -- 550.1 -> 599 -- and holds at the other two, because
+ * there the rail is the binding constraint rather than the content. The
+ * `arrival scroll` column moves at **two**, 16 -> 65 and 46 -> 95. Only the
+ * `one panel` column, which is history, is untouched.
+ *
+ * **What the two short viewports then do is this rule working exactly as it
+ * was built to.** At 1024x768 and above the rail can afford the 49px and the
+ * pair grows 550 -> 599. At 900x600 and 375x812 it cannot, the pair stays at
+ * 504, and **this panel pays the whole 49** -- 333.6 -> 285 and 347.4 -> 298 --
+ * because `.ui-panel.hud-regime` is `flex: 0 0 auto` and this rule is
+ * `overflow-y: auto`. Its arrival overflow goes 46 -> 95 and 16 -> 65 by the
+ * same 49. On `main` before the split, one panel would have absorbed it into
+ * a single scroll box
+ * and carried the timetable with it; here the timetable does not move, which
+ * is the property `ui-roster-panel-split.spec.ts` pins and the first occasion
+ * this repository has had to observe it rather than assert it. **The split's
+ * buy stopped being hypothetical the day the editor landed on the other half.**
+ *
+ * Nothing became unreachable: all four roster rows, the "and N more" line and
+ * all six need lines are laid out and scrollable at all five, and the
+ * six-viewport run of that spec is green.
+ */
+.ui-panel.hud-roster {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, for `.ui-panel.hud-regime`'s stated reason: the rail's
+     one-width invariant. */
+  box-sizing: border-box;
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
 }
@@ -2097,6 +2910,118 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+/* The regime editor (#1167). It has no box of its own: `.ui-section` already
+   draws the header row and the fold, and a second border here would put a line
+   inside the block the rule above already closed with one.
+
+   `display: none` on `[hidden]` is belt and braces rather than a fix for a
+   measured defect: `.ui-section` sets no author `display` today, so the user
+   agent's own `[hidden]` rule already wins, and this keeps that true if one is
+   ever added -- which is exactly what `.hud-regime__blocks` one rule up had to
+   be repaired for. The editor is hidden whenever nothing can receive the
+   command. */
+.hud-regime__editor[hidden] { display: none; }
+
+/*
+ * **The editor's own height ceiling, and it exists because the ADR 0115 split
+ * composed with #1273 into an unreachability that neither branch's specs saw.**
+ *
+ * `.ui-panel.hud-regime` above is `flex: 0 0 auto`, and the reason that rule
+ * gives is that this panel *"is bounded by the classification-group catalogue
+ * rather than by the population"*. **#1273's regime editor broke that
+ * premise.** Expanded, it is seven toggles per classification group, wrapping,
+ * so the panel's height became a function of two growing vocabularies -- and a
+ * `flex: 0 0 auto` panel that outgrows its rail does not scroll, it takes the
+ * height from the panel below it.
+ *
+ * **The panel below it is `.ui-panel.hud-roster`, and what it loses first is
+ * its own header.** It is `flex: 0 1 auto` with `overflow-y: auto`, so its
+ * automatic minimum size is 0 and nothing stops the rail squeezing it below
+ * the 44px `.ui-panel__header` that carries its only Collapse control. The
+ * header is then taller than the box it sits in, its lower half is clipped by
+ * the panel's own scrollport, and `app-shell.spec.ts`'s #88 sweep -- which
+ * hit-tests five points across every control and scrolls only the boxes a
+ * player could have scrolled -- reports the Collapse as covered by the
+ * *timetable panel's* body, because the sample point 80 % of the way down a
+ * 44px button in a 28px box lands above the roster panel entirely.
+ *
+ * **Measured inside `app-shell.spec.ts`'s own state, not the UI harness's**,
+ * which is the correction that took this rule from two viewports to five: the
+ * first `max-height` here was 200px, derived through
+ * `ui-roster-panel-split.spec.ts`'s fixtures, where the rail is a different
+ * length and the rule did everything it claimed. A bound derived from a
+ * fixture is a bound derived from the wrong page -- this repository's own "a
+ * prefix is not a sample of a suite", one level up. Editor open, on the
+ * assembled page, with 200px standing:
+ *
+ * | viewport | rail content | regime panel | roster's client box | header fits |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 547.4 | 417.6 | 116 | yes |
+ * | 1024x768 | 483.5 | 417.6 | 64 | yes |
+ * | 1280x720 | 447.5 | 417.6 | **28** | **no** |
+ * | 375x812 | 447.7 | 417.6 | **28** | **no** |
+ * | 900x600 | 365.5 | 417.6 | **0** | **no, and 46px of it below the fold** |
+ *
+ * The rail's whole budget is the last column's problem: the roster needs its
+ * 44px header plus its two hairlines, so the timetable panel may have at most
+ * `rail - 46`, which is 401.5 at the tightest desktop viewport and **319.5 at
+ * 900x600**. This list is the only block in the panel that can give that back.
+ * Everything else here is a row of text or a tap target.
+ *
+ * **Three tap targets, and one at short viewports, rather than a round
+ * number.** The panel without this list is 213.6px, so a ceiling of C lays the
+ * panel out at `C + 217.6` (the extra 4 is this rule's own `padding-top`).
+ * `3 * --tap-target` puts it at 349.6 and leaves the roster 96px, 116px and
+ * 96px of client box at 1280x720, 1024x768 and 375x812 against the 44 it
+ * needs; `--tap-target` alone under `@media (max-height: 700px)` puts it at
+ * 261.6 at 900x600 and leaves the roster 102px, which is the whole of its
+ * natural height there. **The tightest margin of the five is 51px**, more than
+ * a further timetable row, which is the growth this bound has to survive.
+ *
+ * `overflow-y: auto` and not `hidden`, because the difference is the whole
+ * point: #88's sweep moves only the boxes whose own `overflow` says a player
+ * could have moved them, so a clipped toggle stays unreachable and a scrolled
+ * one does not.
+ *
+ * **A ceiling and not a shrink chain, and that is a measurement rather than a
+ * preference.** The alternative -- `.ui-panel.hud-regime` at `flex: 0 1 auto`
+ * with this list absorbing the shrink as `flex: 1 1 auto; min-height: 0` --
+ * was built and measured on this page, and it does reach all five viewports
+ * with the timetable's own overflow still 0. It was rejected on what its floor
+ * costs:
+ *
+ * - `min-height: 0` on the panel is the only floor that lets the shrink
+ *   through, and it is a licence to clip the timetable. `.ui-panel` is
+ *   `overflow: hidden`, so the panel's automatic minimum size is already 0 and
+ *   the content only keeps up while there is a list to absorb. With the editor
+ *   **collapsed** there is none, and the collapsed panel plus the roster's
+ *   natural height is 361.6 against 365.5 of rail at 900x600 -- 3.9px from
+ *   clipping the timetable, which is the one property ADR 0115's split exists
+ *   to guarantee and `ui-roster-panel-split.spec.ts` pins at 0.
+ * - `min-height: min-content` is the floor that would be safe, and it does not
+ *   shrink. Measured here: the panel stayed at 349.6 at 900x600 and left the
+ *   roster 14px of client box. It is the finding `.hud-build > .ui-panel__body`
+ *   already records above -- a scroll container's min-content contribution in
+ *   its scroll axis is its content, not its `min-height` -- reproduced one
+ *   panel over.
+ * - The floor that works is `.hud-build`'s: a hand-summed `calc()` of every
+ *   block the panel may not shrink past, plus the guard assertion that keeps
+ *   the sum honest. That is a rail redesign, and this is a reachability fix.
+ *
+ * So the bound is a number, it is stated in tap targets rather than pixels,
+ * and the thing that keeps it honest is #88 itself: a vocabulary that outgrows
+ * it fails this sweep at the viewport it outgrows it at, with the Collapse
+ * control named.
+ */
+.hud-regime__editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+  max-height: var(--hud-regime-editor-ceiling);
+  overflow-y: auto;
 }
 
 /* Name left, share right: the shape every readout line in this HUD uses. */
@@ -2147,13 +3072,29 @@
   gap: var(--space-2);
 }
 
-/* One row: who, what they are doing, and how they stand. `align-items: center`
-   so a wrapped name keeps the badge beside its middle rather than pushing it to
-   the top -- the same choice `.hud-staff__held-row` makes. */
+/* One row: who, what they are doing, and how they stand.
+
+   **`align-items: center` is gone, and the comment it carried is kept rather
+   than deleted because what it describes is the defect issue #909 fixed.** It
+   read: *"`align-items: center` so a wrapped name keeps the badge beside its
+   middle rather than pushing it to the top -- the same choice
+   `.hud-staff__held-row` makes."* That is exactly what it did, and beside the
+   *middle* of a two-line row is between the two lines: measured at 375x812
+   before the fix, the pill's box spanned y=562.4..582.4 while the need pair
+   spanned y=573.0..586.2, so the pill overlapped the need's meter by 9.4px and
+   belonged to neither line. The two values it sat between are two different
+   scales -- a prisoner's risk tier and a need's level -- and `Low` means
+   opposite things on them, which is what
+   `docs/research/2026-09-03-can-a-player-read-this.md` §4 misread twice.
+
+   The badge now sits inside `.hud-regime__roster-head` beside the name it
+   grades, so this row has a single child, and both `align-items: center` and
+   the `gap` between siblings are gone with the sibling they were for. What is
+   left is `display: flex` alone, and it is not ceremony: it is what makes
+   `.hud-regime__roster-text`'s `flex: 1 1 auto` and `min-width: 0` below mean
+   anything, and those are the pair that keeps a long name inside the panel. */
 .hud-regime__roster-row:not([hidden]) {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 /* `min-width: 0` so a long name-plus-activity pair shrinks rather than pushing
@@ -2176,10 +3117,35 @@
   flex: 1 1 auto;
 }
 
+/* Who the row is about, and how they stand, on one line (issue #909). The pill
+   is pushed to the far edge by `space-between` rather than by a margin, so a
+   name long enough to fill the row simply meets it; `align-items: center`
+   because the pill is a 20px box and the name is a 13px line, and centring the
+   shorter of the two on the taller is what keeps this line the pill's own
+   height rather than the pill's height plus a baseline offset.
+
+   `min-width: 0` is **defensive here rather than load-bearing**, and it is
+   stated that way for the reason `.hud-regime__roster-text`'s own comment above
+   states it: `overflow-wrap: anywhere` on `.hud-regime__roster-name` leaves the
+   name no min-content width to break, so nothing measured needs this to keep
+   the pill inside the panel. It stays because a locale whose name vocabulary
+   cannot break that way would reach it and nothing here would notice. */
+.hud-regime__roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .hud-regime__roster-name {
   color: var(--text-heading);
   white-space: normal;
   overflow-wrap: anywhere;
+  /* Defensive, for `.hud-regime__roster-head`'s stated reason: the name is now a
+     flex item beside the pill, and this is what would let it shrink first in a
+     locale whose names `overflow-wrap: anywhere` cannot break. */
+  min-width: 0;
 }
 
 /* A sentence rather than a label, and it wraps: an action's word plus the
@@ -2196,7 +3162,19 @@
    the escape: at the narrowest viewport the suite visits, a long action word
    plus a ten-segment bar does not fit, and wrapping is the only alternative to
    the bar being squeezed to nothing. `align-items: baseline` so the need's word
-   sits on the activity's baseline rather than floating against the bar. */
+   sits on the activity's baseline rather than floating against the bar.
+
+   **`justify-content: space-between` was reconsidered at issue #909 and kept,
+   and it is kept for a second reason the first version of this comment did not
+   have.** The pill moved to the line above, which freed the right-hand end of
+   this line -- so grouping the pair leftward beside the activity was on the
+   table, and was tried and screenshotted at 375x812 and 1440x900. It is worse
+   twice over: the ten-segment bars stop forming a right-aligned column the eye
+   can compare four rows down, and the activity's word ends up one `--space-2`
+   from the need's word, so `Yard Time Hygiene` and `Idle Bladder` read as
+   single phrases. That is issue #909's own defect -- two facts abutting on one
+   line with nothing saying which is which -- reintroduced one column to the
+   left. The spread is what keeps the activity and the need apart. */
 .hud-regime__roster-line {
   display: flex;
   flex-wrap: wrap;
@@ -2226,10 +3204,162 @@
   letter-spacing: 0;
 }
 
-/* Never shrinks. The pair beside it wraps instead. */
-.hud-regime__roster-row > .ui-badge { flex: 0 0 auto; }
+/* The meter's own figure, on screen as of issue #909 -- it was `.ui-sr-only`,
+   which told a screen reader the need was at 20% and left a sighted player an
+   unlabelled bar beside a second graded value. `roster-panel.ts`'s
+   `RosterRow.needValue` records what that cost. `tabular-nums` so four rows of
+   percentages line up in a column the eye can compare, the same treatment
+   `.hud-regime__roster-count` gets, and `nowrap` for
+   `.hud-regime__roster-need-name`'s reason: this is the pair that must not grow
+   the row a line taller by breaking inside itself. */
+.hud-regime__roster-need-value {
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Never shrinks. The name beside it wraps instead -- `overflow-wrap: anywhere`
+   on `.hud-regime__roster-name` is what lets it. Re-aimed from
+   `.hud-regime__roster-row > .ui-badge` at issue #909, because the pill moved
+   one box in: it is now the name's sibling on this row's first line rather than
+   the row's own second child beside the need's meter. */
+.hud-regime__roster-head > .ui-badge { flex: 0 0 auto; }
 
 .hud-regime__roster-more[hidden] { display: none; }
+
+/* A row that holds a prisoner is a press target, and this is the whole of what
+   that costs the layout: a cursor and a focus ring. No padding, no minimum
+   height and no background -- `PRISONER_ROSTER_ROW_LIMIT` in `roster-panel.ts`
+   measures four rows at 44.7px against the 54.75px its arithmetic allows, and
+   the rows are 27.5px when the activity line does not wrap, so a tap-target
+   floor of 44px here would push the fourth row out of the panel's fold at
+   900x600. The row is already 27.5px tall and spans the panel's full width,
+   which is a larger target than any of the 44px controls in this rail; what a
+   floor would buy is height it does not need.
+
+   `cursor: pointer` only while the row *is* a control: `role` is written by
+   `paintRoster` and removed by `clearRowData`, so a vacated pooled row keeps
+   the plain cursor and cannot advertise a press that reaches nobody. */
+.hud-regime__roster-row[role='radio'] { cursor: pointer; }
+
+/* The selected row, and it is a **background step and nothing else**:
+   `tests/unit/ui-design-tokens.test.ts` allows separation from "a 1px hairline
+   and a background step, and from nothing else", the row already carries a
+   badge whose tone is the prisoner's classification -- a second tint over it
+   would put two meanings on one rectangle -- and a background costs no
+   geometry, so the fold measurement above is untouched by a row being chosen.
+   `outline` is deliberately left for focus, one rule down: two outlines on one
+   rectangle is the pair that cannot both be seen. Colour never stands alone
+   here either -- `aria-checked` is what says "selected" to a screen reader, and
+   `data-selected` is what says it to a probe. */
+.hud-regime__roster-row[aria-checked='true'] { background: var(--surface-sunken); }
+
+/* The keyboard's route has to be visible, and this row is not one of the
+   `.ui-*` primitives `primitives.css` gives the shared ring to -- it is a
+   `div` carrying `role="radio"`, for the reason `clearRowData` records. Same
+   two declarations as `.hud-build__category:focus-visible`, with the offset
+   turned **inward**: `.ui-panel.hud-regime` is `overflow-x: hidden`, so a ring
+   drawn 2px outside a row that spans the panel's full width would be clipped on
+   both sides. */
+.hud-regime__roster-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Regime panel: the one prisoner the player is looking at (issue #895) */
+/* ------------------------------------------------------------------ */
+
+/* The inspector, third block in the panel body. Same gutter and hairline
+   treatment as the roster above it, so the three regions of one panel do not
+   read as three designs.
+
+   `display: none` on `[hidden]` for the reason `.hud-regime__blocks` carries
+   it: an author `display` beats the user agent's `[hidden] { display: none }`,
+   and this block has one. Nobody selected is the arrival state of the tab for
+   every player, so the attribute has to win. */
+.hud-regime__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-regime__detail[hidden] { display: none; }
+
+/* A duration sentence must wrap in the narrow rail, including at larger UI
+   scales. The shared eyebrow's single-line heading treatment would clip it. */
+.hud-regime__detail-sentence {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-subtle);
+}
+
+/* The name left and the badge right: the shape every readout line in this HUD
+   uses. `align-items: center` so a wrapped name keeps the badge beside its
+   middle, exactly as `.hud-regime__roster-row` does. */
+.hud-regime__detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The heading of the block, and it is a name rather than a label -- so it wraps
+   and breaks like the row's name above it and not like an eyebrow. */
+.hud-regime__detail-name {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.hud-regime__detail-header > .ui-badge { flex: 0 0 auto; }
+
+/* Six needs in **two columns**, which is a height decision and was measured.
+   One column is six lines of about 15px plus five gutters; two columns is three
+   lines, and this panel is a scroll container competing with the timetable and
+   the roster for a 900x600 rail. `minmax(0, 1fr)` rather than `1fr` so a long
+   need word shrinks its own column instead of widening the grid past the
+   panel. */
+.hud-regime__detail-needs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+
+/* One need: its word, then its bar. `space-between` so the six bars line up on
+   their column's right edge and the block reads as a scale rather than as six
+   sentences. `min-width: 0` is what lets the word shrink; the bar never does,
+   because a bar squeezed to nothing is a readout with no value. */
+.hud-regime__detail-need {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.hud-regime__detail-need[hidden] { display: none; }
+
+.hud-regime__detail-need > .ui-bar { flex: 0 0 auto; }
+
+/* Matches `.hud-regime__roster-need-name`: a label rather than a heading, and
+   it never wraps -- the six need words are single short catalogue words, and a
+   wrapped one would be the thing that makes the line taller. `overflow: hidden`
+   so a longer word in another locale is clipped by its own column rather than
+   pushing the bar out of it. */
+.hud-regime__detail-need-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0;
+  min-width: 0;
+}
 
 /* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
@@ -2385,6 +3515,18 @@
        is what keeps the enclosure readout -- the last block in the panel --
        inside the panel's unscrolled box at 900x600. */
     --hud-rooms-gutter: var(--space-1);
+    /* One row where the taller viewports allow three. The Regime panel pays
+       for the short viewports in the only currency it has -- it is
+       `flex: 0 0 auto`, so it cannot hand its excess to the rail, and every
+       other block in it is a row of text or a tap target. At 900x600 the rail
+       holds 365.5px and the Prisoners panel below needs 46 of them for its own
+       header, which leaves the timetable panel 319.5: three rows here lay it
+       out at 349.6 and crush that header to 14px of box, one row lays it out
+       at 261.6 and leaves the panel below its whole natural height. The list
+       still scrolls to all of itself, which is what makes one row a bound
+       rather than a loss -- `app-shell.spec.ts`'s #88 sweep is the assertion
+       that says so. */
+    --hud-regime-editor-ceiling: var(--tap-target);
   }
 
   .hud__side { padding: var(--space-2); }
@@ -2405,9 +3547,18 @@
 
   /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
      2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
-     from this same block for the same kind of sentence -- that branch is not
-     merged as this is written, so the selector it adds is not in this file yet
-     and the citation is to the pull request rather than to a rule below.
+     from this same block for the same kind of sentence.
+
+     **The two sentences after that used to read** *"that branch is not merged
+     as this is written, so the selector it adds is not in this file yet and the
+     citation is to the pull request rather than to a rule below."* True on
+     2026-08-31: PR #647 merged with the note's renderer dropped, and the
+     selector came in with it. **False from 2026-09-04**, when #920 landed the
+     renderer on the one predicate the arrival state can afford -- the rule is
+     the next one below and the citation is to it as well as to the pull
+     request. Marked rather than overwritten, because the interval is the
+     finding: a citation into a *rule* rots when the rule arrives, which is the
+     opposite direction from the one `docs/AGENT_WORKFLOW.md` §4 warns about.
      `hud.security.hire-unassigned` -- "A new guard
      starts unassigned." -- is the half of the old hire hint the approved
      wording displaced, and the measurement that displaced it is why it comes
@@ -2434,8 +3585,50 @@
     overflow: visible;
   }
 
-  /* The priced hire sentence itself, exempted on the same terms as the two
-     rules below and above it -- and this one was forced by the owner's second
+  /*
+     The Build panel's queued-order sentence, and the one place it is **not**
+     shown. This is the honest gap in the fix for #920 and it is written out
+     rather than left to be discovered.
+
+     PR #647's shape, which the block above cites, exempted
+     `.hud-build__order-note` from this clamp so the sentence could be two lines
+     here. That is the right instinct and it does not fit. At 900x600 the arm
+     hint is already on this block's one-line clamp, so the 26.4px the sentence
+     needs has nowhere to come from -- and the three assertions named beside the
+     `[data-queued]` clamp above all require net zero in the queued state. An
+     exempted two-line note measured 204px of panel overflow against 178px
+     without it, and pushed the first refund's Cancel to y=518.6 against a fold
+     at 521.7: inside by 3.1px in the state with deliveries, and 26px over the
+     box in the state without them, where `app-shell.spec.ts`'s #390 test pins
+     the panel at exactly 0.
+
+     And **one line is worse than none here**, which is what rules out simply
+     letting the clamp apply. Clipped to one line at 238px the box is 238x13.2
+     and what survives is *"An order is queued now and built while the..."* --
+     the half saying the order was taken, with the half saying nothing happens
+     until the clock runs cut off. A player who has just spent 1,920 on
+     twenty-four orders reads that as a confirmation. PR #647 measured the same
+     `scrollHeight` 26 against `clientHeight` 13 at this viewport in August and
+     drew the same conclusion.
+
+     So below 701px tall the sentence is not rendered, and the dead end issue
+     #920 is about stays open at that one viewport.
+     `tests/browser/ui-build-order-note.spec.ts` asserts this rather than
+     hiding it: it requires the sentence laid out at the four taller viewports
+     and requires it to have no box here, so a change that closes the gap fails
+     the test and has to say so.
+
+     **What would close it is a shorter sentence** -- one that fits 238px on a
+     single line and still names the clock. That is wording, and wording is
+     recorded for the owner rather than invented in a layout fix.
+
+     This rule beats `.hud-build__order-note`'s own `margin-top` above and the
+     `[hidden]` guard is unaffected: both are `display`-neutral, and a hidden
+     element is hidden either way. */
+  .hud-build__order-note { display: none; }
+
+  /* The priced hire sentence itself, exempted on the same terms as the other
+     exemptions in this block -- and this one was forced by the owner's second
      ruling of 2026-09-03 rather than chosen. `hud.security.hire-hint` gained
      the words *"including today"* because without them it was false on the
      first press of a new game: hiring bills two days' wage for the day it
@@ -2460,6 +3653,37 @@
      an attribute against one class -- and this note is hidden whenever there is
      no role to price. */
   .hud-staff__hire-note {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
+  /* The dismiss confirmation (the owner's sentence of 2026-09-03,
+     `hud.security.roster-dismiss-confirm`), exempted for the same reason as the
+     hire sentence directly above and by the same route: the ruling supplied a
+     sentence, the sentence did not fit, and the box gives way rather than the
+     sentence.
+
+     *"Dismiss {name}? Their wage stops and they do not come back."* is two
+     lines at 900x600, measured: with this rule's selector unmatched the box
+     reports `scrollHeight` 26 against `clientHeight` 13, which is two lines cut
+     to one, and `tests/browser/ui-staff-dismiss.spec.ts` goes red on exactly
+     that reading. The clause the second line carries is *"and they do not come
+     back"* -- the whole of what makes this a warning rather than a second
+     rendering of the button beside it. Cut, it would ask the player to confirm
+     the reversible half of an irreversible act, which is worse than asking
+     nothing: a false reassurance produced by a box.
+
+     The clamp's own rule is that what stays clamped is "the notes a clipped line
+     still leaves usable", and the cost is the one `.hud-staff__hire-unassigned`
+     priced and paid: `.ui-panel.hud-staff` is `overflow-y: auto`, so one more
+     line of `--font-size-eyebrow` moves the scroll threshold and loses nothing.
+
+     `.hud-staff__note[hidden]` above still wins over this rule -- a class and an
+     attribute against one class -- and this note relies on that rather than
+     merely tolerating it: it is hidden in every state except the one press
+     between arming a dismissal and confirming it. */
+  .hud-staff__dismiss-confirm {
     display: block;
     -webkit-line-clamp: none;
     overflow: visible;
@@ -2591,6 +3815,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
+  /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
+     bearing rather than tidy: nothing inside the panel declares a
+     `font-size`, so without this its rows would inherit the 15px `body`
+     carries and the pin beside it would be inert -- which is measurably a
+     panel body 15px shorter than its own content at 900x600. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -2689,6 +3919,53 @@
  * is where it stops moving. 12px is identical to 16px, so 16 is the point at
  * which the donation is sufficient and no further.
  *
+ * **That last sentence is withdrawn, and the paragraph above it is kept rather
+ * than rewritten, because the reason it went stale is the finding (#938).** It
+ * was measured while `.hud-rooms__needs-items` held **one** wrapped row, and in
+ * that state the list still had slack: 12px and 16px came out identical
+ * precisely *because* neither floor was reached, so lowering it further could
+ * not have donated anything. #938 adds a doorway sentence to that row, the row
+ * becomes two, and the list is then sitting exactly on its floor -- measured on
+ * the assembled application at 900x600 in the #331 fixture's own state (two
+ * doorless cells, `room.cell` selected):
+ *
+ *   .hud-rooms > .ui-panel__body   client 291  scroll 293   <- 2px over
+ *   .hud-rooms__catalogue          h  64  min-height  64px  <- on its floor
+ *   .hud-rooms__list               h  16  min-height  16px  <- on its floor
+ *   .hud-rooms__needs-items        h  26.4                  <- two 13.2px rows
+ *
+ * The body's children are catalogue 64 + map 70.2 + needs 70.9 + status 80 =
+ * 285.1, and 285.1 plus the body's own 8px padding-top is the 293 above. So the
+ * donation is now the only thing between this readout and the box, which is the
+ * opposite of what the withdrawn sentence concluded -- and it is `--space-2`
+ * for the same kind of reason `--space-4` was chosen: 8px is what the second
+ * row costs against the 11.2px the list had left, and it leaves the panel body
+ * inside its own content at the one viewport that spends it.
+ *
+ * **Two rows is the deepest the shipped catalogue can reach here, so 8px is
+ * sufficient and not merely enough for one fixture** -- which is what
+ * `.hud-rooms__needs-item[data-kind='doorway']`'s own rule below is for. With
+ * the sentence on a row of its own the object chips compress under it, and at
+ * this panel's width the deepest shipped room short of everything --
+ * `room.kitchen`, `1 x Stove` + `1 x Prep Counter` + `1 x Fridge`, measured as
+ * one row in `ui-shell.spec.ts` case 4 -- is one chip row, exactly as
+ * `room.cell`'s two chips are. A third row would fail loudly on the assertion
+ * above rather than being hidden, which is what `ROOM_NEEDS_NAMED_LIMIT` says a
+ * panel outgrown by content must do.
+ *
+ * **What it costs, stated rather than left to be found.** At 900x600, and only
+ * while a room is unfinished, the catalogue list is an 8px slice of a 44px row
+ * instead of a 16px one; it still scrolls over all eighteen types
+ * (`scrollHeight` 837) and it comes back to its full row the moment the last
+ * room is furnished. Measured after the change: the panel body is 285.1px of
+ * content in a 291px box at 900x600 -- 5.9px of slack, which is under a line, so
+ * the *next* block added to this panel is another measurement and not a free
+ * one. Neither of the other two viewports the readout is measured at spends
+ * anything on this rule: the list is 68px at 1280x800 with and without it. At
+ * 375x812 the list goes from 64.9px to 51.7px, and that is the doorway row's
+ * own cost rather than this rule's -- the wider phone panel used to fit all
+ * three lines in one row.
+ *
  * **It donates nothing where nothing is needed**, which is the whole reason
  * this is a floor and not a height: a flex item shrinks only under pressure,
  * and at 1280x720 and 375x812 there is none. Measured at all three: the fold
@@ -2707,7 +3984,20 @@
  * which is #174 for the fourth time and on the one block #529 exists to make
  * reachable.
  */
-.hud-rooms[data-needs] { --hud-rooms-catalogue-floor: var(--space-4); }
+/*
+ * `[data-full]` alongside `[data-needs]` (ADR 0028 phase 5).
+ *
+ * The same block, drawing its other subject -- rooms that are finished and
+ * cannot take another user -- and it needs the same donation because it is the
+ * same box in the same column. It is strictly *cheaper* than the shape measured
+ * above: header, one room line and **one** item line, against the header, room
+ * line and three item lines the unfinished subject can reach. `rooms-panel.ts`'s
+ * `roomNeedsSubjectOf` is what guarantees only one of the two attributes is ever
+ * present, so no state adds the two boxes together and the 100px measured above
+ * is still this readout's deepest shape.
+ */
+.hud-rooms[data-needs],
+.hud-rooms[data-full] { --hud-rooms-catalogue-floor: var(--space-2); }
 
 .hud-rooms > .ui-panel__body > .hud-rooms__catalogue {
   display: flex;
@@ -2769,6 +4059,43 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
+}
+
+/*
+ * The catalogue swatch (#1021): the colour `WorldScene` paints a zoned room's
+ * tiles in, read onto its own catalogue row so the two cannot disagree.
+ *
+ * Sized off `--icon-size-sm` rather than a number of its own, because that is
+ * the row's other leading glyph and the two are meant to read as one unit --
+ * an icon that says "this is a room type" and a chip that says "this hue" --
+ * not as a glyph plus an unrelated decoration. `flex: 0 0 auto` for the same
+ * reason every other fixed-size child of `.ui-row` has it: the label is the
+ * one flex item allowed to give up width to an ellipsis, and everything
+ * beside it holds its size.
+ *
+ * A hairline `border`, not the ring `ui-design-tokens.test.ts` refuses this
+ * whole tree a `box-shadow` for: *"Separation comes from a 1px hairline and a
+ * background step, and from nothing else."* Several of the eighteen
+ * catalogue hues (ADR 0098 option A) sit only degrees from this panel's own
+ * surface, so every swatch gets the same hairline regardless of its own
+ * colour rather than only the ones that would otherwise vanish into it.
+ * `box-sizing: border-box` keeps the border inside the sized box instead of
+ * growing it -- this tree resets `box-sizing` nowhere (see the comment on
+ * `.ui-panel__body` above), so a plain `border` here would otherwise add 2px
+ * to the row's fixed-size children.
+ *
+ * Deliberately not a token colour: the fill is an inline `background-color`
+ * set from `HudRoomViewModel.tint`, a 24-bit number this file cannot see and
+ * must not duplicate as a second table (`view-model.ts`'s own doc comment on
+ * `tint` says why).
+ */
+.hud-rooms__row-swatch {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  inline-size: var(--icon-size-sm);
+  block-size: var(--icon-size-sm);
+  border: var(--hairline) solid var(--border-hairline);
+  border-radius: var(--radius-sm);
 }
 
 /*
@@ -2854,6 +4181,14 @@
 .hud-rooms__actions > .hud-rooms__cancel {
   flex: 0 0 auto;
 }
+
+/* The members of this row carry `padding: 0 var(--space-2)` rather than
+   `.ui-action`'s own `var(--space-4)`, and the rule is up beside
+   `.hud-build__actions`'s with the measurement that chose it (issue #926):
+   `.hud-rooms__arm`'s label painted 6.3px outside its own button at every
+   viewport 900px wide or wider, for the same three reasons the Build panel's
+   did, and the reclaimed padding is what lets the wrapped label land on two
+   lines inside the 44px tap target instead of growing this row to 47px. */
 
 /* Pinned, exactly as `.hud-build__target` is, so a longer readout cannot move
    the controls under it: the area line goes from "Nothing selected" to
@@ -3073,6 +4408,38 @@
 }
 
 /*
+ * The doorway sentence takes a row of its own (#938).
+ *
+ * **A layout guarantee rather than a preference, and the alternative was
+ * measured.** The box above is a wrapping row so that `1 x Bed` and `1 x Toilet`
+ * share a line -- quantities are short, and that compression is 13px of what
+ * pays for this readout at all. A *sentence* in the same row is a different
+ * thing: at 900x600 `a door -- nobody can get in` is 152.5px of a 238px row, so
+ * it took the first chip up with it and pushed the last chip onto a second row.
+ * Measured in the #331 fixture, both items reporting the same `top` of 413.4
+ * and `1 x Toilet` alone at 426.6 -- which reads as "a door ... 1 x Bed" on one
+ * line and is not the list the box was built to draw.
+ *
+ * `flex-basis: 100%` makes the wrap a property of the *kind* of line instead of
+ * a property of how wide this locale's words happen to be. The sentence is row
+ * one, the chips compress on row two, and the block is **exactly two rows for
+ * every shape the shipped catalogue can produce** -- which is what makes the
+ * catalogue's donation above a sufficient figure rather than a figure that fits
+ * one prison. `ui-shell.spec.ts` asserts both halves through
+ * `RoomsProbe.needsItemRows`: one row for three object chips, two when a
+ * doorway sentence is among them. `data-kind` is set by `rooms-panel.ts` beside
+ * the sentence, for the reason recorded there.
+ */
+/*
+ * `'unreachable'` joins `'doorway'` here rather than getting a rule of its own
+ * (ADR 0108): both are a whole sentence on the row where the object entries are
+ * chips, and both are drawn by the same `needSentence` branch shape. A separate
+ * selector with the same declaration would be two places to keep in step.
+ */
+.hud-rooms__needs-item[data-kind='doorway'],
+.hud-rooms__needs-item[data-kind='unreachable'] { flex-basis: 100%; }
+
+/*
  * What the *selected room type* will need standing in it (#529).
  *
  * Inside `.hud-rooms__rule-block`, which is already a gapless column, so this
@@ -3117,12 +4484,54 @@
 }
 
 /* Folded until the simulation has evaluated a room, for the reason and with
-   the `:not([hidden])` guard `.hud-rooms__area` above gives in full. */
+   the `:not([hidden])` guard `.hud-rooms__area` above gives in full.
+
+   **Issue #1006 finding 4: this readout was cut off mid-word.** Measured on the
+   assembled page at 900x600 before the fix: the block's `scrollWidth` was
+   **268px** against a `clientWidth` of **238px**, and the screenshot in that
+   issue reads `Walled in on every si`. Nothing here declared `overflow` or
+   `text-overflow`, so both were at their initial values and the sentence simply
+   spilled out of the panel and was cut by the ancestor that clips.
+
+   **It was never the sentence's fault, which is why nothing about it was the
+   fix.** The eyebrow `Enclosure` was 80.8px and the gap 8px, leaving a value
+   **149px** in a 238px box -- and both sentences this readout can render are
+   wider than that: `Walled in on every side` 179.4px, `Open on at least one
+   side` 195px, the second of them shipped and unchanged. Every state of this
+   block was clipped.
+
+   **The fix is in `rooms-panel.ts`**, which now builds the label as
+   `.ui-sr-only` instead of a visible eyebrow -- out of flow, so the sentence
+   gets the whole 238px. That docblock carries the arithmetic and the two
+   options it rules out; the short version is that wrapping the value onto a
+   second line draws it whole and costs 13.2px, and the panel body at 900x600
+   has 5.9px of slack with a needs readout showing.
+
+   **The backstop is `white-space: normal` on the value, and it is not
+   `flex-wrap`.** That was the first attempt and it is recorded because it does
+   not work here: `flex-wrap` breaks *between* items, and with the label out of
+   flow the value is the only one -- a single flex item wider than its line
+   overflows exactly as before. Measured with the wrap rule in place and the
+   value left `nowrap`: a 257.5px draft still reported `scrollWidth` 257 against
+   `clientWidth` 238. `.ui-value` sets `white-space: nowrap` for a good reason
+   (a ticking counter that changes width makes the strip twitch) and this
+   element is a sentence rather than a counter, so it opts out. A locale whose
+   sentence is wider than 238px then takes a second line and fails
+   `app-shell.spec.ts`'s panel-body assertion loudly, instead of being quietly
+   cut in half.
+
+   `flex-wrap: wrap` and `row-gap: 0` are kept for the day this block has two
+   in-flow children again: together they cost a wrapped line exactly one line
+   rather than a line plus a gutter, which is what `.hud-rooms__rule-block` --
+   the panel's own stacked readout three rules up -- already does.
+   */
 .hud-rooms__enclosure:not([hidden]) {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
+  row-gap: 0;
 }
 
 /* Sealed is not "good" and open is not "bad" -- `room.yard` is authored
@@ -3130,7 +4539,12 @@
    answer itself. The value carries the answer as data for a test to read; only
    the note line above is ever coloured, and only when the requirement and the
    answer actually disagree. */
-.hud-rooms__enclosure-value { font-variant-numeric: tabular-nums; }
+.hud-rooms__enclosure-value {
+  font-variant-numeric: tabular-nums;
+  /* See the block rule above: this is a sentence, not a counter, and it is the
+     only in-flow child -- so `nowrap` here is what would clip it. */
+  white-space: normal;
+}
 
 /* ------------------------------------------------------------------ */
 /* The status strip gives the metrics their own row (#634)             */
@@ -3382,7 +4796,16 @@
  * at all. With every badge the *content* can produce, each carrying the widest
  * word its own namespace authors:
  *
- *   prisoners   "36 with no bed"                  104.4px
+ *   prisoners   "36 with no bed"                  104.4px   (the badge's text
+ *                                                             until #961; it
+ *                                                             reads "36 not
+ *                                                             housed" since,
+ *                                                             one character
+ *                                                             SHORTER, so the
+ *                                                             total below is
+ *                                                             an upper bound
+ *                                                             rather than a
+ *                                                             stale figure)
  *   coverage    "42 understaffed · 36 unguarded"   204.9px
  *   incidents   "Gang Retaliation"                 114.7px  (`Active` is 52.7)
  *   contraband  "Currency"                          69.1px  (nothing, before)
@@ -3438,7 +4861,31 @@
  * does instead of choosing is state the deficit and keep the two rows that *are*
  * whole pinned: an ordinary prison at 1280, and every badge at once at 1920.
  */
-@media (max-width: 720px), (max-width: 2559px) and (min-height: 701px) {
+/*
+ * **THE HEIGHT CONDITION CAME OFF THIS QUERY IN #1159, AND THE SENTENCE IT
+ * REFUTES IS TWO PARAGRAPHS DOWN RATHER THAN DELETED.**
+ *
+ * It read `(max-width: 2559px) and (min-height: 701px)`, and the block below
+ * still explains why: a second strip row costs the middle row 30.5px, and
+ * `ARRIVAL_PANEL_HEIGHT_PX`'s own note records 900x600 sitting the change out
+ * "because the rule carries `min-height: 701px` -- see `hud.css` for why a
+ * short viewport cannot pay for the second row".
+ *
+ * **It can pay for it now, and this stage is what pays.** Moving the five
+ * sections into a left column leaves the `tabs` grid row `auto` around nothing,
+ * so the middle row gains 69.2px at every width above 720px. Measured at
+ * 900x600 across this one change: the strip goes 48 -> 78.5px and the rail
+ * 552 -> 521.5px, which is still 38.7px more rail than the 482.8px it had
+ * before this stage began.
+ *
+ * What it buys is the thing #634 is about. The Layout menu's button needs a
+ * 52px gutter at the right-hand end of the strip (see `.hud-strip__layout`),
+ * and at 900x600 the strip is one row whose only flexible member is the
+ * metrics: they went 123.7px to 83.7px and `app-shell.spec.ts` reported **not
+ * one status chip on screen**, where 123.7 shows one. With a row of their own
+ * they have the strip's full width and show every chip that fits.
+ */
+@media (max-width: 720px), (max-width: 2559px) {
   /*
    * The metrics take a row whole and scroll sideways within it.
    *
@@ -3577,15 +5024,53 @@
      rail. */
   .ui-panel.hud-rooms { width: 100%; }
 
-  /* The Intake panel occupies the same rail slot on the Overview tab and has
+  /* The Intake panel occupies the same rail slot on the Manage tab and has
      to follow it: two classes for the same specificity reason, or it would
      stay 264px in a 343px rail. */
   .ui-panel.hud-intake { width: 100%; }
+
+  /* And the Overview panel, on the same slot on the first tab, for the same
+     specificity reason. */
+  .ui-panel.hud-overview { width: 100%; }
+
+  /*
+   * AND IT IS THE ONE PANEL HERE THAT HAS TO BE ABLE TO SHRINK, BECAUSE BELOW
+   * THIS BREAKPOINT IT CARRIES THE ALERTS FOLD (issue #1201).
+   *
+   * `flex: 0 0 auto` arrived on 2026-09-14 so that two panels sharing the
+   * Manage rail could not steal each other's height, and this panel is alone on
+   * its own tab -- but it is no longer a fixed height, because `hud.ts` moves
+   * the alerts fold into `.hud-overview__fold` at this breakpoint and the log
+   * grows with the prison. `.hud__side` is `max-height: var(--hud-inspector-height)`
+   * (the phone sheet's ceiling, at the foot of this file) and `.hud__rail` is
+   * `overflow: hidden`, so an unshrinkable panel taller than the ceiling is a
+   * panel whose bottom rows are clipped by the rail with no gesture that brings
+   * them back -- which is the same class of defect as the one this mount is
+   * fixing.
+   *
+   * `flex: 0 1 auto` with `min-height: 0` lets the sheet's ceiling reach the
+   * panel, and the panel's own `overflow-y: auto` (above, outside this block)
+   * is then what the excess lands in. One scroll container and not two: the
+   * nested `min-height: 0` chain `.hud-minimap` carries for the same list is
+   * what bounds it *inside* the fold on a desktop, and on a phone the whole
+   * panel scrolling is the better of the two -- a finger on a 375 px column
+   * should not have to find the inner box.
+   *
+   * Two classes, matching every rule above it here, for the same specificity
+   * reason.
+   */
+  .ui-panel.hud-overview { flex: 0 1 auto; min-height: 0; }
 
   /* And the Regime panel, which shares the same rail slot on the fifth tab:
      two classes for the same specificity reason, or it would stay 264px in a
      343px rail. */
   .ui-panel.hud-regime { width: 100%; }
+
+  /* And the Prisoners panel beside it (ADR 0115). It is laid out *with* the
+     Regime panel rather than instead of it, so this is not merely the same
+     specificity argument: two panels in one stretched rail at two different
+     widths would be visibly ragged rather than merely narrow. */
+  .ui-panel.hud-roster { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;
@@ -3603,5 +5088,927 @@
      gap tightening above -- a phone concession, not a readout one -- stays
      here. */
 
-  .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
+  /*
+   * ICON-ONLY TABS BELOW THE BREAK -- the owner's ruling of 2026-09-16 on
+   * #1192. Below 721px a tab shows its glyph and not its name.
+   *
+   * The floor is `--tap-target` plus a little, not the 64px this line used to
+   * carry: with the name gone the button holds one 20px glyph, so 64px was
+   * sizing a box around text that is no longer drawn. 56px keeps each button
+   * clear of the 44px tap-target floor and takes the whole bar to 282px at
+   * 375x812 (351px before) -- and, unlike every tracked-label candidate #1192
+   * priced, it still fits the **320px** viewport, 282px in 296px of room,
+   * where the tracking fix this block used to carry was measured running out
+   * at a 4.08px overlap with two tabs clipped away.
+   */
+  .ui-tab { min-width: calc(56px * var(--ui-scale)); padding: var(--space-2); }
+
+  /*
+   * The section names, hidden from the screen and kept in the accessibility
+   * tree (#1192, the owner's ruling of 2026-09-16).
+   *
+   * **This is `.ui-sr-only` applied by a breakpoint**, and the declarations
+   * are restated rather than the class being swapped on because a breakpoint
+   * is the stylesheet's to know: `createTabButton` would otherwise have to
+   * carry a `matchMedia` listener to add and remove a class that CSS can apply
+   * itself. `primitives.css:83` is the canonical copy and this must not drift
+   * from it -- in particular it must never become `display: none`, which takes
+   * the name out of the accessibility tree and leaves five buttons a screen
+   * reader announces as nothing at all. `ui-shell.spec.ts`'s "every tab still
+   * has an accessible name at 375x812" is the gate on that, computed off the
+   * accessibility tree rather than off this rule's text.
+   *
+   * WHAT THIS REPLACED, AND WHY THE RULING WAS NEEDED TO REPLACE IT. This
+   * selector carried `letter-spacing: var(--label-tracking-tight)`, the
+   * shipped half of the earlier #1192 fix. Its measurements are kept in
+   * `docs/VISUAL_IDENTITY.md` item 5 because they are what the ruling was made
+   * against: the five Polish names summed to 323.70px unwrapped in a 351px
+   * inner bar, 291.14px tracked tight, and at a 320px viewport they overlapped
+   * by 4.08px at any tracking value. Hiding them ends that arithmetic rather
+   * than tightening it.
+   *
+   * **The cost is stated rather than smoothed away**, because the ruling was
+   * made over it: below the break the section's name is no longer on screen
+   * for a sighted player, which is tie-break rung 4 of
+   * `docs/VISUAL_IDENTITY.md`. The owner was shown that and ruled anyway.
+   */
+  .hud__tabs .ui-tab__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* The layout shell: collapse arrows, separators and the Layout menu    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Stage 3 of the 2026-09-13 identity rollout (#1159).
+ *
+ * Three regions fold and two of them resize. The numbers are **not** here:
+ * `src/ui/hud/hud-layout.ts` owns every limit and `src/ui/hud/layout-shell.ts`
+ * writes the result into three custom properties on `.hud`. This file decides
+ * only what a width *means* at each tier -- which is why the phone block below
+ * reads `--hud-inspector-height` and the desktop block reads
+ * `--hud-inspector-width`, from one control whose drag axis changes with the
+ * tier.
+ *
+ * `--hud-inspector-width` is the **panel's** width, not the rail's, and the
+ * rail adds its own gutters back on. That keeps the announced number
+ * (`aria-valuenow`, the slider, the delivery's "Prawy desktop: 260-600 px")
+ * the number a player is actually setting, and it is what makes the default
+ * of 264 px reproduce this repository's rail exactly: 264 + 2 x 12 = 288 px of
+ * rail around a 264 px panel, which is what `--hud-rail-panel-width` drew
+ * before this stage existed.
+ */
+
+/*
+ * Every new control opts back in to pointer events, because `.hud` is
+ * `pointer-events: none` and the block at the top of this file opts in only
+ * whole panels and `.hud-tabs__inner`.
+ *
+ * Named one by one rather than as `.hud__tabs > *` or `.hud__rail > *`, for
+ * the reason issue #1054 wrote into that block: a container opted in whole
+ * swallows presses on its own blank chrome, and the two containers here are
+ * mostly blank -- a stretched navigation rail is a full-height column with
+ * five tabs in it, and everything below them is map.
+ */
+.hud-layout__arrow,
+.hud-layout__separator,
+.hud-strip .hud-layout {
+  pointer-events: auto;
+  touch-action: auto;
+}
+
+/*
+ * The handle itself. `touch-action`, `user-select` and the cursor are set by
+ * `createResizeSeparator` inline, because without them the control is
+ * functionally broken rather than merely unpainted; everything here is the
+ * visual half that module deliberately left to the integration.
+ *
+ * A hit area wider than the hairline it draws: `--tap-target` is 44px and a
+ * 1px line is not a touch target, so the element is `--space-3` wide and the
+ * rule is drawn down its middle by a `::before` that is `--hairline` thick.
+ * Constitution article 7 -- touch is first-class -- is the reason that is not a
+ * 1px element with a hover state.
+ */
+.hud-layout__separator {
+  flex: 0 0 auto;
+  position: absolute;
+  z-index: 1;
+  background: transparent;
+}
+
+.hud-layout__separator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: var(--border);
+}
+
+.hud-layout__separator:hover::before,
+.hud-layout__separator[aria-busy='true']::before {
+  background: var(--accent);
+}
+
+.hud-layout__separator:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.hud-layout__separator[aria-orientation='vertical'] {
+  top: 0;
+  bottom: 0;
+  width: var(--space-3);
+}
+
+.hud-layout__separator[aria-orientation='vertical']::before {
+  width: var(--hairline);
+  height: 100%;
+}
+
+.hud-layout__separator[aria-orientation='horizontal'] {
+  left: 0;
+  right: 0;
+  height: var(--space-3);
+}
+
+.hud-layout__separator[aria-orientation='horizontal']::before {
+  height: var(--hairline);
+  width: 100%;
+}
+
+/* The arrow. One glyph, rotated by the direction the fold goes, so a player
+   reads "this closes to the left" rather than having to remember which of two
+   identical chevrons is which. `chevron` points down at rest, which is what
+   the metric strip's own fold does. */
+.hud-layout__arrow {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* 120ms linear, which is what `.ui-panel__toggle` and `.ui-section__chevron`
+   already use in `primitives.css`: the same glyph doing the same job should
+   not turn at two speeds. */
+.hud-layout__arrow > .ui-icon { transition: transform 120ms linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-layout__arrow > .ui-icon { transition: none; }
+}
+
+.hud-layout__arrow[data-layout-region='navigation'] > .ui-icon { transform: rotate(90deg); }
+.hud-layout__arrow[data-layout-region='navigation'][data-collapsed='true'] > .ui-icon { transform: rotate(-90deg); }
+.hud-layout__arrow[data-layout-region='inspector'] > .ui-icon { transform: rotate(-90deg); }
+.hud-layout__arrow[data-layout-region='inspector'][data-collapsed='true'] > .ui-icon { transform: rotate(90deg); }
+.hud-layout__arrow[data-layout-region='metrics'] > .ui-icon { transform: rotate(180deg); }
+.hud-layout__arrow[data-layout-region='metrics'][data-collapsed='true'] > .ui-icon { transform: none; }
+
+/*
+ * The strip's layout slot: one control, in the strip's own top-right corner,
+ * with a gutter reserved for it.
+ *
+ * **Both arrangements were measured, and each fails somewhere the other does
+ * not.** In flow the slot joins an existing strip row where there is room and
+ * takes a row of its own where there is not: at 375x812 that is a whole extra
+ * 48px of strip (103.7 -> 151.7), straight out of the rail. Absolutely
+ * positioned it needs a reserved gutter or it sits on whatever the last row
+ * ends with -- at 900x600 the transport buttons run to x = 888 and the slot
+ * starts at 852 -- and that gutter comes out of `.hud-strip__metrics`, the
+ * strip's only flexible member, because `.hud-strip__brand` is `flex: none` by
+ * a decision recorded at that rule.
+ *
+ * Reserved wins, because the block below pays the metrics back: at the one
+ * viewport where a 52px gutter left them too narrow for a single chip, they
+ * now have a row of their own. In flow there is no equivalent -- an extra
+ * strip row is height, and height is the rail's.
+ *
+ * It is **one** 44px control, which is why either arrangement is affordable at
+ * all: the metric strip's fold moved into the Layout menu (see
+ * `layout-shell.ts`) rather than sitting here beside the button.
+ */
+.hud-strip__layout {
+  position: absolute;
+  top: 0;
+  right: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--tap-target);
+}
+
+/*
+ * The three the metric strip's fold control hides, each opting into `[hidden]`
+ * explicitly.
+ *
+ * `hidden` is a UA `display: none`, and an author `display: flex` on the same
+ * element beats it -- which all three of these carry. Written out rather than
+ * fixed with `!important`, and named one by one rather than as
+ * `.hud-strip > [hidden]`, so that the list of what the control hides is a
+ * thing a reader can check against the string it is labelled with ("Hide the
+ * counters and the clock").
+ */
+.hud-strip__metrics[hidden],
+.hud-strip__clock[hidden],
+.hud-strip__transport[hidden] {
+  display: none;
+}
+
+/*
+ * The gutter the slot above sits in, and the stacking order that lets the
+ * Layout menu's drawer hang across the rail.
+ *
+ * `z-index: 4` because the drawer is `position: absolute` under the strip and
+ * on a phone the rail starts immediately below it -- full width, with
+ * `.hud__aside` raised to `z-index: 2` for the reason that rule gives. Without
+ * it the save panel's buttons won the hit test through the open menu and
+ * `app-shell.spec.ts` reported all four of the menu's controls unreachable at
+ * 375x812. The strip is the topmost band of the HUD at every tier, so this is
+ * the arrangement on screen as well as in the stacking order.
+ */
+.hud-strip {
+  position: relative;
+  z-index: 4;
+  padding-right: calc(var(--tap-target) + 2 * var(--space-1));
+}
+
+/*
+ * ...and the metrics row takes that gutter straight back, because the slot is
+ * never on the metrics row.
+ *
+ * The reservation exists so the slot does not sit on whatever the strip's
+ * **first** row ends with. Wherever the metrics have a row of their own --
+ * every viewport the browser suite visits, since the query above lost its
+ * height condition -- that row is `order: 1` and is laid out *below* the slot,
+ * so the 40px is reserved against nothing and paid for by the readout.
+ *
+ * Measured at 1280x800 by `ui-strip-badged-width.spec.ts`: an ordinary
+ * prison's nine badged chips are **1248.8px** and the row is 1256px without
+ * the gutter and 1216px with it, so the strip dropped a chip in the state a
+ * player spends the game in. A negative margin is what lets a `flex-basis:
+ * 100%` row extend back across padding its own siblings need, and it is
+ * exactly `--space-3 - (--tap-target + 2 x --space-1)` -- the gutter less the
+ * padding the strip had before it.
+ */
+.hud-strip__metrics {
+  margin-right: calc(var(--space-3) - var(--tap-target) - 2 * var(--space-1));
+}
+
+/*
+ * ...except on a phone, where the gutter costs more than it buys.
+ *
+ * At 375x812 the strip is three rows and reserving 52px of a 375px window
+ * rewraps them: measured 103.7px -> 124.2px, and the 20.5px comes out of the
+ * rail and lands on whichever panel is showing. Without the reservation the
+ * slot sits over the right end of the strip's first row, which at this width
+ * is **empty**: the brand badge is 225px of a 359px row and ends at x = 233,
+ * and the slot's 52px start at 323.
+ *
+ * What it overlays at larger interface scales is that badge's text, not a
+ * control -- there is no button in the strip's first row here -- so the cost is
+ * a truncated build id at a scale where the strip is already three rows,
+ * against 20px of every panel at the default one.
+ */
+@media (max-width: 720px) {
+  .hud-strip { padding-right: var(--space-2); }
+  /* Nothing to reclaim: the gutter here is the padding the strip already had. */
+  .hud-strip__metrics { margin-right: 0; }
+}
+
+/* ---- the Layout menu --------------------------------------------- */
+
+.hud-layout {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+.hud-layout__legend {
+  color: var(--text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-layout { position: relative; }
+
+/*
+ * The body floats above the strip rather than growing it. A menu that took a
+ * row of the strip would move every panel under it on every open, and the
+ * strip's height is a budget the rail is already sharing (#174, #545). This is
+ * the one surface in the HUD that is *meant* to sit over the world, which is
+ * what the shadow says -- `docs/VISUAL_IDENTITY.md`: "Shadow means floating
+ * above the map; fixed panels are separated by borders instead."
+ */
+.hud-layout__body {
+  position: absolute;
+  top: 100%;
+  /*
+   * Anchored to its **right** edge, because the slot it hangs from is at the
+   * right end of the strip: anchored left the body ran off the window and
+   * `app-shell.spec.ts` reported all four of its controls as
+   * "(outside the viewport)" at 1280x720.
+   */
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: calc(220px * var(--ui-scale));
+  max-width: calc(100vw - 2 * var(--space-3));
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  /*
+   * A border and not a shadow, although this is the one HUD surface that
+   * really does float over the map and `docs/VISUAL_IDENTITY.md` gives that
+   * meaning to a shadow.
+   *
+   * `tests/unit/ui-design-tokens.test.ts` forbids `box-shadow` in this file
+   * outright, and the ban is older than the direction and is not this change's
+   * to lift: a shadow needs a colour, every colour here has to be a token, and
+   * the token architecture that would carry one is stage 1's. A doubled border
+   * against the raised surface reads as "above" well enough until then, and
+   * the alternative -- adding a shadow token in passing -- is exactly the kind
+   * of quiet palette decision that gate exists to catch.
+   */
+  border: var(--hairline) solid var(--border);
+  outline: var(--hairline) solid var(--border-hairline);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+.hud-layout__body[hidden] { display: none; }
+
+.hud-layout__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.hud-layout__row[hidden] { display: none; }
+
+/*
+ * The metric strip's fold control, which lives in this drawer rather than on
+ * the strip -- see `layout-shell.ts` for the 36-combination measurement that
+ * put it here.
+ *
+ * Its sentence is visible here, where there is room for it. Everywhere else in
+ * this HUD an icon button's name is `screenReaderText`, hidden because the
+ * glyph is the affordance and the strip has no width for words; in a menu the
+ * words *are* the affordance, and showing the control's own accessible name is
+ * what keeps the visible label and the announced one the same string.
+ */
+.hud-layout__row--fold > .hud-layout__arrow {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0 var(--space-2);
+}
+
+.hud-layout__row--fold > .hud-layout__arrow > .ui-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  text-align: left;
+}
+
+.hud-layout__slider-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.hud-layout__slider {
+  width: 100%;
+  min-height: var(--tap-target);
+  accent-color: var(--accent);
+}
+
+.hud-layout__clock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+}
+
+/*
+ * The host's own box in this menu (#663), above "Map only" and "Reset layout"
+ * so the two controls that act on the *layout* stay together at the end.
+ *
+ * Empty unless the composition root mounts something, and `:empty` is what
+ * keeps a menu with nothing in it exactly as tall as it was -- the same
+ * arrangement `.hud__aside:empty` has in the rail.
+ */
+.hud-layout__preferences {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--space-2);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-layout__preferences:empty {
+  display: none;
+}
+
+/* The strip's own type for the three readouts, and its own greying for a
+   stopped clock (#639's second channel). Named rather than inherited by class
+   reuse: two elements answering `.hud-clock__day` broke three specs on a
+   selector that names one thing. */
+.hud-layout__clock-day { font-size: var(--text-size-value); color: var(--text-heading); }
+.hud-layout__clock-progress { color: var(--text-subtle); margin-left: var(--space-2); }
+.hud-layout__clock-speed { color: var(--text-subtle); margin-left: auto; }
+
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-day,
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-progress,
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-speed {
+  color: var(--text-subtle);
+}
+
+/*
+ * The inspector's arrow rides the **separator**, at the rail's leading edge,
+ * and takes no height from the column at all.
+ *
+ * At every tier, not only the desktop one: in flow at the top of the rail it cost `--tap-target` of the rail's own
+ * height, which is 88px at 200 %. Measured at 900x600 and 200 %: the middle
+ * row is 102.8px between a 254.4px strip and a 242.8px wrapped tab bar, so
+ * the arrow took 88 of the 102.8 and `.hud__aside` was left 14.8px -- its
+ * interface-scale control laid itself at y = 391 in a rail ending at 357.2,
+ * outside the rail's own `overflow: hidden`, and `app-shell.spec.ts`
+ * reported it covered by a tab label. Beside the panels rather than above
+ * them, the rail is exactly the rail it was.
+ *
+ * What it sits over is the panel's own leading gutter and, at the very top,
+ * the interface-scale control's icon and legend -- neither of which is a
+ * control. The two chrome buttons sit at the *right* of that row, which is
+ * why this corner is the one it can have.
+ */
+.hud__rail > .hud-layout__arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* 3, above `.hud__aside`'s 2 at the phone tier (see that rule for why the
+     aside is raised at all). Equal indices are decided by document order,
+     which the aside wins, and `app-shell.spec.ts` reported this arrow covered
+     by `.display-scale` at 375x812. A 44px square at the rail's top-left
+     corner sits over the interface-scale control's icon and legend and over
+     neither of that row's two buttons, which is why this corner is the one it
+     can have. */
+  z-index: 3;
+}
+
+/* ---- tablet and desktop: the navigation is a left rail ------------ */
+
+/*
+ * 721px and not 720: this is the exact complement of `@media (max-width:
+ * 720px)` above, which is `hud.css`'s own phone boundary and the one
+ * `isPhoneLayout` reads. Two blocks that both claimed 720 would both apply at
+ * exactly 720.
+ */
+@media (min-width: 721px) {
+  /*
+   * The navigation moves out of the bottom row and becomes the left column the
+   * direction asks for -- `DOKUMENTACJA/03-INTERAKCJE-I-URZADZENIA.md`:
+   * "Telefon ma dolną nawigację i panel; tablet/desktop mają mapę między
+   * bokami." (A phone has bottom navigation and a panel; tablet and desktop
+   * have the map between the sides.)
+   *
+   * `grid-area: middle` rather than a new grid column, which is the same move
+   * `.hud__corner` and `.hud__rail` already make: the three share the middle
+   * row and place themselves inside it with `justify-self`, so a fourth
+   * surface needs no change to `grid-template-columns` and no surface can push
+   * another off the viewport by growing.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs {
+    grid-area: middle;
+    justify-self: start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: row;
+    /*
+     * `flex-start` and not `stretch`: the column's cross axis is the vertical
+     * one, so stretching made `.hud-tabs__inner` as tall as the whole rail --
+     * 93..888 of a 900px window -- with its background, its border and its
+     * pointer events over the minimap corner below it. `flex: 0 1 auto` on the
+     * bar cannot undo that, because `flex` governs the main axis and this is
+     * the cross one. Measured at 1440x900: both zoom buttons hit-tested to a
+     * `.ui-tab`.
+     */
+    align-items: flex-start;
+    gap: var(--space-1);
+    position: relative;
+    box-sizing: border-box;
+    min-height: 0;
+    width: var(--hud-navigation-width);
+    /* The floor under a folded rail: whatever happens to the width, the arrow
+       that brings it back is a whole tap target wide. Constitution article 16
+       -- "Panel przywraca widoczny uchwyt." */
+    min-width: var(--tap-target);
+    padding: var(--space-3) 0 var(--space-3) var(--space-3);
+  }
+
+  .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__tabs {
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  /*
+   * The column takes the rail's full height and centres the tabs in it, and it
+   * **scrolls** rather than clipping if it ever holds more than it can show.
+   *
+   * `navigationPlacement` is what normally keeps that from happening: it hands
+   * the navigation back to the bottom bar at any scale and window where the
+   * tabs would not fit. This is the second line of defence, and it is written
+   * out rather than trusted to that arithmetic because the failure it guards
+   * is silent -- `.hud-tabs__inner`'s own `overflow: hidden` (set for the
+   * bar's rounded corners) would otherwise clip a tab away with nothing said,
+   * which is the exact failure its own comment describes at the other
+   * breakpoint: "two tabs are off the bar and nothing says so". The element is
+   * already opted into pointer events, so a wheel and a touch drag reach it.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner {
+    /*
+     * `0 1 auto`, so the bar is as tall as its five tabs and no taller.
+     *
+     * It was `1 1 auto` and the box then filled the whole column -- 93..888 of
+     * a 900px window -- while the tabs sat at the top of it. The box carries
+     * `background: var(--surface-raised)` and is opted into pointer events, so
+     * it covered the minimap corner's controls wherever the corner was not
+     * shifted out of the way: `app-shell.spec.ts` reported it at 1440x900.
+     */
+    flex: 0 1 auto;
+    max-height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /*
+   * The tabs stop enforcing their own 72px floor inside the rail, and the rail
+   * enforces the delivery's instead.
+   *
+   * `.ui-tab`'s `min-width: calc(72px * var(--ui-scale))` is the horizontal
+   * bar's rule and is right there: five tabs side by side must not shrink into
+   * illegibility. In a column the rail's width is the constraint, it is
+   * *unscaled* by design (`hud-layout.ts` says why), and a scale above 100 %
+   * would otherwise make every tab wider than the rail it is in and clip two
+   * of them away silently -- which is the failure `.hud-tabs__inner`'s own
+   * `overflow: hidden` comment describes at the other breakpoint.
+   */
+  /*
+   * And the #545 wrap is turned back off here, which is not undoing that fix
+   * but scoping it.
+   *
+   * `:root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }`
+   * above exists because a horizontal bar wider than the viewport clips its
+   * own tabs. In a **column** the same declaration wraps into a second
+   * column: measured at 900x600 and 150 %, the Regime tab laid itself at
+   * x = 179 beside the other four instead of under them, outside the rail and
+   * over the map, and `elementFromPoint` at its centre returned the canvas.
+   * The column's answer to not fitting is the scroll two rules up.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner { flex-wrap: nowrap; }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab {
+    min-width: 0;
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab .ui-tab__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* A column is separated along its rows, not its columns. */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab + .ui-tab {
+    border-left: 0;
+    border-top: var(--hairline) solid var(--border-hairline);
+  }
+
+  /* The active marker follows: the bar draws it on the top edge, a column
+     draws it on the leading edge, which is the edge the eye runs down. */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab[data-active='true'] {
+    border-top-color: transparent;
+    border-left: 2px solid var(--accent);
+    /* The 2px the border takes, given back, so the label does not shift by two
+       pixels when a tab is selected -- the same reason `.ui-tab` carries a
+       transparent `border-top` at rest. */
+    padding-left: calc(var(--space-3) - 2px);
+  }
+
+  .hud-layout__separator--navigation { right: 0; }
+
+  /* The minimap corner shares the middle row with the navigation and would sit
+     under it. It moves right by exactly what the rail is taking. */
+  /*
+   * The minimap corner shares the middle row with the navigation column, and
+   * whether it has to move depends on whether the two fit above each other.
+   *
+   * The column is `justify-content: flex-start` above, so the tabs sit at the
+   * **top** of the rail and the corner is bottom-aligned by its own rule. At
+   * 1280x800 that is 274px of tabs and 396px of corner in a 719px middle row:
+   * they clear each other and the corner keeps the left edge it has always
+   * had. Below that they do not, and the corner moves right by exactly what
+   * the column is taking.
+   *
+   * **781px is the arithmetic rather than a round number**: 274 + 396 is 670px
+   * of furniture, the strip is 80.7px, and 670 + 80.7 + one `--space-3` of air
+   * rounds to 761 -- so every viewport at least 781px tall clears it with room
+   * to spare at the default interface scale. Above that scale both terms grow
+   * and the query cannot ask about `--ui-scale`, so the *shift* is what a
+   * taller column falls back to: `navigationPlacement` has already sent the
+   * navigation to the bottom bar by the time the column would be tall enough
+   * to matter at these heights.
+   *
+   * **Why it is worth a media query rather than shifting always.** The corner
+   * moving 192px right moves the band of bare world the browser suite's own
+   * drag aim scans, and `app-shell.spec.ts`'s #331 reported it: the probe drag
+   * and the real drag for the same room landed three tiles apart, because the
+   * alerts list grows between them and a corner at x = 192 puts that growth
+   * where the scan was looking. Keeping the corner where it was at the
+   * viewport that test uses is the honest fix; moving it at the viewports that
+   * need it is the honest cost.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud__corner {
+    margin-left: calc(var(--hud-navigation-width) + var(--space-3));
+  }
+
+  @media (min-height: 781px) {
+    .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
+  }
+
+  .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }
+
+  /*
+   * The inspector: the rail's width is now the player's.
+   *
+   * `+ 2 * var(--space-3)` is `.hud__side`'s own gutters added back, so the
+   * number the player set is the panel's width and not the rail's. At the
+   * 264px default that is a 288px rail around a 264px panel, which is exactly
+   * what `--hud-rail-panel-width` drew before this stage.
+   */
+  /*
+   * No `padding-left` for the handle, deliberately: the separator is
+   * absolutely positioned over the rail's leading edge, so it costs the rail
+   * no width at all. A gutter here instead would come straight out of the
+   * panel -- measured at 1280x720 as a 252px panel inside a 288px rail, which
+   * put the Build panel's body 268px past its own box against a 235px bound
+   * (#174's assertion, doing its job).
+   */
+  .hud__rail {
+    position: relative;
+    width: calc(var(--hud-inspector-width) + 2 * var(--space-3));
+    box-sizing: border-box;
+  }
+
+  .hud[data-layout-inspector='collapsed'] .hud__rail { width: auto; }
+
+  .hud-layout__separator--inspector { left: 0; }
+
+  /*
+   * Every panel in the rail follows the player's width, and the way it does is
+   * by **redefining the token they already share** rather than by giving each
+   * of them `width: 100%`.
+   *
+   * `--hud-rail-panel-width` exists precisely because the rail's panels live in
+   * different files and "are only correct while they agree" (its own comment in
+   * `tokens.css`): the five HUD panels in this file, the save panel and the
+   * chrome row in `src/styles.css`. Pointing it at the resized width keeps that
+   * agreement for all seven in one line, and none of those rules has to learn
+   * that the rail is resizable now.
+   *
+   * `width: 100%` was tried first and is subtly wrong: it measures the rail's
+   * *content box*, and `.hud__aside` and `.hud__side` do not always carry the
+   * same padding -- under `@media (max-height: 700px)` both drop to
+   * `--space-2`, so at 900x600 the Build panel came out 272px against the save
+   * panel's 264px and `app-shell.spec.ts` reported "the rail's panels are not
+   * all one width", which is the invariant that token was created to hold.
+   */
+  .hud { --hud-rail-panel-width: max(var(--hud-inspector-width), calc(260px * var(--ui-scale))); }
+
+  /*
+   * The `max()` above is a **fail-safe and never a limit**: 260 is
+   * `INSPECTOR_WIDTH_RANGE.min`, so a settled frame is already at or above it
+   * and this changes nothing a player can see. It is here because the value
+   * arrives from JavaScript, and #529 caught the one frame where it arrived
+   * wrong -- a `0` left behind by the phone tier, which made every panel in
+   * the rail 2px wide and wrapped its text one character per line. The root
+   * fix is in `hud-layout.ts`'s `layoutCustomProperties`; this is the floor
+   * that stops the same class of mistake reaching a player next time.
+   *
+   * Lifted for a **collapsed** inspector, where 0 is the honest width and the
+   * panels it would size are `hidden` anyway -- a floor there would widen a
+   * rail the player has just folded away.
+   */
+  .hud[data-layout-inspector='collapsed'] { --hud-rail-panel-width: var(--hud-inspector-width); }
+
+
+  /*
+   * **Beside the tabs, not above them**, and that is the difference between
+   * the column fitting and not.
+   *
+   * Above them the arrow took 78px of a 444.5px column at 900x600 and 150 %,
+   * leaving 366.5px for 405px of tabs -- clipped, and reported by #545's
+   * containment check as a tab covered by its own scroll container. Beside
+   * them it costs width, which the rail has a range for and the player can
+   * drag.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow {
+    align-self: flex-start;
+  }
+}
+
+/* ---- phone: the navigation stays at the foot, the panel is a sheet - */
+
+@media (max-width: 720px) {
+  /*
+   * THE NAVIGATION'S OWN ARROW IS NOT DRAWN ON A PHONE, AND THIS IS THE HONEST
+   * LIMIT RATHER THAN AN OVERSIGHT.
+   *
+   * There is nowhere to put it that does not cost something a gate already
+   * holds, and all three places were measured:
+   *
+   *   - **In the bar's row.** Five tabs are `min-width: 64px` each at this
+   *     breakpoint, so 320px of a 351px content box, and a 44px arrow beside
+   *     them wraps the bar into a second row -- the 55px band of world that
+   *     `.hud-tabs__inner`'s own #545 comment refuses to spend at 100 %.
+   *   - **Floating above the bar**, which is where it sits at the desktop
+   *     widths where the navigation is also a bar. On a phone the rail is
+   *     full-width and reaches the bar, so that corner is the Build panel:
+   *     measured at 375x812 with the coordinates expanded, the arrow covered
+   *     "Increase Tile Y" and `app-shell.spec.ts` reported it.
+   *   - **Inside `.hud-tabs__inner`**, which is inside what it hides --
+   *     constitution article 16's first sentence, refused by construction.
+   *
+   * So on a phone the Layout menu is the navigation's handle: "Map only" folds
+   * the sections with the other two regions and brings them back, and it lives
+   * in the status strip, which nothing folds. A phone therefore cannot fold the
+   * sections *alone*. That is a real gap and it is recorded in
+   * `app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` beside the minimap and the
+   * zoom pair, which is the list the mobile layout pass works from.
+   */
+  .hud__tabs > .hud-layout__arrow { display: none; }
+
+  /*
+   * The rail keeps the whole middle row, exactly as it did before this stage,
+   * and the **sheet** is what the height drag sizes.
+   *
+   * Two arrangements were measured and rejected, because each looks obviously
+   * right and breaks something a gate already holds. Capping the rail with
+   * `max-height` while it still stretched left it at the *top* of the middle
+   * row, so the save panel's prison list covered the centre pixel and *"a
+   * click in the middle of the screen reaches the world"* returned an `LI`.
+   * Anchoring it with `align-self: end` instead made the rail content-sized --
+   * 255px, `.hud__aside` 8px around 88px of content -- and the chrome row and
+   * the save panel laid themselves over the Intake panel, nine controls
+   * covered on the overview tab.
+   *
+   * The reason both fail is the same and it is the honest reading of the
+   * delivery: *"dolny [panel] na telefonie zmienia wysokość"* -- the **bottom**
+   * panel changes height, not the whole rail. The rail also holds the host's
+   * aside slot, which is not the sheet.
+   *
+   * A ceiling and not a fixed height, because that is what the delivery
+   * describes -- *"wysokość od 180 px do ograniczenia zależnego od ekranu"*, a
+   * limit. Where the panel is shorter than the ceiling the rail is exactly what
+   * it was; where it is taller -- the Build panel with its coordinates expanded
+   * is 576px at 375x812 against a 536px ceiling -- the drag is what gives the
+   * player their map back.
+   */
+  .hud__rail { position: relative; }
+
+  .hud__side {
+    position: relative;
+    max-height: var(--hud-inspector-height);
+  }
+
+  /*
+   * The aside's own content paints **above** the sheet's handle, and this line
+   * exists only for a window where the rail is already too short for what it
+   * holds.
+   *
+   * At a 720x450 CSS viewport -- a 1440x900 window at a 200 % browser page
+   * zoom -- with the interface scale at 175 %, the strip is 179px and the tab
+   * bar is 130, so the rail gets 153px for a 79px chrome row plus two panels.
+   * `.hud__aside` is 38px around 79px of content and the overflow lands on the
+   * sheet below it. That is the 200 %-zoom debt this stage inherited (#1159's
+   * own issue thread records 23 of 36 combinations failing identically on
+   * `origin/main`) and it is not this change's to fix.
+   *
+   * What *is* this change's is not making it worse. Without this rule the
+   * sheet's separator -- painted later, and `pointer-events: auto` -- won the
+   * hit test at the interface-scale button's centre, so the combination went
+   * from failing on containment to failing on reachability as well. With it the
+   * paint order is exactly what it was before this stage existed. Where the
+   * rail is tall enough for its content, which is every combination at 100 %,
+   * nothing overlaps and this rule does nothing at all.
+   */
+  /*
+   * **THE SLOT'S FLOOR BECOMES ITS OWN CONTENT WHERE A SHARE OF THE RAIL IS
+   * NO LONGER ONE (#1312).**
+   *
+   * `.hud__aside`'s `min-height: 25%` is derived one file up against a 482.8px
+   * rail at 900x600, where a quarter is 120.7px and generous. Under a 200 %
+   * browser page zoom the CSS viewport halves in each axis and the rail at a
+   * 1280x720 window is **214px**, a quarter of which is 54px -- against a 46px
+   * chrome row of two 44px tap targets and the save panel's own 26px header,
+   * neither of which can shrink. The slot has no `overflow` of its own, so the
+   * 34px difference was drawn over the sheet below it, where no gesture
+   * reaches it. That is loss of content, which constitution article 8 forbids
+   * through ADR 0112 decision 1 (`docs/VISUAL_IDENTITY.md`).
+   *
+   * **Bisected to `d4986dfa` (#1201)**, which moved the alerts fold into
+   * `.hud__side` at this very breakpoint and priced it against this slot's
+   * slack -- *"`.hud__aside`'s `flex: 1 1 0` slack pays for all of it, with
+   * 277 px still above its own 25 % floor"*. That is true at the 375x812 it
+   * was measured at. At a halved viewport there is no slack: across that
+   * commit the rail is unchanged at 202.8px and `.hud__side` goes 108.2 ->
+   * 144.1, straight out of this slot. `.ui-panel.hud-overview` above is
+   * `flex: 0 1 auto; min-height: 0` with its own `overflow-y: auto` **because
+   * of that same commit**, so what this raise takes back lands in a scrollport
+   * a finger can reach rather than in `.hud__rail`'s `overflow: hidden`.
+   *
+   * **A length, not `min-content`, and the rejected attempt is the reason.**
+   * `flex-basis: min-content` on this slot resolves through the save panel's
+   * whole prison list: measured, the slot took **217px of a 214px rail** and
+   * left `.hud__side` 32px -- the promise one file up, inverted. So the floor
+   * is spelled out: one tap target for the chrome row, one more for the save
+   * panel's header and this slot's two gutters. Both terms scale with
+   * `--ui-scale` (`tokens.css`), so the floor tracks the interface scale that
+   * causes the squeeze -- 96px of floor for 88px of content at 100 %, 72px for
+   * 67px at 75 %.
+   *
+   * **IN THIS BLOCK RATHER THAN ON THE BASE RULE, AND THAT IS MEASURED RATHER
+   * THAN TIDINESS.** Written on the base rule it reaches 900x600 at a **900px**
+   * width, which is not this tier, and at 200 % interface scale the floor there
+   * is 192px of a rail that cannot spare it: `app-shell.spec.ts`'s #545 sweep
+   * went red with *"the rail scrolls at 900x600 and 200%"*, 9px of
+   * `.hud__rail` overflow -- one overflow traded for another. Capping the floor
+   * at `min(..., 50%)` instead cleared #545 and cost eleven combinations of the
+   * #1312 sweep (16 of 36 failing became 27). Scoped here it costs neither:
+   * every one of the sweep's 36 combinations has a CSS width at or under 720px,
+   * because a page zoom halves it, and every viewport that failed #545 is
+   * wider.
+   */
+  .hud__aside {
+    position: relative;
+    /* 2, not 1: the separator itself carries `z-index: 1`, and two positioned
+       siblings at the same index are decided by document order -- which the
+       sheet wins, because it comes after the aside. */
+    z-index: 2;
+    min-height: max(25%, calc(2 * var(--tap-target) + var(--space-2)));
+  }
+
+  .hud[data-layout-inspector='collapsed'] .hud__side { max-height: none; }
+
+  /* On the sheet's own top edge, which is where the hand reaches for it. */
+  .hud__side > .hud-layout__separator--inspector { top: 0; }
+
+}
+
+/*
+ * The bottom bar's own arrow, at every viewport where the navigation is a bar
+ * -- a phone, and any window too short for the column at the interface scale
+ * the player chose (`navigationPlacement`).
+ *
+ * **Above the bar and floating, not beside it in flow**, for the reason the
+ * rail's arrow is not in flow either: in the row it took `--tap-target` of the
+ * bar's own width, which is 88px at 200 %, and `.hud-tabs__inner` wraps on
+ * max-content -- measured at 900x600 and 200 %, the bar went from two rows to
+ * three, 134.4px to 242.8px, and the 108px came out of the middle row and
+ * therefore out of the rail.
+ *
+ * It is the one control in this HUD that is laid out over the world rather
+ * than beside it. That is the trade the alternative makes worse: the band it
+ * covers is 44px in the bottom corner of a bar that is already there, against
+ * a whole extra row of tabs across the foot of the screen.
+ */
+.hud[data-layout-navigation-placement='bar'] .hud__tabs { position: relative; }
+
+.hud[data-layout-navigation-placement='bar'] .hud__tabs > .hud-layout__arrow {
+  position: absolute;
+  right: var(--space-3);
+  bottom: 100%;
 }

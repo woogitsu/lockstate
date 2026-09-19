@@ -7,6 +7,7 @@ import { RouteCache } from '../../src/simulation/navigation/route-cache';
 import type { SearchStats } from '../../src/simulation/navigation/local-search';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { buildCellBlockFixture, buildFixtureGraph, buildSingleDoorFixture, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 const LEFT_TILE = { x: tileCoordinate(1), y: tileCoordinate(1) };
 const RIGHT_TILE = { x: tileCoordinate(6), y: tileCoordinate(1) };
@@ -27,12 +28,70 @@ describe('findRoute: optional SearchStats work-unit counting', () => {
     expect(first.expansions).toBe(second.expansions);
   });
 
-  it('does not mutate the caller-supplied stats object when no stats are passed (opt-in, zero overhead)', () => {
+  /*
+   * ### What this test's title means, given that no object is supplied
+   *
+   * Until 2026-09-08 the title read *"does not mutate the caller-supplied
+   * stats object when no stats are passed (opt-in, zero overhead)"* and the
+   * body passed no stats and asserted only that the route succeeded. Nothing
+   * in it could fail if the property in the title were violated: the whole
+   * `vitest` suite -- 417 files, 4895 passed -- stayed green with `findRoute`
+   * memoising the last caller-supplied `SearchStats` and counting into it on
+   * every later call that passed none.
+   *
+   * The title survives, sharpened, because its property is real. It only
+   * looks vacuous: on a call that passes no stats there is no object *this
+   * call* was handed, so "the caller-supplied stats object" can only be one
+   * handed to some **other** call, and the claim is that this call leaves it
+   * alone. That is cross-call isolation, and it is what makes a
+   * `SearchStats` safe to hold across ticks -- `PathRequestQueue.processTick`
+   * allocates one per request and charges it against `workBudget`, so a
+   * counter silently accumulating work that some *other*, uncounted caller
+   * did would spend a budget on searches it never performed.
+   *
+   * The reading under which the title is vacuous -- "the function tolerates
+   * the absent argument" -- is the one the old body checked, and it is
+   * already covered several times over: the `RouteCache` and `FlowFieldCache`
+   * describes below call `findRoute` with `undefined` in this position
+   * throughout.
+   *
+   * ### And what it cannot mean
+   *
+   * `local-search.ts`'s docblock claims two things for the absent argument:
+   * *"Passing no `SearchStats` costs nothing and changes no return value."*
+   * The second half is asserted here, against the same route computed with a
+   * counter attached. The first half -- "costs nothing", the *zero overhead*
+   * the old title also claimed -- is **not** asserted and is not assertable
+   * from here: an absent write to an object that was never supplied leaves
+   * nothing to observe, and the only alternative is a wall-clock comparison,
+   * which on this container would be a flake rather than a guard. It is
+   * dropped from the title rather than left standing over a body that cannot
+   * reach it.
+   *
+   * The route equality below compares two calls into the code under test, not
+   * a fixture against a value that code computed. It is a claim about the
+   * difference the parameter makes and deliberately says nothing about
+   * whether the route itself is right; `navigation-flat-search-reference.test.ts`
+   * owns that.
+   */
+  it('does not touch a caller-supplied stats object on a later call that passes none, and answers the same either way (opt-in)', () => {
     const { world, doors, chunkA, chunkB } = buildTwoRoomFixture();
     const graph = buildFixtureGraph(world, doors, [chunkA, chunkB]);
 
-    const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
-    expect(result.ok).toBe(true);
+    const counted: SearchStats = { expansions: 0 };
+    const countedResult = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD, counted);
+    expectOk(countedResult, 'the guard route whose expansions are counted');
+    const chargedByItsOwnCall = counted.expansions;
+    expect(chargedByItsOwnCall).toBeGreaterThan(0);
+
+    // Repeated, because a counter that leaks would leak once per uncounted
+    // call: one route would prove only that the first leak is not fatal.
+    for (let repeat = 0; repeat < 5; repeat += 1) {
+      const uncounted = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
+      expectOk(uncounted, 'the guard route asked for with no stats object');
+      expect(uncounted).toEqual(countedResult);
+      expect(counted.expansions).toBe(chargedByItsOwnCall);
+    }
   });
 
   it('charges expansions for both the permission-aware and physical-fallback region passes on a permission-denied result', () => {
@@ -53,7 +112,7 @@ describe('findRoute: optional SearchStats work-unit counting', () => {
 
     const stats: SearchStats = { expansions: 0 };
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD, stats);
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the guard route whose expansions are counted');
 
     // Origin and destination are 5 tiles apart plus a door crossing -- local search alone
     // must expand more than the handful of regions in the tiny two-room fixture.

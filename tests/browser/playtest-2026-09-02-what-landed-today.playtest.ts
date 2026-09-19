@@ -1,6 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -14,7 +13,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -444,7 +445,7 @@ async function buildSealedCell(
   let zoned = false;
   let attempts = 0;
   for (; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -492,7 +493,7 @@ async function buildSealedCell(
 }
 
 async function admit(page: Page, count: number, act: string): Promise<number> {
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   let pressed = 0;
   for (let index = 0; index < count; index += 1) {
     if ((await page.locator('.hud-intake__admit').getAttribute('disabled')) !== null) {
@@ -509,7 +510,7 @@ async function admit(page: Page, count: number, act: string): Promise<number> {
 }
 
 async function hireGuards(page: Page, count: number, act: string): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < count; index += 1) {
@@ -522,7 +523,7 @@ async function hireGuards(page: Page, count: number, act: string): Promise<void>
 
 /** Opens the Staff panel's roster fold, which arrives collapsed, so its rows are laid out and readable. */
 async function openRosterFold(page: Page): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const section = page.locator('.hud-staff__roster');
   if ((await section.getAttribute('data-collapsed')) === 'true') {
     // `.ui-section__header`, not `.ui-panel__header > .ui-panel__toggle`: the
@@ -780,7 +781,7 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   // ---- phase 1: what Admit does on a prison with no cell ----------------
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   log(act, `refusal band before any press: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   const admitBox = await page.locator('.hud-intake__admit').boundingBox();
   if (admitBox !== null) {
@@ -818,7 +819,7 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   await page.waitForTimeout(400);
   log(act, `paused at tick ${settled}; counts ${JSON.stringify(await latestCounts(page))}`);
 
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(600);
 
   const rows = await prisonerRows(page);
@@ -1088,7 +1089,7 @@ test('act 4: neglect until Medium — what changes on screen at that tick, and w
   await page.waitForTimeout(400);
   log(act, `clock: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
 
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(500);
 
   const timeline: ScreenSample[] = [];

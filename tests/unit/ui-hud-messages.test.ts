@@ -60,17 +60,22 @@ const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
 const HUD_MODULE_NAMES = [
   'alert-row-label.ts',
   'build-panel.ts',
+  'dismiss-arming.ts',
   'event-band-dwell.ts',
+  'hud-layout.ts',
   'hud-state.ts',
   'hud.ts',
   'index.ts',
   'intake-panel.ts',
   'label-parameters.ts',
+  'layout-shell.ts',
   'messages.ts',
+  'overview-panel.ts',
   'pooled-row-binding.ts',
   'projection.ts',
   'regime-panel.ts',
   'rooms-panel.ts',
+  'roster-panel.ts',
   'staff-panel.ts',
   'status-strip.ts',
   'tool-arming.ts',
@@ -89,12 +94,14 @@ const PRIMITIVE_MODULE_NAMES = [
   'list-row.ts',
   'number-field.ts',
   'panel.ts',
+  'resize-separator.ts',
   'roving-focus-keydown.ts',
   'roving-focus.ts',
   'segmented-bar.ts',
   'stat-chip.ts',
   'status-badge.ts',
   'tab-button.ts',
+  'toggle-group.ts',
 ] as const;
 
 /**
@@ -252,6 +259,43 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * same chip's same balance at its `critical` step -- the treasury floor,
      * `counts.treasuryOverdraftFloorMinorUnits` -- and no new flow either.
      */
+    /*
+     * **Two more join on 2026-09-09, and `price` is one of the two refused
+     * words above that this pair actually contradicts -- read the paragraph
+     * at "cost" and "price" stay refused" again before assuming precedent.**
+     * `hud.build.catalogue-row-price` and `-price-segment` (issue #901) are a
+     * catalogue row's own cost, stated on the row rather than behind a press
+     * on the buy disclosure. That paragraph's objection was to a *standalone*
+     * readout invented for a key with no purchase behind it -- and this one
+     * is not standalone: `build-panel.ts`'s row-mount loop computes the exact
+     * `unitPriceMinorUnits * quantityPerPlacement` product `paintBuyTotal`
+     * already renders for `hud.build.buy-submit`, from the same
+     * `HudBuildMaterialViewModel` the buy control reads. It restates a number
+     * the panel already states elsewhere, earlier, where a player can read it
+     * without a press -- it does not invent one.
+     *
+     * `AGENTS.md`'s fourth reservation names #901 by number as one of the four
+     * sentences waiting when the owner partly released it on 2026-09-04: the
+     * wording is the agent's to choose, the truth of it is not, and the two
+     * keys ship only because that number is opened and checked, not assumed.
+     */
+    /*
+     * **One more joins on 2026-09-14, and it is the narrowest kind of
+     * addition this list takes: a figure already on screen, stated in a second
+     * place, by a panel that lands in the same change.**
+     * `hud.overview.wages` is the Overview section's own label for
+     * `dailyWageBillMinorUnits` -- the identical figure
+     * `hud.security.roster-wage-bill` above already states on the Staff
+     * panel's collapsed `On the payroll` header, published by `PayrollSystem`
+     * since ADR 0042 step 3. The rule this list guards is that a label may not
+     * be authored before something renders the figure it names; here the
+     * figure was already rendered, and `src/ui/hud/overview-panel.ts` arrives
+     * with the key (issue #1183).
+     *
+     * The period is in the label -- *Wages a day* -- because the figure is a
+     * rate rather than money already paid, which is the same reading
+     * `hud.security.roster-wage-bill`'s `{total} a day` takes of it.
+     */
     const ALLOWED_MONEY_KEYS = new Set([
       'hud.status.funds',
       'hud.status.funds-remaining',
@@ -259,6 +303,9 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.status.funds-deliveries-stopped',
       'hud.status.funds-treasury-floor-exhausted',
       'hud.security.roster-wage-bill',
+      'hud.overview.wages',
+      'hud.build.catalogue-row-price',
+      'hud.build.catalogue-row-price-segment',
     ]);
 
     for (const key of HUD_MESSAGE_KEYS) {
@@ -339,6 +386,9 @@ describe('message keys live in one registry', () => {
       // where everybody was housed would leave the new one unwalked.
       occupiedPlaces: 0,
       staff: 1,
+      // Not painted by any strip label this case walks (issue #870); a value
+      // to satisfy the type.
+      staffUnassigned: 1,
       rooms: 1,
       roomCapacity: 2,
       // Non-zero on the understaffed rung, so the coverage chip takes its
@@ -400,7 +450,11 @@ describe('message keys live in one registry', () => {
     ]) {
       expect(walked, `${rung} is never rendered by the coverage chip in this walk`).toContain(rung);
     }
-    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
+    // The delivery's own five, in its own order (ADR 0112 decision 3). Paired
+    // with `tests/unit/ui-hud-shell-state.test.ts`'s `HUD_TAB_IDS` assertion:
+    // `HUD_TAB_IDS` and `HUD_TABS` are two declarations of the same list, and
+    // these two assertions are what stop one of them drifting from the other.
+    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);
   });
 });

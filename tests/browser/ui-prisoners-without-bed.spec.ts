@@ -2,7 +2,8 @@ import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
 
 /**
- * *"N with no bed"* on the PRISONERS chip, in a real browser (issue #609).
+ * *"N not housed"* on the PRISONERS chip, in a real browser (issue #609;
+ * the noun moved from "bed" to "place" with issue #961's resident ceiling).
  *
  * ## Why a browser is required and `pnpm test` cannot cover this
  *
@@ -18,7 +19,7 @@ import './ui-harness-api';
  * ## And why the geometry is asserted rather than the text alone
  *
  * `.hud-strip__metrics` is `overflow-x: auto` with `scrollbar-width: none`
- * (`src/ui/hud/hud.css:155-165`). A chip that does not fit is therefore
+ * (`src/ui/hud/hud.css:217-218`). A chip that does not fit is therefore
  * scrolled out of sight **with no scrollbar to say so** -- present in the
  * DOM, reachable by `innerText`, and visible to nobody. Issue #629 is a
  * standing owner directive that information which exists and reaches nobody
@@ -63,6 +64,7 @@ async function setCounts(
           // fit into, and a strip whose other seven chips read "0" is a
           // narrower strip than any player sees.
           staff: 27,
+          staffUnassigned: 0,
           rooms: 61,
           prisonersCovered: 100,
           prisonersUnderstaffed: 30,
@@ -124,8 +126,8 @@ test.describe('the PRISONERS chip says how many have no bed (#609)', () => {
 
     expect(
       shortfall.text,
-      'the strip drew no "with no bed" badge for a twelve-prisoner prison with three beds',
-    ).toBe('9 with no bed');
+      'the strip drew no "not housed" badge for a twelve-prisoner prison with three beds',
+    ).toBe('9 not housed');
     expect(shortfall.tone).toBe('warning');
     expect(shortfall.chipValue, 'the chip must still answer "how many prisoners are there"').toBe('12');
 
@@ -199,7 +201,7 @@ test.describe('the PRISONERS chip says how many have no bed (#609)', () => {
     expect(
       afterRemoval.text,
       'the badge is silent in the one prison it exists for: a bed removed under a sleeping prisoner',
-    ).toBe('1 with no bed');
+    ).toBe('1 not housed');
     expect(afterRemoval.width).toBeGreaterThan(0);
     expect(afterRemoval.insideMetricsRow).toBe(true);
     expect(afterRemoval.chipValue).toBe('2');
@@ -214,12 +216,12 @@ test.describe('the PRISONERS chip says how many have no bed (#609)', () => {
     // place; a badge that is appended and never taken away is a strip that
     // reports a prison that has already been fixed.
     await setCounts(page, { prisoners: 12, occupiedPlaces: 3, prisonerCapacity: 3 });
-    expect((await readBadge(page)).text).toBe('9 with no bed');
+    expect((await readBadge(page)).text).toBe('9 not housed');
 
     await setCounts(page, { prisoners: 12, occupiedPlaces: 12, prisonerCapacity: 16 });
     const housed = await readBadge(page);
 
-    // Not "0 with no bed" and not an empty badge: no badge. `coverageTone`'s
+    // Not "0 not housed" and not an empty badge: no badge. `coverageTone`'s
     // recorded reason -- a strip where several things are always on teaches
     // players to ignore the one that matters -- and that note extends it past
     // amber to green.

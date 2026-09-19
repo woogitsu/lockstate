@@ -101,6 +101,24 @@ export interface TileRectangle {
  */
 export type RoomEnclosure = 'sealed' | 'open';
 
+/*
+ * **`RoomPerimeterAccess` and `roomPerimeterAccess` used to live here, and ADR
+ * 0108 moved the verdict out of this module rather than widening it.**
+ *
+ * The type they published had three values and the docblock on it stated the
+ * asymmetry in its own words: *"`'no-way-in'` is certain, `'doorway'` is
+ * necessary rather than sufficient, and no sentence built on this may claim
+ * more"*, handing the region question to `buildNavigationGraph`. #1006 measured
+ * what shipping a player-facing readout on the half that is not certain costs
+ * -- silence in exactly the state that costs 2,000 a day and every yard tick --
+ * and the answer is now `RoomAccess` in `./reachability.ts`, which asks this
+ * module's two perimeter questions first and the region question afterwards.
+ *
+ * What stays here is what this module can state honestly about one rectangle:
+ * `roomPerimeterEnclosure` above, and `roomPerimeterHoldsDoor` below.
+ */
+
+
 /**
  * Which edge of which tile the world stores a gap at.
  *
@@ -152,6 +170,31 @@ export interface RoomEdgeReader {
 }
 
 /**
+ * The one read `roomPerimeterHoldsDoor` needs from a door registry, named as a
+ * port for the reason `RoomEdgeReader` is one.
+ *
+ * `DoorRegistry.getByEdge` satisfies it structurally and every call site
+ * passes one. The return type is `unknown` rather than `DoorDefinition |
+ * undefined` deliberately: this module needs to know only whether an edge
+ * *has* a door, and a `DoorDefinition` here would import the navigation
+ * vocabulary -- its lock state, its cost multiplier, its permissions -- into a
+ * module that must not weigh any of it. A locked door is still a door to this
+ * question, which is the same policy `buildNavigationGraph` applies when it
+ * records a portal "regardless of its current lock state".
+ *
+ * `'left'` and `'top'` are `DoorSide`'s own spelling for the two edges the
+ * world stores, and they are the same two edges `RoomEnclosureGap` calls
+ * `'west'` and `'north'`. Two vocabularies for one pair of edges is not this
+ * module's to unify -- the door registry is keyed on one of them and
+ * `src/rendering/build/edge-picking.ts` on the other -- so the walk below
+ * reads a tile's north edge through `getTopEdge` and asks the registry for the
+ * same tile's `'top'`.
+ */
+export interface RoomDoorReader {
+  getByEdge(tile: TilePosition, side: 'left' | 'top'): unknown;
+}
+
+/**
  * Evaluates the perimeter of `rectangle` against the world's edge layers.
  *
  * A rectangle with a non-positive dimension has no perimeter to check and is
@@ -191,6 +234,59 @@ export function roomPerimeterEnclosure(world: RoomEdgeReader, rectangle: TileRec
   }
 
   return { enclosure: 'sealed' };
+}
+
+/**
+ * Whether any edge on `rectangle`'s perimeter carries a **registered door**.
+ *
+ * The second of this module's two perimeter questions, and the one that makes
+ * a crossing possible at all: `edgeStanding` (`../navigation/traversal.ts`)
+ * consults `DoorRegistry` *before* the edge value, and `buildNavigationGraph`
+ * records a portal for exactly that edge whatever its lock state. So a closed
+ * perimeter holding no door anywhere is a boundary no route can cross in either
+ * direction -- `traversal.ts` states it as a rule rather than an observation:
+ * *"any non-zero value with no registered door is an impassable wall"*.
+ *
+ * **It answers about the wall line and says nothing about what is behind it**,
+ * which is the whole reason `roomAccess` (`./reachability.ts`) exists to ask a
+ * second question of the region graph. A caller reading `true` here as "somebody
+ * can get in" is making exactly the claim #1006 was filed about.
+ *
+ * ## Determinism and cost
+ *
+ * The same canonical perimeter order `roomPerimeterEnclosure` walks -- north row
+ * west to east, then south row, then west column, then east column -- so the two
+ * walks cannot disagree about which edges belong to the rectangle. A pure read
+ * of the registry; it materialises nothing, for the reason that function gives.
+ * At most `2 * (width + height)` lookups, and it **returns on the first door
+ * found**, so the answer is a function of the rectangle rather than of the loop.
+ */
+export function roomPerimeterHoldsDoor(doors: RoomDoorReader, rectangle: TileRectangle): boolean {
+  if (rectangle.width < 1 || rectangle.height < 1) return false;
+
+  const left = rectangle.x;
+  const top = rectangle.y;
+  const right = rectangle.x + rectangle.width - 1;
+  const bottom = rectangle.y + rectangle.height - 1;
+
+  for (let x = left; x <= right; x += 1) {
+    // The rectangle's top boundary: this tile's own north edge, which the
+    // registry keys as `'top'`.
+    if (doors.getByEdge(tile(x, top), 'top') !== undefined) return true;
+  }
+  for (let x = left; x <= right; x += 1) {
+    // Its bottom boundary: the north edge of the row below it.
+    if (doors.getByEdge(tile(x, bottom + 1), 'top') !== undefined) return true;
+  }
+  for (let y = top; y <= bottom; y += 1) {
+    if (doors.getByEdge(tile(left, y), 'left') !== undefined) return true;
+  }
+  for (let y = top; y <= bottom; y += 1) {
+    // Its east boundary: the west edge of the column to its right.
+    if (doors.getByEdge(tile(right + 1, y), 'left') !== undefined) return true;
+  }
+
+  return false;
 }
 
 function tile(x: number, y: number): TilePosition {

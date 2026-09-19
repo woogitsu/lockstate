@@ -67,13 +67,14 @@ export type PrisonSyncStatus =
  * prison, so keep-local / keep-cloud / duplicate all apply.
  *
  * `local-ahead-of-cloud-baseline` is the offline case and is not the same
- * event. `create_save_version` accepts only `current_revision + 1`, and
- * `PrisonSaveRepository.markPendingSync` overwrites, so N offline saves leave
- * the local revision N ahead of a cloud that has not moved at all. Nothing
- * has diverged and there is nothing to choose between -- the local copy is
- * strictly newer -- but the push still cannot be made as-is. Collapsing it
- * into `cloud-ahead` would offer the player a choice between their own work
- * and an older copy of their own work.
+ * event. `create_save_version` accepts only `current_revision + 1`, and every
+ * durable save -- the interval autosave included -- advances
+ * `PrisonSlotMetadata.currentRevision`, so N offline saves leave the local
+ * revision N ahead of a cloud that has not moved at all. Nothing has diverged
+ * and there is nothing to choose between -- the local copy is strictly newer
+ * -- but the push still cannot be made as-is. Collapsing it into `cloud-ahead`
+ * would offer the player a choice between their own work and an older copy of
+ * their own work.
  */
 export type SyncConflictReason = 'cloud-ahead' | 'local-ahead-of-cloud-baseline';
 
@@ -89,12 +90,19 @@ export interface SaveListRow {
   readonly displayName: string | undefined;
   readonly availability: 'local-only' | 'cloud-only' | 'local-and-cloud';
   /**
-   * The local revision, when it is knowable.
+   * The prison's current local revision, when it is knowable.
    *
-   * `PrisonSlotMetadata` does not carry one: the only place a revision is
-   * recorded locally is `pendingSync.dirtySinceRevision`, which
-   * `clearPendingSync` deletes outright. So a fully synced prison reports
-   * `undefined` here rather than a number this layer would have had to invent.
+   * Read from `PrisonSlotMetadata.currentRevision`, which every durable save
+   * writes -- the interval autosave included. It used to be
+   * `pendingSync.dirtySinceRevision`, the one caller of which
+   * (`SessionController.saveNow`) is not on the interval-autosave path, so
+   * that marker could freeze at an old revision while the durable one moved
+   * on; #1097 measured a prison three autosaves ahead of it, which this
+   * projection then reported as `cloud-ahead` -- the multi-device divergence
+   * case -- on a prison strictly ahead of the cloud. `currentRevision` cannot
+   * drift the same way (see its own doc comment), so `undefined` here now
+   * means only "no generation has landed in this slot yet", not "nothing
+   * unsynced".
    */
   readonly localRevision: number | undefined;
   readonly cloudRevision: number | undefined;
@@ -145,7 +153,7 @@ function rowForLocal(
   cloud: CloudPrisonMetadata | undefined,
   input: SaveListProjectionInput,
 ): SaveListRow {
-  const localRevision = slot.pendingSync?.dirtySinceRevision;
+  const localRevision = slot.currentRevision;
   const failure = input.failures?.[slot.prisonId];
   const base = {
     prisonId: slot.prisonId,
@@ -164,7 +172,14 @@ function rowForLocal(
     return { ...base, availability: 'local-only', sync: 'local-only', conflict: undefined, failure: undefined };
   }
 
-  const conflict = localRevision === undefined ? undefined : conflictOf(localRevision, cloud.revision);
+  // Caught up with the cloud's own revision is `synced`, never a conflict --
+  // `currentRevision` is written on every save and is never cleared, so
+  // (unlike the old `pendingSync`-backed marker) it stays defined long after
+  // a prison is fully synced. `conflictOf` exists to arbitrate revisions that
+  // actually differ; calling it on equal ones would answer `cloud-ahead` on a
+  // prison with nothing left to push.
+  const conflict =
+    localRevision === undefined || localRevision === cloud.revision ? undefined : conflictOf(localRevision, cloud.revision);
   const availability = 'local-and-cloud' as const;
 
   // Precedence, most actionable first. A conflict outranks a recorded failure
@@ -173,7 +188,7 @@ function rowForLocal(
   // says which of #20's choices apply.
   if (conflict !== undefined) return { ...base, availability, sync: 'conflict', conflict, failure };
   if (failure !== undefined) return { ...base, availability, sync: 'sync-failed', conflict: undefined, failure };
-  if (localRevision === undefined) {
+  if (localRevision === undefined || localRevision === cloud.revision) {
     return { ...base, availability, sync: 'synced', conflict: undefined, failure: undefined };
   }
   return {

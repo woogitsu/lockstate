@@ -318,7 +318,7 @@ test('act 2: spending a prison into the red, one purchase at a time, and reading
   await read('after the refused purchase');
 
   // And the hire half of the same ruling, on the Security tab.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act, `the hire control reads ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -387,7 +387,7 @@ test('act 3: the worker refusing a hire and a purchase, in the host\'s words (#7
   // (1) Two presses of Hire inside one publication window. 80 each against 135
   // of facility left: the first fits, the second does not, and the host has
   // been told about neither by the time both are sent.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act, `the hire control reads ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -449,7 +449,7 @@ async function rosterRows(page: Page): Promise<readonly string[]> {
  * act hung for the whole ten minutes without printing a line.
  */
 async function openRosterFold(page: Page): Promise<boolean> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const section = page.locator('.hud-staff__roster');
   if ((await section.count()) === 0) return false;
   const collapsed = await section.getAttribute('data-collapsed', { timeout: 5000 });
@@ -491,7 +491,7 @@ test('act 4: a guard saved mid-walk, reloaded, and what the roster row says unti
   // stopped so the deployment starts from a known standstill.
   await play(page);
   await pause(page);
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < 3; index += 1) {
@@ -628,7 +628,7 @@ test('act 5: the longest sentence the alerts log can hold, read at 1280x720 and 
      * confirm. The alerts channel carries at most one refusal row, so this is
      * also the whole log.
      */
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -664,7 +664,7 @@ test('act 5: the longest sentence the alerts log can hold, read at 1280x720 and 
     log(act, `${at}: clipping over the whole HUD -> ${JSON.stringify(await clippingSweep(page), null, 0)}`);
 
     // The same sweep with every tab open in turn, since each swaps the aside.
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(250);
       const found = await clippingSweep(page);
@@ -694,9 +694,9 @@ test('act 6: the first half hour — twelve prisoners, four guards, three in-gam
     for (const [id, selector] of [
       ['overview', '.hud-overview'],
       ['build', '.hud-build'],
-      ['rooms', '.hud-rooms'],
-      ['security', '.hud-staff'],
-      ['regime', '.hud-regime'],
+      ['zones', '.hud-rooms'],
+      ['manage', '.hud-staff'],
+      ['day-plan', '.hud-regime'],
     ] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(250);
@@ -736,7 +736,7 @@ test('act 6: the first half hour — twelve prisoners, four guards, three in-gam
   };
 
   // Three in-game day boundaries at x4, sampling the whole counts series.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await openRosterFold(page);
   const startTick = await currentTick(page);
   for (let day = 1; day <= 3; day += 1) {
@@ -782,7 +782,7 @@ test('act 6: the first half hour — twelve prisoners, four guards, three in-gam
    * offers such a moment. That is the state ruling 24 is about, and act 4
    * could not manufacture it.
    */
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await openRosterFold(page);
   const hunt = Date.now();
   let caught: readonly string[] = [];
@@ -814,7 +814,7 @@ test('act 6: the first half hour — twelve prisoners, four guards, three in-gam
   await page.waitForTimeout(8000);
   const afterLoad = await latestCounts(page);
   log(act, `after load: ${JSON.stringify(afterLoad)}`);
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await openRosterFold(page);
   log(act, `roster immediately after load: ${JSON.stringify(await rosterRows(page))}`);
   if (beforeSave !== undefined && afterLoad !== undefined) {
@@ -855,7 +855,7 @@ test('act 5b: how wide the alert sentence actually gets, and how many lines that
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

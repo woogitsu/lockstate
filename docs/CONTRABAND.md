@@ -16,7 +16,7 @@ intelligence projections are distinct." `ContrabandRegistry` is the
 ground truth of what contraband actually exists, where, and how it got
 there -- this is never exposed wholesale to a UI. `IntelligenceLedger`
 records are one of the things a security-desk UI reads — and, since
-`src/simulation/presentation/contraband-projection.ts:53-60` takes five sources
+`src/simulation/presentation/contraband-projection.ts:64-71` takes five sources
 (`searchSystem`, `confiscations`, `intelligence`, `informants` and
 `searchPolicies`), not the only one. **This sentence said "the *only* thing"**,
 which an added source falsifies without touching it; that projection's own
@@ -141,18 +141,26 @@ holds no state: "is a sweep outstanding" is a prefix scan of
 new enters the payload.
 
 **Two conditions, and they are the cost.** A sector orders nothing unless (1)
-a guard is assigned to it and (2) the claimable pool can staff the order.
+a guard is assigned to it and (2) the **search** pool can staff the order.
 ADR 0073's Option A says *"guards on post search their own sector"*; taken
 literally that is not implementable, because `assignQueuedOrders` staffs from
-`claimableGuardIds` — the unassigned, post-eligible pool (ADR 0053) — never
-from a posted guard, so an order in a fully-posted prison would queue for ever.
-So the duty is *a staffed sector runs sweeps and a **spare** guard walks them*:
-a prison that hires exactly its posted requirement finds nothing, and the first
-hire past it is what makes contraband findable. Measured through the real
-command path (twelve admissions, three guards, sixteen in-game days): 63 sweeps
-completed, both introduced items found, none queued and none cancelled — against
-0/0/0 on the same prison and seed before ADR 0073
-(`tests/integration/contraband-search-duty.test.ts`).
+`claimableSearchGuardIds` — the unassigned, post-eligible pool (ADR 0053) less
+the guards held for incident response (issue #996) — never from a posted guard,
+so an order in a fully-posted prison would queue for ever. So the duty is
+*a staffed sector runs sweeps and a **spare** guard walks them*: a prison that
+hires exactly its posted requirement finds nothing.
+
+**Which hire turns searching on moved on 2026-09-05, and this paragraph said the
+other number.** It read *"the first hire past it is what makes contraband
+findable"*, measured at *"twelve admissions, three guards, sixteen in-game days:
+63 sweeps completed, both introduced items found"*. Since issue #996 a search
+may not claim the last `INCIDENT_RESPONSE_GUARD_RESERVE` free guards, so it is
+the **second** hire past the requirement, and the same prison with a fourth
+guard runs 64 sweeps over those sixteen days and finds both items — while the
+three-guard one runs none. The retired figures are kept because a reader
+comparing this file against an older branch needs to see which changed
+(`docs/research/2026-09-05-what-a-sweep-costs-the-response.md`,
+`tests/integration/contraband-search-duty.test.ts`).
 
 **What is still the owner's** is ADR 0073's Option B, the targeted search
 control: search *this* cell, *this* person, sweep *that* sector. The ADR
@@ -216,9 +224,9 @@ supply exactly one -- the caller, which already knows sector membership
 from wherever it authored the sector/cells, supplies the list rather than
 this system inferring it). `submitOrder` enqueues; the order **stays
 queued** (observably, via `getMetrics().searchesQueued`/`isQueued`) until
-enough post-eligible unassigned staff exist (`claimableGuardIds`,
-[ADR 0053](./adr/0053-who-may-stand-a-security-post.md)) to meet the scope's
-policy `requiredGuardCount` -- "searches create jobs and consume staff/
+enough post-eligible unassigned staff exist **beyond the incident reserve**
+(`claimableSearchGuardIds`, [ADR 0053](./adr/0053-who-may-stand-a-security-post.md)
+and issue #996) to meet the scope's policy `requiredGuardCount` -- "searches create jobs and consume staff/
 time rather than resolving instantly," and a real staffing diversion,
 since every guard a search claims is one `DeploymentSystem` cannot use to
 fill a sector shortage that same cycle.

@@ -68,12 +68,28 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
     // are where that is measured.
     cancelRefundMinorUnits: 80,
+    // `revision` (ADR 0107): distinct per order (`index + 1`) so the
+    // aiming assertions below -- which check the whole `cancel-build-order`
+    // intent, revision included -- are not vacuously true of rows sharing
+    // one value.
+    revision: index + 1,
   };
 }
 
 /**
- * A queue of `total` orders showing the first three, which is what the reader
- * asks for and what the block draws.
+ * A queue of `total` orders showing the first three.
+ *
+ * **That used to be "which is what the reader asks for and what the block
+ * draws", and #862 made the first half false.** `BuildQueueReader` now asks the
+ * projection for `BUILD_QUEUE_ROW_LIMIT` = 64 rows, so a real twelve-order
+ * queue arrives with all twelve in the window. The three-row window this
+ * fixture builds is still a state the panel must handle and still a state
+ * production produces -- it is what a queue *longer* than the pool looks like --
+ * so every case in this file is measuring something reachable, and what it is
+ * measuring is the narrow-window branch rather than the common one.
+ *
+ * The batch of orders that arrives whole, which is what #862 is about, is
+ * measured in `tests/browser/ui-build-queue-reach.spec.ts`.
  *
  * Twelve by default: one drag along twelve edges is the gesture #348 turned into
  * a 730-tick wait, and it is the gesture this whole surface is sized for.
@@ -292,7 +308,7 @@ test.describe('the Build panel queue', () => {
 
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01', revision: 2 })]);
 
     // One intent, for one order, and *not* an undo. The two are different
     // requests and the panel must never substitute one for the other.
@@ -425,7 +441,7 @@ test.describe('the Build panel queue', () => {
     await page.mouse.click(target.x, target.y);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01', revision: 2 })]);
 
     /*
      * The freed place stays blank for `BUILD_QUEUE_ROW_SETTLE_MS`, and
@@ -473,7 +489,7 @@ test.describe('the Build panel queue', () => {
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
     expect((await probeQueue(page)).sectionLaidOut).toBe(true);
 
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
     expect((await probeQueue(page)).sectionLaidOut).toBe(false);
 
     // Coming back shows nothing until the host answers again, which is the
@@ -523,7 +539,7 @@ test.describe('the Build panel queue', () => {
 
     // Away and back, which is `applyBuildQueue(undefined)` and then a fresh
     // answer -- the sweep's tab walk, in two lines.
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
     await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
 
@@ -549,7 +565,7 @@ test.describe('the Build panel queue', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-02'))).toBe(true);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02', revision: 3 })]);
   });
 
   test('leaves every revealed cancel inside the panel, scrolling to them where it has to', async ({ page }) => {

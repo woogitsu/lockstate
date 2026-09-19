@@ -187,7 +187,7 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- twenty
+What the test *asserts* is the shape and not any of these numbers -- twenty-one
 integers of counts, every one of them an integer scalar rather than a list, a
 refusal of exactly three scalars, and a serialized payload under a byte
 ceiling -- because the shape is the
@@ -300,6 +300,71 @@ The `payload` therefore gains an optional `refusal`:
 vocabularies behind it cannot collide, and closed so that a reason this build
 does not know fails at the decoder rather than reaching the HUD as a row with
 no sentence behind it.
+
+**That enumeration was exact for twenty-three days and is now incomplete. It
+is marked here rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both
+directions). The sentence above is what this amendment decided on 2026-08-24,
+and the three members it names are unchanged. `refusalSchema` gained a
+**fourth** on 2026-09-16, in #1261, implementing ADR 0091 decision 2 (option F,
+ruled by the owner that day):
+
+```ts
+routeDecidedSince: z.literal(true).optional()
+```
+
+**It is not a fourth member of the same kind, and that is what an editor who
+only lengthened the list would lose.** `sequence`, `tick` and `reason` are
+properties *of the refusal*: which one it is, when it happened, and why.
+`routeDecidedSince` is not a property of the refusal at all. It reports
+something that happened **after** it -- that the same command route has since
+decided another outcome -- and it rides on the refusal's record because that is
+where the reader already is. `RefusalLog` sets it on the standing record
+without touching any of the three: `sequence`, `tick`, `reason` and `count` are
+what they were, `last` still carries the record, and the alerts list still
+shows the row. The rule that consumes it lives in ADR 0091 and not here; what
+this ADR decides is the wire shape.
+
+**So why not a third sibling of `counts`, beside `refusal` and `zoning`?**
+Because the fact has no subject of its own. A sibling would have to carry a
+refusal's identity to say which refusal it was about -- which is the `sequence`
+it would then be duplicating -- and would have to be cleared in step with
+`record` replacing the refusal, an invariant spanning two fields where carrying
+it on the record is an invariant spanning none. `zoning` is a sibling because
+it *does* have its own subject: a room designation, with its own ordinal and
+its own tick. This has neither.
+
+**The `true`-or-absent shape is load-bearing rather than terse.** The fact is
+monotone per record -- a route that has decided something since cannot
+un-decide it while this refusal is the standing one, and a new `record`
+replaces the whole value -- so `z.literal(true).optional()` makes "present and
+false" *unrepresentable* rather than merely unused, and keeps this payload's
+own convention, in which `refusal` and `zoning` are absent when there is
+nothing to say rather than present and empty. It is also the choice that kept
+the change off the ~30 fixtures and ~15 `toEqual` assertions that spell
+`{ sequence, tick, reason }` out literally; #1261's price section reports both
+figures and reports that a required `boolean` would have paid them.
+
+**Nothing in the two sections below moves, and each holds for a reason worth
+stating rather than assuming.** "Why this shape, and why not a new message
+kind" argues that a snapshot channel may only carry snapshot-shaped things: one
+more scalar on a record that is already at most one is still not a queue, and
+*"the standing refusal's own route has decided something since"* is as plain a
+reading of the session at a tick as *"the last refusal was X"*. "Cost, and why
+the cadence still holds" is unchanged in its bound -- the flag is written from
+the command dispatch at the command's tick and only read by the publication --
+but the worker's *publish gate* is not: the flag turns over on a refusal whose
+ordinal never moves, so #1261 had to put a second watermark beside
+`_publishedRefusalSequence`, or the sequence gate would have suppressed the one
+publication the change exists to send. "Compatibility" holds for its own stated
+reason, unchanged: the member is optional, both peers are emitted from one
+build, and the envelope version stays `1`.
+
+**One sentence further up this section now reads narrower than it looks.**
+*"What the test asserts is the shape ... a refusal of exactly three scalars"*
+is still literally true of `tests/unit/worker-status-counts.test.ts`, whose
+`expect(Object.keys(payload.refusal)).toHaveLength(3)` runs against a payload
+that carries no `routeDecidedSince`. Read it as a statement about that fixture,
+not about the schema's ceiling, which is four.
 
 ### Why this shape, and why not a new message kind
 

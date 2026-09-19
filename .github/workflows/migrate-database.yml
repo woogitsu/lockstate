@@ -60,7 +60,7 @@ env:
 
 jobs:
   migrate:
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: self-hosted
     timeout-minutes: 30
     environment:
       name: ${{ inputs.target }}

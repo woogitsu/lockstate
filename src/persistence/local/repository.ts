@@ -1,4 +1,10 @@
-import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveDecodeError, type SaveEnvelope } from '../save-schema';
+import {
+  decodeSaveEnvelope,
+  decodeSaveEnvelopeUnlessTrusted,
+  type SaveDecodeError,
+  type SaveDecodeErrorCode,
+  type SaveEnvelope,
+} from '../save-schema';
 import {
   applyConfirmedRetention,
   applyGenerationRetention,
@@ -11,11 +17,50 @@ import {
 } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
-import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlotMetadata } from './store';
+import { decodeTombstoneRecord, encodeTombstoneRecord, tombstoneKeyOf } from './tombstone-schema';
+import type {
+  LocalSaveStore,
+  LocalSaveTransaction,
+  PendingSyncState,
+  PrisonSlotMetadata,
+  TombstoneGeneration,
+} from './store';
 
+/**
+ * What a compare-and-swap refusal found, so the caller can act on the fact
+ * rather than on prose (ADR 0109 Decision 4).
+ *
+ * Mirrors the cloud client's `conflict` arm, which hands back `cloudCurrent`
+ * for exactly the same reason (`src/persistence/cloud/memory-client.ts:90-92`):
+ * "refuse and drop" is the failure ADR 0105 exists to prevent wearing a new
+ * costume, and a caller cannot retry or report a refusal it cannot read.
+ */
+export interface StaleRevisionRefusal {
+  /** `metadata.currentRevision` as the refusing transaction found it. */
+  readonly durableRevision: number;
+  /** What the caller said it had last seen, and which no longer matches. */
+  readonly expectedRevision: number;
+}
+
+/**
+ * `revision` on the success arm is ADR 0109 Decision 1, and it is the half
+ * that stops a stale writer laundering its own divergence.
+ *
+ * The revision is now allocated **inside the transaction that compares it**,
+ * so the caller cannot know what was written until the write returns. Before
+ * this, `SessionController` allocated it from a counter it incremented on
+ * every successful save, and issue #582's FINAL-004 measured what that cost:
+ * a stale write's completion callback advanced a *different, newer* session's
+ * counter, because the callback was guarded by `prisonId` and a same-slot
+ * reload does not change one. The next ordinary save then built a perfectly
+ * consecutive successor to a durable state that session had never seen.
+ *
+ * Reporting the number back makes `session.revision` a cache of what the last
+ * write returned instead of an allocator, which is what closes that.
+ */
 export type SaveResult =
-  | { readonly ok: true; readonly generationId: string }
-  | { readonly ok: false; readonly error: SaveWriteError };
+  | { readonly ok: true; readonly generationId: string; readonly revision: number }
+  | { readonly ok: false; readonly error: SaveWriteError; readonly stale?: StaleRevisionRefusal };
 
 /**
  * The outcome of an import, which has two things to report that a save does
@@ -41,8 +86,8 @@ export type SaveResult =
  * worth being able to assert in a test.
  */
 export type SaveImportResult =
-  | { readonly ok: true; readonly generationId: string; readonly migrated: boolean }
-  | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError };
+  | { readonly ok: true; readonly generationId: string; readonly revision: number; readonly migrated: boolean }
+  | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError; readonly stale?: StaleRevisionRefusal };
 
 /**
  * What `demoteGeneration` did, and when it did nothing, why.
@@ -223,11 +268,78 @@ export interface CreatePrisonInput {
   readonly displayName?: string;
 }
 
+/**
+ * How long a deleted prison can be brought back (ADR 0114).
+ *
+ * **One day, and the number is load-bearing on a sentence.**
+ * `save.delete.confirm` tells the player, before they confirm, that they can
+ * bring the prison back "for one day" -- so this constant and that string are
+ * one claim written twice, and
+ * `tests/unit/persistence-local-repository.test.ts` pins them to each other.
+ * Changing it without changing the sentence ships a promise the code does not
+ * keep, which is `AGENTS.md`'s fourth reservation.
+ *
+ * A default on `PrisonSaveRepositoryOptions` rather than a literal inside
+ * `delete()`, for `keepGenerations`' reason: a policy number belongs where a
+ * caller can see it and a test can move it.
+ */
+export const DEFAULT_UNDO_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * One prison the player deleted and can still bring back.
+ *
+ * A summary rather than the `TombstoneRecord` itself, deliberately: the record
+ * holds every save payload the prison had, and handing those to a panel that
+ * wants a name and a deadline would put megabytes through the interface layer
+ * on every repaint. `restoreFromTombstone` reads the payloads where they live.
+ */
+export interface DeletedPrison {
+  readonly prisonId: string;
+  readonly displayName?: string;
+  readonly deletedAt: number;
+  /** When the undo closes. Informational for a display; never the gate -- see `restoreFromTombstone`. */
+  readonly expiresAt: number;
+}
+
+/**
+ * What an undo press actually did.
+ *
+ * Three refusals rather than one `false`, on issue #19's argument that distinct
+ * recoverable states must not collapse into one sentence: they call for
+ * different things to be said. `'window-closed'` is the only one that also
+ * destroys something, and it destroys the copy it just refused -- so the
+ * sentence "this prison can no longer be brought back" is true the instant it
+ * is said rather than true of a record still sitting on disk.
+ */
+export type RestoreRefusalReason = 'not-found' | 'window-closed' | 'slot-taken';
+
+/**
+ * The four things a press of "Bring it back" can have done, flattened.
+ *
+ * Named here rather than in the interface layer so that one definition
+ * serves the repository, `SessionController` and the panel's sentence mapping:
+ * a fifth outcome then fails `tsc` at the switch that chooses the sentence,
+ * rather than falling through to whichever sentence happens to be last.
+ */
+export type RestoreOutcome = 'restored' | RestoreRefusalReason;
+
+export type RestoreFromTombstoneResult =
+  | { readonly ok: true; readonly metadata: PrisonSlotMetadata }
+  | { readonly ok: false; readonly reason: RestoreRefusalReason };
+
+/** What the saves panel shows: the prisons a player has, and the ones they can still get back. */
+export interface SaveInventory {
+  readonly prisons: readonly PrisonSlotMetadata[];
+  readonly deleted: readonly DeletedPrison[];
+}
+
 export interface PrisonSaveRepositoryOptions {
   /** Current generation plus this many previous safe copies. Default 3 (current + 2 previous, matching the issue's minimum). */
   readonly keepGenerations?: number;
   readonly now?: () => number;
   readonly generateGenerationId?: () => string;
+  /** How long a deleted prison stays restorable. Default `DEFAULT_UNDO_WINDOW_MS`. */
+  readonly undoWindowMs?: number;
 }
 
 /**
@@ -247,10 +359,165 @@ async function writeSlot(tx: LocalSaveTransaction, metadata: PrisonSlotMetadata)
   await tx.putMetadata(encodePrisonSlotMetadata(metadata));
 }
 
-let generationSequence = 0;
+/**
+ * Reads every tombstone, deleting the ones that can no longer serve an undo.
+ *
+ * A free function rather than a method because two callers need it *inside a
+ * transaction they already hold* -- `listTombstones` and `listSaves` -- and the
+ * whole point of the second is that it costs one transaction rather than two.
+ *
+ * Two kinds are swept. A copy past its `expiresAt` is gone by definition. A
+ * record this build cannot validate is swept for the three reasons
+ * `tombstone-schema.ts` gives: it indexes nothing the player still has, it
+ * expires by construction, and a copy that cannot be read is a copy that can
+ * never be restored -- so holding it only costs the player bytes. A record
+ * whose own key is unreadable is left alone rather than guessed at, because a
+ * guessed key deletes some other prison's copy.
+ */
+async function sweepTombstones(tx: LocalSaveTransaction, now: number): Promise<readonly DeletedPrison[]> {
+  const restorable: DeletedPrison[] = [];
+  for (const record of await tx.listTombstones()) {
+    const tombstone = decodeTombstoneRecord(record);
+    if (tombstone === undefined) {
+      const key = tombstoneKeyOf(record);
+      if (key !== undefined) await tx.deleteTombstone(key);
+      continue;
+    }
+    if (now >= tombstone.expiresAt) {
+      await tx.deleteTombstone(tombstone.prisonId);
+      continue;
+    }
+    restorable.push({
+      prisonId: tombstone.prisonId,
+      ...(tombstone.metadata.displayName === undefined ? {} : { displayName: tombstone.metadata.displayName }),
+      deletedAt: tombstone.deletedAt,
+      expiresAt: tombstone.expiresAt,
+    });
+  }
+  return restorable;
+}
+
+/**
+ * A generation id no other realm can mint (#582 FINAL-022).
+ *
+ * **This read `gen-<Date.now() base36>-<module counter base36>` until
+ * 2026-09-09, and the counter was the defect.** Module state is per JavaScript
+ * realm, so every tab and every worker starts it at zero: two of them saving in
+ * the same millisecond minted the *same* id for different bytes. A generation
+ * id is the key the payload is stored under **and** the entry in
+ * `generationIds`, so a collision is one generation quietly overwriting
+ * another's bytes while both stay listed -- a corrupted save that reads as a
+ * healthy one.
+ *
+ * `crypto.randomUUID()` is this repository's stated convention for ids minted
+ * on the main thread (`src/ui/save-panel.ts`), and it needs no coordination
+ * between realms, which is the whole property a counter cannot have.
+ *
+ * **The one property `generation-policy.ts` reasons about is preserved and is
+ * pinned by a test**: a UUID emits only hex and `-`, so `!` remains a character
+ * this function cannot produce, and quarantine therefore still means "was
+ * quarantined" rather than "happened to be named that way".
+ */
 function defaultGenerationId(): string {
-  generationSequence += 1;
-  return `gen-${Date.now().toString(36)}-${generationSequence.toString(36)}`;
+  return `gen-${crypto.randomUUID()}`;
+}
+
+/**
+ * What a *decode* refusal licenses `loadCurrent` to do with the generation
+ * that produced it.
+ *
+ * ## The defect this replaces
+ *
+ * The walk had one bucket. Every generation it passed over on the way to one
+ * that decoded was named `confirmedInvalid` and handed to
+ * `recoverToGeneration`, which deletes -- and `decodeSaveEnvelope` returns six
+ * distinct codes, of which exactly one means *"the bytes are fine and this
+ * build is the wrong reader"*. So a generation written by a **newer** build
+ * was destroyed the moment an older readable one was found, on the strength of
+ * a refusal whose own meaning is that a reader exists. `migration.ts` had
+ * written the mechanism down without anybody reading it as a defect: it says
+ * of its own error union that `PrisonSaveRepository.loadCurrent` *"treats any
+ * `ok !== true` alike"*.
+ *
+ * That is the deletion [ADR 0065](../../../docs/adr/0065-what-happens-to-a-save-this-build-cannot-read.md)
+ * exists to prevent, one boundary below the one it decided. Its argument is
+ * about evidence rather than certainty and it transfers verbatim: for
+ * `unsupported-by-this-build`, *"a build that reads the bytes is known to
+ * exist -- it wrote them"*, and a save declaring a `saveSchemaVersion` this
+ * build has never heard of makes that claim more directly than a refused
+ * restore can. `SessionController.loadPrison` has honoured the distinction at
+ * the restore layer since #432; this is the same rule at the decode layer.
+ *
+ * ## The four outcomes, and why the reason has to travel with the id
+ *
+ * - `'record-absent'` -- the id is retained and no record answers to it. There
+ *   are no bytes to keep and none to destroy, so dropping the id from the
+ *   window is pure healing and is what this walk has always done.
+ * - `'undecodable-content'` -- this build read the bytes and reached a verdict
+ *   **about them**. Deleted, once a later generation has decoded, exactly as
+ *   before.
+ * - `'unsupported-version'` -- quarantined through `quarantineGeneration`,
+ *   which already carries ADR 0065's bound of one per prison and its exemption
+ *   from the retention budget. Nothing new is stored and no second store is
+ *   invented; the decode layer simply becomes a second caller of the mechanism
+ *   the restore layer already uses.
+ * - `'no-verdict'` -- our own migration chain failed, so no verdict about the
+ *   save has been reached at all. Nothing is deleted, nothing is marked and
+ *   nothing is repointed. This is #431's rule (`SnapshotRestoreFaultError`
+ *   costs the generation nothing) applied to the code fault that happens
+ *   earlier: `docs/PERSISTENCE.md`'s taxonomy calls
+ *   `migration-produced-invalid-output` *"a bug in the migration, not the
+ *   input"*, and a build must not delete a player's save on the strength of
+ *   its own bug.
+ *
+ * ## `invalid-shape` is deliberately NOT decided here
+ *
+ * It stays in `'undecodable-content'`, which is exactly what it did before
+ * this change, and that is a decision **declined** rather than taken.
+ * `docs/PERSISTENCE.md` records that an optional field added without a format
+ * bump is refused by an older `.strict()` schema as `invalid-shape` where a
+ * version bump would have produced `unsupported-version` -- *"Both builds
+ * refuse it; only the diagnosis differs."* So the code is ambiguous: sometimes
+ * a real future-build mismatch whose bytes a newer build reads, sometimes
+ * genuine corruption. Routing it either way is an amendment to ADR 0065's
+ * taxonomy, and `AGENTS.md` and `CLAUDE.md` both put an absent architectural
+ * decision in an ADR rather than in implementation code.
+ * `docs/adr/drafts/decode-refusals-and-the-ambiguity-of-invalid-shape.md` is
+ * that proposal. Until it is ruled on, this arm behaves as it always has.
+ *
+ * `no-migration-path` is grouped with the migrator faults rather than with the
+ * version mismatch for the same care: `docs/PERSISTENCE.md` describes it as
+ * *"A declared or intermediate version has no registered schema/migration"*,
+ * which is a gap in this build's chain and not a reading of the bytes. It
+ * therefore gets the outcome that asserts least -- nothing -- rather than the
+ * prison's one quarantine slot, which ADR 0065 decision 1 allocated to the
+ * verdict with a demonstrated reader behind it.
+ */
+type DecodeRefusalVerdict = 'record-absent' | 'undecodable-content' | 'unsupported-version' | 'no-verdict';
+
+/**
+ * The mapping above, as code. Exhaustive over `SaveDecodeErrorCode` on
+ * purpose: a seventh decode code has to decide keep-or-delete here rather than
+ * inheriting whichever branch happened to be the fallback, and `never` makes
+ * adding one a typecheck failure at this line -- the same guard
+ * `SessionController.loadPrison` puts on the restore taxonomy.
+ */
+function verdictForDecodeRefusal(code: SaveDecodeErrorCode): DecodeRefusalVerdict {
+  switch (code) {
+    case 'unsupported-version':
+      return 'unsupported-version';
+    case 'no-migration-path':
+    case 'migration-produced-invalid-output':
+    case 'migration-step-threw':
+      return 'no-verdict';
+    case 'invalid-shape':
+    case 'checksum-mismatch':
+      return 'undecodable-content';
+    default: {
+      const unhandled: never = code;
+      throw new Error(`Unhandled save decode error code "${String(unhandled)}"; a refused generation has no retention verdict.`);
+    }
+  }
 }
 
 /**
@@ -265,6 +532,7 @@ export class PrisonSaveRepository {
   private readonly keepGenerations: number;
   private readonly now: () => number;
   private readonly generateGenerationId: () => string;
+  private readonly undoWindowMs: number;
 
   public constructor(
     private readonly store: LocalSaveStore,
@@ -273,6 +541,7 @@ export class PrisonSaveRepository {
     this.keepGenerations = options.keepGenerations ?? 3;
     this.now = options.now ?? Date.now;
     this.generateGenerationId = options.generateGenerationId ?? defaultGenerationId;
+    this.undoWindowMs = options.undoWindowMs ?? DEFAULT_UNDO_WINDOW_MS;
   }
 
   public async list(): Promise<readonly PrisonSlotMetadata[]> {
@@ -295,6 +564,10 @@ export class PrisonSaveRepository {
         prisonId: input.prisonId,
         gameVersion: input.gameVersion,
         currentGenerationId: undefined,
+        // Omitted rather than set to `undefined`: unlike `currentGenerationId`
+        // (typed `string | undefined`, always present), `currentRevision` is
+        // genuinely optional -- see its doc comment in `store.ts` -- and
+        // `exactOptionalPropertyTypes` distinguishes the two.
         generationIds: [],
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -305,14 +578,267 @@ export class PrisonSaveRepository {
     });
   }
 
+  /**
+   * Deletes a prison, and keeps one restorable copy of it until the undo window
+   * closes (ADR 0114).
+   *
+   * ## What changed, and what deliberately did not
+   *
+   * **This used to be a destruction and is now a move.** The body read, in
+   * full:
+   *
+   * ```ts
+   * const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
+   * if (metadata === undefined) return;
+   * for (const generationId of metadata.generationIds) {
+   *   await tx.deleteGeneration(prisonId, generationId);
+   * }
+   * await tx.deleteMetadata(prisonId);
+   * ```
+   *
+   * Everything it did, it still does: the slot and every generation it
+   * references leave the `prisons` and `generations` stores, `list()` stops
+   * returning the prison, and a deletion of a prison that is not there is still
+   * a no-op that writes nothing. The signature, the return type and the
+   * observable contract of `list()` are untouched, which is why
+   * `tests/unit/persistence-local-repository.test.ts`'s two existing deletion
+   * tests pass unmodified.
+   *
+   * ## Why it is the same transaction and not a second one
+   *
+   * This is the property the whole design rests on, and ADR 0114 rejected a
+   * separate database on exactly it: a real IndexedDB transaction cannot span
+   * two databases, so a copy held anywhere else would need a second transaction
+   * with no way to commit both as one unit. A crash between them either leaves
+   * the prison *and* a spurious copy, or -- the defect this feature exists to
+   * prevent -- deletes the prison with the copy still unwritten. One
+   * transaction has neither failure mode: the tombstone and the deletions
+   * commit together or nothing happens at all.
+   *
+   * The **order inside it** is `writeGeneration`'s order for `writeGeneration`'s
+   * reason: what is being kept is staged before anything is thrown away.
+   *
+   * ## What the copy holds
+   *
+   * The slot record verbatim and every generation `generationIds` actually
+   * names, not merely `currentGenerationId`. The retention window may hold more
+   * than `keepGenerations` -- one extra for an unproven import (#438) and one
+   * again for a generation quarantined as unreadable by this build (#432) -- so
+   * the copy reads the ids the slot really carries rather than a number assumed
+   * in advance, and a restore gives the player back the same ladder they could
+   * have recovered down before they deleted it.
+   *
+   * A generation id that `generationIds` names and storage does not hold is
+   * skipped rather than stored as `undefined`. That is not a defect being
+   * papered over: `loadCurrent`'s recovery walk already treats a missing
+   * generation as one to step past, so a prison with a gap restores to exactly
+   * the prison it was.
+   */
   public async delete(prisonId: string): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
+
+      const generations: TombstoneGeneration[] = [];
+      for (const generationId of metadata.generationIds) {
+        const value = await tx.getGeneration(prisonId, generationId);
+        if (value !== undefined) generations.push({ generationId, value });
+      }
+
+      const deletedAt = this.now();
+      // Staged before a single delete below, so a transaction that does not
+      // commit leaves the prison exactly where it was.
+      await tx.putTombstone(
+        encodeTombstoneRecord({
+          prisonId,
+          metadata: encodePrisonSlotMetadata(metadata),
+          generations,
+          deletedAt,
+          expiresAt: deletedAt + this.undoWindowMs,
+        }),
+      );
+
       for (const generationId of metadata.generationIds) {
         await tx.deleteGeneration(prisonId, generationId);
       }
       await tx.deleteMetadata(prisonId);
+    });
+  }
+
+  /**
+   * Every prison that can still be brought back, sweeping as it reads (ADR
+   * 0114).
+   *
+   * ## Why the expiry is enforced here rather than by a timer
+   *
+   * **There is no scheduler in this application, and this is designed around
+   * that rather than adding one.** No `setInterval` exists in `main.ts`,
+   * `save-panel.ts`, `session-controller.ts` or this file that could drive an
+   * expiry; the save panel's `refresh()` runs at mount and after every action,
+   * and nothing runs on a clock. So the fact "is this copy still good" is
+   * recomputed from a stored timestamp wherever it is read, exactly as
+   * `docs/PERSISTENCE.md`'s `SafetyCoverageSystem` census is recomputed rather
+   * than carried.
+   *
+   * A `setTimeout`-based window would be strictly worse, not merely different:
+   * it dies with the tab, so a player who closes the game mid-window loses both
+   * the undo *and* the sweep, leaving bytes nothing would ever free. The cost
+   * of doing it this way, named rather than hidden, is that **a copy can
+   * physically outlive its window by as long as the player goes between
+   * sessions** -- it is swept at the first read past `expiresAt`, and if that
+   * read is a month late, so is the sweep. It is never *offered* late, which is
+   * the half that reaches the player.
+   *
+   * ## Why it is a `readwrite` transaction for what reads like a query
+   *
+   * Because sweeping is the enforcement. Returning expired copies and letting a
+   * caller filter them would make every caller responsible for the window, and
+   * the one that forgot would show a player an undo that `restoreFromTombstone`
+   * then refuses.
+   *
+   * A record that fails validation is swept in the same pass and for a reason
+   * `tombstone-schema.ts` gives at length: unlike a slot record, a tombstone
+   * indexes nothing the player still has, expires by construction, and cannot
+   * serve the one purpose it exists for if this build cannot read it.
+   */
+  public async listTombstones(): Promise<readonly DeletedPrison[]> {
+    return this.store.runTransaction('readwrite', (tx) => sweepTombstones(tx, this.now()));
+  }
+
+  /**
+   * Both halves of what the saves panel shows, from **one** transaction.
+   *
+   * ## Why this exists rather than the panel calling two methods
+   *
+   * It did call two, and that was measured as a cost rather than argued as
+   * one. `SavePanel.refresh()` runs after every action in the panel, and the
+   * browser reachability sweep (`app-shell.spec.ts`, #88) presses every control
+   * on every tab at every viewport -- which is the one test in this repository
+   * that multiplies a per-refresh cost by enough to see it. On `origin/main`
+   * that test finished in **2.9 minutes against a 3.0-minute cap**; with a
+   * second transaction added to every refresh it stopped finishing at all. One
+   * transaction puts the cost back where it was.
+   *
+   * ## And it is the more correct shape anyway
+   *
+   * Two reads are two snapshots. Between them a prison can be deleted, and the
+   * panel would then draw a list holding it in **neither** half -- present in
+   * neither `prisons` (the delete committed after the first read) nor
+   * `deleted` (the tombstone was written before the second). One transaction
+   * cannot see that state, so the list the player reads is always a list that
+   * actually existed.
+   *
+   * `readwrite`, because the sweep is what enforces the undo window and a
+   * read-only list would leave every caller responsible for an expiry it
+   * cannot enforce.
+   */
+  public async listSaves(): Promise<SaveInventory> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const stored = await tx.listMetadata();
+      // `list()`'s rule, unchanged and deliberately not softened here: one
+      // unreadable record refuses the whole list rather than being skipped.
+      const prisons = stored.map((record) => requirePrisonSlotMetadata(record));
+      const deleted = await sweepTombstones(tx, this.now());
+      return { prisons, deleted };
+    });
+  }
+
+  /**
+   * Brings a deleted prison back, whole (ADR 0114).
+   *
+   * ## The gate is this call's own clock reading, never a display
+   *
+   * `now() >= expiresAt` is evaluated here, inside the transaction that would
+   * do the writing, against the `expiresAt` that is actually stored. Whatever a
+   * panel last painted is a display convenience and is not consulted, which is
+   * `pressDeleteConfirmation`'s discipline one layer up
+   * (`src/ui/save-panel-delete.ts`) applied to a deadline instead of a subject:
+   * a countdown a few seconds stale can therefore never let a late press
+   * through, and never refuse an early one.
+   *
+   * A refusal for a closed window **deletes the copy as it refuses**. Without
+   * that, "this prison can no longer be brought back" would be a sentence made
+   * false by the record still sitting there.
+   *
+   * ## Why the restore bypasses `create()` and `importSave()`
+   *
+   * Because neither can give the prison back unchanged, which is the whole
+   * claim the player is told. `create()` stamps `createdAt` from the clock, and
+   * `importSave` writes one generation into a slot through `writeGeneration`,
+   * which allocates a fresh revision and applies retention -- so rebuilding a
+   * prison through them would hand back a prison with a new creation date and a
+   * generation ladder rebuilt one eviction at a time. This writes the stored
+   * slot record and every stored generation back exactly as they were:
+   * same `createdAt`, same `updatedAt`, same `currentRevision`, same ladder.
+   *
+   * Nothing is re-encoded on the way back either. A generation re-enters the
+   * system where every freshly-read generation does -- through
+   * `decodeSaveEnvelope`, on `loadCurrent`'s recovery walk -- so a generation
+   * that was unreadable before the deletion is exactly as unreadable after the
+   * restore, and this method invents no integrity guarantee and removes none.
+   *
+   * `'slot-taken'` is the case where the player created a new prison under the
+   * same id while the window was open. Refusing is the only honest answer:
+   * writing the copy over it would destroy a live prison to undo a dead one,
+   * and merging them is not a thing a restore can mean.
+   */
+  public async restoreFromTombstone(prisonId: string): Promise<RestoreFromTombstoneResult> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const raw = await tx.getTombstone(prisonId);
+      const tombstone = decodeTombstoneRecord(raw);
+      if (tombstone === undefined) {
+        // Absent, or present and unreadable. The second is swept here for the
+        // same reason `listTombstones` sweeps it, and `raw === undefined`
+        // makes the delete a no-op rather than a special case.
+        if (raw !== undefined) await tx.deleteTombstone(prisonId);
+        return { ok: false, reason: 'not-found' };
+      }
+
+      if (this.now() >= tombstone.expiresAt) {
+        await tx.deleteTombstone(prisonId);
+        return { ok: false, reason: 'window-closed' };
+      }
+
+      // Throws `CorruptSlotMetadataError` on an unreadable live slot, which is
+      // the right answer: this cannot know whether that record is a prison the
+      // player still wants, so it writes nothing over it.
+      if (readSlot(await tx.getMetadata(prisonId), prisonId) !== undefined) {
+        return { ok: false, reason: 'slot-taken' };
+      }
+
+      for (const generation of tombstone.generations) {
+        await tx.putGeneration(prisonId, generation.generationId, generation.value);
+      }
+      // Last of the writes, for `writeGeneration`'s reason: the record that
+      // makes the prison visible is staged after the payloads it points at.
+      await writeSlot(tx, tombstone.metadata);
+      await tx.deleteTombstone(prisonId);
+      return { ok: true, metadata: tombstone.metadata };
+    });
+  }
+
+  /**
+   * Throws away a deleted prison's copy now, without waiting for the window
+   * (ADR 0114, the owner's ruling of 2026-09-14).
+   *
+   * **This exists because an undo window holds bytes, and the product already
+   * tells a player that deleting a prison is how you get bytes back.**
+   * `save.status.quota-exceeded` says, verbatim on this tree, *"Storage is
+   * full. Delete an old prison or export and remove saves to free space. Your
+   * previous save is intact."* A player who follows that advice under the
+   * design in ADR 0114 §§1-3 would not actually free the space until the window
+   * closed -- the player who most needs the bytes served worst by the feature.
+   * §6 named the trade-off and refused to settle it; the owner settled it by
+   * adding this rather than by shortening the window or skipping the copy near
+   * quota, so the undo promise stays whole and the player is given a deliberate
+   * way out of it.
+   *
+   * Deleting a tombstone that is not there is a no-op, exactly as deleting a
+   * prison that is not there is.
+   */
+  public async forgetTombstone(prisonId: string): Promise<void> {
+    await this.store.runTransaction('readwrite', async (tx) => {
+      await tx.deleteTombstone(prisonId);
     });
   }
 
@@ -330,9 +856,23 @@ export class PrisonSaveRepository {
    * import, a value read back from storage, anything that crossed a process
    * or serialization boundary, and anything merely *cast* to the trusted type
    * — is still fully validated here before it can reach storage.
+   *
+   * **`expectedRevision` is the caller's claim about what it last saw**, and
+   * the write is refused with `'stale-revision'` when the slot disagrees (ADR
+   * 0109 Decision 1). The envelope's own `revision` is ignored on the way in
+   * and re-stamped on the way down; see `writeGeneration` for why that is
+   * cheap and for what happens on a slot that has no `currentRevision` yet.
+   *
+   * It is optional because two callers legitimately have no claim to make: a
+   * brand-new prison's first generation, whose slot has no durable revision at
+   * all, and the browser harness's direct writes. Passing nothing is "write
+   * whatever is next", which is what this method did unconditionally before
+   * and is therefore the behaviour-preserving default -- **and it is not a
+   * safe default for a session**, which is why `SessionController` always
+   * passes one.
    */
-  public async save(prisonId: string, envelope: SaveEnvelope): Promise<SaveResult> {
-    return this.writeGeneration(prisonId, envelope, applyGenerationRetention);
+  public async save(prisonId: string, envelope: SaveEnvelope, expectedRevision?: number): Promise<SaveResult> {
+    return this.writeGeneration(prisonId, envelope, applyGenerationRetention, expectedRevision);
   }
 
   /**
@@ -357,6 +897,7 @@ export class PrisonSaveRepository {
     prisonId: string,
     envelope: SaveEnvelope,
     retentionFor: (existing: readonly string[], newGenerationId: string, keep: number) => GenerationRetentionResult,
+    expectedRevision: number | undefined,
   ): Promise<SaveResult> {
     const decoded = decodeSaveEnvelopeUnlessTrusted(envelope);
     if (!decoded.ok) {
@@ -373,6 +914,8 @@ export class PrisonSaveRepository {
       return { ok: false, error: { code: 'unknown-error', message: `Refusing to write generation "${generationId}": that id is reserved for a quarantined generation.` } };
     }
 
+    let refusal: StaleRevisionRefusal | undefined;
+    let allocatedRevision = decoded.value.revision;
     try {
       await this.store.runTransaction('readwrite', async (tx) => {
         const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
@@ -380,12 +923,103 @@ export class PrisonSaveRepository {
           throw new Error(`Prison "${prisonId}" does not exist. Call create() first.`);
         }
 
-        await tx.putGeneration(prisonId, generationId, decoded.value);
+        const durableRevision = metadata.currentRevision;
+
+        /*
+         * THE COMPARISON (ADR 0109 Decision 1, ADR 0105 option 2).
+         *
+         * The slot is already read inside this transaction, so the comparison
+         * costs no extra round trip -- that is the whole of why option 2 was
+         * cheap. IndexedDB serialises the transaction, so the read and the
+         * write below cannot be interleaved by another writer: atomicity was
+         * never the missing property, the comparison was.
+         *
+         * `durableRevision === undefined` FAILS OPEN, exactly once per slot,
+         * and that is deliberate rather than an oversight. `currentRevision`
+         * is optional and "nothing repairs it retroactively; the slot's next
+         * durable save populates it" (`slot-metadata-schema.ts`), so a slot
+         * written before #1097 -- or the sliver between `create()` and its
+         * first generation -- has nothing to compare against. Refusing there
+         * would make every pre-#1097 prison unsaveable, which is a worse
+         * failure than the one this guards. ADR 0109's open question 2 records
+         * that this is a hole one tab can drive through on such a slot, and
+         * that whether to backfill on read instead is not settled.
+         *
+         * `expectedRevision === undefined` is the caller declining to make a
+         * claim -- see `importSave`, which is handed a file rather than a
+         * session's own state and so has no "what did I last see" to offer.
+         */
+        if (expectedRevision !== undefined && durableRevision !== undefined && expectedRevision !== durableRevision) {
+          refusal = { durableRevision, expectedRevision };
+          return;
+        }
+
+        /*
+         * THE ALLOCATION (ADR 0109 Decision 1).
+         *
+         * Stamped here rather than taken from the envelope, because the
+         * caller's number was read before this transaction opened and is
+         * therefore a guess about a slot it does not hold. `session.revision +
+         * 1` computed in `SessionController.buildEnvelope` is what issue
+         * #582's FINAL-005 measured going wrong: two overlapping saves both
+         * built revision 2 from the same counter value, both reported success,
+         * and the third landed on 4 because the counter had been advanced
+         * twice while one revision-2 write survived. On-disk: 1, 2, 4.
+         *
+         * **This is affordable because `revision` sits outside the checksum.**
+         * `createSaveEnvelope` hashes the payload only --
+         * `checksum: computeSaveChecksum(payload as JsonValue)` at
+         * `save-schema.ts:1910`, inside `createSaveEnvelope` -- and puts `revision`
+         * in the metadata beside
+         * it. So re-stamping it invalidates no checksum, moves no schema
+         * version, and leaves `decodeSaveEnvelope` unaffected. ADR 0105 left
+         * the choice between "a lock, a queue, or allocating the revision at
+         * write time" open because it did not have that fact; ADR 0109
+         * Context 4 establishes it and this is what it buys.
+         *
+         * The spread rather than a mutation is not a style choice: a trusted
+         * envelope is `Object.freeze`d by `markTrusted`, so assigning to it
+         * would throw in strict mode and silently do nothing outside it.
+         */
+        /*
+         * **A slot that cannot speak for itself keeps the caller's number**,
+         * and this is not a shortcut -- allocating 1 there is a defect, found
+         * by `tests/unit/persistence-local-repository.test.ts`'s #1097 backfill
+         * case going red on `expected 1 to be 4`.
+         *
+         * `currentRevision` is absent on a slot written before #1097, and such
+         * a slot can hold generations at revision 40. Allocating `0 + 1` would
+         * make the *newest* generation revision 1 while an older retained one
+         * is 40 -- an ordering inversion on disk -- and would drop the slot's
+         * `currentRevision` from 40 to 1 under
+         * `src/ui/account/save-list-projection.ts:156`, which classifies cloud
+         * drift by exactly that number. So the first write to such a slot
+         * carries the sequence forward instead, and every write after it is
+         * allocated here, because by then the slot has a revision to speak
+         * with. That is the same "fail open exactly once" this method's
+         * comparison does, applied to the allocation.
+         */
+        allocatedRevision = durableRevision === undefined ? decoded.value.revision : durableRevision + 1;
+        const record: SaveEnvelope = { ...decoded.value, revision: allocatedRevision };
+
+        await tx.putGeneration(prisonId, generationId, record);
 
         const retention = retentionFor(metadata.generationIds, generationId, this.keepGenerations);
         await writeSlot(tx, {
           ...metadata,
           currentGenerationId: generationId,
+          // Every route that lands a generation goes through this one write,
+          // the interval autosave included (`SessionController`'s
+          // `AutosaveScheduler` calls `save()` directly, never `saveNow`) --
+          // which is exactly the choke point #1097 needed: a revision number
+          // that cannot drift behind the durable generation it describes,
+          // because it is written in the same transaction as that generation
+          // rather than by a separate, easily-missed call.
+          //
+          // It is now also written in the same transaction that *allocated*
+          // it, so the pointer and the generation cannot disagree even in
+          // principle: they are the same number, not two computations of it.
+          currentRevision: allocatedRevision,
           generationIds: retention.generationIds,
           updatedAt: this.now(),
         });
@@ -398,42 +1032,93 @@ export class PrisonSaveRepository {
       return { ok: false, error: classifyStoreError(error) };
     }
 
-    return { ok: true, generationId };
+    if (refusal !== undefined) {
+      const found: StaleRevisionRefusal = refusal;
+      return {
+        ok: false,
+        error: {
+          code: 'stale-revision',
+          message: `Refusing to persist a stale generation of "${prisonId}": the caller last saw revision ${found.expectedRevision}, and the slot is at revision ${found.durableRevision}.`,
+        },
+        stale: found,
+      };
+    }
+
+    return { ok: true, generationId, revision: allocatedRevision };
   }
 
   /**
    * Startup recovery policy: try the current generation first; if it is
    * missing or fails schema/checksum validation, walk the remaining
    * generations newest-first and adopt the first one that validates,
-   * updating the pointer so the corrupt generation is not retried on every
-   * boot. Returns `no-valid-generation` only when nothing in the retained
-   * window validates -- and, exactly as before, having deleted nothing in
-   * that case.
+   * updating the pointer so a generation this build has judged is not retried
+   * on every boot. Returns `no-valid-generation` only when nothing in the
+   * retained window validates -- and, exactly as before, having deleted
+   * nothing in that case.
    *
-   * **Nothing is deleted here except generations this call proved
-   * undecodable, and only once a *later* one has decoded.** A generation the
-   * caller asked to `skip` is not judged by this method at all, so it is
-   * neither returned nor retired; see `LoadCurrentOptions.skip`.
+   * **A refusal is not consent to delete, and which refusal it was decides
+   * what happens.** The walk carries each refusal's decode code with the
+   * generation id that produced it and splits the outcomes four ways; see
+   * `DecodeRefusalVerdict` for the whole mapping and for the one arm this
+   * change deliberately leaves as it found it. Only `'record-absent'` and
+   * `'undecodable-content'` reach `recoverToGeneration`, and only once a
+   * *later* generation has decoded.
+   *
+   * A generation the caller asked to `skip` is not judged by this method at
+   * all, so it is neither returned nor retired; see `LoadCurrentOptions.skip`.
    */
   public async loadCurrent(prisonId: string, options: LoadCurrentOptions = {}): Promise<LoadResult> {
     const metadata = readSlot(await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId)), prisonId);
     if (metadata === undefined) return { ok: false, reason: 'not-found' };
 
     const candidates = [...metadata.generationIds].reverse().filter((id) => options.skip?.has(id) !== true); // newest first
-    for (const [index, generationId] of candidates.entries()) {
+    // Newest-first, like the walk, which is what lets `quarantineGeneration`
+    // below apply ADR 0065 decision 3's bound without this method restating
+    // it: the newest claimant is offered the slot first and an older one is
+    // then declined by that method rather than by a rule written twice.
+    const refused: { readonly generationId: string; readonly verdict: DecodeRefusalVerdict }[] = [];
+    for (const generationId of candidates) {
       const raw = await this.store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
       const decoded = raw === undefined ? undefined : decodeSaveEnvelope(raw);
-      if (decoded?.ok !== true) continue;
+      if (decoded === undefined) {
+        refused.push({ generationId, verdict: 'record-absent' });
+        continue;
+      }
+      if (!decoded.ok) {
+        refused.push({ generationId, verdict: verdictForDecodeRefusal(decoded.error.code) });
+        continue;
+      }
 
-      // Everything this walk passed over is confirmed-invalid: it was read
-      // and it did not decode. Skipped generations are not in `candidates`,
-      // so they can never end up here.
-      const confirmedInvalid = candidates.slice(0, index);
+      // Everything below is housekeeping earned by *this* decode: a generation
+      // went through the same schema, migration and checksum on the same build
+      // moments ago and came back a save. That is what turns each refusal above
+      // from "this build can read nothing" into "this build cannot read that
+      // one". Skipped generations are not in `candidates`, so they can never
+      // end up here.
+      const confirmedInvalid = refused
+        .filter((entry) => entry.verdict === 'record-absent' || entry.verdict === 'undecodable-content')
+        .map((entry) => entry.generationId);
+
+      // Before the deletions rather than after, so that a storage failure
+      // here leaves the disk exactly as it was: quarantine is the arm that
+      // *keeps* bytes, and a partial run of this housekeeping must not be one
+      // that destroyed the readable generations and failed to keep the
+      // unreadable one. The next load reaches the same verdicts and finishes
+      // the job -- the same self-healing the walk itself is built on.
+      for (const { generationId: unsupportedGenerationId } of refused.filter(
+        (entry) => entry.verdict === 'unsupported-version',
+      )) {
+        await this.quarantineGeneration(prisonId, unsupportedGenerationId);
+      }
+
       // The other reason the generation that decoded is not the current one
       // is a pointer that has fallen outside the retained window, which this
       // read heals. A pointer that is retained and simply older than the
       // generation returned is left alone -- moving it would be a write on a
-      // read that retired nothing.
+      // read that retired nothing. A pointer left naming a *newer* generation
+      // this walk refused is left alone for the same reason, and costs
+      // nothing: the walk is newest-first regardless of what the pointer says,
+      // and `quarantineGeneration` moves it itself when it marks the record.
       const pointerIsRetained =
         metadata.currentGenerationId !== undefined && metadata.generationIds.includes(metadata.currentGenerationId);
       if (confirmedInvalid.length > 0 || !pointerIsRetained) {
@@ -797,14 +1482,45 @@ export class PrisonSaveRepository {
         rejected: decoded.error,
       };
     }
-    const result = await this.writeGeneration(prisonId, decoded.value, applyProvisionalRetention);
+    /*
+     * **No expected revision, which is ADR 0109's open question 1 answered
+     * the way it guessed an implementer might.**
+     *
+     * That question is *"Does `importSave` take the same CAS? It writes a
+     * generation the player was handed rather than one a session produced, so
+     * 'what did the writer last see' has no obvious answer for it."* It has
+     * none here either: the file's own `revision` describes the slot it was
+     * exported from, which may be a different prison on a different machine,
+     * and the player pressing Import is asking for this file to become the
+     * newest generation rather than asserting anything about the slot. So
+     * import is an explicit overwrite arm and passes no claim.
+     *
+     * It still takes the *allocation* half, and that is the part that matters:
+     * `writeGeneration` stamps `currentRevision + 1` regardless, so an
+     * imported file cannot land carrying a revision from another slot's
+     * sequence and cannot leave a hole behind it. Before this, a file exported
+     * at revision 40 imported into a slot at revision 3 wrote `currentRevision:
+     * 40` and the next ordinary save built 4 -- a pointer that went backwards.
+     */
+    const result = await this.writeGeneration(prisonId, decoded.value, applyProvisionalRetention, undefined);
     return result.ok ? { ...result, migrated: decoded.migrated } : result;
   }
 
+  /**
+   * Records that the prison has unpushed local work, at the revision it first
+   * went dirty -- a lower bound, not the latest revision `saveNow` happens to
+   * have just written (#1097). So this is a no-op once a marker already
+   * exists: only `clearPendingSync` may move it, by removing it so the next
+   * call can set a fresh one. Every caller (`SessionController.saveNow`)
+   * still calls this after every successful save, exactly as before; it is
+   * this method, not the call site, that now makes repeated calls between one
+   * clear and the next collapse into the first.
+   */
   public async markPendingSync(prisonId: string, pendingSync: PendingSyncState): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) throw new Error(`Prison "${prisonId}" does not exist.`);
+      if (metadata.pendingSync !== undefined) return;
       await writeSlot(tx, { ...metadata, pendingSync });
     });
   }

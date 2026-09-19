@@ -1,4 +1,4 @@
-import type { SaveImportResult, SaveResult } from '../../src/persistence/local/repository';
+import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveInventory, SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import {
@@ -10,6 +10,7 @@ import {
 import {
   EMPTY_HUD_VIEW_MODEL,
   type HudBuildEdge,
+  type HudCountsViewModel,
   type HudBuildOrder,
   type HudHistoryDirection,
   type HudIntent,
@@ -18,6 +19,7 @@ import {
   type HudRoomGesture,
   type HudBuildQueueViewModel,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -29,6 +31,7 @@ import {
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 import type {
+  ActionLabelFitProbe,
   AlertProbe,
   AlertRowProbe,
   BuildLayoutProbe,
@@ -38,6 +41,7 @@ import type {
   ImportOutcomeName,
   HudProbe,
   IntakeProbe,
+  OverviewProbe,
   BuildQueueProbe,
   BuildQueueRowProbe,
   HeldGuardRowProbe,
@@ -50,6 +54,7 @@ import type {
   LockstateUiHarness,
   RefusalProbe,
   RegimeBlockProbe,
+  RegimeDetailNeedProbe,
   RegimeProbe,
   RegimeRosterRowProbe,
   RepaintFormatterCost,
@@ -99,8 +104,8 @@ interface Pending {
  * things about them.
  */
 const IMPORT_OUTCOMES: Readonly<Record<ImportOutcomeName, SaveImportResult>> = {
-  ok: { ok: true, generationId: 'imported-gen-1', migrated: false },
-  'ok-migrated': { ok: true, generationId: 'imported-gen-2', migrated: true },
+  ok: { ok: true, generationId: 'imported-gen-1', revision: 1, migrated: false },
+  'ok-migrated': { ok: true, generationId: 'imported-gen-2', revision: 1, migrated: true },
   'not-a-save': {
     ok: false,
     error: { code: 'unknown-error', message: 'Import rejected: Save envelope is missing a numeric saveSchemaVersion.' },
@@ -143,7 +148,29 @@ class StubSessions implements SavePanelSessions {
   public saveCalls = 0;
   public readonly importedRaw: string[] = [];
   public readonly loadedPrisons: string[] = [];
+  /**
+   * Every prison the panel has actually asked to delete, in order (#1142).
+   *
+   * The proof a confirmation is real: a Delete control that armed nothing and
+   * deleted immediately leaves the same list on screen as one that asks first,
+   * right up until the moment this array is read.
+   */
+  public readonly deletedPrisons: string[] = [];
+  /** Every prison whose copy the panel has asked to free, in order (ADR 0114). */
+  public readonly forgottenPrisons: string[] = [];
   private readonly prisons: PrisonSlotMetadata[] = [];
+  /**
+   * The stub's `tombstones` store (ADR 0114).
+   *
+   * A real move rather than a list of names: `deletePrison` takes the slot out
+   * of `prisons` and puts it here, `restoreDeletedPrison` puts it back, and
+   * both lists are read by the panel through the same port the real controller
+   * satisfies. A stub that only recorded the call would leave a panel that
+   * drew no row at all looking identical to one that drew the row correctly.
+   */
+  private readonly deleted: { readonly slot: PrisonSlotMetadata; readonly deletedAt: number; expiresAt: number }[] = [];
+  /** What the stub's next restore will report, so all four arms are reachable from a spec. */
+  private restoreOutcome: RestoreOutcome | undefined;
   private pendingCreate: Pending | undefined;
   private session: ActiveSession | undefined;
   private importOutcome: ImportOutcomeName = 'ok';
@@ -207,8 +234,86 @@ class StubSessions implements SavePanelSessions {
   }
 
   public async deletePrison(prisonId: string): Promise<void> {
+    this.deletedPrisons.push(prisonId);
     const index = this.prisons.findIndex((prison) => prison.prisonId === prisonId);
-    if (index >= 0) this.prisons.splice(index, 1);
+    if (index < 0) return;
+    const [slot] = this.prisons.splice(index, 1);
+    if (slot === undefined) return;
+    const deletedAt = Date.now();
+    this.deleted.push({ slot, deletedAt, expiresAt: deletedAt + 24 * 60 * 60 * 1000 });
+  }
+
+  /** One read for both halves, exactly as the real controller does it. */
+  public async listSaves(): Promise<SaveInventory> {
+    return { prisons: await this.listPrisons(), deleted: await this.listDeletedPrisons() };
+  }
+
+  public async listDeletedPrisons(): Promise<readonly DeletedPrison[]> {
+    // The sweep, mirrored: the real repository deletes an expired copy in the
+    // transaction that reads it, so a stub that returned expired rows would
+    // let a spec assert a row the application can never draw.
+    const now = Date.now();
+    for (let index = this.deleted.length - 1; index >= 0; index -= 1) {
+      if (now >= (this.deleted[index]?.expiresAt ?? 0)) this.deleted.splice(index, 1);
+    }
+    return this.deleted.map((entry) => ({
+      prisonId: entry.slot.prisonId,
+      ...(entry.slot.displayName === undefined ? {} : { displayName: entry.slot.displayName }),
+      deletedAt: entry.deletedAt,
+      expiresAt: entry.expiresAt,
+    }));
+  }
+
+  public async restoreDeletedPrison(prisonId: string): Promise<RestoreOutcome> {
+    const forced = this.restoreOutcome;
+    this.restoreOutcome = undefined;
+    const index = this.deleted.findIndex((entry) => entry.slot.prisonId === prisonId);
+    if (forced !== undefined && forced !== 'restored') {
+      // Every refusal arm of the real method also destroys or declines to touch
+      // the copy; `'window-closed'` is the one that deletes it, which is what
+      // makes its sentence true.
+      if (forced === 'window-closed' && index >= 0) this.deleted.splice(index, 1);
+      return forced;
+    }
+    if (index < 0) return 'not-found';
+    const [entry] = this.deleted.splice(index, 1);
+    if (entry !== undefined) this.prisons.push(entry.slot);
+    return 'restored';
+  }
+
+  public async forgetDeletedPrison(prisonId: string): Promise<void> {
+    this.forgottenPrisons.push(prisonId);
+    const index = this.deleted.findIndex((entry) => entry.slot.prisonId === prisonId);
+    if (index >= 0) this.deleted.splice(index, 1);
+  }
+
+  /** Makes the next restore report this outcome, so a spec can reach all four. */
+  public setRestoreOutcome(outcome: RestoreOutcome): void {
+    this.restoreOutcome = outcome;
+  }
+
+  /** How many deleted prisons are still restorable, read without the DOM. */
+  public deletedCount(): number {
+    return this.deleted.length;
+  }
+
+  /**
+   * Puts a prison on the list with a chosen name and a chosen age (#1142).
+   *
+   * `createPrison` cannot do this: it stamps `Date.now()` and blocks on a
+   * pending promise, so every prison it makes is seconds old and the
+   * confirmation's age sentence would only ever have one reachable form.
+   */
+  public seedPrison(prisonId: string, displayName: string, updatedAt: number): void {
+    this.prisons.push({
+      prisonId,
+      gameVersion: GAME_VERSION,
+      displayName,
+      currentGenerationId: 'gen-1',
+      generationIds: ['gen-1'],
+      createdAt: updatedAt,
+      updatedAt,
+    });
   }
 
   public async exportActive(): Promise<undefined> {
@@ -219,7 +324,7 @@ class StubSessions implements SavePanelSessions {
     const pending = this.pendingCreate;
     this.pendingCreate = undefined;
     if (pending === undefined) return;
-    if (outcome === 'ok') pending.resolve({ ok: true, generationId: 'gen-1' });
+    if (outcome === 'ok') pending.resolve({ ok: true, generationId: 'gen-1', revision: 1 });
     // The exact rejection issue #65 leaked to the console.
     else pending.reject(new Error('The simulation worker did not reply within 15000ms'));
   }
@@ -284,34 +389,71 @@ const countingLocalizer: HudLocalizer = {
 // population would actually have earned by now, rather than a round number:
 // 142 occupied places at 300 minor units a prisoner-day, a quarter of the way
 // through a 2,400-tick day, is `floor(300 x 142 x 601 / 2400)` = 10,667 (#29).
+/*
+ * Lifted out of `BASE_VIEW_MODEL` below by issue #1191, which made
+ * `HudViewModel.counts` optional: a fixture that reads a figure back off the
+ * view model would otherwise have to assert the field's presence at every use.
+ * The row itself is unchanged, and this fixture is deliberately a prison that
+ * *has* reported -- the absent case is what `mountHudShell({ empty: true })`
+ * drives, through `EMPTY_HUD_VIEW_MODEL`.
+ */
+const BASE_COUNTS: HudCountsViewModel = {
+  prisoners: 142,
+  prisonerCapacity: 180,
+  // Everybody housed, which is what the accrual above already assumes: 142
+  // occupied places is where `10_667` comes from. A fixture whose accrual
+  // said 142 and whose place count said otherwise would put the strip's
+  // "N not housed" badge (#609, the noun since #961) on every spec in this file for a prison
+  // the same fixture is paying full price for.
+  occupiedPlaces: 142,
+  staff: 27,
+  // Not painted by anything this harness drives (issue #870): the field
+  // exists on `HudCountsViewModel` and needs a value to satisfy the type,
+  // and it is deliberately not a fraction of `staff` above so a future
+  // reader that confused the two would not get a plausible-looking number
+  // by accident.
+  staffUnassigned: 5,
+  rooms: 61,
+  // The three coverage rungs sum to 142, this fixture's own population, and
+  // no two of them are equal -- so a strip that read the wrong one, or
+  // derived one by subtraction, renders a number this fixture never gave it
+  // (issue #588).
+  prisonersCovered: 100,
+  prisonersUnderstaffed: 30,
+  prisonersUnguarded: 12,
+  prisonersHighRisk: 0,
+  activeIncidents: 0,
+  contrabandFound: 4,
+  treasuryMinorUnits: 24_920,
+  stateIncomeAccruedTodayMinorUnits: 10_667,
+};
+
 const BASE_VIEW_MODEL: HudViewModel = {
-  counts: {
-    prisoners: 142,
-    prisonerCapacity: 180,
-    // Everybody housed, which is what the accrual above already assumes: 142
-    // occupied places is where `10_667` comes from. A fixture whose accrual
-    // said 142 and whose place count said otherwise would put the strip's
-    // "N with no bed" badge (#609) on every spec in this file for a prison
-    // the same fixture is paying full price for.
-    occupiedPlaces: 142,
-    staff: 27,
-    rooms: 61,
-    // The three coverage rungs sum to 142, this fixture's own population, and
-    // no two of them are equal -- so a strip that read the wrong one, or
-    // derived one by subtraction, renders a number this fixture never gave it
-    // (issue #588).
-    prisonersCovered: 100,
-    prisonersUnderstaffed: 30,
-    prisonersUnguarded: 12,
-    prisonersHighRisk: 0,
-    activeIncidents: 0,
-    contrabandFound: 4,
-    treasuryMinorUnits: 24_920,
-    stateIncomeAccruedTodayMinorUnits: 10_667,
-  },
+  counts: BASE_COUNTS,
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
   clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],
+  /*
+   * The Overview section's readout (issue #1183), present here because this
+   * fixture is a prison that *has* reported -- which is the state the panel's
+   * figures are for.
+   *
+   * The first two repeat `counts` above deliberately rather than being
+   * different numbers: they are the same two published figures the status
+   * strip states, and a fixture that gave the panel a different balance from
+   * the chip would hide exactly the defect a reader of this screen would care
+   * about. `4_800` is a third distinct number, so a row wired to the wrong
+   * field is visible.
+   *
+   * `EMPTY_HUD_VIEW_MODEL` carries no `overview` at all, which is what
+   * `mountHudShell({ empty: true })` drives: no prison has reported, and the
+   * panel says so in words rather than in zeros.
+   */
+  overview: {
+    treasuryMinorUnits: 24_920,
+    stateIncomeAccruedTodayMinorUnits: 10_667,
+    dailyWageBillMinorUnits: 4_800,
+  },
 };
 
 /**
@@ -426,6 +568,22 @@ const BUILD_MODEL: HudBuildViewModel = {
         quantityPerPlacement: 2,
         maxQuantity: 100_000,
       },
+      // What `placementCostMinorUnits` (`src/simulation/economy/placement-cost.ts`)
+      // answers for this buildable's one requirement, which is what
+      // `buildCatalogue` in `src/main.ts` now puts on the row.
+      //
+      // **It is a separate figure from `material` above rather than a
+      // derivation of it, which is the whole reason the field exists** (issue
+      // #1160): the panel used to multiply that material's two numbers itself,
+      // over the first purchasable requirement rather than all of them. A
+      // fixture that omits this renders a row with no price at all -- measured,
+      // when it was omitted: `is reachable from the Build tab and hidden from
+      // every other one` failed on `Brick wall · 80 per segment`.
+      //
+      // Written out rather than imported for the reason the prices above are:
+      // this harness exercises the panel, and `app-shell.spec.ts` plus
+      // `ui-build-catalogue-price.spec.ts` drive the real projection.
+      placementCostMinorUnits: 80,
     },
     {
       definitionId: 'door-wooden',
@@ -453,6 +611,8 @@ const BUILD_MODEL: HudBuildViewModel = {
         quantityPerPlacement: 1,
         maxQuantity: 100_000,
       },
+      // One plank at 65, the same way the row above carries two bricks at 40.
+      placementCostMinorUnits: 65,
     },
   ],
   origin: { x: 16, y: 16 },
@@ -701,7 +861,11 @@ function staffCoverageProbe(): StaffCoverageProbe {
  * previous tick's prisoners as though they were still on the roster.
  */
 function regimeProbe(): RegimeProbe {
-  const panel = document.querySelector<HTMLElement>('.hud-regime');
+  // Two panels since ADR 0115, laid out together on the Plan dnia tab: the
+  // timetable's and the roster's. Every fold measurement below is the roster
+  // panel's, because every line those measurements are about is inside it.
+  const schedulePanel = document.querySelector<HTMLElement>('.hud-regime');
+  const panel = document.querySelector<HTMLElement>('.hud-roster');
   const blocks = document.querySelector<HTMLElement>('.hud-regime__blocks');
   const roster = document.querySelector<HTMLElement>('.hud-regime__roster');
   const empty = [...(roster?.querySelectorAll<HTMLElement>('.hud-regime__note') ?? [])].find(
@@ -719,7 +883,8 @@ function regimeProbe(): RegimeProbe {
     // `setVisible(false)` hides the panel's own element, so the answer has to
     // come from the ancestor chain the way `staffProbe` and `intakeProbe` take
     // it.
-    laidOut: panel !== null && panel.offsetParent !== null,
+    laidOut: schedulePanel !== null && schedulePanel.offsetParent !== null,
+    rosterPanelLaidOut: panel !== null && panel.offsetParent !== null,
     blocksLaidOut: drawn(blocks),
     blocks: [...(blocks?.querySelectorAll<HTMLElement>('.hud-regime__block-row') ?? [])].map(
       (row): RegimeBlockProbe => ({
@@ -741,6 +906,15 @@ function regimeProbe(): RegimeProbe {
         prisoner: row.dataset['prisoner'] ?? '',
         classificationGroup: row.dataset['classificationGroup'] ?? null,
         riskTier: row.dataset['riskTier'] ?? null,
+        // Whether the row is a control at all, and whether it is the chosen
+        // one (issue #895). `getAttribute` for the two ARIA carriers, because
+        // *absent* is a distinct state from `"false"` on both -- a vacated
+        // pooled row has no `role` and no `aria-checked`, which is what keeps
+        // it out of the #88 control sweep's inventory.
+        role: row.getAttribute('role'),
+        tabIndex: row.tabIndex,
+        ariaChecked: row.getAttribute('aria-checked'),
+        selected: row.dataset['selected'] ?? null,
         nameText: textOf(row.querySelector('.hud-regime__roster-name')),
         activityText: textOf(row.querySelector('.hud-regime__roster-activity')),
         badgeText: textOf(badge),
@@ -761,11 +935,16 @@ function regimeProbe(): RegimeProbe {
     // `innerText`, so the answer is what was rendered: the pooled rows the
     // panel hid are left out of it, and a panel with no box at all reports
     // nothing rather than reporting its whole vocabulary.
-    text: panel === null ? '' : panel.innerText,
+    text: [schedulePanel, panel].map((box) => (box === null ? '' : box.innerText)).join('\n').trim(),
     panelVisibleBottom:
       panel === null ? 0 : panel.getBoundingClientRect().top + panel.clientTop + panel.clientHeight,
     panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
     panelScrollTop: panel?.scrollTop ?? 0,
+    scheduleBox: layoutBoxOf(schedulePanel),
+    scheduleOverflow: schedulePanel === null ? 0 : schedulePanel.scrollHeight - schedulePanel.clientHeight,
+    scheduleLastLineBottom: [...(blocks?.querySelectorAll<HTMLElement>('.hud-regime__block-row') ?? [])]
+      .filter((row) => drawn(row))
+      .reduce((lowest, row) => Math.max(lowest, row.getBoundingClientRect().bottom), 0),
     // The lowest edge the panel actually drew, whichever line that is: the last
     // roster row on a full window, the "and N more" line when the population
     // outgrew it, or the empty sentence in a prison that holds nobody.
@@ -775,6 +954,36 @@ function regimeProbe(): RegimeProbe {
       ...(drawn(empty) && empty !== undefined ? [empty] : []),
     ].reduce((lowest, node) => Math.max(lowest, node.getBoundingClientRect().bottom), 0),
     panelBox: layoutBoxOf(panel),
+    // The inspector, and its need lines are filtered by `getClientRects()` for
+    // the reason every list in this probe is: they are pooled, so a line with
+    // no need in it is present in the DOM and must not be reported as one the
+    // player can see.
+    detail: (() => {
+      const block = document.querySelector<HTMLElement>('.hud-regime__detail');
+      const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+      const needs = [...(block?.querySelectorAll<HTMLElement>('.hud-regime__detail-need') ?? [])].filter((line) =>
+        drawn(line),
+      );
+      return {
+        laidOut: drawn(block),
+        prisoner: block?.dataset['prisoner'] ?? null,
+        nameText: textOf(block?.querySelector('.hud-regime__detail-name')),
+        badgeText: textOf(badge),
+        badgeTone: badge?.dataset['tone'] ?? null,
+        needs: needs.map((line): RegimeDetailNeedProbe => {
+          const bar = line.querySelector<HTMLElement>('.ui-bar');
+          return {
+            need: line.dataset['need'] ?? null,
+            permille: line.dataset['needPermille'] ?? null,
+            unmet: line.dataset['needUnmet'] ?? null,
+            nameText: textOf(line.querySelector('.hud-regime__detail-need-name')),
+            tone: bar?.dataset['tone'] ?? null,
+            valueText: bar?.getAttribute('aria-valuetext') ?? null,
+          };
+        }),
+        box: layoutBoxOf(block),
+      };
+    })(),
   };
 }
 
@@ -932,14 +1141,89 @@ window.lockstateUiHarness = {
     return nodes.length > 0 && nodes.every((node) => node.getClientRects().length > 0);
   },
 
-  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void {
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean; readonly nowMs?: number }): void {
     panel?.dispose();
     sessions = new StubSessions();
     // The host's localizer is passed in rather than left to the panel's
     // default, which is what `src/main.ts` should also do (issue #208).
     // `en-XA` is ADR 0011's own tool for the question this panel failed: a
     // string that is not in the catalog stays unaccented and unbracketed.
-    panel = new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer);
+    // A frozen clock where one is asked for, so the confirmation's age
+    // sentence is a function of the seeded timestamp and nothing else -- the
+    // application's own construction passes no clock and gets `Date.now`.
+    const nowMs = options?.nowMs;
+    panel =
+      nowMs === undefined
+        ? new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer)
+        : new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer, () => nowMs);
+  },
+
+  seedPrison(prisonId: string, displayName: string, updatedAt: number): void {
+    sessions?.seedPrison(prisonId, displayName, updatedAt);
+  },
+
+  /**
+   * Calls `SavePanel.confirmDelete` directly, with whatever is armed.
+   *
+   * The only way to reach the guard from a browser at all: the confirming
+   * control exists only while a deletion is armed, so a press can never be the
+   * unconfirmed case. `request*` methods are the panel's own test seam and
+   * return the gate's decision for exactly this reason -- a refusal is
+   * asserted rather than inferred from a prison still being on the list.
+   */
+  confirmDeleteDirect(prisonId: string): string {
+    return panel?.confirmDelete(prisonId) ?? 'no-panel';
+  },
+
+  deletedPrisons(): readonly string[] {
+    return [...(sessions?.deletedPrisons ?? [])];
+  },
+
+  forgottenPrisons(): readonly string[] {
+    return [...(sessions?.forgottenPrisons ?? [])];
+  },
+
+  setRestoreOutcome(outcome: RestoreOutcome): void {
+    sessions?.setRestoreOutcome(outcome);
+  },
+
+  /** Rows on the page for deleted prisons -- the DOM, not the stub's bookkeeping. */
+  deletedPrisonRowCount(): number {
+    return document.querySelectorAll('[data-deleted-prison]').length;
+  },
+
+  /** Copies the stub still holds, which is the half the DOM cannot show. */
+  heldCopyCount(): number {
+    return sessions?.deletedCount() ?? -1;
+  },
+
+  /** Clicks a control on one deleted prison's own row, by the row rather than by label. */
+  clickDeletedPrisonButton(prisonId: string, label: string): boolean {
+    const row = document.querySelector<HTMLElement>(`[data-deleted-prison="${CSS.escape(prisonId)}"]`);
+    if (row === null) return false;
+    const button = [...row.querySelectorAll('button')].find((candidate) => candidate.textContent === label);
+    if (button === undefined) return false;
+    button.click();
+    return true;
+  },
+
+  /** The text of the delete confirmation now on the page, or `''` if there is none. */
+  deleteConfirmationText(): string {
+    return document.querySelector('[data-delete-confirm] .save-panel__item-label')?.textContent ?? '';
+  },
+
+  /**
+   * What the keyboard is standing on, as a label rather than an element.
+   *
+   * `''` for `<body>`, which is where the browser parks focus when the control
+   * holding it is removed or disabled -- the exact state constitution article
+   * 16 forbids leaving a player in, so it has to be distinguishable from a
+   * real control rather than merely absent.
+   */
+  focusedControlLabel(): string {
+    const active = document.activeElement;
+    if (active === null || active === document.body) return '';
+    return active.textContent ?? '';
   },
 
   clickSaveButton(label: string): boolean {
@@ -1085,7 +1369,19 @@ window.lockstateUiHarness = {
   },
 
   hudProbe(): HudProbe {
-    const values = [...document.querySelectorAll<HTMLElement>('.hud-strip .ui-value')];
+    /*
+     * The strip's own readouts, which is what "every number" means here.
+     *
+     * `:not(.hud-layout__body *)` excludes the Layout menu's drawer (#1159).
+     * The drawer hangs from the strip and holds a clock readout of its own --
+     * it is there because folding the strip's readouts takes the strip's clock
+     * with them -- but it is `hidden` until a player opens it, so
+     * `expectLaidOut` below would report it as a number that is not on screen.
+     * Its three values are monospace for the same reason every other value is
+     * (they carry `ui-value`), and `tests/browser/hud-layout-shell.spec.ts`
+     * asserts that where it can also assert the menu is open.
+     */
+    const values = [...document.querySelectorAll<HTMLElement>('.hud-strip .ui-value:not(.hud-layout__body *)')];
     const nonMonospace = values.filter((node) => {
       const style = window.getComputedStyle(node);
       // The rule is "every number uses a monospace face with tabular
@@ -1113,9 +1409,26 @@ window.lockstateUiHarness = {
       clockDayProgress: document.querySelector('.hud-clock__day-progress')?.textContent ?? '',
       valueCount: values.length,
       nonMonospaceValues: nonMonospace.map((node) => node.textContent ?? ''),
-      // Scoped to the minimap frame: the Build panel uses the same section
-      // primitive, so an unscoped selector would depend on document order.
-      alertsCollapsed: document.querySelector('.hud-minimap .ui-section')?.getAttribute('data-collapsed') ?? null,
+      /*
+       * Scoped by what the section CONTAINS rather than by where it sits, and
+       * the change is #1201's (2026-09-16).
+       *
+       * It read `.hud-minimap .ui-section`, under the comment *"Scoped to the
+       * minimap frame: the Build panel uses the same section primitive, so an
+       * unscoped selector would depend on document order."* The reason was
+       * right and the scope has stopped being available: below 720 px the
+       * alerts fold is mounted in the Overview panel's `foldSlot` on the
+       * owner's ruling, so at 375x812 that selector matched nothing and this
+       * probe answered `null` for a section that is on screen and expanded --
+       * which is exactly what `ui-shell.spec.ts`'s #220 case reported.
+       *
+       * `:has(.hud-alerts__list)` keeps the original reason intact: no other
+       * `.ui-section` on this page holds that list, so the Build panel's
+       * sections are still excluded, and the answer no longer depends on which
+       * of the fold's two homes the viewport puts it in.
+       */
+      alertsCollapsed:
+        document.querySelector('.ui-section:has(.hud-alerts__list)')?.getAttribute('data-collapsed') ?? null,
       centreIsClickThrough: centre === null || !(hudRoot?.contains(centre) ?? false),
     };
   },
@@ -1348,6 +1661,55 @@ window.lockstateUiHarness = {
         const rightmost = buttons.reduce((widest, button) => Math.max(widest, button.getBoundingClientRect().right), 0);
         return buttons.length === 0 ? 0 : Math.round((rightmost - limit) * 10) / 10;
       })(),
+      /*
+       * Label against button, which is the measurement `actionsOverflowPx`
+       * above cannot take (issue #926, and `ActionLabelFitProbe` carries the
+       * argument).
+       *
+       * Rounded to a tenth like every other figure in this probe, and read in
+       * one pass so the button, its label and its neighbour are all measured
+       * against the same layout -- a second `evaluate` could observe a
+       * different one.
+       */
+      actionLabelFits: ((): readonly ActionLabelFitProbe[] => {
+        if (actions === null) return [];
+        const laidOut = [...actions.querySelectorAll<HTMLElement>('.ui-action')].filter(
+          (button) => button.getClientRects().length > 0,
+        );
+        // The class that names the control, rather than its index: an index
+        // renumbers itself the moment the buy toggle leaves the row, and this
+        // probe is read in both states.
+        const nameOf = (button: HTMLElement): string =>
+          [...button.classList].find((name) => name.startsWith('hud-build__')) ?? '';
+        return laidOut.map((button, index) => {
+          const buttonBox = button.getBoundingClientRect();
+          const labelNode = button.querySelector<HTMLElement>('.ui-action__label');
+          const labelBox = labelNode?.getBoundingClientRect() ?? null;
+          const neighbour = laidOut[index + 1] ?? null;
+          const neighbourLeft = neighbour === null ? null : neighbour.getBoundingClientRect().left;
+          const round = (value: number): number => Math.round(value * 10) / 10;
+          return {
+            control: nameOf(button),
+            label: labelNode?.textContent?.trim() ?? '',
+            buttonWidthPx: round(buttonBox.width),
+            buttonHeightPx: round(buttonBox.height),
+            buttonRightPx: round(buttonBox.right),
+            labelWidthPx: labelBox === null ? 0 : round(labelBox.width),
+            labelHeightPx: labelBox === null ? 0 : round(labelBox.height),
+            labelRightPx: labelBox === null ? 0 : round(labelBox.right),
+            labelOverflowPx: labelBox === null ? 0 : round(labelBox.right - buttonBox.right),
+            neighbourLeftPx: neighbourLeft === null ? null : round(neighbourLeft),
+            neighbour: neighbour === null ? null : nameOf(neighbour),
+            neighbourOverlapPx:
+              labelBox === null || neighbourLeft === null ? 0 : round(labelBox.right - neighbourLeft),
+            // `+ 0.5` rather than `>`: both figures are sub-pixel and a
+            // fractional layout would otherwise report every label as wider
+            // than its own box.
+            labelWiderThanBox: labelNode !== null && labelNode.scrollWidth > labelNode.clientWidth + 0.5,
+          };
+        });
+      })(),
+      actionsHeightPx: actions === null ? 0 : Math.round(actions.getBoundingClientRect().height * 10) / 10,
       hint: hint?.textContent?.trim() ?? '',
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
@@ -1471,12 +1833,25 @@ window.lockstateUiHarness = {
    * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
    * on the field being there at all.
    */
-  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void {
+  reportRegime(
+    regime: HudRegimeViewModel | undefined,
+    roster?: HudPrisonerRosterViewModel,
+    detail?: HudPrisonerDetailViewModel,
+  ): void {
     hud?.update({
       ...BASE_VIEW_MODEL,
       ...(regime === undefined ? {} : { regime }),
       ...(roster === undefined ? {} : { prisonerRoster: roster }),
+      // The third block of the same panel (issue #895), on the same terms as
+      // the two above and in the same call for the same reason: its height is
+      // the panel's, so a spec measuring the selected state has to be able to
+      // publish all three at once.
+      ...(detail === undefined ? {} : { prisonerDetail: detail }),
     });
+  },
+
+  clearPrisonerSelection(): void {
+    hud?.clearPrisonerSelection();
   },
 
   clickHireStaff(): boolean {
@@ -1547,6 +1922,29 @@ window.lockstateUiHarness = {
     if (button === null) return false;
     button.click();
     return true;
+  },
+
+  overviewProbe(): OverviewProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-overview');
+    const figures = panel?.querySelector<HTMLElement>('.hud-overview__figures') ?? null;
+    const none = panel?.querySelector<HTMLElement>('.hud-overview__none') ?? null;
+    const rows = [...(figures?.querySelectorAll<HTMLElement>('.hud-overview__row') ?? [])];
+    const values: Record<string, string> = {};
+    for (const row of rows) {
+      const id = row.dataset['figure'] ?? '';
+      values[id] = row.querySelector<HTMLElement>('.hud-overview__value')?.dataset['value'] ?? '';
+    }
+    return {
+      // `offsetParent` for the same reason `intakeProbe` below uses it: a
+      // control inside a `hidden` panel is reachable by a keyboard and
+      // invisible to a player, so "present" is not the claim worth making.
+      laidOut: panel !== null && panel.offsetParent !== null,
+      figures: values,
+      rowTexts: rows.map((row) => (row.textContent ?? '').trim()),
+      figuresLaidOut: figures !== null && figures.offsetParent !== null,
+      noneLaidOut: none !== null && none.offsetParent !== null,
+      noneText: none !== null && none.offsetParent !== null ? (none.textContent ?? '').trim() : '',
+    };
   },
 
   intakeProbe(): IntakeProbe {
@@ -1861,6 +2259,7 @@ window.lockstateUiHarness = {
         document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
       enclosureLaidOut: laidOut('.hud-rooms__enclosure'),
       panelNeeds: panel?.dataset['needs'] ?? '',
+      panelFull: panel?.dataset['full'] ?? '',
       // Laid out, not merely present: `paintActions` uses `hidden`, so a control
       // that is not showing must have no box at all and be out of the tab order.
       armLaidOut: laidOut('.hud-rooms__arm'),
@@ -1905,6 +2304,9 @@ window.lockstateUiHarness = {
         return body !== null && body.getClientRects().length > 0;
       })(),
       needsLaidOut: laidOut('.hud-rooms__needs'),
+      needsLabelText:
+        document.querySelector<HTMLElement>('.hud-rooms__needs-label')?.textContent?.trim() ?? '',
+      needsFull: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['full'] ?? '',
       needsUnfinished: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['unfinished'] ?? '',
       needsTotal: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['needs'] ?? '',
       needsCountText:
@@ -1913,10 +2315,20 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
-      /** One entry per object the named room is short, in the order drawn (#529). */
+      /** One entry per thing the named room is short, in the order drawn (#529). */
       needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
         (item) => item.textContent?.trim() ?? '',
       ),
+      /** The same lines' `data-kind`, so a spec need not read English to tell an object line from a doorway one (#938). */
+      needsItemKinds: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.dataset['kind'] ?? '',
+      ),
+      /** Distinct top edges among those lines, so a wrapping row can be measured as rows (#938). */
+      needsItemRows: new Set(
+        [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map((item) =>
+          Math.round(item.getBoundingClientRect().top),
+        ),
+      ).size,
       /**
        * The readout's own height, so a spec can measure what the block costs the
        * panel rather than asserting a line count and hoping.
@@ -2041,7 +2453,7 @@ window.lockstateUiHarness = {
       // the worker's 250 ms clock publication drives.
       hud?.update({
         ...BASE_VIEW_MODEL,
-        counts: { ...BASE_VIEW_MODEL.counts, prisoners: BASE_VIEW_MODEL.counts.prisoners + 1 },
+        counts: { ...BASE_COUNTS, prisoners: BASE_COUNTS.prisoners + 1 },
         clock: { ...BASE_VIEW_MODEL.clock, tickOfDay: BASE_VIEW_MODEL.clock.tickOfDay + 5 },
       });
     } finally {

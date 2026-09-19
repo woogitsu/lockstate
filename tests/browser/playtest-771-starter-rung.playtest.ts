@@ -13,6 +13,7 @@ import {
   press,
   runUntilTick,
   sentCommands,
+  showPanel,
   tab,
   waitForQueueEmpty,
 } from './playtest-harness';
@@ -157,7 +158,7 @@ test('a fresh, unfurnished prison presses itself to the starter rung, is refused
 
   let zonedRooms = 0;
   for (let attempt = 1; attempt <= 12 && zonedRooms === 0; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -188,7 +189,7 @@ test('a fresh, unfurnished prison presses itself to the starter rung, is refused
   console.log(`[bed settled] queue: ${await panelText(page, '.hud-build__queue')}`);
 
   // Admit, and let a day of income land.
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1500);
   console.log(`[admitted] intake panel: ${await panelText(page, '.hud-intake')}`);

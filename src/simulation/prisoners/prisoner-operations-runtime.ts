@@ -23,7 +23,15 @@ import {
   SubstitutionRecordComponent,
 } from './components';
 import { PrisonerDischargeSystem } from './discharge-system';
-import { DEFAULT_ACCOMMODATION_POLICY, firstAvailableAccommodationTarget, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
+import {
+  DEFAULT_ACCOMMODATION_POLICY,
+  firstAvailableAccommodationTarget,
+  type AccommodationPolicy,
+  IntakeSystem,
+  type IntakeContrabandIntroducer,
+  type IntakeGangAssigner,
+  type IntakeHousedNotice,
+} from './intake-system';
 import {
   releasePrisoner,
   type PrisonerGangReleasePort,
@@ -32,7 +40,8 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
-import { combineRegimeOverrides, DEFAULT_REGIME_SCHEDULES, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { RegimeScheduleRegistry } from './regime-registry';
 import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
@@ -224,6 +233,45 @@ export interface PrisonerOperationsRuntimeOptions {
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
   readonly contrabandRngStreamName?: string;
   /**
+   * Which gang an arrival joins, called by `IntakeSystem` at the same
+   * classification stage `contrabandIntroducer` is called from
+   * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 6). Absent, intake assigns nobody.
+   *
+   * A separate port from `gangs` above rather than a second method on it, and
+   * the split is the point: `gangs` is a *release* surface -- the one thing
+   * this runtime has to tell the registry when a prisoner leaves -- and this
+   * is an *assignment* rule. `PrisonerReleaseSurfaces` names the first; nothing
+   * about a departure belongs in the second.
+   *
+   * **This bullet read "an *intake* rule" until 2026-09-09 and the word is
+   * corrected rather than the sentence rewritten**, because the split it
+   * describes is unchanged and only the number of assignment sites moved. The
+   * owner answered ADR 0103's open question 5 that day, so this port is now
+   * handed to `ClassificationReviewSystem` as well -- which is the site that
+   * makes it reach anybody at all, since the game's only admission surface
+   * sends `priorIncidents: 0` and `high-risk` is therefore unreachable at
+   * intake. One port, two callers, one rule.
+   */
+  readonly gangAssigner?: IntakeGangAssigner;
+  /**
+   * What the player is told once a queued arrival gets a bed
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3),
+   * called by `IntakeSystem` at the same `'accommodation-assignment'` stage
+   * `resolveExistingTarget` decides. Absent, intake houses people exactly as
+   * it always has and says nothing about it.
+   *
+   * Not owned here, for the reason `identity` above is not: naming this
+   * prisoner needs a *read* of an already-minted name and the room catalog's
+   * own `nameKey`, neither of which this runtime holds -- `identity` here is
+   * typed `ActorIdentityLifecycle`, the mint-and-release pair, and carries no
+   * read access either. `createIntakeHousedNotice`
+   * (`src/simulation/events/intake-housed-notice.ts`) is composed at the
+   * session root, which already holds the identity registry, the room
+   * catalog and the event log for `createResidentRelocationNotice`.
+   */
+  readonly housedNotice?: IntakeHousedNotice;
+  /**
    * How long a solitary sanction runs (issue #80,
    * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
    * Defaults to
@@ -270,6 +318,21 @@ export class PrisonerOperationsRuntime {
    * (`src/simulation/worker/render-actors-keyframe.ts`); nothing outside this
    * runtime writes it.
    */
+  /**
+   * The session's timetables, and the only thing `EditRegimeBlock` writes
+   * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)).
+   *
+   * Public for the reason `roomInstances` is: three things outside this class
+   * need it and none of them should own it -- `session-commands.ts` performs
+   * the edit, `captureSessionSystems`/`restoreSessionSystems` carry it across a
+   * save, and `statusStripSource` hands it to the projection so the panel
+   * reports the edited day rather than the build-time constant.
+   *
+   * Seeded from `options.regimeSchedules` exactly as the array this field
+   * replaces was, so a runtime constructed without that option still starts on
+   * `DEFAULT_REGIME_SCHEDULES` and nothing about a fixture changes.
+   */
+  public readonly regimes: RegimeScheduleRegistry;
   public readonly locomotion = new LocomotionStore();
   private readonly locomotionSystem: LocomotionSystem;
   public readonly coldState = new PrisonerColdState();
@@ -306,8 +369,10 @@ export class PrisonerOperationsRuntime {
    * kept showing after a batch of sentences all ended within the same window
    * (ADR 0050, "What this does not decide"). **That sentence read "Nobody has
    * been admitted yet" when this counter was written and reads "No prisoners
-   * yet. Build a cell with a bed to take somebody in." since the owner's
-   * ruling of 2026-09-03** -- the wording moved, the two states this counter
+   * yet. Build a cell -- big enough, walled all round, with a bed and a toilet
+   * in it -- to take somebody in." since the owner's ruling of 2026-09-03 as
+   * corrected in place on their ruling of 2026-09-19 (#933)** -- the wording
+   * moved twice, the two states this counter
    * tells apart did not, and the new wording is false of the emptied-out
    * prison for one more reason than the old one was: the cell it tells the
    * player to build is already standing. This is the
@@ -372,6 +437,9 @@ export class PrisonerOperationsRuntime {
       options.identityRngStreamName,
       options.contrabandIntroducer,
       options.contrabandRngStreamName,
+      undefined,
+      options.gangAssigner,
+      options.housedNotice,
     );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
     this.classificationReviewSystem = new ClassificationReviewSystem(
@@ -381,7 +449,13 @@ export class PrisonerOperationsRuntime {
       options.disciplinaryEvidence,
       options.contrabandIntroducer,
       options.contrabandRngStreamName,
+      // The SAME port the intake stage above is given, not a second one --
+      // ADR 0103 open question 5, answered by the owner on 2026-09-09. Both
+      // sites hand the rule the group and the tick; `defaultGangIdForArrival`
+      // decides, and it is pure in the entity id, so the two writes agree.
+      options.gangAssigner,
     );
+    this.regimes = new RegimeScheduleRegistry(options.regimeSchedules);
     this.classificationEarlyWarningSystem = new ClassificationEarlyWarningSystem(this.entityStore, this.query, this.records, options.disciplinaryEvidence);
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
@@ -397,7 +471,7 @@ export class PrisonerOperationsRuntime {
       this.roomInstances,
       options.navigation,
       this.locomotion,
-      options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
+      () => this.regimes.all(),
       options.routeContextResolver,
       // The caller's override (a live riot, ADR 0057) tried first, and this
       // runtime's own solitary-sanction override underneath it -- see
@@ -541,6 +615,36 @@ export class PrisonerOperationsRuntime {
     const index = this.entityStore.getIndex(entityId);
     const currentEnd = this.records.solitarySanctionEndTick[index]!;
     this.records.solitarySanctionEndTick[index] = Math.max(currentEnd, tick) + this.sanctionPolicy.solitaryTermTicks;
+  }
+
+  /**
+   * Records that `entityId` was hurt in an incident (issue #589, the owner's
+   * ruling of 2026-09-17).
+   *
+   * Called from `IncidentResponseSystem`'s `onPrisonerInjured` port, once per
+   * id in a lapsed incident's `outcome.injuredEntityIds`. Idempotent: a
+   * prisoner hurt twice before a course of treatment completes is injured, not
+   * more injured, because the ruling bought a boolean and no severity.
+   *
+   * **Silently does nothing for an id that names nobody living**, the same
+   * guard and the same reason `imposeSolitarySanction` above carries -- and
+   * here it also does the work of a type test. `IncidentRecord.participantIds`
+   * is a list of `EntityId`s that this runtime's `EntityStore` may not hold at
+   * all: a save restored between an incident opening and closing, an escapee
+   * `lapse` released moments earlier on the same list, or an id belonging to
+   * some other population. `isAlive` answers the only question that matters --
+   * is this a prisoner this runtime still holds -- and answers it without this
+   * system having to know what else an entity id can be.
+   */
+  public markInjured(entityId: EntityId): void {
+    if (!this.entityStore.isAlive(entityId)) return;
+    this.records.injured[this.entityStore.getIndex(entityId)] = 1;
+  }
+
+  /** Whether `entityId` is hurt and not yet treated. `false` for an id that names nobody living, for `isServingSolitarySanction`'s reason: a stale reference must not answer for an entity this runtime no longer holds. */
+  public isInjured(entityId: EntityId): boolean {
+    if (!this.entityStore.isAlive(entityId)) return false;
+    return this.records.injured[this.entityStore.getIndex(entityId)] === 1;
   }
 
   /** `CellSharingView` for one resident, read at the index the caller already has -- the same shape `SanctionSystem.sharingViewOf` and `IntakeSystem`'s own private helper build, extracted here because `relocateResidentsOutOf` is a third caller of the identical read. */

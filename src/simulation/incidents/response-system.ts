@@ -76,9 +76,15 @@ export interface EscapedPrisoner {
  * response is too slow or too thin -- "failed/late response produces
  * consistent outcomes rather than hidden success."
  *
- * Guards are claimed from `GuardRoster.unassignedGuardIds()`, the same
- * finite shared pool `DeploymentSystem` and #27's `SearchSystem` draw
- * from, so emergency response is a real staffing diversion. Like search
+ * Guards are claimed from `claimableGuardIds` -- `unassignedGuardIds()`
+ * narrowed to post-eligible roles since ADR 0053 -- out of the same finite
+ * roster `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
+ * response is a real staffing diversion. **A search draws on a strictly
+ * smaller pool than this one since issue #996** (`claimableSearchGuardIds`,
+ * which withholds `INCIDENT_RESPONSE_GUARD_RESERVE`): a sweep in flight can no
+ * longer be the reason this system has nobody to claim, while this system can
+ * still take the guard a sweep would have been walked by. The asymmetry is the
+ * decision -- a response cannot be deferred and a sweep can. Like search
  * duty, a responding guard sits in the `'on-search'` phase -- neither
  * `DeploymentSystem` nor `PatrolSystem` acts on that phase, so no changes
  * to either were needed here (see `docs/CONTRABAND.md`'s note).
@@ -208,8 +214,55 @@ export class IncidentResponseSystem implements SystemRegistration {
      * `new-session.ts`, so a hard dependency would invert that order. Defaults
      * to doing nothing, so a fixture with no prisoner slice -- and every
      * existing test of this system -- is unchanged.
+     *
+     * **IT TOOK `(entityId, tick)` UNTIL
+     * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+     * AND THE PARAGRAPHS ABOVE ARE KEPT BECAUSE EVERY OTHER WORD OF THEM STILL
+     * HOLDS.** The old signature handed on `incident.instigatorId` and nothing
+     * else, so the second participant -- the one a *directional* grudge needs
+     * -- never crossed it. ADR 0103 Context 13 point 3 is that finding, and
+     * Context 9's claim that this port was already *"of exactly the shape a
+     * second consumer needs"* is the sentence it corrects: the **pattern** was
+     * right and the **shape** was not. It carries the record now, which the
+     * method already held, so widening it is one line of signature rather than
+     * a second port beside this one -- and one port keeps the property
+     * `adjudicateAssaultIfAny`'s own docblock is about, that the two terminal
+     * call sites cannot drift.
+     *
+     * **The narrowing below the port is unchanged, and a consumer may rely on
+     * it**: `adjudicateAssaultIfAny` still calls this only for an `'assault'`
+     * that carries an `instigatorId`, so `incident.type === 'assault'` and
+     * `incident.instigatorId !== undefined` both hold on every call.
      */
-    private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},
+    private readonly onAssaultAdjudicated: (incident: IncidentRecord, tick: number) => void = () => {},
+    /**
+     * What a lapsed incident costs the people caught in it (issue #589, the
+     * owner's ruling of 2026-09-17). Called once per id in the outcome's
+     * `injuredEntityIds`, from `lapse` and from nowhere else.
+     *
+     * **From `lapse` alone, because `lapse` is the only transition that writes
+     * a non-empty `injuredEntityIds`.** `advanceResponse`'s `'resolved'` branch
+     * -- the other and only other terminal transition -- writes `[]`, so a
+     * contained incident hurts nobody and this port is not called for one. That
+     * asymmetry is the whole of what a guard buys a player, and it is measured:
+     * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played the
+     * same prison with six guards (15 of 15 resolved, **zero** injuries) and
+     * with none (19 of 19 lapsed, **114** prisoner-injuries).
+     *
+     * The same narrow injected-port shape `onPrisonerEscaped` and
+     * `onAssaultAdjudicated` above are, for the same reason: the prisoner
+     * runtime is constructed before this system in `new-session.ts`, so a hard
+     * dependency would invert that order, and the default no-op leaves every
+     * fixture without a prisoner slice unchanged.
+     *
+     * **It answers nothing, unlike `onPrisonerEscaped`.** There is no sentence
+     * for it to name anybody in and nothing here reads back whether the mark
+     * took: an id that is not a live prisoner is simply not injured, and this
+     * system does not need to know which ids those were. The one thing the
+     * outcome record asserts -- that everyone caught in the lapse was hurt --
+     * is a property of the transition and is already written, above.
+     */
+    private readonly onPrisonerInjured: (entityId: EntityId, tick: number) => void = () => {},
   ) {}
 
   /**
@@ -231,11 +284,17 @@ export class IncidentResponseSystem implements SystemRegistration {
    * producer cannot outpace the one in `IncidentTriggerSystem` that it exists
    * to close off.
    *
-   * It is also the only true thing to say after a **lapse**. An incident that
-   * ran its course was not "resolved" -- participants were injured, and an
-   * escape attempt means somebody is gone -- but the prison does have nothing
-   * open, and that is all this claims. What it cost is `IncidentOutcome`, which
-   * the `hud/incidents` projection renders per incident.
+   * It read *"it is also the only true thing to say after a **lapse**"*, and
+   * that is the claim issue #914 measured and this method no longer makes; the
+   * section at the end of this docblock carries the numbers. The paragraph as
+   * it stood: *"An incident that ran its course was not 'resolved' --
+   * participants were injured, and an escape attempt means somebody is gone --
+   * but the prison does have nothing open, and that is all this claims. What
+   * it cost is `IncidentOutcome`, which the `hud/incidents` projection renders
+   * per incident."* The last clause defers to a projection **nothing under
+   * `src/ui/` requests** (`tests/foundation/projection-reachability-contract.test.ts`
+   * names it in `UNPAINTED_PROJECTION_IDS`), so on the shipped screen the
+   * deferral resolved to nothing at all.
    *
    * **That paragraph was true about this method and false about the screen,
    * and the owner ruled on it on 2026-08-31 (#703, ruling 6).** "Nothing is
@@ -264,17 +323,57 @@ export class IncidentResponseSystem implements SystemRegistration {
    * emits one event fewer rather than a different one. A future route to
    * `escaped: true` that wants its own closing sentence owes the owner that
    * sentence first, exactly as `lapse`'s own comment says of the escape line.
+   *
+   * ## The two endings say two things now (issue #914's finding 4)
+   *
+   * **The paragraph above beginning "It is also the only true thing to say
+   * after a lapse" is kept and is superseded, in that order, because it is the
+   * claim that was measured.**
+   * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played the
+   * same prison twice: with six guards, **15 incidents out of 15** ended
+   * `'resolved'` with **zero injuries**; with none, **19 out of 19** ended
+   * `'lapsed'` with **114 prisoner-injuries and three escapes** -- and both
+   * alert columns held the same rows in the same order saying the same
+   * sentence. "Nothing is open" was honest about `openIncidentCount` and the
+   * screen was not honest about the prison.
+   *
+   * So `endedByLapse` chooses between two events rather than gating one. It is
+   * a parameter and not a field read off the incident for the reason
+   * `escapeAnnounced` is one: **this method is called from the two terminal
+   * transitions and from nowhere else**, each of which knows which of the two
+   * it is by construction, and threading it means the `'resolved'` branch
+   * cannot accidentally claim a lapse or the reverse. `lapse` passes `true`
+   * and `advanceResponse`'s `'resolved'` branch passes the literal `false`,
+   * exactly as it already passes `escapeAnnounced`'s.
+   *
+   * **What the lapse row may claim is bounded by `lapse` itself**, which
+   * writes `injuredEntityIds: [...incident.participantIds]` unconditionally
+   * while the `'resolved'` branch writes `[]`. That is why the sentence can
+   * assert that everyone caught in it was hurt: the cost is a property of the
+   * transition. No count crosses the wire -- see the schema in
+   * `src/simulation/protocol/types.ts` for why a figure would need a plural
+   * rule this catalogue's HUD localizer does not expose.
+   *
+   * **Still at most one row per return to calm.** The `openIncidentCount`
+   * guard is untouched and runs first, so two incidents closing on the same
+   * tick produce one sentence, and it describes the transition that emptied
+   * the log. The `escapeAnnounced` gate is untouched too and suppresses either
+   * one.
    */
-  private reportAllClearIfCalm(tick: number, escapeAnnounced: boolean): void {
+  private reportAllClearIfCalm(tick: number, escapeAnnounced: boolean, endedByLapse: boolean): void {
     if (this.incidents.openIncidentCount > 0) return;
     if (escapeAnnounced) return;
+    if (endedByLapse) {
+      this.events.recordIncidentsAllClearAfterLapse(tick);
+      return;
+    }
     this.events.recordIncidentsAllClear(tick);
   }
 
   /** The one thing both terminal transitions below do identically, so the two call sites cannot drift about which incidents earn a sanction or which participant it lands on. */
   private adjudicateAssaultIfAny(incident: IncidentRecord, tick: number): void {
     if (incident.type !== 'assault' || incident.instigatorId === undefined) return;
-    this.onAssaultAdjudicated(incident.instigatorId, tick);
+    this.onAssaultAdjudicated(incident, tick);
   }
 
   /**
@@ -445,10 +544,11 @@ export class IncidentResponseSystem implements SystemRegistration {
    * cannot fill the response.
    *
    * Split out of `tryDispatch` so that `redispatchInterruptedResponses` claims
-   * responders by exactly the same rule -- ascending entity id, from the same
-   * finite shared pool `DeploymentSystem` and `SearchSystem` draw from. A second
-   * selection rule for the re-dispatch path would be a second thing to keep
-   * deterministic.
+   * responders by exactly the same rule -- ascending entity id, from the whole
+   * post-eligible free pool. `DeploymentSystem` claims out of the same one and
+   * `SearchSystem` out of a subset of it (issue #996), and **nothing narrows
+   * this claim**: the reserve exists for it. A second selection rule for the
+   * re-dispatch path would be a second thing to keep deterministic.
    */
   private claimableResponders(incident: IncidentRecord): readonly EntityId[] | undefined {
     const required = this.requiredResponderCount(incident.severity);
@@ -640,6 +740,23 @@ export class IncidentResponseSystem implements SystemRegistration {
     // Whether this transition actually *told the player* somebody left, which
     // is not the same question as `outcome.escaped` -- see
     // `reportAllClearIfCalm`, which is the only reader.
+    /*
+     * **The injuries, before the escapes** (issue #589). Both walk the same
+     * list, and the order is what keeps them from disagreeing: an escapee is
+     * released inside the escape loop below, so marking after it would find
+     * `isAlive` false for exactly the participants who got out and the two
+     * loops would silently be about different people. Marking first means the
+     * flag is written and then, for an escapee, discarded with the rest of
+     * their slot -- which is the same thing `releasePrisoner` does to every
+     * other fact about them, and is why nothing has to be undone.
+     *
+     * `injuredEntityIds` rather than `participantIds`, although `lapse` has
+     * just written them as the same list: this loop is about who was *hurt*,
+     * and reading the field that means that is what survives the day a lapse
+     * stops injuring everybody present.
+     */
+    for (const entityId of outcome.injuredEntityIds) this.onPrisonerInjured(entityId, tick);
+
     let escapeAnnounced = false;
     if (outcome.escaped) {
       for (const entityId of incident.participantIds) {
@@ -656,7 +773,10 @@ export class IncidentResponseSystem implements SystemRegistration {
     }
 
     this.adjudicateAssaultIfAny(incident, tick);
-    this.reportAllClearIfCalm(tick, escapeAnnounced);
+    // `true`: this is the lapse, so the row a calm prison gets from here is
+    // the one that says the last incident ran out of time rather than the one
+    // that says it was contained.
+    this.reportAllClearIfCalm(tick, escapeAnnounced, true);
 
     // The one close `releaseResponse` cannot serve, because there is no record
     // for it to read: an incident whose response was interrupted by a save
@@ -847,7 +967,11 @@ export class IncidentResponseSystem implements SystemRegistration {
     // escape. Written as the literal rather than threaded from a variable so
     // that anyone adding an escape route to this branch has to touch this line
     // to keep it honest, instead of a `false` flowing through unexamined.
-    this.reportAllClearIfCalm(tick, false);
+    //
+    // The second `false` is the same argument about the same line: this branch
+    // is a containment, and `injuredEntityIds` a few lines above is `[]`
+    // because of it.
+    this.reportAllClearIfCalm(tick, false, false);
   }
 
   public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {

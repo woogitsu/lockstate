@@ -9,6 +9,7 @@ import { JobBoard } from '../../src/simulation/operations/job';
 import { CarryJobExecutor } from '../../src/simulation/operations/carry-executor';
 import { CarryCrew } from '../helpers/carry-executor-harness';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #25's "representative flows prove extensibility; definitions
@@ -138,8 +139,8 @@ describe('representative operations flow: laundry (cell -> laundry -> clean stor
     // `Container` requires for any stock removal (its only removal path,
     // by design -- "auditable to prevent duplication/loss"), exactly like
     // a kitchen "cooking" step sits outside a food-delivery carry job.
-    expect(laundry.reserve('item.dirty-linen', 8).ok).toBe(true);
-    expect(laundry.withdrawReserved('item.dirty-linen', 8).ok).toBe(true);
+    expectOk(laundry.reserve('item.dirty-linen', 8), 'the wash claiming the delivered dirty linen');
+    expectOk(laundry.withdrawReserved('item.dirty-linen', 8), 'the wash taking the dirty linen off the shelf');
     expect(laundry.quantityOf('item.dirty-linen')).toBe(0);
     laundry.deposit('item.clean-linen', 8);
     board.submitCarryItem(

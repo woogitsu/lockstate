@@ -10,8 +10,9 @@ import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
-import { EMPTY_HUD_VIEW_MODEL } from '../../src/ui/hud/view-model';
+import { ZEROED_COUNTS } from '../helpers/hud-counts';
 import { SimulationEventLog } from '../../src/simulation/events';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * **What every reader of the balance does with a negative one.**
@@ -146,8 +147,7 @@ describe('the status channel carries a negative balance instead of refusing the 
       },
     });
 
-    expect(decoded.ok ? null : decoded.error.code).toBe(null);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the status-counts message carrying the negative balance');
     /*
      * The fifteen other figures, walked rather than assumed. This is the half
      * of the old assertion that was the finding: the block is `.strict()`, so
@@ -195,7 +195,11 @@ describe('the status channel carries a negative balance instead of refusing the 
 
 describe('the HUD side needs nothing new to say a prison is under water', () => {
   it('carries the negative through the metric descriptors with no tone and no badge', () => {
-    const metrics = projectStatusMetrics({ ...EMPTY_HUD_VIEW_MODEL.counts, treasuryMinorUnits: -4_000 });
+    // A prison that *has* reported, every other figure at a published zero:
+    // `EMPTY_HUD_VIEW_MODEL` carries no counts at all since issue #1191, and
+    // borrowing its row to stand for a reported one is the confusion that
+    // issue closed.
+    const metrics = projectStatusMetrics({ ...ZEROED_COUNTS, treasuryMinorUnits: -4_000 });
     const funds = metrics.find((metric) => metric.id === 'funds');
 
     expect(funds?.value).toBe(-4_000);
@@ -253,6 +257,12 @@ describe('payroll draws on the room a floor opened, down to the wage rung and no
       treasury,
       { allGuardIds: () => [1], getStaffRoleId: () => 'staff-role.guard' },
       new SimulationEventLog(),
+      // Mature and furnished: this describe's subject is the mature ladder's
+      // own wage rung, which ADR 0096 decision 2 (2026-09-10) leaves
+      // untouched -- only a *fresh, unfurnished* prison's `'wages'` rung moves,
+      // and this fixture must not accidentally exercise that starter rung
+      // instead of the one these cases are about.
+      { totalResidentCapacity: 1 },
     );
     const kernel = new Kernel();
     kernel.registerSystem(payroll);

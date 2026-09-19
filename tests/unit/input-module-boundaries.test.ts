@@ -168,6 +168,7 @@ describe('input module boundaries', () => {
       'src/input/index.ts',
       'src/input/keyboard.ts',
       'src/input/pointer.ts',
+      'src/input/pointer-gesture.ts',
       'src/input/settings.ts',
       'src/input/storage.ts',
     ]) {
@@ -176,12 +177,13 @@ describe('input module boundaries', () => {
 
     // And the scanner really is reading imports out of these files: a scan
     // that returned nothing at all would make every rule below vacuous in a
-    // way the file count cannot see. `src/input/index.ts` is nine
+    // way the file count cannot see. `src/input/index.ts` is ten
     // `export * from` lines and nothing else, so it is the honest place to pin
-    // that -- measured, not derived. It was eight until #201 added
-    // `./focus`, and this assertion is what said so.
+    // that -- measured, not derived. It was eight until #201 added `./focus`
+    // and nine until #1159 added `./pointer-gesture`, and this assertion is
+    // what said so both times.
     const barrel = inputFiles.find(({ file }) => file === 'src/input/index.ts')!;
-    expect(findImports(barrel.source).length).toBe(9);
+    expect(findImports(barrel.source).length).toBe(10);
     expect(inputFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);
   });
 

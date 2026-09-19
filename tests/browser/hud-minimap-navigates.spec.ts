@@ -111,7 +111,7 @@ async function clickMinimap(page: Page, point: { readonly x: number; readonly y:
 
 /**
  * Which world tile the camera currently puts under `PROBE`, read by pressing
- * the world with the removal tool armed and catching the `RemoveObject` the
+ * the world with the removal tool armed and catching the `RemoveWall` the
  * gesture submits.
  *
  * **Deliberately not `calibrate()`.** That measures the screen-to-tile
@@ -123,10 +123,14 @@ async function clickMinimap(page: Page, point: { readonly x: number; readonly y:
  * resolution. Precision moved to `world-scene-minimap.spec.ts`, which can state
  * it exactly; what is left here is a direction, and one press answers that.
  *
- * `RemoveObject` is submitted for whatever tile the gesture names, with nothing
- * checked first (`src/main.ts`'s own comment on the `remove-object` intent: the
- * one refusal reason is the worker's), so this reads correctly even after the
- * camera has jumped to land the prison does not own.
+ * **`RemoveWall`, not `RemoveObject`, since ADR 0106.** A world press with the
+ * removal tool armed always resolves an edge (`pickEdgeAtWorld`, never
+ * `undefined` for a finite point) and `src/main.ts` reads that presence to
+ * choose the command, so every such press now submits `RemoveWall` rather
+ * than the tile-only `RemoveObject` -- with nothing checked first either way
+ * (`src/main.ts`'s own comment on the `remove-object` intent: the one refusal
+ * reason is the worker's), so this reads correctly even after the camera has
+ * jumped to land the prison does not own.
  *
  * Armed and disarmed around each reading, exactly as `calibrate()` does, so a
  * caller is never left holding a tool it did not ask for.
@@ -135,9 +139,9 @@ async function probeCameraTile(page: Page): Promise<{ readonly tileX: number; re
   await page.locator('.hud-build__remove').click();
   const commands = await press(page, PROBE.x, PROBE.y);
   await page.locator('.hud-build__remove').click();
-  const removal = commands.find((command) => command['type'] === 'RemoveObject');
+  const removal = commands.find((command) => command['type'] === 'RemoveWall');
   if (removal === undefined) {
-    throw new Error(`no RemoveObject from a press at ${String(PROBE.x)},${String(PROBE.y)}: ${JSON.stringify(commands)}`);
+    throw new Error(`no RemoveWall from a press at ${String(PROBE.x)},${String(PROBE.y)}: ${JSON.stringify(commands)}`);
   }
   return { tileX: removal['x'] as number, tileY: removal['y'] as number };
 }
@@ -262,6 +266,114 @@ test.describe('the minimap navigates the camera (#793)', () => {
     expect(
       (await sentCommands(page)).slice(submittedBefore),
       'a minimap click reached the simulation -- moving the camera is presentational only (AGENTS.md boundary 1), so this gesture must build no command at all',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * **Issue #903's own half: the surface used to be a `div` with `tabIndex -1`
+ * and no `role`, so a keyboard player could reach every other control on this
+ * page and never this one.** `hud.ts` now builds it as a real `<button>`; this
+ * file is where that claim gets checked against a real browser's own Tab order
+ * and a real synthetic key event, not merely against what the DOM node looks
+ * like statically.
+ */
+test.describe('the minimap surface is keyboard-reachable (#903)', () => {
+  test('sequential Tab presses reach the surface, and it is a real <button> naming the sentence a sighted player reads', async ({ page }) => {
+    await startFreshPrison(page);
+
+    /*
+     * Real `Tab` presses, not `element.focus()`. A `tabIndex="-1"` element
+     * still accepts a direct `.focus()` call -- that is precisely what made
+     * the pre-#903 `div` look reachable if you only inspected it, and reading
+     * the property instead of driving the browser's own sequential focus
+     * navigation would repeat that mistake in the test meant to catch it.
+     */
+    let reachedInBudget = -1;
+    for (let i = 0; i < 60; i++) {
+      await page.keyboard.press('Tab');
+      const onSurface = await page.evaluate(() => document.activeElement?.classList.contains('hud-minimap__surface') ?? false);
+      if (onSurface) {
+        reachedInBudget = i;
+        break;
+      }
+    }
+    expect(reachedInBudget, 'sixty Tab presses never reached .hud-minimap__surface -- it is not in the keyboard focus order').toBeGreaterThanOrEqual(0);
+
+    const focused = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      return { tag: el.tagName, text: el.textContent?.trim() ?? null };
+    });
+    // A real `<button>`, not an ARIA role bolted onto a `div` -- native
+    // semantics rather than a reimplementation of them.
+    expect(focused.tag, 'the focused minimap surface is not a real <button>').toBe('BUTTON');
+    // Name-from-content, exactly as a native button computes its own
+    // accessible name: the sentence a screen reader announces is the same one
+    // a sighted player reads, not a second, divergent `aria-label` that could
+    // drift from it.
+    expect(focused.text, "the focused surface's accessible name is not the visible placeholder sentence").toBe(MINIMAP_PLACEHOLDER_TEXT);
+  });
+
+  test('Enter on the focused surface reaches onMinimapNavigate: the panel updates and the camera actually moves', async ({ page }) => {
+    await startFreshPrison(page);
+
+    const textBefore = await page.locator('.hud-minimap__placeholder').textContent();
+    expect(textBefore).toBe(MINIMAP_PLACEHOLDER_TEXT);
+
+    /*
+     * Displace the camera off-centre with a real click first (issue #793's
+     * own mechanism, already proved above), so the keyboard press below --
+     * which names the surface's own centre, `0.5, 0.5` -- has somewhere
+     * different to prove it actually reached. Without this, a fresh prison's
+     * camera already starts framed on that same centre
+     * (`WorldScene.frameCameraOnFirstWorld`), and an Enter press that changed
+     * nothing on screen would be indistinguishable from one that was never
+     * wired at all -- the same shape of blind spot this file's own comment
+     * warns about for a diagonal click.
+     */
+    await clickMinimap(page, pointAt(await minimapSurfaceRect(page), 0.05, 0.95));
+    const offCentre = await probeCameraTile(page);
+
+    const submittedBefore = (await sentCommands(page)).length;
+
+    // Tab to the surface rather than assuming the prior click left it
+    // focused -- the claim under test is the keyboard path, so it is driven
+    // exactly the way a keyboard-only player would drive it.
+    let reachedInBudget = -1;
+    for (let i = 0; i < 60; i++) {
+      await page.keyboard.press('Tab');
+      const onSurface = await page.evaluate(() => document.activeElement?.classList.contains('hud-minimap__surface') ?? false);
+      if (onSurface) {
+        reachedInBudget = i;
+        break;
+      }
+    }
+    expect(reachedInBudget).toBeGreaterThanOrEqual(0);
+
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(50);
+
+    // The text swap is gated in `hud.ts` on `onMinimapNavigate` returning
+    // `true` and nothing else, so seeing it here is direct proof the keyboard
+    // event reached that real callback rather than merely focusing an inert
+    // element.
+    const textAfter = await page.locator('.hud-minimap__placeholder').textContent();
+    expect(textAfter, 'Enter on the focused surface did not flip the panel to the navigable sentence -- the key press never reached onMinimapNavigate').toBe(MINIMAP_NAVIGABLE_TEXT);
+
+    // And the substantive claim, not only the sentence: the camera actually
+    // moved, read the same way the mouse-driven tests above read it.
+    const afterEnter = await probeCameraTile(page);
+    expect(afterEnter, 'Enter on the focused minimap surface left the camera exactly where the prior click put it').not.toEqual(offCentre);
+
+    // AGENTS.md boundary 1: a keyboard press on this surface is exactly as
+    // presentational as a click on it. `probeCameraTile` itself submits a
+    // `RemoveWall` to do its reading (ADR 0106), so that is the one command
+    // type this filters out before asserting the keyboard gesture built
+    // nothing else.
+    const submittedSince = (await sentCommands(page)).slice(submittedBefore);
+    expect(
+      submittedSince.filter((command) => command['type'] !== 'RemoveWall'),
+      'a keyboard press on the minimap reached the simulation -- moving the camera is presentational only',
     ).toEqual([]);
   });
 });

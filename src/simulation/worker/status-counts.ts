@@ -77,6 +77,14 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     // notice ([ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
     // decision 2).
     materialsFunding: runtime.justInTimeMaterials,
+    // `DeploymentSystem` itself, for `payroll`'s reason above:
+    // `hasUnreachablePost` is a live read over the sector registry and the
+    // roster, so a wall built or taken down between two publications reaches
+    // `PrisonCondition`'s `'security.post-unreachable'` member without
+    // anything here having to notice
+    // ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+    // accepted by the owner on 2026-09-17).
+    deployment: runtime.deploymentSystem,
   }).counts;
 }
 

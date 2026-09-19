@@ -32,16 +32,34 @@ design. That gap is now closed except where noted:
   the server timestamps a client could stamp (see "The server's timestamps
   are the server's" below), `20260824110000`, `20260824110100` and
   `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
-  #163's trusted-role `TRUNCATE`, and the two dated `20260826` for #280 and
-  #194's open half. So do **suites 005 to 011 in their
-  entirety** and every change the first four suites have gained since. All of
-  it has been executed only against plain PostgreSQL. The date is what
-  defines the set here, not this list: the list stood at eleven while twelve
-  postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 321 assertions
-  (54/54, 104/104, 35/35, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6), measured on the run that
+  #163's trusted-role `TRUNCATE`, the two dated `20260826` for #280 and
+  #194's open half, and `20260904090000` for the telemetry ingest. So does
+  **every suite from 005 onwards, in its entirety**, and every change the
+  first four suites have gained since. All of it has been executed only
+  against plain PostgreSQL. The date is what defines the set here, not this
+  list: the list stood at eleven while twelve postdated the run, **and then
+  the same thing happened twice more** — re-derived 2026-09-15,
+  `ls supabase/migrations/ | cut -c1-8 | sort | uniq -c` shows a
+  `20260904` migration this enumeration did not name, and `supabase/tests/`
+  holds a suite `012` that "005 to 011" excluded. A closed range is a tally
+  wearing different clothes; the range is now open-ended. The counts above are
+  the stack-run counts, not today's.
+  `pnpm verify:sql` is at 412 assertions
+  (54/54, 104/104, 37/37, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6, 89/89), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
+
+  **That line read "321 assertions (54/54, 104/104, 35/35, 33/33, 8/8, 23/23,
+  11/11, 12/12, 25/25, 10/10, 6/6)" until 2026-09-04**, and the sentence above
+  it still reads **"suites 005 to 011 in their entirety"**, which is left as it
+  stands because it is what was measured then. Both are dated by one change:
+  `20260904090000_create_telemetry_events.sql` added the telemetry ingest
+  destination and, on the owner's ruling of that date, its retention job, which
+  brought **suite 012** (89 assertions), took suite 003 from 35 to 37 with the
+  fourth database role, and extended suites 005, 007, 008, 009 and 010 with the
+  new objects' declarations. So the unexecuted-against-the-stack set is now
+  **suites 005 to 012**, and the twelfth has never run anywhere but on plain
+  PostgreSQL.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -56,7 +74,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 321 assertions — which
+  migration and every suite via `pnpm verify:sql` — 412 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -94,7 +112,7 @@ design. That gap is now closed except where noted:
 
   Two limits of that stand-in, because they are what a reader of this bullet
   needs next. **It does not cast.** It accepts `'prison-1'` as a prison id
-  (`tests/unit/persistence-cloud-supabase-client.test.ts:430`) where the real
+  (`tests/unit/persistence-cloud-supabase-client.test.ts:475`) where the real
   `prisons.id` is `uuid` and the database refuses it -- #338. That is one
   concrete instance of this bullet's own warning that a fake tests the fake,
   and it is named here so the caution reads as a live risk rather than a

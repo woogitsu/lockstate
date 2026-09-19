@@ -12,6 +12,7 @@ import {
 import { MAX_BUFFERED_SIMULATION_EVENTS } from '../simulation/events/event-log';
 import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
 import { NEED_MAX_SCALED } from '../simulation/prisoners/needs';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/regime';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
@@ -24,6 +25,7 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -33,7 +35,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 5 as const;
+export const SAVE_SCHEMA_VERSION = 6 as const;
 
 // --- Kernel / RNG ---
 
@@ -69,8 +71,17 @@ const namedRngStreamStateSchema = z
  * (`tests/perf/persistence-decode-aliasing.perf.ts`).
  *
  * One line, and it closes both trust entry points -- `createSaveEnvelope` and
- * `decodeSaveEnvelope` -- across all three payload versions and the V1 -> V2 ->
- * V3 migration chain, because `kernelSnapshotSchema` is shared by all of them.
+ * `decodeSaveEnvelope` -- across every payload version and the whole migration
+ * chain, because `kernelSnapshotSchema` is shared by all of them: it appears
+ * once per version below, and `save-migrations.ts` exports one
+ * `migrateSaveEnvelopeV<n>ToV<n+1>` per step.
+ *
+ * **This read "all three payload versions and the V1 -> V2 -> V3 migration
+ * chain" on 2026-09-15, when there were six schemas and five steps** -- and
+ * `docs/PERSISTENCE.md` carried the same claim twice, once as "four" and once
+ * as "three", in one file. The number is gone rather than set to six because
+ * the sentence is about the schema being *shared*, which is true at any count
+ * and stops the tally from rotting a fourth time.
  */
 const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
 
@@ -284,8 +295,8 @@ const entityStoreSnapshotV1Schema = z
      * `decodeSaveEnvelope`, which aborted `PrisonSaveRepository.loadCurrent`'s
      * recovery walk before it could reach the older good generation.
      *
-     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:13`), the
-     * ceiling `EntityStore`'s own constructor enforces at `:83`, so this is
+     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:15`), the
+     * ceiling `EntityStore`'s own constructor enforces at `:103`, so this is
      * not a number invented for a schema. **It narrows nothing that was
      * loadable**: V2's identical bound already refused every such save one
      * step later, as `migration-produced-invalid-output` -- above `0xf_ffff` a
@@ -293,7 +304,7 @@ const entityStoreSnapshotV1Schema = z
      * allocation instead of after) and the label on it.
      *
      * The widest capacity any writer in this repository produces is
-     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:244,326`);
+     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:392,597`);
      * a sweep of every numeric and symbolic `capacity` assignment in `src/`
      * and `tests/` finds nothing above it, and both checked-in V1 fixtures
      * carry 8. ADR 0038 §1 classifies this as a *value* the build cannot
@@ -414,6 +425,34 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     // array is still checked against `activeLength` below, exactly as every
     // required array is.
     solitarySanctionEndTick: z.array(uint32Schema).optional(),
+    /*
+     * **Optional, and `SAVE_SCHEMA_VERSION` is not bumped** -- the same rule
+     * and the same shape as `solitarySanctionEndTick` above (issue #589, the
+     * owner's ruling of 2026-09-17).
+     *
+     * **The ruling authorised a bump and it is not spent, which is a decision
+     * rather than an omission.** The option the owner approved said
+     * `SAVE_SCHEMA_VERSION` would move by one field; the repository's own
+     * accepted rule says it should not, and the rule wins because it is what
+     * makes the change safe rather than what makes it tidy. ADR 0038 decision
+     * 1, restating `docs/PERSISTENCE.md`'s "Adding an optional field without a
+     * version bump": *"Absence is a fact about the save's age and is honoured
+     * with the value the writing build would have held"*, with a bump required
+     * instead only where absence is ambiguous or an existing field changed
+     * meaning. All three of that section's conditions hold here -- the field is
+     * optional, absent means exactly what every earlier build meant ("nobody in
+     * this session has been hurt"), and no existing field moves -- and ADR 0038
+     * rejected a V6 bump for `masterSeed` on the ground that its only migration
+     * content would be fabricating a value the save does not record, which is
+     * precisely what a `false`-per-slot migration step would be here.
+     *
+     * `z.array(byteSchema)` rather than a boolean array because
+     * `PrisonerRecordComponent.injured` is a `Uint8Array` and the payload
+     * carries the stored units verbatim, the way every other component array
+     * here does; `0` and `1` are the only values written and
+     * `tests/unit/prisoners-injury.test.ts` is what pins that.
+     */
+    injured: z.array(byteSchema).optional(),
     // Named, not positional: reordering `NEED_IDS` in the simulation must not
     // silently reinterpret an existing save's levels as a different need.
     needs: z
@@ -451,6 +490,7 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     check('classificationGroupIndex', value.classificationGroupIndex);
     check('intakeStage', value.intakeStage);
     if (value.solitarySanctionEndTick !== undefined) check('solitarySanctionEndTick', value.solitarySanctionEndTick);
+    if (value.injured !== undefined) check('injured', value.injured);
     check('actionIndex', value.actionIndex);
     check('actionPhase', value.actionPhase);
     check('phaseStartedAtTick', value.phaseStartedAtTick);
@@ -600,7 +640,8 @@ const objectsSectionSchema = z
  * log. So no migration step is added, and `SAVE_SCHEMA_VERSION` does not move.
  * ADR 0084 predicted this in its Consequences and said to record it so a
  * future implementer does not re-litigate it; this is that record, and it was
- * re-checked against ADR 0038 section 1 and `docs/PERSISTENCE.md:69-92` rather
+ * re-checked against ADR 0038 section 1 and that document's own
+ * "Adding an optional field without a version bump" section rather
  * than taken from the ADR.
  *
  * The cost of not bumping is the one `masterSeed` records: an **older** build
@@ -1241,9 +1282,9 @@ const sessionSystemsV3Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3
 /** Frozen historical shape: scaled needs (#259), authored room capacity, no objects section. */
 const sessionSystemsV4Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4)).strict();
 /**
- * Current shape: room instances carry their rectangle and no derived fields,
- * placed objects have a section (ADR 0028), and the alerts log has one (ADR
- * 0084, the owner's decision 4 of 2026-09-01).
+ * Frozen historical shape: room instances carry their rectangle and no derived
+ * fields, placed objects have a section (ADR 0028), and the alerts log has one
+ * (ADR 0084, the owner's decision 4 of 2026-09-01).
  *
  * Both extra sections are optional and both are added *here* rather than in
  * `sessionSystemsShapeFor` above, which is what keeps the V3 and V4 shapes
@@ -1254,6 +1295,68 @@ const sessionSystemsV5Schema = z
     ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
     objects: objectsSectionSchema.optional(),
     alerts: alertsSectionSchema.optional(),
+  })
+  .strict();
+
+/**
+ * One classification group's timetable, as the session runs it
+ * ([ADR 0113](../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §2).
+ *
+ * `RegimeSchedule`'s own shape reused rather than a parallel one invented,
+ * which is the discipline `docs/PERSISTENCE.md` describes for `payload`
+ * generally. `.strict()` on both objects, like every other section here.
+ *
+ * **`allowedCategories` is `.min(1)`** for the reason `editRegimeBlockSchema`
+ * gives at the command boundary: an empty array names nothing in
+ * `ACTION_CATEGORIES`, and a block a prisoner can never act in is the state
+ * ADR 0054 exists to rule out. It is a shape defect either way -- nothing
+ * about the session is needed to see it -- so it is refused here as
+ * `invalid-shape` rather than surviving into a restore.
+ *
+ * **What this schema deliberately does not check: gaplessness.** That is a
+ * rule about a schedule's blocks *together*, and it is enforced by
+ * `RegimeScheduleRegistry.loadSnapshot`, which is the subsystem that owns it --
+ * the same split this file's own header states ("semantic rules ... belong to
+ * the subsystems that own them and are enforced by their own `loadSnapshot`").
+ */
+const regimeBlockSchema = z
+  .object({
+    startTickOfDay: z.number().int().min(0).max(DAY_LENGTH_TICKS - 1),
+    endTickOfDay: z.number().int().min(1).max(DAY_LENGTH_TICKS),
+    allowedCategories: z.array(z.enum(ACTION_CATEGORIES)).min(1),
+  })
+  .strict();
+
+const regimeScheduleSchema = z
+  .object({
+    classificationGroupId: identifierSchema,
+    blocks: z.array(regimeBlockSchema).min(1),
+  })
+  .strict();
+
+const regimeSchedulesSectionSchema = z.array(regimeScheduleSchema).min(1);
+
+/**
+ * Current shape: V5's, plus the required `regimeSchedules` section
+ * (ADR 0113 §2).
+ *
+ * Added here rather than in `sessionSystemsShapeFor` for the reason V5's two
+ * optional sections are: V3's and V4's shapes stay frozen, so a save written
+ * by one of those builds is still exactly what it was.
+ *
+ * **Required rather than optional, which is the whole reason for the version
+ * bump.** `EncodedSessionSystems.regimeSchedules` carries the argument: absence
+ * is genuinely ambiguous once a schedule can be edited, so there is no honest
+ * default a reader could apply, and `migrateSaveEnvelopeV5ToV6` manufactures
+ * the section instead.
+ */
+const sessionSystemsV6Schema = z
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
+    objects: objectsSectionSchema.optional(),
+    alerts: alertsSectionSchema.optional(),
+    regimeSchedules: regimeSchedulesSectionSchema,
   })
   .strict();
 
@@ -1397,6 +1500,43 @@ const savePayloadV5Schema = z
   })
   .strict();
 
+/**
+ * V6 (ADR 0113 §2): `simulation` gains a **required** `regimeSchedules`
+ * section.
+ *
+ * Everything outside that one key is byte-identical to V5, `masterSeed`
+ * included.
+ *
+ * **Why it is a bump and not the optional-field pattern**, which this file
+ * applies three times immediately above: that pattern's condition is that
+ * absence be unambiguous. It held for `objects` ("no object has been placed" --
+ * no V4 build could place one), for `alerts` ("this save does not know") and
+ * for `masterSeed` ("absent means 0" -- production could write nothing else).
+ * It does not hold here. A V5 save records no schedule, and the moment a
+ * schedule is editable, an absent section cannot distinguish "this prison runs
+ * the defaults" from "this prison's edits were not recorded". A schedule that
+ * does not exist has to be *manufactured* by a migration, which is
+ * `docs/PERSISTENCE.md`'s own line for when a bump is required rather than
+ * optional.
+ *
+ * **`simulation` itself stays optional, and that is not a hole.** A payload
+ * with no `simulation` section at all is a save from a build that had no
+ * subsystem state, and `migrateSaveEnvelopeV2ToV3` established that a
+ * migration may not fabricate one -- see `migrateSaveEnvelopeV5ToV6` for what
+ * that means here, and for why it is honest rather than a gap.
+ */
+const savePayloadV6Schema = z
+  .object({
+    masterSeed: uint32Schema.optional(),
+    kernel: kernelSnapshotSchema,
+    world: worldSnapshotSchema,
+    construction: constructionSnapshotSchema,
+    entities: entityStoreSnapshotV2Schema.optional(),
+    simulation: sessionSystemsV6Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
+  })
+  .strict();
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
@@ -1405,9 +1545,11 @@ export type SavePayloadV2 = DeepReadonly<z.infer<typeof savePayloadV2Schema>>;
 export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
 /** Historical V4 payload shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
+/** Historical V5 payload shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
+export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV5;
+export type SavePayload = SavePayloadV6;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1467,13 +1609,19 @@ const saveEnvelopeV4ObjectSchema = z
 const saveEnvelopeV4Schema = withOrderedTimestamps(saveEnvelopeV4ObjectSchema);
 
 const saveEnvelopeV5ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV5Schema })
+  .object({ ...saveEnvelopeMetadataShape(5), payload: savePayloadV5Schema })
   .strict();
 
 const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV5Schema`. */
-const saveEnvelopeMetadataV5Schema = withOrderedTimestamps(
+const saveEnvelopeV6ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV6Schema })
+  .strict();
+
+const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV6Schema`. */
+const saveEnvelopeMetadataV6Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -1485,13 +1633,15 @@ export type SaveEnvelopeV2 = DeepReadonly<z.infer<typeof saveEnvelopeV2ObjectSch
 export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSchema>>;
 /** Historical V4 envelope shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
+/** Historical V5 envelope shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
+export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV5;
+export type SaveEnvelope = SaveEnvelopeV6;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1504,7 +1654,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(1, saveEnvelopeV1Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV6Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -1524,6 +1675,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 4,
   toVersion: 5,
   migrate: (input) => migrateSaveEnvelopeV4ToV5(input as SaveEnvelopeV4),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 5,
+  toVersion: 6,
+  migrate: (input) => migrateSaveEnvelopeV5ToV6(input as SaveEnvelopeV5),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1707,6 +1863,33 @@ export interface CreateSaveEnvelopeInput {
   readonly masterSeed?: number;
   readonly gameVersion: string;
   readonly prisonId: string;
+  /**
+   * What the composing session believes the next revision is -- **a proposal,
+   * not an allocation** (ADR 0109 Decision 1).
+   *
+   * `PrisonSaveRepository.writeGeneration` re-stamps this inside the
+   * `readwrite` transaction that compares the slot's `currentRevision`, so the
+   * number that reaches storage is allocated where it can be compared rather
+   * than where it was guessed. The only case that keeps what is passed here is
+   * the first write to a slot that has no `currentRevision` to allocate from.
+   *
+   * **Re-stamping costs this schema nothing, and that is why the design is
+   * affordable.** `createSaveEnvelope` below hashes the *payload* and puts
+   * this field in the metadata beside the digest, so changing it invalidates
+   * no checksum, moves no `saveSchemaVersion`, and leaves `decodeSaveEnvelope`
+   * unaffected. ADR 0105 left the choice between "a lock, a queue, or
+   * allocating the revision at write time" open because it did not have that
+   * fact; ADR 0109 Context 4 established it.
+   *
+   * **This docblock exists partly because ADR 0109 said it already did.** The
+   * document's "Consequences for existing sentences" names a *"'not this
+   * issue' note about caller-managed revisions"* in this file as a sentence
+   * that would go false. There was no such note here and there never had been
+   * -- `git log -S` over this file finds neither phrase -- and the sentence it
+   * meant lives in `docs/PERSISTENCE.md`'s own envelope-shape block. Rather
+   * than record only that the ADR was wrong, the note it expected is now
+   * written, stating what is true.
+   */
   readonly revision: number;
   readonly createdAt: number;
   readonly updatedAt: number;
@@ -1737,7 +1920,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV5Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV6Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -1745,7 +1928,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV5Schema.parse({
+  const payload = savePayloadV6Schema.parse({
     ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
@@ -1755,7 +1938,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV5Schema.parse({
+  const metadata = saveEnvelopeMetadataV6Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

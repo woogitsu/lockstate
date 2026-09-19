@@ -120,6 +120,9 @@ test('CancelBuildOrder command stops construction', () => {
   kernel.submitCommand('cmd-cancel', 1, 1, packCommand({
     type: 'CancelBuildOrder',
     orderId: 'order-cancel',
+    // ADR 0107: the order's true current revision, read fresh off the
+    // system this test already holds a reference to.
+    expectedRevision: construction.revisionOf('order-cancel'),
   }));
   
   kernel.step(); // tick 1

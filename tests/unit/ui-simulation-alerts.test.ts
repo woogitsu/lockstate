@@ -11,6 +11,25 @@ import {
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
+import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import { alertRows } from '../helpers/alert-rows';
+
+/**
+ * `hudAlertsFromWorkerMessage`'s rows, for the assertions that read one.
+ *
+ * The translator answers three things since issue #1184 -- a list, `'none'`
+ * for `simulation/stopped`, `undefined` for a message that says nothing --
+ * and this throws on the two that are not a list rather than coercing them to
+ * `[]`. Every use below drives a publication or a fault, so the throw is
+ * unreachable; the three tests that assert the other two answers call the
+ * translator directly, which is what makes the distinction visible here.
+ */
+function rows(
+  message: WorkerToMainMessage,
+  previous?: readonly HudAlertViewModel[],
+): readonly HudAlertViewModel[] {
+  return alertRows(previous === undefined ? hudAlertsFromWorkerMessage(message) : hudAlertsFromWorkerMessage(message, previous));
+}
 
 /**
  * The main thread's refusal translation: the alerts list's first producer.
@@ -50,7 +69,7 @@ const COUNTS = {
   treasuryMinorUnits: 25_000,
 } as const;
 
-function publication(refusal?: { sequence: number; tick: number; reason: RefusalReason }): WorkerToMainMessage {
+function publication(refusal?: { sequence: number; tick: number; reason: RefusalReason; routeDecidedSince?: true }): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
@@ -66,7 +85,24 @@ function publication(refusal?: { sequence: number; tick: number; reason: Refusal
 
 describe('a refusal the worker published becomes an alert row', () => {
   it('turns the refusal into one row carrying a message key and a severity', () => {
-    expect(hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }))).toEqual([
+    expect(rows(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }))).toEqual([
+      {
+        id: 'refusal-1',
+        labelKey: 'hud.alert.refusal.build.unowned-land',
+        severity: 'warning',
+      },
+    ]);
+  });
+
+  it('keeps the row when the simulation marks the refusal route as decided since -- the list is the record (ADR 0091)', () => {
+    // The companion to the band's own rule: option F retires the corner and
+    // deliberately leaves the log alone, which is the split
+    // `src/ui/simulation-alerts.ts` has described in prose since #507. A
+    // reader who finds the band empty and the list full has found the ruling,
+    // not a bug.
+    expect(
+      rows(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land', routeDecidedSince: true })),
+    ).toEqual([
       {
         id: 'refusal-1',
         labelKey: 'hud.alert.refusal.build.unowned-land',
@@ -81,7 +117,7 @@ describe('a refusal the worker published becomes an alert row', () => {
     // is "this message says nothing about alerts" and leaves the HUD alone.
     // A publication always carries the complete refusal state, so it is
     // always the former.
-    expect(hudAlertsFromWorkerMessage(publication())).toEqual([]);
+    expect(rows(publication())).toEqual([]);
   });
 
   it('keeps the row identity while a refusal stands, and mints a new one when it changes', () => {
@@ -90,21 +126,29 @@ describe('a refusal the worker published becomes an alert row', () => {
     // an id derived from anything per-message -- the envelope's `messageId`,
     // its `tick` -- would rebuild the row the player is reading several times
     // a second.
-    const first = hudAlertsFromWorkerMessage(publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds' }));
-    const republished = hudAlertsFromWorkerMessage(publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds' }));
+    const first = rows(publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds' }));
+    const republished = rows(publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds' }));
     expect(republished?.[0]?.id).toBe(first?.[0]?.id);
 
-    const next = hudAlertsFromWorkerMessage(publication({ sequence: 5, tick: 90, reason: 'build.out-of-bounds' }));
+    const next = rows(publication({ sequence: 5, tick: 90, reason: 'build.out-of-bounds' }));
     // Same reason, same sentence, different refusal: a new row rather than
     // the old one silently rewritten under the player.
     expect(next?.[0]?.id).not.toBe(first?.[0]?.id);
     expect(next?.[0]?.labelKey).toBe(first?.[0]?.labelKey);
   });
 
-  it('empties the list when the session stops', () => {
+  it('takes the log off when the session stops, rather than emptying it (#1184)', () => {
     // A refusal by a simulation that no longer exists is not something the
-    // player can act on -- the same reasoning that sends the counts back to
-    // `EMPTY_HUD_VIEW_MODEL.counts` and the clock to `UNKNOWN_HUD_CLOCK`.
+    // player can act on -- the same reasoning that sends the clock back to
+    // `UNKNOWN_HUD_CLOCK`.
+    //
+    // **`'none'` and not `[]`, and that distinction is issue #1184.** An empty
+    // list is what a running prison with a clean log publishes, and the HUD
+    // says so in words: *"No active alerts"*. Returning it here made a session
+    // that had ENDED say the same sentence about a prison that was no longer
+    // there -- article 5's *"'brak incydentow' i 'brak danych' to rozne
+    // stany"*. `'none'` deletes the field instead, and the HUD paints
+    // *"No prison is reporting."* for it.
     expect(
       hudAlertsFromWorkerMessage({
         protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -113,7 +157,7 @@ describe('a refusal the worker published becomes an alert row', () => {
         kind: 'simulation/stopped',
         payload: { tick: 900, reason: 'shutdown-requested' },
       } as WorkerToMainMessage),
-    ).toEqual([]);
+    ).toBe('none');
   });
 
   it('says nothing about alerts for a message that is not about them', () => {
@@ -131,7 +175,7 @@ describe('a refusal the worker published becomes an alert row', () => {
 describe('what the player is told is a key, and the key is real', () => {
   it('emits a key for every reason the protocol declares, and no two share one', () => {
     const keys = REFUSAL_REASONS.map(
-      (reason) => hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey,
+      (reason) => rows(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey,
     );
     expect(keys.filter((key) => key === undefined)).toEqual([]);
     // A shared key would put one sentence on two different refusals, which
@@ -152,7 +196,7 @@ describe('what the player is told is a key, and the key is real', () => {
     });
 
     for (const reason of REFUSAL_REASONS) {
-      const key = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey;
+      const key = rows(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey;
       expect(key, `${reason} produced no label key`).toBeDefined();
       const text = localizer.format(String(key));
       expect(text, `${String(key)} has no default-locale entry`).not.toBe(key);
@@ -182,7 +226,7 @@ describe('what the player is told is a key, and the key is real', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const alertSentence = (reason: RefusalReason): string =>
       localizer.format(
-        String(hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
+        String(rows(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
       );
 
     expect(alertSentence('hire.insufficient-funds')).toBe(
@@ -203,12 +247,22 @@ describe('what the player is told is a key, and the key is real', () => {
      * not the fixture supplying both sides of the comparison
      * (`docs/TESTING.md`): the expected text comes from the ruling, and the
      * code under test is the table that chooses which key each reason gets.
+     *
+     * **The tail was rewritten on 2026-09-04 and the transcription follows it
+     * rather than the 2026-09-01 words.** Ruling 19's requirement is *name
+     * what stops, not the number it stops at*, and the clause that carried it
+     * -- *"until the state pays what it owes"* -- is false of a prison that is
+     * not earning: `StateIncomeSystem.update` credits nothing when
+     * `stateIncomeForCompletedDay` is zero, and that fold counts only
+     * prisoners holding a furnished bed
+     * (`src/simulation/economy/income.ts`; issue #913). *"Until the prison
+     * earns the money"* is the same shape with the false promise removed.
      */
     expect(alertSentence('purchase.insufficient-funds')).toBe(
-      'Nothing was bought — deliveries are refused until the state pays what it owes.',
+      'Nothing was bought — deliveries are refused until the prison earns the money.',
     );
     expect(alertSentence('hire.insufficient-funds')).toBe(
-      'Nobody was hired — hiring is refused until the state pays what it owes.',
+      'Nobody was hired — hiring is refused until the prison earns the money.',
     );
 
     // And still not each other's. The namespace exists so that somebody who
@@ -235,11 +289,11 @@ describe('what the player is told is a key, and the key is real', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const alertSentence = (reason: RefusalReason): string =>
       localizer.format(
-        String(hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
+        String(rows(publication({ sequence: 1, tick: 1, reason }))?.[0]?.labelKey),
       );
 
     expect(alertSentence('construction.materials-unfunded')).toBe(
-      'The build queue is stalled — no more materials until the state pays what it owes.',
+      'The build queue is stalled — no more materials until the prison earns the money.',
     );
 
     const ladder = [
@@ -249,9 +303,12 @@ describe('what the player is told is a key, and the key is real', () => {
     ];
     expect(new Set(ladder).size, 'three rungs, three sentences').toBe(3);
     // And they are one ladder rather than three unrelated rules: the tail is
-    // the owner's, shared on purpose, and a rung that lost it would read as a
-    // different kind of refusal.
-    for (const sentence of ladder) expect(sentence).toContain('until the state pays what it owes');
+    // shared on purpose, and a rung that lost it would read as a different
+    // kind of refusal. The clause itself changed on 2026-09-04 (issue #913 --
+    // the state owes nothing to a prison that is not earning); what ruling 19
+    // asked for, a tail naming what stops rather than the threshold, is what
+    // is checked here.
+    for (const sentence of ladder) expect(sentence).toContain('until the prison earns the money');
   });
 
   it('carries no simulation text and no reason id into the view model', () => {
@@ -260,7 +317,7 @@ describe('what the player is told is a key, and the key is real', () => {
     // both would be a namespace leaking one layer too far (ADR 0011).
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     for (const reason of REFUSAL_REASONS) {
-      const row = hudAlertsFromWorkerMessage(publication({ sequence: 3, tick: 1, reason }))?.[0];
+      const row = rows(publication({ sequence: 3, tick: 1, reason }))?.[0];
       expect(row?.labelKey).not.toBe(reason);
       expect(row?.labelKey).not.toBe(localizer.format(String(row?.labelKey)));
       expect(row?.labelKey).toMatch(/^[a-z][a-z0-9.-]*$/u);
@@ -295,7 +352,7 @@ function fault(
  */
 describe('a protocol fault the worker raised becomes an alert row', () => {
   it('turns an uncorrelated fault into a row carrying a message key and a severity', () => {
-    expect(hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }))).toEqual([
+    expect(rows(fault('invalid-message', { recoverable: true }))).toEqual([
       { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'warning' },
     ]);
   });
@@ -313,27 +370,30 @@ describe('a protocol fault the worker raised becomes an alert row', () => {
     // A worker that rejected a message it never applied is still running the
     // prison; a reply this thread could not read means it cannot say what the
     // worker did at all.
-    expect(hudAlertsFromWorkerMessage(fault('invalid-payload', { recoverable: true }))?.[0]?.severity).toBe('warning');
-    expect(hudAlertsFromWorkerMessage(fault('invalid-payload', { recoverable: false }))?.[0]?.severity).toBe('danger');
+    expect(rows(fault('invalid-payload', { recoverable: true }))?.[0]?.severity).toBe('warning');
+    expect(rows(fault('invalid-payload', { recoverable: false }))?.[0]?.severity).toBe('danger');
   });
 
   it('keeps one row per code however many times that fault recurs', () => {
     // A peer sending malformed messages in a loop must not grow the list
     // without bound (`docs/HUD_PROJECTIONS.md` contract 5), and must not move
     // the row a player is reading.
-    let alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
-    alerts = hudAlertsFromWorkerMessage(fault('unknown-message-kind', { recoverable: true }), alerts) ?? [];
+    let alerts = rows(fault('invalid-message', { recoverable: true })) ?? [];
+    alerts = rows(fault('unknown-message-kind', { recoverable: true }), alerts) ?? [];
     const positions = alerts.map((row) => row.id);
     expect(positions).toEqual(['fault-invalid-message', 'fault-unknown-message-kind']);
     for (let repeat = 0; repeat < 50; repeat += 1) {
-      alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }), alerts) ?? [];
+      alerts = rows(fault('invalid-message', { recoverable: true }), alerts) ?? [];
     }
     expect(alerts.map((row) => row.id)).toEqual(positions);
   });
 
-  it('empties the list when the session stops', () => {
-    const alerts = hudAlertsFromWorkerMessage(fault('internal-error')) ?? [];
+  it('takes the log off when the session stops, standing faults and all (#1184)', () => {
+    const alerts = rows(fault('internal-error'));
     expect(alerts).toHaveLength(1);
+    // `'none'` rather than `[]` for the reason the refusal case above states:
+    // the field comes off the view model, so a stopped session cannot be read
+    // as a running prison with nothing to report.
     expect(
       hudAlertsFromWorkerMessage(
         {
@@ -345,7 +405,7 @@ describe('a protocol fault the worker raised becomes an alert row', () => {
         } as WorkerToMainMessage,
         alerts,
       ),
-    ).toEqual([]);
+    ).toBe('none');
   });
 });
 
@@ -355,8 +415,8 @@ describe('the two producers of alert rows do not erase each other', () => {
     // survive one would be visible for under 500 ms, which the player cannot
     // tell apart from never being told at all -- #187 finding 3 with extra
     // steps.
-    const withFault = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
-    const next = hudAlertsFromWorkerMessage(
+    const withFault = rows(fault('invalid-message', { recoverable: true })) ?? [];
+    const next = rows(
       publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }),
       withFault,
     );
@@ -364,31 +424,31 @@ describe('the two producers of alert rows do not erase each other', () => {
   });
 
   it('keeps a standing fault row when a counts publication carries no refusal', () => {
-    const withFault = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
-    expect(hudAlertsFromWorkerMessage(publication(), withFault)?.map((row) => row.id)).toEqual([
+    const withFault = rows(fault('invalid-message', { recoverable: true })) ?? [];
+    expect(rows(publication(), withFault)?.map((row) => row.id)).toEqual([
       'fault-invalid-message',
     ]);
   });
 
   it('replaces only the refusal row when the refusal changes', () => {
-    let alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
-    alerts = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unowned-land' }), alerts) ?? [];
-    alerts = hudAlertsFromWorkerMessage(publication({ sequence: 2, tick: 9, reason: 'zone.invalid-area' }), alerts) ?? [];
+    let alerts = rows(fault('invalid-message', { recoverable: true })) ?? [];
+    alerts = rows(publication({ sequence: 1, tick: 1, reason: 'build.unowned-land' }), alerts) ?? [];
+    alerts = rows(publication({ sequence: 2, tick: 9, reason: 'zone.invalid-area' }), alerts) ?? [];
     expect(alerts.map((row) => row.id)).toEqual(['fault-invalid-message', 'refusal-2']);
   });
 
   it('keeps a standing refusal row when a fault arrives', () => {
     const withRefusal =
-      hudAlertsFromWorkerMessage(publication({ sequence: 3, tick: 4, reason: 'purchase.insufficient-funds' })) ?? [];
-    const next = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }), withRefusal);
+      rows(publication({ sequence: 3, tick: 4, reason: 'purchase.insufficient-funds' })) ?? [];
+    const next = rows(fault('invalid-message', { recoverable: true }), withRefusal);
     expect(next?.map((row) => row.id)).toEqual(['refusal-3', 'fault-invalid-message']);
   });
 
   it('is pure: the same arguments give the same answer and the list it was handed is untouched', () => {
-    const held = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    const held = rows(fault('invalid-message', { recoverable: true })) ?? [];
     const before = JSON.stringify(held);
-    const first = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
-    const second = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
+    const first = rows(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
+    const second = rows(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
     expect(first).toEqual(second);
     expect(JSON.stringify(held)).toBe(before);
   });
@@ -399,7 +459,7 @@ describe('what the player is told about a fault is a key, and the key is real', 
     // Exhaustive over the enum rather than over what is reachable today: a
     // code that gains an uncorrelated emitter must already have a sentence,
     // or it ships as its own raw dotted key.
-    const keys = PROTOCOL_FAULT_CODES.map((code) => hudAlertsFromWorkerMessage(fault(code))?.[0]?.labelKey);
+    const keys = PROTOCOL_FAULT_CODES.map((code) => rows(fault(code))?.[0]?.labelKey);
     expect(keys.filter((key) => key === undefined)).toEqual([]);
     expect(new Set(keys).size).toBe(PROTOCOL_FAULT_CODES.length);
   });
@@ -413,7 +473,7 @@ describe('what the player is told about a fault is a key, and the key is real', 
     });
 
     for (const code of PROTOCOL_FAULT_CODES) {
-      const key = hudAlertsFromWorkerMessage(fault(code))?.[0]?.labelKey;
+      const key = rows(fault(code))?.[0]?.labelKey;
       expect(key, `${code} produced no label key`).toBeDefined();
       const text = localizer.format(String(key));
       expect(text, `${String(key)} has no default-locale entry`).not.toBe(key);
@@ -428,7 +488,7 @@ describe('what the player is told about a fault is a key, and the key is real', 
     // English, not a translated string -- never reaches a row.
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     for (const code of PROTOCOL_FAULT_CODES) {
-      const row = hudAlertsFromWorkerMessage(fault(code))?.[0];
+      const row = rows(fault(code))?.[0];
       expect(row?.labelKey).not.toBe(code);
       expect(row?.labelKey).not.toContain(`rejected: ${code}`);
       expect(row?.labelKey).not.toBe(localizer.format(String(row?.labelKey)));
@@ -473,7 +533,7 @@ describe('the same refusal is read a second time, for the band that is always la
     // two lookups could drift one entry at a time.
     for (const reason of REFUSAL_REASONS) {
       const message = publication({ sequence: 1, tick: 3, reason });
-      const row = hudAlertsFromWorkerMessage(message)?.[0];
+      const row = rows(message)?.[0];
       const notice = hudRefusalFromWorkerMessage(message);
       expect(notice).not.toBe('none');
       expect(notice).not.toBeUndefined();
@@ -527,6 +587,39 @@ describe('the same refusal is read a second time, for the band that is always la
         payload: { tick: 40, clock: { mode: 'running', speed: 1 } },
       } as WorkerToMainMessage),
     ).toBeUndefined();
+  });
+
+  /**
+   * ADR 0091 decision 2, option F (ruled by the owner 2026-09-16). The
+   * simulation reports that the standing refusal's own command route has
+   * decided something since; **the band retires on it and the list does
+   * not**, and these two cases are the halves of that divergence asserted
+   * separately rather than one inferred from the other.
+   *
+   * This function's job is to forward the fact, not to act on it: the band
+   * rule lives in `mountHud`'s `applySimulationRefusal` and is measured in
+   * `tests/browser/ui-refusal-band-route-retire.spec.ts`, because that is the
+   * only place the production DOM exists.
+   */
+  it('forwards the mark the simulation put on the refusal, without acting on it (ADR 0091)', () => {
+    expect(
+      hudRefusalFromWorkerMessage(
+        publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove', routeDecidedSince: true }),
+      ),
+    ).toEqual({
+      sequence: 3,
+      labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove',
+      routeDecidedSince: true,
+    });
+  });
+
+  it('leaves the field off entirely while nothing of that route has been decided', () => {
+    // Absent rather than `false`, so a consumer cannot read "not marked" and
+    // "the worker does not report marks" as the same state, and so the shape
+    // matches `SimulationRefusal`'s own `true`-or-absent field.
+    const notice = hudRefusalFromWorkerMessage(publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove' }));
+    expect(notice).toEqual({ sequence: 3, labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove' });
+    expect(notice === 'none' || notice === undefined ? true : 'routeDecidedSince' in notice).toBe(false);
   });
 
   it('is pure: the same message gives the same answer', () => {

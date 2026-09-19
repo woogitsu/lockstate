@@ -58,6 +58,83 @@ signed on another.
 Measured on v0.0.364 (`1547c7f6`), the head of `main` when this branch was cut.
 Every `file:line` below was opened at that commit.
 
+**THAT PIN IS ADVISORY AND IT IS CORRECTED HERE RATHER THAN DELETED
+(`docs/AGENT_WORKFLOW.md` §4), BECAUSE IT WAS TRUE ON THE DAY IT WAS WRITTEN
+AND BECAUSE THE SENTENCE IS WHAT A LATER READER WAS TOLD.** Swept by hand on
+2026-09-15 against `main` at `e044a3e8`, every rooted anchor opened.
+
+- **A global pin does not date what is below it.** The convention is stated
+  once, in `docs/adr/README.md`'s section *"A global anchor pin in an ADR is
+  advisory, and does not date what is below it"* (added by pull request #1231),
+  and is cited here rather than restated.
+- **Four commits edited below this pin with the pin sentence byte-identical in
+  the parent and in the commit**: `cd41a1d6`, `a21258e4`, `490df767` and
+  `24c5ea65`. None of their messages mentions a pin.
+- **`a21258e4` is the worse of the two shapes #1231 distinguishes.** It did not
+  move an existing anchor; it **added** one below the pin —
+  `src/content/simulation-message-keys.ts:159`, in the amendment of 2026-09-03 —
+  read against that day's tree and thereby inheriting, silently, a date at which
+  it was never opened. That is the shape #1231 records against ADR 0008, and
+  this document is a second instance of it.
+- **The Context and Decision sections below diagnose and design against a tree
+  this decision has since replaced, so their anchors are NOT re-aimed.**
+  `cd41a1d6` deleted both `job-system.ts` and `job-worker-adapter.ts` outright
+  — named here as bare basenames, which is this corpus's form for a path that
+  is history, and which is what `documentation-links-contract.test.ts` went red
+  over when this note first spelled them rooted. Re-aiming a
+  citation inside a diagnosis whose subject no longer exists would make a dead
+  diagnosis read as current — the error pull request #1229 avoided in ADR 0040
+  and named. What is recorded instead is what became of each subject.
+
+**What became of the anchors, opened one at a time on 2026-09-15.** Four of
+them no longer have a subject at all, and one sentence is now false in a
+direction worth knowing about.
+
+- *"`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860`
+  and registered at `src/simulation/runtime/new-session.ts:1400`"* — **the class
+  is gone.** `job-system.ts` was deleted by `cd41a1d6`, the implementation of
+  this document's own decision 4, and nothing in `src/` declares `JobSystem`
+  today; the surviving mentions are prose in docblocks that record the
+  retirement. Both anchors are in range and land on unrelated code (`:860` is a
+  line of a docblock about withdrawal and recording, `:1400` reads
+  `const occupants = resolveOccupants(sectorId);`), which is
+  `documentation-source-anchor-contract.test.ts`'s own stated blind spot:
+  *"an anchor that drifts onto plausible-looking code is worse than one that
+  drifts onto nothing"*. The lifecycle survives as
+  `src/simulation/operations/carry-executor.ts`, whose header says so.
+- *"the order is pinned at `tests/determinism/kernel-system-order.test.ts:434`"*
+  — cited **four times** in this document, and **the pinned row is gone.** That
+  line today reads `{ id: 'procurement', order: 110 }`; the removal of
+  `operations.jobs` at 260 is recorded in that file's own comment at
+  `tests/determinism/kernel-system-order.test.ts:454-457`, which names this ADR.
+  This is what decision 4 said would happen, so the four sentences are not wrong
+  about the future they described; they are wrong about the present tense they
+  are written in.
+- *"`JobBoard.submitCarryItem` has exactly one occurrence under `src/` and it is
+  the declaration (`job.ts:106`)"* — **false twice over, and this is the
+  finding.** The declaration is `src/simulation/operations/job.ts:144`, and
+  `job.ts:106` is now a blank line. More importantly the *count* is stale in the
+  direction the whole document is about: there is a production writer now,
+  `src/simulation/operations/delivery-route.ts:231`, so the "consumer with no
+  writer" shape #811 named and this section measured is **closed**. A sentence
+  asserting a count is the form `docs/AGENT_WORKFLOW.md` §4 says rots first, and
+  this one rotted because the decision it supports was implemented.
+- *"two test helpers doing so by hand (`tests/helpers/determinism-scenario.ts:188`
+  and `:195`)"* — `:188` is today a line of the docblock recording that **no
+  worker is registered any more, because there is no pool to register in**, and
+  the two carry jobs the sentence's `:195` meant are submitted at
+  `tests/helpers/determinism-scenario.ts:204-209`.
+- *"`PrisonerWorkerReleasePort` (`src/simulation/prisoners/release.ts:32-34`)"* —
+  the port is gone and its replacement stands at those very lines, which is the
+  most misleading kind of drift this corpus has: the anchor still lands on a
+  docblock about ending a departing prisoner's errand, and
+  `src/simulation/prisoners/release.ts:36-38` states the substitution in place.
+- **Not a finding, and recorded because it looked like one.** *"(whole file,
+  decision 5)"* beside `tests/determinism/job-performing-restart-bound.test.ts`
+  reads as a deletion; the file is still on disk. The list item that governs it
+  says *"rewritten"*, and the sentence quoted is inside *What shifts* rather
+  than *What is deleted*. Checked before being reported.
+
 **Every player-facing sentence this needs is deliberately absent.**
 `AGENTS.md`'s fourth exclusion reserves them; the section *What is owed to the
 owner* lists them. Where a word is owed, this document says so rather than
@@ -234,13 +311,15 @@ checked rather than asserted:
   destination anchor after the walk has already stepped there.
 - `src/simulation/prisoners/prisoner-operations-runtime.ts:420` — the
   `writeTile` closure `LocomotionSystem` advances a walk through.
-- `src/simulation/prisoners/prisoner-operations-runtime.ts:959` — admission,
-  placing a new prisoner on the origin tile before intake.
+- `src/simulation/prisoners/prisoner-operations-runtime.ts:1053-1054` — admission,
+  placing a new prisoner on the origin tile before intake (the anchor read
+  `:959`, a blank line).
 - `job-worker-adapter.ts:43` (in the file this decision **deletes**) — the job system's
   write, and the one that is *external* to the action path.
 
 And every caller of `LocomotionStore.cancelWalk` on a prisoner:
-`action-system.ts:631` (a room un-zoned mid-journey) and
+`action-system.ts:992` (a room un-zoned mid-journey; the anchor read `:631`, a
+bare `}`) and
 `job-worker-adapter.ts:42`; the third caller, `security/guard-roster.ts:203`,
 is the guard population. So ADR 0059's *"There is one such write outside
 `prisoners/`"* is still exactly true at `1547c7f6`, and it names the seam this
@@ -398,7 +477,8 @@ two carriers set off for one crate — which is exactly what
 exist, are total, and are tested: `failJob` and `cancel` through
 `compensateHeldStock` ([ADR 0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md)).
 So the four travel-failure exits in `ActionSystem.continueTravelling`
-(`src/simulation/prisoners/action-system.ts:611`) — no path request, a failed
+(`src/simulation/prisoners/action-system.ts:950`; the anchor read `:611`, a bare
+`}`) — no path request, a failed
 route, a target that stopped existing, and `loadSnapshot`'s drop-to-idle — gain
 one line each for the carry kind: fail the job, which compensates the goods.
 The leak ADR 0029 feared is closed by the same shape that closes it for the
@@ -408,10 +488,12 @@ job system today, not by four careful release calls written fresh.
 currentActionTargetInstanceId` (`src/simulation/prisoners/components.ts:315`)
 stays a room-instance id and is **not written** for a carry.
 `projectPrisonerDetail` publishes that map as `targetRoomInstanceId`
-(`src/simulation/presentation/prisoner-projection.ts:694`) and resolves it
+(`src/simulation/presentation/prisoner-projection.ts:723`; the anchor read
+`:694`) and resolves it
 through the room registry; a job id in that field would be a lie in a field
 name, and the save's `coldState.currentActionTargetInstanceId` array
-(`src/persistence/save-schema.ts:639`) would carry it. The prisoner → job link
+(`src/persistence/save-schema.ts:651`; the anchor read `:639`, a bare `})`) would
+carry it. The prisoner → job link
 is the job's own `assignedWorkerId`, read the other way round through a
 `JobBoard.activeJobFor(entityId)` accessor backed by a `Map<EntityId, string>`
 the board maintains on assignment and on every terminal transition and rebuilds
@@ -790,6 +872,38 @@ here rather than in a commit message nobody keeps:**
    the tile the save carried. Same one restore rule, reached without adding a
    path. The other direction — a job whose carrier is not in this session — is
    `CarryJobExecutor.reconcileRestoredJobs`, as decision 5 requires.
+
+   **NOTE 2 IS KEPT AS IT STANDS AND IT WAS HALF TRUE, WHICH IS THE PART THAT
+   COST SOMETHING — corrected 2026-09-15, issue #882.** *"A prisoner's own
+   active job makes the carry providable again"* is true of `prisonProvides`
+   and of `carryAvailableFor`, and it is not true of `planIdleSelection`, which
+   is the method the re-selection actually goes through. That gate tested the
+   regime block's `allowedCategories` **before** the active-job check and `&&`
+   short-circuited, so a carrier whose re-selection landed after the work block
+   had ended was filtered out of their own errand and chose something else with
+   the goods already in their hands. The substitution of one path for another is
+   sound; what note 2 did not check is that the substituted path asks a
+   *second* question the re-seat sketch never would have.
+
+   **So this document's own Consequence — *"A carry outlasts its block … not
+   cut at a regime boundary"* — was true continuously and false across a
+   restore, for as long as the mechanic has existed.** Reproduced seeded and
+   exactly, never statistically: a save taken mid-drop-off at tick 1,880, 80
+   ticks past the work block that started the errand, finished the errand in
+   continuous play and, restored from that same bundle, sent the carrier to the
+   lavatory holding four bricks and left the job `assigned` for **1,140 ticks**
+   against note 3's bound of 40. The fix consults the carrier's own active job
+   **before** the category gate and exempts a resuming carrier from the owner's
+   need-threshold amendment of 2026-09-02, which binds the prisoner being
+   *sent*. No payload changed and `SAVE_SCHEMA_VERSION` did not move: decision
+   5 holds exactly as written, and the general rule the fix records beside the
+   code is that **a restore may not ask a question continuous play never asks**.
+   The guard is `tests/integration/carry-restore-resumes-the-errand.test.ts`.
+
+   **Open question 1 is untouched.** *"Should a carrier be interruptible by a
+   regime change?"* is still the owner's and still unanswered; this made the
+   restore path agree with the continuous one, which is the answer this
+   document already gives.
 3. **Decision 5's restore bound is two reconsideration cycles, not one.** It
    predicted *"a restored carrier loses at most one reconsideration cycle to
    the travel restart"*; measured, the worst mid-walk capture costs **40

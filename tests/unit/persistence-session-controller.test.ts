@@ -7,6 +7,8 @@ import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { type CloudPrisonMetadata, projectSaveList } from '../../src/ui/account/save-list-projection';
+import { expectOk } from '../helpers/expect-ok';
 
 function buildController(options: { readonly autosaveIntervalMs?: number; readonly store?: MemoryLocalSaveStore } = {}) {
   const store = options.store ?? new MemoryLocalSaveStore();
@@ -26,7 +28,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const { controller, repository } = buildController();
 
     const result = await controller.createPrison('prison-1', 'Alcatraz');
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the creation of prison-1');
 
     const session = controller.getActiveSession();
     expect(session?.prisonId).toBe('prison-1');
@@ -35,7 +37,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     // Durable before the player does anything -- a crash right after "New prison"
     // must not leave a slot with no readable generation.
     const loaded = await repository.loadCurrent('prison-1');
-    expect(loaded.ok).toBe(true);
+    expectOk(loaded, "prison-1's current generation");
   });
 
   it('lists created prisons through the repository', async () => {
@@ -56,13 +58,13 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const tickBeforeSave = runtime.kernel.tick;
     expect(tickBeforeSave).toBe(25);
 
-    expect((await controller.saveNow()).ok).toBe(true);
+    expectOk(await controller.saveNow(), 'the save');
 
-    controller.closeSession();
+    await controller.closeSession();
     expect(controller.getActiveSession()).toBeUndefined();
 
     const outcome = await controller.loadPrison('prison-1');
-    expect(outcome.ok).toBe(true);
+    expectOk(outcome, 'the reload of prison-1 after closing the session');
     expect(host.getRuntime()!.kernel.tick).toBe(tickBeforeSave);
   });
 
@@ -76,7 +78,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     expect(runtime.construction.getOrder('wall-1')).toBeDefined();
 
     await controller.saveNow();
-    controller.closeSession();
+    await controller.closeSession();
     await controller.loadPrison('prison-1');
 
     expect(host.getRuntime()!.construction.getOrder('wall-1')).toBeDefined();
@@ -86,11 +88,12 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const { controller } = buildController();
     await controller.createPrison('prison-1');
     await controller.saveNow();
-    controller.closeSession();
+    await controller.closeSession();
 
+    // `expectOk` narrows, so the `if (!outcome.ok) return;` that used to sit
+    // here is gone rather than kept: it existed only to satisfy the compiler.
     const outcome = await controller.loadPrison('prison-1');
-    expect(outcome.ok).toBe(true);
-    if (!outcome.ok) return;
+    expectOk(outcome, 'the reload of prison-1 carrying its construction orders');
 
     // Message keys since #226; the text they resolve to is pinned in
     // `tests/unit/restored-scope.test.ts` against the bundled catalog.
@@ -122,7 +125,13 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     await controller.saveNow();
 
     const [metadata] = await repository.list();
-    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(controller.getActiveSession()!.revision);
+    // `dirtySinceRevision` is a lower bound -- the revision the prison first
+    // went dirty at -- not "whatever `saveNow` just wrote" (#1097): once a
+    // marker exists, `markPendingSync` leaves it alone until
+    // `clearPendingSync` runs, so it stays at 1 (set by `createPrison`'s own
+    // `saveNow`) rather than moving to 2 with this second save.
+    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(1);
+    expect(metadata!.pendingSync?.dirtySinceRevision).not.toBe(controller.getActiveSession()!.revision);
     // The payload itself carries no sync state -- it lives on slot metadata.
     const loaded = await repository.loadCurrent('prison-1');
     expect(loaded.ok && Object.keys(loaded.envelope.payload)).not.toContain('pendingSync');
@@ -136,6 +145,38 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     await controller.deletePrison('prison-1');
     expect(controller.getActiveSession()).toBeUndefined();
     expect(await controller.listPrisons()).toEqual([]);
+  });
+
+  /**
+   * Issue #582 RED-001. The assertion above -- the one this file has always
+   * carried -- checks `getActiveSession()`, which is a field on the controller,
+   * and that is exactly why the defect survived it: **clearing the controller's
+   * own bookkeeping is not stopping the thing that is running.** The runtime
+   * host keeps its simulation alive after the save it belongs to has been
+   * deleted, so a worker goes on ticking against a prison that no longer
+   * exists on disk, until the next New or Load happens to stop it.
+   *
+   * `SessionRuntimeHost.stop()` is documented "safe to call when nothing is
+   * running", so this needs no guard for the not-running case.
+   */
+  it('stops the runtime host on delete, not merely its own record of the session', async () => {
+    const { controller, host } = buildController();
+    await controller.createPrison('prison-1');
+    expect(host.getRuntime(), 'the fixture must actually be running something for this to mean anything').toBeDefined();
+
+    await controller.deletePrison('prison-1');
+
+    expect(host.getRuntime(), 'the simulation must not outlive the save it belongs to').toBeUndefined();
+  });
+
+  it('stops the runtime host when a session is closed without being deleted', async () => {
+    const { controller, host } = buildController();
+    await controller.createPrison('prison-1');
+    expect(host.getRuntime()).toBeDefined();
+
+    await controller.closeSession();
+
+    expect(host.getRuntime()).toBeUndefined();
   });
 });
 
@@ -161,7 +202,7 @@ describe('SessionController: durable failure evidence', () => {
     expect(controller.getLastSaveResult()).toBe(result);
 
     // The pre-failure generation is still loadable -- a failed write never destroys it.
-    expect((await repository.loadCurrent('prison-1')).ok).toBe(true);
+    expectOk(await repository.loadCurrent('prison-1'), "prison-1's current generation");
   });
 
   it('reports a missing prison and a prison with no readable generation distinctly', async () => {
@@ -243,7 +284,7 @@ describe('SessionController: autosave coalescing and non-overlap', () => {
     saveResults.length = 0;
 
     controller.markDirty();
-    controller.closeSession();
+    await controller.closeSession();
 
     await vi.advanceTimersByTimeAsync(5_000);
     expect(saveResults).toHaveLength(0);
@@ -315,6 +356,88 @@ describe('SessionController: autosave coalescing and non-overlap', () => {
     const loaded = await repository.loadCurrent('prison-1');
     expect(loaded.ok && loaded.envelope.revision).toBe(2);
   });
+
+  /**
+   * Reproduces #1097's measurement. `markPendingSync` has one caller, inside
+   * `saveNow` (`session-controller.ts`), and the interval autosave writes a
+   * new generation through `repository.save` directly -- never through
+   * `saveNow` -- so `pendingSync.dirtySinceRevision` freezes at whatever
+   * `createPrison`'s own `saveNow` set while the durable revision keeps
+   * moving underneath it. Numbers match the issue's own repro (marker frozen
+   * at the create-time revision, 1; durable revision at 4 after three
+   * autosaves) rather than being asserted from a paraphrase of it.
+   */
+  it('#1097: three autosaves after creation leave the pendingSync marker stale while the durable revision moves on', async () => {
+    const { controller, repository } = buildController({ autosaveIntervalMs: 1_000 });
+    await controller.createPrison('prison-1');
+    expect(controller.getActiveSession()!.revision).toBe(1);
+
+    for (let i = 0; i < 3; i += 1) {
+      controller.markDirty();
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+
+    const durableRevision = controller.getActiveSession()!.revision;
+    const [metadata] = await repository.list();
+    // eslint-disable-next-line no-console -- evidence for the PR, not a leftover.
+    console.log(
+      '#1097 repro: durable revision =',
+      durableRevision,
+      'pendingSync =',
+      metadata!.pendingSync,
+      'currentRevision =',
+      metadata!.currentRevision,
+    );
+
+    expect(durableRevision).toBe(4);
+    // The marker: never moved past what `createPrison`'s own `saveNow` set.
+    // This is the defect, not something the fix touches -- see the next test
+    // and `save-list-projection.ts` for what stops reading it as the local
+    // revision.
+    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(1);
+    // The fix: `PrisonSlotMetadata.currentRevision` is written by every
+    // durable save, autosave included (`writeGeneration` in `repository.ts`),
+    // so it never drifts the way the marker does.
+    expect(metadata!.currentRevision).toBe(durableRevision);
+  });
+
+  /**
+   * The consequence #1097 traced all the way to the one reader that exists.
+   * `save-list-projection.ts` used to read the stale marker as the row's
+   * local revision, so this same drift turned into `cloud-ahead` on a prison
+   * that was strictly *ahead* of the cloud -- the multi-device divergence
+   * case, offering "keep cloud" over three good autosaves.
+   */
+  it('#1097: the save-list projection no longer misreads that drift as a cloud-ahead conflict', async () => {
+    const { controller, repository } = buildController({ autosaveIntervalMs: 1_000 });
+    await controller.createPrison('prison-1');
+    for (let i = 0; i < 3; i += 1) {
+      controller.markDirty();
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+    const [metadata] = await repository.list();
+
+    // The cloud sits exactly where the stale marker says local is -- the
+    // scenario in which the old reader answered `cloud-ahead`.
+    const cloud: CloudPrisonMetadata = {
+      prisonId: 'prison-1',
+      revision: metadata!.pendingSync!.dirtySinceRevision,
+      updatedAt: metadata!.updatedAt,
+    };
+    const [row] = projectSaveList({
+      account: { kind: 'anonymous', accountId: 'a3f1c2d4-0000-4000-8000-000000000001' },
+      local: [metadata!],
+      cloud: [cloud],
+      connectivity: 'online',
+    });
+
+    // Local is genuinely three revisions ahead of a cloud that has not moved
+    // -- the offline case, not a divergence -- so `cloud-ahead`, which would
+    // offer "keep cloud" over the player's own autosaves, must not be the
+    // verdict.
+    expect(row!.conflict).not.toBe('cloud-ahead');
+    expect(row).toMatchObject({ sync: 'conflict', conflict: 'local-ahead-of-cloud-baseline' });
+  });
 });
 
 describe('SessionController: export/import through schema validation', () => {
@@ -333,7 +456,7 @@ describe('SessionController: export/import through schema validation', () => {
     const throughFile: unknown = JSON.parse(JSON.stringify(exported));
     await controller.createPrison('target-prison');
     const imported = await controller.importInto('target-prison', throughFile);
-    expect(imported.ok).toBe(true);
+    expectOk(imported, 'the import into target-prison');
   });
 
   it('rejects a corrupt import before anything reaches storage', async () => {
@@ -427,13 +550,13 @@ describe('SessionController: a failed createPrison leaves no slot behind (#65)',
     await expect(controller.createPrison('prison-doomed')).rejects.toThrow(/did not reply/);
 
     expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-keep']);
-    expect((await repository.loadCurrent('prison-keep')).ok).toBe(true);
+    expectOk(await repository.loadCurrent('prison-keep'), "prison-keep's current generation");
   });
 
   it('still creates normally when nothing fails', async () => {
     const { repository, controller } = controllerWith(new InProcessSessionHost());
 
-    expect((await controller.createPrison('prison-1')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-1'), 'the creation of prison-1');
     expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-1']);
     expect((await repository.list())[0]!.generationIds).toHaveLength(1);
   });
@@ -486,7 +609,7 @@ describe('SessionController: a save that decodes but cannot be restored is demot
     // Through the ordinary write path, so the save is stored only if it is
     // genuinely schema- and checksum-valid.
     const written = await repository.save(prisonId, broken as unknown as SaveEnvelope);
-    expect(written.ok).toBe(true);
+    expectOk(written, 'the write of the deliberately broken generation');
   }
 
   it('demotes the unrestorable generation, loads the previous one and reports the load as recovered', async () => {

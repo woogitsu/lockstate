@@ -83,6 +83,57 @@ one.
 
 Read on `317f487` (v0.0.124). Every line below was opened.
 
+**THAT PIN IS ADVISORY, AND IT IS CORRECTED HERE RATHER THAN DELETED
+(`docs/AGENT_WORKFLOW.md` §4).** Swept by hand on 2026-09-15 against `main` at
+`e044a3e8`, every rooted anchor in this document opened.
+
+- **A global pin does not date what is below it**, for the reasons collected
+  once in `docs/adr/README.md`'s section *"A global anchor pin in an ADR is
+  advisory, and does not date what is below it"* (added by pull request #1231).
+  Cited, not restated.
+- **Two commits edited below this pin with the pin sentence byte-identical in
+  the parent and in the commit**, and the sharper of the two is
+  `7768fcec`, whose subject line is *"docs(adr): re-anchor ADR 0051, and note
+  the same stale member count as 0039"*. **A commit whose entire subject is
+  re-anchoring moved anchors under a header telling readers they were already
+  dated, and did not mention the header.** `194d4a11` is the other.
+- **Twelve of this document's fifteen rooted anchors no longer land on what
+  their sentence names.** The three that still do are
+  `src/ui/simulation-clock.ts:36-46` (the `hudClockFromWorkerMessage` return),
+  `src/rendering/world/structures.ts:26-42` (`phaseOf`, still mapping
+  `'approved'` to `'planned'`) and `src/simulation/kernel/kernel.ts:157-227`,
+  whose span still contains `step()` — at `src/simulation/kernel/kernel.ts:190`,
+  beside the `dispatchDueCommands` this decision asked for at `:186`.
+- **They are not re-aimed, and that is a decision rather than an omission.**
+  *What the code does today* is a diagnosis of the tree this decision replaced:
+  `fd2584d5` landed the decision, so item 4's *"A command submitted while paused
+  is accepted and then sits"* and item 5's conclusion *"the only thing between it
+  and its effect is the absence of a `step()`"* are false in the present tense
+  they are written in. Re-aiming a citation inside a dead diagnosis makes the
+  diagnosis read as current, which is the error pull request #1229 avoided in
+  ADR 0040 and named. The live coordinates a reader actually needs are three:
+  the paused drain at `src/simulation/worker/state-machine.ts:1261-1263`
+  (`if (this._kernel.dispatchDueCommands() > 0) {`; this branch wrote
+  `:1237-1242` on 2026-09-15, which is the *docblock about* the drain rather
+  than the drain, and by 2026-09-16 — when the branch merged `origin/main` —
+  even that had slipped), the baseline publication at
+  `src/simulation/worker/state-machine.ts:1064-1071`
+  (the subject of *"Publish a baseline on state entry"* below, which is still
+  true and whose own anchor has drifted), and the projection at
+  `src/ui/simulation-commands.ts:290`, which ADR 0056 has since floored.
+- **The re-anchoring note below has itself rotted, which is §4's *"a correction
+  is no more durable than the claim it corrected"* happening inside this
+  document.** It reads *"Re-anchored 2026-09-06: the union is 21 members today,
+  three more than this paragraph counts"*. `HudIntent` has **22** members, at
+  `src/ui/hud/hud.ts:365-738`, and the twenty-second is `sell-materials` —
+  a command-submitter (`src/main.ts:3310`, `case 'sell-materials':`; this
+  branch wrote `:3297` and it was a comment line by the time the branch merged
+  `origin/main` on 2026-09-16) and therefore a **fourteenth**
+  against the *"Thirteen submit a command"* tally below, not a fourth piece of
+  chrome. The count is left where it stands and corrected here, because the
+  paragraph's subject is the drift and overwriting it would erase the record of
+  a number that was wrong twice.
+
 1. **A session starts paused, and that is deliberate, not an oversight.**
    `handleInitialize` constructs the clock paused and enters the `paused`
    state (`src/simulation/worker/state-machine.ts:786-787`), and reports that
@@ -120,7 +171,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
    `structuresFromConstruction` maps the `approved` state — which
    `ConstructionSystem.submitOrder` writes synchronously, inside the command
    handler (`src/simulation/construction/system.ts:337-338`) — to the
-   `planned` phase, i.e. a ghost (`src/rendering/world/structures.ts:24-39`).
+   `planned` phase, i.e. a ghost (`src/rendering/world/structures.ts:26-42`).
    Nothing reaches it while paused.
 7. **Six panel readouts ride the counts cadence**, so they refresh only when a
    `simulation/status-counts` arrives (`src/main.ts:1437-1443`): room needs,
@@ -129,7 +180,22 @@ Read on `317f487` (v0.0.124). Every line below was opened.
 
 ### What a player can do, and what each gesture produces while paused
 
-`HudIntent` has eighteen members (`src/ui/hud/hud.ts:270-…`). Four are chrome
+`HudIntent` has eighteen members (`src/ui/hud/hud.ts:322-668`, re-anchored —
+the same span [ADR 0039](./0039-a-keyboard-route-to-room-zoning.md) cites).
+**Re-anchored 2026-09-06: the union is 21 members today, three more than this
+paragraph counts, and was already 21 before this window opened — the same
+finding ADR 0039 records and marks in place rather than here a second time.**
+The three not sorted into a category below are `select-prisoner` (a fourth
+chrome member: it sets local selection state and never calls `submit`,
+`main.ts:2289-2293`), `dismiss-staff` (a fourteenth command-submitter,
+gated through `requireSimulation` like the thirteen below,
+`main.ts:2531-2533`) and `dismiss-alert` (submits too, but deliberately
+*without* `requireSimulation` — its own comment states why: the row leaving
+the list is not a command outcome, so a paused or session-less thread still
+performs it locally, `main.ts:2561-2570`). None of the three changes this
+section's conclusion about the thirteen below; they are named because a
+paragraph that sorts every member should say what it does not yet sort.
+Four are chrome
 the HUD owns and never reach the simulation — `select-tab`, `toggle-panel`,
 `arm-build-tool`, `arm-room-tool`. One is the clock itself (`set-clock`).
 **Thirteen submit a command**: `place-build-order`, `place-object`,

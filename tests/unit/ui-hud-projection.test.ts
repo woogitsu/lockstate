@@ -19,6 +19,7 @@ import {
   UNKNOWN_HUD_CLOCK,
   type HudClockViewModel,
   type HudCountsViewModel,
+  type HudRoomNeedsViewModel,
   type HudSpeed,
 } from '../../src/ui/hud/view-model';
 import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/segmented-bar';
@@ -45,6 +46,7 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     prisonerCapacity: 0,
     occupiedPlaces: 0,
     staff: 0,
+    staffUnassigned: 0,
     rooms: 0,
     roomCapacity: 0,
     prisonersCovered: 0,
@@ -208,7 +210,172 @@ function metric(view: HudCountsViewModel, id: HudMetricId): HudMetricDescriptor 
   return found!;
 }
 
+/**
+ * The same lookup with the second input the strip now takes (#1006 finding 1).
+ *
+ * A second helper rather than a second parameter on `metric`, because the
+ * cases above are about a strip that has been handed **no** room readout at
+ * all, and that is the state a session spends its first frames in. Passing
+ * `undefined` explicitly through the existing helper would have made every one
+ * of those cases assert the absent-readout arm by accident rather than on
+ * purpose; the case directly below asserts it deliberately.
+ */
+function metricWithRoomNeeds(
+  view: HudCountsViewModel,
+  roomNeeds: HudRoomNeedsViewModel | undefined,
+  id: HudMetricId,
+): HudMetricDescriptor {
+  const found = projectStatusMetrics(view, roomNeeds).find((descriptor) => descriptor.id === id);
+  expect(found, `no ${id} metric in the strip`).toBeDefined();
+  return found!;
+}
+
+/**
+ * A room readout in the shape `roomNeedsFromProjections` returns one.
+ *
+ * `needs` is left empty in every case here on purpose: the badge is drawn from
+ * `unfinishedRooms` alone, and a fixture that filled the list would let a
+ * projection reading `needs.length` pass. The two figures are deliberately made
+ * to disagree below for the same reason.
+ */
+function roomNeeds(overrides: Partial<HudRoomNeedsViewModel> = {}): HudRoomNeedsViewModel {
+  return { unfinishedRooms: 0, totalRooms: 0, totalNeeds: 0, needs: [], atCapacity: [], ...overrides };
+}
+
+describe('status strip: a prison nobody has reported (issue #1191)', () => {
+  /*
+   * The third state the strip lacked. Before this, `projectStatusMetrics` took
+   * a required row and `EMPTY_HUD_VIEW_MODEL` supplied a row of zeros for two
+   * situations that are not a prison at all -- before the first
+   * `simulation/status-counts` publication, and after `simulation/stopped` --
+   * so the chips stated *Prisoners 0, Rooms 0, Funds 0* beside a clock reading
+   * `--` in the same paint.
+   *
+   * The clock's half of that strip has always had this state, and
+   * `displayDay`'s docblock has always argued it in the same words: *"before a
+   * session exists the simulation has no clock, and 'day 1' would be a claim
+   * about a prison that is not running"*. These cases are the metrics' half.
+   */
+  it('projects the same chips, in the same order, when no counts are given', () => {
+    // The list is one list: a tenth chip added to the reported projection must
+    // appear in the unreported one without anybody maintaining a second table,
+    // which is why `UNREPORTED_STATUS_METRICS` is built by mapping the reported
+    // projection rather than by hand.
+    expect(projectStatusMetrics().map((metric) => metric.id)).toEqual(
+      projectStatusMetrics(counts()).map((metric) => metric.id),
+    );
+  });
+
+  it('puts nothing in any of them -- no value, tone, badge, capacity or description', () => {
+    // Every channel a chip can state something through, at once. A value of
+    // `0` here is the defect the issue is about; a badge or a bar is the same
+    // defect wearing a different control, because both are statements about a
+    // prison that has not spoken.
+    for (const metric of projectStatusMetrics()) {
+      expect(metric.value, `${metric.id} states a number nobody published`).toBeUndefined();
+      expect(metric.tone, `${metric.id} is toned for a condition nobody published`).toBeUndefined();
+      expect(metric.badge, `${metric.id} carries a badge nobody published`).toBeUndefined();
+      expect(metric.capacity, `${metric.id} carries a capacity nobody published`).toBeUndefined();
+      expect(metric.description, `${metric.id} explains a number it does not have`).toBeUndefined();
+    }
+  });
+
+  it('keeps every chip identifiable while it is empty', () => {
+    // The chips still have to be *chips*: an icon and a label, so the row a
+    // player is looking at is recognisably the status strip with nothing in it
+    // rather than a row of stray dashes. This is what makes `--` readable as
+    // "prisoners: unknown".
+    for (const metric of projectStatusMetrics()) {
+      expect(metric.icon, `${metric.id} lost its icon`).toBeTruthy();
+      expect(metric.labelKey, `${metric.id} lost its label`).toBeTruthy();
+    }
+  });
+
+  it('ignores a room-needs readout when no prison has reported', () => {
+    // `roomNeeds` is pulled per tab rather than published on the counts
+    // stream, so it can in principle be present while the counts are absent.
+    // A badge drawn from it then would be a statement about a prison whose own
+    // figures are unknown -- the defect, reached by the other door.
+    const rooms = projectStatusMetrics(undefined, roomNeeds({ unfinishedRooms: 2 })).find(
+      (metric) => metric.id === 'rooms',
+    );
+
+    expect(rooms?.badge, 'a badge about rooms nobody has counted').toBeUndefined();
+  });
+
+  it('states a reported zero as zero, so an empty prison is not an unknown one', () => {
+    /*
+     * The other half of the shape, and the reason absence had to be a
+     * different value rather than a smaller number: a prison that genuinely
+     * holds nobody publishes zeros, and those zeros are a fact about it. They
+     * are painted with no hedge.
+     *
+     * A fix that made "0" mean "unknown" would have closed #1191 by deleting a
+     * true sentence, which is the failure `konstytucja.md` article 5's third
+     * anti-pattern names from the other side.
+     */
+    const reported = projectStatusMetrics(counts());
+
+    expect(reported.find((metric) => metric.id === 'prisoners')?.value).toBe(0);
+    expect(reported.find((metric) => metric.id === 'rooms')?.value).toBe(0);
+    expect(reported.find((metric) => metric.id === 'funds')?.value).toBe(0);
+  });
+});
+
 describe('status strip: tone and badges', () => {
+  it('says on the rooms chip how many rooms are not ready, on every tab (#1006 finding 1)', () => {
+    /*
+     * The defect this closes, measured by play-test on 2026-09-05: a cell with
+     * no door in its wall line reported `NOT READY 1 of 1` in `.hud-rooms`,
+     * which is not laid out on any other tab, while the strip read `1 ROOMS`
+     * with no qualifier. Eight game days on OVERVIEW produced two messages and
+     * not one word about the door.
+     *
+     * The badge is what a player on any tab now sees. It does not say *why* --
+     * that stays the panel's job, and a missing bed and a missing door are both
+     * counted here.
+     */
+    const notReady = metricWithRoomNeeds(
+      counts({ rooms: 3 }),
+      // The two figures disagree deliberately: `totalNeeds` counts the things
+      // those rooms are short between them, and a badge reading 4 would be
+      // counting requirements where the sentence says rooms.
+      roomNeeds({ unfinishedRooms: 2, totalRooms: 3, totalNeeds: 4 }),
+      'rooms',
+    );
+    expect(notReady.value, 'the chip keeps the raw room count a player asks it for').toBe(3);
+    expect(notReady.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.roomsNotReady,
+      numberParameters: { count: 2 },
+    });
+    // `numberParameters` and not `parameters`: the strip formats these through
+    // `HudLocalizer.formatNumber`, so a prison with 1,240 unfinished rooms
+    // reads `1,240 not ready` under a chip reading `1,240` rather than `1240`.
+    // The badge that forced that channel is `{remaining} left`; this is the
+    // class, not the instance.
+    expect(notReady.badge?.numberParameters).toBeDefined();
+    expect(notReady.tone, 'the badge is the only signal, so the chip is not toned as well').toBeUndefined();
+
+    /*
+     * The two states that draw nothing, and they are different facts.
+     *
+     * `unfinishedRooms === 0` is the simulation saying every room works; an
+     * absent readout is nothing having asked, which is what a session before it
+     * starts and after it stops looks like. Neither may render as `0 not
+     * ready`: the first would be a permanent badge on a chip that is fine --
+     * *"a status strip where several things are always amber teaches players to
+     * ignore amber"* -- and the second would be a claim about a prison nothing
+     * is answering for.
+     */
+    expect(metricWithRoomNeeds(counts({ rooms: 3 }), roomNeeds({ totalRooms: 3 }), 'rooms').badge).toBeUndefined();
+    expect(metricWithRoomNeeds(counts({ rooms: 3 }), undefined, 'rooms').badge).toBeUndefined();
+    // And the strip's other eight chips are unmoved by the new input.
+    expect(projectStatusMetrics(counts(), roomNeeds({ unfinishedRooms: 2 })).map((each) => each.id)).toEqual(
+      projectStatusMetrics(counts()).map((each) => each.id),
+    );
+  });
+
   it('states the incident condition in words, so colour is never the only signal', () => {
     const clear = metric(counts({ activeIncidents: 0 }), 'incidents');
     expect(clear?.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.incidentsClear });
@@ -705,7 +872,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
       numberParameters: { count: 9 },
     });
     // The same 9 the Intake panel already says out loud in this prison --
-    // "9 waiting with no bed to sleep in" -- which is why the strip uses the
+    // "9 waiting with no place to sleep" -- which is why the strip uses the
     // owner's matching wording rather than a second phrasing for one fact.
   });
 
@@ -729,7 +896,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     });
   });
 
-  it('draws no badge at all when everybody has a bed, rather than a permanent "0 with no bed"', () => {
+  it('draws no badge at all when everybody has a place, rather than a permanent "0 with no place"', () => {
     // `coverageTone`'s rule, applied to a chip that had no badge until now:
     // a status strip where several things are always on teaches players to
     // ignore the one that matters, and that note already extends it past
@@ -803,7 +970,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     // `assign` does not release a prisoner from a previous instance and
     // `residentIdsWithExistingPlace` does not de-duplicate, so this layer
     // cannot prove `occupiedPlaces <= prisoners` from the far side of a
-    // message channel. "-2 with no bed" is a sentence no player should ever
+    // message channel. "-2 with no place" is a sentence no player should ever
     // read; a badge that does not appear is the right worst case.
     expect(metric(counts({ prisoners: 3, occupiedPlaces: 5 }), 'prisoners').badge).toBeUndefined();
   });
@@ -1102,5 +1269,58 @@ describe('refusalMessageKey: what a refused control says', () => {
     expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).not.toBe(
       refusalMessageKey('admit-prisoner'),
     );
+  });
+});
+
+/**
+ * **What the `Earned today` chip says about the part of the grant it is not
+ * paying** (issue #890).
+ *
+ * #890 measured the state withholding 40% of a prison's grant at steady state
+ * with no minor-unit figure for it anywhere a player could read. The
+ * projection now publishes the figure and the chip carries it as a
+ * description -- the tooltip and screen-reader shape the owner's ruling of
+ * 2026-09-01 already chose for `funds`, because it costs no chip width on a
+ * row whose overflow is measured.
+ *
+ * **Three states, and only one of them draws a sentence**, which is what
+ * these cases pin: absent (a payload written before the field existed), `0`
+ * (a prison meeting every need) and a positive figure.
+ */
+describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
+  it('carries the withheld figure as a description, and never as a badge or a tone', () => {
+    const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
+
+    expect(chip.description).toEqual({
+      textKey: 'hud.status.earned-withheld',
+      numberParameters: { withheld: 640 },
+    });
+    // The two lines beside it are unchanged: no threshold has been set and no
+    // colour is painted, which is the half of this readout that is still the
+    // owner's (#890's re-measurement names loudness as their judgement).
+    expect(chip.badge).toBeUndefined();
+    expect(chip.tone).toBeUndefined();
+  });
+
+  it('says nothing when a prison is meeting every need, and nothing when no payload carried the field', () => {
+    expect(
+      metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }), 'earned-today')
+        .description,
+    ).toBeUndefined();
+    expect(metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today').description).toBeUndefined();
+  });
+
+  it('names the figure rather than formatting it, so the strip groups it exactly as it groups the value', () => {
+    // `numberParameters`, which is `overdraftBadge`'s rule: this layer is
+    // pure and has no localizer, so the quantity is named and the strip
+    // formats it. A six-figure value is carried as the integer itself rather
+    // than as a string this layer grouped, so it cannot be grouped
+    // differently from the chip value it sits under.
+    const chip = metric(
+      counts({ stateIncomeAccruedTodayMinorUnits: 284_500, stateIncomeWithheldTodayMinorUnits: 96_400 }),
+      'earned-today',
+    );
+    expect(chip.description?.numberParameters).toEqual({ withheld: 96_400 });
+    expect(typeof chip.description?.numberParameters?.['withheld']).toBe('number');
   });
 });

@@ -1,7 +1,7 @@
 import type { EntityId } from '../entity/entity-store';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { GuardRoster } from '../security/guard-roster';
-import { claimableGuardIds } from '../security/post-eligibility';
+import { claimableSearchGuardIds } from '../security/post-eligibility';
 import type { SecuritySectorDefinition } from '../security/sector';
 import type { SearchPolicyDefinition, SearchTarget } from './search-policy';
 import type { SearchSystem } from './search-system';
@@ -36,18 +36,51 @@ import type { SearchSystem } from './search-system';
  * The ADR describes Option A as *"guards on post search their own sector on a
  * cadence"*. Taken literally that is not implementable against the system it
  * feeds, and the difference is worth stating rather than quietly resolving:
- * `SearchSystem.assignQueuedOrders` staffs a job from `claimableGuardIds` --
- * the **unassigned**, post-eligible pool (ADR 0053) -- never from guards
- * already standing a post. A guard on post is not claimable, so an order given
- * to a prison whose every guard is posted would sit in the queue for ever,
- * growing the payload and moving nothing.
+ * `SearchSystem.assignQueuedOrders` staffs a job from `claimableSearchGuardIds`
+ * -- the **unassigned**, post-eligible pool (ADR 0053), less the reserve issue
+ * #996 holds back for incident response -- never from guards already standing a
+ * post. A guard on post is not claimable, so an order given to a prison whose
+ * every guard is posted would sit in the queue for ever, growing the payload
+ * and moving nothing.
  *
  * So the duty is: **a sector that is actually staffed runs standing sweeps, and
  * a spare guard walks them.** Both halves are conditions below, and together
  * they are the balance coupling ADR 0073 states as a consequence -- a prison
- * that hires exactly its posted requirement never searches, and the first
- * guard hired past that requirement is what makes contraband findable. Nothing
- * here takes a guard off a wall.
+ * that hires exactly its posted requirement never searches, and a guard hired
+ * past that requirement is what makes contraband findable.
+ *
+ * **This paragraph used to end *"Nothing here takes a guard off a wall"*, and
+ * that sentence was true of the wall and false of the riot** (issue #996). It
+ * is corrected rather than deleted, because what it got right is the half a
+ * reader most needs: a guard on post is not claimable, so no sweep has ever
+ * cost a sector its posting. What it missed is that the *same* pool answers
+ * incidents, so a sweep did take the guard a riot would have been sent -- and
+ * at exactly one spare guard it took the only one, for the length of the
+ * sweep. Measured before the fix, over sixteen in-game days: **453 ticks a
+ * day** (19% of the day) with the free pool empty and a sweep holding the
+ * guard, in a twelve-prisoner prison with one spare
+ * (`docs/research/2026-09-05-what-a-sweep-costs-the-response.md`).
+ *
+ * What the condition below reads now is `claimableSearchGuardIds`, which is
+ * that pool less `INCIDENT_RESPONSE_GUARD_RESERVE` -- the guard a response
+ * would be mounted from. So the sentence that replaces the retired one is:
+ * **nothing here takes a guard off a wall, and nothing here takes the last
+ * guard a response could be mounted from.** The price is named where the
+ * constant is declared and in ADR 0073's amendment: contraband becomes
+ * findable at the posted requirement plus two rather than plus one.
+ *
+ * **Nothing said that to the player until issue #989, and this paragraph
+ * predicted the measurement that found it out.** The Security panel prints the
+ * *posting* requirement and calls it `Covered`, so a prison at `2 of 2 ·
+ * Covered` read as finished and searched nothing: 1 guard 0 discoveries, 2
+ * guards 0 discoveries, 3 guards finds, over ~9 in-game days on one seed. The
+ * requirement itself is untouched -- how large it should be is balance and the
+ * owner's -- and what changed is the sentence beside it,
+ * `hud.security.coverage-met-hint`, which now names this duty and incident
+ * response as the two things a *free* guard is for. It is the twin of issue
+ * #941, which found the same shape on `IncidentResponseSystem`;
+ * `tests/foundation/claimable-guard-pool-contract.test.ts` is what fails if a
+ * third consumer of that pool appears.
  *
  * ## Determinism
  *
@@ -110,20 +143,23 @@ export class SectorSearchDutySystem implements SystemRegistration {
     const sweepIndex = Math.floor(context.tick / this.schedule.intervalTicks);
 
     /*
-     * The claimable read below is taken *before* `contraband.search` runs, so
+     * The search-pool read below is taken *before* `contraband.search` runs, so
      * with several staffed sectors this loop can order more sweeps in one tick
      * than there are spare guards to walk them. The surplus stays queued and
      * drains as guards free up, which is `SearchSystem`'s documented
      * "observable backlog, not a failure" -- and it is bounded rather than
      * unbounded, because `hasOutstandingSweep` allows each sector exactly one.
-     * Reserving against the pool here instead would put a second copy of the
-     * staffing rule in this file, which is what ADR 0053 exists to prevent.
+     * Counting the sweeps this loop has already ordered against the pool here
+     * would put a second copy of the staffing rule in this file, which is what
+     * ADR 0053 exists to prevent. The *incident* reserve is not that: it is one
+     * function both call sites read (`claimableSearchGuardIds`, issue #996), so
+     * it is the same rule in one place rather than a second one.
      */
 
     for (const sector of this.sectors.all()) {
       if (this.hasOutstandingSweep(sector.id)) continue;
       if (this.assignedGuardCount(sector.id) === 0) continue;
-      if (claimableGuardIds(this.guards).length < policy.requiredGuardCount) continue;
+      if (claimableSearchGuardIds(this.guards).length < policy.requiredGuardCount) continue;
 
       const targets = selectSweepTargets(this.resolveOccupants(sector), sweepIndex, this.maxTargetsPerSweep);
       if (targets.length === 0) continue;

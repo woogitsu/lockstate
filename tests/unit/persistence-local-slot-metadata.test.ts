@@ -88,6 +88,27 @@ describe('prisonSlotMetadataSchema: accepts every record this repository has eve
     const record = { ...freshSlotRecord(), currentGenerationId: 'gen-9', generationIds: ['gen-1'] };
     expect(prisonSlotMetadataSchema.safeParse(record).success).toBe(true);
   });
+
+  it('accepts a slot record with currentRevision present (#1097)', () => {
+    const record = { ...freshSlotRecord(), currentGenerationId: 'gen-1', generationIds: ['gen-1'], currentRevision: 4 };
+    expect(prisonSlotMetadataSchema.safeParse(record).success).toBe(true);
+  });
+
+  /**
+   * `currentRevision` was added by #1097, after this repository had already
+   * written slots without it -- `freshSlotRecord()` predates the field and is
+   * exactly that shape. It must keep parsing under the new schema, or every
+   * existing player's save list would refuse to load the moment this schema
+   * shipped (`docs/PERSISTENCE.md`, "Adding an optional field without a
+   * version bump").
+   */
+  it('accepts a slot record from before currentRevision existed, with the key entirely absent', () => {
+    const record = freshSlotRecord();
+    expect('currentRevision' in record).toBe(false);
+    const parsed = prisonSlotMetadataSchema.safeParse(record);
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.currentRevision).toBeUndefined();
+  });
 });
 
 describe('prisonSlotMetadataSchema: rejects records this repository could not have written', () => {
@@ -102,6 +123,8 @@ describe('prisonSlotMetadataSchema: rejects records this repository could not ha
     ['a timestamp that is not a number', { ...freshSlotRecord(), updatedAt: '1000' }],
     ['an unknown field', { ...freshSlotRecord(), slotIndex: 2 }],
     ['a half-written pendingSync', { ...freshSlotRecord(), pendingSync: { markedAt: 1 } }],
+    ['a non-number currentRevision', { ...freshSlotRecord(), currentRevision: '4' }],
+    ['a negative currentRevision', { ...freshSlotRecord(), currentRevision: -1 }],
   ];
 
   for (const [description, record] of rejected) {
@@ -127,6 +150,15 @@ describe('decodePrisonSlotMetadata: absent is not the same as corrupt', () => {
     expect((thrown as CorruptSlotMetadataError).prisonId).toBe('prison-1');
     expect((thrown as CorruptSlotMetadataError).issues.join()).toContain('generationIds');
     expect((thrown as Error).message).toContain('left untouched');
+  });
+
+  it('decodes an old slot with no currentRevision at all, rather than refusing it (#1097)', () => {
+    const legacy = { ...freshSlotRecord(), currentGenerationId: 'gen-1', generationIds: ['gen-1'] };
+    expect('currentRevision' in legacy).toBe(false);
+    const decoded = decodePrisonSlotMetadata(legacy, 'prison-1');
+    expect(decoded).toBeDefined();
+    expect(decoded?.currentRevision).toBeUndefined();
+    expect(decoded?.currentGenerationId).toBe('gen-1');
   });
 
   it('refuses to write a record it could not read back', () => {

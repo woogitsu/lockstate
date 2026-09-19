@@ -27,8 +27,18 @@ const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinat
 function stubSource(
   orders: readonly BuildOrder[],
   previewOf: (orderId: string) => number = () => 0,
-): { allOrders: () => readonly BuildOrder[]; previewCancelRefundMinorUnits: (orderId: string) => number } {
-  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf };
+): {
+  allOrders: () => readonly BuildOrder[];
+  previewCancelRefundMinorUnits: (orderId: string) => number;
+  revisionOf: (orderId: string) => number;
+} {
+  // These tests are about ordering, not revisions (ADR 0107 concerns
+  // `ConstructionSystem` itself, exercised by
+  // `tests/unit/construction-preview-cancel-refund.test.ts`'s sibling and by
+  // `construction.test.ts`'s own revision tests), so every order stubs the
+  // same fixed value rather than a fixture supplying both sides of a
+  // comparison this file never makes.
+  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf, revisionOf: () => 0 };
 }
 
 /**
@@ -93,17 +103,30 @@ function cancel(runtime: SimulationRuntime, orderId: string): void {
     `cmd-cancel-${orderId}`,
     runtime.kernel.expectedSequence,
     runtime.kernel.tick,
-    packCommand({ type: 'CancelBuildOrder', orderId }),
+    // ADR 0107: aimed at the order's true current revision, read fresh at
+    // the moment of the press -- this file's subject is aiming a cancel by
+    // id, not staleness, so no press here is ever refused for that reason.
+    packCommand({ type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) }),
   );
 }
 
+/**
+ * Calls the system rather than submitting the command.
+ *
+ * ADR 0104 option 2 ([#956](https://github.com/woogitsu/lockstate/issues/956),
+ * accepted 2026-09-09) refuses a router-level `Undo` whose newest transaction
+ * is not the player's own latest action, and the cancel this file pairs `Undo`
+ * with is a later action -- so submitting the command here would answer a
+ * refusal and reach no order at all. That route is covered by
+ * `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`.
+ * **What this file is about is unchanged**: which order `undo()` reaches, and
+ * that it is not the one `CancelBuildOrder` reaches, which is the same call on
+ * the same stack either way. `label` is kept so the call sites still read as
+ * the presses they model.
+ */
 function undo(runtime: SimulationRuntime, label: string): void {
-  runtime.kernel.submitCommand(
-    `cmd-undo-${label}`,
-    runtime.kernel.expectedSequence,
-    runtime.kernel.tick,
-    packCommand({ type: 'Undo' }),
-  );
+  void label;
+  runtime.construction.undo();
 }
 
 function runTo(runtime: SimulationRuntime, tick: number): void {
@@ -138,16 +161,28 @@ describe('the pending build queue, as a read model', () => {
       // submitted these -- and its first act on an `approved` order is to move
       // it on. One step is therefore enough to see the state a queued order
       // spends most of its wait in.
-      // `cancelRefundMinorUnits: 0` for both, and it is a fact about this
-      // fixture rather than about materials-pending in general: `session()`
-      // pre-seeds 500 bricks, so neither order's two-brick requirement ever
-      // triggers a just-in-time purchase -- `procureForPendingOrders` nets
-      // held stock off demand before it prices anything -- and cancelling
-      // turns around a delivery that was never made.
-      // `tests/unit/construction-preview-cancel-refund.test.ts` is where a
-      // real purchase makes this figure positive.
-      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 0 },
-      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 0 },
+      // `cancelRefundMinorUnits: 80` for both, and **this read `0` until the
+      // owner's ruling of 2026-09-02**. It is a fact about this fixture rather
+      // than about `materials-pending` in general: `session()` pre-seeds 500
+      // bricks, so neither order's two-brick requirement ever triggers a
+      // just-in-time purchase -- `procureForPendingOrders` nets held stock off
+      // demand before it prices anything -- and there is no delivery for a
+      // cancellation to turn around.
+      //
+      // What the ruling added is the second arm: `refundSurplusStock` sells
+      // the two bricks each cancelled order's requirement leaves surplus back
+      // at the catalogue price. **This fixture is therefore the cost of the
+      // broad reading, in a unit test** -- a shelf the player already holds,
+      // two commands, 80 minor units, exactly as the ruling was priced -- and
+      // the row must name it, because `CancelBuildOrder` pays it.
+      // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
+      // is where that agreement is proved against the treasury itself.
+      // `revision: 2` for both (ADR 0107): `submitOrder`'s own
+      // `'approved'` write is each order's first (revision 1), and the
+      // scheduled pass `runTo(runtime, 1)` steps through moves it on to
+      // `'materials-pending'`, its second (revision 2).
+      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
+      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
     ]);
   });
 

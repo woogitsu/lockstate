@@ -51,7 +51,7 @@ import {
  * type. `save-panel-messages.ts` is the sixth and names none: it is a frozen
  * registry of message keys. Two of the five, `build-tool.ts`
  * and `simulation-commands.ts`, are the orchestration modules the issue meant,
- * and `build-tool.ts:9-15` explains at length why it is the one module allowed
+ * and `build-tool.ts:16-85` explains at length why it is the one module allowed
  * to know both halves.) So "must not import the simulation" would be false
  * here, and asserting a false rule with five exemptions produces the list
  * nobody reads that `tests/helpers/simulation-enum-source.ts` argues against.
@@ -188,6 +188,27 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Value: `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` from `src/simulation/economy`, and nothing else -- one integer constant, used as a default argument. This module is the host's pre-flight on the two intents that cost money, and it exists because the comparison it makes lived inline in `src/main.ts`, which `vitest.config.ts` cannot reach at all (`environment: 'node'`, and that file touches `document`), so #703 ruling A silently made it wrong: it refused presses the simulation accepts. Importing the constant rather than restating `-2_500` is the point of the entry -- the host's echo and the treasury's own floor derive from one definition, which is the same argument `simulation-clock.ts` makes below about the calendar. It runs no simulation code, holds no state, constructs nothing and has no dependency on the runtime: a value import of `Treasury` itself, or of anything that could build one, would mean the interface had started keeping a second treasury instead of echoing the published balance, and that is the erosion this entry exists to catch.",
   },
   {
+    file: 'src/ui/save-panel-delete.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the message shape this module's three `describe*` functions return. It is `save-panel.ts`'s own content entry one module over and for the same reason -- these functions were extracted *out* of that file so `pnpm test` could reach them (`environment: 'node'` makes anything touching `document` unobservable, #445's argument), and an extraction that needed a wider dependency than the file it came from would be the wrong extraction. Erased, so no content code runs on this module's account.",
+  },
+  {
+    file: 'src/ui/save-panel-delete.ts',
+    tree: 'persistence',
+    kind: 'type-only',
+    reason:
+      "Type-only: `RestoreOutcome` from `src/persistence/local/repository`, the four names an undo press can come back with (ADR 0114). It is here for `save-panel.ts`'s `SaveResult` reason -- this module maps a persistence outcome to a sentence, and the union is declared once, in the layer that produces it, so that `describeRestoreOutcome`'s exhaustive switch is what fails `tsc` the day a fifth outcome exists rather than a sentence silently going unwritten. Restating the four names here instead would put a second definition of a persistence contract in a view, which is the contamination `save-panel.ts`'s own `value` entry argues against at length. Erased, so this module still runs no persistence code and constructs no repository; a `value` import appearing here -- `PrisonSaveRepository` itself, or anything that could build one -- would mean the pure decision module had started reaching storage, and that is the change this entry exists to catch.",
+  },
+  {
+    file: 'src/ui/save-panel-delete.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, the parameter bag beside the key. Same reading as the `content` entry above and as `save-panel.ts`'s own `services` entry: this module chooses a key and its parameters and resolves nothing, so it needs no value from the localization runtime. A `value` import appearing here would mean a decision module had started formatting text, which is the composing layer's job and the thing ADR 0011's last-possible-moment rule keeps out of pure functions.",
+  },
+  {
     file: 'src/ui/save-panel.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -251,6 +272,62 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `DisplayScaleLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `save-panel.ts` and `telemetry-consent-prompt.ts` carry; the control constructs no localizer of its own and never falls back to one.",
   },
   {
+    file: 'src/ui/language-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the language control's five message keys and nothing else, in the shape `theme-messages.ts` and `display-scale-messages.ts` use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the control's `LanguageLocalizer` port and the endonym table it resolves through. The same erased naming-of-a-key-type `theme.ts` and `display-scale.ts` make; no content code runs because of it.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'input',
+    kind: 'value',
+    reason:
+      "Value: `nextLanguagePreference` from `src/input/language-preference`, plus the erased `LanguagePreference` and `OfferedLocale`. **The same shape as `theme.ts`'s entry above and no step further**, which is the comparison that matters because the erosion it names is the one this control is most exposed to. Which preferences exist, and what \"the next one\" means, are properties of the persisted record and live beside the decoder that checks a stored value against them. `nextLanguagePreference` is pure -- a function of a string. What this module deliberately does **not** import is `src/input/storage.ts`: a language change is the one preference here whose write must be *read back* by the caller (a refused write cancels the reload), and a control that stored it itself would be deciding to reload as well as asking to. `src/main.ts` owns both ends, exactly as it does for the theme.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `LanguageLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `theme.ts` and `display-scale.ts` carry; the control constructs no localizer of its own and never falls back to one -- which matters more here than elsewhere, since a language control holding a second localizer would be the one surface guaranteed to disagree with the page.",
+  },
+  {
+    file: 'src/ui/theme-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the theme control's four message keys and nothing else, in the shape `display-scale-messages.ts` and `brand-messages.ts` use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the control's `ThemeLocalizer` port and the keys it resolves. The same erased naming-of-a-key-type `display-scale.ts` and `brand-badge.ts` make; no content code runs because of it.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'input',
+    kind: 'value',
+    reason:
+      "Value: `THEME_PREFERENCES`, `isThemePreference` and `resolveTheme` from `src/input/theme-preference`, plus the erased `Theme` and `ThemePreference`. **The same shape as `display-scale.ts`'s entry above, and deliberately not one step further.** Which preferences exist, and which theme each resolves to given what the device asks for, are properties of the persisted record -- they live beside the decoder that checks a stored value against them, so the storage key and the control cannot end up with two vocabularies. All three are pure: `resolveTheme` is a function of a string and a boolean, and this module reads `prefers-color-scheme` through a port it is handed rather than inside them. That entry names the erosion to catch -- \"a value import of `src/input/storage.ts` ... would mean the control had started reading and writing the settings store itself instead of being handed a scale by the composition root\" -- and an earlier draft of this module did exactly that. This gate is what found it: `createThemeController` now takes the stored preference and a `persist` callback, and `src/main.ts` owns both ends.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `ThemeLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `display-scale.ts` and `save-panel.ts` carry; the control constructs no localizer of its own and never falls back to one.",
+  },
+  {
     file: 'src/ui/simulation-clock.ts',
     tree: 'simulation',
     kind: 'value',
@@ -291,6 +368,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'value',
     reason:
       '**This entry read `type-only` until the owner\'s decisions of 2026-09-01 on [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)**, and the erased names it described are unchanged: `SimulationEvent`, `SimulationEventType` and `WorkerToMainMessage` from `src/simulation/protocol/types`. Its reason still holds and is kept: it reads a `simulation/event` publication into a HUD alert row and a band notice and does nothing else -- the same shape as `simulation-alerts.ts` beside it, and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. The `Record` over `SimulationEventType` is still what makes an event type added to the protocol fail to compile until somebody has decided what it says to a player and how loudly (#507). **Two values are now named, and both are pure functions the alternative to which is a second copy of a rule.** `simulationEventIdentity` decides when two arrivals are the same statement, and the worker resolves a dismissal by the same function -- two answers to that question is exactly how a row the player retired would come back holding the wrong arrivals. `projectClockPosition` turns an event\'s tick into the day a row says it happened on; it is *"the one piece of clock arithmetic in the codebase, so a caller cannot disagree with the status strip about which day it is"*, and `simulation-clock.ts`\'s entry above already names the same value for the same reason. Neither touches state: one stringifies an object, the other divides a number. A value import of a decoder, a runtime factory or a kernel would still be the erosion this entry exists to catch.',
+  },
+  {
+    file: 'src/ui/simulation-conditions.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonCondition` from `src/simulation/protocol/types`, so an exhaustive `Record` over the closed union can be checked at compile time -- exactly the use `simulation-alerts.ts` makes of `RefusalReason` and `simulation-events.ts` of `SimulationEventType`, and for the same purpose: a sixth member added to the protocol fails to compile here until somebody has decided whether and where the player is told about it ([ADR 0117](../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md), accepted by the owner on 2026-09-17). The module is a table and one `some` over it; it resolves no text, names no message key and holds no state, and the erasure means no simulation code runs because of it. It lives outside `src/ui/hud/` for that directory's standing reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know a protocol vocabulary sits beside `simulation-counts.ts`, which is its only caller.",
   },
   {
     file: 'src/ui/simulation-counts.ts',
@@ -368,6 +452,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, and it is the **second** reader of `hud/staff` -- beside `simulation-staff-coverage.ts` above, which asks the same projection with `limit: 0` for totals and no rows. Two readers on one projection because they ask for different things, not because one was forgotten: merging them would tie a warning readout's cadence to a control list's and publish a window one of them cannot use. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be the sharpest violation in this manifest alongside `simulation-held-guards.ts`'s: it would mean the main thread had started deciding *who is employed* from a roster it does not own, and every row it produced carries a staff id that a press **destroys** (#533).",
+  },
+  {
+    file: 'src/ui/simulation-prisoner-detail.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonerDetailViewModel` from `src/simulation/presentation/prisoner-projection` (issue #895). The thirteenth of the translators outside `src/ui/hud/` and the ninth that reads a *pulled* read model, and the first of any of them whose request names **one** row -- `hud/prisoner-detail` is `target: 'entity'`, so the id the player pressed on a roster row is what crosses. It derives no message key of its own and therefore has no `content` entry beside this one, unlike its sibling: the two rules it needs are `prisonerNeed` and `prisonerStandingLabelKey`, exported from `src/ui/simulation-prisoner-roster.ts` so that the roster and the inspector cannot disagree about a prisoner whose classification has not run yet -- a same-tree import, which this gate does not and should not see. Erased, so no simulation code runs on its account; the projection executes in the worker, and it has to, because `projectPrisonerDetail` starts with `entityStore.isAlive(entityId)` over a store this thread does not hold, and its `unmetForStateIncome` per need is `STATE_INCOME_UNMET_NEED_LEVEL` applied in `src/simulation/economy/income.ts`. A `value` import here would mean the main thread had started deciding what the state is withholding from whom, which is a balance number on the thread that owns none.",
   },
   {
     file: 'src/ui/simulation-prisoner-roster.ts',
@@ -544,19 +635,25 @@ describe('UI orchestration boundaries', () => {
       'src/ui/display-scale-messages.ts',
       'src/ui/display-scale.ts',
       'src/ui/host-refusal.ts',
+      'src/ui/language-messages.ts',
+      'src/ui/language.ts',
       'src/ui/object-tool.ts',
+      'src/ui/prisoner-sentence.ts',
       'src/ui/room-tool.ts',
+      'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
       'src/ui/simulation-alerts.ts',
       'src/ui/simulation-build-queue.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
+      'src/ui/simulation-conditions.ts',
       'src/ui/simulation-counts.ts',
       'src/ui/simulation-events.ts',
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
+      'src/ui/simulation-prisoner-detail.ts',
       'src/ui/simulation-prisoner-roster.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
@@ -565,6 +662,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-staff-roster.ts',
       'src/ui/simulation-zoning.ts',
       'src/ui/telemetry-consent-prompt.ts',
+      'src/ui/theme-messages.ts',
+      'src/ui/theme.ts',
     ]);
     // And the import scanner really is reading them.
     expect(orchestrationFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);

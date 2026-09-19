@@ -44,9 +44,12 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * ## The prison
  *
- * 24 prisoners in one furnished dormitory -- 24 beds and 24 toilets, so every
- * `own-accommodation` action always resolves and nothing here is about
- * accommodation scarcity -- a canteen with two dining tables, and a
+ * 24 prisoners in twelve furnished cells -- 24 beds and 24 toilets, two of
+ * each per cell, so every `own-accommodation` action always resolves and
+ * nothing here is about accommodation scarcity. **Twelve cells and not one
+ * dormitory since issue #961**, whose ceiling makes a 24-resident `room.cell`
+ * unreachable; the twelve tile the same 12x6 rectangle the dormitory occupied,
+ * so the geometry outside it is untouched -- a canteen with two dining tables, and a
  * `room.shower-room` at its authored 3x3 minimum. `object.shower-head` is `1x1`
  * and `concurrentUseCapacityFor` sums footprint widths, so **two heads is a
  * hygiene ceiling of two against 24 prisoners**. The ceiling is derived from the
@@ -61,7 +64,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * | | prisoners who never showered | prisoners who reached hygiene 0.0 | worst final hygiene | shower ticks, lowest .. highest |
  * | --- | --- | --- | --- | --- |
  * | *before*, ascending index | **2** (p22, p23) | 8 | **0.0** (six of them) | 0 .. 480 |
- * | after, by need urgency | 0 | **0** | **166.4** | 240 .. 400 |
+ * | after, by need urgency, as first measured | 0 | **0** | **166.4** | 240 .. 400 |
+ * | the same row today | 0 | **0** | **171.6** | 216 .. 360 |
+ * | and today, twelve cells rather than one dormitory (#961) | 0 | **0** | **28.4** | 288 .. 504 |
  *
  * The two highest-index prisoners went from **0 showers in 40,000 ticks** to
  * six each, and the lowest hygiene any prisoner touched at any tick went from
@@ -69,6 +74,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * *more* showers in total, because ordering the arrivals also stops two
  * prisoners walking to the same last free head and one of them wasting the trip
  * (`unmetDemandCycles` 1,364 -> 978, `actionsCompleted` 8,758 -> 9,114).
+ *
+ * **The second "after" row is added rather than the first being overwritten,
+ * and the reason it is needed at all is a rot this file had already grown.**
+ * The first row is the run as it stood when the fairness ordering landed; ADR
+ * 0059, issue #588's hire and ADR 0102 each moved it afterwards, and each time
+ * the figures inside the cases below were re-measured while this table was
+ * not. Nothing about the *claim* moved in any of them -- both columns that
+ * carry it are still 0 -- which is exactly why nobody noticed, and is why the
+ * history is kept in the table rather than in a paragraph saying it changed.
  *
  * ## What this file is careful not to be
  *
@@ -91,8 +105,33 @@ const SEED = 0x0b1ec7;
 
 const PRISONERS = 24;
 
-/** One dormitory: `room.cell`'s authored 2x3 minimum is far exceeded, and 24 beds make its resident capacity 24. */
-const DORM = { x: 0, y: 0, width: 12, height: 6 } as const;
+/**
+ * **Twelve cells, not one dormitory, since issue #961** (the owner's ruling of
+ * 2026-09-17: a resident ceiling per room type in the catalogue). `room.cell`
+ * authors `maxResidents: 2`, so the 12x6 single room this fixture used to zone
+ * would now house two prisoners out of 24 and the file's subject -- 24
+ * prisoners contending for a room -- would quietly stop existing.
+ *
+ * The **footprint is unchanged**: twelve 2x3 cells, `room.cell`'s own authored
+ * minimum, tile the same rectangle at the same origin, so every distance to the
+ * canteen and the shower room is the distance this file always measured and the
+ * outer wall is the same wall. What is new is the interior walls and a door per
+ * cell.
+ *
+ * The two rows are separated by an open corridor at `y = 3` rather than being
+ * stacked against each other, so that **every cell's door opens onto open
+ * ground**. Stacked, the upper row's only way out was through the cell below
+ * it, and 24 prisoners routing to two shower heads through another prisoner's
+ * cell left one of them at hygiene 0.0 -- which is the exact floor the case
+ * below exists to say nobody reaches. The rectangle is therefore 12x7 where
+ * the dormitory was 12x6; nothing else about the prison moved.
+ */
+const CELL_RECTS = [0, 4].flatMap((y) => [0, 2, 4, 6, 8, 10].map((x) => ({ x, y, width: 2, height: 3 } as const)));
+
+/** Two beds and two toilets per cell -- 24 and 24, the same objects and the same bill as the dormitory carried. */
+const BED_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y }, { x: rect.x + 1, y: rect.y }]);
+const TOILET_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y + 2 }, { x: rect.x + 1, y: rect.y + 2 }]);
+
 /** `room.canteen`'s authored 6x6 minimum, given 8x8 so its two `3x2` tables and four `2x1` benches never overlap. */
 const CANTEEN = { x: 16, y: 0, width: 8, height: 8 } as const;
 /** `room.shower-room`'s authored 3x3 minimum, clear of both. */
@@ -141,8 +180,11 @@ function prison(showerHeads: 2 | 8): SimulationRuntime {
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: PLANKS }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: BRICKS }));
 
+  for (const [index, rect] of CELL_RECTS.entries()) {
+    wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
+    submit(runtime, `zone-cell-${index}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect }));
+  }
   for (const [id, rect, roomId] of [
-    ['dorm', DORM, 'room.cell'],
     ['canteen', CANTEEN, 'room.canteen'],
     ['shower', SHOWER, 'room.shower-room'],
   ] as const) {
@@ -150,19 +192,11 @@ function prison(showerHeads: 2 | 8): SimulationRuntime {
     submit(runtime, `zone-${id}`, packCommand({ type: 'ZoneRoom', roomId, ...rect }));
   }
 
-  let placed = 0;
-  for (const y of [0, 2]) {
-    for (let x = 0; x < 12; x += 1) {
-      submit(runtime, `bed-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-bed-${placed}`, definitionId: 'bed-wooden', x, y }));
-      placed += 1;
-    }
+  for (const [placed, tile] of BED_TILES.entries()) {
+    submit(runtime, `bed-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-bed-${placed}`, definitionId: 'bed-wooden', ...tile }));
   }
-  placed = 0;
-  for (const y of [4, 5]) {
-    for (let x = 0; x < 12; x += 1) {
-      submit(runtime, `toilet-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-toilet-${placed}`, definitionId: 'toilet-brick', x, y }));
-      placed += 1;
-    }
+  for (const [placed, tile] of TOILET_TILES.entries()) {
+    submit(runtime, `toilet-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-toilet-${placed}`, definitionId: 'toilet-brick', ...tile }));
   }
   submit(runtime, 'dt-0', packCommand({ type: 'PlaceObject', orderId: 'o-dt-0', definitionId: 'dining-table-wooden', x: 17, y: 1 }));
   submit(runtime, 'dt-1', packCommand({ type: 'PlaceObject', orderId: 'o-dt-1', definitionId: 'dining-table-wooden', x: 17, y: 3 }));
@@ -251,6 +285,33 @@ function watched(showerHeads: 2 | 8): WatchedRun {
   };
 }
 
+/**
+ * **The three tests that call `watched` carry a 30,000 ms budget, and the one
+ * that does not is left on the global default**
+ * ([#1005](https://github.com/matmaxalez/lockstate/issues/1005)).
+ *
+ * `watched` runs the real kernel to `WATCH_UNTIL`, sampling all `PRISONERS` of
+ * them on every one of those ticks, and two of these tests run it twice. That
+ * is essential work -- there is no assertion inside the loop to remove, and
+ * the comment on the loop says why it may not be sampled coarsely -- so what
+ * needed fixing was the budget rather than the test. Measured on this
+ * container with nothing else running, worst of three full-suite runs:
+ * 1,713 ms for the two-run determinism case, 1,467 ms for the eight-head
+ * comparison and 1,141 ms for the fairness case, against `vitest.config.ts`'s
+ * `testTimeout` of 5,000 ms. A margin of 2.9x is inside what ordinary parallel
+ * load on a four-core box costs, and the failure it produces is
+ * `Error: Test timed out in 5000ms` -- a red that says nothing about the
+ * prison and teaches its reader to discount red.
+ *
+ * 30,000 ms is the figure this suite already gives a test that runs the kernel
+ * -- `tests/integration/economy-loan-recovery.test.ts` and
+ * `tests/unit/prisoners-actor-tier-scale.test.ts` both take it -- and it is a
+ * budget rather than an absence of one: a kernel that stopped advancing still
+ * fails here, and it fails in half a minute.
+ *
+ * The money test is deliberately not given one. It never calls `watched`; it
+ * stops at `BUILT_BY` and costs 489 ms, so the default is doing its job.
+ */
 describe('twenty-four prisoners and a shower room with two heads', () => {
   it('lets the prisoners scanned last wash, which they never once did while the scan ran in entity-index order', () => {
     const run = watched(2);
@@ -300,7 +361,36 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * **Both of the assertions under it are unchanged and are still what this
      * literal is for.**
      */
-    expect(run.showerTicksByDay[23]).toEqual([0, 0, 36, 0, 0, 36, 36, 0, 72, 36, 0, 0, 36, 0, 0, 72, 0]);
+    /*
+     * **Re-measured for
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+     * which moved every figure in this file and improved the one that
+     * mattered.** All 24 prisoners here are housed -- the twelve cells hold
+     * 24 beds between them -- so this file has no unhoused population for that decision to
+     * reach. What it reaches is the *window before* each of them is housed:
+     * `ActionSystem` now considers a prisoner at intake stage
+     * `accommodation-assignment`, and every arrival sits there for at least
+     * one of `IntakeSystem`'s scheduled ticks, so 24 arrivals now contend for
+     * two shower heads before they have a cell and the whole schedule
+     * staggers differently from there. The array read
+     * `[0, 0, 36, 0, 0, 36, 36, 0, 72, 36, 0, 0, 36, 0, 0, 72, 0]` before it.
+     * **Both of the assertions under it are unchanged and are still what this
+     * literal is for.**
+     */
+    /*
+     * **Re-measured for issue #961**, the owner's ruling of 2026-09-17 that a
+     * room type may author a resident ceiling. `room.cell` authors
+     * `maxResidents: 2`, so the single 12x6 dormitory this fixture zoned is
+     * now twelve 2x3 cells filling the same rectangle (see `CELL_RECTS`).
+     * **Nothing outside the dormitory moved** -- same origin, same outer wall,
+     * same canteen, same shower room, same 24 beds and 24 toilets, same bill
+     * -- and the run still moves, because eleven interior walls and a door per
+     * cell change how 24 prisoners route to two heads. The array read
+     * `[0, 0, 0, 0, 0, 36, 36, 36, 0, 0, 72, 36, 36, 0, 36, 0, 0]` before it.
+     * **Both of the assertions under it are unchanged and are still what this
+     * literal is for.**
+     */
+    expect(run.showerTicksByDay[23]).toEqual([0, 0, 0, 44, 0, 36, 0, 36, 44, 0, 44, 36, 0, 44, 0, 44, 0]);
     expect(run.showerTicks[23], 'the last prisoner scanned took no shower at all before #434').toBeGreaterThan(0);
     expect(run.showerTicks[22], 'and neither did the one before them').toBeGreaterThan(0);
 
@@ -326,26 +416,45 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * below is where that is asserted.
      *
      * **The sentence that stood here said they stay "well above a third of
-     * `NEED_MAX`", and that is no longer true.** The worst floor is 24.4 of
-     * 255 -- a tenth, not a third -- and it fell there with issue #588's
-     * hire (see `watched`): three guards walking to and standing on the
-     * arrival tile change how 24 prisoners route to a two-head shower room,
-     * and one of them now cuts it much finer than before. The claim is
-     * narrowed to what is measured rather than kept at a level the run does
-     * not support: **nobody reaches the floor**, and the run is much closer to
-     * it than it was.
+     * `NEED_MAX`", and that stopped being true with issue #588's hire.** The
+     * worst floor fell to 24.4 of 255 -- a tenth, not a third -- because three
+     * guards walking to and standing on the arrival tile changed how 24
+     * prisoners route to a two-head shower room. That paragraph is kept rather
+     * than deleted, because the figure it corrected is the one below.
+     *
+     * **ADR 0102 moved it back up, to 97.2, and that direction is worth
+     * marking too.** More prisoners now compete for the two heads -- every
+     * arrival's pre-housing window is added to the contention -- and the
+     * schedule that comes out of it leaves the worst-served prisoner better
+     * off rather than worse, which is the opposite of what more contention
+     * would suggest and is why it is a measured figure rather than a reasoned
+     * one. The claim itself stays exactly where it was narrowed to:
+     * **nobody reaches the floor.**
      */
-    // 24.4 since issue #588's hire; 90.4 and 125.2 since ADR 0059, against
-    // 96.8 and 166.4 before that.
-    expect(Math.min(...run.lowestHygiene)).toBe(24.4);
-    expect(Math.min(...run.finalHygiene)).toBe(125.2);
+    // **3.2 and 28.4 since issue #961 split the dormitory into twelve celled
+    // rooms**, against 97.2 and 171.6 for the single dormitory; 24.4 and 125.2
+    // since issue #588's hire; 90.4 and 125.2 since ADR 0059, against 96.8 and
+    // 166.4 before that.
+    //
+    // **The margin against the floor narrowed by thirty times and the claim did
+    // not move**, which is the pair worth reading together rather than either
+    // number alone. Twelve cells with a door each cost more walking than one
+    // open dormitory did, so 24 prisoners queueing for two heads get filthier
+    // than they used to before they are served -- and the property this file is
+    // about, that **nobody reaches the floor and nobody is permanently outside
+    // the winning set**, still holds on every one of the 24. A prison that is
+    // all cells is a harder prison to keep clean, which is a consequence of the
+    // ruling rather than of this fixture, and it is recorded here because 3.2
+    // out of 255 is a thin margin to discover by accident later.
+    expect(Math.min(...run.lowestHygiene)).toBe(3.2);
+    expect(Math.min(...run.finalHygiene)).toBe(28.4);
     for (const [n, hygiene] of run.lowestHygiene.entries()) {
       expect(hygiene, `prisoner ${n} was left to reach the hygiene floor`).toBeGreaterThan(0);
     }
     for (const [n, ticks] of run.showerTicks.entries()) {
       expect(ticks, `prisoner ${n} never washed`).toBeGreaterThan(0);
     }
-  });
+  }, 30_000);
 
   it('is the ceiling and not the prison: eight heads and the same bill remove the contention entirely', () => {
     const control = watched(8);
@@ -359,15 +468,20 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // With the ceiling above what the population ever asks for, the spread that
     // the two-head run is about is gone: every prisoner washes as often as the
     // regime lets them and nobody is refused.
-    // 612 / 756 / 186.4 since issue #588's hire (see `watched`); 612 / 828 /
-    // 185 since ADR 0059, against 760 / 1,000 / 203.6 before that. The number
-    // this test is actually for -- the least-washed prisoner in an eight-head
-    // room against the best-washed in a two-head one -- did not move at all.
-    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(612);
-    expect(Math.max(...control.showerTicks)).toBe(756);
-    expect(Math.min(...control.lowestHygiene)).toBe(186.4);
+    // 580 / 996 / 201.6 since issue #961 split the dormitory into twelve
+    // cells (see `CELL_RECTS`); 576 / 792 / 185.2 since ADR 0102 (see the
+    // re-measurement note in the case above); 612 / 756 / 186.4 since issue
+    // #588's hire (see `watched`);
+    // 612 / 828 / 185 since ADR 0059, against 760 / 1,000 / 203.6 before that.
+    // The number this test is actually for -- the least-washed prisoner in an
+    // eight-head room against the best-washed in a two-head one -- is still a
+    // clear win and is asserted as the comparison on the last line rather than
+    // as either literal.
+    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(580);
+    expect(Math.max(...control.showerTicks)).toBe(996);
+    expect(Math.min(...control.lowestHygiene)).toBe(201.6);
     expect(Math.min(...control.showerTicks)).toBeGreaterThan(Math.max(...watchedTwoHead.showerTicks));
-  });
+  }, 30_000);
 
   it('spends the same money in both prisons, so the difference between them is one ceiling and not one budget', () => {
     /*
@@ -402,5 +516,5 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     expect(second.showerTicksByDay).toEqual(first.showerTicksByDay);
     expect(second.lowestHygiene).toEqual(first.lowestHygiene);
     expect(second.runtime.prisoners.actionSystem.getMetrics()).toEqual(first.runtime.prisoners.actionSystem.getMetrics());
-  });
+  }, 30_000);
 });

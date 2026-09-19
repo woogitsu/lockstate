@@ -1189,6 +1189,100 @@ shape as `treasuryOverdraftFloorMinorUnits` and mapped straight through from
 the boundary, for the reason `src/ui/hud/` may not import the simulation
 (`AGENTS.md` boundary 1) but `src/main.ts` may.
 
+> **Corrected 2026-09-15: `roomCapacity` is not the published twin of
+> `totalResidentCapacity`, and the two answer "fresh, unfurnished"
+> differently.** The paragraph above is kept rather than rewritten, because
+> the word doing the damage is *twin* and a reader should see it. Everything
+> else in it holds: the host really does read `counts.roomCapacity`, really
+> does map it straight through, and really may not import the simulation.
+>
+> `totalResidentCapacity` walks the registry's own instance map. The published
+> `roomCapacity` is summed over `collectRoomInstances`, which enumerates *by
+> room-catalog id* over the content registry, so an instance registered under
+> an id that registry does not define contributes nothing to it — the
+> enumeration gap `docs/HUD_PROJECTIONS.md` records as gap 15, which
+> `RoomInstanceRegistry.totalResidentCapacity`'s own docblock already cites as
+> the reason a structural gate asks the registry instead. So
+> `roomCapacity === 0` is implied by `totalResidentCapacity === 0` and does not
+> imply it: the host is "fresh" in strictly more cases than the simulation is.
+>
+> **Measured, not reasoned.** A session restored with one room instance under
+> an off-catalogue id, a bed standing in its rectangle, and 655 bricks bought:
+> `totalResidentCapacity` 1, published `roomCapacity` 0, so the worker judges
+> the press against the mature −1,250 and the host against the starter −1,185.
+> At the resulting balance of −1,200 the FUNDS badge reads `0 left` in the
+> danger tone and `judgeAffordability` refuses a 40-minor-unit brick press
+> `past-the-floor`, while the same press submitted to the real command handler
+> is **accepted** and lands the treasury at −1,240. The same payload carries an
+> empty `conditions` array, because `computeStandingPrisonConditions` is fed
+> the registry figure: one status-counts message, two answers.
+>
+> The direction is the safe one — the host understates spendable room by up to
+> the 65 the starter rung is worth, rather than overstating it — so this is not
+> `AGENTS.md`'s fourth exclusion. It is still a refusal the simulation would
+> not have made. Nothing in §3's arithmetic moves, and no figure published
+> anywhere in this corpus moves: on the shipped catalogue the two definitions
+> agree in every state a player can reach by playing, because
+> `RoomZoningService.zone` refuses `unknown-room-type`. The divergence is
+> reachable only through a **restore**, which registers whatever
+> `roomCatalogId` the save carries — the save schema bounds it at
+> `z.string().min(1)` and nothing at the restore checks it against the
+> catalogue (ADR 0071 decision 4 forbids the registry reading one).
+>
+> **Not fixed here, because the fix is a behaviour change.** The obvious
+> reconciliation is to publish the predicate the simulation already computes —
+> `projectStatusStrip` builds `isFreshUnfurnishedPrison` from the registry and
+> then drops it, feeding it only to the condition set — and have the host read
+> that instead of re-deriving one from a count. That widens
+> `statusCountsSchema` and changes what a press is judged against, which is a
+> decision to take deliberately rather than inside a documentation correction.
+> No gate would notice a future divergence:
+> `tests/integration/economy-funds-badge-starter-rung.test.ts` asserts both
+> figures are `0` on a prison that is fresh by both definitions, which is the
+> one case in which they cannot disagree.
+
+> **Fixed on 2026-09-15, and the block above is kept rather than rewritten
+> because every measurement in it still holds and only the last paragraph is
+> now history.** `projectStatusStrip` publishes the predicate it used to
+> compute and drop, as `statusCountsSchema.isFreshUnfurnishedPrison`, and the
+> three host sites read it through one function,
+> `freshUnfurnishedPrison` in `src/ui/affordability.ts`, instead of each
+> deriving `counts.roomCapacity === 0`. Three copies of a definition were the
+> defect, so the repair is one reader rather than three corrected
+> derivations. Nothing in §3's arithmetic moves and no published figure moves,
+> exactly as the block above says.
+>
+> **It cannot turn the safe refusal into a false promise, and the sub-sum is
+> the proof.** `roomCapacity` is accumulated over `collectRoomInstances` from
+> the same `residentCapacity` values `totalResidentCapacity` sums, over
+> non-negative terms, so it is a sub-sum: the host's "fresh" set strictly
+> contained the simulation's, and it now equals it. Every prison whose answer
+> changes moves from fresh to **not** fresh — from the starter −1,185 to the
+> mature −1,250, a **deeper** floor, which is the floor the worker was already
+> enforcing on that same prison. The host can therefore claim no room the
+> worker will refuse; it claims exactly the room the worker computes from the
+> same tick's state, which is a tighter coupling than any derivation can be.
+> No player-facing string is authored: `hud.status.funds-remaining`
+> (*"{remaining} left"*) is unchanged, and only the number it interpolates
+> moves, upward, on a prison where it had been understated.
+>
+> **The gate this block called for exists**:
+> `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`,
+> which builds the divergent prison through the restore path's own three calls
+> and pins the published predicate equal to
+> `RoomInstanceRegistry.totalResidentCapacity === 0`. Watched red first, on
+> three cases; and red again under mutation — publishing `roomCapacity === 0`
+> in the projection's place reproduces this block's own measurement exactly:
+> badge `0 left` in the danger tone, `judgeAffordability` refusing the 40 as
+> `past-the-floor` at a spendable of −15, while the command handler accepts it.
+>
+> **`docs/HUD_PROJECTIONS.md` gap 15's correction of 2026-09-15 still says the
+> three host sites derive freshness from `roomCapacity`, and as of this entry
+> that sentence is stale.** It is left for whoever holds that file; the
+> *enumeration* gap it records is real and is not closed by this — the registry
+> still has no `all()`, and the fix works by not asking the fan-out the
+> question rather than by fixing the fan-out.
+
 ### 3. The starter limit, and its arithmetic
 
 **`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS = -1,185`** —

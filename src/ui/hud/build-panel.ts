@@ -1,7 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
-import { pressAffordabilityVerdict } from '../affordability';
+import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
@@ -114,7 +114,14 @@ export interface BuildPanelIntent {
   readonly removing: boolean;
 }
 
-/** What one press of the buy control asks for: ids and numbers only. */
+/**
+ * What one press of the buy control asks for: ids and numbers only.
+ *
+ * Reused for the sell control below rather than declared a second time with
+ * an identical shape: both name a material and a quantity and nothing else,
+ * and a second interface would be one more thing to keep in step with this
+ * one for no distinction either control's consumer reads.
+ */
 export interface BuildPanelPurchaseIntent {
   readonly itemId: string;
   readonly quantity: number;
@@ -162,13 +169,16 @@ export interface BuildPanelOptions {
   /** Buy the selected buildable's material, in the quantity the stepper shows (#89). */
   readonly onPurchase: (intent: BuildPanelPurchaseIntent) => void;
   /**
-   * Withdraw **one** pending order, named by its own id.
+   * Withdraw **one** pending order, named by its own id, at the revision this
+   * row's own last publication read for it (ADR 0107).
    *
-   * The id and nothing else. The panel does not know that a `CancelBuildOrder`
-   * command exists, any more than it knows `PurchaseMaterials` does -- it knows
-   * that a row it drew named an order and that the player pressed that row.
+   * The id, the revision and nothing else. The panel does not know that a
+   * `CancelBuildOrder` command exists, any more than it knows
+   * `PurchaseMaterials` does, or that `expectedRevision` is compared against
+   * anything -- it knows that a row it drew named an order at a revision and
+   * that the player pressed that row.
    */
-  readonly onCancelOrder: (orderId: string) => void;
+  readonly onCancelOrder: (orderId: string, revision: number) => void;
   /**
    * Cancel **one** purchase whose delivery has not landed, named by its own id
    * (#285).
@@ -180,6 +190,16 @@ export interface BuildPanelOptions {
    * player pressed it.
    */
   readonly onCancelPurchase: (orderId: string) => void;
+  /**
+   * Sell the selected buildable's material, in the quantity the stepper
+   * shows, back to the depot at a loss (ADR 0075 decision 3, invoked by ADR
+   * 0096 decision 3(b)).
+   *
+   * Shares `onPurchase`'s stepper and its `BuildPanelPurchaseIntent` shape --
+   * selling names the same material and the same quantity a purchase would,
+   * out of the same disclosure.
+   */
+  readonly onSell: (intent: BuildPanelPurchaseIntent) => void;
 }
 
 export interface BuildPanel {
@@ -209,6 +229,8 @@ export interface BuildPanel {
   readonly submitControl: HTMLButtonElement;
   /** The buy button, for the same reason `submitControl` exists: a refused purchase is reported on it. */
   readonly purchaseControl: HTMLButtonElement;
+  /** The sell button, for the same reason `purchaseControl` exists: a refused sale is reported on it. */
+  readonly sellControl: HTMLButtonElement;
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
@@ -256,6 +278,15 @@ export interface BuildPanel {
    * be translated into on its way from `hud.ts` to this panel.
    */
   setTreasury(counts: HudCountsViewModel): void;
+  /**
+   * Puts the panel's tool down, as `Escape` on the world asks (issue #959).
+   *
+   * Exactly the transition leaving the tab already makes -- both flags off,
+   * repaint, one `onArm(false, ...)` report -- rather than a second answer to
+   * "what does a disarmed Build panel look like". A press that finds the
+   * panel holding nothing does nothing at all.
+   */
+  standDown(): void;
   setVisible(visible: boolean): void;
 }
 
@@ -318,6 +349,83 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
   return !removing && buildable?.occupiesEdge === true;
+}
+
+/**
+ * Which sentence the armed tool's one hint line carries (issue #904).
+ *
+ * **The line described the wall gesture for every row in the catalogue, and
+ * nineteen of the twenty-one place an object on a tile instead.** Arming a Bed,
+ * a Toilet or a Storage Rack read *"Click a tile edge to place a wall. Drag
+ * along it to lay a run."* -- two instructions, neither of which does anything
+ * for such a row: `ObjectTool.place` is one press on one tile
+ * (`src/ui/object-tool.ts`), and the dragged-run producer is
+ * `BuildTool.attachOrders`, which lays walls and nothing else.
+ *
+ * Keyed on `placesObject`, which is the same field `HudPlaceIntent`'s consumer
+ * in `hud.ts` branches on to send `place-object` rather than
+ * `place-build-order`. That is the point of reading it here as well: the
+ * sentence and the command are then two readings of one fact instead of two
+ * rules that can disagree, which is the argument `edgeChooserShown` above
+ * makes about a hidden control and a submitted value.
+ *
+ * Removal wins over both, for the reason it hides the edge chooser: it names no
+ * buildable at all, so the selected row decides nothing about it.
+ *
+ * Exported and pure so that the choice is checkable without a DOM, exactly as
+ * the two functions above are -- `paintArmed` is otherwise reachable only
+ * through a mounted panel, and the wrong sentence there is invisible to every
+ * headless test.
+ */
+export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
+  if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
+}
+
+/**
+ * What one catalogue row's own label says, price included (issue #901).
+ *
+ * **Every one of the 21 rows used to show zero digits.** The price existed
+ * only behind a press on the buy disclosure (`hud.build.buy-submit`); this is
+ * where it is folded into the row itself instead, on the shape
+ * `hud.security.hire` already shipped for the Security tab -- see the
+ * commentary on `HUD_MESSAGE_KEY.buildCatalogueRowPrice` in `messages.ts` and
+ * on the two locale entries in `default-locale-en.ts` for the full
+ * verification: what the two keys say, and the code that makes each true.
+ *
+ * Branched on `buildable.placesObject`, the same fact `armedHintKey` above
+ * branches its own two sentences on: `true` (nineteen rows) is one press, one
+ * tile, one command (`ObjectTool.place`), so a flat price stays true; `false`
+ * (`wall-brick`, `door-wooden`) reaches the drag-a-run route
+ * (`BuildTool.place`), so the price must name its unit or a run of several
+ * would be underquoted by the same factor.
+ *
+ * `total` arrives pre-formatted, exactly as `formatBuildQueueOrderText` and
+ * `formatPendingDeliveryText` below take theirs: number formatting is
+ * `HudLocalizer.formatNumber`'s job, which a function taking only `Translate`
+ * has no access to. `undefined` means the buildable's material has no price
+ * at all (`HudBuildableViewModel.material` is absent) -- the row still needs a
+ * label, and a row naming no price is honest about a material `#29` has not
+ * priced, rather than a bug to route around.
+ *
+ * Pure and exported for the reason `armedHintKey` above is: the default
+ * Vitest environment is `node` (`docs/TESTING.md`), so nothing headless can
+ * mount the panel, and "what a row's price sentence says" is exactly the
+ * claim that has to be assertable over real text from a real catalog.
+ */
+export function buildCatalogueRowLabel(
+  t: Translate,
+  buildable: HudBuildableViewModel,
+  total: string | undefined,
+): string {
+  const name = t(buildable.labelKey);
+  if (total === undefined) return name;
+  return t(
+    buildable.placesObject
+      ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
+      : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
+    { buildable: name, total },
+  );
 }
 
 /**
@@ -541,40 +649,95 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
 }
 
 /**
- * How many queued orders the block lists at once.
+ * How many queued orders the block holds a row for.
  *
- * **Three, and it is a measurement plus an argument. Both halves matter.**
+ * **Sixty-four, and it is a measurement plus an argument -- as three was, and
+ * both halves changed for a reason each (#862).**
  *
- * The measurement is the panel's, and it is the tightest in the interface.
- * `buyToggle`'s comment records it: at 900x600, Build tab, coordinates folded --
- * the state a player arrives in -- the panel's body holds 291.2px of content in
- * a 291.2px box and there is **7.8px** between the last section's bottom edge
- * and the fold. So an always-visible list of rows was never on the table; a
- * collapsed section of its own is 45px, which is already six times the whole
- * budget. That is why this block is `hidden` while nothing is queued -- an empty
- * queue is the state a player arrives in, and the arrival height is therefore
- * byte-identical to what #174 left -- and why it is *collapsed* when it appears,
- * so a queue costs a header and not a list until the player asks for one.
+ * ### What three was, and what falsified it
  *
- * The argument is what decides the number rather than making it as large as
- * fits. Since #348 the crew builds **one order at a time**, so the queue is a
- * schedule and this list is its head: row one is being built, row two is next,
- * row three is after that. An order thirteenth in line is not one a player needs
- * to reach, because nothing is going to happen to it for another six hundred
- * ticks -- and the control for "I have changed my mind about that whole run" is
- * `Undo`, which pops the transaction the run was drawn in. So the two controls
- * divide the work: `Undo` takes back a gesture, and a row takes back one order.
- * `hud.build.queue-more` says exactly that to a player with more queued than
- * these, and `hud.build.queue-count` always states the whole length, so the
- * panel never implies the queue is shorter than it is.
+ * The measurement was the panel's, and it is still the tightest in the
+ * interface. `buyToggle`'s comment records it: at 900x600, Build tab,
+ * coordinates folded -- the state a player arrives in -- the panel's body holds
+ * 291.2px of content in a 291.2px box and there is **7.8px** between the last
+ * section's bottom edge and the fold. So an always-visible list of rows was
+ * never on the table; a collapsed section of its own is 45px, which is already
+ * six times the whole budget. That is why this block is `hidden` while nothing
+ * is queued -- an empty queue is the state a player arrives in, and the arrival
+ * height is therefore byte-identical to what #174 left -- and why it is
+ * *collapsed* when it appears, so a queue costs a header and not a list until
+ * the player asks for one. **None of that is withdrawn.**
  *
- * The rows are also **pooled** -- created once here, repainted per publication --
- * and that is not only an allocation choice. Each row's cancel button joins the
- * HUD's busy group, and `createBusyGroup` has `add` and no `remove`: a block
- * that built a row per order would grow that group without bound over a session
- * and keep every dead button in it.
+ * What is withdrawn is the step from that measurement to a *row count*. The
+ * height a list costs the panel is a property of the list's **box**, not of how
+ * many rows are inside it, and `.hud-build__queue-list` in `hud.css` now bounds
+ * that box directly -- three rows tall, which is the 148px the opened list
+ * measured at before this change, with `overflow-y: auto` under it. So the
+ * opened block costs the panel exactly what it cost when this number was three,
+ * at every viewport, and the rows past the third are reached by scrolling the
+ * list rather than by not existing. That is the same mechanism
+ * `.hud-build__list` has always used for the catalogue one section up, in this
+ * same panel, and `tests/browser/app-shell.spec.ts` asserts that list is
+ * scrollable in the arrival state for exactly this reason: rows a player cannot
+ * reach are what a donation costs, and `overflow-y` is the whole of what makes
+ * them reachable (#174).
+ *
+ * The argument was that the queue is the crew's *schedule* and this list is its
+ * head -- row one being built, row two next, row three after that -- so an order
+ * thirteenth in line is not one a player needs to reach, `Undo` being the
+ * control for "I have changed my mind about that whole run". **Measured, that
+ * is what it cost:** with fourteen orders placed, three had a control and
+ * eleven had none at any of the six viewports the browser suite visits, because
+ * eleven of them had no row in the DOM at all. `Undo` is not a substitute --
+ * it pops the transaction the run was drawn in, so the player who wants one
+ * wall of fourteen back has to take all fourteen. ADR 0031 decision 4 named
+ * itself *"the decision most open to being overruled"* and named the trigger:
+ * *"If that proves to be the common case rather than the rare one"*. A batch of
+ * orders is the common case -- it is what a drag produces, and #348 is why the
+ * batch then sits there for hundreds of ticks.
+ *
+ * ### Why sixty-four
+ *
+ * Because that is how many orders **one gesture can place**.
+ * `MAX_RUN_SEGMENTS` in `src/rendering/build/edge-picking.ts` clamps a dragged
+ * wall run to 64 segments and one segment is one `PlaceBuildOrder`, so 64 is
+ * the longest queue a player can produce without meaning to produce two. It is
+ * not imported here -- `src/ui/hud/` may not import from `src/rendering/`
+ * (`AGENTS.md` boundary 1) -- and the two numbers agreeing is asserted by
+ * `tests/unit/ui-hud-build-panel.test.ts`, which may import both, exactly as
+ * `MAX_ZONE_SIDE_TILES` states its own agreement with the simulation's ceiling.
+ *
+ * A queue longer than one gesture still exists, and `hud.build.queue-more`
+ * still says how many are behind the last row while `hud.build.queue-count`
+ * always states the whole length -- so the panel never implies the queue is
+ * shorter than it is, which is the property that made three honest and makes
+ * sixty-four honest.
+ *
+ * **What it costs, measured rather than asserted.** This number is also the
+ * projection window `BuildQueueReader` asks for, and `projectBuildQueue` prices
+ * each row by walking the whole order book
+ * (`ConstructionSystem.previewCancelRefundMinorUnits` -> `demandedQuantityOf`),
+ * so the call is O(window x orders). Timed on this container over a real
+ * runtime, 200 calls per figure: with 328 orders queued -- the drag
+ * `tests/integration/economy-cancel-what-comes-back.test.ts` measures -- one
+ * projection costs 0.318ms at a window of 3 and **3.469ms** at 64; with 64
+ * orders queued it is 0.250ms against 0.739ms. The reader is driven by the
+ * worker's clock heartbeat at up to about four a second (ADR 0086 section 3),
+ * so the worst case a player can reach is roughly 14ms of worker time per
+ * second, and it drains as the queue does. That is the price of every order in
+ * a drag having a control, and it is worth paying.
+ *
+ * ### What has not changed: the rows are pooled
+ *
+ * Created once here, repainted per publication -- and that is not only an
+ * allocation choice. Each row's cancel button joins the HUD's busy group, and
+ * `createBusyGroup` has `add` and no `remove`: a block that built a row per
+ * order would grow that group without bound over a session and keep every dead
+ * button in it. A **fixed** pool is what closes that, at any size, which is why
+ * this number could move at all -- 64 buttons joined once at construction is
+ * bounded in exactly the way 3-per-publication would not be.
  */
-export const BUILD_QUEUE_ROW_LIMIT = 3;
+export const BUILD_QUEUE_ROW_LIMIT = 64;
 
 /**
  * How long a place in the queue list stays blank after the order it named
@@ -774,6 +937,26 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
 export const PENDING_DELIVERY_ROW_LIMIT = 3;
 
 /**
+ * How long a place in the pending-deliveries list stays blank after the
+ * purchase it named leaves, before another purchase may appear there.
+ *
+ * The same figure and the same argument as `BUILD_QUEUE_ROW_SETTLE_MS` one
+ * block over, and deliberately the same number rather than a second judgement:
+ * both are claims about how long a person takes to read a short label and press
+ * the control beside it, and nothing measured here distinguishes the two lists.
+ * Read that constant's header for where the ~800ms lower bound comes from and
+ * for what about the figure is judgement rather than measurement.
+ *
+ * **Why this list needed it too**, which issue #877 named and left unmeasured:
+ * a delivery leaves the window by *arriving*, `PROCUREMENT_DELIVERY_DELAY_TICKS`
+ * apart, and the rows are the three landing soonest -- so the head of this list
+ * is replaced on its own schedule with no press from the player, exactly as the
+ * queue's is when the crew finishes a wall. What a misfire costs here is a
+ * refund of the wrong amount on a purchase the player did not mean to cancel.
+ */
+export const PENDING_DELIVERY_ROW_SETTLE_MS = BUILD_QUEUE_ROW_SETTLE_MS;
+
+/**
  * What one pending delivery says it is, and what cancelling it gives back.
  *
  * Pure and exported for the reason `formatBuildQueueOrderText` is: the default
@@ -822,13 +1005,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * held here between publications so a quantity change alone can repaint
    * the buy button without waiting for the next one.
    *
-   * Zeroed and unfurnished until the first `setTreasury` call, which is the
-   * same "nothing published yet" reading `EMPTY_HUD_VIEW_MODEL.counts` gives
-   * every other figure on this HUD -- and, since the buy row cannot be open
-   * before a session exists to populate it, this default is never rendered.
+   * Zeroed and unfurnished until the first `setTreasury` call -- and since the
+   * buy row cannot be open before a session exists to populate it, this default
+   * is never rendered.
+   *
+   * **`EMPTY_HUD_VIEW_MODEL.counts` used to be the reading cited for that
+   * default, and it no longer exists** (issue #1191): a HUD that has heard from
+   * nobody carries no counts at all, and `hud.ts` withholds this setter rather
+   * than passing a fabricated `0` balance through it. The default below is this
+   * panel's own, which is what it always effectively was.
    */
   let treasuryMinorUnits = 0;
-  let treasuryRoomCapacity: number | undefined;
+  /**
+   * The published predicate, cached beside the balance it is judged with --
+   * not `counts.roomCapacity`, which this panel derived freshness from until
+   * 2026-09-15 and which cannot see a room instance registered under a
+   * room-catalog id the content registry does not define
+   * (`statusCountsSchema.isFreshUnfurnishedPrison`).
+   */
+  let treasuryFreshUnfurnishedPrison = false;
 
   const selectedBuildable = () => model.buildables.find((entry) => entry.definitionId === selectedId);
   const selectedMaterial = () => selectedBuildable()?.material;
@@ -952,9 +1147,36 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   };
 
   for (const buildable of model.buildables) {
+    /*
+     * The row's price, **formatted here and computed nowhere here** (issue
+     * #1160, constitution article 4).
+     *
+     * This read
+     * `buildable.material.unitPriceMinorUnits * buildable.material.quantityPerPlacement`
+     * until 2026-09-14, which is the interface recomputing a finance figure --
+     * and recomputing it over the first *purchasable* requirement rather than
+     * over all of them, so a buildable naming two materials would have been
+     * priced at part of its cost. `placementCostMinorUnits` in
+     * `src/simulation/economy/placement-cost.ts` is the simulation's own
+     * arithmetic, the composition root runs it, and what arrives here is a
+     * number to format. `HudLocalizer.formatNumber` stays the panel's job: ADR
+     * 0011 puts number formatting on this side of the boundary and the figure
+     * on the other.
+     *
+     * Formatted once at mount rather than repainted, unchanged: content
+     * supplies one price per unit and it never moves
+     * (`src/content/procurement-catalog.ts`), and `model.buildables` is itself
+     * supplied once at mount and not per snapshot -- see `HudBuildViewModel`.
+     * `undefined` for a buildable the simulation cannot price, which
+     * `buildCatalogueRowLabel` reads as "no price to state" rather than a bug.
+     */
+    const total =
+      buildable.placementCostMinorUnits === undefined
+        ? undefined
+        : localizer.formatNumber(buildable.placementCostMinorUnits);
     const row = createListRow({
       icon: 'build',
-      label: t(buildable.labelKey),
+      label: buildCatalogueRowLabel(t, buildable, total),
       onActivate: () => {
         selectedId = buildable.definitionId;
         paintCatalogue();
@@ -1152,6 +1374,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * Measured on the assembled page at all five viewports the browser suite
    * visits -- see `tests/browser/app-shell.spec.ts`.
    *
+   * **AMENDED 2026-09-04 (issue #926): that pair fitted the third BUTTON and
+   * not the third LABEL, and the paragraph above is left as it stands because
+   * it is the claim that was incomplete.** Letting the arm button shrink put
+   * it at 76.4px with an 87.9px label, and `primitives.css` had
+   * `.ui-action__label { white-space: nowrap }` with no `overflow` above it --
+   * so the arm label painted 17.8px outside its own button and 9.8px over
+   * *this* control at every viewport 900px wide or wider. Shortening this
+   * label further would not have helped: with the icon and `.ui-action`'s
+   * padding, the arm label had 18.4px of box to fit in. `hud.css` and
+   * `primitives.css` carry the fix and the whole measurement;
+   * `tests/browser/ui-build-arm-label-fit.spec.ts` is the gate, because the
+   * one this row already had reads the button's own box.
+   *
    * ### It is not the queue block, and the two do different work
    *
    * The panel has a per-order control now -- one per row of `.hud-build__queue`,
@@ -1203,22 +1438,39 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     children: [eyebrowText(t(HUD_MESSAGE_KEY.buildPlacement)), targetValue],
   });
 
-  const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
+  /*
+   * Its own class beside `.hud-build__note`, for the reason
+   * `.hud-build__queue-shortfall` has one: a rule has to be able to name *this*
+   * note and not the three others in this panel. `hud.css` needs it since #920
+   * -- the queued-order sentence is paid for out of this hint's fourth line --
+   * and a structural selector (`.hud-build__map > .hud-build__note`) would have
+   * meant a rule that silently changes meaning the next time a note joins or
+   * leaves this block.
+   */
+  const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note hud-build__arm-hint');
 
   /*
    * `hud.build.note` -- "An order is queued now and built while the clock
-   * runs." -- is in the shipped locale and in `HUD_MESSAGE_KEY` and is rendered
-   * by nothing. It has been that way since `67e366e` (2026-08-23), which
-   * replaced the coordinate steppers with pointing at the world and, in moving
-   * the submit button into the folded "Enter coordinates" section, deleted the
-   * `.hud-build__footer` the sentence shared with it.
+   * runs." -- and the sentence a paused newcomer needs (#920, and the owner's
+   * first ruling of 2026-08-30 in #639).
    *
-   * **The owner ruled on 2026-08-30 (#639) that it should render again, and it
-   * still does not, because this panel has no room for it. That is a
-   * measurement, not an opinion, and it is written here because the next reader
-   * of #639 will reach for exactly this spot.** Taken on the assembled page
-   * (issue #647), one prison saved, Build tab, nothing scrolled, the sentence
-   * appended to the map block below `armHint`:
+   * ### What this block said until 2026-09-04, and why both directions are kept
+   *
+   * It said the sentence *"is rendered by nothing"*, had been that way since
+   * `67e366e` (2026-08-23) -- which, in moving the submit button into the
+   * folded "Enter coordinates" section, deleted the `.hud-build__footer` the
+   * sentence shared with it -- and that the owner's ruling *"still does not"*
+   * reach the screen *"because this panel has no room for it"*. Every word of
+   * that was true when it was written, and the measurement under it was real:
+   * PR #647 restored the sentence **unconditionally** in this block, right
+   * here below `armHint`, and its own gate found the panel over its box. The
+   * renderer was dropped and the table was left where the next reader of #639
+   * would look for it. It is kept below rather than overwritten, because it is
+   * the claim that was overturned and `docs/AGENT_WORKFLOW.md` §4 asks for the
+   * direction to be marked.
+   *
+   * The table it carried, as it stood -- the sentence appended here, one prison
+   * saved, Build tab, nothing scrolled:
    *
    * | viewport | sentence | panel overflow | why |
    * | --- | --- | --- | --- |
@@ -1228,26 +1480,132 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * | 1280x720 | 26.4px, 2 lines | **4px** | list absorbs 22.4 of 26.4, then hits its floor |
    * | 900x600 | 26.4px, 2 lines | **23px** | list is *already* on its floor and absorbs nothing |
    *
-   * The catalogue list is this panel's only flexible member -- the thing
-   * `hud.css` lets it take height from, which ADR 0031 decision 3 already
-   * spends 45px of on the queue. At 900x600 it is on its two-row floor on
-   * arrival and its one-row floor with a queue, so there is nothing left to
-   * take: the panel's whole always-visible budget there is **7.8px** on arrival
-   * and **6.8px** queued.
+   * ### The measurement that replaces it, and it is worse rather than better
    *
-   * **And one clipped line does not fit either**, which is what makes this
-   * structural rather than tunable. Clamped to a single line by the
-   * `max-height: 700px` trims, the sentence still costs 17.2px against that
-   * 7.8px -- 9px of overflow on arrival and 10px queued. There is no smaller
-   * version of it.
+   * Re-taken on 2026-09-04 on the assembled page at `0e614c71` (v0.0.451), the
+   * same way -- `New prison`, Build tab, nothing opened, nothing scrolled, the
+   * sentence injected here from the test so that both readings come from one
+   * tree. **`.hud-build`'s `scrollHeight - clientHeight` with the sentence
+   * always laid out, against 0 without it at all five viewports:**
    *
-   * So it is not rendered here, and it is deliberately **not** put in a fold
-   * instead: a fold that starts shut is what #627 measured reaching nobody. The
-   * height has to come from somewhere, every candidate is a number pinned by
-   * `tests/browser/app-shell.spec.ts` under #88, #174, #285 and #390, and
-   * moving one of those is a decision with #174 attached rather than an
-   * implementation detail. Issue #647 carries the options and their costs.
+   * | viewport | sentence | panel overflow | then | now |
+   * | --- | --- | --- | --- | --- |
+   * | 1440x900 | 26.4px, 2 lines | 0 | 0 | unchanged |
+   * | 1024x768 | 26.4px, 2 lines | 0 | 0 | unchanged |
+   * | 375x812 | 13.2px, 1 line | 0 | 0 | unchanged |
+   * | 1280x720 | 26.4px, 2 lines | **27px** | 4px | **the list no longer absorbs any of it** |
+   * | 900x600 | 13.2px, clipped | **9px** | 23px | the clamp, and the clamp cuts the half that matters |
+   *
+   * The 1280x720 row is the one that moved, and the reason is that the
+   * catalogue list is now *already* on its two-row floor there: 238x88 on
+   * arrival, which is `--hud-build-catalogue-floor` exactly. In the tree the
+   * old table was taken on it still had 22.4px of slack to donate. So the
+   * always-laid-out placement did not become tunable in the year since -- it
+   * got 23px further away, at the viewport `HUD_LAYOUT_VIEWPORTS` puts first.
+   * The 900x600 row is the same 9px the old block derived for its clipped
+   * variant, so nothing about that viewport is in dispute.
+   *
+   * ### What this does instead, and why it costs the arrival state nothing
+   *
+   * **The sentence is laid out only while something is queued.** `paintQueue`
+   * owns it, on the one predicate the queue block itself is drawn on
+   * (`queue.total > 0`), so:
+   *
+   *   - **arrival is untouched.** Nothing is queued when a player loads the
+   *     game, so this element has no box, and `the Build panel arrives inside
+   *     its own fold, with nothing queued (#174)` measures the same panel it
+   *     measured before: 0 overflow at all five viewports, "Enter coordinates"
+   *     still ending 7.8px inside the fold at 900x600. That is the whole reason
+   *     the renderer can exist now when it could not in August -- the 17.2px
+   *     against 7.8px the commit message of `445f5465` called *"structurally
+   *     impossible"* was arithmetic about the **arrival** state, and this
+   *     sentence is no longer in it.
+   *   - **it appears in the state #920 is about**, which is the state where the
+   *     money has already left the treasury. Act 4 of
+   *     `docs/research/2026-09-04-the-first-ten-minutes.md` measured a newcomer
+   *     at `24 waiting / 0 being built`, tick `-1`, 1,920 spent, with `/clock/i`
+   *     false against the entire laid-out HUD.
+   *   - **and it is on screen there without scrolling.** Measured in the queued
+   *     state, the sentence's own box against the panel's unscrolled fold:
+   *     y=541.3..567.7 of 637.6 at 1280x720, 586.3..612.7 of 817.6 at 1440x900,
+   *     553.3..579.7 of 685.6 at 1024x768, 424.9..451.3 of 521.7 at 900x600 and
+   *     564.4..577.6 of 717.8 at 375x812. Inside the fold at every one.
+   *
+   * ### Why here and not beside the queue block
+   *
+   * Beside the queue block is where `queueShortfall` lives, and its argument --
+   * a readout the player must not go looking for is appended beside a fold and
+   * never inside one -- is the reason it was the other candidate #920 named.
+   * **It was measured and it loses.** Appended immediately after
+   * `queueSection.element`, the same sentence lands at y=866.2 of a 637.6 fold
+   * at 1280x720, 911.2 of 817.6, 878.2 of 685.6, 699.4 of 521.7 and 876 of
+   * 717.8: **below the fold at all five viewports, not one.** The queue block is
+   * the last thing in the body and the panel grows downward into its own
+   * scroll, so anything after it is past the fold in every state that has a
+   * queue in it. The map block is the second thing in the body, which is why
+   * the same sentence is visible from here and invisible from there.
+   *
+   * ### And it is not free here either -- what the first attempt broke
+   *
+   * `.hud-build__map` ends in the deliveries block (#703 ruling 2), and that
+   * block's spend line and **first refund** are guaranteed on screen with
+   * nothing opened and nothing scrolled -- the owner's ruling of 2026-08-31,
+   * asserted at every viewport by
+   * `tests/browser/build-deliveries-outside-the-fold.spec.ts`. In the loaded
+   * state it sits right against the panel's fold. Adding this sentence above it
+   * and giving nothing back pushed the first refund's Cancel *out*: y=607..651
+   * against a fold at 637.6 at 1280x720, and y=478.6..522.6 against 521.7 at
+   * 900x600. That went red, which is the gate doing its job, and it is why
+   * `hud.css` pays for this sentence out of the arm hint's fourth line rather
+   * than out of nothing. The table of what that comes to is there, beside the
+   * rule.
+   *
+   * What still moves: "Enter coordinates" and the queue block's header go down
+   * by 13.2px at the viewports where the clamp applies and 26.4px at 900x600.
+   * **Both are already below the panel's fold in this state before the note
+   * exists** -- coordinates at y=777.2 and the queue header at y=822.2 against
+   * a 637.6 fold at 1280x720, on unmodified `main` -- so what moves is content
+   * the player already reaches by scrolling, and it moves by one line.
+   *
+   * (That last fact is worth someone's attention separately: `hud.css`'s
+   * `.hud-build[data-queued]` block bought 45px specifically to keep the queue
+   * block's header above the fold, and #703's deliveries block has since taken
+   * it. Not this branch's to fix, and not caused by it.)
+   *
+   * ### The two placements that were measured and lost
+   *
+   * **Beside the queue block**, where `queueShortfall` lives, and which #920
+   * names as a candidate: appended immediately after `queueSection.element` the
+   * sentence lands at y=776.2 of a 637.6 fold at 1280x720, 821.2 of 817.6,
+   * 788.2 of 685.6, 609.4 of 521.7 and 786 of 717.8 -- **below the fold at five
+   * of the five short viewports**, in the fold only at 1920x1080. The queue
+   * block is the last thing in the body and the panel grows downward into its
+   * own scroll, so anything after it is past the fold in every state that has a
+   * queue in it.
+   *
+   * **After the deliveries block**, which costs that block nothing and was the
+   * obvious answer to the paragraph above: y=802.5, 847.5, 814.5, 635.8, 799.2
+   * against the same folds. Same verdict, same reason.
+   *
+   * A fold is still refused for the reason it always was: a fold that starts
+   * shut is what #627 measured reaching nobody. And a sentence below an
+   * unscrolled fold is the same defect wearing a scrollbar.
    */
+  const orderNote = eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note hud-build__order-note');
+  /*
+   * Hidden until `paintQueue` says otherwise, and `hidden` rather than an empty
+   * text node: an empty laid-out line still takes its gap.
+   *
+   * The class beside `.hud-build__note` is load-bearing rather than
+   * descriptive, exactly as `.hud-build__queue-shortfall`'s is, and it is
+   * load-bearing **twice** here. `.hud-build__note` is given an author
+   * `display` by `hud.css`'s `max-height: 700px` block, which beats the user
+   * agent's `[hidden] { display: none }`; and this element takes a second
+   * author `display` from that same block's clamp exemption. Both are answered
+   * by `.hud-build__order-note[hidden]` in `hud.css`, which is a class and an
+   * attribute against one class either way.
+   */
+  orderNote.hidden = true;
 
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
@@ -1268,7 +1626,22 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
     // One line either way, so the controls under it never move: the hint says
     // what the armed gesture does, and a removal does something else.
-    armHint.textContent = t(removing ? HUD_MESSAGE_KEY.buildRemoveHint : HUD_MESSAGE_KEY.buildArmHint);
+    //
+    // **Three sentences reach this line since issue #904, not two, and the
+    // third is a correction rather than an addition.** `buildArmHint`
+    // describes the wall gesture -- an edge click and a dragged run -- and was
+    // shown for every row in the catalogue, including the nineteen of twenty-one that place
+    // an object on a tile. There is no drag route for those at all
+    // (`ObjectTool.place` is one press, one tile) and they are addressed by a
+    // tile rather than by an edge, so the hint told a player arming a bed to
+    // do two things neither of which works.
+    //
+    // Chosen on `placesObject`, which is the same shape fact `onPlace` in
+    // `hud.ts` branches on to decide whether the numeric route sends
+    // `place-object` or `place-build-order`. Reading one field for both means
+    // the sentence cannot describe a gesture other than the one the panel
+    // would perform. Removal still wins over both: it names no row.
+    armHint.textContent = t(armedHintKey(selectedBuildable(), removing));
 
     // The numeric route follows the mode too, or the one submit button would
     // say "Place order" and clear a tile.
@@ -1381,6 +1754,40 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     },
   });
   buySubmit.element.classList.add('hud-build__buy-submit');
+
+  /**
+   * Sell back the same material the buy row is open on, in the same
+   * quantity the same stepper shows (ADR 0075 decision 3, invoked by ADR
+   * 0096 decision 3(b)).
+   *
+   * Beside `buySubmit` in the same disclosure rather than a fold of its own:
+   * both name the same material and reuse `quantityField`, so a second
+   * toggle and a second stepper would be two controls asking the same two
+   * questions the Buy row already asks. `paintBuy` already hides this row
+   * for a buildable nothing sells and for the removal gesture, on the same
+   * terms `buyToggle`'s own comment gives, because a purchase and a sale of
+   * a material nothing prices are both nothing to offer.
+   *
+   * **No `setUnavailable` and no pre-flight, unlike `buySubmit`.** #772's
+   * verdict exists because the host holds a published balance to check a
+   * charge against; there is no published count of what the container
+   * holds, so there is nothing honest to check a quantity against before the
+   * press. The press still lands and is still refused on its own terms --
+   * `session-commands.ts`'s `SellMaterials` branch records
+   * `sell.insufficient-stock` through the same `RefusalLog` every other
+   * command's refusal reaches the player through -- which is
+   * `cancel-material-purchase`'s own precedent for a control with no
+   * pre-check, applied here to stock instead of to a delivery in flight.
+   */
+  const sellSubmit: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildSell),
+    onActivate: () => {
+      const material = selectedMaterial();
+      if (material === undefined) return;
+      options.onSell({ itemId: material.itemId, quantity });
+    },
+  });
+  sellSubmit.element.classList.add('hud-build__sell-submit');
 
   /*
    * ---- what has been bought and has not arrived (#285, #703) -----------
@@ -1508,13 +1915,29 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * busy group, and `createBusyGroup` has `add` and no `remove`, so a block that
    * built a row per delivery would grow that group without bound over a session
    * and keep every dead button in it.
+   *
+   * **`orderId` is read at press time, and that is necessary and was never
+   * sufficient** -- the same correction `RosterRow` in `staff-panel.ts` records
+   * about itself, left unmade here when #877 closed because that pass never
+   * reached this block. Reading at press time makes the id **current**, not
+   * **the one the player read**. This block bound `rows[i]` to
+   * `deliveries[i]`, and a delivery leaves the window by *landing*, on the
+   * procurement clock and with no press from the player, so the head of the list
+   * was replaced while the player was reading it and every surviving purchase
+   * slid up one row. The `Cancel` under the pointer then refunded a different
+   * purchase for a different amount.
+   *
+   * `assignPooledRows` is what closes it, and `freedAtMs` is the state that rule
+   * needs from this row. Gated by `tests/browser/ui-pooled-rows-aim.spec.ts`.
    */
   interface DeliveryRow {
     readonly element: HTMLElement;
     readonly label: HTMLSpanElement;
     readonly cancel: ActionButton;
-    /** The delivery this row currently names, or `undefined` while it is hidden. */
+    /** The delivery this row currently names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /** When this place was last emptied. `assignPooledRows` reads it; see `PENDING_DELIVERY_ROW_SETTLE_MS`. */
+    freedAtMs: number | undefined;
   }
 
   const deliveryRows: readonly DeliveryRow[] = Array.from({ length: PENDING_DELIVERY_ROW_LIMIT }, (): DeliveryRow => {
@@ -1536,6 +1959,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         },
       }),
       orderId: undefined,
+      freedAtMs: undefined,
     };
     row.element.append(element('div', { className: 'hud-build__delivery-text', children: [label] }), row.cancel.element);
     row.element.hidden = true;
@@ -1607,11 +2031,27 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const buyShortfallId = nextUiId('hud-build-buy-shortfall');
   buyShortfall.id = buyShortfallId;
 
+  /*
+   * Buy and Sell, side by side rather than stacked (issue measured live: a
+   * second full-width row here pushes `deliveriesBlock` -- a *sibling* of
+   * `buyRow`, not a child of it -- far enough down that its third delivery
+   * row's Cancel control lands outside `.hud-build`'s visible box at 900x600.
+   * `tests/browser/app-shell.spec.ts`'s "a pending delivery is on the panel
+   * with the fold shut … (#285, #703)" measures exactly that box and caught
+   * it. One row of the same height Buy alone used to take, on
+   * `.hud-build__actions`'s own pattern (two buttons, `flex: 1 1 0`,
+   * `min-width: 0`), is what keeps this addition height-neutral.
+   */
+  const buySellRow = element('div', {
+    className: 'hud-build__buy-sell',
+    children: [buySubmit.element, sellSubmit.element],
+  });
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
-      buySubmit.element,
+      buySellRow,
       buyShortfall,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
@@ -1642,19 +2082,45 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   buyRow.id = buyRowId;
   buyToggle.element.setAttribute('aria-controls', buyRowId);
 
-  /** Clamps to what the selected material allows, then repaints what it costs. */
+  /** Clamps to what the selected material allows, then repaints what it costs and what selling it back would credit. */
   function setQuantity(value: number): void {
     const material = selectedMaterial();
     const ceiling = material === undefined ? value : material.maxQuantity;
     quantity = Math.min(Math.max(1, Math.trunc(value)), ceiling);
     quantityField.setValue(quantity);
     paintBuyTotal();
+    paintSellTotal();
+  }
+
+  /**
+   * What selling the stepper's quantity of the selected material would
+   * credit -- `paintBuyTotal`'s own shape, and simpler than it for the
+   * reason `sellSubmit`'s own comment gives: there is no verdict to mark,
+   * only a label to state, so this is the whole of what a quantity change
+   * repaints on the sell side.
+   */
+  function paintSellTotal(): void {
+    const material = selectedMaterial();
+    if (material === undefined) return;
+    const total = sellBackPreviewMinorUnits(material.unitPriceMinorUnits, quantity);
+    sellSubmit.setLabel(
+      t(HUD_MESSAGE_KEY.buildSellSubmit, {
+        count: quantity,
+        material: t(material.labelKey),
+        total: localizer.formatNumber(total),
+      }),
+    );
   }
 
   function paintBuyTotal(): void {
     const material = selectedMaterial();
     if (material === undefined) return;
-    const total = material.unitPriceMinorUnits * quantity;
+    // The charge `ProcurementSystem.purchase` will make, called rather than
+    // recomposed here -- the same seam `paintSellTotal` above uses for the sell
+    // side, and for the reason `purchasePreviewMinorUnits` states: this line
+    // read `material.unitPriceMinorUnits * quantity` until 2026-09-14, which is
+    // the panel computing a price (issue #1160, constitution article 4).
+    const total = purchasePreviewMinorUnits(material.unitPriceMinorUnits, quantity);
     buySubmit.setLabel(
       t(HUD_MESSAGE_KEY.buildBuySubmit, {
         count: quantity,
@@ -1728,13 +2194,21 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * keeping the press is what keeps it reachable.
      *
      * **Freshness, threaded exactly as `overdraftRemaining` threads it**
-     * (`src/ui/hud/projection.ts`): `treasuryRoomCapacity === 0`, never a
-     * bare `false`, because a fresh, unfurnished prison is judged against the
+     * (`src/ui/hud/projection.ts`): the published predicate, never a bare
+     * `false`, because a fresh, unfurnished prison is judged against the
      * shallower starter rung and a caller that silently answered "not fresh"
      * would reopen the -1,185/-1,250 gap PR #769 and #771's amendment closed
      * (`deliveriesRungFloorMinorUnits`'s own docblock).
+     *
+     * **That sentence read `treasuryRoomCapacity === 0` until 2026-09-15 and
+     * is corrected rather than overwritten, because the reason it gives is
+     * still the reason.** Deriving the predicate from `roomCapacity` was the
+     * host inventing a second definition of "fresh", and it answered
+     * differently from the worker's on any prison holding a room the content
+     * catalogue does not define -- the same defect this paragraph warns about
+     * wearing the opposite sign, and the one that actually shipped.
      */
-    const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
+    const isFreshUnfurnishedPrison = treasuryFreshUnfurnishedPrison;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
     buySubmit.setUnavailable(verdict.refused);
     /*
@@ -1852,8 +2326,30 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     deliveriesBlock.hidden = shown === undefined;
     if (shown === undefined) {
       for (const row of deliveryRows) {
+        /*
+         * **The settle window is forgotten here rather than stamped, and that
+         * is `paintQueue`'s correction one block over rather than a new
+         * decision.** This branch is *"nothing has asked"* and *"nothing is on
+         * the way"*, and `src/main.ts:2538` reaches it every time the player
+         * leaves the Build tab, because nothing refreshes this list from
+         * another tab. Stamping here is what #860's first version shipped for
+         * the queue: every place came back inside its window, **refused the
+         * publication that arrives when the player returns**, and -- with
+         * nothing further to publish until a delivery lands -- left the block
+         * drawing no rows at all. Measured on this branch before the
+         * correction: three purchases out, tab away, tab back, and
+         * `probe().rows` is `[]`.
+         *
+         * The rule is `pooled-row-binding.ts`'s: a place with **no box** carries
+         * no settle window, because the window exists so that a label the
+         * player may have read is not replaced under their pointer, and a place
+         * with no box had no label to read.
+         */
+        row.freedAtMs = undefined;
         row.element.hidden = true;
         row.orderId = undefined;
+        row.cancel.setUnavailable(true);
+        delete row.element.dataset['delivery'];
       }
       deliveriesCount.textContent = '';
       deliveriesMore.textContent = '';
@@ -1877,15 +2373,71 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // translated text.
     deliveriesBlock.dataset['pending'] = String(shown.total);
 
+    /*
+     * Which row names which delivery -- `assignPooledRows`, not
+     * `shown.deliveries[index]`, and the substitution is #860's fix applied to
+     * the list issue #877 named beside the two in the Staff panel and left
+     * unmeasured.
+     *
+     * The hazard is the queue's, arriving by a different route. A delivery
+     * leaves this window by **landing**, on the procurement clock and with no
+     * press from the player, so the head of the list is replaced while the
+     * player is reading it and every surviving purchase used to slide up one
+     * row. The `Cancel` beside the label then refunded a different purchase for
+     * a different amount -- and the id read at press time was that different
+     * purchase, so nothing on the code path could detect it. The remedy is the
+     * one that module's header argues for: a *place* names one purchase for as
+     * long as that purchase is in the window, and a new one only appears in a
+     * place that has been visibly blank for `PENDING_DELIVERY_ROW_SETTLE_MS`.
+     */
+    const byOrderId = new Map(shown.deliveries.map((delivery) => [delivery.orderId, delivery]));
+    const nowMs = performance.now();
+    const assignments = assignPooledRows(
+      deliveryRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
+      shown.deliveries.map((delivery) => delivery.orderId),
+      nowMs,
+      PENDING_DELIVERY_ROW_SETTLE_MS,
+    );
+
+    let drawn = 0;
     for (const [index, row] of deliveryRows.entries()) {
-      const delivery = shown.deliveries[index];
-      if (delivery === undefined) {
+      const assignment = assignments[index];
+      if (assignment === undefined || assignment.kind === 'empty') {
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.element.hidden = true;
         row.orderId = undefined;
+        row.label.textContent = '';
+        row.cancel.setUnavailable(true);
+        delete row.element.dataset['delivery'];
         continue;
       }
+      if (assignment.kind === 'holds-open') {
+        /*
+         * This place names nothing: its delivery has just landed or been
+         * cancelled, or it is still inside its settle window, or a row below it
+         * is occupied and giving this box up would slide that row up into
+         * whatever pointer is resting there -- which is the same defect by
+         * geometry instead of by binding. It keeps its box and loses everything
+         * else, and `row.orderId === undefined` in the handler above is the
+         * authority that stops a press; `setUnavailable` is the signal, for the
+         * reason the queue's own hold-open branch records about
+         * `createBusyGroup`.
+         */
+        if (row.orderId !== undefined) row.freedAtMs = nowMs;
+        row.orderId = undefined;
+        row.element.hidden = false;
+        row.label.textContent = '';
+        row.cancel.setUnavailable(true);
+        row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildDeliveryCancel));
+        delete row.element.dataset['delivery'];
+        continue;
+      }
+      const delivery = byOrderId.get(assignment.itemId);
+      if (delivery === undefined) continue;
+      drawn += 1;
       row.orderId = delivery.orderId;
       row.element.hidden = false;
+      row.cancel.setUnavailable(false);
       row.label.textContent = formatPendingDeliveryText(
         t,
         delivery,
@@ -1907,10 +2459,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       );
     }
 
-    // How many are behind the last row, and no control to reach them: the rows
-    // are the deliveries landing soonest, so they are the ones whose refunds are
-    // about to stop being available, and the rest come into view as those land.
-    const unlisted = Math.max(0, shown.total - shown.deliveries.length);
+    /*
+     * How many are behind the last row, and no control to reach them: the rows
+     * are the deliveries landing soonest, so they are the ones whose refunds are
+     * about to stop being available, and the rest come into view as those land.
+     *
+     * Counted against the rows this pass actually **drew** rather than against
+     * `shown.deliveries.length`, for the reason the queue's own "and N more"
+     * line is: a place holding its box open for a publication is a place the
+     * arriving purchase could not have, so counting the window instead would
+     * understate what the player cannot reach.
+     */
+    const unlisted = Math.max(0, shown.total - drawn);
     deliveriesMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildDeliveriesMore, { count: unlisted });
     deliveriesMore.hidden = unlisted === 0;
   }
@@ -1938,7 +2498,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * different request, and this is where it is made.
    *
    * `BUILD_QUEUE_ROW_LIMIT` carries the height measurement and the argument for
-   * showing the head of the queue rather than all of it.
+   * how many orders the pool holds a row for -- **sixty-four since #862, and
+   * this sentence used to say "showing the head of the queue rather than all of
+   * it"**. It said that because the list's height was the row count; it is now
+   * the list's own box (`.hud-build__queue-list` in `hud.css`), so the head of
+   * the queue is what the box shows and the whole of it is what the list holds.
    */
   let queue: HudBuildQueueViewModel | undefined;
 
@@ -2002,11 +2566,47 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     readonly cancel: ActionButton;
     /** The order this row names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /**
+     * The revision (ADR 0107) this row's last publication read for `orderId`
+     * -- `0` while the row names nothing, matching `ConstructionSystem
+     * .revisionOf`'s own answer for an id it holds nothing under. Kept in
+     * step with `orderId` for the same reason: `assignPooledRows` guarantees
+     * this field always names *this row's current occupant*, never a
+     * previous one, so a press reads the pairing this row is showing right
+     * now rather than one captured earlier and possibly re-pointed since.
+     */
+    revision: number;
     /** When this place was last emptied. `assignPooledRows` reads it; see `BUILD_QUEUE_ROW_SETTLE_MS`. */
     freedAtMs: number | undefined;
   }
 
-  const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
+  /**
+   * The pool: at most `BUILD_QUEUE_ROW_LIMIT` rows, created as the queue first
+   * needs them and reused for ever after.
+   *
+   * **Lazily rather than all at once, and that changed with #862 for a reason
+   * a test found.** The pool used to be built eagerly, `Array.from({ length:
+   * BUILD_QUEUE_ROW_LIMIT })`, which was free while the limit was three and is
+   * not free at sixty-four: `tests/browser/app-shell.spec.ts`'s #88 sweep
+   * asserts that the set of controls *never laid out in any state* equals an
+   * explicit exempt list, and sixty-four rows against the six orders that test
+   * places would have put fifty-eight `Cancel` buttons on that list. Extending
+   * a pinned list is allowed here; extending it by fifty-eight entries that
+   * move whenever this constant does is not the same thing as recording a
+   * genuine exemption, and the sweep's finding is real: a control that is never
+   * drawn is a control nothing can vouch for.
+   *
+   * Growing on demand costs nothing the eager version did not, and gives two
+   * things back. A session that never queues anything holds no rows at all, and
+   * the HUD's busy group -- `add` with no `remove` -- gains a member only when
+   * a queue has actually been that long. The bound the group depends on is
+   * unchanged, because it was never "created up front": it is that the pool has
+   * a **ceiling** and rows past it are reused rather than built.
+   */
+  const queueRows: QueueRow[] = [];
+
+  /** One row: two lines of readout, and the one control that withdraws it. */
+  function createQueueRow(): QueueRow {
     const label = valueText('', 'hud-build__queue-label');
     const state = eyebrowText('', 'hud-build__queue-state');
     const row: QueueRow = {
@@ -2038,12 +2638,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
            * order has left the window -- so a press reaches what the player was
            * looking at, or reaches nothing.
            */
-          const { orderId } = row;
+          const { orderId, revision } = row;
           if (orderId === undefined) return;
-          options.onCancelOrder(orderId);
+          options.onCancelOrder(orderId, revision);
         },
       }),
       orderId: undefined,
+      revision: 0,
       freedAtMs: undefined,
     };
     row.element.append(
@@ -2053,7 +2654,20 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     row.element.hidden = true;
     queueList.append(row.element);
     return row;
-  });
+  }
+
+  /**
+   * Grows the pool until it can draw `count` orders, and never past its
+   * ceiling.
+   *
+   * The clamp is here rather than at the call site because it is the invariant
+   * the busy group depends on, and an invariant that lives at one call site is
+   * one refactor away from living nowhere.
+   */
+  function ensureQueueRows(count: number): void {
+    const wanted = Math.min(count, BUILD_QUEUE_ROW_LIMIT);
+    while (queueRows.length < wanted) queueRows.push(createQueueRow());
+  }
 
   /**
    * Takes a row out of the list entirely: no order, no box, and nothing left on
@@ -2094,9 +2708,40 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const queueSection: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
-    // Collapsed when it appears, for the reason `BUILD_QUEUE_ROW_LIMIT` gives:
-    // a queue then costs this panel a header and a count, and costs it a list
-    // only when the player asks for one.
+    /*
+     * Collapsed when it appears, for the reason `BUILD_QUEUE_ROW_LIMIT` gives:
+     * a queue then costs this panel a header and a count, and costs it a list
+     * only when the player asks for one.
+     *
+     * **#862 asked whether it should arrive open, now that the list's box is
+     * bounded, and the answer is measured rather than argued.** Unfolding was
+     * tried and the probe reverted: the section goes from 45px to 201px, and
+     * the panel pays that 156px out of the catalogue's list, which is the one
+     * block `hud.css` lets it take height from. In the UI harness, with
+     * fourteen orders queued, arriving open put the panel's own overflow at 0 at
+     * 1440x900, 1280x800, 1280x720, 1024x768 and 375x812 -- so it *fits* there,
+     * by shrinking the catalogue's list from 245px of 924px of rows to 89px,
+     * two rows of twenty-one -- and at **12px over its box at 900x600 with
+     * nothing having scrolled**, where the catalogue is already flat on its
+     * one-row floor and has nothing left to give. That harness hands this panel
+     * 128.7px more rail than the assembled page does, so 900x600 is not the only
+     * viewport where it does not fit in the application.
+     *
+     * Both halves of that are reasons to leave it shut. The 12px is #174's shape
+     * -- laid out below the unscrolled fold -- and the 156px is the donation ADR
+     * 0031's acceptance is explicitly conditional on not making bigger: its
+     * status section promotes open question 4 to blocking and says the catalogue
+     * *"needs a surface of its own -- its own scroll, a filter, or a different
+     * donor -- before more rows arrive"*. A queue that arrived open would spend
+     * that donor twice.
+     *
+     * What #862 is actually about is reachable underneath: one press on a header
+     * that states the queue's whole length now reveals a control for every order
+     * in it, where before it revealed three of fourteen. Whether the fold should
+     * also arrive open -- a two-row catalogue against a queue the player never
+     * has to open -- is a trade between two player-visible surfaces and is the
+     * owner's, with the figures above.
+     */
     collapsed: true,
     trailing: queueCount,
     onToggle: (collapsed) => {
@@ -2125,6 +2770,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    *
    * `hidden`, not an empty box: a laid-out empty block still takes its gap and
    * its border.
+   *
+   * ## What the owner's ruling of 2026-09-06 (#1031) makes this block
+   *
+   * *"Świat ma rację -- licz po ukończeniu"* ("The world is right -- count on
+   * completion"): a bed that has been ordered and not yet built raises no
+   * capacity anywhere, so **this is the only readout in the interface that
+   * names it**. The ruling's second half -- *"whatever a player has ordered
+   * must be visible somewhere"* -- therefore rests on the predicate one line
+   * below. It is a `total > 0` and nothing else, which is what keeps `hidden`
+   * meaning "nothing is queued" rather than "nothing is being said". Measured
+   * against the projection this block draws from, in
+   * `tests/integration/capacity-counts-on-completion.test.ts`: every bed a
+   * player has pressed for is either standing in a room's capacity or named in
+   * that queue, at every tick, with no instant in which it is neither.
+   *
+   * A queued order is 151 ticks of a player's attention for a bed
+   * (`PROCUREMENT_DELIVERY_DELAY_TICKS` and then the work), so a change that
+   * made this block conditional on anything more than the queue's length would
+   * take the acknowledgement away rather than tidy it.
    */
   function paintQueue(): void {
     const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
@@ -2160,6 +2824,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // is about rather than standing over an empty queue.
       queueShortfall.textContent = '';
       queueShortfall.hidden = true;
+      /*
+       * The one sentence in this panel that says why a queue is not moving goes
+       * with the queue it is about (#920). Nothing queued is nothing waiting on
+       * the clock -- and, more to the point, the arrival state is the one place
+       * this panel has no height to spare: `orderNote`'s own block carries the
+       * 27px and 9px that an always-laid-out line costs there.
+       */
+      orderNote.hidden = true;
       delete panel.element.dataset['queued'];
       return;
     }
@@ -2171,6 +2843,23 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       count: shown.total,
       started: shown.started,
     });
+    /*
+     * Shown for the whole time a queue exists, and **not** narrowed to
+     * `shown.started === 0`, which was the other candidate and is the one that
+     * would have made the sentence false.
+     *
+     * `started` is 0 whenever the crew has not begun, and a stopped clock is
+     * only one of the reasons for that: a queue stalled on materials money has
+     * `started: 0` with the clock *running*, which is the state
+     * `queueShortfall` two lines below is about. Saying "built while the clock
+     * runs" into that state would name the wrong cause, and a sentence whose
+     * truth depends on which reason produced the zero is the fourth reservation
+     * in `AGENTS.md` -- a promise the code does not keep. As written the
+     * sentence is true of every state that has a queue in it: what it says is
+     * that the money is spent and the work is tick-driven, which does not stop
+     * being true while a wall is going up.
+     */
+    orderNote.hidden = false;
     /*
      * On the *panel*, not on the block, because it is what `hud.css` keys the
      * catalogue's floor on -- and that floor is where the 45px this block costs
@@ -2187,6 +2876,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * `hud.css` for what pays for it.
      */
     panel.element.dataset['queued'] = String(shown.total);
+
+    // The pool grows to what this publication needs before anything below reads
+    // `queueRows`, so a queue that has just become longer than any before it
+    // draws every order it can reach this pass rather than next time (#862).
+    // Capped at `BUILD_QUEUE_ROW_LIMIT`, same as `assignPooledRows`'s own input
+    // below is -- growing past what the loop can assign would be a pool no
+    // publication could ever fill.
+    ensureQueueRows(shown.orders.length);
 
     /*
      * Which row names which order -- `assignPooledRows`, not `orders[index]`,
@@ -2244,6 +2941,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          */
         if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.orderId = undefined;
+        row.revision = 0;
         row.element.hidden = false;
         row.label.textContent = '';
         row.state.textContent = '';
@@ -2257,6 +2955,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       if (order === undefined) continue;
       drawn += 1;
       row.orderId = order.orderId;
+      row.revision = order.revision;
       row.element.hidden = false;
       row.cancel.setUnavailable(false);
       row.label.textContent = formatBuildQueueOrderText(t, order, localizer.formatNumber(order.cancelRefundMinorUnits));
@@ -2276,15 +2975,20 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     }
 
     /*
-     * How many are behind the last row, and no control to reach them --
-     * `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
-     * the control that does take a whole run back.
-     *
      * Counted against the rows this pass actually **drew** rather than against
      * `shown.orders.length`, because those two are no longer the same number: a
      * row holding its box open for one publication is a row the arriving order
      * could not have, so a queue of twelve with three sent and two drawn has
      * ten behind the list and not nine.
+     *
+     * That also subsumes the other way `shown.orders.length` could be the wrong
+     * divisor (#862): a window longer than the pool, which nothing in
+     * production hands this panel -- `BuildQueueReader` asks for exactly
+     * `BUILD_QUEUE_ROW_LIMIT` rows -- but which a test that writes its own view
+     * model can. `drawn` cannot exceed `queueRows.length` either way, because
+     * the loop above assigns it by walking `queueRows` itself; a separate
+     * `Math.min(..., queueRows.length)` here would be guarding an invariant
+     * `drawn`'s own definition already guarantees.
      */
     const unlisted = Math.max(0, shown.total - drawn);
     queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
@@ -2443,6 +3147,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         }),
         targetBlock,
         armHint,
+        // Below the arm hint and above the buy disclosure, which is PR #647's
+        // placement kept rather than re-derived. See `orderNote` for the
+        // measurement that says it is the only one of the two candidates the
+        // player can read without scrolling.
+        orderNote,
         buyRow,
         /*
          * Outside `buyRow` and immediately below it (issue #703 ruling 2,
@@ -2532,18 +3241,21 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
-    // Every control that issues a command, which is now three kinds of them:
-    // the numeric route's submit, the buy button, and one cancel per pooled
-    // queue row. The rows are pooled precisely so that this list is fixed at
-    // mount -- the HUD's busy group has `add` and no `remove`.
+    // Every control that issues a command, which is now four kinds of them:
+    // the numeric route's submit, the buy button, the sell button, and one
+    // cancel per pooled queue row. The rows are pooled precisely so that this
+    // list is fixed at mount -- the HUD's busy group has `add` and no
+    // `remove`.
     controls: [
       submit.element,
       buySubmit.element,
+      sellSubmit.element,
       ...queueRows.map((row) => row.cancel.element),
       ...deliveryRows.map((row) => row.cancel.element),
     ],
     submitControl: submit.element,
     purchaseControl: buySubmit.element,
+    sellControl: sellSubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
     isRemoving: () => removing,
@@ -2558,7 +3270,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     },
     setTreasury(counts: HudCountsViewModel): void {
       treasuryMinorUnits = counts.treasuryMinorUnits;
-      treasuryRoomCapacity = counts.roomCapacity;
+      treasuryFreshUnfurnishedPrison = freshUnfurnishedPrison(counts);
       // A publication can arrive while the buy row is closed -- most
       // publications do -- and `paintBuyTotal` returns immediately for an
       // undisclosed row (`selectedMaterial()` reads whatever the catalogue
@@ -2576,6 +3288,28 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // string comparison the engine makes either way; the reason the old
       // sentence gave is gone, and the conclusion is not.
       paintBuyTotal();
+    },
+    standDown(): void {
+      /*
+       * The world's `Escape`, with no gesture left for it to take (#959).
+       *
+       * **The same five lines `setVisible(false)` runs below, and the same
+       * guard**, because "the tool is put down" has one meaning on this panel,
+       * and a transition written twice is how #689 came to be shipped twice. What
+       * differs is only what else goes: leaving the tab also drops the queue
+       * and the deliveries, because nothing refreshes them from another tab.
+       * The player is still looking at this panel, so those stay.
+       *
+       * `removing` goes with `armed`, for `toggleRemovalMode`'s reason: a
+       * panel whose "Remove" was still latched would hand back a pointer that
+       * deletes, on a press the player made to hold nothing.
+       */
+      if (!armed) return;
+      armed = false;
+      removing = false;
+      paintArmed();
+      paintBuy();
+      options.onArm(false, selectedId, false);
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

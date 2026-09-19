@@ -10,7 +10,7 @@ import {
 } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import type { HudAlertViewModel, HudCountsViewModel, HudEventNoticeViewModel, HudViewModel } from '../../src/ui/hud';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { reportedCounts } from '../helpers/hud-counts';
 import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 import { type Page, expect, test } from './network-changed-fixture';
@@ -49,7 +49,7 @@ import './ui-harness-api';
  * A Playwright spec runs in Node and may import `src/**`
  * (`ui-relocation-notice.spec.ts` and `app-shell.spec.ts` already do). So the
  * fixture is not a hand-written view model: it builds a prison with
- * `createNewSimulationRuntime`, walls and furnishes a cell, hires the three
+ * `createNewSimulationRuntime`, walls and furnishes a cell, hires the four
  * guards a sweep needs a spare from, admits twelve prisoners, runs sixteen
  * in-game days until its own sector-search duty confiscates something, then
  * puts the result through the production projection, the production wire
@@ -103,8 +103,15 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 
 /**
  * The prison of `tests/integration/contraband-search-duty.test.ts`, kept in
- * step with it deliberately: three guards so one is the spare a sweep is
- * walked by, twelve admissions spread out, sixteen in-game days.
+ * step with it deliberately: four guards, twelve admissions spread out,
+ * sixteen in-game days.
+ *
+ * **It was three until issue #996**, and the fourth hire is that change's
+ * price rather than a fixture preference: two of the four stand the derived
+ * sector's posts, the third is the reserve `claimableSearchGuardIds` withholds
+ * for incident response, and the fourth is the spare a sweep is walked by.
+ * With three this prison confiscates nothing at all and every assertion below
+ * would be about an empty chip.
  */
 function playedPrison(seed: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
@@ -113,7 +120,7 @@ function playedPrison(seed: number): SimulationRuntime {
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   stepTo(runtime, 200);
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 4; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));
   }
   for (let index = 0; index < 12; index += 1) {
@@ -156,8 +163,10 @@ function countsFor(seed: number): {
     payload: { tick: runtime.kernel.tick, schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION, counts: projected },
   }) as WorkerToMainMessage;
 
-  const counts = hudCountsFromWorkerMessage(message);
-  if (counts === undefined) throw new Error('the production translator said nothing about a counts publication');
+  // Through the shared narrowing helper since #1191 made the translator's
+  // answer three-state: a row, `'none'` for a stopped session, `undefined` for
+  // a message that said nothing.
+  const counts = reportedCounts(message);
   return {
     counts,
     categories: [...new Set(runtime.confiscations.all().map((event) => event.categoryId))].sort(),
@@ -314,7 +323,7 @@ test.describe('the contraband chip names what was found (#703 ruling 3)', () => 
      *
      * So the row was already 8px past its client width *before* this change,
      * driven by an existing state-driven badge -- the Prisoners chip's "11
-     * with no bed" (issue #609). The assertion was false of `main`, not of the
+     * not housed" (issue #609). The assertion was false of `main`, not of the
      * badge. **That is a finding about the strip at desktop width and it is
      * handed over rather than fixed here**: eight chips plus their badges do
      * not fit 1280x800, and nothing in the repository measured that until this

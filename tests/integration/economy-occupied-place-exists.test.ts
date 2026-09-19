@@ -146,7 +146,25 @@ function cycleOnePlankThroughThreeCells(): SimulationRuntime {
     // the just-in-time pass buys a plank for it at the press. **`Undo` is kept
     // rather than switched**, because it is still the gesture the exploit was
     // reported with and this file is the reproduction of that report.
-    submit(runtime, `undo-${String(index)}`, packCommand({ type: 'Undo' }));
+    /*
+     * **THE SENTENCE ABOVE IS KEPT AND ITS LAST CLAUSE IS NO LONGER TRUE OF THE
+     * COMMAND, WHICH IS WORTH MORE THAN A SILENT SWITCH.** ADR 0104 option 2
+     * ([#956](https://github.com/woogitsu/lockstate/issues/956), accepted by the
+     * owner on 2026-09-09) refuses a router-level `Undo` whose newest
+     * transaction is not the player's own latest action. The admission above is
+     * a later action, so **the exact gesture #585 was reported with can no
+     * longer be performed** -- a press there now answers a refusal and reaches
+     * no order at all.
+     *
+     * That closes the exploit's keystroke route on top of the economic close
+     * the 2026-09-01 ruling already gave it, and it means this file reproduces
+     * the *cost* of the report rather than its gesture. `undo()` is called
+     * directly so the cost is still measured on the same order by the same
+     * call; the refusal itself is measured in
+     * `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`.
+     */
+    runtime.construction.undo();
+    void index;
     expect(runtime.refusals.count, 'undoing a completed bed order must not be refused').toBe(0);
     stepBy(runtime, 60);
   }

@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { SIMULATION_ENUM_GROUPS, deriveSimulationMessageKey, type SimulationEnumGroup } from '../../src/content';
+import { MAX_RUN_SEGMENTS } from '../../src/rendering/build/edge-picking';
 import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../src/services/localization';
 import { BUILD_EDGES, DEFAULT_BUILD_EDGE } from '../../src/simulation/construction';
 import {
   BUILD_CATEGORY_ALL,
   BUILD_QUEUE_ROW_LIMIT,
   PENDING_DELIVERY_ROW_LIMIT,
+  armedHintKey,
   buildCatalogueFocusRing,
+  buildCatalogueRowLabel,
   buildCategoryOptions,
   buildEdgeChoiceOptions,
   edgeChooserShown,
@@ -85,6 +88,143 @@ describe('the HUD edge vocabulary matches the simulation', () => {
  * a DOM. Whether the control's box is actually hidden is a browser question and
  * is measured in `tests/browser/ui-shell.spec.ts`.
  */
+/**
+ * **The armed tool's hint must describe the gesture the armed tool performs**
+ * (issue #904).
+ *
+ * One line said *"Click a tile edge to place a wall. Drag along it to lay a
+ * run."* for all twenty-one catalogue rows, and nineteen of them place an
+ * object on a tile: `ObjectTool.place` takes one press on one tile and there is
+ * no drag route for it at all. So the hint told a player who had armed a Bed to
+ * do two things, neither of which works, and nothing failed -- `paintArmed` is
+ * reachable only through a mounted panel, which is why the choice is an
+ * exported pure function now and why these cases exist.
+ *
+ * Asserted against the *catalogue text* rather than against the key alone for
+ * the two arms that matter: a key is satisfied by any sentence, and what was
+ * wrong here was a sentence.
+ */
+describe('the armed hint says what the armed gesture does (#904)', () => {
+  const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+  const row = (placesObject: boolean): HudBuildableViewModel => ({
+    definitionId: placesObject ? 'bed-wooden' : 'wall-brick',
+    labelKey: 'content.buildable',
+    occupiesEdge: !placesObject,
+    placesObject,
+    categoryId: 'structure',
+    categoryLabelKey: 'category.structure',
+  });
+
+  it('tells an edge row to click an edge and drag a run', () => {
+    const hint = localizer.format(armedHintKey(row(false), false));
+    expect(hint).toContain('tile edge');
+    expect(hint, 'a run is the wall gesture and only the wall gesture').toContain('Drag');
+  });
+
+  it('tells a tile row to press a tile, and does not offer it a run', () => {
+    const hint = localizer.format(armedHintKey(row(true), false));
+    /*
+     * The three facts a press on this row is actually subject to.
+     * `ObjectPlacementService` asks `roomInstanceContaining` of the anchor and
+     * refuses `'outside-room'` when there is none, so the room is a rule and
+     * not a suggestion; and `ObjectTool.place` is "one press, one tile, one
+     * command", so there is nothing to drag.
+     */
+    expect(hint, 'a tile object is addressed by a tile').toContain('tile');
+    expect(hint, 'and refused outside a room -- `outside-room`').toContain('designated room');
+    expect(hint, 'there is no dragged run for an object').not.toContain('Drag');
+    expect(hint, 'and it is not an edge gesture').not.toContain('tile edge');
+  });
+
+  it('is the removal hint while removing, whatever is selected', () => {
+    // A removal names no buildable -- what goes is whatever is on the tile --
+    // which is the same reason it hides the edge chooser.
+    expect(armedHintKey(row(true), true)).toBe(armedHintKey(row(false), true));
+    expect(localizer.format(armedHintKey(row(true), true))).toContain('take it away');
+  });
+
+  it('falls back to the edge sentence when nothing is selected', () => {
+    // Not a judgement about the empty catalogue: `paintArmed` only reaches this
+    // with no row chosen, and the wall route is what a row answering `false` to
+    // both shape facts takes as well.
+    expect(armedHintKey(undefined, false)).toBe(armedHintKey(row(false), false));
+  });
+
+  it('gives the two arms different sentences, which is the whole of the fix', () => {
+    expect(localizer.format(armedHintKey(row(true), false))).not.toBe(
+      localizer.format(armedHintKey(row(false), false)),
+    );
+  });
+});
+
+/**
+ * **The catalogue row states its own price, before it is armed** (issue #901).
+ *
+ * All 21 rows used to show zero digits, in the visible label or anywhere
+ * else, with the price reachable only behind a press on the buy disclosure.
+ * `buildCatalogueRowLabel` is the fix, folding the price into the row's own
+ * label on `hud.security.hire`'s shipped shape -- and, since a wall or door
+ * row's cost is per segment rather than per press, it must say so or a drag
+ * of several would be underquoted by the same factor.
+ */
+describe('the catalogue row states its own price (#901)', () => {
+  const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+  const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+    parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
+  const row = (placesObject: boolean): HudBuildableViewModel => ({
+    definitionId: placesObject ? 'bed-wooden' : 'wall-brick',
+    // `object.bed.name` is `bed-wooden`'s real label key -- an object
+    // buildable is labelled by the object it places (`buildableLabelKey`,
+    // `src/main.ts`) -- so the assertions below check real catalogue text
+    // rather than a placeholder key, per `armedHintKey`'s own reasoning above.
+    labelKey: 'object.bed.name',
+    occupiesEdge: !placesObject,
+    placesObject,
+    categoryId: 'structure',
+    categoryLabelKey: 'category.structure',
+  });
+
+  it('states a flat price for a row that places one object with one press', () => {
+    expect(buildCatalogueRowLabel(t, row(true), '65')).toBe('Bed · 65');
+  });
+
+  it('names the unit for a row whose press can drag a run of several', () => {
+    // The exact defect a flat price would reproduce: a drag of several tile
+    // edges costs several times the quoted number, so the sentence must say
+    // "per segment" or it promises the smaller figure for the larger charge.
+    expect(buildCatalogueRowLabel(t, row(false), '80')).toBe('Bed · 80 per segment');
+  });
+
+  it('gives the two shapes different sentences, which is the whole of the fix', () => {
+    expect(buildCatalogueRowLabel(t, row(true), '80')).not.toBe(buildCatalogueRowLabel(t, row(false), '80'));
+  });
+
+  it('states no price for a buildable made of something nothing sells', () => {
+    // `total` is `undefined` exactly when `HudBuildableViewModel.material` is
+    // -- a real state (`purchasableMaterialFor` in `src/main.ts`), not a
+    // defect to paper over with an invented figure.
+    expect(buildCatalogueRowLabel(t, row(true), undefined)).toBe('Bed');
+  });
+
+  it('renders real catalogue text for the two shapes that ship today', () => {
+    // Asserted against the *catalogue text* rather than the key alone, for
+    // `armedHintKey`'s own reason above: a key is satisfied by any sentence,
+    // and what #901 found wrong was a sentence with no price in it at all.
+    const wallBrick: HudBuildableViewModel = {
+      definitionId: 'wall-brick',
+      labelKey: 'hud.build.buildable.wall-brick',
+      occupiesEdge: true,
+      placesObject: false,
+      categoryId: 'structure',
+      categoryLabelKey: 'category.structure',
+    };
+    const label = buildCatalogueRowLabel(t, wallBrick, localizer.formatNumber(80));
+    expect(label).toContain('Brick wall');
+    expect(label, 'the number a segment actually costs').toContain('80');
+    expect(label, 'the unit the number is per, or a run overcharges silently').toContain('per segment');
+  });
+});
+
 describe('the edge chooser and the edge a command carries agree', () => {
   const row = (occupiesEdge: boolean): HudBuildableViewModel => ({
     definitionId: occupiesEdge ? 'wall-brick' : 'bed-wooden',
@@ -427,6 +567,7 @@ describe('a queued row names its own order', () => {
     edge: 'north',
     state: 'assigned',
     cancelRefundMinorUnits: 80,
+    revision: 1,
     ...overrides,
   });
 
@@ -508,14 +649,35 @@ describe('a queued row names its own order', () => {
     expect(started).toContain(shipped.formatNumber(0));
   });
 
-  it('bounds how many rows the block ever holds', () => {
-    // Not a preference: `BUILD_QUEUE_ROW_LIMIT` carries the panel's height
-    // measurement and the argument for showing the head of the queue. A list
-    // that grew with the queue is what the 7.8px arrival budget forbids, and
-    // pooling the rows is what keeps the HUD's busy group -- which has `add` and
-    // no `remove` -- from growing over a session.
-    expect(BUILD_QUEUE_ROW_LIMIT).toBeGreaterThan(1);
-    expect(BUILD_QUEUE_ROW_LIMIT).toBeLessThanOrEqual(4);
+  it('holds a row for every order one gesture can place, and no more than a fixed pool', () => {
+    /*
+     * Two claims, and neither is a preference.
+     *
+     * **The floor is `MAX_RUN_SEGMENTS`.** A dragged wall run is clamped to that
+     * many segments and one segment is one `PlaceBuildOrder`, so it is the
+     * longest queue a player can produce without meaning to produce two -- and
+     * #862 measured what a smaller pool costs: with fourteen orders placed,
+     * three had a cancel control and eleven had no row in the DOM at all, at
+     * every viewport. The number is not imported into `src/ui/hud/`, which may
+     * not read `src/rendering/` (`AGENTS.md` boundary 1); this test may import
+     * both, which is where `MAX_ZONE_SIDE_TILES` states its own agreement with
+     * the simulation's ceiling too.
+     *
+     * **The ceiling is that the pool is fixed and small.** Each row's cancel
+     * button joins the HUD's busy group, `createBusyGroup` has `add` and no
+     * `remove`, and a block that built a row per order would grow that group
+     * without bound over a session. A fixed pool closes that at any size; what
+     * this bound refuses is a pool sized to a queue with no ceiling
+     * (`docs/HUD_PROJECTIONS.md` contract 5), which the projection's own paging
+     * comment measures at 328 orders.
+     *
+     * The height that used to bound this number does not any more, and that is
+     * the substitution #862 made: `.hud-build__queue-list` in `hud.css` caps the
+     * list's *box* at three rows with `overflow-y: auto` under it, so what the
+     * block costs the panel is the box and no longer the row count.
+     */
+    expect(BUILD_QUEUE_ROW_LIMIT).toBeGreaterThanOrEqual(MAX_RUN_SEGMENTS);
+    expect(BUILD_QUEUE_ROW_LIMIT).toBeLessThanOrEqual(MAX_RUN_SEGMENTS * 2);
   });
 });
 

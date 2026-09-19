@@ -8,6 +8,7 @@ import {
   restoreSimulationRuntime,
   SESSION_SNAPSHOT_SCHEMA_ID,
   SESSION_SNAPSHOT_SCHEMA_VERSION,
+  sessionSnapshotBundleFromTransport,
   type SessionSnapshotBundle,
 } from '../runtime/restore-session';
 import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
@@ -273,6 +274,24 @@ export class SimulationWorkerStateMachine {
    * second time (#261).
    */
   private _publishedRefusalSequence = 0;
+  /**
+   * Whether the refusal the main thread was last told about carried
+   * `routeDecidedSince` (ADR 0091 decision 2, option F).
+   *
+   * A second watermark beside the sequence rather than folded into it,
+   * because the flag turns over on a refusal whose `sequence` does not move:
+   * `RefusalLog.supersede` sets it on the *standing* record, and nothing about
+   * that record's ordinal changes. Without this the gate below would read
+   * "same sequence, nothing new" and suppress the one publication the band
+   * needs in order to retire the sentence -- the same failure mode
+   * `_publishedRefusalSequence`'s own comment describes for a refusal that
+   * moves no count, one field over.
+   *
+   * It is a boolean rather than a count because the fact is monotone per
+   * record: `false` -> `true` at most once, and a `record` that replaces the
+   * standing refusal moves `sequence` and opens the gate on its own.
+   */
+  private _publishedRefusalRouteDecided = false;
   /**
    * The `sequence` of the zoning notice the main thread was last told about,
    * `0` for none.
@@ -545,7 +564,7 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- twenty integers of counts beside at most one refusal record, which is
+   * -- twenty-one integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
    * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`
@@ -558,7 +577,10 @@ export class SimulationWorkerStateMachine {
    * nineteen until the owner's ruling 18 of 2026-08-31 added
    * `treasuryOverdraftFloorMinorUnits`, the treasury's own floor, without which
    * the strip could say the balance was negative and not how much of the
-   * facility was left. And
+   * facility was left, and twenty until issue #890 added
+   * `stateIncomeWithheldTodayMinorUnits` -- how much of today's grant unmet
+   * needs have kept back, which the prison's own roster showed the cause of
+   * and no readout anywhere showed the money of. And
    * the number is checked against the projection's own schema rather than
    * trusted (`tests/foundation/documentation-claims-contract.test.ts`).
    *
@@ -578,7 +600,10 @@ export class SimulationWorkerStateMachine {
 
     const refusal = this._runtime.refusals.last;
     const refusalSequence = refusal?.sequence ?? 0;
-    const refusalIsNew = refusalSequence !== this._publishedRefusalSequence;
+    const refusalRouteDecided = refusal?.routeDecidedSince === true;
+    const refusalIsNew =
+      refusalSequence !== this._publishedRefusalSequence ||
+      refusalRouteDecided !== this._publishedRefusalRouteDecided;
     // A newly designated room opens the interval gate for the reason a
     // refusal does, and with the same bound: both are player-initiated
     // events rather than levels, both are a field access to test, and each
@@ -598,6 +623,7 @@ export class SimulationWorkerStateMachine {
     if (!eventIsNew && this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
     this._publishedCounts = counts;
     this._publishedRefusalSequence = refusalSequence;
+    this._publishedRefusalRouteDecided = refusalRouteDecided;
     this._publishedZoningSequence = zoningSequence;
 
     this.post({
@@ -776,7 +802,16 @@ export class SimulationWorkerStateMachine {
     // of which the main thread should have to track (ADR 0059).
     const control = this._clock.control;
     const ticksPerWallSecond = (1_000 / this._clock.stepMilliseconds) * (control.mode === 'running' ? control.speed : 1);
-    const data = encodeRenderActorsKeyframe(this._runtime.prisoners, ticksPerWallSecond, this._runtime.securityGuards);
+    // ADR 0099 decision 3's marker, read off the world it is a marker for and
+    // published unexamined. `publishRenderDelta` is still strictly a read: the
+    // counter is incremented at the write sites that change what the renderer
+    // draws, never here.
+    const data = encodeRenderActorsKeyframe(
+      this._runtime.prisoners,
+      ticksPerWallSecond,
+      this._runtime.world.drawnWorldRevision,
+      this._runtime.securityGuards,
+    );
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),
@@ -863,6 +898,66 @@ export class SimulationWorkerStateMachine {
         ...(options.details === undefined ? {} : { details: options.details }),
       }
     });
+  }
+
+  /**
+   * Refuses a request that arrived after `simulation/shutdown`, with the fault
+   * code the vocabulary has carried for exactly this since it was closed.
+   * Answers `true` when it refused, so a handler reads
+   * `if (this.refusedBecauseShuttingDown(msg.messageId)) return;`.
+   *
+   * ## What this replaces, measured rather than described
+   *
+   * Issue #444 drove five request kinds through a shut-down state machine and
+   * got five different answers, *"none of them using the fault code named for
+   * it"*: `submit-command` got **no reply at all** and the caller waited out
+   * `WorkerSessionHost`'s 15-second timeout; `request-snapshot` got **a full
+   * session bundle, handed out during shutdown**; `request-projection` got a
+   * projection; `set-clock` got a refusal under the generic `'invalid-state'`;
+   * `ping` got a pong. Three of those are this method's callers and the fourth
+   * is the code change beside it.
+   *
+   * `'ping'` is deliberately not a caller. It is a liveness probe -- *"is this
+   * worker still answering"* -- and a worker mid-shutdown is, so a pong is the
+   * true answer rather than a gap. (Nothing in `src/` sends one either;
+   * `tests/foundation/message-kind-reachability-contract.test.ts` records that
+   * and records that whether to keep it is the owner's open decision on #274.)
+   *
+   * ## Why this is not a new decision
+   *
+   * [ADR 0024](../../../docs/adr/0024-protocol-fault-recoverability.md) §1 is
+   * accepted and settles the shape: a request that reached no simulation state
+   * *"must not end the session -- but it must be reported to the player, and
+   * the two are one decision rather than two."* Its own Context names this
+   * path's symptom in the same breath -- *"`handleSubmitCommand` returns
+   * **without replying at all**"* and *"a pending request waits out its 15 s
+   * timeout before reporting the wrong cause"*. So the refusal is
+   * `recoverable`, for the reason `RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND`
+   * states at the `not-initialized` guards: a request refused at the first
+   * line of its handler has touched nothing, and `fault()` therefore leaves
+   * `_state` where it is. **The worker stays `shutting-down` and this method
+   * changes no session's lifetime** -- which is what separates it from issue
+   * #444 item 2, the `recoverable` flag on the four *premature* guards, an
+   * amendment this does not make and does not need.
+   *
+   * ## What it is worth to a player
+   *
+   * `src/ui/simulation-alerts.ts` has mapped `'shutting-down'` to
+   * `hud.alert.fault.shutting-down` since that table was written, and
+   * `src/content/default-locale-en.ts` ships the sentence. Nothing could
+   * produce the code, so the sentence was a string the game could never say.
+   * A correlated `protocol/error` rejects the pending request the moment it
+   * arrives (`WorkerSessionHost.settle`), so a save or a command sent into a
+   * closing session is reported for what it is instead of resolving fifteen
+   * seconds later as a worker that did not reply.
+   */
+  private refusedBecauseShuttingDown(requestMessageId: string): boolean {
+    if (this._state !== 'shutting-down') return false;
+    this.fault('shutting-down', 'The session is shutting down; this request was not served.', {
+      replyTo: requestMessageId,
+      recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+    });
+    return true;
   }
 
   public handleMessage(msg: MainToWorkerMessage): void {
@@ -1012,7 +1107,7 @@ export class SimulationWorkerStateMachine {
       // `WorkerSessionHost` re-raise the right class on the other side without
       // reading a message string.
       try {
-        this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
+        this._runtime = restoreSimulationRuntime(sessionSnapshotBundleFromTransport(snapshot.data)).runtime;
       } catch (error) {
         const reason = restoreFailureReasonOf(error);
         const detail = error instanceof Error ? error.message : String(error);
@@ -1075,6 +1170,12 @@ export class SimulationWorkerStateMachine {
   }
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {
+    // Before the generic guard below, which would otherwise answer a shut-down
+    // session under `'invalid-state'` -- *"the simulation cannot do that right
+    // now"*, true but the least specific true thing available. Same refusal,
+    // same `recoverable: true`, same terminal state untouched; only the code
+    // and the sentence the player is shown change.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
     if (this._state !== 'paused' && this._state !== 'running') {
       // Recoverable, for the reason stated once at the three `not-initialized`
       // guards and applying unchanged here: no clock was set, so no simulation
@@ -1112,8 +1213,15 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
-    if (this._state === 'shutting-down' || this._state === 'faulted') {
-      return; // Ignore commands during shutdown
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
+    if (this._state === 'faulted') {
+      // Unchanged, and deliberately not folded into the refusal above. A
+      // faulted worker has *already* posted the `protocol/error` that says so,
+      // and the vocabulary has no code meaning "this worker is faulted" to
+      // post a second one with. Whether a silent drop is right here at all is
+      // the other half of issue #444 item 2, and it is not answered by giving
+      // `shutting-down` the emitter it never had.
+      return;
     }
 
     let accepted = false;
@@ -1255,6 +1363,15 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
+    // After the kernel guard and before the capture, because the capture is
+    // the thing being refused: issue #444 measured this handler answering a
+    // post-shutdown request with **a full session bundle**. A shut-down
+    // session is not a state a save may be taken of. The main-thread path that
+    // can arrive here is named in `SessionController.closeSession`: autosave's
+    // `dispose()` cancels pending timers and *"does not await a capture
+    // already past its `state = 'saving'` line"* (issue #582 FINAL-004), so a
+    // capture in flight when the shutdown is sent can land after it.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
 
     const bundle = captureSessionSnapshot(this._runtime);
     this.post({
@@ -1346,6 +1463,14 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
+
+    // The reachable one of the three, and the reason this guard is here rather
+    // than only on the two above. A panel's readouts are registered once at
+    // boot over `SimulationMessageChannel` and *"have to keep working across a
+    // worker swap without knowing one happened"* (#149,
+    // `src/ui/simulation-projections.ts`), so an open panel goes on asking a
+    // worker that the session layer has already told to shut down.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
 
     const { projectionId, offset, limit, target } = msg.payload;
     const entry = PROJECTION_CATALOG[projectionId];

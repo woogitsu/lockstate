@@ -10,6 +10,7 @@ import type { CarryJobExecutor } from '../operations/carry-executor';
 import type { CarryItemJob } from '../operations/job';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import { DEFAULT_ACTIONS, type ActionDefinition } from './actions';
+import { INFIRMARY_TREATMENT_ACTION_ID, treatmentTicksFor } from './injury';
 import {
   ACTION_PHASES,
   actionIndexOf,
@@ -22,13 +23,58 @@ import {
   type SubstitutionRecordComponent,
 } from './components';
 import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
-import { findRegimeSchedule, resolveActiveRegimeBlock, type ActionCategory, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
   return ACTION_PHASES.indexOf(phase);
 }
+
+/**
+ * The intake stages at which a prisoner has a day at all --
+ * [ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * decision 1, accepted by the owner on 2026-09-07, in the owner's own words
+ * *"ADR: nieulokowany ma móc jeść i się myć"* ("an unhoused prisoner must be
+ * able to eat and wash").
+ *
+ * **`update` used to admit `'completed'` alone, and that one line was issue
+ * #1064.** A prisoner the prison has classified but not yet housed sat outside
+ * this system entirely -- not routed to a narrower set of legal actions, not
+ * given a fallback, never considered -- while `NeedsDecaySystem` decayed all
+ * six of their needs from the tick they were admitted. `IntakeSystem`'s
+ * `'accommodation-assignment'` stage retries with no timeout for as long as no
+ * instance of their target room type is free, so "not yet housed" is not a
+ * transient: measured on one bed and two admissions, the second prisoner's
+ * hunger reached 0 at about tick 4,900 and stayed there for the rest of the
+ * run.
+ *
+ * **What is in, and what is deliberately not.**
+ *
+ * - `'accommodation-assignment'` is in. It is exactly "classified, has a real
+ *   target room type, waiting for an instance of it to free up", which is the
+ *   population the owner's ruling names.
+ * - `'queued'`, `'reception'` and `'classification'` stay out, and not as a
+ *   matter of degree: `classificationGroupIndex` is written *during* the
+ *   `classification` stage, and `planIdleSelection` resolves a regime schedule
+ *   from it, so admitting those three would need a timetable to resolve
+ *   against a group that does not exist yet.
+ * - `'failed'` stays out. ADR 0102 decision 1 **recommends** including it, on
+ *   `PrisonerDischargeSystem`'s `SENTENCE_BEARING_STAGES` precedent, and the
+ *   Status section of that document is equally explicit that the owner's
+ *   acceptance *"does not decide `failed`'s inclusion (Decision §1's
+ *   recommendation stays a recommendation)"*. So it is left where the owner
+ *   left it, and open question 2 of that document is where it is decided.
+ *
+ * A `Set` of indices rather than a list of stage names compared one at a time:
+ * `intakeStage` stores the index, this is read once per live prisoner per
+ * tick, and building it from `intakeStageIndex` keeps the single spelling of
+ * each stage that `components.ts` owns.
+ */
+const ACTION_ELIGIBLE_INTAKE_STAGE_INDICES: ReadonlySet<number> = new Set([
+  intakeStageIndex('accommodation-assignment'),
+  intakeStageIndex('completed'),
+]);
 
 /**
  * One prisoner and how badly they want what they are about to ask for -- the
@@ -172,6 +218,25 @@ export const DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER: PrisonerRouteContextResolv
  * the same fact and the one that drifts when the id is renamed.
  */
 const CARRY_ACTION = DEFAULT_ACTIONS.find((action) => action.target.kind === 'job-board');
+
+/**
+ * The one entry of `DEFAULT_ACTIONS` that clears
+ * `PrisonerRecordComponent.injured` (issue #589).
+ *
+ * Resolved once from the catalogue rather than per prisoner per cycle, the same
+ * way `CARRY_ACTION` above is -- **and by id rather than by a structural
+ * property, which is the opposite of that constant's rule and is deliberate.**
+ * The carry is identified by `target.kind` because "the entry whose target is a
+ * job" is a fact about the shape that no second entry can ever share. Treatment
+ * has no such property: it targets a room with a required capability exactly as
+ * the shower, the canteen meal, the classroom and both work entries do, so any
+ * structural test would be a description that a sixth room action could
+ * accidentally satisfy. The id is the fact. `injury.ts` exports it, and
+ * `tests/unit/prisoners-action-catalog.test.ts` is what fails if the catalogue
+ * stops carrying an entry with that id -- which is what makes the
+ * `undefined` arm below unreachable rather than merely unreached.
+ */
+const TREATMENT_ACTION = DEFAULT_ACTIONS.find((action) => action.id === INFIRMARY_TREATMENT_ACTION_ID);
 
 /**
  * What a candidate action resolved to: a room to walk to, or a job to walk for.
@@ -325,7 +390,22 @@ export class ActionSystem implements SystemRegistration {
      * rather than in the statement that resolved the route.
      */
     private readonly locomotion: LocomotionStore,
-    private readonly regimeSchedules: readonly RegimeSchedule[],
+    /**
+     * The session's live timetables, read through an accessor rather than
+     * captured as an array
+     * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)).
+     *
+     * The paragraph below explains why this field had no setter, and its
+     * objection is the one ADR 0113 answers rather than waives: the array is
+     * now `RegimeScheduleRegistry`'s, it is written into the save's
+     * `simulation.regimeSchedules` section and restored from it, so an edited
+     * timetable no longer reverts on load. An accessor and not a registry
+     * reference because this system needs exactly one thing from it -- the
+     * schedules as of this tick -- and a fixture that has no registry can pass
+     * `() => DEFAULT_REGIME_SCHEDULES` and be in precisely the state it was in
+     * before this change.
+     */
+    private readonly regimeSchedules: () => readonly RegimeSchedule[],
     private readonly routeContextResolver: PrisonerRouteContextResolver = DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER,
     /**
      * What an incident is imposing on this prisoner's day in place of their
@@ -340,6 +420,17 @@ export class ActionSystem implements SystemRegistration {
      * it needs every close path to remember to write it back. Resolving at the
      * point of use has none of those properties, and the array a session was
      * constructed with is still the only timetable it holds.
+     *
+     * **Its last clause stopped being true on ADR 0113 and the paragraph is
+     * kept rather than rewritten, because its first three reasons are still
+     * the reasons an override is not a schedule edit.** The schedules are no
+     * longer "the array a session was constructed with": they are
+     * `RegimeScheduleRegistry`'s, they are in the save, and `EditRegimeBlock`
+     * writes them. What did *not* change is this resolver -- the second and
+     * third objections above (an override is per prisoner, not per group, and
+     * a written-down override needs every close path to unwrite it) are
+     * untouched by a schedule being persisted, so an open riot still replaces
+     * a day at the point of use and is still never written into a schedule.
      *
      * Defaults to naming no override, which is what a fixture with no incident
      * pipeline wants: `PrisonerOperationsRuntime` can be stood up alone, and
@@ -490,9 +581,54 @@ export class ActionSystem implements SystemRegistration {
 
     for (const entityId of this.query.execute()) {
       const index = this.store.getIndex(entityId);
-      if (this.records.intakeStage[index] !== intakeStageIndex('completed')) continue;
-
       const phase = ACTION_PHASES[this.currentAction.phase[index]!]!;
+
+      if (!ACTION_ELIGIBLE_INTAKE_STAGE_INDICES.has(this.records.intakeStage[index]!)) {
+        /*
+         * **A prisoner who leaves the eligible set mid-action, which is a
+         * fourth exit ADR 0102 creates and does not itself name.**
+         *
+         * There is exactly one such transition, because the set is
+         * `{'accommodation-assignment', 'completed'}` and nothing moves a
+         * prisoner out of `'completed'`: `IntakeSystem` sends an
+         * `'accommodation-assignment'` prisoner to `'failed'` on the tick the
+         * prison holds no instance of any room type their classification group
+         * may be housed in. Before the widened gate an unhoused prisoner held
+         * no claim and stood in no action, so this cost nothing; now they can
+         * be eating in the canteen when it happens.
+         *
+         * **How a player reaches that transition is read rather than driven**,
+         * and is recorded as such: `RoomZoningService.unzone` refuses only on
+         * an instance with a live *use* claim or with residents it cannot
+         * relocate, so the last housing room of a group can be un-zoned while
+         * an unhoused prisoner of that group is eating somewhere else. No
+         * fixture in this repository drives that sequence end to end, and the
+         * unit case that covers this branch writes the stage by hand and says
+         * so. The guard is here anyway, because the failure it prevents is
+         * silent -- a seat held for the rest of the session by a prisoner
+         * `update` will never look at again -- and because it costs one
+         * comparison on the path of every prisoner still in intake.
+         *
+         * Left alone, the `continue` below would be the one exit from
+         * `performing` that forgot to release, against `releaseUseClaim`'s own
+         * "one release site per exit, asked unconditionally" argument -- and
+         * the seat would be held by a prisoner nothing will ever look at
+         * again, for the rest of the session.
+         *
+         * `phase === 'idle'` covers every prisoner still inside the intake
+         * pipeline and every `'failed'` record that never began anything, so
+         * the ordinary case pays one comparison and writes nothing.
+         *
+         * No `unmetDemandCycles`, following `continuePerforming`'s own
+         * convention: this is bookkeeping that can no longer be read back
+         * rather than a demand the prison refused. And no carry is possible
+         * here -- `planIdleSelection` refuses every `'work'` action to a
+         * prisoner at `'accommodation-assignment'` (ADR 0102 decision 2), so
+         * the only action such a prisoner can be holding targets a room.
+         */
+        if (phase !== 'idle') this.abandonActionOnIneligibleStage(entityId, index);
+        continue;
+      }
 
       if (phase === 'performing') {
         this.continuePerforming(entityId, index, context.tick);
@@ -625,17 +761,57 @@ export class ActionSystem implements SystemRegistration {
     }
 
     const elapsed = tick - this.currentAction.phaseStartedAtTick[index]!;
-    if (elapsed >= action.minDurationTicks) {
+    if (elapsed >= this.requiredDurationOf(entityId, action)) {
       // Released before the target is cleared, because the release needs the
       // instance id the target holds. ADR 0029 settles ADR 0028's own open
       // question 7 here: the claim ends when the *action* ends, not when the
       // actor leaves the tile, because an abstracted arrival gives this model
       // no departure event to hang the other answer on.
+      //
+      // **Before the release, because the flag is what the course was for**
+      // (issue #589). A completed course of `action.infirmary-treatment`
+      // clears `injured`; every other action reaches this line having changed
+      // nothing but need levels, exactly as before.
+      if (action === TREATMENT_ACTION) this.records.injured[index] = 0;
       this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       this.actionsCompleted += 1;
     }
+  }
+
+  /**
+   * How long this performance of `action` has to last, which is
+   * `action.minDurationTicks` for every entry in the catalogue but one.
+   *
+   * **`action.infirmary-treatment` is the exception, and the exception is where
+   * `'medical-supply'` acquires its first reader** (issue #589). A course takes
+   * the catalogue's figure on a bare medical bed and half of it in a room that
+   * also holds a `medical-supply` object -- `object.medicine-cabinet`, which
+   * `room.infirmary` requires and which nothing in this repository read before
+   * this method. `treatmentTicksFor` is the rule and `injury.ts` carries where
+   * the factor of two comes from.
+   *
+   * Read off the **target instance's** derived capabilities rather than off a
+   * sitewide count, so it is a property of the room the prisoner is actually
+   * lying in: a prison with a stocked infirmary and a bare one treats at two
+   * speeds, and which one a prisoner gets is which room `findAvailableForUse`
+   * gave them. `objectCapabilities` is recomputed from placements by
+   * `RoomCapacityResolver` on every placement, removal, zoning and restore, so
+   * it is never persisted and a save round trip cannot disagree with it -- the
+   * same property that lets `deriveRoomCapacity` stay out of the payload.
+   *
+   * An instance that has gone missing falls back to the catalogue figure. It is
+   * unreachable from here -- the caller has already returned for exactly that
+   * state, a few lines above -- and the fallback is the *slower* branch either
+   * way, which is the direction that cannot invent a shorter course than the
+   * content promises.
+   */
+  private requiredDurationOf(entityId: number, action: ActionDefinition): number {
+    if (action !== TREATMENT_ACTION) return action.minDurationTicks;
+    const instanceId = this.coldState.getActionTarget(entityId);
+    const instance = instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
+    return treatmentTicksFor(action.minDurationTicks, instance?.objectCapabilities ?? []);
   }
 
   /**
@@ -749,6 +925,28 @@ export class ActionSystem implements SystemRegistration {
   private releaseUseClaim(entityId: number): void {
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     if (targetInstanceId !== undefined) this.roomInstances.releaseUse(targetInstanceId, entityId);
+  }
+
+  /**
+   * Gives back everything a prisoner was holding when their intake stage left
+   * the set `update` will look at again -- the exit ADR 0102's widened gate
+   * creates. The call site carries the argument for why it exists; this is the
+   * four statements, in the order the other exits use them.
+   *
+   * `cancelWalk` and `abandonRoute` are both total on a prisoner who was
+   * `performing` rather than `travelling` (no walk, no outstanding request),
+   * and `releaseUseClaim` is total on one who was `travelling` (ADR 0029
+   * decision 2: a traveller holds no claim). So the two phases share one path
+   * rather than branching, exactly as `releaseUseClaim` argues for being
+   * ungated on `target.kind`: the case that most needs the release is the case
+   * a branch would skip.
+   */
+  private abandonActionOnIneligibleStage(entityId: number, index: number): void {
+    this.locomotion.cancelWalk(index);
+    this.abandonRoute(entityId);
+    this.releaseUseClaim(entityId);
+    this.currentAction.phase[index] = phaseIndex('idle');
+    this.coldState.setActionTarget(entityId, undefined);
   }
 
   /**
@@ -1169,33 +1367,6 @@ export class ActionSystem implements SystemRegistration {
   }
 
   /**
-   * What one idle prisoner *wants* this cycle, and how badly -- the half of the
-   * old `beginNextAction` that reads nothing but the prisoner.
-   *
-   * Split out for issue #434, so that the whole idle population can be planned,
-   * reordered by `compareByNeedUrgency` and only then executed. Everything it
-   * touches is that prisoner's own state plus the tick, so the split changes no
-   * answer: the block comes from a gapless schedule, the candidates from
-   * `DEFAULT_ACTIONS` filtered by that block, and the ranking from
-   * `rankActions`' total order over needs. `resolveTargetInstance` -- the one
-   * step that looks at a room and at the claims other prisoners have taken --
-   * stays in `beginNextAction` below, which is what keeps a claim visible to
-   * everybody scanned after the prisoner who took it.
-   */
-  /**
-   * The regime block this prisoner is under at `tick` -- their own override
-   * where one stands, their classification group's timetable otherwise.
-   *
-   * Split out of `planIdleSelection` so that `arrive` can ask the same question
-   * without planning a selection, and so the two cannot answer it differently.
-   */
-  private activeBlockCategories(entityId: number, index: number, tick: number): readonly ActionCategory[] {
-    const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
-    return resolveActiveRegimeBlock(schedule, tick).allowedCategories;
-  }
-
-  /**
    * Is there an errand this prisoner could be given right now?
    *
    * **Two ways, and the second is what makes a restore need no new field**
@@ -1230,6 +1401,20 @@ export class ActionSystem implements SystemRegistration {
     return this.carry.board.availableJobsSorted().length > 0;
   }
 
+  /**
+   * What one idle prisoner *wants* this cycle, and how badly -- the half of the
+   * old `beginNextAction` that reads nothing but the prisoner.
+   *
+   * Split out for issue #434, so that the whole idle population can be planned,
+   * reordered by `compareByNeedUrgency` and only then executed. Everything it
+   * touches is that prisoner's own state plus the tick, so the split changes no
+   * answer: the block comes from a gapless schedule, the candidates from
+   * `DEFAULT_ACTIONS` filtered by that block, and the ranking from
+   * `rankActions`' total order over needs. `resolveTargetInstance` -- the one
+   * step that looks at a room and at the claims other prisoners have taken --
+   * stays in `beginNextAction` below, which is what keeps a claim visible to
+   * everybody scanned after the prisoner who took it.
+   */
   private planIdleSelection(entityId: number, index: number, tick: number): PlannedSelection {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
     // The override, where one stands, *replaces* the timetable rather than
@@ -1238,7 +1423,7 @@ export class ActionSystem implements SystemRegistration {
     // is unchanged: the block is still resolved from a gapless schedule, the
     // candidates are still `DEFAULT_ACTIONS` filtered by the block, and the
     // walk is still ADR 0041's.
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
+    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules(), classificationGroupId);
     const block = resolveActiveRegimeBlock(schedule, tick);
     /*
      * **`action.carry` is filtered out entirely unless there is an errand to
@@ -1247,11 +1432,97 @@ export class ActionSystem implements SystemRegistration {
      * still shift `providedIndex` and the substitution counters for every
      * prisoner in every work block, in every prison that has never seen a job.
      */
+    /*
+     * **Work is refused to a prisoner still waiting for a bed, explicitly, and
+     * that is ADR 0102 decision 2 declining to answer a question rather than
+     * answering it.**
+     *
+     * The rest of that decision is a *structural* boundary and needs no list:
+     * `prisonProvides`'s `own-accommodation` branch already answers `false`
+     * for a prisoner `getAccommodation` has nothing for, so sleep, the in-cell
+     * meal, the toilet and free association stay unreachable with no code
+     * here. `action.laundry-work`, `action.kitchen-work` and `action.carry`
+     * are the three that would slip through it: none of them needs a cell, so
+     * the structural test admits them by default. Whether an unhoused prisoner
+     * should hold a job -- do they get paid the same way, does an assignment
+     * wait for them the way a bed does, does a work block mean anything before
+     * a regime is settled -- is a separate document's question, and ADR 0102
+     * requires the implementing pass to close it rather than let it be
+     * answered by omission.
+     *
+     * Keyed on the intake stage and not on "has no accommodation": a *housed*
+     * resident whose bed is taken away is
+     * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+     * population, at stage `'completed'`, and nothing here is meant to change
+     * what they may do.
+     */
+    const awaitingAccommodation = this.records.intakeStage[index] === intakeStageIndex('accommodation-assignment');
+    /*
+     * **Taking an errand and resuming one are two decisions, and issue #882 is
+     * what it cost to spell them with one predicate.**
+     *
+     * `action.carry` is category `'work'`, so this gate used to read
+     * `isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories) &&
+     * this.carryAvailableFor(entityId)`. `carryAvailableFor` answers the
+     * resumption question correctly -- a prisoner whose own `activeJobFor` is
+     * defined is eligible whatever else the board holds -- but `&&`
+     * short-circuits before it the moment the work block ends, so a prisoner
+     * **already holding the goods** was filtered out of their own errand and
+     * selected something else while carrying it.
+     *
+     * That contradicts [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)'s
+     * Consequences in the ADR's own words -- *"A carry outlasts its block.
+     * Like every action, it is not cut at a regime boundary; a prisoner who
+     * picked up at 1,795 finishes the drop-off in the recreation block"* --
+     * and it contradicted them **only across a restore**, because continuous
+     * play keeps the carrier in `travelling`/`performing` and never re-enters
+     * this method. `PrisonerOperationsRuntime.loadSnapshot` drops every
+     * restored traveller to `'idle'`, which is the one restore rule decision 5
+     * (as corrected by its own landing note 2) deliberately relies on to
+     * resume a carrier without adding a field or a path. It only works if the
+     * re-selection it forces answers the way the uninterrupted action would
+     * have.
+     *
+     * **So the rule this line now carries is general, and it is worth more
+     * than the carry:** a restore may not ask a question continuous play never
+     * asks, and where it is forced to ask one it must get the answer the
+     * unbroken action already had. The regime gate is about *sending* a
+     * prisoner on an errand; it has nothing to say to a prisoner who is
+     * already on one and whose hands are full.
+     *
+     * Nothing here widens who may *take* an errand. `activeJobFor` is a keyed
+     * read of the asking prisoner's own assignment (see `carryAvailableFor`
+     * for why that stays inside ADR 0062 decision 3), so a prisoner with no
+     * job of their own is gated exactly as before, in every block; and a job
+     * whose carrier is not in the restored session is
+     * `CarryJobExecutor.reconcileRestoredJobs`'s, not this method's. The ADR's
+     * open question 1 -- *"should a carrier be interruptible by a regime
+     * change?"* -- is left where it is, the owner's and unanswered: this makes
+     * the restore path agree with the continuous one, which is the answer the
+     * document already gives (*"this document says no"*), rather than choosing
+     * a different one.
+     *
+     * `awaitingAccommodation` still wins over both, and no carrier can be at
+     * that stage anyway -- the reconsideration loop's own
+     * `abandonActionOnIneligibleStage` comment states why.
+     */
+    const resumingAnErrand = CARRY_ACTION !== undefined
+      && !awaitingAccommodation
+      && this.carry?.board.activeJobFor(entityId) !== undefined;
     const carryEligible = CARRY_ACTION !== undefined
-      && isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)
+      && !awaitingAccommodation
+      && (resumingAnErrand || isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories))
       && this.carryAvailableFor(entityId);
     const legalActions = DEFAULT_ACTIONS.filter(
-      (action) => isActionCategoryAllowed(action, block.allowedCategories) && (action !== CARRY_ACTION || carryEligible),
+      (action) =>
+        // The carry's legality is `carryEligible` entire: it already folds in
+        // the category test for the taking case and waives it for the resuming
+        // one. Leaving the shared `isActionCategoryAllowed` in front of it here
+        // would re-impose, one line later, the gate the line above just lifted.
+        action === CARRY_ACTION
+          ? carryEligible
+          : isActionCategoryAllowed(action, block.allowedCategories)
+            && !(awaitingAccommodation && action.category === 'work'),
     );
     const ranked = rankActions(this.needs, index, legalActions);
     // `needUrgency` split in two (issue #435), so that one walk over
@@ -1289,10 +1560,107 @@ export class ActionSystem implements SystemRegistration {
      * determinism is unaffected -- need levels are integers in component
      * storage and the threshold is a constant comparison.
      */
+    /*
+     * **The amendment binds the prisoner being SENT, not the one already
+     * carrying** -- the same distinction the `resumingAnErrand` block above
+     * draws, applied to the second of this method's two carry gates (#882).
+     *
+     * The owner's sentence is *"the institution will not send a prisoner on an
+     * errand while it is already failing to meet a need it is being docked
+     * for"*, and `carry-need-threshold.test.ts` records it in exactly those
+     * terms. A prisoner who is mid-errand with the goods in their hands is not
+     * being sent anywhere; continuous play never re-asks the question for
+     * them, so a restore that answers it differently would drop the goods on
+     * the floor of whatever block the save happened to land in and would do it
+     * *only* to prisoners whose needs had drifted since. Making resumption
+     * exempt is what keeps the restored future equal to the continuous one,
+     * which is the whole of this fix and not a re-balancing of the amendment:
+     * every prisoner who does not already hold a job reaches the rule below
+     * unchanged, and `carry-need-threshold.test.ts` still measures it.
+     */
     const bestProvidable = rankedProvidedIndex < 0 ? undefined : ranked[rankedProvidedIndex]!;
-    const aNeedIsUrgent = bestProvidable !== undefined
+    const aNeedIsUrgent = !resumingAnErrand
+      && bestProvidable !== undefined
       && bestProvidable !== CARRY_ACTION
       && relievesAnUnmetNeed(this.needs, index, bestProvidable);
+
+    /*
+     * **Treatment outranks everything, and it is the same rule ADR 0093
+     * decision 2 states for the carry rather than a second kind of rule**
+     * (issue #589, the owner's ruling of 2026-09-17).
+     *
+     * `action.infirmary-treatment` declares no need effect, so `scoreAction`
+     * gives it exactly **0** -- the floor, since no authored effect is
+     * negative. Left to the ranking it would therefore be reached only when
+     * every other legal candidate had failed to resolve, which is the shape
+     * that made `action.carry` need a rule: an injured prisoner would go to
+     * the infirmary only in a prison that offered them nothing else, and the
+     * flag would clear by accident or not at all. So the promotion is decided
+     * by the flag, as the carry's is by the board.
+     *
+     * **It is ahead of the carry deliberately, and the order is the one place
+     * the two rules meet.** A prisoner who is hurt and is also being sent on an
+     * errand is treated; the institution does not hand a crate to somebody it
+     * has just been told is injured. Written as a `return` before the carry's
+     * own block rather than as a fourth condition inside it, so neither rule
+     * has to state the other's.
+     *
+     * **`aNeedIsUrgent` does not bound it, and that is the difference from the
+     * carry.** The owner's 2026-09-02 amendment bounds the *carry* because a
+     * carry is work the institution chooses to hand out -- *"the institution
+     * will not send a prisoner on an errand while it is already failing to meet
+     * a need it is being docked for"*. Treatment is not work handed out and no
+     * ruling bounds it; a prisoner who is hungry and injured is still injured,
+     * and the state does not dock the prison for a need this action could
+     * serve, because it serves none. What treatment costs is measured in
+     * `injury.ts`: the day of need decay the course takes, and nothing else.
+     *
+     * **`prisonProvides` is the gate, which is what keeps a prison with no
+     * infirmary byte-identical.** `hasPlaceForUse('room.infirmary',
+     * 'medical-treatment')` is false wherever no such room has been zoned and
+     * furnished, so the promotion never fires, `ranked` is returned untouched,
+     * and not one counter or `providedIndex` moves for any prisoner in any
+     * prison that has never built one -- the same property ADR 0093 decisions 2
+     * and 6 buy by filtering the carry out when the board is empty. The flag
+     * simply stays set, which is the corpus's own "nothing deadlocks" condition
+     * met by doing nothing rather than by authoring a passive-recovery timer
+     * the ruling did not buy.
+     *
+     * **Two gates that are deliberately absent, said rather than left for a
+     * reader to infer.**
+     *
+     * `awaitingAccommodation` does not bound this. ADR 0102 decision 2 refuses
+     * **work** to a prisoner still waiting for a bed, and refuses it because
+     * whether an unhoused prisoner should hold a job is a question that
+     * document declines to answer. Treatment is not a job and the question does
+     * not arise: care is not owed to somebody because they have a cell.
+     *
+     * Nor does a live solitary sanction, and that is inherited rather than
+     * chosen. `PrisonerOperationsRuntime` overrides a sanctioned prisoner's
+     * timetable to `HIGH_RISK_REGIME`, which allows `hygiene` for 2,200 of its
+     * 2,400 ticks -- so `action.shower` has walked sanctioned prisoners to a
+     * shower room since long before this entry existed, and treatment behaves
+     * the same way for the same reason. Solitary is modelled here as a
+     * restriction on a timetable and not as physical confinement that stops
+     * every room action; changing that is a decision about the sanction, not
+     * about the injury.
+     */
+    if (
+      TREATMENT_ACTION !== undefined
+      && this.records.injured[index] === 1
+      && legalActions.includes(TREATMENT_ACTION)
+      && this.prisonProvides(entityId, TREATMENT_ACTION)
+    ) {
+      // Promoted rather than sorted into place, exactly as the carry is below:
+      // `rankActions` stays pure and the rest of the ranking keeps its own
+      // total order. `providedIndex: 0` is honest for the same reason it is
+      // there -- `prisonProvides` was just consulted and answered yes -- and a
+      // prisoner who then loses the race for the last bed walks on to their
+      // need-ranked candidates under ADR 0041 decision 1 and is counted a
+      // contended substitution, because somebody else got the bed.
+      const candidates = [TREATMENT_ACTION, ...ranked.filter((action) => action !== TREATMENT_ACTION)];
+      return { entityId, index, classificationGroupId, candidates, providedIndex: 0, urgency: scoreAction(this.needs, index, TREATMENT_ACTION) };
+    }
 
     if (carryEligible && CARRY_ACTION !== undefined && !aNeedIsUrgent) {
       // Promoted rather than sorted into place, which is what leaves

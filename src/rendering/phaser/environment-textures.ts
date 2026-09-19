@@ -88,9 +88,16 @@ export async function loadEnvironmentAtlas(
   // In parallel, because these are independent multi-megabyte downloads and
   // fetching them one after another would make the world wait for the sum of
   // them rather than the slowest.
+  //
+  // Keyed by `sheetKey`, not `assetId`: two catalogs (owner sheets and
+  // rendered objects, ADR 0100) are not guaranteed to use disjoint ids --
+  // `fixture.cell.toilet_sink` names one entry in each -- and `sheetKey` is
+  // the field `planEnvironmentAtlas` guarantees unique across both. Keying on
+  // the raw id here would let one catalog's fetched bitmap silently stand in
+  // for the other's frame whenever the two shared a string.
   const sheets = new Map<string, ImageBitmap>(
     await Promise.all(
-      plan.sheets.map(async (sheet) => [sheet.assetId, await loadSheet(sheet.imageUrl)] as const),
+      plan.sheets.map(async (sheet) => [sheet.sheetKey, await loadSheet(sheet.imageUrl)] as const),
     ),
   );
 
@@ -104,8 +111,8 @@ export async function loadEnvironmentAtlas(
 
   try {
     for (const frame of plan.frames) {
-      const sheet = sheets.get(frame.assetId);
-      if (sheet === undefined) throw new Error(`The plan asked for "${frame.assetId}", which was not downloaded.`);
+      const sheet = sheets.get(frame.sheetKey);
+      if (sheet === undefined) throw new Error(`The plan asked for "${frame.assetId}" (${frame.sheetKey}), which was not downloaded.`);
       const cut = await createImageBitmap(
         sheet,
         frame.sourceRectPx.x,

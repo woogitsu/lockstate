@@ -3,7 +3,14 @@ import { defaultContrabandRegistry } from '../../src/content/contraband-catalog'
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import { PRISON_CONDITIONS, REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import {
+  PRISON_CONDITIONS,
+  REFUSAL_REASONS,
+  refusalSchema,
+  SIMULATION_PROTOCOL_VERSION,
+  type MainToWorkerMessage,
+  type SimulationRefusal,
+} from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -21,6 +28,7 @@ import { projectStatusCounts, statusCountsEqual } from '../../src/simulation/wor
 import type { SimulationStatusCounts } from '../../src/simulation/protocol/types';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The longest string `counts.contrabandNameKey` can carry, read off the real
@@ -72,8 +80,26 @@ interface Published {
     readonly tick: number;
     readonly schemaVersion: number;
     readonly counts: Record<string, number>;
-    /** Absent until the session has refused something (#261). */
-    readonly refusal?: { readonly sequence: number; readonly tick: number; readonly reason: string };
+    /**
+     * Absent until the session has refused something (#261).
+     *
+     * **`SimulationRefusal` itself, not a hand-written restatement of it**
+     * (issue #1304). This block used to spell out `refusalSchema`'s members
+     * by hand, and the comment above `routeDecidedSince` claimed the copy was
+     * *"exactly as `SimulationRefusal` declares it"* -- a claim nothing
+     * checked, made in the same file whose worst-case fixture had already
+     * drifted from that schema for three days (#1268). A second mirror of a
+     * `.strict()` schema is the defect, so it is deleted rather than
+     * corrected: a fifth member now arrives here for free.
+     *
+     * The rest of `Published` stays deliberately loose -- `kind` is `string`
+     * and `counts` is `Record<string, number>` -- because this interface
+     * describes what came *off the port* before the decoder has vouched for
+     * it, and the tests below check those two by assertion. `refusal` is
+     * different only in that a tie was available and the drift it would have
+     * caught was real.
+     */
+    readonly refusal?: SimulationRefusal;
   };
 }
 
@@ -266,6 +292,16 @@ describe('publishing the status counts', () => {
       // The starting balance, unspent: this scenario buys nothing, so the
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
+      // `false`, and **not** because `roomCapacity: 4` above is nonzero:
+      // this is `RoomInstanceRegistry.totalResidentCapacity === 0`, the
+      // registry's own walk, which the host read as `roomCapacity === 0`
+      // until 2026-09-15 and got a different answer from on any prison holding
+      // a room the content catalogue does not define
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`, and
+      // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+      // is the prison where they come apart). This scenario's rooms are all
+      // catalogued, so the two agree here, which is the ordinary case.
+      isFreshUnfurnishedPrison: false,
       treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
       // The facility under it, published since the owner's ruling 18 of
       // 2026-08-31 so the strip can say how much of it is left rather than only
@@ -311,6 +347,12 @@ describe('publishing the status counts', () => {
       // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
+      // Zero for a second reason, which is why it is asserted beside the line
+      // above rather than assumed to follow it (issue #890): withholding is
+      // per **occupied place**, and this scenario has none. A prison earning
+      // nothing is not a prison having something withheld -- the two are the
+      // same number here and come apart the moment anybody is housed.
+      stateIncomeWithheldTodayMinorUnits: 0,
       // Five guards at the catalogue's 80-a-day guard band (ADR 0042 step 3).
       // Not zero, and that is the point of asserting it here: the wage bill is
       // a fact about who is *employed*, not about who is housed or deployed --
@@ -393,7 +435,7 @@ describe('publishing the status counts', () => {
     expect(publications.length).toBeGreaterThan(1);
     for (const publication of publications) {
       const decoded = decodeWorkerToMainMessage(publication);
-      expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+      expectOk(decoded, `the status-counts publication stamped tick ${String(publication.payload.tick)}`);
     }
   });
 
@@ -545,6 +587,57 @@ describe('publishing the status counts', () => {
     expect(harness.publications()).toHaveLength(2);
   });
 
+  /**
+   * **ADR 0091 decision 2, option F (ruled by the owner 2026-09-16): the
+   * publication gate has to open on a flag that moves no ordinal.**
+   *
+   * `RefusalLog.supersede` sets `routeDecidedSince` on the *standing* record
+   * when the same route decides something at a different target, so nothing
+   * about that record's `sequence` changes -- and the gate above is a
+   * comparison against `_publishedRefusalSequence`. Without a second
+   * watermark this publication does not happen at all, and the band never
+   * learns it should retire the sentence: the same failure mode #261 names
+   * for a refusal that moves no count, one field over.
+   *
+   * The counts are asserted equal to the previous publication for exactly
+   * that reason -- if a count had moved, the interval gate could have carried
+   * this message anyway and the test would be pinning nothing.
+   */
+  test('publishes again when the standing refusal own route decides elsewhere, though its ordinal never moves (ADR 0091)', () => {
+    const harness = new Harness();
+    harness.run(1);
+    // Refused: outside the one owned chunk.
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    const refused = harness.publications();
+    expect(refused).toHaveLength(2);
+    expect(refused[1]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+
+    // Accepted: inside it, and a different tile, so #492's key misses and the
+    // refusal is *not* withdrawn. Same route, so option F marks it.
+    submitBuildOrder(harness['machine'], 1, { x: 4, y: 4 }, 1);
+    harness.advance(50);
+
+    const after = harness.publications();
+    expect(after, 'a publication the sequence gate alone would have suppressed').toHaveLength(3);
+    expect(after[2]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      routeDecidedSince: true,
+    });
+    // Nothing but the flag can have caused this message: the interval gate
+    // returns early unless `eventIsNew`, and only 100 ms of the 500 ms
+    // interval has elapsed. A moved count is not enough to get past it --
+    // which matters here, because the accepted order *does* move the treasury.
+    expect(harness.elapsedMs).toBeLessThan(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+
+    // And it does not become a new firehose: the flag is monotone per record,
+    // so the gate opens once for it and not once per wake thereafter.
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.publications()).toHaveLength(3);
+  });
+
   test('replaces the standing refusal when the simulation refuses something else', () => {
     const harness = new Harness();
     harness.run(1);
@@ -577,8 +670,33 @@ describe('publishing the status counts', () => {
     const carrying = harness.publications().filter((publication) => publication.payload.refusal !== undefined);
     expect(carrying.length).toBeGreaterThan(1);
     for (const publication of carrying) {
-      expect(publication.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+      expect(publication.payload.refusal).toMatchObject({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
     }
+
+    /*
+     * **This case asserted the whole object until ADR 0091 decision 2 (option
+     * F, ruled 2026-09-16), and the clause that moved is worth naming rather
+     * than quietly relaxing.** The record really is republished unchanged --
+     * `sequence`, `tick` and `reason` are asserted above on every carrying
+     * publication, which is what this test has always been about. What is new
+     * is a fourth member that is *not* part of the record: the scenario
+     * session's own queued build orders succeed as the clock runs, and a
+     * success on the `build` route marks the standing `build.out-of-bounds`
+     * refusal as no longer being about anything the player is looking at.
+     *
+     * So the property to pin is that the mark is **monotone** -- it appears
+     * once and never comes back off a republication -- because a flag that
+     * flickered would make the band show a retired sentence again. The record
+     * itself is untouched either way, which the `toMatchObject` assertions
+     * above and `refusals.count` in `tests/unit/simulation-refusals.test.ts`
+     * both hold.
+     */
+    const marks = carrying.map((publication) => publication.payload.refusal?.routeDecidedSince === true);
+    expect(marks, 'the scenario builds successfully as it runs, so the mark has to arrive').toContain(true);
+    expect(
+      marks.slice(marks.indexOf(true)).every((mark) => mark),
+      'a route cannot un-decide: once marked, every later republication carries it',
+    ).toBe(true);
   });
 
   test('still projects at most once per interval plus once per refusal', () => {
@@ -612,7 +730,7 @@ describe('publishing the status counts', () => {
     const published = harness.publications()[1];
     expect(published?.payload.refusal).toBeDefined();
     const decoded = decodeWorkerToMainMessage(published);
-    expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+    expectOk(decoded, 'the status-counts publication once it carries a refusal');
   });
 
   test('publishes nothing once the session has stopped', () => {
@@ -717,6 +835,24 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           sequence: Number.MAX_SAFE_INTEGER,
           tick: runtime.kernel.tick,
           reason: [...REFUSAL_REASONS].sort((left, right) => right.length - left.length)[0],
+          // **And since issue #1261 the same forcing covers
+          // `routeDecidedSince`** (issue #1268), the fourth and last member of
+          // `refusalSchema` and the only optional one: `z.literal(true)`, set
+          // on the *standing* record by `RefusalLog.supersede` when a press on
+          // the same route has since been decided (ADR 0091 option F). This
+          // scenario supersedes nothing, so the flag is absent from what the
+          // log would hand over; the bound has to hold for the publication
+          // that carries it, so the worst case is forced here for exactly the
+          // reason `activeIncidentType` and `contrabandNameKey` are.
+          //
+          // It is a literal rather than a boolean, so `true` is the only
+          // spelling and there is no longer one to reach for. Forcing it is
+          // what this fixture's own header asks for in as many words -- *"a
+          // measurement taken without it would understate every publication
+          // that carries one (#261)"* -- and between #1261 shipping the field
+          // and this line, it did: by 25 bytes, which is 7 more than the head
+          // room the old bound had.
+          routeDecidedSince: true as const,
         },
       };
       const cloneStartedAt = performance.now();
@@ -770,6 +906,14 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // This is what a status-counts
       // payload is, and why it needs no paging.
       //
+      // **22, not 21, since `isFreshUnfurnishedPrison` was published on
+      // 2026-09-15.** ADR 0017's "Amendment, 2026-09-01" §2 defines the
+      // predicate as `RoomInstanceRegistry.totalResidentCapacity === 0`, and
+      // `projectStatusStrip` computed it and dropped it while three host sites
+      // re-derived a different answer from `roomCapacity`. It is an always-present
+      // scalar, so it moves the base count by exactly one -- which is the
+      // visible one-line edit this assertion exists to force.
+      //
       // **21, not 20, since ADR 0087 decision 2 added `conditions`.** Unlike
       // the two conditional keys below it, `conditions` is a third field this
       // object admits as `.optional()` on the wire yet **always** publishes --
@@ -777,7 +921,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        21 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        23 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -826,6 +970,17 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           }
           continue;
         }
+        // **The first boolean on this channel** (2026-09-15):
+        // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+        // published so the host stops re-deriving one from `roomCapacity`. A
+        // boolean is a scalar and is exactly what this loop is protecting --
+        // it is named here rather than waved through by loosening the check
+        // below, so a count that started arriving as `0`/`1`, or a second
+        // boolean nobody meant to add, still fails.
+        if (key === 'isFreshUnfurnishedPrison') {
+          expect(typeof value, 'counts.isFreshUnfurnishedPrison is not a boolean').toBe('boolean');
+          continue;
+        }
         expect(typeof value, `counts.${key} is not a scalar`).toBe('number');
         expect(Number.isInteger(value), `counts.${key} is not an integer`).toBe(true);
       }
@@ -833,7 +988,42 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // a queue: exactly the shape a snapshot channel can carry honestly
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
-      expect(Object.keys(payload.refusal)).toHaveLength(3);
+      // **Four since issue #1261, not three** (issue #1268). The count is the
+      // point of the assertion and not an incidental number: `refusalSchema`
+      // is `.strict()` and closed at `sequence`, `tick`, `reason` and
+      // `routeDecidedSince`, so this line is what fails if a fifth member --
+      // or a queue wearing one member's name -- arrives without this fixture
+      // being re-measured. It stood at 3 for the two days after #1261 shipped
+      // the fourth, which is precisely why the stale byte figure below went
+      // unnoticed: the fixture could not carry the new field without this
+      // line moving in the same edit, so nothing ever prompted the first
+      // change.
+      expect(Object.keys(payload.refusal)).toHaveLength(4);
+      // **And it is the refusal `refusalSchema` declares, member for member**
+      // (issue #1304). The line above counts; this one says *which*, against
+      // the schema itself rather than against a number written here.
+      //
+      // The asymmetry it removes was measured on this file (#1304). Deleting
+      // a member from `refusalSchema` already failed `tsc` in six places, so
+      // **removal** was gated and still is -- nothing below replaces that.
+      // **Addition** was gated by nothing: a new optional member compiled,
+      // shipped, widened every publication carrying it, and left the byte
+      // bound below stale and green. That is not hypothetical --
+      // `routeDecidedSince` did exactly this between #1261 (2026-09-16) and
+      // #1268, breaching the pinned bound by 7 bytes for three days.
+      //
+      // This is the missing direction and nothing more. It fails when the
+      // schema gains a member the fixture above does not force, and the
+      // failure **names the member** -- which a length assertion cannot do,
+      // and which is the whole reason the worst case has to be re-measured
+      // rather than merely re-counted. `.strict()` makes the schema's key set
+      // the closed truth about this record, so the two sides of this
+      // comparison are the wire shape and the thing claiming to be its worst
+      // case; neither is a copy of the other.
+      expect(
+        Object.keys(payload.refusal).sort(),
+        'the worst-case fixture no longer forces every member `refusalSchema` declares -- re-measure the byte bound below against the new member rather than raising it',
+      ).toEqual(Object.keys(refusalSchema.shape).sort());
       // **710 and not 669, and the raise is derived from a run rather than
       // chosen** -- the same way every bound below replaced the one before it.
       // The bound it replaces predicted this raise in as many words: it said a
@@ -917,7 +1107,127 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(710);
+      //
+      // **728 and not 710, and the raise is a longer refusal reason rather
+      // than a new field.** ADR 0107 (`cancel-build-order.stale-cancellation`,
+      // 37 characters) replaced `place-object.not-a-placeable-object` (35) as
+      // the longest member of `REFUSAL_REASONS` -- the same string this test's
+      // own `[...REFUSAL_REASONS].sort(...)[0]` picks up automatically, so
+      // nothing here had to be told the new value. Re-measured on this tree:
+      // `payloadJsonBytes=708` at 250 actors and `710` at 1,000, 2,500 and
+      // 5,000 -- two bytes over the previous tier's own worst case, which is
+      // exactly the two-character difference between the two reasons and
+      // nothing more, so this is the `contrabandNameKey`/
+      // `treasuryOverdraftFloorMinorUnits` shape again: a field's *spelling*
+      // moving the bound, not the population or the count of fields. 710 + 18
+      // = **728**, the same headroom every previous raise in this file left.
+      //
+      // **761 and not 728, and the raise is one new field** --
+      // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+      // published on 2026-09-15 so the three host sites stop re-deriving it
+      // from `roomCapacity`. Re-measured on this tree at the same worst case
+      // every previous raise used: `payloadJsonBytes=741` at 250 actors and
+      // `743` at 1,000, 2,500 and 5,000 -- still the two-byte digit-count
+      // spread between the tiers rather than growth, which is the property
+      // this bound exists to protect and the one a boolean trivially keeps.
+      // The 33 bytes are arithmetic rather than a measurement to be trusted on
+      // its own: `"isFreshUnfurnishedPrison":false,` is 26 + 1 + 5 + 1, and
+      // `false` is the longer of the two spellings, so this is the worst case
+      // and not a sample of it. 743 + 18 = **761**, the same headroom every
+      // previous raise in this file left, so the next field breaches this one
+      // too and the soft limit goes on being felt one field at a time.
+      //
+      // **786 and not 761, and the raise is a field that shipped on
+      // 2026-09-16 and never reached this fixture** (issue #1268) --
+      // `routeDecidedSince`, which #1261 added to `refusalSchema` under ADR
+      // 0091 option F. This is the first raise in this paragraph's history
+      // that corrects a bound which was *already wrong* rather than one that a
+      // new field has just outgrown: 761 was derived correctly from a
+      // worst case that had stopped being the worst case. Re-measured on this
+      // tree with the flag forced, at the same worst case every previous raise
+      // used: `payloadJsonBytes=766` at 250 actors and `768` at 1,000, 2,500
+      // and 5,000 -- still the same two-byte digit-count spread between the
+      // tiers rather than growth, which is the property this bound exists to
+      // protect and the one a literal trivially keeps.
+      //
+      // The 25 bytes are arithmetic rather than a measurement to be trusted on
+      // its own: `,"routeDecidedSince":true` is 1 + 19 + 1 + 4, and
+      // `z.literal(true)` admits no other spelling, so this is the worst case
+      // and not a sample of it. 768 + 18 = **786**, the same headroom every
+      // previous raise in this file left, so the next field breaches this one
+      // too and the soft limit goes on being felt one field at a time.
+      //
+      // **What 761 was measured against, kept rather than overwritten,
+      // because the gap is the finding.** It was `payloadJsonBytes=741` and
+      // `743` -- exactly 25 short of the figures above at both tiers, i.e.
+      // this one field and nothing else. **768 is over 761**, so the honest
+      // largest declared payload had been breaching its own pinned bound by 7
+      // bytes for two days and no run said so.
+      //
+      // **800 and not 761, and the raise is one new field** --
+      // `stateIncomeWithheldTodayMinorUnits`, issue #890's measurement of a
+      // prison paying 40% under its headline grant with no figure for the
+      // shortfall anywhere outside the worker. Re-measured on this tree at
+      // the same worst case every previous raise used:
+      // `payloadJsonBytes=780` at 250 actors and `782` at 1,000, 2,500 and
+      // 5,000 -- still the two-byte digit-count spread between the tiers
+      // rather than growth, which is the property this bound exists to
+      // protect and the one an integer keeps. 782 + 18 = **800**, the same
+      // headroom every previous raise in this file left, so the next field
+      // breaches this one too.
+      //
+      // **The 39 bytes are 38 of spelling and one of value, and that second
+      // number is not a worst case -- stated rather than implied, because
+      // every raise above could say the same and none of them did.**
+      // `"stateIncomeWithheldTodayMinorUnits":` is 36 + 1, the comma is one
+      // more, and this fixture houses nobody, so the value is the single
+      // digit `0`. The field is bounded by
+      // `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x occupied places`, so a
+      // populated prison spends more digits here -- exactly as
+      // `treasuryMinorUnits` and `stateIncomeAccruedTodayMinorUnits` beside
+      // it do, and exactly what the two-byte tier spread this paragraph keeps
+      // quoting already is. The 18 bytes of head room absorb it; a reader
+      // raising this bound next should know they are raising it from a
+      // measurement whose money fields are at their smallest.
+      //
+      // **825, and neither 786 nor 800 -- the two figures above were measured
+      // on branches that could not see each other, and this is the merge that
+      // had to re-measure rather than pick.** Both paragraphs above raise
+      // *this* line from the same 761 base, for different fields, and both
+      // derivations are correct about their own field and wrong about the
+      // payload: with `routeDecidedSince` forced **and**
+      // `stateIncomeWithheldTodayMinorUnits` published, the worst case is
+      // larger than either was measured against. 786 would put the bound
+      // *below* a payload `main` already carries; 800 would silently discard
+      // the finding the paragraph before it is for. So both are kept above,
+      // unedited, and this third one replaces neither.
+      //
+      // Re-measured on the merged tree, at the same worst case every previous
+      // raise used: `payloadJsonBytes=805` at 250 actors and `807` at 1,000,
+      // 2,500 and 5,000 -- still the same two-byte digit-count spread between
+      // the tiers rather than growth, which is the property this bound exists
+      // to protect. 807 + 18 = **825**, the same headroom every previous
+      // raise in this file left.
+      //
+      // **The two fields are exactly additive, which is the check that makes
+      // this a measurement rather than a sum.** 741 + 25 + 39 = 805 and
+      // 743 + 25 + 39 = 807, against the 741/743 the 761 bound was derived
+      // from -- so neither field changes the other's cost, and the
+      // arithmetic each paragraph above gives for its own field survives
+      // being combined. Had the measured figure and the sum disagreed, this
+      // comment would say so and the bound would follow the measurement.
+      //
+      // **And the 7-byte breach the #1268 paragraph reports is not history:
+      // it is live on `main` as this is written, and it is the same 7
+      // bytes.** `main` pins 800 and its fixture measures 780/782, so `main`
+      // is green -- but `main`'s fixture still omits `routeDecidedSince`, and
+      // the honest largest payload `main` can publish is 807. 807 - 800 = 7,
+      // the identical figure, because #1302 left the same 18 bytes of head
+      // room and the missing field costs 25. The bound has now been breached
+      // by exactly 7 bytes twice in a row, by two unrelated raises, for the
+      // one reason #1304 exists to remove: nothing ties the fixture to the
+      // shape it claims to be the worst case of.
+      expect(JSON.stringify(payload).length).toBeLessThan(825);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
@@ -952,7 +1262,7 @@ describe('statusCountsSchema.conditions: the bound is enforced at decode, not on
 
     const [published] = harness.publications();
     if (published === undefined) throw new Error('the fixture must have produced at least one publication to attack');
-    expect(decodeWorkerToMainMessage(published).ok, 'the unmodified publication must itself be valid').toBe(true);
+    expectOk(decodeWorkerToMainMessage(published), 'the unmodified publication this case builds its attack from');
 
     const overfilled = {
       ...published,
@@ -995,6 +1305,9 @@ describe('statusCountsEqual: conditions compares by content, not by array identi
     staffUnassigned: 0,
     rooms: 0,
     roomCapacity: 0,
+    // A prison with nothing registered is fresh on the registry's own reading,
+    // which is the one case where it and `roomCapacity` above cannot disagree.
+    isFreshUnfurnishedPrison: true,
     accommodationCapacity: 0,
     roomOccupants: 0,
     activeIncidents: 0,

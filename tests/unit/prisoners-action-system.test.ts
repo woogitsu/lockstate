@@ -100,7 +100,7 @@ describe('ActionSystem: end-to-end selection, travel and performance', () => {
 
     const kernel = makeKernel();
     const locomotion = registerLocomotion(kernel, position);
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES, () => ({
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, () => DEFAULT_REGIME_SCHEDULES, () => ({
       role: 'prisoner', securityClearance: 0, permissions: [],
     }));
 
@@ -180,7 +180,7 @@ describe('a prisoner whose best action cannot resolve a target falls back within
 
     const kernel = new Kernel(MEAL_BLOCK_START_TICK, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
     const locomotion = registerLocomotion(kernel, position);
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES);
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, () => DEFAULT_REGIME_SCHEDULES);
     kernel.registerSystem(navigation);
     kernel.registerSystem(actionSystem);
 
@@ -282,5 +282,158 @@ describe('needs at NEED_MAX are never exceeded even under repeated action perfor
       expect(level[index]!).toBeLessThanOrEqual(NEED_MAX_SCALED);
       expect(fixture.prisoners.needs.get(index, needId)).toBeLessThanOrEqual(NEED_MAX);
     }
+  });
+});
+
+/**
+ * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ * at the level `tests/integration/unhoused-prisoner-actions.test.ts` cannot
+ * state: **one reconsideration cycle, and one intake stage against another
+ * with everything else held equal.**
+ *
+ * That integration file drives a real prison through real commands over 20,000
+ * ticks, which is what makes it evidence about the game. What it cannot
+ * separate is the stage from everything the stage travels with -- a prisoner
+ * with no bed also has no accommodation, no residency and a different position
+ * -- so these cases build one prisoner, step exactly one tick, and change the
+ * intake stage and nothing else between the two halves of each comparison.
+ */
+describe('what intake stage decides about action selection (ADR 0102)', () => {
+  /** The general-population regime's second meal block is `[1200, 1300)`, and it allows `meal` and nothing else. */
+  const MEAL_BLOCK_START_TICK = 1_200;
+  /** Its first work block is `[500, 1000)`: `work`, `education` and `free-association`. */
+  const WORK_BLOCK_START_TICK = 500;
+
+  /**
+   * One prisoner standing **on the anchor tile of the one room this prison
+   * has**, with no accommodation of any kind.
+   *
+   * Standing on the anchor takes `beginNextAction`'s `sameTile` path, so a
+   * selection reaches `performing` inside a single reconsideration tick and
+   * what is measured is the choice rather than who finished routing first --
+   * the same device `buildFallbackFixture` above uses and for the same reason.
+   */
+  function buildStageFixture(options: { readonly room: 'canteen' | 'laundry'; readonly stage: 'accommodation-assignment' | 'completed'; readonly startTick: number }) {
+    const capacity = 4;
+    const store = new EntityStore(capacity);
+    const bitset = new ComponentBitset(capacity);
+    const query = new EntityQuery(store, bitset);
+    query.mask.require(0);
+
+    const records = new PrisonerRecordComponent(capacity);
+    const needs = new NeedsComponent(capacity);
+    const currentAction = new CurrentActionComponent(capacity);
+    const position = new PositionComponent(capacity);
+    const substitutions = new SubstitutionRecordComponent(capacity);
+    const coldState = new PrisonerColdState();
+    const roomInstances = new RoomInstanceRegistry();
+
+    const cellBlock = buildCellBlockFixture(4);
+    const navigation = new NavigationSystem(cellBlock.world, { workBudgetPerTick: 2_000, agingIntervalTicks: 15, flowFieldActivationThreshold: 6 }, cellBlock.doors);
+    navigation.setLoadedChunks(cellBlock.chunkPositions);
+
+    // One room, anchored on the tile the prisoner stands on. The laundry is
+    // registered on the canteen's tile because this fixture's world has no
+    // laundry of its own and the anchor only has to be somewhere navigable --
+    // what is under test is which candidate the selection accepts, not where
+    // the room is.
+    const anchorTile = cellBlock.canteenTiles[0]!;
+    const instanceId = options.room === 'canteen' ? 'canteen-0' : 'laundry-0';
+    roomInstances.register({
+      instanceId,
+      roomCatalogId: options.room === 'canteen' ? 'room.canteen' : 'room.laundry',
+      anchorTile,
+      residentCapacity: 0,
+      concurrentUseCapacity: 4,
+      objectCapabilities: [options.room === 'canteen' ? 'dining' : 'laundry'],
+    });
+
+    const kernel = new Kernel(options.startTick, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
+    const locomotion = registerLocomotion(kernel, position);
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, () => DEFAULT_REGIME_SCHEDULES);
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(actionSystem);
+
+    const entityId = store.spawn();
+    const index = store.getIndex(entityId);
+    bitset.add(index, 0);
+    records.intakeStage[index] = intakeStageIndex(options.stage);
+    records.classificationGroupIndex[index] = 0; // general-population, written during the `classification` stage
+    // Every need on the floor, so no candidate is refused for want of wanting
+    // it: what decides the outcome below is the stage and the room, never the
+    // scoring.
+    for (const needId of ['hunger', 'hygiene', 'recreation'] as const) needs.set(index, needId, 0);
+    position.tileX[index] = anchorTile.x;
+    position.tileY[index] = anchorTile.y;
+
+    return { kernel, store, entityId, index, records, currentAction, coldState, roomInstances, actionSystem };
+  }
+
+  const actionIdOf = (fixture: ReturnType<typeof buildStageFixture>): string | undefined => {
+    const actionIndex = fixture.currentAction.actionIndex[fixture.index]!;
+    return actionIndex >= 0 ? DEFAULT_ACTIONS[actionIndex]!.id : undefined;
+  };
+
+  it('eats at `accommodation-assignment`, exactly as it does at `completed`', () => {
+    for (const stage of ['accommodation-assignment', 'completed'] as const) {
+      const fixture = buildStageFixture({ room: 'canteen', stage, startTick: MEAL_BLOCK_START_TICK });
+
+      fixture.kernel.step(); // one reconsideration, and only one
+
+      expect(actionIdOf(fixture), stage).toBe('action.eat-meal');
+      expect(ACTION_PHASES[fixture.currentAction.phase[fixture.index]!], stage).toBe('performing');
+      expect(fixture.actionSystem.getMetrics().actionsStarted, stage).toBe(1);
+    }
+  });
+
+  it('does no work at `accommodation-assignment`, and the same prisoner at `completed` does', () => {
+    // ADR 0102 decision 2's one explicit exclusion. The two fixtures differ in
+    // the intake stage and in nothing else -- same room, same tick, same
+    // needs, neither holding an accommodation -- so a `'work'` action taken by
+    // one and refused the other is the stage deciding it.
+    const waiting = buildStageFixture({ room: 'laundry', stage: 'accommodation-assignment', startTick: WORK_BLOCK_START_TICK });
+    waiting.kernel.step();
+    expect(actionIdOf(waiting)).toBeUndefined();
+    expect(ACTION_PHASES[waiting.currentAction.phase[waiting.index]!]).toBe('idle');
+    expect(waiting.actionSystem.getMetrics()).toMatchObject({ actionsStarted: 0, unmetDemandCycles: 1 });
+
+    const housed = buildStageFixture({ room: 'laundry', stage: 'completed', startTick: WORK_BLOCK_START_TICK });
+    housed.kernel.step();
+    expect(actionIdOf(housed)).toBe('action.laundry-work');
+    expect(housed.actionSystem.getMetrics().actionsStarted).toBe(1);
+  });
+
+  it('gives back its seat when its stage leaves the eligible set mid-action, instead of holding it for ever', () => {
+    /*
+     * The exit the widened gate creates, and the one ADR 0102 does not name.
+     * `IntakeSystem` writes exactly this transition -- an
+     * `accommodation-assignment` prisoner becomes `'failed'` on the scheduled
+     * tick the prison holds no instance of any room type their classification
+     * group may be housed in, which a player reaches by un-zoning the last
+     * such room -- and it is written by hand here rather than driven, for the
+     * reason this file's header gives: what is under test is `ActionSystem`'s
+     * response to the stage, not `IntakeSystem`'s reason for writing it.
+     *
+     * Before ADR 0102 this cost nothing, because an unhoused prisoner held no
+     * claim and stood in no action. It is a leak now, and a silent one: the
+     * seat would be held by a prisoner `update` will never look at again.
+     */
+    const fixture = buildStageFixture({ room: 'canteen', stage: 'accommodation-assignment', startTick: MEAL_BLOCK_START_TICK });
+    fixture.kernel.step();
+
+    // The precondition, asserted rather than assumed.
+    expect(ACTION_PHASES[fixture.currentAction.phase[fixture.index]!]).toBe('performing');
+    expect(fixture.roomInstances.useOccupancyOf('canteen-0', 'dining')).toBe(1);
+    expect(fixture.coldState.getActionTarget(fixture.entityId)).toBe('canteen-0');
+
+    fixture.records.intakeStage[fixture.index] = intakeStageIndex('failed');
+    // One whole reconsideration cycle: `ActionSystem`'s schedule is every 20
+    // ticks, so a single `step` after the write would land on a tick the
+    // system does not run at and prove nothing either way.
+    for (let tick = 0; tick < 20; tick += 1) fixture.kernel.step();
+
+    expect(fixture.roomInstances.useOccupancyOf('canteen-0', 'dining'), 'the seat is given back').toBe(0);
+    expect(ACTION_PHASES[fixture.currentAction.phase[fixture.index]!]).toBe('idle');
+    expect(fixture.coldState.getActionTarget(fixture.entityId)).toBeUndefined();
   });
 });
