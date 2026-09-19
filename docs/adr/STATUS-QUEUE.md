@@ -9669,7 +9669,7 @@ settled, items 2 and 3 as still owed.
    and only one of the two is what the bullet is about.
    `const prisonerDetailReader = …` holds at **`:1665`**,
    `src/ui/simulation-prisoner-detail.ts:212` and
-   `src/ui/hud/regime-panel.ts:743` hold, all three on files this window did
+   `regime-panel.ts:743` hold, all three on files this window did
    not touch and all three opened anyway. **The verbatim quotations needed no
    edit for the eighth consecutive anchor**, and the number beside one of them
    has now moved at seven of the eight.
@@ -9692,7 +9692,7 @@ settled, items 2 and 3 as still owed.
    hunk (`@@ -133,7 +133,8 @@`, a two-line docblock sentence replacing one,
    nearly two thousand lines above the declaration). `const prisonerDetailReader
    = …` holds at **`:1665`**, `src/ui/simulation-prisoner-detail.ts:212` and
-   `src/ui/hud/regime-panel.ts:743` hold, all three on files this window did not
+   `regime-panel.ts:743` hold, all three on files this window did not
    touch and all three opened anyway. **The verbatim quotations needed no edit
    for the seventh consecutive anchor**, and the number beside one of them has
    now moved at six of the seven.
@@ -19116,7 +19116,7 @@ once: state the subject, not the absence.
   purpose and this pass does not re-adopt.
 - **§2's ADR 0093 quartet: three of four hold**, `src/main.ts:1665`,
   `src/ui/simulation-prisoner-detail.ts:212` and
-  `src/ui/hud/regime-panel.ts:743`, each opened although none of those files is
+  `regime-panel.ts:743`, each opened although none of those files is
   in the window.
 - **§2's three `action-system.ts` call sites and its `:1295` guard quotation
   hold for the fourth anchor running**, on a file in none of the six merges.
@@ -19367,7 +19367,7 @@ repair is made in §2 here, and that is the more useful half of this bullet.
   budget"*, cited by quotation rather than by line, which is why the edit cost
   it nothing.
 - **§2's three remaining ADR 0093 coordinates hold** — `src/main.ts:1665`,
-  `src/ui/simulation-prisoner-detail.ts:212`, `src/ui/hud/regime-panel.ts:743`
+  `src/ui/simulation-prisoner-detail.ts:212`, `regime-panel.ts:743`
   — each opened although none of those files is in the window.
 
 ### The census moved by one document and not by one status word, and the previous pass's own commit count was wrong when it was written
