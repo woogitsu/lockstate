@@ -70,6 +70,38 @@ for re-opening it after #1167 is kept below rather than deleted, and re-opening
 it would be a fresh ruling rather than the discharge of this one. Nothing here
 authorises moving either half to Manage later without asking again.
 
+**AND THAT CLAUSE STOPPED BEING TRUE WHEN THE SPLIT LANDED. It is kept above
+rather than rewritten**, per `docs/AGENT_WORKFLOW.md` §4's rule about marking
+both directions, because it records the state the ruling sat in between being
+made and being built, and because a reader needs to see that the ruling and the
+implementation are two separate events.
+
+**Built.** `src/ui/hud/roster-panel.ts` carries the roster and the inspector as
+`.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the timetable;
+`hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+`tests/browser/ui-roster-panel-split.spec.ts` holds the three properties the
+split makes structural. **The placement is ruled and is not deferred**: moving
+the roster to Zarządzaj later is a fresh ruling, and nothing in what was built
+prepares one.
+
+**What it cost, measured on the same fixtures before and after** — the
+timetable, a four-row roster of a prison of nine, and a selected prisoner:
+**63 px** of panel chrome at every viewport (one panel 487.13 px at
+1440x900 / 1280x720 / 1024x768 / 900x600 and 456.75 px at 375x812; two panels
+169.75 + 380.38 = 550.13, and 156.56 + 347.44 = 504.00 at the phone), and an
+arrival overflow of **16 px at 375x812** and **46 px at 900x600** where the one
+panel arrived unscrolled. **What it did not buy is an independent scroll**: the
+single panel's own `scrollHeight - clientHeight` was **0 at all five
+viewports** in that same fullest state, so the scroll this ADR's §"The options"
+worried about was never actually reached. The Manage rail is untouched, which
+is what declining option 2 means: `.hud__side`, Intake and Staff measure
+identically before and after at all five viewports.
+
+**Those figures are this document's own and are NOT the 51.56 px / 14.88 px
+above.** Those two price **option 2**, which was declined; these price **option
+4**, which shipped and leaves the Manage rail alone. A reader comparing them
+would be comparing two different arrangements.
+
 ## Context
 
 ### What the delivery asks for
@@ -285,6 +317,11 @@ one-line mount change afterwards — the same shape the 2026-09-14 move's own
 commit sequence used for intake (§6 step 3 of the navigation-move record:
 *"Either is a one-line `setVisible`/gate change… so the sequencing cost of
 waiting for the answer is zero"*).
+
+**OVERTAKEN ON 2026-09-16: the owner ruled option 4 and it was built the same
+week.** The paragraph below is kept because it is the position this document
+argued from, and because its last sentence — *"a table that has never been
+ruled on"* — is exactly the clause the ruling closed. Read the Status block.
 
 **This document does not implement it.** Stage 5's own exit criterion is that
 nothing is unreachable, and every row of the Regime panel is reachable today at

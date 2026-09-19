@@ -168,7 +168,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * appears anywhere. The grep that says something is
          * `grep -rni 'high.risk' src/ui/`; before this change every hit it
          * returned was a comment or the `classificationGroupId === 'high-risk'`
-         * tone rule in `hud/regime-panel.ts`, and none of them was this count.
+         * tone rule now in `hud/roster-panel.ts`, and none of them was this count.
          * No tally is given, because the point is the *spelling* of the grep and
          * a count of hits would rot on the next comment anybody writes.
          */

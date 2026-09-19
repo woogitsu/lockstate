@@ -497,6 +497,24 @@ sentence.
    delivery puts them under Zarządzaj; and the eleven surfaces the direction
    does not place are still unplaced.
 
+   **The first half of that sentence stopped being literally true on
+   2026-09-16 and is kept rather than rewritten, because the *gap* it names is
+   intact.** The roster and the inspector are their own panel now —
+   `src/ui/hud/roster-panel.ts`, `.ui-panel.hud-roster` — and it is still laid
+   out on Day plan, beside the timetable, because that is what the owner ruled
+   that day: *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia"*
+   (split the panel in code, both halves on Plan dnia), with the option that
+   moved it to Zarządzaj declined. So the code no longer disagrees with itself
+   about what a panel is, and it still disagrees with the delivery's table
+   about which section inmates belong to — by ruling rather than by omission.
+   A UI change must not read this as groundwork for a later move: moving the
+   panel is a fresh ruling for the owner.
+
+   **The 63 px that cost, and the arrival scroll it bought at two viewports,
+   are in `hud.css`'s `.ui-panel.hud-roster` block** — the measurement any
+   further panel added to this rail should be read against, because it is what
+   a second panel header costs anywhere in it.
+
    **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
    2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in
    **two line boxes** -- 26.38px against every other label's 13.19 -- in the

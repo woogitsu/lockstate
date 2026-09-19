@@ -503,6 +503,14 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   4) and is not done here. Named so that a reader does not take this
    *   sentence's absence for the split having happened.
    *
+   *   **The split happened on 2026-09-16 and the paragraph above is kept**
+   *   (`docs/AGENT_WORKFLOW.md` SS4): the roster and the inspector are
+   *   `src/ui/hud/roster-panel.ts` now, titled from `hud.regime.roster`. What
+   *   did **not** happen is the mount move the sentence anticipates -- the
+   *   owner ruled both halves stay on this tab and declined the option that
+   *   put the roster under Zarzadzaj -- so this label still names a section
+   *   that holds more than the delivery's table gives it.
+   *
    * Widths, because ADR 0022's measurement is what limits a label here. It
    * measured the tab bar at 375x812 spanning x = 1.8 .. 373.2 with a fifth tab
    * injected -- 1.8px of margin per side -- so a nine-character label such as
@@ -3172,7 +3180,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // naming a tab.
   //
   // **The state this sentence is not true of is a prison that emptied out**,
-  // and it does not have to be: `regime-panel.ts` draws this line only while
+  // and it does not have to be: `roster-panel.ts` draws this line only while
   // `everAdmitted` is false (issue #506), so a prison that admitted people and
   // has since discharged all of them draws no sentence here at all. That
   // second state still has none, and authoring one is the owner's under
@@ -3190,7 +3198,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and choosing it in their own words: *"This prison is empty. Take somebody
   // in to start again."* It is the sentence the key above has never been able
   // to carry: a prison that admitted people and discharged all of them drew
-  // **no line at all** before this, because `regime-panel.ts` gated the box on
+  // **no line at all** before this, because `roster-panel.ts` gated the box on
   // `everAdmitted` being false and there was no true thing to put there.
   //
   // Same two-part shape as the key above, as ruled -- the state, then the one

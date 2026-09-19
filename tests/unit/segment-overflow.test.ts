@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { occupancyTone } from '../../src/ui/hud/projection';
-import { NEED_BAR_MAX_PERMILLE } from '../../src/ui/hud/regime-panel';
+import { NEED_BAR_MAX_PERMILLE } from '../../src/ui/hud/roster-panel';
 import { DEFAULT_BAR_SEGMENTS, filledSegments, overflowSegments } from '../../src/ui/primitives/segmented-bar';
 
 /**

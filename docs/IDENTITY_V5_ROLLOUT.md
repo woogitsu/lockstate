@@ -508,6 +508,35 @@ answer this after that lands.
 > implements it**, so this stage's owed item is answered rather than
 > discharged.
 
+> **AND THE LAST CLAUSE OF THE BLOCK ABOVE STOPPED BEING TRUE WHEN THE SPLIT
+> LANDED. It is kept rather than rewritten, per `docs/AGENT_WORKFLOW.md` §4's
+> rule about marking both directions**, because what it records is the state
+> the ruling sat in for the days between being made and being built.
+>
+> **Built.** `src/ui/hud/roster-panel.ts` carries the roster and the inspector
+> as `.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the timetable;
+> `hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+> `.ui-panel.hud-regime` is `flex: 0 0 auto` and `.ui-panel.hud-roster` is
+> `overflow-y: auto`, the division this stage already recorded for Intake and
+> Staff on Manage. So the owed item is **discharged** as well as answered.
+>
+> **What it cost, measured on the same fixtures before and after** — the
+> timetable, a four-row roster of a prison of nine, and a selected prisoner:
+> **63 px** of panel chrome at every viewport, and an arrival scroll of **16 px
+> at 375x812 and 46 px at 900x600** where one panel arrived unscrolled. Nothing
+> became unreachable, which is this stage's exit criterion. **What it did not
+> buy is an independent scroll**, and that refutes the obvious argument for the
+> split: the single panel's own overflow was **0 at all five viewports** in that
+> same fullest state, so there was never a scroll for the timetable to be
+> carried away by. The buys are an independent collapse, an independent height
+> budget and a one-line mount.
+> `tests/browser/ui-roster-panel-split.spec.ts` holds them and `hud.css`'s
+> `.ui-panel.hud-roster` block carries the table.
+>
+> **The remaining gap is the delivery's table, not the code.** *osadzeni* sits
+> under Zarządzaj in `DOKUMENTACJA/projekt.md`; the owner put the roster on Plan
+> dnia. That disagreement is now a ruling rather than an omission.
+
 **The second owed thing — the eleven unplaced surfaces — is discharged as a
 check and produces one question.** Every one is still mounted, and a twelfth
 exists that stage 0 could not have listed: the language picker (#663), inside

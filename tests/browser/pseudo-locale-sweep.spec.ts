@@ -533,7 +533,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
    * Every other finding the sweep collects is either bracketed -- reached
    * through the catalogue, `Localizer.format` having produced it -- or it is
    * exactly the leak this test exists to catch. A generated prisoner or staff
-   * name is not a third exemption: `regime-panel.ts` interpolates it into
+   * name is not a third exemption: `roster-panel.ts` interpolates it into
    * `HUD_MESSAGE_KEY.regimeRosterName` via `t(...)`, so it arrives bracketed
    * (the template's `⟦ … ⟧` wraps the whole rendered string, name included --
    * the "second class" of finding this file's own docblock describes under

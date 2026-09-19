@@ -168,7 +168,7 @@ an incident.
 > - **A readout.** The regime panel draws a bar per prisoner carrying **that
 >   prisoner's lowest need** — its word, its level in permille, and a `warning`
 >   tone when the need is unmet for state income
->   (`src/ui/hud/regime-panel.ts:621-623`, `:1311-1324`; `:1317-1319` says the
+>   (`src/ui/hud/roster-panel.ts:572-574`, `:1184-1197`; `:1190-1192` says the
 >   subject of the bar changes with which of the six is now lowest). **That is
 >   ADR 0029
 >   decision 5's revisit condition — *"the readout that shows a starving need"* —
