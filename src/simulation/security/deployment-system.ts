@@ -6,7 +6,7 @@ import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
 import { isAtPost } from './deployment-phase';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
-import { claimableGuardIds } from './post-eligibility';
+import { claimableGuardIds, isPostEligibleStaffRoleId } from './post-eligibility';
 import { resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
@@ -40,6 +40,56 @@ export class DeploymentSystem implements SystemRegistration {
 
   private requestSequence = 0;
   private deploymentFailures = 0;
+
+  /**
+   * The sectors whose **most recent** deployment route request failed, and
+   * which have had no successful one since ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted 2026-09-17, option 3).
+   *
+   * **Not `deploymentFailures` above, and that is the whole reason this field
+   * exists.** That counter is a lifetime total which never decreases, so it
+   * can say *this prison has failed to post a guard* and can never say
+   * *currently* -- ADR 0117 §3 rules it out by name for exactly that. This
+   * set is a level: `continueDeploymentTravel` adds a sector when its route
+   * request comes back `ok: false`, and every path on which a route to the
+   * post turns out to exist removes it again -- the successful branch of the
+   * same method, `onArrivedAtPost`, and `beginDeployment`'s
+   * already-standing-there fast path. **The successful branch is the earliest
+   * of those three and is the one that matters**: a resolved route is a way
+   * to the post, so the level drops when the route exists rather than when
+   * the walk ends, which was measured at 74 ticks later on seed `0x396`. So it goes back to
+   * false when the player takes the wall down, which is the property the
+   * condition's sentence rests on.
+   *
+   * **Not snapshotted, deliberately**, exactly as `requestSequence` is not.
+   * A restored session starts with it empty and re-establishes the truth on
+   * its first deployment cadence -- one `intervalTicks: 10` pair, i.e. within
+   * 20 ticks of the load -- because the world geometry that decides it is
+   * itself in the save. Persisting it would put a derived fact in the payload
+   * and give a stale save authority over a world it no longer describes.
+   * `getSnapshot` below is unchanged and `SAVE_SCHEMA_VERSION` does not move.
+   *
+   * **Read by key only, never iterated**, so `docs/DETERMINISM.md`'s rule
+   * about `Map`/`Set` iteration order is not engaged: `hasUnreachablePost`
+   * walks `SecuritySectorRegistry.all()` -- which is sorted -- and asks this
+   * set about each id in turn.
+   *
+   * ## The one stale window, stated rather than left to be found
+   *
+   * A sector whose last request failed keeps the flag while no request is
+   * made at all -- the prison has dismissed every post-eligible guard, say.
+   * `hasUnreachablePost` cannot report a condition in that state because it
+   * also requires a claimable guard, so nothing is said. But a player who
+   * dismisses every guard, takes the wall down, and then hires again would
+   * have the condition read true for at most one deployment cadence before
+   * the first successful route clears it. The alternative -- clearing the
+   * flag whenever a guard is claimed -- was measured and rejected: assignment
+   * happens one cadence *before* the failure it causes is read, so the flag
+   * would flicker in exactly the 100-ticks-on / 100-ticks-off pattern ADR
+   * 0117 §1b measures for `shortage`, which is the defect this condition
+   * exists to stop reproducing.
+   */
+  private readonly sectorsWithFailedRoute = new Set<string>();
 
   public constructor(
     private readonly sectors: SecuritySectorRegistry,
@@ -114,6 +164,104 @@ export class DeploymentSystem implements SystemRegistration {
       this.resolveOccupantCount(sectorId),
       sectorOccupantCountIsComplete(sectorId),
     );
+  }
+
+  /**
+   * Whether some sector of this prison currently has a post **nothing can
+   * route to**, with guards on the roster that would take it
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17).
+   *
+   * The producer of `PrisonCondition`'s `'security.post-unreachable'` member,
+   * read once per status-strip publication by
+   * `computeStandingPrisonConditions`. It is a **read**: nothing here assigns,
+   * routes, steps or mutates, which is what lets the projection stay the pure
+   * function `tests/determinism/status-counts-publication.test.ts` treats it
+   * as.
+   *
+   * ## The four conjuncts, and why each one is load-bearing
+   *
+   * ADR 0117 §3 names the shape and leaves the predicate to the
+   * implementation; these are the four it asked for, with what each one keeps
+   * out.
+   *
+   * 1. **The sector asks for at least one guard.** A sector requiring nobody
+   *    has no post to fail to man, and `resolveOccupancyScaledGuardCount`
+   *    answers `0` for an empty prison (issue #533's exemption), so this is
+   *    also what keeps the condition off a prison with no prisoners in it.
+   * 2. **Its last deployment route failed and nothing has succeeded since**
+   *    -- `sectorsWithFailedRoute`. This is the conjunct that says
+   *    *currently*, and the one that goes back to false when the player takes
+   *    the wall down.
+   * 3. **No guard of the sector is standing on the post.** Without it the
+   *    condition could stand beside a manned post in a prison whose *second*
+   *    guard could not be routed, and the sentence it prints ("nobody is on
+   *    duty") would be false.
+   * 4. **The roster holds at least one post-eligible guard.** A prison that
+   *    has hired nobody has an unmanned post too, and its true story is "hire
+   *    a guard", not "nothing can reach the post".
+   *
+   *    **It is the whole roster and deliberately not `claimableGuardIds`,
+   *    and that is a measurement rather than a preference.** Written with
+   *    `claimableGuardIds` -- the list `assignUnassignedGuards` draws from,
+   *    which holds only *unassigned* guards -- this predicate answered `true`
+   *    on exactly **100 of 200 consecutive ticks** on seed `0x396` with the
+   *    post sealed, because the one guard is assigned on one deployment
+   *    cadence and unassigned again on the next. That is the same
+   *    ten-tick alternation ADR 0117 §1b measures for `shortage` and for the
+   *    strip's coverage counts, reproduced inside the condition written to
+   *    stop it: the chip would have read *"Post cut off"* and *"Covered"* in
+   *    turn. Counting hired post-eligible guards instead holds it at **200 of
+   *    200**, because a hire is a fact about the roster rather than about
+   *    where the deployment cadence happens to be.
+   *
+   * ## What it deliberately does not read
+   *
+   * `deploymentFailures`. It is a lifetime counter that never decreases, so
+   * a prison that recovered would carry the condition for the rest of the
+   * session; ADR 0117 §3 rules it out by name and `sectorsWithFailedRoute`'s
+   * own comment records the same thing from the other side.
+   *
+   * ## Cost
+   *
+   * `O(sectors x guards)` with one `Set.has` per sector, on the
+   * 500 ms status-counts cadence, against a registry that holds exactly one
+   * sector in any startable session (ADR 0110). No route is requested and no
+   * search is run: the answer is state this system already holds.
+   */
+  public hasUnreachablePost(tick: number): boolean {
+    for (const sector of this.sectors.all()) {
+      if (this.requiredGuardCountFor(sector.id, tick) <= 0) continue;
+      if (!this.sectorsWithFailedRoute.has(sector.id)) continue;
+      if (this.hasGuardOnPost(sector.id)) continue;
+      if (!this.hasPostEligibleGuard()) continue;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Whether the roster holds anybody who could take a post at all -- hired,
+   * whatever the deployment cadence has done with them this tick.
+   *
+   * `isPostEligibleStaffRoleId` is the same eligibility rule
+   * `claimableGuardIds` applies (ADR 0053's *"one place decides"*); what
+   * differs is that this does not also require the guard to be unassigned,
+   * which is what makes the answer steady rather than alternating. See
+   * `hasUnreachablePost`'s conjunct 4 for the measurement.
+   */
+  private hasPostEligibleGuard(): boolean {
+    for (const guardId of this.guards.allGuardIds()) {
+      if (isPostEligibleStaffRoleId(this.guards.getStaffRoleId(guardId))) return true;
+    }
+    return false;
+  }
+
+  private hasGuardOnPost(sectorId: string): boolean {
+    for (const guardId of this.guards.allGuardIds()) {
+      if (this.guards.getSectorId(guardId) === sectorId && this.guards.getDeploymentPhase(guardId) === 'on-post') return true;
+    }
+    return false;
   }
 
   private assignedGuardCountFor(sectorId: string): number {
@@ -204,6 +352,10 @@ export class DeploymentSystem implements SystemRegistration {
     const currentTile = this.guards.getTile(guardId);
 
     if (isAtPost(currentTile, postTile)) {
+      // Standing on it already, so nothing has to be routed to reach it --
+      // `onArrivedAtPost`'s clause one line of code away, for the path that
+      // never enters the navigation queue at all.
+      this.sectorsWithFailedRoute.delete(sectorId);
       this.guards.setDeploymentPhase(guardId, 'on-post');
       return;
     }
@@ -238,11 +390,28 @@ export class DeploymentSystem implements SystemRegistration {
     this.navigation.clearResult(requestId);
     this.guards.setPathRequestId(guardId, undefined);
 
+    // Read before either branch, because `unassign` below clears it and both
+    // branches are statements about this guard's sector (ADR 0117).
+    const sectorId = this.guards.getSectorId(guardId);
+
     if (!outcome.result.ok) {
       this.deploymentFailures += 1;
+      // ADR 0117 §4's truth condition (b) -- "no guard can reach it is true
+      // exactly when the route request fails, which is the branch at
+      // `deployment-system.ts`" -- and this is that branch.
+      if (sectorId !== undefined) this.sectorsWithFailedRoute.add(sectorId);
       this.guards.unassign(guardId); // retryable next assignment cycle, not a permanent loss of coverage
       return;
     }
+
+    // **The moment "no guard can reach it" stops being true is here, not at
+    // the far end of the walk.** A resolved route *is* a way to the post, so
+    // the flag goes down as soon as one exists; clearing it only in
+    // `onArrivedAtPost` left the condition standing for the whole walk --
+    // measured at **74 ticks** on seed `0x396` after one of the four sealing
+    // edges came down -- during which the chip would have printed "No guard
+    // can reach the post" over a guard visibly walking to it.
+    if (sectorId !== undefined) this.sectorsWithFailedRoute.delete(sectorId);
 
     /*
      * The route is walked rather than applied in one step (ADR 0088,
@@ -267,6 +436,12 @@ export class DeploymentSystem implements SystemRegistration {
    * different cadence than this system runs on.
    */
   public onArrivedAtPost(guardId: EntityId): void {
+    // A guard standing on the post is the refutation of "no guard can reach
+    // it", so the flag goes down here rather than only where a route resolves:
+    // this is the one place every arrival passes through, whatever route
+    // length or reload brought the guard to it.
+    const arrivedSectorId = this.guards.getSectorId(guardId);
+    if (arrivedSectorId !== undefined) this.sectorsWithFailedRoute.delete(arrivedSectorId);
     this.guards.setDeploymentPhase(guardId, 'on-post');
   }
 }

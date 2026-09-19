@@ -1102,11 +1102,30 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * off this panel. The gutter is dropped below 720px, where the strip's first
  * row ends at x = 233 and the slot's 52px start at 323, so it overlays empty
  * strip instead of taking a reservation nobody needed.
+ *
+ * **`375x812` MOVED 439.3 -> 447.7 ON 2026-09-16, AND IT IS THE PHONE'S TURN
+ * TO BE GIVEN HEIGHT RATHER THAN TO LEND IT.** The entry above says the phone
+ * *"sits it out because a phone keeps its bottom bar"*; it keeps the bar and
+ * the bar got shorter. The owner ruled that below 721px a tab shows its icon
+ * and not its name (#1192), so `.ui-tab__label` is `.ui-sr-only` there and the
+ * `.ui-tab` floor drops 64px -> 56px.
+ *
+ * The chain, measured on this page in one worktree, both arms of one run
+ * (`tests/browser/playtest-1192-icon-only-tabs.playtest.ts`):
+ *
+ *     viewport    tab bar          rail             this panel
+ *     375x812     69.2 -> 58.0     639.1 -> 650.3   439.3 -> 447.7
+ *
+ * 11.2px comes off the `tabs` row, the middle row takes all of it, and
+ * `.hud__aside`'s `min-height: 25%` keeps 2.8 of it (159.8 -> 162.6) exactly
+ * as every entry above describes -- which leaves the 8.4 this number moved by.
+ * The other two viewports do not move, because the rule is inside
+ * `@media (max-width: 720px)`.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 447.5,
   '900x600': 365.5,
-  '375x812': 439.3,
+  '375x812': 447.7,
 };
 
 /**
@@ -6610,13 +6629,31 @@ test.describe('the assembled application', () => {
         `the Rooms panel's arrival height changed at ${width}x${height}`,
       ).toBe(ARRIVAL_PANEL_HEIGHT_PX[`${width}x${height}`]);
       if (width === 375) {
-        // The recording #312 shipped, kept as an assertion. `TILE_SIZE_PX` is 64
-        // at zoom 1, so "under 64" is "not even one tile", and every authored
-        // room needs at least 2x2 of them.
+        /*
+         * The recording #312 shipped, kept as an assertion. `TILE_SIZE_PX` is
+         * 64 at zoom 1, and every authored room needs at least 2x2 of them, so
+         * what keeps the fold below necessary is that no 128px square of bare
+         * world is reachable on arrival.
+         *
+         * **THIS READ `toBeLessThan(64)` UNTIL 2026-09-16 AND THE SENTENCE
+         * ABOVE IS WHY IT COULD MOVE.** That threshold was "not even one
+         * tile", which is stricter than the reason it was given in the same
+         * comment, and it went red at exactly 64 when the owner's #1192 ruling
+         * took 11.2px off the phone's tab bar (`hud.css`'s
+         * `@media (max-width: 720px)` block; `ARRIVAL_PANEL_HEIGHT_PX` above
+         * carries that chain). One tile of bare world is not a room, and the
+         * scan steps in 16px, so the number is pinned exactly rather than
+         * bounded -- a second gain would show up here rather than being
+         * absorbed by a looser ceiling.
+         */
         expect(
           arrival.largestBareSquare,
           `bare world appeared on arrival at ${width}x${height}, so the fold below may no longer be needed`,
-        ).toBeLessThan(64);
+        ).toBe(64);
+        expect(
+          arrival.largestBareSquare,
+          `a 2x2 room fits in the bare world on arrival at ${width}x${height}, so the fold below is not needed`,
+        ).toBeLessThan(128);
         expect(arrival.gapsBetweenPanels, `the rail's gaps changed at ${width}x${height}`).toEqual([8, 16, 24]);
       }
 

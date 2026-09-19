@@ -10,6 +10,7 @@ import type { CarryJobExecutor } from '../operations/carry-executor';
 import type { CarryItemJob } from '../operations/job';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import { DEFAULT_ACTIONS, type ActionDefinition } from './actions';
+import { INFIRMARY_TREATMENT_ACTION_ID, treatmentTicksFor } from './injury';
 import {
   ACTION_PHASES,
   actionIndexOf,
@@ -217,6 +218,25 @@ export const DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER: PrisonerRouteContextResolv
  * the same fact and the one that drifts when the id is renamed.
  */
 const CARRY_ACTION = DEFAULT_ACTIONS.find((action) => action.target.kind === 'job-board');
+
+/**
+ * The one entry of `DEFAULT_ACTIONS` that clears
+ * `PrisonerRecordComponent.injured` (issue #589).
+ *
+ * Resolved once from the catalogue rather than per prisoner per cycle, the same
+ * way `CARRY_ACTION` above is -- **and by id rather than by a structural
+ * property, which is the opposite of that constant's rule and is deliberate.**
+ * The carry is identified by `target.kind` because "the entry whose target is a
+ * job" is a fact about the shape that no second entry can ever share. Treatment
+ * has no such property: it targets a room with a required capability exactly as
+ * the shower, the canteen meal, the classroom and both work entries do, so any
+ * structural test would be a description that a sixth room action could
+ * accidentally satisfy. The id is the fact. `injury.ts` exports it, and
+ * `tests/unit/prisoners-action-catalog.test.ts` is what fails if the catalogue
+ * stops carrying an entry with that id -- which is what makes the
+ * `undefined` arm below unreachable rather than merely unreached.
+ */
+const TREATMENT_ACTION = DEFAULT_ACTIONS.find((action) => action.id === INFIRMARY_TREATMENT_ACTION_ID);
 
 /**
  * What a candidate action resolved to: a room to walk to, or a job to walk for.
@@ -741,17 +761,57 @@ export class ActionSystem implements SystemRegistration {
     }
 
     const elapsed = tick - this.currentAction.phaseStartedAtTick[index]!;
-    if (elapsed >= action.minDurationTicks) {
+    if (elapsed >= this.requiredDurationOf(entityId, action)) {
       // Released before the target is cleared, because the release needs the
       // instance id the target holds. ADR 0029 settles ADR 0028's own open
       // question 7 here: the claim ends when the *action* ends, not when the
       // actor leaves the tile, because an abstracted arrival gives this model
       // no departure event to hang the other answer on.
+      //
+      // **Before the release, because the flag is what the course was for**
+      // (issue #589). A completed course of `action.infirmary-treatment`
+      // clears `injured`; every other action reaches this line having changed
+      // nothing but need levels, exactly as before.
+      if (action === TREATMENT_ACTION) this.records.injured[index] = 0;
       this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       this.actionsCompleted += 1;
     }
+  }
+
+  /**
+   * How long this performance of `action` has to last, which is
+   * `action.minDurationTicks` for every entry in the catalogue but one.
+   *
+   * **`action.infirmary-treatment` is the exception, and the exception is where
+   * `'medical-supply'` acquires its first reader** (issue #589). A course takes
+   * the catalogue's figure on a bare medical bed and half of it in a room that
+   * also holds a `medical-supply` object -- `object.medicine-cabinet`, which
+   * `room.infirmary` requires and which nothing in this repository read before
+   * this method. `treatmentTicksFor` is the rule and `injury.ts` carries where
+   * the factor of two comes from.
+   *
+   * Read off the **target instance's** derived capabilities rather than off a
+   * sitewide count, so it is a property of the room the prisoner is actually
+   * lying in: a prison with a stocked infirmary and a bare one treats at two
+   * speeds, and which one a prisoner gets is which room `findAvailableForUse`
+   * gave them. `objectCapabilities` is recomputed from placements by
+   * `RoomCapacityResolver` on every placement, removal, zoning and restore, so
+   * it is never persisted and a save round trip cannot disagree with it -- the
+   * same property that lets `deriveRoomCapacity` stay out of the payload.
+   *
+   * An instance that has gone missing falls back to the catalogue figure. It is
+   * unreachable from here -- the caller has already returned for exactly that
+   * state, a few lines above -- and the fallback is the *slower* branch either
+   * way, which is the direction that cannot invent a shorter course than the
+   * content promises.
+   */
+  private requiredDurationOf(entityId: number, action: ActionDefinition): number {
+    if (action !== TREATMENT_ACTION) return action.minDurationTicks;
+    const instanceId = this.coldState.getActionTarget(entityId);
+    const instance = instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
+    return treatmentTicksFor(action.minDurationTicks, instance?.objectCapabilities ?? []);
   }
 
   /**
@@ -1523,6 +1583,84 @@ export class ActionSystem implements SystemRegistration {
       && bestProvidable !== undefined
       && bestProvidable !== CARRY_ACTION
       && relievesAnUnmetNeed(this.needs, index, bestProvidable);
+
+    /*
+     * **Treatment outranks everything, and it is the same rule ADR 0093
+     * decision 2 states for the carry rather than a second kind of rule**
+     * (issue #589, the owner's ruling of 2026-09-17).
+     *
+     * `action.infirmary-treatment` declares no need effect, so `scoreAction`
+     * gives it exactly **0** -- the floor, since no authored effect is
+     * negative. Left to the ranking it would therefore be reached only when
+     * every other legal candidate had failed to resolve, which is the shape
+     * that made `action.carry` need a rule: an injured prisoner would go to
+     * the infirmary only in a prison that offered them nothing else, and the
+     * flag would clear by accident or not at all. So the promotion is decided
+     * by the flag, as the carry's is by the board.
+     *
+     * **It is ahead of the carry deliberately, and the order is the one place
+     * the two rules meet.** A prisoner who is hurt and is also being sent on an
+     * errand is treated; the institution does not hand a crate to somebody it
+     * has just been told is injured. Written as a `return` before the carry's
+     * own block rather than as a fourth condition inside it, so neither rule
+     * has to state the other's.
+     *
+     * **`aNeedIsUrgent` does not bound it, and that is the difference from the
+     * carry.** The owner's 2026-09-02 amendment bounds the *carry* because a
+     * carry is work the institution chooses to hand out -- *"the institution
+     * will not send a prisoner on an errand while it is already failing to meet
+     * a need it is being docked for"*. Treatment is not work handed out and no
+     * ruling bounds it; a prisoner who is hungry and injured is still injured,
+     * and the state does not dock the prison for a need this action could
+     * serve, because it serves none. What treatment costs is measured in
+     * `injury.ts`: the day of need decay the course takes, and nothing else.
+     *
+     * **`prisonProvides` is the gate, which is what keeps a prison with no
+     * infirmary byte-identical.** `hasPlaceForUse('room.infirmary',
+     * 'medical-treatment')` is false wherever no such room has been zoned and
+     * furnished, so the promotion never fires, `ranked` is returned untouched,
+     * and not one counter or `providedIndex` moves for any prisoner in any
+     * prison that has never built one -- the same property ADR 0093 decisions 2
+     * and 6 buy by filtering the carry out when the board is empty. The flag
+     * simply stays set, which is the corpus's own "nothing deadlocks" condition
+     * met by doing nothing rather than by authoring a passive-recovery timer
+     * the ruling did not buy.
+     *
+     * **Two gates that are deliberately absent, said rather than left for a
+     * reader to infer.**
+     *
+     * `awaitingAccommodation` does not bound this. ADR 0102 decision 2 refuses
+     * **work** to a prisoner still waiting for a bed, and refuses it because
+     * whether an unhoused prisoner should hold a job is a question that
+     * document declines to answer. Treatment is not a job and the question does
+     * not arise: care is not owed to somebody because they have a cell.
+     *
+     * Nor does a live solitary sanction, and that is inherited rather than
+     * chosen. `PrisonerOperationsRuntime` overrides a sanctioned prisoner's
+     * timetable to `HIGH_RISK_REGIME`, which allows `hygiene` for 2,200 of its
+     * 2,400 ticks -- so `action.shower` has walked sanctioned prisoners to a
+     * shower room since long before this entry existed, and treatment behaves
+     * the same way for the same reason. Solitary is modelled here as a
+     * restriction on a timetable and not as physical confinement that stops
+     * every room action; changing that is a decision about the sanction, not
+     * about the injury.
+     */
+    if (
+      TREATMENT_ACTION !== undefined
+      && this.records.injured[index] === 1
+      && legalActions.includes(TREATMENT_ACTION)
+      && this.prisonProvides(entityId, TREATMENT_ACTION)
+    ) {
+      // Promoted rather than sorted into place, exactly as the carry is below:
+      // `rankActions` stays pure and the rest of the ranking keeps its own
+      // total order. `providedIndex: 0` is honest for the same reason it is
+      // there -- `prisonProvides` was just consulted and answered yes -- and a
+      // prisoner who then loses the race for the last bed walks on to their
+      // need-ranked candidates under ADR 0041 decision 1 and is counted a
+      // contended substitution, because somebody else got the bed.
+      const candidates = [TREATMENT_ACTION, ...ranked.filter((action) => action !== TREATMENT_ACTION)];
+      return { entityId, index, classificationGroupId, candidates, providedIndex: 0, urgency: scoreAction(this.needs, index, TREATMENT_ACTION) };
+    }
 
     if (carryEligible && CARRY_ACTION !== undefined && !aNeedIsUrgent) {
       // Promoted rather than sorted into place, which is what leaves

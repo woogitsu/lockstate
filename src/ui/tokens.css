@@ -689,6 +689,15 @@
    * 291.14px and the tightest adjacent pair sits **5.11px** apart, which is
    * the gap `Strefy/Zarządzaj` already has today (5.14px). 0.04em buys 7.02px
    * and tracks the caps tighter for a pixel and a half nothing needs.
+   *
+   * **NOTHING APPLIES THIS TODAY, AND THE PARAGRAPHS ABOVE ARE KEPT RATHER
+   * THAN DELETED BECAUSE THEY ARE WHAT THE RULING THAT REMOVED IT WAS MADE
+   * AGAINST.** Its one rule was `hud.css`'s `.hud__tabs .ui-tab__label` inside
+   * `@media (max-width: 720px)`, and on 2026-09-16 the owner ruled that below
+   * that break a tab shows its icon and not its name (#1192), so there is no
+   * label there left to track. The token stays declared: the measurements
+   * above are the only record of what a phone bar full of uppercase Polish
+   * costs, and a tighter label is the obvious thing to reach for again.
    */
   --label-tracking-tight: 0.06em;
   /* The line-height every label-sized run of type is set in. A token rather

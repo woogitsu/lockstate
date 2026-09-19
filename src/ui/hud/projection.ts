@@ -443,6 +443,14 @@ function roomsNotReadyBadge(roomNeeds: HudRoomNeedsViewModel | undefined): HudMe
  * colour alone.
  */
 function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
+  // Above the ladder, because it is the state the ladder cannot see (ADR 0117,
+  // accepted 2026-09-17). While a post cannot be reached, the three counts
+  // below alternate between *covered* and *unguarded* on the deployment
+  // cadence -- 100 ticks each over 200, seed `0x396` -- so reading them alone
+  // paints this chip green on half of all frames over a prison no guard is
+  // standing in. `coverageBadge` takes the same precedence for the same
+  // reason, so the colour and the word still come off one ladder read once.
+  if (counts.postUnreachable === true) return 'danger';
   if (counts.prisonersUnguarded > 0) return 'danger';
   if (counts.prisonersUnderstaffed > 0) return 'warning';
   return undefined;
@@ -490,6 +498,11 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
  */
 function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   const tone = coverageTone(counts);
+  // ADR 0117 §4's second decision, settled here: while this stands,
+  // `securityCoverageMet` -- "Covered" -- is false, and it is what this chip
+  // would otherwise read on half of all ticks (measured; see `coverageTone`).
+  // So the rung is displaced rather than annotated.
+  if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
   // One ladder, read once: the tone and the word come off the same two rungs in
   // the same order, so a rung that changes the colour cannot fail to change the
@@ -964,7 +977,16 @@ export function projectStatusMetrics(
       capacity: undefined,
       tone: coverageTone(counts),
       badge: coverageBadge(counts),
-      description: undefined,
+      /**
+       * **The one sentence a stranded post gets** (ADR 0117, accepted by the
+       * owner on 2026-09-17), and `undefined` on every other prison.
+       *
+       * The chip's own `title` and screen-reader text, exactly as the `FUNDS`
+       * chip's is; the badge above carries the short form, so nothing is said
+       * only here -- see `HudMetricDescriptor.description`, which states that
+       * as a constraint rather than a remark.
+       */
+      description: counts.postUnreachable === true ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint } : undefined,
     },
     {
       id: 'rooms',

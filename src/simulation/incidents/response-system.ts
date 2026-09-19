@@ -235,6 +235,34 @@ export class IncidentResponseSystem implements SystemRegistration {
      * `incident.instigatorId !== undefined` both hold on every call.
      */
     private readonly onAssaultAdjudicated: (incident: IncidentRecord, tick: number) => void = () => {},
+    /**
+     * What a lapsed incident costs the people caught in it (issue #589, the
+     * owner's ruling of 2026-09-17). Called once per id in the outcome's
+     * `injuredEntityIds`, from `lapse` and from nowhere else.
+     *
+     * **From `lapse` alone, because `lapse` is the only transition that writes
+     * a non-empty `injuredEntityIds`.** `advanceResponse`'s `'resolved'` branch
+     * -- the other and only other terminal transition -- writes `[]`, so a
+     * contained incident hurts nobody and this port is not called for one. That
+     * asymmetry is the whole of what a guard buys a player, and it is measured:
+     * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played the
+     * same prison with six guards (15 of 15 resolved, **zero** injuries) and
+     * with none (19 of 19 lapsed, **114** prisoner-injuries).
+     *
+     * The same narrow injected-port shape `onPrisonerEscaped` and
+     * `onAssaultAdjudicated` above are, for the same reason: the prisoner
+     * runtime is constructed before this system in `new-session.ts`, so a hard
+     * dependency would invert that order, and the default no-op leaves every
+     * fixture without a prisoner slice unchanged.
+     *
+     * **It answers nothing, unlike `onPrisonerEscaped`.** There is no sentence
+     * for it to name anybody in and nothing here reads back whether the mark
+     * took: an id that is not a live prisoner is simply not injured, and this
+     * system does not need to know which ids those were. The one thing the
+     * outcome record asserts -- that everyone caught in the lapse was hurt --
+     * is a property of the transition and is already written, above.
+     */
+    private readonly onPrisonerInjured: (entityId: EntityId, tick: number) => void = () => {},
   ) {}
 
   /**
@@ -712,6 +740,23 @@ export class IncidentResponseSystem implements SystemRegistration {
     // Whether this transition actually *told the player* somebody left, which
     // is not the same question as `outcome.escaped` -- see
     // `reportAllClearIfCalm`, which is the only reader.
+    /*
+     * **The injuries, before the escapes** (issue #589). Both walk the same
+     * list, and the order is what keeps them from disagreeing: an escapee is
+     * released inside the escape loop below, so marking after it would find
+     * `isAlive` false for exactly the participants who got out and the two
+     * loops would silently be about different people. Marking first means the
+     * flag is written and then, for an escapee, discarded with the rest of
+     * their slot -- which is the same thing `releasePrisoner` does to every
+     * other fact about them, and is why nothing has to be undone.
+     *
+     * `injuredEntityIds` rather than `participantIds`, although `lapse` has
+     * just written them as the same list: this loop is about who was *hurt*,
+     * and reading the field that means that is what survives the day a lapse
+     * stops injuring everybody present.
+     */
+    for (const entityId of outcome.injuredEntityIds) this.onPrisonerInjured(entityId, tick);
+
     let escapeAnnounced = false;
     if (outcome.escaped) {
       for (const entityId of incident.participantIds) {

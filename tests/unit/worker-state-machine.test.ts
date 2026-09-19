@@ -828,3 +828,154 @@ describe('a command submitted against a paused clock', () => {
     ).toEqual([20]);
   });
 });
+
+/**
+ * What the worker answers once it has been told to shut down.
+ *
+ * Issue #444 drove five request kinds through a shut-down state machine and
+ * got five different answers, *"none of them using the fault code named for
+ * it"*: `submit-command` got no reply at all and the caller waited out
+ * `WorkerSessionHost`'s 15-second timeout; `request-snapshot` got a full
+ * session bundle handed out during shutdown; `request-projection` got a
+ * projection; `set-clock` got a refusal under the generic `'invalid-state'`;
+ * `ping` got a pong. `'shutting-down'` was a member of the closed fault
+ * vocabulary that nothing could produce, and
+ * `tests/foundation/fault-code-reachability-contract.test.ts` recorded it as
+ * such.
+ *
+ * These cases are what that gate's entry was exchanged for. They are written
+ * as *behaviour* rather than as a count of emissions, because the gate can
+ * only see that `fault('shutting-down'` is spelled somewhere in the producing
+ * surface -- it cannot see that the refusal is correlated, that it is
+ * recoverable, or that the snapshot the handler would otherwise have captured
+ * is not posted.
+ */
+describe('a request that arrives after simulation/shutdown', () => {
+  /** An initialised worker that has been shut down, and the messages so far discarded. */
+  function shutDown(): { port: MockPort; machine: SimulationWorkerStateMachine } {
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'msg-init',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 's1', source: { kind: 'new', masterSeed: 11 } },
+    });
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'msg-stop',
+      kind: 'simulation/shutdown',
+      payload: { reason: 'user-request' },
+    });
+    expect(machine.state).toBe('shutting-down');
+    // The `simulation/stopped` acknowledgement and everything before it, so
+    // each case below reads only what its own request provoked.
+    port.messages.length = 0;
+    return { port, machine };
+  }
+
+  const send = (machine: SimulationWorkerStateMachine, message: MainToWorkerMessage): void => {
+    machine.handleMessage(message);
+  };
+
+  test.each([
+    [
+      'simulation/submit-command',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-command',
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: 'c-1',
+          sequence: 0,
+          executeAtTick: 0,
+          command: packCommand({ type: 'PlaceBuildOrder', orderId: 'o-1', definitionId: 'wall-brick', x: 2, y: 2 }),
+        },
+      },
+    ],
+    [
+      'simulation/request-snapshot',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-snapshot',
+        kind: 'simulation/request-snapshot',
+        payload: { reason: 'manual-save' },
+      },
+    ],
+    [
+      'simulation/request-projection',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-projection',
+        kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/status-strip' },
+      },
+    ],
+    [
+      'simulation/set-clock',
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'req-clock',
+        kind: 'simulation/set-clock',
+        payload: { mode: 'running', speed: 1 },
+      },
+    ],
+  ])('is refused with the fault code named for it: %s', (_kind, message) => {
+    const { port, machine } = shutDown();
+
+    send(machine, message as MainToWorkerMessage);
+
+    // One answer, and it is the refusal rather than silence, a bundle or a
+    // projection. The kind matters as much as the code: `request-snapshot`
+    // used to post `simulation/snapshot` here, carrying the whole session.
+    expect(port.messages.map((posted) => posted.kind)).toEqual(['protocol/error']);
+    const fault = port.messages[0];
+    expect(fault.payload.code).toBe('shutting-down');
+    // Correlated, so `WorkerSessionHost.settle` rejects the pending request
+    // immediately instead of leaving it to the 15-second reply timeout that
+    // ADR 0024's Context names as the misleading symptom.
+    expect(fault.replyTo).toBe((message as { messageId: string }).messageId);
+    // And it is on the wire in a shape the main thread's decoder accepts, not
+    // merely an object with the right fields.
+    expectOk(decodeWorkerToMainMessage(fault), 'the shutdown refusal');
+  });
+
+  test('leaves the session exactly where it was, which is what separates this from #444 item 2', () => {
+    const { port, machine } = shutDown();
+
+    send(machine, {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'req-command',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'c-1',
+        sequence: 0,
+        executeAtTick: 0,
+        command: packCommand({ type: 'PlaceBuildOrder', orderId: 'o-1', definitionId: 'wall-brick', x: 2, y: 2 }),
+      },
+    });
+
+    // `fault()` transitions only when the fault is *not* recoverable, and this
+    // one is -- a request refused at the first line of its handler touched
+    // nothing. So the worker is still shutting down rather than faulted, and
+    // the refusal says so on the wire as well as in the state.
+    expect(machine.state).toBe('shutting-down');
+    expect(port.messages[0].payload.recoverable).toBe(true);
+  });
+
+  test('still answers a liveness probe, because a shutting-down worker is still answering', () => {
+    const { port, machine } = shutDown();
+
+    send(machine, {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'req-ping',
+      kind: 'protocol/ping',
+      payload: { nonce: 'n-1' },
+    });
+
+    // The one kind of the five deliberately left alone: `protocol/ping` asks
+    // whether this worker is still there, and it is. Refusing it would turn a
+    // true answer into a fault.
+    expect(port.messages.map((posted) => posted.kind)).toEqual(['protocol/pong']);
+  });
+});

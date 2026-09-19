@@ -106,6 +106,14 @@ const intents = (page: Page) => page.evaluate(() => window.lockstateUiHarness.hu
 const report = (page: Page, model: HudPendingDeliveriesViewModel | undefined) =>
   page.evaluate((next) => window.lockstateUiHarness.reportPendingDeliveries(next), model);
 
+const ariaDisabledOfRow = (page: Page, index: number) =>
+  page.evaluate(
+    (at) =>
+      document.querySelectorAll('.hud-build__delivery-row')[at]?.querySelector('.ui-action')?.getAttribute('aria-disabled') ??
+      null,
+    index,
+  );
+
 test.describe('the Build panel deliveries block', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(HARNESS_URL);
@@ -397,49 +405,173 @@ test.describe('the Build panel deliveries block', () => {
     // Nothing changed locally: the panel waits for the next publication rather
     // than optimistically dropping the row, exactly as buying waits for the
     // balance to move.
-    expect((await probe(page)).rows.map((row) => row.orderId)).toEqual(['buy-00', 'buy-01', 'buy-02']);
+    const pressed = await probe(page);
+    expect(pressed.rows.map((row) => row.orderId)).toEqual(['buy-00', 'buy-01', 'buy-02']);
 
-    // And when the simulation's answer arrives, the block follows it.
+    /*
+     * And when the simulation's answer arrives, the block follows it -- by
+     * emptying the place `buy-01` was in, not by sliding `buy-02` up into it.
+     * The last three assertions read the other way until 2026-09-17, when
+     * `assignPooledRows` reached this block (#877); the test below this one
+     * carries why, and `src/ui/hud/pooled-row-binding.ts` carries the argument.
+     */
     await report(page, {
       total: 4,
       refundableMinorUnits: 520,
       deliveries: [delivery(0, 1), delivery(2, 3)],
     });
     const settled = await probe(page);
-    expect(settled.rows.map((row) => row.orderId)).toEqual(['buy-00', 'buy-02']);
+    expect(settled.rows.map((row) => row.orderId)).toEqual(['buy-00', '', 'buy-02']);
     expect(settled.countText).toContain('4');
-    // The third pooled row is repainted away rather than left holding a dead
-    // purchase id: a stale row is a control promising a refund nothing will make.
-    expect(settled.rows).toHaveLength(2);
+    /*
+     * The freed row is repainted to name nothing rather than left holding a
+     * dead purchase id -- a stale row is a control promising a refund nothing
+     * will make -- and it keeps its box rather than collapsing, because
+     * collapsing it would slide `buy-02`'s Cancel up a row's height into the
+     * pointer that has just pressed here.
+     */
+    expect(settled.rows).toHaveLength(3);
+    expect(settled.rows[1]?.labelText).toBe('');
+    /*
+     * `aria-disabled` rather than `disabled`, and the difference is deliberate
+     * in `ActionButton`: `createBusyGroup`'s `apply` assigns `disabled` to every
+     * member on every busy transition, so a `disabled` written by the paint
+     * would be cleared the next time any command in the HUD settles. The
+     * authority that stops a press is `row.orderId === undefined` in the panel;
+     * this attribute is the signal.
+     */
+    expect(await ariaDisabledOfRow(page, 1)).toBe('true');
+    expect(settled.rows[2]?.cancelBox?.y).toBe(pressed.rows[2]?.cancelBox?.y);
   });
 
-  test('re-aims a pooled row at the delivery that is in it now, not the one that was', async ({ page }) => {
+  test('never re-aims a pooled row, so a press cannot reach a purchase the row never named (#877)', async ({
+    page,
+  }) => {
     /*
-     * The defect a pooled row buys with one hand and could give back with the
-     * other. The rows are created once and repainted per publication -- which is
-     * what keeps the HUD's busy group, `add` with no `remove`, from growing over a
+     * **The gate for the Build panel's half of #877, and it replaces a test
+     * that asserted the opposite** -- the same inversion
+     * `ui-build-queue.spec.ts` records for the queue one block over under #860.
+     *
+     * The replaced test was called *"re-aims a pooled row at the delivery that
+     * is in it now, not the one that was"*, and the defect it guarded was real:
+     * the rows are created once and repainted per publication -- which is what
+     * keeps the HUD's busy group, `add` with no `remove`, from growing over a
      * session -- so a cancel handler that captured its id at construction would
-     * refund whichever delivery sat in that row two seconds ago.
+     * refund whichever delivery sat in that row two seconds ago. Reading the id
+     * at press time closed that, and this file proved it.
+     *
+     * It did not close the other direction, and the other direction is worse,
+     * because there is no `Undo` for a refund. Reading at press time makes the
+     * id **current**; it does not make it the id the player read -- the label
+     * and the id are written in the same synchronous paint, so a press on a
+     * re-pointed row submits precisely the new id and nothing on the code path
+     * can tell. And a delivery leaves this window by **landing**, on the
+     * procurement clock and with no press from the player, so the head of the
+     * list is replaced while the player is reading it.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
     await openBuildTab(page);
     await report(page, pending(5));
     await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
 
-    // The first delivery lands, so every row shifts up one.
+    const before = await probe(page);
+    expect(before.rows.map((row) => row.orderId)).toEqual(['buy-00', 'buy-01', 'buy-02']);
+
+    // The first delivery lands. Under `rows[i] = deliveries[i]` this moved
+    // `buy-01` up into the place `buy-00`'s label was in and put `buy-02` under
+    // a pointer resting on the Cancel the player had read as `buy-01`'s.
     await report(page, {
       total: 4,
       refundableMinorUnits: 560,
       deliveries: [delivery(1, 2), delivery(2, 3), delivery(3, 4)],
     });
-    expect((await probe(page)).rows.map((row) => row.orderId)).toEqual(['buy-01', 'buy-02', 'buy-03']);
+    const advanced = await probe(page);
+    expect(advanced.rows.map((row) => row.orderId)).toEqual(['', 'buy-01', 'buy-02']);
+    // Every surviving purchase is in the place it was in, to the pixel.
+    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
+    expect(advanced.rows[2]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
+    // The freed place keeps its box and promises nothing while it names
+    // nothing, and the arriving `buy-03` is counted behind the line rather than
+    // put in it: two of four are drawn, so two are out of reach.
+    expect(advanced.rows[0]?.labelText).toBe('');
+    expect(await ariaDisabledOfRow(page, 0)).toBe('true');
+    expect(advanced.moreText).toContain('2');
 
-    // Pressing the first row now cancels `buy-01`, which is what is in it --
-    // never `buy-00`, which is what was.
+    // A publication inside the settle window does not fill the freed place.
+    const advance = {
+      total: 4,
+      refundableMinorUnits: 560,
+      deliveries: [delivery(1, 2), delivery(2, 3), delivery(3, 4)],
+    };
+    await report(page, advance);
+    expect((await probe(page)).rows.map((row) => row.orderId)).toEqual(['', 'buy-01', 'buy-02']);
+
+    // Past the window the waiting purchase takes it, so the block does not go
+    // on drawing two rows for four purchases for ever.
+    await page.waitForTimeout(1_200);
+    await report(page, advance);
+    const refilled = await probe(page);
+    expect(refilled.rows.map((row) => row.orderId)).toEqual(['buy-03', 'buy-01', 'buy-02']);
+    expect(refilled.moreText).toContain('1');
+
+    /*
+     * And the press reaches what the row names, throughout: `buy-01` is still
+     * in the place it was read in, and `buy-00` -- which a re-aiming pool would
+     * have replaced with a live control -- is gone from the DOM entirely, so
+     * nothing can be aimed at it.
+     */
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressPendingDeliveryCancel('buy-00'))).toBe(false);
     expect(await page.evaluate(() => window.lockstateUiHarness.pressPendingDeliveryCancel('buy-01'))).toBe(true);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-material-purchase')))
       .toEqual([JSON.stringify({ kind: 'cancel-material-purchase', orderId: 'buy-01' })]);
+  });
+
+  test('draws its rows again after the tab has been away, with no publication to unstick it (#877, #88)', async ({
+    page,
+  }) => {
+    /*
+     * **The regression #860's own fix shipped, one block over and fourteen days
+     * later**, and `ui-build-queue.spec.ts` carries the same test for the same
+     * sequence because the same mistake was available to make twice.
+     *
+     * `src/main.ts` only asks for this list while the Build tab is showing, so
+     * leaving the tab calls `applyPendingDeliveries(undefined)` and
+     * `paintDeliveries` empties every pooled place. Stamping `freedAtMs` there
+     * put every place inside its settle window, so the publication that
+     * arrives when the player comes back was **refused by all three of them** --
+     * and `app-shell.spec.ts`'s #88 sweep found it as three Cancel controls
+     * *"never laid out in any state"* at 900x600 and at 375x812, which is
+     * twenty-six minutes of CI to say what these four lines say in a second.
+     *
+     * The rule is `pooled-row-binding.ts`'s: a place with **no box** carries no
+     * settle window, because the window exists so that a label a player may
+     * have read is not replaced under their pointer, and a place with no box
+     * had no label to read.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openBuildTab(page);
+    await report(page, pending(5));
+    expect((await probe(page)).rows).toHaveLength(3);
+
+    // Away and back, which is the sweep's tab walk in two lines.
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
+    expect((await probe(page)).blockLaidOut).toBe(false);
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+    await report(page, pending(5));
+
+    const returned = await probe(page);
+    expect(returned.rows.map((row) => row.orderId)).toEqual(['buy-00', 'buy-01', 'buy-02']);
+    // Stronger than "there are three": each is a control a player can press.
+    for (const row of returned.rows) {
+      expect(row.cancelHasOffsetParent, `${row.orderId}'s cancel has no offsetParent`).toBe(true);
+      expect(row.cancelDisabled, `${row.orderId}'s cancel is disabled`).toBe(false);
+      expect(row.cancelBox?.height ?? 0, `${row.orderId}'s cancel has no height`).toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressPendingDeliveryCancel('buy-02'))).toBe(true);
+    await expect
+      .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-material-purchase')))
+      .toEqual([JSON.stringify({ kind: 'cancel-material-purchase', orderId: 'buy-02' })]);
   });
 
   test('can be pressed with the disclosure closed, and that is the whole of #703 ruling 2', async ({ page }) => {
