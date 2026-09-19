@@ -638,6 +638,31 @@ export type HudIntent =
    */
   | { readonly kind: 'dismiss-staff'; readonly staffId: number }
   /**
+   * The player has changed what one group's running regime block allows
+   * (#1167, ADR 0113 slice 1's missing producer).
+   *
+   * A *command*, on `hire-staff`'s terms: it asks the simulation to change,
+   * and a second press while one is in flight must not hand a busy host two
+   * edits of the same block.
+   *
+   * **The block is named by the tick it starts on, not by an index**, which is
+   * ADR 0113 section 3's own choice and the reason
+   * `HudRegimeBlockViewModel.startTickOfDay` is carried at all: the registry
+   * reorders schedules into a canonical order on restore, so an index can mean
+   * a different block after a reload and a boundary cannot.
+   *
+   * **The whole new category list travels, not a delta.** `EditRegimeBlock`
+   * replaces `allowedCategories` wholesale, so a diff would have to be applied
+   * against a copy of the schedule this thread holds on a cadence -- the same
+   * reason `onCancelPurchase` one panel over does not send a position.
+   */
+  | {
+      readonly kind: 'edit-regime-block';
+      readonly classificationGroupId: string;
+      readonly startTickOfDay: number;
+      readonly allowedCategoryIds: readonly string[];
+    }
+  /**
    * The player has read a row of the alerts log and wants it gone (the owner's
    * decision 3 of 2026-09-01 on
    * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)).
@@ -2313,8 +2338,45 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * selection is *chrome*, so it still issues no command and still joins no
    * busy group. `runReported` rather than `dispatchCommand` is what says so
    * below, exactly as it does for the two arming intents.
+   *
+   * **"It issues no command" stopped being true on 2026-09-16 and the sentence
+   * is kept rather than rewritten**, because what it described is the state
+   * `EditRegimeBlock` spent two days in: consumer, refusals and save section
+   * built, and nothing on any panel able to send one (#1167, ADR 0113
+   * slice 1). The selection is still chrome and still ungated; the regime edit
+   * below is a command and goes through `dispatchCommand` like every other,
+   * which is what puts this panel in the busy group for the first time.
+   *
+   * **AND THE TWO PARAGRAPHS ABOVE NOW DESCRIBE TWO DIFFERENT PANELS, WHICH IS
+   * WHY BOTH ARE KEPT.** The owner's ADR 0115 ruling split this panel in code:
+   * the roster, the inspector and the selection the middle paragraph is about
+   * are `rosterPanel` below, and `runReported('select-prisoner', ...)` is in
+   * that call rather than this one -- so *"`runReported` rather than
+   * `dispatchCommand` is what says so below"* is true of the next mount down
+   * and not of this one. What is left here is the timetable and the one
+   * command, so the first paragraph's *"it issues no command"* is false of
+   * this panel and true of the other, and the third paragraph's correction is
+   * the only one that still lands on the panel it was written about.
    */
-  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+  const regimePanel: RegimePanel = createRegimePanel({
+    localizer,
+    /*
+     * Editing the day is a *command* on `onHire`'s terms, and the button that
+     * was pressed is deliberately **not** passed as the refusal's control, for
+     * the reason `onRelease` and `onDismiss` give: the toggles are repainted
+     * from every `hud/status-strip` reply, so a mark left on a toggle would end
+     * up on whichever category the next reply put there. The refusal line still
+     * says what did not happen, and it is on screen at every viewport.
+     */
+    onEditBlock: (intent) => {
+      dispatchCommand({
+        kind: 'edit-regime-block',
+        classificationGroupId: intent.classificationGroupId,
+        startTickOfDay: intent.startTickOfDay,
+        allowedCategoryIds: intent.allowedCategoryIds,
+      });
+    },
+  });
 
   // ---- bottom-right roster panel (Plan dnia tab) --------------------
   /*

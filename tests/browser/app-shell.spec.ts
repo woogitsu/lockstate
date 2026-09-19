@@ -2916,18 +2916,56 @@ interface UnreachableControl {
 
 interface ControlReachability {
   /**
-   * Every control the selector matched, in document order, named. The index
-   * into this list is the control's identity for the run: tab switching and
-   * resizing hide and show controls but never add or remove them, so index
-   * `n` is the same element in every state the test visits.
-   *
-   * The *names* are unique too, which the accounting assertion below depends
-   * on: each is the control's chain of classed ancestors followed by the
-   * control itself, and a numeric suffix breaks the remaining ties (the two
+   * Every control the selector matched, in document order, named. Each name is
+   * the control's chain of classed ancestors followed by the control itself,
+   * with a numeric suffix breaking the remaining ties (the two
    * `ui-number__input` boxes in the Build panel's coordinate grid are
    * identical all the way up). See `NEVER_LAID_OUT_BELOW_720`.
+   *
+   * **THE INDEX IS NOT THE CONTROL'S IDENTITY, AND THIS COMMENT USED TO SAY IT
+   * WAS.** It read: *"The index into this list is the control's identity for
+   * the run: tab switching and resizing hide and show controls but never add
+   * or remove them, so index `n` is the same element in every state the test
+   * visits."* It is kept here rather than deleted because the accounting
+   * assertion at the foot of `everyControlAt` was written on it, and a reader
+   * needs to see what was assumed.
+   *
+   * It is false, and #1167's regime editor is what proved it. That editor
+   * builds one toggle group per classification group **on the first paint that
+   * has a schedule to paint**, and the schedule only arrives while the
+   * `day-plan` tab is the one showing. Measured at 1024x768 on `143d77eb`, the
+   * sweep's first four tab states saw **137** controls and every state from the
+   * fifth on saw **151**: fourteen controls *added*, in the middle of the
+   * document, by visiting a tab. The figures are a reading of that tree rather
+   * than a property of this one; what does not change is that a tab visit can
+   * grow the list.
+   *
+   * What that cost was silence rather than a red. `everMeasured` was a set of
+   * **indices**, so the eight indices 129-136 -- marked measured while the
+   * document held 137 controls, where they named the last eight controls on
+   * the page -- were still in the set when the final inventory held 151 and
+   * those same indices named toggles. Eight of the editor's fourteen buttons
+   * were certified reachable by other controls' measurements; the sweep
+   * reported six. At 375x812 it reported eight, because two of that last
+   * group are `.hud__corner`'s own and are not laid out there either, so two
+   * fewer aliases were available to inherit -- which is why the extra two were
+   * a `#1` and a different category and looked like a layout asymmetry.
+   *
+   * `everMeasured` is keyed by `ids` now -- an attribute minted on the element
+   * itself. The name was tried first and is not good enough either: it carries
+   * the control's own text and classes, so the Rooms panel's `Designate 0 x 0`
+   * and the Build queue's rows change identity when the state does, and the
+   * first run of the name-keyed version reported eight controls never laid out
+   * that plainly had been.
    */
   readonly controls: readonly string[];
+  /**
+   * The identity of each control in `controls`, at the same index: the
+   * `data-sweep-control` attribute minted on the element the first time any
+   * state saw it. Stable where the index and the name are not -- see the
+   * block in `controlReachability` that mints them.
+   */
+  readonly ids: readonly string[];
   /** Indices of the controls that were laid out, and so actually measured. */
   readonly measured: readonly number[];
   readonly unreachable: readonly UnreachableControl[];
@@ -3144,7 +3182,36 @@ async function controlReachability(page: Page, selector: string = INTERACTIVE_SE
       }
     });
 
-    return { controls: names, measured, unreachable };
+    /**
+     * A stable identity per *element*, minted on first sight and left on the
+     * node.
+     *
+     * The sweep visits a dozen states and has to remember, across all of them,
+     * which controls it managed to measure. Neither obvious key works: an
+     * index moves when a state adds a control to the middle of the document,
+     * and a name moves when a control's own text or classes change -- the
+     * Rooms panel's `Designate 0 x 0` becomes `Designate 3 x 4` with a
+     * rectangle dragged, and the Build queue's rows carry a state class. The
+     * element is the thing that does not move, so the key is written on it.
+     *
+     * `data-sweep-control` is inert: nothing in `src/**` reads it, `describe`
+     * above names controls by class and text, and a `data-` attribute is not
+     * part of `className`. The counter hangs off `window` so the ids survive
+     * one `page.evaluate` to the next and are re-minted from zero by the one
+     * thing that also drops the attributes, a navigation.
+     */
+    const scope = window as unknown as { __lockstateSweepControlId?: number };
+    const ids = controls.map((control) => {
+      const existing = control.dataset['sweepControl'];
+      if (existing !== undefined) return existing;
+      const next = (scope.__lockstateSweepControlId ?? 0) + 1;
+      scope.__lockstateSweepControlId = next;
+      const id = `c${next}`;
+      control.dataset['sweepControl'] = id;
+      return id;
+    });
+
+    return { controls: names, ids, measured, unreachable };
   }, selector);
 }
 
@@ -3869,8 +3936,30 @@ test.describe('the assembled application', () => {
     // below is about the viewport, not about one tab: the Build panel is
     // legitimately absent on four of the five tabs, and the Rooms panel on
     // the other four.
-    const everMeasured = new Set<number>();
-    let inventory: readonly string[] = [];
+    const everMeasured = new Set<string>();
+    /**
+     * The last state's reading, whole. It used to be that state's `controls`
+     * alone; it is the pair now, because the accounting below has to line each
+     * name up with the identity the sweep remembered it by.
+     */
+    let inventory: ControlReachability = { controls: [], ids: [], measured: [], unreachable: [] };
+
+    /**
+     * Mark everything this state managed to hit-test, by the element's own
+     * `ids` entry.
+     *
+     * Not by index: `ControlReachability.controls` carries the reason in full,
+     * and the short version is that a state can add controls to the middle of
+     * the document -- the regime editor's toggle groups are built on the first
+     * paint that has a schedule -- so an index measured in one state names a
+     * different control in the next.
+     */
+    const record = (reachability: ControlReachability): void => {
+      for (const index of reachability.measured) {
+        const id = reachability.ids[index];
+        if (id !== undefined) everMeasured.add(id);
+      }
+    };
 
     // Every tab, and the list is  rather than a copy of it: this
     // loop was a hard-coded four when the Rooms tab landed, so the whole Rooms
@@ -3881,8 +3970,8 @@ test.describe('the assembled application', () => {
     for (const tab of HUD_TAB_IDS) {
       await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
       const reachability = await controlReachability(page);
-      inventory = reachability.controls;
-      for (const index of reachability.measured) everMeasured.add(index);
+      inventory = reachability;
+      record(reachability);
       expect(
         reachability.unreachable,
         `controls covered by something else on the ${tab} tab at ${width}x${height}`,
@@ -3909,8 +3998,8 @@ test.describe('the assembled application', () => {
      */
     await page.locator('.hud-layout__button').click();
     const withLayoutMenu = await controlReachability(page);
-    inventory = withLayoutMenu.controls;
-    for (const index of withLayoutMenu.measured) everMeasured.add(index);
+    inventory = withLayoutMenu;
+    record(withLayoutMenu);
     /*
      * Only the menu's **own** controls are required to be reachable here,
      * and that narrowing is the honest one rather than a convenience.
@@ -4309,7 +4398,7 @@ test.describe('the assembled application', () => {
     const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
     const expanded = await controlReachability(page);
-    for (const index of expanded.measured) everMeasured.add(index);
+    record(expanded);
     expect(
       expanded.unreachable,
       `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
@@ -4402,7 +4491,7 @@ test.describe('the assembled application', () => {
     ).toBeGreaterThanOrEqual(0);
 
     const buying = await controlReachability(page);
-    for (const index of buying.measured) everMeasured.add(index);
+    record(buying);
     expect(
       buying.unreachable,
       `controls covered by something else with the buy row open at ${width}x${height}`,
@@ -4511,8 +4600,8 @@ test.describe('the assembled application', () => {
     }
 
     const queued = await controlReachability(page);
-    inventory = queued.controls;
-    for (const index of queued.measured) everMeasured.add(index);
+    inventory = queued;
+    record(queued);
     expect(
       queued.unreachable,
       `controls covered by something else with the build queue open at ${width}x${height}`,
@@ -4578,8 +4667,8 @@ test.describe('the assembled application', () => {
     const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
     if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
     const typedRoute = await controlReachability(page);
-    inventory = typedRoute.controls;
-    for (const index of typedRoute.measured) everMeasured.add(index);
+    inventory = typedRoute;
+    record(typedRoute);
     expect(
       typedRoute.unreachable,
       `controls covered by something else with the Rooms coordinates expanded at ${width}x${height}`,
@@ -4611,8 +4700,8 @@ test.describe('the assembled application', () => {
     ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
 
     const roomsReachability = await controlReachability(page);
-    inventory = roomsReachability.controls;
-    for (const index of roomsReachability.measured) everMeasured.add(index);
+    inventory = roomsReachability;
+    record(roomsReachability);
     expect(
       roomsReachability.unreachable,
       `controls covered by something else with a room pending at ${width}x${height}`,
@@ -4620,6 +4709,82 @@ test.describe('the assembled application', () => {
 
     // Discarded, so the next viewport starts from the state this one did.
     await page.locator('.hud-rooms__cancel').click();
+
+    /*
+     * The regime editor, opened (#1167, ADR 0113 slice 1).
+     *
+     * **A state of its own rather than a row in the exemption list**, on
+     * exactly the reading the Layout menu's block above states: these toggles
+     * are offered to a player at every viewport and simply live behind a
+     * press, like the Build panel's coordinates and the Rooms panel's typed
+     * route. `NEVER_LAID_OUT_BELOW_720` is for a control that is mechanically
+     * absent -- `.hud__corner` is `display: none` there -- and no rule in
+     * `hud.css` touches this section at any width. Exempting it would have
+     * said a player cannot reach it, which is false, and would have said it
+     * about the only controls the change under test adds, which is the shape
+     * #533's block calls certifying every control on the page except the one
+     * the change is about. (#1201 is the same ruling one step further on: the
+     * alerts fold left that constant because its control was *made* reachable,
+     * not because a state was added. Nothing here needed making.)
+     *
+     * **The day-plan tab first, because the editor is only populated there.**
+     * `regimePanel.setVisible(false)` clears the schedule on the way out
+     * (`src/ui/hud/regime-panel.ts`), and `paintEditor` hides the section with
+     * no schedule to paint; the toggle groups themselves are pooled, so they
+     * stay in the document once built and stay in the inventory for every
+     * later state. That asymmetry -- a control that is in the document from
+     * the fifth state and not from the first -- is what `ControlReachability`
+     * records above.
+     *
+     * `aria-expanded` is read rather than the header clicked blind, the same
+     * handshake the Rooms coordinates and the staff roster use: the section is
+     * created `collapsed: true`, and the flag survives the panel being hidden
+     * and shown again by a tab change, so a blind click is a claim about the
+     * arrival state rather than a reading of it.
+     */
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
+    const regimeEditor = page.locator('.hud-regime__editor > .ui-section__header');
+    await expect(regimeEditor, `the regime editor is missing at ${width}x${height}`).toBeVisible();
+    if ((await regimeEditor.getAttribute('aria-expanded')) === 'false') await regimeEditor.click();
+    /*
+     * Non-vacuity, and it is not ceremony: the editor draws one group per
+     * classification group and draws nothing at all when the schedule has not
+     * arrived, so an empty body would sail through `record` below and leave
+     * the toggles in exactly the state this block exists to end -- laid out in
+     * no state, but with the block present to suggest otherwise.
+     */
+    const editorShape = await page.evaluate(() => {
+      const groups = [...document.querySelectorAll('.hud-regime__editor-list .ui-toggles')];
+      return {
+        groups: groups.length,
+        rows: document.querySelectorAll('.hud-regime__block-list .hud-regime__block-row').length,
+        smallest: Math.min(...groups.map((group) => group.querySelectorAll('.ui-toggles__option').length)),
+      };
+    });
+    // Read off the page rather than compared against a written-down fourteen:
+    // the counts are a classification vocabulary and an action-category
+    // vocabulary, both of which are meant to grow, and a tally in a test is
+    // the sentence that rots first. What is asserted is the *relation* -- one
+    // group per block the panel drew, and more than one category in each, so
+    // `lockedCategoryIdsFor` has something to lock.
+    expect(editorShape.groups, `the open regime editor drew no toggle groups at ${width}x${height}`).toBe(
+      editorShape.rows,
+    );
+    expect(editorShape.groups, `the regime panel drew no blocks at ${width}x${height}`).toBeGreaterThan(0);
+    expect(
+      editorShape.smallest,
+      `a regime editor group offers fewer than two categories at ${width}x${height}`,
+    ).toBeGreaterThan(1);
+    const regimeEditing = await controlReachability(page);
+    inventory = regimeEditing;
+    record(regimeEditing);
+    expect(
+      regimeEditing.unreachable,
+      `controls covered by something else with the regime editor open at ${width}x${height}`,
+    ).toEqual([]);
+    // Shut again, so the next viewport's pixel assertions are taken against
+    // the arrival state the ones in this one were.
+    if ((await regimeEditor.getAttribute('aria-expanded')) === 'true') await regimeEditor.click();
 
     /*
      * Somebody on the payroll (#533), which is the Staff panel's equivalent of
@@ -4701,8 +4866,8 @@ test.describe('the assembled application', () => {
 
 
     const payroll = await controlReachability(page);
-    inventory = payroll.controls;
-    for (const index of payroll.measured) everMeasured.add(index);
+    inventory = payroll;
+    record(payroll);
     expect(
       payroll.unreachable,
       `controls covered by something else with the payroll open at ${width}x${height}`,
@@ -4817,14 +4982,25 @@ test.describe('the assembled application', () => {
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
     ];
-    const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
+    const neverLaidOut = inventory.controls.filter(
+      (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
+    );
     expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
       [...exempt].sort(),
     );
+    /*
+     * The same fact as a tally, and it is counted over the inventory rather
+     * than over `everMeasured` itself: the set also holds names that existed
+     * in an earlier state and do not survive into the final one, so its raw
+     * size is not a statement about this inventory. Kept although the check
+     * above now implies it, because the number is what a reader checks a
+     * changed shell against.
+     */
+    const measuredInInventory = inventory.ids.filter((id) => everMeasured.has(id)).length;
     expect(
-      everMeasured.size,
-      `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
-    ).toBe(inventory.length - exempt.length);
+      measuredInInventory,
+      `hit-tested only ${measuredInInventory} of ${inventory.controls.length} controls at ${width}x${height}`,
+    ).toBe(inventory.controls.length - exempt.length);
     /*
      * Non-vacuity for the spill assertions above: they sit behind a condition,
      * so a build where the body never spills would satisfy them by never

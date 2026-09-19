@@ -101,6 +101,7 @@ const PRIMITIVE_MODULE_NAMES = [
   'stat-chip.ts',
   'status-badge.ts',
   'tab-button.ts',
+  'toggle-group.ts',
 ] as const;
 
 /**

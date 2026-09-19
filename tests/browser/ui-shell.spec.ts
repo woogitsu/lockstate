@@ -5716,12 +5716,16 @@ test.describe('the Regime panel (issue #451)', () => {
           'action-category.free-association.name',
         ],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['recreation', 'hygiene', 'free-association'],
       },
       {
         classificationGroupId: 'high-risk',
         labelKey: 'classification-group.high-risk.name',
         allowedCategoryLabelKeys: ['action-category.hygiene.name'],
         blockProgressPercent: 42,
+        startTickOfDay: 1_200,
+        allowedCategoryIds: ['hygiene'],
       },
     ],
   };

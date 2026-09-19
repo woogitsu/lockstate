@@ -2804,6 +2804,56 @@
  * independent collapse, an independent height budget and a one-line mount,
  * and it does not today buy an independent scroll, because the one panel it
  * replaced never scrolled.
+ *
+ * **EVERY FIGURE IN THE TABLE ABOVE WAS TAKEN BEFORE #1273, AND EVERY ROW OF
+ * IT NOW READS LOW. The table is kept rather than rewritten**, per
+ * `docs/AGENT_WORKFLOW.md` SS4's rule about marking both directions: it is
+ * what the split cost *on its own*, which is the number the owner's ruling was
+ * priced against, and separating it from what the two changes cost *together*
+ * is the whole reason both are here.
+ *
+ * ADR 0113 slice 1's regime editor (#1167, #1273) hangs a collapsed
+ * `.ui-section` inside `.hud-regime__blocks`, and `regime-panel.ts` priced it
+ * at *"one 44px header"* with the arrival height *"unchanged"*. Re-measured
+ * with the two changes composed, same fixtures and same command as the table
+ * above, all five viewports:
+ *
+ * | viewport | timetable | roster | pair | roster overflow |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 219 | 380 | 599 | 0 |
+ * | 1280x720 | 219 | 380 | 599 | 0 |
+ * | 1024x768 | 219 | 380 | 599 | 0 |
+ * | 900x600 | 219 | 285 | 504 | 95 |
+ * | 375x812 | 206 | 298 | 504 | 65 |
+ *
+ * **The collapsed editor is a flat +49px on `.ui-panel.hud-regime` at every
+ * one of the five**, not 44 and not nothing: the 44px header plus the column
+ * gap above it. So *"the arrival height is unchanged"* is false of the rail,
+ * and the correction is in `regime-panel.ts` beside the sentence that says it.
+ *
+ * **Which column of the table above that falsifies, stated exactly.** Both
+ * per-panel heights move at **all five** viewports. The `two panels` total
+ * moves at **three** -- 550.1 -> 599 -- and holds at the other two, because
+ * there the rail is the binding constraint rather than the content. The
+ * `arrival scroll` column moves at **two**, 16 -> 65 and 46 -> 95. Only the
+ * `one panel` column, which is history, is untouched.
+ *
+ * **What the two short viewports then do is this rule working exactly as it
+ * was built to.** At 1024x768 and above the rail can afford the 49px and the
+ * pair grows 550 -> 599. At 900x600 and 375x812 it cannot, the pair stays at
+ * 504, and **this panel pays the whole 49** -- 333.6 -> 285 and 347.4 -> 298 --
+ * because `.ui-panel.hud-regime` is `flex: 0 0 auto` and this rule is
+ * `overflow-y: auto`. Its arrival overflow goes 46 -> 95 and 16 -> 65 by the
+ * same 49. On `main` before the split, one panel would have absorbed it into
+ * a single scroll box
+ * and carried the timetable with it; here the timetable does not move, which
+ * is the property `ui-roster-panel-split.spec.ts` pins and the first occasion
+ * this repository has had to observe it rather than assert it. **The split's
+ * buy stopped being hypothetical the day the editor landed on the other half.**
+ *
+ * Nothing became unreachable: all four roster rows, the "and N more" line and
+ * all six need lines are laid out and scrollable at all five, and the
+ * six-viewport run of that spec is green.
  */
 .ui-panel.hud-roster {
   width: var(--hud-rail-panel-width);
@@ -2853,6 +2903,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+/* The regime editor (#1167). It has no box of its own: `.ui-section` already
+   draws the header row and the fold, and a second border here would put a line
+   inside the block the rule above already closed with one.
+
+   `display: none` on `[hidden]` is belt and braces rather than a fix for a
+   measured defect: `.ui-section` sets no author `display` today, so the user
+   agent's own `[hidden]` rule already wins, and this keeps that true if one is
+   ever added -- which is exactly what `.hud-regime__blocks` one rule up had to
+   be repaired for. The editor is hidden whenever nothing can receive the
+   command. */
+.hud-regime__editor[hidden] { display: none; }
+
+.hud-regime__editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
 }
 
 /* Name left, share right: the shape every readout line in this HUD uses. */
