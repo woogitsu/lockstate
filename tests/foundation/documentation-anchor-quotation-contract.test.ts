@@ -398,6 +398,11 @@ const verified = citations.filter(isVerified);
 const unverified = citations.filter((citation) => !isVerified(citation));
 
 function unverifiedByDocument(): ReadonlyMap<string, number> {
+  if (process.env.DUMP_UNVERIFIED !== undefined) {
+    for (const c of unverified) {
+      if (c.source.includes(process.env.DUMP_UNVERIFIED)) console.log('UNV', c.token);
+    }
+  }
   const counts = new Map<string, number>();
   for (const citation of unverified) counts.set(citation.source, (counts.get(citation.source) ?? 0) + 1);
   return counts;
