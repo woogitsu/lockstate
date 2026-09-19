@@ -457,6 +457,50 @@ rather than touch that file a second time for a single stale entry. This
 paragraph records that choice rather than let a reader assume the glob's
 continued presence is an oversight.
 
+> **THE CLAUSE ABOVE IS FALSE ABOUT THE BYTES, AND HAS BEEN SINCE THE COMMIT
+> THAT WROTE IT. It is kept rather than rewritten, per `docs/AGENT_WORKFLOW.md`
+> §4's rule about marking both directions, and because what it got wrong is the
+> price of a decision the owner took -- which is the one number a reader of this
+> paragraph is here for.**
+>
+> The glob `rendered.furniture.cell.locker.variants.*.png` does not fetch
+> ~11 KiB. It fetches **nothing**, and has since `bb7dc40a` (2026-09-07
+> 09:50:44Z) -- the same commit this paragraph was written in. That commit's own
+> message says why: it `git rm`'d
+> `rendered.furniture.cell.locker.variants.10a6c751ad5c.png` ("11.27 KiB")
+> *"since nothing publishes or reads it any more"*. A glob whose only matching
+> file was deleted in the same commit matches zero files, and `git lfs pull`
+> pulls zero bytes for it. Checked on `36503522` (v0.0.696):
+> `public/game-content/source-art/` holds
+> `furniture.cell.locker.variants.89a3cfd67726.png` -- the owner's sheet,
+> without the `rendered.` prefix, matched by no segment of that list -- and no
+> `rendered.` locker file at all.
+>
+> **How the gap arose, because it is the ordinary one and not a subtle one.**
+> The sentence describes the tree as it stood earlier in its own commit, and
+> nothing re-read it after the deletion three paragraphs of that commit message
+> later. **The interesting part is what it then cost.** A repository-wide
+> freshness audit of 2026-09-12 re-derived the claim independently, made it
+> worse -- pricing the glob at **1,672,608 bytes pulled from LFS on every
+> `browser` job** -- and proposed spending a reservation-3 release on removing
+> it. Every digit of that figure is wrong, because the file it prices does not
+> exist. The audit had named this as its own weakest claim and was right to: it
+> had never watched CI fetch the file, and the file was in its worktree because
+> the whole tree is materialised there. [#1149](https://github.com/woogitsu/lockstate/issues/1149)
+> §1 carries the refutation in full.
+>
+> **What survives is smaller and still real.** The owner's 2026-09-07 decision
+> is **not** being violated -- the cost the `rendered.*` wildcard was refused
+> for is fetching art nothing draws, and this fetches nothing at all -- so the
+> removal is tidiness rather than a repair, and it stays the owner's either way.
+> But the include list was never kept in step with `environment-sprites.ts` in
+> the *listed-and-undeclared* direction, and nothing checked it: the decode step
+> beside it fails closed only on an id that is **declared and unfetched**.
+> `tests/foundation/ci-configuration-contract.test.ts`'s *"LFS include filter
+> contract"* now checks both directions, tolerates this one segment by name, and
+> goes red the day a `rendered.` locker file is published again -- which is the
+> day the "it costs nothing" premise above stops being true.
+
 **Published into `public/game-content/source-art/`, the owner sheets'
 own directory, not a new one.** `public/_headers`' `/game-content/source-art/*`
 rule is directory-wide and content-hash-keyed, so reusing the directory needs
