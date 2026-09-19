@@ -489,7 +489,14 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures seventeen produced and one unproduced, the first entry this list has held in six passes', () => {
+  // **This name read "measures seventeen produced and one unproduced, the
+  // first entry this list has held in six passes", and both halves of it went
+  // false in the same commit that moved the two assertions below to 0 and
+  // 18** (#1167). A test name is what a reader of a CI log is shown, so it is
+  // corrected here rather than left describing the state the body had just
+  // stopped asserting -- and it is kept quoted, because this file's whole
+  // subject is a count that means something.
+  it('measures eighteen produced and none unproduced, the list empty again after its one entry', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
