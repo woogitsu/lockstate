@@ -352,9 +352,11 @@ describe('a sentence that ends (#441)', () => {
 
 /**
  * Issue #506: the Regime panel's roster-empty sentence -- "Nobody has been
- * admitted yet" then, "No prisoners yet. Build a cell with a bed to take
- * somebody in." since the owner's ruling of 2026-09-03, and false of this
- * prison under either wording -- read `roster.total === 0` as its only
+ * admitted yet" then, "No prisoners yet. Build a cell -- big enough, walled
+ * all round, with a bed and a toilet in it -- to take somebody in." since the
+ * owner's ruling of 2026-09-03 as corrected in place on 2026-09-19 (#933), and
+ * false of this prison under every one of those wordings -- read
+ * `roster.total === 0` as its only
  * condition, so a
  * prison whose entire population served its sentence and left (exactly what
  * the test above produces; `ADMISSION_REQUEST` in `src/main.ts` used to make

@@ -3248,7 +3248,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // records is still exactly right about *this* key -- this sentence is true of
   // one state only, and the fix was a second sentence rather than a wider
   // claim in this one.
-  'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
+  'hud.regime.roster-empty': 'No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.',
   // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
   // and choosing it in their own words: *"This prison is empty. Take somebody
   // in to start again."* It is the sentence the key above has never been able
