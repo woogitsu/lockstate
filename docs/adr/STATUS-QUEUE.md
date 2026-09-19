@@ -18478,7 +18478,7 @@ already wrong when the previous pass closed.
 
 **What this pass did NOT find, said plainly.** Nothing in §§2, 5 or 6 moved
 that this pass could detect, and the two findings above are both in §§3-4. The
-`docs/adr/README.md` index reads **Next free number: 0117** at `:289`,
+`docs/adr/README.md` index reads **Next free number: 0118** at `:290`,
 re-derived here rather than carried, and no numbered ADR was added or deleted
 in the window. One sub-line imprecision is recorded rather than corrected: §2's
 ADR 0088 confirmation says *"`guard-roster.ts:52` names this ADR by number and
@@ -18697,10 +18697,22 @@ by the census noticing the one `Status` word that moved in the window.
   ends of the window rather than carried. Six ADR documents are members of this
   window and not one of them added a heading of that shape. This is the first
   anchor in three at which the glob-scoped count has nothing to move.
-- **The index reads `Next free number: 0117`** at `docs/adr/README.md:289`,
+- **The index reads `Next free number: 0118`** at `docs/adr/README.md:290`,
   re-derived here rather than carried, and no numbered ADR was added or deleted
   in the window — `docs/adr/README.md`'s only change in it is the single line
   of ADR 0116's status cell.
+
+  > **Both figures in the sentence above moved after the pass was written, and
+  > it is corrected rather than left standing.** When this pass ran at
+  > `90d62621` the index's line read **0117** at `:289`, which was true of that
+  > commit; ADR 0117 landed on the number on `agent/adr-guard-post-tile` and
+  > took the line to 0118 at `:290`, and the clause about no numbered ADR being
+  > added is true of the window this pass read and not of the branch carrying
+  > this correction. The number is restated rather than kept as history because
+  > `tests/foundation/adr-status-queue-anchor-contract.test.ts` treats every
+  > restatement at or after this pass's own marker as live and requires it to
+  > agree with the index — which is the property that makes this file safe to
+  > copy a number out of.
 
 ### What this pass deliberately did not chase
 

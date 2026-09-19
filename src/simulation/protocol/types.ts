@@ -662,12 +662,30 @@ void _statusCountsIncidentTypeMirrorsIncidentType;
  *
  * Declared in the ascending-id order `docs/DETERMINISM.md`'s canonical-order
  * rule asks for, which `computeStandingPrisonConditions` emits in rather than
- * sorting on every call -- the four members are authored in that order
+ * sorting on every call -- the members are authored in that order
  * already, so iterating this array *is* iterating in canonical order.
+ *
+ * **`'security.post-unreachable'` is the fifth member, and the first whose
+ * subject is neither money nor a queue** ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+ * accepted by the owner on 2026-09-17, option 3). It stands when the tile a
+ * sector's guards are posted to cannot be routed to, so the sector's post is
+ * never manned however many guards the prison has hired. Read
+ * `DeploymentSystem.hasUnreachablePost` for the predicate and ADR 0117 §1 for
+ * what was measured before it existed: the prison is permanently unguarded
+ * and the status strip's coverage chip reads *covered* on exactly half of all
+ * ticks (re-measured on the strip's own `prisonersCovered` /
+ * `prisonersUnguarded` pair, 100 ticks each over 200, seed `0x396`).
+ *
+ * **Its position here is the ascending-id rule and not a ranking.**
+ * `security.` sorts after `intake.` and before `treasury.`, so it goes third,
+ * and every member's index moves rather than a new one being appended -- which
+ * is safe precisely because nothing persists this union: see the paragraph
+ * above on why no member is snapshotted.
  */
 export const PRISON_CONDITIONS = [
   'construction.unfunded',
   'intake.no-place',
+  'security.post-unreachable',
   'treasury.construction-refused',
   'treasury.deliveries-refused',
 ] as const;
