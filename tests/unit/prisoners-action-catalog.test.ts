@@ -76,6 +76,7 @@ const SAVED_ACTION_INDEX_MEANS: readonly (readonly [index: number, actionId: str
   [9, 'action.laundry-work'],
   [10, 'action.kitchen-work'],
   [11, 'action.carry'],
+  [12, 'action.infirmary-treatment'],
 ];
 
 describe('a saved actionIndex still names the action it named when it was written', () => {
@@ -134,10 +135,14 @@ describe('a saved actionIndex still names the action it named when it was writte
     // next to `action.eat-meal`, whose need it shares, and `action.carry` next
     // to the other two `work` entries -- and all four are precisely where they
     // must not go: indices 1, 4, 5, 6, 9 and 10 already mean something on disk.
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.carry');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.kitchen-work');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 3]!.id).toBe('action.laundry-work');
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 4]!.id).toBe('action.free-association');
+    // `action.infirmary-treatment` is the fifth instance (#589): it reads
+    // naturally beside `action.shower`, whose `hygiene` category it shares,
+    // and index 4 already means `action.shower` on disk.
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.infirmary-treatment');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.carry');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 3]!.id).toBe('action.kitchen-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 4]!.id).toBe('action.laundry-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 5]!.id).toBe('action.free-association');
   });
 });
 

@@ -286,6 +286,12 @@ const plMessages: Readonly<Record<string, string>> = {
   // closely and is twenty characters in a roster cell; the shorter noun is
   // chosen for that reason and the alternative is recorded here.
   'action.carry.name': 'Transport',
+  // "Treatment" is the care rather than the place, and *Leczenie* keeps that:
+  // *Izba chorych* is `room.infirmary.name` two catalogs over and would repeat
+  // the room in the column that is supposed to say the activity -- the same
+  // rule the two `Praca w ...` rows and *Transport* above follow. It is a
+  // verbal noun like every other row here, so it carries no gender.
+  'action.infirmary-treatment.name': 'Leczenie',
 
   // Action phases. Nouns, never adjectives: these stand beside the verbal
   // nouns above in the same roster column and must not carry a gender.
