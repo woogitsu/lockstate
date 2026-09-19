@@ -826,6 +826,46 @@ sections. `ANCHOR_STALENESS_BUDGET_MERGES` and `ANCHOR_STALENESS_BUDGET_COMMITS`
 in the sibling gate are a different mechanism and were not touched: this ruling
 reaches what is *counted*, never how much is *allowed*.
 
+**THE SENTENCE ABOVE WAS FALSE OF THE DIFF THAT FIRST CARRIED IT, AND IT IS
+LEFT STANDING RATHER THAN CORRECTED IN PLACE.** The habit is the one
+`docs/AGENT_WORKFLOW.md` §4 asks for and that `CLAUDE.md`'s preamble
+demonstrates at length; breaking it here, in the entry that records a ruling
+*about* an archive whose records must not be re-aimed, would be the worst
+available place to break it.
+
+**What it claimed.** That the ruling reaches what is counted and never how much
+is allowed.
+
+**What the first revision of the diff did.** It set
+`docs/adr/STATUS-QUEUE.md`'s row to **123**, the exact count its live sections
+measure. But the row was not previously equal to its count either: at
+`36503522` it allowed **300** against **236** counted, and #1321 had left those
+**64** there on purpose, in its own words, *"because lowering it to the new
+count would hand the headroom straight back"*. Setting the row to 123 therefore
+spent the whole of that reserved headroom — it changed how much is allowed, by
+64, inside the commit whose prose says it does not. That tightening was
+**voluntary and measurable**: with the exclusion in place and the row left at
+300, the gate is green. The owner ruled on counting and was never offered the
+tightening.
+
+**What the diff does now.** The row is **187**, derived rather than picked:
+300 - 113 = 187, the 113 being the anchors the ruling removes from counting, so
+the pre-ruling slack of 64 is carried across the change (187 - 123 = 64) rather
+than spent. The whole of the ruling's win is banked as budget retired and none
+of it as slack removed, which is what makes the standing sentence true as
+written. `tests/foundation/documentation-anchor-quotation-contract.test.ts`
+pins the derivation in an assertion, so a later editor who lowers the row to
+the live count fails rather than drifts — and that matters because **a budget
+can never be raised**, so headroom not preserved at that commit cannot be
+recovered afterwards.
+
+**Why it is recorded here and not only in the pull request.** The failure mode
+was not arithmetic. It was a prose claim and a diff written in the same change
+by the same session, neither checked against the other — the same failure mode
+this document's `CLAUDE.md` counterpart records six times against itself, and
+the check that would have caught it is the cheap one: read the sentence against
+the diff it ships with.
+
 
 ## Required workflow for every issue
 Before coding:

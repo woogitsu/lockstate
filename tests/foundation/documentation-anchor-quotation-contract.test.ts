@@ -655,32 +655,51 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  *
  * **One row moves on 2026-09-19 for a reason no re-derivation of the whole
  * table would produce, and it is the only row that moves.**
- * `docs/adr/STATUS-QUEUE.md` falls **300 -> 123**, and the fall is in two
- * separate steps that a single number would hide:
+ * `docs/adr/STATUS-QUEUE.md` falls **300 -> 187**. The figure is derived rather
+ * than picked, in three steps a single number would hide:
  *
- * - **300 -> 236 was paid for, not granted.** #1321 quoted the code beside 64
- *   anchors that were already correct, on `origin/main` @ `36503522`, and
- *   deliberately left this row at 300 so that the headroom stayed headroom.
- * - **236 -> 123 is the owner's ruling of 2026-09-19** -- *"Wyłączyć datowaną
- *   sekcję 3 z liczenia"* -- taking effect through `DATED_ARCHIVE_SECTIONS`
- *   above rather than through this table. The 113 anchors that leave are the
- *   ones inside dated §3 pass accounts, and the remedy the gate offers for
- *   them is empty: their coordinates are a record the file has ruled must not
- *   move. The row is then lowered **to the measured live count**, so the
- *   exclusion buys correctness and not slack.
+ * - **What the row counted before the ruling was 236, not 300.** #1321 quoted
+ *   the code beside 64 anchors that were already correct, on `origin/main` @
+ *   `36503522`, and **deliberately left this row at 300** -- in its own words,
+ *   *"left where it is on purpose, because lowering it to the new count would
+ *   hand the headroom straight back"*. So the 64 between 236 and 300 is
+ *   **reserved headroom, not accidental residue**, and that provenance is what
+ *   makes it carryable rather than spendable here.
+ * - **The ruling takes 113 anchors out of the counting, and nothing else.**
+ *   The owner's fifth ruling of 2026-09-19 -- *"Wyłączyć datowaną sekcję 3 z
+ *   liczenia"* -- takes effect through `DATED_ARCHIVE_SECTIONS` above rather
+ *   than through this table. The counted population falls **236 -> 123**: the
+ *   113 that leave are the ones inside dated §3 pass accounts, for which the
+ *   gate's remedy was empty, their coordinates being a record the file has
+ *   ruled must not move.
+ * - **The row therefore falls by those same 113, and by nothing more.**
+ *   300 - 113 = **187**, which is the pre-ruling slack of 64 carried across
+ *   the change rather than spent: 187 - 123 = 64, the same headroom the row
+ *   held at `36503522`. The whole of the ruling's win is banked as budget
+ *   retired; none of it is banked as slack removed.
  *
- * Measured on this branch off `origin/main` @ `d11021de` by the DERIVATION
+ * **Why the row is not 123, and this is the correction that matters.** An
+ * earlier revision of this branch set it to the measured live count, arguing
+ * the exclusion should buy correctness and not slack. That was an additional
+ * tightening **the owner did not rule and was not offered** -- the label
+ * reaches what is *counted*, never how much is *allowed* -- and it was
+ * measurably voluntary: with the exclusion in place and the row left at 300
+ * this file is green. Voluntary is allowed; unruled and folded into a ruling's
+ * own commit is not. It was also the expensive direction, because **a budget
+ * can never be raised** -- the assertion below forbids it literally -- so
+ * headroom not preserved here cannot be recovered later, and the cost of a
+ * zero-slack row lands on whoever's pull request happens to shift a line in a
+ * file this document cites, which is exactly how #1308 and #1318 went red on
+ * subjects of their own that had nothing to do with it.
+ *
+ * Measured on this branch off `origin/main` @ `09384b9f` by the DERIVATION
  * procedure above, run twice -- once with the exclusion and once without --
  * and diffed: **exactly one row differs between the two tables**, this one.
  * The other 89 rows, and the two documents outside the table, are byte
  * identical. The assertion `costs no other document a single anchor` below is
- * that same measurement, kept as a test rather than left in this comment.
- *
- * **What this row now has no room for, said plainly:** 123 is exact, so the
- * live sections of that document have zero headroom, which is the condition
- * #1308 and #1318 went red under. The difference is what is left inside the
- * bound -- the live sections, where quoting an anchor is a legal remedy --
- * rather than an archive where it is not.
+ * that same measurement, kept as a test rather than left in this comment, and
+ * `carries the pre-ruling slack across the change rather than spending it`
+ * pins the 64 so that a future editor who spends it fails rather than drifts.
  */
 const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0003-simulation-worker-protocol.md': 9,
@@ -760,7 +779,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/drafts/how-a-language-change-reaches-a-running-page.md': 5,
   'docs/adr/drafts/what-a-second-tab-follows.md': 7,
   'docs/adr/README.md': 14,
-  'docs/adr/STATUS-QUEUE.md': 123,
+  'docs/adr/STATUS-QUEUE.md': 187,
   'docs/AGENT_WORKFLOW.md': 2,
   'docs/ARCHITECTURE.md': 1,
   'docs/HANDOVER-2026-08-26.md': 3,
@@ -982,6 +1001,30 @@ describe("the dated archive inside docs/adr/STATUS-QUEUE.md, excluded on the own
 
     expect(remaining.length).toBeGreaterThan(50);
     expect(whole.length).toBeGreaterThan(remaining.length);
+  });
+
+  it('carries the pre-ruling slack across the change rather than spending it', () => {
+    // The row is 187 because 300 - 113 = 187, not because 187 was measured.
+    // What is asserted is the DERIVATION: the live count the exclusion leaves,
+    // plus the headroom the row carried at `36503522`, is the row. #1321 left
+    // that headroom deliberately -- "lowering it to the new count would hand
+    // the headroom straight back" -- and a budget can never be raised, so an
+    // editor who quietly lowers this row to the live count cannot undo it.
+    // Spending the slack should therefore be a red light, not a silent drift.
+    const SLACK_RESERVED_AT_36503522 = 64;
+    const live = citations.filter(
+      (citation) => citation.source === queue && !isVerified(citation),
+    ).length;
+
+    expect({
+      live,
+      budget: UNVERIFIED_BUDGET[queue],
+      slack: (UNVERIFIED_BUDGET[queue] ?? 0) - live,
+    }).toEqual({
+      live: 123,
+      budget: 187,
+      slack: SLACK_RESERVED_AT_36503522,
+    });
   });
 
   it('costs no other document a single anchor', () => {
