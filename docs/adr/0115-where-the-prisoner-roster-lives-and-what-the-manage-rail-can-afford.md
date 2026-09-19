@@ -11,6 +11,44 @@
 
 ## Status
 
+**Accepted, 2026-09-16, by the repository owner: option 4 — split the panel in
+code and keep both halves on Plan dnia.** Option 2, a third panel on the Manage
+rail, was **declined**. The placement is ruled and is not deferred: moving the
+roster to Zarządzaj later is a fresh ruling, and nothing in what was built
+prepares one.
+
+**Built, which is the clause of the paragraph below that stopped being true.**
+`src/ui/hud/roster-panel.ts` carries the roster and the inspector as
+`.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the timetable;
+`hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+`tests/browser/ui-roster-panel-split.spec.ts` holds the three properties the
+split makes structural.
+
+**The provenance is the weaker of the two kinds this repository
+distinguishes.** The owner did not type a sentence. They were shown the four
+options below as a clickable question and chose the one labelled:
+
+> Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)
+
+("Option 4 — split the panel in code, both halves on Plan dnia
+(recommended).") The label is the whole of what was agreed.
+
+**What it cost, measured on the same fixtures before and after** — the
+timetable, a four-row roster of a prison of nine, and a selected prisoner:
+**63 px** of panel chrome at every viewport (one panel 487.13 px at
+1440x900 / 1280x720 / 1024x768 / 900x600 and 456.75 px at 375x812; two panels
+169.75 + 380.38 = 550.13, and 156.56 + 347.44 = 504.00 at the phone), and an
+arrival overflow of **16 px at 375x812** and **46 px at 900x600** where the one
+panel arrived unscrolled. **What it did not buy is an independent scroll**: the
+single panel's own `scrollHeight - clientHeight` was **0 at all five
+viewports** in that same fullest state, so the scroll this ADR's §"The options"
+worried about was never actually reached. The Manage rail is untouched, which
+is what declining option 2 means: `.hud__side`, Intake and Staff measure
+identically before and after at all five viewports.
+
+*The paragraph that follows is kept rather than rewritten, because every
+argument below it was written from a position this document no longer holds.*
+
 **Proposed.** Nothing here is decided and no code implements it. It exists
 because `docs/IDENTITY_V5_ROLLOUT.md` stage 5 lists the Regime panel's split as
 something the stage *owes* — *"a code change rather than a mount move"* — and
@@ -222,6 +260,11 @@ one-line mount change afterwards — the same shape the 2026-09-14 move's own
 commit sequence used for intake (§6 step 3 of the navigation-move record:
 *"Either is a one-line `setVisible`/gate change… so the sequencing cost of
 waiting for the answer is zero"*).
+
+**OVERTAKEN ON 2026-09-16: the owner ruled option 4 and it was built the same
+week.** The paragraph below is kept because it is the position this document
+argued from, and because its last sentence — *"a table that has never been
+ruled on"* — is exactly the clause the ruling closed. Read the Status block.
 
 **This document does not implement it.** Stage 5's own exit criterion is that
 nothing is unreachable, and every row of the Regime panel is reachable today at
