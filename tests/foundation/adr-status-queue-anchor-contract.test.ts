@@ -92,6 +92,37 @@ import { describe, expect, it } from 'vitest';
  * `95f07a13` (v0.0.625), fourteen seconds apart on 2026-09-15. Every one of
  * them spends a release of this budget on nothing.
  *
+ * **THAT LAST SENTENCE IS FALSE, MEASURED 2026-09-19, AND THE PARAGRAPH IS
+ * KEPT ABOVE RATHER THAN REWRITTEN BECAUSE THE COUNT IN IT IS REAL AND THE
+ * INFERENCE FROM IT IS NOT.** Adjacency is a detector with a false-positive
+ * mode, and on this repository's history it is wrong far more often than it is
+ * right. Read against every `Version` workflow run the Actions API holds —
+ * **736**, which for this workflow is all of them, earliest 2026-08-24T12:33:22Z
+ * — grouped by `head_sha`, **exactly one sha carries two runs**: `a27c437f`
+ * (#1189), the pair already named above. So `deac3215` (v0.0.616) is the only
+ * version number this repository has ever issued for no work, out of 693.
+ * The adjacency count is **41 of 693** today, and **40 of the 41 are merges
+ * whose bump serialised behind a later merge** rather than waste: `version.yml`
+ * carries no `concurrency` group on purpose, its runs queue for a runner (one
+ * measured at 56m 50s), and a bump pushed after the next merge has landed
+ * commits on top of a release commit. The largest instance is four adjacent
+ * releases on 2026-09-17 — `ce710028`/`b50632b2`/`1ab77187`/`7b41e8e4`
+ * (v0.0.657-660) — which is four merges landing in 90 seconds (#1232, #1245,
+ * #1284, #1238) and four runs executing 41 minutes later, four distinct
+ * `head_sha`s, one each. Four merges, four numbers, nothing spent on nothing.
+ *
+ * **Nothing in the argument this paragraph serves depends on the retraction.**
+ * The unit is still merges, and the case for that is now *stronger* rather than
+ * weaker: one duplicated bump in 26 days against **42** merges that got no bump
+ * at all (735 non-release first-parent commits since v0.0.1 against 693 release
+ * commits), which is the next paragraph's half of the argument and always was
+ * the bigger one. And the retraction is what makes the change free rather than
+ * a trade — a duplicated bump contributes zero to `landingsSince` by
+ * construction, and so do all 41 adjacencies. The measurement is
+ * `docs/research/2026-09-19-one-merge-two-version-numbers.md`, which also
+ * records that it recommends no change under `.github/workflows/`: 40 shapes a
+ * topology guard would misread against 1 it would catch.
+ *
  * **The error runs the other way too, and that half is worse.** A merge can
  * land with no bump at all: between `491fcdce` (v0.0.541) and `450c9819`
  * (v0.0.542) first-parent `main` carries **20** commits — nineteen merges,

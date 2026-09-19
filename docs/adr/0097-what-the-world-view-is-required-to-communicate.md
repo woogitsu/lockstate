@@ -117,8 +117,15 @@ merged as [#1018](https://github.com/woogitsu/lockstate/pull/1018) against
 `main` @ `1ad253c` (v0.0.497):
 
 - A sealed cell and a working one — same tiles, same crop, same population, same
-  `roomCapacity` — differ by **6,061 pixels of 147,456 (4.11%)**. Thirty-two of
-  thirty-six tiles are pixel-identical. The 3,072 differing pixels at tile
+  `roomCapacity` — differ by **6,061 pixels of 147,456 (4.11%)**. Thirty of
+  thirty-six tiles are pixel-identical — **corrected from "thirty-two" on
+  2026-09-19 (issue #1022)**, when the research record's own per-tile map was
+  re-derived by decoding the two committed screenshots and returned `6,061` of
+  `147,456` and that map digit for digit, with **six** tiles non-zero rather
+  than four. The pixel figures this decision rests on are unchanged; only the
+  tile count was wrong, and the record carries the fuller correction. The
+  decode now runs as
+  `tests/foundation/world-view-state-measurement-contract.test.ts`. The 3,072 differing pixels at tile
   (14,17) are **the door**; the 2,989 at row y=12 are four prisoner sprites
   overlapping slightly differently in one corner.
 - Act 5: six frames over 1,144 ticks, **0 differing pixels of 409,600**.
