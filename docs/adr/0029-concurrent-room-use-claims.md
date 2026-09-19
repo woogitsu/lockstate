@@ -714,7 +714,7 @@ Two clauses, and they have come apart.
   `hud/prisoner-detail` channel. **Nothing under `src/ui/` asks for that
   channel** — the only prisoner projection the HUD consumes is
   `projectPrisonerPopulationCounts`, through
-  `src/simulation/presentation/status-strip-projection.ts:27` (called at `:768`,
+  `src/simulation/presentation/status-strip-projection.ts:31` (called at `:843`,
   `const population = projectPrisonerPopulationCounts(source.prisoners);`; this
   branch wrote `:752`, which was a docblock line by the time it merged
   `origin/main` on 2026-09-16), and it carries no need. So a prisoner's hunger can sit at 0 for the length of a session with no
