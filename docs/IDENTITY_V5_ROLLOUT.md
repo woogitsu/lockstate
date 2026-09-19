@@ -400,6 +400,58 @@ again, and what clearing it would actually take.
 > identically on both trees: no LFS bytes, actor atlases undecodable. The three
 > regressed combinations fail on DOM overflow in `.hud__aside` rather than on
 > anything the canvas does.
+>
+> **AND THE "31 OF 36" IN THIS MARK IS A READING OF `ab3bf7ba`, WHICH THE HEAD
+> HAS SINCE LEFT BEHIND (#1318).** It is right about the tree it names and is
+> not edited. Same committed sweep, same config, re-run on `a1c7f97d`
+> (v0.0.696, the merge of #1311, one commit past #1318's `1da79d2e`): **16 of
+> 36**. The failing set is `1280x720@200%`, `1024x768@175%`, `1024x768@200%`,
+> `900x600@150%`, `900x600@175%`, `900x600@200%`, `390x844@100%`,
+> `390x844@150%`, `390x844@175%`, `390x844@200%`, and all six `375x812`
+> scales.
+>
+> **The clause above that the head falsifies is the last one: *"the rollout's
+> one recorded repair to this row did not hold"*.** It held again.
+> `1280x720@100%`, `1024x768@100%` and `900x600@75%` — the three this mark
+> records as having come back on `ab3bf7ba`, each on `.hud__aside` overflow
+> alone — pass on `a1c7f97d`. #1312's repair, merged as #1318, put a content
+> floor under that slot, and `tests/browser/ui-rail-aside-content-floor.spec.ts`
+> is the gate that now holds those three rows, so the next change to the rail's
+> arithmetic says so on the way in rather than in a hand-run sweep. No
+> `.hud__aside` overflow appears in any of the 16 failing reports.
+> `390x844@75%` still passes, as on `ab3bf7ba`.
+>
+> **What the 16 is a delta of, and what it is not.** Against `ab3bf7ba` and
+> only against it: fifteen combinations cleared, none added. It is **not**
+> comparable to the 23, for the reason this mark's first paragraph gives, and
+> the sweep is still the only instrument any of these figures may be read
+> through.
+>
+> **Why the mark above went stale, which is not the silence the paragraph
+> before it describes.** Nothing went unmeasured here. #1318's branch measured
+> 16 and deliberately did not touch these two documents, because #1311 was open
+> and appending to these very paragraphs; the two merged minutes apart with
+> #1311 second, and #1311's reading is bound to `ab3bf7ba` and stays true of
+> it. This is a live claim overtaken between one merge and the next, not a
+> rotted one — and the reason it needed a person to notice is still the one
+> above: no gate collects a `*.playtest.ts`.
+>
+> **One present-tense statement of this figure sits outside these two
+> documents and is named rather than edited**, because it belongs to #1318's
+> just-merged ground: `tests/browser/ui-rail-aside-content-floor.spec.ts`'s
+> docblock reads *"16 of 36 still fail after this repair"*. The run recorded
+> here agrees with its number on `a1c7f97d`; what it does not carry is the
+> commit that would let a later reader check it.
+>
+> **The Git LFS condition recorded above held for this run too**, and the
+> absolute figure is conditional on it. The tree had no LFS bytes
+> (`file public/assets/actors/actor.guard.base.idle.png` answers `ASCII text`),
+> so all ten actor atlases failed to decode. The sweep reports on `.brand`,
+> `.hud-tabs__inner`, `.save-panel`, `.ui-tab` and `.display-scale__cycle`
+> centres and `.hud-strip`'s overflow — DOM geometry, not the canvas — and the
+> comparison against `ab3bf7ba` shares the condition, so the **delta** is the
+> sounder half. **The absolute 16 wants a tree holding the art before it is
+> certified.**
 
 ---
 
@@ -835,6 +887,18 @@ the record says so wherever it quotes a number.
   combinations this row counts as fixed are the three that came back; and this
   row's own reading is left alone, because it is what stage 8 measured on the
   tree stage 8 measured.
+
+  > **And the 31 has itself been overtaken (#1318); the record is again at
+  > §"Stage 3" rather than repeated here.** The short of it: **16 of 36** on
+  > `a1c7f97d` (v0.0.696), and the three combinations this row counts as fixed
+  > pass again, because the `.hud__aside` floor that #1312 found now has a gate
+  > of its own. **The row's verdict is not moved by any of this.** FAIL is what
+  > a failing set of 16 says as plainly as one of 29, *"Brak utraty treści i
+  > działań"* is unmet at 16, and constitution article 8's third element is
+  > unmet with it. What has changed is the size of the debt, which is the
+  > debt's measurement and not the row's verdict — and no tree measured so far
+  > has held the Git LFS bytes, so every figure in this chain is conditional in
+  > the way §"Stage 3" states.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
   repository does not have. The clause beside it *does* transfer, and was unmet
