@@ -278,4 +278,129 @@ test.describe('the Plan dnia tab after ADR 0115 split the panel', () => {
       ).toBeLessThanOrEqual(scrolled.scheduleBox?.bottom ?? 0);
     });
   }
+
+  /**
+   * **#1295: the roster panel with the regime editor open.**
+   *
+   * `.ui-panel.hud-regime` is `flex: 0 0 auto`, so whatever natural height it
+   * takes, it takes out of the rail and the panel below pays. That division is
+   * right while the timetable is a closed catalogue, and #1273 made it one that
+   * a player can *open*: the editor's toggle list is seven controls per
+   * classification group. Composed, and before `--hud-regime-editor-ceiling`
+   * bounded that list, the timetable panel's natural height exceeded the whole
+   * rail at 900x600 and the roster panel was laid out **entirely below the
+   * viewport** -- `top 659.00, bottom 661.00` against 600px of page, with
+   * `.hud__side` overflowing by 61px at `overflow-y: visible`, so no gesture
+   * reached it. That is the reachability regression `docs/IDENTITY_V5_ROLLOUT.md`
+   * stage 5 makes an exit criterion, and issue #1295 is its measurement.
+   *
+   * **The repair is `.hud-regime__editor-list`'s `max-height` and it is already
+   * on `main`** -- `hud.css` carries the derivation, three tap targets falling
+   * to one under `@media (max-height: 700px)`. What was missing is a test that
+   * fails if it is loosened. `app-shell.spec.ts`'s #88 sweep does catch it, but
+   * only *indirectly* and only at the sample point: it reports the roster's
+   * Collapse button as covered by the timetable's body, which names a control
+   * rather than the panel, and it would stop naming it the day the roster's
+   * header stops carrying a control.
+   *
+   * So two assertions, each the direct form of one half of #1295's report, at
+   * all five viewports `app-shell.spec.ts`'s `HUD_LAYOUT_VIEWPORTS` visits
+   * rather than the two this file's other cases use -- 900x600 is the viewport
+   * that failed and it is in neither pair:
+   *
+   * 1. **The roster panel intersects the viewport.** The literal defect.
+   * 2. **The roster panel's own client box is at least as tall as its own
+   *    header.** The defect one step before it becomes unreachability: a panel
+   *    squeezed under its own 44px header overhangs its scrollport, which is
+   *    what #88 was reporting at 1280x720 and 375x812 where the panel was still
+   *    on screen. This is a *relation* between two boxes on the page and not a
+   *    pixel count, for the reason `PRISONER_ROSTER_ROW_LIMIT`'s tables give:
+   *    a number written here fails on a font metric that is nobody's defect.
+   *
+   * And `scheduleOverflow` is re-read, because the cheap way to pass the two
+   * above is to let the timetable panel scroll -- which is the `flex: 0 1 auto`
+   * mutation this file's other cases already watch go red, and the one property
+   * ADR 0115's split exists to guarantee. A repair that trades it is not one.
+   *
+   * Watched red by deleting `max-height: var(--hud-regime-editor-ceiling)` from
+   * `.hud-regime__editor-list`: 900x600 fails assertion 1 and 1280x720,
+   * 1024x768 and 375x812 fail assertion 2. Restored, all five pass.
+   */
+  const REACHABILITY_VIEWPORTS = [
+    [1280, 720],
+    [1440, 900],
+    [1024, 768],
+    [900, 600],
+    [375, 812],
+  ] as const;
+
+  for (const [width, height] of REACHABILITY_VIEWPORTS) {
+    test(`keeps the roster panel reachable with the regime editor open at ${width}x${height} (#1295)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, ROSTER] as const,
+      );
+      // The inspector, for this file's stated reason: the fullest state the tab
+      // can draw is the one the composition has to survive, and #1295 was
+      // measured in it.
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL] as const,
+      );
+
+      /*
+       * `aria-expanded` read rather than the header clicked blind, the same
+       * handshake `app-shell.spec.ts`'s #88 sweep uses on this same section:
+       * it is created collapsed, so a blind click is a claim about the arrival
+       * state rather than a reading of it.
+       */
+      const editor = page.locator('.hud-regime__editor > .ui-section__header');
+      await expect(editor, `the regime editor is missing at ${width}x${height}`).toBeVisible();
+      if ((await editor.getAttribute('aria-expanded')) === 'false') await editor.click();
+      await expect(editor, `the regime editor did not open at ${width}x${height}`).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+      // Non-vacuity: an editor that drew no groups costs the panel nothing, and
+      // every assertion below would pass on a page where this block is the
+      // empty state rather than the open one.
+      expect(
+        await page.locator('.hud-regime__editor-list .ui-toggles').count(),
+        `the open regime editor drew no toggle groups at ${width}x${height}`,
+      ).toBe(TIMETABLE.groups.length);
+
+      const rosterPanel = page.locator('.ui-panel.hud-roster');
+      await expect(
+        rosterPanel,
+        `the roster panel is outside the viewport with the regime editor open at ${width}x${height}`,
+      ).toBeInViewport();
+
+      const fit = await rosterPanel.evaluate((panel) => {
+        const header = panel.querySelector<HTMLElement>('.ui-panel__header');
+        return {
+          client: panel.clientHeight,
+          header: header === null ? null : header.getBoundingClientRect().height,
+        };
+      });
+      expect(fit.header, `the roster panel has no header at ${width}x${height}`).not.toBeNull();
+      expect(
+        fit.client,
+        `the roster panel's client box is ${fit.client}px and its own header is ${fit.header}px, so the header overhangs its scrollport at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(fit.header ?? 0);
+
+      // The timetable panel is still not a scroll container: see this block's
+      // header for why a repair that traded this would not be one.
+      const open = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
+      expect(
+        open.scheduleOverflow,
+        `the timetable's panel scrolls by ${open.scheduleOverflow}px with the editor open at ${width}x${height}`,
+      ).toBe(0);
+    });
+  }
 });
