@@ -302,19 +302,39 @@ describe('the thresholds above the requirement, which are three and not one', ()
    * distinguish "one hidden threshold" from "several". These four readings are
    * what say the search gate and the two response gates are different numbers.
    */
-  it('switches searching on at the first spare guard, and answering on later', () => {
+  /**
+   * **This case measured `required + 1` when it was written against `ac58c457`
+   * and measures `required + 2` on the base this branch was brought up to.**
+   * The reading is corrected rather than the case deleted, because *what moved
+   * it* is the finding: `claimableSearchGuardIds` in
+   * `src/simulation/security/post-eligibility.ts` holds
+   * `INCIDENT_RESPONSE_GUARD_RESERVE` free guards back from a sweep, so the
+   * first spare hire is reserved for response and the second is what makes
+   * contraband findable. That constant landed for issue #996 after this
+   * document's measurements were taken.
+   *
+   * **It narrows the search gate and leaves the subject of ADR 0095 exactly
+   * where it was.** `IncidentResponseSystem` still calls `claimableGuardIds`
+   * unnarrowed, so posting still spends the whole requirement out of the pool
+   * a riot is answered from, and the prison at its requirement still reads
+   * `Covered` with nothing spare and answers nothing. The reserve moved one
+   * rung of the ladder; it did not move the rung the document is about.
+   */
+  it('switches searching on two spare guards above the requirement, and answering on later', () => {
     const atRequirement = readAfterSixteenDays(REQUIRED_AT_POPULATION);
     const oneSpare = readAfterSixteenDays(REQUIRED_AT_POPULATION + 1);
+    const twoSpare = readAfterSixteenDays(REQUIRED_AT_POPULATION + 2);
 
-    // `required + 1`: the `'sector'` search policy asks for one guard, so the
-    // first spare hire makes contraband findable -- which `docs/CONTRABAND.md`
-    // and `SectorSearchDutySystem`'s docblock both state deliberately.
-    expect([atRequirement.spare, oneSpare.spare]).toEqual([0, 1]);
-    expect(atRequirement.contraband).toBe(0);
-    expect(oneSpare.contraband).toBeGreaterThan(0);
+    // The `'sector'` search policy asks for one guard and the search pool is
+    // `claimableGuardIds` less one, so a prison with a single spare guard
+    // still cannot sweep. Both figures are asserted, not just the live one:
+    // the zero at one spare is what says the reserve is doing the holding.
+    expect([atRequirement.spare, oneSpare.spare, twoSpare.spare]).toEqual([0, 1, 2]);
+    expect([atRequirement.contraband, oneSpare.contraband]).toEqual([0, 0]);
+    expect(twoSpare.contraband).toBeGreaterThan(0);
 
-    // And it is *not* the same threshold: one spare guard cannot answer a
-    // severity-3 assault, which asks for `ceil(3 * 0.5) = 2`.
+    // And it is *not* the same threshold as answering: one spare guard cannot
+    // answer a severity-3 assault, which asks for `ceil(3 * 0.5) = 2`.
     expect(oneSpare.dispatched).toBe(0);
     expect(oneSpare.resolved).toBe(0);
     expect(oneSpare.lapsed).toBe(atRequirement.lapsed);

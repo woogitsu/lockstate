@@ -25,7 +25,24 @@ found by playing, and it needs the owner for two reasons rather than one:
    is quoted below only as evidence of what is currently said.
 
 **No ADR's `Status` word is touched by this document**, ADR 0053's and ADR
-0073's included.
+0073's included. **It stays `Proposed` here.** Opening a pull request is not
+an acceptance, an ADR number and its acceptance are the owner's, and
+`docs/AGENT_WORKFLOW.md` §3 forbids an implementing agent from approving its
+own work.
+
+> **Brought up to `09384b9f` after sitting unmerged since 2026-09-03**, on the
+> owner's ruling of 2026-09-19 to open a pull request from this branch and not
+> to merge it. **That ruling's provenance is the weaker kind** and is recorded
+> as such: it is the label of a clickable option a session wrote --
+> *"Otworzyć PR z tej gałęzi"* -- rather than a sentence the owner typed, the
+> same shape `AGENTS.md` flags in its entries of 2026-09-08 and 2026-09-09.
+>
+> **What the catch-up changed and what it deliberately did not.** Coordinates
+> into `src/` were re-aimed at the files as they stand on that commit, and one
+> row of the measured ladder is corrected in a marked note where issue #996
+> moved it. **No measurement was re-run and re-stated as though it had been
+> taken today**: every figure below is dated to `ac58c457` in the text, and the
+> corrections say which commit they were taken on.
 
 **The number is provisional.** ADR numbers are assigned centrally after drafts
 return (`AGENTS.md`). 0095 was the stated next free number in
@@ -38,6 +55,12 @@ any head was **0094**, and `gh`'s open pull request list (six: #896, #892, #891,
 #844, #812, #355) holds nothing at 0095 or above. If 0095 collides anyway,
 renumber this file, its row in [`README.md`](./README.md), and every citation of
 it (`grep -rn "0095" src/ tests/ docs/`).
+
+> **That sweep is history and the number did not collide.** On `09384b9f` the
+> index's own preamble records 0095 among the numbers *held on a remote head and
+> not on disk*, and names this branch as the head holding it. The number is
+> still this document's; nothing below is warranted by the 146-head sweep any
+> more, and the index's later sweeps are the ones to read.
 
 - Related: issues [#893](https://github.com/matmaxalez/lockstate/issues/893),
   #457, #29;
@@ -60,30 +83,44 @@ finding.
 
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
-   (`src/simulation/security/deployment-system.ts:182`-`:197`). Arrival sets
-   the phase to `'on-post'` (`:207` for a guard already standing there,
-   `:270` in `onArrivedAtPost` for one that walked).
-2. `GuardRoster.unassignedGuardIds()` is
-   `allGuardIds().filter(id => deploymentPhase === 'unassigned')`
-   (`src/simulation/security/guard-roster.ts:236`-`:237`). **A posted guard is
-   not unassigned**, and nothing in `src/` returns a posted guard to that phase
-   except `unassign`, which no scheduled path calls for a healthy post.
+   (`src/simulation/security/deployment-system.ts:328`-`:348`,
+   `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
+   (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
+   for one that walked).
+2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
+   phase (`src/simulation/security/guard-roster.ts:245`-`:246`,
+   `unassignedGuardIds`). **A posted guard is not unassigned**, and nothing in
+   `src/` returns a posted guard to that phase except `unassign`, which no
+   scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
-   (`src/simulation/security/post-eligibility.ts:107`).
+   (`src/simulation/security/post-eligibility.ts:110`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
-   (`deployment-system.ts:194`), `IncidentResponseSystem.claimableResponders`
-   (`src/simulation/incidents/response-system.ts:463`),
-   `SectorSearchDutySystem` (`src/simulation/contraband/sector-search-duty.ts:126`)
-   and `SearchSystem.assignQueuedOrders`
-   (`src/simulation/contraband/search-system.ts:287`-`:290`).
+   (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
+   `IncidentResponseSystem`'s responder claim
+   (`src/simulation/incidents/response-system.ts:553`,
+   `claimableResponders`), the sector sweep duty
+   (`src/simulation/contraband/sector-search-duty.ts:162`,
+   `claimableSearchGuardIds`) and the search queue
+   (`src/simulation/contraband/search-system.ts:284`-`:295`,
+   `assignQueuedOrders`).
+
+> **Fact 4 read *"`SectorSearchDutySystem` … and `SearchSystem.assignQueuedOrders`"*
+> against `claimableGuardIds` when it was measured, and the two search call
+> sites were re-aimed by issue #996 afterwards.** They now read
+> `claimableSearchGuardIds`, which is `claimableGuardIds` less
+> `INCIDENT_RESPONSE_GUARD_RESERVE`. That narrows the *search* gate by one hire
+> and leaves everything this document is about untouched: the responder claim
+> is not narrowed by anything in that module, so posting still spends the whole
+> requirement out of the pool a riot is answered from. The ladder below is
+> re-measured for it in the paragraph that follows the table.
 
 So posting spends the whole requirement out of the pool that answers incidents
 and walks searches, and never gives any of it back.
 
 **A trap for the next reader, recorded because it cost the integrator a
-near-miss.** The comment at `response-system.ts:456` reads *"`claimableGuardIds`,
+near-miss.** The comment just above that responder claim reads *"`claimableGuardIds`,
 not `unassignedGuardIds()`"*, which scans as though responders come from
 somewhere else. They do not. That comment draws its distinction on the
 **role-filter** axis — ADR 0053, only a post-eligible role counts — and says
@@ -91,7 +128,8 @@ nothing about the unassigned axis. One level down settles it.
 
 ### What the player is told
 
-`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:302`-`:342`) has three
+`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:461`-`:520`,
+`describeStaffCoverage`) has three
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`
 (`src/ui/simulation-staff-coverage.ts`, whose own docblock says
@@ -119,6 +157,23 @@ days, and the *only* difference between rows is the hire count:
 | 4 | `Covered` | 2 | 3 | 6 | 6 | 2 | 0 |
 | 6 | `Covered` | 4 | **10** | **0** | **34** | 2 | 0 |
 
+> **Re-measured on `09384b9f`, the base this branch was brought up to, and one
+> row of the ladder moved.** Contraband switches on at **two** spare guards
+> rather than one: `claimableSearchGuardIds` holds
+> `INCIDENT_RESPONSE_GUARD_RESERVE` free guards back from a sweep (issue #996,
+> landed after these figures were taken), so the 3-hire row reads `contraband: 0`
+> on that base and the 4-hire row reads 2. **Every other cell of the table
+> reproduces**, including the two that carry the finding -- the 2-hire row is
+> still identical to the 1-hire row on every outcome column, and the 6-hire row
+> still resolves 10 and dispatches 34. The table above is left as measured on
+> `ac58c457` and this note is the correction, so that a reader can see which
+> number moved and what moved it.
+>
+> **It strengthens the finding rather than weakening it.** A prison now needs
+> one hire *more* than this document measured before anything at all happens
+> above the requirement, and the badge is exactly as silent about the second
+> rung as it was about the first.
+
 Four things in that table are the subject of this document.
 
 **The panel's own advice buys nothing the panel speaks about.** Rows 1 and 2
@@ -132,7 +187,9 @@ for at the moment it claims:
 
 - `required + 1` to search at all — the `'sector'` policy's
   `requiredGuardCount: 1`
-  (`src/simulation/contraband/default-search-policies.ts:65`);
+  (`src/simulation/contraband/default-search-policies.ts:65`) — **`required + 2`
+  on `09384b9f`, for the reserve the note above names; the policy's own number
+  is unchanged and it is the pool that shrank**;
 - `required + 2` to answer a severity-3 assault and `required + 4` to answer a
   severity-8 riot — `max(1, ceil(severity * respondersPerSeverityPoint))` with
   `respondersPerSeverityPoint: 0.5`
@@ -184,9 +241,17 @@ shortfall and does not imply one: row 2 of the table has `shortage: 0` and
 `spare: 0`. The paragraph's conclusion — that this is coherent play — rests on
 the reader picturing a prison that is *visibly* short, where the panel is
 already telling the player to hire. The prison in row 2 is being told the
-opposite. That sentence is corrected on this branch, with the row-2
-counter-example, because a wrong load-bearing claim in a reference document is
-not this decision's to leave standing while the decision waits.
+opposite.
+
+> **That clause read *"That sentence is corrected on this branch"* and no
+> longer is, because the correction reached `docs/INCIDENTS.md` by another
+> route first.** `main` carries a fuller marking of the same paragraph, dated
+> 2026-09-15 on `2559eb14`, which cites this branch by name and reproduces the
+> row-2 figures. This branch's own edit of that file was therefore dropped when
+> it was brought up to `09384b9f` rather than merged on top of a correction
+> that already says more. **The finding is unchanged and is no longer owed:**
+> a wrong load-bearing claim in a reference document was not this decision's to
+> leave standing while the decision waits, and it is not standing.
 
 ### Where the two budgets already are, and the number already on screen
 
@@ -281,7 +346,8 @@ architecture:
 - `requiredResponderCount` of the highest severity the game can produce — the
   reserve that answers anything. There is no exported ceiling constant to reach
   for: a riot's severity is clamped inline to 10
-  (`src/simulation/incidents/trigger-system.ts:373`) and an assault's to
+  (`src/simulation/incidents/trigger-system.ts:385`,
+  `candidate.score * 10`) and an assault's to
   `ASSAULT_SEVERITY_CEILING`, 5 (`src/simulation/incidents/flashpoint.ts:373`),
   so taking this option means authoring that ceiling somewhere it can be read
   by both the response system and a projection. At 10 the figure is
@@ -427,9 +493,9 @@ prison. The instrument is what a retuning pass should argue against.
 - `tests/integration/staff-coverage-readout.test.ts` and
   `tests/unit/ui-hud-messages.test.ts` gain the new rung and its two keys.
 - `docs/SECURITY.md`'s coverage section and `docs/INCIDENTS.md`'s response
-  section each gain a sentence naming the reserve, and
-  `docs/INCIDENTS.md`'s "exists exactly when" paragraph is corrected on this
-  branch regardless of whether any decision here is taken.
+  section each gain a sentence naming the reserve. The *"exists exactly when"*
+  paragraph in the latter is already marked on `09384b9f`, by the route the
+  note in the Context section above records, so this document owes it nothing.
 - **No gate catches a locale key added without a reader**, which is worth
   stating because the natural assumption is that one does.
   `tests/foundation/unconsumed-content-contract.test.ts` is about declared
