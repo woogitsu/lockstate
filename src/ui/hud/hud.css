@@ -2917,11 +2917,96 @@
    command. */
 .hud-regime__editor[hidden] { display: none; }
 
+/*
+ * **The editor's own height budget, and it exists because the ADR 0115 split
+ * turned an unbounded section into an unreachability.**
+ *
+ * `.ui-panel.hud-regime` is `flex: 0 0 auto`, and the reason that rule gives
+ * for it is that this panel *"is bounded by the classification-group catalogue
+ * rather than by the population"*. **#1273's regime editor broke that
+ * premise.** Expanded, it is seven toggles per classification group, wrapping
+ * -- so the panel's height became a function of two growing vocabularies, and
+ * a `flex: 0 0 auto` panel that outgrows its rail does not scroll, it pushes
+ * the panel below it off the screen.
+ *
+ * Measured in Chromium on this tree, editor **open**, before this rule --
+ * `.hud__side`'s height against the two panels in it:
+ *
+ * | viewport | rail | regime panel | roster left | roster's bottom edge |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 819 | 570 | 225 | 888, inside |
+ * | 1024x768 | 687 | 570 | 93 | 756, inside |
+ * | 1280x720 | 639 | 570 | 45 | 708, inside |
+ * | 375x812 | 536 | 461 | 43 | 730, inside |
+ * | 900x600 | 519 | **570** | **2** | **661, against a 600px viewport** |
+ *
+ * At 900x600 the timetable panel alone wants 51px more than the whole rail
+ * has, so the roster is crushed to 2px and its header -- a 44px tap target
+ * carrying the only Collapse control it has -- is 61px below the fold, with no
+ * player-scrollable ancestor to bring it back. `app-shell.spec.ts`'s #88 sweep
+ * failed at **all five** viewports on exactly this, *"controls covered by
+ * something else with the regime editor open"*, and it was right to: stage 5's
+ * exit criterion is that nothing is unreachable, and ADR 0112's accepted
+ * article 5 makes that a correctness defect rather than a polish one.
+ *
+ * **So the bound is restored here rather than by loosening the panel.**
+ * `flex: 0 1 auto` on the panel was the other candidate and is wrong twice:
+ * `ui-roster-panel-split.spec.ts` pins the timetable's own overflow at 0 and
+ * watched that exact mutation go red, and `.ui-panel`'s `overflow: hidden`
+ * means a shrunk panel would *clip* the timetable rather than scroll it --
+ * trading a control off the bottom of the rail for one off the bottom of a
+ * box. Bounding the editor keeps both halves of the split's bargain: the
+ * timetable never scrolls, and the roster keeps its height.
+ *
+ * **Where 200px comes from, derived rather than chosen.** The tightest rail of
+ * the five is 900x600's **519px**. The regime panel without this list is
+ * 570 - 344 = **226px**. The roster panel needs its 44px header plus a line of
+ * content to be worth laying out at all, call it **88px**. 519 - 226 - 88 =
+ * **205px**, and 200 is that rounded down to the nearest `--space` step's
+ * multiple. It shows four toggle rows and scrolls the rest, which is the same
+ * bargain `BUILD_QUEUE_ROW_LIMIT` and `PRISONER_ROSTER_ROW_LIMIT` strike one
+ * panel over.
+ *
+ * `overflow-y: auto` and not `hidden`, because the difference is the whole
+ * point: `app-shell.spec.ts`'s reachability sweep moves only the boxes whose
+ * own `overflow` says a player could have moved them, so a clipped toggle
+ * stays unreachable and a scrolled one does not.
+ *
+ * **THIS RULE IS A PARTIAL FIX AND THE WORK IS NOT FINISHED. Said here rather
+ * than discovered by the next reader.** With it applied, #88 goes green at
+ * **1440x900 and 1024x768** and stays red at **1280x720, 900x600 and
+ * 375x812**, where the second classification group's seven toggles and the
+ * roster's Collapse are still reported `(outside the viewport)`.
+ *
+ * **Why the derivation above did not settle it, which is the useful part.**
+ * The 200px was derived from measurements taken through the UI harness
+ * (`ui-roster-panel-split.spec.ts`'s fixtures), and in that harness the rule
+ * does exactly what it claims: the regime panel goes 570 -> 431px at 900x600,
+ * the list scrolls at 204px against a 344px `scrollHeight`, and every box sits
+ * inside the viewport (roster bottom 592 against 600). **But #88 runs against
+ * the assembled application, not the harness**, and its prison is not this
+ * fixture -- so a bound derived from the harness is a bound derived from the
+ * wrong page. That is the same shape as this repository's own rule that a
+ * prefix is not a sample of a suite: a fixture is not a sample of the app.
+ *
+ * **What would finish it** is the same measurement taken inside
+ * `app-shell.spec.ts`'s own state at the three red viewports, and then very
+ * likely a structural bound rather than this fixed one: `.ui-panel.hud-regime`
+ * allowed to shrink with `flex: 0 1 auto` while the *editor list* absorbs the
+ * shrink as `flex: 1 1 auto; min-height: 0`, so the timetable keeps its
+ * natural height and the panel can never take more of the rail than the roster
+ * can spare. That keeps the split's pinned property -- the timetable's own
+ * overflow stays 0, because it is the list and not the timetable that gives
+ * way -- and it stops the bound being a number that has to be re-derived every
+ * time either vocabulary grows.
+ */
 .hud-regime__editor-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   padding-top: var(--space-1);
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 /* Name left, share right: the shape every readout line in this HUD uses. */
