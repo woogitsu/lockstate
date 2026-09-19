@@ -359,7 +359,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.regime.roster-unnamed` | Prisoner {id} | `src/content/default-locale-en.ts:3217` |
 | `hud.regime.roster-heading` | Heading to {activity} | `src/content/default-locale-en.ts:3218` |
 | `hud.regime.roster-more` | and {count} more | `src/content/default-locale-en.ts:3219` |
-| `hud.regime.roster-empty` | No prisoners yet. Build a cell with a bed to take somebody in. | `src/content/default-locale-en.ts:3251` |
+| `hud.regime.roster-empty` | No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in. | `src/content/default-locale-en.ts:3251` |
 | `hud.regime.roster-emptied` | This prison is empty. Take somebody in to start again. | `src/content/default-locale-en.ts:3288` |
 | `hud.refusal.set-clock` | The clock did not change — the request was refused. | `src/content/default-locale-en.ts:3303` |
 | `hud.refusal.place-build-order` | The build order was not placed — the request was refused. | `src/content/default-locale-en.ts:3304` |
