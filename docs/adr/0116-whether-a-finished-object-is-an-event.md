@@ -148,7 +148,10 @@ priced "a few dozen lines" at 635.*
 
 Issue #960's title claims **"twenty event types and not one reports something
 going right"**, and its §2 lists the twenty it counted at v0.0.465. **The
-surface is 27 members today** (`src/simulation/protocol/types.ts:1769-1797`),
+surface was 27 members when this section was written and is 28 at
+`460ef077`** (`SIMULATION_EVENT_TYPES`,
+`src/simulation/protocol/types.ts:1973-2002`; the correction under the table
+below names the member that moved it, and it is this document's own),
 and #960's own §6 names the one thing that would refute it: *"A shipped event
 type that reports a success which the census missed — the census is a read of
 one `as const` tuple, so this is falsifiable by opening `types.ts`."*
@@ -164,6 +167,42 @@ Opening it refutes it. The seven members added since #960's census are:
 | `economy.construction-restored` | `eea81acb`, 2026-09-11T14:44:49Z (#966) | the queue can be funded again |
 | `economy.deliveries-restored` | `eea81acb`, 2026-09-11T14:44:49Z (#966) | purchases are possible again |
 | `prisoners.housed` | `eea81acb`, 2026-09-11T14:44:49Z (#966) | an arrival got a bed |
+
+> **Correction, bound to `78cd9d2a` rather than to "today".** The bolded
+> sentence above this table read *"**The surface is 27 members today**
+> (`src/simulation/protocol/types.ts`, lines 1769-1797)"*. Its count and its
+> coordinate went stale for two unrelated reasons, so they are corrected below
+> as two things rather than one.
+>
+> *(The dead coordinate is quoted with its number outside the backticks,
+> because a quotation of a dead anchor is still an anchor as far as
+> `tests/foundation/documentation-anchor-quotation-contract.test.ts` is
+> concerned, and quoting it whole would re-register it as a live one — measured
+> here, not assumed: it put the document back to 20 unverified anchors.)*
+>
+> **The count: 27 → 28, and the eighth member is this ADR's own ruling built.**
+> `78cd9d2a` (2026-09-17T15:25:33Z, [#1284](https://github.com/woogitsu/lockstate/pull/1284))
+> added `construction.order-completed` — option 2 of §6, graded `'info'` and
+> routed `'log-only'`, exactly as the Status block above records. It is
+> therefore **not** an eighth row of the table above, whose subject is the
+> members added between #960's census and the writing of this section; it
+> arrived after, and it arrived because of this document. The read is
+> reproducible: `SIMULATION_EVENT_TYPES` opens at
+> `src/simulation/protocol/types.ts:1973` and closes `] as const;` at `:2002`,
+> 28 string members between them, at `460ef077`.
+>
+> **The gap is not a census that missed something.** #960's §6 names the
+> falsifier as *"opening `types.ts`"*, and opening it is still what settles the
+> number — what changed is that §7's proposal stopped being a proposal. A
+> reader who finds 29 here should look for a ninth member and a ninth reason,
+> not assume this sentence rotted again.
+>
+> **The coordinate: `:1769-1797` → `:1973-2002`.** D1 below already caught this
+> once and re-aimed it to `:1864-1892`, which was right at `ca82e946` and is
+> wrong at `460ef077`; the tuple's opening line has moved 1864 → 1973 over nine
+> commits to that file, five of them not merges. Every anchor into the tuple in
+> this document now quotes `SIMULATION_EVENT_TYPES` beside the number, because
+> the symbol moves with the code and the number does not.
 
 **Five of the seven are unambiguously good news**, and every one of them is
 graded `'info'` in `EVENT_PRESENTATION` (`src/ui/simulation-events.ts:530-606`)
@@ -342,8 +381,8 @@ records.** `construction-projection.ts:53-59` states it:
 So an event that names *what* finished carries `definitionId`, a stable content
 id — never `BuildableDefinition.name`, which is English text and which ADR 0011
 forbids on a projection outright. That is the same discipline `rooms.zoned`'s
-`roomNameKey: identifierSchema` (`src/simulation/protocol/types.ts:1889`) is
-under, and `types.ts:994-996` already says so: *"A key is not text: ADR 0011 keeps
+`roomNameKey: identifierSchema` (`src/simulation/protocol/types.ts:2346`) is
+under, and `types.ts:1012-1014` already says so: *"A key is not text: ADR 0011 keeps
 translated text off the wire, and the HUD still resolves this one."*
 
 **And it has a cost `rooms.zoned` does not pay**: resolving `definitionId` to a
@@ -565,15 +604,43 @@ thirty of forty-four `Proposed` ADRs are already implemented in full, so
 
 | Check | Result |
 | --- | --- |
-| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1864-1892`) | **27 members**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo |
+| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1973-2002`) | **27 members at `ca82e946`**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo. **28 at `460ef077`**, the seventh `construction.*` being `order-completed`, which is the absence this row measures, filled by `78cd9d2a` |
 | `EVENT_PRESENTATION` (`src/ui/simulation-events.ts:458`) | a `Record` over that closed union, so a member cannot exist unrouted and cannot be hiding |
 | `src/content/default-locale-en.ts` | 37 `hud.alert.event*` occurrences and no completion key among them |
 | `src/simulation/events/event-log.ts` | twenty `public record*` methods, none for a completion |
 
-So the absence is structural and nothing about it has been built. The line
-numbers §1 and §4 cite for `SIMULATION_EVENT_TYPES` (`:1769-1797`) have moved
-since this document was written; the list is at `:1864-1892` today and is the
-same list one member longer than §1 counted.
+So the absence was structural and nothing about it had been built **at
+`ca82e946`**. `78cd9d2a` built it; the four rows above are kept as the check
+they were rather than restated, because D1's claim is about that commit.
+
+**The paragraph that stood here has been replaced, and what was wrong with it
+is worth more than what it was trying to say.** It read: *"The line numbers §1
+and §4 cite for `SIMULATION_EVENT_TYPES` (`:1769-1797`) have moved since this
+document was written; the list is at `:1864-1892` today and is the same list
+one member longer than §1 counted."* Three separate things in one sentence:
+
+- **`:1864-1892` was right at `ca82e946` and is wrong at `460ef077`.** The
+  tuple's opening line has moved 1864 → 1973 over nine commits to
+  `src/simulation/protocol/types.ts`, five of them not merges, and none of the
+  nine touched this document. A coordinate re-aimed against *today* rots on the
+  next insertion above it, which is why every anchor into the tuple here now
+  reads `src/simulation/protocol/types.ts:1973-2002` with
+  `SIMULATION_EVENT_TYPES` quoted beside it.
+- **The first row of the table above disagreed with it by 28 lines**, citing
+  `:1892-1920` for the same tuple in the same subsection. At `ca82e946`,
+  `:1892` was the closing `] as const;` — so the row cited the 28 lines
+  *following* the list it was counting, while the paragraph under the table
+  cited the list itself. A correction written in the same pass as the thing it
+  corrects can still miss it.
+- **"one member longer than §1 counted" was never true of anything.** §1
+  counted 27 and this table counts 27, and both were reads of the same
+  27-member tuple at commits between which it did not move. The sentence
+  invented a discrepancy to explain a coordinate difference that had a
+  different cause — the two anchors were simply aimed at different places in
+  the same file.
+
+And §4, which that sentence names alongside §1, cites no line number for the
+tuple at all — only §1 and this subsection ever did.
 
 ### D2. The measurement that arrived after this document was written
 

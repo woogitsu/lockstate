@@ -41,7 +41,9 @@
 > class remedy: `HostRefusalReason` gained a second member,
 > `'no-room-to-hold-anybody'` (`src/ui/host-refusal.ts:69`, not the one member
 > `:57` cited below), and `refusalMessageKey` grew a second `if` narrowing by
-> reason (`src/ui/hud/projection.ts:1233-1235`), not the `Record` Option 2
+> reason (`src/ui/hud/projection.ts:1335`,
+> `if (reason === 'no-room-to-hold-anybody' && actionId === 'admit-prisoner') {`),
+> not the `Record` Option 2
 > recommends. So: H4 is no longer a miss (the "genuinely player-actionable...
 > **No**" cells below are false), the sentence is shipped
 > (`src/content/default-locale-en.ts:2369`, key `hud.refusal.admit-prisoner-no-room`,
