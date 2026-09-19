@@ -3657,6 +3657,40 @@
  */
 :root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }
 
+/*
+ * And one step less block padding on a wrapped bar, which is what pays for the
+ * sixth section at an enlarged interface scale (2026-09-19).
+ *
+ * **Measured, and the measurement is the argument.** At 900x600 and 200 % the
+ * six tabs are 144px of `min-width` each against a bar the viewport cannot make
+ * 864px wide, so they wrap -- exactly as the rule above intends, and exactly as
+ * five tabs did not. The bar then went from one row to two, 109.39px to
+ * 218.78px, and the 109px it took came out of the middle row: `.hud__rail`
+ * reported `scrollHeight - clientHeight` of **27px**, which
+ * `app-shell.spec.ts`'s #545 sweep reports as *"the rail scrolls at 900x600 and
+ * 200%"* and which breaks that test's own stated invariant -- *"The rail is not
+ * the scroll container; its panels are."*
+ *
+ * A row at `--space-1` instead of `--space-2` is **16px narrower per row at
+ * 200 %**, 32px over the two rows, which is the 27 with room to spare. **The
+ * two alternatives were both rejected on grounds this file can state.**
+ * Taking the *names* off the screen at enlarged scale -- extending #1192's
+ * icon-only treatment to `:root[data-ui-scale-enlarged='true']` -- fits six
+ * tabs on one row and is a player-visible removal at a viewport class the
+ * owner's 2026-09-16 ruling does not reach, so it is theirs rather than ours.
+ * Re-cutting `.hud__aside`'s floor is the other place the 27px could come from
+ * and it is where #1318 has just put a floor *back*, for #1312's loss of
+ * content; taking it out again would re-open that.
+ *
+ * So the bar spends padding, which is the one thing here that is neither a
+ * control nor a sentence. `.ui-tab`'s own `min-height: var(--tap-target)`
+ * still holds the 44px floor, scaled, and the glyph and the label are both
+ * still drawn.
+ */
+:root[data-ui-scale-enlarged='true'] .hud[data-layout-navigation-placement='bar'] .ui-tab {
+  padding-block: var(--space-1);
+}
+
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);
 }
@@ -5953,6 +5987,18 @@
     min-width: 0;
     width: 100%;
     flex: 0 0 auto;
+    /*
+     * And one step less block padding than the bar draws, which is what pays
+     * for the sixth section above the 720px break (2026-09-19). The corner
+     * block far below in this file carries the whole measurement and the two
+     * repairs that were tried and reverted before this one; in short: six tabs
+     * at the bar's padding are 328.13px of column at 1280x800 and run into a
+     * bottom-left corner that has no height to give, and 47.19px per tab is
+     * 280.13px, which clears it. `--tap-target`'s 44px floor still holds, and
+     * `.ui-tab`'s own `min-height: var(--tap-target)` is what enforces it if
+     * this ever shrinks further.
+     */
+    padding-block: var(--space-1);
   }
 
   .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab .ui-tab__label {
@@ -6038,29 +6084,43 @@
    * So the corner does not move at these heights, and the only thing left to
    * give is its **height**.
    *
-   * It is the right thing to give. The corner is a bottom-anchored column whose
-   * tallest child is the alerts list, and that list is already a scroll
-   * container with `min-height: 0` down the whole chain (the block near the top
-   * of this file that widened the corner says so). The tab column is neither:
-   * every section must be pressable, and `.hud-tabs__inner`'s `overflow` would
-   * clip one away in silence.
+   * **CAPPING THE CORNER'S HEIGHT WAS THE SECOND THING TRIED AND IT IS ALSO
+   * REVERTED, AND THIS IS THE MORE USEFUL OF THE TWO FINDINGS.** The argument
+   * was that the corner is the one that can yield, because its tallest child
+   * is the alerts list and that list is already a scroll container with
+   * `min-height: 0` down the whole chain. **The corner has no such slack.**
+   * `.hud__corner { max-height: calc(100% - var(--hud-navigation-block)) }`
+   * inside this query cost it 27px at 1280x800 -- 398 -> 371.31, the top
+   * moving 402 -> 428.69 -- and every one of those 27 came out of the alerts
+   * list, whose box went to a **28px** `clientHeight` holding a **76px** row.
+   * `ui-alerts-column.spec.ts`'s #739 assertion reported it in those words:
+   * *"1280x800 danger: a single alert (76px) is taller than its list box
+   * (28px)"*, green on `main` and red with the cap. A corner that hides an
+   * alert to uncover a zoom button has traded one loss of content for
+   * another.
    *
-   * `--hud-navigation-block` is `layout-shell.ts`'s, published every refresh
-   * from `navigationRailBlock(viewport)` --
-   * `HUD_TAB_IDS.length * 54 + 24`, scaled. **The count is deliberately not in
-   * this file**: a tally in a stylesheet is the sentence shape
-   * `docs/AGENT_WORKFLOW.md` §4 says rots first, and this one would rot into a
-   * corner drawn over the tab somebody just added. At 1280x800 the cap is
-   * `719 - 348 = 371px`, so the corner's top moves 402 -> 429 and clears the
-   * column's 420.81 by 8px. Where the corner already fits -- 1440x900 and up,
-   * and every viewport below 781px where it has stepped aside instead -- `max`
-   * is not reached and nothing moves.
+   * **So the column is what gives, and it gives its own padding rather than a
+   * tab.** `.ui-tab`'s block padding drops from `--space-2` to `--space-1`
+   * *in this placement only*, which takes a rail tab from 55.19px to 47.19px
+   * and the six-tab column from 328.13px to 280.13px -- clear of the corner's
+   * 402 by 22px at 1280x800, with nothing scrolled, nothing clipped and
+   * nothing hidden. 47.19 is still above `--tap-target`'s 44px floor
+   * (constitution article 16), and the label is still drawn: the tab is a
+   * column of a 20px glyph over a 13.19px label, 37.19px of content in a
+   * 47.19px button. The bar placement's padding is untouched.
+   *
+   * `NAVIGATION_TAB_HEIGHT_PX` in `hud-layout.ts` moves 54 -> 47 with it,
+   * because that constant is a *measurement* of this rule and
+   * `navigationPlacement` reads it. The placement flip it could cause was
+   * checked rather than assumed: a viewport changes answer only where the
+   * room left by the strip lands between `6*47+24` and `6*54+24` scaled, which
+   * at 100% is a window 411-452px tall and wider than 720px. 721x420 -- the
+   * viewport `locale-delivery.spec.ts` and `ui-shell.spec.ts` calibrate their
+   * Polish overlap and wrap gates at, precisely because the tabs do *not* fit
+   * a rail there -- still answers `bar`, and both gates were re-run.
    */
   @media (min-height: 781px) {
-    .hud[data-layout-navigation-placement='rail'] .hud__corner {
-      margin-left: 0;
-      max-height: calc(100% - var(--hud-navigation-block, 0px));
-    }
+    .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
   }
 
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }

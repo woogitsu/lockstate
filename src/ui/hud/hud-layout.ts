@@ -135,7 +135,33 @@ export const DEFAULT_INSPECTOR_WIDTH_PX = 264;
  * floors: "the sums cannot be derived ... so something has to check them").
  * `tests/browser/hud-layout-shell.spec.ts` is what checks it.
  */
-export const NAVIGATION_TAB_HEIGHT_PX = 54;
+export const NAVIGATION_TAB_HEIGHT_PX = 47;
+
+/*
+ * **54 UNTIL 2026-09-19, AND THE PARAGRAPH ABOVE IS THE MEASUREMENT THAT
+ * NUMBER CAME FROM RATHER THAN A STALE SENTENCE** (`docs/AGENT_WORKFLOW.md`
+ * §4). It is kept because it still says *how* to re-measure this, which is the
+ * part that does not rot.
+ *
+ * What moved is the stylesheet, not the method. The navigation gained a sixth
+ * section (ruled 2026-09-19), six tabs at the bar's block padding are 328.13px
+ * of column at 1280x800, and the bottom-left corner is bottom-anchored in the
+ * same row with no height to give -- `hud.css`'s corner block carries that
+ * measurement and the two repairs tried and reverted before this one. So a
+ * rail tab draws one step less block padding than a bar tab
+ * (`padding-block: var(--space-1)`), and is **47.19px** on the assembled page
+ * at 1280x800 where it was 55.19. Rounded down rather than up, as 54 was: the
+ * fit test must not think a tab is smaller than it is.
+ *
+ * **What this number moving can do is flip a viewport from `bar` to `rail`,
+ * and that was checked rather than assumed.** It flips only where the room the
+ * strip leaves lands between `6*47+24` and `6*54+24`, scaled -- at 100 % a
+ * window 411-452px tall and wider than 720px. **721x420 still answers `bar`**,
+ * which matters because `tests/browser/locale-delivery.spec.ts` and
+ * `tests/browser/ui-shell.spec.ts` calibrate their Polish overlap and wrap
+ * gates at exactly that viewport, for exactly the reason that the tabs do not
+ * fit a rail there. Both were re-run.
+ */
 
 /** The rail's own vertical padding at 100 %, one `--space-3` at each end. */
 export const NAVIGATION_RAIL_PADDING_PX = 24;
