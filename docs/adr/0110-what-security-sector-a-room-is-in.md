@@ -294,7 +294,7 @@ defect, and a document that called it one would be doing what
 The handover named several beneficiaries. Checked one at a time:
 
 - **The security-office reader (#595) — real, and the strongest case.**
-  `room.security-office` is in the catalogue (`src/content/room-catalog.ts:159-163`),
+  `room.security-office` is in the catalogue (`src/content/room-catalog.ts:219-223`),
   and both halves of what it would read exist and are idle:
   `SectorRiskTracker.getConsecutiveHotSamples`
   (`src/simulation/incidents/sector-risk.ts:201`) and `ContrabandRegistry.all()`
