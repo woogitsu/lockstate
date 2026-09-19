@@ -198,7 +198,7 @@ all 18 `room.*.name` keys ship in the default catalog
 
 The Build panel's body headroom is **not** the budget, and treating it as one
 would have made alternative C look merely tight instead of impossible.
-`.hud__side` is `flex: 0 1 auto` with `min-height: 0` (`src/ui/hud/hud.css:1220-1228`)
+`.hud__side` is `flex: 0 1 auto` with `min-height: 0` (`src/ui/hud/hud.css:1179-1187`)
 and `.hud__aside` is `flex: 1 1 0` with a `min-height: 25%` floor (`:1154-1158`;
 the anchors read `:385-393` and `:367-372`),
 so the Build panel grows into the aside's slack before it overflows anything.
