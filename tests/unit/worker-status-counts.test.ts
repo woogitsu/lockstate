@@ -3,7 +3,14 @@ import { defaultContrabandRegistry } from '../../src/content/contraband-catalog'
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import { PRISON_CONDITIONS, REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import {
+  PRISON_CONDITIONS,
+  REFUSAL_REASONS,
+  refusalSchema,
+  SIMULATION_PROTOCOL_VERSION,
+  type MainToWorkerMessage,
+  type SimulationRefusal,
+} from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -73,18 +80,26 @@ interface Published {
     readonly tick: number;
     readonly schemaVersion: number;
     readonly counts: Record<string, number>;
-    /** Absent until the session has refused something (#261). */
-    readonly refusal?: {
-      readonly sequence: number;
-      readonly tick: number;
-      readonly reason: string;
-      /**
-       * Present once the same command route has decided something else since
-       * (ADR 0091 decision 2, option F). `true`-or-absent, exactly as
-       * `SimulationRefusal` declares it.
-       */
-      readonly routeDecidedSince?: true;
-    };
+    /**
+     * Absent until the session has refused something (#261).
+     *
+     * **`SimulationRefusal` itself, not a hand-written restatement of it**
+     * (issue #1304). This block used to spell out `refusalSchema`'s members
+     * by hand, and the comment above `routeDecidedSince` claimed the copy was
+     * *"exactly as `SimulationRefusal` declares it"* -- a claim nothing
+     * checked, made in the same file whose worst-case fixture had already
+     * drifted from that schema for three days (#1268). A second mirror of a
+     * `.strict()` schema is the defect, so it is deleted rather than
+     * corrected: a fifth member now arrives here for free.
+     *
+     * The rest of `Published` stays deliberately loose -- `kind` is `string`
+     * and `counts` is `Record<string, number>` -- because this interface
+     * describes what came *off the port* before the decoder has vouched for
+     * it, and the tests below check those two by assertion. `refusal` is
+     * different only in that a tie was available and the drift it would have
+     * caught was real.
+     */
+    readonly refusal?: SimulationRefusal;
   };
 }
 
@@ -984,6 +999,31 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // line moving in the same edit, so nothing ever prompted the first
       // change.
       expect(Object.keys(payload.refusal)).toHaveLength(4);
+      // **And it is the refusal `refusalSchema` declares, member for member**
+      // (issue #1304). The line above counts; this one says *which*, against
+      // the schema itself rather than against a number written here.
+      //
+      // The asymmetry it removes was measured on this file (#1304). Deleting
+      // a member from `refusalSchema` already failed `tsc` in six places, so
+      // **removal** was gated and still is -- nothing below replaces that.
+      // **Addition** was gated by nothing: a new optional member compiled,
+      // shipped, widened every publication carrying it, and left the byte
+      // bound below stale and green. That is not hypothetical --
+      // `routeDecidedSince` did exactly this between #1261 (2026-09-16) and
+      // #1268, breaching the pinned bound by 7 bytes for three days.
+      //
+      // This is the missing direction and nothing more. It fails when the
+      // schema gains a member the fixture above does not force, and the
+      // failure **names the member** -- which a length assertion cannot do,
+      // and which is the whole reason the worst case has to be re-measured
+      // rather than merely re-counted. `.strict()` makes the schema's key set
+      // the closed truth about this record, so the two sides of this
+      // comparison are the wire shape and the thing claiming to be its worst
+      // case; neither is a copy of the other.
+      expect(
+        Object.keys(payload.refusal).sort(),
+        'the worst-case fixture no longer forces every member `refusalSchema` declares -- re-measure the byte bound below against the new member rather than raising it',
+      ).toEqual(Object.keys(refusalSchema.shape).sort());
       // **710 and not 669, and the raise is derived from a run rather than
       // chosen** -- the same way every bound below replaced the one before it.
       // The bound it replaces predicted this raise in as many words: it said a

@@ -1524,8 +1524,35 @@ export type RefusalReason = (typeof REFUSAL_REASONS)[number];
  * person changing the schema actually runs.
  * `tests/foundation/documented-wire-schema-membership-contract.test.ts` is the
  * gate; it derives both sides rather than reading this comment.
+ *
+ * ## Why this one is exported when its siblings on this payload are not
+ *
+ * **Exported for a boundary test, and named here so the export is not read as
+ * an invitation to validate refusals with it outside the protocol layer.**
+ * The test is the key-set assertion in
+ * `tests/unit/worker-status-counts.test.ts` -- the file that pins what one
+ * `simulation/status-counts` publication costs in bytes. That bound is only a
+ * bound if it was measured at the **worst case**, and the worst case is a
+ * hand-written literal: it forces the optional members on, because the
+ * scenario it runs does not produce them.
+ *
+ * A hand-written literal cannot notice a member it was never told about.
+ * Issue #1268 is the measurement: `routeDecidedSince` shipped on 2026-09-16
+ * (#1261), the fixture never learned of it, and the pinned bound was breached
+ * by 7 bytes for three days with every run green. **Removal** of a member was
+ * already gated -- `tsc` fails in six places -- so the missing direction was
+ * **addition**, and nothing gated it at all (#1304). Exporting the schema
+ * lets that test assert its fixture's key set *against the schema* rather
+ * than against a number, so a fifth member fails there and names itself in
+ * the failure message.
+ *
+ * It is exported rather than reached by walking `workerToMainMessageSchema`
+ * (which the membership contract above does) because that walk unwraps a
+ * discriminated union and a `ZodOptional` to get here, and a unit test paying
+ * that cost would be a second hand-maintained mirror of the protocol's
+ * internal shape -- the very thing being removed.
  */
-const refusalSchema = z
+export const refusalSchema = z
   .object({
     sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
     tick: tickSchema,
