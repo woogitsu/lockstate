@@ -1004,6 +1004,25 @@ decision about what to build next.
    carries: it is a figure the simulation would have to project beside the two
    it already does, computed where the withholding is computed.
 
+   **It now does, and the paragraph above is kept rather than rewritten
+   because the instruction in it is still the one a reader needs**
+   (`docs/AGENT_WORKFLOW.md` §4). `stateIncomeWithheldTodayMinorUnits` is
+   published from `projectStatusStrip` as of issue #890 —
+   `stateIncomeAccruedByTick(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
+   occupied places, tick)` less `stateIncomeAccruedTodayMinorUnits` — and the
+   `Earned today` chip carries it as a description, so ADR 0064's second of
+   three reaches a player. Reason 2 above was re-derived on the two prisons
+   `tests/integration/needs-state-grant-loop.test.ts` builds rather than on
+   the smallest case: at eight occupied places with three unmet needs each the
+   two orderings disagree at **2,240 of 2,400 ticks**, and a mutation using
+   the wrong one goes red at tick 0 while the day-boundary case stays green —
+   which is the trap this entry predicted, reproduced.
+
+   **The third of the three — which room would fix it — still exists
+   nowhere**, and what is *not* settled is loudness: whether the withheld
+   figure should also be a badge visible without hovering is the owner's, and
+   #890 holds it.
+
    **Half-answered by #535 decision 6, and the half that moved is the first
    one.** `PrisonerNeedViewModel` now carries `unmetForStateIncome` — computed
    by `isNeedUnmetForStateIncome`, the same predicate `unmetNeedCount` sums to
