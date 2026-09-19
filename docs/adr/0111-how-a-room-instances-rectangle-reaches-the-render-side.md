@@ -13,7 +13,48 @@
 
 ## Status
 
-**Proposed, 2026-09-12. Not self-approved.**
+**Accepted by the owner on 2026-09-19, in one ruling: decision 1's recommended
+transport.** Put to them as four options — this document's own Options A to D —
+they chose the one labelled:
+
+> Rozszerzyć world w migawce geometrii (rekomendacja ADR-a)
+
+("Extend `world` in the geometry snapshot (the ADR's recommendation).") That is
+**Option A**, and it is the option Decision 1 below recommends. The `Proposed`
+block is kept below rather than replaced, on the pattern
+[ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)'s Status
+block sets and for the reason it gives: `docs/AGENT_WORKFLOW.md` §4's rule is to
+mark both directions, and what the question looked like before it was answered
+is what a later reader needs in order to judge the answer.
+
+**The provenance is the weaker kind, and is disclosed here rather than inferred
+from the entry in `AGENTS.md`.** The ruling is the *label of a clickable option
+the integrating session wrote and the owner chose*, not a sentence they typed —
+the same disclosure the 2026-09-08, 2026-09-09 and 2026-09-10 entries in
+`AGENTS.md` make about themselves, and the same one the scope ruling below
+already makes about the filing of this document. It is the second ruling of that
+kind this document carries and the first that reaches anything below the Status
+block.
+
+**What the acceptance covers, exactly: all three decisions, and nothing drawn
+with them.** Decision 1 (the rectangle rides the geometry pull), decision 2 (the
+condition ordinal stays on the delta channel, which is a restatement of ADR
+0097's decision 2 rather than a new decision) and decision 3 (publishing a
+rectangle licenses no mark). **Decision 3 is part of what was accepted and not a
+caveat on it**: what is drawn with `width` and `height`, and what it claims to a
+player, stay ADR 0097's and ADR 0101's. Options B, C and D are rejected on the
+costs this document prices for them; Option B's separate, smaller case — two
+numbers on the HUD row for a *"show me this room"* affordance — is untouched by
+this ruling, exactly as that option says.
+
+**No player-facing string is accepted here, because none is authored here.** The
+paragraph below saying so is unchanged by the acceptance, and reservation 4 of
+`AGENTS.md` still governs whatever ADR 0097 eventually puts on screen.
+
+---
+
+**Proposed, 2026-09-12. Not self-approved.** *(The state of this document before
+the ruling above.)*
 
 **The scope ruling is the owner's and covers only the filing**, in the clickable
 option they chose on 2026-09-12 — *"Dwa ADR-y: 0110 i 0111 (rekomendacja)"*
