@@ -565,7 +565,7 @@ thirty of forty-four `Proposed` ADRs are already implemented in full, so
 
 | Check | Result |
 | --- | --- |
-| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1864-1892`) | **27 members**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo |
+| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1892-1920`) | **27 members**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo |
 | `EVENT_PRESENTATION` (`src/ui/simulation-events.ts:458`) | a `Record` over that closed union, so a member cannot exist unrouted and cannot be hiding |
 | `src/content/default-locale-en.ts` | 37 `hud.alert.event*` occurrences and no completion key among them |
 | `src/simulation/events/event-log.ts` | twenty `public record*` methods, none for a completion |
