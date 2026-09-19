@@ -3106,6 +3106,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // A list separator, which is vocabulary rather than punctuation: it is `، `
   // in Arabic and `、` in Japanese.
   'hud.regime.category-separator': ', ',
+  // The regime editor (#1167, ADR 0113 slice 1's missing producer). Every
+  // word here is checked against the code that makes it true, per `AGENTS.md`
+  // reservation 4 as the owner released it on 2026-09-04.
+  //
+  // "the block running now" and not "a block": the panel's own readout is the
+  // block each group is inside at this tick -- `projectStatusStrip` publishes
+  // one `regime` row per group and each row is that group's *running* block --
+  // and `HudRegimeBlockViewModel.startTickOfDay` is that block's own start, so
+  // the tick the toggle sends names the block the row is already describing.
+  // Moving a boundary or editing a block that is not running is deliberately
+  // not built (ADR 0113 section 3), and this sentence must not imply either.
+  //
+  // "Change" and not "Set" or "Plan": a press sends `EditRegimeBlock`, whose
+  // one write is `RegimeScheduleRegistry.editBlock` --
+  // `src/simulation/prisoners/regime-registry.ts`, in its own words *"the one
+  // write ADR 0113 section 3 allows: one block's `allowedCategories`, in one
+  // group's schedule"*. Nothing else in the schedule moves.
+  'hud.regime.edit': 'Change the block running now',
+  // True because `editRegimeBlockSchema` puts `.min(1)` on
+  // `allowedCategories` (`src/simulation/protocol/commands.ts`), so a command
+  // switching the last one off is refused at decode time and never reaches the
+  // registry -- which is why the control is locked here rather than pressed
+  // and silently dropped. "at least one thing" rather than "at least one
+  // category" because the toggles are labelled with the things themselves --
+  // Sleep, Meal, Work -- and "category" is the protocol's word, not a
+  // player's.
+  'hud.regime.edit-last-category': 'A block has to allow at least one thing, so the last one cannot be switched off.',
   // #958: remaining ticks at the detail reply divided by the published day
   // length; a duration, not a real-world date or a promise of discharge now.
   'hud.regime.sentence-remaining': 'Sentence remaining (in-game days): {days}',

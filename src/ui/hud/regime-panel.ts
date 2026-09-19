@@ -4,7 +4,10 @@ import { element, eyebrowText, screenReaderText, valueText } from '../primitives
 import { createPanel } from '../primitives/panel';
 import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
+import { createCollapsibleSection } from '../primitives/collapsible-section';
 import { createSegmentedBar, type SegmentedBar } from '../primitives/segmented-bar';
+import { createToggleGroup, type ToggleGroup } from '../primitives/toggle-group';
+import { deriveSimulationMessageKey, simulationEnumIds } from '../../content/simulation-message-keys';
 import { createStatusBadge, type BadgeTone, type StatusBadge } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
 import { remainingSentenceDays } from '../prisoner-sentence';
@@ -373,6 +376,28 @@ export interface RegimePanelOptions {
    * would be the owner's.
    */
   readonly onSelectPrisoner?: (entityId: number | undefined) => void;
+  /**
+   * The player changed what one group's **running** block allows (#1167,
+   * ADR 0113 slice 1).
+   *
+   * A *command*, unlike `onSelectPrisoner` above, and the difference is what
+   * it asks for: this one asks the simulation to change, so the host gates it
+   * and a refusal has to reach the player. The panel applies nothing itself --
+   * the toggles repaint from the next `hud/status-strip` reply, exactly as the
+   * `Allows` sentence beside them does -- which is what keeps the DOM from
+   * becoming a second, disagreeing copy of the schedule if the command is
+   * refused.
+   *
+   * Absent means no editor is drawn at all. A panel offered no sink for the
+   * command must not show controls that would send one, which is the same rule
+   * `pendingDeliveries` and the roster draw between "nobody asked" and "the
+   * answer is none".
+   */
+  readonly onEditBlock?: (intent: {
+    readonly classificationGroupId: string;
+    readonly startTickOfDay: number;
+    readonly allowedCategoryIds: readonly string[];
+  }) => void;
 }
 
 /** The localizer call this panel makes, narrowed so the pure helpers below need no `HudLocalizer`. */
@@ -700,6 +725,69 @@ export function formatRegimeAllowsText(t: Translate, group: HudRegimeBlockViewMo
   });
 }
 
+/**
+ * The categories a block would allow after one toggle press, in the
+ * vocabulary's own order.
+ *
+ * Pure and exported for the reason `describeStaffCoverage` and
+ * `formatRegimeAllowsText` are: the default Vitest environment is `node`
+ * (`docs/TESTING.md`), so nothing headless can call `createRegimePanel`, and
+ * *what a press asks the simulation for* is the decision this change adds. A
+ * rule that only ran inside a DOM builder would be unreachable from
+ * `pnpm test` rather than merely untested.
+ *
+ * **Filtered out of `vocabulary` rather than spliced into `current`**, which
+ * is what makes the result order-stable: two presses that end at the same set
+ * produce the same array, so the command a player sends does not depend on the
+ * order they pressed things in. `RegimeScheduleRegistry.editBlock` canonicalises
+ * anyway (`canonicalCategories`), so this is about what the *wire* carries
+ * being a function of the state rather than of the gestures.
+ *
+ * **A category not in `vocabulary` is dropped**, including one that was in
+ * `current`. That cannot happen while `simulationEnumIds('action-category')`
+ * and `ACTION_CATEGORIES` agree, which
+ * `tests/foundation/content-vocabulary-contract.test.ts` requires exactly --
+ * and if they ever stopped agreeing, sending a member this panel could not
+ * name would be sending a value the command's own `z.enum` would refuse.
+ */
+export function nextAllowedCategories(
+  current: readonly string[],
+  categoryId: string,
+  pressed: boolean,
+  vocabulary: readonly string[],
+): readonly string[] {
+  const wanted = new Set(current);
+  if (pressed) wanted.add(categoryId);
+  else wanted.delete(categoryId);
+  return vocabulary.filter((candidate) => wanted.has(candidate));
+}
+
+/**
+ * Which of a block's toggles may not be pressed, and it is never more than one.
+ *
+ * A block must allow at least one category -- `editRegimeBlockSchema` puts
+ * `.min(1)` on `allowedCategories` -- and the press that emptied one would not
+ * be quietly dropped so much as **thrown**: `packCommand` parses against that
+ * schema inside `SimulationCommandSender.submit`
+ * (`src/ui/simulation-commands.ts`), on this thread, before anything is sent.
+ * The refusal a player would then read is `hud.refusal.*`'s generic line,
+ * which says nothing about what they did. A panel that let that happen would
+ * be a control that failed and did not say why, which is the shape the owner's
+ * standing directive names. So the **last remaining** category is locked, with
+ * `hud.regime.edit-last-category` saying why instead.
+ *
+ * (`unpackCommand` answering `null` is the same rule one boundary further on,
+ * for a payload that reached the worker some other way. Nothing on this path
+ * gets that far.)
+ *
+ * Only the pressed member is ever locked: an *off* toggle can always be
+ * switched on, whatever else is off, because adding a category can never empty
+ * the block.
+ */
+export function lockedCategoryIdsFor(allowedCategoryIds: readonly string[]): readonly string[] {
+  return allowedCategoryIds.length === 1 ? allowedCategoryIds : [];
+}
+
 export interface RegimePanel {
   readonly element: HTMLElement;
   /**
@@ -787,15 +875,119 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
    * focusable -- so replacing it cannot take focus away from a player.
    */
   const blockList = element('div', { className: 'hud-regime__block-list' });
+
+  // ---- and the one control over it ----------------------------------
+  /*
+   * The regime editor (#1167). `EditRegimeBlock` has had a consumer, two
+   * refusals and a V6 save section since ADR 0113 slice 1 landed, and no
+   * producer -- it was the only entry in `AWAITING_PRODUCER`
+   * (`tests/foundation/unconsumed-command-contract.test.ts`), which is that
+   * gate's own words for a command only a test can send.
+   *
+   * **Collapsed on arrival, and that is a height decision rather than a taste
+   * one.** Seven toggles per group is four wrapped rows at 375px, and this
+   * panel shares `.hud__side` with a roster that is already the taller half of
+   * it. A collapsed section costs the layout one 44px header, which is the
+   * same argument `BUILD_QUEUE_ROW_LIMIT`'s block makes one panel over -- the
+   * arrival height is unchanged and a player who wants the control opens it.
+   *
+   * **Pooled per group, where the rows above are rebuilt**, and here the
+   * reason the rows give is the one that stops applying: `replaceChildren`
+   * is safe for the rows because *nothing in them is focusable*, and every
+   * member of this section is a `<button>`. This block repaints on the same
+   * pull cadence, so rebuilding it would take a player's focus off the toggle
+   * they were about to press, twice a second.
+   */
+  const editorBody = element('div', { className: 'hud-regime__editor-list' });
+  const editor = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.regimeEdit),
+    collapsed: true,
+    // Controlled, like every section in this HUD: the widget reports the state
+    // it wants and this applies it. There is nothing else to decide here --
+    // no other block's height depends on it -- so the owner's answer is always
+    // yes, and it is still routed through `setCollapsed` rather than letting
+    // the widget flip itself, which is the rule the primitive states.
+    onToggle: (collapsed) => {
+      editor.setCollapsed(collapsed);
+    },
+  });
+  editor.element.classList.add('hud-regime__editor');
+  editor.body.append(editorBody);
+
+  /*
+   * The whole vocabulary, not the members this block happens to allow: a
+   * player who could only switch categories *off* would have no way back.
+   * `simulationEnumIds` is how the HUD is allowed to know it --
+   * `ACTION_CATEGORIES` lives in `src/simulation/**`, which this layer may not
+   * import, and `content/simulation-message-keys.ts` is gated to agree with it
+   * exactly.
+   */
+  const categoryIds = simulationEnumIds('action-category');
+  const editorGroups = new Map<string, ToggleGroup>();
+
   const blocksBlock = element('div', {
     className: 'hud-regime__blocks',
-    children: [eyebrowText(t(HUD_MESSAGE_KEY.regimeBlocks), 'hud-regime__blocks-header'), blockList],
+    children: [
+      eyebrowText(t(HUD_MESSAGE_KEY.regimeBlocks), 'hud-regime__blocks-header'),
+      blockList,
+      editor.element,
+    ],
   });
 
   let regime: HudRegimeViewModel | undefined;
 
+  /**
+   * One toggle group per classification group, created once and repainted.
+   *
+   * The legend is the group's own label rather than a word of its own: the
+   * rows above already name the group, and a second noun here would be a
+   * second vocabulary for the same thing.
+   */
+  function editorGroupFor(group: HudRegimeBlockViewModel): ToggleGroup {
+    const existing = editorGroups.get(group.classificationGroupId);
+    if (existing !== undefined) return existing;
+    const created = createToggleGroup({
+      legend: t(group.labelKey),
+      options: categoryIds.map((id) => ({ id, label: t(deriveSimulationMessageKey('action-category', id)) })),
+      pressedIds: group.allowedCategoryIds,
+      onToggle: (categoryId, pressed) => {
+        /*
+         * Read off `regime` at press time rather than off the `group` this
+         * closure was created with: the closure is made once and the schedule
+         * is republished twice a second, so a captured row would send the
+         * categories the block held when the section was first drawn.
+         */
+        const current = regime?.groups.find(
+          (candidate) => candidate.classificationGroupId === group.classificationGroupId,
+        );
+        if (current === undefined) return;
+        options.onEditBlock?.({
+          classificationGroupId: current.classificationGroupId,
+          startTickOfDay: current.startTickOfDay,
+          allowedCategoryIds: nextAllowedCategories(current.allowedCategoryIds, categoryId, pressed, categoryIds),
+        });
+      },
+    });
+    created.element.dataset['group'] = group.classificationGroupId;
+    editorGroups.set(group.classificationGroupId, created);
+    editorBody.append(created.element);
+    return created;
+  }
+
+  function paintEditor(): void {
+    // No sink for the command means no control that would send one.
+    editor.element.hidden = regime === undefined || options.onEditBlock === undefined;
+    if (regime === undefined) return;
+    for (const group of regime.groups) {
+      const toggles = editorGroupFor(group);
+      toggles.setPressed(group.allowedCategoryIds);
+      toggles.setLocked(lockedCategoryIdsFor(group.allowedCategoryIds), t(HUD_MESSAGE_KEY.regimeEditLastCategory));
+    }
+  }
+
   function paintRegime(): void {
     blocksBlock.hidden = regime === undefined;
+    paintEditor();
     if (regime === undefined) {
       blockList.replaceChildren();
       return;

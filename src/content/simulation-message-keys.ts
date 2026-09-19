@@ -785,6 +785,36 @@ export function simulationEnumMessageKeys(): readonly LocalizationKey[] {
   return Object.keys(simulationEnumMessages());
 }
 
+/**
+ * Every stable id in one namespace, in the order this catalogue declares them.
+ *
+ * **The point of it is which module may ask.** A HUD panel that offers the
+ * player a *choice* out of one of these vocabularies -- the Regime panel's
+ * regime editor is the first, offering the seven `ActionCategory` members --
+ * needs the whole vocabulary and not only the members the current projection
+ * happens to carry, and it may not import `ACTION_CATEGORIES` itself: the HUD
+ * imports nothing from `src/simulation/**` (`AGENTS.md` boundary 1, gated by
+ * `tests/unit/ui-hud-messages.test.ts`). This module is already on the HUD's
+ * side of that line and is already where the same panel derives each member's
+ * label from, so the ids and the words come from one source rather than two.
+ *
+ * **It is a safe source rather than a convenient one**, and the reason is
+ * `validateSimulationEnumGroups` below: a group's `labels` keys must agree
+ * *exactly* with its `sourceFile`'s own declaration -- containment is not
+ * enough, which is what `additionalIds` exists to make possible -- so a
+ * category added to `ACTION_CATEGORIES` and not to this catalogue fails
+ * `tests/foundation/content-vocabulary-contract.test.ts` rather than quietly
+ * leaving a toggle off the panel.
+ *
+ * `additionalIds` are deliberately **not** included: they are ids the source
+ * declaration does not hold, with a reason, and a control that offered one
+ * would be offering a value the simulation's own vocabulary does not contain.
+ */
+export function simulationEnumIds(namespace: SimulationEnumNamespace): readonly string[] {
+  const group = SIMULATION_ENUM_GROUPS.find((candidate) => candidate.namespace === namespace);
+  return group === undefined ? [] : Object.keys(group.labels);
+}
+
 export type SimulationEnumGroupError =
   | { readonly kind: 'duplicate-namespace'; readonly namespace: string }
   | { readonly kind: 'duplicate-key'; readonly key: LocalizationKey }
