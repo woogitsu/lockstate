@@ -678,36 +678,32 @@ select lives_ok(
 
 -- --- create_save_version()'s two refusals for one question (#340) ------
 --
--- WHAT THIS SECTION PINS, AND WHY IT LOOKS BACKWARDS. `create_save_version()`
--- answers "is this prison yours?" and "does this prison exist?" with two
+-- WHAT THIS SECTION PINS: THE ORACLE'S ABSENCE. `create_save_version()` used
+-- to answer "is this prison yours?" and "does this prison exist?" with two
 -- different SQLSTATEs and two different messages
 -- (20260822190300_create_save_version_rpc.sql:96 and :105), while the RLS
 -- policy on the same table refuses to answer the second question at all -- the
--- foreign row simply is not visible. That is an existence oracle, it is filed
+-- foreign row simply is not visible. That was an existence oracle, it was filed
 -- as #340, and this suite could not see it: the assertion above uses
 -- `throws_ok(..., '42501', null, ...)`, which reads the SQLSTATE and leaves the
--- message free, and no assertion in any of the eleven suites called this
--- function with a prison id that does not exist. #340's proposed merged
--- refusal applied verbatim left all 287 green.
+-- message free, and no assertion in any of the suites called this function with
+-- a prison id that does not exist.
 --
--- Suite 002 pins the fixed version of exactly this shape for the challenge RPC
--- ("a challenge id that does not exist is refused with a message that says
--- nothing about existence"), and the honest thing here would be to assert that
--- shape and let it fail until the migration lands. It is not asserted that way
--- for one reason and it is worth stating: the fix is a migration, this agent
--- may not write one, and a suite that is red on `main` is a gate nobody reads.
--- pgTAP's `todo` is the idiom for exactly that and it does not survive this
--- harness -- `select todo(...)` emits `not ok N - … # TODO`, and
--- `scripts/verify-supabase-sql.mjs`'s TAP parser matches `/^not ok \d+/` with
--- no TODO exemption, so the whole run goes red anyway (verified). Nor is there
--- a precedent for it: `todo` appears in none of the eleven suites.
+-- UNTIL `20260826090000_close_prison_id_existence_oracles.sql` THE TWO
+-- ASSERTIONS BELOW PINNED THAT DEFECT ON PURPOSE, messages included, and were
+-- written so the migration merging the two branches could not land silently --
+-- their titles said in terms that they must change when it did. This is that
+-- change. They now assert the merged refusal: one sentence for both probes,
+-- differing only in the id the caller itself supplied. A future edit that
+-- re-splits the branches fails a gate rather than a review.
 --
--- So today's two-branch behaviour is pinned instead, messages included. That is
--- deliberately a pin on a DEFECT, and it is written to be impossible to
--- misread as approval: the migration that merges these two branches MUST
--- update these three assertions, and cannot land silently. The first two are
--- what #340 fixes; the third is what makes it a disclosure rather than a
--- cosmetic inconsistency, and it stays true either way.
+-- Suite 002 pins the same shape for the challenge RPC, and
+-- supabase/tests/011_refusal_indistinguishability.test.sql pins it in depth for
+-- both prison entry points, including the NULL-identity path and
+-- `create_prison()`'s #343 half.
+--
+-- The third assertion is unchanged and stays true either way: it is what makes
+-- the pair a disclosure rather than a wording inconsistency.
 
 create function pg_temp.save_version_answer(p_prison_id uuid)
 returns text
@@ -728,14 +724,14 @@ set local role authenticated;
 
 select is(
   pg_temp.save_version_answer('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  '42501: not authorized for prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  'TODAY: a prison that exists and belongs to someone else is refused with 42501 and a message naming the prison (#340 -- this assertion must change when the two branches merge)'
+  '42501: prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa is not available for save versions',
+  'a prison that exists and belongs to someone else is refused with 42501 and a message that says nothing about ownership (#340, closed by 20260826090000)'
 );
 
 select is(
   pg_temp.save_version_answer('99999999-9999-9999-9999-999999999999'),
-  'P0001: prison 99999999-9999-9999-9999-999999999999 does not exist',
-  'TODAY: a prison that does not exist is refused with a DIFFERENT sqlstate and a message that says so -- the two answers together are the oracle #340 reports'
+  '42501: prison 99999999-9999-9999-9999-999999999999 is not available for save versions',
+  'and a prison that does not exist is refused with the same sqlstate and the same sentence: the two answers are one answer, which is the #340 oracle closed'
 );
 
 select is(
