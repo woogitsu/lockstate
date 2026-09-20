@@ -2587,10 +2587,36 @@ describe('browser failure evidence contract', () => {
     // `failure()` (the 2026-09-19 blind spot restored). Either direction is
     // an owner-reserved change to `.github/workflows/ci.yml` and fails here
     // in the commit that makes it.
+    //
+    // **AND THAT PARAGRAPH IS SUPERSEDED TOO, WITHIN THE HOUR, AND KEPT FOR
+    // THE SAME REASON THE ONE ABOVE IT IS KEPT.** Both halves of its
+    // parenthetical are wrong, and both were measured rather than argued.
+    //
+    // *"Empty artifacts forever"* is refuted by the step's own
+    // `if-no-files-found: ignore`: with an empty `test-results/` the action
+    // creates no artifact at all, so what `always()` costs on a green run is
+    // a few seconds and a log line, not storage. The workflow comment that
+    // priced `always()` that way had been wrong about it since it was
+    // written, and this assertion inherited the error from it.
+    //
+    // *"The 2026-09-19 blind spot"* was not closed by
+    // `failure() || cancelled()` either. Read off the API for job
+    // 105967436033 (run 35468216836, attempt 1): the job concluded
+    // **`failure`**, step `Run the real-browser suite` concluded
+    // **`cancelled`**, and this step concluded **`skipped`** -- so a
+    // *cancelled step* does not make step-level `failure()` true, and the
+    // run itself was never cancelled (attempt 2 concluded `success`) so
+    // `cancelled()` would have been false as well. The condition ruled on
+    // earlier that day would have skipped this step exactly as `failure()`
+    // did.
+    //
+    // The owner ruled again on 2026-09-20 and chose `always()`. That is what
+    // is pinned below, and `AGENTS.md` records both rulings rather than
+    // replacing the first with the second.
     expect(
       stepScalar(upload, 'if')?.value,
-      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: failure() || cancelled()\`, which the owner ruled on 2026-09-20. On plain \`failure()\` a job cancelled rather than failed uploads nothing -- a runner died mid-suite on 2026-09-19 and left a red job with no log and no artifact. On \`always()\`, or with no condition at all, it stores an empty artifact on every green run instead. The condition is owner-reserved deploy configuration: change it with a ruling, not with this assertion.`,
-    ).toBe('failure() || cancelled()');
+      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: always()\`, which the owner ruled on 2026-09-20 after a first ruling that day for \`failure() || cancelled()\` was measured not to fire. The shape to hold in mind is the one that lost the evidence: on 2026-09-19 a self-hosted runner died mid-suite, the suite step concluded \`cancelled\` INSIDE a run that was never cancelled, and the job concluded \`failure\` -- so step-level \`failure()\` was false (a cancelled step is not a failed one) and \`cancelled()\` was false too (nothing cancelled the run). Neither guard fires there; only \`always()\` does. The usual argument for narrowing this -- that an unconditional upload stores an empty artifact on every green run -- is false of this step, because \`if-no-files-found: ignore\` means an empty \`test-results/\` creates no artifact at all. The condition is owner-reserved deploy configuration: change it with a ruling, not with this assertion.`,
+    ).toBe('always()');
 
     // The suite step must have run before there is anything to collect, and a
     // step ordered above it would upload the previous run's leftovers.

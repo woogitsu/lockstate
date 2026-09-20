@@ -959,11 +959,63 @@ jobs:
       # condition, so a later widening to `always()` or a narrowing back to
       # `failure()` fails in the commit that does it rather than quietly.
       #
+      # **AND THE BLOCK ABOVE WAS SUPERSEDED WITHIN THE HOUR, ON 2026-09-20,
+      # BY A SECOND RULING FROM THE SAME OWNER ON THE SAME DAY.** It is kept
+      # whole, exactly as it kept the paragraph it corrected. Everything it
+      # says about the incident stands; what it got wrong is the remedy, and
+      # it got the remedy wrong because the question it answered carried a
+      # false premise. The condition is now **`always()`**.
+      #
+      # **First: `failure() || cancelled()` would not have fired on the very
+      # incident that motivated it.** The block above flagged this as
+      # unverified -- "do not read it as a proof that the 2026-09-19 evidence
+      # would have survived" -- and it is now measured rather than inferred.
+      # Read off the API for job 105967436033 (run 35468216836, attempt 1):
+      #
+      #   * the job concluded              `failure`
+      #   * `Run the real-browser suite`   `cancelled`
+      #   * this step                      `skipped`
+      #
+      # That pair is decisive. The job ended `failure` and this step was
+      # still skipped, so step-level `failure()` evaluated **false**: a
+      # *cancelled step* is not a failed one. And the workflow run was never
+      # cancelled as a whole -- attempt 2 of it concluded `success` -- so
+      # `cancelled()` was false as well. The 2026-09-19 shape is a cancelled
+      # step inside a live run, and **neither guard reaches it**. Only
+      # `always()` does.
+      #
+      # **Second: this comment's own costing of `always()` was wrong, and had
+      # been since it was written.** Every paragraph above prices `always()`
+      # at "an empty artifact on every green run", and the step five lines
+      # below sets `if-no-files-found: ignore`. With an empty
+      # `test-results/` the action creates **no artifact at all** -- it logs
+      # and moves on. The cost of `always()` on a green run is a few seconds
+      # and a log line. The whole argument for keeping a guard here was
+      # resting on a cost this step does not pay, which is why the 2026-09-08
+      # decision reached for `timeout-minutes` instead, and why the earlier
+      # ruling today reached for a narrower condition than it needed.
+      #
+      # **Where the false premise came from, named because that is the part
+      # a reader can use.** Not from this file and not from `AGENTS.md`: the
+      # integrating session framed `failure() || cancelled()` to the owner as
+      # the condition that catches the runner-death case, without first
+      # checking what `cancelled()` is actually true of. The owner's first
+      # ruling was sound on the question as put; the question was wrong.
+      # `AGENTS.md` records **both** rulings, in the shape its 2026-09-10
+      # `branch-gc.yml` entry established for a permission granted on a false
+      # premise, rather than quietly replacing the first with the second.
+      #
+      # `tests/foundation/ci-configuration-contract.test.ts` now pins
+      # `always()`, and its message carries the 2026-09-19 shape -- a
+      # cancelled step inside a live run -- because that shape is the only
+      # thing standing between this condition and a future editor narrowing
+      # it back on the reasoning above.
+      #
       # The name carries `run_attempt` as well as `run_id` because a re-run of
       # a failed job reuses the run id, and v4 refuses to overwrite an
       # existing artifact name rather than merging into it.
       - name: Upload the browser suite's failure evidence
-        if: failure() || cancelled()
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: browser-failure-${{ github.run_id }}-${{ github.run_attempt }}
