@@ -345,6 +345,23 @@ schedule: that method is the one place the requirement is read, by
 `assignUnassignedGuards` and by `getCoverageReport` both, so what is enforced
 and what the projections publish cannot disagree.
 
+**That single reading is also a bound worth stating, because the number is
+doing two jobs** ([#893](https://github.com/matmaxalez/lockstate/issues/893);
+[ADR 0095](./adr/0095-what-the-guard-requirement-is-a-requirement-for.md),
+`Proposed`). `requiredGuardCountFor` is the *posting cap* as well as the figure
+the Staff panel renders, and posting spends the whole cap out of
+`claimableGuardIds` -- so a prison that hires exactly its requirement is
+`Covered` with **nothing spare**, and a response, a sector sweep and a search
+job all claim from spare. Measured in
+`tests/integration/security-coverage-versus-response.test.ts`: at the derived
+requirement of two, sixteen in-game days give 0 incidents resolved, 0
+responders dispatched and 0 contraband found; six hires at the same seed give 10
+resolved and 34 dispatched, with the badge reading `Covered` in both. **Raising
+the requirement does not fix that and makes it worse**: the same six guards
+under a `scheduled: 6` schedule are all posted, and that prison resolves 0 and
+lapses 9 at an identical wage bill. Whether to publish a second figure for the
+reserve is ADR 0095's question and it is open.
+
 **What it does not bring back**, measured in
 `tests/integration/security-default-sector.test.ts`:
 

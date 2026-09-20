@@ -16,6 +16,8 @@ import { extrapolateActors, type PublishedActorPosition } from './actor-extrapol
 import { structuresFromConstruction } from '../world/structures';
 import { WorldRenderView } from '../world/world-view';
 import { actorsFromDelta } from './actors-from-delta';
+import { roomConditionsFromDelta } from './room-conditions-from-delta';
+import { roomsFromSnapshot } from './rooms-from-snapshot';
 import { actorsFromSnapshot } from './actors-from-snapshot';
 import { EMPTY_RENDER_FRAME, type MutableRenderActor, type RenderFeed, type RenderFrame } from './render-feed';
 
@@ -563,6 +565,13 @@ export class SimulationSnapshotFeed implements RenderFeed {
     this.lastWorldRevision = decoded.worldRevision;
 
     const actors = actorsFromDelta(decoded);
+    // ADR 0097 decision 2's half of the same buffer: the condition ordinals
+    // move at the delta's cadence, while the rectangles they are joined to
+    // keep the frame's `revision` and move only when the geometry pull
+    // answers. Replaced wholesale, exactly as the actors are -- a keyframe is
+    // the complete set, so a room absent from it is a room the simulation
+    // published no answer for.
+    const roomConditions = roomConditionsFromDelta(decoded);
     this.publishedActors = actors;
     this.publishedAt = actors.map((actor) => ({ tileX: actor.tileX, tileY: actor.tileY }));
     this.publishedAtSeconds = undefined;
@@ -571,6 +580,8 @@ export class SimulationSnapshotFeed implements RenderFeed {
       world: this.frame.world,
       structures: this.frame.structures,
       actors,
+      rooms: this.frame.rooms,
+      roomConditions,
     };
     this.lastDeltaTick = payload.tick;
   }
@@ -647,6 +658,14 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // so neither path has a velocity to carry. Simulation-side locomotion
         // is the missing piece, and it is its own decision.
         actors: actorsFromSnapshot(bundle.simulation, bundle.entities),
+        // ADR 0111 decision 1: the rectangles ride the geometry pull, beside
+        // the world and the structures they are drawn over, and are replaced
+        // wholesale with them. The condition ordinals beside them are kept
+        // from whatever the last delta said -- a snapshot carries no
+        // condition, and dropping them here would blank every mark for up to
+        // one delta interval on every geometry refresh.
+        rooms: roomsFromSnapshot(bundle.simulation),
+        roomConditions: this.frame.roomConditions,
       };
       // A snapshot's actors carry no velocity and are not advanced between
       // frames; they are also replaced wholesale by the next delta. Dropping

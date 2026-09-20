@@ -574,3 +574,57 @@ export function roomLabelFits(textWidthPx: number, spanTiles: number, tileSizePx
   if (textWidthPx <= 0 || spanTiles <= 0 || zoom <= 0) return false;
   return textWidthPx + 2 * ROOM_LABEL_MARGIN_PX <= spanTiles * tileSizePx * zoom;
 }
+
+/**
+ * How a room nobody can get into is marked on the map (ADR 0097 decision 1's
+ * obligation 2, issue #1022).
+ *
+ * ## Why a boundary and not a wash
+ *
+ * ADR 0097 decision 3: the zoning tint is issue #1021's channel for room
+ * *identity* and is already at a deliberately weakened alpha, so a condition
+ * cue that modulated it would foreclose that work and both marks would get
+ * worse. A stroke at the room's own boundary is a different visual channel
+ * from a floor wash, which is what lets identity and condition be read at the
+ * same time.
+ *
+ * ## Where the colour comes from
+ *
+ * `docs/VISUAL_IDENTITY.md`'s night palette, *"Danger `#FFB3B9` on `#482B35`"*
+ * — the ink, not the surface, because this is a line over a dark world rather
+ * than a filled chip in a panel. That document classes the palette **values**
+ * as the delivery's material rather than something ADR 0112 rules, so this is
+ * a citation and not a contract; what it buys is that the one warning colour
+ * in the product is the one warning colour on the map.
+ *
+ * It also has to survive the floor under it. The warmest room tint shipped is
+ * `room.cell`'s `0xd14f4f`, and a cell is exactly the room #1022 measured, so
+ * the mark is drawn **twice**: `ROOM_CONDITION_MARK_BACKING_COLOR` beneath at
+ * a wider stroke, then the danger ink over it. The dark backing is what keeps
+ * the line readable over a red floor without moving the ink off the palette.
+ */
+export const ROOM_CONDITION_MARK_COLOR = 0xffb3b9;
+
+/** The darker line drawn under the mark, so the ink reads over a light or a warm floor. `#482B35`, the night danger surface. */
+export const ROOM_CONDITION_MARK_BACKING_COLOR = 0x482b35;
+
+/** Stroke width of the mark, in world units, at zoom 1. */
+export const ROOM_CONDITION_MARK_WIDTH_PX = 2;
+
+/** Stroke width of the backing line. Wider on both sides than the mark, which is what makes it a backing rather than a second mark. */
+export const ROOM_CONDITION_MARK_BACKING_WIDTH_PX = 4;
+
+/**
+ * How far inside the room's rectangle the mark is drawn, in world units.
+ *
+ * Inside rather than on the boundary, because the boundary is where the wall
+ * art is: a stroke centred on the rectangle's edge would be half-hidden under
+ * the wall sprites of the very room it is about, and two rooms sharing a wall
+ * would draw two marks on top of each other. Inset, two sealed neighbours read
+ * as two marks -- which is the whole reason this is keyed by room instance
+ * (ADR 0097's 2026-09-11 amendment) rather than by a per-tile field.
+ */
+export const ROOM_CONDITION_MARK_INSET_PX = 3;
+
+/** The mark's alpha. Full: a warning that fades is a warning a player argues with. */
+export const ROOM_CONDITION_MARK_ALPHA = 1;

@@ -191,7 +191,14 @@ function buildFrame(): RenderFrame {
      */
   ];
 
-  return { revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures, actors: [] };
+  return {
+    revision: 1,
+    world: WorldRenderView.fromSnapshot(world.snapshot()),
+    structures,
+    actors: [],
+    rooms: [],
+    roomConditions: [],
+  };
 }
 
 const frame = buildFrame();

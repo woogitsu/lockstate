@@ -157,7 +157,7 @@ at the site:
   **THAT SENTENCE STOPPED BEING TRUE ON 2026-09-11 AND IS CORRECTED RATHER THAN
   OVERWRITTEN (`docs/AGENT_WORKFLOW.md` §4), BECAUSE THE BALANCE PASS IT
   PREDICTED IS EXACTLY WHAT HAPPENED.** The constant is **`0.4`**
-  (`src/simulation/incidents/default-gangs.ts:174`), raised by the owner's
+  (`src/simulation/incidents/default-gangs.ts:231`), raised by the owner's
   ruling on this open question in `554984ec`. The reason is in that constant's
   own docblock and is worth carrying here: at `0.2` the mechanism was
   measurably close to unreachable — eight seeds, ninety in-game days each, a
@@ -169,7 +169,7 @@ at the site:
   **The two rulings interact, and neither bullet says so.** Open question 2 was
   answered *"both directions at half weight"*, and
   `recordGrudgeFromAdjudicatedAssault` splits the constant —
-  `src/simulation/incidents/default-gangs.ts:253-257` — so each direction of a
+  `src/simulation/incidents/default-gangs.ts:310-314` — so each direction of a
   cross-gang assault accrues `0.4 / 2`, which is the `0.2` this bullet names.
   The recommendation survives as the *per-direction* figure and is false as the
   *constant*. That is the distinction to hold, and it is why this is marked in
@@ -363,7 +363,7 @@ Swept by hand on 2026-09-15 against `main` at `e044a3e8`, every anchor opened.
 - **#1231 excluded `338b053b` from its evidence table on the ground that it is
   *"a reformat, not a re-aim"*, and that reading does not survive opening the
   diff.** That commit demoted two live anchors into historical blockquotes and
-  wrote replacements beside them — Context 6's `trigger-system.ts:531` and
+  wrote replacements beside them — Context 6's `trigger-system.ts:583` and
   Context 13's `response-system.ts:329` and `:218`, each moved into a quoted
   block introduced *"so they are quoted here as history rather than as live
   citations"*. Re-aiming an anchor into a history block is the most deliberate
@@ -468,7 +468,7 @@ Now the arithmetic, off constants that were opened:
   (verbatim in `src/simulation/incidents/gangs.ts`), at `:143`.
 - The gate is `if (risk < this.retaliationThreshold) continue;` (verbatim in
   `src/simulation/incidents/trigger-system.ts`), at `:529`, and the threshold
-  defaults to `0.6` (`src/simulation/incidents/trigger-system.ts:262`).
+  defaults to `0.6` (`src/simulation/incidents/trigger-system.ts:312`).
 
 So:
 
@@ -497,13 +497,13 @@ yet to decide, not a property of there being one sector.
 
 ### 4. A retaliation is the last gate in the update loop, behind three others — VERIFIED, read
 
-`IncidentTriggerSystem.update` (`src/simulation/incidents/trigger-system.ts:294-333`)
+`IncidentTriggerSystem.update` (`src/simulation/incidents/trigger-system.ts:346-385`)
 runs, per sector, in this order: bail out if any incident is open in the sector
 at all; try a riot; try an escape attempt; try an assault; and only then, last,
 `this.tryOpenRetaliation(sectorId, context.tick);`
-(`src/simulation/incidents/trigger-system.ts:345`; the anchor read `:333`, a
+(`src/simulation/incidents/trigger-system.ts:397`; the anchor read `:333`, a
 blank line). The system's cadence is
-`intervalTicks: 50` (`src/simulation/incidents/trigger-system.ts:244`; the anchor
+`intervalTicks: 50` (`src/simulation/incidents/trigger-system.ts:294`; the anchor
 read `:232`).
 
 **REASONED, from those gates**: in a prison hot enough to be producing
@@ -558,7 +558,7 @@ finding was made against, and a reader has to be able to see the defect as it
 was:
 
 > `const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);`
-> at `src/simulation/incidents/trigger-system.ts:531`
+> at `src/simulation/incidents/trigger-system.ts:583`
 
 What stands there now is the same union off two locals the guard has just
 read: `const participants = [...offendedMembers, ...offendingMembers].sort((a, b) => a - b);`
@@ -577,7 +577,7 @@ on one side only and replays it for determinism
 > the finding (2026-09-17).** That spec's title today is *"refuses a
 > retaliation nobody is in, on either side, and opens one the moment both sides
 > have a member"* — the opposite of what this sentence concluded. The guard
-> that closed it is `src/simulation/incidents/trigger-system.ts:561-563`, which
+> that closed it is `src/simulation/incidents/trigger-system.ts:613-615`, which
 > this document already cites in *Decision 6*'s own landing note; the two
 > passages disagreed with each other inside one file, which is the check
 > `docs/AGENT_WORKFLOW.md` §4 says no diff performs. The sentence is kept
@@ -730,13 +730,13 @@ relying on it.
 
 **It does, and the worry that it might not is closed rather than carried.** An
 assault is an `IncidentType` opened by `IncidentTriggerSystem.tryOpenAssault`
-(`src/simulation/incidents/trigger-system.ts:402`), and the record it opens
+(`src/simulation/incidents/trigger-system.ts:454`), and the record it opens
 carries three things a grudge producer needs:
 
 - **Exactly two participants.**
   `export const ASSAULT_PARTICIPANT_COUNT = 2;` (verbatim in
   `src/simulation/incidents/flashpoint.ts`), at `:343`, sliced off the ranked
-  flashpoints at `src/simulation/incidents/trigger-system.ts:434` and sorted
+  flashpoints at `src/simulation/incidents/trigger-system.ts:486` and sorted
   into the list at `:441`.
 - **One of the two named separately.** `instigatorId: worst.entityId,`
   (verbatim in `src/simulation/incidents/trigger-system.ts`), at `:450`.
@@ -758,7 +758,7 @@ struck first"* (`src/simulation/incidents/incident.ts:95-97`). The comment at
 the write site says the same thing from the other end — *"`worst` is
 `ranked[0]` -- the entity `scoreAssaultPressure` finds a reason for -- not a
 struck-first determination"*
-(`src/simulation/incidents/trigger-system.ts:444-449`) — and two more modules
+(`src/simulation/incidents/trigger-system.ts:496-501`) — and two more modules
 say it independently: an assault's participants are *"who was in it"*, and
 *"Distinguishing an aggressor from a victim is adjudication, which is issue
 #80's and needs a command type"*
@@ -1208,7 +1208,7 @@ two cross-gang assaults buy one retaliation — on the reasoning that one is
 indistinguishable from "an assault sometimes escalates" and three is far enough
 away that a player would never connect the two events. It is a directional
 default in the same sense `retaliationThreshold` calls itself one
-(`src/simulation/incidents/trigger-system.ts:274`, re-aimed 2026-09-15 from
+(`src/simulation/incidents/trigger-system.ts:324`, re-aimed 2026-09-15 from
 `:261`). Open Question 6.
 
 **"Two assaults" means two in the SAME direction, and this is the part an
@@ -1414,7 +1414,7 @@ can check against the code above rather than as an assertion:**
 1. **A grudge is a directional, single-use ledger entry, not a standing
    relationship.** `grudges` is keyed `offended->offending`
    (`src/simulation/incidents/gangs.ts:82`) and is *cleared on use*
-   (`src/simulation/incidents/trigger-system.ts:580`, re-aimed 2026-09-15 from
+   (`src/simulation/incidents/trigger-system.ts:632`, re-aimed 2026-09-15 from
    `:546`). The genre's usual model
    is a persistent inter-gang hostility that modulates a probability; ours is a
    debt that is created by one identifiable event and discharged by one
@@ -1546,12 +1546,12 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
 
 - *"No producer of any kind: zero calls to `register`, `addMember` or
   `addGrudge` outside `loadSnapshot`"* — **there are four.**
-  `src/simulation/incidents/default-gangs.ts:81` registers,
+  `src/simulation/incidents/default-gangs.ts:82` registers,
   `src/simulation/runtime/new-session.ts:671` adds a member at the site
-  Decision 6 named, and `src/simulation/incidents/default-gangs.ts:256-257` add
+  Decision 6 named, and `src/simulation/incidents/default-gangs.ts:313-314` add
   the grudge pair. The count was the claim and the count has moved.
 - *"No guard against a retaliation with an empty participant list"* — **the
-  guard is `src/simulation/incidents/trigger-system.ts:561-563`**, which is
+  guard is `src/simulation/incidents/trigger-system.ts:613-615`**, which is
   Decision 4 built. This bullet called it *"the one defect in existing code this
   document asks to close"*; it is closed.
 - *"No way for the adjudication seam to name the victim"* — **the seam carries

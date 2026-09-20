@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION } from '../../src/simulation/incidents/trigger-system';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -180,8 +181,14 @@ describe('a gang retaliation from the admission the interface actually makes (#9
     expect(runtime.gangs.allGrudges()).toEqual([]);
 
     stepTo(runtime, FIRST_REVIEW_TICK);
-    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([2]);
-    expect(runtime.gangs.membersOf('gang.beta')).toEqual([1]);
+    // **The two lines below swapped on 2026-09-19** and nothing else in this
+    // case did. Under entity-id parity entity 2 was `gang.alpha` and entity 1
+    // was `gang.beta`; under the amended rule the first prisoner to reach
+    // `high-risk` takes the empty `gang.alpha` and the second takes the other.
+    // The pair still straddles the two gangs -- on this seed it did so by luck
+    // before and does so by construction now, which is the whole amendment.
+    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([1]);
+    expect(runtime.gangs.membersOf('gang.beta')).toEqual([2]);
     // Both were admitted at the interface's `priorIncidents` and are high-risk
     // now: the tier came from what happened in the prison, not from the gate.
     for (const entityId of [1, 2]) {
@@ -209,8 +216,8 @@ describe('a gang retaliation from the admission the interface actually makes (#9
     // sentence `'Two gangs are settling a score.'` is put on the channel for
     // this incident, and the incident has a member of each gang in it.
     expect(retaliations[0]!.participantIds).toEqual([1, 2]);
-    expect(runtime.gangs.getGangOf(retaliations[0]!.participantIds[0]!)).toBe('gang.beta');
-    expect(runtime.gangs.getGangOf(retaliations[0]!.participantIds[1]!)).toBe('gang.alpha');
+    expect(runtime.gangs.getGangOf(retaliations[0]!.participantIds[0]!)).toBe('gang.alpha');
+    expect(runtime.gangs.getGangOf(retaliations[0]!.participantIds[1]!)).toBe('gang.beta');
   });
 
   it('puts it on the alerts channel, after the assault it came from', () => {
@@ -225,35 +232,78 @@ describe('a gang retaliation from the admission the interface actually makes (#9
   });
 
   /**
-   * **The measured negative, and it is the finding this file exists to pin as
-   * much as the positive one.**
+   * **This case used to be the measured NEGATIVE, and the 2026-09-19 amendment
+   * is what turned it round. Its old text is kept verbatim below, because it
+   * is the defect that was fixed and a reader should see the finding rather
+   * than the repair alone:**
    *
-   * `defaultGangIdForArrival` splits members on `entityId % 2`
-   * (`src/simulation/incidents/default-gangs.ts`), and in a prison of this
-   * shape the only prisoners who ever reach tier 3 are the ones who keep
-   * fighting each other. So whether a session can *ever* produce a retaliation
-   * is decided by the parity of two entity ids.
+   * > `defaultGangIdForArrival` splits members on `entityId % 2`
+   * > (`src/simulation/incidents/default-gangs.ts`), and in a prison of this
+   * > shape the only prisoners who ever reach tier 3 are the ones who keep
+   * > fighting each other. So whether a session can *ever* produce a
+   * > retaliation is decided by the parity of two entity ids.
+   * >
+   * > Measured over 90 in-game days on seed `0x0cc3`, the same prison and the
+   * > same commands: entities **1 and 5** are the pair, both odd, both in
+   * > `gang.beta` — 85 assaults, **zero** grudges and **zero** retaliations,
+   * > for the life of the prison.
+   * >
+   * > This is not asserted as desirable. It is asserted so that a change to
+   * > the membership rule has to come past it.
    *
-   * Measured over 90 in-game days on seed `0x0cc3`, the same prison and the
-   * same commands: entities **1 and 5** are the pair, both odd, both in
-   * `gang.beta` — 85 assaults, **zero** grudges and **zero** retaliations, for
-   * the life of the prison. On seed `0x0cc0` above the pair is 1 and 2 and the
-   * retaliation arrives every 4,800 ticks thereafter.
+   * It came past it. The rule now fills the smaller gang, so the same pair —
+   * still entities 1 and 5, still both odd, still the only two this prison
+   * carries to tier 3 — lands one in each gang, and the same 85 assaults that
+   * bought nothing now buy a retaliation. **Seed `0x0cc3` is one of the three
+   * of twelve that could never meet this mechanism at all**; `0x0cc9` (0 and
+   * 4) and `0x0cca` (4 and 6) are the other two, and all three retaliate now.
    *
-   * This is not asserted as desirable. It is asserted so that a change to the
-   * membership rule has to come past it.
+   * **And it is asserted at a cadence rather than as a metronome.** Seven
+   * retaliations in ninety in-game days, exactly 24,000 ticks apart, where the
+   * seeds that did fire before fired thirty-four times at 4,800 — see
+   * `DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION`.
    */
-  it('produces none at all when the one pair that fights shares a gang, however long it runs', () => {
+  it('produces retaliations for a same-parity pair, which the parity split could not (#979, ruled 2026-09-19)', () => {
     const runtime = advanced(0x0cc3, 1_000 + 90 * DAY);
 
     const assaults = incidentsOfType(runtime, 'assault');
     expect(assaults.length).toBe(85);
     expect(new Set(assaults.map((assault) => assault.participantIds.join('/')))).toEqual(new Set(['1/5']));
 
-    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([]);
-    expect(runtime.gangs.membersOf('gang.beta')).toEqual([1, 5]);
-    expect(runtime.gangs.allGrudges()).toEqual([]);
-    expect(incidentsOfType(runtime, 'gang-retaliation')).toEqual([]);
+    // The pair is unchanged and so is its parity: what changed is the rule
+    // that reads it. Under `entityId % 2` both of these were `gang.beta`.
+    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([1]);
+    expect(runtime.gangs.membersOf('gang.beta')).toEqual([5]);
+
+    const retaliations = incidentsOfType(runtime, 'gang-retaliation');
+    expect(retaliations.length).toBe(7); // was 0, for ever
+    expect(retaliations[0]!.startedAtTick).toBe(55_700);
+
+    // **The reservation-4 assertion, on every one of them rather than on the
+    // first.** `'Two gangs are settling a score.'` is put on the channel for
+    // each of these, and a retaliation with an empty participant list would
+    // make that sentence false. Decision 4's guard is what refuses one; this
+    // asserts the guard was never the thing that had to fire here.
+    for (const retaliation of retaliations) {
+      expect(retaliation.participantIds).toEqual([1, 5]);
+    }
+
+    // **The severities are the cost of the longer window and are asserted
+    // rather than glossed.** The ledger goes on accruing through the quiet
+    // period and `GangRegistry` clamps a grudge at 1, so the first retaliation
+    // fires at the threshold (0.4, risk 0.6, severity 6) and every later one
+    // fires off a saturated ledger (grudge 1, risk 1, severity 10). Before
+    // 2026-09-19 all thirty-four on a firing seed were severity 6. Fewer and
+    // harder is the trade the cadence change makes, and this line is where a
+    // reviewer sees it.
+    expect(retaliations.map((retaliation) => retaliation.severity)).toEqual([6, 10, 10, 10, 10, 10, 10]);
+
+    // The cadence, asserted as the gap rather than as seven ticks.
+    for (let index = 1; index < retaliations.length; index += 1) {
+      expect(retaliations[index]!.startedAtTick - retaliations[index - 1]!.startedAtTick).toBe(
+        DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION,
+      );
+    }
     /*
      * The only test in this file that advances a whole simulated season, and
      * the only one with no headroom under the root config's 5 s default. It

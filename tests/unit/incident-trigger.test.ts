@@ -7,6 +7,7 @@ import { DEFAULT_SECTOR_RISK_POLICY, SectorRiskTracker, type SectorRiskSample } 
 import {
   DEFAULT_MINIMUM_RIOT_PARTICIPANTS,
   DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT,
+  DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION,
   IncidentTriggerSystem,
   type PrisonerFlashpointSampler,
 } from '../../src/simulation/incidents/trigger-system';
@@ -317,6 +318,64 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     expect(incidents.all()[0]!.type).toBe('gang-retaliation');
     expect(incidents.all()[0]!.participantIds).toEqual([4, 9]);
     expect(trigger.getMetrics().retaliationsTriggered).toBe(1);
+  });
+
+  /**
+   * **The retaliation's own quiet window, ruled by the owner on 2026-09-19
+   * ("Obie naraz") and measured before it was chosen.**
+   *
+   * Until then a retaliation shared `quietTicksAfterIncident` with the riot,
+   * and in the one prison shape where the mechanism is reachable that 4,800 is
+   * not a floor but the cadence: twelve seeds of the bed-only one-guard prison,
+   * ninety in-game days each, and the four that retaliated fired 34, 34, 11 and
+   * 11 times with a gap of exactly 4,800 every time -- a prison-wide lockdown
+   * every two in-game days for the rest of the session.
+   *
+   * This asserts the two windows are **separate**, which is the part a fixture
+   * could not see before: the sector is inside the riot window and outside the
+   * retaliation window, and the retaliation is still refused.
+   */
+  it('holds a second retaliation for its own window rather than the riot\'s', () => {
+    const gangs = new GangRegistry();
+    gangs.register({ id: 'gang-north', territorySectorIds: ['block-a'] });
+    gangs.register({ id: 'gang-south', territorySectorIds: ['block-a'] });
+    gangs.addMember('gang-north', 4);
+    gangs.addMember('gang-south', 9);
+    gangs.addGrudge('gang-north', 'gang-south', 0.8);
+
+    const { incidents, trigger, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => CALM, gangs });
+
+    stepSamples(kernel, 1);
+    expect(incidents.all()).toHaveLength(1);
+    const first = incidents.all()[0]!;
+    const firstTick = first.startedAtTick;
+
+    // **Closed by hand, because this harness has no `IncidentResponseSystem`
+    // and `update`'s "one open incident per sector" gate is above the quiet
+    // windows.** Left open, no second incident of any type could open here and
+    // the case would pass against a system with no retaliation window at all.
+    // A lapse is what this incident would reach in a session
+    // (`responseDeadlineTicks` is 600), so that is the transition used.
+    incidents.transition(first.id, 'lapsed', firstTick + 600);
+
+    // The grudge is refilled immediately, so nothing but the window can be
+    // what withholds the next one.
+    gangs.addGrudge('gang-north', 'gang-south', 0.8);
+
+    // Past the riot's window (`DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT`,
+    // 4,800) and well short of the retaliation's own 24,000. Before this
+    // change the second retaliation opened here.
+    while (kernel.tick < firstTick + DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT + SAMPLE_INTERVAL) kernel.step();
+    expect(incidents.all()).toHaveLength(1);
+
+    // One sampling point past the retaliation's own window.
+    while (kernel.tick < firstTick + DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION + SAMPLE_INTERVAL * 2) kernel.step();
+    const all = incidents.all().filter((incident) => incident.type === 'gang-retaliation');
+    expect(all).toHaveLength(2);
+    expect(Math.min(...all.map((incident) => incident.startedAtTick - firstTick).filter((gap) => gap > 0))).toBeGreaterThanOrEqual(
+      DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION,
+    );
+    expect(trigger.getMetrics().retaliationsTriggered).toBe(2);
   });
 
   it('a grudge below the threshold never fires, and an acted-on grudge is cleared rather than repeating', () => {
