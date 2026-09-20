@@ -3752,8 +3752,26 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * One open incident, as its row reads. `{type}` is the derived enum word
    * `incident-type.*.name` (Assault, Escape Attempt, Gang Retaliation, Riot)
    * and `{sector}` is the sector's stable id, printed as an id because nothing
-   * on this thread turns one into a place (`docs/HUD_PROJECTIONS.md` gaps 10
-   * and 11).
+   * on this thread turns one into a place.
+   *
+   * **THE GAPS THIS SENTENCE CITED WERE THE WRONG TWO, AND THE WRONG CITATION
+   * IS KEPT RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md` §4). It read
+   * *"(`docs/HUD_PROJECTIONS.md` gaps 10 and 11)"*; opened, gap 10 is
+   * *"Position updates only on arrival"* and gap 11 is *"Room membership is
+   * not derivable from position"*, both about a prisoner's tile and neither
+   * about a sector's name. The gaps that do bear on it are **16**
+   * (*"No room-to-sector mapping"*) and **23** (*"No sector membership model a
+   * *panel* can read"*).
+   *
+   * **And the closer reason is simpler than either of them: no sector has a
+   * name to print.** `DEFAULT_SECURITY_SECTOR_ID` in
+   * `src/simulation/security/default-sector.ts` is an id chosen to be stable
+   * across saves, and ADR 0036's sector is derived rather than drawn, so
+   * nobody authored a word for it. What a sector *does* carry is its grade's
+   * `nameKey`, which the sectors block above this one already prefers over the
+   * id -- the incident row does not, because `IncidentRow` on the projection
+   * carries `sectorId` alone. Whether an id belongs on screen here is an open
+   * question and has not been put to the owner.
    */
   'hud.security-section.incident-row': '{type} in {sector}',
   /*
