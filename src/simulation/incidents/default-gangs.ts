@@ -16,8 +16,9 @@ import type { IncidentRecord } from './incident';
  *
  * **Nothing here draws a random number.** ADR 0103 Context 10 measured that no
  * file under `src/simulation/incidents/` reads an RNG stream and decision 5
- * keeps it that way, so membership alternates on a recorded input -- the
- * arrival's entity id -- rather than on a seventh named stream and the
+ * keeps it that way, so membership is decided from recorded state -- since
+ * 2026-09-19 the two gangs' own member counts, and before that the arrival's
+ * entity id -- rather than from a seventh named stream and the
  * save-compatibility question `src/simulation/runtime/new-session.ts:476-481`
  * sets out for one.
  *
@@ -90,6 +91,33 @@ export function applyDefaultGangs(gangs: GangRegistry, sectorId: string): void {
  * chosen alternates on the arrival's entity id, which is recorded input, so
  * this needs no draw and no stream.
  *
+ * **THE SENTENCE ABOVE IS NO LONGER TRUE OF THE CODE AND IS KEPT BECAUSE IT IS
+ * THE RULE THAT WAS CHANGED.** Entity-id parity was ADR 0103 decision 6 as
+ * accepted on 2026-09-08, and it was amended by the owner on 2026-09-19. What
+ * it cost is measured rather than argued: twelve seeds `0x0cc0`-`0x0ccb`, the
+ * bed-only one-guard prison built from player commands only, every arrival at
+ * `priorIncidents: 0`, ninety in-game days each. Seven of the twelve produce a
+ * tier-3 pair at all; **three of those seven produce a pair that shares a gang
+ * and retaliate zero times, for ever** -- `0x0cc3` (entities 1 and 5, both
+ * odd), `0x0cc9` (0 and 4) and `0x0cca` (4 and 6). In a neglected prison the
+ * only prisoners the disciplinary record carries to tier 3 are the one pair who
+ * keep fighting each other, so under parity **whether a session could ever meet
+ * this mechanism was decided by the parity of two entity ids.**
+ *
+ * **What it is now: the smaller gang, ties broken by `DEFAULT_GANG_IDS`
+ * order.** With two gangs that makes the first high-risk prisoner an
+ * `gang.alpha`, the second a `gang.beta`, and so on alternately -- so a pair
+ * straddles the two gangs by construction rather than by luck. It is still a
+ * pure function of recorded state, still draws no random number (ADR 0103
+ * decision 5) and still needs no seventh stream or persisted field; what it
+ * gives up is being a pure function of the entity id *alone*, which is why the
+ * "already a member" branch below exists.
+ *
+ * **Provenance of the amendment is the weaker kind, as `AGENTS.md` records of
+ * several rulings**: the owner chose a clickable option labelled *"Obie
+ * naraz"* ("both at once" -- change the split and cool the cadence), not a
+ * sentence they typed.
+ *
  * **OPEN QUESTION 5 IS WHAT THIS DOES NOT ANSWER, AND IT IS THE ONE AN
  * IMPLEMENTER HITS FIRST.** ADR 0103 decision 6 says *"at intake"* and its own
  * Context 15 shows the population that actually becomes `high-risk` becomes so
@@ -120,12 +148,41 @@ export function applyDefaultGangs(gangs: GangRegistry, sectorId: string): void {
  * **Calling it twice for one entity is safe by construction**, which is what
  * makes two sites cheap: the answer is a pure function of `entityId`, so both
  * sites compute the same gang, and `GangRegistry.addMember` moves-or-sets.
+ * **Since 2026-09-19 that is bought by the "already a member" branch rather
+ * than by the rule's shape**, and the property it buys is the same one: a
+ * prisoner assigned at intake and re-affirmed at the review lands in the gang
+ * they are already in.
  * `tests/integration/gang-membership-at-review.test.ts` measures the whole
  * path from an admission a player can actually make.
  */
-export function defaultGangIdForArrival(entityId: EntityId, classificationGroupId: string): string | undefined {
+export function defaultGangIdForArrival(
+  gangs: GangRegistry,
+  entityId: EntityId,
+  classificationGroupId: string,
+): string | undefined {
   if (classificationGroupId !== HIGH_RISK_GROUP_ID) return undefined;
-  return DEFAULT_GANG_IDS[entityId % DEFAULT_GANG_IDS.length]!;
+
+  // Already in a gang: answer the one they are in. This is what keeps calling
+  // the rule from two sites idempotent now that the answer is no longer a pure
+  // function of the entity id -- without it, a second call for the same
+  // prisoner would read the counts again and could move them.
+  const existing = gangs.getGangOf(entityId);
+  if (existing !== undefined) return existing;
+
+  // The smallest gang, ties broken by `DEFAULT_GANG_IDS` order. Deterministic
+  // and draw-free: the tuple is fixed and a member count is order-free, so the
+  // answer depends only on the sequence of assignments, which is itself
+  // deterministic.
+  let chosen: string = DEFAULT_GANG_IDS[0];
+  let smallest = Number.POSITIVE_INFINITY;
+  for (const gangId of DEFAULT_GANG_IDS) {
+    const size = gangs.membersOf(gangId).length;
+    if (size < smallest) {
+      smallest = size;
+      chosen = gangId;
+    }
+  }
+  return chosen;
 }
 
 /**

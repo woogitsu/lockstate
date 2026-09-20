@@ -346,7 +346,7 @@ architecture:
 - `requiredResponderCount` of the highest severity the game can produce — the
   reserve that answers anything. There is no exported ceiling constant to reach
   for: a riot's severity is clamped inline to 10
-  (`src/simulation/incidents/trigger-system.ts:385`,
+  (`src/simulation/incidents/trigger-system.ts:437`,
   `candidate.score * 10`) and an assault's to
   `ASSAULT_SEVERITY_CEILING`, 5 (`src/simulation/incidents/flashpoint.ts:373`),
   so taking this option means authoring that ceiling somewhere it can be read
