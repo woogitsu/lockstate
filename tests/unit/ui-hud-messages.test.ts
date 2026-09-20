@@ -76,6 +76,7 @@ const HUD_MODULE_NAMES = [
   'regime-panel.ts',
   'rooms-panel.ts',
   'roster-panel.ts',
+  'security-panel.ts',
   'staff-panel.ts',
   'status-strip.ts',
   'tool-arming.ts',
@@ -454,7 +455,7 @@ describe('message keys live in one registry', () => {
     // with `tests/unit/ui-hud-shell-state.test.ts`'s `HUD_TAB_IDS` assertion:
     // `HUD_TAB_IDS` and `HUD_TABS` are two declarations of the same list, and
     // these two assertions are what stop one of them drifting from the other.
-    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan']);
+    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan', 'security']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);
   });
 });

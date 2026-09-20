@@ -74,7 +74,89 @@
  * player who had `security` open yesterday gets the reducer's initial tab
  * today, exactly as they do on every page load.
  */
-export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
+/**
+ * **A SIXTH SECTION LANDED ON 2026-09-17, AND EVERY PARAGRAPH ABOVE IS KEPT.**
+ * They are a true record of why the bar held five and of what each slot was
+ * for; what changed is that four catalogued read models had a route out of the
+ * worker and no painter, and the owner ruled -- provenance the weaker kind, the
+ * label of a clickable option this session wrote -- *"Piata sekcja w nawigacji
+ * -- wlasna zakladka (zalecane)"* ("a fifth section in the navigation -- its
+ * own tab (recommended)"). It is a *sixth* tab and the delivery's *fifth*
+ * section, which is why the option says fifth: the delivery names five and this
+ * is the one beside them.
+ *
+ * **The "sixth tab is foreclosed" measurement above had to be re-taken, and
+ * what the re-take says is CONDITIONAL rather than settled.** ADR 0022 measured
+ * it against a bar of five *labelled* tabs. The owner ruled on 2026-09-16
+ * (#1192) that the tabs go icon-only below the break, which is what makes room
+ * for a sixth -- but that ruling is **recorded and not yet implemented**: #1275
+ * records it and states in its own body that nothing under `src/` is touched,
+ * and PR #1281 is the open branch that ships the CSS. Neither is on `main` as
+ * this lands.
+ *
+ * **So the numbers, both of them, measured on the assembled page at 375x812 in
+ * `tests/browser/playtest-2026-09-17-six-tabs.playtest.ts` rather than
+ * inferred** (an earlier version of this paragraph quoted only the second and
+ * presented it as this tree's, which it is not):
+ *
+ * - **This tree, six labelled tabs:** six 64px buttons span `-4.5..379.5`
+ *   inside a 351px bar that runs `12..363` -- 384px of button in 351px of bar,
+ *   so the first and last overhang it by 16.5px each. At 320x640 the same
+ *   layout puts `overview` and `security` outside the viewport and
+ *   `elementFromPoint` at their own centres returns something else:
+ *   **two of the six sections are unreachable there**, where five labelled
+ *   tabs at 320 were all reachable on `main`.
+ * - **The same page with #1192's icon-only rule applied** (the playtest's
+ *   `ICON_ONLY=1` arm injects it, which is the only way this tree can see it):
+ *   six 56px buttons span `19.5..355.5` inside a 338px bar, and all six are
+ *   reachable at 320x640 too.
+ *
+ * **The second is the state this section is designed for and the first is the
+ * state it ships into until #1281 merges.** That ordering is the one thing
+ * about this array a reader must not take on trust.
+ *
+ * ----------------------------------------------------------------------
+ *
+ * **BOTH OF THE CONDITIONS ABOVE CLOSED, AND THE PARAGRAPHS ARE KEPT RATHER
+ * THAN REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). This block was written on
+ * 2026-09-17 citing a ruling that existed only in a dead session's transcript;
+ * the branch was parked on 2026-09-18 for exactly that reason, and the parking
+ * comment on #1292 is worth reading before this one.
+ *
+ * - **The authorising ruling is real and is now written down.** The owner ruled
+ *   on **2026-09-19** that the sixth section goes in -- Polish option label
+ *   *"Tak, szosta sekcja wchodzi"*. **Provenance is the weaker kind**: they
+ *   chose a clickable option an integrating session wrote, they did not type a
+ *   sentence. PR **#1319** is what gives it a durable home in `AGENTS.md`, and
+ *   `docs/VISUAL_IDENTITY.md`'s §"Where this repository stands against it"
+ *   item 5 carries it too. **It answers one question and not two**: *may the
+ *   navigation carry a sixth section at all*. Whether the sector id belongs on
+ *   screen was neither asked nor answered, and the `{sector}` note in
+ *   `security-panel.ts` is still open.
+ * - **#1281 merged** (`51cf5291`), so the icon-only arm above is the tree
+ *   rather than an injected stylesheet, and the first bullet's 384px-in-351px
+ *   bar is history.
+ *
+ * **What the sixth section cost above the break, because it is not free
+ * there and #1192's ruling does not reach it.** In `rail` placement the tab
+ * column is one button taller -- `y = 92.69..420.81` at 1280x800, measured on
+ * the assembled page -- and the bottom-left corner is bottom-anchored in the
+ * same middle row, so `.hud-zoom__in` was covered by a `.ui-tab`.
+ *
+ * **This sentence said the corner yields, and it was wrong -- kept rather than
+ * deleted** (`docs/AGENT_WORKFLOW.md` §4): *"The corner now yields instead:
+ * `hud.css` caps it with `--hud-navigation-block`."* Capping the corner took
+ * the 27px out of the alerts list, which had none to give, so it was reverted
+ * along with the custom property it needed. **The column yields instead, and
+ * it yields padding rather than a section**: a rail tab draws one step less
+ * block padding than a bar tab, 47.19px where a bar tab is 55.19px, still
+ * above `--tap-target`'s 44px floor and still drawing both glyph and label.
+ * `hud.css`'s corner block carries the whole measurement and both reverted
+ * repairs; `NAVIGATION_TAB_HEIGHT_PX` in `hud-layout.ts` is that rule's
+ * measurement and moved 54 -> 47 with it. **This array is still what sets the
+ * column's height**, so a seventh section is measured by the same arithmetic.
+ */
+export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];
 
 export const HUD_PANEL_IDS = ['minimap', 'alerts'] as const;

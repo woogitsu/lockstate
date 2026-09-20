@@ -515,6 +515,67 @@ sentence.
    further panel added to this rail should be read against, because it is what
    a second panel header costs anywhere in it.
 
+   > **A SIXTH SECTION WAS BUILT ON 2026-09-17 AND RULED ON 2026-09-19, AND
+   > THE READING ABOVE IS KEPT RATHER THAN OVERWRITTEN**
+   > (`docs/AGENT_WORKFLOW.md` §4, both directions).
+   > `HUD_TAB_IDS` is
+   > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security']` today:
+   > the direction's five, in the direction's order, **plus** a `security`
+   > section that paints the four HUD read models that had a route out of the
+   > worker and no painter (`hud/security`, `hud/incidents`,
+   > `hud/incident-detail`, `hud/contraband`). **This is a reading of the code
+   > and binds nothing**, and it takes nothing away from §"Navigation" above,
+   > which is a restatement and does bind: the five titles are unchanged, none
+   > was renamed, and none was dropped.
+   >
+   > **THE QUESTION THIS BLOCK USED TO LEAVE OPEN WAS RULED ON 2026-09-19 AND
+   > THE SENTENCE THAT LEFT IT OPEN IS KEPT.** It read: *"What is not settled
+   > here is whether the direction's navigation may carry a section it does not
+   > name — the ruling behind the sixth tab is recorded in
+   > `src/ui/hud/hud-state.ts`'s docblock, with its provenance marked as the
+   > weaker kind, and nowhere else in this repository."* That was true for two
+   > days and is why this branch sat parked. **The owner ruled on 2026-09-19
+   > that the sixth section goes in** — Polish option label *"Tak, szósta
+   > sekcja wchodzi"*. **The provenance is the weaker kind**: the owner chose a
+   > clickable option an integrating session wrote rather than typing a
+   > sentence, and PR #1319 is what gives that ruling a durable home in
+   > `AGENTS.md`. What it answers is *may there be a sixth section at all*, and
+   > nothing more: the sector-id question below it was not asked and is not
+   > answered.
+   >
+   > **The second ruling it depended on has landed.** #1192's icon-only tabs
+   > below 720px (ruled 2026-09-16, recorded by #1275) shipped in #1281,
+   > merged at `51cf5291`, and they are what make room for a sixth button on a
+   > phone. Measured on the assembled page at 375x812 *before* #1281, with six
+   > labelled tabs: 384px of button in a 351px bar, the first and last
+   > overhanging by 16.5px each, and at 320x640 `overview` and `security` fell
+   > outside the viewport and hit-tested to something else. With #1192's rule
+   > in the tree that arithmetic is gone: each tab is `min-width: 56px` with
+   > its name in the accessibility tree only.
+   >
+   > **Above the break the sixth button cost one change, and it is a change to
+   > the bottom-left corner rather than to the navigation** (2026-09-19). In
+   > `rail` placement the tab column is one button taller -- measured on the
+   > assembled page at 1280x800, `.hud-tabs__inner` spans `y = 92.69..420.81`
+   > where five tabs spanned 92.69..367 -- and the corner is bottom-anchored in
+   > the same middle row, so `.hud-zoom__in` at `415..459` was covered by a
+   > `.ui-tab` and a press meant for it landed there. `hud.css` now caps the
+   > corner at `calc(100% - var(--hud-navigation-block))` inside the one media
+   > query where the corner does not step aside for the column, and the corner
+   > yields its slack: 402 -> 428.69, clearing the column by 8px. The corner's
+   > tallest child is the alerts list, which is already a scroll container; the
+   > tab column is not, and a clipped tab is a section nobody can press. **No
+   > section name is taken off the screen anywhere #1192's ruling does not
+   > already take it**, which was the other candidate and is the owner's to
+   > rule on rather than an agent's.
+   >
+   > **Re-deriving the media query's own 781px threshold for six tabs was the
+   > obvious repair, and it is reported rather than shipped.** `837px` -- that
+   > block's arithmetic with the new column -- turns the zoom control green and
+   > then fails `app-shell.spec.ts`'s #331 Rooms-panel drag at 1280x800,
+   > exactly as `hud.css`'s own comment predicts in writing. Measured on
+   > 2026-09-19 against current `main`, not carried from the earlier attempt.
+
    **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
    2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in
    **two line boxes** -- 26.38px against every other label's 13.19 -- in the

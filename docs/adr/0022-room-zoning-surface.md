@@ -154,14 +154,23 @@ introduced.
 > (`docs/AGENT_WORKFLOW.md` §4: a correction is no more durable than the claim
 > it corrected). Read on 2026-09-15 at `origin/main` `e044a3e8`: `HudIntent` is
 > `src/ui/hud/hud.ts:365-738` and declares **twenty-two** members, still three
-> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:174`. Re-opened 2026-09-16 after this
+> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:181`
+> (the anchor read `:174`; both numbers are re-derived at the end of this
+> paragraph). Re-opened 2026-09-16 after this
 > branch merged `origin/main`: `HudIntent` still spans `:365-738`, still
 > declares twenty-two members, and `HudRoomGesture` is still `:174`. The
 > sentence the paragraph is checking — that none of `HudIntent`'s members was
 > about a room at v0.0.30 — is unaffected, and *"eighteen"* is the shape §4
 > names as rotting first. So a reader following the old anchor to check *"none of them is a
-room"* lands on a type that is about nothing else. **That replacement anchor
-said `:153` until 2026-08-28**, and was off by one when it was written -- the
+room"* lands on a type that is about nothing else. **Re-derived whole on
+2026-09-19, because #1292 inserted a sixth tab and a `select-incident` intent
+into this file: `HudIntent` is `src/ui/hud/hud.ts:372-792` and declares
+**twenty-four** members, and `export type HudRoomGesture` is at
+`src/ui/hud/hud.ts:181`.** The twenty-two above was right for its span and its
+date and is kept: two members have arrived since, `select-prisoner` on `main`
+with ADR 0115's roster split and `select-incident` with the Security section,
+and *"still three of them room-related"* is unaffected by either. **That
+replacement anchor said `:153` until 2026-08-28**, and was off by one when it was written -- the
 `export type HudRoomGesture` line is at `:154`, and `git show` at the previous
 STATUS-QUEUE anchor puts it at `:154` there too, so this is not drift. A
 correction that carries a wrong number is the failure it was written to fix,
@@ -219,7 +228,7 @@ section's bottom edge crosses the panel's fold:
 | 1280×720 | 38.2 | 30.2 |
 | 900×600 | 12.2 | 7.8 |
 
-`--tap-target` is 44px (`src/ui/tokens.css:709`; the anchor read `:150`). So **a single always-visible
+`--tap-target` is 44px (`src/ui/tokens.css:718`; the anchor read `:150`, then `:709`). So **a single always-visible
 control fits at three of the five viewports and at neither 1280×720 nor
 900×600** — and the desktop 1280×720 is the second-tightest of the five,
 tighter than the phone. That inversion is why the number had to be measured
@@ -759,7 +768,9 @@ asserted and the implementation had to correct.
    > **Still five members, and not the same five.** Kept rather than rewritten
    > (`docs/AGENT_WORKFLOW.md` §4). `HUD_TAB_IDS` is today
    > `['overview', 'build', 'zones', 'manage', 'day-plan']`
-   > (`src/ui/hud/hud-state.ts:77`) and the label this item calls `Rooms` is
+   > (`src/ui/hud/hud-state.ts:159`; the anchor read `:77`, then `:118`, then `:150`, re-aimed on
+   > 2026-09-19, the list itself corrected in the note below) and the label this
+   > item calls `Rooms` is
    > `'hud.tab.zones': 'Zones'` (`src/content/default-locale-en.ts:496`). The
    > rename is [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)
    > decision 3, ruled by the owner on 2026-09-13 and merged as `919d6b15`.
@@ -768,6 +779,25 @@ asserted and the implementation had to correct.
    > the nine-character clause is if anything safer. What moved is the tab's id
    > and its word, and every *other* sentence in this document that says
    > `Rooms`, `security` or `regime` of a live tab is reading the old bar.
+   >
+   > > **"STILL FIVE MEMBERS" STOPPED BEING TRUE ON 2026-09-19 AND THE
+   > > PARAGRAPH ABOVE IS KEPT RATHER THAN REWRITTEN** (`docs/AGENT_WORKFLOW.md`
+   > > §4: a correction is no more durable than the claim it corrected, and a
+   > > tally is the sentence form that rots first -- this is the second time
+   > > this one has). `HUD_TAB_IDS` is
+   > > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const`
+   > > at `src/ui/hud/hud-state.ts:159` -- **six** members, the direction's five
+   > > in the direction's order plus a `security` section, ruled by the owner on
+   > > 2026-09-19 (provenance the weaker kind: the label of a clickable option,
+   > > *"Tak, szósta sekcja wchodzi"*, not a sentence they typed) and built by
+   > > #1292. The anchor read `:77` until this change and the coordinate moved
+   > > because the constant's own docblock grew, not because the file did.
+   > > **The nine-character clause and the `Zones` label are untouched.** What
+   > > this does retire is the parenthesis *"a sixth still foreclosed at
+   > > 375x812"* directly above: #1192's icon-only tabs below 721px, ruled
+   > > 2026-09-16 and merged as #1281, are what unforeclosed it -- below the
+   > > break a tab draws its glyph and keeps its name in the accessibility tree
+   > > only, so the bar's width stopped being a function of the section names.
 
 6. **The `test.slow()` estimate was in the right place.** B was also charged
    with widening the #88 tab sweep, estimated at "roughly 55s" for a fifth tab

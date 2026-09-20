@@ -312,6 +312,15 @@ export const HUD_MESSAGE_KEY = {
   tabZones: 'hud.tab.zones',
   tabManage: 'hud.tab.manage',
   tabDayPlan: 'hud.tab.day-plan',
+  /*
+   * The sixth, added 2026-09-17 for the four projections that had a route out
+   * of the worker and no painter. `hud.tab.security` is a *new* key rather than
+   * the `hud.tab.security` that #1192's predecessor retired: that one was
+   * deleted with its section, so nothing carries a stale reading of it, and
+   * `tests/foundation/second-locale-contract.test.ts`'s `unknown-key` audit is
+   * what would say otherwise.
+   */
+  tabSecurity: 'hud.tab.security',
 
   /**
    * The Layout menu and the three collapse arrows beside it (#1159, stage 3
@@ -1693,6 +1702,59 @@ export const HUD_MESSAGE_KEY = {
    * them and never both.
    */
   refusalReleaseGuard: 'hud.refusal.release-guard',
+
+  /*
+   * The Security section (2026-09-17), the sixth tab's own panel.
+   *
+   * A namespace of its own -- `hud.security-section.*` -- rather than
+   * `hud.security.*`, which the Staff panel has held since it lived on a tab
+   * called `security`. Two panels sharing one key prefix is how a key gets
+   * repointed at the wrong sentence, and the Staff panel's keys are not this
+   * section's to rename.
+   *
+   * **Every string behind these keys is written under `AGENTS.md`'s fourth
+   * reservation as it stands since 2026-09-04: the wording is ours, the
+   * requirement that the sentence be TRUE is the owner's.** The default locale
+   * carries the verification beside each one -- which field decides it, and in
+   * which state it is painted -- and that file is the one to read rather than
+   * this. The empty states are where that rule bites hardest here: a security
+   * panel that says nothing is wrong when the projection is merely unpopulated
+   * is exactly the defect the reservation names, so not one of them asserts
+   * that the prison is safe.
+   */
+  sectionSecurityTitle: 'hud.security-section.title',
+  sectionSecurityWaiting: 'hud.security-section.waiting',
+
+  sectionSecuritySectors: 'hud.security-section.sectors',
+  sectionSecuritySectorsEmpty: 'hud.security-section.sectors-empty',
+  sectionSecuritySectorStaffing: 'hud.security-section.sector-staffing',
+  sectionSecuritySectorShort: 'hud.security-section.sector-short',
+  sectionSecuritySectorOpenIncidents: 'hud.security-section.sector-open-incidents',
+  sectionSecurityLockdown: 'hud.security-section.lockdown',
+
+  sectionSecurityIncidents: 'hud.security-section.incidents',
+  sectionSecurityIncidentsNone: 'hud.security-section.incidents-none',
+  sectionSecurityIncidentsClosed: 'hud.security-section.incidents-closed',
+  sectionSecurityIncidentsSummary: 'hud.security-section.incidents-summary',
+  sectionSecurityIncidentsToll: 'hud.security-section.incidents-toll',
+  sectionSecurityIncidentRow: 'hud.security-section.incident-row',
+  sectionSecurityIncidentSeverity: 'hud.security-section.incident-severity',
+  sectionSecurityIncidentPeople: 'hud.security-section.incident-people',
+  sectionSecurityIncidentTimeline: 'hud.security-section.incident-timeline',
+  sectionSecurityIncidentTimelineRow: 'hud.security-section.incident-timeline-row',
+  sectionSecurityIncidentResponders: 'hud.security-section.incident-responders',
+  sectionSecurityIncidentOutcome: 'hud.security-section.incident-outcome',
+  sectionSecurityIncidentEscaped: 'hud.security-section.incident-escaped',
+  sectionSecurityIncidentsByType: 'hud.security-section.incidents-by-type',
+  sectionSecurityCountRow: 'hud.security-section.count-row',
+
+  sectionSecurityContraband: 'hud.security-section.contraband',
+  sectionSecuritySearchesNone: 'hud.security-section.searches-none',
+  sectionSecuritySearchRow: 'hud.security-section.search-row',
+  sectionSecuritySearchProgress: 'hud.security-section.search-progress',
+  sectionSecurityFound: 'hud.security-section.found',
+  sectionSecurityFoundNone: 'hud.security-section.found-none',
+  sectionSecuritySearchTally: 'hud.security-section.search-tally',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

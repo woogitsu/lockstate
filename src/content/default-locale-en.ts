@@ -605,6 +605,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.tab.zones': 'Zones',
   'hud.tab.manage': 'Manage',
   'hud.tab.day-plan': 'Schedule',
+  /*
+   * The sixth section (2026-09-17). `Security` is the word the three read
+   * models behind it already use for themselves -- `projectSecurity`'s sectors
+   * and their access policy, `projectIncidents`, and `projectContraband`'s
+   * searches -- and it is eight characters, the same width as `Schedule`, which
+   * is what the phone bar was measured against.
+   *
+   * It is true of the section rather than aspirational: the panel behind it
+   * shows what the prison's sectors are staffed at, what has gone wrong and
+   * what has been found. It issues no command, which is why the word is a noun
+   * for a subject and not a verb for an action, unlike `Build` and `Manage`.
+   */
+  'hud.tab.security': 'Security',
 
   /*
    * The Layout menu and the three collapse arrows (#1159, stage 3).
@@ -3635,6 +3648,234 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.at-capacity-count': '{full} of {total}',
   'hud.rooms.at-capacity-room': '{room} at {x}, {y} is full',
   'hud.rooms.at-capacity-places': 'places in use: {inUse} of {capacity}',
+
+  /*
+   * ------------------------------------------------------------------
+   * The Security section (2026-09-17)
+   * ------------------------------------------------------------------
+   *
+   * Thirty strings, written under `AGENTS.md`'s fourth reservation as it
+   * has stood since 2026-09-04: the owner released the CHOICE of words and did
+   * not release the requirement that each sentence be true of the code that
+   * renders it. So each carries what decides it -- the field it reads and the
+   * state it is painted in -- and the ones that could be false are marked.
+   *
+   * THE RULE THIS SECTION PRESSES HARDEST AGAINST IS THE EMPTY STATE. A
+   * security panel is empty in exactly two different prisons: one in which
+   * nothing has happened, and one in which nothing has *reported*. Saying "all
+   * clear" would be true of neither and would read as true of both, which is
+   * the defect the reservation names. So every empty state below says what the
+   * record holds, never what the prison is.
+   */
+
+  /** The panel's title, and the section name in the tab bar is the same word. */
+  'hud.security-section.title': 'Security',
+  /*
+   * Painted in one state and only one: the panel has no view model at all,
+   * because nothing has published one yet or because `simulation/stopped` took
+   * it off. `createSecurityPanel`'s `paintAll` is the single authority on it,
+   * and it is the same sentence `hud.alerts.unknown` and `hud.overview.none`
+   * already use for the same state -- deliberately the same, so a player who
+   * has learnt what it means on one surface has learnt it on all three.
+   */
+  'hud.security-section.waiting': 'No prison is reporting.',
+
+  /** The first block's eyebrow. `SecurityViewModel.sectors` is what it holds. */
+  'hud.security-section.sectors': 'Sectors',
+  /*
+   * `sectors.length === 0`. It says what the projection answered and makes no
+   * claim about safety. A session derives one sector from owned land
+   * (`applyDefaultSecuritySector`), so a prison that owns nothing has none --
+   * which is the state this sentence describes, and it is reachable.
+   */
+  'hud.security-section.sectors-empty': 'No sector has been drawn on this land yet.',
+  /*
+   * `staffing.assigned` and `staffing.required`, both the projection's, on the
+   * sector row. `assigned` counts guards on post, walking there and pulled onto
+   * a search -- everything the deployment system still holds against this
+   * sector -- which is why the word is "assigned" rather than "on post".
+   */
+  'hud.security-section.sector-staffing': '{assigned} of {required} guards assigned',
+  /*
+   * `staffing.shortage`, painted only when it is above zero. It is the
+   * projection's per-sector figure and not `required - assigned` recomputed
+   * here; `HudStaffCoverageViewModel.shortage` records at length why the two
+   * stop agreeing the moment a second sector exists.
+   */
+  'hud.security-section.sector-short': '{count} short',
+  /*
+   * `openIncidentCount`, painted only when it is above zero. The projection
+   * asks `IncidentLog.openIncidentsInSector`, so "open" is the log's word for
+   * "not resolved and not lapsed" and not this panel's judgement.
+   */
+  'hud.security-section.sector-open-incidents': '{count} open here',
+  /*
+   * The badge on a sector whose `controlState` is `'lockdown'`, and on no
+   * other. The two other states -- `'normal'` and `'restricted'` -- carry the
+   * derived enum word `sector-control-state.*.name` instead, which is authored
+   * in `simulation-message-keys.ts` beside the enum. This one is a badge rather
+   * than a word in a line because it is the state that changes what the prison
+   * does.
+   */
+  'hud.security-section.lockdown': 'Lockdown',
+
+  /** The second block's eyebrow. */
+  'hud.security-section.incidents': 'Incidents',
+  /*
+   * `total === 0`: `IncidentLog` holds nothing at all this session.
+   *
+   * It says the log is empty, not that the prison is safe. Those are different
+   * facts and the difference is the whole of the fourth reservation: a prison
+   * whose worker has never been asked, and a prison in which four assaults are
+   * in progress with the panel shut, both produce an empty list.
+   */
+  'hud.security-section.incidents-none': 'Nothing has been recorded yet.',
+  /*
+   * `stillOpen === 0` with `total` above zero: everything the log holds has
+   * reached `'resolved'` or `'lapsed'`, both of which are terminal and
+   * forward-only (`IncidentRowViewModel.terminal`). It states the record and
+   * the count, and deliberately does not say the prison is under control --
+   * `'lapsed'` means nobody responded in time, so a prison whose every incident
+   * lapsed reports this sentence too.
+   */
+  'hud.security-section.incidents-closed': 'Nothing is open. {total} recorded so far.',
+  /** `stillOpen` and `total`, both the projection's `summary`. */
+  'hud.security-section.incidents-summary': '{open} open of {total} recorded',
+  /*
+   * `summary.totalInjured` and `summary.escapes`, summed by the projection over
+   * every outcome the log holds -- so both are about incidents that have
+   * finished, and an incident still in progress contributes nothing to either.
+   * Painted only when at least one of them is above zero.
+   */
+  'hud.security-section.incidents-toll': '{injured} hurt, {escapes} got out',
+  /*
+   * One open incident, as its row reads. `{type}` is the derived enum word
+   * `incident-type.*.name` (Assault, Escape Attempt, Gang Retaliation, Riot)
+   * and `{sector}` is the sector's stable id, printed as an id because nothing
+   * on this thread turns one into a place.
+   *
+   * **THE GAPS THIS SENTENCE CITED WERE THE WRONG TWO, AND THE WRONG CITATION
+   * IS KEPT RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md` §4). It read
+   * *"(`docs/HUD_PROJECTIONS.md` gaps 10 and 11)"*; opened, gap 10 is
+   * *"Position updates only on arrival"* and gap 11 is *"Room membership is
+   * not derivable from position"*, both about a prisoner's tile and neither
+   * about a sector's name. The gaps that do bear on it are **16**
+   * (*"No room-to-sector mapping"*) and **23** (*"No sector membership model a
+   * *panel* can read"*).
+   *
+   * **And the closer reason is simpler than either of them: no sector has a
+   * name to print.** `DEFAULT_SECURITY_SECTOR_ID` in
+   * `src/simulation/security/default-sector.ts` is an id chosen to be stable
+   * across saves, and ADR 0036's sector is derived rather than drawn, so
+   * nobody authored a word for it. What a sector *does* carry is its grade's
+   * `nameKey`, which the sectors block above this one already prefers over the
+   * id -- the incident row does not, because `IncidentRow` on the projection
+   * carries `sectorId` alone. Whether an id belongs on screen here is an open
+   * question and has not been put to the owner.
+   */
+  'hud.security-section.incident-row': '{type} in {sector}',
+  /*
+   * `severity` against `severityMax`, both carried on the row. `incident.ts`
+   * documents severity as a published `0-10` scale, and the ceiling crosses the
+   * boundary as a number rather than being written here, so the sentence stays
+   * true if the scale moves.
+   */
+  'hud.security-section.incident-severity': 'Severity {severity} of {max}',
+  /*
+   * `participantCount`, the length of the incident's own `participantIds`. They
+   * are prisoners taking part, which is why the word is not "involved" -- a
+   * guard dispatched to it is a responder and is not in this count.
+   */
+  'hud.security-section.incident-people': '{count} taking part',
+  /** The inspector's eyebrow, over the selected incident's `timeline`. */
+  'hud.security-section.incident-timeline': 'How it went',
+  /*
+   * One timeline entry: the derived state word, and the tick it was reached.
+   *
+   * A TICK AND NOT A TIME, deliberately. The simulation's clock is ticks and
+   * the conversion to a day and a position within it needs the day length,
+   * which this reply does not carry -- `regime-panel.ts` takes it as a second
+   * parameter for its one sentence-remaining readout for exactly that reason,
+   * and a timeline needs the conversion once per entry. So the number is
+   * labelled as what it is.
+   */
+  'hud.security-section.incident-timeline-row': '{state} at tick {tick}',
+  /*
+   * `requiredResponders`, absent unless the session has a response system. It
+   * is `IncidentResponseSystem.requiredResponderCount(severity)` -- how many
+   * guards the response asks for, not how many it got.
+   *
+   * **A label and a figure rather than a sentence**, and that is a grammar
+   * decision rather than a style one: `Response asks for {count} guards` was
+   * the first draft, and it renders *"1 guards"* for the commonest severity
+   * band. The HUD's `t` is `Localizer.format` and not `formatPlural`, so a
+   * plural entry here would carry forms nothing selects between --
+   * `hud.status.rooms-not-ready` records that same reasoning at length. A
+   * colon has no grammatical number in English or in Polish.
+   */
+  'hud.security-section.incident-responders': 'Responders needed: {count}',
+  /*
+   * The outcome, painted only for a terminal incident: an open one has no
+   * `outcome` at all, and drawing "0 hurt" for it would assert that it hurt
+   * nobody when what is true is that it has not finished. Both figures and both
+   * ceilings are the projection's.
+   */
+  'hud.security-section.incident-outcome': '{injured} hurt, damage {damage} of {max}',
+  /** `outcome.escaped`, painted only when it is true. */
+  'hud.security-section.incident-escaped': 'Somebody got out.',
+  /** The eyebrow over the per-type counts. */
+  'hud.security-section.incidents-by-type': 'By kind',
+  /*
+   * One counted row, shared by the incident kinds and the contraband
+   * categories. `{label}` is always a translated word from a catalog or a
+   * derived enum key, never a string this panel composed.
+   */
+  'hud.security-section.count-row': '{label}: {count}',
+
+  /** The third block's eyebrow. */
+  'hud.security-section.contraband': 'Contraband',
+  /*
+   * `searchOrders` is empty: nothing is queued and nothing is active.
+   *
+   * "under way" rather than "has been ordered", and the difference is a false
+   * sentence avoided: a completed order is neither queued nor active, so a
+   * prison that has run a hundred searches reports an empty list here, and
+   * "no search has been ordered" would be false of it.
+   */
+  'hud.security-section.searches-none': 'No search is under way.',
+  /*
+   * One search order. `{scope}` is the derived enum word `search-scope.*.name`
+   * (Cell, Delivery, Person, Sector) and `{state}` is
+   * `search-order-state.*.name`, which covers `'queued'` as well as the three
+   * job states -- an order accepted and not yet assigned a guard has no job
+   * record, and that namespace exists so the row can still be labelled.
+   */
+  'hud.security-section.search-row': '{scope} search - {state}',
+  /*
+   * `currentTargetIndex` against `targetCount`. The index is read as a count of
+   * targets already done, which is how the projection itself reads it: its
+   * `progress` is `toBoundedValue(currentTargetIndex, targets.length)`.
+   */
+  'hud.security-section.search-progress': '{done} of {count} searched',
+  /** The eyebrow over what has actually been confiscated. */
+  'hud.security-section.found': 'Confiscated',
+  /*
+   * Painted only when the search system has recorded no discovery AND no
+   * category has a count -- both, because they come from different places and
+   * either alone could be zero while the other is not. It is a statement about
+   * the confiscation ledger and the search metrics, and it does not say the
+   * prison is clean: `ContrabandRegistry` is ground truth and this panel is
+   * deliberately built so that it can never see it
+   * (`contraband-projection.ts`'s own header).
+   */
+  'hud.security-section.found-none': 'Nothing has been confiscated.',
+  /*
+   * `itemsDiscovered` and `itemsMissed`, the search system's own metrics. A
+   * miss is a search that ran over a concealed item and did not detect it, so
+   * this pair is a statement about the searching and not about what is in the
+   * prison.
+   */
+  'hud.security-section.search-tally': '{found} found, {missed} missed',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

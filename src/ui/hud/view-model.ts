@@ -1992,6 +1992,29 @@ export interface HudViewModel {
    * it were about their current choice.
    */
   readonly prisonerDetail?: HudPrisonerDetailViewModel;
+  /**
+   * The Security section's four pulled fields (2026-09-17), on exactly the
+   * terms the nine above it are on: each is absent because **nothing asked**,
+   * never because the prison is quiet.
+   *
+   * That distinction is the whole reason they are optional rather than carrying
+   * an empty view model, and it is sharper here than anywhere else in this
+   * file: a security readout whose absent state and whose all-clear state
+   * render alike is `konstytucja.md` article 5's third named anti-pattern
+   * (*"'Brak incydentow' i 'brak danych' to rozne stany"*) in the one panel
+   * whose subject is things going wrong. `security-panel.ts` paints one
+   * sentence for absence -- the same sentence the alerts list and the Overview
+   * readout already use -- and a different one for each empty record.
+   *
+   * `incidentDetail` has the two extra causes `prisonerDetail` has, for the
+   * same reason: nobody is selected, and the selected incident has left the
+   * open list. It carries its own `incidentId` so a reply about an incident the
+   * player has since moved off cannot be painted under their current choice.
+   */
+  readonly security?: HudSecurityViewModel;
+  readonly incidents?: HudIncidentsViewModel;
+  readonly incidentDetail?: HudIncidentDetailViewModel;
+  readonly contraband?: HudContrabandViewModel;
 }
 
 /**
@@ -2325,6 +2348,242 @@ export interface HudStaffCoverageViewModel {
   readonly assigned: number;
   /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
   readonly shortage: number;
+}
+
+/*
+ * ------------------------------------------------------------------
+ * The Security section (2026-09-17)
+ * ------------------------------------------------------------------
+ *
+ * Four catalogued read models had a route out of the worker and no painter
+ * until this section existed, and the reachability gate named each with what
+ * blocked it (`tests/foundation/projection-reachability-contract.test.ts`'s
+ * `UNPAINTED_PROJECTION_IDS`). Three of the four entries blamed the same
+ * missing thing -- a panel -- and the fourth, `hud/incident-detail`, blamed the
+ * absence of the third: *"it waits on the LIST half rather than on a selection
+ * model"*. So the shape below is a list and a detail beside it, not four
+ * parallel blocks.
+ *
+ * **These are narrowings, and every one of them is deliberate.** The three
+ * projections behind this section publish a great deal this file does not
+ * declare -- `projectSecurity` alone carries every door of every sector, every
+ * patrol waypoint as a tile, and the whole access policy for every
+ * classification group, staff role and grade. A panel is not the place to
+ * decide which of those a player needs, and the fields that are missing here
+ * are missing for one of two reasons, stated per field below: either nothing on
+ * this thread could make them mean anything (a tile coordinate does not answer
+ * "where is this", `docs/HUD_PROJECTIONS.md` gaps 10 and 11), or saying them
+ * would need a sentence nobody has written.
+ */
+
+/** One security sector, as the sectors block says it. */
+export interface HudSecuritySectorRowViewModel {
+  /** The sector's stable id, which is also the row's browser handle. */
+  readonly sectorId: string;
+  /**
+   * The grade's word, from the content catalog's own `nameKey` -- absent when
+   * the sector names a grade the catalog does not define, which
+   * `projectSecurity` reports by omitting the field rather than by inventing a
+   * name.
+   */
+  readonly gradeLabelKey?: LocalizationKey;
+  /** `sector-control-state.*.name`: Normal, Restricted or Lockdown. */
+  readonly controlStateLabelKey: LocalizationKey;
+  /** True for `'lockdown'` only. It decides the row's tone, and the word beside it is the key above. */
+  readonly underLockdown: boolean;
+  /** Guards this sector asks for at the projection's tick. */
+  readonly required: number;
+  /** Guards assigned to it -- on post, walking there, or pulled onto a search. */
+  readonly assigned: number;
+  /** This sector's own shortfall, the projection's, never `required - assigned` recomputed here. */
+  readonly shortage: number;
+  /** Incidents still open in this sector. */
+  readonly openIncidentCount: number;
+}
+
+/**
+ * What the prison's sectors are, over `hud/security`.
+ *
+ * `sectors` is every sector the registry holds and is not windowed: the
+ * projection is declared `paged: false` and a session derives exactly one
+ * sector (`applyDefaultSecuritySector`), so there is no window to ask for and
+ * none to report.
+ */
+export interface HudSecurityViewModel {
+  readonly sectors: readonly HudSecuritySectorRowViewModel[];
+  /** Sectors under lockdown, the projection's own total. */
+  readonly sectorsUnderLockdown: number;
+  /** Sectors on restricted access, likewise. */
+  readonly sectorsRestricted: number;
+  /**
+   * The summed per-sector shortfall, carried rather than derived for the reason
+   * `HudStaffCoverageViewModel.shortage` gives at length: one sector over-staffed
+   * and another short still reports a shortage, where `required - assigned`
+   * would net them out and read as covered.
+   */
+  readonly shortage: number;
+}
+
+/** One incident, as a row in the list says it. */
+export interface HudIncidentRowViewModel {
+  /** The incident's stable id -- the row's handle, and what the detail request names. */
+  readonly incidentId: string;
+  /** `incident-type.*.name`: Assault, Escape Attempt, Gang Retaliation or Riot. */
+  readonly typeLabelKey: LocalizationKey;
+  /** `incident-state.*.name`. */
+  readonly stateLabelKey: LocalizationKey;
+  /** Where it is. A sector id and not a place: nothing on this thread turns one into a description. */
+  readonly sectorId: string;
+  /** `0`-`10`, a published scale (`incident.ts`), so the rank itself is meaningful to render. */
+  readonly severity: number;
+  /**
+   * The ceiling of that scale, carried rather than written into the panel.
+   *
+   * A readout saying "severity 8 of 10" states a fact about the simulation's
+   * scale, and the HUD may not import the constant that declares it
+   * (`AGENTS.md` boundary 1). Carrying it is what makes the sentence true by
+   * construction instead of true until somebody moves `INCIDENT_SEVERITY_MAX`.
+   */
+  readonly severityMax: number;
+  /** How many prisoners are in it. */
+  readonly participantCount: number;
+  /** `'resolved'` and `'lapsed'`; the lifecycle is forward-only and both are terminal. */
+  readonly terminal: boolean;
+}
+
+/**
+ * What has gone wrong, over `hud/incidents`.
+ *
+ * **Nothing here is a window, and that is a decision rather than an
+ * omission.** `IncidentsViewModel` carries exactly one paged list, `resolved`,
+ * and its rows come out of `IncidentLog.all()` in ascending incident id --
+ * oldest first. A panel showing the first four terminal incidents of a long
+ * session would be showing the four a player has least reason to care about,
+ * and asking for the last four needs the total first, which is a second round
+ * trip per refresh. So this reader asks with `limit: 0` -- totals and no rows,
+ * the arrangement `staffCoverageReader` already uses on `hud/staff` -- and what
+ * is rendered instead is the two lists the projection publishes *whole*: the
+ * still-open incidents, which `IncidentLog` indexes, and the per-type counts.
+ *
+ * The cost of that choice, stated rather than hidden: a resolved incident's own
+ * row is not reachable from this panel at all. It is counted, and its type is
+ * counted, and it cannot be opened. Making it reachable is a windowing
+ * question for the projection (`docs/HUD_PROJECTIONS.md:1613-1616` already
+ * records that `resolved.total` costs `O(allIncidentsEverRecorded)` whatever
+ * window is asked for), not a panel one.
+ */
+export interface HudIncidentsViewModel {
+  readonly open: readonly HudIncidentRowViewModel[];
+  /** Every incident ever recorded this session, the projection's `summary.total`. */
+  readonly total: number;
+  /** Still open, resolved and lapsed, each the projection's own count. */
+  readonly stillOpen: number;
+  readonly resolved: number;
+  readonly lapsed: number;
+  /** Prisoners hurt, and escapes that succeeded, summed over every outcome the log holds. */
+  readonly injured: number;
+  readonly escapes: number;
+  /**
+   * How many of each kind, in the projection's declared type order.
+   *
+   * A type nothing has produced is **dropped** here rather than carried as a
+   * zero. The projection emits all four deliberately, *"so a state row never
+   * appears and vanishes"*, which is the right contract for a projection and
+   * the wrong one for a block that is empty in every prison nothing has gone
+   * wrong in -- the same judgement, in the same words, that
+   * `intakePipelineFromProjection` makes about its six stages.
+   */
+  readonly byType: readonly { readonly typeLabelKey: LocalizationKey; readonly count: number }[];
+}
+
+/**
+ * One incident read at the second scale, over `hud/incident-detail`.
+ *
+ * The row's own fields are redeclared rather than nested, for the reason
+ * `HudPrisonerDetailViewModel` gives about the roster: the detail is the same
+ * incident read again, so the type, the state and the severity are the same
+ * facts rendered by the same functions, and a second shape for them would be a
+ * second way of saying an incident is a riot.
+ */
+export interface HudIncidentDetailViewModel extends HudIncidentRowViewModel {
+  /**
+   * Chronological -- the order the incident actually progressed -- each entry a
+   * state word and the tick it was reached.
+   *
+   * The tick is a number and stays one. Turning it into a time of day would
+   * need the day length, which this view model does not carry and which the
+   * detail reply does not either; the Regime panel's sentence-remaining readout
+   * takes it as a second parameter for exactly that reason, and an incident
+   * timeline with six ticks on it would need six of those conversions to be
+   * worth anything.
+   */
+  readonly timeline: readonly { readonly stateLabelKey: LocalizationKey; readonly atTick: number }[];
+  /** Prisoners hurt in this one. Absent outcome means the incident is still open, and this is then `0`. */
+  readonly injuredCount: number;
+  /** `0`-`10`, the second published scale `incident.ts` declares. */
+  readonly propertyDamage: number;
+  /** Its ceiling, carried for `HudIncidentRowViewModel.severityMax`'s reason. */
+  readonly propertyDamageMax: number;
+  /** Whether somebody got out. */
+  readonly escaped: boolean;
+  /** Absent unless a response system is in the session; it is how many guards the response asks for. */
+  readonly requiredResponders?: number;
+}
+
+/** One search order the prison has issued. */
+export interface HudSearchOrderViewModel {
+  readonly orderId: string;
+  /** `search-scope.*.name`: Cell, Delivery, Person or Sector. */
+  readonly scopeLabelKey: LocalizationKey;
+  /** `search-order-state.*.name`. `'queued'` means staffing demand is unmet -- a backlog, not a failure. */
+  readonly stateLabelKey: LocalizationKey;
+  /** Whether it is still waiting for a guard. It decides the row's tone. */
+  readonly queued: boolean;
+  /** How far down its target list it has got, and how long that list is. */
+  readonly currentTargetIndex: number;
+  readonly targetCount: number;
+}
+
+/** How much of one contraband category the prison has confiscated. */
+export interface HudConfiscationCountViewModel {
+  readonly categoryId: string;
+  /** The category's word, from the contraband catalog's own `nameKey`. */
+  readonly categoryLabelKey: LocalizationKey;
+  readonly count: number;
+}
+
+/**
+ * What the prison is searching for and what it has found, over
+ * `hud/contraband`.
+ *
+ * **What is deliberately not here is the half that would give the game away.**
+ * `ContrabandViewModel` also carries `intelligence` and `informants` -- what
+ * the prison *suspects*, with its uncertainty intact -- and
+ * `contraband-projection.ts`'s own header is explicit that the registry of
+ * where the drugs actually are must never reach a panel. Suspicion is a
+ * different subject from evidence and reads as the same thing in a list beside
+ * it, so it is left on the projection rather than folded into this block.
+ */
+export interface HudContrabandViewModel {
+  /** Every order the prison has out, queued ones first -- `searchOrders` is not a window. */
+  readonly searches: readonly HudSearchOrderViewModel[];
+  /**
+   * What has been confiscated, by kind.
+   *
+   * The same choice `HudIncidentsViewModel` makes and for the same two reasons:
+   * `discovered` is the projection's one paged list and its rows are oldest
+   * first, and `ConfiscationLedger.all()` is unbounded over a session
+   * (`docs/HUD_PROJECTIONS.md:1600-1603`). `discoveredByCategoryId` is
+   * published whole, in declared catalog order. A category nothing has been
+   * found in is dropped here rather than carried as a zero.
+   */
+  readonly foundByCategory: readonly HudConfiscationCountViewModel[];
+  /** Items found, and searches that missed one that was there. Both the search system's own metrics. */
+  readonly itemsDiscovered: number;
+  readonly itemsMissed: number;
+  /** Orders waiting for a guard, and orders a guard is walking or working. */
+  readonly searchesQueued: number;
+  readonly searchesActive: number;
 }
 
 /**

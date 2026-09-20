@@ -21,6 +21,7 @@ import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
 import { type RosterPanel, createRosterPanel } from './roster-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
+import { type SecurityPanel, createSecurityPanel } from './security-panel';
 import {
   HUD_PANEL_IDS,
   type HudPanelId,
@@ -98,6 +99,11 @@ export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'zones', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabZones },
   { id: 'manage', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabManage },
   { id: 'day-plan', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabDayPlan },
+  // The sixth section (2026-09-17). `incident` rather than `security`, which
+  // the `manage` tab above already draws: the glyph is a drawing's name and two
+  // sections wearing one silhouette is the defect #1283 is fixing elsewhere in
+  // this array, not one to add to.
+  { id: 'security', icon: 'incident', labelKey: HUD_MESSAGE_KEY.tabSecurity },
 ];
 
 /**
@@ -761,7 +767,29 @@ export type HudIntent =
    * nobody -- a state both the host and the panel handle -- and it can never
    * quietly name somebody else.
    */
-  | { readonly kind: 'select-prisoner'; readonly prisonerId: number | undefined };
+  | { readonly kind: 'select-prisoner'; readonly prisonerId: number | undefined }
+  /**
+   * The player chose an incident on the Security section, or cleared the choice
+   * (2026-09-17).
+   *
+   * The same shape and the same reasoning as `select-prisoner` above, one
+   * section over: *chrome*, already applied by the panel, asking the simulation
+   * to change nothing, so it is never gated. The host turns an id into a
+   * `hud/incident-detail` request and `undefined` into "stop asking".
+   *
+   * **A string id rather than a number, and that is the protocol's own
+   * distinction rather than this file's.** `projectionTargetSchema` declares
+   * two target kinds because the two id spaces are genuinely different types --
+   * `projectPrisonerDetail` takes an `EntityId`, `projectIncidentDetail` takes a
+   * string -- and carrying one as the other would mean a parse at a trust
+   * boundary, which is what that schema exists to avoid.
+   *
+   * An incident id is safe to name here for the reason an `EntityId` is:
+   * `IncidentLog` never deletes a record and never reissues an id, so this
+   * names the incident the player pressed or names nothing, and can never
+   * quietly name a different one.
+   */
+  | { readonly kind: 'select-incident'; readonly incidentId: string | undefined };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -1089,6 +1117,20 @@ export interface HudHandle {
    * failed read, none of which makes the player's choice false.
    */
   clearPrisonerSelection(): void;
+  /**
+   * The same event one section over: the worker says there is no such incident
+   * (2026-09-17).
+   *
+   * Not part of `HudViewModel` for `clearPrisonerSelection`'s reason -- the
+   * view model is snapshot-shaped and this is an *event*, the one reply
+   * `hud/incident-detail` gives for an id it does not hold, which
+   * `IncidentsReader.readDetail` answers as `'gone'`.
+   *
+   * `IncidentLog` never deletes a record, so this is reachable only for an id
+   * that was never minted. It exists because the alternative is a panel that
+   * would paint nothing and say nothing if it ever were.
+   */
+  clearIncidentSelection(): void;
   getState(): HudShellState;
   /** The layout the shell currently holds, which is what a host persists (#1159). */
   getLayout(): LayoutSettings;
@@ -2406,6 +2448,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
 
+  // ---- bottom-right security panel (Security tab) -------------------
+  /*
+   * The seventh occupant of `.hud__side`, and the one that retires the last
+   * four catalogued read models with a route and no reader (2026-09-17).
+   *
+   * It issues no command, so it joins no busy group: everything it holds is a
+   * readout pulled while this tab is the one showing, and its one selection is
+   * chrome -- `runReported` rather than `dispatchCommand` below is what says
+   * so, exactly as it does for the Regime panel's prisoner selection and for
+   * the two arming intents.
+   */
+  const securityPanel: SecurityPanel = createSecurityPanel({
+    localizer,
+    onSelectIncident: (incidentId) => {
+      runReported('select-incident', () => options.onIntent?.({ kind: 'select-incident', incidentId }), reportError);
+    },
+  });
+
   const side = element('div', {
     className: 'hud__side',
     children: [
@@ -2416,6 +2476,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       staffPanel.element,
       regimePanel.element,
       rosterPanel.element,
+      securityPanel.element,
     ],
   });
 
@@ -2709,6 +2770,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Two panels and one tab, so the two are laid out together or neither is --
     // the pairing the Manage tab already makes with Intake and Staff.
     rosterPanel.setVisible(state.activeTab === 'day-plan');
+    // The sixth, on the section added 2026-09-17. With this line every member
+    // of `HUD_TAB_IDS` still answers a tap with a panel, which is the property
+    // `tests/browser/ui-shell.spec.ts` holds the whole array to.
+    securityPanel.setVisible(state.activeTab === 'security');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
@@ -3007,6 +3072,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // checked row and the block below it agreeing about the same prisoner rather
     // than one tick apart.
     rosterPanel.setPrisonerDetail(next.prisonerDetail, next.clock.dayLengthTicks);
+    /*
+     * And the Security section's four, on identical terms (2026-09-17). The
+     * projections decided every figure and every id; the panel decides the
+     * tone, the order of the lines and which of its empty sentences is true;
+     * these four lines decide nothing.
+     *
+     * The detail goes after the list for the reason the prisoner detail goes
+     * after the roster: a snapshot carrying both must leave the checked row and
+     * the block below it agreeing about the same incident rather than one tick
+     * apart.
+     */
+    securityPanel.setSecurity(next.security);
+    securityPanel.setIncidents(next.incidents);
+    securityPanel.setIncidentDetail(next.incidentDetail);
+    securityPanel.setContraband(next.contraband);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -3029,6 +3109,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
+    clearIncidentSelection: () => securityPanel.clearIncidentSelection(),
     getState: () => state,
     getLayout: () => layout.getSettings(),
     refreshLayout: () => {

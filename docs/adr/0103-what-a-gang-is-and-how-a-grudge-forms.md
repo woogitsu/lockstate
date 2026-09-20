@@ -886,8 +886,24 @@ deliberately carries no identity: *"No incident id, no sector id: the channel
 carries no identity"* (`src/simulation/protocol/types.ts:1998`). The place a
 player would look one up does not exist: `hud/incidents` and
 `hud/incident-detail` are both listed in `UNPAINTED_PROJECTION_IDS`
-(`tests/foundation/projection-reachability-contract.test.ts:363-366`), and
+(`const UNPAINTED_PROJECTION_IDS`,
+`tests/foundation/projection-reachability-contract.test.ts:383`; the anchor read
+`:363-366`), and
 `grep -rn "hud/incidents" src/ui/ src/main.ts` returns nothing on this tree.
+
+> **BOTH HALVES OF THAT SENTENCE STOPPED BEING TRUE ON 2026-09-19, AND IT IS
+> KEPT RATHER THAN REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). #1292's Security
+> section gave `hud/incidents` and `hud/incident-detail` a reader --
+> `src/ui/simulation-incidents.ts` reads the pair, `src/ui/hud/security-panel.ts`
+> paints it -- so **neither id is in `UNPAINTED_PROJECTION_IDS` any more**; the
+> list holds exactly one entry, `'world/render-snapshot'`, whose blocker was
+> never a panel. The grep now returns hits under `src/ui/`. **What this does
+> *not* settle is the finding this bullet is making**: the panel names the
+> incident's participants by count (`{count} taking part`, from
+> `participantIds.length`) and not by name, because turning an entity id into a
+> prisoner a player recognises is `docs/HUD_PROJECTIONS.md`'s gaps 10 and 11 and
+> is not built. So *"a player is told that a fight happened and is never told
+> who was in it"* holds, for a different reason than the one written above it.
 `participantEntityIds` is projected
 (`src/simulation/presentation/incident-projection.ts:112`, written at `:263`)
 and has no reader anywhere in `src/`. **So a player is told that a fight
