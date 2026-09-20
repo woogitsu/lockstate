@@ -242,14 +242,23 @@ export function navigationPlacement(viewport: LayoutViewport, reservedHeight: nu
  * the column runs `y = 92.69..420.81` and `.hud-zoom__in` sits at `415..459`,
  * so a press meant for the zoom control landed on a `.ui-tab`.
  *
- * `layout-shell.ts` publishes this as `--hud-navigation-block`, and `hud.css`
- * caps the corner with it inside the one media query where the corner does not
- * move -- so the corner yields its slack (its alerts list is already a scroll
- * container) instead of being covered. **A `calc()` in the stylesheet was the
- * other candidate and is wrong for this repository's own reason**: it would
- * have to write the section count into CSS, and a tally is the sentence shape
- * `docs/AGENT_WORKFLOW.md` §4 says rots first. Here it is `HUD_TAB_IDS.length`,
- * so the next section added moves the cap with it.
+ * **THE PARAGRAPH ABOVE DESCRIBED A REPAIR THAT WAS REVERTED, AND THE SENTENCE
+ * THAT SAID SO IS KEPT BELOW RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md`
+ * §4). It read: *"`layout-shell.ts` publishes this as
+ * `--hud-navigation-block`, and `hud.css` caps the corner with it inside the
+ * one media query where the corner does not move -- so the corner yields its
+ * slack (its alerts list is already a scroll container) instead of being
+ * covered."* The cap cost the alerts list 27px it did not have -- a 28px list
+ * box holding a 76px row, which `ui-alerts-column.spec.ts`'s #739 assertion
+ * reports in those words -- so it was reverted, and with it the custom
+ * property, its `@property` block and the publication that fed it. `hud.css`'s
+ * corner block carries that finding in full.
+ *
+ * **What actually pays for the sixth section is a rail tab's own block
+ * padding**, one step down from the bar's, which is why
+ * `NAVIGATION_TAB_HEIGHT_PX` above is 47 rather than 54. Nothing in CSS reads
+ * this function's result; the one caller is `navigationPlacement` directly
+ * above, which is the caller it was extracted from.
  */
 export function navigationRailBlock(viewport: LayoutViewport): number {
   const scale = Number.isFinite(viewport.uiScale) && viewport.uiScale > 0 ? viewport.uiScale : 1;

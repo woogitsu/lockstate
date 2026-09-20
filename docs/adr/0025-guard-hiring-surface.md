@@ -291,7 +291,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > **There is no `security` tab any more, and this paragraph is left as it stood
 > rather than re-aimed onto whatever now sits at that line** (`docs/AGENT_WORKFLOW.md`
 > §4). `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
-> (`src/ui/hud/hud-state.ts:150`; the anchor read `:77`, then `:118`), five members, and the Staff panel this
+> (`src/ui/hud/hud-state.ts:159`; the anchor read `:77`, then `:118`, then `:150`), five members, and the Staff panel this
 > decision placed is mounted on `manage`:
 > `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2611`;
 > the anchor read `:2506`, a bare `*/`. [ADR 0022](./0022-room-zoning-surface.md)'s
@@ -316,7 +316,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > (`docs/AGENT_WORKFLOW.md` §4, both directions). There is one again, and it
 > > is **not** the tab this decision placed the Staff panel on: `HUD_TAB_IDS` is
 > > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const`
-> > at `src/ui/hud/hud-state.ts:150` (the anchor read `:77`), **six** members,
+> > at `src/ui/hud/hud-state.ts:159` (the anchor read `:77`, then `:150`), **six** members,
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at

@@ -141,11 +141,20 @@
  * there and #1192's ruling does not reach it.** In `rail` placement the tab
  * column is one button taller -- `y = 92.69..420.81` at 1280x800, measured on
  * the assembled page -- and the bottom-left corner is bottom-anchored in the
- * same middle row, so `.hud-zoom__in` was covered by a `.ui-tab`. The corner
- * now yields instead: `hud.css` caps it with `--hud-navigation-block`, which
- * `layout-shell.ts` publishes from `navigationRailBlock` in `hud-layout.ts` --
- * `HUD_TAB_IDS.length * 54 + 24`, scaled, so **this array is what moves that
- * cap** and a seventh section would move it again without anybody editing CSS.
+ * same middle row, so `.hud-zoom__in` was covered by a `.ui-tab`.
+ *
+ * **This sentence said the corner yields, and it was wrong -- kept rather than
+ * deleted** (`docs/AGENT_WORKFLOW.md` §4): *"The corner now yields instead:
+ * `hud.css` caps it with `--hud-navigation-block`."* Capping the corner took
+ * the 27px out of the alerts list, which had none to give, so it was reverted
+ * along with the custom property it needed. **The column yields instead, and
+ * it yields padding rather than a section**: a rail tab draws one step less
+ * block padding than a bar tab, 47.19px where a bar tab is 55.19px, still
+ * above `--tap-target`'s 44px floor and still drawing both glyph and label.
+ * `hud.css`'s corner block carries the whole measurement and both reverted
+ * repairs; `NAVIGATION_TAB_HEIGHT_PX` in `hud-layout.ts` is that rule's
+ * measurement and moved 54 -> 47 with it. **This array is still what sets the
+ * column's height**, so a seventh section is measured by the same arithmetic.
  */
 export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];

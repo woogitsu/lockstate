@@ -228,7 +228,7 @@ section's bottom edge crosses the panel's fold:
 | 1280×720 | 38.2 | 30.2 |
 | 900×600 | 12.2 | 7.8 |
 
-`--tap-target` is 44px (`src/ui/tokens.css:709`; the anchor read `:150`). So **a single always-visible
+`--tap-target` is 44px (`src/ui/tokens.css:718`; the anchor read `:150`, then `:709`). So **a single always-visible
 control fits at three of the five viewports and at neither 1280×720 nor
 900×600** — and the desktop 1280×720 is the second-tightest of the five,
 tighter than the phone. That inversion is why the number had to be measured
@@ -768,7 +768,7 @@ asserted and the implementation had to correct.
    > **Still five members, and not the same five.** Kept rather than rewritten
    > (`docs/AGENT_WORKFLOW.md` §4). `HUD_TAB_IDS` is today
    > `['overview', 'build', 'zones', 'manage', 'day-plan']`
-   > (`src/ui/hud/hud-state.ts:150`; the anchor read `:77`, then `:118`, re-aimed on
+   > (`src/ui/hud/hud-state.ts:159`; the anchor read `:77`, then `:118`, then `:150`, re-aimed on
    > 2026-09-19, the list itself corrected in the note below) and the label this
    > item calls `Rooms` is
    > `'hud.tab.zones': 'Zones'` (`src/content/default-locale-en.ts:496`). The
@@ -786,7 +786,7 @@ asserted and the implementation had to correct.
    > > tally is the sentence form that rots first -- this is the second time
    > > this one has). `HUD_TAB_IDS` is
    > > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const`
-   > > at `src/ui/hud/hud-state.ts:150` -- **six** members, the direction's five
+   > > at `src/ui/hud/hud-state.ts:159` -- **six** members, the direction's five
    > > in the direction's order plus a `security` section, ruled by the owner on
    > > 2026-09-19 (provenance the weaker kind: the label of a clickable option,
    > > *"Tak, szósta sekcja wchodzi"*, not a sentence they typed) and built by
