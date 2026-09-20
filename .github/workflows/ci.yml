@@ -995,6 +995,30 @@ jobs:
       # decision reached for `timeout-minutes` instead, and why the earlier
       # ruling today reached for a narrower condition than it needed.
       #
+      # **THIRD, AND THE PARAGRAPH ABOVE IS WRONG TOO: IT WAS READ OUT OF THE
+      # ACTION'S DOCUMENTATION RATHER THAN OFF A RUN, AND A RUN REFUTES IT.**
+      # The first `browser` job to execute this step under `always()` --
+      # run 35514269512, head `70b9bbf0` -- concluded **success**, and an
+      # artifact was created anyway: `browser-failure-35514269512-1`,
+      # **27,416 bytes**. So `test-results/` is NOT empty on a green run and
+      # `if-no-files-found: ignore` never engages. The cost of `always()` here
+      # is one small artifact per green run held for `retention-days`, not
+      # nothing.
+      #
+      # **The ruling is unchanged and the reason it survives is worth stating,
+      # because it is no longer the reason it was given.** ~27 KB per green
+      # run against a 7-day retention is on the order of a megabyte, which is
+      # cheap rather than free -- and the evidence it buys is the thing three
+      # separate diagnoses have now gone without. What died is the claim that
+      # the narrower guards cost nothing to give up; what stands is that they
+      # do not fire on the shape that loses the evidence.
+      #
+      # **How this one got in is the same route as the premise below.** It was
+      # taken from `actions/upload-artifact`'s documented behaviour and written
+      # into three files as measured fact, in the same pass that corrected an
+      # earlier unmeasured claim. The check that caught it cost one API call
+      # against a run that had already happened.
+      #
       # **Where the false premise came from, named because that is the part
       # a reader can use.** Not from this file and not from `AGENTS.md`: the
       # integrating session framed `failure() || cancelled()` to the owner as
