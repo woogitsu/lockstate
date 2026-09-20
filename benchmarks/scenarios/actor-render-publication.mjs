@@ -247,6 +247,15 @@ async function runPublication(seed, population) {
       decodedRecordCount: payload.recordCount,
       decodedRemovedCount: payload.removed.length,
       decodedLayoutVersion: payload.layoutVersion,
+      /*
+       * How many room-condition rows the payload carries (ADR 0097's layout-4
+       * block). **Zero in this scenario**, and measured rather than assumed:
+       * this fixture is a population of walkers with no `RoomInstanceRegistry`
+       * behind it, so the encoder is called with no room rows at all. It is
+       * pinned below so that the four bytes layout 4 costs here are provably
+       * the header's room-count word and not a row that arrived unnoticed.
+       */
+      decodedRoomCount: payload.roomConditions.length,
       decodedKeyframeFlag: payload.keyframe ? 1 : 0,
       renderActorCount: actors.length,
       // ADR 0059's claim about ADR 0040's unbuilt changed-only encoding.
@@ -325,9 +334,23 @@ const SMOKE_BOUNDS = Object.freeze({
    *
    * `payloadBytesPerActor` moves with it because it is this number divided by
    * the population: 10,020 / 500 = 20.04 exactly.
+   *
+   * MOVED BY ANOTHER FOUR BYTES ON 2026-09-19, FOR THE SAME KIND OF REASON,
+   * AND RE-MEASURED RATHER THAN RAISED. ADR 0097's accepted option A adds a
+   * **sixth** header word to `lockstate.render-actors` -- `roomCount` -- and,
+   * after the removal list, three words for each room the worker has a verdict
+   * for (`RENDER_ACTORS_ROOM_WORDS`, 12 bytes a room). **This scenario's
+   * fixture registers no rooms**, which `decodedRoomCount` below pins at 0, so
+   * the row block is empty and the whole of the difference here is the one
+   * header word: `RENDER_ACTORS_HEADER_WORDS` 5 to 6, 10,020 to **10,024** --
+   * 500 records at 20 bytes plus a 24-byte header. Measured by running
+   * `pnpm benchmark:smoke`, which reported `10024` against the old bound
+   * before this line moved.
+   *
+   * 10,024 / 500 = 20.048 exactly.
    */
-  payloadByteLength: { equals: 10_020 },
-  payloadBytesPerActor: { max: 20.04 },
+  payloadByteLength: { equals: 10_024 },
+  payloadBytesPerActor: { max: 20.048 },
   decodedRecordCount: { equals: 500 },
   decodedRemovedCount: { equals: 0 },
   /*
@@ -337,9 +360,20 @@ const SMOKE_BOUNDS = Object.freeze({
    * assumed). A reader who sees only the byte count move might think the
    * header grew without the version saying so, which is the failure this
    * pair of bounds exists to make impossible.
+   *
+   * 3 -> 4 on 2026-09-19 with ADR 0097's room-count word, read off
+   * `RENDER_ACTORS_LAYOUT_VERSION` rather than assumed, for the same reason.
    */
-  decodedLayoutVersion: { equals: 3 },
+  decodedLayoutVersion: { equals: 4 },
   decodedKeyframeFlag: { equals: 1 },
+  /*
+   * The fixture's room count, and the reason `payloadByteLength` moved by
+   * exactly four bytes rather than by four plus a multiple of twelve. A
+   * scenario that started publishing rooms would move the byte figure and this
+   * one together, which is what tells a "the header grew" from a "rooms
+   * arrived" without anybody having to reason about the arithmetic.
+   */
+  decodedRoomCount: { equals: 0 },
   renderActorCount: { equals: 500 },
 });
 
@@ -361,12 +395,17 @@ const FULL_BOUNDS = Object.freeze({
   getIdByIndexCalls: { equals: 5_000 },
   locomotionReadCalls: { equals: 5_000 },
   locomotionReadCallsPerLiveActor: { equals: 1 },
-  /* Same four bytes as the smoke profile above; 100,020 / 5,000 = 20.004. */
-  payloadByteLength: { equals: 100_020 },
-  payloadBytesPerActor: { max: 20.004 },
+  /*
+   * Same two four-byte header words as the smoke profile above, and the same
+   * empty room block: 5,000 records at 20 bytes plus a 24-byte header is
+   * 100,024, and 100,024 / 5,000 = 20.0048.
+   */
+  payloadByteLength: { equals: 100_024 },
+  payloadBytesPerActor: { max: 20.0048 },
   decodedRecordCount: { equals: 5_000 },
   decodedRemovedCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 3 },
+  decodedLayoutVersion: { equals: 4 },
+  decodedRoomCount: { equals: 0 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
 });

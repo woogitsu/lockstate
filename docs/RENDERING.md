@@ -312,14 +312,20 @@ reason the paragraph below gives, and the two decode rows would move by a fifth
 of a walk of the same records. A re-measurement is worth taking before either is
 cited as a current figure.
 
-**The layout 4 row is arithmetic on the same terms as the layout 3 row below
-it**: one more header word, plus three words for each room the worker could
-answer about. How many rooms a real prison has is the figure ADR 0111 §7 says
-nobody has — the largest committed fixture paints zoning straight onto the
-world plane and registers **zero** room instances — so the row is given per
-room rather than dressed as a total. A measured pair for a two-room prison is
-in `tests/integration/a-sealed-cell-reaches-the-drawn-frame.test.ts`: **24
-bytes with no rooms, 48 with two.**
+**The layout 4 row's two totals are MEASURED and the per-room term is
+arithmetic, and the split is worth keeping straight.** The totals come from
+`benchmarks/scenarios/actor-render-publication.mjs`, whose fixture registers no
+rooms: `pnpm benchmark:smoke` reports `payloadByteLength` **10,024** at 500
+actors and the full profile reports **100,024** at 5,000, both with
+`decodedRoomCount` 0 — so the four bytes over layout 3 are exactly the
+`roomCount` header word, pinned as `equals` beside a pinned room count of zero
+rather than left to be inferred. The **12 bytes a room** on top of that is
+arithmetic from `RENDER_ACTORS_ROOM_WORDS`, because how many rooms a real
+prison has is the figure ADR 0111 §7 says nobody has — the largest committed
+fixture paints zoning straight onto the world plane and registers **zero** room
+instances. A measured pair for a two-room prison is in
+`tests/integration/a-sealed-cell-reaches-the-drawn-frame.test.ts`: **24 bytes
+with no rooms, 48 with two.**
 
 **The layout 3 row is arithmetic and not a measurement, and it says so rather
 than borrowing the credibility of the rows above it.** ADR 0099 adds one header
