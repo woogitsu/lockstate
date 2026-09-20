@@ -6161,9 +6161,20 @@
    * **So the column is what gives, and it gives its own padding rather than a
    * tab.** `.ui-tab`'s block padding drops from `--space-2` to `--space-1`
    * *in this placement only*, which takes a rail tab from 55.19px to 47.19px
-   * and the six-tab column from 328.13px to 280.13px -- clear of the corner's
-   * 402 by 22px at 1280x800, with nothing scrolled, nothing clipped and
-   * nothing hidden. 47.19 is still above `--tap-target`'s 44px floor
+   * and the six-tab column from 328.13px to 280.13px -- clear of the corner
+   * at 1280x800, with nothing scrolled, nothing clipped and
+   * nothing hidden.
+   *
+   * **THE CLEARANCE THIS SENTENCE CARRIED WAS WRONG AND THE FIGURE IS KEPT**
+   * (`docs/AGENT_WORKFLOW.md` §4): it read *"clear of the corner's 402 by
+   * 22px"*, and the commit that shipped the rule said 29px. Re-probed on the
+   * assembled page, the column runs `top = 92.69, bottom = 372.81` (six tabs,
+   * one tab 47.19) and the corner `top = 404, bottom = 800, height = 396`,
+   * with `.hud-zoom__in` at `417..461`. **The clearance is 31.19px**, and the
+   * corner's own numbers were a couple of pixels out too -- 396 at 404 rather
+   * than 398 at 402. Three figures for one gap is what a measurement carried
+   * between sessions rather than re-taken looks like.
+   * 47.19 is still above `--tap-target`'s 44px floor
    * (constitution article 16), and the label is still drawn: the tab is a
    * column of a 20px glyph over a 13.19px label, 37.19px of content in a
    * 47.19px button. The bar placement's padding is untouched.
