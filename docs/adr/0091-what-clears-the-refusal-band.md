@@ -53,9 +53,9 @@ the specification rather than the defect. Declining it is a product position
 about what the corner IS, and it is the position anyone proposing D again has
 to overturn.
 
-**Nothing under `src/` implements decision 2 yet**, and the ruling does not
+~~**Nothing under `src/` implements decision 2 yet**, and the ruling does not
 by itself change that: it settles which rule is right, not that the rule is
-built. Decision 1 is already implemented — it is a correction of an existing,
+built.~~ Decision 1 is already implemented — it is a correction of an existing,
 accepted mechanism's own stated test, not a new architectural choice; see
 below.
 
@@ -63,6 +63,31 @@ below.
 on decision 2, and nothing should until the owner has read it." It was true
 for fourteen days and is quoted rather than deleted, because the condition it
 names is the one that just ended.*
+
+**AND THE SENTENCE THAT REPLACED IT WENT STALE IN ITS TURN, WHICH IS WHY IT IS
+STRUCK THROUGH RATHER THAN DELETED.** `563ed7fc` (#1261) implemented decision 2
+under `src/` — `RefusalLog.supersede` marks the standing record, the mark
+crosses the wire on `simulation/status-counts`, and `mountHud`'s
+`applySimulationRefusal` retires the corner on it. So *"nothing under `src/`
+implements decision 2 yet"* was true when it was written and was falsified by
+the very next change to this subject. The clause after it is untouched and
+still correct: a ruling settles which rule is right, not that the rule is
+built. Corrected 2026-09-20.
+
+**A FURTHER RULING LANDED ON 2026-09-20 AND IT IS RECORDED IN THIS DOCUMENT AS
+AN AMENDMENT RATHER THAN A SECOND DECISION**, because it answers the half of
+decision 2's own question that option F left open: what retires the band when
+*nothing* happens. Asked that, the owner chose from four clickable options the
+one labelled *"Tak, ale liczony w tikach"* ("Yes, but counted in ticks"). The
+provenance is the same weaker kind as option F's, and for the same reason: the
+label of an option a session wrote, not a sentence the owner typed. The
+amendment is below, under its own heading.
+
+**Neither ruling is self-approved and this document says so in the terms
+`docs/AGENT_WORKFLOW.md` §3 requires.** The sessions that implemented option F
+and this amendment did not decide them; they recorded a decision the owner
+took, with its date, its wording and the weakness of its provenance, and left
+the Status block saying who decided what and when.
 
 ## Context
 
@@ -628,3 +653,155 @@ measurement, which is why it is the owner's.
 - `#777` is a separate, unrelated bug (a HUD-side caching error, not a
   supersession-key question) and is fixed independently on this branch; see
   the commit that touches `src/ui/hud/hud.ts`'s `applySimulationRefusal`.
+
+## Amendment, 2026-09-20 — the band also retires when nothing happens, counted in ticks
+
+**Ruled by the repository owner on 2026-09-20. This is their decision and not
+a recommendation of this repository's**, which is why it is recorded here with
+its date, its wording and the weakness of its provenance stated, per
+`docs/AGENT_WORKFLOW.md` §3's rule that an implementing agent does not approve
+its own work.
+
+### The question option F could not answer
+
+Option F retires the band on a **decided outcome of the same command route**.
+That is a rule about something happening. Its mirror image had no rule at all:
+a refusal that nothing ever answers — the player reads it, does nothing else,
+and looks away — held the corner for the rest of the session. Nothing in the
+original decision 2 dossier priced that case, and ADR 0084's amendment §6 had
+closed the obvious door to it by saying in terms that
+`EVENT_BAND_HOLD_CEILING_MS` does **not** reach this band.
+
+**The bill is the same one #985 sent for the events band.** `.hud__refusal` is
+a row of `.hud`'s grid, so a raised band costs the `minmax(0, 1fr)` middle row
+— and `.hud__rail` in it — its own height. Re-measured for this amendment on
+the assembled application at 900×600, through the production translator and the
+production DOM: `.hud__rail` is **484.31px** while the band is up and
+**519.31px** once it is lowered. **35px**, given back in the same layout pass.
+
+### What the owner chose, and in which words
+
+Put four clickable options, they chose the one labelled:
+
+> Tak, ale liczony w tikach
+
+("Yes, but counted in ticks.")
+
+**The provenance is the weaker of the two kinds this repository
+distinguishes**, exactly as option F's own is and as `CLAUDE.md` flags for the
+2026-09-08, -09 and -10 releases inside reservation 3: the owner did not type a
+sentence, they chose the label of an option the session that then implemented
+it had written. The distinction matters here in one way and it is named rather
+than left to be inferred — **the option's own label is the whole of what was
+agreed**. What was agreed is that the band has a lifetime and that the lifetime
+is counted in **simulation ticks**. Nothing about the number, the field names,
+the publication gate or the tests below was agreed; those are this repository's
+and are argued for on their own terms.
+
+### Why the unit is the whole of the ruling
+
+A wall-clock ceiling is what `.hud__event` has. On this band it would take the
+sentence down while the game is **paused** — the one state in which a player is
+most likely reading it and least likely to have caused anything that would
+replace it — and it would take it down four times sooner at x4 than at x1 for
+no reason a player could name. Counted in ticks, a paused prison never ages the
+sentence at all and a slow one ages it slowly.
+
+That property is the reason this is a second lifetime vocabulary in a region
+that already had three, rather than the existing one extended. **That cost was
+put to the owner before they chose**: more to explain and more to test. It is
+authorised, which makes the explaining part of the deliverable rather than
+optional — this section, ADR 0084 §6's marked block, and the docblocks in
+`src/simulation/refusals/refusal-band-lifetime.ts` are that explaining.
+
+### The number, which is not part of the ruling
+
+`REFUSAL_BAND_TICK_CEILING` is **300 ticks**. Balance and number-tuning are not
+reserved, so this is measured and set here rather than asked about, and it is
+derived from both ends rather than picked:
+
+- **Long enough to read the longest thing the band can say.** The band's
+  sentences are the 48 `hud.alert.refusal.*` strings; the longest is
+  `hud.alert.refusal.zone.not-enclosed` at 23 words. At 100 words per minute —
+  the half-rate ADR 0084's own ceiling argues is right for a player whose eyes
+  are on the prison rather than on the band — that is 13.8 s, plus the 250 ms
+  this repository already calls *seen* is **14.05 s**. A tick is 50 ms, so
+  281 ticks, and 300 is the round number above it.
+- **Short enough that the row comes back inside the game's own time.** A day is
+  2,400 ticks, so this is one eighth of one. And it sits above the events
+  band's own ceiling — 8,000 ms is 160 ticks at x1 — for a sentence nearly
+  twice as long, which is the ordering a reader would expect rather than an
+  accident of rounding.
+
+**What it costs, stated rather than left to be found.** At x4 a tick is
+12.5 ms, so 300 ticks is **3.75 s** of wall clock, well under the 14.05 s the
+derivation above calls a read of the longest sentence. A player fast-forwarding
+may therefore lose a long refusal before finishing it. That is a direct
+consequence of the unit the owner chose, the mirror image of the property that
+makes a paused prison safe, and the alerts list keeps the row either way.
+
+### How it is built, and the one thing that could not be done on the main thread
+
+The wire gains **no member**. `routeDecidedSince` had to cross the boundary
+because only `RefusalLog` can know it; this fact is a subtraction of two
+integers `simulation/status-counts` already carries — the tick the readout is
+about and the tick the refusal happened on — so `hudRefusalFromWorkerMessage`
+computes it and `refusalSchema` is untouched. The notice gains
+`outlivedBandTicks`, a view-model field; `applySimulationRefusal` treats it
+exactly as it treats `routeDecidedSince`, as a third door into one retirement
+branch.
+
+**What the main thread cannot do is make a publication happen**, and this is
+the half that would be missed by anyone reading the paragraph above as "a HUD
+change". A refusal in a prison where nothing further happens moves no count and
+no ordinal, so the publisher's interval gate and its `statusCountsEqual` gate
+between them suppress every message there is: the main thread is never told the
+clock has moved, and a rule that only ran on publications would keep the
+sentence for ever in **precisely the case this amendment is about**. The
+publisher therefore carries a third watermark beside the two option F needed,
+and opens the gate exactly once per refusal when the ceiling is crossed.
+
+**Nothing about `RefusalLog` moves.** The record is untouched, `last` still
+carries it, `count` still counts it, and the alerts list still shows the row —
+the same divergence option F bought, for the same reason: the band is the
+notice, the list is the record. This is a band lifetime, not a log rule, and
+#492's narrow reading of a supersession is not revisited.
+
+**No ordinal-suppression state is needed on this side**, and the difference
+from the events band is worth knowing before anyone copies one across.
+`EventBandDwellState.retired` exists because `HudViewModel.event` is sticky and
+*the main thread's own timer* takes the sentence down, so the next publication
+of the identical notice would raise it again at up to twice a second. Here the
+retirement is a property of the **notice**: `outlivedBandTicks` is monotone in
+the simulation's own clock, so every later publication of the same refusal
+carries it too and lands in the same branch. There is no timer on this side and
+no state to flicker against.
+
+### What this amendment does not decide
+
+- **A wall-clock ceiling on this band.** Declined by the ruling itself.
+- **Anything about `EVENT_BAND_HOLD_CEILING_MS`**, which is untouched and
+  stays a wall-clock number for a band whose sentence is not about a press the
+  player just made.
+- **Gap 34, a dismiss button.** ADR 0084 declined it explicitly; it stays the
+  owner's and is not reopened here.
+- **`.hud__unavailable`, and the host-refusal half of `.hud__refusal`.**
+  Neither has a tick to be counted from: one is a fact about the page, the
+  other never entered the simulation and is cleared when its own action later
+  succeeds.
+- **Whether 300 is right.** It is a measurement, not a ruling, and the next
+  measurement supersedes it without anyone being asked.
+
+### Weakest claim, named
+
+**That 100 words per minute is the right reading rate to derive this from.** It
+is borrowed from `EVENT_BAND_HOLD_CEILING_MS`, where it was chosen for a
+*twelve*-word sentence a player may glance at; this band's longest is 23 words
+and belongs to a press the player just made, so they have more reason to read
+it and are more likely to be looking at the corner already. If the true rate is
+higher, 300 is generous; if a player's attention is genuinely elsewhere, no
+rate makes 300 enough. The derivation is therefore an argument by analogy with
+the only comparable number this codebase has — the same kind of claim option F's
+own recommendation named as its weakest, one band over — and not a measurement
+of anybody reading anything. What is measured is the 35px, the 23 words, the
+2,400-tick day and the 50 ms tick.

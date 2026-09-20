@@ -1013,7 +1013,65 @@ section is wrong.
   floor: the owner was asked about `.hud__event`. Both other bands keep their
   own lifetimes — a host refusal until the same action succeeds, a simulation
   refusal until another replaces it or the session ends — and nothing in this
-  ruling reaches them. Note for anyone tempted to carry it across: **an ordinary
+  ruling reaches them.
+
+  > **THE SECOND HALF OF THAT SENTENCE STOPPED BEING TRUE ON 2026-09-20, AND
+  > THE FIRST HALF DID NOT.** It is kept rather than rewritten, per
+  > `docs/AGENT_WORKFLOW.md` §4's rule that both directions are marked: the
+  > paragraph above is the state this document described for fifteen days, and
+  > a reader has to be able to see what it said before deciding whether the
+  > amendment below is coherent with it.
+  >
+  > **What still holds.** *This* ceiling — `EVENT_BAND_HOLD_CEILING_MS`, 8,000
+  > milliseconds of wall clock — still does not reach `.hud__refusal`, and is
+  > untouched. So is `.hud__unavailable`, which has no tick to be counted from
+  > at all: *"this browser cannot start a worker"* is a fact about the page,
+  > not about anything the simulation decided. So is the host-refusal half of
+  > `.hud__refusal`, cleared when that action later succeeds and likewise
+  > never entered the simulation.
+  >
+  > **What moved.** *"A simulation refusal until another replaces it or the
+  > session ends"* is no longer the whole of that band's lifetime. It now has
+  > two further ways to end, both of them about the refusal ceasing to be the
+  > thing the player is looking at rather than ceasing to be true: a decided
+  > outcome of the same command route (ADR 0091 decision 2, option F, ruled
+  > 2026-09-16), and — ruled by the owner on 2026-09-20 — **a count of
+  > simulation ticks elapsed since the refusal, with nothing further having
+  > happened.**
+  >
+  > **The unit is the whole of the second ruling and is why it is not simply
+  > this ceiling extended.** The owner was asked whether the band should retire
+  > when nothing further happens and chose, from four clickable options, the
+  > one labelled *"Tak, ale liczony w tikach"* ("Yes, but counted in ticks").
+  > A wall-clock ceiling would take the sentence down while the game is
+  > **paused**, which is the one state in which a player is most likely reading
+  > it and least likely to have caused anything that would replace it. Counted
+  > in ticks, a paused prison never ages the sentence and a slow one ages it
+  > slowly.
+  >
+  > **The provenance is the weaker of the two kinds this repository
+  > distinguishes, and it is stated rather than left to be inferred.** The
+  > owner did not type a sentence; they chose the label of an option the
+  > session that then implemented it had written — the same provenance ADR 0091
+  > records for option F and `CLAUDE.md` records for the 2026-09-08, -09 and
+  > -10 releases inside reservation 3. What was agreed is the **rule and the
+  > unit**. The number is not part of it: `REFUSAL_BAND_TICK_CEILING` is 300
+  > ticks and is this repository's measurement, recorded in
+  > `src/simulation/refusals/refusal-band-lifetime.ts` and changeable there
+  > when the measurement moves.
+  >
+  > **What the ruling explicitly did not authorise**, because it was put to the
+  > owner in those terms: a wall-clock ceiling on this band; any change to
+  > `EVENT_BAND_HOLD_CEILING_MS`; and gap 34, the dismiss button this document
+  > declined below, which stays the owner's and is not reopened here.
+  >
+  > **The cost was disclosed before the choice and is therefore authorised
+  > rather than discovered.** This region now has a *second* lifetime
+  > vocabulary — milliseconds for the events band, ticks for the refusal band —
+  > in a place that already had three lifetimes. That is more to explain and
+  > more to test, and the explaining is the deliverable rather than an optional
+  > extra: it is why this block is long. `docs/adr/0091-what-clears-the-refusal-band.md`
+  > carries the amendment in full. Note for anyone tempted to carry it across: **an ordinary
   refusal does not raise the events band at all.** *"A wall on an occupied
   tile"* raises `.hud__refusal` through `applySimulationRefusal`; only
   `economy.construction-refused` and `economy.deliveries-refused` are events.
