@@ -246,6 +246,7 @@ async function runPublication(seed, population) {
       // Main thread, per publication (ADR 0059 rows 3 and 4).
       decodedRecordCount: payload.recordCount,
       decodedRemovedCount: payload.removed.length,
+      decodedRoomConditionCount: payload.roomConditions.length,
       decodedLayoutVersion: payload.layoutVersion,
       decodedKeyframeFlag: payload.keyframe ? 1 : 0,
       renderActorCount: actors.length,
@@ -371,6 +372,28 @@ const SMOKE_BOUNDS = Object.freeze({
   decodedRecordCount: { equals: 500 },
   decodedRemovedCount: { equals: 0 },
   /*
+   * ZERO, PRINTED RATHER THAN DEDUCED -- and that is the whole reason this
+   * metric exists.
+   *
+   * The `payloadByteLength` pin above says its four new bytes are the
+   * `roomCount` header word and no room row. Before this metric, that reading
+   * rested on arithmetic closing exactly: a header of twenty-four plus 500
+   * records at twenty leaves no room for a twelve-byte row, so `roomCount`
+   * had to be zero for the total to land on 10,024. That is a sound deduction
+   * and it is only sound while the record width is fixed. A later layout that
+   * made a record variable-width would leave the total unable to say *where*
+   * its bytes went, and the byte pin would go on passing while meaning
+   * something else.
+   *
+   * So the decoded row count is published and pinned at zero directly: this
+   * scenario builds nothing, has no zoned room instances, and must therefore
+   * carry no room-condition rows. A fixture that silently acquired one would
+   * move `payloadByteLength` by twelve and fail both bounds, and a future
+   * change that kept the total still by shrinking something else would now
+   * fail this one alone.
+   */
+  decodedRoomConditionCount: { equals: 0 },
+  /*
    * 2 -> 3 with the same change: ADR 0099's fifth header word is a layout
    * change, so `RENDER_ACTORS_LAYOUT_VERSION` is now 3
    * (`src/simulation/protocol/render-actors-payload.ts`, read rather than
@@ -418,6 +441,8 @@ const FULL_BOUNDS = Object.freeze({
   payloadBytesPerActor: { max: 20.0048 },
   decodedRecordCount: { equals: 5_000 },
   decodedRemovedCount: { equals: 0 },
+  /* Zero for the smoke profile's reason: this fixture zones no rooms either. */
+  decodedRoomConditionCount: { equals: 0 },
   decodedLayoutVersion: { equals: 4 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
