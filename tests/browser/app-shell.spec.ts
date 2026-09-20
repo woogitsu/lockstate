@@ -6821,11 +6821,31 @@ test.describe('the assembled application', () => {
          * scan steps in 16px, so the number is pinned exactly rather than
          * bounded -- a second gain would show up here rather than being
          * absorbed by a looser ceiling.
+         *
+         * **AND IT READ `64` UNTIL THE NAVIGATION'S SIXTH SECTION, WHICH IS
+         * THE LOSS THE SENTENCE ABOVE ASKED TO BE SHOWN RATHER THAN A GAIN.**
+         * The bar at this viewport is icon-only under the owner's #1192 ruling
+         * and gains no height from a sixth tab, but it gains **width**:
+         * measured on the assembled page at 375x812, `.hud__tabs` runs
+         * `x = 35..341` with five tabs and `x = 7..369` with six, so the bare
+         * sliver of world beside it goes from about 27px a side to about 6.
+         * `roomWorldGeometry`'s scan samples three points of a candidate
+         * square -- its two corners and its midpoint -- so that sliver is what
+         * the 64 was standing on: the bare runs beside the bar measured 40px
+         * at `y = 760, 776, 792` before and 16px after. The panel's own
+         * arrival height is **unchanged** at 447.7px and is asserted separately
+         * a few lines up, which is how this is known to be the bar's width and
+         * not the sheet's height.
+         *
+         * **The clause this assertion exists for is more true than it was, not
+         * less**: what keeps the fold necessary is that no 128px square of
+         * bare world is reachable, and 32 is further from 128 than 64 was. The
+         * next assertion is that clause, unchanged.
          */
         expect(
           arrival.largestBareSquare,
           `bare world appeared on arrival at ${width}x${height}, so the fold below may no longer be needed`,
-        ).toBe(64);
+        ).toBe(32);
         expect(
           arrival.largestBareSquare,
           `a 2x2 room fits in the bare world on arrival at ${width}x${height}, so the fold below is not needed`,
