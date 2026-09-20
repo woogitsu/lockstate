@@ -200,6 +200,8 @@ let currentFrame: RenderFrame = {
   world: buildWorld(true),
   structures: STRUCTURES,
   actors: [],
+  rooms: [],
+  roomConditions: [],
 };
 
 const feed: RenderFeed = { readFrame: () => currentFrame };
@@ -331,6 +333,8 @@ const harness: LockstateRoomLabelHarness = {
       world: buildWorld(false),
       structures: STRUCTURES,
       actors: [],
+      rooms: [],
+      roomConditions: [],
     };
     await nextFrame();
     await nextFrame();

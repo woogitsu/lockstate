@@ -31,6 +31,7 @@ import { refusalBandCeilingPassed } from '../refusals/refusal-band-lifetime';
 import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } from '../runtime/restore-refusal';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
+import { collectRoomConditions, type RoomConditionRow } from './room-conditions';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -379,6 +380,19 @@ export class SimulationWorkerStateMachine {
    * cover.
    */
   private _publishedDeltaTick = 0;
+  /**
+   * ADR 0097's condition rows and the drawn-world marker they were read at.
+   *
+   * Every input `collectRoomConditions` reads is structural -- the world's
+   * edge layers, the door registry, the region partition built from both --
+   * and none of them can change without `markDrawnWorldChanged` moving the
+   * marker (ADR 0099 decision 3). So the rows are recomputed on a marker that
+   * moved and republished unchanged in between, which is what keeps ADR 0108's
+   * exterior walk off a 10 Hz channel. `-1` is "never computed": the marker is
+   * a `u32` and `0` is a value it really takes on a fresh session.
+   */
+  private _roomConditions: readonly RoomConditionRow[] = [];
+  private _roomConditionsRevision = -1;
   private _deltaPublishedAtMs = Number.NEGATIVE_INFINITY;
 
   public constructor(
@@ -838,11 +852,13 @@ export class SimulationWorkerStateMachine {
     // published unexamined. `publishRenderDelta` is still strictly a read: the
     // counter is incremented at the write sites that change what the renderer
     // draws, never here.
+    const worldRevision = this._runtime.world.drawnWorldRevision;
     const data = encodeRenderActorsKeyframe(
       this._runtime.prisoners,
       ticksPerWallSecond,
-      this._runtime.world.drawnWorldRevision,
+      worldRevision,
       this._runtime.securityGuards,
+      this.roomConditions(worldRevision),
     );
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -874,6 +890,41 @@ export class SimulationWorkerStateMachine {
     // freshly built here and read by nothing else, so detaching it costs this
     // side nothing.
     this.post(message, collectProtocolTransferables(message));
+  }
+
+  /**
+   * ADR 0097's per-room condition ordinals for this publication.
+   *
+   * Cached against the drawn world's marker for the reason
+   * `_roomConditions` states: the answer is a function of structure, and
+   * structure cannot move without the marker moving. A session the marker has
+   * not moved for republishes the rows it published last time, which is not a
+   * staleness the player can see -- a room whose access changed is a room
+   * whose walls, doors or zoning changed, and every one of those writes moves
+   * the marker.
+   */
+  /**
+   * Drops the cache when the runtime underneath it is replaced.
+   *
+   * Without this the marker would be the cache key across two different
+   * prisons: a restored session starts its own `drawnWorldRevision`, and a
+   * value equal to the one the previous runtime was cached at would republish
+   * the *previous prison's* rooms. The rows would then name anchors the new
+   * prison has never zoned -- harmless at the renderer, which drops a row
+   * matching no published rectangle, and wrong here, which is where it
+   * matters.
+   */
+  private forgetRoomConditions(): void {
+    this._roomConditions = [];
+    this._roomConditionsRevision = -1;
+  }
+
+  private roomConditions(worldRevision: number): readonly RoomConditionRow[] {
+    if (this._runtime === null) return [];
+    if (this._roomConditionsRevision === worldRevision) return this._roomConditions;
+    this._roomConditions = collectRoomConditions(this._runtime);
+    this._roomConditionsRevision = worldRevision;
+    return this._roomConditions;
   }
 
   /**
@@ -1060,6 +1111,7 @@ export class SimulationWorkerStateMachine {
 
     if (msg.payload.source.kind === 'new') {
       this._runtime = createNewSimulationRuntime(msg.payload.source.masterSeed);
+      this.forgetRoomConditions();
       this._kernel = this._runtime.kernel;
     } else {
       // Restore from a persisted snapshot (ADR 0003: "Initialization
@@ -1140,6 +1192,7 @@ export class SimulationWorkerStateMachine {
       // reading a message string.
       try {
         this._runtime = restoreSimulationRuntime(sessionSnapshotBundleFromTransport(snapshot.data)).runtime;
+        this.forgetRoomConditions();
       } catch (error) {
         const reason = restoreFailureReasonOf(error);
         const detail = error instanceof Error ? error.message : String(error);

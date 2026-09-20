@@ -14493,7 +14493,7 @@ ruling's third clause constrains nothing today, because `openIncident` is
 said there to record every assault unconditionally. **That last clause is
 quoted from that document and is not re-verified here** — `openIncident` is a
 private method of `IncidentTriggerSystem` with **four** call sites in its own
-file (`src/simulation/incidents/trigger-system.ts:490` declares it; `:367`,
+file (`src/simulation/incidents/trigger-system.ts:542` declares it; `:367`,
 `:436`, `:507` and `:532` call it), and reading
 whether every assault path reaches it is that document's work rather than
 this file's. **A ruling on one decision inside a `Proposed`
@@ -18167,7 +18167,7 @@ re-run.
   #1264. Three of this file's four citations of `:1205` are dated records like
   this one; the fourth, in the delta-read bullet above, was written in the
   present tense and is corrected there. **Four of them land on plausible neighbouring prose**
-  — `default-gangs.ts:186` is a docblock sentence, `zoning.ts:448` is a
+  — `default-gangs.ts:243` is a docblock sentence, `zoning.ts:448` is a
   different field's declaration, `view-model.ts:1954` is a field of a different
   interface, and `0015-actor-identity-allocation.md:159` is a blank line — which
   is the failure this file names as the costly one, arriving four times in one
@@ -18396,7 +18396,7 @@ reading is kept beside the new one rather than overwritten.
 - **`README.md:59`** still carries ADR 0014's corrected sentence — *"is
   `Accepted` — it describes the pipeline the repository implements"* — unmoved,
   on a file this window changed by one line.
-- **`src/simulation/incidents/default-gangs.ts:81` (`gangs.register({ id: gangId`) and `:186`**,
+- **`src/simulation/incidents/default-gangs.ts:82` (`gangs.register({ id: gangId`) and `:186`**,
   **`src/rendering/world/environment-art.ts:24`**,
   **`docs/adr/0015-actor-identity-allocation.md:160-163`** and
   **`src/ui/hud/messages.ts:28`** are byte-identical at both ends of the window,
@@ -22308,7 +22308,7 @@ one direction.
   `3399b1f9` — the ADR gained a 46-line `IMPLEMENTED 2026-09-09` block above
   it in this window; found by
   `grep -n 'gains one guard'`, not by offsetting the hunk).
-  `src/simulation/incidents/trigger-system.ts:525-532` has exactly one guard,
+  `src/simulation/incidents/trigger-system.ts:577-584` has exactly one guard,
   `:529`'s `if (risk < this.retaliationThreshold) continue;`, and then `:531`
   builds `participants` from both `membersOf` calls straight into
   `openIncident` with no emptiness check between them. That file's own comment
@@ -22325,7 +22325,7 @@ one direction.
   decision and code for a row to name"* — **does not apply**, because on ADR
   0103 they are not readable together on any tree, including `main`'s tip
   (`3b6f1b86`), where the producer grep still returns nothing and
-  `trigger-system.ts:525-532` is unchanged. That is an argument that 0103
+  `trigger-system.ts:577-584` is unchanged. That is an argument that 0103
   differs from both 0098 and 0101 in exactly the way §2 exists to catch, and it
   is put to the owner rather than answered.
 
@@ -22336,7 +22336,7 @@ one direction.
   > than inherited:
   >
   > - **"No producer of any kind"** — false now. `gangs.register(...)` at
-  >   `src/simulation/incidents/default-gangs.ts:81` (`gangs.register({ id: gangId`),
+  >   `src/simulation/incidents/default-gangs.ts:82` (`gangs.register({ id: gangId`),
   >   `gangs.addGrudge(...)` at `:186`, and `gangs.addMember(gangId, entityId)`
   >   at `src/simulation/runtime/new-session.ts:651`. Found by grepping every
   >   `.ts` under `src/` at both anchors for `.addMember(`, `.addGrudge(` and
@@ -22350,7 +22350,7 @@ one direction.
   > - **Decision 4's missing guard** — present. The ADR asked that
   >   *"`tryOpenRetaliation` gains one guard: skip the pair unless both"*
   >   members lists are non-empty, and
-  >   `src/simulation/incidents/trigger-system.ts:563` is
+  >   `src/simulation/incidents/trigger-system.ts:615` is
   >   `if (offendedMembers.length === 0 || offendingMembers.length === 0) continue;`,
   >   **both sides**, which is what the ADR asked for rather than one of them.
   >   The cited span widens with the implementation, `:525-532` → **`:537-566`**.
@@ -22367,10 +22367,10 @@ one direction.
   > **`:256` and `:257`** — a pair, not the single `:186`; and
   > `grep -n 'gains one guard'` over ADR 0103 returns **`:1158`** against the
   > `:1134` this entry cites below. **Two of the three code numbers land on
-  > docblock prose** — `default-gangs.ts:186` is *"the one door both terminal
+  > docblock prose** — `default-gangs.ts:243` is *"the one door both terminal
   > transitions of an assault go through"* — which is the plausible-neighbour
   > failure this section already names as the costly one.
-  > `default-gangs.ts:81` and `trigger-system.ts:563` still land exactly, and
+  > `default-gangs.ts:82` and `trigger-system.ts:615` still land exactly, and
   > every claim above survives: the registry has three producers, none of them
   > a restore path, and the guard asks both sides.
   >
@@ -22391,7 +22391,7 @@ one direction.
   > together at `e5fbe9d9`, so the condition the question rested on is gone and
   > **nothing is put to the owner by this bullet any more.** The two premises
   > it named are both now false and are marked rather than rewritten:
-  > `3b6f1b86` is inside this window and `trigger-system.ts:525-532` did not
+  > `3b6f1b86` is inside this window and `trigger-system.ts:577-584` did not
   > stay unchanged.
   >
   > **What is NOT closed, and stays the owner's.** ADR 0103's open question 5 —

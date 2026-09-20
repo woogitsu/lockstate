@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { CROSS_GANG_ASSAULT_GRUDGE_WEIGHT, DEFAULT_GANG_IDS } from '../../src/simulation/incidents/default-gangs';
+import { DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION } from '../../src/simulation/incidents/trigger-system';
 import { resolveRetaliationRisk } from '../../src/simulation/incidents/gangs';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -131,8 +132,23 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     // are split on entity id parity; entity 1 draws `-1` on the screening
     // variance and stays `general-population`, and entity 6 opened an escape
     // attempt at tick 1,050 that nobody contained, so they are gone.
-    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([0, 2, 4]);
-    expect(runtime.gangs.membersOf('gang.beta')).toEqual([3, 5, 7]);
+    //
+    // **THE SPLIT CHANGED ON 2026-09-19 AND THE THREE LINES BELOW ARE THE ONLY
+    // THING THAT MOVED HERE.** The sentence above is kept because it describes
+    // the rule that was amended: the owner ruled that `defaultGangIdForArrival`
+    // fills the *smaller* gang rather than alternating on entity id parity, so
+    // this fixture's seven assignments now interleave by arrival order --
+    // 0 to alpha, 2 to beta, 3 to alpha, 4 to beta, 5 to alpha, 6 to beta,
+    // 7 to alpha. The old reading was `[0, 2, 4]` and `[3, 5, 7]`.
+    //
+    // **Why the two are not the same size, which is the interesting part.**
+    // Entity 6 was assigned `gang.beta` and then escaped, and
+    // `releasePrisoner` drops a departing prisoner's membership -- so the
+    // *assignment* alternated perfectly and the *roster* does not. That is the
+    // same fact ADR 0103 decision 4's guard exists for, visible here without a
+    // retaliation being involved.
+    expect(runtime.gangs.membersOf('gang.alpha')).toEqual([0, 3, 5, 7]);
+    expect(runtime.gangs.membersOf('gang.beta')).toEqual([2, 4]);
     expect(runtime.gangs.getGangOf(1)).toBeUndefined();
   });
 
@@ -271,6 +287,20 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     //   tick 16,600  -- 'gang.beta->gang.alpha' at **0.8**, risk clamped to
     //                   1, **severity 10**
     //
+    // **THE THREE TICKS ABOVE MOVED ON 2026-09-19 AND THE COUNT DID NOT, WHICH
+    // IS EXACTLY WHAT THE CADENCE CHANGE WAS FOR.** A gang retaliation now has
+    // its own quiet window, `DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION`
+    // (24,000, ten in-game days) instead of sharing the riot's 4,800. Measured
+    // on this tree after that change, same fixture, same four assaults:
+    //
+    //   tick  7,000  -- unchanged: nothing precedes it, so no window binds
+    //   tick 31,000  -- was 11,800; exactly 24,000 after the first
+    //   tick 55,000  -- was 16,600; exactly 24,000 after the second
+    //
+    // The grudges are unchanged and so are the severities: what the window
+    // moves is *when* a discharged ledger may next be acted on, not what it
+    // holds. The old figures are kept beside the new ones.
+    //
     // `allGrudges()` sorts by key, so 'gang.alpha->gang.beta' is sampled
     // first and is discharged twice while the reverse key keeps accruing --
     // which is how one direction reaches 0.8 and produces a retaliation half
@@ -278,12 +308,30 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     // predicted the severity-10 one**; it is recorded here because the owner
     // was told a retaliation could fire twice where it fired once, and the
     // measured answer is three times with one of them worse.
+    // **The window is asserted as a window and not only as three ticks**: at
+    // 16,610, where this case used to end with three retaliations already
+    // recorded, there is exactly one. That is the cadence change failing
+    // closed, and it is the assertion a revert would have to come past.
     stepTo(runtime, 16_610);
+    expect(runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation')).toHaveLength(1);
 
-    const retaliations = runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation');
+    stepTo(runtime, 55_010);
+
+    // Sorted by tick rather than taken in `IncidentLog.all()` order, which is
+    // by id: the ids are `incident.gang-retaliation.<sequence>` and the
+    // sequence is shared with every other incident type, so `.10` sorts before
+    // `.9` once this prison has opened ten of anything. That bites here and
+    // did not before only because the three retaliations are now 48,000 ticks
+    // apart instead of 9,600, with riots in between.
+    const retaliations = runtime.incidents
+      .all()
+      .filter((incident) => incident.type === 'gang-retaliation')
+      .slice()
+      .sort((a, b) => a.startedAtTick - b.startedAtTick);
     expect(retaliations).toHaveLength(3); // was 2 while the weight was 0.2
 
-    expect(retaliations[1]!.startedAtTick).toBe(11_800);
+    expect(retaliations[1]!.startedAtTick).toBe(31_000); // was 11,800
+    expect(retaliations[1]!.startedAtTick - retaliations[0]!.startedAtTick).toBe(DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION);
     expect(retaliations[1]!.severity).toBe(6);
     expect(retaliations[1]!.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
     expect(retaliations[1]!.causeFactors).toEqual([
@@ -292,11 +340,15 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     ]);
 
     const third = retaliations[2]!;
-    expect(third.startedAtTick).toBe(16_600);
+    expect(third.startedAtTick).toBe(55_000); // was 16,600
+    expect(third.startedAtTick - retaliations[1]!.startedAtTick).toBe(DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION);
     // `round(risk * 10)` with the risk clamped at 1 -- the only severity-10
     // retaliation this fixture has ever produced.
     expect(third.severity).toBe(10);
-    expect(third.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
+    // Entity 1 is in the list where it was not before: the third retaliation
+    // now falls 38,400 ticks later, and by then the classification review has
+    // made the one arrival who screened out of `high-risk` at the gate a member.
+    expect(third.participantIds).toEqual([0, 1, 2, 3, 4, 5, 7]);
     expect(third.causeFactors).toEqual([
       { kind: 'gang-grudge', value: 0.8 },
       { kind: 'retaliation-risk', value: 1 },
@@ -313,6 +365,8 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     // only. Both-directions-at-half-weight with the weight still 0.2:
     // 11,800 and 16,600 -- the same count, clustered, after a longer wait.
     // Both directions at the ruled weight 0.4: 7,000, 11,800 and 16,600.
+    // With the retaliation's own quiet window, 2026-09-19: 7,000, 31,000 and
+    // 55,000 -- the same three, spread over 48,000 ticks instead of 9,600.
     // The ledger-entry count doubles under all three: four assaults write
     // four entries before the halving and eight after, because `addGrudge`
     // is called twice per adjudicated assault.
@@ -410,9 +464,16 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, SEED).runtime;
 
     expect(restored.gangs.all()).toEqual(runtime.gangs.all());
+    // **The save-compatibility evidence for the 2026-09-19 split change, and
+    // it is this line rather than an argument.** Membership is persisted as a
+    // list (`src/persistence/save-schema.ts`'s `gangs.members`) and
+    // `GangRegistry.loadSnapshot` replays it with `addMember`, so a restore
+    // never consults the membership *rule* at all. A save written under the
+    // parity split therefore restores exactly the rosters it carried; only
+    // assignments made after the restore use the new rule.
     expect(DEFAULT_GANG_IDS.map((gangId) => restored.gangs.membersOf(gangId))).toEqual([
-      [0, 2, 4],
-      [3, 5, 7],
+      [0, 3, 5, 7],
+      [2, 4],
     ]);
     expect(restored.gangs.allGrudges()).toEqual([
       ['gang.alpha', 'gang.beta', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],

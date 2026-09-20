@@ -357,6 +357,8 @@ const harness: LockstateWorldSceneHarness = {
       world: WorldRenderView.fromSnapshot(world.snapshot()),
       structures: [],
       actors: [],
+      rooms: [],
+      roomConditions: [],
     };
 
     const readsBefore = reads;
@@ -376,6 +378,33 @@ const harness: LockstateWorldSceneHarness = {
     scene.cameras.main.setScroll(scrollX, scrollY);
   },
   framesRead: () => reads,
+  publishRooms: (rooms, conditions): Promise<void> => {
+    // `revision` deliberately does **not** move for the conditions: they ride
+    // the delta in the game and the tile painter must not repaint for them
+    // (ADR 0097 decision 2). It moves here only because the rectangles ride
+    // the geometry pull, which is the channel `revision` counts.
+    currentFrame = {
+      revision: currentFrame.revision + 1,
+      world: currentFrame.world,
+      structures: currentFrame.structures,
+      actors: currentFrame.actors,
+      rooms: rooms.map((room) => ({ ...room, roomCatalogId: 'room.cell' })),
+      roomConditions: [...conditions],
+    };
+
+    const readsBefore = reads;
+    return new Promise<void>((resolve) => {
+      const poll = (): void => {
+        if (reads > readsBefore) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(poll);
+      };
+      requestAnimationFrame(poll);
+    });
+  },
+  roomConditionMarks: () => scene.roomConditionMarks,
   homeIndicator: () => {
     const mark = scene.homeIndicatorMark;
     return mark === undefined ? undefined : { x: mark.position.x, y: mark.position.y, angleRadians: mark.angleRadians };

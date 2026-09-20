@@ -246,6 +246,7 @@ async function runPublication(seed, population) {
       // Main thread, per publication (ADR 0059 rows 3 and 4).
       decodedRecordCount: payload.recordCount,
       decodedRemovedCount: payload.removed.length,
+      decodedRoomConditionCount: payload.roomConditions.length,
       decodedLayoutVersion: payload.layoutVersion,
       decodedKeyframeFlag: payload.keyframe ? 1 : 0,
       renderActorCount: actors.length,
@@ -325,11 +326,73 @@ const SMOKE_BOUNDS = Object.freeze({
    *
    * `payloadBytesPerActor` moves with it because it is this number divided by
    * the population: 10,020 / 500 = 20.04 exactly.
+   *
+   * MOVED BY FOUR MORE BYTES FOR #1022, AND THE PARAGRAPHS ABOVE ARE KEPT
+   * RATHER THAN REWRITTEN BECAUSE THEY ARE WHY THIS GATE CAUGHT IT AGAIN.
+   * ADR 0097 decision 2 requires the answer to *"whether what is here works"*
+   * to ride this channel rather than the geometry pull -- a 30-second-stale
+   * claim about whether a cell is working is a false claim -- and ADR 0111
+   * decision 2 restates it. So `lockstate.render-actors` goes to layout 4 with
+   * a sixth header word, `roomCount`, and a three-word row per room after the
+   * removal list. `RENDER_ACTORS_HEADER_WORDS` went 5 to 6 and this bound goes
+   * 10,020 to 10,024: the same 500 records at 20 bytes, a header that is now
+   * twenty-four bytes rather than twenty, and no room rows at all.
+   *
+   * **The room rows are absent here rather than free, and that is the thing to
+   * read before trusting this number.** This scenario builds nothing -- it is
+   * the same reason it passes ADR 0099's marker as a literal zero -- so the
+   * fixture has no zoned room instances and `roomCount` is 0. What this pin
+   * therefore still measures is the *fixed* cost of layout 4 on a publication
+   * that has nothing to say about rooms: four bytes, once, per publication,
+   * whether or not any room exists. The per-room twelve bytes are priced where
+   * they can be counted, in
+   * `tests/integration/a-sealed-cell-reaches-the-drawn-frame.test.ts` (24
+   * bytes for a prison with no rooms, 48 with two) and in the payload table in
+   * `docs/RENDERING.md`.
+   *
+   * What the four bytes buy: a sealed cell and a working one are otherwise
+   * indistinguishable on the map, and the renderer cannot difference the
+   * verdict out of anything it already holds -- reachability is an exterior
+   * walk over simulation state (ADR 0108), not a fact about a message the main
+   * thread has. The alternative priced in ADR 0097 was a 30-second geometry
+   * pull, which at 10 Hz publication cadence is a wrong answer on screen for
+   * up to three hundred frames.
+   *
+   * The bound stays `equals` for the reason the paragraph above gives, and is
+   * not widened into a range: a range here would stop reporting the growth it
+   * was pinned to report, and the only reason this file is being edited is
+   * that the `equals` did its job.
    */
-  payloadByteLength: { equals: 10_020 },
-  payloadBytesPerActor: { max: 20.04 },
+  payloadByteLength: { equals: 10_024 },
+  /*
+   * 10,024 / 500 = 20.048 exactly, up from 20.04. `max` rather than `equals`
+   * only because `round4` is in the path; the value is exact.
+   */
+  payloadBytesPerActor: { max: 20.048 },
   decodedRecordCount: { equals: 500 },
   decodedRemovedCount: { equals: 0 },
+  /*
+   * ZERO, PRINTED RATHER THAN DEDUCED -- and that is the whole reason this
+   * metric exists.
+   *
+   * The `payloadByteLength` pin above says its four new bytes are the
+   * `roomCount` header word and no room row. Before this metric, that reading
+   * rested on arithmetic closing exactly: a header of twenty-four plus 500
+   * records at twenty leaves no room for a twelve-byte row, so `roomCount`
+   * had to be zero for the total to land on 10,024. That is a sound deduction
+   * and it is only sound while the record width is fixed. A later layout that
+   * made a record variable-width would leave the total unable to say *where*
+   * its bytes went, and the byte pin would go on passing while meaning
+   * something else.
+   *
+   * So the decoded row count is published and pinned at zero directly: this
+   * scenario builds nothing, has no zoned room instances, and must therefore
+   * carry no room-condition rows. A fixture that silently acquired one would
+   * move `payloadByteLength` by twelve and fail both bounds, and a future
+   * change that kept the total still by shrinking something else would now
+   * fail this one alone.
+   */
+  decodedRoomConditionCount: { equals: 0 },
   /*
    * 2 -> 3 with the same change: ADR 0099's fifth header word is a layout
    * change, so `RENDER_ACTORS_LAYOUT_VERSION` is now 3
@@ -337,8 +400,14 @@ const SMOKE_BOUNDS = Object.freeze({
    * assumed). A reader who sees only the byte count move might think the
    * header grew without the version saying so, which is the failure this
    * pair of bounds exists to make impossible.
+   *
+   * 3 -> 4 with #1022's room block, for exactly the same reason:
+   * `RENDER_ACTORS_LAYOUT_VERSION` is now 4 in
+   * `src/simulation/protocol/render-actors-payload.ts`, read rather than
+   * assumed, and a byte count that moved without the version moving with it is
+   * the failure this pair exists to catch.
    */
-  decodedLayoutVersion: { equals: 3 },
+  decodedLayoutVersion: { equals: 4 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 500 },
 });
@@ -361,12 +430,20 @@ const FULL_BOUNDS = Object.freeze({
   getIdByIndexCalls: { equals: 5_000 },
   locomotionReadCalls: { equals: 5_000 },
   locomotionReadCallsPerLiveActor: { equals: 1 },
-  /* Same four bytes as the smoke profile above; 100,020 / 5,000 = 20.004. */
-  payloadByteLength: { equals: 100_020 },
-  payloadBytesPerActor: { max: 20.004 },
+  /*
+   * Same four bytes as the smoke profile above; 100,020 / 5,000 = 20.004.
+   *
+   * And the same four again for #1022's layout 4: 100,024 = a twenty-four-byte
+   * header plus 5,000 records at 20 bytes, with no room rows, because this
+   * profile builds nothing either. 100,024 / 5,000 = 20.0048 exactly.
+   */
+  payloadByteLength: { equals: 100_024 },
+  payloadBytesPerActor: { max: 20.0048 },
   decodedRecordCount: { equals: 5_000 },
   decodedRemovedCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 3 },
+  /* Zero for the smoke profile's reason: this fixture zones no rooms either. */
+  decodedRoomConditionCount: { equals: 0 },
+  decodedLayoutVersion: { equals: 4 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
 });

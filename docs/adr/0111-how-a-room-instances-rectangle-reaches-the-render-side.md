@@ -128,8 +128,13 @@ the whole cost question turns on which one a rectangle rides.
 
 `RenderFrame` is the single seam between them and the painter, and it carries
 four fields — `revision`, `world`, `structures`, `actors`
-(`src/rendering/feed/render-feed.ts:42-51`) — with a docblock that says why the
+(`src/rendering/feed/render-feed.ts:91-118`) — with a docblock that says why the
 seam is one:
+
+> **Six since this decision was implemented on 2026-09-19**, and the count is
+> corrected here rather than overwritten (`docs/AGENT_WORKFLOW.md` §4): `rooms`
+> is decision 1's payload and `roomConditions` is decision 2's. The sentence
+> below is unchanged and is what both of them ride through.
 
 `A feed is a one-way valve: it turns snapshots the simulation published into immutable view data.`
 (verbatim in `src/rendering/feed/render-feed.ts`)
@@ -171,7 +176,7 @@ under a comment naming the reason:
 **So room-instance rectangles are not subject to ADR 0097 §5's 30-second
 staleness bound.** They change when zoning changes, zoning moves the marker, the
 marker sets `dirty`, and the pull fires. `DEFAULT_POLL_INTERVAL_SECONDS = 30`
-(`src/rendering/feed/simulation-snapshot-feed.ts:128`) is a consistency net
+(`src/rendering/feed/simulation-snapshot-feed.ts:131`) is a consistency net
 underneath that, not the refresh rate.
 
 **ADR 0097's decision 2 survives this intact and must not be read as weakened.**

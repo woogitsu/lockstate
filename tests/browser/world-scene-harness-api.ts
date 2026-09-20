@@ -105,6 +105,22 @@ export interface HarnessHomeIndicator {
   readonly angleRadians: number;
 }
 
+/** One room the fixture publishes to the scene, as `RenderFrame.rooms` carries it. */
+export interface HarnessRoomRectangle {
+  readonly instanceId: string;
+  readonly anchorTileX: number;
+  readonly anchorTileY: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** One condition the fixture publishes, as a `simulation/delta` carries it: an anchor tile and an ordinal. */
+export interface HarnessRoomCondition {
+  readonly anchorTileX: number;
+  readonly anchorTileY: number;
+  readonly condition: number;
+}
+
 export interface LockstateWorldSceneHarness {
   /** Resolves once `WorldScene.create` has run and its listeners are registered. */
   readonly ready: Promise<void>;
@@ -172,6 +188,28 @@ export interface LockstateWorldSceneHarness {
    * reaches the arming.
    */
   standDownRequests(): number;
+  /**
+   * Publishes ADR 0097's two payloads into the frame the scene reads: the
+   * rectangles that ride the geometry pull and the condition ordinals that
+   * ride the delta.
+   *
+   * Two arguments rather than one joined list, because they arrive on two
+   * channels in the game (ADR 0111 decisions 1 and 2) and a harness that
+   * joined them here could not reproduce the state a spec most wants to check
+   * -- a verdict whose rectangle has not arrived.
+   *
+   * Resolves once the scene has read a frame carrying them.
+   */
+  publishRooms(rooms: readonly HarnessRoomRectangle[], conditions: readonly HarnessRoomCondition[]): Promise<void>;
+  /**
+   * Which rooms the scene has actually marked, as `instanceId:ordinal`, read
+   * off the live layer.
+   *
+   * `WorldScene.roomConditionMarks` is the scene's own accessor and exists for
+   * this; nothing in the game reads it. It reports what is **drawn**, so a
+   * room whose rectangle scrolled out of view is absent.
+   */
+  roomConditionMarks(): readonly string[];
   /**
    * Whether any of the three tool doubles is still armed.
    *

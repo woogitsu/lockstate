@@ -69,30 +69,40 @@ export interface ReadRenderActorsPayload {
   readonly worldRevision: number;
   readonly records: readonly ReadRenderActorRecord[];
   readonly removed: readonly number[];
+  /** `u32[5]` and the three-word rows after the removals: ADR 0097's per-room condition block (layout 4). */
+  readonly roomCount: number;
+  readonly rooms: readonly ReadRenderRoomCondition[];
+}
+
+export interface ReadRenderRoomCondition {
+  readonly anchorTileX: number;
+  readonly anchorTileY: number;
+  readonly condition: number;
 }
 
 /** Reads the bytes as the ADR's table describes them. Throws on any length the table cannot explain. */
 export function readRenderActorsPayload(buffer: ArrayBuffer): ReadRenderActorsPayload {
   const view = new DataView(buffer);
-  if (buffer.byteLength < 20) {
-    throw new Error(`A payload is at least a five-word header: 20 bytes, got ${String(buffer.byteLength)}.`);
+  if (buffer.byteLength < 24) {
+    throw new Error(`A payload is at least a six-word header: 24 bytes, got ${String(buffer.byteLength)}.`);
   }
   const layoutVersion = view.getUint32(0, true);
   const flags = view.getUint32(4, true);
   const recordCount = view.getUint32(8, true);
   const removedCount = view.getUint32(12, true);
   const worldRevision = view.getUint32(16, true);
+  const roomCount = view.getUint32(20, true);
 
-  const expected = 20 + recordCount * 20 + removedCount * 4;
+  const expected = 24 + recordCount * 20 + removedCount * 4 + roomCount * 12;
   if (buffer.byteLength !== expected) {
     throw new Error(
-      `${String(recordCount)} records and ${String(removedCount)} removals is ${String(expected)} bytes, got ${String(buffer.byteLength)}.`,
+      `${String(recordCount)} records, ${String(removedCount)} removals and ${String(roomCount)} rooms is ${String(expected)} bytes, got ${String(buffer.byteLength)}.`,
     );
   }
 
   const records: ReadRenderActorRecord[] = [];
   for (let record = 0; record < recordCount; record += 1) {
-    const at = 20 + record * 20;
+    const at = 24 + record * 20;
     records.push({
       entityId: view.getUint32(at, true),
       packedFields: view.getUint32(at + 4, true),
@@ -105,7 +115,17 @@ export function readRenderActorsPayload(buffer: ArrayBuffer): ReadRenderActorsPa
 
   const removed: number[] = [];
   for (let index = 0; index < removedCount; index += 1) {
-    removed.push(view.getUint32(20 + recordCount * 20 + index * 4, true));
+    removed.push(view.getUint32(24 + recordCount * 20 + index * 4, true));
+  }
+
+  const rooms: ReadRenderRoomCondition[] = [];
+  for (let index = 0; index < roomCount; index += 1) {
+    const at = 24 + recordCount * 20 + removedCount * 4 + index * 12;
+    rooms.push({
+      anchorTileX: view.getInt32(at, true),
+      anchorTileY: view.getInt32(at + 4, true),
+      condition: view.getUint32(at + 8, true),
+    });
   }
 
   return {
@@ -117,6 +137,8 @@ export function readRenderActorsPayload(buffer: ArrayBuffer): ReadRenderActorsPa
     worldRevision,
     records,
     removed,
+    roomCount,
+    rooms,
   };
 }
 
@@ -134,16 +156,20 @@ export function writeRenderActorsPayload(payload: {
   readonly worldRevision: number;
   readonly records: readonly ReadRenderActorRecord[];
   readonly removed: readonly number[];
+  /** The three-word rows after the removals: ADR 0097's per-room condition block (layout 4). Omitted is "no rooms", which is a zero in `u32[5]`. */
+  readonly rooms?: readonly ReadRenderRoomCondition[];
 }): ArrayBuffer {
-  const buffer = new ArrayBuffer(20 + payload.records.length * 20 + payload.removed.length * 4);
+  const rooms = payload.rooms ?? [];
+  const buffer = new ArrayBuffer(24 + payload.records.length * 20 + payload.removed.length * 4 + rooms.length * 12);
   const view = new DataView(buffer);
   view.setUint32(0, payload.layoutVersion, true);
   view.setUint32(4, payload.flags, true);
   view.setUint32(8, payload.records.length, true);
   view.setUint32(12, payload.removed.length, true);
   view.setUint32(16, payload.worldRevision, true);
+  view.setUint32(20, rooms.length, true);
   payload.records.forEach((record, index) => {
-    const at = 20 + index * 20;
+    const at = 24 + index * 20;
     view.setUint32(at, record.entityId, true);
     view.setUint32(at + 4, record.packedFields, true);
     view.setInt32(at + 8, record.subX, true);
@@ -152,7 +178,13 @@ export function writeRenderActorsPayload(payload: {
     view.setInt16(at + 18, record.velocitySubY, true);
   });
   payload.removed.forEach((entityId, index) => {
-    view.setUint32(20 + payload.records.length * 20 + index * 4, entityId, true);
+    view.setUint32(24 + payload.records.length * 20 + index * 4, entityId, true);
+  });
+  rooms.forEach((room, index) => {
+    const at = 24 + payload.records.length * 20 + payload.removed.length * 4 + index * 12;
+    view.setInt32(at, room.anchorTileX, true);
+    view.setInt32(at + 4, room.anchorTileY, true);
+    view.setUint32(at + 8, room.condition, true);
   });
   return buffer;
 }
