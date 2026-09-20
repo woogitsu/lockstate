@@ -1004,27 +1004,45 @@ describe("the dated archive inside docs/adr/STATUS-QUEUE.md, excluded on the own
   });
 
   it('carries the pre-ruling slack across the change rather than spending it', () => {
-    // The row is 187 because 300 - 113 = 187, not because 187 was measured.
-    // What is asserted is the DERIVATION: the live count the exclusion leaves,
-    // plus the headroom the row carried at `36503522`, is the row. #1321 left
-    // that headroom deliberately -- "lowering it to the new count would hand
-    // the headroom straight back" -- and a budget can never be raised, so an
-    // editor who quietly lowers this row to the live count cannot undo it.
-    // Spending the slack should therefore be a red light, not a silent drift.
+    /*
+     * The row is 187 because 300 - 113 = 187, not because 187 was measured.
+     * What is asserted is the DERIVATION: the live count the exclusion left at
+     * `faf7ce3a`, plus the headroom the row carried at `36503522`, is the row.
+     * #1321 left that headroom deliberately -- "lowering it to the new count
+     * would hand the headroom straight back" -- and a budget can never be
+     * raised, so an editor who quietly lowers this row to the live count
+     * cannot undo it. Spending the slack is therefore a red light.
+     *
+     * **THE LIVE COUNT IS DELIBERATELY NOT PINNED, AND THE FIRST VERSION OF
+     * THIS ASSERTION PINNED IT.** It compared `{ live, budget, slack }`
+     * against `{ live: 123, budget: 187, slack: 64 }` as one object, which
+     * reads as a tighter check and is in fact the opposite: it makes any
+     * movement of `live` a failure, so the 64 of slack the assertion exists to
+     * protect could not be used by anybody. The slack IS the permission for
+     * `live` to move.
+     *
+     * Measured, rather than reasoned: combining `faf7ce3a` with #1308 -- a
+     * pull request that adds one Polish locale key and touches no document --
+     * moved `live` 123 -> 124 by shifting a line this queue cites, and the
+     * pinned form failed with `expected { live: 124, budget: 187, slack: 63 }
+     * to deeply equal { live: 123, budget: 187, slack: 64 }`. That is a red
+     * light on an innocent pull request, which is the exact failure mode
+     * #1321 recorded against the old zero-headroom row and the reason this
+     * slack was reserved in the first place.
+     *
+     * So what is pinned is the ROW, against being lowered to the live count,
+     * and the floor under the slack. The sibling budget assertion above
+     * already fails when `live` exceeds the row; between them, `live` may
+     * move freely inside the headroom and may not leave it.
+     */
     const SLACK_RESERVED_AT_36503522 = 64;
     const live = citations.filter(
       (citation) => citation.source === queue && !isVerified(citation),
     ).length;
+    const budget = UNVERIFIED_BUDGET[queue] ?? 0;
 
-    expect({
-      live,
-      budget: UNVERIFIED_BUDGET[queue],
-      slack: (UNVERIFIED_BUDGET[queue] ?? 0) - live,
-    }).toEqual({
-      live: 123,
-      budget: 187,
-      slack: SLACK_RESERVED_AT_36503522,
-    });
+    expect(budget).toBe(123 + SLACK_RESERVED_AT_36503522);
+    expect(live).toBeLessThanOrEqual(budget);
   });
 
   it('costs no other document a single anchor', () => {
