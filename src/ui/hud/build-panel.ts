@@ -2307,25 +2307,6 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    *
    * `hidden`, not an empty box: a laid-out empty block still takes its gap and
    * its border.
-   *
-   * ## What the owner's ruling of 2026-09-06 (#1031) makes this block
-   *
-   * *"Świat ma rację -- licz po ukończeniu"* ("The world is right -- count on
-   * completion"): a bed that has been ordered and not yet built raises no
-   * capacity anywhere, so **this is the only readout in the interface that
-   * names it**. The ruling's second half -- *"whatever a player has ordered
-   * must be visible somewhere"* -- therefore rests on the predicate one line
-   * below. It is a `total > 0` and nothing else, which is what keeps `hidden`
-   * meaning "nothing is queued" rather than "nothing is being said". Measured
-   * against the projection this block draws from, in
-   * `tests/integration/capacity-counts-on-completion.test.ts`: every bed a
-   * player has pressed for is either standing in a room's capacity or named in
-   * that queue, at every tick, with no instant in which it is neither.
-   *
-   * A queued order is 151 ticks of a player's attention for a bed
-   * (`PROCUREMENT_DELIVERY_DELAY_TICKS` and then the work), so a change that
-   * made this block conditional on anything more than the queue's length would
-   * take the acknowledgement away rather than tidy it.
    */
   function paintQueue(): void {
     const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
