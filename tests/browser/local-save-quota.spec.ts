@@ -69,10 +69,27 @@ test.describe('quota exhaustion', () => {
     const good = await page.evaluate((prisonId) => window.lockstateHarness.save(prisonId, 1), PRISON);
     expect(good.ok).toBe(true);
 
-    // Fill coarsely, then finely, so the origin ends up hard against the cap
-    // rather than a megabyte short of it.
+    /*
+     * Fill coarsely, then finely, then more finely still, so the origin ends up
+     * hard against the cap rather than a megabyte -- or a chunk -- short of it.
+     *
+     * **The third pass is what makes the precondition below reachable rather
+     * than lucky, and it was bought with a real failure.** A pass stops at the
+     * first write the browser refuses, so it leaves headroom of up to its own
+     * chunk size: after a 32 KiB pass, anything from 0 to just under 32 KiB can
+     * remain, and the precondition demands less than `OVERSIZED_SAVE_BYTES`
+     * (8 KiB). Whether the run could test anything was therefore decided by
+     * where the boundary happened to land modulo 32 KiB. On PR #1322's browser
+     * job (run 35466440775, head `93612fbc`) it landed badly: the fine pass
+     * stopped with **17138 bytes** free -- a legitimate refusal of a 32 KiB
+     * write, and room to spare for the 8 KiB save -- and the precondition
+     * fired. The last pass's chunk is now smaller than the save it must not
+     * leave room for, which is the property that was missing; the bound below
+     * is unchanged and nothing under it is weakened.
+     */
     expect((await page.evaluate(() => window.lockstateHarness.fillUntilWriteFails(1024 * 1024, 32))).failure).not.toBeNull();
     expect((await page.evaluate(() => window.lockstateHarness.fillUntilWriteFails(32 * 1024, 256))).failure).not.toBeNull();
+    expect((await page.evaluate(() => window.lockstateHarness.fillUntilWriteFails(1024, 512))).failure).not.toBeNull();
 
     /*
      * The precondition, asserted rather than assumed (#227).
@@ -80,25 +97,30 @@ test.describe('quota exhaustion', () => {
      * Everything below is sound only while the save genuinely does not fit.
      * That is a property of the **machine**, not of the fixture: the cap is set
      * over CDP, but the usage is reached by filling real storage until the
-     * browser refuses a write, and the two passes above are coarse-then-fine
+     * browser refuses a write, and the three passes above narrow the chunk
      * precisely because the boundary is approached rather than set. If they
-     * both report a failure while headroom remains -- accounting granularity,
+     * all report a failure while headroom remains -- accounting granularity,
      * eviction between the fill and the save, another origin moving under the
      * same quota -- the save succeeds and `expect(rejected.ok).toBe(false)`
      * fails with a message about generation rotation, which is the wrong
      * diagnosis for a test whose fill fell short.
      *
      * PR #218 hit exactly one such failure and spent an investigation on it;
-     * it has not reproduced since (#227), so this is not a fix for a known bug
-     * but a true statement about what the assertions below depend on. It adds
-     * nothing that can pass in place of them, weakens none of them, and turns
-     * a confusing failure into an actionable one.
+     * PR #1322 hit the second, on a change to gang membership that cannot
+     * reach this file -- the envelope saved here is built by the harness from
+     * a bare `Kernel`, `SparseWorld` and `ConstructionSystem` and never runs a
+     * simulation. So this is not a fix for a known product bug but a true
+     * statement about what the assertions below depend on. It adds nothing
+     * that can pass in place of them, weakens none of them, and turns a
+     * confusing failure into an actionable one.
      *
-     * Measured on this container: the fill overshoots, `usage` landing about
-     * 17 KiB **past** the cap, so the margin here is wide. The bound is the
-     * save's own size rather than that observation, because the observation is
-     * a fact about one machine and the bound is the condition that has to hold
-     * on every machine.
+     * Measured on the container of `6cc10411`: the fill overshot, `usage`
+     * landing about 17 KiB **past** the cap, so the margin there was wide. On
+     * `lockstate-wsl-DOM-NEW-01` at `93612fbc` it undershot by about the same
+     * 17 KiB instead, which is how the third pass above came to be needed --
+     * so that reading is a fact about one machine in both directions, and the
+     * bound stays the save's own size rather than either of them, because the
+     * bound is the condition that has to hold on every machine.
      */
     const settled = await page.evaluate(() => window.lockstateHarness.estimateQuota());
     expect(settled.quota, 'the quota override stopped being reported mid-test').toBe(QUOTA_BYTES);

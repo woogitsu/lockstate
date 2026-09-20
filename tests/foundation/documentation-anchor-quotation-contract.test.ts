@@ -189,6 +189,11 @@ import { describe, expect, it } from 'vitest';
  * - **`docs/research/` is not scanned**, for the reason its own README gives
  *   and the sibling gate repeats: a dated record does not become wrong, it
  *   becomes older.
+ * - **`docs/adr/STATUS-QUEUE.md`'s dated §3 pass accounts are not scanned**,
+ *   for the same reason one directory up: see `DATED_ARCHIVE_SECTIONS` below
+ *   for the owner's ruling of 2026-09-19 and for what the delimiter is. The
+ *   rest of that document -- its header, §§1-2, its undated
+ *   `## 3. Still outstanding` and §§4-6 -- is scanned exactly as before.
  * - **Anchors into paths outside `src/` and `tests/`** -- `scripts/`,
  *   `supabase/`, `.github/` -- are counted by neither gate here. They are a
  *   small and slow-moving population; extending to them is a widening of
@@ -341,12 +346,89 @@ function candidatesFor(text: string, spans: readonly CodeSpan[], index: number):
   return found;
 }
 
-function citationsIn(file: string): readonly Citation[] {
+/**
+ * Dated archive *inside* a document, excluded for the reason `docs/research/`
+ * is excluded one directory up.
+ *
+ * **The owner ruled on 2026-09-19: "Wyłączyć datowaną sekcję 3 z liczenia"**
+ * -- exclude `docs/adr/STATUS-QUEUE.md`'s dated §3 pass accounts from the
+ * counting. The provenance is the weaker kind `AGENTS.md` flags: the owner
+ * chose an option an integrating session wrote rather than typing a sentence,
+ * so this is read no wider than the label. `AGENTS.md` carries the entry.
+ *
+ * The argument, established with evidence by #1321 and not restated here: that
+ * document is append-mostly dated history, roughly a third of its unverified
+ * anchors sit in §3 entries whose coordinates the file has itself ruled must
+ * not move -- *"Neither points where it says any more, and neither should be
+ * moved"* -- and for those the gate offers no compliant remedy at all. Quoting
+ * them is impossible, re-aiming them is forbidden by the record, and raising
+ * the budget is forbidden by the gate. The budget is per document but the
+ * failure is not: #1308 and #1318 both went red on line arithmetic in a third
+ * file with nothing to do with their subject.
+ *
+ * **The delimiter is the document's own, not a line range.** Every pass
+ * account is appended as an `## 3. ...` heading carrying the date of the pass,
+ * and runs to the next `## ` heading. The one §3 heading that carries no date
+ * -- `## 3. Still outstanding: ADR 0013 §§5-6` -- is the live one and is
+ * **not** excluded, which is also why this is scoped to *dated* §3 rather than
+ * to §3. A pass account appended tomorrow is excluded with no edit here; a
+ * live section is not, unless somebody writes a date into its heading, and the
+ * assertions below pin the live headings by name against exactly that.
+ *
+ * This is deliberately a map rather than a rule about markdown: it names one
+ * document, and every other document in the corpus is scanned whole. The
+ * `no other document loses an anchor to the dated-archive exclusion` assertion
+ * below proves that by measuring it rather than asserting it in prose.
+ */
+const DATED_ARCHIVE_SECTIONS: ReadonlyMap<string, RegExp> = new Map([
+  ['docs/adr/STATUS-QUEUE.md', /^## 3\..*\d{4}-\d{2}-\d{2}/u],
+]);
+
+/** An `## ` heading in a markdown document, with its offset and its text. */
+interface Heading {
+  readonly text: string;
+  readonly start: number;
+  readonly end: number;
+}
+
+function headingsIn(text: string): readonly Heading[] {
+  return [...text.matchAll(/^## .*$/gmu)].map((match) => ({
+    text: match[0],
+    start: match.index!,
+    end: match.index! + match[0].length,
+  }));
+}
+
+/**
+ * Half-open `[start, end)` character ranges of `source`'s dated archive
+ * sections. Empty for every document not named in `DATED_ARCHIVE_SECTIONS`.
+ */
+function archiveRangesIn(source: string, text: string): readonly (readonly [number, number])[] {
+  const pattern = DATED_ARCHIVE_SECTIONS.get(source);
+  if (pattern === undefined) return [];
+  const headings = headingsIn(text);
+  const ranges: (readonly [number, number])[] = [];
+  for (let index = 0; index < headings.length; index += 1) {
+    const heading = headings[index]!;
+    if (!pattern.test(heading.text)) continue;
+    const next = headings[index + 1];
+    ranges.push([heading.start, next === undefined ? text.length : next.start]);
+  }
+  return ranges;
+}
+
+function withinAny(ranges: readonly (readonly [number, number])[], offset: number): boolean {
+  return ranges.some(([start, end]) => offset >= start && offset < end);
+}
+
+function citationsIn(file: string, scanArchive = false): readonly Citation[] {
   const source = relative(ROOT, file);
   const text = readFileSync(file, 'utf8');
   const spans = codeSpansIn(text);
+  const archive = scanArchive ? [] : archiveRangesIn(source, text);
   const citations: Citation[] = [];
   for (let index = 0; index < spans.length; index += 1) {
+    if (withinAny(archive, spans[index]!.start)) continue;
     // Trailing sentence punctuation is the sentence's, not the anchor's.
     const token = spans[index]!.text.trim().replace(/[.,;]+$/, '');
     const parsed = ANCHOR.exec(token);
@@ -393,7 +475,15 @@ function isVerified(citation: Citation): boolean {
   return false;
 }
 
-const citations = markdownFiles.flatMap(citationsIn);
+const citations = markdownFiles.flatMap((file) => citationsIn(file));
+
+/**
+ * The same scan with the dated-archive exclusion switched off. Nothing gates on
+ * it; it exists so the assertions below can *measure* the exclusion's blast
+ * radius rather than assert it in prose.
+ */
+const citationsScanningArchives = markdownFiles.flatMap((file) => citationsIn(file, true));
+
 const verified = citations.filter(isVerified);
 const unverified = citations.filter((citation) => !isVerified(citation));
 
@@ -563,6 +653,59 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  * prose around an anchor is free here; editing the code the anchor points at
  * is what this gate charges for.
  *
+ * **One row moves on 2026-09-19 for a reason no re-derivation of the whole
+ * table would produce, and it is the only row that moves.**
+ * `docs/adr/STATUS-QUEUE.md` falls **300 -> 187**. The figure is derived rather
+ * than picked, in three steps a single number would hide:
+ *
+ * - **What the row counted before the ruling was 236, not 300.** #1321 quoted
+ *   the code beside 64 anchors that were already correct, on `origin/main` @
+ *   `36503522`, and **deliberately left this row at 300** -- in its own words,
+ *   *"left where it is on purpose, because lowering it to the new count would
+ *   hand the headroom straight back"*. So the 64 between 236 and 300 is
+ *   **reserved headroom, not accidental residue**, and that provenance is what
+ *   makes it carryable rather than spendable here.
+ * - **The ruling takes 113 anchors out of the counting, and nothing else.**
+ *   The owner's fifth ruling of 2026-09-19 -- *"Wyłączyć datowaną sekcję 3 z
+ *   liczenia"* -- takes effect through `DATED_ARCHIVE_SECTIONS` above rather
+ *   than through this table. The counted population falls **236 -> 123**: the
+ *   113 that leave are the ones inside dated §3 pass accounts, for which the
+ *   gate's remedy was empty, their coordinates being a record the file has
+ *   ruled must not move.
+ * - **The row therefore falls by those same 113, and by nothing more.**
+ *   300 - 113 = **187**, which is the pre-ruling slack of 64 carried across
+ *   the change rather than spent: 187 - 123 = 64, the same headroom the row
+ *   held at `36503522`. The whole of the ruling's win is banked as budget
+ *   retired; none of it is banked as slack removed.
+ *
+ * **Why the row is not 123, and this is the correction that matters.** An
+ * earlier revision of this branch set it to the measured live count, arguing
+ * the exclusion should buy correctness and not slack. That was an additional
+ * tightening **the owner did not rule and was not offered** -- the label
+ * reaches what is *counted*, never how much is *allowed* -- and it was
+ * measurably voluntary: with the exclusion in place and the row left at 300
+ * this file is green. Voluntary is allowed; unruled and folded into a ruling's
+ * own commit is not. It was also the expensive direction, because **a budget
+ * can never be raised** -- the assertion below forbids it literally -- so
+ * headroom not preserved here cannot be recovered later, and the cost of a
+ * zero-slack row lands on whoever's pull request happens to shift a line in a
+ * file this document cites, which is exactly how #1308 and #1318 went red on
+ * subjects of their own that had nothing to do with it.
+ *
+ * Measured on this branch off `origin/main` @ `09384b9f` by the DERIVATION
+ * procedure above, run twice -- once with the exclusion and once without --
+ * and diffed: **exactly one row differs between the two tables**, this one.
+ * The other 89 rows, and the two documents outside the table, are byte
+ * identical. The assertion `costs no other document a single anchor` below is
+ * that same measurement, kept as a test rather than left in this comment, and
+ * `carries the pre-ruling slack across the change rather than spending it`
+ * pins the 64 so that a future editor who spends it fails rather than drifts.
+ *
+ * **And the `docs/PLAYER_STRINGS.md` row above was raised by #1292 before the
+ * ruling entry above it was written; the two are independent and both are
+ * kept.** #1292's own account follows. Its `STATUS-QUEUE.md` paragraph is
+ * history: that row is no longer 300 but the number the ruling derives
+ * above, and #1292 still does not write it.
  * **Two rows rose on 2026-09-19 for #1292's Security section, and they are the
  * only two: nine further anchors it moved were repaired rather than
  * budgeted.** The branch adds a sixth HUD section and about 2,400 lines under
@@ -682,7 +825,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/drafts/how-a-language-change-reaches-a-running-page.md': 5,
   'docs/adr/drafts/what-a-second-tab-follows.md': 7,
   'docs/adr/README.md': 14,
-  'docs/adr/STATUS-QUEUE.md': 300,
+  'docs/adr/STATUS-QUEUE.md': 187,
   'docs/AGENT_WORKFLOW.md': 2,
   'docs/ARCHITECTURE.md': 1,
   'docs/HANDOVER-2026-08-26.md': 3,
@@ -844,3 +987,163 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
 });
 
 
+
+describe("the dated archive inside docs/adr/STATUS-QUEUE.md, excluded on the owner's 2026-09-19 ruling", () => {
+  const queue = 'docs/adr/STATUS-QUEUE.md';
+  const queueText = readFileSync(join(ROOT, queue), 'utf8');
+  const ranges = archiveRangesIn(queue, queueText);
+  const headings = headingsIn(queueText);
+
+  it('keys off the document\'s own heading shape and excludes a substantial archive', () => {
+    // A floor, not an equality: a pass appended tomorrow must not fail this,
+    // a delimiter that stopped matching must. There were 40 dated §3 headings
+    // at `d11021de`, the first dated 2026-09-03 and the last 2026-09-19.
+    expect(ranges.length).toBeGreaterThan(30);
+
+    // Every excluded region begins at a heading that is both §3 and dated.
+    const excludedHeadings = headings.filter((heading) => withinAny(ranges, heading.start));
+    const misshapen = excludedHeadings.filter(
+      (heading) => !(/^## 3\./u.test(heading.text) && /\d{4}-\d{2}-\d{2}/u.test(heading.text)),
+    );
+    expect(misshapen.map((heading) => heading.text), 'an excluded section that is not a dated §3 pass account').toEqual([]);
+  });
+
+  it('leaves every live section of that document counted, each pinned by name', () => {
+    // The rot this exclusion could suffer is silent widening: a live section
+    // whose heading gains a date, or a delimiter that swallows what follows
+    // the last pass account. Both land here.
+    const live = (prefix: string): string => {
+      const heading = headings.find((candidate) => candidate.text.startsWith(prefix));
+      if (heading === undefined) return `${prefix}: no such heading in ${queue}`;
+      return withinAny(ranges, heading.start) ? `${prefix}: EXCLUDED` : `${prefix}: counted`;
+    };
+
+    expect({
+      header: withinAny(ranges, 0) ? 'EXCLUDED' : 'counted',
+      one: live('## 1. What was decided'),
+      two: live('## 2. Nine entries'),
+      threeLive: live('## 3. Still outstanding'),
+      four: live('## 4. The live risk'),
+      five: live('## 5. Where an accepted decision'),
+      six: live('## 6. Stale status references'),
+      howTo: live('## How to act on a future entry'),
+    }).toEqual({
+      header: 'counted',
+      one: '## 1. What was decided: counted',
+      two: '## 2. Nine entries: counted',
+      threeLive: '## 3. Still outstanding: counted',
+      four: '## 4. The live risk: counted',
+      five: '## 5. Where an accepted decision: counted',
+      six: '## 6. Stale status references: counted',
+      howTo: '## How to act on a future entry: counted',
+    });
+  });
+
+  it('still finds anchors in that document, so the exclusion cannot have emptied it', () => {
+    // If this ever reaches zero the budget row goes spent and the sibling
+    // assertion deletes it, which would re-admit unverified anchors silently.
+    const remaining = citations.filter((citation) => citation.source === queue);
+    const whole = citationsScanningArchives.filter((citation) => citation.source === queue);
+
+    expect(remaining.length).toBeGreaterThan(50);
+    expect(whole.length).toBeGreaterThan(remaining.length);
+  });
+
+  it('carries the pre-ruling slack across the change rather than spending it', () => {
+    /*
+     * The row is 187 because 300 - 113 = 187, not because 187 was measured.
+     * What is asserted is the DERIVATION: the live count the exclusion left at
+     * `faf7ce3a`, plus the headroom the row carried at `36503522`, is the row.
+     * #1321 left that headroom deliberately -- "lowering it to the new count
+     * would hand the headroom straight back" -- and a budget can never be
+     * raised, so an editor who quietly lowers this row to the live count
+     * cannot undo it. Spending the slack is therefore a red light.
+     *
+     * **THE LIVE COUNT IS DELIBERATELY NOT PINNED, AND THE FIRST VERSION OF
+     * THIS ASSERTION PINNED IT.** It compared `{ live, budget, slack }`
+     * against `{ live: 123, budget: 187, slack: 64 }` as one object, which
+     * reads as a tighter check and is in fact the opposite: it makes any
+     * movement of `live` a failure, so the 64 of slack the assertion exists to
+     * protect could not be used by anybody. The slack IS the permission for
+     * `live` to move.
+     *
+     * Measured, rather than reasoned: combining `faf7ce3a` with #1308 -- a
+     * pull request that adds one Polish locale key and touches no document --
+     * moved `live` 123 -> 124 by shifting a line this queue cites, and the
+     * pinned form failed with `expected { live: 124, budget: 187, slack: 63 }
+     * to deeply equal { live: 123, budget: 187, slack: 64 }`. That is a red
+     * light on an innocent pull request, which is the exact failure mode
+     * #1321 recorded against the old zero-headroom row and the reason this
+     * slack was reserved in the first place.
+     *
+     * So what is pinned is the ROW, against being lowered to the live count,
+     * and the floor under the slack. The sibling budget assertion above
+     * already fails when `live` exceeds the row; between them, `live` may
+     * move freely inside the headroom and may not leave it.
+     */
+    const SLACK_RESERVED_AT_36503522 = 64;
+    const live = citations.filter(
+      (citation) => citation.source === queue && !isVerified(citation),
+    ).length;
+    const budget = UNVERIFIED_BUDGET[queue] ?? 0;
+
+    expect(budget).toBe(123 + SLACK_RESERVED_AT_36503522);
+    expect(live).toBeLessThanOrEqual(budget);
+  });
+
+  it('costs no other document a single anchor', () => {
+    // The exclusion's blast radius, measured rather than promised. Every
+    // document but the one named in DATED_ARCHIVE_SECTIONS must be scanned
+    // whole, and this is what would catch a delimiter that generalised.
+    const per = (all: readonly Citation[]): ReadonlyMap<string, number> => {
+      const counts = new Map<string, number>();
+      for (const citation of all) counts.set(citation.source, (counts.get(citation.source) ?? 0) + 1);
+      return counts;
+    };
+    const after = per(citations);
+    const before = per(citationsScanningArchives);
+    const moved = [...before.entries()]
+      .filter(([document, count]) => (after.get(document) ?? 0) !== count)
+      .map(([document, count]) => `${document}: ${count} -> ${String(after.get(document) ?? 0)}`);
+
+    expect(moved.length).toBe(1);
+    expect(moved[0]?.startsWith(`${queue}: `), moved.join(', ')).toBe(true);
+  });
+
+  it('agrees with a synthetic document opened by hand, in both directions', () => {
+    // The delimiter, exercised on text this test owns, so neither direction
+    // depends on the real file still having the shape it has today.
+    const synthetic = [
+      '# What the owner still has to decide',
+      '',
+      'The header cites `src/header.ts:1`, `headerSymbol`.',
+      '',
+      '## 3. Still outstanding: ADR 0013 §§5-6',
+      '',
+      'The live section cites `src/live.ts:2`, `liveSymbol`.',
+      '',
+      '## 3. What the anchor pass of 2026-09-19 (third) opened',
+      '',
+      'The pass account cites `src/archive.ts:3`, `archivedSymbol`.',
+      '',
+      '## 4. The live risk to watch',
+      '',
+      'A later live section cites `src/later.ts:4`, `laterSymbol`.',
+      '',
+    ].join('\n');
+    const syntheticRanges = archiveRangesIn(queue, synthetic);
+    const state = (needle: string): string =>
+      withinAny(syntheticRanges, synthetic.indexOf(needle)) ? 'excluded' : 'counted';
+
+    expect({
+      count: syntheticRanges.length,
+      header: state('`src/header.ts:1`'),
+      live: state('`src/live.ts:2`'),
+      archive: state('`src/archive.ts:3`'),
+      later: state('`src/later.ts:4`'),
+    }).toEqual({ count: 1, header: 'counted', live: 'counted', archive: 'excluded', later: 'counted' });
+
+    // And the same text under any other document's name is scanned whole.
+    expect(archiveRangesIn('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', synthetic)).toEqual([]);
+  });
+});

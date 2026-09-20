@@ -920,6 +920,16 @@ the record says so wherever it quotes a number.
   > debt's measurement and not the row's verdict — and no tree measured so far
   > has held the Git LFS bytes, so every figure in this chain is conditional in
   > the way §"Stage 3" states.
+
+  > **And the 16 has been overtaken too, by the sweep's first follow-up; the
+  > record is again at §"Stage 3".** The short of it: **13 of 36** on
+  > `7b0f6f69`, a strict subset of the 16 — `390x844@100%`, `375x812@75%` and
+  > `375x812@100%` cleared, none added. **The row's verdict is still not moved
+  > by any of it**, for the reason the mark above already gives. What is new is
+  > that the figure has stopped depending on somebody remembering to re-run it:
+  > `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` is collected by
+  > the `browser` gate and fails on a fourteenth combination, which is the
+  > failure mode this whole chain of marks is a record of.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
   repository does not have. The clause beside it *does* transfer, and was unmet

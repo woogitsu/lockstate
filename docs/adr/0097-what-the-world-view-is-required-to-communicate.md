@@ -117,8 +117,15 @@ merged as [#1018](https://github.com/woogitsu/lockstate/pull/1018) against
 `main` @ `1ad253c` (v0.0.497):
 
 - A sealed cell and a working one — same tiles, same crop, same population, same
-  `roomCapacity` — differ by **6,061 pixels of 147,456 (4.11%)**. Thirty-two of
-  thirty-six tiles are pixel-identical. The 3,072 differing pixels at tile
+  `roomCapacity` — differ by **6,061 pixels of 147,456 (4.11%)**. Thirty of
+  thirty-six tiles are pixel-identical — **corrected from "thirty-two" on
+  2026-09-19 (issue #1022)**, when the research record's own per-tile map was
+  re-derived by decoding the two committed screenshots and returned `6,061` of
+  `147,456` and that map digit for digit, with **six** tiles non-zero rather
+  than four. The pixel figures this decision rests on are unchanged; only the
+  tile count was wrong, and the record carries the fuller correction. The
+  decode now runs as
+  `tests/foundation/world-view-state-measurement-contract.test.ts`. The 3,072 differing pixels at tile
   (14,17) are **the door**; the 2,989 at row y=12 are four prisoner sprites
   overlapping slightly differently in one corner.
 - Act 5: six frames over 1,144 ticks, **0 differing pixels of 409,600**.
@@ -299,7 +306,7 @@ in prose.
 >
 > **The sixth is the one that matters and it did not exist when this was
 > written:** ADR 0099's world-revision marker, read off a delta, at
-> `src/rendering/feed/simulation-snapshot-feed.ts:560`. It makes a *geometry*
+> `src/rendering/feed/simulation-snapshot-feed.ts:563`. It makes a *geometry*
 > change prompt rather than 30 seconds stale, because `SparseWorld.setZoning`
 > moves that marker (`src/simulation/world/sparse-world.ts:908`).
 >
@@ -500,7 +507,7 @@ with a screenshot pair.
 
 **This has a corollary that costs a renderer module.** `TileLayer` repaints on a
 change of `revision` or of visible range and on nothing else
-(`src/rendering/feed/render-feed.ts:43-46`), and `revision` is deliberately
+(`src/rendering/feed/render-feed.ts:92-96`), and `revision` is deliberately
 geometry-only — `SimulationSnapshotFeed.applyDelta`'s own docblock
 (`src/rendering/feed/simulation-snapshot-feed.ts:395-402`) records that bumping
 it for an actor delta would throw away ADR 0040 slice 1's entire saving. So a
@@ -556,7 +563,7 @@ competing.
 > can satisfy with the existing technique — it is a hard requirement the
 > existing technique cannot meet, because **no room-instance identity or
 > rectangle reaches the render side of the worker boundary at all today.**
-> `RenderFrame` (`src/rendering/feed/render-feed.ts:42-51`) has exactly three
+> `RenderFrame` (`src/rendering/feed/render-feed.ts:91-118`) has exactly three
 > data fields — `world`, `structures`, `actors` — and none of them carries a
 > room instance id or rectangle; `RenderStructure` (`src/rendering/world/structures.ts`)
 > is walls, doors and build orders, not rooms. `roomAccess` and the rectangle
@@ -564,6 +571,18 @@ competing.
 > only the HUD's `RoomListRowViewModel` (ADR 0108's own wiring, confirmed live
 > in `docs/research/2026-09-11-does-unreachable-show-in-the-world.md`) — never
 > the render channel `TileLayer` reads.
+>
+> > **THE PARAGRAPH ABOVE STOPPED BEING TRUE ON 2026-09-19 AND IS KEPT RATHER
+> > THAN REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4), because it is the state
+> > this ADR's option A was blocked on and a reader needs to see what moved.
+> > `RenderFrame` carries **five** data fields today: `rooms`, the room
+> > rectangles the geometry pull publishes (ADR 0111 decision 1, implemented
+> > by reading the `roomInstanceDefinitions` rows `captureSessionSnapshot`
+> > already wrote), and `roomConditions`, the per-instance ordinals the
+> > `simulation/delta` publishes (this ADR's decision 2). The requirement the
+> > amendment states is unchanged and is what the implementation obeys: the
+> > mark is keyed by room **instance**, so two adjacent `room.cell` instances
+> > sharing a wall carry two verdicts and not one.
 >
 > **What this changes about Option A's cost, which this document did not
 > price.** Before a condition ordinal can ride the delta channel per

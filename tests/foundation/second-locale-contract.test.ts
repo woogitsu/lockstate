@@ -96,10 +96,25 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * says a partial locale should -- and the floor stays where the last
    * deliberate measurement put it.
    */
-  pl: 693,
+  pl: 698,
 };
 
 /*
+ * **Raised 693 -> 698 on 2026-09-19, by one translated key and a re-measurement
+ * that found four more.** `hud.status.earned-withheld` is the key this change
+ * authored: #1302 shipped the English sentence alone on 2026-09-19 and #664's
+ * rule means no gate saw the gap. The other four were already translated and
+ * already uncounted -- `auditLocaleCatalog` reported `pl` at **697** against
+ * the reference on the unmodified base commit, with the floor still at 693.
+ *
+ * **The number lands at the measurement and the attribution is written here
+ * instead**, which is the rule the paragraph below settled after the 674 entry
+ * had tried the other way round: four keys of slack in a floor is four keys
+ * that can be lost without this row noticing. Measured by bisection on this
+ * tree -- 698 passes, 699 fails, and 697/698 on the base file before the
+ * Polish key was added -- so the floor and the measurement are the same number
+ * again.
+ *
  * **Raised 675 -> 690 on 2026-09-14 by the fifteen `hud.layout.*` keys**, the
  * same deliberate act, measured the same way. Those fifteen were English on a
  * Polish page -- three of them on screen at boot -- because #1159 added them

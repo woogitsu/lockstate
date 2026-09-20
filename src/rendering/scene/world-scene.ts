@@ -39,6 +39,7 @@ import {
   type TileRect,
 } from '../build/area-picking';
 import { HomeIndicatorLayer } from '../phaser/home-indicator-layer';
+import { RoomConditionLayer } from '../phaser/room-condition-layer';
 import { RoomLabelLayer } from '../phaser/room-label-layer';
 import { TileLayer } from '../phaser/tile-layer';
 import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
@@ -285,6 +286,12 @@ export class WorldScene extends Phaser.Scene {
    * regions once per revision to write no text.
    */
   private roomLabels: RoomLabelLayer | undefined;
+  /**
+   * ADR 0097's condition mark (#1022). Unconditional, unlike `roomLabels`:
+   * a name needs a localized word handed in from the composition root and a
+   * mark needs nothing but the frame, so there is no option to be absent.
+   */
+  private roomConditions: RoomConditionLayer | undefined;
   private actors: ActorLayer | undefined;
   private buildOverlay: BuildOverlay | undefined;
 
@@ -380,6 +387,7 @@ export class WorldScene extends Phaser.Scene {
     this.tiles = new TileLayer(this);
     const roomName = this.roomName;
     if (roomName !== undefined) this.roomLabels = new RoomLabelLayer(this, roomName);
+    this.roomConditions = new RoomConditionLayer(this);
     this.buildOverlay = new BuildOverlay(this);
     this.areaOverlay = new AreaOverlay(this);
     this.objectOverlay = new AreaOverlay(this);
@@ -698,6 +706,7 @@ export class WorldScene extends Phaser.Scene {
       canvas.removeEventListener('pointerdown', capturePointer);
       this.tiles?.destroy();
       this.roomLabels?.destroy();
+      this.roomConditions?.destroy();
       this.actors?.destroy();
       this.buildOverlay?.destroy();
       this.areaOverlay?.destroy();
@@ -705,6 +714,7 @@ export class WorldScene extends Phaser.Scene {
       this.homeIndicator?.destroy();
       this.tiles = undefined;
       this.roomLabels = undefined;
+      this.roomConditions = undefined;
       this.actors = undefined;
       this.buildOverlay = undefined;
       this.areaOverlay = undefined;
@@ -762,6 +772,7 @@ export class WorldScene extends Phaser.Scene {
     // that floor is painted from this exact `frame.world` (`room-label-layer.ts`
     // records what the 30-second geometry window does and does not do to that).
     this.roomLabels?.update(frame, range, this.cameras.main.zoom);
+    this.roomConditions?.update(frame, range);
     this.actors?.update(frame.actors, range, nowSeconds);
     // Handed over every frame rather than read once: `frame.world` is replaced
     // wholesale on every snapshot (`WorldRenderView.fromSnapshot`), and this is
@@ -1421,6 +1432,18 @@ export class WorldScene extends Phaser.Scene {
    * would be checking `offscreenHomeIndicator` against itself rather than
    * checking that this scene feeds it the right rectangle.
    */
+  /**
+   * Which rooms currently carry ADR 0097's condition mark, as
+   * `instanceId:ordinal`, in the order they are drawn.
+   *
+   * For `tests/browser/`, the same reason `RoomLabelLayer.drawn` exists: the
+   * claim a gate is for is "the mark is on screen", and nothing in the game
+   * reads this.
+   */
+  public get roomConditionMarks(): readonly string[] {
+    return this.roomConditions?.drawn ?? [];
+  }
+
   public get homeIndicatorMark(): HomeIndicator | undefined {
     return this.homeIndicator?.mark;
   }

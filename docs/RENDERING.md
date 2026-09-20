@@ -176,12 +176,29 @@ its first sender: `SimulationWorkerStateMachine.publishRenderDelta` posts an
 unsolicited keyframe of the live prisoner population beside the clock and
 status-counts publications already on the tick loop, on a **100 ms ceiling**
 and skipped entirely while the tick stands still. The body is an
-`array-buffer` `versionedPayload` -- `lockstate.render-actors` (v1 at slice 1, v3 since ADR 0099), whose layout
+`array-buffer` `versionedPayload` -- `lockstate.render-actors` (v1 at slice 1, v3 since ADR 0099, **v4 since ADR 0097's room-condition block**), whose layout
 is defined once in `src/simulation/protocol/render-actors-payload.ts` -- and it
 is transferred rather than copied. Applying one replaces `RenderFrame.actors`
-and nothing else, and **reads one header word that is not about the actors at
-all**: ADR 0099's marker, which sets the feed's sixth `dirty` mark and touches
-no field of the frame.
+**and `RenderFrame.roomConditions`**, and **reads one header word that is not
+about the actors at all**: ADR 0099's marker, which sets the feed's sixth
+`dirty` mark and touches no field of the frame.
+
+> **The sentence above read "replaces `RenderFrame.actors` and nothing else"
+> until layout 4, and it is corrected rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4), because what it described was true of every
+> layout before it. [ADR 0097](./adr/0097-what-the-world-view-is-required-to-communicate.md)
+> decision 2 requires a per-room condition ordinal to ride *this* channel
+> rather than the geometry pull — *"a 30-second-stale claim about whether a
+> cell is working is a false claim"* — so layout 4 adds a room-count header
+> word and a three-word row per room: an anchor tile and one ordinal, **12
+> bytes a room**, and no geometry. The **rectangles** those ordinals are drawn
+> around ride the geometry pull instead
+> ([ADR 0111](./adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md)
+> decision 1) and cost nothing new, because `captureSessionSnapshot` has
+> carried `roomInstanceDefinitions` — id, catalogue id, anchor, width, height —
+> in every bundle since room bounds were recorded. `RenderFrame` therefore
+> gained two fields, `rooms` and `roomConditions`, on two different freshness
+> terms: the first moves with `revision`, the second does not.
 
 **Geometry still arrives on a snapshot request**, which is now a consistency net
 rather than the render path. The feed makes one with
@@ -283,6 +300,7 @@ a fresh process per configuration:
 | render-actors keyframe (layout 1) | 8,016 bytes | **80,016 bytes** |
 | render-actors keyframe (layout 2, ADR 0059) | 10,016 bytes | **100,016 bytes** |
 | render-actors keyframe (layout 3, ADR 0099) | 10,020 bytes | **100,020 bytes** |
+| render-actors keyframe (layout 4, ADR 0097) | 10,024 bytes + 12 a room | **100,024 bytes + 12 a room** |
 | the same actors as JSON rows | 11,811 bytes | 126,823 bytes |
 
 Every timing in that table was measured against layout 1, whose record was four
@@ -293,6 +311,15 @@ the timings are **not** re-measured here: the boundary row cannot move for the
 reason the paragraph below gives, and the two decode rows would move by a fifth
 of a walk of the same records. A re-measurement is worth taking before either is
 cited as a current figure.
+
+**The layout 4 row is arithmetic on the same terms as the layout 3 row below
+it**: one more header word, plus three words for each room the worker could
+answer about. How many rooms a real prison has is the figure ADR 0111 §7 says
+nobody has — the largest committed fixture paints zoning straight onto the
+world plane and registers **zero** room instances — so the row is given per
+room rather than dressed as a total. A measured pair for a two-room prison is
+in `tests/integration/a-sealed-cell-reaches-the-drawn-frame.test.ts`: **24
+bytes with no rooms, 48 with two.**
 
 **The layout 3 row is arithmetic and not a measurement, and it says so rather
 than borrowing the credibility of the rows above it.** ADR 0099 adds one header

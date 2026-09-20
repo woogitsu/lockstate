@@ -40,6 +40,20 @@ differ.
 > true of the new ones: a stale runner pool and a stale date are wrong about
 > **measurements**, not about permission breadth. Both directions are now on
 > the list, so neither is the one to watch for.
+>
+> **SIX, AS OF 2026-09-19, AND THE PARAGRAPHS ABOVE ARE LEFT SAYING FIVE.** The
+> sixth is the *"reservation 4"* miscount corrected further down, where
+> `supabase/migrations/` — **reservation 2** in `AGENTS.md`'s numbering — is
+> called reservation 4. It arrived by the same route as the fourth and the
+> fifth: a number written once and never re-read against the document this file
+> paraphrases, so it is a miscount rather than a claim about permission breadth,
+> and the *"both directions"* sentence above still holds with two on one side
+> and four on the other. **Correct as of 2026-09-19**, which supersedes the
+> stamp above under that paragraph's own instruction that the stamp is the line
+> the next editor must touch. The tally is kept in this append-only shape
+> deliberately: a tally rewritten in place is a tally whose earlier values
+> nobody can see, and those values are the whole evidence that this file should
+> not be trusted over `AGENTS.md`.
 
 **The first of those four was released on 2026-09-03, narrowly.** The owner
 authorised the one `main` and the one Worker module that carry ADR 0046's
@@ -225,6 +239,35 @@ that are now wrong.** The telemetry migration landed on 2026-09-04
 (`supabase/migrations/20260904090000_create_telemetry_events.sql`), and
 reservation 4 is no longer whole. `supabase/migrations/` itself is still the
 owner's: that migration was authorised one at a time, not as a category.
+
+> **"RESERVATION 4" IS WRONG AND THE NUMBER IS `2` — the sixth mistake this
+> file records against itself, and the second in a row that is a miscount
+> rather than a claim about permission breadth.** Corrected 2026-09-19; the
+> sentence is kept because a file whose whole argument is that it rots should
+> show the rot rather than describe it.
+>
+> `supabase/migrations/` is **reservation 2** in `AGENTS.md`'s own numbering,
+> and reservation 4 is the player-promise one, whose partial release of
+> 2026-09-04 this file already records separately and for an entirely different
+> reason (the paragraph beginning *"The fourth was partly released"*). So the
+> sentence as written says the telemetry migration dented the player-promise
+> reservation, which it did not and could not.
+>
+> **The clause it corrects makes the intended reading legible, which is how the
+> ambiguity is settled rather than split.** It is quoting *"the other three
+> exclusions"* — items 2, 3 and 4 as a set, that set being what the 2026-09-03
+> release of item 1 left — and saying that set is no longer whole. That is a
+> true sentence about a **set of three**, and it was written as a false one
+> about **item 4**. Both readings were on the table in
+> [#1149](https://github.com/woogitsu/lockstate/issues/1149) §5, which asked the
+> owner to choose between them; they do not need to, because the clause being
+> corrected is in the same sentence and settles it.
+>
+> **`AGENTS.md` is the document that cannot be misread here and it is the one to
+> open.** Its reservation 1 entry says of this same migration, in bold, *"Item 2
+> was not thereby released"* — the number, the scope and the limit in one line.
+> Nothing about reservation 4 moved on 2026-09-04 except the wording release
+> this file records elsewhere.
 
 ## The 2026-09-13 visual identity delivery — a pointer, not a summary
 

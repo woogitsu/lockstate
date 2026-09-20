@@ -369,8 +369,10 @@ export class PrisonerOperationsRuntime {
    * kept showing after a batch of sentences all ended within the same window
    * (ADR 0050, "What this does not decide"). **That sentence read "Nobody has
    * been admitted yet" when this counter was written and reads "No prisoners
-   * yet. Build a cell with a bed to take somebody in." since the owner's
-   * ruling of 2026-09-03** -- the wording moved, the two states this counter
+   * yet. Build a cell -- big enough, walled all round, with a bed and a toilet
+   * in it -- to take somebody in." since the owner's ruling of 2026-09-03 as
+   * corrected in place on their ruling of 2026-09-19 (#933)** -- the wording
+   * moved twice, the two states this counter
    * tells apart did not, and the new wording is false of the emptied-out
    * prison for one more reason than the old one was: the cell it tells the
    * player to build is already standing. This is the

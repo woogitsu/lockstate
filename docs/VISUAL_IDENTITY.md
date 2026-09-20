@@ -867,6 +867,42 @@ sentence.
    > conditional on that** and wants a tree holding the art before it is
    > certified; the *delta* against `ab3bf7ba` is the sounder half, because
    > that reading was taken under the same condition.
+   >
+   > **AND THE "16 OF 36" IN THIS MARK HAS BEEN OVERTAKEN IN TURN, BY THE
+   > SWEEP'S FIRST FOLLOW-UP.** It is right about `a1c7f97d` and is not
+   > edited. Same committed sweep, same config, re-run on `7b0f6f69` (the
+   > branch of #1312's remaining-sweep follow-up, on `faf7ce3a`): **13 of 36**.
+   > The three that left are `390x844@100%`, `375x812@75%` and
+   > `375x812@100%`; the failing set is otherwise the same set of labels, so
+   > this is again a **strict subset** — three cleared, none added.
+   >
+   > **What did not move is the row's verdict, and that clause is now the
+   > oldest true sentence in this chain.** FAIL is what a failing set of 13
+   > says as plainly as one of 16, of 31 or of 29. *"Brak utraty treści i
+   > działań"* is unmet at 13 and constitution article 8's third element is
+   > unmet with it.
+   >
+   > **What the remaining 13 fail on is one thing rather than five**, and it is
+   > worth recording because it is the shape of the decision that is left: at
+   > a viewport halved in both axes the status strip, the tab bar and the rail
+   > cannot all have the height they ask for, and which of them gives way is
+   > not a question `src/ui/hud/hud.css` can answer by tuning a number. Every
+   > one of the 13 sits at an interface scale of 125 % or more, or at a window
+   > of 900x600 or narrower, or both.
+   >
+   > **The gap this whole chain is a record of is closed on the way in from
+   > here, and not by a person remembering to look.**
+   > `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` is collected by
+   > the `browser` gate and asserts that the failing set may shrink and may not
+   > grow. It is a subset assertion rather than an equality, so a repair needs
+   > no edit to it; what it forbids is a fourteenth combination arriving
+   > unannounced, which is exactly how the three this chain opens on came back.
+   > It does **not** re-derive these documents' figure, so the marks above stay
+   > the way this figure is checked.
+   >
+   > **The Git LFS condition recorded three times above held for this run as
+   > well**, and the absolute 13 is conditional on it in exactly the way the
+   > absolute 16 is.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked

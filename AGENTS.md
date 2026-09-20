@@ -787,6 +787,149 @@ second, about a sector id on screen, was not asked and is not answered here.
 body reports red are still red, and the row-and-column budget above the 720 px
 break is still the open decision that body names.
 
+**A FIFTH RULING LANDED THE SAME DAY, AND THE HEADING ABOVE STILL SAYS FOUR
+BECAUSE IT WAS WRITTEN BEFORE THIS ONE.** It is left standing rather than
+corrected, on the habit `docs/AGENT_WORKFLOW.md` §4 asks for and which every
+block above follows; what a reader needs is that **five** rulings of
+2026-09-19 are recorded in this section, and that this one shares the weaker
+provenance the heading describes — a clickable option **written by the
+integrating session**, in Polish, which the owner picked. Not a sentence they
+typed. It authorises what its label says and nothing wider.
+
+**5. `docs/adr/STATUS-QUEUE.md`'s dated §3 pass accounts, excluded from the
+anchor-staleness counting.** The question put to the owner was what to do about
+a per-document budget that counts an append-only archive as if it were live
+prose. #1321 had established, with evidence, that roughly a third of that
+document's unverified anchors sit in §3 entries whose coordinates the file has
+itself ruled must not move — *"Neither points where it says any more, and
+neither should be moved"* — so the gate offered them no compliant remedy at all:
+quoting them is impossible, re-aiming them is forbidden by the record, and
+raising the budget is forbidden by the gate. Being per document did not keep the
+cost there either: #1308 and #1318 both went red on line arithmetic in a third
+file with nothing to do with their subject. They chose:
+
+> Wyłączyć datowaną sekcję 3 z liczenia
+
+("Exclude the dated section 3 from the counting.") **It is read as narrowly as
+it is written.** *Dated* §3 is what it names, so the undated
+`## 3. Still outstanding` section, the document's header and §§1-2, 4-6 stay
+counted, and no other document in the corpus is touched by it. It is not a
+licence to exclude a second document, a second section, or a whole file: the
+one precedent it rests on, `docs/research/`, was itself argued from that
+directory's own README rather than assumed.
+
+**No budget was raised to implement it, and the document's row was lowered.**
+`tests/foundation/documentation-anchor-quotation-contract.test.ts` carries the
+exclusion, keyed off the document's own heading shape rather than a line range,
+and that document's row falls from 300 to the exact measured count of its live
+sections. `ANCHOR_STALENESS_BUDGET_MERGES` and `ANCHOR_STALENESS_BUDGET_COMMITS`
+in the sibling gate are a different mechanism and were not touched: this ruling
+reaches what is *counted*, never how much is *allowed*.
+
+**THE SENTENCE ABOVE WAS FALSE OF THE DIFF THAT FIRST CARRIED IT, AND IT IS
+LEFT STANDING RATHER THAN CORRECTED IN PLACE.** The habit is the one
+`docs/AGENT_WORKFLOW.md` §4 asks for and that `CLAUDE.md`'s preamble
+demonstrates at length; breaking it here, in the entry that records a ruling
+*about* an archive whose records must not be re-aimed, would be the worst
+available place to break it.
+
+**What it claimed.** That the ruling reaches what is counted and never how much
+is allowed.
+
+**What the first revision of the diff did.** It set
+`docs/adr/STATUS-QUEUE.md`'s row to **123**, the exact count its live sections
+measure. But the row was not previously equal to its count either: at
+`36503522` it allowed **300** against **236** counted, and #1321 had left those
+**64** there on purpose, in its own words, *"because lowering it to the new
+count would hand the headroom straight back"*. Setting the row to 123 therefore
+spent the whole of that reserved headroom — it changed how much is allowed, by
+64, inside the commit whose prose says it does not. That tightening was
+**voluntary and measurable**: with the exclusion in place and the row left at
+300, the gate is green. The owner ruled on counting and was never offered the
+tightening.
+
+**What the diff does now.** The row is **187**, derived rather than picked:
+300 - 113 = 187, the 113 being the anchors the ruling removes from counting, so
+the pre-ruling slack of 64 is carried across the change (187 - 123 = 64) rather
+than spent. The whole of the ruling's win is banked as budget retired and none
+of it as slack removed, which is what makes the standing sentence true as
+written. `tests/foundation/documentation-anchor-quotation-contract.test.ts`
+pins the derivation in an assertion, so a later editor who lowers the row to
+the live count fails rather than drifts — and that matters because **a budget
+can never be raised**, so headroom not preserved at that commit cannot be
+recovered afterwards.
+
+**Why it is recorded here and not only in the pull request.** The failure mode
+was not arithmetic. It was a prose claim and a diff written in the same change
+by the same session, neither checked against the other — the same failure mode
+this document's `CLAUDE.md` counterpart records six times against itself, and
+the check that would have caught it is the cheap one: read the sentence against
+the diff it ships with.
+
+
+**TWO FURTHER RULINGS ON 2026-09-19 — THE SIXTH AND THE SEVENTH — AND NEITHER
+HEADING ABOVE HAS BEEN CORRECTED.** The first says four and the entry after it
+says five, each true when written and each left standing, because a count
+rewritten in place is a count whose earlier value nobody can see. `CLAUDE.md`'s
+preamble is this repository's standing demonstration of what that costs: of the
+six mistakes it records against itself it sorts them *"two on one side and four
+on the other"*, the four being wrong **numbers** rather than wrong claims about
+how wide a permission ran.
+
+**The numbering here is load-bearing and was nearly got wrong.** These two were
+drafted as the fifth and the sixth by a session that had checked this file and
+found four — while an agent it had itself dispatched was adding the fifth on a
+branch. The collision was caught by reading that agent's diff rather than this
+file, which is the same check `docs/AGENT_WORKFLOW.md` §4 asks for and the same
+failure mode `CLAUDE.md` records twice: a number written once and never re-read
+against the document it describes. **Ruling 5 is the exclusion of
+`docs/adr/STATUS-QUEUE.md`'s dated §3 from anchor counting**, recorded in the
+entry immediately above this one.
+
+They share the weaker provenance the block above describes — clickable options
+**written by the integrating session**, in Polish, one chosen from each. **What
+is recorded below is the label of an option this session authored and the owner
+picked, not a sentence the owner typed.** Read each as authorising what its
+label says and nothing wider.
+
+**6. ADR 0095 — the held number goes onto a pull request.** `docs/adr/README.md`
+has carried *"0095 remains held and still not on disk"* through six successive
+audit entries. The work sits on the branch
+`measure/893-coverage-and-response-draw-from-one-pool`, last committed
+2026-09-03, with no pull request — and `deletebranches.sh` does not protect it,
+so a branch-cleanup run would have destroyed the only copy and settled the
+question in the one direction nobody chose. Offered that, releasing the number,
+or merely protecting the branch and deciding later, the owner chose:
+
+> Otworzyć PR z tej gałęzi
+
+("Open a PR from that branch.") **It authorises a pull request and no merge**,
+and the number stays taken. Accepting ADR 0095 is a separate decision and still
+theirs. ADR 0096's own row in that README records that it *"Takes 0096 over a
+held 0095"* and cites this exact branch, so whatever 0095 decides has to be read
+against a document that already superseded its subject matter — which is the
+first thing its pull request has to say.
+
+**7. The dead glob segment in `ci.yml` — offered inside reservation 3, and
+DECLINED.** This entry exists because a reservation that was *asked about and
+not released* leaves no trace anywhere else, and the next session would
+otherwise spend the question again. The `browser` job's `git lfs pull
+--include=` list names eight path segments. Measured against `09384b9f`, seven
+of them match exactly one file each under `public/game-content/source-art/` and
+`rendered.furniture.cell.locker.variants` matches **none**. Offered the deletion
+of that one segment, leaving it, or first checking whether locker art is
+planned, the owner chose:
+
+> Zostawić
+
+("Leave it.") **Reservation 3 is untouched and nothing in `.github/workflows/`
+moved.** The reading that makes the choice cheap is the one the option carried:
+a `git lfs pull` whose glob matches nothing does not fail, it fetches nothing.
+The 2026-09-07 entry above establishes that the list fails closed on an id
+**absent from it** — the decode step's own error says `add '<id>' to the
+--include filter above` — not on one that is present and unused. So the segment
+costs nothing while it waits, and if locker art is ever published it is already
+named.
 
 ## Required workflow for every issue
 Before coding:
