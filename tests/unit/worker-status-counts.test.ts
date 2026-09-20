@@ -1,4 +1,4 @@
-import { REFUSAL_BAND_TICK_CEILING } from '../../src/simulation/refusals/refusal-band-lifetime';
+import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
@@ -157,6 +157,16 @@ class Harness {
 
   private send(message: MainToWorkerMessage): void {
     this.machine.handleMessage(message);
+  }
+
+  /** Stops the clock without ending the session, for the paused-band case. */
+  public pause(): void {
+    this.send({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: `pause-${String(this.nowMs)}`,
+      kind: 'simulation/set-clock',
+      payload: { mode: 'paused' },
+    });
   }
 
   public run(speed: 1 | 2 | 4 = 1): void {
@@ -674,7 +684,7 @@ describe('publishing the status counts', () => {
     // decides anything and option F cannot be what opens the gate. The wake
     // above already ran tick 1, so this stops the session one tick short of
     // the ceiling.
-    for (let wake = 0; wake < REFUSAL_BAND_TICK_CEILING - 2; wake += 1) harness.advance(50);
+    for (let wake = 0; wake < REFUSAL_BAND_TICK_CEILING_AT_X1 - 2; wake += 1) harness.advance(50);
     expect(
       harness.publications(),
       'an empty prison moves no count, so the interval gate alone must carry nothing -- if it did, the assertion below would be pinning nothing',
@@ -687,7 +697,7 @@ describe('publishing the status counts', () => {
     expect(
       (opened?.payload.tick ?? -1) - standing.tick,
       'the gate has to open on the tick that completes the count, not near it',
-    ).toBe(REFUSAL_BAND_TICK_CEILING);
+    ).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
     // The record itself is untouched -- this is a band lifetime, not a log
     // rule -- and the counts are identical to the publication before it, which
     // is what leaves the tick as the only thing that can have caused this
@@ -699,6 +709,90 @@ describe('publishing the status counts', () => {
     // the gate opens once for it and not once per wake thereafter.
     for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
     expect(harness.publications()).toHaveLength(3);
+  });
+
+  /**
+   * **The threshold scales with the running speed** -- the owner's second
+   * ruling of 2026-09-20, *"Skalować sufit prędkością (zalecane)"* ("Scale the
+   * ceiling with speed"), chosen from three clickable options and carrying the
+   * same weaker provenance as the ruling it amends.
+   *
+   * At x2 a tick is 25 ms of wall clock, so holding the same ~15 s takes
+   * **600** ticks rather than 300. The assertion that matters is the negative
+   * one: **nothing is published at tick 300**, which is where an unscaled
+   * ceiling would have fired. Without it this case would pass against a
+   * ceiling that ignored the speed entirely, because 600 is past 300 too.
+   */
+  test('scales the tick threshold with the running speed, so x2 holds twice as many ticks (owner 2026-09-20)', () => {
+    const harness = new Harness();
+    harness.run(2);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    expect(harness.publications()).toHaveLength(2);
+    expect(harness.kernelTick(), 'one wake at x2 is two ticks, which the arithmetic below depends on').toBe(2);
+
+    // Past the x1 ceiling and well past it: 149 more wakes is tick 300.
+    for (let wake = 0; wake < 149; wake += 1) harness.advance(50);
+    expect(harness.kernelTick()).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
+    expect(
+      harness.publications(),
+      'the x1 ceiling fired at x2 -- the threshold is not scaling with the speed',
+    ).toHaveLength(2);
+
+    // On to one tick short of the x2 ceiling, then over it.
+    for (let wake = 0; wake < 149; wake += 1) harness.advance(50);
+    expect(harness.kernelTick()).toBe(refusalBandTickCeiling(2) - 2);
+    expect(harness.publications()).toHaveLength(2);
+
+    harness.advance(50);
+    expect(harness.kernelTick()).toBe(refusalBandTickCeiling(2));
+    const after = harness.publications();
+    expect(after, 'the x2 ceiling was reached and no publication carried it').toHaveLength(3);
+    expect(after[2]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+  });
+
+  /**
+   * **A paused prison must never age the sentence by a single tick**, which is
+   * the 2026-09-20 ruling in one line, and scaling the threshold created a new
+   * way to break it that counting in ticks alone did not have.
+   *
+   * `ClockControl` has no speed while paused. Reading that as x1 would be the
+   * obvious thing to do and would be wrong in the dangerous direction: `1` is
+   * the **smallest** multiplier and therefore the **shortest** budget, so a
+   * player who pauses at x4 under a refusal 400 ticks old would have the
+   * threshold drop from 1,200 to 300 beneath it and the corner would retire a
+   * sentence in a frozen prison. The publisher therefore freezes the whole
+   * comparison while the clock is paused rather than choosing a multiplier.
+   */
+  test('a paused clock freezes the band comparison instead of reading itself as x1 (owner 2026-09-20)', () => {
+    const harness = new Harness();
+    harness.run(4);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    expect(harness.publications()).toHaveLength(2);
+
+    // Past the x1 ceiling, nowhere near the x4 one (1,200).
+    for (let wake = 0; wake < 99; wake += 1) harness.advance(50);
+    const standingAt = harness.kernelTick();
+    expect(standingAt).toBeGreaterThan(REFUSAL_BAND_TICK_CEILING_AT_X1);
+    expect(standingAt).toBeLessThan(refusalBandTickCeiling(4));
+    const beforePause = harness.publications().length;
+
+    harness.pause();
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.kernelTick(), 'a paused prison ran a tick, so nothing below is about pausing').toBe(standingAt);
+    const afterPause = harness.publications();
+    expect(
+      afterPause.length,
+      'the pause published something about the band -- a paused clock is being read as a speed',
+    ).toBe(beforePause);
+    // And the last thing the main thread was told still carries the refusal
+    // unmarked, which is what keeps the sentence on the corner.
+    expect(afterPause[afterPause.length - 1]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+    });
   });
 
   test('replaces the standing refusal when the simulation refuses something else', () => {

@@ -2201,7 +2201,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // to a band `hud.css` lays out at every viewport with no section to
     // open -- which the list is not, at any viewport (#220, and see
     // `hudRefusalFromWorkerMessage` for the split).
-    const refusal = hudRefusalFromWorkerMessage(message);
+    const refusal = hudRefusalFromWorkerMessage(message, (clock ?? viewModel.clock).speed);
     /*
      * The events channel (issue #507), read on the same two surfaces the
      * refusal is and in the same order: the log first, then the notice.

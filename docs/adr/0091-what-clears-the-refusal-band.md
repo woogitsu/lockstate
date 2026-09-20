@@ -83,6 +83,17 @@ provenance is the same weaker kind as option F's, and for the same reason: the
 label of an option a session wrote, not a sentence the owner typed. The
 amendment is below, under its own heading.
 
+**AND A SECOND RULING THE SAME DAY AMENDS THE FIRST, ON A COST THE FIRST ONE
+DISCLOSED.** Counting in ticks made the band's wall-clock hold depend on the
+speed -- 15.0 s at x1, 7.5 s at x2, 3.75 s at x4 -- so the sentence could
+vanish unread at both faster speeds. Put that, the owner chose from three
+clickable options *"Skalować sufit prędkością (zalecane)"* ("Scale the ceiling
+with speed"). Same weaker provenance again. **The unit did not move**: the
+ceiling is still counted in ticks and a paused prison still ages the sentence
+by nothing at all. What scales is the threshold. It is recorded in the same
+amendment below, in its own subsection, so a reader sees the first ruling and
+its correction in one place rather than having to reconcile two.
+
 **Neither ruling is self-approved and this document says so in the terms
 `docs/AGENT_WORKFLOW.md` §3 requires.** The sessions that implemented option F
 and this amendment did not decide them; they recorded a decision the owner
@@ -733,12 +744,100 @@ derived from both ends rather than picked:
   twice as long, which is the ordering a reader would expect rather than an
   accident of rounding.
 
-**What it costs, stated rather than left to be found.** At x4 a tick is
+~~**What it costs, stated rather than left to be found.** At x4 a tick is
 12.5 ms, so 300 ticks is **3.75 s** of wall clock, well under the 14.05 s the
 derivation above calls a read of the longest sentence. A player fast-forwarding
 may therefore lose a long refusal before finishing it. That is a direct
 consequence of the unit the owner chose, the mirror image of the property that
-makes a paused prison safe, and the alerts list keeps the row either way.
+makes a paused prison safe, and the alerts list keeps the row either way.~~
+
+**THE OWNER RULED ON THAT COST THE SAME DAY AND THE PARAGRAPH IS KEPT BECAUSE
+IT IS WHAT THEY WERE SHOWN.** It is also understated: the arithmetic was
+re-derived from `SimulationWorkerStateMachine`'s own `ticksPerWallSecond` --
+`(1_000 / stepMilliseconds) * speed`, with a 50 ms step and
+`speedSchema = 1 | 2 | 4` -- which gives **15.0 s at x1, 7.5 s at x2 and
+3.75 s at x4**. So the sentence could vanish unread at *both* faster speeds,
+not only the fastest. See the subsection below.
+
+### The second ruling of 2026-09-20: the threshold scales with the speed
+
+Put the arithmetic above, the owner chose from three clickable options:
+
+> Skalować sufit prędkością (zalecane)
+
+("Scale the ceiling with speed.") **Same weaker provenance as the ruling it
+amends** -- the label of an option this session wrote, not a sentence they
+typed -- and recorded in the same form for the same reason.
+
+**What it authorises, and its limit.** The ceiling stays *counted in ticks*;
+that is the earlier ruling and it does not move, so a paused prison must still
+never age the sentence by a single tick. What changes is that the **threshold**
+scales with the running speed, so the wall-clock hold is about 15 s at x1, x2
+and x4 alike. It authorises nothing else: not a wall-clock timer on this band,
+not a change to `EVENT_BAND_HOLD_CEILING_MS`, not gap 34.
+
+**The arithmetic, and the direction it goes.** A tick is
+`stepMilliseconds / speed` of wall clock -- 50 ms at x1, 25 ms at x2, 12.5 ms
+at x4 -- so a faster game spends *more* ticks per wall-clock second and needs
+*more* of them to fill the same hold. The threshold is therefore the x1 figure
+**multiplied** by the speed: 300, 600, 1,200 ticks, each of them 15.0 s. **The
+300 and its derivation above are untouched** -- 23 words at 100 wpm plus the
+250 ms this repository calls seen, over a 50 ms tick -- and the scaling is a
+separate factor on top of that number rather than a replacement for it.
+
+**Where the speed comes from, and why it is not a wire member.** The main
+thread already holds it: `simulation/clock-state` carries the clock control,
+`hudClockFromWorkerMessage` puts it on `HudClockViewModel.speed`, and
+`src/main.ts` has that value in hand on the same publication it is translating.
+So it is a parameter of `hudRefusalFromWorkerMessage` and
+`simulation/status-counts` is still untouched. Putting it on the wire instead
+would have added a fifth member to `refusalSchema`, which
+`documented-wire-schema-membership-contract` would then require naming in every
+document that enumerates that shape -- to carry a fact the receiving thread was
+already holding.
+
+**A speed change under a standing refusal is evaluated at the speed in force
+now**, not at the speed the refusal was raised at. Freezing the raise-time
+speed would mean recording it somewhere: the HUD cannot, because it may first
+see a refusal long after it happened, so it would have to travel on the wire --
+the member the paragraph above declines. Evaluating now is also the honest
+reading of what the budget *is*: fifteen seconds of the wall clock the player
+is watching. A player who presses fast-forward has asked for the prison to move
+faster, and the sentence moving with it is the answer that needs no
+explanation.
+
+**But the predicate is then not monotone, and that is the one thing that had to
+be built rather than reasoned away.** Ticks only advance; the budget they are
+measured against does not. A refusal past its 300-tick budget at x1 is not past
+its 1,200-tick budget at x4, so slowing down *un-marks* a refusal the corner
+has already let go of -- and #777's fix guarantees the sentence would come back
+rather than merely allowing it, because an unchanged ordinal takes the line
+again once the band is empty. So `mountHud` now remembers the ordinal it
+retired, the same mechanism `EventBandDwellState.retired` is for one band over
+and for a different reason. **The predicate moves both ways; the retirement
+moves one way**, which is the property a player would name: a sentence the
+corner has let go of does not come back because they pressed fast-forward.
+
+**A paused clock freezes the comparison rather than choosing a multiplier for
+it.** `ClockControl` carries no speed while paused, and reading that as x1
+would be the obvious thing and wrong in the dangerous direction: x1 is the
+*smallest* multiplier and so the *shortest* budget, so a player who pauses at
+x4 under a refusal 400 ticks old would have the threshold drop from 1,200 to
+300 beneath it and the corner would retire a sentence in a frozen prison. The
+publisher therefore holds its last answer while the clock is paused, and the
+HUD relies on `HudClockViewModel.speed` keeping the last speed the simulation
+actually ran at -- behaviour `hudClockFromWorkerMessage` already documents for
+its own reasons, and which is load-bearing here.
+
+**The new cost, in the other currency, stated for the same reason the old one
+was.** Holding 15 wall-clock seconds at x4 takes 1,200 ticks, which is **half
+an in-game day** against one eighth at x1. So a player who fast-forwards now
+keeps the sentence across a much longer stretch of prison time, and the corner
+is that much more likely to be describing something the prison has moved on
+from. That is the trade this ruling makes -- readable at every speed, staler in
+game terms at the fast ones -- and option F is what limits it: the moment that
+player's own route decides anything, the sentence goes whatever the tick count
+says.
 
 ### How it is built, and the one thing that could not be done on the main thread
 
@@ -805,3 +904,22 @@ the only comparable number this codebase has — the same kind of claim option F
 own recommendation named as its weakest, one band over — and not a measurement
 of anybody reading anything. What is measured is the 35px, the 23 words, the
 2,400-tick day and the 50 ms tick.
+
+**The speed scaling does not make that claim stronger and must not be read as
+having settled it.** It makes the same unmeasured 14.05 s estimate hold at
+three speeds instead of one. If 100 wpm is the wrong rate, it is now the wrong
+rate three times over rather than once — the scaling fixes a *dependence on
+the speed*, not the rate the whole derivation rests on. What would settle it is
+somebody being timed reading the longest of these 48 sentences, which nobody
+has been.
+
+**And a second weakest claim belongs to the new shape specifically: that
+evaluating at the current speed, plus a one-way retirement, is the right pair.**
+The pair is coherent and is tested from both directions, but it means the
+*remaining* hold on a standing sentence jumps when the player changes speed —
+a refusal 400 ticks old is comfortable at x4 and already gone at x1. A design
+that accumulated a speed-weighted budget as ticks passed would not jump, and
+would be a truer reading of "fifteen seconds of wall clock". It was not built
+because it is state on a record that has none today, and because accumulating
+wall-clock-weighted time is one short step from the wall-clock timer this band
+was ruled not to have. That reasoning is a judgement, not a measurement.

@@ -297,7 +297,8 @@ export class SimulationWorkerStateMachine {
   /**
    * Whether the refusal the main thread was last told about had already
    * outlived the band's tick ceiling when that publication left
-   * (`REFUSAL_BAND_TICK_CEILING`, ruled in ticks by the owner 2026-09-20).
+   * (`refusalBandTickCeiling`, ruled in ticks by the owner 2026-09-20 and
+   * ruled to scale with the running speed by the same owner on the same day).
    *
    * **A third watermark, for the same reason there is a second one, and it is
    * the half of this that could not be done on the main thread alone.** The
@@ -310,11 +311,20 @@ export class SimulationWorkerStateMachine {
    * happen. This is that publication, and there is exactly one of it per
    * refusal.
    *
-   * Monotone per record like `_publishedRefusalRouteDecided`: ticks only
-   * advance within a session, and a `record` that replaces the standing
-   * refusal moves `sequence` and opens the gate on its own. A session loaded
-   * over a running one is a new state machine, so a restored kernel cannot
-   * carry this backwards.
+   * **Not monotone per record, unlike `_publishedRefusalRouteDecided`, and the
+   * difference arrived with the speed ruling.** Ticks only advance, so at a
+   * fixed speed this goes `false` -> `true` once. The *threshold* moves with
+   * the speed, though, so a player who slows down under a standing refusal can
+   * flip it back and open this gate a second time. That is bounded by how fast
+   * a player can work the transport controls -- the same bound
+   * `_publishedZoningSequence` argues for a dragged rectangle -- and it is
+   * harmless rather than merely cheap, because the **band** remembers the
+   * ordinal it retired and will not raise it again whatever this publishes
+   * (`mountHud`'s `applySimulationRefusal`). So the worst case is one extra
+   * publication the HUD ignores, not a sentence coming back.
+   *
+   * A session loaded over a running one is a new state machine, so a restored
+   * kernel cannot carry this backwards.
    */
   private _publishedRefusalOutlivedBand = false;
   /**
@@ -643,8 +653,21 @@ export class SimulationWorkerStateMachine {
     // available to the interval gate: a ceiling that only reached the payload
     // would be computed on publications this method had already declined to
     // make.
+    //
+    // **A paused clock freezes the answer rather than choosing a speed for
+    // it**, and that is the 2026-09-20 ruling written as code. The threshold
+    // scales with the speed (the owner's *"Skalować sufit prędkością"*,
+    // 2026-09-20), and `1` is the smallest multiplier and so the shortest
+    // budget -- so treating `{ mode: 'paused' }` as x1 would *shrink* the
+    // budget under a standing refusal and could retire a sentence in a frozen
+    // prison, which is exactly what counting in ticks exists to prevent.
+    // Holding the last published answer says the property out loud: while the
+    // prison is paused, nothing about this band changes.
+    const control = this._clock.control;
     const refusalOutlivedBand =
-      refusal !== undefined && refusalBandCeilingPassed(refusal.tick, this._kernel.tick);
+      control.mode === 'paused'
+        ? this._publishedRefusalOutlivedBand
+        : refusal !== undefined && refusalBandCeilingPassed(refusal.tick, this._kernel.tick, control.speed);
     const refusalIsNew =
       refusalSequence !== this._publishedRefusalSequence ||
       refusalRouteDecided !== this._publishedRefusalRouteDecided ||

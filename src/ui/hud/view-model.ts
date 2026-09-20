@@ -1739,10 +1739,20 @@ export interface HudRefusalNoticeViewModel {
    */
   readonly routeDecidedSince?: true;
   /**
-   * Present once the refusal has stood for `REFUSAL_BAND_TICK_CEILING`
+   * Present once the refusal has stood `refusalBandTickCeiling(speed)`
    * simulation ticks without anything retiring it -- the owner's ruling of
    * 2026-09-20, *"Tak, ale liczony w tikach"* ("Yes, but counted in ticks"),
-   * amending ADR 0091 and ADR 0084 section 6.
+   * amending ADR 0091 and ADR 0084 section 6, and their second ruling the same
+   * day, *"Skalować sufit prędkością"* ("Scale the ceiling with speed"), which
+   * made the threshold a function of the running speed rather than one number.
+   *
+   * **Not monotone, and the band compensates rather than this field.** At a
+   * fixed speed it turns on once and stays on. Change the speed under a
+   * standing refusal and the budget moves: 300 ticks at x1, 1,200 at x4, so a
+   * player who slows down un-marks a refusal that was marked. `mountHud`'s
+   * `applySimulationRefusal` therefore remembers the ordinal it retired and
+   * will not raise it again. **The predicate moves both ways; the retirement
+   * moves one way.**
    *
    * **The complement of `routeDecidedSince`, and deliberately a second field
    * rather than a widening of the first.** That one retires the band when
@@ -1752,12 +1762,21 @@ export interface HudRefusalNoticeViewModel {
    * single flag would make the band unable to say which of the two it obeyed,
    * which is the thing ADR 0091's amendment has to be able to explain.
    *
-   * **Ticks, not milliseconds, and that is the whole of what the owner
-   * ruled.** A paused prison never ages the sentence; a prison at x1 ages it
-   * at 50 ms a tick and one at x4 four times faster. `.hud__event`'s
+   * **Ticks, not milliseconds, and that is the whole of what the owner ruled
+   * first.** A paused prison never ages the sentence, at any speed and for any
+   * length of real time, because no tick passes. `.hud__event`'s
    * `EVENT_BAND_HOLD_CEILING_MS` is untouched and remains a wall-clock number.
    * `src/simulation/refusals/refusal-band-lifetime.ts` carries the
-   * measurement, the number and what the unit costs.
+   * measurement, the number, the scaling and what both cost.
+   *
+   * **The speed is a parameter of `hudRefusalFromWorkerMessage`, not a wire
+   * member.** `src/main.ts` already holds it -- `simulation/clock-state`
+   * carries it and `hudClockFromWorkerMessage` puts it on
+   * `HudClockViewModel.speed` -- so the scaling cost the boundary nothing.
+   * That `speed` deliberately keeps the last speed the simulation *ran* at
+   * across a pause is load-bearing rather than incidental: x1 is the shortest
+   * budget, so a paused clock reported as x1 would shrink it under a sentence
+   * the player is reading.
    *
    * **Only the band reads it**, exactly as for `routeDecidedSince`:
    * `hudAlertsFromWorkerMessage` does not look at it, so the alerts list keeps

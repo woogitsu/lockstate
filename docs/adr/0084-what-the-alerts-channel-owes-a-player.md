@@ -1055,7 +1055,7 @@ section is wrong.
   > session that then implemented it had written — the same provenance ADR 0091
   > records for option F and `CLAUDE.md` records for the 2026-09-08, -09 and
   > -10 releases inside reservation 3. What was agreed is the **rule and the
-  > unit**. The number is not part of it: `REFUSAL_BAND_TICK_CEILING` is 300
+  > unit**. The number is not part of it: `REFUSAL_BAND_TICK_CEILING_AT_X1` is 300
   > ticks and is this repository's measurement, recorded in
   > `src/simulation/refusals/refusal-band-lifetime.ts` and changeable there
   > when the measurement moves.

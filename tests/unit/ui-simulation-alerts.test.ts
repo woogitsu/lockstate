@@ -8,11 +8,11 @@ import {
   type RefusalReason,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
-import { REFUSAL_BAND_TICK_CEILING } from '../../src/simulation/refusals/refusal-band-lifetime';
+import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
-import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
+import type { HudAlertViewModel, HudSpeed } from '../../src/ui/hud/view-model';
 import { alertRows } from '../helpers/alert-rows';
 
 /**
@@ -76,7 +76,7 @@ const COUNTS = {
  * `publishedAt` is the tick the readout is *about*, and it defaults to the
  * refusal's own rather than to a constant. That default used to be `1_234`,
  * which stopped being inert on 2026-09-20: the band now retires a refusal that
- * has stood `REFUSAL_BAND_TICK_CEILING` ticks with nothing further happening
+ * has stood `REFUSAL_BAND_TICK_CEILING_AT_X1` ticks with nothing further happening
  * (the owner's ruling, amending ADR 0091), and `hudRefusalFromWorkerMessage`
  * computes that from these two numbers. A fixture that published every refusal
  * more than a thousand ticks after it happened would mark every notice in this
@@ -99,6 +99,20 @@ function publication(
       ...(refusal === undefined ? {} : { refusal }),
     },
   } as WorkerToMainMessage;
+}
+
+/**
+ * `hudRefusalFromWorkerMessage` at x1 unless a case says otherwise.
+ *
+ * The speed is a required parameter of the production function (the owner's
+ * *"Skalować sufit prędkością"* of 2026-09-20 scales the band's tick threshold
+ * with it), and defaulting it here keeps every case that is **not** about the
+ * ceiling reading as it did before that ruling. The cases that *are* about it
+ * pass a speed explicitly, which is the only way to tell from the call site
+ * which kind of case you are looking at.
+ */
+function bandNotice(message: WorkerToMainMessage, speed: HudSpeed = 1) {
+  return hudRefusalFromWorkerMessage(message, speed);
 }
 
 describe('a refusal the worker published becomes an alert row', () => {
@@ -538,7 +552,7 @@ describe('the same refusal is read a second time, for the band that is always la
     // The ordinal and not the tick: the band uses it to tell a republication
     // of the refusal it is already showing from a newly decided one, and
     // `tick` is the tick the refusal happened on rather than an identity.
-    expect(hudRefusalFromWorkerMessage(publication({ sequence: 7, tick: 12, reason: 'remove-object.nothing-to-remove' }))).toEqual({
+    expect(bandNotice(publication({ sequence: 7, tick: 12, reason: 'remove-object.nothing-to-remove' }))).toEqual({
       sequence: 7,
       labelKey: 'hud.alert.refusal.remove-object.nothing-to-remove',
     });
@@ -552,7 +566,7 @@ describe('the same refusal is read a second time, for the band that is always la
     for (const reason of REFUSAL_REASONS) {
       const message = publication({ sequence: 1, tick: 3, reason });
       const row = rows(message)?.[0];
-      const notice = hudRefusalFromWorkerMessage(message);
+      const notice = bandNotice(message);
       expect(notice).not.toBe('none');
       expect(notice).not.toBeUndefined();
       expect(typeof notice === 'object' ? notice.labelKey : undefined).toBe(row?.labelKey);
@@ -565,7 +579,7 @@ describe('the same refusal is read a second time, for the band that is always la
     // and now it would do so in a band that is on screen at every viewport.
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     for (const reason of REFUSAL_REASONS) {
-      const notice = hudRefusalFromWorkerMessage(publication({ sequence: 1, tick: 3, reason }));
+      const notice = bandNotice(publication({ sequence: 1, tick: 3, reason }));
       const key = typeof notice === 'object' ? notice.labelKey : undefined;
       expect(key, `${reason} produced no key`).toBeDefined();
       const text = localizer.format(String(key));
@@ -581,12 +595,12 @@ describe('the same refusal is read a second time, for the band that is always la
     // The distinction the band depends on. `undefined` would make a session
     // that has refused nothing indistinguishable from a message that is not
     // about refusals at all, and the band would keep a withdrawn sentence.
-    expect(hudRefusalFromWorkerMessage(publication())).toBe('none');
+    expect(bandNotice(publication())).toBe('none');
   });
 
   it("says 'none' when the session stops", () => {
     expect(
-      hudRefusalFromWorkerMessage({
+      bandNotice({
         protocolVersion: SIMULATION_PROTOCOL_VERSION,
         messageId: 'stopped-2',
         replyTo: 'shutdown-2',
@@ -598,7 +612,7 @@ describe('the same refusal is read a second time, for the band that is always la
 
   it('says nothing at all about a message that is not about refusals', () => {
     expect(
-      hudRefusalFromWorkerMessage({
+      bandNotice({
         protocolVersion: SIMULATION_PROTOCOL_VERSION,
         messageId: 'clock-2',
         kind: 'simulation/clock-state',
@@ -621,7 +635,7 @@ describe('the same refusal is read a second time, for the band that is always la
    */
   it('forwards the mark the simulation put on the refusal, without acting on it (ADR 0091)', () => {
     expect(
-      hudRefusalFromWorkerMessage(
+      bandNotice(
         publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove', routeDecidedSince: true }),
       ),
     ).toEqual({
@@ -635,14 +649,14 @@ describe('the same refusal is read a second time, for the band that is always la
     // Absent rather than `false`, so a consumer cannot read "not marked" and
     // "the worker does not report marks" as the same state, and so the shape
     // matches `SimulationRefusal`'s own `true`-or-absent field.
-    const notice = hudRefusalFromWorkerMessage(publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove' }));
+    const notice = bandNotice(publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove' }));
     expect(notice).toEqual({ sequence: 3, labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove' });
     expect(notice === 'none' || notice === undefined ? true : 'routeDecidedSince' in notice).toBe(false);
   });
 
   /**
    * **The complement of option F, ruled by the owner on 2026-09-20**: the band
-   * retires a refusal that has stood `REFUSAL_BAND_TICK_CEILING` simulation
+   * retires a refusal that has stood `REFUSAL_BAND_TICK_CEILING_AT_X1` simulation
    * ticks with nothing further happening. The provenance is the weaker of the
    * two kinds this repository distinguishes -- the label of a clickable option
    * a session wrote, *"Tak, ale liczony w tikach"* ("Yes, but counted in
@@ -663,15 +677,15 @@ describe('the same refusal is read a second time, for the band that is always la
    */
   it('marks a refusal that has stood the whole tick ceiling with nothing further happening', () => {
     expect(
-      hudRefusalFromWorkerMessage(
-        publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING),
+      bandNotice(
+        publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING_AT_X1),
       ),
     ).toEqual({ sequence: 4, labelKey: 'hud.alert.refusal.zone.not-enclosed', outlivedBandTicks: true });
   });
 
   it('leaves the mark off one tick short of the ceiling', () => {
-    const notice = hudRefusalFromWorkerMessage(
-      publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING - 1),
+    const notice = bandNotice(
+      publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING_AT_X1 - 1),
     );
     expect(notice).toEqual({ sequence: 4, labelKey: 'hud.alert.refusal.zone.not-enclosed' });
     // Absent rather than `false`, matching `routeDecidedSince` beside it.
@@ -687,7 +701,7 @@ describe('the same refusal is read a second time, for the band that is always la
     // would lose.
     const standing = { sequence: 5, tick: 900, reason: 'unzone.room-occupied' } as const;
     for (let republication = 0; republication < 50; republication += 1) {
-      expect(hudRefusalFromWorkerMessage(publication(standing, 900))).toEqual({
+      expect(bandNotice(publication(standing, 900))).toEqual({
         sequence: 5,
         labelKey: 'hud.alert.refusal.unzone.room-occupied',
       });
@@ -699,10 +713,10 @@ describe('the same refusal is read a second time, for the band that is always la
     // notice can carry both. The band reads them as one branch, but a shape
     // that made either exclusive would invent a relationship neither rule has.
     expect(
-      hudRefusalFromWorkerMessage(
+      bandNotice(
         publication(
           { sequence: 6, tick: 12, reason: 'build.out-of-bounds', routeDecidedSince: true },
-          12 + REFUSAL_BAND_TICK_CEILING,
+          12 + REFUSAL_BAND_TICK_CEILING_AT_X1,
         ),
       ),
     ).toEqual({
@@ -713,8 +727,76 @@ describe('the same refusal is read a second time, for the band that is always la
     });
   });
 
+  /**
+   * **The threshold scales with the running speed** -- the owner's second
+   * ruling of 2026-09-20, *"Skalować sufit prędkością (zalecane)"* ("Scale the
+   * ceiling with speed"), chosen from three clickable options and carrying the
+   * same weaker provenance as the ruling it amends. It was put to them as the
+   * cost the first ruling disclosed: 300 ticks is 15.0 s at x1, **7.5 s at
+   * x2** and 3.75 s at x4, against a 14.05 s estimate of reading the longest
+   * sentence, so the sentence could vanish unread at both faster speeds.
+   *
+   * **The unit did not change and must not.** A paused prison still ages the
+   * sentence by nothing at all, because no tick passes; what scales is the
+   * number of ticks the sentence is owed.
+   *
+   * Each speed is asserted from **both sides of its own boundary**, and the
+   * x2 and x4 cases additionally assert the negative at the x1 figure -- a
+   * ceiling that ignored the speed would pass a one-sided test at 600 or 1,200
+   * ticks, because those are past 300 too.
+   */
+  it.each([1, 2, 4] as const)('holds a refusal for a speed-scaled number of ticks at x%i', (speed) => {
+    const standing = { sequence: 7, tick: 100, reason: 'zone.not-enclosed' } as const;
+    const ceiling = refusalBandTickCeiling(speed);
+    expect(ceiling, 'the ceiling at this speed is not what the derivation says').toBe(
+      REFUSAL_BAND_TICK_CEILING_AT_X1 * speed,
+    );
+
+    const short = bandNotice(publication(standing, standing.tick + ceiling - 1), speed);
+    expect(short).toEqual({ sequence: 7, labelKey: 'hud.alert.refusal.zone.not-enclosed' });
+
+    const reached = bandNotice(publication(standing, standing.tick + ceiling), speed);
+    expect(reached).toEqual({
+      sequence: 7,
+      labelKey: 'hud.alert.refusal.zone.not-enclosed',
+      outlivedBandTicks: true,
+    });
+  });
+
+  it.each([2, 4] as const)('does not retire at the x1 figure when the game is running at x%i', (speed) => {
+    // The negative that makes the parameterised case above mean something.
+    const standing = { sequence: 7, tick: 100, reason: 'zone.not-enclosed' } as const;
+    expect(
+      bandNotice(publication(standing, standing.tick + REFUSAL_BAND_TICK_CEILING_AT_X1), speed),
+    ).toEqual({ sequence: 7, labelKey: 'hud.alert.refusal.zone.not-enclosed' });
+  });
+
+  it('holds the same stretch of wall clock at every speed, which is the whole point of scaling', () => {
+    // A tick is `stepMilliseconds / speed` of wall clock, and
+    // `FixedStepClock`'s default step is 50 ms. So the check is that the
+    // product is one number rather than three -- the arithmetic the ruling was
+    // put to the owner as.
+    const holdMs = ([1, 2, 4] as const).map((speed) => refusalBandTickCeiling(speed) * (50 / speed));
+    expect(holdMs).toEqual([15_000, 15_000, 15_000]);
+  });
+
+  it('is not monotone in the speed, which is the property the band has to compensate for', () => {
+    // Stated as a test rather than only in prose, because it is the reason
+    // `mountHud` remembers the ordinal it retired. The same record, the same
+    // two ticks, read at two speeds, gives two different answers -- so a band
+    // with no memory would put a retired sentence back when the player slowed
+    // down.
+    const standing = { sequence: 8, tick: 0, reason: 'unzone.room-occupied' } as const;
+    const atOneSpeed = bandNotice(publication(standing, REFUSAL_BAND_TICK_CEILING_AT_X1), 1);
+    const atFourSpeed = bandNotice(publication(standing, REFUSAL_BAND_TICK_CEILING_AT_X1), 4);
+    expect(atOneSpeed === 'none' || atOneSpeed === undefined ? false : atOneSpeed.outlivedBandTicks).toBe(true);
+    expect(
+      atFourSpeed === 'none' || atFourSpeed === undefined ? true : 'outlivedBandTicks' in atFourSpeed,
+    ).toBe(false);
+  });
+
   it('is pure: the same message gives the same answer', () => {
     const message = publication({ sequence: 3, tick: 8, reason: 'zone.overlaps-existing-room' });
-    expect(hudRefusalFromWorkerMessage(message)).toEqual(hudRefusalFromWorkerMessage(message));
+    expect(bandNotice(message)).toEqual(bandNotice(message));
   });
 });

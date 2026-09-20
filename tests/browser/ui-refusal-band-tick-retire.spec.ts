@@ -6,10 +6,10 @@ import {
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
-import { REFUSAL_BAND_TICK_CEILING } from '../../src/simulation/refusals/refusal-band-lifetime';
+import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
-import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudViewModel } from '../../src/ui/hud';
+import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudSpeed, HudViewModel } from '../../src/ui/hud';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
@@ -111,12 +111,20 @@ interface MainThreadReading {
   readonly alerts: readonly HudAlertViewModel[];
 }
 
-/** What `src/main.ts` would hold for the refusal standing in `runtime` right now. */
-function readMainThread(runtime: SimulationRuntime): MainThreadReading {
+/**
+ * What `src/main.ts` would hold for the refusal standing in `runtime` right
+ * now, at `speed`.
+ *
+ * The speed is the one `src/main.ts` reads off `HudClockViewModel.speed` and
+ * hands the translator, because the band's tick threshold scales with it (the
+ * owner's *"Skalować sufit prędkością"*, 2026-09-20). It defaults to x1 so a
+ * case that is not about the scaling does not have to mention it.
+ */
+function readMainThread(runtime: SimulationRuntime, speed: HudSpeed = 1): MainThreadReading {
   const refusal = runtime.refusals.last;
   if (refusal === undefined) throw new Error('nothing is standing, so there is no band state to read');
   const message = publication(runtime, refusal);
-  const notice = hudRefusalFromWorkerMessage(message);
+  const notice = hudRefusalFromWorkerMessage(message, speed);
   if (notice === undefined || notice === 'none') throw new Error('the translator gave the band nothing to say');
   const alerts = hudAlertsFromWorkerMessage(message, []);
   if (alerts === undefined || alerts === 'none') throw new Error('the translator gave the list nothing to show');
@@ -205,8 +213,8 @@ test.describe('the refusal band retires after a tick ceiling with nothing furthe
     // inside as well as the outside, because a rule that fired early would
     // still empty the band eventually and every "it went away" assertion in
     // this file would stay green.
-    idle(runtime, REFUSAL_BAND_TICK_CEILING - 1 - (runtime.kernel.tick - refusedAt));
-    expect(runtime.kernel.tick - refusedAt).toBe(REFUSAL_BAND_TICK_CEILING - 1);
+    idle(runtime, REFUSAL_BAND_TICK_CEILING_AT_X1 - 1 - (runtime.kernel.tick - refusedAt));
+    expect(runtime.kernel.tick - refusedAt).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1 - 1);
     const almost = await show(page, readMainThread(runtime));
     expect(almost.bandVisible, 'the sentence is still owed its last tick').toBe(true);
     expect(almost.bandText).toBe(sentence);
@@ -214,7 +222,7 @@ test.describe('the refusal band retires after a tick ceiling with nothing furthe
 
     // **The tick that completes the count.**
     idle(runtime, 1);
-    expect(runtime.kernel.tick - refusedAt).toBe(REFUSAL_BAND_TICK_CEILING);
+    expect(runtime.kernel.tick - refusedAt).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
     const retired = await show(page, readMainThread(runtime));
     expect(retired.bandVisible, 'nothing answered the refusal and the ceiling has been reached').toBe(false);
     expect(retired.bandSource, 'a retired band belongs to no producer').toBeNull();
@@ -271,7 +279,7 @@ test.describe('the refusal band retires after a tick ceiling with nothing furthe
     // painted would show the sentence here and never take it back.
     const runtime = createNewSimulationRuntime(SEED);
     placeWall(runtime, 'refused', UNOWNED_TILE);
-    idle(runtime, REFUSAL_BAND_TICK_CEILING);
+    idle(runtime, REFUSAL_BAND_TICK_CEILING_AT_X1);
 
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
@@ -282,10 +290,98 @@ test.describe('the refusal band retires after a tick ceiling with nothing furthe
     expect(reading.rowPresent, 'the list still receives it on its first sight of it too').toBe(true);
   });
 
+  test('holds a refusal four times as many ticks at x4, so the sentence keeps its ~15 seconds', async ({ page }) => {
+    // **The owner's second ruling of 2026-09-20**, from three clickable
+    // options: *"Skalować sufit prędkością (zalecane)"* ("Scale the ceiling
+    // with speed"). Same weaker provenance as the ruling it amends -- an
+    // option's label, not a sentence they typed. It was put to them as the
+    // cost the first ruling had disclosed: at x4 a tick is 12.5 ms, so 300
+    // ticks is 3.75 s against a 14.05 s estimate of reading the longest
+    // sentence this band can say.
+    //
+    // The load-bearing assertion is the **negative** one at 300 ticks. An
+    // unscaled ceiling passes a one-sided test at 1,200 ticks, because 1,200
+    // is past 300 as well.
+    const runtime = createNewSimulationRuntime(SEED);
+    placeWall(runtime, 'refused', UNOWNED_TILE);
+    const refusedAt = runtime.refusals.last?.tick ?? -1;
+
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    expect((await show(page, readMainThread(runtime, 4))).bandVisible).toBe(true);
+
+    idle(runtime, REFUSAL_BAND_TICK_CEILING_AT_X1 - (runtime.kernel.tick - refusedAt));
+    expect(runtime.kernel.tick - refusedAt).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
+    const atTheOneSpeedCeiling = await show(page, readMainThread(runtime, 4));
+    expect(
+      atTheOneSpeedCeiling.bandVisible,
+      'the x1 ceiling retired the band at x4 -- the threshold is not scaling with the speed',
+    ).toBe(true);
+
+    idle(runtime, refusalBandTickCeiling(4) - 1 - (runtime.kernel.tick - refusedAt));
+    expect(runtime.kernel.tick - refusedAt).toBe(refusalBandTickCeiling(4) - 1);
+    expect((await show(page, readMainThread(runtime, 4))).bandVisible, 'one tick still owed').toBe(true);
+
+    idle(runtime, 1);
+    const retired = await show(page, readMainThread(runtime, 4));
+    expect(retired.bandVisible, 'the x4 ceiling was reached and the corner kept the sentence').toBe(false);
+    expect(retired.rowPresent, 'the list is the record and keeps it at every speed').toBe(true);
+  });
+
+  test('a retirement is one-way: slowing down does not bring a retired sentence back', async ({ page }) => {
+    // **The failure mode the scaling created, and the reason `mountHud` now
+    // remembers the ordinal it retired.** Ticks only advance, but the budget
+    // they are measured against is four times larger at x4 than at x1, so the
+    // same record past its x1 budget is *not* past its x4 one: the mark goes
+    // off again. `#777`'s fix then guarantees the sentence comes back rather
+    // than merely allowing it, because an unchanged ordinal takes the line
+    // again once the band is empty.
+    //
+    // The predicate moves both ways; the retirement must not.
+    const runtime = createNewSimulationRuntime(SEED);
+    placeWall(runtime, 'refused', UNOWNED_TILE);
+    const refusedAt = runtime.refusals.last?.tick ?? -1;
+
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    expect((await show(page, readMainThread(runtime, 1))).bandVisible).toBe(true);
+
+    idle(runtime, REFUSAL_BAND_TICK_CEILING_AT_X1 - (runtime.kernel.tick - refusedAt));
+    expect((await show(page, readMainThread(runtime, 1))).bandVisible, 'the x1 retirement never happened').toBe(false);
+
+    // The player presses fast-forward. The translator now says the refusal is
+    // *not* past its budget -- asserted here rather than assumed, because if
+    // it were still marked this case would pass without the memory existing.
+    const atSpeed = readMainThread(runtime, 4);
+    expect(
+      atSpeed.notice.outlivedBandTicks,
+      'the mark survived the speed change, so this case is not testing the memory',
+    ).toBeUndefined();
+
+    const afterSpeedUp = await show(page, atSpeed);
+    expect(
+      afterSpeedUp.bandVisible,
+      'a sentence the corner had let go of came back because the player pressed fast-forward',
+    ).toBe(false);
+    expect(afterSpeedUp.bandSource).toBeNull();
+
+    // And back down again, several times, because a memory that only survives
+    // one change is not a memory.
+    for (const speed of [1, 2, 4, 1] as const) {
+      expect((await show(page, readMainThread(runtime, speed))).bandVisible).toBe(false);
+    }
+
+    // A genuinely new refusal is still shown: this is a memory of one ordinal,
+    // not a mute.
+    submit(runtime, 'unzone', packCommand({ type: 'UnzoneRoom', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.count).toBe(2);
+    expect((await show(page, readMainThread(runtime, 4))).bandVisible).toBe(true);
+  });
+
   test('a later refusal takes the band back, so a retirement is a lifetime and not a mute', async ({ page }) => {
     const runtime = createNewSimulationRuntime(SEED);
     placeWall(runtime, 'refused', UNOWNED_TILE);
-    idle(runtime, REFUSAL_BAND_TICK_CEILING);
+    idle(runtime, REFUSAL_BAND_TICK_CEILING_AT_X1);
 
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
