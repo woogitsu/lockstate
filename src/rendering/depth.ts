@@ -126,6 +126,20 @@ export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
 export const ROOM_LABEL_DEPTH = -FLOOR_DEPTH - 1;
 
 /**
+ * Depth for ADR 0097's per-room condition mark.
+ *
+ * Immediately under the room's name and above everything with height, for the
+ * same reason the name is up there: the mark is about a *room*, and a bed
+ * standing in the middle of that room is not a reason to hide the sentence
+ * "nobody can get in here". One below `ROOM_LABEL_DEPTH` so that where a mark
+ * and a name meet -- they are drawn at different places in the rectangle, so
+ * they mostly do not -- the answer on screen is defined rather than whichever
+ * drew last, which is the rule `AREA_PREVIEW_DEPTH` already follows one file
+ * over.
+ */
+export const ROOM_CONDITION_MARK_DEPTH = ROOM_LABEL_DEPTH - 1;
+
+/**
  * Depth for something whose base sits at `anchorWorldY`.
  *
  * Pure and total: given the same anchor and layer it always returns the same

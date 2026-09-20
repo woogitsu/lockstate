@@ -7,6 +7,7 @@ import {
   RENDER_ACTORS_SCHEMA_VERSION,
 } from '../../src/simulation/protocol/render-actors-payload';
 import { encodeRenderActorsKeyframe } from '../../src/simulation/worker/render-actors-keyframe';
+import { collectRoomConditions } from '../../src/simulation/worker/room-conditions';
 import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   SESSION_SNAPSHOT_SCHEMA_ID,
@@ -91,6 +92,13 @@ export class LoopbackWorker implements SimulationMessageSource {
       1_000 / TICK_MILLISECONDS,
       this.runtime.world.drawnWorldRevision,
       this.runtime.securityGuards,
+      // ADR 0097's room-condition block, from the production collector, for
+      // the reason the marker above comes from the production encoder: a fake
+      // that computed its own ordinals would prove only that the feed reads
+      // what the fake put there. The worker caches this against the marker;
+      // this loopback recomputes it per publication, which is the same bytes
+      // by a slower route.
+      collectRoomConditions(this.runtime),
     );
     const message = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,

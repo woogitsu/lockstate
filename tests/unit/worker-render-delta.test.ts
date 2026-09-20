@@ -234,7 +234,10 @@ describe('the worker publishes a render delta', () => {
     // header word; the envelope, the transport and the content type are
     // untouched by both, which is the point of versioning the read model
     // inside the payload (ADR 0003 decision 5).
-    expect(delta!.payload.delta.schemaVersion).toBe(3);
+    // 4 since ADR 0097's per-room condition block joined this payload; the
+    // envelope's own `SIMULATION_PROTOCOL_VERSION` is untouched by it, which
+    // is the property versioning the read model inside the payload buys.
+    expect(delta!.payload.delta.schemaVersion).toBe(4);
     if (delta!.payload.delta.transport !== 'array-buffer') throw new Error('unreachable');
     expect(delta!.payload.delta.contentType).toBe('application/x-lockstate-render-actors');
     expect(delta!.payload.delta.byteLength).toBe(delta!.payload.delta.data.byteLength);
