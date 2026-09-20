@@ -156,7 +156,38 @@
    * at the scales that did not exist before.
    */
   flex-wrap: wrap;
-  align-content: center;
+  /*
+   * THE STRIP IS AS TALL AS THE ROWS IT WRAPPED INTO, AND THE FIRST OF THEM
+   * STARTS AT ITS TOP EDGE (#1312 follow-up).
+   *
+   * `min-height` above is a floor and was the only thing sizing this box, and
+   * a floor is not a fit. `.hud` is `grid-template-rows: auto ...` in a
+   * viewport-height container, and an `auto` row sizes a wrapping flex
+   * container by an intrinsic contribution that under-counts the wraps: the
+   * strip's members are measured where they need not wrap, so the track comes
+   * out at the floor while the laid-out strip is taller. Measured on a
+   * 390x844 window halved by a 200 % page zoom at a 150 % interface scale, on
+   * `faf7ce3a`: the track is **132px** and the content in it is **157px**.
+   *
+   * `align-content: center` then centred 157px of rows inside a 132px box, so
+   * the overflow was split between the two ends and the FIRST row -- the
+   * brand badge, which is where a bug report reads the build id from -- was
+   * laid at **top=-26.4**, above the top of the page. The same reading at
+   * 1024x768 halved at 175 % put it at top=-4.
+   *
+   * `height: max-content` is resolved against this box's own used width, which
+   * the grid has already decided, so it is the height the strip actually
+   * wraps into rather than the height it would want if it did not wrap; the
+   * track follows it. `min-height` still floors it where the content is
+   * shorter, so no viewport that was not overflowing changes. `flex-start`
+   * then makes the remaining question moot: if anything ever does overflow
+   * this box again it does so downward, and the brand stays at the top.
+   *
+   * Measured across this change at 390x844 halved at 150 %: strip
+   * 132 -> 184.8px, spill 26 -> 0px, brand top -26.4 -> 0.
+   */
+  height: max-content;
+  align-content: flex-start;
   gap: var(--space-1) var(--space-4);
   min-height: var(--hud-strip-height);
   padding: 0 var(--space-3);
@@ -1150,6 +1181,13 @@
  * injected as a control the Build panel fits perfectly and the save panel
  * becomes a 41.1px box over 240px of content. The `max-height: 700px` block at
  * the foot of this file is where that viewport is paid for instead (#174).
+ *
+ * **A SHARE STOPS BEING A FLOOR ONCE THE RAIL IS SHORT, AND BELOW 720px THIS
+ * LINE IS RAISED FOR THAT REASON (#1312).** A quarter of a 214px rail is 54px
+ * and the two things this slot holds need 88 of them, so under a page zoom the
+ * slot was drawing over the panel below it. The raise, its derivation and why
+ * it is scoped to that tier rather than written here are at `.hud__aside` in
+ * the `max-width: 720px` block at the foot of this file.
  */
 .hud__aside {
   display: flex;
@@ -3407,6 +3445,34 @@
  * Rooms panel 70.2px of arrival height.
  */
 :root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }
+
+/*
+ * AND THE SAME WRAP WHERE THE VIEWPORT IS NARROWER THAN THE BAR, AT ANY SCALE.
+ *
+ * The rule above gates the wrap on the player having asked for a larger
+ * interface, and the comment above it says why the gate is there rather than
+ * the wrap being unconditional: at a 375x812 phone at 100 % a bar that may
+ * wrap does wrap, "where the tabs shrink and fit", and that second row cost
+ * the Rooms panel 70.2px of arrival height. That reading is about a 375 CSS
+ * pixel viewport and it still holds; this rule does not touch it.
+ *
+ * What it does not cover is a viewport NARROWER than that, which a 200 % page
+ * zoom produces out of the same phone: 390x844 lays out in 195 CSS pixels and
+ * 375x812 in 188. There the tabs do not shrink and fit -- every tab carries a
+ * `min-width` floor, the bar is wider than the column, and `overflow: hidden`
+ * above clips whatever hangs off it. Measured on `faf7ce3a` at 100 %, two tab
+ * centres were laid at **x=-14.5 and x=209.5 of a 195-pixel viewport**, and at
+ * 75 % one tab centre resolved to `.hud-tabs__inner` itself rather than to the
+ * tab -- the clip, reported.
+ *
+ * So the gate is widened by one term rather than removed, and the term is the
+ * width at which the measurement above was taken: below 375 CSS pixels the bar
+ * wraps whatever the interface scale is. At 375 exactly, and above it, nothing
+ * changes.
+ */
+@media (max-width: 374px) {
+  .hud-tabs__inner { flex-wrap: wrap; }
+}
 
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);
@@ -5918,12 +5984,60 @@
    * rail is tall enough for its content, which is every combination at 100 %,
    * nothing overlaps and this rule does nothing at all.
    */
+  /*
+   * **THE SLOT'S FLOOR BECOMES ITS OWN CONTENT WHERE A SHARE OF THE RAIL IS
+   * NO LONGER ONE (#1312).**
+   *
+   * `.hud__aside`'s `min-height: 25%` is derived one file up against a 482.8px
+   * rail at 900x600, where a quarter is 120.7px and generous. Under a 200 %
+   * browser page zoom the CSS viewport halves in each axis and the rail at a
+   * 1280x720 window is **214px**, a quarter of which is 54px -- against a 46px
+   * chrome row of two 44px tap targets and the save panel's own 26px header,
+   * neither of which can shrink. The slot has no `overflow` of its own, so the
+   * 34px difference was drawn over the sheet below it, where no gesture
+   * reaches it. That is loss of content, which constitution article 8 forbids
+   * through ADR 0112 decision 1 (`docs/VISUAL_IDENTITY.md`).
+   *
+   * **Bisected to `d4986dfa` (#1201)**, which moved the alerts fold into
+   * `.hud__side` at this very breakpoint and priced it against this slot's
+   * slack -- *"`.hud__aside`'s `flex: 1 1 0` slack pays for all of it, with
+   * 277 px still above its own 25 % floor"*. That is true at the 375x812 it
+   * was measured at. At a halved viewport there is no slack: across that
+   * commit the rail is unchanged at 202.8px and `.hud__side` goes 108.2 ->
+   * 144.1, straight out of this slot. `.ui-panel.hud-overview` above is
+   * `flex: 0 1 auto; min-height: 0` with its own `overflow-y: auto` **because
+   * of that same commit**, so what this raise takes back lands in a scrollport
+   * a finger can reach rather than in `.hud__rail`'s `overflow: hidden`.
+   *
+   * **A length, not `min-content`, and the rejected attempt is the reason.**
+   * `flex-basis: min-content` on this slot resolves through the save panel's
+   * whole prison list: measured, the slot took **217px of a 214px rail** and
+   * left `.hud__side` 32px -- the promise one file up, inverted. So the floor
+   * is spelled out: one tap target for the chrome row, one more for the save
+   * panel's header and this slot's two gutters. Both terms scale with
+   * `--ui-scale` (`tokens.css`), so the floor tracks the interface scale that
+   * causes the squeeze -- 96px of floor for 88px of content at 100 %, 72px for
+   * 67px at 75 %.
+   *
+   * **IN THIS BLOCK RATHER THAN ON THE BASE RULE, AND THAT IS MEASURED RATHER
+   * THAN TIDINESS.** Written on the base rule it reaches 900x600 at a **900px**
+   * width, which is not this tier, and at 200 % interface scale the floor there
+   * is 192px of a rail that cannot spare it: `app-shell.spec.ts`'s #545 sweep
+   * went red with *"the rail scrolls at 900x600 and 200%"*, 9px of
+   * `.hud__rail` overflow -- one overflow traded for another. Capping the floor
+   * at `min(..., 50%)` instead cleared #545 and cost eleven combinations of the
+   * #1312 sweep (16 of 36 failing became 27). Scoped here it costs neither:
+   * every one of the sweep's 36 combinations has a CSS width at or under 720px,
+   * because a page zoom halves it, and every viewport that failed #545 is
+   * wider.
+   */
   .hud__aside {
     position: relative;
     /* 2, not 1: the separator itself carries `z-index: 1`, and two positioned
        siblings at the same index are decided by document order -- which the
        sheet wins, because it comes after the aside. */
     z-index: 2;
+    min-height: max(25%, calc(2 * var(--tap-target) + var(--space-2)));
   }
 
   .hud[data-layout-inspector='collapsed'] .hud__side { max-height: none; }

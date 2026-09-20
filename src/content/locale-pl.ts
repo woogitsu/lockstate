@@ -535,6 +535,49 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.status.funds-treasury-floor-exhausted':
     'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają miejsce do spania, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
   'hud.status.earned-today': 'Zarobione dziś',
+  /*
+   * The `Zarobione dziś` chip's description while unmet needs are holding back
+   * part of today's grant (issue #890, translated after #1302 shipped the
+   * English alone). The English key's own docblock in `default-locale-en.ts`
+   * carries the proof of each clause; this note records only where the Polish
+   * departs from word order, and it departs in three places.
+   *
+   *  - **The cause keeps the subject position.** *Niezaspokojone potrzeby
+   *    wstrzymały...* — the claim the English makes without hedging is that
+   *    unmet needs are the *whole* of the difference between the two figures,
+   *    which holds because `stateIncomeForPrisonerDayAt` is the only term
+   *    between them. An impersonal *potrącono* would have been this
+   *    catalogue's rule 2 register and would have dropped exactly that
+   *    attribution, so rule 2 does not apply: its subject is a cause, not a
+   *    person, and there is no gender to avoid.
+   *  - **`{withheld}` is a bare grouped number**
+   *    (`status-strip.ts`'s `textParameters` runs it through
+   *    `localizer.formatNumber`), and it sits as the object of *wstrzymały*.
+   *    A bare numeral's accusative is its nominative at every count, so this
+   *    needs no reshape and no plural forms — the file's rule 3, satisfied
+   *    without a colon.
+   *  - **The second clause is imperfective, not adjectival.** English has
+   *    *"whose needs are going unmet"*, an ongoing state; *którego potrzeby
+   *    nie są zaspokajane* carries that aspect where a second
+   *    *niezaspokojone* would have read as a settled label and repeated the
+   *    first clause's word. The charge really is per resident and counted
+   *    from that resident's own six needs (`stateIncomeForOccupiedPlaces`
+   *    folds `stateIncomeForPrisonerDay(unmetNeedCount(needs, index))`), so
+   *    the singular *za osadzonego* is the right number.
+   *
+   * *przywraca tę część* rather than *zwraca pieniądze*: the accrual is
+   * derived from the tick and the prison's current state, never accumulated,
+   * so meeting a need restates the whole elapsed day at the higher rate and
+   * this figure falls. That is a share put back, not a refund paid, and the
+   * fourth reservation is the reason the distinction is written down.
+   *
+   * **No rate and no threshold is quoted**, for the English key's recorded
+   * reason: `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` moved twice in
+   * one day. *Osadzony* rather than *więzień* under the owner's ruling of
+   * 2026-08-30: this is a status chip's own description, not event flavour.
+   */
+  'hud.status.earned-withheld':
+    'Niezaspokojone potrzeby wstrzymały jak dotąd {withheld} z dzisiejszej dotacji — państwo płaci mniej za osadzonego, którego potrzeby nie są zaspokajane, a zaspokojenie jednej z nich przywraca tę część.',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
   'hud.status.incidents-clear': 'Spokój',
@@ -1117,7 +1160,7 @@ const plMessages: Readonly<Record<string, string>> = {
   // needs neither.
   'hud.regime.roster-heading': 'W drodze: {activity}',
   'hud.regime.roster-more': 'i jeszcze {count}',
-  'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę z łóżkiem, aby kogoś przyjąć.',
+  'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę — dość dużą, zamkniętą ścianami ze wszystkich stron, z łóżkiem i toaletą w środku — aby kogoś przyjąć.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
 

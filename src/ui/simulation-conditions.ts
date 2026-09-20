@@ -16,6 +16,15 @@ import type { PrisonCondition } from '../simulation/protocol/types';
  * build a reader, because all four members were already painted somewhere
  * else, each with a figure `conditions` could never carry.
  *
+ * **That measurement is history as of the commit that created this file, and
+ * it is corrected here rather than deleted** (`docs/AGENT_WORKFLOW.md` §4:
+ * mark both directions). Re-measured 2026-09-19 on `main` at v0.0.695, the
+ * same grep returns a *code* hit: `isPostUnreachable(counts.conditions)` at
+ * `src/ui/simulation-counts.ts:152`, which is this module's only caller. The
+ * paragraph above describes the tree this module was written into, not the
+ * one it now sits in, and issue #930's remaining half -- *"paint it or delete
+ * it"* -- is answered by that line plus the table below.
+ *
  * [ADR 0117](../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
  * accepted by the owner on 2026-09-17, adds the member that is **not** painted
  * anywhere else: `'security.post-unreachable'`. So this module is the reader
@@ -56,7 +65,34 @@ export type PrisonConditionPresentation =
    */
   | 'painted-elsewhere';
 
-const PRISON_CONDITION_PRESENTATION: Readonly<Record<PrisonCondition, PrisonConditionPresentation>> = {
+/**
+ * **Exported for `tests/unit/ui-simulation-conditions.test.ts` and read
+ * nowhere else in `src/`.** The compiler holds this table's *exhaustiveness*;
+ * it cannot hold the two claims below it that decide what a player is told,
+ * and neither can `tests/foundation/unconsumed-status-count-contract.test.ts`,
+ * whose floor is a *mention* of `conditions` under `src/ui/` -- satisfied by
+ * a comment, and satisfied by this table whether or not anything renders it
+ * (issue #930's *"a gate whose unit is an id cannot see an orphan inside an
+ * object that has a reader"*, one level further in). The two claims:
+ *
+ * 1. **Exactly one member may carry `'coverage-chip'`, and it must be
+ *    `'security.post-unreachable'`.** `isPostUnreachable` below collapses the
+ *    whole class to one boolean, and the sentence that boolean paints --
+ *    `hud.security.post-unreachable`, through `HudCountsViewModel.postUnreachable`
+ *    and `projectStatusMetrics` -- names *that member* and no other. A sixth
+ *    condition about guard coverage, filed under the same presentation because
+ *    the coverage chip is plainly where it belongs, would therefore make the
+ *    chip assert that a sector's post cannot be reached about a prison whose
+ *    post is perfectly reachable. `tsc` stays green, because the value is a
+ *    legal member of the union; every existing test stays green, because none
+ *    of them publishes a condition other than the one. That is a player-facing
+ *    sentence the code does not keep, which is `AGENTS.md`'s fourth
+ *    reservation, reached by an edit that looks obviously right.
+ * 2. **The table's keys are exactly `PRISON_CONDITIONS`, in its order.**
+ *    `tsc` already refuses a missing or unknown key; the test states it in
+ *    the vocabulary's own terms so the failure names the member.
+ */
+export const PRISON_CONDITION_PRESENTATION: Readonly<Record<PrisonCondition, PrisonConditionPresentation>> = {
   'construction.unfunded': 'painted-elsewhere',
   'intake.no-place': 'painted-elsewhere',
   'security.post-unreachable': 'coverage-chip',

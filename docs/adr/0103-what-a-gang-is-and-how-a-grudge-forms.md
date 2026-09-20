@@ -102,6 +102,17 @@ here.** The answer settles a direction in a ledger nobody reads on screen;
 question 1's finding stands untouched, so a player still cannot connect a
 retaliation to the fight that caused it.
 
+**DECISION 6 AMENDED BY THE OWNER ON 2026-09-19 — the member split AND the
+cadence, both at once.** Of 12 seeds, 7 reach a tier-3 pair; 3 of those draw a
+same-gang pair and never retaliate, and the remaining 4 lock the prison down
+every 4,800 ticks forever — so an id parity decides which game a session gets.
+Put to them as options, the owner chose the one labelled *"Obie naraz"* ("Both
+at once"). **The provenance is the weaker kind, as above.** The amendment is
+written into decision 6 itself rather than summarised here, and **the acceptance
+of all seven decisions does not move**: one of the seven is amended, none is
+withdrawn. **No code changed with it**, and the amendment deliberately fixes
+neither the new split nor the new cadence figure.
+
 **Given against a summary, not against these 1,700 lines, and that is
 disclosed rather than glossed.** The option they read carried three things: that
 Decision 2 was already theirs and decisions 1 and 3 to 7 were the document's and
@@ -1337,6 +1348,52 @@ below) — but that is
 a second write site, a second determinism question and a decision this document
 has not priced. **Open Question 5**, and it is the one an implementer hits
 first.
+
+**AMENDED BY THE OWNER ON 2026-09-19 — BOTH THE MEMBER SPLIT AND THE CADENCE,
+AND THE TWO PARAGRAPHS ABOVE ARE KEPT EXACTLY AS THEY STAND.** They are the rule
+that was amended and the correction that survived it; a reader needs to see what
+the amendment is an amendment *to*.
+
+**The finding that forced it.** Whether a session ever sees a gang retaliation
+at all is decided by **the parity of two entity ids** — the alternation this
+rule uses to pick which of the two gangs an arrival joins. Over 12 seeds, **7**
+reach a tier-3 pair. Of those 7, **3** draw a pair whose two prisoners land in
+the *same* gang, and a same-gang pair has no contested grudge to amplify, so
+those prisons retaliate **never**. The other **4** lock the whole prison down
+every **4,800 ticks, forever** — Context 5's arithmetic and Context 15's, run
+forward rather than stopped at the first retaliation. **Both halves are the
+mechanism failing, in opposite directions**, and the split between them is a
+coin this document did not know it was tossing.
+
+**Decision 6 is one of the seven the owner accepted on 2026-09-08**, so changing
+it is theirs and not this repository's, which is why it was put to them rather
+than fixed. Offered the member split and the cadence as alternatives and as a
+pair, they chose the option labelled:
+
+> Obie naraz
+
+("Both at once.") **So decision 6 is amended in both directions: the membership
+split changes AND the retaliation cadence is cooled.** Neither alone was taken,
+and the option said in as many words that either alone leaves one of the two
+failure modes standing — a better split still produces a prison that locks down
+on a fixed drumbeat, and a cooler cadence still produces prisons that never
+retaliate at all.
+
+**The provenance is the weaker kind, exactly as this document's Status block
+records of the 2026-09-08 acceptance and the 2026-09-10 answer to open question
+2**: the label of a clickable option the integrating session wrote and the owner
+chose, not a sentence they typed. `AGENTS.md`'s entry of 2026-09-19 carries the
+same disclosure for all four of that day's rulings.
+
+**WHAT THIS AMENDMENT DOES NOT DO, AND IT IS THE HALF AN IMPLEMENTER WILL WANT
+TO SKIP.** It does not pick the new split, and it does not pick the new cadence
+figure. The owner ruled that both move; *what they move to* is a costing this
+document has not done and must not be guessed at in implementation code. Open
+question 4 — every arrival joins a gang — is the obvious candidate for the first
+half and is **not** thereby accepted; Open question 5's timing problem is
+untouched and still the thing an implementer hits first. **No code changed with
+this ruling**: the amendment was recorded on its own, deliberately, so that the
+decision and the diff that implements it can be reviewed as two things.
 
 ### 7. Why this is Lockstate's mechanism and not a copied one
 

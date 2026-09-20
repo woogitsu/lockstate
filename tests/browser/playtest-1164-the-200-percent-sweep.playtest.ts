@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { UI_SCALES, WINDOWS, fails, faults, sweep } from './page-zoom-sweep';
 
 /**
  * The 200 %-page-zoom sweep, re-measured for stage 8 acceptance (#1164),
@@ -21,7 +23,7 @@ import { expect, test, type Page } from '@playwright/test';
  * utraty treści i działań"* -- cannot be worked by quoting a figure somebody
  * else measured with a file they deleted.
  *
- * ## Why it is a playtest and not a gate
+ * ## Why it is a playtest and not a gate -- and what now is one beside it
  *
  * It asserts nothing about the failing set. `tests/browser/browser-suites.ts`
  * explains why `playwright.playtest.config.ts` is excluded from the two CI
@@ -35,6 +37,16 @@ import { expect, test, type Page } from '@playwright/test';
  * combinations and measured something at each. That is a check on the harness,
  * not on the interface.
  *
+ * **That left the number itself ungated, and #1312 records what it cost**:
+ * *"A number that moves only when a person runs it by hand cannot announce
+ * that it has gone stale. Between `2559eb14` and `ab3bf7ba` nobody ran it."*
+ * So the measurement moved out into `page-zoom-sweep.ts`, which this file and
+ * `ui-200-percent-zoom-sweep-ratchet.spec.ts` now share. The spec is collected
+ * by the `browser` gate and asserts the one thing that is not a pin: the
+ * failing set may shrink and may not grow. This file keeps the job it was
+ * written for -- printing every fault at every combination, as a research
+ * document -- and no longer keeps the only copy of how they are measured.
+ *
  * ## What a "200 % page zoom" is here, and why the window is halved
  *
  * Playwright's Chromium cannot be driven to a browser page zoom through the
@@ -46,6 +58,9 @@ import { expect, test, type Page } from '@playwright/test';
  * asks about.
  *
  * ## The four things measured, taken verbatim from `d7aab8d8`
+ *
+ * These now live in `page-zoom-sweep.ts`, unchanged in substance; they are
+ * repeated here because this file's report is only readable beside them.
  *
  * > any of `.hud-strip`, `.brand`, `.display-scale`, `.hud-tabs__inner`,
  * > `.save-panel`, `.hud-build` laid outside the viewport; any `.ui-tab` or
@@ -63,164 +78,25 @@ import { expect, test, type Page } from '@playwright/test';
  * 390x844, which is the phone the delivery's own test plan names first.
  */
 
-const APP_URL = '/index.html';
-
-const ACCESSIBILITY_SETTINGS_STORAGE_KEY = 'lockstate.settings.accessibility';
-
-/** `UI_SCALE_STEPS`, `src/input/accessibility.ts:52`. */
-const UI_SCALES = [0.75, 1, 1.25, 1.5, 1.75, 2] as const;
-
-const WINDOWS = [
-  [1280, 720],
-  [1440, 900],
-  [1024, 768],
-  [900, 600],
-  [390, 844],
-  [375, 812],
-] as const;
-
-/** Must be laid out inside the viewport, if it is laid out at all. */
-const CONTAINED = ['.hud-strip', '.brand', '.display-scale', '.hud-tabs__inner', '.save-panel', '.hud-build'] as const;
-
-/** Must own its own centre pixel, if it is laid out at all. */
-const REACHABLE = ['.ui-tab', '.display-scale__cycle'] as const;
-
-/** The two boxes whose own scroll overflow is reported separately. */
-const OVERFLOWING = ['.hud__aside', '.hud-strip'] as const;
-
-interface CombinationReport {
-  readonly window: string;
-  readonly scale: number;
-  readonly outside: readonly string[];
-  readonly covered: readonly string[];
-  readonly overflow: readonly string[];
-}
-
-function fails(report: CombinationReport): boolean {
-  return report.outside.length > 0 || report.covered.length > 0 || report.overflow.length > 0;
-}
-
-async function measure(page: Page): Promise<Omit<CombinationReport, 'window' | 'scale'>> {
-  return page.evaluate(
-    ({ contained, reachable, overflowing }) => {
-      const outside: string[] = [];
-      const covered: string[] = [];
-      const overflow: string[] = [];
-
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const round = (value: number): number => Math.round(value * 10) / 10;
-
-      for (const selector of contained) {
-        for (const node of document.querySelectorAll(selector)) {
-          const box = node.getBoundingClientRect();
-          // A box with no area is not laid out; `display: none` below 720px is
-          // deliberate and is not what this is looking for.
-          if (box.width === 0 && box.height === 0) continue;
-          const over: string[] = [];
-          if (box.left < -0.5) over.push(`left=${round(box.left)}`);
-          if (box.top < -0.5) over.push(`top=${round(box.top)}`);
-          if (box.right > width + 0.5) over.push(`right=${round(box.right)}>${width}`);
-          if (box.bottom > height + 0.5) over.push(`bottom=${round(box.bottom)}>${height}`);
-          if (over.length > 0) outside.push(`${selector} ${over.join(' ')}`);
-        }
-      }
-
-      for (const selector of reachable) {
-        for (const node of document.querySelectorAll(selector)) {
-          const box = node.getBoundingClientRect();
-          if (box.width === 0 && box.height === 0) continue;
-          const x = box.left + box.width / 2;
-          const y = box.top + box.height / 2;
-          if (x < 0 || y < 0 || x > width || y > height) {
-            covered.push(`${selector} centre (${round(x)},${round(y)}) is off the viewport`);
-            continue;
-          }
-          const hit = document.elementFromPoint(x, y);
-          if (hit === null) {
-            covered.push(`${selector} centre hits nothing`);
-            continue;
-          }
-          if (hit !== node && !node.contains(hit)) {
-            const label = `${hit.tagName.toLowerCase()}${hit.className === '' ? '' : `.${String(hit.className).split(/\s+/)[0]}`}`;
-            covered.push(`${selector} centre belongs to ${label}`);
-          }
-        }
-      }
-
-      for (const selector of overflowing) {
-        for (const node of document.querySelectorAll(selector)) {
-          const element = node as HTMLElement;
-          const box = element.getBoundingClientRect();
-          if (box.width === 0 && box.height === 0) continue;
-          const spill = element.scrollHeight - element.clientHeight;
-          if (spill > 1) overflow.push(`${selector} spills ${round(spill)}px of its own box`);
-        }
-      }
-
-      return { outside, covered, overflow };
-    },
-    { contained: [...CONTAINED], reachable: [...REACHABLE], overflowing: [...OVERFLOWING] },
-  );
-}
 
 test('the 200 % page zoom sweep: 36 combinations, reported rather than asserted (#1164)', async ({ page }) => {
   test.slow();
 
-  const reports: CombinationReport[] = [];
-
-  for (const [windowWidth, windowHeight] of WINDOWS) {
-    // A 200 % page zoom halves the CSS viewport in each axis.
-    const width = Math.round(windowWidth / 2);
-    const height = Math.round(windowHeight / 2);
-
-    for (const scale of UI_SCALES) {
-      await page.setViewportSize({ width, height });
-
-      // The page has to exist before its origin has a `localStorage` to write
-      // to, so the scale is written on the page already loaded and picked up
-      // by the reload below. `addInitScript` is deliberately not used: it
-      // accumulates across a loop of 36, and a harness that quietly runs 36
-      // copies of itself is not one whose numbers should be believed.
-      await page.goto(APP_URL);
-      await page.evaluate(
-        ({ key, uiScale }) => {
-          try {
-            window.localStorage.setItem(key, JSON.stringify({ version: 1, reducedMotion: false, uiScale }));
-          } catch {
-            // A browser that will not store anything still boots; the scale
-            // simply stays at 1, and the `--ui-scale` logged below says so.
-          }
-        },
-        { key: ACCESSIBILITY_SETTINGS_STORAGE_KEY, uiScale: scale },
-      );
-      await page.reload();
-      await page.waitForSelector('.hud');
-      await page.waitForSelector('.save-panel');
-
-      const applied = await page.evaluate(() =>
-        getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim(),
-      );
-
-      const measured = await measure(page);
-      reports.push({ window: `${windowWidth}x${windowHeight}`, scale, ...measured });
-
-      const row = reports[reports.length - 1] as CombinationReport;
-      const verdict = fails(row) ? 'FAIL' : 'pass';
-      console.log(
-        `[1164] ${row.window} (CSS ${width}x${height}) at ${Math.round(scale * 100)}% ` +
-          `(--ui-scale=${applied}): ${verdict}` +
-          (fails(row)
-            ? ` -- outside: ${row.outside.length}, unreachable: ${row.covered.length}, overflow: ${row.overflow.length}` +
-              `\n        ${[...row.outside, ...row.covered, ...row.overflow].join('\n        ')}`
-            : ''),
-      );
-    }
-  }
+  const reports = await sweep(page, (row, css) => {
+    const verdict = fails(row) ? 'FAIL' : 'pass';
+    console.log(
+      `[1164] ${row.window} (CSS ${css.width}x${css.height}) at ${Math.round(row.scale * 100)}% ` +
+        `(--ui-scale=${row.appliedScale}): ${verdict}` +
+        (fails(row)
+          ? ` -- outside: ${row.outside.length}, unreachable: ${row.covered.length}, overflow: ${row.overflow.length}` +
+            `\n        ${faults(row).join('\n        ')}`
+          : ''),
+    );
+  });
 
   const failing = reports.filter(fails);
   console.log(`[1164] SWEEP: ${failing.length} of ${reports.length} combinations fail.`);
-  console.log(`[1164] failing set: ${failing.map((row) => `${row.window}@${Math.round(row.scale * 100)}%`).join(', ')}`);
+  console.log(`[1164] failing set: ${failing.map((row) => row.label).join(', ')}`);
 
   // The one assertion, and it is about the harness rather than the interface:
   // every combination was visited and something was measured at each.

@@ -718,6 +718,130 @@ sentence.
    > cleared debt, the delivery's *"Brak utraty treści i działań"* is unmet,
    > and constitution article 8's third element is unmet with it. `d7aab8d8`
    > still carries the price of clearing it.
+   >
+   > **AND THE "29 OF 36" IN THIS MARK IS A READING OF `2559eb14`, NOT OF
+   > `main` (#1202).** It is right about the tree it names: run there a third
+   > time it returns `29 of 36` with the same failing set. What it cannot say,
+   > and does not, is anything about a later tree — and the same committed
+   > sweep, same config, on `ab3bf7ba` (v0.0.693) returns **31 of 36**.
+   >
+   > **The three combinations this mark records as cleared are the three that
+   > came back.** `1280x720@100%`, `1024x768@100%` and `900x600@75%` fail on
+   > `ab3bf7ba`, each on `.hud__aside` overflow alone and nothing else — 34 px,
+   > 32 px and 18 px of spill — which is the failure mode they had before they
+   > were fixed. One went the other way: `390x844@75%` fails on `2559eb14`,
+   > where two `.ui-tab` centres belong to the canvas, and passes on
+   > `ab3bf7ba`. So *"32 → 29, three fixed, none added"* is a true sentence
+   > about a window that has since closed, and a later tree owes its own
+   > measurement rather than a subtraction from this one.
+   >
+   > **How this gap arose is the mark above's own shape, one turn on.** The 23
+   > stopped being re-derivable because its instrument was deleted. The 29
+   > stopped describing the head because the instrument that replaced it is a
+   > `*.playtest.ts`, which no gate collects — deliberately, and
+   > `tests/browser/browser-suites.ts` gives the reason. A figure that moves
+   > only when a person runs it by hand does not announce that it has stopped
+   > being true, and three combinations regressed inside that silence.
+   >
+   > **The Git LFS condition recorded just above held for these runs too**, and
+   > identically on both trees: no LFS bytes, actor atlases undecodable. The
+   > three regressed combinations fail on DOM overflow in `.hud__aside`, which
+   > is not the canvas.
+   >
+   > **What still does not change is that the row fails.** On every tree
+   > measured so far the delivery's *"Brak utraty treści i działań"* is unmet,
+   > and constitution article 8's third element is unmet with it.
+   >
+   > **AND THE "31 OF 36" IN THIS MARK IS A READING OF `ab3bf7ba`, WHICH THE
+   > HEAD HAS SINCE LEFT BEHIND (#1318).** It is right about the tree it names
+   > and is not edited. Same committed sweep, same config, re-run on
+   > `a1c7f97d` (v0.0.696, the merge of #1311 — one commit past #1318's
+   > `1da79d2e`): **16 of 36**. The failing set is `1280x720@200%`,
+   > `1024x768@175%`, `1024x768@200%`, `900x600@150%`, `900x600@175%`,
+   > `900x600@200%`, `390x844@100%`, `390x844@150%`, `390x844@175%`,
+   > `390x844@200%`, and every one of the six `375x812` scales.
+   >
+   > **The three combinations this mark records as having come back have gone
+   > again, and that is the sentence above that stops being true of the head.**
+   > `1280x720@100%`, `1024x768@100%` and `900x600@75%` pass on `a1c7f97d`.
+   > They failed on `ab3bf7ba` on `.hud__aside` overflow alone, and #1312's
+   > repair — merged as #1318 — put a content floor under that slot;
+   > `tests/browser/ui-rail-aside-content-floor.spec.ts` is the gate that now
+   > holds those same three rows. No `.hud__aside` overflow appears anywhere in
+   > the 16 failing reports. `390x844@75%` still passes, as it did on
+   > `ab3bf7ba`.
+   >
+   > **Read as a delta rather than as a tally, and only against the tree pair
+   > it is a delta of:** fifteen of `ab3bf7ba`'s 31 cleared between `ab3bf7ba`
+   > and `a1c7f97d`, and none was added. What the 16 is *not* is a figure
+   > comparable to the 23 or to anything measured with the instrument
+   > `d7aab8d8` deleted; that bar stands exactly as this mark already sets it.
+   >
+   > **How this gap arose is a narrower thing than the silence recorded above,
+   > and worth separating from it.** Nothing here went unmeasured for a window:
+   > #1318's own branch measured 16 and said so, and deliberately left these
+   > two documents alone because #1311 was open and appending to these very
+   > paragraphs. The two merged minutes apart, #1311 second, and #1311's
+   > reading is bound to `ab3bf7ba` and stays true of it. So this is not a
+   > rotted claim — it is a **live claim that the head overtook between one
+   > merge and the next**, and it is appended for the same reason the marks
+   > above are.
+   >
+   > **One sentence elsewhere states this figure in the present tense without
+   > binding it to a commit**, and it is named here rather than edited, because
+   > it belongs to #1318's just-merged ground:
+   > `tests/browser/ui-rail-aside-content-floor.spec.ts`'s docblock reads
+   > *"16 of 36 still fail after this repair"*. The run recorded here agrees
+   > with its number on `a1c7f97d`; what it lacks is the commit that makes it
+   > checkable later.
+   >
+   > **The Git LFS condition recorded twice above held for this run as well.**
+   > The tree had no LFS bytes — `file public/assets/actors/actor.guard.base.idle.png`
+   > answers `ASCII text` — so the actor atlases did not decode and the console
+   > carried `Failed to process file: image` for all ten. The sweep measures
+   > `.hud-*` DOM geometry and not the canvas, and the four things it reports
+   > on in the 16 failures are `.brand`, `.hud-tabs__inner`, `.save-panel`,
+   > `.ui-tab` and `.display-scale__cycle` centres, and `.hud-strip`'s own
+   > overflow — none of them the canvas. **The absolute 16 is nevertheless
+   > conditional on that** and wants a tree holding the art before it is
+   > certified; the *delta* against `ab3bf7ba` is the sounder half, because
+   > that reading was taken under the same condition.
+   >
+   > **AND THE "16 OF 36" IN THIS MARK HAS BEEN OVERTAKEN IN TURN, BY THE
+   > SWEEP'S FIRST FOLLOW-UP.** It is right about `a1c7f97d` and is not
+   > edited. Same committed sweep, same config, re-run on `7b0f6f69` (the
+   > branch of #1312's remaining-sweep follow-up, on `faf7ce3a`): **13 of 36**.
+   > The three that left are `390x844@100%`, `375x812@75%` and
+   > `375x812@100%`; the failing set is otherwise the same set of labels, so
+   > this is again a **strict subset** — three cleared, none added.
+   >
+   > **What did not move is the row's verdict, and that clause is now the
+   > oldest true sentence in this chain.** FAIL is what a failing set of 13
+   > says as plainly as one of 16, of 31 or of 29. *"Brak utraty treści i
+   > działań"* is unmet at 13 and constitution article 8's third element is
+   > unmet with it.
+   >
+   > **What the remaining 13 fail on is one thing rather than five**, and it is
+   > worth recording because it is the shape of the decision that is left: at
+   > a viewport halved in both axes the status strip, the tab bar and the rail
+   > cannot all have the height they ask for, and which of them gives way is
+   > not a question `src/ui/hud/hud.css` can answer by tuning a number. Every
+   > one of the 13 sits at an interface scale of 125 % or more, or at a window
+   > of 900x600 or narrower, or both.
+   >
+   > **The gap this whole chain is a record of is closed on the way in from
+   > here, and not by a person remembering to look.**
+   > `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` is collected by
+   > the `browser` gate and asserts that the failing set may shrink and may not
+   > grow. It is a subset assertion rather than an equality, so a repair needs
+   > no edit to it; what it forbids is a fourteenth combination arriving
+   > unannounced, which is exactly how the three this chain opens on came back.
+   > It does **not** re-derive these documents' figure, so the marks above stay
+   > the way this figure is checked.
+   >
+   > **The Git LFS condition recorded three times above held for this run as
+   > well**, and the absolute 13 is conditional on it in exactly the way the
+   > absolute 16 is.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked
