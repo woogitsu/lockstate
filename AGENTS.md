@@ -931,6 +931,157 @@ The 2026-09-07 entry above establishes that the list fails closed on an id
 costs nothing while it waits, and if locker art is ever published it is already
 named.
 
+**A SIXTH RELEASE INSIDE RESERVATION 3, 2026-09-20 — ONE `if:` CONDITION ON
+THE `browser` JOB'S EVIDENCE UPLOAD, AND IT IS THE FIRST THAT ANSWERS A
+QUESTION THE FILE ITSELF HAD WRITTEN DOWN AS OPEN.** The step named
+`Upload the browser suite's failure evidence` in `.github/workflows/ci.yml`
+ran `if: failure()`. `failure()` is false for a cancellation, so a job that is
+cancelled rather than failed uploaded nothing. That stopped being theoretical
+on 2026-09-19: the runner `lockstate-wsl-DOM-NEW-03` died at roughly 21:54Z
+during PR #1313's `browser` job (run 35468216836, attempt 1, job
+105967436033). Read off the API rather than taken from a brief: the suite step
+concluded **cancelled**, the evidence step concluded **skipped**, and the log
+blob was never finalized (`BlobNotFound`) — a red job with no log and no
+artifact, whose diagnosis had to be reconstructed from scheduler behaviour.
+The owner was asked and chose, from three clickable options, the one labelled:
+
+> `failure() || cancelled()` (zalecane)
+
+("`failure() || cancelled()` (recommended).")
+
+**What the release covers, exactly.** That one `if:` condition on that one
+step, from `failure()` to `failure() || cancelled()`, and nothing else in the
+file: not a second step, not a second job, not any `timeout-minutes`, not the
+`git lfs pull --include=` filter, not `retention-days`, not
+`if-no-files-found`, not the runner selectors, not `deploy.yml`, not
+`wrangler.jsonc`, not `public/_headers`, and neither dashboard.
+
+**The provenance is the weaker kind, exactly as the 2026-09-08, 2026-09-09 and
+2026-09-10 entries and all five rulings of 2026-09-19 record of themselves**:
+the label of a clickable option the integrating session wrote and the owner
+picked, not a sentence they typed. Read it as authorising the condition that
+label spells and nothing wider.
+
+**The chosen condition is a third option the file's own comment does not
+consider, and that is the part worth reading.** The long comment above that
+step poses the choice as `failure()` versus `always()` and prices `always()`
+at an empty artifact on every green run — which is why the 2026-09-08 release
+raised the job's `timeout-minutes` instead of touching the condition. The
+owner chose neither: `failure() || cancelled()` uploads whenever there is
+something to look at and is still false on green, so that cost is not paid.
+**The superseded sentence — "it stays here as the open question it has been
+since this comment was written" — is kept in the file with the correction
+appended beneath it**, on the habit `docs/AGENT_WORKFLOW.md` §4 asks for,
+rather than edited away.
+
+**The weakest claim in this entry, named here rather than left for a reader to
+find.** `cancelled()` is documented as true when the *workflow run* was
+cancelled. It is therefore certain for the concurrency-group case and for an
+explicit cancel, and **unverified for the 2026-09-19 runner-death case that
+motivated the question**: that run was not cancelled as a whole — attempt 2 of
+it concluded `success` — and a job whose runner disappears may end in a state
+where neither `failure()` nor `cancelled()` is true and the step is skipped
+again. The change is strictly wider than what it replaces and costs nothing on
+a green run, so it is worth having on either reading; it is not proof that the
+lost evidence would have survived.
+
+**A gate moved with it, in the same commit, and moving it was ours.**
+`tests/foundation/ci-configuration-contract.test.ts` already pinned this
+condition to the literal `failure()`, so the workflow edit turned it red — the
+contract working. Its assertion now pins `failure() || cancelled()` and its
+superseded comment is kept above the correction in the same form. Adding and
+re-aiming that assertion is not inside reservation 3: the test file is ours,
+and what it pins is the owner's ruling rather than a choice this session made.
+
+
+**AND THAT ENTRY WAS SUPERSEDED WITHIN THE HOUR BY A SECOND RULING THE SAME
+DAY — BOTH ARE RECORDED, AND THE FIRST IS NOT ROLLED BACK OUT OF THE RECORD.**
+The condition shipped is **`always()`**. The entry above is kept whole because
+the first ruling **happened**, was acted on, and was superseded for a reason a
+later reader needs: **the question it answered carried a false premise, and the
+premise came from the integrating session rather than from any document.**
+`AGENTS.md`'s 2026-09-10 `branch-gc.yml` entry is the precedent for this shape
+— *"the owner authorised more than was required, and only half of it was
+used"* — and this follows it.
+
+**The premise, named exactly.** The integrating session framed
+`failure() || cancelled()` to the owner as the condition that catches the
+runner-death case of 2026-09-19, without first checking what `cancelled()` is
+true of. The agent that implemented the first ruling flagged that it could not
+verify it and wrote the caveat into the workflow, the test and this document.
+The caveat was then checked against the API and it holds decisively.
+
+**The measurement, for job 105967436033 (run 35468216836, attempt 1,
+`browser`, runner `lockstate-wsl-DOM-NEW-03`).** The job concluded
+**`failure`**; the step `Run the real-browser suite` concluded **`cancelled`**;
+the step `Upload the browser suite's failure evidence` concluded **`skipped`**.
+The job ended `failure` and the upload was still skipped, so step-level
+`failure()` evaluated **false** — a *cancelled step* is not a failed one. And
+the run was never cancelled as a whole: attempt 2 of it concluded `success`, so
+`cancelled()` was false too. **The condition ruled on earlier that day would
+have skipped this step exactly as `failure()` did.** The 2026-09-19 shape is a
+cancelled step inside a live run, and neither guard reaches it.
+
+**The second finding, which removed the stated cost of `always()`.** The
+workflow comment had priced an unconditional upload at "an empty artifact on
+every green run" since the day it was written, and the step itself carries
+`if-no-files-found: ignore`: with an empty `test-results/` the action creates
+**no artifact at all**. The real cost on a green run is a few seconds and a log
+line. Every argument on this step for eleven days — including the 2026-09-08
+decision to raise `timeout-minutes` rather than touch the condition — had been
+weighing a cost this step does not pay.
+
+**THE SECOND FINDING IS FALSE, AND IT IS KEPT ABOVE BECAUSE IT WAS PUT TO THE
+OWNER AS PART OF THE QUESTION THEY ANSWERED.** It was read out of
+`actions/upload-artifact`'s documented behaviour, not off a run, and the first
+run to execute this step under `always()` refutes it: run 35514269512, head
+`70b9bbf0`, `browser` job **success** — and an artifact created anyway,
+`browser-failure-35514269512-1`, **27,416 bytes**. `test-results/` is not empty
+on a green run, so `if-no-files-found: ignore` never engages and the green-run
+cost is a small artifact per run rather than a log line.
+
+**The ruling stands, for a reason that is no longer the reason it was given.**
+About 27 KB per green run against a seven-day retention is on the order of a
+megabyte: cheap, not free. What the refutation kills is the claim that the
+narrower guards cost nothing to give up; what survives untouched is the
+measured fact that neither of them fires on the shape that loses the evidence,
+which is the half the decision actually rests on.
+
+**Both mistakes on this line arrived by the same route and it is the route to
+watch.** The first was a condition put to the owner without checking what it
+evaluates to; the second was a cost written into three files as measured fact
+when it had been read from a vendor's documentation — and it was written *in
+the same pass that corrected the first*. A correction is not evidence that the
+corrected text is now sound. The check that caught this one was a single API
+call against a run that had already finished.
+
+**The ruling.** Put both findings to the owner, who chose, from three clickable
+options, the one labelled:
+
+> Zmień na `always()` (zalecane)
+
+("Change it to `always()` (recommended).")
+
+**What this release covers, exactly — unchanged in breadth from the entry
+above, only in value.** That one `if:` condition on that one step, now
+`always()`, and nothing else in `.github/workflows/ci.yml`: not a second step,
+not a second job, not any `timeout-minutes`, not the `git lfs pull --include=`
+filter, not `retention-days`, not `if-no-files-found`, not the runner
+selectors, not `deploy.yml`, not `wrangler.jsonc`, not `public/_headers`, and
+neither dashboard.
+
+**The provenance is the weaker kind, as the first ruling's is and as every
+release in this reservation since 2026-09-08 records of itself**: the label of
+a clickable option the integrating session wrote and the owner picked, not a
+sentence they typed.
+
+**What this costs the owner that the first ruling did not, stated plainly
+rather than left implicit.** They ruled twice on one line in one day, and the
+second ruling existed only because the first question was mis-framed here. That
+is the cost of putting a condition to someone without first checking what it
+evaluates to, and it is recorded so the next session pays the check instead.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.

@@ -178,7 +178,7 @@ files, and every one of the ten is `self-hosted` — none names
 `woogitsu-*`, `lockstate-wsl-DOM-NEW-*`, or any other label. That is now pinned
 by `tests/foundation/ci-configuration-contract.test.ts`'s "runner selector
 contract" (`describe('runner selector contract'` at
-`tests/foundation/ci-configuration-contract.test.ts:2837`), added on the
+`tests/foundation/ci-configuration-contract.test.ts:2895`), added on the
 owner's instruction of 2026-09-13 — *"runnery to po prostu self hosted i tak
 ustaw wszędzie"* ("the runners are just self-hosted, set it that way
 everywhere"). So the runner **names** above (`woogitsu-linux-03`,
