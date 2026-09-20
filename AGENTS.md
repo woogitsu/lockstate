@@ -867,6 +867,70 @@ the check that would have caught it is the cheap one: read the sentence against
 the diff it ships with.
 
 
+**TWO FURTHER RULINGS ON 2026-09-19 — THE SIXTH AND THE SEVENTH — AND NEITHER
+HEADING ABOVE HAS BEEN CORRECTED.** The first says four and the entry after it
+says five, each true when written and each left standing, because a count
+rewritten in place is a count whose earlier value nobody can see. `CLAUDE.md`'s
+preamble is this repository's standing demonstration of what that costs: of the
+six mistakes it records against itself it sorts them *"two on one side and four
+on the other"*, the four being wrong **numbers** rather than wrong claims about
+how wide a permission ran.
+
+**The numbering here is load-bearing and was nearly got wrong.** These two were
+drafted as the fifth and the sixth by a session that had checked this file and
+found four — while an agent it had itself dispatched was adding the fifth on a
+branch. The collision was caught by reading that agent's diff rather than this
+file, which is the same check `docs/AGENT_WORKFLOW.md` §4 asks for and the same
+failure mode `CLAUDE.md` records twice: a number written once and never re-read
+against the document it describes. **Ruling 5 is the exclusion of
+`docs/adr/STATUS-QUEUE.md`'s dated §3 from anchor counting**, recorded in the
+entry immediately above this one.
+
+They share the weaker provenance the block above describes — clickable options
+**written by the integrating session**, in Polish, one chosen from each. **What
+is recorded below is the label of an option this session authored and the owner
+picked, not a sentence the owner typed.** Read each as authorising what its
+label says and nothing wider.
+
+**6. ADR 0095 — the held number goes onto a pull request.** `docs/adr/README.md`
+has carried *"0095 remains held and still not on disk"* through six successive
+audit entries. The work sits on the branch
+`measure/893-coverage-and-response-draw-from-one-pool`, last committed
+2026-09-03, with no pull request — and `deletebranches.sh` does not protect it,
+so a branch-cleanup run would have destroyed the only copy and settled the
+question in the one direction nobody chose. Offered that, releasing the number,
+or merely protecting the branch and deciding later, the owner chose:
+
+> Otworzyć PR z tej gałęzi
+
+("Open a PR from that branch.") **It authorises a pull request and no merge**,
+and the number stays taken. Accepting ADR 0095 is a separate decision and still
+theirs. ADR 0096's own row in that README records that it *"Takes 0096 over a
+held 0095"* and cites this exact branch, so whatever 0095 decides has to be read
+against a document that already superseded its subject matter — which is the
+first thing its pull request has to say.
+
+**7. The dead glob segment in `ci.yml` — offered inside reservation 3, and
+DECLINED.** This entry exists because a reservation that was *asked about and
+not released* leaves no trace anywhere else, and the next session would
+otherwise spend the question again. The `browser` job's `git lfs pull
+--include=` list names eight path segments. Measured against `09384b9f`, seven
+of them match exactly one file each under `public/game-content/source-art/` and
+`rendered.furniture.cell.locker.variants` matches **none**. Offered the deletion
+of that one segment, leaving it, or first checking whether locker art is
+planned, the owner chose:
+
+> Zostawić
+
+("Leave it.") **Reservation 3 is untouched and nothing in `.github/workflows/`
+moved.** The reading that makes the choice cheap is the one the option carried:
+a `git lfs pull` whose glob matches nothing does not fail, it fetches nothing.
+The 2026-09-07 entry above establishes that the list fails closed on an id
+**absent from it** — the decode step's own error says `add '<id>' to the
+--include filter above` — not on one that is present and unused. So the segment
+costs nothing while it waits, and if locker art is ever published it is already
+named.
+
 **A SIXTH RELEASE INSIDE RESERVATION 3, 2026-09-20 — ONE `if:` CONDITION ON
 THE `browser` JOB'S EVIDENCE UPLOAD, AND IT IS THE FIRST THAT ANSWERS A
 QUESTION THE FILE ITSELF HAD WRITTEN DOWN AS OPEN.** The step named
