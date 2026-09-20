@@ -11,8 +11,9 @@ import {
 import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
+import { hudClockFromWorkerMessage } from '../../src/ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
-import type { HudAlertViewModel, HudSpeed } from '../../src/ui/hud/view-model';
+import { UNKNOWN_HUD_CLOCK, type HudAlertViewModel, type HudSpeed } from '../../src/ui/hud/view-model';
 import { alertRows } from '../helpers/alert-rows';
 
 /**
@@ -793,6 +794,64 @@ describe('the same refusal is read a second time, for the band that is always la
     expect(
       atFourSpeed === 'none' || atFourSpeed === undefined ? true : 'outlivedBandTicks' in atFourSpeed,
     ).toBe(false);
+  });
+
+  /**
+   * **A pause must not shrink the band's budget, and this is the composition
+   * that guarantees it** -- the two production functions `src/main.ts` runs
+   * back to back on every worker message, driven here by real protocol
+   * payloads.
+   *
+   * The scaling ruling made pausing dangerous in a way counting in ticks alone
+   * was not. `ClockControl` carries **no speed** while paused, so anything
+   * that resolved a pause to x1 would hand the band the *shortest* budget --
+   * 300 ticks instead of 1,200 -- and a refusal 400 ticks old would be retired
+   * in a frozen prison, which is the exact thing the 2026-09-20 ruling exists
+   * to prevent.
+   *
+   * Nothing resolves it to x1, because `hudClockFromWorkerMessage` keeps the
+   * last speed the simulation actually *ran* at across a pause. That
+   * behaviour predates this band and was written for the fast-forward control;
+   * it is load-bearing here, which is why the property is pinned from this
+   * side rather than left to that function's own tests.
+   *
+   * **The worker makes the same reading locally and it is not what protects
+   * the player** -- `publishStatusCounts` freezes its comparison while paused,
+   * but `transition` stops the tick loop for every state but `running`, so
+   * that branch has no observable consequence today. Its own comment says so.
+   * This is the assertion that would go red.
+   */
+  it('keeps the band on the speed the prison last ran at when the player pauses (owner 2026-09-20)', () => {
+    const running = hudClockFromWorkerMessage(
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'clock-running',
+        kind: 'simulation/clock-state',
+        payload: { tick: 400, clock: { mode: 'running', speed: 4 } },
+      } as WorkerToMainMessage,
+      UNKNOWN_HUD_CLOCK,
+    );
+    expect(running?.speed).toBe(4);
+
+    const paused = hudClockFromWorkerMessage(
+      {
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'clock-paused',
+        kind: 'simulation/clock-state',
+        payload: { tick: 400, clock: { mode: 'paused' } },
+      } as WorkerToMainMessage,
+      running ?? UNKNOWN_HUD_CLOCK,
+    );
+    expect(paused?.mode).toBe('paused');
+    expect(paused?.speed, 'a paused clock reported x1 would hand the band the shortest budget there is').toBe(4);
+
+    // 400 ticks old: past the x1 budget, a third of the way through the x4
+    // one. What the band is told depends entirely on which speed reached it.
+    const standing = { sequence: 9, tick: 0, reason: 'zone.not-enclosed' } as const;
+    expect(bandNotice(publication(standing, 400), paused?.speed ?? 1)).toEqual({
+      sequence: 9,
+      labelKey: 'hud.alert.refusal.zone.not-enclosed',
+    });
   });
 
   it('is pure: the same message gives the same answer', () => {

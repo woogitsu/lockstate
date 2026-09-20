@@ -655,14 +655,27 @@ export class SimulationWorkerStateMachine {
     // make.
     //
     // **A paused clock freezes the answer rather than choosing a speed for
-    // it**, and that is the 2026-09-20 ruling written as code. The threshold
-    // scales with the speed (the owner's *"Skalować sufit prędkością"*,
-    // 2026-09-20), and `1` is the smallest multiplier and so the shortest
-    // budget -- so treating `{ mode: 'paused' }` as x1 would *shrink* the
-    // budget under a standing refusal and could retire a sentence in a frozen
-    // prison, which is exactly what counting in ticks exists to prevent.
-    // Holding the last published answer says the property out loud: while the
+    // it.** The threshold scales with the speed (the owner's *"Skalować sufit
+    // prędkością"*, 2026-09-20) and `ClockControl` carries no speed while
+    // paused; `1` is the smallest multiplier and so the shortest budget, so
+    // reading a pause as x1 would *shrink* the budget under a standing
+    // refusal. Holding the last answer says the property out loud: while the
     // prison is paused, nothing about this band changes.
+    //
+    // **It has no observable consequence today, and that is written here so
+    // that nobody adds a test claiming otherwise -- one was written and
+    // deleted.** `transition` stops the tick loop for every state but
+    // `running`, so the only way this method runs in a paused prison is
+    // `handleSubmitCommand`'s drain (#749), which passes
+    // `dispatchedWhilePaused` and forces the gate open regardless of what this
+    // computes; the other paused caller is the publish after `initialize`, and
+    // a restored session has no standing refusal because `RefusalLog` is not
+    // in the save. **The property a player can actually see is enforced on the
+    // main thread**, where the band is measured against
+    // `HudClockViewModel.speed` -- which `hudClockFromWorkerMessage`
+    // deliberately keeps at the last speed the simulation *ran* at. This
+    // branch is the same reading made locally, so a future publisher that does
+    // publish on a pause cannot inherit the bug by default.
     const control = this._clock.control;
     const refusalOutlivedBand =
       control.mode === 'paused'

@@ -818,16 +818,31 @@ and for a different reason. **The predicate moves both ways; the retirement
 moves one way**, which is the property a player would name: a sentence the
 corner has let go of does not come back because they pressed fast-forward.
 
-**A paused clock freezes the comparison rather than choosing a multiplier for
-it.** `ClockControl` carries no speed while paused, and reading that as x1
-would be the obvious thing and wrong in the dangerous direction: x1 is the
-*smallest* multiplier and so the *shortest* budget, so a player who pauses at
-x4 under a refusal 400 ticks old would have the threshold drop from 1,200 to
-300 beneath it and the corner would retire a sentence in a frozen prison. The
-publisher therefore holds its last answer while the clock is paused, and the
-HUD relies on `HudClockViewModel.speed` keeping the last speed the simulation
-actually ran at -- behaviour `hudClockFromWorkerMessage` already documents for
-its own reasons, and which is load-bearing here.
+**A paused clock must not be read as x1, and the protection is on the main
+thread rather than where this document first said it was.** `ClockControl`
+carries no speed while paused, and resolving that to x1 would be the obvious
+thing and wrong in the dangerous direction: x1 is the *smallest* multiplier and
+so the *shortest* budget, so a player who pauses at x4 under a refusal 400
+ticks old would have the threshold drop from 1,200 to 300 beneath it and the
+corner would retire a sentence in a frozen prison.
+
+Nothing resolves it to x1, because `hudClockFromWorkerMessage` keeps the last
+speed the simulation actually *ran* at across a pause -- behaviour written for
+the fast-forward control long before this band and load-bearing here. That
+composition is what a test can go red on, and does.
+
+**The publisher makes the same reading locally and it turns out to be
+unobservable, which is recorded because a test was written claiming otherwise
+and then deleted.** `publishStatusCounts` freezes its comparison while the
+clock is paused; but `transition` stops the tick loop for every state but
+`running`, so the only way that method runs in a paused prison is
+`handleSubmitCommand`'s drain (#749), which forces the publication gate open
+anyway, and the other paused caller is the publish after `initialize`, where a
+restored session has no standing refusal because `RefusalLog` is not in the
+save. The branch is kept as the locally correct reading, so a future publisher
+that *does* publish on a pause cannot inherit the bug by default, and its own
+comment says it buys nothing today. **The first draft of this section claimed
+the publisher was what kept a paused prison safe. It is not.**
 
 **The new cost, in the other currency, stated for the same reason the old one
 was.** Holding 15 wall-clock seconds at x4 takes 1,200 ticks, which is **half

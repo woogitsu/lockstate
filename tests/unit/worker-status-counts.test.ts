@@ -159,16 +159,6 @@ class Harness {
     this.machine.handleMessage(message);
   }
 
-  /** Stops the clock without ending the session, for the paused-band case. */
-  public pause(): void {
-    this.send({
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: `pause-${String(this.nowMs)}`,
-      kind: 'simulation/set-clock',
-      payload: { mode: 'paused' },
-    });
-  }
-
   public run(speed: 1 | 2 | 4 = 1): void {
     this.send({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -749,50 +739,6 @@ describe('publishing the status counts', () => {
     const after = harness.publications();
     expect(after, 'the x2 ceiling was reached and no publication carried it').toHaveLength(3);
     expect(after[2]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
-  });
-
-  /**
-   * **A paused prison must never age the sentence by a single tick**, which is
-   * the 2026-09-20 ruling in one line, and scaling the threshold created a new
-   * way to break it that counting in ticks alone did not have.
-   *
-   * `ClockControl` has no speed while paused. Reading that as x1 would be the
-   * obvious thing to do and would be wrong in the dangerous direction: `1` is
-   * the **smallest** multiplier and therefore the **shortest** budget, so a
-   * player who pauses at x4 under a refusal 400 ticks old would have the
-   * threshold drop from 1,200 to 300 beneath it and the corner would retire a
-   * sentence in a frozen prison. The publisher therefore freezes the whole
-   * comparison while the clock is paused rather than choosing a multiplier.
-   */
-  test('a paused clock freezes the band comparison instead of reading itself as x1 (owner 2026-09-20)', () => {
-    const harness = new Harness();
-    harness.run(4);
-    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
-    harness.advance(50);
-    expect(harness.publications()).toHaveLength(2);
-
-    // Past the x1 ceiling, nowhere near the x4 one (1,200).
-    for (let wake = 0; wake < 99; wake += 1) harness.advance(50);
-    const standingAt = harness.kernelTick();
-    expect(standingAt).toBeGreaterThan(REFUSAL_BAND_TICK_CEILING_AT_X1);
-    expect(standingAt).toBeLessThan(refusalBandTickCeiling(4));
-    const beforePause = harness.publications().length;
-
-    harness.pause();
-    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
-    expect(harness.kernelTick(), 'a paused prison ran a tick, so nothing below is about pausing').toBe(standingAt);
-    const afterPause = harness.publications();
-    expect(
-      afterPause.length,
-      'the pause published something about the band -- a paused clock is being read as a speed',
-    ).toBe(beforePause);
-    // And the last thing the main thread was told still carries the refusal
-    // unmarked, which is what keeps the sentence on the corner.
-    expect(afterPause[afterPause.length - 1]?.payload.refusal).toEqual({
-      sequence: 1,
-      tick: 0,
-      reason: 'build.out-of-bounds',
-    });
   });
 
   test('replaces the standing refusal when the simulation refuses something else', () => {
