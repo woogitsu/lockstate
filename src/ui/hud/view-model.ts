@@ -1738,6 +1738,42 @@ export interface HudRefusalNoticeViewModel {
    * `SimulationRefusal.routeDecidedSince`.
    */
   readonly routeDecidedSince?: true;
+  /**
+   * Present once the refusal has stood for `REFUSAL_BAND_TICK_CEILING`
+   * simulation ticks without anything retiring it -- the owner's ruling of
+   * 2026-09-20, *"Tak, ale liczony w tikach"* ("Yes, but counted in ticks"),
+   * amending ADR 0091 and ADR 0084 section 6.
+   *
+   * **The complement of `routeDecidedSince`, and deliberately a second field
+   * rather than a widening of the first.** That one retires the band when
+   * something happens; this one retires it when nothing does. They are
+   * different facts with different producers -- one is witnessed by
+   * `RefusalLog.supersede`, the other is a subtraction of two ticks -- and a
+   * single flag would make the band unable to say which of the two it obeyed,
+   * which is the thing ADR 0091's amendment has to be able to explain.
+   *
+   * **Ticks, not milliseconds, and that is the whole of what the owner
+   * ruled.** A paused prison never ages the sentence; a prison at x1 ages it
+   * at 50 ms a tick and one at x4 four times faster. `.hud__event`'s
+   * `EVENT_BAND_HOLD_CEILING_MS` is untouched and remains a wall-clock number.
+   * `src/simulation/refusals/refusal-band-lifetime.ts` carries the
+   * measurement, the number and what the unit costs.
+   *
+   * **Only the band reads it**, exactly as for `routeDecidedSince`:
+   * `hudAlertsFromWorkerMessage` does not look at it, so the alerts list keeps
+   * the row. The band is the notice and the list is the record.
+   *
+   * **It is not on the wire**, and the difference from `routeDecidedSince` is
+   * worth reading. That one crosses the boundary because only `RefusalLog`
+   * can know it. This one is computed by `hudRefusalFromWorkerMessage` from
+   * two numbers `simulation/status-counts` already carries -- the
+   * publication's `tick` and the refusal's own -- so `refusalSchema` gains no
+   * member. What the worker does contribute is the *publication*: a refusal in
+   * a prison where nothing further happens moves no count and no ordinal, so
+   * `SimulationWorkerStateMachine` opens its gate once when the ceiling is
+   * crossed and the main thread would otherwise never be told again.
+   */
+  readonly outlivedBandTicks?: true;
 }
 
 /**

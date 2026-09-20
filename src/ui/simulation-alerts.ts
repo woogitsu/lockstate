@@ -1,3 +1,4 @@
+import { refusalBandCeilingPassed } from '../simulation/refusals/refusal-band-lifetime';
 import type { LocalizationKey } from '../content/localization';
 import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
 import { PROTOCOL_FAULT_CODES } from '../simulation/protocol/types';
@@ -446,10 +447,25 @@ export function hudRefusalFromWorkerMessage(
       // function serves the band, and the band's rule is `hud.ts`'s to state.
       // Spread rather than passed as `undefined`, because
       // `exactOptionalPropertyTypes` is on and the field is `true`-or-absent.
+      //
+      // `outlivedBandTicks` is *computed* here rather than forwarded, and it
+      // is the one thing this translator decides. The arithmetic is a
+      // subtraction of two integers the payload already carries -- the tick
+      // this readout is about and the tick the refusal happened on -- so the
+      // wire gains no member for it (`refusalSchema` is unchanged). This
+      // module is the composition root's helper and is allowed to know both
+      // sides of the boundary, which is why the simulation's own constant can
+      // be imported here and must not be copied into `src/ui/hud/`: a second
+      // copy of a tick budget on this side would disagree with the simulation
+      // the day the balance moved, exactly as `HudClockViewModel`'s
+      // `dayLengthTicks` comment says of the day length.
       return {
         sequence: refusal.sequence,
         labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
         ...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as const } : {}),
+        ...(refusalBandCeilingPassed(refusal.tick, message.payload.tick)
+          ? { outlivedBandTicks: true as const }
+          : {}),
       };
     }
 

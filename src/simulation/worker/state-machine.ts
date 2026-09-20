@@ -27,6 +27,7 @@ import {
   RENDER_ACTORS_SCHEMA_ID,
   RENDER_ACTORS_SCHEMA_VERSION,
 } from '../protocol/render-actors-payload';
+import { refusalBandCeilingPassed } from '../refusals/refusal-band-lifetime';
 import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } from '../runtime/restore-refusal';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
@@ -292,6 +293,29 @@ export class SimulationWorkerStateMachine {
    * standing refusal moves `sequence` and opens the gate on its own.
    */
   private _publishedRefusalRouteDecided = false;
+  /**
+   * Whether the refusal the main thread was last told about had already
+   * outlived the band's tick ceiling when that publication left
+   * (`REFUSAL_BAND_TICK_CEILING`, ruled in ticks by the owner 2026-09-20).
+   *
+   * **A third watermark, for the same reason there is a second one, and it is
+   * the half of this that could not be done on the main thread alone.** The
+   * ceiling is crossed by the *clock* rather than by anything the player did,
+   * so no ordinal moves and no count moves -- and a refusal in a prison where
+   * nothing further happens is exactly the case where `statusCountsEqual`
+   * suppresses every publication there is. The main thread already holds both
+   * numbers it needs (the publication's `tick` and the refusal's own), so it
+   * needs no new field on the wire; what it cannot do is make a publication
+   * happen. This is that publication, and there is exactly one of it per
+   * refusal.
+   *
+   * Monotone per record like `_publishedRefusalRouteDecided`: ticks only
+   * advance within a session, and a `record` that replaces the standing
+   * refusal moves `sequence` and opens the gate on its own. A session loaded
+   * over a running one is a new state machine, so a restored kernel cannot
+   * carry this backwards.
+   */
+  private _publishedRefusalOutlivedBand = false;
   /**
    * The `sequence` of the zoning notice the main thread was last told about,
    * `0` for none.
@@ -601,9 +625,16 @@ export class SimulationWorkerStateMachine {
     const refusal = this._runtime.refusals.last;
     const refusalSequence = refusal?.sequence ?? 0;
     const refusalRouteDecided = refusal?.routeDecidedSince === true;
+    // Read once, here rather than beside `tick` below, because it has to be
+    // available to the interval gate: a ceiling that only reached the payload
+    // would be computed on publications this method had already declined to
+    // make.
+    const refusalOutlivedBand =
+      refusal !== undefined && refusalBandCeilingPassed(refusal.tick, this._kernel.tick);
     const refusalIsNew =
       refusalSequence !== this._publishedRefusalSequence ||
-      refusalRouteDecided !== this._publishedRefusalRouteDecided;
+      refusalRouteDecided !== this._publishedRefusalRouteDecided ||
+      refusalOutlivedBand !== this._publishedRefusalOutlivedBand;
     // A newly designated room opens the interval gate for the reason a
     // refusal does, and with the same bound: both are player-initiated
     // events rather than levels, both are a field access to test, and each
@@ -624,6 +655,7 @@ export class SimulationWorkerStateMachine {
     this._publishedCounts = counts;
     this._publishedRefusalSequence = refusalSequence;
     this._publishedRefusalRouteDecided = refusalRouteDecided;
+    this._publishedRefusalOutlivedBand = refusalOutlivedBand;
     this._publishedZoningSequence = zoningSequence;
 
     this.post({

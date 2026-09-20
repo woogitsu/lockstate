@@ -1752,9 +1752,42 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * the next *new* ordinal takes the band normally. The flag is monotone per
    * record -- a route cannot un-decide -- so a retired sentence never comes
    * back on a later republication of the same refusal.
+   *
+   * ## The band also retires when nothing happens at all (the owner's ruling
+   * of 2026-09-20, amending ADR 0091 and ADR 0084 section 6)
+   *
+   * Option F above answers *"the player has moved on"*. It does not answer
+   * *"the player has done nothing at all since"*, and until this that case had
+   * no answer: ADR 0084's amendment section 6 says in terms that
+   * `EVENT_BAND_HOLD_CEILING_MS` does **not** reach this band, so a refusal in
+   * a quiet prison held the corner -- and the grid row under it -- for the
+   * rest of the session. Measured on the assembled application at 900x600,
+   * that row costs `.hud__rail` 35px.
+   *
+   * The owner ruled that it should retire, **counted in simulation ticks**
+   * rather than on the wall clock, and `HudRefusalNoticeViewModel`'s
+   * `outlivedBandTicks` is that answer arriving. It is a third door into this
+   * same branch, for the reason the second one is a door into it: a notice the
+   * band is not to keep is treated exactly as no notice at all, so there is
+   * one retirement path rather than three.
+   *
+   * **The `retired`-ordinal suppression the events band needs is not needed
+   * here, and the difference is worth knowing before anyone copies it
+   * across.** `EventBandDwellState.retired` exists because
+   * `HudViewModel.event` is sticky and *this thread's own timer* takes the
+   * sentence down: the next publication of the identical notice would raise it
+   * again, at up to twice a second. Here the retirement is a property of the
+   * **notice**, not of this module -- `outlivedBandTicks` is monotone in the
+   * simulation's own clock, so every later publication carrying the same
+   * refusal carries the flag too and lands in this same branch. There is no
+   * timer on this side and no state to flicker against.
+   *
+   * **Nothing is restored**, on option F's own terms: the sequence is cleared
+   * with the line, so a genuinely new refusal takes the band normally. This is
+   * a lifetime, not a mute.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined || notice.routeDecidedSince === true) {
+    if (notice === undefined || notice.routeDecidedSince === true || notice.outlivedBandTicks === true) {
       simulationRefusalSequence = undefined;
       if (refusalSource === 'simulation') clearRefusalLine();
       return;

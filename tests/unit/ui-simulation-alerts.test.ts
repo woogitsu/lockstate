@@ -8,6 +8,7 @@ import {
   type RefusalReason,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
+import { REFUSAL_BAND_TICK_CEILING } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
@@ -69,13 +70,30 @@ const COUNTS = {
   treasuryMinorUnits: 25_000,
 } as const;
 
-function publication(refusal?: { sequence: number; tick: number; reason: RefusalReason; routeDecidedSince?: true }): WorkerToMainMessage {
+/**
+ * One `simulation/status-counts` publication carrying `refusal`.
+ *
+ * `publishedAt` is the tick the readout is *about*, and it defaults to the
+ * refusal's own rather than to a constant. That default used to be `1_234`,
+ * which stopped being inert on 2026-09-20: the band now retires a refusal that
+ * has stood `REFUSAL_BAND_TICK_CEILING` ticks with nothing further happening
+ * (the owner's ruling, amending ADR 0091), and `hudRefusalFromWorkerMessage`
+ * computes that from these two numbers. A fixture that published every refusal
+ * more than a thousand ticks after it happened would mark every notice in this
+ * file as outlived, and each case below would then be asserting about the
+ * retirement rule instead of about the thing it was written for. Ageing is
+ * opted into, by the cases that are about it.
+ */
+function publication(
+  refusal?: { sequence: number; tick: number; reason: RefusalReason; routeDecidedSince?: true },
+  publishedAt?: number,
+): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
     kind: 'simulation/status-counts',
     payload: {
-      tick: 1_234,
+      tick: publishedAt ?? refusal?.tick ?? 1_234,
       schemaVersion: 1,
       counts: { ...COUNTS },
       ...(refusal === undefined ? {} : { refusal }),
@@ -620,6 +638,79 @@ describe('the same refusal is read a second time, for the band that is always la
     const notice = hudRefusalFromWorkerMessage(publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove' }));
     expect(notice).toEqual({ sequence: 3, labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove' });
     expect(notice === 'none' || notice === undefined ? true : 'routeDecidedSince' in notice).toBe(false);
+  });
+
+  /**
+   * **The complement of option F, ruled by the owner on 2026-09-20**: the band
+   * retires a refusal that has stood `REFUSAL_BAND_TICK_CEILING` simulation
+   * ticks with nothing further happening. The provenance is the weaker of the
+   * two kinds this repository distinguishes -- the label of a clickable option
+   * a session wrote, *"Tak, ale liczony w tikach"* ("Yes, but counted in
+   * ticks") -- and what was agreed is the unit, not the number.
+   *
+   * Unlike `routeDecidedSince`, this mark is **computed here** rather than
+   * forwarded: it is a subtraction of two integers the payload already carries,
+   * so `refusalSchema` gains no member. This function is the composition root's
+   * helper and may know both sides of the boundary, which is what lets the
+   * simulation's own constant be imported instead of copied into `src/ui/hud/`.
+   *
+   * The boundary is asserted from both sides, because a rule that fired a tick
+   * early would still retire every band eventually and a one-sided assertion
+   * would stay green. The band rule itself lives in `mountHud`'s
+   * `applySimulationRefusal` and is measured in
+   * `tests/browser/ui-refusal-band-tick-retire.spec.ts`, the only place the
+   * production DOM exists.
+   */
+  it('marks a refusal that has stood the whole tick ceiling with nothing further happening', () => {
+    expect(
+      hudRefusalFromWorkerMessage(
+        publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING),
+      ),
+    ).toEqual({ sequence: 4, labelKey: 'hud.alert.refusal.zone.not-enclosed', outlivedBandTicks: true });
+  });
+
+  it('leaves the mark off one tick short of the ceiling', () => {
+    const notice = hudRefusalFromWorkerMessage(
+      publication({ sequence: 4, tick: 40, reason: 'zone.not-enclosed' }, 40 + REFUSAL_BAND_TICK_CEILING - 1),
+    );
+    expect(notice).toEqual({ sequence: 4, labelKey: 'hud.alert.refusal.zone.not-enclosed' });
+    // Absent rather than `false`, matching `routeDecidedSince` beside it.
+    expect(notice === 'none' || notice === undefined ? true : 'outlivedBandTicks' in notice).toBe(false);
+  });
+
+  it('counts in ticks and not in the wall clock, which is the whole of what the owner ruled', () => {
+    // A paused prison republishes the standing refusal beside whatever else
+    // the counts channel carries, and its tick does not move. Time passing on
+    // this thread is not represented here at all -- there is nothing in this
+    // function that could read it -- and that is exactly the property a
+    // wall-clock ceiling like `.hud__event`'s `EVENT_BAND_HOLD_CEILING_MS`
+    // would lose.
+    const standing = { sequence: 5, tick: 900, reason: 'unzone.room-occupied' } as const;
+    for (let republication = 0; republication < 50; republication += 1) {
+      expect(hudRefusalFromWorkerMessage(publication(standing, 900))).toEqual({
+        sequence: 5,
+        labelKey: 'hud.alert.refusal.unzone.room-occupied',
+      });
+    }
+  });
+
+  it('marks both ways at once when a route decided something and the ceiling has passed', () => {
+    // The two marks are independent facts with different producers, so a
+    // notice can carry both. The band reads them as one branch, but a shape
+    // that made either exclusive would invent a relationship neither rule has.
+    expect(
+      hudRefusalFromWorkerMessage(
+        publication(
+          { sequence: 6, tick: 12, reason: 'build.out-of-bounds', routeDecidedSince: true },
+          12 + REFUSAL_BAND_TICK_CEILING,
+        ),
+      ),
+    ).toEqual({
+      sequence: 6,
+      labelKey: 'hud.alert.refusal.build.out-of-bounds',
+      routeDecidedSince: true,
+      outlivedBandTicks: true,
+    });
   });
 
   it('is pure: the same message gives the same answer', () => {
