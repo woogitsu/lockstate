@@ -2599,6 +2599,20 @@ describe('browser failure evidence contract', () => {
     // priced `always()` that way had been wrong about it since it was
     // written, and this assertion inherited the error from it.
     //
+    // **THAT PARAGRAPH IS ITSELF WRONG AND IS KEPT SO THE ROUTE IS VISIBLE.**
+    // It was read out of the action's documentation rather than off a run.
+    // The first `browser` job to execute this step under `always()` -- run
+    // 35514269512, head `70b9bbf0` -- concluded SUCCESS and created an
+    // artifact anyway: `browser-failure-35514269512-1`, 27,416 bytes. So
+    // `test-results/` is not empty on a green run, `if-no-files-found`
+    // never engages, and the green-run cost is one small artifact per run
+    // held for `retention-days`.
+    //
+    // The assertion below is unchanged, because the half of the case it
+    // rests on was measured and still holds: neither `failure()` nor
+    // `cancelled()` fires on a cancelled step inside a live run. Only the
+    // costing moved, from "free" to "cheap".
+    //
     // *"The 2026-09-19 blind spot"* was not closed by
     // `failure() || cancelled()` either. Read off the API for job
     // 105967436033 (run 35468216836, attempt 1): the job concluded
@@ -2615,7 +2629,7 @@ describe('browser failure evidence contract', () => {
     // replacing the first with the second.
     expect(
       stepScalar(upload, 'if')?.value,
-      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: always()\`, which the owner ruled on 2026-09-20 after a first ruling that day for \`failure() || cancelled()\` was measured not to fire. The shape to hold in mind is the one that lost the evidence: on 2026-09-19 a self-hosted runner died mid-suite, the suite step concluded \`cancelled\` INSIDE a run that was never cancelled, and the job concluded \`failure\` -- so step-level \`failure()\` was false (a cancelled step is not a failed one) and \`cancelled()\` was false too (nothing cancelled the run). Neither guard fires there; only \`always()\` does. The usual argument for narrowing this -- that an unconditional upload stores an empty artifact on every green run -- is false of this step, because \`if-no-files-found: ignore\` means an empty \`test-results/\` creates no artifact at all. The condition is owner-reserved deploy configuration: change it with a ruling, not with this assertion.`,
+      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: always()\`, which the owner ruled on 2026-09-20 after a first ruling that day for \`failure() || cancelled()\` was measured not to fire. The shape to hold in mind is the one that lost the evidence: on 2026-09-19 a self-hosted runner died mid-suite, the suite step concluded \`cancelled\` INSIDE a run that was never cancelled, and the job concluded \`failure\` -- so step-level \`failure()\` was false (a cancelled step is not a failed one) and \`cancelled()\` was false too (nothing cancelled the run). Neither guard fires there; only \`always()\` does. The usual argument for narrowing this -- that an unconditional upload is not worth its storage -- was measured on run 35514269512 rather than argued: that green \`browser\` job created a 27,416-byte artifact, so the cost is one small artifact per green run against \`retention-days\`, which is cheap rather than free. An earlier version of this message claimed \`if-no-files-found: ignore\` made it free; that was read from the action's documentation and the run refutes it. The condition is owner-reserved deploy configuration: change it with a ruling, not with this assertion.`,
     ).toBe('always()');
 
     // The suite step must have run before there is anything to collect, and a

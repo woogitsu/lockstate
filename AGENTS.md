@@ -1031,6 +1031,30 @@ line. Every argument on this step for eleven days — including the 2026-09-08
 decision to raise `timeout-minutes` rather than touch the condition — had been
 weighing a cost this step does not pay.
 
+**THE SECOND FINDING IS FALSE, AND IT IS KEPT ABOVE BECAUSE IT WAS PUT TO THE
+OWNER AS PART OF THE QUESTION THEY ANSWERED.** It was read out of
+`actions/upload-artifact`'s documented behaviour, not off a run, and the first
+run to execute this step under `always()` refutes it: run 35514269512, head
+`70b9bbf0`, `browser` job **success** — and an artifact created anyway,
+`browser-failure-35514269512-1`, **27,416 bytes**. `test-results/` is not empty
+on a green run, so `if-no-files-found: ignore` never engages and the green-run
+cost is a small artifact per run rather than a log line.
+
+**The ruling stands, for a reason that is no longer the reason it was given.**
+About 27 KB per green run against a seven-day retention is on the order of a
+megabyte: cheap, not free. What the refutation kills is the claim that the
+narrower guards cost nothing to give up; what survives untouched is the
+measured fact that neither of them fires on the shape that loses the evidence,
+which is the half the decision actually rests on.
+
+**Both mistakes on this line arrived by the same route and it is the route to
+watch.** The first was a condition put to the owner without checking what it
+evaluates to; the second was a cost written into three files as measured fact
+when it had been read from a vendor's documentation — and it was written *in
+the same pass that corrected the first*. A correction is not evidence that the
+corrected text is now sound. The check that caught this one was a single API
+call against a run that had already finished.
+
 **The ruling.** Put both findings to the owner, who chose, from three clickable
 options, the one labelled:
 
