@@ -24690,10 +24690,14 @@ one direction.
   SENTENCE THE PREVIOUS RE-RUN OFFERED AS ITS EVIDENCE SAYS `git grep -c`
   RETURNS FILES WHEN IT RETURNS HITS.** The same four files match at both ends
   of this window and the same five hits are in them. The one that moved is the
-  `.css` hit: `src/ui/hud/hud.css:3000`,
+  `.css` hit: `src/ui/hud/hud.css:3031`,
   `natural height is 361.6 against 365.5 of rail at 900x600 -- 3.9px from`,
   **+7** from `1da79d2e`/#1318's rail work — the only one of that merge's three
-  hunks above it. The other four are unmoved, on files in no merge of this
+  hunks above it. **The anchor read `:3000` when that was written and reads
+  `:3031` here**, moved a further **+31** by the status strip's
+  `height: max-content` repair for #1312's remaining sweep, whose docblock sits
+  above it in the same file. The hit, the quote and the reasoning are
+  unchanged; only the coordinate is. The other four are unmoved, on files in no merge of this
   window: `src/ui/primitives/icon.ts:97`
   (`M13.17 3.91 20.24 10.98`) and `:149` (`'M15.8 16.1h3.9',`),
   `src/ui/primitives/resize-separator.ts:110`
@@ -24721,7 +24725,7 @@ one direction.
   the half that broke is the half the previous re-run had just called *"the
   strongest evidence it has ever been offered"*. The file count is still
   **four** and the four are the same four. **`3.9` is in one of them now**:
-  `src/ui/hud/hud.css:3000`,
+  `src/ui/hud/hud.css:3031`,
   `natural height is 361.6 against 365.5 of rail at 900x600 -- 3.9px from`,
   a docblock line about the collapsed regime editor,
   added by `4d8b00c5` inside #1280's ADR 0115 split. `git grep -c '3\.9' --

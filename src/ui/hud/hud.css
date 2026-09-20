@@ -156,7 +156,38 @@
    * at the scales that did not exist before.
    */
   flex-wrap: wrap;
-  align-content: center;
+  /*
+   * THE STRIP IS AS TALL AS THE ROWS IT WRAPPED INTO, AND THE FIRST OF THEM
+   * STARTS AT ITS TOP EDGE (#1312 follow-up).
+   *
+   * `min-height` above is a floor and was the only thing sizing this box, and
+   * a floor is not a fit. `.hud` is `grid-template-rows: auto ...` in a
+   * viewport-height container, and an `auto` row sizes a wrapping flex
+   * container by an intrinsic contribution that under-counts the wraps: the
+   * strip's members are measured where they need not wrap, so the track comes
+   * out at the floor while the laid-out strip is taller. Measured on a
+   * 390x844 window halved by a 200 % page zoom at a 150 % interface scale, on
+   * `faf7ce3a`: the track is **132px** and the content in it is **157px**.
+   *
+   * `align-content: center` then centred 157px of rows inside a 132px box, so
+   * the overflow was split between the two ends and the FIRST row -- the
+   * brand badge, which is where a bug report reads the build id from -- was
+   * laid at **top=-26.4**, above the top of the page. The same reading at
+   * 1024x768 halved at 175 % put it at top=-4.
+   *
+   * `height: max-content` is resolved against this box's own used width, which
+   * the grid has already decided, so it is the height the strip actually
+   * wraps into rather than the height it would want if it did not wrap; the
+   * track follows it. `min-height` still floors it where the content is
+   * shorter, so no viewport that was not overflowing changes. `flex-start`
+   * then makes the remaining question moot: if anything ever does overflow
+   * this box again it does so downward, and the brand stays at the top.
+   *
+   * Measured across this change at 390x844 halved at 150 %: strip
+   * 132 -> 184.8px, spill 26 -> 0px, brand top -26.4 -> 0.
+   */
+  height: max-content;
+  align-content: flex-start;
   gap: var(--space-1) var(--space-4);
   min-height: var(--hud-strip-height);
   padding: 0 var(--space-3);
@@ -3414,6 +3445,34 @@
  * Rooms panel 70.2px of arrival height.
  */
 :root[data-ui-scale-enlarged='true'] .hud-tabs__inner { flex-wrap: wrap; }
+
+/*
+ * AND THE SAME WRAP WHERE THE VIEWPORT IS NARROWER THAN THE BAR, AT ANY SCALE.
+ *
+ * The rule above gates the wrap on the player having asked for a larger
+ * interface, and the comment above it says why the gate is there rather than
+ * the wrap being unconditional: at a 375x812 phone at 100 % a bar that may
+ * wrap does wrap, "where the tabs shrink and fit", and that second row cost
+ * the Rooms panel 70.2px of arrival height. That reading is about a 375 CSS
+ * pixel viewport and it still holds; this rule does not touch it.
+ *
+ * What it does not cover is a viewport NARROWER than that, which a 200 % page
+ * zoom produces out of the same phone: 390x844 lays out in 195 CSS pixels and
+ * 375x812 in 188. There the tabs do not shrink and fit -- every tab carries a
+ * `min-width` floor, the bar is wider than the column, and `overflow: hidden`
+ * above clips whatever hangs off it. Measured on `faf7ce3a` at 100 %, two tab
+ * centres were laid at **x=-14.5 and x=209.5 of a 195-pixel viewport**, and at
+ * 75 % one tab centre resolved to `.hud-tabs__inner` itself rather than to the
+ * tab -- the clip, reported.
+ *
+ * So the gate is widened by one term rather than removed, and the term is the
+ * width at which the measurement above was taken: below 375 CSS pixels the bar
+ * wraps whatever the interface scale is. At 375 exactly, and above it, nothing
+ * changes.
+ */
+@media (max-width: 374px) {
+  .hud-tabs__inner { flex-wrap: wrap; }
+}
 
 .hud-tabs__inner > .ui-tab + .ui-tab {
   border-left: var(--hairline) solid var(--border-hairline);
