@@ -867,6 +867,69 @@ the check that would have caught it is the cheap one: read the sentence against
 the diff it ships with.
 
 
+**A SIXTH RELEASE INSIDE RESERVATION 3, 2026-09-20 — ONE `if:` CONDITION ON
+THE `browser` JOB'S EVIDENCE UPLOAD, AND IT IS THE FIRST THAT ANSWERS A
+QUESTION THE FILE ITSELF HAD WRITTEN DOWN AS OPEN.** The step named
+`Upload the browser suite's failure evidence` in `.github/workflows/ci.yml`
+ran `if: failure()`. `failure()` is false for a cancellation, so a job that is
+cancelled rather than failed uploaded nothing. That stopped being theoretical
+on 2026-09-19: the runner `lockstate-wsl-DOM-NEW-03` died at roughly 21:54Z
+during PR #1313's `browser` job (run 35468216836, attempt 1, job
+105967436033). Read off the API rather than taken from a brief: the suite step
+concluded **cancelled**, the evidence step concluded **skipped**, and the log
+blob was never finalized (`BlobNotFound`) — a red job with no log and no
+artifact, whose diagnosis had to be reconstructed from scheduler behaviour.
+The owner was asked and chose, from three clickable options, the one labelled:
+
+> `failure() || cancelled()` (zalecane)
+
+("`failure() || cancelled()` (recommended).")
+
+**What the release covers, exactly.** That one `if:` condition on that one
+step, from `failure()` to `failure() || cancelled()`, and nothing else in the
+file: not a second step, not a second job, not any `timeout-minutes`, not the
+`git lfs pull --include=` filter, not `retention-days`, not
+`if-no-files-found`, not the runner selectors, not `deploy.yml`, not
+`wrangler.jsonc`, not `public/_headers`, and neither dashboard.
+
+**The provenance is the weaker kind, exactly as the 2026-09-08, 2026-09-09 and
+2026-09-10 entries and all five rulings of 2026-09-19 record of themselves**:
+the label of a clickable option the integrating session wrote and the owner
+picked, not a sentence they typed. Read it as authorising the condition that
+label spells and nothing wider.
+
+**The chosen condition is a third option the file's own comment does not
+consider, and that is the part worth reading.** The long comment above that
+step poses the choice as `failure()` versus `always()` and prices `always()`
+at an empty artifact on every green run — which is why the 2026-09-08 release
+raised the job's `timeout-minutes` instead of touching the condition. The
+owner chose neither: `failure() || cancelled()` uploads whenever there is
+something to look at and is still false on green, so that cost is not paid.
+**The superseded sentence — "it stays here as the open question it has been
+since this comment was written" — is kept in the file with the correction
+appended beneath it**, on the habit `docs/AGENT_WORKFLOW.md` §4 asks for,
+rather than edited away.
+
+**The weakest claim in this entry, named here rather than left for a reader to
+find.** `cancelled()` is documented as true when the *workflow run* was
+cancelled. It is therefore certain for the concurrency-group case and for an
+explicit cancel, and **unverified for the 2026-09-19 runner-death case that
+motivated the question**: that run was not cancelled as a whole — attempt 2 of
+it concluded `success` — and a job whose runner disappears may end in a state
+where neither `failure()` nor `cancelled()` is true and the step is skipped
+again. The change is strictly wider than what it replaces and costs nothing on
+a green run, so it is worth having on either reading; it is not proof that the
+lost evidence would have survived.
+
+**A gate moved with it, in the same commit, and moving it was ours.**
+`tests/foundation/ci-configuration-contract.test.ts` already pinned this
+condition to the literal `failure()`, so the workflow edit turned it red — the
+contract working. Its assertion now pins `failure() || cancelled()` and its
+superseded comment is kept above the correction in the same form. Adding and
+re-aiming that assertion is not inside reservation 3: the test file is ours,
+and what it pins is the owner's ruling rather than a choice this session made.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.

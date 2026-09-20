@@ -2571,10 +2571,26 @@ describe('browser failure evidence contract', () => {
     // cost of `failure()` is that a *cancelled* job -- `timeout-minutes`, or
     // the concurrency group -- uploads nothing, which the step's own comment
     // records as a deliberate trade.
+    //
+    // **THAT COMMENT IS SUPERSEDED AND KEPT, exactly as the workflow's own
+    // comment block is.** It records the state of the trade until 2026-09-20,
+    // and what it got wrong is that it treated `failure()` and `always()` as
+    // the only two conditions available. The owner ruled on 2026-09-20 and
+    // chose a third, `failure() || cancelled()`: it uploads when a job is
+    // cancelled -- which is how the evidence was lost when a runner died
+    // mid-suite on 2026-09-19 -- and it is still false on a green run, so the
+    // empty-artifact cost the paragraph above prices against `always()` is
+    // not paid. `AGENTS.md` carries the release and its provenance.
+    //
+    // This assertion is now the thing that stops a later editor quietly
+    // widening to `always()` (empty artifacts forever) or narrowing back to
+    // `failure()` (the 2026-09-19 blind spot restored). Either direction is
+    // an owner-reserved change to `.github/workflows/ci.yml` and fails here
+    // in the commit that makes it.
     expect(
       stepScalar(upload, 'if')?.value,
-      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: failure()\`. Unconditional, it stores an empty artifact on every green run; on \`always()\` the same. If a job that is being *cancelled* rather than failed now needs to upload too, that is \`always()\` plus a re-read of the comment on the step, not a silent widening.`,
-    ).toBe('failure()');
+      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: failure() || cancelled()\`, which the owner ruled on 2026-09-20. On plain \`failure()\` a job cancelled rather than failed uploads nothing -- a runner died mid-suite on 2026-09-19 and left a red job with no log and no artifact. On \`always()\`, or with no condition at all, it stores an empty artifact on every green run instead. The condition is owner-reserved deploy configuration: change it with a ruling, not with this assertion.`,
+    ).toBe('failure() || cancelled()');
 
     // The suite step must have run before there is anything to collect, and a
     // step ordered above it would upload the previous run's leftovers.

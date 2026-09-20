@@ -918,11 +918,52 @@ jobs:
       # stays here as the open question it has been since this comment was
       # written.
       #
+      # **THAT LAST SENTENCE STOPPED BEING TRUE ON 2026-09-20, AND IT IS KEPT
+      # RATHER THAN DELETED BECAUSE A READER SHOULD SEE WHAT IT CLAIMED.** It
+      # claimed the question was still open, and it posed that question as a
+      # choice between exactly two conditions: keep `failure()`, or widen to
+      # `always()` and pay for an empty artifact on every green run. **The
+      # owner was asked on 2026-09-20 and chose a third condition the
+      # paragraph above does not consider** -- `failure() || cancelled()`,
+      # which uploads whenever there is something to look at and never on a
+      # green run, so the cost `always()` carries is not paid. `AGENTS.md`
+      # records the release, and records its provenance as the weaker kind:
+      # the label of a clickable option the integrating session wrote and the
+      # owner picked, not a sentence they typed.
+      #
+      # **What it bought, concretely.** On 2026-09-19 the runner
+      # `lockstate-wsl-DOM-NEW-03` died at ~21:54Z during PR #1313's `browser`
+      # job (run 35468216836, attempt 1, job 105967436033). Read off the API:
+      # `Run the real-browser suite` concluded **cancelled**, this step
+      # concluded **skipped**, and the log blob was never finalized
+      # (`BlobNotFound`), so the job was red with no log and no artifact and
+      # the diagnosis had to be reconstructed from scheduler behaviour. That
+      # is the failure shape the paragraph above names -- "a job cancelled
+      # some other way ... still upload nothing" -- arriving by a route it did
+      # not list, which is neither `timeout-minutes` nor the concurrency
+      # group but the runner simply going away.
+      #
+      # **The honest limit on this, which is not written down anywhere else.**
+      # `cancelled()` is documented as true when the *workflow run* was
+      # cancelled. It is therefore certain for the concurrency-group case and
+      # for an explicit cancel, and **unverified for the runner-death case
+      # above**, whose run was never cancelled as a whole (attempt 2 of that
+      # same run concluded `success`). A runner that dies may leave the job
+      # in a state where neither `failure()` nor `cancelled()` evaluates true
+      # and the step is skipped again. This condition is strictly wider than
+      # what it replaces and costs nothing on green, so it is worth having
+      # either way -- but do not read it as a proof that the 2026-09-19
+      # evidence would have survived.
+      #
+      # `tests/foundation/ci-configuration-contract.test.ts` pins this exact
+      # condition, so a later widening to `always()` or a narrowing back to
+      # `failure()` fails in the commit that does it rather than quietly.
+      #
       # The name carries `run_attempt` as well as `run_id` because a re-run of
       # a failed job reuses the run id, and v4 refuses to overwrite an
       # existing artifact name rather than merging into it.
       - name: Upload the browser suite's failure evidence
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: browser-failure-${{ github.run_id }}-${{ github.run_attempt }}
