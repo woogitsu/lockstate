@@ -6822,30 +6822,28 @@ test.describe('the assembled application', () => {
          * bounded -- a second gain would show up here rather than being
          * absorbed by a looser ceiling.
          *
-         * **AND IT READ `64` UNTIL THE NAVIGATION'S SIXTH SECTION, WHICH IS
-         * THE LOSS THE SENTENCE ABOVE ASKED TO BE SHOWN RATHER THAN A GAIN.**
-         * The bar at this viewport is icon-only under the owner's #1192 ruling
-         * and gains no height from a sixth tab, but it gains **width**:
-         * measured on the assembled page at 375x812, `.hud__tabs` runs
-         * `x = 35..341` with five tabs and `x = 7..369` with six, so the bare
-         * sliver of world beside it goes from about 27px a side to about 6.
-         * `roomWorldGeometry`'s scan samples three points of a candidate
-         * square -- its two corners and its midpoint -- so that sliver is what
-         * the 64 was standing on: the bare runs beside the bar measured 40px
-         * at `y = 760, 776, 792` before and 16px after. The panel's own
-         * arrival height is **unchanged** at 447.7px and is asserted separately
-         * a few lines up, which is how this is known to be the bar's width and
-         * not the sheet's height.
-         *
-         * **The clause this assertion exists for is more true than it was, not
-         * less**: what keeps the fold necessary is that no 128px square of
-         * bare world is reachable, and 32 is further from 128 than 64 was. The
-         * next assertion is that clause, unchanged.
+         * **THE SIXTH SECTION MOVED THIS TO 32 AND THEN BACK TO 64, AND THE
+         * ROUND TRIP IS KEPT BECAUSE IT IS WHAT THE NUMBER IS FOR.** The bar
+         * at this viewport is icon-only under the owner's #1192 ruling and
+         * gains no height from a sixth tab, but it gains **width**: at the
+         * `min-width: calc(56px * var(--ui-scale))` that icon-only rule was
+         * given for five tabs, `.hud__tabs` ran `x = 7..369` in a 375px
+         * viewport where five tabs ran `x = 35..341`, and the bare sliver
+         * beside it went from about 27px a side to about 6. Measured, this
+         * assertion read **32**. That same overflow was a *failure* one
+         * viewport class over -- `1440x900@200%` wrapped the bar to two rows
+         * and put `.display-scale__cycle` under a `.ui-tab`, which
+         * `ui-200-percent-zoom-sweep-ratchet.spec.ts` refuses -- so the
+         * icon-only `min-width` was re-derived to 48px, and with it the
+         * sliver comes back and this reads **64** again. The pinned number is
+         * therefore unchanged, and the reason it is pinned exactly rather
+         * than bounded is exactly this: a 32 here was the visible end of a
+         * defect that failed elsewhere.
          */
         expect(
           arrival.largestBareSquare,
           `bare world appeared on arrival at ${width}x${height}, so the fold below may no longer be needed`,
-        ).toBe(32);
+        ).toBe(64);
         expect(
           arrival.largestBareSquare,
           `a 2x2 room fits in the bare world on arrival at ${width}x${height}, so the fold below is not needed`,

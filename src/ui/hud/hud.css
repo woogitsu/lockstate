@@ -5455,7 +5455,43 @@
    * where the tracking fix this block used to carry was measured running out
    * at a 4.08px overlap with two tabs clipped away.
    */
-  .ui-tab { min-width: calc(56px * var(--ui-scale)); padding: var(--space-2); }
+  /*
+   * **56 UNTIL THE SIXTH SECTION, AND THE PARAGRAPH ABOVE IS THE DERIVATION
+   * RATHER THAN A STALE SENTENCE** (`docs/AGENT_WORKFLOW.md` §4) -- it still
+   * says how to re-derive this, which is the part that does not rot. What
+   * moved is the number of buttons the arithmetic is over.
+   *
+   * **56 was derived for five tabs and six do not fit.** The clause above
+   * that this rule has to keep is *"it still fits the **320px** viewport,
+   * 282px in 296px of room"*: six tabs at 56px are `6 x 56 + 5 hairlines =
+   * 341px` in the same 296px, so the number that was chosen to fit that
+   * viewport stops fitting it the moment a section is added.
+   *
+   * **And it was measured failing at a viewport the sweep visits.** At
+   * `1440x900@200%` -- a 720x450 CSS viewport at `--ui-scale: 2`, which is the
+   * phone tier -- six 112px tabs plus their hairlines exceed
+   * `.hud-tabs__inner`'s 672px, so the bar wrapped to two rows, went 88px ->
+   * 178px, and `.hud__tabs` grew to `0,248 720x202` over a
+   * `.display-scale` sitting at `17,221 343x88`.
+   * `ui-200-percent-zoom-sweep-ratchet.spec.ts` reported it in one line:
+   * *"1440x900@200% .display-scale__cycle centre belongs to button.ui-tab"*.
+   * That ratchet is a ceiling no combination may join, so the number is
+   * re-derived rather than the combination listed.
+   *
+   * **48px, and the two bounds it is chosen between.** Below: `--tap-target`
+   * is 44px scaled and a tab may not go under it, so 48 keeps the same 4px of
+   * clearance the old number's own sentence claims for it. Above: six tabs at
+   * 48px are `6 x 48 + 5 = 293px`, which fits the 320px viewport's 296px of
+   * room with 3px to spare, and `6 x 96 + 5 = 581px` at `--ui-scale: 2`,
+   * which fits the failing combination's 672px with 91px to spare rather than
+   * with one. A seventh section would need this derived again; the two bounds
+   * above are how.
+   *
+   * The button still holds one 20px glyph and nothing else -- the name is
+   * hidden from the screen and kept in the accessibility tree by the rule
+   * below -- so nothing is taken off the screen here that was on it.
+   */
+  .ui-tab { min-width: calc(48px * var(--ui-scale)); padding: var(--space-2); }
 
   /*
    * The section names, hidden from the screen and kept in the accessibility
