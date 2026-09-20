@@ -68,7 +68,7 @@
  *   floor is `0` unless something sets it — so a session that has borrowed
  *   nothing behaves exactly as it did before, to the minor unit. **What the
  *   floor should be is not decided here**: ADR 0017 decision 5 reserves it to
- *   [#29](https://github.com/matmaxalez/lockstate/issues/29), with the rest
+ *   [#29](https://github.com/woogitsu/lockstate/issues/29), with the rest
  *   of the loan's magnitudes.
  *
  *   **Both halves of that bullet expired on 2026-08-31 and it is kept because

@@ -61,7 +61,7 @@ export const HUD_MESSAGE_KEY = {
   rooms: 'hud.status.rooms',
   /**
    * The badge under the rooms chip: how many of the rooms it counts are not
-   * ready ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+   * ready ([#1006](https://github.com/woogitsu/lockstate/issues/1006)
    * finding 1).
    *
    * `prisonersWithoutBed`'s arrangement one chip over, and for the reason that

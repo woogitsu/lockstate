@@ -71,7 +71,7 @@ export function isCancellable(state: BuildOrder['state']): boolean {
  * and they must never disagree.** `cancelOrder` uses it to decide what is
  * destroyed; `undo()` uses it to decide whether the transaction it just
  * reversed destroyed anything, which is what
- * [#927](https://github.com/matmaxalez/lockstate/issues/927) is about. A third
+ * [#927](https://github.com/woogitsu/lockstate/issues/927) is about. A third
  * state joining this set has to be told to one place, not remembered in two.
  *
  * `SimulationEventLog.recordBuildOrderCancelled` deliberately does **not** read
@@ -88,12 +88,12 @@ function destroysSpendOnCancel(state: BuildOrder['state']): boolean {
 /**
  * What one `undo()` press did: whether it reversed anything at all, and -- when
  * it did -- whether any of what it reversed was past the point of no return
- * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ * ([#927](https://github.com/woogitsu/lockstate/issues/927)).
  *
  * ## Why this is not the count the ruling declined
  *
  * The owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749) rules that Undo's
+ * [#749](https://github.com/woogitsu/lockstate/issues/749) rules that Undo's
  * sentence *"does not name a count"* and rules explicitly that the
  * transaction-size plumbing is not to be built. `spendDestroyed` is not that
  * plumbing and cannot become it: it is one bit, it says nothing about how many
@@ -777,7 +777,7 @@ export class ConstructionSystem implements SystemRegistration {
    * ## Why the return value exists, and what it is deliberately not
    *
    * It is not a count. The owner's ruling of 2026-09-01 on
-   * [#749](https://github.com/matmaxalez/lockstate/issues/749) gives Undo a
+   * [#749](https://github.com/woogitsu/lockstate/issues/749) gives Undo a
    * success sentence and rules that it *"does not name a count"* -- an undo
    * reverses a whole transaction, so naming one order would be a small lie
    * whenever a run of several was taken back -- and rules explicitly that the
@@ -785,7 +785,7 @@ export class ConstructionSystem implements SystemRegistration {
    * is sitting right there and is not returned, on purpose.
    *
    * **This method answered a bare `boolean` until
-   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * [#927](https://github.com/woogitsu/lockstate/issues/927), and the
    * paragraph above is kept whole because it is still the rule -- what changed
    * is that one bit was not enough to be honest with.** A `boolean` says only
    * *something moved*, so the handler could say only *"the last change to the

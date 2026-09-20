@@ -1333,6 +1333,13 @@ a document about method should say how to write one that lasts.
   `STATUS-QUEUE.md` have found that nearly every correction needed was a line
   number pointing at a sentence that had not changed. Cite code by `file:line`,
   because grep checks it; cite prose by quoting it.
+- **A link through `github.com/matmaxalez/lockstate` names this repository's
+  former host rather than a wrong issue or pull-request number** -- the numbers
+  survived the rename to `woogitsu/lockstate` and only the owner segment did
+  not, so such a link dates the sentence around it rather than refuting it, and
+  a dated record under `docs/research/` keeps its own on purpose under that
+  directory's rule that *"a record here does not become wrong, it becomes
+  older"*.
 - **A delta pass is blind to a claim that was already false when its window
   opened**, and to a document contradicting itself. Reading a file's own
   headings against each other is a different check from any diff, it takes a

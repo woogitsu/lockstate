@@ -74,7 +74,7 @@ export const NEED_MAX_SCALED = NEED_MAX * NEED_SCALE;
  * other end of it.
  *
  * **That premise is gone since the owner's 2026-08-30 ruling on
- * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * [#593](https://github.com/woogitsu/lockstate/issues/593)
  * ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)):
  * the range is 14 to 90 in-game days, 33,600 to 216,000 ticks, so 20,400 is
  * now inside every drawable sentence and 0.01 would have a population after

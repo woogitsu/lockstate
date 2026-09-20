@@ -226,7 +226,7 @@ export interface PrisonerOperationsRuntimeOptions {
    * same question at the one review that raises somebody *into* tier 3 --
    * which is the only way the fifth entry of the `2 + tier` eligible band ever
    * gets a producer, `classifyPrisoner` at `priorIncidents: 0` being unable to
-   * score 3 ([#677](https://github.com/matmaxalez/lockstate/issues/677)).
+   * score 3 ([#677](https://github.com/woogitsu/lockstate/issues/677)).
    * Absent, neither introduces anything and neither draws.
    */
   readonly contrabandIntroducer?: IntakeContrabandIntroducer;
@@ -256,7 +256,7 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly gangAssigner?: IntakeGangAssigner;
   /**
    * What the player is told once a queued arrival gets a bed
-   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3),
+   * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 3),
    * called by `IntakeSystem` at the same `'accommodation-assignment'` stage
    * `resolveExistingTarget` decides. Absent, intake houses people exactly as
    * it always has and says nothing about it.

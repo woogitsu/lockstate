@@ -116,7 +116,7 @@ export interface ContrabandIntroductionPolicy {
  *     ticks, and empty unless `s >= 24,000`.
  *
  *     **The owner's 2026-08-30 ruling on
- *     [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ *     [#593](https://github.com/woogitsu/lockstate/issues/593)
  *     ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md))
  *     replaced this sub-paragraph, and both halves are kept because the
  *     arithmetic is the same and only the inputs moved.** It read:
@@ -190,7 +190,7 @@ export interface ContrabandIntroductionPolicy {
  * third and fourth steps for the first time, and still none for its fifth** --
  * which is a smaller version of exactly the gap this whole comment is about,
  * and is recorded here rather than fixed, because fixing it means moving
- * `priorIncidents` and that is [#540](https://github.com/matmaxalez/lockstate/issues/540)'s
+ * `priorIncidents` and that is [#540](https://github.com/woogitsu/lockstate/issues/540)'s
  * decision, not this file's.
  *
  * The policy below is still the right shape for the game this comment

@@ -31,7 +31,7 @@ import { isCancellable, type ConstructionSystem } from './system';
  *
  * @param events Where a cancellation, an undo or a redo that **succeeded** is
  * recorded so the player is told it worked (the owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ * [#749](https://github.com/woogitsu/lockstate/issues/749)).
  *
  * **Required for `refusals`' reason, and the defect it answers is that reason's
  * mirror.** Until #749 these three controls said nothing at all when they
@@ -205,7 +205,7 @@ export function createConstructionCommandHandler(
        * and is deliberately left there.
        *
        * **Undo now says *which* of two things it did, which is
-       * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+       * [#927](https://github.com/woogitsu/lockstate/issues/927), and the
        * reason it needed fixing is visible right here in the table of two
        * branches**: `CancelBuildOrder` above reads the state and picks its
        * sentence from it, and this branch recorded one sentence for a press that

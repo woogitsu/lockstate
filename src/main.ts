@@ -1113,7 +1113,7 @@ function staffRoster(): HudStaffViewModel {
  * This paragraph used to continue *"the bounds -- 2 to 16 in-game days,
  * uniform -- are a proposal recorded at `MIN_SENTENCE_DAYS` ... and are the
  * owner's to confirm or replace"*, and the owner has now replaced them: the
- * ruling on [#593](https://github.com/matmaxalez/lockstate/issues/593),
+ * ruling on [#593](https://github.com/woogitsu/lockstate/issues/593),
  * 2026-08-30, makes the range **14 to 90 in-game days**
  * ([ADR 0079](../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).
  * Nothing on screen renders a sentence today, so a varying one adds no
@@ -1390,7 +1390,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    *
    * **That paragraph is no longer true of this reader and is kept rather than
    * rewritten, because it is the rule that was relaxed and why**
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 1).
    * Its reasoning is untouched -- a closed panel still asks for nothing -- and
    * its premise moved: the `ROOMS` chip's badge is drawn off this readout by
    * `projectStatusMetrics`, and the status strip is laid out on all five tabs,
@@ -2025,7 +2025,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
   /*
    * **Asked for on every tab, and that changed on 2026-09-05**
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 1).
    *
    * This read `if (roomNeedsReader === undefined || activeTab !== 'rooms')
    * return;` (the tab's id when that was written; it is `zones` since

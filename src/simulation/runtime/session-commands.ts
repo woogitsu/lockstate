@@ -122,10 +122,10 @@ import { tileCoordinate } from '../world/coordinates';
  * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
  * for the case that log could never carry: a command that **worked** (the
  * owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ * [#749](https://github.com/woogitsu/lockstate/issues/749)).
  *
  * **Three of the ten routes write to it, and the third was not in #749's scope
- * -- it is [#945](https://github.com/matmaxalez/lockstate/issues/945), a
+ * -- it is [#945](https://github.com/woogitsu/lockstate/issues/945), a
  * command that destroys money.** The paragraph below is kept as it stood
  * because its reasoning is what left the third one silent, and the reasoning
  * was about *scope* rather than about whether the silence was defensible. It
@@ -845,7 +845,7 @@ export function createSessionCommandHandler(
         refusals.supersede(removeKey);
         /*
          * **A removal that destroyed a purchase says so, and this branch is not
-         * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+         * where it says it** ([#945](https://github.com/woogitsu/lockstate/issues/945)).
          *
          * The notice is raised inside `ObjectPlacementService.remove`, on the
          * line that drops the registry row, through
@@ -864,7 +864,7 @@ export function createSessionCommandHandler(
          */
         /*
          * **The other success this press can be, and it says the opposite
-         * thing** ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+         * thing** ([#988](https://github.com/woogitsu/lockstate/issues/988)).
          *
          * A `RemoveObject` aimed at a tile whose object is still being built
          * cancels that order instead, and a cancellation *refunds* -- so the

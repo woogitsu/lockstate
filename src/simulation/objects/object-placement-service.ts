@@ -270,7 +270,7 @@ export interface RemoveObjectOrderCancelled {
   readonly anchorTile: TilePosition;
   /**
    * The order's lifecycle state as it was **before** `cancelOrder` ran
-   * ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+   * ([#988](https://github.com/woogitsu/lockstate/issues/988)).
    *
    * It is on the outcome because it cannot be recovered from anywhere else
    * once `remove` has returned: `ConstructionSystem.allOrders` hands out the
@@ -408,7 +408,7 @@ export interface ExcessResidentRelocationNoticePort {
 
 /**
  * What the player is told when a *standing* object is taken away
- * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ * ([#945](https://github.com/woogitsu/lockstate/issues/945)).
  *
  * **A structural port rather than `SimulationEventLog`**, exactly as
  * `ObjectOrderSink` above is a port rather than `ConstructionSystem`: this
@@ -651,7 +651,7 @@ export class ObjectPlacementService {
       this.placedObjects.remove(object.placedObjectId);
       /*
        * And the player is told what that cost them
-       * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+       * ([#945](https://github.com/woogitsu/lockstate/issues/945)).
        *
        * **On this line and not at the command handler**, and not merged into
        * the relocation notice two lines down: `RemovedObjectNoticePort` carries
@@ -667,7 +667,7 @@ export class ObjectPlacementService {
        * not-keep `AGENTS.md`'s fourth exclusion reserves.
        *
        * **The pending-order arm below said nothing at all until
-       * [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+       * [#988](https://github.com/woogitsu/lockstate/issues/988), and the
        * sentence that argued for the silence is kept rather than deleted,
        * because half of it is still the reason that arm does not call this
        * method.** It read:

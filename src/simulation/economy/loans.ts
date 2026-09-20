@@ -35,7 +35,7 @@ import type { Treasury } from './treasury';
  * ## What this module deliberately does not hold
  *
  * **No magnitudes.** The diversion percentage, the fee and the duration are
- * [#29](https://github.com/matmaxalez/lockstate/issues/29)'s under ADR 0017
+ * [#29](https://github.com/woogitsu/lockstate/issues/29)'s under ADR 0017
  * decision 5, and ADR 0075 names them as the reason its own weakest claim
  * stands: *"recovery from any reachable position remains unproved until those
  * numbers exist."* So `LoanTerms` is a parameter and there is no default
@@ -46,7 +46,7 @@ import type { Treasury } from './treasury';
  *
  * **Three of the four have since been chosen and the fourth was never asked
  * for.** The owner's ruling 10 of 2026-08-31 on
- * [#703](https://github.com/matmaxalez/lockstate/issues/703) sets the diversion
+ * [#703](https://github.com/woogitsu/lockstate/issues/703) sets the diversion
  * at **25%**, the fee at **15%** and the duration at **45 in-game days** --
  * which is that research record's candidate C. It says nothing about
  * `escalatedDiversionRateBasisPoints`, because nobody put it to them, so the

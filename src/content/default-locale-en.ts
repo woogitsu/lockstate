@@ -205,7 +205,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.rooms': 'Rooms',
   /*
    * How many of the rooms the chip above counts are not ready
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1),
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 1),
    * or nothing when they all are.
    *
    * **Authored under `AGENTS.md` reservation 4's partial release of
@@ -1405,7 +1405,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   /*
    * The recovery half of the two sentences directly above, which never had
-   * one ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1) --
+   * one ([#966](https://github.com/woogitsu/lockstate/issues/966) site 1) --
    * authored under `AGENTS.md` reservation 4's partial release of 2026-09-04:
    * the choice of words is ours, the requirement that the sentence be TRUE is
    * not.
@@ -1494,7 +1494,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * gave.
    *
    * **A cancelled order that had already finished got no sentence here until
-   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * [#927](https://github.com/woogitsu/lockstate/issues/927), and the
    * paragraph that withheld it is kept below rather than deleted -- it is why
    * the defect survived.** It read:
    *
@@ -1661,7 +1661,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   /*
    * **A standing object taken away, and the money it cost gone with it**
-   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   * ([#945](https://github.com/woogitsu/lockstate/issues/945)).
    *
    * The seventh sentence in this family and the first that is not about a build
    * *order*. It exists because #945 measured `RemoveObject` on a finished bed
@@ -1695,7 +1695,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   refunds, does not raise this key.
    *
    *   **That clause read *"records nothing here"* until
-   *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+   *   [#988](https://github.com/woogitsu/lockstate/issues/988), and the
    *   correction is to the word rather than to the proof.** It was written
    *   about *this* key and is still true of it, but the arm it describes
    *   recorded nothing **anywhere**, and on a band that holds one sentence a
@@ -1768,7 +1768,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   /*
    * The housing mirror of the sentence directly above -- an arrival who had
    * nowhere to sleep gets a place for the first time, rather than an
-   * already-housed resident losing one ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+   * already-housed resident losing one ([#966](https://github.com/woogitsu/lockstate/issues/966)
    * site 3). Authored under `AGENTS.md` reservation 4's partial release of
    * 2026-09-04: the choice of words is ours, the requirement that the sentence
    * be TRUE is not.
@@ -1781,7 +1781,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * of `residentCapacity` matching the target's `requiredObjectCapability`
    * genuinely exists in that instance right now. "Has a place" is exactly
    * that fact and no more: not that the room satisfies the catalog's full
-   * requirement list ([#933](https://github.com/matmaxalez/lockstate/issues/933)
+   * requirement list ([#933](https://github.com/woogitsu/lockstate/issues/933)
    * is the record of that exact conflation), not that it is reachable, not
    * that it is permanent.
    *
@@ -1855,7 +1855,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * - **Not that anybody can get in.** `ZoneRoomAccepted.enclosure` may read
    *   `'sealed'` for a room with no doorway at all, which is
-   *   [#938](https://github.com/matmaxalez/lockstate/issues/938): the Rooms
+   *   [#938](https://github.com/woogitsu/lockstate/issues/938): the Rooms
    *   panel's *"Walled in on every side"* renders identically for a reachable
    *   room and a sealed box, and a prisoner in a doorless shower room measured
    *   hygiene 0 of 255 with 162 route failures. So no clause here implies the
@@ -1955,7 +1955,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   /*
    * **Authored under the same release, the mirror of the two entries above
-   * on the command that undoes a designation** ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+   * on the command that undoes a designation** ([#1006](https://github.com/woogitsu/lockstate/issues/1006)
    * finding 5). Before this key existed, a room zoned and immediately
    * removed left `hud.alert.event.rooms.zoned`'s *"{room} designated."*
    * standing in this same column with the status strip already reading
@@ -2072,7 +2072,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // the five above made necessary: a successful escape and a contained attempt
   // produced the same two rows, so the failure the whole security half of the
   // game exists to prevent reached the player as nothing
-  // ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+  // ([#683](https://github.com/woogitsu/lockstate/issues/683)).
   //
   // **This sentence is the owner's, ruled on 2026-08-30, and is reproduced
   // exactly.** It was chosen over two alternatives for a stated reason -- it
@@ -3401,7 +3401,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.enclosure-none': 'Not evaluated yet',
   /*
    * What `roomPerimeterEnclosure` actually found, and the scope of it
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 2).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 2).
    *
    * **This read `'Walled in on every side'` and the words alone were the
    * defect.** They are the pass half of a pass/fail pair, they sit two lines

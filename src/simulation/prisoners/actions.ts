@@ -354,7 +354,7 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    *
    * This is [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md), accepted
    * by the repository owner on 2026-09-03 after they had chosen option (c) of
-   * issue [#600](https://github.com/matmaxalez/lockstate/issues/600) on
+   * issue [#600](https://github.com/woogitsu/lockstate/issues/600) on
    * 2026-09-02: a carry stops being a second authority that moves a prisoner
    * and becomes an action the prisoner chooses. Before it, `operations.jobs`
    * ran at order 260 on every session's kernel with an empty board and an empty

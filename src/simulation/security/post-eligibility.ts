@@ -109,7 +109,7 @@ export function claimableGuardIds(
 
 /**
  * How many claimable guards a contraband search must leave behind for incident
- * response ([issue #996](https://github.com/matmaxalez/lockstate/issues/996)).
+ * response ([issue #996](https://github.com/woogitsu/lockstate/issues/996)).
  *
  * ## What it is for
  *

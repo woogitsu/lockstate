@@ -264,7 +264,7 @@ export interface ZoneRoomAccepted {
   /**
    * The room type's own word, as the catalog's `nameKey` -- what the
    * acknowledgement of an accepted designation names
-   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 2).
    *
    * **A key and not a word, and it is read here rather than looked up again
    * downstream.** `zone` has already resolved the definition in order to
@@ -331,7 +331,7 @@ export interface UnzoneRoomAccepted {
   /**
    * Each removed instance's own room type, as the catalog's own `nameKey` --
    * one entry per `removedInstanceIds`, in the same order
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 5).
    *
    * **A parallel array rather than a single array of pairs**, matching how
    * `ZoneRoomAccepted` already carries its own `roomNameKey` beside `instance`

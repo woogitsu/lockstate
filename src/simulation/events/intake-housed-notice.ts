@@ -27,7 +27,7 @@ export interface IntakeHousedNoticeSources {
 
 /**
  * Tells the player that a queued arrival finally got a bed
- * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) -- the
+ * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 3) -- the
  * housing mirror of `createResidentRelocationNotice`
  * (`src/simulation/events/resident-relocation-notice.ts`), which announces the
  * same fact for a resident who already had a place and had it taken away.

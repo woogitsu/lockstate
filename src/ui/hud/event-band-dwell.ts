@@ -71,7 +71,7 @@ export const EVENT_BAND_DWELL_FLOOR_MS = 600;
  * band -- *"the band's job ... is narrower: that a player looking at it sees
  * the sentence exist"*. A surface whose job is "sees it exist" does not need
  * to hold a grid row for the rest of the session, and
- * [#985](https://github.com/matmaxalez/lockstate/issues/985) is the bill for
+ * [#985](https://github.com/woogitsu/lockstate/issues/985) is the bill for
  * doing so.
  *
  * ## The bill, measured on the assembled application at 900x600

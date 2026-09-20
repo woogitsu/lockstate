@@ -15,7 +15,7 @@ import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
  * **This paragraph used to continue "the bounds below are not [settled], and
  * are a proposal for review", and that is no longer true.** The bounds are
  * settled: the owner ruled on
- * [#593](https://github.com/matmaxalez/lockstate/issues/593) on 2026-08-30
+ * [#593](https://github.com/woogitsu/lockstate/issues/593) on 2026-08-30
  * that a sentence is 14 to 90 in-game days, and the ruling is recorded in
  * [ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md).
  * The old standing is kept in view rather than deleted because it is what the
@@ -68,7 +68,7 @@ export const SENTENCE_UNSET_TICKS = 0;
  *
  * This block opened **"Proposed, not settled"** and proposed `[2, 16]` days.
  * The owner ruled on
- * [#593](https://github.com/matmaxalez/lockstate/issues/593) that sentences
+ * [#593](https://github.com/woogitsu/lockstate/issues/593) that sentences
  * become **14 to 90 days**, having first asked how long an in-game day is in
  * real time and been answered at the constants: a tick is 50 ms
  * (`state-machine.ts`) and a day is `DAY_LENGTH_TICKS` = 2,400, so **one

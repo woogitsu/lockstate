@@ -462,7 +462,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * `LONG_SENTENCE_THRESHOLD_TICKS`, adding this stream leaves every
      * classification outcome of every existing seed bit-identical"*, and the
      * owner's 2026-08-30 ruling on
-     * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+     * [#593](https://github.com/woogitsu/lockstate/issues/593)
      * ([ADR 0079](../../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md))
      * spent that property deliberately.** The range is 14 to 90 in-game days,
      * so the seven drawable lengths at 84 days and up cross the 200,000-tick
@@ -945,7 +945,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     }),
     /*
      * And what the player is told when a *standing* object is taken away
-     * ([#945](https://github.com/matmaxalez/lockstate/issues/945)): the log
+     * ([#945](https://github.com/woogitsu/lockstate/issues/945)): the log
      * itself, not an adapter, because `RemovedObjectNoticePort` is one method
      * taking a tick and `SimulationEventLog` satisfies it as written. The
      * relocation notice above needs an adapter only because its sentence names

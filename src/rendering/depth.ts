@@ -28,7 +28,7 @@ export const DEPTH_ROW_STRIDE = 8;
  * There is one bias for every actor, and splitting it per population would not
  * help -- read this before adding `prisoner` and `guard` entries below.
  *
- * Issue [#944](https://github.com/matmaxalez/lockstate/issues/944) §4 step 2
+ * Issue [#944](https://github.com/woogitsu/lockstate/issues/944) §4 step 2
  * proposes exactly that: co-located actors get the identical depth from
  * `depthForAnchor`, Phaser's sort is stable, and the tie therefore fell to the
  * feed's array order -- prisoners first, guards second -- so on a shared tile

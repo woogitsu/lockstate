@@ -14,7 +14,7 @@ const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
 /**
  * Announces the moment the treasury falls to or below the deliveries or the
  * construction rung -- the owner's ruling of 2026-09-01 on issue
- * [#767](https://github.com/matmaxalez/lockstate/issues/767), which widened
+ * [#767](https://github.com/woogitsu/lockstate/issues/767), which widened
  * [ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
  * decision 2 from a standing indicator alone into a standing indicator *and*
  * a crossing notice: *"a persistent indicator ... plus a one-off notice at
@@ -174,7 +174,7 @@ export class InsolvencyRungSystem implements SystemRegistration {
       } else {
         this.standing.delete(rung);
         // The recovery half of the same edge detection
-        // ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1).
+        // ([#966](https://github.com/woogitsu/lockstate/issues/966) site 1).
         // No `this.seeded` guard is needed here: this arm is reached only when
         // `wasStanding` was `true`, which requires a *previous* call to have
         // added the rung to `standing`, and every call sets `this.seeded = true`

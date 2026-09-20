@@ -237,7 +237,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * Every row above is something the prison did on its own. These five are the
  * prison carrying out an instruction, and they are here because the owner's
  * ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749) puts four success
+ * [#749](https://github.com/woogitsu/lockstate/issues/749) puts four success
  * sentences on the events band rather than on the refusal band beside it.
  * `docs/research/2026-09-01-what-act-six-never-reached.md` D2 is the
  * measurement that provoked the ruling: cancelling a queued build order,
@@ -274,7 +274,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   whenever a run of several was taken back.
  * - **`construction.undone-spend-destroyed` is `'warning'`, and it is the row
  *   above graded by the same rule `construction.order-cancelled-underway` is**
- *   ([#927](https://github.com/matmaxalez/lockstate/issues/927)). An undo that
+ *   ([#927](https://github.com/woogitsu/lockstate/issues/927)). An undo that
  *   reversed a finished or started order destroyed what it had consumed --
  *   `ConstructionSystem.cancelOrder` releases nothing and refunds nothing for
  *   either state -- so what this reports is value destroyed, and grading it
@@ -290,7 +290,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   band would have said *"The order was cancelled…"* and never that anything
  *   was undone. One press, one sentence, and the sentence says both halves.
  * - **`objects.removed-spend-destroyed` is `'warning'`, graded by the same rule
- *   as the two rows above it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *   as the two rows above it** ([#945](https://github.com/woogitsu/lockstate/issues/945)).
  *   Taking a standing object away destroys what it cost --
  *   `ObjectPlacementService.remove`'s standing-object arm credits no treasury
  *   and fills no container, which is the owner's ruling of 2026-09-01 -- so
@@ -307,7 +307,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   loss event only for `kind === 'removed'`.
  *
  *   **That paragraph said "stays off this table" until
- *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the words
+ *   [#988](https://github.com/woogitsu/lockstate/issues/988), and the words
  *   are corrected rather than the claim, because the claim was never about the
  *   table.** The other success has had a row here all along --
  *   `construction.order-cancelled`, whose own bullet in this list grades it
@@ -366,7 +366,7 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * band was measured against the layout it lands in, and it is what
  * `surfaces: 'log-only'` above is.
  *
- * What it was taken on is [#985](https://github.com/matmaxalez/lockstate/issues/985),
+ * What it was taken on is [#985](https://github.com/woogitsu/lockstate/issues/985),
  * and the defect there is **not** this member's: `.hud__event` is one grid row
  * whatever raised it, that row costs 32px, and at 900x600 the rail is already
  * documented in `hud.css` as *"OVER by 30"* before any band exists. The
@@ -702,7 +702,7 @@ const EVENT_ROW_PREFIX = 'event-';
  *
  * **The range that sentence quoted, `[2, 16]` -- 4,800..38,400 ticks, mean
  * 21,600 -- is itself gone since the owner's 2026-08-30 ruling on
- * [#593](https://github.com/matmaxalez/lockstate/issues/593)
+ * [#593](https://github.com/woogitsu/lockstate/issues/593)
  * ([ADR 0079](../../docs/adr/0079-a-sentence-long-enough-to-be-a-history.md)).**
  * It is `[14, 90]` now: 33,600..216,000 ticks, mean 124,800 -- **52** in-game
  * days rather than nine, and 5.8x the spread. The old figures are kept above

@@ -374,7 +374,7 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
 /**
  * The badge under the `ROOMS` chip: how many of the rooms it counts cannot yet
  * do the job they were designated for
- * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 1).
  *
  * ## Why the strip carries this at all
  *
@@ -832,7 +832,7 @@ function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | 
  * one a player has to re-read every time.
  *
  * **`roomNeeds` is the one input that is not a count, and it is optional**
- * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 1).
  * It is the Rooms panel's own readout, pulled over the projection channel
  * rather than published on `simulation/status-counts`, so it is absent whenever
  * nothing has asked -- before a session exists, and after one stops. Optional

@@ -56,7 +56,7 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
 
 /**
  * Who the prison just lost, as the departure itself reports them
- * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+ * ([#683](https://github.com/woogitsu/lockstate/issues/683)).
  *
  * The return of `IncidentResponseSystem`'s `onPrisonerEscaped` port. Carries
  * only the name, because the entity id is already what the caller passed in;

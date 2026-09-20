@@ -59,7 +59,7 @@ export interface IntakeGangAssigner {
 
 /**
  * What the player is told when a queued arrival finally gets a bed
- * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 3) --
  * `IntakeSystem`'s mirror of `ResidentRelocationNotice`
  * (`src/simulation/events/resident-relocation-notice.ts`), and optional and
  * port-shaped for the same two reasons `IntakeContrabandIntroducer` above is:
@@ -313,7 +313,7 @@ export class IntakeSystem implements SystemRegistration {
     private readonly gangAssigner?: IntakeGangAssigner,
     /**
      * What the player is told once this arrival gets a bed
-     * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3).
+     * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 3).
      * Absent, intake houses people exactly as it always has and says nothing.
      *
      * Last in the list, after the five optional collaborators above, so no

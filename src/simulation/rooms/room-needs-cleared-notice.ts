@@ -26,7 +26,7 @@ const UNPAGED_ROOM_LIST_LIMIT = Number.MAX_SAFE_INTEGER;
 /**
  * Fires a one-off, per-instance notice the day a room stops being short of
  * anything the Rooms panel's own `NOT READY` block checks for
- * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 3).
+ * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 3).
  *
  * ## The defect, in the issue's own terms
  *

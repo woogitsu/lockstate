@@ -625,7 +625,7 @@ void _statusCountsIncidentTypeMirrorsIncidentType;
  * it -- [ADR 0087](../../../docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md)
  * decision 2, and the amendment of 2026-09-01 that widened decision 1's
  * vocabulary from a recommendation into the owner's ruling on issue
- * [#767](https://github.com/matmaxalez/lockstate/issues/767).
+ * [#767](https://github.com/woogitsu/lockstate/issues/767).
  *
  * **A closed union, not a count and not a level with one current value.**
  * `refusal` and `zoning` below are each *one* current fact, so an optional
@@ -1854,7 +1854,7 @@ const snapshotMessageSchema = z
  * cancelled, a delivery cancelled, the build history walked back or forward.
  *
  * **The widening is a consequence of the owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749) rather than a
+ * [#749](https://github.com/woogitsu/lockstate/issues/749) rather than a
  * decision taken here.** That ruling puts the four success sentences in the
  * HUD's events band (`.hud__event`) rather than in the refusal band, because
  * the refusal band is permanently red and a success painted there would
@@ -1905,7 +1905,7 @@ const snapshotMessageSchema = z
  * **What it may claim is narrower than what it knows**, and the narrowing is
  * the point rather than caution. The accepted outcome holds the whole
  * `RoomInstance`, but a room being designated is not a room being *usable*
- * ([#938](https://github.com/matmaxalez/lockstate/issues/938): a `sealed`
+ * ([#938](https://github.com/woogitsu/lockstate/issues/938): a `sealed`
  * perimeter reads identically for a reachable room and one with no doorway,
  * and a prisoner measured hygiene 0 of 255 in a doorless shower room) and not
  * a room that *works* (every type but `room.yard` needs objects placed in it,
@@ -2097,7 +2097,7 @@ const residentRelocatedEventSchema = z
 
 /**
  * A queued arrival who had nowhere to sleep has just been assigned a place
- * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 3) --
  * `IntakeSystem`'s mirror of `residentRelocatedEventSchema` above, in both
  * directions: that one moves a *housed* resident when their place is taken
  * away, this one houses somebody for the very first time.
@@ -2117,7 +2117,7 @@ const residentRelocatedEventSchema = z
  * away -- ADR 0076 decision A(ii)'s concern, not this event's.
  *
  * **What it does not claim.** Not that the room is complete by the catalog's
- * own requirement list ([#933](https://github.com/matmaxalez/lockstate/issues/933)
+ * own requirement list ([#933](https://github.com/woogitsu/lockstate/issues/933)
  * measured exactly this conflation between "holds a `sleep-surface`" and "is a
  * valid room"), and not that the place is comfortable, reachable or permanent
  * -- only that a bed exists and this prisoner now has it. `roomNameKey` is the
@@ -2154,7 +2154,7 @@ const prisonerHousedEventSchema = z
 
 /**
  * A room that was short something the Rooms panel checks for is no longer
- * short it ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+ * short it ([#1006](https://github.com/woogitsu/lockstate/issues/1006)
  * finding 3).
  *
  * ## What "short something" means, exactly, because that is the whole risk here
@@ -2257,7 +2257,7 @@ const roomNeedsClearedEventSchema = z
 
 /**
  * A designated room came off the zoning plane
- * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+ * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 5).
  *
  * **The mirror of `rooms.zoned` on the command that undoes it, and the gap
  * issue #1006 measured directly: a room zoned and then immediately removed
@@ -2298,7 +2298,7 @@ const roomUnzonedEventSchema = z
 
 /**
  * A rectangle the player designated is now a room of that type
- * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+ * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 2).
  *
  * **One event per accepted press.** `createSessionCommandHandler`'s `ZoneRoom`
  * branch records it on the `outcome.kind === 'zoned'` arm, which
@@ -2328,7 +2328,7 @@ const roomUnzonedEventSchema = z
  *   collapses a run of designations into one counted row.
  * - **Nothing about enclosure, capacity or readiness.** `enclosure: 'sealed'`
  *   does not mean anybody can reach the room
- *   ([#938](https://github.com/matmaxalez/lockstate/issues/938)) and a
+ *   ([#938](https://github.com/woogitsu/lockstate/issues/938)) and a
  *   registered instance is not a working one -- `residentCapacity` is 0 until
  *   an object stands in it. A sentence built on either would be the promise
  *   `AGENTS.md`'s fourth reservation protects.
@@ -2380,7 +2380,7 @@ const wagesUnpaidEventSchema = z
  * The treasury just fell to or below the deliveries rung
  * (`INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS`, ADR 0017's "Amendment,
  * 2026-09-01", ruling 19) -- the owner's ruling of 2026-09-01 on issue
- * [#767](https://github.com/matmaxalez/lockstate/issues/767): *"a persistent
+ * [#767](https://github.com/woogitsu/lockstate/issues/767): *"a persistent
  * indicator ... plus a one-off notice at the moment of crossing, so a player
  * who was looking elsewhere gets a nudge."*
  *
@@ -2453,7 +2453,7 @@ const constructionRefusedEventSchema = z
 
 /**
  * The treasury has climbed back above the deliveries rung it had fallen to or
- * below ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1) --
+ * below ([#966](https://github.com/woogitsu/lockstate/issues/966) site 1) --
  * the recovery `deliveriesRefusedEventSchema` above never had a mirror for.
  *
  * **What this claims, and what it deliberately does not.** `InsolvencyRungSystem`
@@ -2492,7 +2492,7 @@ const deliveriesRestoredEventSchema = z
 /**
  * The construction mirror of `deliveriesRestoredEventSchema` above, for the
  * `'construction'` rung `constructionRefusedEventSchema` crosses back over
- * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1). A member
+ * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 1). A member
  * of its own rather than a shared `rung` field, for the identical reason
  * `constructionRefusedEventSchema` is: `EVENT_PRESENTATION` grades a sentence
  * by `type` alone, and "deliveries can be paid for again" and "the build queue
@@ -2587,7 +2587,7 @@ const escapeAttemptOpenedEventSchema = z
 
 /**
  * A prisoner got out
- * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+ * ([#683](https://github.com/woogitsu/lockstate/issues/683)).
  *
  * **The only member of this union that reports an *outcome* rather than an
  * opening, and the reason it is a member at all is that nothing else on the
@@ -2753,7 +2753,7 @@ const incidentsAllClearAfterLapseEventSchema = z
 
 /**
  * A search found one contraband item (the owner's **ruling 13** of 2026-08-31
- * on [#703](https://github.com/matmaxalez/lockstate/issues/703)).
+ * on [#703](https://github.com/woogitsu/lockstate/issues/703)).
  *
  * The half of ruling 3 that `StatusStripViewModel.contrabandNameKey` could not
  * carry, and that field's own comment says so at its site: a badge beside a
@@ -2822,7 +2822,7 @@ const contrabandDiscoveredEventSchema = z
 /**
  * A queued build order was cancelled before the crew reached it, and the money
  * it cost came back (the owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ * [#749](https://github.com/woogitsu/lockstate/issues/749)).
  *
  * ## Why two members rather than one carrying the state
  *
@@ -2870,7 +2870,7 @@ const buildOrderCancelledEventSchema = z
  * it true).
  *
  * **The name says `-underway` and the member covers `'completed'` too since
- * [#927](https://github.com/matmaxalez/lockstate/issues/927); the name is kept
+ * [#927](https://github.com/woogitsu/lockstate/issues/927); the name is kept
  * because it is a persisted discriminant.** `save-schema.ts` validates a save's
  * alerts section against `simulationEventSchema` below, so renaming a type
  * breaks every save that carries one -- and `docs/PERSISTENCE.md` prices what
@@ -2978,7 +2978,7 @@ const constructionRedoneEventSchema = z
 /**
  * The build history was walked back one transaction, and some of what it
  * reversed was past the point of no return
- * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ * ([#927](https://github.com/woogitsu/lockstate/issues/927)).
  *
  * The member above's counterpart, and the same relationship
  * `construction.order-cancelled-underway` has to `construction.order-cancelled`
@@ -3037,7 +3037,7 @@ const constructionUndoRefusedNewerActionEventSchema = z
 /**
  * An object that was standing in the prison was taken away, and what it cost
  * is gone with it
- * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ * ([#945](https://github.com/woogitsu/lockstate/issues/945)).
  *
  * **The first member on this channel that is not a construction *order*'s
  * event, and that is the whole reason it exists rather than reusing one.**

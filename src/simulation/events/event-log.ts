@@ -34,7 +34,7 @@ export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
 
 /**
  * Whether one `Undo` press destroyed what had been spent on any of the orders
- * it reversed ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ * it reversed ([#927](https://github.com/woogitsu/lockstate/issues/927)).
  *
  * The discriminator `recordConstructionUndone` splits its two sentences on, and
  * deliberately the whole of what crosses into this module about that press:
@@ -385,7 +385,7 @@ export class SimulationEventLog {
 
   /**
    * Records that a rectangle the player designated is now a room of that type
-   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 2).
    *
    * **One call per accepted press**, like `recordResidentRelocated` above: the
    * caller is `createSessionCommandHandler`'s `ZoneRoom` branch, on the arm
@@ -408,7 +408,7 @@ export class SimulationEventLog {
 
   /**
    * Records that a designated room came off the zoning plane
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 5).
    *
    * **One call per removed instance**, like `recordResidentRelocated` above
    * and unlike `recordRoomZoned`: `RoomZoningService.unzone` can clear several
@@ -437,7 +437,7 @@ export class SimulationEventLog {
   /**
    * Records that one room instance stopped being short of anything the
    * Rooms panel's own `NOT READY` block checks for
-   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 3).
+   * ([#1006](https://github.com/woogitsu/lockstate/issues/1006) finding 3).
    *
    * **One call per instance crossing the threshold on one scheduled read**,
    * like `recordRoomUnzoned` above and for the analogous reason: a session
@@ -465,7 +465,7 @@ export class SimulationEventLog {
 
   /**
    * Records that a prisoner got out
-   * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
+   * ([#683](https://github.com/woogitsu/lockstate/issues/683)).
    *
    * **One call per escapee**, like `recordResidentRelocated` above and unlike
    * `recordDischarge`, and decided the same way: the owner's approved sentence
@@ -506,7 +506,7 @@ export class SimulationEventLog {
 
   /**
    * Records that a search found one contraband item (the owner's **ruling 13**
-   * of 2026-08-31 on [#703](https://github.com/matmaxalez/lockstate/issues/703)).
+   * of 2026-08-31 on [#703](https://github.com/woogitsu/lockstate/issues/703)).
    *
    * **One call per item found**, like `recordResidentRelocated` and
    * `recordEscapeSucceeded` above and unlike `recordDischarge`, and decided the
@@ -599,7 +599,7 @@ export class SimulationEventLog {
   /**
    * Records that the treasury just climbed back above one insolvency rung's
    * floor -- the mirror `recordInsolvencyRungCrossed` above never had
-   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1).
+   * ([#966](https://github.com/woogitsu/lockstate/issues/966) site 1).
    *
    * **The one call site is `InsolvencyRungSystem`'s `else` arm**, which has
    * existed since that system was written and deleted the rung from
@@ -627,7 +627,7 @@ export class SimulationEventLog {
 
   /**
    * Records that a queued arrival who had nowhere to sleep has just been
-   * assigned a place ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+   * assigned a place ([#966](https://github.com/woogitsu/lockstate/issues/966)
    * site 3) -- the housing mirror of `recordResidentRelocated` above.
    *
    * **One call per housed arrival**, like `recordResidentRelocated`: the
@@ -704,7 +704,7 @@ export class SimulationEventLog {
   /**
    * Records that a build order the player asked to cancel was cancelled
    * (the owner's ruling of 2026-09-01 on
-   * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+   * [#749](https://github.com/woogitsu/lockstate/issues/749)).
    *
    * **Two sentences, split on whether the crew had started**, which is the
    * owner's answer to "one sentence or two" and their reasoning for it:
@@ -716,7 +716,7 @@ export class SimulationEventLog {
    * unpaid. Two different outcomes, so two different things to say.
    *
    * **The split was `'in-progress'` against everything else until
-   * [#927](https://github.com/matmaxalez/lockstate/issues/927)**, which found
+   * [#927](https://github.com/woogitsu/lockstate/issues/927)**, which found
    * `'completed'` saying nothing at all; the paragraph below the `switch`
    * argument records what that silence rested on and why neither half of it
    * survived.
@@ -733,7 +733,7 @@ export class SimulationEventLog {
    * above has.
    *
    * **`'completed'` recorded nothing until
-   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and both
+   * [#927](https://github.com/woogitsu/lockstate/issues/927), and both
    * reasons it gave had gone dead.** The paragraph is kept below rather than
    * deleted, because it is the argument that produced a silence about a
    * destroyed purchase and a reader needs to see why it stopped holding. It
@@ -873,7 +873,7 @@ export class SimulationEventLog {
    * small lie whenever a run of several was taken back, and surfacing the size
    * needs plumbing on `redoTransaction` that the ruling declines. Left known.
    *
-   * **Two sentences since [#927](https://github.com/matmaxalez/lockstate/issues/927),
+   * **Two sentences since [#927](https://github.com/woogitsu/lockstate/issues/927),
    * split on whether the transaction destroyed anything -- the same split
    * `recordBuildOrderCancelled` above has had since #749, on the channel that
    * can destroy strictly more.** `Undo` goes through
@@ -933,7 +933,7 @@ export class SimulationEventLog {
   /**
    * Records that an object standing in the prison was taken away, and that what
    * it cost is gone with it
-   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   * ([#945](https://github.com/woogitsu/lockstate/issues/945)).
    *
    * **The silence this closes destroyed money and put nothing on screen.** #945
    * measured it at v0.0.451: a standing bed cost 65 on placement

@@ -4,7 +4,7 @@
  *
  * ## The defect this exists for, and the exact bound of what it fixes
  *
- * Issue [#944](https://github.com/matmaxalez/lockstate/issues/944): a prison
+ * Issue [#944](https://github.com/woogitsu/lockstate/issues/944): a prison
  * with 22 prisoners and 6 guards alive drew **two figures**, because the worker
  * had put 6 prisoners on one tile and 16 prisoners plus all 6 guards on
  * another, and two actors on one tile were drawn at one point. Depth could not

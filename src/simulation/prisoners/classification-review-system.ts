@@ -250,7 +250,7 @@ export class ClassificationReviewSystem implements SystemRegistration {
    *
    * **And it is not load-bearing for what the first period now looks like.**
    * The arithmetic above has not changed, but the world it runs in has: since
-   * [#593](https://github.com/matmaxalez/lockstate/issues/593) re-ranged
+   * [#593](https://github.com/woogitsu/lockstate/issues/593) re-ranged
    * sentences to 14-90 in-game days, **97.27%** of prisoners reach a first
    * review where **14.00%** used to. Re-derived against those numbers rather
    * than inherited from the old ones: on the same 7,700-case cross-section
@@ -299,7 +299,7 @@ export class ClassificationReviewSystem implements SystemRegistration {
     /**
      * The same introduction port `IntakeSystem` takes, asked again at the one
      * review that carries a prisoner **into** tier 3 -- ADR 0080, issue
-     * [#677](https://github.com/matmaxalez/lockstate/issues/677).
+     * [#677](https://github.com/woogitsu/lockstate/issues/677).
      *
      * The same port and not a second one, deliberately: the rule stays in
      * `src/simulation/contraband/introduction.ts`, this system supplies only
