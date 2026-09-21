@@ -130,6 +130,78 @@ outward-facing or unrevertable, which is the whole reason:
    `enforce_telemetry_retention()` is a function nothing invokes.
 2. **`supabase/migrations/`.** An applied migration is history. Propose new
    migration content in an ADR or an issue instead. Rollback is not automated.
+
+   **OFFERED INSIDE THIS RESERVATION, AND DECLINED, 2026-09-21.** This entry
+   exists for the reason reservation 3's dead-glob-segment entry gives: a
+   reservation that was *asked about and not released* leaves no trace
+   anywhere else, so the next session would otherwise spend the owner's
+   attention re-asking a question this file can just answer.
+
+   #355 (`fix/340-343-close-prison-id-oracles`, still a draft, waiting on the
+   owner reading the SQL) adds a `create_prison()` collision handler that
+   catches `unique_violation`, reads `GET STACKED DIAGNOSTICS
+   constraint_name`, and answers the safe, indistinguishable `42501` refusal
+   only when that name is `'prisons_pkey'`; anything else falls through to a
+   bare `raise;` that re-exposes the raw `23505` and its row-existence
+   `DETAIL` — the #343 oracle the migration exists to close. Two ways of
+   hardening that discrimination were drafted and put to the owner as options
+   against the migration already under review, byte-for-byte:
+
+   - **An explicit re-raise.** Name the one other constraint the handler
+     expects (`prisons_owner_slot_unique`) and fail loudly on anything else,
+     rather than silently re-raising it unchanged.
+   - **A runtime catalog lookup.** Resolve `prisons`'s primary key by querying
+     `pg_index`/`pg_constraint` at call time instead of comparing against the
+     literal `'prisons_pkey'`, so a rename cannot silently reopen the branch.
+
+   Both change bytes in `20260826090000_close_prison_id_existence_oracles.sql`
+   (under `supabase/migrations/`, not cited rooted here because it is #355's
+   own unmerged file and does not exist on `main`), which is this
+   reservation's, mid-review, so they were drafted rather than built. Offered those two, plus "nothing in the migration — the tests are
+   enough," the owner chose:
+
+   > Nic w migracji — wystarczą testy (zalecane)
+
+   ("Nothing in the migration — the tests are enough.") Weaker provenance, as
+   usual for a ruling recorded here: the label of an option this session wrote
+   from the drafted proposal, not a sentence the owner typed. **The migration
+   stays byte-for-byte what was under review**, apart from the one-token dead
+   test-file reference in its own header comment the owner separately
+   authorised the same day (*"Poprawić przed czytaniem"* — "correct it before
+   the read").
+
+   **What made the question worth asking at all**, verified directly against a
+   scratch PostgreSQL 16.13 database rather than argued: a bare `create unique
+   index ... on t(col)`, with no surrounding `ADD CONSTRAINT`, never gets a row
+   in `pg_constraint`, yet a colliding insert against it still raises
+   `duplicate key value violates unique constraint "<that index's own
+   name>"`, and `GET STACKED DIAGNOSTICS constraint_name` reports that name
+   exactly as it would a real constraint's. So a bare unique index added to
+   `prisons` later would reach `create_prison()`'s untested fallthrough
+   exactly as a rename or an added constraint would, and an inventory read
+   only from `pg_constraint` cannot see it.
+
+   **No constraint in this schema has ever been renamed** — checked across
+   every file in `supabase/migrations/` for `rename constraint` and a bare
+   `rename` — and that absence is what makes detection rather than prevention
+   a reasonable trade today. It is not a fact about the schema's future: the
+   day a constraint on `prisons` is renamed for its own reason, this trade is
+   spent and the question above is open again.
+
+   **What is in place instead is detection, not prevention.**
+   `supabase/tests/010_constraint_inventory.test.sql` gained a second pgTAP
+   assertion, pinning `prisons`'s unique *indexes* (`pg_index`/`pg_class`,
+   `indisunique`) by name rather than by count — a count is satisfied by
+   swapping one unique index for another, which is exactly the silent case
+   this exists to catch — alongside its existing `pg_constraint`-based
+   assertion. Red-before/green-after was confirmed by hand: adding a bare
+   decoy unique index on `prisons` turned the new assertion red, listing the
+   decoy by name; dropping it returned the suite to green. This fails `pnpm
+   verify:sql` before such a migration can merge into `main`. It changes
+   nothing at runtime — a bare unique index added and reviewed without ever
+   running that suite would still reach the same fallthrough — and it is a
+   test file, not a migration, so it needed no ruling and is already on
+   #355's branch.
 3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
    the Cloudflare or Supabase dashboards. Nothing in this repository can read
    back what those dashboards hold, so a change there cannot be verified here.
