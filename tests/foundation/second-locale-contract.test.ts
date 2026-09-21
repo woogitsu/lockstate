@@ -95,8 +95,17 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * this -- `pl` simply falls back for it, exactly as the audit's docblock
    * says a partial locale should -- and the floor stays where the last
    * deliberate measurement put it.
+   *
+   * Raised to `731` by #1309, which translates `hud.regime.edit` and
+   * `hud.regime.edit-last-category` -- two keys #1167 (`6f8bb006`) added to
+   * `src/content/default-locale-en.ts` with no Polish counterpart, found by a
+   * key-by-key comparison because #664 deliberately built no gate that would
+   * have caught them on its own. Measured `729` on unmodified `e22c7760`
+   * (the base this issue works from) and `731` after both keys were added,
+   * via `auditLocaleCatalog(messageCatalogPl, defaultMessageCatalogEn)
+   * .translatedKeyCount` -- a `+2` this time, not a `729 + 2` guess.
    */
-  pl: 698,
+  pl: 731,
 };
 
 /*

@@ -1207,6 +1207,28 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę — dość dużą, zamkniętą ścianami ze wszystkich stron, z łóżkiem i toaletą w środku — aby kogoś przyjąć.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
+  // Added by #1309 -- both post-date the 2026-09-14 catalogue and are
+  // translated straight against `src/content/default-locale-en.ts`'s own
+  // comments (#1167), not against a summary of them.
+  //
+  // Imperative, matching the house voice (`hud.build.step-down`/`-up`,
+  // `hud.security.hire`): the eyebrow above the regime editor's one control,
+  // over the group's *currently running* block -- `regime-panel.ts:240` sets
+  // it as `eyebrow:`, and `HudRegimeBlockViewModel.startTickOfDay` is that
+  // running block's own start, exactly as the English comment says. "Zmień"
+  // takes no object case ambiguity here because "blok" stays nominative as
+  // the sentence's own subject-complement, not a parameter.
+  'hud.regime.edit': 'Zmień aktualnie trwający blok',
+  // Declarative, same shape as the refusal-style sentences elsewhere in this
+  // catalogue (`hud.alert.refusal.place-object.outside-room`: "Nie postawiono
+  // obiektu — musi stać w wyznaczonym pomieszczeniu."): a rule stated, then
+  // its consequence. True of `regime-panel.ts:158`'s `lockedCategoryIdsFor`,
+  // which locks only the last remaining category because
+  // `editRegimeBlockSchema` puts `.min(1)` on `allowedCategories`. "rzecz"
+  // rather than "kategoria" for the same reason the English comment gives:
+  // the toggles are labelled with the things themselves (Sleep, Meal, Work),
+  // and "category" is the protocol's word, not a player's.
+  'hud.regime.edit-last-category': 'Blok musi dopuszczać przynajmniej jedną rzecz, dlatego ostatniej nie da się wyłączyć.',
 
   // =====================================================================
   // Rooms panel -- `hud.rooms.*`. The panel with the most reshapes, because it
