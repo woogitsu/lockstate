@@ -423,13 +423,21 @@ command, or only on another refusal — and if neither, on what?**
 Read at `e044a3e8`, not inferred:
 
 - `applySimulationRefusal` (`const applySimulationRefusal = (notice:`,
-  `src/ui/hud/hud.ts:1798-1813`; the anchor read `:1678-1693` and was re-aimed
-  on 2026-09-19 after #1292 added the Security section above it, by `grep -n`
-  rather than by arithmetic) clears the band on
+  `src/ui/hud/hud.ts:1861-1891`; the anchor read 1678-1693, then 1798-1813, and
+  was re-aimed both times by `grep -n` rather than by arithmetic — on
+  2026-09-19 after #1292 added the Security section above it, and again on
+  `ba1c0a87` merged with `49cd2fbd`, which moved the declaration and grew the
+  body) clears the band on
   exactly one condition — `notice === undefined`, i.e. the worker stopped
   publishing a refusal — and otherwise only *replaces* it with a newer one.
-- `clearRefusal` (`const clearRefusal = (actionId: string)`, `:1723-1726`; the
-  anchor read `:1639-1642`) returns immediately unless
+  **That last sentence is the reading at `e044a3e8` and is no longer the
+  code**: the amendment of 2026-09-20 below adds the `outlivedBandTicks` door
+  into the same branch, so the re-aimed coordinate lands on a function with
+  more conditions than the finding it is cited for. The finding is kept as it
+  was written, and the coordinate is live, which is why they now say different
+  things.
+- `clearRefusal` (`const clearRefusal = (actionId: string)`, `:1740-1743`; the
+  anchor read 1639-1642, then 1723-1726) returns immediately unless
   `refusalSource === 'host'`, so no success of any kind touches a simulation
   refusal from the HUD side.
 - The only thing that can make `notice` go `undefined` is
