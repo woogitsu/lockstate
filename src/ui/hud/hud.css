@@ -6144,6 +6144,37 @@
    * navigation to the bottom bar by the time the column would be tall enough
    * to matter at these heights.
    *
+   * **BOTH PARAGRAPHS ABOVE COUNT FIVE SECTIONS AND THE RAIL HAS CARRIED SIX
+   * SINCE #1292. They are kept rather than rewritten, because the figure they
+   * state is the one the re-measurement is against.** Read off the assembled
+   * page at `49cd2fbd` (v0.0.721), at the default interface scale: the column
+   * is **280.13px** and not 274, the corner is **398px** tall and not 396, and
+   * the middle row at 1280x800 is 719.31px. So the furniture is 678.13px and
+   * not 670, and the arithmetic this block names comes out at
+   * 280.13 + 398 + 80.69 + 12 = **770.82px**.
+   *
+   * **781 is therefore still right, and "with room to spare" is no longer.**
+   * The spare is 781 - 770.82 = **10.19px**, measured as exactly that at
+   * 1280x781. A sixth section spent two thirds of it.
+   *
+   * **And 1280x800 is the wrong place to look, which is worth saying because
+   * it is where this block looks.** At 800 the column clears the corner by
+   * 29.19px; at the 781px threshold the same clearance is 10.19px, at 780 it
+   * is 9.19px with the corner already stepped 192px right, and at the
+   * 1024x768 tablet it is -2.81px with the same shift carrying it. The
+   * threshold is where the budget is spent, not the viewport in the sentence
+   * above.
+   *
+   * **None of those numbers lives only here.** The owner ruled on 2026-09-21
+   * to record the budget and change nothing -- no icon-only rule above the
+   * break, no moved corner, no scrolling column, all three offered and
+   * declined -- and a number only a human ever moves cannot report that it has
+   * rotted, as the two paragraphs above have just demonstrated. Every figure
+   * in this one is asserted on the assembled page by the three `(#1292)` tests
+   * in `tests/browser/hud-layout-shell.spec.ts`, which name this block. Raising
+   * 781 to fit a seventh section is the decision that was deferred, not a
+   * number to edit here.
+   *
    * **Why it is worth a media query rather than shifting always.** The corner
    * moving 192px right moves the band of bare world the browser suite's own
    * drag aim scans, and `app-shell.spec.ts`'s #331 reported it: the probe drag
