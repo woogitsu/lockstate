@@ -60,6 +60,18 @@ import { stripComments } from '../helpers/canonical-iteration';
  * SQL as if it were live, and it is not a hypothetical: the three readers
  * here each did it, in three different directions, until 2026-09-21. The
  * rule has its own test at the bottom of this file.
+ *
+ * ALL THREE READERS WERE WRONG BEFORE THAT FIX, AND TWO OF THE THREE WERE
+ * STILL UNPINNED AFTER IT: fixing a reader and demonstrating the fix are not
+ * the same repair, because demonstrating it needs a case the real migrations
+ * do not provide. `rowShapesReturnedBy` got a real one for free
+ * (`submit_challenge_evidence`'s row shapes differ across its three
+ * definitions); `statusesReturnedBy` and `outColumnsOf` did not, because
+ * nothing in this schema has ever changed a function's status vocabulary or
+ * OUT column list, and both are now pinned by synthetic fixtures instead
+ * (near the end of this file). A fourth reader added here should assume the
+ * same is true of it by default: a real redefinition to demonstrate the
+ * newest-wins rule against is the exception, not the norm.
  */
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -119,22 +131,47 @@ const RPC_ROW_TYPES: readonly { readonly rpc: string; readonly rowType: string }
  * the definition precedes the revoke in each file; it is not a property worth
  * relying on. `lastIndexOf` within the chosen file, for the same reason the
  * loop keeps the last file.
+ *
+ * `entries` defaults to `migrationEntries()` (the real `supabase/migrations/`
+ * directory) for every production call site, and exists as a parameter for
+ * exactly one reason: `supabase/migrations/` is append-only and reservation 2
+ * (AGENTS.md) forbids editing it, so it can never host a synthetic pair of
+ * definitions whose OUT columns differ -- and without that pair, nothing here
+ * can tell "reads the newest definition" apart from "reads the oldest" for a
+ * reader whose two candidate answers would otherwise be identical. Before this
+ * parameter, `outColumnsOf` below hard-coded the real directory and could not
+ * be exercised against anything else; that was itself a finding, not just an
+ * inconvenience -- see "reads the newest OUT column list on a synthetic pair"
+ * near the end of this file.
  */
-function newestDefinitionOf(functionName: string): string | null {
+function newestDefinitionOf(
+  functionName: string,
+  entries: readonly MigrationEntry[] = migrationEntries(),
+): string | null {
   const header = `create or replace function public.${functionName}(`;
   let newest: string | null = null;
 
-  for (const entry of readdirSync(migrationsDirectory).sort()) {
-    if (!entry.endsWith('.sql')) continue;
-    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
-
-    const start = sql.lastIndexOf(header);
+  for (const entry of [...entries].sort((left, right) => left.name.localeCompare(right.name))) {
+    const start = entry.sql.lastIndexOf(header);
     if (start === -1) continue;
-    const end = sql.indexOf('$$;', start);
-    newest = sql.slice(start, end === -1 ? undefined : end);
+    const end = entry.sql.indexOf('$$;', start);
+    newest = entry.sql.slice(start, end === -1 ? undefined : end);
   }
 
   return newest;
+}
+
+/** One migration file, named and read, for readers that take a directory as data. */
+interface MigrationEntry {
+  readonly name: string;
+  readonly sql: string;
+}
+
+/** Every `.sql` file in `supabase/migrations/`, named and read. */
+function migrationEntries(): readonly MigrationEntry[] {
+  return readdirSync(migrationsDirectory)
+    .filter((entry) => entry.endsWith('.sql'))
+    .map((name) => ({ name, sql: readFileSync(join(migrationsDirectory, name), 'utf8') }));
 }
 
 /**
@@ -162,14 +199,29 @@ function definitionCountOf(functionName: string): number {
  * always a cast literal. A function that answered some other way would produce
  * an empty set here, which the emptiness guard below turns into a failure rather
  * than into a pass.
+ *
+ * `entries` defaults to the real migrations directory, exactly as
+ * `newestDefinitionOf`'s does and for the same reason -- see that function's
+ * comment. This is also the reader whose own bug is invisible to every
+ * existing test: the "reads the newest definition" probe below calls
+ * `rowShapesReturnedBy` and `definitionCountOf` against
+ * `submit_challenge_evidence`, never `statusesReturnedBy`, and the two RPCs
+ * `statusesReturnedBy` IS checked against (`RPC_ROW_TYPES`) are each defined
+ * in exactly one migration, so the newest-vs-oldest branch is never taken for
+ * it there either. That is the whole reason this reader's own reimplemented
+ * accumulate-across-files bug (see "reads the newest status vocabulary on a
+ * synthetic pair" near the end of this file) would pass unnoticed without a
+ * fixture -- and unlike `outColumnsOf`'s, it would pass unnoticed even
+ * against real, redefined SQL, because every real status change this schema
+ * has ever made is an addition; see that test's own comment.
  */
-function statusesReturnedBy(functionName: string): readonly string[] {
+function statusesReturnedBy(functionName: string, entries: readonly MigrationEntry[] = migrationEntries()): readonly string[] {
   // Only the newest definition, and only the body of the named function: a
   // migration may define several, and `create_save_version`'s `'conflict'`
   // must not be read as one of `create_prison`'s answers. The `Set` still
   // dedups within one body; what it must NOT do is carry a status forward
   // from a definition that no longer runs.
-  const body = newestDefinitionOf(functionName);
+  const body = newestDefinitionOf(functionName, entries);
   if (body === null) return [];
 
   const statuses = new Set<string>();
@@ -253,11 +305,17 @@ const RPC_ROW_SHAPES: readonly {
   },
 ];
 
-/** The `returns table (...)` column names of a PL/pgSQL function, in order. */
-function outColumnsOf(functionName: string): readonly string[] {
+/**
+ * The `returns table (...)` column names of a PL/pgSQL function, in order.
+ *
+ * `entries` defaults to the real migrations directory, exactly as
+ * `newestDefinitionOf`'s does and for the same reason -- see that function's
+ * comment.
+ */
+function outColumnsOf(functionName: string, entries: readonly MigrationEntry[] = migrationEntries()): readonly string[] {
   // Newest definition only. This one used to `return` on the FIRST file that
   // matched, which is the oldest signature -- the opposite of the rule.
-  const definition = newestDefinitionOf(functionName);
+  const definition = newestDefinitionOf(functionName, entries);
   if (definition === null) return [];
 
   const listStart = definition.indexOf('returns table (');
@@ -508,5 +566,158 @@ describe('every RPC status the database can return is one the client handles', (
         ...new Set(statuses),
       ]);
     }
+  });
+
+  /**
+   * `outColumnsOf` alone, on a pair no real migration provides.
+   *
+   * WHY THIS TEST EXISTS SEPARATELY FROM THE ONE ABOVE. The probe above
+   * proves `rowShapesReturnedBy` (and, through `definitionCountOf`, the
+   * redefinition itself) picks the newest definition -- it does NOT prove
+   * that of `statusesReturnedBy`, which it never calls; see that function's
+   * own comment. It does not touch `outColumnsOf` either, because
+   * `submit_challenge_evidence`'s three definitions all declare the same
+   * `returns table (status text, submission_id uuid)` -- no function in this
+   * repository has ever changed its OUT column list, so nothing real
+   * distinguishes `outColumnsOf` reading the newest definition from it
+   * reading the oldest. Reverting `outColumnsOf` alone to its pre-fix
+   * first-match loop leaves the whole of `tests/foundation` green.
+   *
+   * WHY A FIXTURE RATHER THAN A MIGRATION. `supabase/migrations/` is
+   * append-only and reservation 2 (AGENTS.md) is the owner's; manufacturing
+   * the difference there is both disallowed and the wrong tool; a migration
+   * is schema for a real function, not a test fixture. `newestDefinitionOf`
+   * and `outColumnsOf` used to make a fixture impossible outright: both
+   * hard-coded `readdirSync(migrationsDirectory)`, so there was no argument
+   * through which anything but the real directory could reach them. That was
+   * itself the finding, and the fix is the `entries` parameter both
+   * functions now take (see `newestDefinitionOf`'s comment) -- a synthetic
+   * pair of migration-shaped strings, fed to the *same* `outColumnsOf` every
+   * other test in this file calls, with the real directory only as its
+   * default argument.
+   *
+   * The two definitions below differ ONLY in their OUT column list, so first-
+   * wins and newest-wins disagree on this pair the way they cannot on any
+   * real function today. Filenames sort so the second is newest.
+   */
+  it("reads the newest OUT column list on a synthetic pair, since no real migration's differs", () => {
+    const probe = 'fixture_only_out_columns_differ';
+    const entries: readonly MigrationEntry[] = [
+      {
+        name: '20260101000000_fixture_first.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text, old_only_column uuid)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text, null::uuid;\nend;\n$$;\n`,
+      },
+      {
+        name: '20260102000000_fixture_second.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text, new_only_column uuid, extra_column int)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text, null::uuid, 1;\nend;\n$$;\n`,
+      },
+    ];
+
+    // Non-vacuity: if the two fixture definitions ever stopped disagreeing,
+    // this test would pass no matter which one `outColumnsOf` read.
+    expect(outColumnsOf(probe, [entries[0]!])).not.toEqual(outColumnsOf(probe, [entries[1]!]));
+
+    expect(outColumnsOf(probe, entries)).toEqual(['status', 'new_only_column', 'extra_column']);
+    // Filename order must not matter, only newest-by-name: feeding the pair
+    // in reverse must not flip the answer to the first file supplied.
+    expect(outColumnsOf(probe, [...entries].reverse())).toEqual(['status', 'new_only_column', 'extra_column']);
+  });
+
+  /**
+   * `statusesReturnedBy` alone, on a pair no real migration provides.
+   *
+   * WHY THIS TEST EXISTS SEPARATELY FROM BOTH OF THE OTHER TWO, AND WHY A
+   * REAL PROBE CANNOT REPLACE IT even though `submit_challenge_evidence`'s
+   * status vocabulary genuinely does change across its migrations (its first
+   * definition returns only `'duplicate'` and `'submitted'`; the second adds
+   * `'conflict'`, and the third keeps all three). Every one of those changes
+   * is an ADDITION. `statusesReturnedBy`'s pre-#1339 bug unioned statuses
+   * across every file into a `Set` instead of reading only the newest
+   * definition -- and unioning a strictly growing sequence of sets produces
+   * the same set the last one alone would. Feeding all three
+   * `submit_challenge_evidence` definitions to that accumulating bug would
+   * therefore answer `{conflict, duplicate, submitted}`, identical to
+   * `newestDefinitionOf`'s answer, so no case this schema has ever produced
+   * can distinguish the two directions for this specific reader -- only a
+   * status a later definition REMOVES can, and nothing here has done that.
+   * (`rowShapesReturnedBy` does not share this blind spot: it keys on
+   * `(status, expressions)`, and `'duplicate'`'s expression itself changed
+   * from `v_existing` to `v_existing_id` between the first and second
+   * definitions, which a per-status accumulator conflates into duplicate
+   * entries rather than silently agreeing.)
+   *
+   * The gap is compounded, not just masked, by nothing calling
+   * `statusesReturnedBy(probe)` at all: the "reads the newest definition"
+   * test below calls `rowShapesReturnedBy` and `definitionCountOf` against
+   * `submit_challenge_evidence`, never `statusesReturnedBy`; and
+   * `RPC_ROW_TYPES`, the only place `statusesReturnedBy` is actually invoked,
+   * names `create_prison` and `create_save_version`, each defined in exactly
+   * one migration -- so the newest-vs-oldest branch inside
+   * `statusesReturnedBy` is never taken by anything that calls it either.
+   * Reverting `statusesReturnedBy` to its own pre-#1339 accumulate-across-
+   * every-file loop (bypassing `newestDefinitionOf` altogether, the same
+   * shape the real bug had) leaves the whole of `tests/foundation` green.
+   *
+   * WHY A FIXTURE RATHER THAN A MIGRATION, and why `entries` is a parameter
+   * here too: identical reasoning to `outColumnsOf`'s fixture above --
+   * `supabase/migrations/` is append-only and reservation 2 (AGENTS.md) is
+   * the owner's, so the difference is manufactured here instead, fed to the
+   * same `statusesReturnedBy` every other test in this file calls.
+   *
+   * The two definitions below share one status and differ in a second, so
+   * first-wins and newest-wins disagree on the returned set the way they
+   * cannot on any status-vocabulary case this file already exercises for
+   * `statusesReturnedBy` specifically (only `rowShapesReturnedBy` gets that
+   * exercise, from `submit_challenge_evidence`). Filenames sort so the second
+   * is newest.
+   */
+  it("reads the newest status vocabulary on a synthetic pair, since statusesReturnedBy is never probed against a real redefinition", () => {
+    const probe = 'fixture_only_statuses_differ';
+    const entries: readonly MigrationEntry[] = [
+      {
+        name: '20260101000000_fixture_first.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text;\n  return query select 'old_only_status'::text;\nend;\n$$;\n`,
+      },
+      {
+        name: '20260102000000_fixture_second.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text;\n  return query select 'new_only_status'::text;\nend;\n$$;\n`,
+      },
+    ];
+
+    // Non-vacuity: if the two fixture definitions ever stopped disagreeing,
+    // this test would pass no matter which one `statusesReturnedBy` read.
+    expect(statusesReturnedBy(probe, [entries[0]!])).not.toEqual(statusesReturnedBy(probe, [entries[1]!]));
+
+    expect(statusesReturnedBy(probe, entries)).toEqual(['new_only_status', 'ok']);
+    // Filename order must not matter, only newest-by-name: feeding the pair
+    // in reverse must not flip the answer to the first file supplied.
+    expect(statusesReturnedBy(probe, [...entries].reverse())).toEqual(['new_only_status', 'ok']);
+  });
+
+  /**
+   * Filename order is application order ONLY because every migration is
+   * timestamp-prefixed, and nothing before this test enforced that prefix.
+   *
+   * `newestDefinitionOf` sorts filenames lexicographically and trusts that
+   * order to be chronological -- correct exactly as long as every name starts
+   * `YYYYMMDDHHMMSS_`. Nothing enforced that upstream of a lexicographic
+   * sort: `abc_foo.sql` sorts after `20260822190000_create_profiles.sql` and
+   * before nothing, so it would silently become "newest" by name regardless
+   * of when it was actually added, both here and in
+   * `scripts/verify-supabase-sql.mjs`, which applies migrations through the
+   * identical `readdirSync(...).sort()`. A malformed prefix is therefore not
+   * only a risk to this reader; it is a risk to which order migrations
+   * actually apply in, so the cost of missing it is larger than this file.
+   * One regex over the real directory's filenames, checked once here, is
+   * cheap enough that the asymmetry between that cost and this test's size is
+   * the whole case for adding it.
+   */
+  it('names every real migration with the 14-digit timestamp prefix filename order depends on', () => {
+    const prefix = /^\d{14}_[a-z0-9_]+\.sql$/u;
+    const entries = migrationEntries();
+    expect(entries.length, 'no migrations found -- this test proves nothing').toBeGreaterThan(1);
+
+    const malformed = entries.map((entry) => entry.name).filter((name) => !prefix.test(name));
+    expect(malformed, 'these migration filenames do not sort chronologically, so filename order is not application order for them').toEqual([]);
   });
 });
