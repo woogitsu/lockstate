@@ -4099,6 +4099,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   });
 
   hud.asideSlot.append(chromeRow);
+  observeChromeRowOverflow(chromeRow, [displayScale.element, themeControl.element]);
   hud.preferencesSlot.append(languageControl.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
@@ -4137,6 +4138,166 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
  * `deriveXoshiroState` (`src/simulation/rng/seed.ts`) accept -- so nothing
  * downstream can reject a value this function produces.
  */
+/**
+ * Drops the icon and the legend from whichever of `.hud-chrome-prefs`'s two
+ * controls does not fit its half, when and only when that is measured true
+ * (#1164 follow-up -- named against four of the 200 %-page-zoom sweep's
+ * thirteen known failures, though see this function's own record below of
+ * what verifying that against the whole sweep actually found).
+ *
+ * ## The measurement, and why it is a measurement rather than a formula
+ *
+ * `src/styles.css` gives `.hud-chrome-prefs > .display-scale,
+ * .hud-chrome-prefs > .theme-control` `flex: 1 1 0; min-width: 0`, and each
+ * one's own `*__cycle` button `flex: none; min-width: var(--tap-target)`
+ * (`.display-scale__cycle, .theme-control__cycle`). The button's floor does
+ * not shrink and the half's share of the row can be narrower than it,
+ * measured on `d18c2598` at 375x812 and 125 %: the row is 168px, each half is
+ * 82.5px, and `--tap-target` there is 55px -- with the icon beside the
+ * button counted in, the button alone paints 27.5px past its own half, and
+ * with no `overflow: hidden` on either half `.display-scale__cycle`'s centre
+ * pixel resolves to `.theme-control` rather than to itself
+ * (`ui-200-percent-zoom-sweep-ratchet.spec.ts`,
+ * `tests/browser/page-zoom-sweep.ts`'s `REACHABLE` check).
+ *
+ * Whether that is true depends on the row's *actual rendered width* --
+ * `--hud-rail-panel-width`, which `src/ui/hud/layout-shell.ts` computes from
+ * a player's own rail drag and which collapses to 100 % of the viewport under
+ * `hud.css`'s 720px breakpoint -- crossed with `--tap-target`, which
+ * `tokens.css` multiplies by `--ui-scale`. Two independently-varying lengths
+ * whose only fixed relationship is which one wins, so this is read off the
+ * boxes themselves rather than reconstructed from either input: exactly the
+ * reason `applyUiScale` (`src/ui/display-scale.ts`) gives for
+ * `data-ui-scale-enlarged` gating `.hud-tabs__inner`'s wrap -- "CSS has no way
+ * to say 'wrap only if you would otherwise clip'". This mirrors that
+ * mechanism -- a JS-computed boolean a stylesheet rule reads -- rather than
+ * inventing a second vocabulary for the same idea.
+ *
+ * ## Why the measurement is forced into the side-by-side layout first
+ *
+ * An earlier version of this function reconstructed "the width each half
+ * would have side by side" from a formula (the button's `min-width`, its
+ * padding, its icon and two `gap`s, read off computed styles) rather than
+ * from either half's own box, on the reasoning that a half's box already
+ * reflects whichever layout this function chose last time, and reading that
+ * back would make the function's output an input to itself.
+ *
+ * That formula **read narrow at `390x844` and `375x812` and 100 % `--ui-scale`
+ * -- neither enlarged, neither in the thirteen already failing** -- and
+ * stacking there added the height that made `ui-200-percent-zoom-sweep-ratchet.spec.ts`
+ * report `.hud__aside spills 37px of its own box`, a regression the full
+ * sweep caught and this docblock records rather than hides. The margin was
+ * 3px on a 92px sum, which is not a rounding error this repository's
+ * `0.5px` tolerances explain -- reading the boxes directly (below) puts the
+ * same two combinations on the *fitting* side, so the formula was counting
+ * something the real layout does not actually spend.
+ *
+ * So this reads the boxes after all, and the self-reference is avoided a
+ * different way: `row.removeAttribute` puts the row back into its side-by-side
+ * CSS synchronously, `getBoundingClientRect` below forces the layout that
+ * removal implies without yielding to a paint, and the attribute this
+ * function is about to write is applied only after that reading -- so
+ * whatever was painted before this call runs is never what gets measured.
+ *
+ * ## Why this cannot regress a combination that was not already failing
+ *
+ * The attribute is set from the same overflow this module's job is to close:
+ * a half's button spilling past its own box, in the side-by-side layout the
+ * measurement above forces before reading it. A combination where that is
+ * false today does not fail the sweep's `REACHABLE` check on
+ * `.display-scale__cycle` today either -- they are the same measurement of
+ * the same layout -- so stacking never engages anywhere the row was not
+ * already reported unreachable. It says nothing about the *other* two ways
+ * the sweep can fail (`CONTAINED`, `OVERFLOWING`), which is why this was
+ * verified against the whole sweep and not just the four combinations it
+ * targets, and why the paragraph above records the one time that check
+ * caught this function disagreeing with itself.
+ *
+ * ## Why a local attribute and not `:root`
+ *
+ * The condition is a property of this one row's own layout, not of the
+ * interface scale generally -- `.hud-build[data-queued]` and
+ * `.hud-layout__clock[data-clock-mode]` (`hud.css`) are this repository's
+ * existing idiom for exactly that shape of state, and `.hud-chrome-prefs`
+ * follows it rather than crossing back to `:root`.
+ */
+function observeChromeRowOverflow(row: HTMLElement, halves: readonly HTMLElement[]): void {
+  const attribute = 'data-hud-chrome-row-narrow';
+
+  const measure = (): void => {
+    // Forces the side-by-side CSS before reading a single box below, so the
+    // read is of that layout and never of whatever this function set last
+    // time -- see the docblock above this function for the measurement this
+    // replaced and what it got wrong.
+    row.removeAttribute(attribute);
+
+    const rowBox = row.getBoundingClientRect();
+    // Not laid out yet -- nothing to stack around.
+    if (rowBox.width === 0) return;
+
+    /*
+     * The button's own *edge* overflowing its half is not the condition to
+     * read -- `.hud-chrome-prefs`'s children paint in document order with no
+     * `z-index` between them, so a button whose box pokes a few pixels past
+     * its own half is not necessarily one whose *centre pixel* resolves to
+     * the neighbour: `.theme-control` is the later sibling and paints over
+     * the overlap, so a small edge overflow is invisible to a press at the
+     * button's own centre. An earlier version of this function checked the
+     * edge, and it read `375x812` at 100 % `--ui-scale` as narrow -- a
+     * combination the sweep does not fail -- because the true overflow there
+     * never reaches the centre pixel.
+     *
+     * `tests/browser/page-zoom-sweep.ts`'s `REACHABLE` check is centre and
+     * `elementFromPoint`, so this reads the same two things it does, on the
+     * same element, rather than a proxy for them.
+     */
+    let narrow = false;
+    for (const half of halves) {
+      const button = half.querySelector('button');
+      if (button === null) continue;
+      const buttonBox = button.getBoundingClientRect();
+      // Not laid out -- nothing to stack around.
+      if (buttonBox.width === 0 && buttonBox.height === 0) continue;
+      const x = buttonBox.left + buttonBox.width / 2;
+      const y = buttonBox.top + buttonBox.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      if (hit !== null && hit !== button && !button.contains(hit)) {
+        narrow = true;
+        break;
+      }
+    }
+
+    // `setAttribute` and not `toggleAttribute`: the latter writes an
+    // empty-string value, and the CSS rule this drives selects on
+    // `[data-hud-chrome-row-narrow='true']` -- the same value form every
+    // other boolean data attribute in this tree carries
+    // (`data-ui-scale-enlarged='true'`, `hud.css`). `removeAttribute` above
+    // already put the `false` case in place, so there is nothing to restore
+    // when this stays false.
+    if (narrow) row.setAttribute(attribute, 'true');
+  };
+
+  /*
+   * The row alone, not the halves or the buttons: a window resize and a rail
+   * drag (`--hud-rail-panel-width`) both change the row's own box, and so
+   * does an interface-scale change -- every length in it, the buttons'
+   * `--tap-target` floor among them, grows with `--ui-scale`
+   * (`src/ui/tokens.css`), which changes the row's own intrinsic *height*
+   * even where its width does not move. `ResizeObserver` fires on either
+   * axis changing, so this one target already hears all three causes.
+   *
+   * Observing a half or a button instead, or as well, reintroduces the
+   * self-reference `measure`'s own forced side-by-side read exists to avoid:
+   * `measure` sets each half's `flex` and `width` (`src/styles.css`), so
+   * either box changing is sometimes this function's own last answer being
+   * read back rather than a cause external to it.
+   */
+  const observer = new ResizeObserver(measure);
+  observer.observe(row);
+
+  measure();
+}
+
 function generateMasterSeed(): number {
   const drawn = new Uint32Array(1);
   crypto.getRandomValues(drawn);
