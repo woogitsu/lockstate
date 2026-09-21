@@ -119,22 +119,47 @@ const RPC_ROW_TYPES: readonly { readonly rpc: string; readonly rowType: string }
  * the definition precedes the revoke in each file; it is not a property worth
  * relying on. `lastIndexOf` within the chosen file, for the same reason the
  * loop keeps the last file.
+ *
+ * `entries` defaults to `migrationEntries()` (the real `supabase/migrations/`
+ * directory) for every production call site, and exists as a parameter for
+ * exactly one reason: `supabase/migrations/` is append-only and reservation 2
+ * (AGENTS.md) forbids editing it, so it can never host a synthetic pair of
+ * definitions whose OUT columns differ -- and without that pair, nothing here
+ * can tell "reads the newest definition" apart from "reads the oldest" for a
+ * reader whose two candidate answers would otherwise be identical. Before this
+ * parameter, `outColumnsOf` below hard-coded the real directory and could not
+ * be exercised against anything else; that was itself a finding, not just an
+ * inconvenience -- see "reads the newest OUT column list on a synthetic pair"
+ * near the end of this file.
  */
-function newestDefinitionOf(functionName: string): string | null {
+function newestDefinitionOf(
+  functionName: string,
+  entries: readonly MigrationEntry[] = migrationEntries(),
+): string | null {
   const header = `create or replace function public.${functionName}(`;
   let newest: string | null = null;
 
-  for (const entry of readdirSync(migrationsDirectory).sort()) {
-    if (!entry.endsWith('.sql')) continue;
-    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
-
-    const start = sql.lastIndexOf(header);
+  for (const entry of [...entries].sort((left, right) => left.name.localeCompare(right.name))) {
+    const start = entry.sql.lastIndexOf(header);
     if (start === -1) continue;
-    const end = sql.indexOf('$$;', start);
-    newest = sql.slice(start, end === -1 ? undefined : end);
+    const end = entry.sql.indexOf('$$;', start);
+    newest = entry.sql.slice(start, end === -1 ? undefined : end);
   }
 
   return newest;
+}
+
+/** One migration file, named and read, for readers that take a directory as data. */
+interface MigrationEntry {
+  readonly name: string;
+  readonly sql: string;
+}
+
+/** Every `.sql` file in `supabase/migrations/`, named and read. */
+function migrationEntries(): readonly MigrationEntry[] {
+  return readdirSync(migrationsDirectory)
+    .filter((entry) => entry.endsWith('.sql'))
+    .map((name) => ({ name, sql: readFileSync(join(migrationsDirectory, name), 'utf8') }));
 }
 
 /**
@@ -253,11 +278,17 @@ const RPC_ROW_SHAPES: readonly {
   },
 ];
 
-/** The `returns table (...)` column names of a PL/pgSQL function, in order. */
-function outColumnsOf(functionName: string): readonly string[] {
+/**
+ * The `returns table (...)` column names of a PL/pgSQL function, in order.
+ *
+ * `entries` defaults to the real migrations directory, exactly as
+ * `newestDefinitionOf`'s does and for the same reason -- see that function's
+ * comment.
+ */
+function outColumnsOf(functionName: string, entries: readonly MigrationEntry[] = migrationEntries()): readonly string[] {
   // Newest definition only. This one used to `return` on the FIRST file that
   // matched, which is the oldest signature -- the opposite of the rule.
-  const definition = newestDefinitionOf(functionName);
+  const definition = newestDefinitionOf(functionName, entries);
   if (definition === null) return [];
 
   const listStart = definition.indexOf('returns table (');
@@ -508,5 +539,86 @@ describe('every RPC status the database can return is one the client handles', (
         ...new Set(statuses),
       ]);
     }
+  });
+
+  /**
+   * `outColumnsOf` alone, on a pair no real migration provides.
+   *
+   * WHY THIS TEST EXISTS SEPARATELY FROM THE ONE ABOVE. The probe above
+   * proves `rowShapesReturnedBy` and `statusesReturnedBy` (and, through
+   * `definitionCountOf`, the redefinition itself) pick the newest
+   * definition. It does not touch `outColumnsOf`, because
+   * `submit_challenge_evidence`'s three definitions all declare the same
+   * `returns table (status text, submission_id uuid)` -- no function in this
+   * repository has ever changed its OUT column list, so nothing real
+   * distinguishes `outColumnsOf` reading the newest definition from it
+   * reading the oldest. Reverting `outColumnsOf` alone to its pre-fix
+   * first-match loop leaves the whole of `tests/foundation` green.
+   *
+   * WHY A FIXTURE RATHER THAN A MIGRATION. `supabase/migrations/` is
+   * append-only and reservation 2 (AGENTS.md) is the owner's; manufacturing
+   * the difference there is both disallowed and the wrong tool; a migration
+   * is schema for a real function, not a test fixture. `newestDefinitionOf`
+   * and `outColumnsOf` used to make a fixture impossible outright: both
+   * hard-coded `readdirSync(migrationsDirectory)`, so there was no argument
+   * through which anything but the real directory could reach them. That was
+   * itself the finding, and the fix is the `entries` parameter both
+   * functions now take (see `newestDefinitionOf`'s comment) -- a synthetic
+   * pair of migration-shaped strings, fed to the *same* `outColumnsOf` every
+   * other test in this file calls, with the real directory only as its
+   * default argument.
+   *
+   * The two definitions below differ ONLY in their OUT column list, so first-
+   * wins and newest-wins disagree on this pair the way they cannot on any
+   * real function today. Filenames sort so the second is newest.
+   */
+  it("reads the newest OUT column list on a synthetic pair, since no real migration's differs", () => {
+    const probe = 'fixture_only_out_columns_differ';
+    const entries: readonly MigrationEntry[] = [
+      {
+        name: '20260101000000_fixture_first.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text, old_only_column uuid)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text, null::uuid;\nend;\n$$;\n`,
+      },
+      {
+        name: '20260102000000_fixture_second.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text, new_only_column uuid, extra_column int)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text, null::uuid, 1;\nend;\n$$;\n`,
+      },
+    ];
+
+    // Non-vacuity: if the two fixture definitions ever stopped disagreeing,
+    // this test would pass no matter which one `outColumnsOf` read.
+    expect(outColumnsOf(probe, [entries[0]!])).not.toEqual(outColumnsOf(probe, [entries[1]!]));
+
+    expect(outColumnsOf(probe, entries)).toEqual(['status', 'new_only_column', 'extra_column']);
+    // Filename order must not matter, only newest-by-name: feeding the pair
+    // in reverse must not flip the answer to the first file supplied.
+    expect(outColumnsOf(probe, [...entries].reverse())).toEqual(['status', 'new_only_column', 'extra_column']);
+  });
+
+  /**
+   * Filename order is application order ONLY because every migration is
+   * timestamp-prefixed, and nothing before this test enforced that prefix.
+   *
+   * `newestDefinitionOf` sorts filenames lexicographically and trusts that
+   * order to be chronological -- correct exactly as long as every name starts
+   * `YYYYMMDDHHMMSS_`. Nothing enforced that upstream of a lexicographic
+   * sort: `abc_foo.sql` sorts after `20260822190000_create_profiles.sql` and
+   * before nothing, so it would silently become "newest" by name regardless
+   * of when it was actually added, both here and in
+   * `scripts/verify-supabase-sql.mjs`, which applies migrations through the
+   * identical `readdirSync(...).sort()`. A malformed prefix is therefore not
+   * only a risk to this reader; it is a risk to which order migrations
+   * actually apply in, so the cost of missing it is larger than this file.
+   * One regex over the real directory's filenames, checked once here, is
+   * cheap enough that the asymmetry between that cost and this test's size is
+   * the whole case for adding it.
+   */
+  it('names every real migration with the 14-digit timestamp prefix filename order depends on', () => {
+    const prefix = /^\d{14}_[a-z0-9_]+\.sql$/u;
+    const entries = migrationEntries();
+    expect(entries.length, 'no migrations found -- this test proves nothing').toBeGreaterThan(1);
+
+    const malformed = entries.map((entry) => entry.name).filter((name) => !prefix.test(name));
+    expect(malformed, 'these migration filenames do not sort chronologically, so filename order is not application order for them').toEqual([]);
   });
 });
