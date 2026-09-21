@@ -852,6 +852,17 @@ refusal map, and the host namespace carries sixteen keys of its own.
 [#1160](https://github.com/woogitsu/lockstate/issues/1160) stays open for that
 rather than for the one-of-48 gap the section above records.**
 
+> **DISCHARGED, and the sentence is kept because what it asked for is how the
+> answer should be read.** The enumeration is performed in the subsection
+> below: 32 triples, three of them discharged by a spec that proves the
+> success artifact missing, 29 owed — or 30 and 27 on the reading that a key
+> chord is not a press. It is gated by
+> `tests/foundation/refusal-surface-enumeration-contract.test.ts`, which
+> re-runs the reachability walk and asks the shipped `refusalMessageKey` which
+> presses have a host producer, so the table cannot drift from the code.
+> [#1160](https://github.com/woogitsu/lockstate/issues/1160) stays open for the
+> 29, not for the enumeration.
+
 **Weakest claim here:** the three. It is an enumeration over the band's
 `data-source` and over the specs that touch the band's class at all, so a spec
 that drives a refusal out of the real simulation and asserts only the alerts
@@ -859,6 +870,178 @@ row — never the band — falls outside what was searched, which is the same sh
 of blindness the nine above had from the other direction. The 48, the two
 sixteens, the two producers and the three bullets were each reached twice and by
 different means.
+
+### The enumeration criterion 4 was restated in terms of, performed: 32 triples, 3 discharged
+
+The subsection above is left as it stands apart from the discharge marker
+inserted into its closing paragraph, including the sentence that says *"this restatement carries no count, deliberately"* and the sentence that
+says *"enumerating the triples is owed"*. **Both were true when written and the
+second is discharged here rather than deleted**, because the reason no number
+was offered — that an enumeration nobody has performed is not a number — is the
+reason this one is shown as a derivation rather than as a figure.
+
+Everything below is a reading of the code at the merge base of
+`agent/stage-4-surface-enumeration`, and every column of it a browserless gate
+can answer is answered by
+`tests/foundation/refusal-surface-enumeration-contract.test.ts` rather than by
+this table.
+
+#### The counting rule, first, because the number is meaningless without it
+
+- A **press** is a control, or a world gesture, that dispatches one command
+  intent. One control in two modes is two presses when the modes place
+  different things: the Build panel's coordinate submit dispatches
+  `place-build-order`, `place-object` or `remove-object` depending on the
+  selected catalogue row and the remove toggle, and a queued wall order, a
+  placed bed and a removed object are three different absences to prove.
+- Three buttons that dispatch **one** intent with **one** artifact are **one**
+  press. The transport strip's Pause, Play and Fast-forward all dispatch
+  `set-clock` and all fail identically.
+- A **producer** is the side of the submit that decided the refusal: `host`
+  when the composition root threw before submitting and the HUD painted a
+  `hud.refusal.*` sentence, `simulation` when the worker answered and the HUD
+  painted a `hud.alert.refusal.*` one. A press has a host triple exactly when
+  `refusalMessageKey` answers for its intent — which the gate asks the shipped
+  function rather than writing down.
+
+**The press column is not derived by hand.** It is the walk merged as #1349:
+`tests/helpers/control-reachability.ts` resolves every command intent to the
+callback hop and the DOM listener that issues it, and the gate re-runs that
+walk and requires each row's hop to still be on the trail. A panel option
+renamed, or a control that stops being a button, fails the gate rather than
+leaving a table describing a route that no longer exists.
+
+#### The enumeration
+
+`S` is the simulation producer, `H` the host. A row's **artifact** is what
+appears on success and therefore what only a browser can find missing.
+
+| Press | Intent → command | Success artifact | S | H |
+|---|---|---|---|---|
+| Build panel · ENTER COORDINATES · Place order, wall row selected | `place-build-order` → `PlaceBuildOrder` | a queued build order; the queue block appears and `data-queued` counts it | driven, absence unproved | driven, absence unproved |
+| Build panel · same control, object row selected | `place-object` → `PlaceObject` | a placed object, and no queue row for it | **discharged** | — (silent) |
+| Build panel · same control, remove armed | `remove-object` → `RemoveObject` | the object is gone from the tile | owed | — (silent) |
+| World · drag, build tool armed | `place-build-order` → `PlaceBuildOrder` | a queued order per edge the drag covered | owed | driven, absence unproved |
+| World · press, object tool armed to place | `place-object` → `PlaceObject` | a placed object under the ghost | owed | — (silent) |
+| World · press, object tool armed to remove, off an edge | `remove-object` → `RemoveObject` | the object is gone from the tile | owed | — (silent) |
+| World · press, object tool armed to remove, on an edge | `remove-object` → `RemoveWall` | the wall segment is gone from the edge | driven, absence unproved | — (silent) |
+| Build panel · queue row · Cancel | `cancel-build-order` → `CancelBuildOrder` | the order leaves the queue and `data-queued` falls | owed | owed |
+| Build panel · BUY · Buy | `purchase-materials` → `PurchaseMaterials` | a pending delivery; `data-pending` rises | owed | **discharged** |
+| Build panel · delivery row · Cancel | `cancel-material-purchase` → `CancelMaterialPurchase` | the delivery leaves the list and `data-pending` falls | owed | owed |
+| Build panel · BUY · Sell | `sell-materials` → `SellMaterials` | stock falls and the funds readout rises | owed | owed |
+| Zones panel · Designate | `zone-room` → `ZoneRoom` | a zoned room; the rooms metric rises | owed | owed |
+| Zones panel · Remove | `unzone-room` → `UnzoneRoom` | the room is gone and the rooms metric falls | owed | owed |
+| Intake panel · Admit | `admit-prisoner` → `AdmitPrisoner` | a prisoner on the roster; the population metric rises | owed | owed |
+| Staff panel · Hire | `hire-staff` → `HireStaff` | a staff member on the roster; the staff metric rises | owed | **discharged** |
+| Staff panel · held-guard row · Release | `release-guard` → `ReleaseGuardAssignment` | the guard leaves the held rows | owed | owed |
+| Staff panel · staff row · Dismiss, armed then confirmed | `dismiss-staff` → `DismissStaff` | the row leaves the roster | owed | — (silent) |
+| Schedule panel · block toggle | `edit-regime-block` → `EditRegimeBlock` | the block reads the chosen activity | owed | — (silent) |
+| Status strip · transport | `set-clock` → *(no command)* | the clock reads what was asked | — (no reason) | driven, absence unproved |
+| Keyboard · KeyZ on the world | `undo` → `Undo` | the last gesture is taken back | — (no reason) | owed |
+| Keyboard · KeyY on the world | `redo` → `Redo` | the taken-back gesture returns | — (no reason) | owed |
+
+Twenty-one presses. Nineteen of them a pointer can make; the undo pair is a key
+chord and nothing else, which
+`tests/foundation/command-control-reachability-contract.test.ts` already
+records with a named entry apiece.
+
+#### The number, derived
+
+- **32 triples.** Eighteen simulation, fourteen host. The simulation side is
+  one triple per press whose command has a refusal map; the host side is one
+  triple per press whose intent `refusalMessageKey` answers for.
+- **30** if the undo pair is excluded on the ground that a key chord is not a
+  press. **That is the second defensible number and the only thing that
+  separates it from the first.** Nothing else in the table is in doubt: the two
+  differ over whether criterion 4 is about *controls* or about *routes to a
+  command*, and this plan does not settle that.
+- **3 discharged.** A triple is discharged when a CI gate spec drives its press
+  against the assembled application **and** asserts the success artifact
+  missing, which is the thing the criterion says a browser uniquely adds.
+- **29 owed**, or **27** on the pointer-only reading.
+
+**Eight triples are driven and only three are discharged, and the gap is the
+useful part of this pass.** Five specs reach a real refusal through a real
+press and assert the sentence, the band, the alerts row, the marked control —
+and never that nothing happened. A refusal that names itself correctly beside a
+queue row that grew is the defect this criterion exists to catch, and five of
+the eight existing specs would not catch it.
+
+#### Two bounds the subsection above recorded, both now narrowed
+
+**Sixteen command domains declare a simulation refusal map, and one of them no
+press can reach.** `construction.materials-unfunded` is recorded from a tick by
+the construction handler behind the just-in-time materials rung, not from a
+command. So the simulation side of the enumeration is built on fifteen domains,
+not sixteen, and the gate asserts exactly that exclusion.
+
+**The host namespace carries sixteen keys and they are thirteen presses.**
+Three of the sixteen are reason-narrowed variants of a key the same control
+already has — the two overdraft-floor sentences and the no-room Admit — so the
+namespace's size is not the number of host surfaces.
+
+#### The finding this enumeration turned up, recorded and not fixed here
+
+**Four command intents dispatch through the composition root's
+`requireSimulation`, which throws when there is no worker, and map to no
+`hud.refusal.*` sentence at all:** `place-object`, `remove-object`,
+`dismiss-staff` and `edit-regime-block`. The HUD's error path paints nothing
+for an intent the mapping answers `undefined` for, and it does so deliberately
+— the mapping's own docblock says `undefined` means a *chrome* intent, already
+applied locally, for which a "that did not go through" sentence would be a
+false statement on screen. These four are not chrome. They are commands, and a
+host refusal of one of them is a control that silently did nothing, which is
+the defect issue #82 was filed about. The gate asserts the list, so it cannot
+change unnoticed; changing the behaviour is a player-visible promise and is not
+this plan's to make.
+
+**A fifth press reaches neither producer and is excluded from the count rather
+than owed:** the alerts row's own Dismiss. `refusalMessageKey` answers
+`undefined` for `dismiss-alert`, no `RefusalReason` carries that prefix, and
+the composition root submits it through an optional call rather than
+`requireSimulation`, so it does not throw either. There is no refusal for a
+browser spec to find.
+
+#### Three corrections to the subsection above, which predicted two of them
+
+**"Driven coverage is three of the 48" under-reads by five, and the subsection
+named the reason in its own weakest-claim paragraph.** The search was over the
+band's `data-source` attribute, and a **host** refusal is asserted by
+`data-action` — no gate spec asserts `data-source` of `host` at all. Reading
+`data-action` out of every gate spec finds five more driven paths: the
+coordinate submit and the world drag with no session, the Buy control past the
+overdraft floor, the Hire control past the starter rung, and a transport press
+with no worker. Eight, not three.
+
+**The alerts-row blind spot the subsection flagged was searched and is
+empty.** Every gate spec that names an alerts-row selector either mounts a HUD
+view model it builds itself or asserts the row beside the band; none drives a
+real refusal and asserts only the row. So the miss was in the other direction,
+and the direction it was in is the one that paragraph did not consider.
+
+**One spec outside both searches drives a real refusal on the assembled
+application:** the shortfall spec loads the real page, fills a stepper, presses
+Buy for real and asserts the band. It names `data-action` and not
+`data-source`, and its band sentence is quoted as a `toContainText` rather than
+through a key, so neither a reason-id search nor a `data-source` search can
+see it. It covers a triple the app-shell suite already discharges, so it moves
+no number — which is why it is recorded here rather than in the table.
+
+**What this pass's own search cannot see.** A spec that drives a real press,
+gets a real refusal, and asserts **neither** surface — not the band, not the
+alerts row, not `data-action`, not the reason id, not the shipped sentence — is
+outside every search made here, because there is no identifier left to search
+on. Such a spec would have to be found by reading every press in the browser
+suite, which this pass did not do. It would only ever *raise* the discharged
+count, never lower it.
+
+**Weakest claim here:** the three discharged, and specifically the Buy row. Its
+absence assertion is that no command left the main thread, read off an
+instrumented sender, rather than that no delivery row appeared on screen. That
+is a stronger claim in one direction and a weaker one in the other: it cannot
+catch a refusal that also rendered an optimistic row. The 32, the 18, the 14,
+the 21 presses and the four silent intents are each asserted by the gate
+against the code that declares them.
 
 ---
 
