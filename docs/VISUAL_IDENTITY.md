@@ -697,6 +697,55 @@ sentence.
    > **Nothing under `src/ui/` implements this**, and the ruling does not by
    > itself change that.
 
+   > **RULED BY THE OWNER ON 2026-09-21: THE RULE ABOVE IS NOT EXTENDED ABOVE
+   > THE BREAK, AND NOTHING ELSE MOVES EITHER.** The rail has carried six
+   > sections since [#1292](https://github.com/woogitsu/lockstate/issues/1292).
+   > Asked what to do about the row-and-column budget above the 720px break,
+   > the owner chose, from four options:
+   >
+   > > Zapisać budżet, nie zmieniać nic (zalecane)
+   >
+   > ("Record the budget, change nothing.") **The provenance is the weaker of
+   > the two kinds**, the same kind as the 2026-09-16 ruling above: the label of
+   > a clickable option a session wrote, not a sentence the owner typed.
+   >
+   > **Three layout changes were offered and DECLINED, and they are listed here
+   > because a refused option leaves no trace anywhere else** — the next session
+   > would otherwise spend the question again. They are: applying the icon-only
+   > tab rule **above** the break as well (the 2026-09-16 ruling above accepted
+   > it *only below* it, and that limit stands); moving the bottom-left minimap
+   > corner; and a scrolling tab column, which is the second time a scrolling
+   > navigation surface has been put to the owner and declined.
+   >
+   > **What it authorises is a record and a deferral**, not a change: write the
+   > measured clearance down as a durable, checkable fact, and decide nothing
+   > until somebody proposes a seventh section.
+   >
+   > **The record is a test rather than a sentence, and that is the ruling's
+   > own argument carried out.** A number only a human ever moves cannot report
+   > that it has rotted; this figure had been carried at three different wrong
+   > values before it was measured on the assembled page, and the `hud.css`
+   > block that states the 781px arithmetic was still counting *five* sections.
+   > So the figures live in three `(#1292)` tests in
+   > `tests/browser/hud-layout-shell.spec.ts`, which fail when the layout moves
+   > them, and the `hud.css` block carries the prose and points at them.
+   >
+   > **The numbers, read off the assembled page at `49cd2fbd` (v0.0.721).** At
+   > 1280x800: a 719.31px middle row, a 280.13px six-tab column (top 92.69,
+   > bottom 372.81), a 398px corner bottom-anchored at top 402, and **29.19px
+   > of clearance** between them; the tallest tab is 47.19px, so a seventh
+   > section does not fit and `--tap-target`'s 44px floor leaves the padding
+   > step already spent.
+   >
+   > **And 1280x800 is not where the budget is tight, which the figure put to
+   > the owner did not say.** The corner keeps its left edge only above
+   > `hud.css`'s `@media (min-height: 781px)`; at exactly 781px tall the same
+   > clearance is **10.19px**, a third of what a 1280x800 probe reports. Below
+   > the threshold the corner steps 192px right, which is the designed fallback
+   > — 9.19px at 780 and -2.81px at the 1024x768 tablet, both with the shift.
+   > **Raising 781 to fit a seventh section is the decision that was deferred,
+   > not a number to edit.**
+
    **What the move cost, measured, in two places:** the Manage tab is the first
    in this rail's life to lay out two panels at once, and at 900x600 the Intake
    panel came out 42px shorter than its own content beside the Staff panel —

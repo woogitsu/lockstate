@@ -592,4 +592,169 @@ test.describe('the HUD layout shell', () => {
     ).toBeGreaterThanOrEqual(260);
   });
 
+
+  /*
+   * ------------------------------------------------------------------
+   * The middle row's vertical budget, with six sections in the rail
+   * ------------------------------------------------------------------
+   *
+   * The navigation carries six sections since #1292. Asked what to do about
+   * the row-and-column budget above the 720px break, the owner ruled on
+   * 2026-09-21, from four options: *"Zapisać budżet, nie zmieniać nic
+   * (zalecane)"* -- "record the budget, change nothing". **Provenance is the
+   * weaker of the two kinds this repository distinguishes**: the label of a
+   * clickable option a session wrote, not a sentence they typed.
+   *
+   * **Three layout changes were offered and DECLINED, and that is recorded
+   * here because a refused option leaves no other trace**: the icon-only tab
+   * rule above the break (the 2026-09-16 ruling accepted it *only below* it),
+   * moving the bottom-left corner, and a scrolling tab column.
+   *
+   * **So this test is the record.** The ruling asks for the budget to be
+   * written down; a number in a comment cannot report that it has rotted, and
+   * this very figure proves it -- it was carried at three different wrong
+   * values before it was measured on the assembled page, and the `hud.css`
+   * block that states the 781px arithmetic still described *five* sections
+   * until the commit that added this test. Every number below was read off
+   * this page at `49cd2fbd` (v0.0.721) and goes red when the layout moves it.
+   *
+   * ## Two viewports, because one of them hides the binding constraint
+   *
+   * The figure the ruling was given is 1280x800, and at that size the column
+   * clears the corner by 29.19px. **That is not the tight one.** The corner
+   * only keeps its left edge above `@media (min-height: 781px)` in `hud.css`,
+   * and at exactly 781px tall the same clearance is **10.19px** -- the
+   * stylesheet's own threshold is where the budget is actually spent, and a
+   * probe at 1280x800 alone reports three times the headroom that exists.
+   * One pixel below it the corner shifts 192px right, which is the designed
+   * fallback and is asserted here too so that "it does not fit" and "it is
+   * handled" are not the same assertion.
+   *
+   * ## What a seventh section would cost, asserted rather than stated
+   *
+   * `tallestTab` is measured rather than pinned, so the last two assertions
+   * stay true statements about *this* rail rather than about a remembered
+   * tab height: a seventh section costs one more tab, and at both viewports
+   * the clearance is smaller than one tab. **Raising 781, or the corner's
+   * height, or `--tap-target`'s 44px floor, to make a seventh section fit is
+   * not what this records** -- the owner deferred that decision, and this
+   * test is where the next session picks it up.
+   */
+  const RAIL_BUDGET_MEASURED_AT = '49cd2fbd (v0.0.721)';
+
+  /** Everything the middle row's vertical budget is made of, in one round trip. */
+  async function middleRowBudget(page: Page): Promise<{
+    readonly placement: string;
+    readonly sections: number;
+    readonly rowHeight: number;
+    readonly columnHeight: number;
+    readonly columnBottom: number;
+    readonly cornerTop: number;
+    readonly cornerHeight: number;
+    readonly cornerLeft: number;
+    readonly clearance: number;
+    readonly tallestTab: number;
+    readonly stripHeight: number;
+  }> {
+    return page.evaluate(() => {
+      const hud = document.querySelector<HTMLElement>('.hud')!;
+      // `.hud__tabs` is `align-self: stretch` in the rail, so its box IS the
+      // middle row. `.hud-tabs__inner` is `flex: 0 1 auto` inside it, so its
+      // box is the tab column and nothing else.
+      const row = document.querySelector<HTMLElement>('.hud__tabs')!.getBoundingClientRect();
+      const column = document.querySelector<HTMLElement>('.hud-tabs__inner')!.getBoundingClientRect();
+      const corner = document.querySelector<HTMLElement>('.hud__corner')!.getBoundingClientRect();
+      const strip = document.querySelector<HTMLElement>('.hud-strip')!.getBoundingClientRect();
+      const tabs = Array.from(document.querySelectorAll<HTMLElement>('.hud-tabs__inner > .ui-tab'));
+      return {
+        placement: hud.dataset['layoutNavigationPlacement'] ?? '',
+        sections: tabs.length,
+        rowHeight: row.height,
+        columnHeight: column.height,
+        columnBottom: column.bottom,
+        cornerTop: corner.top,
+        cornerHeight: corner.height,
+        cornerLeft: corner.left,
+        clearance: corner.top - column.bottom,
+        tallestTab: Math.max(...tabs.map((tab) => tab.getBoundingClientRect().height)),
+        stripHeight: strip.height,
+      };
+    });
+  }
+
+  test('records the middle row’s budget with six sections in the rail, at 1280x800 (#1292)', async ({ page }) => {
+    await open(page, { width: 1280, height: 800 });
+    const budget = await middleRowBudget(page);
+
+    expect(budget.placement, `the rail is not the placement ${RAIL_BUDGET_MEASURED_AT} measured`).toBe('rail');
+    expect(budget.sections, 'the navigation no longer carries the six sections #1292 left it').toBe(6);
+
+    // The four terms, each to a tenth of a pixel. A padding step, a type-ramp
+    // step, a seventh tab or a taller corner moves one of them.
+    expect(budget.rowHeight, 'the middle row is not the 719.31px the budget was recorded against').toBeCloseTo(
+      719.31,
+      1,
+    );
+    expect(budget.columnHeight, 'the six-tab column is not the 280.13px the budget was recorded against').toBeCloseTo(
+      280.13,
+      1,
+    );
+    expect(budget.cornerHeight, 'the bottom-left corner is not the 398px the budget was recorded against').toBeCloseTo(
+      398,
+      1,
+    );
+    expect(budget.cornerTop, 'the corner is not bottom-anchored at the 402px the budget was recorded against').toBeCloseTo(
+      402,
+      1,
+    );
+
+    // And the term the other four are here for.
+    expect(budget.clearance, 'the recorded clearance at 1280x800 has moved').toBeCloseTo(29.19, 1);
+    expect(budget.cornerLeft, 'the corner has left the edge it keeps above the 781px threshold').toBe(0);
+
+    expect(
+      budget.clearance,
+      'a seventh section now fits at 1280x800 — this is the decision the owner deferred on 2026-09-21, not a test to relax',
+    ).toBeLessThan(budget.tallestTab);
+  });
+
+  test('spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292)', async ({
+    page,
+  }) => {
+    await open(page, { width: 1280, height: 781 });
+    const budget = await middleRowBudget(page);
+
+    expect(budget.placement).toBe('rail');
+    expect(budget.sections).toBe(6);
+    // `@media (min-height: 781px)` still applies here, so the corner is still
+    // on the left edge and the column still has to clear it.
+    expect(budget.cornerLeft, 'the 781px query stopped applying at exactly 781px').toBe(0);
+
+    /*
+     * 280.13 of column + 398 of corner + 80.69 of strip + one `--space-3` of
+     * air is 770.82, and 781 - 770.82 is 10.18. The `hud.css` block beside
+     * that query states the same arithmetic in prose; this is the half of it
+     * a reader does not have to take on faith.
+     */
+    expect(budget.stripHeight, 'the dense strip is not the 80.69px the 781px arithmetic assumes').toBeCloseTo(80.69, 1);
+    expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(10.19, 1);
+
+    expect(
+      budget.clearance,
+      'a seventh section now fits at the 781px threshold — do not raise 781 to make this pass',
+    ).toBeLessThan(budget.tallestTab);
+  });
+
+  test('moves the corner out from under the column one pixel below that threshold (#1292)', async ({ page }) => {
+    await open(page, { width: 1280, height: 780 });
+    const budget = await middleRowBudget(page);
+
+    // Below the query the two no longer clear each other vertically at all --
+    // measured at 9.19px here and at -2.81px on the 1024x768 tablet -- so the
+    // corner steps right by the rail's width. "It does not fit" and "it is
+    // handled" are two facts, and this is the second.
+    expect(budget.cornerLeft, 'the corner did not step aside below the 781px threshold').toBeCloseTo(192, 1);
+    expect(budget.clearance, 'the clearance one pixel below the threshold has moved').toBeCloseTo(9.19, 1);
+  });
+
 });
