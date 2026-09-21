@@ -108,7 +108,7 @@
 --      structured field the id used to arrive in is now empty.
 --
 -- Asserted rather than argued:
--- supabase/tests/011_refusal_indistinguishability.test.sql compares the whole
+-- supabase/tests/013_refusal_indistinguishability.test.sql compares the whole
 -- client-visible answer -- SQLSTATE, message text and `DETAIL` together --
 -- between the foreign-row probe and the absent-row probe for
 -- `create_save_version()`, and between the foreign-id probe and the
