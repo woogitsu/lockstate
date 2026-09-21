@@ -687,6 +687,147 @@ by pressing a control and asserting the band's presence alone, for instance.
 The 48 and the 1 are solid; the nine is a bound with soft edges in both
 directions, and no claim here rests on it.
 
+### Settled 2026-09-21 (#1347, still on issue #1160): criteria 2 and 4 want opposite answers, and the reasoning first offered for criterion 2 was wrong
+
+The section above is left exactly as it stands. It recorded a state and said it
+was not resolving it; what follows resolves it, and where it corrects a figure
+it says what the figure said and what it is. Everything below is a reading of
+the code at `c259ff8c`.
+
+**The vocabulary figure above holds: 48, three times over.** Re-counted at that
+commit, `REFUSAL_REASONS` in `src/simulation/protocol/types.ts` has 48 members,
+the English catalogue carries 48 `hud.alert.refusal.*` keys, and the Polish one
+carries 48. The three suffix sets are identical member for member, checked by
+diffing the sorted lists rather than by eye. **A figure of 67 circulated while
+this was being settled and it is not a count of keys**: 67 is how many lines of
+`src/content/default-locale-en.ts` mention the prefix at all, and nineteen of
+them are comments discussing keys declared elsewhere in the same file.
+
+**Criterion 1 was met before this pass, and the pass added a gate beside it
+rather than a first one.** `tests/browser/ui-build-catalogue-price.spec.ts`
+requires the set of rendered catalogue row ids to equal the registry's keys and
+each row's text to quote its own simulation-computed figure.
+`tests/foundation/build-catalogue-price-contract.test.ts`, merged as #1347, adds
+a browserless gate that walks all 21 buildables and asserts the *whole* rendered
+sentence with `toBe` rather than a substring with `toContain` — its own docblock
+gives the reason, and the reason is that the per-segment clause is a claim about
+money that a substring match cannot defend.
+
+**Criterion 2 — a refusal visibly distinct from a success, carrying the reason
+the simulation gave — is met. The reasoning first offered for it was wrong in
+three ways, and the marking is the useful part.**
+
+What holds, and is the whole of why the criterion is met without per-reason
+work: `tests/unit/ui-simulation-alerts.test.ts` loops over every
+`REFUSAL_REASONS` member four separate times. Each reason yields a label key,
+no two reasons share one, every key resolves to real text in the bundled
+English catalogue, the band's key and the alerts row's key are equal for each
+reason, and neither carries the wire id across the boundary. Its own comment
+says why it is a loop rather than a sample — *"Asserted over every reason the
+protocol declares rather than a sample, because the two lookups could drift one
+entry at a time."*
+
+What does not hold is the claim that every refusal reaches the player through a
+single arbiter whose own comment records that the band has exactly one producer.
+
+- **That comment is about a different band.** It sits on the event band's paint
+  function in `src/ui/hud/hud.ts`, not on the refusal band's.
+- **The comment quotes it as a superseded reading, and says so in the next
+  sentence** — "Both halves are still true of the *producer* and neither is
+  any longer true of the *band*." Quoting it as live inverts what the code
+  says about it.
+- **The refusal band has two producers, and the module carries arbitration for
+  exactly that reason.** `src/ui/hud/hud.ts` keeps a `refusalSource` of
+  `'host' | 'simulation' | undefined`, a `takeRefusalLine(source)` that claims
+  the line, and a `clearRefusalLine` whose docblock reads *"Empties the line,
+  whichever producer was holding it."* `applySimulationRefusal` claims it as
+  `'simulation'`; `reportError` claims it as `'host'` and paints a
+  `hud.refusal.*` sentence instead. `src/ui/simulation-alerts.ts` states the
+  mechanism in one line: *"One refusal is decided on either side of
+  `sender.submit` and both land on the same `.hud__refusal` band"*.
+
+**The finding survives its reasoning, which is why it is corrected rather than
+withdrawn.** `applySimulationRefusal` is declared once and called once, and it
+is the sole producer of the simulation half of that band — so the 48-reason
+loops above are what make criterion 2 per-reason, and no per-reason browser work
+buys it. **Searching by the band's class rather than only by the function's
+name is what separated the two claims**, and it is the check to repeat: by
+identifier alone, the wrong sentence reads as confirmed.
+
+**The two namespaces are real, and both hold sixteen.**
+`src/simulation/refusals/refusal-log.ts` declares sixteen exported
+`*_REFUSAL_REASONS` maps, one per command domain, each keyed by that domain's
+own refusal type and valued in `RefusalReason`. The `hud.refusal.*` namespace is
+separate: sixteen keys in the English catalogue, sixteen in the Polish, none of
+them a `RefusalReason`. `src/ui/simulation-alerts.ts` says what separates them —
+*"the `hud.refusal.*` namespace belongs to a control on this thread, not to the
+wire"*. **One sentence beside them has rotted and is named here rather than
+repaired, because it is a code comment and not this plan's to edit:** a comment
+in `src/content/default-locale-en.ts` calls them *"the two keys in that older
+namespace"*, which was true of a namespace that now carries sixteen.
+
+**Driven coverage is three of the 48, not one and not two.** The section above
+recorded one; a draft of this section said two. Enumerated over the CI gate
+specs at `c259ff8c` by the band's `data-source` attribute rather than by reason
+id:
+
+- `place-object.outside-room` —
+  `tests/browser/ui-build-refusal-is-not-a-success.spec.ts`, a bed placed in a
+  prison with no zoned room anywhere.
+- `remove-wall.nothing-to-remove` — `tests/browser/app-shell.spec.ts`, a world
+  press in remove mode, at 1280x800 and again at 375x812 where the alerts list
+  does not exist.
+- `build.out-of-bounds` — the same file's #261 test, which fills the coordinate
+  form with a tile off the map and submits it. **This one is why counting by
+  reason id under-reads coverage: it never names a key.** It asserts the band's
+  shipped English sentence, *"that tile is outside the map"*, so no text search
+  for the key prefix over the gate specs can see it. The section above marked
+  its own nine as soft-edged in both directions and predicted this exact miss —
+  *"it would miss a spec that reaches a refusal without ever naming its id"*.
+
+All three require the band hidden before the command and `data-source` of
+`simulation` after, so none is a host refusal wearing the same band and none is
+a hand-built view model.
+
+**Three things read as driven and are not, which is worth recording beside the
+three that are.** `tests/browser/ui-shell.spec.ts` and
+`tests/browser/ui-alerts-column.spec.ts` name refusal keys and mount a
+`HudViewModel` they construct themselves.
+`tests/browser/ui-refusal-band-route-retire.spec.ts` is the near case: it drives
+real refusals out of a real `SimulationRuntime` inside the page —
+`build.out-of-bounds` and `unzone.nothing-to-remove` — and then hands them to
+the band through a harness probe rather than a press, so the decision is real
+and the route is not. And the playtest files are outside all of this in writing:
+`tests/browser/browser-suites.ts` says of their config *"It is not a gate: it
+collects `*.playtest.ts`, nothing in CI runs it"*.
+
+**Criterion 4's "a browser spec per refusal path" is the wrong instrument, and
+it is restated per _surface_ rather than per reason.** Forty-eight specs would
+re-prove through Chromium what the unit loops above prove for all 48. What a
+browser spec uniquely adds is that the **success artifact is absent** — and that
+varies by surface, not by reason: a queue row, a placed object, a pending order,
+a roster entry, a zoned room are five different absences, and which side of
+`sender.submit` refused decides which band sentence the player gets. So the unit
+of the criterion is one spec per (press, success artifact, producer) triple.
+
+**This restatement carries no count, deliberately.** A draft of it put *"at most
+~13"* owed and fifteen surfaces on that sentence; the agent that proposed those
+flagged them as its shakiest figures, neither was re-derived here, and an
+enumeration nobody has performed is not a number. What is established is the two
+bounds the answer sits inside: sixteen command domains declare a simulation
+refusal map, and the host namespace carries sixteen keys of its own.
+**Enumerating the triples is owed, and
+[#1160](https://github.com/woogitsu/lockstate/issues/1160) stays open for that
+rather than for the one-of-48 gap the section above records.**
+
+**Weakest claim here:** the three. It is an enumeration over the band's
+`data-source` and over the specs that touch the band's class at all, so a spec
+that drives a refusal out of the real simulation and asserts only the alerts
+row — never the band — falls outside what was searched, which is the same shape
+of blindness the nine above had from the other direction. The 48, the two
+sixteens, the two producers and the three bullets were each reached twice and by
+different means.
+
 ---
 
 ## Stage 5 — Operations: everything the prototype does not show
