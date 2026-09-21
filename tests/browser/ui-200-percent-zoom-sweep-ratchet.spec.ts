@@ -44,12 +44,29 @@ import { UI_SCALES, WINDOWS, fails, faults, sweep } from './page-zoom-sweep';
  *
  * ## The list, and what it is a reading of
  *
- * Thirteen, read off the sweep on this branch. It was **16** on `faf7ce3a`
+ * **Twelve**, read off the sweep on this branch. It was **13** before
+ * `observeChromeRowOverflow` (`src/main.ts`, #1164 follow-up) closed
+ * `375x812@125%` -- the one of the thirteen whose `.display-scale__cycle`
+ * centre landed on `.theme-control` for a reason local to the chrome row
+ * rather than the vertical budget the other twelve share, verified by
+ * dropping that control's icon and legend (both already `aria-hidden`) when a
+ * real measurement finds them not fitting, and confirmed against the whole
+ * sweep rather than the one combination alone. It was **16** on `faf7ce3a`
  * before the two repairs in `ui-hud-chrome-under-page-zoom.spec.ts`, **31**
- * before #1318, and **29** at `2559eb14`. Every entry fails on the vertical
- * budget at the larger interface scales: the strip, the tab bar and the rail
- * cannot all have the height they ask for in a viewport halved in both axes,
- * and which of them gives way is a decision this file does not make.
+ * before #1318, and **29** at `2559eb14`.
+ *
+ * **The twelve that remain are not one thing split from a different one.**
+ * The owner's ruling of 2026-09-21 read the thirteen as nine rail-budget
+ * collapses plus four chrome-row overflows, the second group closable on its
+ * own; measured against the full sweep, only `375x812@125%` was. The other
+ * three named with it (`1024x768@175%`, `390x844@150%`, `375x812@150%`)
+ * share `.display-scale__cycle`'s centre landing on a foreign element, but
+ * closing that reachability fault for them costs `.hud__aside` the height
+ * `overflow: hidden` no longer contains -- the same vertical budget the nine
+ * already share, reached by a different door. Every remaining entry fails on
+ * that budget at the larger interface scales: the strip, the tab bar and the
+ * rail cannot all have the height they ask for in a viewport halved in both
+ * axes, and which of them gives way is a decision this file does not make.
  *
  * ## The one condition on it
  *
@@ -75,7 +92,6 @@ const KNOWN_FAILING: readonly string[] = [
   '390x844@150%',
   '390x844@175%',
   '390x844@200%',
-  '375x812@125%',
   '375x812@150%',
   '375x812@175%',
   '375x812@200%',
