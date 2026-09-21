@@ -648,7 +648,12 @@ describe('the message-key namespaces are counted, and no call site names one tha
 describe('no two message keys differing only in separators carry different text', () => {
   const byNormalisedKey = new Map<string, Map<string, string[]>>();
 
-  for (const [key, text] of defaultLocaleEnCatalog) {
+  for (const [key, entry] of defaultLocaleEnCatalog) {
+    // A plural entry is compared on the form an unnumbered lookup would
+    // render, which is `resolveLocalizationKey`'s own answer and
+    // `Localizer.format`'s: two keys whose `other` forms disagree are the
+    // duplication this gate is for, whatever else they carry.
+    const text = typeof entry === 'string' ? entry : entry.other;
     const normalised = key.replace(/[.-]/g, '');
     const texts = byNormalisedKey.get(normalised) ?? new Map<string, string[]>();
     texts.set(text, [...(texts.get(text) ?? []), key]);

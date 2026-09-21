@@ -2671,12 +2671,33 @@ export const UNKNOWN_HUD_CLOCK: HudClockViewModel = {
  * The localization surface the HUD actually uses.
  *
  * A structural port rather than the concrete `Localizer` class: the HUD
- * needs two methods, and depending on only those keeps it drivable from a
+ * needs three methods, and depending on only those keeps it drivable from a
  * test stub. `Localizer` (src/services/localization/localizer.ts) satisfies
  * this as written.
+ *
+ * **`formatPlural` was added after `format` and `formatNumber`, and the
+ * reason is worth keeping beside it.** The port exposing only `format` was
+ * half of the two-part blocker on Polish plural forms -- a HUD key given
+ * `one`/`few`/`many` would have had forms nothing selected between, because
+ * `Localizer.format` reads a plural entry's `other` and stops. Three
+ * docblocks in this tree recorded that consequence before the port could
+ * answer it: `src/ui/save-panel-messages.ts` on `save.list.item`,
+ * `src/services/localization/pl-catalog.ts` on why the Polish catalogue
+ * authors no forms, and `tests/foundation/second-locale-contract.test.ts` on
+ * the counted messages it pins. The other half was the catalogue type, and
+ * `LocalizationPluralForms` in `src/content/localization.ts` is that half.
+ *
+ * **Adding it migrates nothing.** No HUD call site calls it yet, and a flat
+ * string is its own `other` form, so a key that grows forms later grows them
+ * in the catalogue rather than at the call site.
  */
 export interface HudLocalizer {
   format(key: LocalizationKey, parameters?: MessageParameters): string;
+  /**
+   * Plural-aware lookup: the form `Intl.PluralRules` picks for `count` on the
+   * locale the message actually *resolved* in, never `count === 1`.
+   */
+  formatPlural(key: LocalizationKey, count: number, parameters?: MessageParameters): string;
   formatNumber(value: number, options?: Intl.NumberFormatOptions): string;
 }
 
