@@ -155,6 +155,47 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
  * who is holding the line.
  */
 
+/**
+ * The mirror of `COVERAGE_FLOOR`, added by #1309: how many reference keys a
+ * locale may go without, as a **ceiling** rather than a floor.
+ *
+ * `COVERAGE_FLOOR` cannot see the defect #1309 found. It floors
+ * `audit.translatedKeyCount`, which only counts a candidate key that exists
+ * in the reference -- so when the *reference* gains a key with no candidate
+ * counterpart, `translatedKeyCount` does not move and the floor stays green.
+ * That is exactly what happened twice: `6f8bb006` (#1167) added
+ * `hud.regime.edit` and `hud.regime.edit-last-category` to
+ * `default-locale-en.ts` alone, and `11a684f7` (#1302) added
+ * `hud.status.earned-withheld` alone before it. Both shipped English-only and
+ * neither made this file's floor test fail, because neither lowered `pl`'s
+ * own count.
+ *
+ * `audit.untranslatedKeys` is `referenceKeys.filter(key => candidate lacks
+ * it)` -- it already carries exactly the keys a gap-catcher needs, computed
+ * by the same audit the floor already trusts. A ceiling on its length is not
+ * completeness: `pl` may sit at a nonzero ceiling forever, exactly as
+ * `COVERAGE_FLOOR` lets it sit short of the reference forever. What it adds
+ * is that the gap cannot **grow without somebody raising this number by
+ * hand**, the same discipline `COVERAGE_FLOOR` already applies to shrinking.
+ * A key authored in `en` and `pl` together in the same commit (the pattern
+ * #1308's PR body asks for) never touches this row: the ceiling only moves
+ * when a key ships in one catalogue and not the other, which is precisely
+ * the class #664 could not gate and #1309 asks about.
+ *
+ * Measured on this tree, after #1309's translations: `0` for both locales,
+ * because `pl` now matches the reference key-for-key and the pseudo-locale
+ * is always derived from it. The next English key shipped alone raises this
+ * to `1`, deliberately, by whoever ships it without its Polish counterpart --
+ * exactly the same hand-ratchet discipline `COVERAGE_FLOOR`'s own history
+ * above already applies in the other direction. A PR that raises this number
+ * without a word in its own description saying why is a PR this row is
+ * supposed to make impossible to miss in review, not impossible to write.
+ */
+const MISSING_CEILING: Readonly<Record<string, number>> = {
+  [PSEUDO_LOCALE]: 0,
+  pl: 0,
+};
+
 describe('every non-default catalogue is well-formed, without being required to be complete (#664)', () => {
   it('audits each registered catalogue clean', () => {
     const problems: string[] = [];
@@ -202,6 +243,38 @@ describe('every non-default catalogue is well-formed, without being required to 
         `${locale} translates fewer keys than when its floor was set -- raise it deliberately, never lower it`,
       ).toBeGreaterThanOrEqual(COVERAGE_FLOOR[locale]!);
     }
+  });
+
+  it('keeps the missing-key ceiling and the registry in agreement, in both directions (#1309)', () => {
+    // The same agreement `COVERAGE_FLOOR` proves above, for the row #1309
+    // added: a locale with no ceiling row would never be checked for new
+    // English-only keys, and a row for a locale nobody builds is a ceiling
+    // over nothing.
+    expect(Object.keys(MISSING_CEILING).sort()).toEqual(Object.keys(NON_DEFAULT_CATALOGS).sort());
+  });
+
+  it('has gained no English-only key in any locale (#1309)', () => {
+    for (const [locale, build] of Object.entries(NON_DEFAULT_CATALOGS)) {
+      const audit = auditLocaleCatalog(build(), defaultMessageCatalogEn);
+      expect(
+        audit.untranslatedKeys.length,
+        `${locale} is missing more reference keys than when its ceiling was set (now missing: ${audit.untranslatedKeys.join(', ')}) -- ` +
+          'either translate the new key in the same change, or raise MISSING_CEILING deliberately and say why in the commit',
+      ).toBeLessThanOrEqual(MISSING_CEILING[locale]!);
+    }
+  });
+
+  it('fires when a locale falls behind a new reference key, so the ceiling is not vacuous (#1309)', () => {
+    // The control for the row above, on the same real `pl` catalogue rather
+    // than a fixture: a reference with one key `pl` cannot have must push
+    // `untranslatedKeys` past a ceiling of 0.
+    const reference = buildMessageCatalog(DEFAULT_LOCALE, {
+      ...defaultMessageCatalogEn.messages,
+      'zz-1309-mutation-control.never-translated': 'A reference-only key nothing has translated',
+    });
+    const audit = auditLocaleCatalog(messageCatalogPl, reference);
+    expect(audit.untranslatedKeys).toContain('zz-1309-mutation-control.never-translated');
+    expect(audit.untranslatedKeys.length).toBeGreaterThan(MISSING_CEILING.pl!);
   });
 });
 
