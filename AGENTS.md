@@ -1082,6 +1082,50 @@ is the cost of putting a condition to someone without first checking what it
 evaluates to, and it is recorded so the next session pays the check instead.
 
 
+**A RULING ON 2026-09-21 — HOW THE SECURITY SECTION NAMES THE PLACE AN
+INCIDENT IS IN. IT IS NOT A RESERVATION RELEASE, AND IT IS RECORDED HERE
+BECAUSE ITS PROVENANCE IS THE WEAKER KIND.** The Security section merged in
+#1292 rendered an incident row as *"Assault in security-sector.prison"* /
+*"Napaść w sektorze security-sector.prison"*. The sentence is **true**, so
+reservation 4 was never engaged: it was the only place in the HUD a player saw
+an internal id, and it read as debug output rather than as a false promise.
+
+Offered four options, the owner chose:
+
+> Nazwać stopniem, jak blok wyżej (zalecane)
+
+("Name it by its grade, like the block above.") **The provenance is the weaker
+kind, as every ruling in this document since 2026-09-08 records of itself**:
+the label of a clickable option the integrating session wrote and the owner
+picked, not a sentence they typed.
+
+**What it authorises, exactly.** Extending the `hud/incidents` projection's
+row with the sector's grade name key — a projection change, ours — and
+rendering that grade word where the id is today, **falling back to the id**,
+which is character for character what the sectors block one element up already
+does. **It does not authorise a new player-visible string**, and none was
+needed: `hud.security-section.incident-row` is `'{type} in {sector}'` and
+`'{type} w sektorze {sector}'`, both unchanged, and `{sector}` is a parameter
+whose argument is what moved.
+
+**What the owner gave up, and they were told before choosing.** A grade is
+**not a place**. *"Assault in General"* names the grade, and two sectors of the
+same grade are indistinguishable on screen. `docs/HUD_PROJECTIONS.md` gaps 16
+and 23 are why nothing better exists — no projection publishes what is in a
+sector — and ADR 0036's sector is derived rather than drawn, so nobody ever
+authored a word for it. `DEFAULT_SECURITY_SECTOR_ID` is an id chosen for save
+stability, which is the whole reason it was on screen.
+
+**The cheap check this ruling's implementation did pay, named because the
+entries above it exist to say when one was skipped.** The brief it was given
+asserted that `security-panel.ts` already preferred `sector.gradeLabelKey`
+over the id and that `IncidentRow` carried `sectorId` alone. Both were opened
+and both held — but the same brief's commit and the shared checkout were at
+different revisions, and the file the grep first ran against did not contain
+the panel at all. Read a premise against the tree the work will ship from, not
+against whichever checkout is nearest.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
