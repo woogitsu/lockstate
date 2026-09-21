@@ -383,6 +383,50 @@ canvas {
 }
 
 /*
+ * The narrow-row escape hatch (#1164 follow-up). `src/main.ts`'s
+ * `observeChromeRowOverflow` sets this attribute from a real measurement --
+ * whether `.display-scale__cycle` or `.theme-control__cycle`'s own centre
+ * pixel resolves to something other than itself -- and its own docblock
+ * carries why this is a measurement and not a formula.
+ *
+ * **A second row was the first shape this took, and it is not this one.**
+ * Stacking the two controls costs the row the height side-by-side was chosen
+ * to avoid spending at all (#1157's own reasoning, in the docblock above
+ * `.hud-chrome-prefs`), and where the row was already this tight that height
+ * has nowhere free to come from: verified against the whole sweep, a column
+ * traded the button's own overflow for `.hud__aside` spilling out of the
+ * rail's `overflow: hidden` instead -- a different fault on the same
+ * combination, not a smaller failing set. The ratchet caught it and this
+ * shape replaced it before either landed.
+ *
+ * Hiding the icon and the legend instead costs no height, because both are
+ * already `aria-hidden` (`src/ui/display-scale.ts`, `src/ui/theme.ts`): the
+ * group's own `aria-label` already carries the same words, so a screen
+ * reader loses nothing that was ever exposed to it. What a sighted player
+ * loses is the glyph and the words beside the reading -- the button's own
+ * percentage or word stays on screen and stays pressable, at its full
+ * `min-width: var(--tap-target)` -- and only where the row would otherwise
+ * paint one control over the other or over whatever sits behind it, which a
+ * player can use even less than a control missing its icon.
+ */
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale > .ui-icon,
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control > .ui-icon,
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale__legend,
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control__legend {
+  display: none;
+}
+
+/* With the legend gone, nothing else in the half claims the flexible share
+   `.display-scale__legend`/`.theme-control__legend` carried -- `justify-content:
+   center` puts the remaining button in the middle of its half rather than
+   pinned to its leading edge, which is where an empty flex-1 gap would
+   otherwise leave it. */
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale,
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control {
+  justify-content: center;
+}
+
+/*
  * No readout in this row may overflow its own control, at any width.
  *
  * The buttons are `flex: none` in their standalone form, which is right when a

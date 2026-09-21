@@ -189,11 +189,12 @@ stream states, and `restoreState` overwrites all four.
 > - *"`src/main.ts:2100` constructs `SessionController` with no `masterSeed` at
 >   all"*. It passes a generator: `new SessionController(repository, host, {`
 >   with `generateMasterSeed` among its options
->   (`src/main.ts:4220-4223`; the anchor read `:3943-3946`, re-aimed on
->   2026-09-19 by `grep -n 'new SessionController(repository, host, {'` after
->   #1292 grew this file), that function drawn from
->   `crypto.getRandomValues(drawn);` at `src/main.ts:4142` (the anchor read
->   `:3863`). This is the same change §4's
+>   (`src/main.ts:4381-4384`; the anchor read `:4220-4223`, re-aimed on
+>   2026-09-21 by `grep -n 'new SessionController(repository, host, {'` after
+>   a chrome-row overflow fix added an unrelated function above it), that
+>   function drawn from
+>   `crypto.getRandomValues(drawn);` at `src/main.ts:4303` (the anchor read
+>   `:4142`). This is the same change §4's
 >   2026-08-28 amendment records, and this paragraph was not amended with it.
 > - *"It is currently **inert**"*. It is not, and the three sentences above are
 >   why.
