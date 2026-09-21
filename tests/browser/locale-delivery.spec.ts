@@ -208,9 +208,19 @@ test.describe('the Polish section names on a phone', () => {
       }),
     );
 
-    // Not vacuous: five sections, each with a label that was actually laid out,
-    // and every one of them Polish rather than an English fallback.
-    expect(labels.map((label) => label.text)).toEqual(['Przegląd', 'Buduj', 'Strefy', 'Zarządzaj', 'Plan dnia']);
+    // Not vacuous: six sections, each with a label that was actually laid out,
+    // and every one of them Polish rather than an English fallback. Six since
+    // the owner's ruling of 2026-09-19 -- `Ochrona` is the sixth, and it is
+    // the reason this list is asserted rather than counted: a section whose
+    // name fell back to `Security` would pass a length check.
+    expect(labels.map((label) => label.text)).toEqual([
+      'Przegląd',
+      'Buduj',
+      'Strefy',
+      'Zarządzaj',
+      'Plan dnia',
+      'Ochrona',
+    ]);
 
     const collisions = labels.slice(0, -1).flatMap((label, index) => {
       const next = labels[index + 1]!;
@@ -254,9 +264,16 @@ test.describe('the Polish section names on a phone', () => {
       })),
     );
 
-    // Not vacuous, and Polish rather than an English fallback: the same five
+    // Not vacuous, and Polish rather than an English fallback: the same six
     // names the test above reads, laid out.
-    expect(labels.map((label) => label.text)).toEqual(['Przegląd', 'Buduj', 'Strefy', 'Zarządzaj', 'Plan dnia']);
+    expect(labels.map((label) => label.text)).toEqual([
+      'Przegląd',
+      'Buduj',
+      'Strefy',
+      'Zarządzaj',
+      'Plan dnia',
+      'Ochrona',
+    ]);
     const shortest = Math.min(...labels.map((label) => label.height));
     expect(shortest, 'no tab label was laid out at all').toBeGreaterThan(0);
     expect(
@@ -274,7 +291,7 @@ test.describe('the Polish section names on a phone', () => {
    * This one exists for the same reason the two tests above it do: the default
    * catalogue is not where a localisation defect shows. A tab whose accessible
    * name fell back to English, or to nothing, would leave a Polish player with
-   * five unnamed glyphs and no other navigation surface on the device.
+   * six unnamed glyphs and no other navigation surface on the device.
    */
   test('every tab is announced by its Polish name at 375x812', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
@@ -288,6 +305,7 @@ test.describe('the Polish section names on a phone', () => {
       ['zones', 'Strefy'],
       ['manage', 'Zarządzaj'],
       ['day-plan', 'Plan dnia'],
+      ['security', 'Ochrona'],
     ] as const;
     for (const [id, name] of sections) {
       const tab = page.locator(`.hud__tabs .ui-tab[data-tab="${id}"]`);
@@ -303,6 +321,6 @@ test.describe('the Polish section names on a phone', () => {
         (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
       ),
     );
-    expect(drawn, 'the Polish section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
+    expect(drawn, 'the Polish section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1, 1]);
   });
 });

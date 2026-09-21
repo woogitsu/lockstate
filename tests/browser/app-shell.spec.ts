@@ -6821,6 +6821,24 @@ test.describe('the assembled application', () => {
          * scan steps in 16px, so the number is pinned exactly rather than
          * bounded -- a second gain would show up here rather than being
          * absorbed by a looser ceiling.
+         *
+         * **THE SIXTH SECTION MOVED THIS TO 32 AND THEN BACK TO 64, AND THE
+         * ROUND TRIP IS KEPT BECAUSE IT IS WHAT THE NUMBER IS FOR.** The bar
+         * at this viewport is icon-only under the owner's #1192 ruling and
+         * gains no height from a sixth tab, but it gains **width**: at the
+         * `min-width: calc(56px * var(--ui-scale))` that icon-only rule was
+         * given for five tabs, `.hud__tabs` ran `x = 7..369` in a 375px
+         * viewport where five tabs ran `x = 35..341`, and the bare sliver
+         * beside it went from about 27px a side to about 6. Measured, this
+         * assertion read **32**. That same overflow was a *failure* one
+         * viewport class over -- `1440x900@200%` wrapped the bar to two rows
+         * and put `.display-scale__cycle` under a `.ui-tab`, which
+         * `ui-200-percent-zoom-sweep-ratchet.spec.ts` refuses -- so the
+         * icon-only `min-width` was re-derived to 48px, and with it the
+         * sliver comes back and this reads **64** again. The pinned number is
+         * therefore unchanged, and the reason it is pinned exactly rather
+         * than bounded is exactly this: a 32 here was the visible end of a
+         * defect that failed elsewhere.
          */
         expect(
           arrival.largestBareSquare,

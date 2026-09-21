@@ -422,10 +422,14 @@ command, or only on another refusal — and if neither, on what?**
 
 Read at `e044a3e8`, not inferred:
 
-- `applySimulationRefusal` (`src/ui/hud/hud.ts:1678-1693`) clears the band on
+- `applySimulationRefusal` (`const applySimulationRefusal = (notice:`,
+  `src/ui/hud/hud.ts:1798-1813`; the anchor read `:1678-1693` and was re-aimed
+  on 2026-09-19 after #1292 added the Security section above it, by `grep -n`
+  rather than by arithmetic) clears the band on
   exactly one condition — `notice === undefined`, i.e. the worker stopped
   publishing a refusal — and otherwise only *replaces* it with a newer one.
-- `clearRefusal` (`:1639-1642`) returns immediately unless
+- `clearRefusal` (`const clearRefusal = (actionId: string)`, `:1723-1726`; the
+  anchor read `:1639-1642`) returns immediately unless
   `refusalSource === 'host'`, so no success of any kind touches a simulation
   refusal from the HUD side.
 - The only thing that can make `notice` go `undefined` is

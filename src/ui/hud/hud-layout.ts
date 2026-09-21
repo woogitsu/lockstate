@@ -135,7 +135,33 @@ export const DEFAULT_INSPECTOR_WIDTH_PX = 264;
  * floors: "the sums cannot be derived ... so something has to check them").
  * `tests/browser/hud-layout-shell.spec.ts` is what checks it.
  */
-export const NAVIGATION_TAB_HEIGHT_PX = 54;
+export const NAVIGATION_TAB_HEIGHT_PX = 47;
+
+/*
+ * **54 UNTIL 2026-09-19, AND THE PARAGRAPH ABOVE IS THE MEASUREMENT THAT
+ * NUMBER CAME FROM RATHER THAN A STALE SENTENCE** (`docs/AGENT_WORKFLOW.md`
+ * §4). It is kept because it still says *how* to re-measure this, which is the
+ * part that does not rot.
+ *
+ * What moved is the stylesheet, not the method. The navigation gained a sixth
+ * section (ruled 2026-09-19), six tabs at the bar's block padding are 328.13px
+ * of column at 1280x800, and the bottom-left corner is bottom-anchored in the
+ * same row with no height to give -- `hud.css`'s corner block carries that
+ * measurement and the two repairs tried and reverted before this one. So a
+ * rail tab draws one step less block padding than a bar tab
+ * (`padding-block: var(--space-1)`), and is **47.19px** on the assembled page
+ * at 1280x800 where it was 55.19. Rounded down rather than up, as 54 was: the
+ * fit test must not think a tab is smaller than it is.
+ *
+ * **What this number moving can do is flip a viewport from `bar` to `rail`,
+ * and that was checked rather than assumed.** It flips only where the room the
+ * strip leaves lands between `6*47+24` and `6*54+24`, scaled -- at 100 % a
+ * window 411-452px tall and wider than 720px. **721x420 still answers `bar`**,
+ * which matters because `tests/browser/locale-delivery.spec.ts` and
+ * `tests/browser/ui-shell.spec.ts` calibrate their Polish overlap and wrap
+ * gates at exactly that viewport, for exactly the reason that the tabs do not
+ * fit a rail there. Both were re-run.
+ */
 
 /** The rail's own vertical padding at 100 %, one `--space-3` at each end. */
 export const NAVIGATION_RAIL_PADDING_PX = 24;
@@ -197,13 +223,49 @@ export type NavigationPlacement = 'rail' | 'bar';
  */
 export function navigationPlacement(viewport: LayoutViewport, reservedHeight: number): NavigationPlacement {
   if (isPhoneLayout(viewport)) return 'bar';
-  const scale = Number.isFinite(viewport.uiScale) && viewport.uiScale > 0 ? viewport.uiScale : 1;
   const available = viewport.height - reservedHeight - NAVIGATION_RAIL_SLACK_PX;
+  return available >= navigationRailBlock(viewport) ? 'rail' : 'bar';
+}
+
+/**
+ * How tall the rail's tab column is: every section's button plus the column's
+ * own padding, at the interface scale in force.
+ *
+ * **Extracted from `navigationPlacement` on 2026-09-19 because a second caller
+ * appeared, and the second caller is the reason it is exported at all.** The
+ * fit test above asks whether the column fits *the rail*; it has never asked
+ * whether the column fits the rail **beside the bottom-left corner**, which
+ * shares the middle row with it and is bottom-anchored. With five sections the
+ * two cleared each other at every viewport where the corner does not step
+ * aside, and `hud.css`'s corner-shift block carries that arithmetic in as many
+ * words. A sixth section ends it: measured on the assembled page at 1280x800,
+ * the column runs `y = 92.69..420.81` and `.hud-zoom__in` sits at `415..459`,
+ * so a press meant for the zoom control landed on a `.ui-tab`.
+ *
+ * **THE PARAGRAPH ABOVE DESCRIBED A REPAIR THAT WAS REVERTED, AND THE SENTENCE
+ * THAT SAID SO IS KEPT BELOW RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md`
+ * §4). It read: *"`layout-shell.ts` publishes this as
+ * `--hud-navigation-block`, and `hud.css` caps the corner with it inside the
+ * one media query where the corner does not move -- so the corner yields its
+ * slack (its alerts list is already a scroll container) instead of being
+ * covered."* The cap cost the alerts list 27px it did not have -- a 28px list
+ * box holding a 76px row, which `ui-alerts-column.spec.ts`'s #739 assertion
+ * reports in those words -- so it was reverted, and with it the custom
+ * property, its `@property` block and the publication that fed it. `hud.css`'s
+ * corner block carries that finding in full.
+ *
+ * **What actually pays for the sixth section is a rail tab's own block
+ * padding**, one step down from the bar's, which is why
+ * `NAVIGATION_TAB_HEIGHT_PX` above is 47 rather than 54. Nothing in CSS reads
+ * this function's result; the one caller is `navigationPlacement` directly
+ * above, which is the caller it was extracted from.
+ */
+export function navigationRailBlock(viewport: LayoutViewport): number {
+  const scale = Number.isFinite(viewport.uiScale) && viewport.uiScale > 0 ? viewport.uiScale : 1;
   // `HUD_TAB_IDS.length` rather than five: a tally in a comment is the sentence
   // shape `docs/AGENT_WORKFLOW.md` §4 says rots first, and this one would rot
   // silently into a rail that clips the tab somebody just added.
-  const needed = (HUD_TAB_IDS.length * NAVIGATION_TAB_HEIGHT_PX + NAVIGATION_RAIL_PADDING_PX) * scale;
-  return available >= needed ? 'rail' : 'bar';
+  return (HUD_TAB_IDS.length * NAVIGATION_TAB_HEIGHT_PX + NAVIGATION_RAIL_PADDING_PX) * scale;
 }
 
 /**

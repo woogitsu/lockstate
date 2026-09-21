@@ -474,6 +474,53 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       "Type-only: `PrisonerRosterPage` and `PrisonerRosterRowViewModel` from `src/simulation/presentation/prisoner-projection` (issue #506 added the first, alongside `everAdmitted`, to say what `ViewModelPage` alone could not: that a prisoner has been admitted this session even though the live count has fallen back to zero). The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, so it is `simulation-staff-coverage.ts`'s entry above one projection over: it names the view-model shape `hud/prisoner-roster` answers with and turns each row into a `HudPrisonerRowViewModel`. The `ActionPhase` union it tests against is read off that same view-model type rather than from `src/simulation/prisoners/components.ts`, deliberately, so this module's simulation dependency stays on the presentation layer instead of reaching into the prisoner runtime -- the rule `simulation-intake.ts` states for `IntakeStage`. Erased, so no simulation code runs on its account; the projection executes in the worker, and it has to, because which action a prisoner is on is `ActionSystem`'s selection over a regime schedule and a utility score, and the liveness walk behind the roster is over an `EntityStore` this thread does not hold. A `value` import here would mean the main thread had started deciding *what a prisoner is doing*, which is the second source of truth `AGENTS.md` boundary 1 forbids in its purest form.",
   },
+  /*
+   * The Security section's three readers (2026-09-17). Six entries, and the
+   * one to read is `simulation-incidents.ts`'s `value` simulation import, which
+   * is the first in this manifest.
+   */
+  {
+    file: 'src/ui/simulation-security.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label a sector's control state. The reason is the one every `value` content entry above gives: the alternative is a hand-written table of three `sector-control-state.*.name` strings, which is the drift that module's derivation rule exists to prevent. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state. The grade's word is *not* derived -- a security grade is content with its own `nameKey`, and the projection carries it -- so this module derives exactly one namespace.",
+  },
+  {
+    file: 'src/ui/simulation-security.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `SecurityViewModel` from `src/simulation/presentation/security-projection`. The fourteenth of the translators outside `src/ui/hud/` and the tenth that reads a *pulled* read model: it names the view-model shape `hud/security` answers with and narrows it to `HudSecurityViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and it has to, because a sector's `required` is `DeploymentSystem.requiredGuardCountFor`'s answer over occupancy and an authored schedule (ADR 0048 decision 3) and its `controlState` is the sector registry's, neither of which this thread holds. A `value` import here would mean the main thread had started deciding whether a sector is under lockdown, which is a rule the door system enforces against a state this thread cannot see.",
+  },
+  {
+    file: 'src/ui/simulation-incidents.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label an incident's type and its state -- two namespaces, both declared against `src/simulation/incidents/incident.ts`. The reason is every other `value` content entry's: the alternative is a hand-written table of four `incident-type.*.name` and five `incident-state.*.name` strings, which is the drift that rule exists to prevent.",
+  },
+  {
+    file: 'src/ui/simulation-incidents.ts',
+    tree: 'simulation',
+    kind: 'value',
+    reason:
+      "**Value, and it is the FIRST `value` simulation dependency in this manifest, so it is the entry to argue with.** What it imports is two numeric constants -- `INCIDENT_SEVERITY_MAX` and `INCIDENT_PROPERTY_DAMAGE_MAX` from `src/simulation/presentation/incident-projection` -- alongside the erased `IncidentsViewModel`, `IncidentDetailViewModel` and `IncidentRowViewModel` this module is really about. It runs no simulation code: two `export const` numbers have no behaviour, and the projection itself still executes in the worker. What it buys is a player-visible sentence that is true by construction: the panel renders *\"Severity 8 of 10\"*, `incident.ts` documents both as published `0-10` scales, and the only alternatives were to write `10` into `src/ui/hud/` -- a second declaration of a simulation scale, which is what this manifest exists to catch -- or to print a rank with no scale beside it, which is a number a player cannot read. `BoundedValue` cannot supply it: it carries `permille`, `filled` and `segments` and not the maximum, so the ceiling is genuinely not on the wire. The test of whether this entry is being abused is narrow and checkable: it may name constants, and the day it names a function or a class this reason stops covering it.",
+  },
+  {
+    file: 'src/ui/simulation-contraband.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label a search's scope and its order state. `'search-order-state'` rather than the search system's own job-state union, and the difference is why that namespace exists at all: an order accepted and not yet assigned a guard has no job record, so `'queued'` is a state the row must be able to say and no `SearchJobState` covers it. A contraband category's word is *not* derived -- it is content with its own `nameKey`, which the projection carries -- so this module derives exactly two namespaces.",
+  },
+  {
+    file: 'src/ui/simulation-contraband.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `ContrabandViewModel` from `src/simulation/presentation/contraband-projection`. The sixteenth of the translators outside `src/ui/hud/` and the twelfth that reads a *pulled* read model. Erased, so no simulation code runs on its account -- and this is the projection where that matters most in this manifest, because `ContrabandRegistry` is ground truth about where concealed items actually are and `contraband-projection.ts`'s own header is explicit that it must never reach a panel. A `value` import here would put the module that decides what a player may know about contraband on the thread that renders it.",
+  },
   {
     file: 'src/ui/simulation-regime.ts',
     tree: 'content',
@@ -648,9 +695,11 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-conditions.ts',
+      'src/ui/simulation-contraband.ts',
       'src/ui/simulation-counts.ts',
       'src/ui/simulation-events.ts',
       'src/ui/simulation-held-guards.ts',
+      'src/ui/simulation-incidents.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
       'src/ui/simulation-prisoner-detail.ts',
@@ -658,6 +707,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-security.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-staff-roster.ts',
       'src/ui/simulation-zoning.ts',
