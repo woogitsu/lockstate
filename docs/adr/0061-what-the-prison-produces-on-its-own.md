@@ -23,7 +23,7 @@ Verified on `3bfb799` before anything was written:
 1. **`'assault'` and `'escape-attempt'` were declared, projected and never
    created.** `IncidentType` names all four
    (`src/simulation/incidents/incident.ts:6`), `INCIDENT_TYPES` in
-   `src/simulation/presentation/incident-projection.ts:134` counts all four,
+   `src/simulation/presentation/incident-projection.ts:184` counts all four,
    `simulation-message-keys.ts` labels all four, and
    `DISCIPLINARY_POINTS_BY_INCIDENT_TYPE`
    (`src/simulation/prisoners/disciplinary-record.ts:46-51`) prices all four —

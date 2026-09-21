@@ -2434,6 +2434,16 @@ export interface HudIncidentRowViewModel {
   readonly stateLabelKey: LocalizationKey;
   /** Where it is. A sector id and not a place: nothing on this thread turns one into a description. */
   readonly sectorId: string;
+  /**
+   * The grade's word for that sector, from the content catalog's own
+   * `nameKey` -- absent when the projection could not resolve one, exactly as
+   * `HudSecuritySectorRowViewModel.gradeLabelKey` is.
+   *
+   * **It names a grade, not a place**, and the owner chose it on 2026-09-21
+   * knowing that: two sectors of the same grade read identically. It replaces
+   * an internal id on screen, which was the only one in the HUD.
+   */
+  readonly sectorGradeLabelKey?: LocalizationKey;
   /** `0`-`10`, a published scale (`incident.ts`), so the rank itself is meaningful to render. */
   readonly severity: number;
   /**

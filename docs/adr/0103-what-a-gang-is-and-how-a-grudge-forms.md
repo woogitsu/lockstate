@@ -905,7 +905,7 @@ player would look one up does not exist: `hud/incidents` and
 > is not built. So *"a player is told that a fight happened and is never told
 > who was in it"* holds, for a different reason than the one written above it.
 `participantEntityIds` is projected
-(`src/simulation/presentation/incident-projection.ts:112`, written at `:263`)
+(`src/simulation/presentation/incident-projection.ts:161`, written at `:341`)
 and has no reader anywhere in `src/`. **So a player is told that a fight
 happened and is never told who was in it.**
 
