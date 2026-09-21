@@ -181,12 +181,37 @@ outward-facing or unrevertable, which is the whole reason:
    exactly as a rename or an added constraint would, and an inventory read
    only from `pg_constraint` cannot see it.
 
-   **No constraint in this schema has ever been renamed** — checked across
-   every file in `supabase/migrations/` for `rename constraint` and a bare
-   `rename` — and that absence is what makes detection rather than prevention
-   a reasonable trade today. It is not a fact about the schema's future: the
-   day a constraint on `prisons` is renamed for its own reason, this trade is
-   spent and the question above is open again.
+   **No constraint on `prisons` has ever been renamed**, checked against both
+   routes a rename can take: an explicit `rename constraint`, and a
+   drop-and-recreate under a new name. `prisons_pkey` and
+   `prisons_owner_slot_unique` were both established once, at
+   `20260822190100_create_prisons.sql`, and neither has moved since.
+
+   **That sentence was first written wider than the evidence, and is
+   corrected here rather than rewritten, on this file's own habit of showing
+   rot instead of hiding it.** It first read "no constraint in this schema has
+   ever been renamed" — repo-wide, unqualified, checked with a `grep -i
+   rename` across `supabase/migrations/`. That is false at that width:
+   `supabase/migrations/20260824100000_bind_challenge_evidence_to_payload.sql:266`
+   and
+   `supabase/migrations/20260824100000_bind_challenge_evidence_to_payload.sql:268`
+   drop `challenge_submissions_unique_evidence` and
+   `challenge_submissions_unique_evidence_digest` together, in the same
+   migration, over the same columns plus one — a semantic rename by
+   drop-and-recreate, with no `rename` keyword anywhere in it, so a `grep`
+   for `rename` cannot see it. The finding is not that renames do not happen
+   in this schema; one already has, on a neighbouring table, by exactly the
+   route that grep is blind to. What holds, checked against both routes, is
+   only the narrower claim above: `prisons` specifically has had neither.
+
+   **That narrower fact is what makes detection rather than prevention a
+   reasonable trade today, not "this cannot happen."** It stops being one the
+   day a future migration drops and re-adds `prisons_pkey` or
+   `prisons_owner_slot_unique` under a new name, for any reason of its own,
+   unrelated to this hardening question — the pgTAP assertion below still
+   catches that before merge, as a name it no longer recognises, but the
+   "hasn't happened yet" half of today's trade is gone and the option this
+   reservation declined is worth asking again.
 
    **What is in place instead is detection, not prevention.**
    `supabase/tests/010_constraint_inventory.test.sql` gained a second pgTAP
