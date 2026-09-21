@@ -792,76 +792,103 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `c259ff8c` (**v0.0.730**) by the delta method,
+Re-anchored at `main` @ `03e47695` (**v0.0.740**) by the delta method,
+from `c259ff8c`. This is #1358's merge commit and the last merge on `main`;
+`package.json` ships **0.0.740** at it, and two release commits sit above it —
+`4a4825b8` (`chore(release): v0.0.741`) and `233fd234` (`chore(release):
+v0.0.742`) — so `package.json` ships **0.0.742** at the tip and the release
+assertion reads 742 − 740 = **two**. It is the merge rather than a release
+commit for the reason every anchor in this chain gives: a `chore(release)`
+commit starts no CI run and a reader who followed one out would have nothing to
+verify against.
+
+**THE GATE WAS GREEN AT EIGHT OF TEN AND THIS PASS WAS TAKEN ANYWAY — the
+second consecutive anchor on this chain moved with nothing red to unblock.**
+`adr-status-queue-anchor-contract` was passing on the tree this pass opened on:
+**8 of 10** on merges and **26 of 100** on commits, counted from `c259ff8c` to
+`03e47695`. `tooling/anchor-budget-spend.mjs` printed *"8 of 10 merges since
+`c259ff8c` … 2 merges remain before it is exceeded"*, which is a `::warning::`
+rather than a `::notice::` — the script escalates inside the last three merges
+of the budget — but a warning about what is *about* to be red is not a red.
+**Neither budget is raised and neither is argued with**:
+`ANCHOR_STALENESS_BUDGET_MERGES` stays at 10 and
+`ANCHOR_STALENESS_BUDGET_COMMITS` stays at 100, and nothing here asks for
+either to move in either direction. The green reading is not inferred from the
+budget arithmetic alone: `main`'s own `verify` job ran the whole of
+`tests/foundation` on `c5ad58e0` — run 35657418586, step *"Verify project"*,
+`success` — with this file still anchored at `c259ff8c`. This window carries
+**20 changed paths — 4 under `src/`, 7 under `tests/`, 8 under `docs/` and
+`AGENTS.md`** — against the previous window's 11, and **four production-code
+paths against that window's two**.
+
+**TWELVE RELEASE NUMBERS STAND AGAINST EIGHT MERGES, AND THE GAP IS NOT WASTE:
+FOUR OF THE TWELVE WERE EARNED BY MERGES THAT LANDED BEFORE THE ANCHOR.** 730 →
+742 is twelve, so the unit this gate counted until 2026-09-15 would have read
+**12 of 10 here and fired** while the live unit sat two clear. That is the
+direction the 2026-09-15 unit change was made for, and the gate's own header
+records an earlier instance of it in its own words: *"On 2026-09-15 this
+assertion fired at **eleven** releases … **Nine** merges had landed in that
+window"*. Each of the
+twelve release commits was matched to the `Version` run that pushed it, by
+`head_sha` off the Actions API rather than by adjacency: v0.0.731 to run 774
+(#1345), 732 to 775 (#1346), 733 to 776 (#1347), 734 to 777 (#1348 — the
+previous anchor itself), 735 to 778 (#1352), 736 to 779 (#1349), 737 to 780
+(#1350), 738 to 781 (#1351), 739 to 782 (#1353), 740 to 783 (#1354), 741 to 784
+(#1355) and 742 to 785 (#1358). **Twelve numbers, twelve distinct merges, no
+duplicate delivery** — and the first four belong to merges at or below
+`c259ff8c`, whose bumps queued for a runner and landed inside this window
+rather than inside the window that earned them. **Net the four out and the two
+units agree exactly at eight.** That is the header's *"a merge can land with no
+bump at all"* half running in reverse, and it is a sharper argument for the
+merge unit than either half already recorded: the release count is wrong here
+not because a number was spent on nothing but because a number was spent late.
+
+**The window is 26 commits anchor to anchor and 18 of them are first-parent.**
+**3.3 commits per merge**, against the 2.8 the previous pass measured and the
+median of 3.7 it measured over the whole chain. The eight merges landed inside
+**25 minutes** (23:06:02 to 23:31:01 +02:00) and four of them inside **18
+seconds** (23:06:02 to 23:06:20), which is the traffic rate the two-merge
+remainder would have been spent at.
+
+**The eight merges, in order off `git log --first-parent`:** #1352
+(`agent/reanchor-status-queue-2`, the previous anchor's own pass), #1349
+(`agent/join-command-control-reachability`), #1350 (`agent/stage-4-settled`),
+#1351 (`agent/adr-draft-action-column`), #1353
+(`agent/fold-chrome-rows-into-deferred`), #1354
+(`agent/stage-7-first-batch-research`), #1355
+(`agent/record-2026-09-21-rulings`) and #1358
+(`agent/stage-6-polish-plurals`), which is the anchor.
+
+**EVERY FINISHED `CI` RUN IN THIS WINDOW IS RED AND NOT ONE OF THE REDS IS A
+FAILING TEST — AND THE COST IS NOT COSMETIC.** Read off the Actions API rather
+than assumed, for the eight `CI` runs on `main` carrying these merges' shas:
+**four concluded `cancelled`** — #1352 (run 35655160856), #1349 (35655168784),
+#1350 (35655182275) and #1351 (35655191177), each superseded by the next
+merge's push within seconds — **three concluded `failure`** — #1353
+(35656084853), #1354 (35656685612) and #1355 (35657418586) — and #1358
+(35657622720), the anchor, was `in_progress` when this pass read it. **In all
+three failures the failing step is the same one and it is not a step in this
+repository**: every step of `verify` from `Set up job` through *"Verify
+generated output did not modify tracked files"* concluded `success`, and the
+only step with a `failure` conclusion is `Complete runner` — the runner's
+post-job cleanup hook, which the log reports as *"is not a valid path to a
+script"*. **What it costs is the browser suite**: `assets` and `browser`
+concluded **`skipped`** in all three runs, because they are gated on a `verify`
+the hook had already marked failed. So a host misconfiguration outside this
+repository is, for the length of this window, stopping the browser suite from
+running on `main` at all — and doing it while every gate that did run was
+green. The same hook is failing the `Version` runs: run 785's `Bump the patch
+version, tag it, and push both` and `Report the anchor budget's current spend`
+both concluded `success` and the run concluded `failure`, so the bump landed,
+the annotation printed, and the run is red anyway.
+
+**The anchor before this one, kept — v0.0.730 (`c259ff8c`).** It read: *"Re-anchored at `main` @ `c259ff8c` (**v0.0.730**) by the delta method,
 from `9a0d6135`. This is #1348's merge commit, the last merge on `main` and
 the tip of `main` itself; `package.json` ships **0.0.730** at it and **no
 release commit sits above it**, so the release assertion reads 730 − 730 =
 **zero**. It is the merge rather than a release commit for the reason every
 anchor in this chain gives: a `chore(release)` commit starts no CI run and a
-reader who followed one out would have nothing to verify against.
-
-**THE GATE WAS GREEN AT SIX OF TEN AND THIS PASS WAS TAKEN ANYWAY — the
-second anchor on this chain moved at exactly that reading, and the first since
-2026-09-18.** `adr-status-queue-anchor-contract` was passing on the tree this
-pass opened on: **6 of 10** on merges and **17 of 100** on commits, counted to
-`c259ff8c`, which is both the anchor and the tip of `main`.
-`tooling/anchor-budget-spend.mjs` printed `::notice::` rather than
-`::warning::` there — *"6 of 10 merges since `9a0d6135` … 4 merges remain
-before it is exceeded"* — so nothing was red and nothing was about to be
-announced as red. **Neither budget is raised and neither is argued with**:
-`ANCHOR_STALENESS_BUDGET_MERGES` stays at 10 and
-`ANCHOR_STALENESS_BUDGET_COMMITS` stays at 100, and nothing here asks for
-either to move in either direction. The argument for moving early is the one
-the `adad4f08` pass of 2026-09-18 made in its own words — *"this pass was
-opened deliberately before it could go red"* — and it is stronger now than it
-was then, because the two passes between this one and that one were both taken
-with the gate RED and both record it in their headings. **This window carries
-**11 changed paths — 2 under `src/`, 2 under `tests/`, 4 under `docs/`, 2 new
-scripts under `scripts/` and `package.json`** — against the previous window's
-101, and **two production-code paths against that window's 35**, which makes
-it the narrowest reading this chain has taken since 2026-09-20.
-
-**FIVE RELEASE NUMBERS STAND AGAINST SIX MERGES, AND THE SIGN IS THE OTHER WAY
-ROUND FROM EACH OF THE TWO WINDOWS BEFORE IT.** 725 → 730 is five, so the unit
-this gate counted until 2026-09-15 would have read 5 of 10 here and passed
-more comfortably than the live unit does. The mechanism is the *skipped* bump
-rather than the duplicated one, read off `git log --first-parent` rather than
-inferred: `29b676ec` (`chore(release): v0.0.730`) is the newest release commit
-on `main`, and **four merges sit above it** — #1345, #1346, #1347 and #1348 —
-so four of this window's six landings went under one version number. That is
-the half of the header's *"The unit stopped being releases"* argument this
-chain has recorded least often, and it is the half the 2026-09-15 unit change
-was actually made for.
-
-**The window is 17 commits anchor to anchor and 11 of them are first-parent.**
-**2.8 commits per merge**, against the 6.3 the previous pass measured and the
-median of 3.7 it measured over the whole chain — the shallowest window this
-chain has read since 2026-09-20, and narrow in both dimensions at once rather
-than trading one for the other.
-
-**The six merges, in order off `git log --first-parent`:** #1344
-(`agent/status-queue-reanchor`, the previous anchor's own pass), #1343
-(`agent/979-tier-3-reachability-adr`), #1345
-(`agent/stage-8-touch-row-remeasured`), #1346
-(`agent/rollout-stages-0-1-4`), #1347
-(`agent/1160-buildable-price-contract`) and #1348
-(`fix/chrome-row-overflow-1164-followup`), which is the anchor.
-
-**NOT ONE MERGE IN THIS WINDOW HAS A FINISHED CI RUN, WHICH IS A SHAPE THIS
-CHAIN HAS NEVER RECORDED — and it is the reason this entry's only green
-evidence is a local run.** Read off the Actions API rather than assumed, for
-the six `CI` runs on `main` carrying these merges' shas: **four concluded
-`cancelled`** — #1343 (run 35636897072), #1345 (35638479751), #1346
-(35638490210) and #1347 (35638497570), each superseded by the next merge's
-push within seconds — and **two had not finished when this pass read them**:
-#1344 (35634892056, `in_progress`) and #1348 (35638507950, `pending`), the
-anchor itself. The previous window reported seven successes against three
-cancellations and two unfinished; this one reports **zero of six finished**,
-which is four merges landing inside 16 seconds (18:27:18Z to 18:27:34Z)
-cancelling each other's runs. **So `main`'s own verdict on every commit in
-this window is unknown rather than green**, and the *"absence of a red is an
-absence of a finished run"* qualification the previous entry wrote about two of
-its twelve merges is true here of all six.
+reader who followed one out would have nothing to verify against."*
 
 **The anchor before this one, kept — v0.0.725 (`9a0d6135`).** It read: *"Re-anchored at `main` @ `9a0d6135` (**v0.0.725**) by the delta method,
 from `1dea0757`. This is #1342's merge commit, the last merge on `main`;
@@ -21283,6 +21310,198 @@ block was reworded past both the `## Status` heading and the `- Status:`
 bullet forms would be counted as neither and would surface here as a changed
 total rather than as an error.
 
+## 3. What the anchor pass of 2026-09-21 (third) opened with the gate GREEN at eight of ten and nothing red to unblock: eight merges against TWELVE release numbers — the retired unit firing while the live one sat two clear — 26 commits, 20 changed paths of which four are production code, not one live coordinate in §§4-6 moved, every finished CI run in the window red in a step this repository does not own, and twelve release numbers matched one-to-one to twelve merges of which four were earned before the anchor
+
+**EIGHT at `03e47695` (**v0.0.740**), twelve release numbers later.** The
+window is `c259ff8c..03e47695`: **26 commits**, **18** of them first-parent,
+**8 merges** that are not `chore(release)` bumps, **12** release numbers, **20
+changed paths**. The gate read **8 of 10** on merges and **26 of 100** on
+commits. **Nothing here asks for `ANCHOR_STALENESS_BUDGET_MERGES` to move**, in
+either direction, and nothing here asks for `ANCHOR_STALENESS_BUDGET_COMMITS`
+to move either.
+
+**This pass was taken with the gate green, which makes it the second
+consecutive anchor on this chain moved with nothing red to unblock.** The
+previous entry's own words are the argument and they are quoted rather than
+paraphrased: *"the second anchor on this chain moved at exactly that reading,
+and the first since 2026-09-18"*. **The difference worth recording is the
+margin**: that pass opened four merges clear of the limit, this one opens two,
+and two merges of remaining budget is — on this window's own timings — about
+**four seconds** of merge traffic, since #1352, #1349, #1350 and #1351 landed
+between 23:06:02 and 23:06:20 +02:00. **Two more pull requests were in flight
+from other agents when this branch was cut**, which is the whole of why the
+margin was not left to be spent.
+
+**The evidence that the gate was green is `main`'s own run and not this pass's
+arithmetic.** `verify` on `c5ad58e0` — run 35657418586, step *"Verify
+project"* — concluded `success` with this file still anchored at `c259ff8c`,
+and that step is what runs `tests/foundation`.
+
+### The eight merges, and where the production code is
+
+- In order off `git log --first-parent`: #1352
+  (`agent/reanchor-status-queue-2`, the previous anchor's own pass, carrying
+  only `docs/adr/STATUS-QUEUE.md`), #1349
+  (`agent/join-command-control-reachability`, two test files), #1350
+  (`agent/stage-4-settled`, documentation), #1351
+  (`agent/adr-draft-action-column`, one draft ADR), #1353
+  (`agent/fold-chrome-rows-into-deferred`, documentation and one browser
+  spec), #1354 (`agent/stage-7-first-batch-research`, one research memo and
+  its index row), #1355 (`agent/record-2026-09-21-rulings`, `AGENTS.md`) and
+  #1358 (`agent/stage-6-polish-plurals`), which is the anchor and **the only
+  merge in the window carrying a file under `src/`**:
+  `src/content/localization.ts`,
+  `src/services/localization/pl-catalog.ts`, `src/ui/hud/view-model.ts` and
+  `src/ui/save-panel-messages.ts`.
+- **Not one of the twenty paths carries a live coordinate in §§4-6**, and that
+  was checked rather than assumed: `grep` for each basename over this file
+  returns nothing at or after §4's heading for nineteen of the twenty. The
+  twentieth is `AGENTS.md`, which §§4-6 name eleven times — and every one of
+  the eleven is a reference to a numbered reservation or boundary rather than
+  to a line, so none of them is a coordinate that can drift.
+- **`AGENTS.md`'s numbering was opened anyway, because those eleven
+  references depend on it.** The window appends 105 lines to that file and
+  inserts nothing: boundaries 1 (*"Rendering is not simulation."*) and 6
+  (*"Content definitions belong in data modules, not hard-coded condition
+  chains."*) and reservations 1 through 4 all stand where they stood, so
+  *"`AGENTS.md`'s fourth reservation"*, *"`AGENTS.md` boundary 1"* and
+  *"`AGENTS.md` boundary 6"* in §5 are still true sentences.
+
+### Nothing in §§4-6 moved, and `src/main.ts` is the reason to say so carefully
+
+- **`src/main.ts` is not in this window at all.** `git diff --name-only
+  c259ff8c..03e47695 -- src/` returns four paths and that is not one of them.
+  Every one of §5's fourteen `src/main.ts` coordinates was still opened one at
+  a time on the anchor tree rather than certified by that absence, and all
+  fourteen land byte-identical — see §5's two re-derivations below.
+- **§4's ten coordinates hold, on a window that touches no path under
+  `.github/` and does not touch `docs/DEPLOYMENT.md`.** That is the weaker,
+  absence-based reading for the eighth consecutive anchor, labelled rather
+  than leaned on, and every coordinate was opened anyway.
+- **A window with no live coordinate movement at all is not new on this
+  chain** — 2026-09-16 (second)'s heading says *"no live coordinate in §§4-6
+  moved at all"* — but the two are not the same shape: that window reached its
+  zero with three cited paths in it, this one reaches it with none.
+
+### The finding: twelve release numbers, twelve merges, and four of them earned before the anchor
+
+**The retired unit would have fired here and the live one did not, and the
+reason is not a duplicated bump.** Each of the twelve release commits in this
+window was matched to the `Version` workflow run that pushed it, by `head_sha`
+off the Actions API rather than by the adjacency heuristic the gate's header
+retracted on 2026-09-19:
+
+- v0.0.731 → run 774 (#1345); 732 → 775 (#1346); 733 → 776 (#1347); 734 → 777
+  (#1348, the previous anchor itself); 735 → 778 (#1352); 736 → 779 (#1349);
+  737 → 780 (#1350); 738 → 781 (#1351); 739 → 782 (#1353); 740 → 783 (#1354);
+  741 → 784 (#1355); 742 → 785 (#1358).
+- **Twelve numbers, twelve distinct merges, no sha carrying two runs.** So
+  none of the twelve was spent on nothing, which is the failure mode the gate's
+  header measured once and then retracted as rare.
+- **Four of the twelve were earned by merges at or below the anchor** —
+  #1345, #1346, #1347 and #1348 — whose `Version` runs queued for a runner and
+  pushed their bumps between 19:28 and 21:06 UTC, hours after the merges
+  themselves. **Net those four out and the two units agree exactly at eight.**
+- **That is the gate's "a merge can land with no bump at all" argument running
+  in reverse, and this chain has not recorded it in this form before.** The
+  release count is wrong here not because a number was spent on nothing but
+  because four numbers were spent *late*, in a window that did not earn them.
+  A reader who takes "twelve releases" as twelve merges of unread history
+  would be wrong by half.
+
+### The second finding: every finished run in this window is red, and none of the reds is a test
+
+**Read off the Actions API for the eight `CI` runs on `main` carrying these
+merges' shas**: four concluded `cancelled` — #1352 (run 35655160856), #1349
+(35655168784), #1350 (35655182275), #1351 (35655191177) — three concluded
+`failure` — #1353 (35656084853), #1354 (35656685612), #1355 (35657418586) —
+and #1358 (35657622720), the anchor, was `in_progress` when this pass read it.
+
+**All three failures are one step, and it is the runner's post-job cleanup
+hook.** In each of the three, every step of `verify` from `Set up job` through
+*"Verify generated output did not modify tracked files"* concluded `success`,
+and the only step with a `failure` conclusion is `Complete runner`, reported in
+the log as *"is not a valid path to a script"*. It is a host misconfiguration
+outside this repository; the runners are `lockstate-wsl-DOM-NEW-01` and `-02`,
+both carrying the bare `self-hosted` label.
+
+**What it costs is the browser suite, and that is the part worth carrying.**
+`assets` and `browser` concluded **`skipped`** in all three runs, because both
+are gated on a `verify` the hook had already marked failed. So for the length
+of this window nothing ran the browser suite on `main` at all — and it did not
+run because a *green* job was labelled red after it finished. **A red that
+skips downstream jobs is more expensive than a red that reports them**, and
+nothing in this repository can see the difference from the conclusion alone.
+
+**The same hook is red on `Version` and the bumps landed anyway.** Run 785's
+`Bump the patch version, tag it, and push both` and `Report the anchor budget's
+current spend` both concluded `success` while the run concluded `failure` — so
+the annotation this file's budget is watched through is still printing, on a
+workflow run that reads red.
+
+### The census did not move at all, and the index agrees with it
+
+- **2026-09-21 (third) census at the anchor: 41 Proposed, 70 Accepted across
+  111 ADR documents**, derived by reading each document's own status statement
+  — `## Status` heading or `- Status:` bullet alike — and compared document by
+  document against the same derivation over the `c259ff8c` tree, which gives
+  41 / 70 / 111 there too. No ADR was added and none changed status; the only
+  ADR-shaped file in the window is a draft under `docs/adr/drafts/`, which
+  carries no number.
+- **So it is still THIRTY-SIX outstanding decisions with no entry giving the
+  owner the evidence**, with five of the 41 Proposed carrying a §2 row (0056,
+  0059, 0071, 0074, 0077).
+- **The index and the census agree.** `grep -cE '^\|.*\| *\*{0,2}Proposed'
+  docs/adr/README.md` returns **41** at both ends of the window, and
+  `docs/adr/README.md` is in none of this window's eight merges.
+- **The classifier's two false positives were opened rather than tolerated**,
+  because a naive match on the word *Proposed* reads 43 here: ADR 0013, whose
+  status statement is *"Accepted for §§1-4, which are enforced in SQL. §§5-6
+  remain Proposed and unimplemented."*, and ADR 0117, whose statement opens
+  *"Accepted by the owner on 2026-09-17: option 3"* and mentions `Proposed`
+  later in the same sentence. Both are Accepted; 43 − 2 = 41, which is the
+  figure the index carries independently.
+- **Next free number: 0118**, re-derived at the commit this pass finishes on
+  and unmoved from the previous anchor's reading, on a line the window did not
+  touch.
+
+### What this pass deliberately did not chase
+
+- **§5's first bullet is eight anchors behind and this pass did not move it.**
+  Its most recent reading is still the *"2026-09-16 (third) census at the
+  anchor `ca82e946`"*. Named rather than repaired for the reason four previous
+  passes gave: repairing it means deciding whether that bullet should carry a
+  live census at all, which is a change to what this file is for.
+- **§5's import quartet was re-derived and its two older published readings
+  were not repaired.** They are right about the trees they name and wrong
+  about `main`, which is that bullet's whole subject; the sweep it has asked
+  for since `a0348955` has now failed to fire at six consecutive anchors.
+- **`verifyChallengeSubmission`, `isPubliclyRankable` and `masterSeedSchema`'s
+  comment were not re-derived**, and neither was §6's list of already-corrected
+  coordinates. None of their files is among this window's twenty paths, so the
+  delta method has nothing to say about drift they may have inherited from
+  before it, and certifying them by inheritance is the thing this chain keeps
+  finding to be wrong.
+- **The four `src/` files this window does touch were checked for citations in
+  §§4-6 and for nothing else.** #1358's Polish plural forms are a feature this
+  pass did not read as a feature.
+
+### Weakest claim in this entry, named rather than left to a reader
+
+**The attribution of the twelve release numbers to twelve `Version` runs.** It
+rests on matching each run's `head_sha` to a merge and each release commit to
+the run whose `updated_at` falls within seconds of the commit's own timestamp
+— a correspondence this pass read off two lists rather than out of any run's
+log, and one that would misread a run that pushed a bump and then updated
+again for another reason. The four-early finding does not depend on the exact
+pairing of 735-742, only on 731-734 belonging to merges at or below the anchor,
+which their `head_sha`s state outright. **The second weakest is the census**,
+for the reason two previous entries gave of their own: the instrument
+classifies each document on its status statement, and this pass had to correct
+it by hand on two documents, which is calibration rather than proof — a third
+document worded past both forms would surface here as a changed total rather
+than as an error.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -21557,8 +21776,48 @@ can see the dashboard setting that would break it. That last clause is the half
 no window of any kind reaches, and ending the absence run changes nothing about
 it.
 
-**RE-VERIFIED AT `c259ff8c`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
-RESTARTS AT ONE — while both halves of this section's own evidence stay
+**RE-VERIFIED AT `03e47695`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+IS AT TWO — while both halves of this section's own evidence stay outside the
+window for an eighth anchor running.** `git diff --name-only
+c259ff8c..03e47695 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,
+so the run the paragraph below restarted at one continues at two. No path
+under `.github/` is in any of this window's eight merges, and neither
+`.github/workflows/migrate-database.yml` nor `docs/DEPLOYMENT.md` is, so the
+reading of the ten coordinates is **still the weaker, absence-based kind**, for
+the eighth consecutive anchor — and it is labelled rather than leaned on, so
+every coordinate was opened one at a time anyway.
+
+**All ten coordinates land, read one at a time, and not one moved.** Into
+`.github/workflows/migrate-database.yml`: `:20` is the ADR 0016 §2 comment
+(*"# target and must never be repointed at production (ADR 0016 §2, Accepted;"*),
+`:33` is `on:`, `:34` is `workflow_dispatch:`, `:41` is `confirm_project_ref:`
+and `:65` is `environment:`; `grep -c '^\s*push:'` over the file still returns
+**0**. Into `docs/DEPLOYMENT.md`: `:200` is the table header (*"| What | When |
+Gate |"*), `:205` the *"| Migrations → Supabase **staging** | automatically, on
+every merge to `main`, through Supabase's own GitHub integration | none |"*
+row, `:219` the *"`migrate-database.yml` has three runs in its entire
+history"* paragraph, `:221` the *"**Read that row as "on every merge"**"*
+paragraph, and `:265` the *"### What currently serves lockstate.io"* heading.
+ADR 0016 §2 is still binding at `0016-migration-delivery-mechanism.md:108` —
+*"Recorded as a constraint precisely because nothing enforces it
+mechanically."* — and the clause no window of any kind reaches, that nothing in
+`tests/` can see the dashboard setting which would break it, is untouched.
+**`docs/DEPLOYMENT.md` has still changed once in twenty-two anchors**, at
+`ed9acb57`, and this section is still not restarting a day count on a run of
+two.
+
+**A NOTE THIS SECTION HAS NOT HAD TO MAKE BEFORE, AND IT IS ABOUT THE
+INSTRUMENT RATHER THAN THE RISK.** Every `CI` run that finished on `main` in
+this window concluded red in the runner's post-job cleanup hook while every
+step it ran passed, and in each of those runs the downstream `assets` and
+`browser` jobs concluded `skipped`. That says nothing about migrations or
+about the Supabase project ref — this section's risk is unmoved — but it does
+say that *"no workflow file was touched"* and *"the workflows behaved"* are
+now two different statements on this repository, and only the first of them is
+what the absence-based reading above establishes.
+
+**IT WAS RE-VERIFIED AT `c259ff8c`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+RESTARTED AT ONE — while both halves of this section's own evidence stay
 outside the window for a seventh anchor running.** `git diff --name-only
 9a0d6135..c259ff8c -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,
 so the run the paragraph below closed at five begins again at one rather than
@@ -25188,6 +25447,58 @@ one direction.
     order.
 
 
+
+  **RE-DERIVED AT `03e47695`: ALL FOURTEEN COORDINATES ARE BYTE-IDENTICAL AND
+  NOT ONE OF THEM WAS CERTIFIED BY THE WINDOW'S ABSENCE — the first reading in
+  this bullet's history where both halves sit at zero.** `src/main.ts` is **not
+  a member of this window**: `git diff --name-only c259ff8c..03e47695 -- src/`
+  returns `src/content/localization.ts`,
+  `src/services/localization/pl-catalog.ts`, `src/ui/hud/view-model.ts` and
+  `src/ui/save-panel-messages.ts`, and nothing else. **The delta method would
+  therefore have let this bullet be skipped, and skipping it is the thing this
+  bullet exists to record the cost of**, so each coordinate below was found by
+  searching the anchor tree for the construct's own text.
+
+  - **The top six and the span are unmoved**: the import trio still
+    **`:151-153`** (`src/main.ts:151`, `import { createTelemetryPipeline }`),
+    the pipeline build still **`:211`** (`src/main.ts:211`,
+    `const telemetry = createTelemetryPipeline({`), the `crashReporter` gate
+    still **`:249-252`** (`src/main.ts:252`, `createCrashReporter({ recorder:`),
+    the crash listeners still **`:255-263`** (`src/main.ts:259`,
+    `crashReporter.reportUnhandledError`), the prose hit naming the telemetry
+    directory from outside it still **`:227`** (`src/main.ts:227`,
+    `Until this change`), and the tracked span still **`:199-261`**
+    (`src/main.ts:199`, `__LOCKSTATE_TELEMETRY_ENVIRONMENT__`).
+  - **The bottom pair is unmoved too, at the values the reading above moved
+    them to**: the second `telemetry.enabled` gate **`:4494`**
+    (`src/main.ts:4494`, `if (telemetry.enabled && appRoot !== null) {`) and
+    the consent mount **`:4499`** (`src/main.ts:4499`,
+    `createTelemetryConsentPrompt({`). **So the two halves have stopped
+    splitting after thirteen consecutive readings in which they did not** —
+    and they stopped not because anything was repaired but because the file
+    they both point into went a whole window untouched.
+  - **The ADR 0038 repair the reading above found is still landing**, checked
+    rather than carried: `src/main.ts:4381`
+    (`SessionController(repository, host, {`) and `src/main.ts:4303`
+    (`crypto.getRandomValues(drawn);`) are the two coordinates #1348 re-aimed
+    in its own commit while leaving this bullet's pair where it stood. **A
+    sweep over every document citing `src/main.ts` was run at this anchor and
+    found no third one**: outside this file, `grep -rn "src/main\.ts:[0-9]"`
+    over `docs/`, `src/` and `tests/` returns no coordinate above old `:4101`
+    other than ADR 0038's two, so the drift #1348 caused is now fully repaired
+    across the corpus — by the commit that caused it for one document and by
+    the reading above for this one.
+  - `src/ui/telemetry-consent-prompt.ts:8`
+    (`} from '../services/telemetry/consent-flow';`) and
+    `src/ui/telemetry-consent-prompt.ts:17`
+    (`: whether to ask at all, what a`) are unmoved for the twentieth anchor
+    running, on a file no window has yet touched. **The count was re-run
+    rather than carried**: `grep -rn "services/telemetry" src/ --include=*.ts`
+    still returns **twelve** hits in **five** files, eleven of them outside
+    `src/services/telemetry/`, and `src/services/telemetry/admission.ts:18`
+    (`used to claim, in its own header, that`) is still the third in sort
+    order.
+
   **RE-DERIVED AT `c259ff8c`: THE TOP SIX AND THE SPAN ALL HELD AND ONLY THE
   BOTTOM PAIR MOVED, BY A UNIFORM +161, AND FOR THE FIRST TIME IN THIS
   BULLET'S HISTORY SOMEBODY ELSE'S DOCUMENT WAS RE-AIMED FOR THE SAME DRIFT IN
@@ -25559,6 +25870,31 @@ one direction.
   drift "the smallest possible instance of the defect" and corrects it — and
   the correction itself has since gone two lines out, uncaught, across every
   anchor since `a0348955`.** A sweep that fires once is not a sweep.
+
+
+  **RE-DERIVED AT `03e47695`: THE QUARTET IS UNMOVED AND IS STILL THIRTEEN
+  LINES OUT FROM THE NEWER READING ABOVE AND THIRTY-EIGHT FROM THE OLDER ONE —
+  so the sweep this bullet has asked for at every anchor since `a0348955` has
+  now failed to fire at six consecutive ones, and for the first time in that
+  run the debt did not grow.** `src/main.ts` is **not** a member of this
+  window, so the four were re-derived against that absence rather than on its
+  authority: `import { createTelemetryConsentPrompt }` is at **`:150`**
+  (`src/main.ts:150`,
+  `import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';`),
+  `import type { CancelScheduledPump }` at **`:153`** (`src/main.ts:153`,
+  `import type { CancelScheduledPump } from './services/telemetry/pump';`),
+  `import './styles.css'` at **`:155`** (`src/main.ts:155`,
+  `import './styles.css';`) and the challenges comment at **`:171`**
+  (`src/main.ts:171`, `, against a challenge definition's` — the backtick-free
+  tail of that line, quoted that way because the line's own head is itself a
+  backticked path). Against the `:137`, `:140`, `:142` and `:158` of the
+  `7e9c3043` reading above that is a uniform **+13**, and against the `:112`,
+  `:115`, `:117` and `:133` of the `3399b1f9` reading below it is a uniform
+  **+38** — the same two figures the reading above published, because nothing
+  in this window touched the file. **A debt that stops growing is not a debt
+  that is paid**, and the useful reading is the opposite of reassuring: the
+  only thing that stopped the gap widening is that no merge happened to edit
+  `src/main.ts` for one window.
 
   **RE-DERIVED AT `c259ff8c`: THE QUARTET IS UNMOVED BY THIS WINDOW AND IS NOW
   THIRTEEN LINES OUT FROM THE NEWER READING ABOVE AND THIRTY-EIGHT FROM THE
