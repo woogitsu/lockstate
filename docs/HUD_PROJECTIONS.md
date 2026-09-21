@@ -2219,7 +2219,7 @@ decision about what to build next.
       `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
       is `[{"id":"refusal-2", …}]` — length 1.
     - The band carries the newest ordinal and nothing else
-      (`src/ui/simulation-alerts.ts:449-453`, `src/ui/hud/hud.ts:1730-1745`).
+      (`src/ui/simulation-alerts.ts:483-490`, `src/ui/hud/hud.ts:1730-1745`).
     - Neither surface shows the count. The row literal carries `id`,
       `labelKey` and `severity` only, and `sequence` reaches a player only as
       an opaque row id.
@@ -2232,20 +2232,69 @@ decision about what to build next.
 
     - **The repins are citation maintenance and change no finding.** `record`
       is `refusal-log.ts:158-166`, `supersessionKeyRoute` having been added
-      above it; the band's notice is built at `simulation-alerts.ts:449-453`;
+      above it; the band's notice is built at `simulation-alerts.ts:483-490`,
+      on `sequence: refusal.sequence`;
       the band's rule is `hud.ts:1730-1745`; and the publisher's single read of
       `refusals.last` is `state-machine.ts:597`, called from `onTickLoop` at
       `:407`. Each measurement re-reads the same at its new coordinate.
     - **"The band carries the newest ordinal and nothing else" is false in both
       directions since #1261.** It carries one thing *more*: the notice now
       forwards `routeDecidedSince` as well
-      (`src/ui/simulation-alerts.ts:452`). And on that flag it carries *less*
+      (`src/ui/simulation-alerts.ts:486`). And on that flag it carries *less*
       than the newest ordinal — a notice marked `routeDecidedSince` is treated
       as no notice at all, so the corner is cleared while the refusal still
       stands in `RefusalLog` and still holds its row in the alerts list
       (`src/ui/hud/hud.ts:1731-1735`). The band is therefore no longer even a
       lossy copy of the newest refusal; it is a copy that retires itself when
       the same command route decides something else.
+
+    **Both `simulation-alerts.ts` coordinates above moved again on 2026-09-20,
+    and the second sentence they carry is now understated rather than false.**
+    The dead numbers, outside backticks so nothing tries to check them, were
+    449-453 and then 462-469 for the notice, and 452 and then 465 for the
+    forwarded flag — they moved twice in one day, both times because this
+    repository added prose beside the code rather than because the code moved.
+    The notice is now built at `src/ui/simulation-alerts.ts:483-490`, on
+    `sequence: refusal.sequence`, and `routeDecidedSince` is forwarded at
+    `:486`. Nothing about those two findings changed — the same
+    lines were re-read at the new coordinates — and the shift is this repository
+    adding the *second* way the band lets go of a sentence.
+
+    - **The owner ruled on 2026-09-20 that the band also retires when nothing
+      further happens, counted in simulation ticks**, amending ADR 0091 and ADR
+      0084's amendment section 6. The provenance is the weaker of the two kinds
+      this repository distinguishes: the label of a clickable option a session
+      wrote, *"Tak, ale liczony w tikach"* ("Yes, but counted in ticks"), not a
+      sentence they typed. `docs/adr/0091-what-clears-the-refusal-band.md`
+      carries it in full.
+    - **So "the band carries the newest ordinal and nothing else" is now false
+      in the *same* two directions, one door wider.** The notice carries a
+      second mark, `outlivedBandTicks`, computed rather than forwarded; and on
+      that mark too the corner is cleared while the refusal still stands in
+      `RefusalLog` and still holds its row in the alerts list.
+    - **It is not on the wire**, which is the difference worth reading against
+      the bullet above. `routeDecidedSince` crosses the boundary because only
+      `RefusalLog` can know it; this one is a subtraction of two integers
+      `simulation/status-counts` already carries, so `refusalSchema` gains no
+      member. What the worker contributes is the *publication*: a refusal in a
+      prison where nothing further happens moves no count and no ordinal, so
+      `SimulationWorkerStateMachine` opens its own gate once when the ceiling is
+      crossed. That is the gate this section's own retention finding depends on
+      and it is why the change is not main-thread-only.
+    - **What that does not touch is the retention finding this section is
+      about**, for exactly the reason option F did not: the band holds *less* of
+      the history, never more.
+    - **A second ruling the same day scales the threshold with the running
+      speed** (*"Skalować sufit prędkością"*, same weaker provenance), because
+      counting in ticks alone made the hold 15.0 s at x1, 7.5 s at x2 and
+      3.75 s at x4. The unit did not move and a paused prison still ages the
+      sentence by nothing; the threshold is 300 ticks at x1, 600 at x2 and
+      1,200 at x4. The speed reaches the translator as a **parameter** that
+      `src/main.ts` reads off `HudClockViewModel.speed`, so
+      `simulation/status-counts` still gains no member — which is why this
+      section's own three-member enumeration of `refusal` above needs no
+      further correction beyond the one already recorded for
+      `routeDecidedSince`.
     - **What that does not touch is the retention finding this section is
       about.** Option F makes the band hold *less* of the history, never more,
       so a refusal a player never saw is if anything less retained after #1261

@@ -104,7 +104,7 @@ function readMainThread(runtime: SimulationRuntime): MainThreadReading {
   const refusal = runtime.refusals.last;
   if (refusal === undefined) throw new Error('nothing is standing, so there is no band state to read');
   const message = publication(runtime, refusal);
-  const notice = hudRefusalFromWorkerMessage(message);
+  const notice = hudRefusalFromWorkerMessage(message, 1);
   if (notice === undefined || notice === 'none') throw new Error('the translator gave the band nothing to say');
   const alerts = hudAlertsFromWorkerMessage(message, []);
   if (alerts === undefined || alerts === 'none') throw new Error('the translator gave the list nothing to show');

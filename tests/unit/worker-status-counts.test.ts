@@ -1,3 +1,4 @@
+import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
@@ -636,6 +637,108 @@ describe('publishing the status counts', () => {
     // so the gate opens once for it and not once per wake thereafter.
     for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
     expect(harness.publications()).toHaveLength(3);
+  });
+
+  /**
+   * **The complement of the case above, ruled by the owner on 2026-09-20: the
+   * publication gate has to open on the passage of ticks alone.**
+   *
+   * Option F retires the band when *something* happens. The owner then ruled
+   * that it also retires when nothing does, *"Tak, ale liczony w tikach"*
+   * ("Yes, but counted in ticks") -- the weaker of the two provenances, a
+   * clickable option's label rather than a typed sentence, exactly as option
+   * F's own is.
+   *
+   * **Why the worker is involved at all, when the main thread can do the
+   * arithmetic itself.** It can: `hudRefusalFromWorkerMessage` subtracts the
+   * refusal's tick from the publication's, and the wire gains no member for
+   * this. What it cannot do is make a publication happen. A refusal in a prison
+   * where nothing further happens moves no count and no ordinal, so the two
+   * gates above suppress every message there is and the main thread is never
+   * told the clock has moved -- the band would keep the sentence for ever in
+   * precisely the case this ruling is about. `_publishedRefusalOutlivedBand` is
+   * that publication, and the assertions below are that it happens **once** and
+   * that nothing else could have carried it.
+   */
+  test('publishes again once the standing refusal has outlived the band, with nothing else having moved (owner 2026-09-20)', () => {
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    const carried = harness.publications();
+    expect(carried).toHaveLength(2);
+    const standing = { sequence: 1, tick: 0, reason: 'build.out-of-bounds' } as const;
+    expect(carried[1]?.payload.refusal).toEqual(standing);
+
+    // Nothing but the clock from here: no command is submitted, so no route
+    // decides anything and option F cannot be what opens the gate. The wake
+    // above already ran tick 1, so this stops the session one tick short of
+    // the ceiling.
+    for (let wake = 0; wake < REFUSAL_BAND_TICK_CEILING_AT_X1 - 2; wake += 1) harness.advance(50);
+    expect(
+      harness.publications(),
+      'an empty prison moves no count, so the interval gate alone must carry nothing -- if it did, the assertion below would be pinning nothing',
+    ).toHaveLength(2);
+
+    harness.advance(50);
+    const after = harness.publications();
+    expect(after, 'the ceiling was reached and no publication carried it').toHaveLength(3);
+    const opened = after[2];
+    expect(
+      (opened?.payload.tick ?? -1) - standing.tick,
+      'the gate has to open on the tick that completes the count, not near it',
+    ).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
+    // The record itself is untouched -- this is a band lifetime, not a log
+    // rule -- and the counts are identical to the publication before it, which
+    // is what leaves the tick as the only thing that can have caused this
+    // message.
+    expect(opened?.payload.refusal).toEqual(standing);
+    expect(opened?.payload.counts).toEqual(carried[1]?.payload.counts);
+
+    // And it does not become a firehose: the fact is monotone per record, so
+    // the gate opens once for it and not once per wake thereafter.
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.publications()).toHaveLength(3);
+  });
+
+  /**
+   * **The threshold scales with the running speed** -- the owner's second
+   * ruling of 2026-09-20, *"Skalować sufit prędkością (zalecane)"* ("Scale the
+   * ceiling with speed"), chosen from three clickable options and carrying the
+   * same weaker provenance as the ruling it amends.
+   *
+   * At x2 a tick is 25 ms of wall clock, so holding the same ~15 s takes
+   * **600** ticks rather than 300. The assertion that matters is the negative
+   * one: **nothing is published at tick 300**, which is where an unscaled
+   * ceiling would have fired. Without it this case would pass against a
+   * ceiling that ignored the speed entirely, because 600 is past 300 too.
+   */
+  test('scales the tick threshold with the running speed, so x2 holds twice as many ticks (owner 2026-09-20)', () => {
+    const harness = new Harness();
+    harness.run(2);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    expect(harness.publications()).toHaveLength(2);
+    expect(harness.kernelTick(), 'one wake at x2 is two ticks, which the arithmetic below depends on').toBe(2);
+
+    // Past the x1 ceiling and well past it: 149 more wakes is tick 300.
+    for (let wake = 0; wake < 149; wake += 1) harness.advance(50);
+    expect(harness.kernelTick()).toBe(REFUSAL_BAND_TICK_CEILING_AT_X1);
+    expect(
+      harness.publications(),
+      'the x1 ceiling fired at x2 -- the threshold is not scaling with the speed',
+    ).toHaveLength(2);
+
+    // On to one tick short of the x2 ceiling, then over it.
+    for (let wake = 0; wake < 149; wake += 1) harness.advance(50);
+    expect(harness.kernelTick()).toBe(refusalBandTickCeiling(2) - 2);
+    expect(harness.publications()).toHaveLength(2);
+
+    harness.advance(50);
+    expect(harness.kernelTick()).toBe(refusalBandTickCeiling(2));
+    const after = harness.publications();
+    expect(after, 'the x2 ceiling was reached and no publication carried it').toHaveLength(3);
+    expect(after[2]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
   });
 
   test('replaces the standing refusal when the simulation refuses something else', () => {

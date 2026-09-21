@@ -1,7 +1,8 @@
+import { refusalBandCeilingPassed } from '../simulation/refusals/refusal-band-lifetime';
 import type { LocalizationKey } from '../content/localization';
 import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
 import { PROTOCOL_FAULT_CODES } from '../simulation/protocol/types';
-import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-model';
+import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudSpeed } from './hud/view-model';
 
 /**
  * What the player is told about each refusal the simulation can report.
@@ -437,6 +438,7 @@ export function hudAlertsFromWorkerMessage(
  */
 export function hudRefusalFromWorkerMessage(
   message: WorkerToMainMessage,
+  speed: HudSpeed,
 ): HudRefusalNoticeViewModel | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
@@ -446,10 +448,45 @@ export function hudRefusalFromWorkerMessage(
       // function serves the band, and the band's rule is `hud.ts`'s to state.
       // Spread rather than passed as `undefined`, because
       // `exactOptionalPropertyTypes` is on and the field is `true`-or-absent.
+      //
+      // `outlivedBandTicks` is *computed* here rather than forwarded, and it
+      // is the one thing this translator decides. The arithmetic is a
+      // subtraction of two integers the payload already carries -- the tick
+      // this readout is about and the tick the refusal happened on -- so the
+      // wire gains no member for it (`refusalSchema` is unchanged). This
+      // module is the composition root's helper and is allowed to know both
+      // sides of the boundary, which is why the simulation's own constant can
+      // be imported here and must not be copied into `src/ui/hud/`: a second
+      // copy of a tick budget on this side would disagree with the simulation
+      // the day the balance moved, exactly as `HudClockViewModel`'s
+      // `dayLengthTicks` comment says of the day length.
+      //
+      // **`speed` is a parameter and still no wire member**, which is the
+      // cheapest honest answer to "where does the threshold's scale come
+      // from" (the owner's *"Skalować sufit prędkością"*, 2026-09-20). The
+      // main thread already holds the current speed: `simulation/clock-state`
+      // carries it, `hudClockFromWorkerMessage` puts it on
+      // `HudClockViewModel.speed`, and `src/main.ts` has that value in hand on
+      // the same publication this function is reading. Putting the speed on
+      // `simulation/status-counts` instead would have added a fifth member to
+      // `refusalSchema` -- and `documented-wire-schema-membership-contract`
+      // would then require naming it in every document that enumerates that
+      // shape, `docs/adr/STATUS-QUEUE.md` among them -- to carry a fact the
+      // receiving thread was already holding.
+      //
+      // **The caller passes the speed the clock is running at now, and a
+      // paused clock keeps the last one it ran at.** That stickiness is
+      // `hudClockFromWorkerMessage`'s own documented behaviour and it is
+      // load-bearing here rather than incidental: `1` is the shortest
+      // threshold, so a paused clock reported as x1 would shrink the budget
+      // under a standing refusal.
       return {
         sequence: refusal.sequence,
         labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
         ...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as const } : {}),
+        ...(refusalBandCeilingPassed(refusal.tick, message.payload.tick, speed)
+          ? { outlivedBandTicks: true as const }
+          : {}),
       };
     }
 

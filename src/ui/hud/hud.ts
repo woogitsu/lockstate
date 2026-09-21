@@ -1640,10 +1640,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * refusal beside a changed count up to twice a second, so without it every
    * republication would steal the line back from a host refusal the player
    * caused since.
+   *
+   * `retiredSimulationRefusalSequence` is the ordinal of the simulation
+   * refusal this band has **let go of**, and it exists because one of the two
+   * retirement rules is not monotone. `routeDecidedSince` is a fact about the
+   * record and can only turn on; `outlivedBandTicks` is a comparison against a
+   * threshold that **scales with the running speed** (the owner's ruling of
+   * 2026-09-20), so a player who slows down under a standing refusal moves the
+   * threshold out from under it and the flag goes off again. Without this the
+   * corner would raise a sentence it had already retired -- and #777's fix
+   * makes that certain rather than merely possible, since an unchanged ordinal
+   * takes the line again once `refusalSource` is `undefined`.
+   *
+   * It is the same job `EventBandDwellState.retired` does one band over, and
+   * it is safe across a session boundary for the same reason that one is:
+   * `simulation/stopped` arrives as no notice at all and empties this first,
+   * so a new session's ordinal 1 cannot be mistaken for an old session's.
    */
   let refusalSource: 'host' | 'simulation' | undefined;
   let refusedAction: string | undefined;
   let simulationRefusalSequence: number | undefined;
+  let retiredSimulationRefusalSequence: number | undefined;
 
   const markControl = (actionId: string, refused: boolean): void => {
     const control = commandControls.get(actionId);
@@ -1794,10 +1811,71 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * the next *new* ordinal takes the band normally. The flag is monotone per
    * record -- a route cannot un-decide -- so a retired sentence never comes
    * back on a later republication of the same refusal.
+   *
+   * ## The band also retires when nothing happens at all (the owner's ruling
+   * of 2026-09-20, amending ADR 0091 and ADR 0084 section 6)
+   *
+   * Option F above answers *"the player has moved on"*. It does not answer
+   * *"the player has done nothing at all since"*, and until this that case had
+   * no answer: ADR 0084's amendment section 6 says in terms that
+   * `EVENT_BAND_HOLD_CEILING_MS` does **not** reach this band, so a refusal in
+   * a quiet prison held the corner -- and the grid row under it -- for the
+   * rest of the session. Measured on the assembled application at 900x600,
+   * that row costs `.hud__rail` 35px.
+   *
+   * The owner ruled that it should retire, **counted in simulation ticks**
+   * rather than on the wall clock, and `HudRefusalNoticeViewModel`'s
+   * `outlivedBandTicks` is that answer arriving. It is a third door into this
+   * same branch, for the reason the second one is a door into it: a notice the
+   * band is not to keep is treated exactly as no notice at all, so there is
+   * one retirement path rather than three.
+   *
+   * ~~**The `retired`-ordinal suppression the events band needs is not needed
+   * here** ... `outlivedBandTicks` is monotone in the simulation's own clock,
+   * so every later publication carrying the same refusal carries the flag
+   * too.~~
+   *
+   * **THAT WAS TRUE OF THE UNSCALED CEILING AND IS FALSE OF THIS ONE.** It is
+   * struck through rather than deleted because the reasoning is exactly right
+   * about *why* a band needs such a memory, and the thing that changed is the
+   * premise rather than the argument. When the owner ruled on 2026-09-20 that
+   * the threshold **scales with the running speed**, `outlivedBandTicks`
+   * stopped being monotone: the ticks still only advance, but the budget they
+   * are measured against is four times larger at x4 than at x1, so a player
+   * who slows down under a standing refusal un-marks it. A band with no memory
+   * would then put the sentence back -- and #777's fix guarantees it would,
+   * because an unchanged ordinal takes the line again once `refusalSource` is
+   * `undefined`.
+   *
+   * So this band now carries `retiredSimulationRefusalSequence`, which is the
+   * same job `EventBandDwellState.retired` does one band over for a different
+   * reason. **The predicate moves both ways; the retirement moves one way**,
+   * which is the property a player would name: a sentence the corner has let
+   * go of does not come back because they pressed fast-forward or stepped back
+   * down from it.
+   *
+   * **Nothing is restored**, on option F's own terms: the sequence is cleared
+   * with the line, so a genuinely new refusal takes the band normally. This is
+   * a lifetime, not a mute.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined || notice.routeDecidedSince === true) {
+    if (notice === undefined) {
+      // The worker withdrew the refusal outright, or the session ended. The
+      // memory goes with it: a withdrawn ordinal can never be republished, and
+      // a session that has ended is what makes the next session's ordinal 1
+      // safe to show.
       simulationRefusalSequence = undefined;
+      retiredSimulationRefusalSequence = undefined;
+      if (refusalSource === 'simulation') clearRefusalLine();
+      return;
+    }
+    if (
+      notice.routeDecidedSince === true ||
+      notice.outlivedBandTicks === true ||
+      notice.sequence === retiredSimulationRefusalSequence
+    ) {
+      simulationRefusalSequence = undefined;
+      retiredSimulationRefusalSequence = notice.sequence;
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
     }
