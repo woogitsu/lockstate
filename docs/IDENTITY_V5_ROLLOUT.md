@@ -869,6 +869,13 @@ just a screenshot.")
 
 ### Worked 2026-09-15 (#1164): ten pass, one is not applicable, one fails, one is partial
 
+> **THE HEADING'S TALLY IS THE 2026-09-15 READING AND IS LEFT STANDING.** On
+> `65c8739f` (v0.0.728) the Touch row is re-measured PASS, so the partial one
+> is now a pass and the reading is eleven, one not applicable and one failing.
+> The heading is not edited, for the reason every block in this document is
+> kept: a count rewritten in place is a count whose earlier value nobody can
+> see, and the Touch row below carries what moved and what was run to move it.
+
 The paragraphs above are left exactly as they stood. What follows is the
 outcome, and it is a record rather than a re-plan.
 [`docs/research/2026-09-15-what-stage-8-accepted-and-what-it-did-not.md`](./research/2026-09-15-what-stage-8-accepted-and-what-it-did-not.md)
@@ -970,6 +977,78 @@ the record says so wherever it quotes a number.
   > verdict in this table is a measurement, and no one has re-run the Touch row
   > against the shipped tree. What changed is that the sentence blocking it is
   > no longer *"nothing implements it"* but *"nobody has re-measured it"*.
+  >
+  > **RE-MEASURED ON `65c8739f` (v0.0.728) AND THE ROW IS NOW PASS. The
+  > PARTIAL record above is kept whole** (`docs/AGENT_WORKFLOW.md` §4, mark
+  > both directions), because it is the state this row held from 2026-09-15 to
+  > this measurement and the reason it held it.
+  >
+  > **The row, as the delivery writes it.** *"Scroll w panelu, resize
+  > wysokości, tap narzędzia"* against *"Gesty nie przeciekają do mapy"*, plus
+  > the closing criterion's *"Każda obecna akcja ma osiągalną drogę"* at the
+  > phone tier, which is the clause the PARTIAL was about. Every reading below
+  > is a run on this branch's base commit with no production code changed by
+  > it.
+  >
+  > | what the row asks | run | result |
+  > |---|---|---|
+  > | tap a tool, no leak to the map, at 375x812 | `app-shell.spec.ts` filtered to `375x812` | **3 passed (1.4m)** |
+  > | two-finger gestures, pan / pinch / clamps / cancel | `world-scene-touch.spec.ts` | **14 passed** |
+  > | resize by height on a phone; the three tiers' shells | `hud-layout-shell.spec.ts` | passed |
+  > | scroll inside a panel, and the corner's press split | `hud-corner-chrome-passthrough.spec.ts` | **3 passed (30.0s)** |
+  > | the panels that give way, at four widths | `operations-reachability.spec.ts` | passed |
+  > | the corner's three surfaces, recorded at all three tiers | `unplaced-surfaces.spec.ts` | passed |
+  > | `DismissAlert` pressed at phone and at desktop, and the last row of a full log at 375x812 | `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` | **3 passed (9.7s)** |
+  >
+  > The middle five ran as one invocation: **54 passed (5.6m)**.
+  >
+  > **The clause that was false is true, and it was measured twice over.**
+  > `DismissAlert`'s dismiss control is present, laid out and owns its own
+  > centre at 375x812, and pressing it raises the dismissal intent — not
+  > geometry alone. Independently, the `#88` control sweep on the assembled
+  > page went green at **every one of its five viewports** on this commit
+  > (1280x720 1.8m, 1440x900 2.5m, 1024x768 1.2m, 900x600 2.1m, 375x812 1.3m;
+  > **5 passed, 8.9m**), and that sweep's accounting assertion is per viewport:
+  > every control in the shell was hit-tested at its own size, with
+  > `NEVER_LAID_OUT_BELOW_720` the only exemption and no simulation command
+  > behind any entry in it.
+  >
+  > **All eighteen commands were re-derived rather than inherited.** Each
+  > `z.literal` in `simulationCommandSchema` was grepped as `type: '<Command>'`
+  > across `src/`: eighteen literals, eighteen submission sites, every one of
+  > them in `src/main.ts`, exactly as the stage 5 record found for its
+  > seventeen.
+  >
+  > **And *"telefon daje dostęp do mapy"* now rests on a stronger reading than
+  > the one the record gave it.** §13 of the record cites the map-only fold,
+  > which that spec exercises at 1440x900 rather than at a phone. The two
+  > world-press tests above press the **real canvas at 375x812** and one of
+  > them removes an object through the worker, which is the map reached and
+  > used at that tier rather than merely uncovered.
+  >
+  > **Four limits on this measurement, named rather than left to be found.**
+  > (1) **Nothing here was taken quiet.** Two other agents ran Playwright
+  > suites and Vitest throughout; contention on this container produces false
+  > reds and not false greens, so a green under load is the safe direction, but
+  > it is not a quiet reading. (2) The two-finger gestures are proved at
+  > **1280x720 only**, which is not one of the three tiers — the handler is
+  > viewport-independent and the arithmetic is taken against that viewport, but
+  > no tier-level touch reading exists. (3) `hud-corner-chrome-passthrough`,
+  > which carries both the whole-list wheel scroll and the press split that
+  > makes *"no leak"* mean something, runs **entirely at 1440x900**; the
+  > phone-tier panel scroll is the full-log reading in the dismiss spec
+  > instead. (4) Git LFS is unprovisioned here, so the real-app runs logged
+  > actor-atlas decode failures throughout; no assertion above reads a sprite,
+  > and every one of them passed with those errors on the console.
+  >
+  > **Three sentences elsewhere went stale when #1279 shipped and are findings
+  > rather than defects**, because each still describes the `.hud__corner`
+  > mechanism correctly and only the alerts list moved out from under it: the
+  > stylesheet's *"On a phone the log is still out of reach"*, the docblock in
+  > `unplaced-surfaces.spec.ts` that says the alerts list *"has no box"* at
+  > 375x812, and the title and docblock of the `app-shell.spec.ts` refusal test
+  > that say the alerts list *"does not exist"* there. The three specs pass
+  > because none of them asserts the stale half.
 
 **So the closing criterion is six clauses satisfied, one satisfied only
 locally, and one false.** The record's §16 takes it apart clause by clause, and
@@ -977,6 +1056,31 @@ separates a clause that passes from the article behind it that does not:
 *"motywy zachowują kontrast i fokus"* holds — contrast computed in both themes,
 focus at 3:1 against every surface — while constitution article 8 asks for three
 things and the third, 200 % text, is the row above.
+
+> **RE-DERIVED ON `65c8739f` (v0.0.728) AGAINST THE TOUCH ROW ABOVE, AND THE
+> SENTENCE IT CORRECTS IS KEPT.** The criterion has eight clauses. The one the
+> sentence above calls false — *"Każda obecna akcja ma osiągalną drogę"* — was
+> false only at the phone tier and only because of `DismissAlert`, and it is
+> now measured true there. So on this commit the tally is **seven clauses
+> satisfied and one satisfied only locally**, and none false.
+>
+> **The clause that stayed only local got weaker rather than stronger, which
+> is the half a reader must not skim.** *"Docelowe testy oraz build
+> przechodzą"* is not re-measured here: this pass ran the typecheck and the
+> `tests/foundation` gate and the Touch row's browser specs, not the nine
+> gates the pass of 2026-09-15 ran. Two things are known about it on this
+> commit rather than assumed. `npx tsc -b` exits 0. And `tests/foundation` is
+> **one test red out of 680** — the anchor-staleness gate over
+> `docs/adr/STATUS-QUEUE.md`, whose budget its own message forbids raising,
+> which is a documentation gate and not this row's. A clause that reads
+> *"the target tests pass"* is therefore satisfied nowhere at all on this
+> commit until that gate is green, and calling it *satisfied only locally* is
+> already the generous reading.
+>
+> **Nothing else in the paragraph above moves.** The 200 % text row is still
+> the FAIL it is marked as, so constitution article 8's third element is still
+> unmet and the theme clause still passes in front of an article that does
+> not.
 
 ---
 
