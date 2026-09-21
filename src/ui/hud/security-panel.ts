@@ -11,6 +11,7 @@ import { HUD_MESSAGE_KEY } from './messages';
 import type {
   HudContrabandViewModel,
   HudIncidentDetailViewModel,
+  HudIncidentRowViewModel,
   HudIncidentsViewModel,
   HudLocalizer,
   HudSecurityViewModel,
@@ -249,6 +250,30 @@ export function createSecurityPanel(options: SecurityPanelOptions): SecurityPane
     );
   }
 
+  /**
+   * Where an incident is, in words.
+   *
+   * **The grade's word when the projection resolved one, and the sector's own
+   * id when it did not** -- character for character the rule the sectors block
+   * above applies to its own header, and the owner's ruling of 2026-09-21 was
+   * to apply that rule here (*"Nazwać stopniem, jak blok wyżej"*). The id was
+   * the only internal identifier a player saw anywhere in the HUD.
+   *
+   * What it gives up, said plainly because the owner was told it before
+   * choosing: a grade is **not a place**. Two sectors of the same grade read
+   * identically, and the grade word is the best thing that exists --
+   * `docs/HUD_PROJECTIONS.md` gaps 16 and 23 are why nothing in the simulation
+   * can say where a sector is, and ADR 0036's derived sector has no authored
+   * name at all.
+   *
+   * The fallback is an id rather than a blank for `formatPrisonerName`'s
+   * reason: the row is still about a sector, and saying nothing about which
+   * one is worse than saying it in the machine's words.
+   */
+  function incidentPlaceWord(incident: HudIncidentRowViewModel): string {
+    return incident.sectorGradeLabelKey === undefined ? incident.sectorId : t(incident.sectorGradeLabelKey);
+  }
+
   // ---- what has gone wrong -------------------------------------------
   let incidents: HudIncidentsViewModel | undefined;
   let detail: HudIncidentDetailViewModel | undefined;
@@ -436,7 +461,7 @@ export function createSecurityPanel(options: SecurityPanelOptions): SecurityPane
     detailBlock.dataset['incident'] = shown.incidentId;
     detailHeading.textContent = t(HUD_MESSAGE_KEY.sectionSecurityIncidentRow, {
       type: t(shown.typeLabelKey),
-      sector: shown.sectorId,
+      sector: incidentPlaceWord(shown),
     });
     detailSeverity.textContent = t(HUD_MESSAGE_KEY.sectionSecurityIncidentSeverity, {
       severity: n(shown.severity),
@@ -523,7 +548,7 @@ export function createSecurityPanel(options: SecurityPanelOptions): SecurityPane
       row.element.hidden = false;
       row.headline.textContent = t(HUD_MESSAGE_KEY.sectionSecurityIncidentRow, {
         type: t(incident.typeLabelKey),
-        sector: incident.sectorId,
+        sector: incidentPlaceWord(incident),
       });
       row.people.textContent = t(HUD_MESSAGE_KEY.sectionSecurityIncidentPeople, { count: n(incident.participantCount) });
       row.severityText.textContent = t(HUD_MESSAGE_KEY.sectionSecurityIncidentSeverity, {

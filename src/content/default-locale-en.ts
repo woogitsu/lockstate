@@ -3769,9 +3769,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * across saves, and ADR 0036's sector is derived rather than drawn, so
    * nobody authored a word for it. What a sector *does* carry is its grade's
    * `nameKey`, which the sectors block above this one already prefers over the
-   * id -- the incident row does not, because `IncidentRow` on the projection
-   * carries `sectorId` alone. Whether an id belongs on screen here is an open
-   * question and has not been put to the owner.
+   * id -- and **the incident row now does the same**. The question was put to
+   * the owner on 2026-09-21 and they ruled *"Nazwać stopniem, jak blok
+   * wyżej"* (name it by its grade, like the block above); provenance is the
+   * weaker kind this repository distinguishes, the label of a clickable
+   * option rather than a sentence they typed. `IncidentRow` on the projection
+   * carries the sector's grade `nameKey` beside its `sectorId`, and
+   * `security-panel.ts` prints the grade word when there is one and the id
+   * when there is not.
+   *
+   * **This sentence did not change and could not**: `{sector}` is a
+   * parameter, and what moved is the argument the panel passes it. What the
+   * ruling gives up, in the owner's hearing before they chose, is that a
+   * grade is **not a place** -- *"Assault in General"* names the grade, and
+   * two sectors of one grade read alike. Gaps 16 and 23 above are why there
+   * is nothing better to pass.
    */
   'hud.security-section.incident-row': '{type} in {sector}',
   /*

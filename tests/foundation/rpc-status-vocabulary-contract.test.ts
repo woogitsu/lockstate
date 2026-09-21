@@ -49,6 +49,17 @@ import { stripComments } from '../helpers/canonical-iteration';
  * because the table column feeding it is -- is pinned by execution instead, in
  * `supabase/tests/001_rls_and_save_version_rpc.test.sql`, which runs the empty
  * prison's conflict against real PostgreSQL and asserts the row.
+ *
+ * A FUNCTION MAY BE DEFINED IN MORE THAN ONE MIGRATION, AND THE NEWEST
+ * DEFINITION IS THE SCHEMA. `supabase/migrations/` is append-only -- an
+ * applied migration is history and is never edited (AGENTS.md, reservation
+ * 2) -- so the way to change a function is to add a migration that
+ * `create or replace`s it. Every reader in this file therefore resolves a
+ * function through `newestDefinitionOf`, which takes the last definition in
+ * filename order and ignores the rest. Reading across definitions reads dead
+ * SQL as if it were live, and it is not a hypothetical: the three readers
+ * here each did it, in three different directions, until 2026-09-21. The
+ * rule has its own test at the bottom of this file.
  */
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -70,6 +81,80 @@ const RPC_ROW_TYPES: readonly { readonly rpc: string; readonly rowType: string }
 ];
 
 /**
+ * The newest definition of a PL/pgSQL function, as the slice of SQL running
+ * from its `create or replace function` header to the `$$;` that closes its
+ * body -- or `null` if no migration defines it.
+ *
+ * WHY "NEWEST" AND NOT "EVERY". `supabase/migrations/` is append-only: a
+ * function is changed by adding a migration that redefines it, never by
+ * editing the migration that introduced it. That is what
+ * `create or replace function` means, and it is the only shape available --
+ * reservation 2 in AGENTS.md forbids editing an applied migration at all. So
+ * **a function may be defined in several files, and the last one to apply is
+ * the schema.** Every earlier definition is history that no longer runs, and a
+ * reader that accumulates across files is reading dead SQL as if it were live.
+ *
+ * Filename order IS application order: migration names are timestamp-prefixed
+ * and `scripts/verify-supabase-sql.mjs:91-94` applies them through
+ * `readdirSync(directory).filter(...).sort()`. `readdirSync` alone is not
+ * ordered, so the `.sort()` below is load-bearing rather than tidy.
+ *
+ * WHAT THIS REPLACED, because it was a live defect rather than a tidy-up.
+ * The three readers below each walked every `.sql` and each got it wrong in a
+ * different direction: `statusesReturnedBy` unioned into a `Set` (so a status
+ * a later definition REMOVED stayed in the vocabulary forever),
+ * `rowShapesReturnedBy` pushed every match with no dedup (so a redefined
+ * function returned each of its rows once per definition), and `outColumnsOf`
+ * returned on the FIRST file it matched (so it read the oldest signature).
+ * Nothing caught it because the two RPCs in `RPC_ROW_TYPES` happen to be
+ * defined exactly once each. `submit_challenge_evidence` has been defined in
+ * three migrations since 2026-08-24 and is ungated only because the client
+ * does not call it -- see the "reads the newest definition" test below, which
+ * uses it as the live evidence that this is not a hypothetical.
+ *
+ * The header is matched as `create or replace function public.<name>(` rather
+ * than `function public.<name>(`, which the previous readers used: the shorter
+ * form also matches the `revoke all on function public.<name>(...)` lines
+ * every one of these migrations ends with. It happened to be harmless because
+ * the definition precedes the revoke in each file; it is not a property worth
+ * relying on. `lastIndexOf` within the chosen file, for the same reason the
+ * loop keeps the last file.
+ */
+function newestDefinitionOf(functionName: string): string | null {
+  const header = `create or replace function public.${functionName}(`;
+  let newest: string | null = null;
+
+  for (const entry of readdirSync(migrationsDirectory).sort()) {
+    if (!entry.endsWith('.sql')) continue;
+    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
+
+    const start = sql.lastIndexOf(header);
+    if (start === -1) continue;
+    const end = sql.indexOf('$$;', start);
+    newest = sql.slice(start, end === -1 ? undefined : end);
+  }
+
+  return newest;
+}
+
+/**
+ * How many migrations define a function. Used only by the test that pins the
+ * newest-definition rule, to keep it from going vacuous if the redefinitions
+ * it relies on ever collapse to one.
+ */
+function definitionCountOf(functionName: string): number {
+  const header = `create or replace function public.${functionName}(`;
+  let count = 0;
+
+  for (const entry of readdirSync(migrationsDirectory)) {
+    if (!entry.endsWith('.sql')) continue;
+    if (readFileSync(join(migrationsDirectory, entry), 'utf8').includes(header)) count += 1;
+  }
+
+  return count;
+}
+
+/**
  * Statuses a PL/pgSQL function can return, read out of its body.
  *
  * Anchored on `return query select '<status>'::text`, which is how every RPC in
@@ -79,22 +164,17 @@ const RPC_ROW_TYPES: readonly { readonly rpc: string; readonly rowType: string }
  * than into a pass.
  */
 function statusesReturnedBy(functionName: string): readonly string[] {
+  // Only the newest definition, and only the body of the named function: a
+  // migration may define several, and `create_save_version`'s `'conflict'`
+  // must not be read as one of `create_prison`'s answers. The `Set` still
+  // dedups within one body; what it must NOT do is carry a status forward
+  // from a definition that no longer runs.
+  const body = newestDefinitionOf(functionName);
+  if (body === null) return [];
+
   const statuses = new Set<string>();
-  for (const entry of readdirSync(migrationsDirectory)) {
-    if (!entry.endsWith('.sql')) continue;
-    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
-
-    // Only the body of the named function. A migration may define several, and
-    // `create_save_version`'s `'conflict'` must not be read as one of
-    // `create_prison`'s answers.
-    const start = sql.indexOf(`function public.${functionName}(`);
-    if (start === -1) continue;
-    const end = sql.indexOf('$$;', start);
-    const body = sql.slice(start, end === -1 ? undefined : end);
-
-    for (const match of body.matchAll(/return query\s+select\s+'([a-z_]+)'::text/gu)) {
-      statuses.add(match[1]!);
-    }
+  for (const match of body.matchAll(/return query\s+select\s+'([a-z_]+)'::text/gu)) {
+    statuses.add(match[1]!);
   }
   return [...statuses].sort();
 }
@@ -175,22 +255,19 @@ const RPC_ROW_SHAPES: readonly {
 
 /** The `returns table (...)` column names of a PL/pgSQL function, in order. */
 function outColumnsOf(functionName: string): readonly string[] {
-  for (const entry of readdirSync(migrationsDirectory)) {
-    if (!entry.endsWith('.sql')) continue;
-    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
-    const start = sql.indexOf(`create or replace function public.${functionName}(`);
-    if (start === -1) continue;
+  // Newest definition only. This one used to `return` on the FIRST file that
+  // matched, which is the oldest signature -- the opposite of the rule.
+  const definition = newestDefinitionOf(functionName);
+  if (definition === null) return [];
 
-    const listStart = sql.indexOf('returns table (', start);
-    if (listStart === -1) return [];
-    const listEnd = sql.indexOf(')', listStart);
-    const list = sql.slice(listStart + 'returns table ('.length, listEnd).replace(/--[^\n]*/gu, '');
-    return list
-      .split(',')
-      .map((column) => column.trim().split(/\s+/u)[0]!)
-      .filter((name) => name !== '');
-  }
-  return [];
+  const listStart = definition.indexOf('returns table (');
+  if (listStart === -1) return [];
+  const listEnd = definition.indexOf(')', listStart);
+  const list = definition.slice(listStart + 'returns table ('.length, listEnd).replace(/--[^\n]*/gu, '');
+  return list
+    .split(',')
+    .map((column) => column.trim().split(/\s+/u)[0]!)
+    .filter((name) => name !== '');
 }
 
 /**
@@ -202,19 +279,15 @@ function outColumnsOf(functionName: string): readonly string[] {
  * `RPC_ROW_SHAPES` rather than pass quietly, which is the direction to fail in.
  */
 function rowShapesReturnedBy(functionName: string): readonly { readonly status: string; readonly expressions: readonly string[] }[] {
+  // Newest definition only. This one used to push every match from every
+  // file with no dedup, so a redefined function returned each of its rows
+  // once per definition -- three declared shapes against six scanned.
+  const body = newestDefinitionOf(functionName);
+  if (body === null) return [];
+
   const shapes: { status: string; expressions: readonly string[] }[] = [];
-  for (const entry of readdirSync(migrationsDirectory)) {
-    if (!entry.endsWith('.sql')) continue;
-    const sql = readFileSync(join(migrationsDirectory, entry), 'utf8');
-
-    const start = sql.indexOf(`function public.${functionName}(`);
-    if (start === -1) continue;
-    const end = sql.indexOf('$$;', start);
-    const body = sql.slice(start, end === -1 ? undefined : end);
-
-    for (const match of body.matchAll(/return query\s+select\s+'([a-z_]+)'::text\s*,([^;]+);/gu)) {
-      shapes.push({ status: match[1]!, expressions: match[2]!.split(',').map((expression) => expression.trim()) });
-    }
+  for (const match of body.matchAll(/return query\s+select\s+'([a-z_]+)'::text\s*,([^;]+);/gu)) {
+    shapes.push({ status: match[1]!, expressions: match[2]!.split(',').map((expression) => expression.trim()) });
   }
   return shapes.sort((left, right) => left.status.localeCompare(right.status));
 }
@@ -375,6 +448,65 @@ describe('every RPC status the database can return is one the client handles', (
           `${rpc}()'s row is checked for ${column} before its status is read, so a status whose row legitimately omits it cannot reach its branch`,
         ).toBe(false);
       }
+    }
+  });
+
+  /**
+   * The readers above read the NEWEST definition of a function, not every
+   * definition.
+   *
+   * WHY THIS NEEDS ITS OWN TEST. `supabase/migrations/` is append-only, so a
+   * function is changed by adding a migration that redefines it. Every reader
+   * in this file therefore has to pick one definition out of several, and
+   * before this test they each picked wrongly in a different direction --
+   * unioning statuses across definitions, counting every row shape once per
+   * definition, and reading the OLDEST signature. Nothing failed, because the
+   * two RPCs in `RPC_ROW_TYPES` are each defined exactly once, so the branch
+   * had never been taken.
+   *
+   * WHY `submit_challenge_evidence` IS THE PROBE, and why the evidence is not
+   * hypothetical: it has been defined in THREE migrations since 2026-08-24
+   * (`20260823090100_create_challenge_tables.sql`,
+   * `20260824100100_harden_submit_challenge_evidence.sql` and
+   * `20260824110100_close_challenge_definition_oracle.sql`), and it is outside
+   * `RPC_ROW_TYPES` only because `src/persistence/cloud/supabase-client.ts`
+   * does not call it -- the `.rpc(...)` cross-check above asserts that the
+   * gated set is exactly the set the client calls, so it cannot be added here
+   * without a caller and a row type to contract against. It is the one
+   * redefined function this repository has, which makes it the only available
+   * probe for the rule, and the reason the defect was latent rather than
+   * visible.
+   *
+   * WHAT GOES RED WITHOUT THE FIX. The first definition returns two rows and
+   * the later two return three, so an accumulating reader answers with 2+3+3
+   * = eight shapes where the live function has three. The count guard below
+   * runs first so that this test cannot quietly become vacuous if those
+   * redefinitions are ever collapsed into one file.
+   */
+  it('reads the newest definition of a redefined function, not every definition', () => {
+    const probe = 'submit_challenge_evidence';
+
+    // Non-vacuity: the rule is only exercised while some function really is
+    // defined more than once.
+    expect(definitionCountOf(probe), `${probe} is no longer redefined, so this test proves nothing`).toBeGreaterThan(1);
+
+    // The live definition is 20260824110100's, which answers with exactly
+    // these three rows. An accumulating reader returns eight.
+    expect(rowShapesReturnedBy(probe)).toEqual([
+      { status: 'conflict', expressions: ['null::uuid'] },
+      { status: 'duplicate', expressions: ['v_existing_id'] },
+      { status: 'submitted', expressions: ['v_submission_id'] },
+    ]);
+
+    // Stated separately from the equality above because it is the property
+    // that actually broke the gate, and it must hold for the gated RPCs too:
+    // one status, one row shape, however many times the function has been
+    // rewritten.
+    for (const rpc of [probe, ...RPC_ROW_TYPES.map((entry) => entry.rpc)]) {
+      const statuses = rowShapesReturnedBy(rpc).map((shape) => shape.status);
+      expect(statuses, `${rpc}() returns a status more than once, which is a reader reading a dead definition`).toEqual([
+        ...new Set(statuses),
+      ]);
     }
   });
 });

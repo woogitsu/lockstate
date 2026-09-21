@@ -72,6 +72,45 @@ const OPEN_INCIDENT = {
   terminal: false,
 } as const;
 
+/**
+ * The same incident with the grade word the projection resolved for its
+ * sector (owner ruling 2026-09-21).
+ *
+ * `grade.general.name` is a real catalog key and its English word is
+ * *General*, so the row reads *"Assault in General"*. Both this and
+ * `OPEN_INCIDENT` are kept, because the rule has two arms and the arm
+ * without a key is the one a sector whose grade the catalog does not define
+ * still has to land on.
+ */
+const OPEN_INCIDENT_GRADED = {
+  ...OPEN_INCIDENT,
+  sectorGradeLabelKey: 'grade.general.name',
+} as const;
+
+const INCIDENTS_OPEN_GRADED: HudIncidentsViewModel = {
+  open: [OPEN_INCIDENT_GRADED],
+  total: 3,
+  stillOpen: 1,
+  resolved: 1,
+  lapsed: 1,
+  injured: 2,
+  escapes: 0,
+  byType: [{ typeLabelKey: 'incident-type.assault.name', count: 3 }],
+};
+
+const DETAIL_GRADED: HudIncidentDetailViewModel = {
+  ...OPEN_INCIDENT_GRADED,
+  timeline: [
+    { stateLabelKey: 'incident-state.reported.name', atTick: 120 },
+    { stateLabelKey: 'incident-state.active.name', atTick: 128 },
+  ],
+  injuredCount: 0,
+  propertyDamage: 0,
+  propertyDamageMax: 10,
+  escaped: false,
+  requiredResponders: 2,
+};
+
 const INCIDENTS_OPEN: HudIncidentsViewModel = {
   open: [OPEN_INCIDENT],
   total: 3,
@@ -314,6 +353,60 @@ test.describe('the Security section', () => {
     expect(text).toContain('Responders needed: 2');
     expect(text).toContain('at tick 128');
     expect(text).not.toContain('damage 0 of 10');
+  });
+
+  /**
+   * Where an incident is, as a player reads it (owner ruling 2026-09-21).
+   *
+   * Until that ruling this row printed the sector's **internal id** --
+   * *"Assault in security-sector.prison"* -- which was the only place in the
+   * HUD a player saw one, and it read as debug output. The owner chose
+   * *"Nazwać stopniem, jak blok wyżej"*: name it by its grade, the rule the
+   * sectors block one element up already follows.
+   *
+   * This is a browser assertion rather than a headless one for the reason
+   * this file's header gives: rendered text is not on-screen text, and the
+   * claim being made is about what a player reads.
+   *
+   * **A grade is not a place**, and the owner was told so before choosing.
+   * Nothing here hides that: the word on screen is the grade's.
+   */
+  test('names the sector by its grade rather than by its id', async ({ page }) => {
+    await openSection(page, { security: SECURITY, incidents: INCIDENTS_OPEN_GRADED, contraband: CONTRABAND });
+    await page.locator('.hud-security__incident-row[data-incident="incident.1"]').click();
+    await feed(page, {
+      security: SECURITY,
+      incidents: INCIDENTS_OPEN_GRADED,
+      contraband: CONTRABAND,
+      incidentDetail: DETAIL_GRADED,
+    });
+
+    const text = await sectionText(page);
+    expect(text).toContain('Assault in General');
+    // The id is gone from the row and from the inspector heading. It is still
+    // the row's browser handle -- `data-incident` and `data-sector` are
+    // attributes, not text -- which `sectionText` cannot see and a player
+    // cannot either.
+    expect(text).not.toContain('sector.default');
+  });
+
+  /**
+   * The other arm of the same rule, which is the one that must not be lost.
+   *
+   * A sector whose grade the content catalog does not define reaches the panel
+   * with no grade key at all, and the row then says the id rather than saying
+   * nothing -- `formatPrisonerName`'s rule for an unnamed prisoner. A test for
+   * the happy arm alone would pass against a panel that printed an empty
+   * string here.
+   */
+  test('falls back to the sector id when no grade word reached the panel', async ({ page }) => {
+    await openSection(page, { security: SECURITY, incidents: INCIDENTS_OPEN, contraband: CONTRABAND });
+    await page.locator('.hud-security__incident-row[data-incident="incident.1"]').click();
+    await feed(page, { security: SECURITY, incidents: INCIDENTS_OPEN, contraband: CONTRABAND, incidentDetail: DETAIL });
+
+    const text = await sectionText(page);
+    expect(text).toContain('Assault in sector.default');
+    expect(text).not.toContain('Assault in General');
   });
 
   /**

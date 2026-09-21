@@ -454,6 +454,10 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
           incidents: runtime.incidents,
           trigger: runtime.incidentTriggerSystem,
           response: runtime.incidentResponseSystem,
+          // The same registry `hud/security` reads above, so the grade word a
+          // row prints and the grade word the sectors block prints are the
+          // same lookup rather than two.
+          sectors: runtime.securitySectors,
         },
         tick,
         pageRequest(request),
@@ -468,7 +472,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     target: 'id',
     project: (runtime, tick, request) => {
       const detail = projectIncidentDetail(
-        { incidents: runtime.incidents, response: runtime.incidentResponseSystem },
+        { incidents: runtime.incidents, response: runtime.incidentResponseSystem, sectors: runtime.securitySectors },
         idTarget(request),
         tick,
       );

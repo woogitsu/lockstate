@@ -27,6 +27,7 @@ import {
   RENDER_ACTORS_SCHEMA_ID,
   RENDER_ACTORS_SCHEMA_VERSION,
 } from '../protocol/render-actors-payload';
+import { refusalBandCeilingPassed } from '../refusals/refusal-band-lifetime';
 import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } from '../runtime/restore-refusal';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
@@ -293,6 +294,39 @@ export class SimulationWorkerStateMachine {
    * standing refusal moves `sequence` and opens the gate on its own.
    */
   private _publishedRefusalRouteDecided = false;
+  /**
+   * Whether the refusal the main thread was last told about had already
+   * outlived the band's tick ceiling when that publication left
+   * (`refusalBandTickCeiling`, ruled in ticks by the owner 2026-09-20 and
+   * ruled to scale with the running speed by the same owner on the same day).
+   *
+   * **A third watermark, for the same reason there is a second one, and it is
+   * the half of this that could not be done on the main thread alone.** The
+   * ceiling is crossed by the *clock* rather than by anything the player did,
+   * so no ordinal moves and no count moves -- and a refusal in a prison where
+   * nothing further happens is exactly the case where `statusCountsEqual`
+   * suppresses every publication there is. The main thread already holds both
+   * numbers it needs (the publication's `tick` and the refusal's own), so it
+   * needs no new field on the wire; what it cannot do is make a publication
+   * happen. This is that publication, and there is exactly one of it per
+   * refusal.
+   *
+   * **Not monotone per record, unlike `_publishedRefusalRouteDecided`, and the
+   * difference arrived with the speed ruling.** Ticks only advance, so at a
+   * fixed speed this goes `false` -> `true` once. The *threshold* moves with
+   * the speed, though, so a player who slows down under a standing refusal can
+   * flip it back and open this gate a second time. That is bounded by how fast
+   * a player can work the transport controls -- the same bound
+   * `_publishedZoningSequence` argues for a dragged rectangle -- and it is
+   * harmless rather than merely cheap, because the **band** remembers the
+   * ordinal it retired and will not raise it again whatever this publishes
+   * (`mountHud`'s `applySimulationRefusal`). So the worst case is one extra
+   * publication the HUD ignores, not a sentence coming back.
+   *
+   * A session loaded over a running one is a new state machine, so a restored
+   * kernel cannot carry this backwards.
+   */
+  private _publishedRefusalOutlivedBand = false;
   /**
    * The `sequence` of the zoning notice the main thread was last told about,
    * `0` for none.
@@ -615,9 +649,42 @@ export class SimulationWorkerStateMachine {
     const refusal = this._runtime.refusals.last;
     const refusalSequence = refusal?.sequence ?? 0;
     const refusalRouteDecided = refusal?.routeDecidedSince === true;
+    // Read once, here rather than beside `tick` below, because it has to be
+    // available to the interval gate: a ceiling that only reached the payload
+    // would be computed on publications this method had already declined to
+    // make.
+    //
+    // **A paused clock freezes the answer rather than choosing a speed for
+    // it.** The threshold scales with the speed (the owner's *"Skalować sufit
+    // prędkością"*, 2026-09-20) and `ClockControl` carries no speed while
+    // paused; `1` is the smallest multiplier and so the shortest budget, so
+    // reading a pause as x1 would *shrink* the budget under a standing
+    // refusal. Holding the last answer says the property out loud: while the
+    // prison is paused, nothing about this band changes.
+    //
+    // **It has no observable consequence today, and that is written here so
+    // that nobody adds a test claiming otherwise -- one was written and
+    // deleted.** `transition` stops the tick loop for every state but
+    // `running`, so the only way this method runs in a paused prison is
+    // `handleSubmitCommand`'s drain (#749), which passes
+    // `dispatchedWhilePaused` and forces the gate open regardless of what this
+    // computes; the other paused caller is the publish after `initialize`, and
+    // a restored session has no standing refusal because `RefusalLog` is not
+    // in the save. **The property a player can actually see is enforced on the
+    // main thread**, where the band is measured against
+    // `HudClockViewModel.speed` -- which `hudClockFromWorkerMessage`
+    // deliberately keeps at the last speed the simulation *ran* at. This
+    // branch is the same reading made locally, so a future publisher that does
+    // publish on a pause cannot inherit the bug by default.
+    const control = this._clock.control;
+    const refusalOutlivedBand =
+      control.mode === 'paused'
+        ? this._publishedRefusalOutlivedBand
+        : refusal !== undefined && refusalBandCeilingPassed(refusal.tick, this._kernel.tick, control.speed);
     const refusalIsNew =
       refusalSequence !== this._publishedRefusalSequence ||
-      refusalRouteDecided !== this._publishedRefusalRouteDecided;
+      refusalRouteDecided !== this._publishedRefusalRouteDecided ||
+      refusalOutlivedBand !== this._publishedRefusalOutlivedBand;
     // A newly designated room opens the interval gate for the reason a
     // refusal does, and with the same bound: both are player-initiated
     // events rather than levels, both are a field access to test, and each
@@ -638,6 +705,7 @@ export class SimulationWorkerStateMachine {
     this._publishedCounts = counts;
     this._publishedRefusalSequence = refusalSequence;
     this._publishedRefusalRouteDecided = refusalRouteDecided;
+    this._publishedRefusalOutlivedBand = refusalOutlivedBand;
     this._publishedZoningSequence = zoningSequence;
 
     this.post({

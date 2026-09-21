@@ -320,8 +320,11 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
-> > `src/ui/hud/hud.ts:2759` (the anchor read `:2611`; ADR 0022's copy of the
-> > same claim was re-aimed with it again), so the Staff panel is still on
+> > `src/ui/hud/hud.ts:2837` (the anchor read 2611, then 2759; re-aimed onto
+> > the quoted line by `grep -n` rather than by arithmetic, on `ba1c0a87`
+> > merged with `49cd2fbd` — neither this document's earlier copy of the
+> > sentence nor ADR 0022's moves with it, because both are kept records of
+> > what a coordinate read), so the Staff panel is still on
 > > `manage` and the old `security` tab is still gone. A section id was reused;
 > > a panel was not moved back.
 

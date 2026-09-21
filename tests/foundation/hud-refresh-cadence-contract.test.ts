@@ -127,7 +127,7 @@ function refreshesTheReadouts(message: WorkerToMainMessage): boolean {
   const counts = hudCountsFromWorkerMessage(message);
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
-  const refusal = hudRefusalFromWorkerMessage(message);
+  const refusal = hudRefusalFromWorkerMessage(message, 1);
   // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
   // the view model rather than being emptied -- and this translator says nothing
   // about that message, so the list it is handed is one no row is added to.
@@ -149,7 +149,7 @@ function refreshesWithoutTheClock(message: WorkerToMainMessage): boolean {
   const counts = hudCountsFromWorkerMessage(message);
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
-  const refusal = hudRefusalFromWorkerMessage(message);
+  const refusal = hudRefusalFromWorkerMessage(message, 1);
   // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
   // the view model rather than being emptied -- and this translator says nothing
   // about that message, so the list it is handed is one no row is added to.
