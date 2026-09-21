@@ -60,6 +60,18 @@ import { stripComments } from '../helpers/canonical-iteration';
  * SQL as if it were live, and it is not a hypothetical: the three readers
  * here each did it, in three different directions, until 2026-09-21. The
  * rule has its own test at the bottom of this file.
+ *
+ * ALL THREE READERS WERE WRONG BEFORE THAT FIX, AND TWO OF THE THREE WERE
+ * STILL UNPINNED AFTER IT: fixing a reader and demonstrating the fix are not
+ * the same repair, because demonstrating it needs a case the real migrations
+ * do not provide. `rowShapesReturnedBy` got a real one for free
+ * (`submit_challenge_evidence`'s row shapes differ across its three
+ * definitions); `statusesReturnedBy` and `outColumnsOf` did not, because
+ * nothing in this schema has ever changed a function's status vocabulary or
+ * OUT column list, and both are now pinned by synthetic fixtures instead
+ * (near the end of this file). A fourth reader added here should assume the
+ * same is true of it by default: a real redefinition to demonstrate the
+ * newest-wins rule against is the exception, not the norm.
  */
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -187,14 +199,29 @@ function definitionCountOf(functionName: string): number {
  * always a cast literal. A function that answered some other way would produce
  * an empty set here, which the emptiness guard below turns into a failure rather
  * than into a pass.
+ *
+ * `entries` defaults to the real migrations directory, exactly as
+ * `newestDefinitionOf`'s does and for the same reason -- see that function's
+ * comment. This is also the reader whose own bug is invisible to every
+ * existing test: the "reads the newest definition" probe below calls
+ * `rowShapesReturnedBy` and `definitionCountOf` against
+ * `submit_challenge_evidence`, never `statusesReturnedBy`, and the two RPCs
+ * `statusesReturnedBy` IS checked against (`RPC_ROW_TYPES`) are each defined
+ * in exactly one migration, so the newest-vs-oldest branch is never taken for
+ * it there either. That is the whole reason this reader's own reimplemented
+ * accumulate-across-files bug (see "reads the newest status vocabulary on a
+ * synthetic pair" near the end of this file) would pass unnoticed without a
+ * fixture -- and unlike `outColumnsOf`'s, it would pass unnoticed even
+ * against real, redefined SQL, because every real status change this schema
+ * has ever made is an addition; see that test's own comment.
  */
-function statusesReturnedBy(functionName: string): readonly string[] {
+function statusesReturnedBy(functionName: string, entries: readonly MigrationEntry[] = migrationEntries()): readonly string[] {
   // Only the newest definition, and only the body of the named function: a
   // migration may define several, and `create_save_version`'s `'conflict'`
   // must not be read as one of `create_prison`'s answers. The `Set` still
   // dedups within one body; what it must NOT do is carry a status forward
   // from a definition that no longer runs.
-  const body = newestDefinitionOf(functionName);
+  const body = newestDefinitionOf(functionName, entries);
   if (body === null) return [];
 
   const statuses = new Set<string>();
@@ -545,9 +572,10 @@ describe('every RPC status the database can return is one the client handles', (
    * `outColumnsOf` alone, on a pair no real migration provides.
    *
    * WHY THIS TEST EXISTS SEPARATELY FROM THE ONE ABOVE. The probe above
-   * proves `rowShapesReturnedBy` and `statusesReturnedBy` (and, through
-   * `definitionCountOf`, the redefinition itself) pick the newest
-   * definition. It does not touch `outColumnsOf`, because
+   * proves `rowShapesReturnedBy` (and, through `definitionCountOf`, the
+   * redefinition itself) picks the newest definition -- it does NOT prove
+   * that of `statusesReturnedBy`, which it never calls; see that function's
+   * own comment. It does not touch `outColumnsOf` either, because
    * `submit_challenge_evidence`'s three definitions all declare the same
    * `returns table (status text, submission_id uuid)` -- no function in this
    * repository has ever changed its OUT column list, so nothing real
@@ -593,6 +621,77 @@ describe('every RPC status the database can return is one the client handles', (
     // Filename order must not matter, only newest-by-name: feeding the pair
     // in reverse must not flip the answer to the first file supplied.
     expect(outColumnsOf(probe, [...entries].reverse())).toEqual(['status', 'new_only_column', 'extra_column']);
+  });
+
+  /**
+   * `statusesReturnedBy` alone, on a pair no real migration provides.
+   *
+   * WHY THIS TEST EXISTS SEPARATELY FROM BOTH OF THE OTHER TWO, AND WHY A
+   * REAL PROBE CANNOT REPLACE IT even though `submit_challenge_evidence`'s
+   * status vocabulary genuinely does change across its migrations (its first
+   * definition returns only `'duplicate'` and `'submitted'`; the second adds
+   * `'conflict'`, and the third keeps all three). Every one of those changes
+   * is an ADDITION. `statusesReturnedBy`'s pre-#1339 bug unioned statuses
+   * across every file into a `Set` instead of reading only the newest
+   * definition -- and unioning a strictly growing sequence of sets produces
+   * the same set the last one alone would. Feeding all three
+   * `submit_challenge_evidence` definitions to that accumulating bug would
+   * therefore answer `{conflict, duplicate, submitted}`, identical to
+   * `newestDefinitionOf`'s answer, so no case this schema has ever produced
+   * can distinguish the two directions for this specific reader -- only a
+   * status a later definition REMOVES can, and nothing here has done that.
+   * (`rowShapesReturnedBy` does not share this blind spot: it keys on
+   * `(status, expressions)`, and `'duplicate'`'s expression itself changed
+   * from `v_existing` to `v_existing_id` between the first and second
+   * definitions, which a per-status accumulator conflates into duplicate
+   * entries rather than silently agreeing.)
+   *
+   * The gap is compounded, not just masked, by nothing calling
+   * `statusesReturnedBy(probe)` at all: the "reads the newest definition"
+   * test below calls `rowShapesReturnedBy` and `definitionCountOf` against
+   * `submit_challenge_evidence`, never `statusesReturnedBy`; and
+   * `RPC_ROW_TYPES`, the only place `statusesReturnedBy` is actually invoked,
+   * names `create_prison` and `create_save_version`, each defined in exactly
+   * one migration -- so the newest-vs-oldest branch inside
+   * `statusesReturnedBy` is never taken by anything that calls it either.
+   * Reverting `statusesReturnedBy` to its own pre-#1339 accumulate-across-
+   * every-file loop (bypassing `newestDefinitionOf` altogether, the same
+   * shape the real bug had) leaves the whole of `tests/foundation` green.
+   *
+   * WHY A FIXTURE RATHER THAN A MIGRATION, and why `entries` is a parameter
+   * here too: identical reasoning to `outColumnsOf`'s fixture above --
+   * `supabase/migrations/` is append-only and reservation 2 (AGENTS.md) is
+   * the owner's, so the difference is manufactured here instead, fed to the
+   * same `statusesReturnedBy` every other test in this file calls.
+   *
+   * The two definitions below share one status and differ in a second, so
+   * first-wins and newest-wins disagree on the returned set the way they
+   * cannot on any status-vocabulary case this file already exercises for
+   * `statusesReturnedBy` specifically (only `rowShapesReturnedBy` gets that
+   * exercise, from `submit_challenge_evidence`). Filenames sort so the second
+   * is newest.
+   */
+  it("reads the newest status vocabulary on a synthetic pair, since statusesReturnedBy is never probed against a real redefinition", () => {
+    const probe = 'fixture_only_statuses_differ';
+    const entries: readonly MigrationEntry[] = [
+      {
+        name: '20260101000000_fixture_first.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text;\n  return query select 'old_only_status'::text;\nend;\n$$;\n`,
+      },
+      {
+        name: '20260102000000_fixture_second.sql',
+        sql: `create or replace function public.${probe}()\nreturns table (status text)\nlanguage plpgsql security definer as $$\nbegin\n  return query select 'ok'::text;\n  return query select 'new_only_status'::text;\nend;\n$$;\n`,
+      },
+    ];
+
+    // Non-vacuity: if the two fixture definitions ever stopped disagreeing,
+    // this test would pass no matter which one `statusesReturnedBy` read.
+    expect(statusesReturnedBy(probe, [entries[0]!])).not.toEqual(statusesReturnedBy(probe, [entries[1]!]));
+
+    expect(statusesReturnedBy(probe, entries)).toEqual(['new_only_status', 'ok']);
+    // Filename order must not matter, only newest-by-name: feeding the pair
+    // in reverse must not flip the answer to the first file supplied.
+    expect(statusesReturnedBy(probe, [...entries].reverse())).toEqual(['new_only_status', 'ok']);
   });
 
   /**
