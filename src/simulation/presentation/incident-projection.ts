@@ -1,3 +1,6 @@
+import type { ContentRegistry } from '../../content/registry';
+import type { SecurityGradeDefinition } from '../../content/security-grade-catalog';
+import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
 import type { EntityId } from '../entity/entity-store';
 import type {
   IncidentRecord,
@@ -74,10 +77,39 @@ export interface IncidentResponseMetricsSource {
   requiredResponderCount(severity: number): number;
 }
 
+/**
+ * Just enough of `SecuritySectorRegistry` to turn an incident's `sectorId`
+ * into the grade it was registered under.
+ *
+ * Structural rather than the registry itself, for the reason
+ * `SecuritySectorSource` in `security-projection.ts` is: this projection
+ * resolves sectors **by id** and never enumerates them, so the narrow shape is
+ * also the honest one about what it reads.
+ */
+export interface IncidentSectorSource {
+  getDefinition(id: string): { readonly gradeId: string } | undefined;
+}
+
 export interface IncidentProjectionSource {
   readonly incidents: IncidentLogSource;
   readonly trigger?: IncidentTriggerMetricsSource;
   readonly response?: IncidentResponseMetricsSource;
+  /**
+   * Optional, and a row without it carries no grade key rather than failing:
+   * every existing caller that only wants incident counts keeps working, and
+   * the panel's own fallback is the same one the sectors block already draws.
+   */
+  readonly sectors?: IncidentSectorSource;
+}
+
+/**
+ * Content this projection reads, injectable for the reason
+ * `SecurityProjectionOptions` is: the grade catalog is content, not a system,
+ * and a test that wants a sector whose grade the catalog does not define needs
+ * to say so rather than mutate the default registry.
+ */
+export interface IncidentProjectionOptions {
+  readonly grades?: ContentRegistry<SecurityGradeDefinition>;
 }
 
 export interface IncidentOutcomeViewModel {
@@ -91,6 +123,23 @@ export interface IncidentRowViewModel {
   readonly incidentId: string;
   readonly type: IncidentType;
   readonly sectorId: string;
+  /**
+   * The grade's word, from the content catalog's own `nameKey`.
+   *
+   * **Absent rather than blank** when no sector source was supplied, when the
+   * id names no registered sector, or when the sector names a grade the
+   * catalog does not define -- the same three-way omission
+   * `SecuritySectorViewModel.gradeNameKey` makes, and for the same reason: a
+   * reader that has to render *something* can then fall back to `sectorId`
+   * and know it is doing so.
+   *
+   * It is a **grade and not a place**. Two sectors of the same grade carry the
+   * same key, and `docs/HUD_PROJECTIONS.md` gaps 16 and 23 are why nothing
+   * better exists: no projection publishes what is in a sector, and nobody has
+   * authored a name for one. ADR 0036's sector is derived, and
+   * `DEFAULT_SECURITY_SECTOR_ID` was chosen for save stability.
+   */
+  readonly sectorGradeNameKey?: string;
   readonly state: IncidentState;
   /** `true` for `'resolved'` and `'lapsed'`; the lifecycle is forward-only and both are terminal. */
   readonly terminal: boolean;
@@ -163,16 +212,29 @@ function projectOutcome(record: IncidentRecord): IncidentOutcomeViewModel | unde
   };
 }
 
+/** `undefined` for an absent source, an unregistered sector, or a grade the catalog does not define. */
+function sectorGradeNameKey(
+  sectorId: string,
+  sectors: IncidentSectorSource | undefined,
+  grades: ContentRegistry<SecurityGradeDefinition>,
+): string | undefined {
+  const sector = sectors?.getDefinition(sectorId);
+  if (sector === undefined) return undefined;
+  return grades.getById(sector.gradeId)?.nameKey;
+}
+
 function projectRow(
   record: IncidentRecord,
   tick: number,
   response: IncidentResponseMetricsSource | undefined,
+  gradeNameKey: string | undefined,
 ): IncidentRowViewModel {
   const outcome = projectOutcome(record);
   return {
     incidentId: record.id,
     type: record.type,
     sectorId: record.sectorId,
+    ...(gradeNameKey !== undefined ? { sectorGradeNameKey: gradeNameKey } : {}),
     state: record.state,
     terminal: isTerminal(record.state),
     severity: record.severity,
@@ -225,7 +287,23 @@ export function projectIncidents(
   source: IncidentProjectionSource,
   tick: number,
   request: PageRequest = {},
+  options: IncidentProjectionOptions = {},
 ): IncidentsViewModel {
+  const grades = options.grades ?? defaultSecurityGradeRegistry;
+  /**
+   * One lookup per distinct sector rather than one per row. A session derives
+   * exactly one sector (ADR 0036), so this cache is usually a single entry --
+   * but the walk below is `O(allIncidentsEverRecorded)` and the registry hit
+   * is a `Map` probe per row without it.
+   */
+  const gradeKeys = new Map<string, string | undefined>();
+  function gradeKeyFor(sectorId: string): string | undefined {
+    if (gradeKeys.has(sectorId)) return gradeKeys.get(sectorId);
+    const key = sectorGradeNameKey(sectorId, source.sectors, grades);
+    gradeKeys.set(sectorId, key);
+    return key;
+  }
+
   const all = source.incidents.all();
 
   const countsByState = new Map<IncidentState, number>();
@@ -258,7 +336,7 @@ export function projectIncidents(
       // is, and `resolvePageRequest` has already floored both at 0 so neither
       // bound can be negative.
       if (terminalSeen >= offset && terminalSeen < offset + limit) {
-        terminalRows.push(projectRow(record, tick, source.response));
+        terminalRows.push(projectRow(record, tick, source.response, gradeKeyFor(record.sectorId)));
       }
       terminalSeen += 1;
     }
@@ -275,7 +353,7 @@ export function projectIncidents(
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-    active: source.incidents.openIncidents().map((record) => projectRow(record, tick, source.response)),
+    active: source.incidents.openIncidents().map((record) => projectRow(record, tick, source.response, gradeKeyFor(record.sectorId))),
     resolved: { total: terminalSeen, offset, limit, rows: terminalRows },
     summary: { total: all.length, stillOpen, resolved, lapsed, totalInjured, totalPropertyDamage, escapes },
     countsByState: INCIDENT_STATES.map((state) => ({ state, count: countsByState.get(state) ?? 0 })),
@@ -290,13 +368,19 @@ export function projectIncidentDetail(
   source: IncidentProjectionSource,
   incidentId: string,
   tick: number,
+  options: IncidentProjectionOptions = {},
 ): IncidentDetailViewModel | undefined {
   const record = source.incidents.get(incidentId);
   if (record === undefined) return undefined;
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-    ...projectRow(record, tick, source.response),
+    ...projectRow(
+      record,
+      tick,
+      source.response,
+      sectorGradeNameKey(record.sectorId, source.sectors, options.grades ?? defaultSecurityGradeRegistry),
+    ),
     participantEntityIds: [...record.participantIds].sort(compareEntityIds),
     timeline: record.timeline.map((entry: IncidentTimelineEntry) => ({ state: entry.state, atTick: entry.atTick })),
     injuredEntityIds: [...(record.outcome?.injuredEntityIds ?? [])].sort(compareEntityIds),

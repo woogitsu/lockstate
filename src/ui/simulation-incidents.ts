@@ -67,6 +67,11 @@ function incidentRowFromProjection(row: IncidentRowViewModel): HudIncidentRowVie
     typeLabelKey: deriveSimulationMessageKey('incident-type', row.type),
     stateLabelKey: deriveSimulationMessageKey('incident-state', row.state),
     sectorId: row.sectorId,
+    // The grade's own `nameKey` is content and arrives on the projection
+    // (ADR 0011: derived, never hand-authored here) -- carried across only
+    // when there is one, so the panel can tell "no grade word" from "a grade
+    // word that happens to be empty" and fall back to the id.
+    ...(row.sectorGradeNameKey === undefined ? {} : { sectorGradeLabelKey: row.sectorGradeNameKey }),
     severity: row.severity,
     // The scale's own ceiling, carried across rather than written into the
     // panel: `incident.ts` documents `0-10` and `INCIDENT_SEVERITY_MAX` is

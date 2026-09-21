@@ -1468,6 +1468,111 @@ describe('incidents', () => {
     expect(incidents.summary).toMatchObject({ total: 41, stillOpen: 1, resolved: 40, lapsed: 0 });
   });
 
+  /*
+   * Where an incident is, in a word a player can read (owner ruling
+   * 2026-09-21).
+   *
+   * The row used to carry `sectorId` and nothing else, so the Security
+   * section printed *"Assault in security-sector.prison"* -- the only
+   * internal id anywhere in the HUD. The ruling was to name it by its grade
+   * "like the block above", which is the sectors block's own
+   * grade-key-or-id rule, and the four tests below are the four states that
+   * rule has to survive.
+   *
+   * It is a **grade and not a place**, which the owner was told before
+   * choosing: both scenario sectors are `grade.general`, so the two rows here
+   * genuinely read alike. That is asserted rather than worked around, because
+   * a test that hid it would be hiding the cost of the decision.
+   */
+  describe('where an incident is', () => {
+    it('carries the grade name key of the sector the incident is in', () => {
+      const runtime = withIncidents(runScenario());
+      const incidents = projectIncidents(
+        { incidents: runtime.incidents, sectors: runtime.securitySectors },
+        runtime.kernel.tick + 10,
+      );
+
+      const riot = incidents.active.find((incident) => incident.incidentId === 'incident.riot.probe')!;
+      expect(riot.sectorId).toBe('sector-a');
+      // The catalog's own key for `grade.general`, which is what
+      // `sector-a` was registered under -- not a word, and not derived here.
+      expect(riot.sectorGradeNameKey).toBe('grade.general.name');
+
+      // A terminal row goes through the same `projectRow`, and a window that
+      // builds it must build this too.
+      const assault = incidents.resolved.rows.find((incident) => incident.incidentId === 'incident.assault.probe')!;
+      expect(assault.sectorId).toBe('sector-b');
+      // `sector-b` is a different sector and the same grade. Two sectors of
+      // one grade are indistinguishable on screen; this is that cost, stated.
+      expect(assault.sectorGradeNameKey).toBe('grade.general.name');
+
+      const detail = projectIncidentDetail(
+        { incidents: runtime.incidents, sectors: runtime.securitySectors },
+        'incident.riot.probe',
+        runtime.kernel.tick + 10,
+      )!;
+      expect(detail.sectorGradeNameKey).toBe('grade.general.name');
+    });
+
+    it('omits the grade name key when no sector source was supplied', () => {
+      const runtime = withIncidents(runScenario());
+      const incidents = projectIncidents({ incidents: runtime.incidents }, runtime.kernel.tick + 10);
+
+      for (const incident of incidents.active) {
+        expect(incident.sectorGradeNameKey).toBeUndefined();
+        // Absent, not present-and-undefined: the projection crosses a
+        // structured-clone boundary and contract 1 is absent optionals.
+        expect(Object.hasOwn(incident, 'sectorGradeNameKey')).toBe(false);
+      }
+      // And the row still says which sector it is, which is what the panel
+      // falls back to.
+      expect(incidents.active.every((incident) => incident.sectorId.length > 0)).toBe(true);
+    });
+
+    it('omits the grade name key for an incident in a sector nothing registered', () => {
+      const runtime = withIncidents(runScenario());
+      runtime.incidents.open(
+        {
+          id: 'incident.assault.nowhere',
+          type: 'assault',
+          sectorId: 'sector-that-was-never-registered',
+          participantIds: [5],
+          severity: 2,
+          causeFactors: [{ kind: 'needs-pressure', value: 0.3 }],
+        },
+        runtime.kernel.tick,
+      );
+      const incidents = projectIncidents(
+        { incidents: runtime.incidents, sectors: runtime.securitySectors },
+        runtime.kernel.tick + 10,
+      );
+
+      const orphan = incidents.active.find((incident) => incident.incidentId === 'incident.assault.nowhere')!;
+      expect(orphan.sectorGradeNameKey).toBeUndefined();
+      expect(orphan.sectorId).toBe('sector-that-was-never-registered');
+      // The registered ones are unaffected -- the omission is per row.
+      expect(
+        incidents.active.find((incident) => incident.incidentId === 'incident.riot.probe')!.sectorGradeNameKey,
+      ).toBe('grade.general.name');
+    });
+
+    it('omits the grade name key when the sector names a grade the catalog does not define', () => {
+      const runtime = withIncidents(runScenario());
+      // A sector source that answers, and a grade id the catalog has never
+      // heard of. This is the third of the three ways the key can be missing,
+      // and the only one the registry cannot produce on its own.
+      const incidents = projectIncidents(
+        {
+          incidents: runtime.incidents,
+          sectors: { getDefinition: () => ({ gradeId: 'grade.invented-for-this-test' }) },
+        },
+        runtime.kernel.tick + 10,
+      );
+
+      for (const incident of incidents.active) expect(incident.sectorGradeNameKey).toBeUndefined();
+    });
+  });
+
   it('reports an empty window rather than a first page when the offset is past the end', () => {
     // The edge `slice(offset, offset + limit)` answered by construction and
     // the ordinal has to answer by arithmetic: an offset beyond the last
