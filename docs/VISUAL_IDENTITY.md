@@ -952,6 +952,42 @@ sentence.
    > **The Git LFS condition recorded three times above held for this run as
    > well**, and the absolute 13 is conditional on it in exactly the way the
    > absolute 16 is.
+   >
+   > **AND THE "13 OF 36" IN THIS MARK HAS BEEN OVERTAKEN IN ITS TURN, BY
+   > #1348.** It is right about `7b0f6f69` and is not edited.
+   > `observeChromeRowOverflow` in `src/main.ts` — a real measurement that
+   > drops the interface-scale and theme controls' icons and legends, both
+   > already `aria-hidden`, when their own centre pixel resolves to a foreign
+   > element — closed `375x812@125%`, and the ratchet's ceiling in
+   > `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` went from
+   > thirteen entries to **twelve**. A strict subset again: one cleared, none
+   > added. **That twelve is read off the ceiling list and off the run #1348's
+   > own commit message records — *"12 of 36 fail, ratchet green, cleared:
+   > 375x812@125%"* — rather than re-measured for this mark**, which is the
+   > weakest claim in it; the gate is what now holds it, and it fails on a
+   > thirteenth combination arriving.
+   >
+   > **What is new here is not the number but the shape of what is left: the
+   > twelve are ONE deferred group, not nine plus three.** Three combinations
+   > were carried alongside the nine rail-budget collapses as a separable
+   > chrome-row defect — `1024x768@175%`, `390x844@150%` and `375x812@150%`.
+   > Re-measured directly by #1348, every way of giving the chrome row more
+   > room trades their REACHABLE fault for an OVERFLOWING fault on
+   > `.hud__aside`: the same vertical rail/strip/tab-bar budget the nine are
+   > deferred on, reached through a different door. **The premise that the
+   > four were separable was the coordinating session's own, put to the owner
+   > in the options that session wrote**, and only `375x812@125%` bore it out.
+   >
+   > **Shown that, the owner ruled on 2026-09-21 that the three fold into the
+   > deferred set rather than stay separate work**, choosing the option
+   > labelled *"Złóż do odroczonych"* ("fold into the deferred set").
+   > **Provenance is the weaker of the two kinds this repository
+   > distinguishes** — the label of a clickable option a session wrote and the
+   > owner picked, not a sentence they typed, exactly as `AGENTS.md`'s
+   > 2026-09-08 and 2026-09-09 entries record of themselves. It defers; it
+   > does not repair. **The row's verdict is untouched by all of it**, which
+   > is now the oldest true sentence in this chain twice over: *"Brak utraty
+   > treści i działań"* is unmet at twelve as plainly as at 13, 16, 31 or 29.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked

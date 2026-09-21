@@ -573,6 +573,38 @@ again, and what clearing it would actually take.
 > comparison against `ab3bf7ba` shares the condition, so the **delta** is the
 > sounder half. **The absolute 16 wants a tree holding the art before it is
 > certified.**
+>
+> **AND THE 16 HAS BEEN OVERTAKEN TWICE SINCE, AND THIS SECTION IS WHERE TWO
+> OTHER PLACES SAY THE RECORD IS.** Stage 8's row above and
+> `docs/VISUAL_IDENTITY.md` both carry *"the record is again at §Stage 3"* and
+> the record was not here; that gap is closed by appending rather than by
+> editing either pointer. **13 of 36** on `7b0f6f69`, #1312's remaining-sweep
+> follow-up — `390x844@100%`, `375x812@75%` and `375x812@100%` cleared, none
+> added — and then **twelve** after #1348, whose `observeChromeRowOverflow` in
+> `src/main.ts` closed `375x812@125%`. Both are strict subsets of the reading
+> before them. The twelve is read off `KNOWN_FAILING` in
+> `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` and off the run
+> #1348's commit message records, not re-measured here.
+>
+> **The remainder also stopped being two things.** Four of the thirteen were
+> carried as a chrome-row defect separable from the nine rail-budget
+> collapses; measured, only `375x812@125%` was, and for `1024x768@175%`,
+> `390x844@150%` and `375x812@150%` every way of giving the chrome row more
+> room trades a REACHABLE fault for an OVERFLOWING one on `.hud__aside` — the
+> same vertical budget, through a different door. **The separability premise
+> was the coordinating session's own, put to the owner in the options that
+> session wrote**, and it is recorded here because a wrong premise that
+> reached a ruling is part of the ruling's record. Shown the measurement, the
+> owner ruled on 2026-09-21, choosing the option labelled *"Złóż do
+> odroczonych"* ("fold into the deferred set"): the three are folded into the
+> same deferred zero-sum rail/strip/tab-bar question as the nine, and are not
+> separate work. **Provenance is the weaker of the two kinds `AGENTS.md`
+> distinguishes** — the label of a clickable option a session wrote and the
+> owner picked, not a sentence they typed.
+>
+> **The row still fails and the Git LFS condition above still applies to every
+> absolute figure in this chain.** Twelve deferred combinations are a deferred
+> debt, not a cleared one.
 
 ---
 
@@ -1332,6 +1364,17 @@ the record says so wherever it quotes a number.
   > `tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` is collected by
   > the `browser` gate and fails on a fourteenth combination, which is the
   > failure mode this whole chain of marks is a record of.
+
+  > **And the 13 has been overtaken by #1348, which is also where the shape of
+  > the remainder changed; the record is at §"Stage 3".** The short of it:
+  > `observeChromeRowOverflow` closed `375x812@125%` and the ratchet's ceiling
+  > went to **twelve**, one cleared and none added — and the three
+  > combinations that had been carried as a separable chrome-row defect
+  > (`1024x768@175%`, `390x844@150%`, `375x812@150%`) were measured not to be
+  > separable, so the owner ruled on 2026-09-21 that they fold into the same
+  > deferred zero-sum rail/strip/tab-bar question as the other nine. **The
+  > row's verdict is still not moved**, for the reason the marks above give,
+  > and a deferral is not a repair.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
   repository does not have. The clause beside it *does* transfer, and was unmet
