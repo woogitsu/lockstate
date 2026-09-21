@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
-import { resolveHudLabelParameters } from './label-parameters';
+import { type HudLabelLocalizer, renderHudLabel } from './label-parameters';
 import { HUD_MESSAGE_KEY } from './messages';
 import type { HudAlertViewModel } from './view-model';
 
@@ -38,17 +38,28 @@ import type { HudAlertViewModel } from './view-model';
  * sentence, where a translator can move it. Both keys are unauthored -- see
  * `HUD_MESSAGE_KEY.alertsOccurrences` for why, and for what the owner is being
  * asked for.
+ *
+ * ## Why the first argument is a localizer and not a `t`
+ *
+ * Because the row's *sentence* may now inflect and the two fragments after it
+ * may not. `renderHudLabel` selects a plural form when the sentence's
+ * parameters carry a count -- which is what lets
+ * `hud.alert.event.incidents.riot-opened` say *"1 prisoner has"* and
+ * *"3 prisoners have"* from one key -- and it needs `formatPlural` to do it.
+ * The occurrences multiplier and the timestamp keep calling `format`
+ * deliberately: `{count}x` and `Day {day}` carry no word that agrees with a
+ * number, in either shipped locale, and giving them forms would be four
+ * identical strings wearing a costume.
  */
-export function hudAlertRowLabel(
-  t: (key: LocalizationKey, parameters?: MessageParameters) => string,
-  alert: HudAlertViewModel,
-): string {
-  const fragments = [t(alert.labelKey, resolveHudLabelParameters(t, alert))];
+export function hudAlertRowLabel(localizer: HudLabelLocalizer, alert: HudAlertViewModel): string {
+  const fragments = [renderHudLabel(localizer, alert)];
   const occurrences = alert.occurrences;
   if (occurrences !== undefined) {
-    if (occurrences.count > 1) fragments.push(t(HUD_MESSAGE_KEY.alertsOccurrences, { count: occurrences.count }));
+    if (occurrences.count > 1)
+      fragments.push(localizer.format(HUD_MESSAGE_KEY.alertsOccurrences, { count: occurrences.count }));
     const at = occurrences.lastAt;
-    if (at !== undefined) fragments.push(t(HUD_MESSAGE_KEY.alertsTime, { day: at.day, progress: at.progressPercent }));
+    if (at !== undefined)
+      fragments.push(localizer.format(HUD_MESSAGE_KEY.alertsTime, { day: at.day, progress: at.progressPercent }));
   }
   return fragments.join(' ');
 }

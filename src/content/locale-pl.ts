@@ -1,4 +1,4 @@
-import { type LocalizationCatalog, buildLocalizationCatalog } from './localization';
+import { type LocalizationCatalog, type LocalizationEntry, buildLocalizationCatalog } from './localization';
 
 /**
  * The Polish (`pl`) content-side catalogue: the second locale this project
@@ -76,7 +76,7 @@ import { type LocalizationCatalog, buildLocalizationCatalog } from './localizati
  * derived by `simulationEnumMessages()` is a label by construction and takes
  * *osadzony*.
  */
-const plMessages: Readonly<Record<string, string>> = {
+const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // ---------------------------------------------------------------------
   // Room types -- `room.*.name`. The Rooms panel's catalogue rows, and the
   // `{room}` parameter of several sentences.
@@ -912,7 +912,37 @@ const plMessages: Readonly<Record<string, string>> = {
   // Reshaped. "Zwolniono {count} więźniów" needs *więźnia* at 1 and
   // *więźniów* above it, and "kara odbyta" agrees with *kara*, not with a
   // count, so this is correct at every number.
-  'hud.alert.event.prisoners.discharged': 'Zwolniono: {count} — kara odbyta.',
+  //
+  // **NO LONGER RESHAPED, AND THE PARAGRAPH ABOVE IS KEPT AS IT STOOD**
+  // (`docs/AGENT_WORKFLOW.md` section 4). Its first half was right and is why
+  // the migration is small: *Zwolniono* is impersonal and takes no subject, so
+  // the prisoner noun the English carries never had to appear here, and none
+  // of the forms below reintroduces it.
+  //
+  // **Its last clause -- "so this is correct at every number" -- was too
+  // strong, and that is the reason this key migrated rather than staying
+  // reshaped.** *Kara odbyta* is one sentence served. Released together, five
+  // prisoners have served five, and *kary odbyte* is what Polish writes for
+  // them; the flat string said *kara odbyta* at every count and under-counted
+  // above 1 exactly as the English over-counted at 1. The figure itself is
+  // still after a colon and still agrees with nothing, which is why only two
+  // distinct sentences are needed where a subject noun would have forced four.
+  //
+  // So `few`, `many` and `other` share one string because Polish gives them
+  // one, not to fill the slots: `tests/foundation/polish-plural-forms-contract.test.ts`
+  // refuses an entry whose forms are all the same, and this one is not.
+  //
+  // Same claim as the reshaped string, and no other: `{count}` is the tick's
+  // own discharge tally. Only the agreement moves.
+  'hud.alert.event.prisoners.discharged': {
+    one: 'Zwolniono: {count} — kara odbyta.',
+    few: 'Zwolniono: {count} — kary odbyte.',
+    many: 'Zwolniono: {count} — kary odbyte.',
+    // The fraction category. Unreachable -- a discharge tally is an integer --
+    // and set to the `many` text rather than to a third sentence, because an
+    // invented one would be copy no player can ever read.
+    other: 'Zwolniono: {count} — kary odbyte.',
+  },
   // Reshaped, and this is the sharpest one in the catalogue. `{name}` cannot
   // be the subject of a Polish past-tense verb (they inflect for gender and
   // there is no gender model), and `{room}` arrives as the room catalogue's
@@ -929,7 +959,42 @@ const plMessages: Readonly<Record<string, string>> = {
   // -- does not exist here, because `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` is 2
   // and 2 is exactly where the Polish rule flips. *Przestano* is the
   // impersonal past: it keeps the whole claim and agrees with nothing.
-  'hud.alert.event.incidents.riot-opened': 'Wybuchł bunt — przestano słuchać poleceń. Liczba uczestników: {count}.',
+  //
+  // **NO LONGER RESHAPED, AND THE PARAGRAPH ABOVE IS KEPT AS IT STOOD**
+  // (`docs/AGENT_WORKFLOW.md` section 4). Two things in it are worth reading
+  // against what replaced it.
+  //
+  // **Its premise held and has been removed.** *"The English's own escape
+  // hatch does not exist here"* was true while the catalogue could hold only
+  // one string per key; it is now the forms below, and the flip at 2 is what
+  // `Intl.PluralRules('pl')` is for -- 1 is `one`, 2-4 and 22-24 are `few`,
+  // 0 and 5+ are `many`.
+  //
+  // **Its linguistic claim is too strong, and that is the reason to migrate
+  // rather than to keep reshaping.** *"Wrong at 2-4"* is wrong: *dwaj
+  // więźniowie przestali* is one correct reading of "2 więźniów", and the
+  // genitive-quantifier reading -- *dwóch więźniów przestało* -- is equally
+  // standard and is the one an Arabic numeral takes in institutional prose.
+  // So `few` and `many` are the same sentence here, which is not a copied
+  // string filling a slot: it is what Polish does with a masculine-personal
+  // noun after a digit, where the split CLDR marks falls between 1 and
+  // everything else rather than between 4 and 5.
+  //
+  // *Więzień* rather than *osadzony*, under the owner's ruling of 2026-08-30:
+  // this is narration in the event band, not a panel label. It is the same
+  // word the assault sentence directly below already carries.
+  //
+  // Same claim as the reshaped string, and no other: `{count}` is the
+  // incident's own participant count. Only the agreement moves.
+  'hud.alert.event.incidents.riot-opened': {
+    one: 'Wybuchł bunt — {count} więzień przestał słuchać poleceń.',
+    few: 'Wybuchł bunt — {count} więźniów przestało słuchać poleceń.',
+    many: 'Wybuchł bunt — {count} więźniów przestało słuchać poleceń.',
+    // The fraction category. Unreachable -- a participant count is an integer
+    // -- and set to the `many` text rather than to a fifth sentence, because
+    // an invented one would be copy no player can ever read.
+    other: 'Wybuchł bunt — {count} więźniów przestało słuchać poleceń.',
+  },
   // The one key in the catalogue that carries *więzień* under the owner's
   // ruling: narration, and the noun is unavoidable because the sentence is
   // about who is fighting.
