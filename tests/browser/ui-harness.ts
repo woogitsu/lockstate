@@ -370,7 +370,7 @@ const pseudoLocalizer = new Localizer({
  * The real `Localizer`, with a counter around the one method issue #136 is
  * about.
  *
- * `HudLocalizer` is the two-method port the HUD depends on, so this is a
+ * `HudLocalizer` is the three-method port the HUD depends on, so this is a
  * legitimate implementation of it rather than a mock: every call still goes
  * to the real localizer. The counter is what lets `ui-shell.spec.ts` report
  * how many values one repaint formats instead of asserting a number somebody
@@ -379,6 +379,12 @@ const pseudoLocalizer = new Localizer({
 let formatNumberCalls = 0;
 const countingLocalizer: HudLocalizer = {
   format: (key, parameters) => (parameters === undefined ? localizer.format(key) : localizer.format(key, parameters)),
+  // Forwarded uncounted: the counter above exists for issue #136's
+  // `Intl.NumberFormat` construction cost, and nothing in the HUD selects a
+  // plural form yet, so counting this one would report a zero that looks like
+  // a measurement.
+  formatPlural: (key, count, parameters) =>
+    parameters === undefined ? localizer.formatPlural(key, count) : localizer.formatPlural(key, count, parameters),
   formatNumber: (value, options) => {
     formatNumberCalls += 1;
     return options === undefined ? localizer.formatNumber(value) : localizer.formatNumber(value, options);

@@ -423,6 +423,32 @@ rather than assumed:
   > 5 osób* is satisfied by reshaping rather than by forms, and why this row's
   > conclusion ("genuinely outstanding work") was right about the work and
   > wrong about what the work would turn out to be.
+  >
+  > > **TWO OF ITS THREE REASONS ARE NO LONGER TRUE, AND THE PARAGRAPH IS KEPT
+  > > AS IT STOOD** (`docs/AGENT_WORKFLOW.md` §4). Corrected 2026-09-21. The
+  > > sentence *"`buildLocalizationCatalog` takes `Record<LocalizationKey,
+  > > string>` so a content catalogue holds no plural entry in any locale"* was
+  > > the first of the two mechanical blockers, and *"`HudLocalizer` exposes
+  > > `format` and not `formatPlural`"* was the second. Both were removed
+  > > together: `src/content/localization.ts` now declares
+  > > `LocalizationPluralForms` and `buildLocalizationCatalog` takes
+  > > `Record<LocalizationKey, LocalizationEntry>`, and `HudLocalizer` in
+  > > `src/ui/hud/view-model.ts` carries `formatPlural` beside `format`.
+  > > `tests/foundation/polish-plural-forms-contract.test.ts` gates both, and
+  > > the middle reason (*"`Localizer.format` reads `entry.value.other`"*) is
+  > > unchanged and still true — it is why a call site that wants a form has to
+  > > ask for one.
+  > >
+  > > **Nothing was migrated with them, and the count is 33 rather than 27.**
+  > > Every entry in both shipped content catalogues is still a plain string,
+  > > so the paragraph's last clause — *1 osoba / 2 osoby / 5 osób* satisfied
+  > > by reshaping — still describes what is on screen today, and every one of
+  > > the 33 was re-read against `Intl.PluralRules('pl')` on 2026-09-21 and is
+  > > correct at every count. What changed is only that a key *may* now be
+  > > given forms. The tally is not restated here for the reason this paragraph
+  > > already gives; `FLAT_MESSAGES_WITH_COUNT` in
+  > > `tests/foundation/second-locale-contract.test.ts` is the list, and its
+  > > `toEqual` is the only place the set is stated.
 - **Locale-formatted numbers and dates.** Already `Intl.NumberFormat` /
   `Intl.DateTimeFormat`, under "Formatting" above. Not new.
 

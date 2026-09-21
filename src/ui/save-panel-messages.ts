@@ -59,6 +59,16 @@ export const SAVE_PANEL_MESSAGE_KEY = {
    * does not inflect in English, so nothing is wrong on screen today; the first
    * locale that needs `one`/`few`/`many` here needs this key moved to a
    * plural-capable catalog and `formatPlural` at the call site.
+   *
+   * **THE MIDDLE SENTENCE IS FALSE SINCE 2026-09-21 AND IS KEPT AS IT STOOD**
+   * (`docs/AGENT_WORKFLOW.md` section 4). A per-key plural form *can* now be
+   * authored in a content catalogue: `LocalizationCatalog` holds
+   * `LocalizationEntry`, which is a string or `LocalizationPluralForms`. The
+   * last sentence is what survives, and it is now a description of the work
+   * rather than of a blocker -- this key still needs `formatPlural` at its
+   * call site, and the save panel's localizer still calls `format`. Nothing
+   * about this key changed; what changed is that changing it is now possible
+   * without widening a type first.
    */
   listItem: 'save.list.item',
 

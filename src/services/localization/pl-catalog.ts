@@ -58,6 +58,17 @@ import { type MessageCatalog, type MessageEntry, buildMessageCatalog } from './c
  * message reaching a screen through `format` would render `other` for every
  * count -- which is why every counted message in `locale-pl.ts` is written to
  * be correct at every count with no plural forms instead.
+ *
+ * **HALF OF THAT CAVEAT IS FALSE SINCE 2026-09-21 AND IT IS KEPT AS IT STOOD**
+ * (`docs/AGENT_WORKFLOW.md` section 4). `HudLocalizer` now exposes
+ * `formatPlural`, and `src/content/localization.ts` now lets a content
+ * catalogue hold plural forms -- so the two mechanical reasons a counted `pl`
+ * message had to be reshaped instead of inflected are both gone. What is
+ * unchanged is everything else: `Localizer.format` still reads `other`, no HUD
+ * call site calls `formatPlural` yet, and every counted message in
+ * `locale-pl.ts` is still a reshaped flat string that is correct at every
+ * count. The caveat above therefore still describes the screen; it no longer
+ * describes the ceiling.
  */
 const SERVICE_MESSAGES_PL: Readonly<Record<string, MessageEntry>> = {
   'product.save-slots.plus-5.name': '5 dodatkowych slotów na więzienia',
