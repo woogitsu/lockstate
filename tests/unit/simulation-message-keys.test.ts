@@ -314,6 +314,12 @@ const UNLABELLED: readonly UnlabelledEnum[] = [
       'Why `GuardReleaseService.release` refused a `ReleaseGuardAssignment` -- the guard is already unassigned, or the roster holds no such entity (ADR 0034). Exempt for the identical reason as `ZoneRoomRefusalReason`, `UnzoneRoomRefusalReason`, `PurchaseCancelRefusalReason` and `ADMIT_PRISONER_REFUSAL_REASONS` above: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.release-guard.*` sentence per reason rather than a two-word label this table could hold. Note that the *other* union the same file declares, `GUARD_CLAIM_KINDS`, is labelled rather than exempt, and the contrast is the whole rule: a claim kind is a dense label on a roster row and a refusal reason is a sentence about something that did not happen.',
   },
   {
+    sourceFile: 'src/content/localization.ts',
+    declaration: 'LocalizationPluralCategory',
+    reason:
+      "CLDR's six plural category names -- `zero`, `one`, `two`, `few`, `many`, `other` -- exempt for exactly the reason `SimulationEnumForm` directly below is: it is metadata of the labelling mechanism itself rather than a vocabulary the simulation projects. A member of it names a *slot in a catalogue entry*, and the thing a player reads is the sentence sitting in that slot, chosen by `Intl.PluralRules` on the resolving locale. A derived `localization-plural-category.few.name` reading \"Few\" would be an English caption for a grammatical category, would have nowhere to be rendered, and would be wrong the moment the interface language changed -- which is the one thing this declaration exists to make possible. It also never approaches the worker boundary: no snapshot, no command and no projection carries a category, and `src/simulation/` cannot import this side of localization at all (`tests/unit/services-layer-boundaries.test.ts`). The names are restated here rather than imported from `Intl.LDMLPluralRule` because `src/content/localization.ts`'s own docblock promises the module stays dependency-free, and `tests/foundation/polish-plural-forms-contract.test.ts` asserts the restatement stays assignable to the runtime's `PluralForms` in both directions so it cannot drift.",
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:
