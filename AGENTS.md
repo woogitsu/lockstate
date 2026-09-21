@@ -1223,6 +1223,111 @@ the panel at all. Read a premise against the tree the work will ship from, not
 against whichever checkout is nearest.
 
 
+**THREE FURTHER RULINGS ON 2026-09-21, ALL THREE OF THE WEAKER PROVENANCE, AND
+THE FIRST OF THEM ANSWERS A QUESTION THE OWNER WAS ASKED ON A FALSE PREMISE.**
+They were put as clickable options **written by the integrating session**, in
+Polish, one chosen from each. **What is recorded below is the label of an
+option this session authored and the owner picked, not a sentence they typed.**
+Read each as authorising what its label says and nothing wider. The heading of
+the entry above says "A RULING" in the singular and is left standing; a heading
+rewritten in place is a heading whose earlier value nobody can see.
+
+**8. The last three chrome-row combinations of the 200% zoom sweep are folded
+into the deferred zero-sum set.** Offered folding them, keeping them as
+separate work, or settling the vertical budget outright, the owner chose:
+
+> Złóż do odroczonych (zalecane)
+
+("Fold them into the deferred set.") It covers `1024x768@175%`,
+`390x844@150%` and `375x812@150%`. No number moves: `KNOWN_FAILING` in
+`tests/browser/ui-200-percent-zoom-sweep-ratchet.spec.ts` stays at twelve
+entries, which is a ceiling and may be lowered but never raised.
+
+**THE PREMISE THE OWNER WAS GIVEN WAS THIS SESSION'S AND IT WAS WRONG.** They
+had earlier been told that four chrome-row combinations were a real local
+defect separable from the nine rail-budget collapses. Measured, one of the
+four was: `375x812@125%`, closed by `observeChromeRowOverflow`. The other
+three were re-measured directly and every way of giving the chrome row more
+room trades their REACHABLE fault for an OVERFLOWING fault on `.hud__aside` —
+the nine's budget reached through a different door. So the question the owner
+answered was framed by a claim that had not been measured when it was made,
+and the answer they gave is the one that survives the measurement. **This is
+the same failure mode the entries above record against this document's
+`CLAUDE.md` counterpart: a claim written once and never re-read against the
+thing it describes.**
+
+**A further correction belongs here because it concerns how a ruling is
+attributed.** The ratchet spec had written that *the owner's* ruling read the
+thirteen as nine plus four. It did not; that split was this session's premise,
+put to them as fact. Corrected in place by marking. **A ruling's record must
+not absorb the framing the ruling was given in.**
+
+**9. Stage 7 of the identity rollout proceeds one release request per batch,
+and NO GLOB WAS RELEASED.** Offered a per-batch request, releasing the whole
+stage-7 `--include=` list up front, or deferring stage 7 entirely, the owner
+chose:
+
+> Jedna prośba na partię (zalecane)
+
+("One request per batch.") **This authorises a method, not an edit.
+Reservation 3 is untouched and nothing in `.github/workflows/` moved.** Each
+batch is still a separate release, still needs the owner's own dated words,
+and is still bounded to the `git lfs pull --include=` list in the `browser`
+job of `.github/workflows/ci.yml`.
+
+**The first batch was researched and there is none, which is why this entry
+records a method with no spend against it.** The research is at
+`docs/research/2026-09-21-what-stage-7s-first-glob-request-would-have-to-name.md`.
+Three findings decide it. The already-committed Blender renders that could
+ship without Blender were examined against the object catalogue by an earlier
+pass and none survived its legibility bar. The paths that would take new art
+are blocked in code rather than in art: terrain has no caller that sets a
+tile's material, and the edge writer defines exactly two numeric edge kinds,
+so a second wall or door kind has nowhere to key on. And the art stage 7
+actually owes — seven catalogued objects with no art of any kind — needs
+Blender 5.2.1 modelling, which neither this environment nor CI has.
+
+**So stage 7 is blocked on the owner in a way the rollout plan did not say.**
+Not on a reservation release: on art that no agent can produce. A generated
+image cannot substitute, and that is a ruling already on the record rather
+than a preference — the renderer satisfies the aspect checks by construction
+and a generated image would satisfy them by luck, unreproducibly.
+
+**A finding worth carrying, because it is the kind that fails closed and
+silently.** The `--include=` list is a literal list of specific globs and not
+a pattern over them, as the 2026-09-07 entry records. Each segment is itself a
+glob over the content hash, so **re-rendering an already-named id needs no
+release; only a new id does.** And the decode assertion is generic while the
+list is not — it reads the ids out of the sprite manifest at run time — so a
+batch's release must be computed from the manifest change rather than from
+what is in the art directory. The list and the manifest agree exactly at the
+time of writing, so nothing is half-released.
+
+**10. Polish plural agreement is choice of words, and therefore ours.** The
+identity rollout's stage 6 carries messages whose count placeholder is flat,
+so Polish reads the wrong noun form for most values. Offered treating plural
+selection as ours, returning the strings to the owner to read, or building the
+selector and migrating nothing, the owner chose:
+
+> Nasze — to wybór słów (zalecane)
+
+("Ours — it is a choice of words.")
+
+**This is a reading of the 2026-09-04 partial release of reservation 4, not a
+new release, and the limit that release set is untouched.** The reasoning the
+option carried, and which the ruling rests on: the *number* in the sentence
+comes from the simulation and does not change; only the word agreeing with it
+does. So the grammatical form is inside "the choice of words is ours" and the
+truth of the sentence stays the owner's.
+
+**What it does not authorise.** Not a new claim, not a changed number, not a
+sentence that says something the code does not do. **Every player-facing
+string authored under it is still quoted verbatim in the commit message and in
+the pull request body, beside the code that proves it true** — that
+requirement is the surviving half of reservation 4 and this ruling does not
+touch it.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
