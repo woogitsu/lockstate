@@ -135,6 +135,64 @@ surface is a question for the owner, not a deletion.
 
 ---
 
+### Produced 2026-09-13 (#1156), and it is the record the ruling asked for rather than the gate it was written as
+
+The paragraphs above are left exactly as they stood, including the one already
+marked as overruled: they are the plan, and what a plan asked for is worth
+keeping beside what happened.
+
+**It exists.** `29e86090` wrote
+[`docs/research/2026-09-13-every-hud-surface-and-where-the-five-sections-put-it.md`](./research/2026-09-13-every-hud-surface-and-where-the-five-sections-put-it.md)
+and added its row to `docs/research/README.md`; it merged as
+[#1169](https://github.com/woogitsu/lockstate/pull/1169) at `1c1c629c`, and
+[#1156](https://github.com/woogitsu/lockstate/issues/1156) is closed as
+completed. The document is 299 lines at `aab09c32`.
+
+**The four items this section asks to *produce* are its §§2–5, in order.** §2
+walks today's surfaces one by one — the shell, the five tabs and their panels,
+the three map tools, and the top-level surfaces the composition root assembles
+outside the HUD. §3 does the projections and does the thing this section asked
+for in the words it asked for, adopting the reachability contract's own
+read/unread split rather than recounting it. §4 does the commands and reports
+that every one of them is submitted from a single file. §5 is the mapping in
+both directions, with a confidence column whose values are *stated*,
+*unsettled* and *unplaced*.
+
+**§1 is the part the stage was for, and it is first rather than last.** It is
+the table of surfaces the direction's five sections do not place — the status
+strip, the events band, the refusal line, the unavailable band, the alerts
+list, the minimap and its zoom, the save panel, the display-scale control, the
+brand badge, the telemetry consent prompt, and an `src/ui/account/` directory
+that has no surface at all. Each row carries why the five do not place it. The
+Regime panel is recorded as having the opposite problem: it holds two subjects
+the direction splits, so placing the panel places half of it.
+
+**Done when, checked against the clause above:** each of today's surfaces is
+either placed in one of the new five or listed as unplaced, and nothing was
+deleted. The clause is met.
+
+**What producing it did not do, and the plan should not be read as saying
+otherwise.** Every unplaced row is *a question for the owner*, and writing the
+question down is not answering it. None of them has been answered since; the
+strongest candidate the document names for a section change — Intake, on
+Overview because the Build panel had no pixels left rather than because
+Overview is where it belongs — is a change the direction does not make and
+nobody has ruled on. The stage produced the record. The record's own §1 is
+still open.
+
+**Its own §§6–7 are beyond what this section asked for**, and §6 is the part a
+later reader is most likely to want: three repository documents the inventory
+found false, each named with the commit that broke it. The tally that
+[#1169](https://github.com/woogitsu/lockstate/pull/1169)'s title says it
+corrected was one of them.
+
+**Weakest claim here, as `docs/AGENT_WORKFLOW.md` §3 requires:** that §§2–5
+*map onto* the four required items is a reading of headings and of what sits
+under them, not a row-by-row re-derivation of the inventory against `src/`. If
+§2 missed a panel module, this paragraph would not know.
+
+---
+
 ## Stage 1 — Two themes, one token architecture
 
 **The problem, stated precisely.** `src/ui/tokens.css` is a three-layer file:
@@ -175,6 +233,69 @@ second design system.
 a screenshot pair per device tier is *not* evidence and the delivery says so.
 
 **Owner-reserved:** nothing. This is ours.
+
+---
+
+### Landed 2026-09-13 (#1157), and this plan was the last document still silent about it
+
+The paragraphs above are left exactly as they stood: they are the plan, and
+what a plan asked for is worth keeping beside what happened.
+
+**Three commits, all 2026-09-13**, merged as
+[#1172](https://github.com/woogitsu/lockstate/pull/1172) at `a6565239` the next
+morning, with [#1157](https://github.com/woogitsu/lockstate/issues/1157) closed
+as completed: `24798b49` put both identity palettes on one token layer,
+`f604b711` added the control and made it follow the device until the player
+chooses, and `1274d23e` cut three buttons down to one cycling button because
+the rail could not afford three.
+
+**The approach above is the approach that shipped, which is worth saying
+because it was the part most likely to be abandoned under pressure.** There is
+no second stylesheet overriding the first. `src/ui/tokens.css` carries both
+palettes on one layer, the light one on bare `:root` so a page that runs no
+script renders the day theme, and the night one behind a `data-theme`
+selector. [`docs/VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) item 1 carries the
+measured version of this and is the file to read for it.
+
+**Every constraint this section names has an executable gate, and the three
+map one to one.** Read at `aab09c32`:
+
+- **Contrast in both themes.** `tests/unit/ui-design-tokens.test.ts`, 76
+  passing tests, which parses a block per theme and refuses to check one
+  vacuously — its own docblock records assertions that passed while reading
+  only the night palette, which is the defect it was rebuilt against.
+- **Article 19, and article 13's preference key.**
+  `tests/unit/ui-theme.test.ts`, 15 passing tests: the vocabulary is three
+  preferences defaulting to following the device, the key is one no other
+  setting reads or writes, the controller paints light before any control
+  exists, stops following the device once the player has chosen, remembers
+  across a reload, and — the clause this section wrote out in full — *switches
+  on a store that throws, and simply does not remember*.
+- **The same behaviour through a real page.** `tests/browser/ui-theme.spec.ts`,
+  seven `test(...)` declarations.
+
+**The evidence clause is met in the form it demanded.** The token test
+*computes* the pairs rather than pinning literals, and it computes them per
+theme; no screenshot pair stands in for any of it.
+
+**The size prediction beside this stage was wrong, and in the cheap
+direction.** [`docs/VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) item 1's kept
+measurement calls a second theme *"the single largest piece of work in the
+whole direction"*; it landed inside one day, in three commits. The token
+architecture this section insisted on is why: the caution-badge argument was
+right, so the light palette really was a second block of ramp values rather
+than a second design system.
+
+**The gap this section is closing is a documentation gap, not a work gap.**
+[`docs/VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) recorded the landing; the
+issue was closed; the tests were green. This file — the one that calls itself
+*the record* where the issues are only the tracker — said nothing, from
+2026-09-13 until `aab09c32`. A reader coming to the plan for the state of the
+rollout would have concluded stage 1 was outstanding.
+
+**Weakest claim here:** the seven is a count of `test(...)` declarations read
+out of the browser spec, not of a run. No browser suite was executed for this
+section, and a declaration is not a pass.
 
 ---
 
@@ -477,6 +598,94 @@ Do instead:
   the subject of several open issues.
 - When the money is taken is an economy question with an existing answer. Find
   it before changing anything; a different answer is an ADR.
+
+---
+
+### Landed 2026-09-14 (#1194), partly: three of four exit criteria, and the fourth is a gate narrower than its own sentence
+
+The paragraphs above are left exactly as they stood: they are the plan, and
+what a plan asked for is worth keeping beside what happened.
+
+**`41f797e7` merged [#1194](https://github.com/woogitsu/lockstate/pull/1194),
+and [#1160](https://github.com/woogitsu/lockstate/issues/1160) is still
+open** — correctly, and this section is the reason written down rather than
+left to whoever opens the issue next.
+
+**What is in, with the gate that holds it.** The catalogue view takes its
+prices from the simulation: `src/simulation/economy/placement-cost.ts` is new
+in that merge, `tests/unit/economy-placement-cost.test.ts` covers it, and
+`tests/browser/ui-build-catalogue-price.spec.ts` drives the assertion through
+a real page — *every buildable has a row, and each row carries its own price*.
+The boundary held: the panel reads a projection through
+`src/ui/hud/view-model.ts` rather than recomputing anything, which is exit
+criterion 1 and constitution article 4 at once. Cancel-for-every-queued-order
+is criterion 3, it belongs to #862 rather than to this stage, and
+`tests/browser/ui-build-queue-reach.spec.ts` still holds it at every viewport,
+so the *do not regress it* clause is met.
+
+**Criterion 2 — a refusal visibly distinct from a success — has exactly one
+browser spec, and the spec is good.**
+`tests/browser/ui-build-refusal-is-not-a-success.spec.ts` drives both halves of
+one press through the real application and requires each to produce the
+other's absence: a wall on owned land queues a row and leaves the refusal band
+hidden, a bed outside any room names the reason and queues nothing. Asserting
+either column alone would pass against the defect, and it says so. It reads
+the expected sentence out of the shipped catalogue rather than writing it
+down, so it follows the wording and fails on the key. It is honest about its
+own scope in its own docblock.
+
+**And here is the finding, which is about the criterion rather than about the
+spec.** Criterion 4's last clause asks for *"a browser spec per refusal path"*.
+Measured on `aab09c32`:
+
+- `REFUSAL_REASONS` in `src/simulation/protocol/types.ts` has **48** members.
+  (Its declaration is at line 1441 at that commit. The number is left outside
+  backticks deliberately: this document has an anchor budget and a quotable
+  fragment is what an anchor costs.)
+- The English catalogue carries **48** `hud.alert.refusal.*` entries, and the
+  set of their suffixes is *identical* to `REFUSAL_REASONS`, member for member.
+  The Polish catalogue carries 48 as well. So there are 48 refusal paths a
+  player can be shown, and the vocabulary is exactly one sentence per path.
+- **One** of those 48 is exercised by the spec this stage authored:
+  `place-object.outside-room`.
+- Across *every* `tests/browser/*.spec.ts` at that commit, nine of the 48
+  reason ids appear in the file text at all, comments included. Nine is an
+  upper bound on coverage rather than a measure of it — the id appearing in a
+  file does not mean a spec drives that path — and it is the generous number,
+  offered so this paragraph cannot be accused of picking the small one.
+
+**What a reader of the merged pull request would conclude, and why it is
+wrong.** They would conclude that refusals are covered. They are covered **as
+a class distinction, on one path**: that the interface tells a refusal from a
+success at all, demonstrated once, with the simulation's own sentence. That is
+a real and load-bearing thing to have proved — `docs/adr/STATUS-QUEUE.md`'s
+standing complaint is about exactly that confusion — and it is not *per
+refusal path*. The distance between the two is 1 and 48.
+
+**This is the shape of defect this repository keeps finding, and naming the
+shape is more useful than naming this instance.** A gate is green; the gate is
+narrower than the sentence a reader takes it to have settled; nothing is
+broken and nothing announces the gap, because a gate that measures a narrow
+thing correctly has no way to report that a wider thing went unmeasured. The `*.playtest.ts`
+silence marked under stage 3 above is the same shape from the other side — a
+number that only moves when a person runs it by hand cannot announce that it
+has stopped being true — and the difference here is worse rather than better:
+this number *is* collected by a gate, every run, and the gate is green.
+
+**This section records the state and does not resolve it.** Whether the answer
+is 48 specs, a table-driven spec over the 48, a narrowing of the criterion's
+wording, or the judgement that one class-distinction spec plus 48 unit-level
+refusal assertions is what *per refusal path* should have meant, is not
+decided here and is not this section's to decide. What is decided is that
+[#1160](https://github.com/woogitsu/lockstate/issues/1160) stays open and says
+why.
+
+**Weakest claim here:** the nine. It is a text search for reason ids over the
+gate specs, so it counts a docblock mention as generously as a driven path,
+and it would miss a spec that reaches a refusal without ever naming its id —
+by pressing a control and asserting the band's presence alone, for instance.
+The 48 and the 1 are solid; the nine is a bound with soft edges in both
+directions, and no claim here rests on it.
 
 ---
 
@@ -795,6 +1004,51 @@ deliberately does **not** assert them away: #664's rule is that no gate may be
 passable only by completing a translation. They are ordinary catalogue work for
 whoever carries the Polish catalogue forward, and the stage is not finished
 while they stand.
+
+> **THE PARAGRAPH ABOVE IS TWO CORRECTIONS STALE AND IS KEPT RATHER THAN
+> REWRITTEN, BECAUSE WHICH FIFTEEN AND WHEN IS THE PART THAT WOULD BE LOST.**
+> It was true when it was written. Neither half of it is true at `aab09c32`.
+>
+> **The fifteen were translated on 2026-09-14, at `0bdb77b5`** — *"translate
+> the fifteen `hud.layout.*` keys, three of them on screen at boot"* — which
+> is the same day #1159's Layout menu authored them in English. The Polish
+> catalogue carries fifteen `hud.layout.*` entries against the English
+> catalogue's fifteen. The three this paragraph names as on screen at boot are
+> among them: *Otwórz menu ustawień*, *Ukryj sekcje*, *Ukryj panele*.
+> `tests/browser/ui-language-picker.spec.ts` kept its own paragraph rather
+> than deleting it, for the reason this paragraph is kept — and nothing in
+> that spec changed to accommodate the translation, because its subtraction
+> reads the catalogues.
+>
+> **Two keys replaced them as the remainder and have also landed.**
+> `hud.regime.edit` and `hud.regime.edit-last-category` arrived in English at
+> `6f8bb006` (#1167) with no Polish counterpart, by exactly the route this
+> paragraph describes for the fifteen. `43a3af42` translated them, and it
+> merged as [#1342](https://github.com/woogitsu/lockstate/pull/1342) at
+> `9a0d6135`.
+>
+> **The part that matters more than either correction: the defect class is now
+> gated.** `08012857`, in the same pull request, added `MISSING_CEILING` to
+> `tests/foundation/second-locale-contract.test.ts` — a ceiling on the number
+> of reference keys a catalogue lacks, mirroring the coverage floor that was
+> already there. The floor could not see this class at all: it counts
+> translated keys, so an English key shipped with no Polish counterpart never
+> moved it. The ceiling stands at zero for Polish and for the pseudo-locale,
+> with a control test that fires when a reference-only key is introduced, so
+> the next English-only key goes red in the commit that ships it rather than
+> being rediscovered in a docblock. That is the thing #664's rule made
+> genuinely hard to build, and the reason it is buildable without breaking
+> #664 is that it ratchets the *gap* rather than requiring completeness: a
+> partial Polish catalogue remains a valid shipping state, it merely cannot
+> grow more partial in silence.
+>
+> **What is not thereby settled.** This closes the fifteen, the two, and the
+> way both of them happened. It does not finish stage 6: every other clause
+> this section opens with — full sentences, no concatenation, Polish plural
+> forms, locale-formatted numbers and dates, and the truth obligation the
+> reservation puts on each string — is untouched by any of it. The sentence
+> *"the stage is not finished while they stand"* was right about the fifteen
+> and is not the only thing keeping the stage open.
 
 ---
 
