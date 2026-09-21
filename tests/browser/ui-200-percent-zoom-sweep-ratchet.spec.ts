@@ -68,6 +68,40 @@ import { UI_SCALES, WINDOWS, fails, faults, sweep } from './page-zoom-sweep';
  * rail cannot all have the height they ask for in a viewport halved in both
  * axes, and which of them gives way is a decision this file does not make.
  *
+ * ## The ruling that folded the last three in, and the premise it corrected
+ *
+ * **The paragraph above attributes the nine-plus-four split to the owner, and
+ * that attribution is wrong. It is marked here rather than rewritten**
+ * (`docs/AGENT_WORKFLOW.md` §4). The split was the **coordinating session's
+ * own premise**, carried into the options that session wrote for the owner:
+ * that the four chrome-row combinations were a real local defect separable
+ * from the nine. Measured against the full sweep, one of the four was --
+ * `375x812@125%`, closed by `observeChromeRowOverflow` -- and three were not.
+ * The reading the owner ruled on therefore came from this side of the
+ * conversation, and that belongs beside the ruling rather than behind it.
+ *
+ * **Shown that measurement, the owner ruled on 2026-09-21 that the three are
+ * folded into the deferred set rather than carried as separate work.**
+ * Offered that against keeping them as their own item, they chose the option
+ * labelled:
+ *
+ * > Złóż do odroczonych
+ *
+ * ("Fold into the deferred set.") **The provenance is the weaker of the two
+ * kinds this repository distinguishes, and is recorded as such**: the label
+ * of a clickable option this session wrote and the owner picked, not a
+ * sentence they typed. `AGENTS.md`'s entries for the 2026-09-08 and
+ * 2026-09-09 releases record the same distinction of themselves. Read it as
+ * settling what its label says and nothing wider.
+ *
+ * **What the ruling changes here is a description, not a number.**
+ * `KNOWN_FAILING` is twelve before it and twelve after it -- the three were
+ * already on the list. What moves is that the list stops being nine plus
+ * three and is one group of twelve waiting on one decision: which of the
+ * strip, the tab bar and the rail gives way. Nothing is added; the ceiling
+ * may be lowered and never raised, and none of the three is to be repaired
+ * ahead of that decision.
+ *
  * ## The one condition on it
  *
  * The figures above were read in a tree with **no Git LFS bytes**, so the
@@ -81,6 +115,12 @@ import { UI_SCALES, WINDOWS, fails, faults, sweep } from './page-zoom-sweep';
 /**
  * The ceiling. Sorted as the sweep visits them, so a diff reads in sweep
  * order rather than alphabetically.
+ *
+ * **All twelve are one group** -- the deferred zero-sum vertical
+ * rail/strip/tab-bar question, by the 2026-09-21 ruling recorded above. There
+ * is no second grouping in this list for an entry to be moved into, which is
+ * why that fold is a paragraph rather than a diff here. The list may be
+ * lowered and never raised.
  */
 const KNOWN_FAILING: readonly string[] = [
   '1280x720@200%',
