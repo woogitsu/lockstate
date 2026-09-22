@@ -47,6 +47,66 @@ the second reason to wait: option B's zero-cost claim is an argument from the
 DOM's shape and not a measurement, and the Playwright run that would settle it
 was not taken.
 
+**THE QUESTION §7 RESERVED WAS ANSWERED BY THE OWNER ON 2026-09-22. THE
+PARAGRAPH ABOVE IS KEPT WHOLE RATHER THAN REWRITTEN**, because it records an
+abstention that really happened and `docs/AGENT_WORKFLOW.md` §4 asks for a
+correction to be readable in both directions. Read it as the state this
+document stood in between the numbering pass and that ruling, not as its state
+now.
+
+**The answer, quoted.** Offered the pressable row with no verb, the labelled
+button at the cost §5b prices, and no action for now, the owner chose:
+
+> Naciskany wiersz, bez czasownika (zalecane)
+
+("A pressable row, without the verb (recommended).") So the first of the two
+halves of the question quoted above is answered yes: **a pressable message row,
+with no action-verb label on it, is an acceptable delivery of the `Akcja`
+column**, and the labelled button does not have to arrive at §5b's price. To
+that extent -- and to no other -- §7's option B is adopted, and the sentence
+above reading *"still a recommendation and is explicitly not adopted"* is
+superseded for option B alone. §7 carries the ruling in its own place as well.
+
+**The provenance is the weaker kind.** It is the label of a clickable option
+the integrating session wrote and the owner picked, not a sentence they typed
+-- the same distinction `AGENTS.md` draws about every ruling it has recorded
+since 2026-09-08, and the same one ADR 0112's Status block draws about four of
+its five. Read it as authorising what the label says and nothing wider.
+`AGENTS.md`'s *"Instructions recorded that are not releases"* section carries
+the entry.
+
+**THE STATUS KEYWORD DOES NOT MOVE, AND THE REASON IS THE DIFFERENCE BETWEEN
+"THE RESERVED QUESTION IS ANSWERED" AND "THE DOCUMENT IS SETTLED."** The
+keyword above still reads `Proposed`, and that is a judgement this pass made
+rather than a formality it skipped. What the owner ruled on is the one question
+§7 marked as theirs. What they did not rule on is everything else §7
+recommends, and §7's recommendation is four bullets rather than one:
+
+- **Ruled.** That the row may be the press and that no action-verb label is
+  owed -- the §7 bullet *"Make the row the press, not a button on it"*, and
+  with it the first half of the recommendation's `B + D`.
+- **Still this document's own proposal.** That the destination goes through the
+  worker protocol first (§6 option D step 1, the change that is the reason
+  this is an ADR at all rather than a pull request), the sequencing that puts
+  it ahead of any affordance, the instruction not to widen `.hud__corner` for
+  this, and the instruction to say nothing to the player until the press works.
+- **Still undecided by anybody.** §6 option C, and the measurement §7 names
+  as owed before implementation -- whether a pressable row inside a scroll
+  container behaves on a touch device -- which §8 names as this document's
+  weakest claim and which no ruling can substitute for.
+
+So the ruling settles the question that was blocking the shape and leaves the
+mechanism where it was. A reader who needs one sentence: the affordance is
+decided, the plumbing is not.
+
+**A SECOND RULING THE SAME DAY DECIDES WHICH VENDORED COPY OF THE TABLE
+BINDS, AND §1b IS WHERE IT IS RECORDED.** §1b reports the `Akcja` table
+vendored twice with neither copy marked as superseding the other. The owner
+chose `projekt.md`, so §1b's own reason for quoting that copy is now a ruling
+rather than an inference. That entry also corrects §1b in three particulars it
+got thin rather than wrong, one of which argues against the §7 ruling, and it
+is the place to read them.
+
 **What it is a response to.** The 2026-09-13 identity delivery
 (`docs/design/2026-09-13-identity-v5/`, vendored verbatim and never edited
 there) pairs every worked message example with a pressable action, and nothing
@@ -119,6 +179,67 @@ cell — that copy reads `Bez dodatkowej akcji` ("no further action") where
 `Funkcja niedostępna` / `Zapisz lokalnie`. Two copies, not one; neither is
 marked as superseding the other. `projekt.md` is quoted above because it is the
 document `DOKUMENTACJA/` presents as the specification.
+
+**THE OWNER RULED ON 2026-09-22 THAT `projekt.md` IS THE OPERATIVE COPY, AND
+THE PARAGRAPH ABOVE IS LEFT STANDING.** It says *"neither is marked as
+superseding the other"*, which was true of the vendored files and is still true
+of them -- the delivery is never edited, so the mark lives here rather than
+there. Offered `projekt.md`, the patch, or checking the dates and deciding
+without them, the owner chose:
+
+> `projekt.md` jest wiążący (zalecane)
+
+("`projekt.md` binds (recommended).") So the copy under `DOKUMENTACJA/` is the
+operative one and the copy under `HISTORIA/ZMIANY/` is a historical record,
+which is what its own directory name says it is. The provenance is the weaker
+kind, as the §7 ruling's is: the label of a clickable option the integrating
+session wrote and the owner picked, not a sentence they typed. It settles which
+copy binds and nothing about what the binding copy asks for.
+
+**The paragraph above is thin in three particulars, found by diffing the two
+copies cell by cell rather than by re-reading the paragraph.** All three are
+recorded here rather than corrected in place, and the third is the one that
+argues against the ruling it sits under.
+
+**First, "one differing cell" undercounts: two cells differ.** The `Trwa zapis`
+row is the one it names. The other is the situation label on the row both
+copies pair with the same message and the same action -- `projekt.md` calls the
+situation `Konflikt lokalny`, the patch calls it `Zapis odmówiony`:
+
+```
+| Konflikt lokalny | Nie zapisano zmian. Ten zapis zmienił się w innej karcie. | Sprawdź wersje |
+```
+
+```
+<td>Zapis odmówiony</td><td>Nie zapisano zmian. Ten zapis zmienił się w innej karcie.</td><td>Sprawdź wersje</td>
+```
+
+**Second, the patch "omits the `Brak wyposażenia` row" from its table and
+carries that row's whole content in the prose ahead of its table**, which
+is a different claim from dropping it. The patch's own message-pattern card
+reads:
+
+```
+<h3>Wzór komunikatu</h3><p><b>Co się stało → gdzie → co można zrobić.</b></p><p>„Cela A-12 nie jest gotowa. Brakuje toalety. Dodaj wyposażenie.”</p>
+```
+
+-- the situation's message and its action verb, in one sentence, as the example
+the chapter is built around. So the row is missing from one table and the ask
+is not missing from the delivery.
+
+**A third difference the paragraph above does not mention at all, and it is the
+one that cuts against the §7 ruling rather than for it.** The two copies'
+captions are different sentences, and the patch's is the stronger of the two:
+`projekt.md` requires *"dowodu w kodzie przed integracją"* ("proof in code
+before integration"), while the patch requires *"zgodności z faktyczną
+odpowiedzią systemu oraz działającego przycisku"* ("agreement with the
+system's actual response **and a working button**"). A copy demanding a button
+is the copy a label-less pressable row sits least comfortably with -- and it is
+the copy the owner ruled is history. Named here because a ruling's record
+should carry the evidence against it, not only the evidence for it. Nothing
+turns on it: constitution article 6's *"Przycisk naprawczy musi mieć
+rzeczywistą implementację"* is binding through ADR 0112 decision 1 either
+way, and §1c quotes it.
 
 ### 1c. The two constitution articles that make it a rule rather than a mock-up
 
@@ -671,6 +792,44 @@ The question, stated so it can be answered yes or no:
 > four-line-box property)?**
 
 This draft recommends the first and does not take it.
+
+**THE OWNER TOOK THE FIRST ON 2026-09-22, AND THE SENTENCE ABOVE IS KEPT.** It
+is true of the draft as it was written, and the draft not taking it is the
+reason the question reached the owner at all. Their choice, from three
+clickable options -- the pressable row with no verb, the labelled button at
+§5b's price, or no action for now:
+
+> Naciskany wiersz, bez czasownika (zalecane)
+
+("A pressable row, without the verb (recommended).")
+
+**What it authorises, read no wider than the label.** The message row itself
+becomes the press and leads to the place it names; no `Pokaż przejście`-style
+action-verb label is owed, and the delivery's §1b table is not a list of
+buttons this repository must ship. The bullet above reading *"Make the row the
+press, not a button on it"* is therefore ruled, and the affordance question is
+closed.
+
+**What it does not authorise, listed because the bullets around it are still
+proposals.** It authorises **no new player-visible string**, and none is
+needed: a row that is pressable and says nothing new says nothing new. It
+**releases no reservation** -- reservation 4's surviving half, that a
+player-visible sentence be true, is untouched, and the 2026-09-04 partial
+release still governs any wording that does change. It **does not decide §6
+option D step 1**, the worker-protocol change this document's own
+recommendation puts first, nor the three bullets beside it: the sequencing, the
+instruction not to widen `.hud__corner`, and the instruction to say nothing to
+the player until the press works. And it does not retire §8: whether a
+pressable row inside a scroll container behaves on a touch device is still a
+Playwright run nobody has taken, and §5c's finding that `.hud__corner` is
+`display: none` below 720 px still means the three phone combinations may not
+have the question.
+
+**The provenance is the weaker kind**: the label of a clickable option the
+integrating session wrote and the owner picked, not a sentence they typed --
+as `AGENTS.md` records of every ruling since 2026-09-08. The Status block above
+carries the same entry and the division of this document into what is ruled and
+what is still proposed.
 
 ---
 
