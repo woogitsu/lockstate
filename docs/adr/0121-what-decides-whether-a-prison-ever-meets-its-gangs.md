@@ -1,4 +1,15 @@
-# ADR draft: what decides whether a prison ever meets its gangs
+# ADR 0121: What decides whether a prison ever meets its gangs
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0121.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0121, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0121 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -8,9 +19,16 @@
 
 ## Status
 
-**Still `Proposed`.** This document asks and stops, exactly as it did when
-first written; nothing below is decided, implemented, or self-approved by the
-agent that wrote it.
+**Proposed.** *(This line read* **"Still `Proposed`."** *and the value never
+changed; only the shape did. `tests/foundation/adr-numbering-contract.test.ts`
+reads the first non-blank line under this heading and requires it to* begin
+*with a known keyword, so a `Proposed` behind the word "Still" parses as no
+status at all -- the one mechanical cost of a document arriving here as a
+draft, where nothing was reading this block. Marked rather than overwritten
+because the word "Still" is the sentence's own history and the numbering pass
+is not entitled to spend it.)* This document asks and stops, exactly as it did
+when first written; nothing below is decided, implemented, or self-approved by
+the agent that wrote it.
 
 **What it originally asked for was ruled on 2026-09-19, in #1322 ("Obie
 naraz" -- "both at once"): the smaller-gang assignment plus a retaliation
@@ -25,9 +43,9 @@ tier-3 reachability"). Provenance is the weaker kind `AGENTS.md` records of
 several rulings -- the label of an option a session wrote from a measurement,
 not a sentence the owner typed. **It authorises this draft coming back to
 them. It authorises no implementation.** §5 onward is that question, and it
-belongs to [ADR 0048](../0048-what-a-sectors-occupants-are.md),
-[ADR 0057](../0057-what-a-riot-does-to-a-prisoners-day.md) and
-[ADR 0061](../0061-what-the-prison-produces-on-its-own.md) territory -- the
+belongs to [ADR 0048](./0048-what-a-sectors-occupants-are.md),
+[ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md) and
+[ADR 0061](./0061-what-the-prison-produces-on-its-own.md) territory -- the
 producers that decide whether any incident opens at all -- **not** to
 ADR 0103, which only ever reads a tier `IncidentTriggerSystem` has already
 written. That misfiling happened twice: once in #979 (filed as a gang issue)
@@ -38,7 +56,7 @@ finding lands.
 describes:** "Proposed, and nothing on the branch that carries it
 implements it. That is the opposite ordering to the two drafts beside it, and
 deliberately so: what this asks for is a change to
-[ADR 0103](../0103-what-a-gang-is-and-how-a-grudge-forms.md) decision 6, which
+[ADR 0103](./0103-what-a-gang-is-and-how-a-grudge-forms.md) decision 6, which
 the owner accepted on 2026-09-08 and refined by ruling open question 5 on
 2026-09-09. An agent does not re-decide an accepted decision inside
 implementation code (`CLAUDE.md`), so this document asks and stops."

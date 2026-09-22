@@ -78,7 +78,7 @@ yet: that, and the re-render, are the language picker's work.
 > `src/ui/` hold the one `Localizer`, across 331 formatting call sites, and none
 > of them exposes a way to be handed a different one) and the two rejected
 > alternatives are in
-> [the ADR draft](./adr/drafts/how-a-language-change-reaches-a-running-page.md).
+> [the ADR draft](./adr/0119-how-a-language-change-reaches-a-running-page.md).
 >
 > So the sentence above is now wrong in a third way, and this is the useful
 > one: *"that, and the re-render, are the language picker's work"* assumed the
@@ -496,7 +496,7 @@ because both mean authoring player-visible copy:
 > `save-slots.over-capacity`)"* was true until 2026-09-21. It is **four**: the
 > alerts path learned to select a form
 > (`src/ui/hud/label-parameters.ts`'s `renderHudLabel`, recorded in
-> [an unnumbered ADR draft](./adr/drafts/what-selects-a-plural-form-on-the-alerts-path.md)),
+> [an unnumbered ADR draft](./adr/0123-what-selects-a-plural-form-on-the-alerts-path.md)),
 > and the two counted alert sentences whose **English** disagreed with their
 > own number migrated behind it — `hud.alert.event.incidents.riot-opened`, which
 > rendered *"1 prisoners have stopped taking orders"*, and

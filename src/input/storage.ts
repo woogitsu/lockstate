@@ -265,7 +265,7 @@ export function loadLanguageSettings(store: KeyValueStore): LanguageSettings {
  *
  * A theme that fails to persist still switches; the page is simply back to the
  * old one after a reload. A language change *is* a reload (see the ADR draft
- * `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), so a
+ * `docs/adr/0119-how-a-language-change-reaches-a-running-page.md`), so a
  * refused write would reload the page straight back into the language the
  * player just asked to leave -- a control that appears to do nothing. The
  * composition root reads this and declines to reload instead.
@@ -305,7 +305,7 @@ export interface SettingsChangeTarget {
  * has no path that hands a different `Localizer` to an interface that is
  * already mounted -- 19 modules under `src/ui/` hold one across 331 call
  * sites and none of them exposes a setter, which is the count
- * `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md` measured
+ * `docs/adr/0119-how-a-language-change-reaches-a-running-page.md` measured
  * and the reason a language change is applied by reloading the page. A
  * `storage` handler for that key could only do one of two things, and both are
  * worse than doing nothing: re-texting what happens to repaint would turn the

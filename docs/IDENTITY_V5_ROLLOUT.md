@@ -1347,7 +1347,7 @@ fit); it reaches a running page through `CATALOG_CHUNKS` in the composition
 root (#662); and a player can choose a language since #663 — one cycling
 control in the HUD's chrome row, over `lockstate.settings.language`, applied by
 reloading rather than by re-rendering
-([the ADR draft](./adr/drafts/how-a-language-change-reaches-a-running-page.md)
+([the ADR draft](./adr/0119-how-a-language-change-reaches-a-running-page.md)
 records why, with the count).
 
 **Fifteen keys are English on a Polish page and it is worth naming them here
@@ -1572,7 +1572,7 @@ the record says so wherever it quotes a number.
   > `subscribeToSettingsChanges`, and `src/main.ts` answers three of the four
   > preference keys with the same apply-path its own control uses. The fourth,
   > `lockstate.settings.language`, is answered by nothing on purpose, and
-  > `docs/adr/drafts/what-a-second-tab-follows.md` carries why. **What is not
+  > `docs/adr/0120-what-a-second-tab-follows.md` carries why. **What is not
   > closed is the row's verdict**: this was a NOT APPLICABLE row and remains
   > one, because the previews it is about still do not exist here.
 - **Touch: PARTIAL.** Every gesture passes and the phone does reach the map.

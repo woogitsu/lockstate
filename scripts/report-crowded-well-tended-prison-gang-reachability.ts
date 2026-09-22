@@ -1,6 +1,6 @@
 /**
  * The second prison shape named as owed by
- * `docs/adr/drafts/what-decides-whether-a-prison-ever-meets-its-gangs.md`
+ * `docs/adr/0121-what-decides-whether-a-prison-ever-meets-its-gangs.md`
  * §5's weakest claim: the same fully furnished, one-guard shape
  * `report-well-tended-prison-gang-reachability.ts` measures at zero
  * incidents in twelve of twelve seeds, but with **sixteen** prisoners
