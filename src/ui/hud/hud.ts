@@ -58,7 +58,7 @@ import {
   type EventBandDwellDecision,
   type EventBandDwellState,
 } from './event-band-dwell';
-import { resolveHudLabelParameters } from './label-parameters';
+import { renderHudLabel } from './label-parameters';
 
 /**
  * The persistent HUD shell.
@@ -1589,7 +1589,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   /** The write itself, unchanged: this is the function `applyEventNotice` was before the floor. */
   function paintEventNotice(notice: HudEventNoticeViewModel | undefined): void {
     eventNotice.hidden = notice === undefined;
-    eventText.textContent = notice === undefined ? '' : t(notice.labelKey, resolveHudLabelParameters(t, notice));
+    // `renderHudLabel` rather than `t(...)`: the band's sentence may inflect
+    // (`hud.alert.event.incidents.riot-opened`), and `t` is `format`, which
+    // reads a plural entry's `other` and stops.
+    eventText.textContent = notice === undefined ? '' : renderHudLabel(localizer, notice);
     if (notice === undefined) delete eventNotice.dataset['severity'];
     else eventNotice.dataset['severity'] = notice.severity;
   }
@@ -2907,7 +2910,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // them was. Composed by a pure function outside this file, because the
       // suite runs in `node` with no jsdom and a decision made inside `mountHud`
       // is unreachable from it.
-      const text = hudAlertRowLabel(t, alert);
+      const text = hudAlertRowLabel(localizer, alert);
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
       /*
        * **A row that can be dismissed carries an `x` control** (the owner's

@@ -223,8 +223,16 @@ describe('every non-default catalogue is well-formed, without being required to 
 
     expect(audit.referenceKeyCount, 'the reference catalogue is empty, so the audit is judging nothing').toBeGreaterThanOrEqual(588);
     expect([...kinds].sort()).toEqual(['missing-plural-category', 'unknown-key']);
-    // Two plural entries short of two categories each.
-    expect(audit.findings.filter((finding) => finding.kind === 'missing-plural-category')).toHaveLength(4);
+    // Four plural entries short of two categories each: `save-slots.available`
+    // and `save-slots.over-capacity`, plus the two alert sentences stage 6
+    // migrated (`hud.alert.event.incidents.riot-opened`,
+    // `hud.alert.event.prisoners.discharged`). It was 2 x 2 until 2026-09-21,
+    // and the number is derived rather than pinned separately below so that
+    // this control keeps meaning "every plural entry in the catalogue" rather
+    // than "the two that existed when it was written".
+    const pluralEntryCount = Object.values(defaultMessageCatalogEn.messages).filter((entry) => typeof entry !== 'string').length;
+    expect(pluralEntryCount, 'the catalogue has no plural entry, so this control is measuring nothing').toBeGreaterThanOrEqual(4);
+    expect(audit.findings.filter((finding) => finding.kind === 'missing-plural-category')).toHaveLength(pluralEntryCount * 2);
   });
 
   it('keeps the ratchet and the registry in agreement, in both directions', () => {
@@ -308,9 +316,42 @@ describe('every non-default catalogue is well-formed, without being required to 
  * splitting it into "real" and "fine" would need a per-entry judgement that is
  * the owner's to make.
  */
+/*
+ * **TWO KEYS LEFT THIS LIST ON 2026-09-21 AND THE DOCBLOCK ABOVE IS KEPT AS IT
+ * STOOD** (`docs/AGENT_WORKFLOW.md` section 4). Its central claim -- *"turning
+ * one of these into a plural entry means authoring its English `one`/`other`
+ * text, which is player-visible copy and the owner's (AGENTS.md, exclusion
+ * 4)"* -- was already half-corrected further down this file, and the owner's
+ * ruling of 2026-09-21 finished the job: plural agreement is choice of words,
+ * and choice of words has been ours since 2026-09-04. The half that never
+ * moved is that the sentence must be **true**, which is why each of the two
+ * migrations below says in its own catalogue comment what `{count}` is and
+ * that only the agreement changed.
+ *
+ * `hud.alert.event.incidents.riot-opened` (`A riot has broken out — {count}
+ * prisoners have stopped taking orders.`) and
+ * `hud.alert.event.prisoners.discharged` (`{count} released — their sentences
+ * are served.`) were the two entries on this list whose **English** disagreed
+ * with the number at 1. Both now carry `one`/`other` in
+ * `src/content/default-locale-en.ts` and Polish forms in
+ * `src/content/locale-pl.ts`, so the assertion below no longer finds them --
+ * they are flat strings no more.
+ *
+ * **The remaining thirty-one are staying, and that is a decision rather than
+ * an omission.** Every one of them was read against the census in this change's
+ * pull request body: none has a noun, verb or determiner after the number that
+ * inflects in English or in Polish, because each was either written as a
+ * formula (`{count} ×`, `{label}: {count}`) or deliberately reshaped in Polish
+ * so nothing agrees with the figure (`Bez miejsca do spania: {count}`,
+ * `{count} min temu`). Giving those keys forms would produce identical strings
+ * in every category -- four copies of one sentence, in two catalogues, that no
+ * `Intl.PluralRules` decision can distinguish -- which is a bigger record for
+ * the owner to read and not a better one.
+ *
+ * What the list still does is unchanged: a counted message added without an
+ * entry here fails on the commit that adds it.
+ */
 const FLAT_MESSAGES_WITH_COUNT = [
-  'hud.alert.event.incidents.riot-opened',
-  'hud.alert.event.prisoners.discharged',
   'hud.alert.occurrences',
   'hud.build.buy-submit',
   'hud.build.deliveries-count',
@@ -420,9 +461,13 @@ describe('the English catalogue counts things with flat strings, and the debt ma
     const entries = Object.values(defaultMessageCatalogEn.messages);
     expect(entries.length, 'fewer messages than when this floor was set').toBeGreaterThanOrEqual(588);
 
-    // Two, today: `save-slots.available` and `save-slots.over-capacity`. The
-    // mechanism exists and is used, which is why the list above is a debt
-    // rather than a missing feature.
+    // Two until 2026-09-21 -- `save-slots.available` and
+    // `save-slots.over-capacity` -- and **four** since, the two added being the
+    // alert sentences stage 6 migrated. The floor stays at 2 rather than
+    // following the measurement: it exists to say the catalogue still has a
+    // worked example of the right shape, and two is as good an example as four.
+    // The number that must track the catalogue is the one in the control above,
+    // which derives it rather than pinning it.
     const plural = entries.filter((entry) => typeof entry !== 'string');
     expect(plural.length, 'no plural entry is left, so the catalogue has no worked example of the right shape').toBeGreaterThanOrEqual(2);
   });

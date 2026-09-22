@@ -91,9 +91,16 @@ describe('docs/PLAYER_STRINGS.md: the record reservation 4 owes the owner', () =
     // The strongest check available: not the scanner against itself, but the
     // scanner against `defaultLocaleEnCatalog` -- the map the game resolves
     // against at runtime.
+    // A migrated key's catalogue value is a `LocalizationPluralForms` object
+    // rather than a string, so the scanner reports the forms it read under
+    // `forms` and the comparison is against those. `value` stays the cell the
+    // record prints -- every form, labelled -- and is not what the game loads
+    // for such a key, which is why it is not what is compared.
+    const shipped = (entry: { readonly key: string; readonly value: string; readonly forms?: Readonly<Record<string, string>> }): unknown =>
+      entry.forms ?? entry.value;
     const wrong = entries
-      .filter((entry) => defaultLocaleEnCatalog.get(entry.key) !== entry.value)
-      .map((entry) => `${entry.key}: record has ${JSON.stringify(entry.value)}, the game loads ${JSON.stringify(defaultLocaleEnCatalog.get(entry.key))}`);
+      .filter((entry) => JSON.stringify(defaultLocaleEnCatalog.get(entry.key)) !== JSON.stringify(shipped(entry)))
+      .map((entry) => `${entry.key}: record has ${JSON.stringify(shipped(entry))}, the game loads ${JSON.stringify(defaultLocaleEnCatalog.get(entry.key))}`);
 
     expect(
       wrong,

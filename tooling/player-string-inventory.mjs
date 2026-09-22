@@ -157,6 +157,79 @@ function lineOfOffset(text, offset) {
 }
 
 /**
+ * The CLDR plural categories a form object may be keyed on, in the order a
+ * reader wants them: ascending, with the fraction category last.
+ *
+ * Written out rather than accepted by pattern, for the same reason the scanner
+ * throws rather than skips: `{ oneu: '...' }` is a typo that would otherwise
+ * become a form nothing selects, in a record whose whole job is that the owner
+ * can read what ships.
+ */
+const PLURAL_CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other'];
+
+/**
+ * Read a `{ one: '...', other: '...' }` value: the shape a key takes once it
+ * carries plural forms (`LocalizationPluralForms`, `src/content/localization.ts`).
+ *
+ * Keys may be bare identifiers or quoted; values are string literals, with the
+ * same `+` concatenation the flat path already allows. Anything else throws,
+ * exactly as the flat path does.
+ */
+function readPluralForms(text, index) {
+  if (text[index] !== '{') throw new Error(`Expected a plural form object at offset ${String(index)}`);
+  const forms = {};
+  let i = skipTrivia(text, index + 1);
+  for (;;) {
+    if (text[i] === '}') return { value: forms, next: i + 1 };
+    if (text[i] === ',') {
+      i = skipTrivia(text, i + 1);
+      continue;
+    }
+
+    let name;
+    if (text[i] === "'" || text[i] === '"') {
+      const quoted = readStringLiteral(text, i);
+      name = quoted.value;
+      i = quoted.next;
+    } else {
+      const match = /^[A-Za-z_$][A-Za-z0-9_$]*/.exec(text.slice(i));
+      if (match === null) throw new Error(`Expected a plural category name at offset ${String(i)}, found ${JSON.stringify(text.slice(i, i + 20))}`);
+      name = match[0];
+      i += name.length;
+    }
+    if (!PLURAL_CATEGORIES.includes(name)) throw new Error(`Unknown plural category "${name}" at offset ${String(i)}`);
+
+    i = skipTrivia(text, i);
+    if (text[i] !== ':') throw new Error(`Expected ':' after plural category "${name}" at offset ${String(i)}`);
+    i = skipTrivia(text, i + 1);
+
+    let value = '';
+    for (;;) {
+      const literal = readStringLiteral(text, i);
+      value += literal.value;
+      i = skipTrivia(text, literal.next);
+      if (text[i] !== '+') break;
+      i = skipTrivia(text, i + 1);
+    }
+    forms[name] = value;
+  }
+}
+
+/**
+ * One table cell for a plural entry: every form, labelled, in category order.
+ *
+ * Both forms are printed rather than only `other`, because the record exists
+ * so the owner can read *what ships* -- and what ships for a migrated key is
+ * the set, not one member of it. The separator is a middle dot, which
+ * `escapeCell` does not have to touch.
+ */
+function renderFormsCell(forms) {
+  return PLURAL_CATEGORIES.filter((category) => forms[category] !== undefined)
+    .map((category) => `${category}: ${forms[category]}`)
+    .join(' · ');
+}
+
+/**
  * Every authored player-visible string, in source order, with the 1-based line
  * its KEY sits on -- the line a reader jumps to, not the line the value happens
  * to wrap onto.
@@ -184,6 +257,18 @@ export function extractAuthoredStrings(sourceText) {
     i = skipTrivia(sourceText, key.next);
     if (sourceText[i] !== ':') throw new Error(`Expected ':' after key "${key.value}" at offset ${String(i)}`);
     i = skipTrivia(sourceText, i + 1);
+
+    if (sourceText[i] === '{') {
+      const forms = readPluralForms(sourceText, i);
+      i = forms.next;
+      entries.push({
+        key: key.value,
+        value: renderFormsCell(forms.value),
+        forms: forms.value,
+        line: lineOfOffset(sourceText, keyOffset),
+      });
+      continue;
+    }
 
     let value = '';
     for (;;) {

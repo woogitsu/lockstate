@@ -1,4 +1,4 @@
-import { buildLocalizationCatalog } from './localization';
+import { type LocalizationEntry, buildLocalizationCatalog } from './localization';
 import { simulationEnumMessages } from './simulation-message-keys';
 
 /**
@@ -22,7 +22,7 @@ import { simulationEnumMessages } from './simulation-message-keys';
  * would put the id in one file and the key in another, which is exactly the
  * drift `simulation-message-keys.ts` exists to make impossible.
  */
-const authoredMessages: Readonly<Record<string, string>> = {
+const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'room.cell.name': 'Cell',
   'room.holding-cell.name': 'Holding Cell',
   'room.solitary-cell.name': 'Solitary Cell',
@@ -1394,7 +1394,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // labelParameters`, which these are the first producer of. `{total}` is a
   // number of minor units formatted by the localizer, exactly as the Build and
   // Staff panels format a price.
-  'hud.alert.event.prisoners.discharged': '{count} released — their sentences are served.',
+  //
+  // **The second key migrated by stage 6, and the second English defect of the
+  // same class as `hud.alert.event.incidents.riot-opened`'s.** The flat string
+  // read `{count} released — their sentences are served.`, and one prisoner
+  // has one sentence: at `count` 1 that rendered *"1 released — their
+  // sentences are served."* It is reachable rather than theoretical --
+  // `SimulationEventLog.recordDischarge` aggregates one event per tick and
+  // emits it for any count at or above 1, and `dischargedEventSchema`
+  // (`src/simulation/protocol/types.ts`) admits `min(1)` on the wire -- so a
+  // tick that releases exactly one prisoner produces it.
+  //
+  // Both forms make the same claim as the flat string they replace and no
+  // other: `{count}` is `event.count`, which `recordDischarge` wrote from the
+  // discharge pass's own tally. Only the agreement moves.
+  // One line, for the anchor-budget reason given on
+  // `hud.alert.event.incidents.riot-opened`.
+  'hud.alert.event.prisoners.discharged': { one: '{count} released — their sentence is served.', other: '{count} released — their sentences are served.' },
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
   // The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
   // amendment): a one-off notice at the moment the treasury crosses a rung,
@@ -2023,7 +2039,37 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // because it is the only one always at least two
   // (`DEFAULT_MINIMUM_RIOT_PARTICIPANTS`) -- this localizer has no plural
   // rules, so a figure that can be 1 would read "1 prisoners".
-  'hud.alert.event.incidents.riot-opened': 'A riot has broken out — {count} prisoners have stopped taking orders.',
+  //
+  // **The last clause of that paragraph stopped being true and the paragraph
+  // is kept as it stood** (`docs/AGENT_WORKFLOW.md` section 4). This localizer
+  // has had plural rules since `Localizer.formatPlural`, and since
+  // `renderHudLabel` (`src/ui/hud/label-parameters.ts`) the alerts list and
+  // the event band -- the two surfaces this key reaches -- select between
+  // them. So the forms below say it rather than the constant saying it.
+  //
+  // **What that buys, precisely, because it is not a rendering fix.** Nothing
+  // a player can reach today reads "1 prisoners": `IncidentTriggerSystem`
+  // opens a riot only where `occupants.length >= this.minimumRiotParticipants`
+  // (`src/simulation/incidents/trigger-system.ts:380`) and nothing in `src/`
+  // passes that constructor argument, so it is `DEFAULT_MINIMUM_RIOT_PARTICIPANTS`
+  // = 2. What the forms remove is the *coupling*: the sentence's grammar used
+  // to depend on a default in a subsystem three layers away, with no gate
+  // between them, and `riotOpenedEventSchema` already admits `min(1)` on the
+  // wire. Three docblocks in this tree carry that dependency in prose --
+  // here, `src/simulation/protocol/types.ts` on `riotOpenedEventSchema`, and
+  // `src/content/locale-pl.ts` on the same key -- and none of them is a test.
+  //
+  // Both forms make the same claim as the flat string they replace and no
+  // other: `{count}` is `event.participantCount` (`src/ui/simulation-events.ts`,
+  // `eventParameters`), which is what `SimulationEventLog.recordIncidentOpened`
+  // wrote from the incident's own participant list. Only the agreement moves.
+  // Written on one line, as the flat string it replaces was, and not because
+  // it reads better: `docs/PLAYER_STRINGS.md` anchors this declaration by line
+  // number, and `tests/foundation/documentation-anchor-quotation-contract.test.ts`
+  // verifies an anchor by finding a neighbouring key within three lines of it.
+  // A four-line entry pushes the next key out of that window and spends the
+  // document's pinned budget, which may not be raised.
+  'hud.alert.event.incidents.riot-opened': { one: 'A riot has broken out — {count} prisoner has stopped taking orders.', other: 'A riot has broken out — {count} prisoners have stopped taking orders.' },
   'hud.alert.event.incidents.assault-opened': 'A fight has broken out between two prisoners.',
   'hud.alert.event.incidents.escape-attempt-opened': 'A prisoner is trying to break out.',
   'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',

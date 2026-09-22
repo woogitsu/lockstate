@@ -489,3 +489,31 @@ because both mean authoring player-visible copy:
 - **2 accessible names are assembled in code** from a localized word, a
   hard-coded `": "` and another element's text. Rule 4 above forbids it;
   the same gate pins both sites.
+
+> **THE FIRST BULLET'S LAST SENTENCE IS NOW FALSE AND THE BULLET IS KEPT AS IT
+> STOOD** (`docs/AGENT_WORKFLOW.md` §4). *"Exactly two keys in the English
+> catalogue are plural entries (`save-slots.available` and
+> `save-slots.over-capacity`)"* was true until 2026-09-21. It is **four**: the
+> alerts path learned to select a form
+> (`src/ui/hud/label-parameters.ts`'s `renderHudLabel`, recorded in
+> [an unnumbered ADR draft](./adr/drafts/what-selects-a-plural-form-on-the-alerts-path.md)),
+> and the two counted alert sentences whose **English** disagreed with their
+> own number migrated behind it — `hud.alert.event.incidents.riot-opened`, which
+> rendered *"1 prisoners have stopped taking orders"*, and
+> `hud.alert.event.prisoners.discharged`, which rendered *"their sentences are
+> served"* for one prisoner.
+>
+> **The rest of the bullet survives, and the interesting part is which rest.**
+> The tally it refuses to repeat has not rotted a fifth time, because it is
+> still not written here. The flat list is now **31** rather than 33, and the
+> number is still stated in exactly one place —
+> `FLAT_MESSAGES_WITH_COUNT` in `tests/foundation/second-locale-contract.test.ts` —
+> which is the discipline the bullet argues for rather than an exception to it.
+>
+> **Nothing else migrated, and that is a decision.** Every one of the remaining
+> 31 was read: each is either a formula whose counting is carried by `×`, a
+> colon or a preposition, or a Polish sentence deliberately reshaped so that no
+> noun agrees with the figure. Giving those forms would produce identical
+> strings in every category, which
+> `tests/foundation/polish-plural-forms-contract.test.ts` refuses by name —
+> *"four identical forms is a flat string with extra steps"*.
