@@ -282,23 +282,21 @@
  * Undo and Redo (#1356), after the transport and never inside it: the
  * transport group is labelled as the clock's controls, and these are not.
  *
- * At the default interface scale this is the whole arrangement, and what it
- * costs was measured on the assembled page against `main` at `4a7215f7`
- * (New prison; Build and Overview tabs): **nothing** at 1280x720, 1280x800,
- * 1440x900, 1024x768, 900x600 and 390x844, where the pair takes its 92px out
- * of the clock group's `flex: 1` stretch on the first row; and **one strip
- * row at 375x812** (103.7 -> 151.7px; the Build panel's box 446 -> 410px with
- * nothing inside it clipped), where the clock and the transport are already
- * 341 of 359px and the pair wraps onto a row of its own.
+ * Above 720px at the default interface scale this is the whole arrangement,
+ * and it costs **nothing**: measured on the assembled page against `main` at
+ * `4a7215f7` (New prison; Build and Overview tabs), strip height, visible
+ * chips and the Build panel's box are unchanged at 1280x720, 1280x800,
+ * 1440x900, 1024x768 and 900x600, because the pair takes its 92px out of the
+ * clock group's `flex: 1` stretch on the first row. Below 720px it is placed
+ * in the strip's top-right corner instead (the phone block beside the Layout
+ * slot's), and above 100 % it takes the clock's place beside the transport
+ * (the next rule); each carries its own measurement.
  *
- * That row is paid in height on purpose. The two ways of not paying it both
- * spend the counters' width instead, and at 100 % that width is a contract:
- * `app-shell.spec.ts`'s *"shows every status chip the screen has room for, at
- * every viewport (#634)"* requires every chip the strip is wide enough for to
- * be shown, and sharing the counters' row with the pair or with the clock put
- * it red at 600x800 (4 of the 5 the strip has room for). The pair beside the
- * brand badge was measured too, and lands on the Layout button at 375x812
- * (255..343 against 327..371).
+ * Rejected on measurement: the pair beside the brand badge in flow (at
+ * 375x812 it lands on the Layout button, 255..343 against 327..371), and any
+ * arrangement that puts the pair or the clock on the counters' row at 100 %,
+ * which `app-shell.spec.ts`'s #634 test refuses (*"every chip the strip has
+ * room for"*: 4 of 5 at 600x800).
  */
 .hud-strip__history {
   display: flex;
@@ -5859,6 +5857,45 @@
   .hud-strip { padding-right: var(--space-2); }
   /* Nothing to reclaim: the gutter here is the padding the strip already had. */
   .hud-strip__metrics { margin-right: 0; }
+}
+
+/*
+ * ON A PHONE, UNDO AND REDO SIT IN THE STRIP'S TOP-RIGHT CORNER BESIDE THE
+ * LAYOUT BUTTON, AND THE FIRST ROW IS HELD TO ONE TAP TARGET TALL (#1356).
+ *
+ * In flow the pair has nowhere free here. The clock and the transport are 341
+ * of 359px of the second row at 375x812, so the pair wrapped onto a row of its
+ * own -- 103.7 -> 151.7px of strip -- and that moved `.save-panel` over the
+ * centre of the screen (`app-shell.spec.ts`: *"a click in the middle of the
+ * screen reaches the world, not the HUD"* went red there). Sharing a row with
+ * the counters or with the clock instead was refused by #634's *"every chip the
+ * strip has room for"*.
+ *
+ * The first row is the one with room: the brand badge and nothing else, 19px
+ * tall, with the Layout button already laid over its right end. So the pair is
+ * placed the way that button is -- absolutely, at the top, a gap to its left --
+ * and costs the difference between that 19px row and a 44px one. The badge is
+ * bounded so it wraps rather than running under the pair, and the row is
+ * floored at one tap target so the second row starts below the buttons rather
+ * than under them.
+ *
+ * Focus order is DOM order -- transport, then the pair, then Layout -- which is
+ * the order the Layout button already has against what it sits beside here.
+ *
+ * Not at an enlarged interface scale, where the rules beside
+ * `.hud-strip__history` above already put the pair on the transport's row.
+ */
+@media (max-width: 720px) {
+  :root:not([data-ui-scale-enlarged='true']) .hud-strip__history {
+    position: absolute;
+    top: 0;
+    right: calc(var(--space-1) + var(--tap-target) + var(--space-1));
+    height: var(--tap-target);
+  }
+  :root:not([data-ui-scale-enlarged='true']) .hud-strip__brand {
+    min-height: var(--tap-target);
+    max-width: calc(100% - 3 * var(--tap-target) - 3 * var(--space-1) - var(--space-2));
+  }
 }
 
 /* ---- the Layout menu --------------------------------------------- */

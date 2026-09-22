@@ -1121,11 +1121,33 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * as every entry above describes -- which leaves the 8.4 this number moved by.
  * The other two viewports do not move, because the rule is inside
  * `@media (max-width: 720px)`.
+ *
+ * **`375x812` MOVED 447.7 -> 429 ON 2026-09-22 (#1356), AND IT IS LENT TO THE
+ * ONE TOUCH ROUTE UNDO AND REDO HAVE.** Until #1356 the pair was `KeyZ` and
+ * `KeyY` and nothing else, so a phone could take back nothing. The strip's new
+ * Undo and Redo buttons sit in its top-right corner below 721px, beside the
+ * Layout button, and the first strip row -- the brand badge alone, 19px -- is
+ * floored at one tap target so the second row starts below them. That is the
+ * cheapest arrangement measured: in flow the pair took a strip row of its own
+ * (103.7 -> 151.7) and moved `.save-panel` over the centre of the screen, and
+ * sharing the counters' row broke #634. `hud.css`'s note on
+ * `.hud-strip__history` below 720px carries the rest.
+ *
+ * The chain, measured on this page in two worktrees, `main` at `4a7215f7`
+ * against the branch:
+ *
+ *     viewport    strip            rail             aside            this panel
+ *     375x812    103.7 -> 128.7    650.3 -> 625.3   162.6 -> 156.3   447.7 -> 429
+ *
+ * 25px comes out of the middle row; `.hud__aside`'s `min-height: 25%` gives up
+ * 6.3 of it and this panel the other 18.7. The two desktop viewports do not
+ * move: there the pair rides the strip's first row, out of the clock group's
+ * `flex: 1` stretch.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 447.5,
   '900x600': 365.5,
-  '375x812': 447.7,
+  '375x812': 429,
 };
 
 /**
