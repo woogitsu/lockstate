@@ -792,7 +792,80 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `03e47695` (**v0.0.740**) by the delta method,
+Re-anchored at `main` @ `4ac515b4` (**v0.0.747**) by the delta method,
+from `03e47695`. This is #1365's merge commit, the last merge on `main` and
+the tip of `main` itself; `package.json` ships **0.0.747** at it and **no
+release commit sits above it**, so the release assertion reads 747 − 747 =
+**zero**. It is the merge rather than a release commit for the reason every
+anchor in this chain gives: a `chore(release)` commit starts no CI run and a
+reader who followed one out would have nothing to verify against.
+
+**THE GATE WAS GREEN AT SEVEN OF TEN AND THIS PASS IS PROACTIVE RATHER THAN A
+RESCUE — the third consecutive anchor on this chain moved with nothing red to
+unblock, which is the longest such run this chain has had.**
+`adr-status-queue-anchor-contract` was passing on the tree this pass opened on:
+**7 of 10** on merges and **22 of 100** on commits, counted from `03e47695` to
+`4ac515b4`. `tooling/anchor-budget-spend.mjs` printed *"7 of 10 merges since
+`03e47695` … 3 merges remain before it is exceeded"* — a `::warning::` rather
+than a `::notice::`, because the script escalates inside the last three merges
+of the budget, which is the threshold rather than the cliff. **Neither budget is
+raised and neither is argued with**: `ANCHOR_STALENESS_BUDGET_MERGES` stays at
+10 and `ANCHOR_STALENESS_BUDGET_COMMITS` stays at 100, and nothing here asks
+for either to move in either direction. The green reading is not this pass's
+arithmetic alone: `main`'s own `CI` run for `03cccc5d` — run 35703251049 —
+concluded **`success`** at 08:41Z on 2026-09-22, with this file still anchored
+at `03e47695` and four of this window's merges already landed. This window
+carries **85 changed paths — 15 under `src/`, 17 under `tests/`, 49 under
+`docs/`, plus `AGENTS.md`, `package.json`, one `scripts/` and one `tooling/`
+path** — against the previous window's 20, and it is the widest reading this
+chain has taken since 2026-09-21.
+
+**SEVEN RELEASE NUMBERS STAND AGAINST SEVEN MERGES, AND THIS IS THE FIRST
+WINDOW ON THIS CHAIN WHERE THE TWO UNITS AGREE EXACTLY.** 740 → 747 is seven,
+so the unit this gate counted until 2026-09-15 would have read **7 of 10 here
+too**, and would have reached the same verdict for once. Every window this
+chain has measured since the unit changed has recorded a divergence in one
+direction or the other — the previous pass's twelve-against-eight, the one
+before it five-against-six — so the agreement is worth recording as the limit
+case rather than as the norm: it says nothing about the two units being
+interchangeable, only that this window happens to carry exactly one bump per
+merge with none queued across its edges.
+
+**The window is 22 commits anchor to anchor and 14 of them are first-parent.**
+**3.1 commits per merge**, against the 3.3 the previous pass measured and the
+median of 3.7 it measured over the whole chain. Where this window is unlike its
+two predecessors is in *elapsed time* rather than in size: the seven merges span
+**13 hours and 10 minutes** (2026-09-21 23:46:39 to 2026-09-22 12:56:26
++02:00), against the previous window's 25 minutes — and the first two of the
+seven landed **six seconds apart** at the beginning of it, so the shape is one
+burst and then a working day rather than a uniform rate.
+
+**The seven merges, in order off `git log --first-parent`:** #1360
+(`agent/reanchor-status-queue-3`, the previous anchor's own pass), #1359
+(`agent/stage-4-surface-enumeration`), #1361
+(`agent/stage-6-plural-migration`), #1362 (`agent/assign-adr-numbers-0118`),
+#1363 (`agent/record-action-column-rulings`), #1364
+(`agent/refusal-carries-its-place`) and #1365
+(`agent/mark-dated-event-types-coordinate`), which is the anchor.
+
+**THE CLEANUP-HOOK FAILURE THE PREVIOUS THREE WINDOWS RECORDED IS GONE, AND
+THIS PASS'S BRIEF ASSERTED IT AS STILL PRESENT.** The brief that ordered this
+pass states that *"every workflow currently fails in its post-job cleanup hook
+(`/usr/local/sbin/actions-runner-cleanup is not a valid path to a script`)"* and
+that *"`assets`/`browser` read `skipped` because they gate on a `verify` the
+hook marked failed"*. Read off the Actions API for run 35716878436 (#1363, on
+runner `lockstate-wsl-DOM-NEW-01`, labels `["self-hosted"]`), both halves are
+false on this tree: `verify` concluded **`success`** and so did its
+`Complete runner` step; `assets` **ran and concluded `success`** rather than
+`skipped`; and the run's own `failure` comes from **`browser`**, whose
+*"Run the real-browser suite"* step concluded **`cancelled`** after 17m 03s
+when #1364's push superseded it. So the red on `main` in this window is
+supersession, which is what a burst of merges does to a long job, and not a
+host hook. **Recorded here because the brief's premise would have had this pass
+excuse a red it did not have to excuse**, and because a correction that lives
+only in a report does not survive the session.
+
+**The anchor before this one, kept — v0.0.740 (`03e47695`).** It read: *"Re-anchored at `main` @ `03e47695` (**v0.0.740**) by the delta method,
 from `c259ff8c`. This is #1358's merge commit and the last merge on `main`;
 `package.json` ships **0.0.740** at it, and two release commits sit above it —
 `4a4825b8` (`chore(release): v0.0.741`) and `233fd234` (`chore(release):
@@ -800,87 +873,7 @@ v0.0.742`) — so `package.json` ships **0.0.742** at the tip and the release
 assertion reads 742 − 740 = **two**. It is the merge rather than a release
 commit for the reason every anchor in this chain gives: a `chore(release)`
 commit starts no CI run and a reader who followed one out would have nothing to
-verify against.
-
-**THE GATE WAS GREEN AT EIGHT OF TEN AND THIS PASS WAS TAKEN ANYWAY — the
-second consecutive anchor on this chain moved with nothing red to unblock.**
-`adr-status-queue-anchor-contract` was passing on the tree this pass opened on:
-**8 of 10** on merges and **26 of 100** on commits, counted from `c259ff8c` to
-`03e47695`. `tooling/anchor-budget-spend.mjs` printed *"8 of 10 merges since
-`c259ff8c` … 2 merges remain before it is exceeded"*, which is a `::warning::`
-rather than a `::notice::` — the script escalates inside the last three merges
-of the budget — but a warning about what is *about* to be red is not a red.
-**Neither budget is raised and neither is argued with**:
-`ANCHOR_STALENESS_BUDGET_MERGES` stays at 10 and
-`ANCHOR_STALENESS_BUDGET_COMMITS` stays at 100, and nothing here asks for
-either to move in either direction. The green reading is not inferred from the
-budget arithmetic alone: `main`'s own `verify` job ran the whole of
-`tests/foundation` on `c5ad58e0` — run 35657418586, step *"Verify project"*,
-`success` — with this file still anchored at `c259ff8c`. This window carries
-**20 changed paths — 4 under `src/`, 7 under `tests/`, 8 under `docs/` and
-`AGENTS.md`** — against the previous window's 11, and **four production-code
-paths against that window's two**.
-
-**TWELVE RELEASE NUMBERS STAND AGAINST EIGHT MERGES, AND THE GAP IS NOT WASTE:
-FOUR OF THE TWELVE WERE EARNED BY MERGES THAT LANDED BEFORE THE ANCHOR.** 730 →
-742 is twelve, so the unit this gate counted until 2026-09-15 would have read
-**12 of 10 here and fired** while the live unit sat two clear. That is the
-direction the 2026-09-15 unit change was made for, and the gate's own header
-records an earlier instance of it in its own words: *"On 2026-09-15 this
-assertion fired at **eleven** releases … **Nine** merges had landed in that
-window"*. Each of the
-twelve release commits was matched to the `Version` run that pushed it, by
-`head_sha` off the Actions API rather than by adjacency: v0.0.731 to run 774
-(#1345), 732 to 775 (#1346), 733 to 776 (#1347), 734 to 777 (#1348 — the
-previous anchor itself), 735 to 778 (#1352), 736 to 779 (#1349), 737 to 780
-(#1350), 738 to 781 (#1351), 739 to 782 (#1353), 740 to 783 (#1354), 741 to 784
-(#1355) and 742 to 785 (#1358). **Twelve numbers, twelve distinct merges, no
-duplicate delivery** — and the first four belong to merges at or below
-`c259ff8c`, whose bumps queued for a runner and landed inside this window
-rather than inside the window that earned them. **Net the four out and the two
-units agree exactly at eight.** That is the header's *"a merge can land with no
-bump at all"* half running in reverse, and it is a sharper argument for the
-merge unit than either half already recorded: the release count is wrong here
-not because a number was spent on nothing but because a number was spent late.
-
-**The window is 26 commits anchor to anchor and 18 of them are first-parent.**
-**3.3 commits per merge**, against the 2.8 the previous pass measured and the
-median of 3.7 it measured over the whole chain. The eight merges landed inside
-**25 minutes** (23:06:02 to 23:31:01 +02:00) and four of them inside **18
-seconds** (23:06:02 to 23:06:20), which is the traffic rate the two-merge
-remainder would have been spent at.
-
-**The eight merges, in order off `git log --first-parent`:** #1352
-(`agent/reanchor-status-queue-2`, the previous anchor's own pass), #1349
-(`agent/join-command-control-reachability`), #1350 (`agent/stage-4-settled`),
-#1351 (`agent/adr-draft-action-column`), #1353
-(`agent/fold-chrome-rows-into-deferred`), #1354
-(`agent/stage-7-first-batch-research`), #1355
-(`agent/record-2026-09-21-rulings`) and #1358
-(`agent/stage-6-polish-plurals`), which is the anchor.
-
-**EVERY FINISHED `CI` RUN IN THIS WINDOW IS RED AND NOT ONE OF THE REDS IS A
-FAILING TEST — AND THE COST IS NOT COSMETIC.** Read off the Actions API rather
-than assumed, for the eight `CI` runs on `main` carrying these merges' shas:
-**four concluded `cancelled`** — #1352 (run 35655160856), #1349 (35655168784),
-#1350 (35655182275) and #1351 (35655191177), each superseded by the next
-merge's push within seconds — **three concluded `failure`** — #1353
-(35656084853), #1354 (35656685612) and #1355 (35657418586) — and #1358
-(35657622720), the anchor, was `in_progress` when this pass read it. **In all
-three failures the failing step is the same one and it is not a step in this
-repository**: every step of `verify` from `Set up job` through *"Verify
-generated output did not modify tracked files"* concluded `success`, and the
-only step with a `failure` conclusion is `Complete runner` — the runner's
-post-job cleanup hook, which the log reports as *"is not a valid path to a
-script"*. **What it costs is the browser suite**: `assets` and `browser`
-concluded **`skipped`** in all three runs, because they are gated on a `verify`
-the hook had already marked failed. So a host misconfiguration outside this
-repository is, for the length of this window, stopping the browser suite from
-running on `main` at all — and doing it while every gate that did run was
-green. The same hook is failing the `Version` runs: run 785's `Bump the patch
-version, tag it, and push both` and `Report the anchor budget's current spend`
-both concluded `success` and the run concluded `failure`, so the bump landed,
-the annotation printed, and the run is red anyway.
+verify against."*
 
 **The anchor before this one, kept — v0.0.730 (`c259ff8c`).** It read: *"Re-anchored at `main` @ `c259ff8c` (**v0.0.730**) by the delta method,
 from `9a0d6135`. This is #1348's merge commit, the last merge on `main` and
@@ -21533,6 +21526,259 @@ it by hand on two documents, which is calibration rather than proof — a third
 document worded past both forms would surface here as a changed total rather
 than as an error.
 
+## 3. What the anchor pass of 2026-09-22 opened with the gate GREEN at seven of ten and nothing red to unblock: seven merges against SEVEN release numbers — the first window on this chain where the two units agree exactly — 22 commits, 85 changed paths of which fifteen are production code, two live coordinates moved on two files by the same commit, the commit that caused both drifts found re-aiming nine other anchors in this file and neither of them, and the brief's account of what CI is doing refuted against the Actions API
+
+**SEVEN at `4ac515b4` (**v0.0.747**), seven release numbers later.** The window
+is `03e47695..4ac515b4`: **22 commits**, **14** of them first-parent, **seven**
+of those merges and **seven** `chore(release)` bumps. `origin/main` was
+re-fetched immediately before this branch was cut and again before the commit
+was written; both times it read `4ac515b4`, which is #1365's merge commit and
+the tip of `main` itself, with **no release commit above it** — so the release
+assertion reads 747 − 747 = **zero** and the anchor is a commit that started a
+CI run rather than a bump that started none.
+
+**This pass is proactive and says so, because the two passes before the last
+one were rescues and their framing is the easiest thing here to borrow by
+mistake.** The gate was passing on the tree this pass opened on and
+`tooling/anchor-budget-spend.mjs` said so in its own words, quoted from the
+run: *"7 of 10 merges since `03e47695` … 3 merges remain before it is
+exceeded"*. That is a `::warning::` and not a red — the script escalates at
+three remaining, which is the point of the threshold — and the third pass on
+this chain already refused the *"unblocks a red `main`"* wording for the same
+reason. Neither budget is raised: `ANCHOR_STALENESS_BUDGET_MERGES` stays at 10,
+`ANCHOR_STALENESS_BUDGET_COMMITS` stays at 100, and no per-document row in
+`tests/foundation/documentation-anchor-quotation-contract.test.ts` moves either.
+
+### The seven merges, and where the production code is
+
+`#1360` (`agent/reanchor-status-queue-3`, the previous anchor's own pass),
+`#1359` (`agent/stage-4-surface-enumeration`), `#1361`
+(`agent/stage-6-plural-migration`), `#1362` (`agent/assign-adr-numbers-0118`),
+`#1363` (`agent/record-action-column-rulings`), `#1364`
+(`agent/refusal-carries-its-place`) and `#1365`
+(`agent/mark-dated-event-types-coordinate`), which is the anchor.
+
+**85 changed paths: 15 under `src/`, 17 under `tests/`, 49 under `docs/`, plus
+`AGENTS.md`, `package.json`, one `scripts/` and one `tooling/` path.** Two of
+the seven carry the whole of the production code — #1361's plural migration and
+#1364's `tile` member on the refusal wire — and #1364 alone accounts for 35 of
+the 49 `docs/` paths, because it re-aimed 83 `file:line` anchors across 35
+documents when its own insertions moved them.
+
+**The shape of this window is unlike either of its two predecessors, and it is
+elapsed time rather than size that separates them.** The seven merges span
+**13 hours and 10 minutes** (2026-09-21 23:46:39 to 2026-09-22 12:56:26
++02:00), against the previous window's 25 minutes — and the first two landed
+**six seconds apart** at the start of it, so the traffic is one burst and then
+a working day. At **3.1 commits per merge** it is nevertheless the shallowest
+of the three, against 3.3 and 2.8, and the chain median of 3.7.
+
+### Seven release numbers against seven merges — the first exact agreement this chain has measured
+
+740 → 747 is seven, so the unit this gate counted until 2026-09-15 would have
+read **7 of 10 here too** and reached the same verdict. Every window measured
+since the unit changed has recorded a divergence in one direction or the other,
+including the two immediately before this one (twelve-against-eight, then
+five-against-six), so this is the limit case and is recorded as such: it does
+not say the two units are interchangeable, only that this window happens to
+carry exactly one bump per merge with none queued across either edge. **The
+mechanism is visible in the log rather than inferred**: each of the seven bumps
+sits immediately above the merge that earned it in `git log --first-parent`,
+which is the arrangement the release unit needs in order to be right and cannot
+require.
+
+### What moved: two live coordinates on two files, both staled by one commit
+
+Both are in §5, both were found by searching this tree for the construct's own
+text at both ends rather than by adding a delta, and **both were exact at
+`03e47695`**, so this is drift the window caused rather than drift it inherited:
+
+- **`src/simulation/protocol/types.ts`'s `zoningNoticeSchema` moves +97**, from
+  the number §5's protocol bullet carried at the previous anchor to
+  `src/simulation/protocol/types.ts:1740` — `const zoningNoticeSchema = z`.
+  The cause is #1364's single hunk in that file, `@@ -1607,0 +1608,97 @@`, which
+  adds the optional `tile` member to `refusalSchema`.
+- **`docs/adr/0003-simulation-worker-protocol.md`'s independent 4/2/3
+  measurement moves +38**, to
+  `docs/adr/0003-simulation-worker-protocol.md:650`, from #1364's own 38-line
+  amendment higher up that same document.
+
+**The nine `src/` coordinates the 4/2/3 claim actually rests on all held**, on a
+window that moved 97 lines of one of the two files they are measured in:
+`types.ts` at `:12`, `:23`, `:223`, `:442` and `:173`, `state-machine.ts`'s
+three receivers and four `transition()` sites and its `'ready'` union member,
+and `transferables.ts`'s two. Each was opened one at a time. §5's protocol
+bullet carries the reading and the fragments.
+
+### The finding: the commit that caused both drifts re-aimed nine anchors in this file and neither of these two
+
+`8b56906c`/#1364 is the commit that moved `types.ts` by 97 lines and ADR 0003
+by 38, and its own message reports *"83 `file:line` anchors across 35 documents
+were re-aimed, both ends of every range, because a protocol change shifts line
+numbers"*. **This file is one of the 35.** It took nine single-line
+substitutions — five `src/ui/hud/view-model.ts` coordinates, one
+`src/simulation/construction/handler.ts` coordinate and three more — and **not
+one of them is either of the two coordinates its own two largest insertions
+staled**. That is the 2026-09-21 (second) pass's finding one turn further on:
+that pass found the commit which caused a drift repairing *a different
+document* for exactly that amount; this one found the commit repairing *the
+right document, nine times over*, and missing the two coordinates that its own
+diff moved. **Nothing points a commit at the set of claims that cite the lines
+it is editing**, which is why re-aiming by hand scales down rather than up.
+
+### The second finding: the whole corpus lost exactly one verified anchor in this window, and it is in this file
+
+Measured with the gate's own predicate rather than argued: the
+`unverified` list inside
+`tests/foundation/documentation-anchor-quotation-contract.test.ts` was dumped at
+both ends of the window and diffed, per document.
+
+- Three documents' counts changed at all. **`docs/HUD_PROJECTIONS.md` fell 11 →
+  10** and **ADR 0114 fell 6 → 5** — both improvements, both #1364's — and
+  **`docs/adr/STATUS-QUEUE.md` rose 126 → 127**.
+- **The single anchor added to the unverified set corpus-wide is the superseded
+  English `order-completed` coordinate in §5's ADR 0116 bullet**, whose key
+  moved +16 under #1361. Every other difference between the two dumps is a
+  number #1364 re-aimed, unverified before and after.
+- Two rows moved key-for-key with the six numbered drafts, at 5 and 7, exactly
+  as #1362's message says.
+
+**So a window of 85 changed paths, containing a protocol change and a string
+migration, cost the documentation corpus one anchor.** That is a much smaller
+number than this file's own history would predict, and the reason is visible in
+the same measurement: #1364 re-aimed 83 anchors by hand and got 81 of them
+right in this corpus. **The exposure is the coordinates no gate counts** — ADR
+0003's is a `docs/` anchor and outside the scan's `src/`-and-`tests/` scope, and
+`zoningNoticeSchema`'s was written as a bare `:1643` rather than rooted, so
+neither of the two coordinates this pass repaired was ever going to appear in
+that 126 → 127.
+
+### The third finding: #1364 re-aimed four coordinates inside this file's dated archive, and two of the four now contradict their own arithmetic
+
+Recorded rather than repaired, and the reason for not repairing it is the same
+rule it breaks. Four of #1364's nine substitutions here land inside dated
+records — the anchor-history preamble and two dated §3 pass accounts — and two
+of them re-aim only the *from* number of a sentence whose form is *"X moved to
+Y"*:
+
+- A preamble sentence now reads that `view-model.ts` 1842 *"is the one that
+  moved, to `:1840`"*, where the pass that wrote it read 1806 moving to 1840.
+- A dated §3 bullet now reads *"2167 → 2132, +1"*, where the pass that wrote it
+  read 2131 → 2132.
+
+Both are arithmetically impossible as they stand. **The owner's ruling of
+2026-09-19 excluded this file's dated §3 accounts from the anchor counting
+precisely because their coordinates must not move** — #1321's evidence for it
+is quoted in `AGENTS.md` as *"Neither points where it says any more, and
+neither should be moved"* — and a re-aim inside that archive spends nothing
+against any budget, which is exactly why nothing stopped it. **This pass leaves
+the bytes alone**: restoring them would be a second overwrite of an archive by
+a pass that was not there, and the record of what the archive said is what the
+exclusion exists to protect. What it does instead is say so here, in bare
+numbers, where the next reader of either sentence will find it.
+
+### The fourth finding: the brief's account of CI is false on this tree, and it is false in the direction that excuses a red
+
+The brief that ordered this pass states that *"every workflow currently fails in
+its post-job cleanup hook (`/usr/local/sbin/actions-runner-cleanup is not a
+valid path to a script`)"* and that *"`assets`/`browser` read `skipped` because
+they gate on a `verify` the hook marked failed **after all its steps
+passed**"*. Read off the Actions API for run 35716878436 — #1363's `CI` run on
+`main`, runner `lockstate-wsl-DOM-NEW-01`, labels `["self-hosted"]`:
+
+- `verify` concluded **`success`**, and so did its `Complete runner` step. The
+  hook is not failing.
+- `assets` **ran and concluded `success`**. It was not skipped.
+- The run's `failure` is **`browser`**, whose *"Run the real-browser suite"*
+  step concluded **`cancelled`** after 17m 03s (10:38:30Z to 10:55:33Z) when
+  #1364's push at 10:53:50Z superseded it.
+
+**And one run in this window went green outright**: run 35703251049, on
+`03cccc5d`/#1362, concluded `success` at 08:41Z — with this file still anchored
+at `03e47695` and four of this window's merges already landed, which is the
+independent evidence that the gate this pass moves was passing on `main` and
+not merely in a container. Of the remaining runs, #1364's (35718471098) was
+still `queued` and #1365's (35718706276) still `pending` when this pass read
+them, so the anchor's own run has not reported.
+
+**Why this is written down rather than left in a report.** The brief's premise
+would have had this pass read a red `main` as someone else's host problem; the
+truth is that a burst of seven merges cancels a seventeen-minute browser job,
+which is a fact about this repository's merge traffic and is actionable. The
+previous three passes recorded the hook failure and it was true when they
+recorded it; §4 carries the correction to the note they left there.
+
+### The census moved by six documents and not by one status word, and the index agrees
+
+- **2026-09-22 census at the anchor: 47 Proposed, 70 Accepted across 117 ADR
+  documents**, derived by reading each document's own status statement —
+  `## Status` heading or `- Status:` bullet alike. The same derivation over the
+  `03e47695` tree gives **41 / 70 / 111**, so the whole of the delta is +6
+  Proposed and +6 documents, with **Accepted unmoved**.
+- **The mover is #1362's central numbering pass**, which gave the six
+  ADR-shaped files under `docs/adr/drafts/` the numbers 0118 to 0123 and moved
+  them into `docs/adr/`. All six are `Proposed`: a numbering pass assigns a
+  number and cannot accept a decision.
+- **The previous pass predicted this figure and it is right**, which is the
+  first time a census bullet in this file has been superseded by a merge that
+  wrote the replacement figure into the same bullet before this pass ran.
+- **At the anchor there were FIVE drafts, not six**, which is worth one line
+  because #1362's own message says six and both are true of different trees:
+  `git ls-tree docs/adr/drafts/` at `03e47695` returns five, the sixth
+  (`what-selects-a-plural-form-on-the-alerts-path.md`, now ADR 0123) arriving
+  with #1361 inside this window and being numbered by #1362 three merges later.
+  The drafts directory now holds only its `.gitkeep`.
+- **So it is FORTY-TWO outstanding decisions with no entry giving the owner the
+  evidence**, with five of the 47 Proposed carrying a §2 row (0056, 0059, 0071,
+  0074, 0077).
+- **The index agrees independently.** `grep -cE '^\|.*\| *\*{0,2}Proposed'
+  docs/adr/README.md` returns **47** at this anchor and **41** at
+  `03e47695`, matching the census at both ends.
+- **Next free number: 0124**, re-derived at the commit this pass finishes on
+  rather than carried: `ls docs/adr/ | grep -E '^[0-9]{4}-' | sed 's/-.*//' |
+  sort -n | tail -1` returns **0123** across **117** ADR files, and 0123 + 1 is
+  0124, which is what `docs/adr/README.md` states. **The figure was verified
+  against disk rather than taken off the README**, which the brief that ordered
+  this pass insisted on and which is this repository's standing lesson about
+  restated numbers.
+
+### What this pass deliberately did not chase
+
+- **§5's first bullet is nine anchors behind and this pass did not move it.**
+  Its most recent reading is still the *"2026-09-16 (third) census at the
+  anchor `ca82e946`"*. Named rather than repaired for the reason five previous
+  passes gave: repairing it means deciding whether that bullet should carry a
+  live census at all, which is a change to what this file is for.
+- **The two archive records #1364 left arithmetically impossible are not
+  repaired**, for the reason the finding above gives at length.
+- **ADR 0040's three citations of ADR 0003 at `:408-412` are not re-aimed.**
+  They were checked, and they were already not landing on the sentence they
+  name *before* this window opened — ADR 0040 says so itself, in its own
+  blockquote, that the *"still no sender"* sentence *"has already been
+  corrected in place"* elsewhere in that file. This window moved the text under
+  them by the same +38 it moved everything else in ADR 0003, which changes
+  nothing about a coordinate that was already superseded and marked by its own
+  document. **It is named here so that the next pass does not rediscover it as
+  new damage.**
+- **§§1-2 were not re-swept.** The window's two production-code merges are both
+  in §5's territory, and the nine substitutions #1364 made in §§1-3 are its
+  own; auditing them beyond the two arithmetic breaks above is a different
+  pass.
+
+### Weakest claim in this entry, named rather than left to a reader
+
+**That the corpus lost exactly one verified anchor.** The instrument is the
+gate's own `unverified` predicate, which is why the number is trustworthy as
+far as it reaches — but its reach is `src/` and `tests/` anchors carrying a
+backticked fragment within three lines, in documents it scans. It cannot see a
+`docs/`-into-`docs/` coordinate, which is what one of the two coordinates this
+pass repaired is; it cannot see a coordinate written bare rather than rooted,
+which is what the other was; and it cannot see a claim with no coordinate at
+all. **So "exactly one" is exact about a measurable class and silent about the
+class this file's findings usually come from**, and the honest reading of it is
+that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
+can check, with the unchecked part unmeasured in both directions.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -21807,7 +22053,50 @@ can see the dashboard setting that would break it. That last clause is the half
 no window of any kind reaches, and ending the absence run changes nothing about
 it.
 
-**RE-VERIFIED AT `03e47695`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+**RE-VERIFIED AT `4ac515b4`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+IS AT THREE — while both halves of this section's own evidence stay outside the
+window for a ninth anchor running.** `git diff --name-only
+03e47695..4ac515b4 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,
+on a window of **85 changed paths**, which is the widest window this run of
+three has survived. Neither `.github/workflows/migrate-database.yml` nor
+`docs/DEPLOYMENT.md` is in any of this window's seven merges, so the reading of
+the ten coordinates is **still the weaker, absence-based kind** — labelled
+rather than leaned on, so every coordinate was opened one at a time anyway.
+
+**All ten coordinates land, read one at a time, and not one moved.** Into
+`.github/workflows/migrate-database.yml`: `:20` is the ADR 0016 §2 comment
+(*"# target and must never be repointed at production (ADR 0016 §2, Accepted;"*),
+`:33` is `on:`, `:34` is `workflow_dispatch:`, `:41` is `confirm_project_ref:`
+and `:65` is `environment:`; `grep -c '^\s*push:'` over the file still returns
+**0**. Into `docs/DEPLOYMENT.md`: `:200` is the table header (*"| What | When |
+Gate |"*), `:205` the *"| Migrations → Supabase **staging** | automatically, on
+every merge to `main`, through Supabase's own GitHub integration | none |"*
+row, `:219` the *"`migrate-database.yml` has three runs in its entire
+history"* paragraph, `:221` the *"**Read that row as "on every merge"**"*
+paragraph, and `:265` the *"### What currently serves lockstate.io"* heading.
+ADR 0016 §2 is still binding at `0016-migration-delivery-mechanism.md:108` —
+*"Recorded as a constraint precisely because nothing enforces it
+mechanically."* — and the clause no window of any kind reaches, that nothing in
+`tests/` can see the dashboard setting which would break it, is untouched.
+**`docs/DEPLOYMENT.md` has still changed once in twenty-three anchors**, at
+`ed9acb57`.
+
+**AND THE NOTE THE PREVIOUS TWO ANCHORS ADDED ABOUT THE INSTRUMENT NEEDS ITS
+OWN CORRECTION, WHICH IS WHY IT IS MADE HERE RATHER THAN LEFT TO BE INHERITED.**
+That note says every `CI` run finishing on `main` concluded red *"in the
+runner's post-job cleanup hook while every step it ran passed"*, with `assets`
+and `browser` reading `skipped`. On this window that is false in all three
+particulars, read off the Actions API for run 35716878436: `verify` concluded
+`success` **including its `Complete runner` step**, `assets` **ran and
+concluded `success`**, and the run's red is `browser`, whose suite step
+concluded `cancelled` when the next merge's push superseded it. **The note's
+own distinction survives its figures** — *"no workflow file was touched"* and
+*"the workflows behaved"* are still two different statements — but the reason
+they come apart in this window is merge traffic, not a host hook, and an
+absence-based reading that leaned on the hook would be leaning on something
+that has gone.
+
+**IT WAS RE-VERIFIED AT `03e47695`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
 IS AT TWO — while both halves of this section's own evidence stay outside the
 window for an eighth anchor running.** `git diff --name-only
 c259ff8c..03e47695 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,
@@ -22891,6 +23180,62 @@ one direction.
   Polish is an unrelated key and fails loudly. **One window produced both
   failure shapes from one insertion**, which is the cheapest demonstration of
   §6's recommendation 1 this file has recorded.
+
+  **RE-READ AT `4ac515b4`: THE PAIR CAME APART A SIXTH TIME, IN THE
+  MOVED-AND-HELD SHAPE, AND THE MOVER IS THE ONE ANCHOR IN THIS WHOLE DOCUMENT
+  THAT THIS WINDOW COST A VERIFICATION.** Both locale files are members of this
+  window: `src/content/locale-pl.ts` through `3c6e1c32`/#1361's plural
+  migration alone, and `src/content/default-locale-en.ts` through that commit
+  and `99f3d39c`/#1362 as well — **the +16 is #1361's**, whose hunk at that
+  file's 1397 is the only one of the four above the key, #1362's being a
+  one-line replacement four thousand lines below it. Read at both ends off
+  `grep -n "'hud.alert.event.construction.order-completed'"` rather than offset
+  from any diff: *"The order was completed."* is now at
+  `src/content/default-locale-en.ts:1654`,
+  `'hud.alert.event.construction.order-completed': 'The order was completed.',`
+  — **+16** from the number this bullet carried one anchor ago, which is
+  written bare here for the reason the `locale-pl` correction below gives — and
+  *"Zlecenie ukończono."* **holds** at `src/content/locale-pl.ts:890`,
+  `'hud.alert.event.construction.order-completed': 'Zlecenie ukończono.',`. So
+  the six splits this entry has recorded are together (+46/+16),
+  held-and-moved (0/+6), moved-and-held (+63/0), held-and-moved again (0/+43),
+  together again (+13/+44) and **moved-and-held again (+16/0)** — and the term
+  that repeats across the two moved-and-held windows is **neither** of the two
+  numbers, which is the reading this window adds to the one the fifth already
+  established.
+
+  **What makes this reading worth more than the five above it is that the gate
+  saw it, and saw only it.** `documentation-anchor-quotation-contract`'s
+  unverified count for this document went **126 → 127** across this window, and
+  the single anchor added to that set is the superseded English coordinate in
+  the `9a0d6135` reading below — measured by dumping the gate's own
+  `unverified` list at both ends of the window and diffing it, not by reasoning
+  about which files moved. Corpus-wide only three documents' counts changed at
+  all, and the other two **fell** (`docs/HUD_PROJECTIONS.md` 11 → 10 and ADR
+  0114 6 → 5). **So one window's mechanically detectable anchor damage across
+  the whole corpus is this one coordinate**, which is the strongest evidence
+  this entry has produced for §6's recommendation 1 and also the narrowest.
+
+  **The earned-withheld pair holds at both ends for a third anchor running.**
+  `grep -c 'hud.status.earned-withheld' src/content/locale-pl.ts` still returns
+  **1**, unmoved at `src/content/locale-pl.ts:579`,
+  `'hud.status.earned-withheld':` with the Polish sentence on the line below;
+  its English partner is unmoved under the same key, with the sentence at
+  `src/content/default-locale-en.ts:485` — *"Unmet needs have withheld
+  {withheld} of today's grant so far"*. **Two coordinate pairs, in the same two
+  files, in the same window, and only one of them moved** — for the second time
+  this entry can say that, and this time the window that moved one and not the
+  other is a single commit rather than two.
+
+  **The finding this entry exists for is unchanged and is now eight anchors
+  old.** `docs/adr/0116-whether-a-finished-object-is-an-event.md` is in none of
+  this window's seven merges and its Status block still reads, in the present
+  tense, *"**Nothing under `src/` implements it, and the ruling does not by
+  itself change that**"*. `SIMULATION_EVENT_TYPES` still has **28** members,
+  counted out of `src/simulation/protocol/types.ts` at both ends — and that
+  file **is** a member of this window this time, through #1364's `tile` member,
+  so the reading is no longer the weaker absence-based kind for the enumeration
+  half of it even though it still is for the ADR half.
 
   **RE-READ AT `9a0d6135`: BOTH MOVED, WHICH IS THE FIRST SHAPE THIS PAIR
   EVER PRODUCED AND THE FIRST TO REPEAT — AT A MAGNITUDE THAT SHARES NEITHER
@@ -25000,6 +25345,54 @@ one direction.
   answered**: `routeDecidedSince` still appears **3** times in it and it still
   carries exactly **four** `## Amendment` headings, re-run at both ends rather
   than carried.
+
+  **MAKE IT EIGHTEEN AT `4ac515b4`, AND THE FILE THE CLAIM IS ABOUT MOVED 97
+  LINES WHILE EVERY COORDINATE THE CLAIM RESTS ON HELD.**
+  `src/simulation/protocol/types.ts` is a member of this window through
+  `8b56906c`/#1364, whose single hunk there — `@@ -1607,0 +1608,97 @@` — adds an
+  optional `tile` member to `refusalSchema` and sits below every handshake
+  coordinate and below `refusalSchema`'s own declaration, so the 4/2/3 split is
+  unmoved on a tree that moved 97 lines of the file it is measured in. Read off
+  the greps this bullet names at both ends rather than offset from that hunk:
+
+  - `types.ts`'s four `protocol/handshake` hits **hold** — the first is
+    `src/simulation/protocol/types.ts:12`, `'protocol/handshake',` — and so do
+    `:23`, `:223` and `:442`. `src/simulation/protocol/types.ts:173` is still
+    `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION),`, and
+    `src/simulation/protocol/types.ts:1555` is still
+    `export const refusalSchema = z`.
+  - **`zoningNoticeSchema` moved, and it is one of the two coordinates this
+    window staled in this bullet.** It is now
+    `src/simulation/protocol/types.ts:1740` —
+    `const zoningNoticeSchema = z` — where the previous anchor read it at 1643,
+    **+97**. The superseded number is written bare rather than in `file:line`
+    notation, because quoting a dead coordinate that way registers it again
+    against this document's anchor budget.
+  - The three `protocol/handshake` receivers **hold**; the first is
+    `src/simulation/worker/state-machine.ts:1085`,
+    `case 'protocol/handshake':`, with `:1115` and `:1124` beside it. The four
+    `this.transition()` sites **hold** —
+    `src/simulation/worker/state-machine.ts:999` is
+    `if (!recoverable) this.transition('faulted');`, and `:1253`, `:1313` and
+    `:1656` are the other three — and the `'ready'` union member **holds** at
+    `src/simulation/worker/state-machine.ts:37-43`, carrying `| 'ready'`. That
+    file is in none of this window's seven merges and was opened anyway.
+  - `transferables.ts`'s two **hold**:
+    `src/simulation/protocol/transferables.ts:39` is
+    `case 'protocol/handshake':`, and `:55` is its accepted counterpart.
+
+  **The total is still nine, still split 4/2/3**, so ADR 0006's state 2 and ADR
+  0003 decision 4's version negotiation are exactly as this bullet has found
+  them for eighteen readings. **The second coordinate this window staled is the
+  independent measurement in ADR 0003**: the sentence *"still returns four hits
+  in `types.ts`, two in `transferables.ts` and three in `state-machine.ts`"* is
+  at `docs/adr/0003-simulation-worker-protocol.md:650`, **+38** from the number
+  this bullet carried one anchor ago, moved by #1364's own 38-line amendment
+  higher up that same document. **#1364 re-aimed nine `file:line` anchors in
+  this file and neither of these two was among them**, which §3 records with
+  the measurement behind it rather than arguing here. `routeDecidedSince` still
+  appears **3** times in that document and it still carries exactly **four**
+  `## Amendment` headings, re-run at both ends rather than carried.
 
 - **FALSIFIED — ADR 0010's telemetry layer is wired, and the half of this entry
   that was a *code* claim is gone.** This entry was re-verified at `54418b6` and
