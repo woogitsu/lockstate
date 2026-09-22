@@ -423,11 +423,13 @@ command, or only on another refusal — and if neither, on what?**
 Read at `e044a3e8`, not inferred:
 
 - `applySimulationRefusal` (`const applySimulationRefusal = (notice:`,
-  `src/ui/hud/hud.ts:1861-1891`; the anchor read 1678-1693, then 1798-1813, and
-  was re-aimed both times by `grep -n` rather than by arithmetic — on
-  2026-09-19 after #1292 added the Security section above it, and again on
-  `ba1c0a87` merged with `49cd2fbd`, which moved the declaration and grew the
-  body) clears the band on
+  `src/ui/hud/hud.ts:1911-1941`; the anchor read 1678-1693, then 1798-1813,
+  then 1861-1891, and was re-aimed every time by `grep -n` rather than by
+  arithmetic — on 2026-09-19 after #1292 added the Security section above it,
+  again on `ba1c0a87` merged with `49cd2fbd`, which moved the declaration and
+  grew the body, and again on 2026-09-22 after ADR 0122's `show-alert-place`
+  intent member was added to the union above it; both ends are now the
+  declaration and the closing brace of the same function) clears the band on
   exactly one condition — `notice === undefined`, i.e. the worker stopped
   publishing a refusal — and otherwise only *replaces* it with a newer one.
   **That last sentence is the reading at `e044a3e8` and is no longer the

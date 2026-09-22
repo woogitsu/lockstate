@@ -285,6 +285,19 @@ export interface LockstateWorldSceneHarness {
    */
   navigateToMinimapPoint(fx: number, fy: number): boolean;
   /**
+   * `WorldScene.navigateToTile`, called directly -- the press ADR 0122 option
+   * D step 4 asks for, on the same terms and for the same reason as
+   * `navigateToMinimapPoint` above: the camera readout on the assembled page
+   * answers in whole tiles, and the claim here is a half-tile offset.
+   *
+   * That offset is the whole subject. ADR 0122 step 4 names
+   * `centerOn(tileToWorld(x), tileToWorld(y))`, which centres on a tile's
+   * *corner*; the scene uses `tileCentreToWorld` and centres on the tile.
+   * Thirty-two world units at `TILE_SIZE_PX` 64 is half a tile, and no
+   * integer-tile readout can tell the two apart.
+   */
+  navigateToTile(tileX: number, tileY: number): boolean;
+  /**
    * Moves the camera by writing Phaser's own `scrollX`/`scrollY`.
    *
    * Deliberately not a pan gesture and not a minimap click: a spec that
