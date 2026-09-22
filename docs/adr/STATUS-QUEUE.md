@@ -21461,9 +21461,40 @@ workflow run that reads red.
   *"Accepted by the owner on 2026-09-17: option 3"* and mentions `Proposed`
   later in the same sentence. Both are Accepted; 43 − 2 = 41, which is the
   figure the index carries independently.
-- **Next free number: 0118**, re-derived at the commit this pass finishes on
-  and unmoved from the previous anchor's reading, on a line the window did not
-  touch.
+- **Next free number: 0124.** **This bullet read `0118` and that reading was
+  correct at the commit the pass above finishes on; it is superseded rather
+  than deleted, because what the number moved *through* is the record.** The
+  pass's own reading was six lower -- 0118, re-derived at its anchor and
+  unmoved from the previous anchor's, on a line its window did not touch -- and
+  it was true of a tree in which the six ADR-shaped files under the drafts
+  directory carried no numbers. The central numbering pass of 2026-09-22 gave
+  them **0118 through 0123** and moved them into `docs/adr/`, so `max + 1` off
+  disk is now 0124 and `docs/adr/README.md` states it. **It is restated here
+  rather than left stale for the reason
+  `tests/foundation/adr-status-queue-anchor-contract.test.ts` gives of this
+  exact sentence**: this is the one number a reader drafting an ADR is most
+  likely to copy out of this file, and the assertion that keeps it honest
+  exempts a *kept historical* restatement but not a live one -- and this
+  bullet is the live one, because it sits at or after the last dated pass
+  taken at the header's own anchor commit. The three identically worded
+  bullets earlier in this file are historical and are deliberately left
+  reading 0118.
+- **The census bullets above are superseded by the same pass, and the figures
+  are marked here rather than edited into them.** *"41 Proposed, 70 Accepted
+  across 111 ADR documents"* was a true reading of the tree that pass finished
+  on, and the sentence beside it -- *"the only ADR-shaped file in the window is
+  a draft under `docs/adr/drafts/`, which carries no number"* -- names exactly
+  the condition that stopped holding. Re-derived the same way, by reading each
+  document's own `## Status` heading or `- Status:` bullet after the six
+  landed: **47 Proposed, 70 Accepted across 117 ADR documents.** The six are
+  all `Proposed` and none is Accepted -- a numbering pass assigns numbers and
+  cannot accept a decision -- so **Accepted is unmoved at 70 and the whole of
+  the delta is on the Proposed side**, +6 on Proposed and +6 on the total.
+  **The index agrees independently**: `grep -cE '^\|.*\| *\*{0,2}Proposed'
+  docs/adr/README.md` returns **47**. The two classifier false positives the
+  bullet above opens by hand -- ADR 0013 and ADR 0117 -- are untouched by
+  this, and are still the reason a naive match on the word *Proposed* reads two
+  high.
 
 ### What this pass deliberately did not chase
 

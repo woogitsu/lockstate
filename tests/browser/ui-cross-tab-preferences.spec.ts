@@ -25,7 +25,7 @@ import { defaultMessageCatalogEn } from '../../src/services/localization/default
  *
  * Both pages come from `page.context().newPage()`, so they are one browsing
  * context, one origin and one `localStorage` -- which is what two tabs are.
- * `docs/adr/drafts/what-a-second-tab-follows.md` is the decision being held to.
+ * `docs/adr/0120-what-a-second-tab-follows.md` is the decision being held to.
  */
 
 const APP_URL = '/index.html';
@@ -64,7 +64,7 @@ async function openSecondTab(page: Page): Promise<Page> {
  *
  * Each press is a navigation: the preference is persisted, the prison is saved
  * and the page comes back in the new language
- * (`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), which
+ * (`docs/adr/0119-how-a-language-change-reaches-a-running-page.md`), which
  * is why the drawer has to be opened again for the next one. The attribute
  * assertion is what waits for the new document -- the old one's button still
  * carries the old value, so it cannot pass early.

@@ -1,4 +1,15 @@
-# ADR draft: how a language change reaches a running page
+# ADR 0119: How a language change reaches a running page
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0119.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0119, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0119 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -19,13 +30,13 @@
 it, because the issue it answers (#663) cannot be implemented without taking
 it: a language picker is a control whose only behaviour *is* the answer to this
 question. The order — implementation ahead of the record — is the one
-[ADR 0065](../0065-what-happens-to-a-save-this-build-cannot-read.md) took, in
+[ADR 0065](./0065-what-happens-to-a-save-this-build-cannot-read.md) took, in
 its own words: *"the defect is live rather than hypothetical, and this document
 is what the branch should be judged against."*
 
 ## Context
 
-[ADR 0011](../0011-localization-architecture.md) decided how a locale is
+[ADR 0011](./0011-localization-architecture.md) decided how a locale is
 resolved, how a catalogue is delivered and how a missing key falls back. It is
 silent on one question, and #663 is the issue that makes the silence expensive:
 

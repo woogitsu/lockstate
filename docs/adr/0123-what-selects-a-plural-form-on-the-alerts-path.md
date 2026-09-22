@@ -1,4 +1,15 @@
-# ADR draft: what selects a plural form on the alerts path
+# ADR 0123: What selects a plural form on the alerts path
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0123.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0123, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0123 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -17,9 +28,39 @@ two alert sentences whose English disagreed with their own number could not be
 given plural forms until something on their render path selected between those
 forms.
 
+**MARKED BY THE NUMBERING PASS, AND IT IS THE ONE CLAUSE THE MERGE MOVED:
+"the branch that carries it" IS NOW `main`.** The sentence above is kept as
+written, because "implemented on the branch that carries it" is what made the
+ordering defensible when this was drafted and deleting it would delete the
+argument. What changed is only which ref that branch is: the work merged, and
+what this document describes is checkable on `main` rather than on a branch --
+`renderHudLabel` and the `HudLabelLocalizer` port are exported from
+`src/ui/hud/label-parameters.ts`, both the alerts list
+(`src/ui/hud/alert-row-label.ts`) and the event band (`src/ui/hud/hud.ts`)
+call it, and the two migrated keys carry `one`/`other` forms in
+`src/content/default-locale-en.ts` and Polish forms in
+`src/content/locale-pl.ts`.
+
+**The status is unaffected and stays `Proposed`.** The merge settled *whether
+the code exists*, which was never this document's open question; it did not
+settle *whether the owner accepts the decision*, and an agent cannot. Read the
+distinction the way [ADR 0065](./0065-what-happens-to-a-save-this-build-cannot-read.md)
+set it up and this document borrowed: implementation ahead of the record is an
+ordering, not an acceptance.
+
+**Nothing else this document states as open was closed by the merge, and that
+was checked rather than assumed.** The two claims with a number in them both
+still hold: the thirty-one counted messages that stay flat are still
+thirty-one, pinned by name in `FLAT_MESSAGES_WITH_COUNT` in
+`tests/foundation/second-locale-contract.test.ts`, whose own prose still reads
+*"The remaining thirty-one are staying, and that is a decision rather than"*;
+and no producer in `src/` hands a label a `count` that is text rather than a
+number, so the `typeof` rule under "Why a message-valued `count` does not
+select" is still a rule written down ahead of a case rather than behind one.
+
 ## Context
 
-[ADR 0011](../0011-localization-architecture.md) decided that plurals are
+[ADR 0011](./0011-localization-architecture.md) decided that plurals are
 selected with `Intl.PluralRules` on the locale that actually resolved the
 message, never with `count === 1`. `selectPluralForm` in
 `src/services/localization/format.ts` has implemented that correctly since, and

@@ -120,7 +120,7 @@ export interface HudRenderableLabelViewModel extends HudLabelParametersViewModel
  * here -- it is what ICU MessageFormat, i18next and Fluent all do, it is the
  * name `Localizer.formatPlural` already injects into every template it
  * renders, and it is the name every one of this tree's counted messages
- * already uses. `docs/adr/drafts/what-selects-a-plural-form-on-the-alerts-path.md`
+ * already uses. `docs/adr/0123-what-selects-a-plural-form-on-the-alerts-path.md`
  * records the decision and the alternatives weighed.
  *
  * **It changes nothing until a key grows forms.** A flat string is its own

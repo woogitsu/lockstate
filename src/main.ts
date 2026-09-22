@@ -3998,7 +3998,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * surface *Ustawienia*.
    *
    * **A press reloads the page, and that is the decision rather than a
-   * shortcut.** `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`
+   * shortcut.** `docs/adr/0119-how-a-language-change-reaches-a-running-page.md`
    * carries the reasoning and the count behind it; the short version is that
    * every mounted surface in this interface holds the one `Localizer` built at
    * boot, and `Localizer`'s own contract is that catalogs are loaded before it
@@ -4066,9 +4066,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * nineteen modules under `src/ui/` captured it, so there is no path that
    * hands a running interface a different one -- which is the same finding
    * that makes the local control reload the page
-   * (`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), and a
+   * (`docs/adr/0119-how-a-language-change-reaches-a-running-page.md`), and a
    * reload is not something to do to a tab the player is not looking at.
-   * `docs/adr/drafts/what-a-second-tab-follows.md` carries the reasoning.
+   * `docs/adr/0120-what-a-second-tab-follows.md` carries the reasoning.
    *
    * Each handler is the same apply-path the control beside it uses, minus the
    * write:
