@@ -1337,9 +1337,11 @@ a sentence they typed** -- the distinction every entry in this document since
 nothing wider.
 
 **The numbering was checked against this file before it was used, because the
-last pass through this section nearly got it wrong.** The four-plus-one of
-2026-09-19 and the three of 2026-09-21 run 1 to 10 with no gap and no
-repetition, the highest on disk is 10, and the numbers below are 11 and 12.
+last pass through this section nearly got it wrong.** Read at the time of writing, the
+rulings of 2026-09-19 and 2026-09-21 ran 1 to 10 with no gap and no repetition,
+so the numbers below are 11 and 12. That reading is dated on purpose: it is a
+statement about the file as it stood, not a standing claim about the highest
+number in it.
 The entry above headed *"THE NUMBERING HERE IS LOAD-BEARING AND WAS NEARLY GOT
 WRONG"* records what the check is for: a number drafted from a stale reading
 while another agent added one on a branch. The branches open at the time of
