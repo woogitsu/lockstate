@@ -36,9 +36,25 @@ import type { HudLocalizer, HudViewModel } from './view-model';
 
 export type TransportIntentKind = 'pause' | 'play' | 'fast-forward';
 
+/** Which way along the edit history a strip control asks to move (#1356). */
+export type HistoryIntentKind = 'undo' | 'redo';
+
 export interface StatusStripOptions {
   readonly localizer: HudLocalizer;
   readonly onTransport: (kind: TransportIntentKind) => void;
+  /**
+   * The Undo control was pressed (#1356).
+   *
+   * Two callbacks rather than one carrying a direction, and that is for the
+   * reachability gate rather than for this file: the caller writes
+   * `kind: 'undo'` and `kind: 'redo'` as literals inside them, which is the
+   * only shape `tests/helpers/control-reachability.ts` can follow from an
+   * intent to a `<button>`. A computed kind is the one thing that walk cannot
+   * see, and the keyboard's `attachHistory` seam already is one.
+   */
+  readonly onUndo: () => void;
+  /** The Redo control was pressed (#1356). */
+  readonly onRedo: () => void;
 }
 
 export interface StatusStrip {
@@ -71,6 +87,12 @@ export interface StatusStrip {
    * had refused something.
    */
   controlFor(kind: TransportIntentKind): HTMLButtonElement;
+  /**
+   * The Undo or the Redo button, so a refused press is marked on the control
+   * that was pressed -- the same contract as `controlFor`, and for the same
+   * reason narrower than `controls` (#1356).
+   */
+  historyControlFor(kind: HistoryIntentKind): HTMLButtonElement;
   /**
    * A box at the right end of the strip for the HUD's own layout controls
    * (#1159): the Layout menu and the metric strip's collapse arrow.
@@ -207,6 +229,48 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     }),
   };
 
+  /*
+   * Undo and Redo, on the one band every viewport lays out (#1356).
+   *
+   * **Why here and not in the Build and Rooms panels.** The keys these stand
+   * in for are bound in the `world` *and* `construction` contexts and reverse
+   * a transaction whichever tab is open, so a control that existed only on two
+   * of the six tabs would be narrower than the key; and the player who has no
+   * key at all is the touch player, whose viewport drops `.hud__corner`
+   * entirely below 720px. The strip is laid out at every width, on every tab,
+   * and is not folded away by the rail's own fold.
+   *
+   * **Always enabled, and that is what the main thread knows rather than a
+   * choice.** Whether there is anything to undo is `ConstructionSystem`'s
+   * `hasSomethingToUndo`, in the worker, and no publication carries it to this
+   * thread. A press against an empty history does exactly what the key does:
+   * the worker's handler records nothing and nothing changes. A control that
+   * greyed itself out on a guess would be a promise the code does not keep in
+   * the other direction.
+   *
+   * **Not in `foldable`.** The strip's collapse control is labelled as hiding
+   * the counters and the clock, and this group is neither -- so folding the
+   * readouts leaves the way back from a misplaced wall where it was.
+   */
+  const history: Readonly<Record<HistoryIntentKind, IconButton>> = {
+    undo: createIconButton({
+      icon: 'undo',
+      label: t(HUD_MESSAGE_KEY.historyUndo),
+      onActivate: () => options.onUndo(),
+    }),
+    redo: createIconButton({
+      icon: 'redo',
+      label: t(HUD_MESSAGE_KEY.historyRedo),
+      onActivate: () => options.onRedo(),
+    }),
+  };
+
+  const historyGroup = element('div', {
+    className: 'hud-strip__history',
+    attributes: { role: 'group', 'aria-label': t(HUD_MESSAGE_KEY.historyRegion) },
+    children: [history.undo.element, history.redo.element],
+  });
+
   const clockGroup = element('div', {
     className: 'hud-strip__clock',
     children: [
@@ -240,7 +304,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const root = element('div', {
     className: 'hud-strip',
     attributes: { role: 'region', 'aria-label': t(HUD_MESSAGE_KEY.statusRegion) },
-    children: [brandSlot, metricsRow, clockGroup, transportGroup, layoutSlot],
+    children: [brandSlot, metricsRow, clockGroup, transportGroup, historyGroup, layoutSlot],
   });
 
   const update = (viewModel: HudViewModel): void => {
@@ -383,8 +447,15 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   return {
     element: root,
     brandSlot,
-    controls: [transport.pause.element, transport.play.element, transport['fast-forward'].element],
+    controls: [
+      transport.pause.element,
+      transport.play.element,
+      transport['fast-forward'].element,
+      history.undo.element,
+      history.redo.element,
+    ],
     controlFor: (kind: TransportIntentKind): HTMLButtonElement => transport[kind].element,
+    historyControlFor: (kind: HistoryIntentKind): HTMLButtonElement => history[kind].element,
     layoutSlot,
     foldable: [metricsRow, clockGroup, transportGroup],
     update,

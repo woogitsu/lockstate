@@ -296,6 +296,15 @@ export const HUD_MESSAGE_KEY = {
   transportPause: 'hud.transport.pause',
   transportPlay: 'hud.transport.play',
   transportFastForward: 'hud.transport.fast-forward',
+  /**
+   * The strip's Undo/Redo pair and the group that names them (#1356). The
+   * labels are the only visible-on-hover and screen-reader carriers of what an
+   * icon-only button does, so each says what the press reverses rather than
+   * only the verb -- see the catalogue entry for why each is true.
+   */
+  historyRegion: 'hud.history.group-label',
+  historyUndo: 'hud.history.undo-last-change',
+  historyRedo: 'hud.history.redo-last-undone',
 
   tabsRegion: 'hud.tabs.title',
   /*

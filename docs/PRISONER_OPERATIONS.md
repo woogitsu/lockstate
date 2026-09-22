@@ -836,7 +836,8 @@ Three consequences are worth stating here rather than leaving to be discovered.
   removal undoable means putting something on the undo stack that is not an
   order, which is `EditHistoryPort`'s question rather than this phase's.
 - **It is reachable without a keyboard, which is the whole reason the phase
-  exists.** `Undo` is bound to `KeyZ` and nothing else, so before this a
+  exists.** `Undo` is bound to `KeyZ` and nothing else *(true when written;
+  #1356 has since given it a button in the status strip)*, so before this a
   misplaced object was permanent for the session on a touch device -- the same
   trap the Rooms tab shipped with (#312) and fixed in a follow-up (#317). The
   Build panel gains a `Remove` toggle beside `Place on map`, which arms the

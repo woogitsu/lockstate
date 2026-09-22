@@ -278,6 +278,29 @@
   gap: var(--space-1);
 }
 
+/*
+ * Undo and Redo (#1356), after the transport and never inside it: the
+ * transport group is labelled as the clock's controls, and these are not.
+ *
+ * Measured on the assembled page against `main` before this landed, at 100 %
+ * interface scale: **no change** in strip height, visible chips or Build panel
+ * box at 1280x720, 1280x800, 1440x900, 1024x768, 900x600 and 390x844 -- the
+ * pair takes its 92px from the clock group, which is `flex: 1` on that row and
+ * was stretched far past its content. At 375x812 the second row (clock beside
+ * the transport) is already 341 of 359px, so the pair wraps to a row of its
+ * own: the strip goes 103.7 -> 151.7px and the Build panel's box 446 -> 410px,
+ * with nothing inside it clipped. That is the price of a touch route on the
+ * narrowest phone, and it was chosen over the one arrangement that avoided it
+ * -- the pair beside the brand badge -- because there it lands on the Layout
+ * button, which sits over that row's right end at this width (255..343
+ * against 327..371).
+ */
+.hud-strip__history {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .hud-clock__speed-group {
   display: inline-flex;
   align-items: center;

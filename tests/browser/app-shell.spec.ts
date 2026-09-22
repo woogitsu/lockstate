@@ -11138,6 +11138,62 @@ test.describe('the assembled application', () => {
     expect(await page.locator('.hud-strip__transport [data-action-failed="true"]').count()).toBe(1);
   });
 
+  /**
+   * Undo and Redo have a pointer and touch route, on a phone, and a refused
+   * press says so on the button that was pressed (#1356).
+   *
+   * Until #1356 the pair was `KeyZ` and `KeyY` and nothing else, so a touch
+   * player could take back nothing. The route this proves is the whole chain
+   * on the assembled page -- the strip's button, `mountHud`'s gate, and
+   * `src/main.ts`'s `case 'undo'`, whose `requireSimulation(commands).submit`
+   * throws while no prison is open -- at 375x812, the narrowest viewport the
+   * sweep visits and the one where `.hud__corner` does not exist.
+   *
+   * With no session the host refuses, which is the one refusal this page can
+   * reach without a gesture to take back; it is the same path a refused
+   * transport press takes in the test above, and the marking is asserted the
+   * same way: the pressed button, and only it.
+   */
+  test('Undo and Redo can be pressed on a phone, and a refusal is marked on the button pressed (#1356)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openApp(page);
+
+    const history = page.locator('.hud-strip__history');
+    const undo = history.getByRole('button', { name: localeText('hud.history.undo-last-change') });
+    const redo = history.getByRole('button', { name: localeText('hud.history.redo-last-undone') });
+    await expect(undo).toBeVisible();
+    await expect(redo).toBeVisible();
+
+    // Inside the window and not covered: `elementFromPoint` at the centre is
+    // the button or its glyph, which is the #88 property for these two alone.
+    for (const button of [undo, redo]) {
+      const hit = await button.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return {
+          inside: box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && box.bottom <= window.innerHeight,
+          hitsItself: top !== null && element.contains(top),
+        };
+      });
+      expect(hit).toEqual({ inside: true, hitsItself: true });
+    }
+
+    const refusal = page.locator('.hud__refusal');
+    await undo.click();
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toContainText(localeText('hud.refusal.undo'));
+    await expect(refusal).toHaveAttribute('data-action', 'undo');
+    await expect(undo).toHaveAttribute('data-action-failed', 'true');
+    expect(await page.locator('.hud-strip [data-action-failed="true"]').count()).toBe(1);
+
+    await redo.click();
+    await expect(refusal).toContainText(localeText('hud.refusal.redo'));
+    await expect(refusal).toHaveAttribute('data-action', 'redo');
+    await expect(redo).toHaveAttribute('data-action-failed', 'true');
+  });
+
   test('names the build it is, in the top-left corner, from a real injected define', async ({ page }) => {
     await openApp(page);
 
