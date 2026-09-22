@@ -563,7 +563,16 @@ describe('a build order the simulation refuses reaches the session log', () => {
     const runtime = createNewSimulationRuntime(0x261);
     placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
 
-    expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    // **And it records where**, since 2026-09-22: `refusalSchema.tile` carries
+    // the coordinate the order was aimed at (ADR 0122 option D step 1), so the
+    // reproduction that made this issue is also the first case that proves the
+    // place travels. `100, 100` is the value typed, not a value derived.
+    expect(runtime.refusals.last).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      tile: OUT_OF_BOUNDS_TILE,
+    });
   });
 
   it('records a wall placed on ground the prison does not own', () => {
@@ -597,7 +606,15 @@ describe('a build order the simulation refuses reaches the session log', () => {
     // Two of the three were refused, and the accepted one in between did not
     // clear the log or advance the count.
     expect(runtime.refusals.count).toBe(2);
-    expect(runtime.refusals.last).toEqual({ sequence: 2, tick: 2, reason: 'build.out-of-bounds' });
+    // The tile is the *third* order's, not the first's: `record` assigns a
+    // whole value, so a replacement carries its own place and never the
+    // previous refusal's.
+    expect(runtime.refusals.last).toEqual({
+      sequence: 2,
+      tick: 2,
+      reason: 'build.out-of-bounds',
+      tile: { x: -100, y: -100 },
+    });
   });
 });
 
@@ -671,7 +688,14 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
     const runtime = createNewSimulationRuntime(0x261);
     submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 1, height: 1 }));
 
-    expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'zone.below-minimum-size' });
+    // The rectangle's **anchor**, and deliberately not its 1x1 extent -- see
+    // `SimulationRefusal.tile` for why the width and height stay off the wire.
+    expect(runtime.refusals.last).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'zone.below-minimum-size',
+      tile: { x: 2, y: 2 },
+    });
   });
 
   it('records a room type the prison does not know', () => {
@@ -754,7 +778,14 @@ describe('a removal the simulation refuses reaches the same session log', () => 
     const runtime = createNewSimulationRuntime(0x261);
     submit(runtime, 0, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 4, height: 4 }));
 
-    expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'unzone.nothing-to-remove' });
+    // The anchor of the 4x4 rectangle the removal named, on `ZoneRoom`'s own
+    // terms above.
+    expect(runtime.refusals.last).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'unzone.nothing-to-remove',
+      tile: { x: 2, y: 2 },
+    });
   });
 
   it('says nothing about a removal the simulation carried out', () => {
@@ -1430,5 +1461,143 @@ describe('issue #514: the material cost a duplicate order would have leaked, and
       expect(runtime.construction.getOrder(`order-${String(sequence)}`)?.state, `order-${String(sequence)}`).toBe('failed');
     }
     expect(site.quantityOf('item.brick'), 'only the one wall that could ever exist was ever paid for').toBe(14);
+  });
+});
+
+/**
+ * **ADR 0122 option D step 1, adopted with §7's recommendation by the owner on
+ * 2026-09-22: a refusal carries the place it is about, or honestly carries
+ * none.**
+ *
+ * Article 6 of the vendored constitution
+ * (`docs/design/2026-09-13-identity-v5/`) asks a message for the fact, the
+ * location and the next step. This channel carried the fact alone, which is
+ * why four `hud.alert.refusal.build.*` sentences say *"that tile"* with
+ * nothing on the wire able to say which. `SimulationRefusal.tile` is the
+ * location.
+ *
+ * **Both directions are asserted here, and the second is the one that matters
+ * more.** That the six positioned domains carry a coordinate is checked above
+ * and below; that the ten unpositioned ones carry *nothing* is what keeps the
+ * member from becoming a coordinate invented for a refusal about a wage bill.
+ * A schema that says "sometimes there is no place" is only honest if something
+ * fails when a place is fabricated.
+ *
+ * The two most interesting negatives are the domains that **hold a tile at the
+ * point of record and decline it**: `admit.*` (the reception tile is in
+ * `AdmitPrisoner`, and `admitSupersessionKey` is domain-wide because
+ * `no-accommodation` is a fact about the whole prison's capacity) and
+ * `construction.materials-unfunded` (both of `reportMaterialsFunding`'s
+ * callers are presses that know a tile, and
+ * `materialsFundingSupersessionKey` is domain-wide because "the queue cannot
+ * be paid for" is a statement about the treasury). The second is driven where
+ * it is already driven end to end, in
+ * `tests/integration/construction-just-in-time-materials.test.ts`; the first
+ * is here.
+ */
+describe('ADR 0122 option D step 1: a refusal carries the place it is about, or honestly none', () => {
+  it('carries the tile a refused object placement named', () => {
+    const runtime = createNewSimulationRuntime(0x122);
+    // `wall-brick` is edge geometry rather than an object, so `PlaceObject` is
+    // the wrong command for it and the placement service says so -- which is
+    // the cheapest refusal in this domain that needs no world setup.
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PlaceObject', orderId: 'order-0', definitionId: 'wall-brick', x: 7, y: 9 }),
+    );
+
+    expect(runtime.refusals.last?.reason).toBe('place-object.not-a-placeable-object');
+    expect(runtime.refusals.last?.tile).toEqual({ x: 7, y: 9 });
+  });
+
+  it('carries the tile a refused object removal named', () => {
+    const runtime = createNewSimulationRuntime(0x122);
+    submit(runtime, 0, packCommand({ type: 'RemoveObject', x: 11, y: 13 }));
+
+    expect(runtime.refusals.last?.reason).toBe('remove-object.nothing-to-remove');
+    expect(runtime.refusals.last?.tile).toEqual({ x: 11, y: 13 });
+  });
+
+  it('carries the tile a refused wall removal named, and not the edge beside it', () => {
+    const runtime = createNewSimulationRuntime(0x122);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: 5, y: 6, edge: 'north' }));
+
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    // The tile, with no `edge` member: `removeWallSupersessionKey` keeps the
+    // edge because two standing facts about one tile must not withdraw each
+    // other, while a place to look is the tile either edge sits on.
+    expect(runtime.refusals.last?.tile).toEqual({ x: 5, y: 6 });
+  });
+
+  it('carries no tile for an admission, though the command named one', () => {
+    const runtime = createNewSimulationRuntime(0x122);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }),
+    );
+
+    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+    expect(
+      runtime.refusals.last?.tile,
+      'the reception tile is in hand and is about the wrong thing: this refusal is the prison having no cell, not the van being parked at 16,16',
+    ).toBeUndefined();
+  });
+
+  it('carries no tile for a purchase, which names an item and a quantity and no place at all', () => {
+    const runtime = createNewSimulationRuntime(0x122);
+    // 1,000 bricks at 40 minor units is 40,000 against a starting 25,000.
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-0', itemId: 'item.brick', quantity: 1_000 }),
+    );
+
+    expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(runtime.refusals.last?.tile).toBeUndefined();
+  });
+
+  it('does not lose the tile when the same route decides something else -- option F rebuilds the record', () => {
+    // `noteRouteDecided` is the one place the standing record is rebuilt
+    // (`{ ...current, routeDecidedSince: true }`) rather than replaced, so a
+    // spread that forgot the tile would leave the alerts list holding a row it
+    // can no longer locate -- which is exactly the row option F keeps.
+    const runtime = createNewSimulationRuntime(0x122);
+    placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
+    expect(runtime.refusals.last?.tile).toEqual(OUT_OF_BOUNDS_TILE);
+
+    placeWall(runtime, 1, OWNED_TILE);
+
+    expect(runtime.refusals.last).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      tile: OUT_OF_BOUNDS_TILE,
+      routeDecidedSince: true,
+    });
+  });
+
+  it('records the same places, for the same commands, on two runs of the same seed', () => {
+    // The determinism the block above this file's `describe('recording a
+    // refusal is deterministic')` asserts for reasons and ticks, asserted for
+    // the new member: the tile comes from the command's own arguments, so it
+    // is exactly as deterministic as the reason beside it -- and a tile
+    // derived from anything else (a wall clock, an iteration order, a random
+    // stream) would show up here.
+    const places = [0, 1].map(() => {
+      // The same seed both times, which is what determinism means here: two
+      // runs of the same commands against the same seed must record the same
+      // places.
+      const runtime = createNewSimulationRuntime(0x122);
+      placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
+      submit(runtime, 1, packCommand({ type: 'RemoveObject', x: 11, y: 13 }));
+      const first = runtime.refusals.last;
+      submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 3, y: 4, width: 2, height: 2 }));
+      return [first?.tile, runtime.refusals.last?.tile];
+    });
+
+    expect(places[0]).toEqual([{ x: 11, y: 13 }, { x: 3, y: 4 }]);
+    expect(places[1]).toEqual(places[0]);
   });
 });

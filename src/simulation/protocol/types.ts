@@ -1605,6 +1605,103 @@ export const refusalSchema = z
      * 0091 prices.
      */
     routeDecidedSince: z.literal(true).optional(),
+    /**
+     * Where in the world the refused command was aimed, on the refusals that
+     * are aimed somewhere at all (ADR 0122 option D step 1, adopted with §7's
+     * recommendation by the owner 2026-09-22).
+     *
+     * ## Why this exists, and what it is the middle beat of
+     *
+     * Article 6 of the vendored constitution
+     * (`docs/design/2026-09-13-identity-v5/`) asks a message for three things:
+     * the fact, the location, and the next step. This channel carried the
+     * first and neither of the others, which is why four
+     * `hud.alert.refusal.build.*` sentences say *"that tile"* and nothing on
+     * the wire can say which tile. This is the location. The next step -- a
+     * press that moves the camera here -- is deliberately not in this change;
+     * `HudAlertViewModel` carries this through to the view model and no
+     * affordance reads it yet, which is the sequencing ADR 0122 §7 asks for
+     * ("take the destination through the protocol before writing any
+     * affordance").
+     *
+     * ## Absent, rather than zeroed or nullable, on ten of the sixteen domains
+     *
+     * `RefusalLog`'s sixteen `*_REFUSAL_REASONS` tables do not all describe
+     * something with a position. Six do -- `build.*`, `zone.*`, `unzone.*`,
+     * `place-object.*`, `remove-object.*` and `remove-wall.*`, every one of
+     * which is keyed by a supersession key that already names a tile or a
+     * rectangle. Ten do not: `purchase.*`, `sell.*`, `cancel-purchase.*`,
+     * `cancel-build-order.*`, `hire.*`, `dismiss.*`, `release-guard.*`,
+     * `edit-regime-block.*`, `admit.*` and
+     * `construction.materials-unfunded`. Their keys name an item and a
+     * quantity, an order id, a role, a person, a schedule boundary, or
+     * nothing at all, and inventing a coordinate for them would be the
+     * opposite of what article 6 asks: a location the code cannot stand
+     * behind. So this member is optional and the absence is the statement,
+     * exactly as `refusal` itself is absent rather than zeroed until the
+     * session has refused something.
+     *
+     * **Two of those ten hold a tile at the point of record and still do not
+     * carry one, which is the distinction worth reading.** `admit.*` has the
+     * reception tile in `AdmitPrisoner` and `admitSupersessionKey` is
+     * deliberately domain-wide, because `no-accommodation` and
+     * `population-full` are facts about the whole prison's capacity rather
+     * than about where the van pulled up -- so the tile is in hand and is
+     * about the wrong thing. `construction.materials-unfunded` is recorded
+     * from `reportMaterialsFunding`, whose two callers are both presses that
+     * know a tile, and `materialsFundingSupersessionKey` is domain-wide for
+     * the same kind of reason its own comment states at length: "the build
+     * queue cannot be paid for" is a statement about the treasury against
+     * everything queued, not about the wall the player last pressed.
+     *
+     * ## A tile, and deliberately not a rectangle
+     *
+     * ADR 0122 option D step 1 offers "a tile or a rectangle". This is the
+     * tile, and for `zone.*`/`unzone.*` it is the rectangle's **anchor** --
+     * the `x`/`y` the command itself carried -- not its centre and not its
+     * extent.
+     *
+     * Two reasons, both from this file's own habits rather than from taste.
+     * The only reader the adopted sequence plans is tile-targeted: ADR 0122
+     * option D step 4 is "a tile-targeted sibling of
+     * `navigateToMinimapPoint`, which is the same `centerOn(tileToWorld(x),
+     * tileToWorld(y))` call `frameCameraOnFirstWorld` already makes", and a
+     * `width`/`height` pair would be two integers no consumer reads --
+     * `zoningNoticeSchema` beside this one declines a room id, a tile and a
+     * text for exactly that reason, and says so in as many words. And an
+     * anchor is what the player named: `hud.rooms.area-value` reads the
+     * rectangle back to them before the press, so the corner they started
+     * the drag from is a coordinate they have already seen.
+     *
+     * **What would justify widening it**, written down so the next reader
+     * does not have to reconstruct it: a surface that outlines the refused
+     * area rather than centring on it. That is a rectangle's only job here,
+     * and nothing asks for it yet.
+     *
+     * ## It is fixed-width, so `docs/HUD_PROJECTIONS.md` contract 5 is
+     * untouched
+     *
+     * Two integers, present or absent, whatever the prison holds. The rule
+     * that section quotes is *"nothing here grows and nothing here locates"*,
+     * and only the second half of it moves: nothing here grows, which is the
+     * half that is a contract about a cadence. The "locates" half was a
+     * description of what this record happened to carry, recorded as gap 34,
+     * and it is that gap this member half-closes.
+     *
+     * `z.number().int()` with no range, mirroring every tile coordinate in
+     * `src/simulation/protocol/commands.ts` (`x: z.number().int()`), because
+     * this **is** one: the coordinate the refused command carried, travelling
+     * back out unchanged. A refusal is often *about* a coordinate being
+     * impossible -- `build.out-of-bounds` exists -- so a range here would
+     * reject the very payloads that most need to report one.
+     */
+    tile: z
+      .object({
+        x: z.number().int(),
+        y: z.number().int(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

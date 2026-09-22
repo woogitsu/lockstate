@@ -45,7 +45,7 @@ and that refutation makes the claim underneath it sharper rather than weaker
 ## 1. VERIFIED, read — the census: twenty types, and the authoritative registry is not where the brief looked
 
 The registry is `SIMULATION_EVENT_TYPES` in
-`src/simulation/protocol/types.ts:1675-1696` — a closed `as const` array from
+`src/simulation/protocol/types.ts:1772-1793` — a closed `as const` array from
 which `SimulationEventType` is derived at `:1698`. It is authoritative rather
 than one of several lists, and mechanically so:
 
@@ -146,7 +146,7 @@ The direction pass is `docs/research/2026-09-04-is-there-anything-to-do.md` §7,
 *"The one positive-feedback channel the game has is empty by construction"*,
 which landed on `main` earlier the same day — and §13 of the same note is the
 "playtest pass" the brief names separately. It reports **eighteen** members at
-`src/simulation/protocol/types.ts:1675-1694` and grades
+`src/simulation/protocol/types.ts:1772-1791` and grades
 `prisoners.discharged` at `src/ui/simulation-events.ts:286`. Both were true
 when it was written and both have moved: the array now ends at `:1696`, and the
 discharge row is at `:342` (`:286` is now a sentence inside a docblock about

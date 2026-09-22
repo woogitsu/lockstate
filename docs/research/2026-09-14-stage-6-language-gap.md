@@ -156,7 +156,7 @@ them apart for this string.
 - `HudViewModel.alerts` has one producer path traced end to end: `src/main.ts:1199`
   initializes `let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL` before any
   worker message has arrived, and `EMPTY_HUD_VIEW_MODEL.alerts` is the literal
-  `[]` (`src/ui/hud/view-model.ts:2094`). Its own doc comment
+  `[]` (`src/ui/hud/view-model.ts:2130`). Its own doc comment
   (`view-model.ts:2064-2071`) states the intent for the *clock* field
   explicitly: *"An empty prison, for a first paint before any snapshot has
   arrived. The clock reads unknown, not 'day 1, paused, at the start of the

@@ -200,7 +200,7 @@ words it says for a free undo of a queued order.
   `'hud.alert.event.construction.undone': 'The last change to the build queue was undone.'`
   and its `redone` twin (`src/content/default-locale-en.ts:883-884`), raised by
   `createConstructionCommandHandler` at
-  `src/simulation/construction/handler.ts:174` and `:178`.
+  `src/simulation/construction/handler.ts:183` and `:178`.
 
 ### This is a ruled behaviour, and that is not the finding
 
@@ -325,7 +325,7 @@ build queue block is not on the screen at all.**
   `{ type: 'Undo' }`.
 - **VERIFIED, read.** So the undo stack holds *construction transactions*
   only. `registerTransactionOrder` (`system.ts:513`) is called from
-  `src/simulation/construction/handler.ts:120` for a `PlaceBuildOrder` and
+  `src/simulation/construction/handler.ts:129` for a `PlaceBuildOrder` and
   from `src/simulation/objects/object-placement-service.ts:502` for a
   `PlaceObject`. Nothing else in `src/` pushes anything onto it — a hire, a
   designation, an admission and a regime change are not on it and cannot be.
@@ -666,7 +666,7 @@ cannot do it, and the key that can charges the player twice.
 
 **VERIFIED, read, and the reason is structural.** `RemoveObject` reaches
 `objectPlacement.remove({x, y})`
-(`src/simulation/runtime/session-commands.ts:665`), which looks up a *placed
+(`src/simulation/runtime/session-commands.ts:676`), which looks up a *placed
 object* at a tile. A wall is an **edge value**, written by `writeEdge` and
 reversed only by `revertConstruction` (`system.ts:1529`), and the only two
 callers of the method that runs it are `CancelBuildOrder` — which

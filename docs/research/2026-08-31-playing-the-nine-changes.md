@@ -863,9 +863,9 @@ sticky-by-accident:
 
 - `src/simulation/worker/state-machine.ts:559`: `publishStatusCounts` puts
   `this._runtime.refusals.last` on every counts payload.
-- `src/simulation/refusals/refusal-log.ts:149`: `supersede(key)` clears the
+- `src/simulation/refusals/refusal-log.ts:172`: `supersede(key)` clears the
   standing refusal **only if the key matches**.
-- `src/simulation/refusals/refusal-log.ts:538`: a removal's key is the *tile* —
+- `src/simulation/refusals/refusal-log.ts:580`: a removal's key is the *tile* —
   `remove-object:${x}:${y}`.
 
 So the band clears when a removal on **that same tile** later succeeds, or when

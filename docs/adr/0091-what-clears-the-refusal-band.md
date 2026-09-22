@@ -441,7 +441,7 @@ Read at `e044a3e8`, not inferred:
   `refusalSource === 'host'`, so no success of any kind touches a simulation
   refusal from the HUD side.
 - The only thing that can make `notice` go `undefined` is
-  `RefusalLog.supersede` (`src/simulation/refusals/refusal-log.ts:152-156`),
+  `RefusalLog.supersede` (`src/simulation/refusals/refusal-log.ts:175-179`),
   which returns without acting unless the standing refusal's own key matches —
   decision 1's narrow key, exactly as shipped.
 - There is **no second, band-only "last decided outcome" state** in `hud.ts`.

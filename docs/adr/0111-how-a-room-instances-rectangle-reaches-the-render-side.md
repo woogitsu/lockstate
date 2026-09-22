@@ -194,7 +194,7 @@ investigation because a cheap answer would have changed the option space.
 carries `instanceId`, `roomCatalogId`, an optional `roomNameKey`, an optional
 `category` and **`anchorTile`** — one point, the north-west corner — alongside
 occupancy and requirement data. `HudRoomNeedViewModel.tile`
-(`src/ui/hud/view-model.ts:1261-1269`) and `HudRoomAtCapacityViewModel.tile`
+(`src/ui/hud/view-model.ts:1297-1305`) and `HudRoomAtCapacityViewModel.tile`
 (`:1335-1343`) carry the same single point.
 
 **`width` and `height` appear nowhere on any of them.** The rectangle is built

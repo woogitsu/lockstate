@@ -630,7 +630,7 @@ most effort on.
   of `main`. All six `hud.alert.refusal.zone.*` strings are in
   `src/content/default-locale-en.ts:173-178`, their mapping is in
   `src/ui/simulation-alerts.ts:43-48`, and `ZONE_REFUSAL_REASONS`
-  (`src/simulation/refusals/refusal-log.ts:135`) is recorded from the handler at
+  (`src/simulation/refusals/refusal-log.ts:158`) is recorded from the handler at
   `src/simulation/runtime/session-commands.ts:70`. Two of those files did not
   exist on `main` when this was written.
   Without that route a zone gesture the simulation refuses tells the player nothing —

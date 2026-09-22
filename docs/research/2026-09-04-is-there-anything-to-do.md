@@ -231,7 +231,7 @@ honestly.
 finding, *"one all-clear sentence serving both a handled incident and an expired
 one."* It is fixed on `origin/main` at v0.0.451 (`0e614c71`):
 `incidents.all-clear-after-lapse` is its own event type
-(`src/simulation/protocol/types.ts:1686`), the UI grades it `'warning'` rather
+(`src/simulation/protocol/types.ts:1783`), the UI grades it `'warning'` rather
 than `'info'` (`src/ui/simulation-events.ts:283-284`), and it has its own
 sentence at `src/content/default-locale-en.ts:1064` — the one quoted above. The
 five lapses this run measured are what proved it renders.
@@ -841,7 +841,7 @@ absence is the harness's design and not a finding.)
 
 **VERIFIED, read**, and this is why zero is the expected number rather than a
 surprise. `SIMULATION_EVENT_TYPES`
-(`src/simulation/protocol/types.ts:1675-1694`) has **eighteen** members and
+(`src/simulation/protocol/types.ts:1772-1791`) has **eighteen** members and
 **not one of them reports something going right**:
 
 - four `construction.*` — a cancellation, a cancellation underway, an undo, a redo;

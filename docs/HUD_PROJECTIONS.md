@@ -149,7 +149,14 @@ re-project every frame at the stretch tier.
 The always-visible counts have no rows at all, which is what makes them
 publishable on a timer: `simulation/status-counts` (section 8) carries twenty-one
 integers and at most one three-field refusal record, so there is nothing here
-for this contract to bound. *(Eighteen until issue #585 added `occupiedPlaces`,
+for this contract to bound. *(The refusal record is four fields since
+2026-09-16 and five since 2026-09-22, the fifth being a nested `tile` of two
+integers; the sentence is left as written because the property it claims — a
+fixed set of scalars, nothing that grows with the prison — is what a tally in
+a sentence is standing in for, and that property is exactly as true of five as
+of three. `tests/unit/worker-status-counts.test.ts` derives the member list
+from `refusalSchema` itself rather than from any number written down, which is
+the direction #1304 closed.)* *(Eighteen until issue #585 added `occupiedPlaces`,
 the residency places that currently exist, and nineteen until the owner's
 ruling 18 of 2026-08-31 added `treasuryOverdraftFloorMinorUnits`, how far below
 zero the balance may be taken, and twenty until issue #890 added
@@ -365,6 +372,39 @@ that reached a bounded in-worker window and stopped there.
   alerts list ignores it, and the row is unchanged. It carries no target and
   no coordinates, so the "nothing here grows and nothing here locates" rule
   is untouched.
+
+  **A FIFTH MEMBER JOINED ON 2026-09-22 AND IT IS THE FIRST THING ON THIS
+  CHANNEL THAT LOCATES ANYTHING, SO HALF OF THE SENTENCE ABOVE IS NOW
+  HISTORY.** Kept rather than rewritten, because the half that moved is the
+  interesting one. `tile` is two integers — the coordinate the refused command
+  was aimed at — and it is **absent on ten of the sixteen refusal domains**,
+  which is the statement rather than a shortfall: six domains (`build.*`,
+  `zone.*`, `unzone.*`, `place-object.*`, `remove-object.*`,
+  `remove-wall.*`) are aimed somewhere and their supersession keys already
+  name a tile or a rectangle; the other ten name an item and a quantity, an
+  order id, a role, a person, a schedule boundary or nothing at all. Two of
+  those ten hold a tile at the point of record and decline it anyway —
+  `admit.*` and `construction.materials-unfunded`, whose refusals are facts
+  about the whole prison rather than about where the press landed.
+
+  **"Nothing here grows" is untouched and "nothing here locates" is what was
+  given up.** Only the first half is a contract about a cadence, and `tile` is
+  fixed-width whatever the prison holds; the second was a description of what
+  this record happened to carry, recorded as gap 34 below, and it is that gap
+  this member half-closes. It is a **tile and not a rectangle** — for
+  `zone.*`/`unzone.*` the rectangle's anchor, not its extent — because the
+  only reader the adopted sequence plans is tile-targeted
+  ([ADR 0122](./adr/0122-what-an-action-column-is-and-whether-a-message-can-carry-a-next-step.md)
+  option D step 4) and this document's own habit is to refuse a member no
+  consumer reads.
+
+  **Nothing renders it yet, and no player-visible string moved for it.** ADR
+  0122 §7 sequences the payload before the affordance, and its recommendation
+  was adopted by the owner on 2026-09-22 as the option labelled *"Naciskany
+  wiersz, bez czasownika"* ("a pressable row, without the verb") — provenance
+  of the weaker kind, an option label rather than a typed sentence. The four
+  `hud.alert.refusal.build.*` sentences that say *"that tile"* are
+  deliberately unchanged until something puts a coordinate on the screen.
 - **A stable id, never a sentence** (ADR 0011).
   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
   reason onto a `hud.alert.refusal.*` message key through a `Record` over the
@@ -2045,7 +2085,14 @@ decision about what to build next.
 
 34. **A refusal cannot be dismissed by the player, and carries no location on
     the wire.** *Amended for issue #492 — the standing-until-another-refusal
-    half of this gap was closed, the rest of it stands.* The refusal raised
+    half of this gap was closed, the rest of it stands.* **Amended again on
+    2026-09-22: the "carries no location" half is closed for six of the
+    sixteen refusal domains and is honestly open for the other ten.**
+    `refusalSchema.tile` is on the wire and reaches
+    `HudAlertViewModel.tile`; what is still missing is the press that would
+    use it (ADR 0122 option D steps 3 and 4) and therefore any sentence that
+    names a coordinate. Read the rest of this entry as written — it is about
+    the dismissal half, which did not move. The refusal raised
     by `simulation/status-counts` used to stand until another refusal
     replaced it or the session ended, full stop; it now also withdraws the
     moment the simulation accepts the exact command it once refused —
@@ -2210,7 +2257,8 @@ decision about what to build next.
     assertions and their output are in the report that accompanies this
     change):
 
-    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:158-166`).
+    - `RefusalLog.record` replaces
+      (`src/simulation/refusals/refusal-log.ts:189-208`, `public record(`).
       Two refusals leave `count === 2` and `last` holding only the second; the
       first is unreachable from the object.
     - The alerts list keeps exactly one refusal row, keyed by ordinal, and
@@ -2219,7 +2267,7 @@ decision about what to build next.
       `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
       is `[{"id":"refusal-2", …}]` — length 1.
     - The band carries the newest ordinal and nothing else
-      (`src/ui/simulation-alerts.ts:483-490`, `src/ui/hud/hud.ts:1730-1745`).
+      (`src/ui/simulation-alerts.ts:501-508`, `src/ui/hud/hud.ts:1730-1745`).
     - Neither surface shows the count. The row literal carries `id`,
       `labelKey` and `severity` only, and `sequence` reaches a player only as
       an opaque row id.
@@ -2231,8 +2279,10 @@ decision about what to build next.
     directions).
 
     - **The repins are citation maintenance and change no finding.** `record`
-      is `refusal-log.ts:158-166`, `supersessionKeyRoute` having been added
-      above it; the band's notice is built at `simulation-alerts.ts:483-490`,
+      is `refusal-log.ts:189-208`, `public record(` — both ends re-aimed on
+      2026-09-22, when `refusalSchema.tile` gave the method a fourth parameter
+      and the signature went from one line to five, on top of the
+      `supersessionKeyRoute` that had already been added above it; the band's notice is built at `simulation-alerts.ts:483-490`,
       on `sequence: refusal.sequence`;
       the band's rule is `hud.ts:1730-1745`; and the publisher's single read of
       `refusals.last` is `state-machine.ts:597`, called from `onTickLoop` at
@@ -2240,7 +2290,7 @@ decision about what to build next.
     - **"The band carries the newest ordinal and nothing else" is false in both
       directions since #1261.** It carries one thing *more*: the notice now
       forwards `routeDecidedSince` as well
-      (`src/ui/simulation-alerts.ts:486`). And on that flag it carries *less*
+      (`src/ui/simulation-alerts.ts:504`). And on that flag it carries *less*
       than the newest ordinal — a notice marked `routeDecidedSince` is treated
       as no notice at all, so the corner is cleared while the refusal still
       stands in `RefusalLog` and still holds its row in the alerts list
@@ -2254,7 +2304,7 @@ decision about what to build next.
     449-453 and then 462-469 for the notice, and 452 and then 465 for the
     forwarded flag — they moved twice in one day, both times because this
     repository added prose beside the code rather than because the code moved.
-    The notice is now built at `src/ui/simulation-alerts.ts:483-490`, on
+    The notice is now built at `src/ui/simulation-alerts.ts:501-508`, on
     `sequence: refusal.sequence`, and `routeDecidedSince` is forwarded at
     `:486`. Nothing about those two findings changed — the same
     lines were re-read at the new coordinates — and the shift is this repository
@@ -2314,7 +2364,7 @@ decision about what to build next.
     boundary at all**, which is stronger than "overwritten fast". One build
     drag submits one `PlaceBuildOrder` per edge (`src/main.ts:2934-2949`) and
     the handler records one refusal per failed order
-    (`src/simulation/construction/handler.ts:113-115`); the publisher reads
+    (`src/simulation/construction/handler.ts:113-124`); the publisher reads
     `this._runtime.refusals.last` once per wake
     (`src/simulation/worker/state-machine.ts:597`, called from `onTickLoop` at
     `:407`), so a burst decided inside one dispatch pass is reduced to its last

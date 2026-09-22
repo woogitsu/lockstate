@@ -275,7 +275,7 @@ because none of their success keys matched the stale `RemoveObject` key --
 confirmed by the same shape of code, one command handler over: a successful
 `RemoveObject` calls `refusals.supersede(removeKey)` where `removeKey =
 removeObjectSupersessionKey(x, y)` is the tile just removed
-(`src/simulation/runtime/session-commands.ts:571-604`, whose own comment
+(`src/simulation/runtime/session-commands.ts:582-615`, whose own comment
 names the same issue by number: *"Issue #492: the tile. A removal elsewhere
 must not silence a standing `nothing-to-remove` about this one."*). This is
 the same `supersede`-is-keyed-to-the-exact-subject design, on a different

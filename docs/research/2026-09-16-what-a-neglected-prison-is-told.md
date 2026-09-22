@@ -17,7 +17,7 @@ re-check is recorded beneath it with `54adc87c`.
 
 - **Eight of the nine `file:line` citations are alive** at `54adc87c` and were
   opened again one at a time. **One is dead** —
-  `src/simulation/protocol/types.ts:1769-1797` — and is re-pinned in §5 with the
+  `src/simulation/protocol/types.ts:1866-1894` — and is re-pinned in §5 with the
   verbatim line at the new coordinate.
 - **The two claims most exposed to §4's "an absence or a count rots first" were
   re-derived rather than re-read**, and both hold: `SIMULATION_EVENT_TYPES` has
@@ -52,7 +52,7 @@ claims, marked rather than overwritten.
 - **The `SIMULATION_EVENT_TYPES` coordinate has moved a second time.** §5's
   2026-09-16 re-pin to `:1864`/`:1892` is dead at `eeda2e53`; the declaration
   `` export const SIMULATION_EVENT_TYPES = [ `` is at
-  **`src/simulation/protocol/types.ts:1891`** and the array closes at
+  **`src/simulation/protocol/types.ts:1988`** and the array closes at
   **`:1920`**, `` ] as const; ``. That is two re-pins of one coordinate in
   three days, which is the measurement `docs/AGENT_WORKFLOW.md` §4 asks for
   when it says a `file:line` is the least durable citation here.
@@ -236,7 +236,7 @@ is the player's *press*, and nothing in either gate reads the prison's
 condition.
 
 - **`rooms.zoned`** is recorded at
-  `src/simulation/runtime/session-commands.ts:314`, in the `DesignateRoom`
+  `src/simulation/runtime/session-commands.ts:320`, in the `DesignateRoom`
   branch, after `zone` returned an accepted outcome — and an accepted outcome
   asks for enclosure and a minimum size, not for a door, a bed or a toilet.
   **VERIFIED, read.**
@@ -442,7 +442,7 @@ The queue's own countdown, logged from inside the section:
 ```
 
 **VERIFIED, read — the silence is structural rather than a missed case.**
-`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1769-1797` —
+`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1866-1894` —
 **re-pinned 2026-09-16 at `54adc87c`: that coordinate is dead, `:1769` now reads
 `` * sentence ended, a payday failed, a fight broke out -- and the heading above ``
 inside an unrelated docblock. The declaration is at **`:1864`**,

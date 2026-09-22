@@ -547,7 +547,18 @@ describe('publishing the status counts', () => {
     const after = harness.publications();
     expect(after).toHaveLength(2);
     const published = after[1];
-    expect(published?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    // **`tile` is the fifth member and this is the assertion that proves it
+    // travels** (ADR 0122 option D step 1): `100, 100` is the coordinate the
+    // Build panel's unranged number fields let a player type, it is what the
+    // order was aimed at, and it is now what the publication says the refusal
+    // is about. Asserted as part of the whole record rather than beside it, so
+    // a tile that arrived on the wrong refusal would fail here too.
+    expect(published?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      tile: { x: 100, y: 100 },
+    });
     // The counts really did not move, so nothing but the refusal caused this
     // message to exist.
     expect(published?.payload.counts).toEqual(before[0]?.payload.counts);
@@ -612,7 +623,12 @@ describe('publishing the status counts', () => {
     harness.advance(50);
     const refused = harness.publications();
     expect(refused).toHaveLength(2);
-    expect(refused[1]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    expect(refused[1]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      tile: { x: 100, y: 100 },
+    });
 
     // Accepted: inside it, and a different tile, so #492's key misses and the
     // refusal is *not* withdrawn. Same route, so option F marks it.
@@ -621,10 +637,16 @@ describe('publishing the status counts', () => {
 
     const after = harness.publications();
     expect(after, 'a publication the sequence gate alone would have suppressed').toHaveLength(3);
+    // **The tile survives `noteRouteDecided`**, which is the one place the
+    // standing record is rebuilt rather than replaced (`{ ...current,
+    // routeDecidedSince: true }`). A spread that dropped it would leave the
+    // row unable to say where a refusal the band has retired was about --
+    // which is exactly the state the alerts list keeps it in.
     expect(after[2]?.payload.refusal).toEqual({
       sequence: 1,
       tick: 0,
       reason: 'build.out-of-bounds',
+      tile: { x: 100, y: 100 },
       routeDecidedSince: true,
     });
     // Nothing but the flag can have caused this message: the interval gate
@@ -667,7 +689,7 @@ describe('publishing the status counts', () => {
     harness.advance(50);
     const carried = harness.publications();
     expect(carried).toHaveLength(2);
-    const standing = { sequence: 1, tick: 0, reason: 'build.out-of-bounds' } as const;
+    const standing = { sequence: 1, tick: 0, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } } as const;
     expect(carried[1]?.payload.refusal).toEqual(standing);
 
     // Nothing but the clock from here: no command is submitted, so no route
@@ -738,7 +760,12 @@ describe('publishing the status counts', () => {
     expect(harness.kernelTick()).toBe(refusalBandTickCeiling(2));
     const after = harness.publications();
     expect(after, 'the x2 ceiling was reached and no publication carried it').toHaveLength(3);
-    expect(after[2]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    expect(after[2]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      tile: { x: 100, y: 100 },
+    });
   });
 
   test('replaces the standing refusal when the simulation refuses something else', () => {
@@ -753,7 +780,15 @@ describe('publishing the status counts', () => {
     expect(published).toHaveLength(3);
     // A new ordinal, so the HUD paints a new row rather than leaving the old
     // one standing, and the count of refusals is carried by the same number.
-    expect(published[2]?.payload.refusal).toEqual({ sequence: 2, tick: 1, reason: 'build.out-of-bounds' });
+    // And the replacement carries **its own** tile rather than the first
+    // refusal's: `record` assigns a whole value, so the negative coordinate
+    // this second order was aimed at is what the row is now about.
+    expect(published[2]?.payload.refusal).toEqual({
+      sequence: 2,
+      tick: 1,
+      reason: 'build.out-of-bounds',
+      tile: { x: -100, y: -100 },
+    });
   });
 
   test('keeps carrying the standing refusal beside counts that do move', () => {
@@ -956,6 +991,23 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           // and this line, it did: by 25 bytes, which is 7 more than the head
           // room the old bound had.
           routeDecidedSince: true as const,
+          // **And since 2026-09-22 the same forcing covers `tile`**, the fifth
+          // member of `refusalSchema` and the second optional one: the
+          // coordinate the refused command was aimed at, absent on the ten
+          // refusal domains that are aimed nowhere (ADR 0122 option D step 1).
+          // This scenario refuses nothing at all -- every member of this
+          // literal is forced -- so the worst case is forced here for exactly
+          // the reason `activeIncidentType`, `contrabandNameKey` and
+          // `routeDecidedSince` are.
+          //
+          // **Forced at its widest, not at a plausible coordinate**, because
+          // the member is `z.number().int()` with no range and bytes here are
+          // digits: the wire mirrors `src/simulation/protocol/commands.ts`'s
+          // own tile schemas, which are unranged because a refusal is often
+          // *about* an impossible coordinate (`build.out-of-bounds`). So both
+          // components are the widest safe integer, and negative on one axis
+          // because the minus sign is a byte too and a player may type one.
+          tile: { x: -Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER },
         },
       };
       const cloneStartedAt = performance.now();
@@ -1101,7 +1153,10 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // unnoticed: the fixture could not carry the new field without this
       // line moving in the same edit, so nothing ever prompted the first
       // change.
-      expect(Object.keys(payload.refusal)).toHaveLength(4);
+      // **Five since 2026-09-22, not four.** `tile` is the fifth the paragraph
+      // above predicted in as many words, and the prediction held: the
+      // fixture could not carry it without this line moving in the same edit.
+      expect(Object.keys(payload.refusal)).toHaveLength(5);
       // **And it is the refusal `refusalSchema` declares, member for member**
       // (issue #1304). The line above counts; this one says *which*, against
       // the schema itself rather than against a number written here.
@@ -1330,7 +1385,33 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // by exactly 7 bytes twice in a row, by two unrelated raises, for the
       // one reason #1304 exists to remove: nothing ties the fixture to the
       // shape it claims to be the worst case of.
-      expect(JSON.stringify(payload).length).toBeLessThan(825);
+      //
+      // **877 and not 825, and the raise is `refusalSchema.tile` -- the first
+      // member on this channel that is an object rather than a scalar.**
+      // Measured on this branch at the same worst case every previous raise
+      // used: `payloadJsonBytes=857` at 250 actors and `859` at 1,000, 2,500
+      // and 5,000 -- still the same two-byte digit-count spread between the
+      // tiers rather than growth, which is the property this bound exists to
+      // protect and the one a *location* had to keep. Two integers are two
+      // integers whether the prison holds four prisoners or five thousand.
+      // 859 + 18 = **877**, the same 18 bytes of head room every previous
+      // raise in this file left.
+      //
+      // **The 52 bytes it costs are mostly coordinate rather than key**, which
+      // is the opposite of `treasuryOverdraftFloorMinorUnits`'s raise above.
+      // Counted out: `,"tile":{"x":,"y":}` is 19 characters of structure and
+      // the two forced safe-integer extremes are the other 33 (17 with the
+      // minus sign, 16 without). A refusal a player actually provokes costs
+      // 25 -- `,"tile":{"x":100,"y":100}` -- and the bound is set against the
+      // coordinate a player *could* type rather than the one they plausibly
+      // would, because `z.number().int()` on the wire declines to rule the
+      // wide one out (a refusal is often about an impossible coordinate).
+      //
+      // **The check that makes this a measurement rather than a sum:**
+      // 805 + 52 = 857 and 807 + 52 = 859 against the 805/807 the 825 bound
+      // was derived from, so the new member changes no other field's cost and
+      // every arithmetic above survives being combined.
+      expect(JSON.stringify(payload).length).toBeLessThan(877);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
