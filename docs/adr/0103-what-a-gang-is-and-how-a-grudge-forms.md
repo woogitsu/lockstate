@@ -636,7 +636,7 @@ position at v0.0.467).
 The incident type is in the persisted enum
 (`src/persistence/save-schema.ts:951`; the anchor read `:939`), the protocol
 event is registered
-(`src/simulation/protocol/types.ts:1729`, payload schema at `:2032`), the
+(`src/simulation/protocol/types.ts:1826`, payload schema at `:2032`), the
 message census carries a label (`src/content/simulation-message-keys.ts:268`),
 and both projections enumerate all four types
 (`src/simulation/presentation/incident-projection.ts:149`,
@@ -883,7 +883,7 @@ payload is the envelope and the literal —
 `type: z.literal('incidents.assault-opened'),` (verbatim in
 `src/simulation/protocol/types.ts`), at `:2039` — because the channel
 deliberately carries no identity: *"No incident id, no sector id: the channel
-carries no identity"* (`src/simulation/protocol/types.ts:1998`). The place a
+carries no identity"* (`src/simulation/protocol/types.ts:2095`). The place a
 player would look one up does not exist: `hud/incidents` and
 `hud/incident-detail` are both listed in `UNPAINTED_PROJECTION_IDS`
 (`const UNPAINTED_PROJECTION_IDS`,
@@ -911,7 +911,7 @@ happened and is never told who was in it.**
 
 **(c) The adjudication — the moment the ruling names — is announced by
 nothing.** `SIMULATION_EVENT_TYPES`
-(`src/simulation/protocol/types.ts:1864-1892`; the anchor read `:1713-1735`) is
+(`src/simulation/protocol/types.ts:1961-1989`; the anchor read `:1713-1735`) is
 the closed list of everything
 the prison can say, and **no member of it is a sanction, a finding, a solitary
 term or an adjudication** — a count is deliberately not given, because the
@@ -956,7 +956,7 @@ so only in the running app, never in a headless replay"*
 **(f) The one fact about the player's attention that does reach the kernel, and
 what it actually is.** A dismissal. `export const dismissAlertSchema = z.object({`
 (verbatim in `src/simulation/protocol/commands.ts`), at `:583`, applied from
-the command queue at `src/simulation/runtime/session-commands.ts:919` into
+the command queue at `src/simulation/runtime/session-commands.ts:940` into
 `public dismiss(fromSequence: number, throughSequence: number): number {`
 (verbatim in `src/simulation/events/event-log.ts`), at `:269`. Its far end is
 documented as exactly the thing the ruling asks for: *"`throughSequence` is the

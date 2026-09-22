@@ -366,6 +366,44 @@ is still literally true of `tests/unit/worker-status-counts.test.ts`, whose
 that carries no `routeDecidedSince`. Read it as a statement about that fixture,
 not about the schema's ceiling, which is four.
 
+**AND A FIFTH LANDED ON 2026-09-22, SO "THE SCHEMA'S CEILING ... IS FOUR" IS
+NOW HISTORY TOO.** Marked rather than rewritten, for the reason the paragraph
+above this one is marked rather than rewritten. The member is `tile`:
+
+```ts
+tile: z.object({ x: z.number().int(), y: z.number().int() }).strict().optional()
+```
+
+**It is the first thing this payload has ever carried that says *where*.** ADR
+0122's option D step 1, sequenced first by its §7 recommendation and adopted by
+the owner on 2026-09-22 as the option labelled *"Naciskany wiersz, bez
+czasownika"* ("a pressable row, without the verb") -- provenance of the weaker
+kind, an option label rather than a typed sentence, and the ADR's own Status
+block is where that is recorded. Article 6 of the vendored constitution
+(`docs/design/2026-09-13-identity-v5/`) asks a message for the fact, the
+location and the next step; this channel carried the fact alone, which is why
+four `hud.alert.refusal.build.*` sentences say *"that tile"* with nothing able
+to say which. This is the location, and the next step is explicitly not here:
+nothing renders `tile` yet and no player-visible string was changed for it.
+
+**Absent on ten of the sixteen refusal domains, and the absence is the
+statement.** Six are aimed somewhere -- `build.*`, `zone.*`, `unzone.*`,
+`place-object.*`, `remove-object.*`, `remove-wall.*` -- and their supersession
+keys already name a tile or a rectangle. The other ten name an item and a
+quantity, an order id, a role, a person, a schedule boundary or nothing, and
+two of them (`admit.*` and `construction.materials-unfunded`) hold a tile at
+the point of record and still decline it, because their refusals are facts
+about the whole prison rather than about the coordinate the press named.
+`src/simulation/protocol/types.ts` carries the full reading.
+
+**Two integers, so nothing about the cadence moves.** `tile` is fixed-width
+whatever the prison holds, which is the property contract 5 of
+`docs/HUD_PROJECTIONS.md` actually bounds; what moved is that document's
+narrower *"nothing here locates"* aside, and its gap 34. The envelope version
+stays `1` on the same three grounds the fourth member kept it there: the
+member is optional, both peers ship from one build, and no fixture spelling
+the three original members out literally becomes invalid.
+
 ### Why this shape, and why not a new message kind
 
 **The channel is a snapshot on a cadence, so what it carries has to be

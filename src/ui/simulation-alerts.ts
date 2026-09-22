@@ -336,6 +336,24 @@ export function hudAlertsFromWorkerMessage(
           id: `${REFUSAL_ROW_PREFIX}${refusal.sequence}`,
           labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
           severity: 'warning',
+          // Forwarded, not decided: the place a refusal is about is the
+          // simulation's fact and this module's job is to put it where the
+          // HUD can reach it (ADR 0122 option D step 2, adopted 2026-09-22).
+          // Absent on the ten `RefusalLog` domains that are aimed nowhere, so
+          // spread rather than passed as `undefined` --
+          // `exactOptionalPropertyTypes` is on and the two are different
+          // values, exactly as `routeDecidedSince` below is spread on the
+          // band.
+          //
+          // **The band does not get it and that asymmetry is deliberate.**
+          // `HudRefusalNoticeViewModel` is one sentence in an always-laid-out
+          // corner with no row to press; ADR 0122's recommendation is that
+          // *the alerts row* becomes the press, and option D step 2 names
+          // `HudAlertViewModel` and nothing else. Giving the band a
+          // destination nothing can press would be a field with no reader on
+          // the surface that has no gesture, which is a different thing from
+          // the field with no reader *yet* on the surface that will get one.
+          ...(refusal.tile === undefined ? {} : { tile: refusal.tile }),
         },
       ];
     }

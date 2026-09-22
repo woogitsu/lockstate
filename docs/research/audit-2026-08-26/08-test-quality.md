@@ -79,9 +79,9 @@ Full suite (232 files / 2,604 tests) run per row. "Caught by N" = tests that wen
 | M9 | Room occupancy claims | `room-instance-registry.ts` `useOccupancyOf`: ignore the `capability` filter (reintroduces #326) | Yes — 2 tests | `src/simulation/prisoners/room-instance-registry.ts:311-317` |
 | M10 | **Projection ordering** | `room-projection.ts`: drop `.sort(compareEntityIds)` on `occupantEntityIds` | **NO — survived** | `src/simulation/presentation/room-projection.ts:400`; see TST-02 — the test that exists for this cannot see it |
 | M11 | Autosave durability | `session-controller.ts`: `markDirty()` never marks the session dirty | Yes — 2 tests | `src/persistence/session/session-controller.ts:229`; `tests/unit/persistence-session-controller.test.ts:211-212` |
-| M12 | **Refusal codes** | `refusal-log.ts`: swap `unbuildable` ↔ `unbuildable-terrain` wire ids | **NO — survived** | `src/simulation/refusals/refusal-log.ts:116-117`; see TST-09 |
+| M12 | **Refusal codes** | `refusal-log.ts`: swap `unbuildable` ↔ `unbuildable-terrain` wire ids | **NO — survived** | `src/simulation/refusals/refusal-log.ts:139-140`; see TST-09 |
 | M13 | **Navigation budget (extreme)** | `workBudget: Number.MAX_SAFE_INTEGER` — literally unbounded A*, forbidden by `AGENTS.md` boundary 9 | **NO — survived** | as M4 |
-| M14 | Refusal sequence | `refusal-log.ts`: `sequence` always `1` | Yes — 6 tests / 4 files | `src/simulation/refusals/refusal-log.ts:88` |
+| M14 | Refusal sequence | `refusal-log.ts`: `sequence` always `1` | Yes — 6 tests / 4 files | `src/simulation/refusals/refusal-log.ts:111` |
 | M15 | Money persistence | `treasury.restore()` ignores the snapshot balance | Yes — 4 tests / 3 files | `src/simulation/economy/treasury.ts:132-136`; `tests/integration/economy-state-income-persistence.test.ts:202` |
 | M16 | Room occupancy (edge) | `occupancyOf` returns `1` for an *unknown* instance instead of `0` | **NO — survived** | `src/simulation/prisoners/room-instance-registry.ts:286`; no test ever queries occupancy of an unregistered instance |
 
@@ -292,7 +292,7 @@ assert in a second, always-running test that a `LOCKSTATE_REQUIRE_BLENDER` env v
 a silent skip cannot be mistaken for a pass.
 
 ### TST-09 · MEDIUM · CONFIRMED — 15 of ~35 refusal reason→wire-id pairings are unverified
-`src/simulation/refusals/refusal-log.ts:114-120` · `tests/unit/simulation-refusals.test.ts:105-133`
+`src/simulation/refusals/refusal-log.ts:137-143` · `tests/unit/simulation-refusals.test.ts:105-133`
 
 `simulation-refusals.test.ts` checks the **key set** (`:133`, against `BUILD_ORDER_FAIL_REASONS`)
 and the **value set** (`:105-126`, every value is a declared `RefusalReason`) — but not the

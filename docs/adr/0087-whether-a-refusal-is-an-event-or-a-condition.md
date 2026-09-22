@@ -114,11 +114,11 @@ So:
 | --- | --- | --- | --- |
 | **Occurrences** — `simulation/event` | push, once per event, coalesced by nothing (`event-log.ts:34-51`) | things that happened at a tick | **yes, since ADR 0084 decision 3** (`event-log.ts:73-105`) — see Cost 6 |
 | **Levels** — `simulation/status-counts` | snapshot on a cadence, ≤2/s, skipped when unchanged | `counts`, `refusal`, `zoning` (`src/simulation/protocol/types.ts:1359-1361`) | not applicable: recomputed, except `refusal` |
-| **Read models** — `simulation/request-projection` | pull, while a panel is showing; **absent is a real state, not a zeroed one** (`src/ui/hud/view-model.ts:1109-1117`) | build queue, room needs, intake pipeline | yes, for free — recomputed from persisted state |
+| **Read models** — `simulation/request-projection` | pull, while a panel is showing; **absent is a real state, not a zeroed one** (`src/ui/hud/view-model.ts:1145-1153`) | build queue, room needs, intake pipeline | yes, for free — recomputed from persisted state |
 
 **`refusal` is declared a level and implemented as an occurrence.** That one
 sentence is the whole of this ADR's problem. `RefusalLog.record`
-(`src/simulation/refusals/refusal-log.ts:116-120`) increments a monotonic
+(`src/simulation/refusals/refusal-log.ts:139-143`) increments a monotonic
 `_sequence` (`:93`), writes one slot, and is called from twelve command
 handlers and nothing else. A level does not have an ordinal, does not
 increment, and is not written by a handler; it is *read off the prison*.
@@ -425,7 +425,7 @@ than answering it the same way for a fact of a different kind.
 
 ### 3. The one answer already given, in passing, in one file
 
-`src/ui/simulation-alerts.ts:388-389` rules that a refusal appearing in both
+`src/ui/simulation-alerts.ts:406-407` rules that a refusal appearing in both
 the band and the list
 
 > is the intended reading rather than a duplication to be removed: **one is

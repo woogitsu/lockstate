@@ -1379,6 +1379,21 @@ a document about method should say how to write one that lasts.
     enumeration of a shape, named in prose**, which has no coordinate to
     intersect on at all.
 
+    **The same shape took a fifth member on 2026-09-22 and this bullet is the
+    place it has to be named, because the bullet is itself one of the six
+    documents that gate on it.** `tile` — two integers saying where the refused
+    command was aimed, absent on the ten refusal domains that are aimed nowhere
+    — went onto `refusalSchema` under ADR 0122 option D step 1. The example
+    above is therefore no longer a story about a fourth member alone; it is a
+    shape that has now grown twice under the same three-member prose
+    enumeration quoted above, which is still correct about what the 2026-08-24
+    amendment decided. That is the shape of the defect this
+    bullet describes, and naming the member here is what
+    `tests/foundation/documented-wire-schema-membership-contract.test.ts`
+    requires of every document that carries the enumeration — including this
+    one, which is the strongest available evidence that the gate derives its
+    document list rather than holding a table.
+
   **What none of this bounds is how many remain, and that is the sentence to
   carry rather than the three.** The third was invisible to the pass before it
   in exactly the way a fourth is invisible now, and the method has no step that

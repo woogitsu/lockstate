@@ -86,7 +86,14 @@ const COUNTS = {
  * opted into, by the cases that are about it.
  */
 function publication(
-  refusal?: { sequence: number; tick: number; reason: RefusalReason; routeDecidedSince?: true },
+  refusal?: {
+    sequence: number;
+    tick: number;
+    reason: RefusalReason;
+    routeDecidedSince?: true;
+    /** Where the refused command was aimed, on the six domains that are aimed somewhere (ADR 0122 option D step 1). */
+    tile?: { x: number; y: number };
+  },
   publishedAt?: number,
 ): WorkerToMainMessage {
   return {
@@ -125,6 +132,84 @@ describe('a refusal the worker published becomes an alert row', () => {
         severity: 'warning',
       },
     ]);
+  });
+
+  /**
+   * **ADR 0122 option D step 2, adopted with §7's recommendation by the owner
+   * on 2026-09-22: the place reaches the view model.**
+   *
+   * The two cases below are the whole of this step on this side of the
+   * boundary, and the second is the one that keeps the first honest. A field
+   * that were always present -- present-and-`undefined` for the ten refusal
+   * domains that are aimed nowhere -- would be a location the interface cannot
+   * stand behind, and `exactOptionalPropertyTypes` makes the difference a
+   * real one rather than a stylistic one.
+   *
+   * **Nothing reads `tile` yet, and that is the sequencing.** ADR 0122 §7 asks
+   * for the destination to travel before any affordance is written; the press
+   * and the camera move are steps 3 and 4 and are not in this change. So these
+   * two cases are the only thing standing between the payload and a field
+   * nobody would notice had stopped arriving.
+   */
+  it('carries the tile the refusal was aimed at through to the row', () => {
+    expect(
+      rows(publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } })),
+    ).toEqual([
+      {
+        id: 'refusal-4',
+        labelKey: 'hud.alert.refusal.build.out-of-bounds',
+        severity: 'warning',
+        tile: { x: 100, y: 100 },
+      },
+    ]);
+  });
+
+  it('leaves the row without a tile key at all when the refusal is aimed nowhere', () => {
+    const [row] = rows(publication({ sequence: 1, tick: 12, reason: 'hire.roster-full' }));
+
+    // `toEqual` ignores a key whose value is `undefined`, so the key set is
+    // asserted directly: "absent" and "present and undefined" are the two
+    // states this has to tell apart, and only one of them is what the wire
+    // says about a refusal with no place.
+    expect(Object.keys(row ?? {}).sort()).toEqual(['id', 'labelKey', 'severity']);
+    expect('tile' in (row ?? {})).toBe(false);
+  });
+
+  it('keeps the tile on a row whose route has decided something since -- the list is the record that can still be located', () => {
+    // The band retires such a refusal (ADR 0091 option F) and the list keeps
+    // it. A row the list keeps is a row a player may press, so it is exactly
+    // the row that must not lose its place.
+    expect(
+      rows(
+        publication({
+          sequence: 7,
+          tick: 12,
+          reason: 'remove-object.nothing-to-remove',
+          routeDecidedSince: true,
+          tile: { x: 11, y: 13 },
+        }),
+      ),
+    ).toEqual([
+      {
+        id: 'refusal-7',
+        labelKey: 'hud.alert.refusal.remove-object.nothing-to-remove',
+        severity: 'warning',
+        tile: { x: 11, y: 13 },
+      },
+    ]);
+  });
+
+  it('gives the band no destination, though the same publication carries one', () => {
+    // The asymmetry ADR 0122 §7 buys: the *row* becomes the press, so the
+    // always-laid-out corner -- which has no row and no gesture -- is left
+    // exactly as it was. A destination on a surface nothing can press would be
+    // a field with no reader on the surface that will never get one.
+    const notice = bandNotice(
+      publication({ sequence: 4, tick: 12, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } }),
+    );
+
+    expect(notice).toEqual({ sequence: 4, labelKey: 'hud.alert.refusal.build.out-of-bounds' });
+    expect('tile' in (notice as object)).toBe(false);
   });
 
   it('keeps the row when the simulation marks the refusal route as decided since -- the list is the record (ADR 0091)', () => {

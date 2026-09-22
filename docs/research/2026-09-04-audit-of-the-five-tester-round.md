@@ -409,7 +409,7 @@ pass is not the same as a diff.
   `default-locale-en.ts:984`). **The substance is unaffected** — the quote is
   real and 75 lines away — which is exactly what makes this the cheap error to
   leave in place and the expensive one to follow.
-- **`src/simulation/runtime/session-commands.ts:673`** (the misplay §1), cited
+- **`src/simulation/runtime/session-commands.ts:684`** (the misplay §1), cited
   for the `RemoveObject` arm's `refusals.supersede(removeKey)`. That statement
   was at `:672` on `0e614c7`; `:673` is the closing brace. Off by one, now at
   `:696`.

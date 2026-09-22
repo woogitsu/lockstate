@@ -473,6 +473,16 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
     const runtime = prisonWith(CANNOT_FUND_A_WALL);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     expect(runtime.refusals.last?.reason).toBe('construction.materials-unfunded');
+    // **And it carries no tile, though the press that produced it named one**
+    // (ADR 0122 option D step 1, 2026-09-22). `reportMaterialsFunding` is
+    // reached from a `PlaceBuildOrder` at `4, 4` and declines the coordinate,
+    // for the reason `materialsFundingSupersessionKey` is domain-wide: "the
+    // build queue cannot be paid for" is a statement about the treasury
+    // against everything queued, not about the wall the player last pressed.
+    // This is one of the two domains where a place is in hand and is about the
+    // wrong thing; `admit.*` is the other, pinned in
+    // `tests/unit/simulation-refusals.test.ts`.
+    expect(runtime.refusals.last?.tile).toBeUndefined();
 
     // Three scheduled construction ticks, and short of the fixture's own
     // delivery at tick 100 -- the refund below needs a purchase still in

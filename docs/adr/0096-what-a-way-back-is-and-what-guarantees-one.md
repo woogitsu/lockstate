@@ -290,7 +290,7 @@ able to cancel (#860, #861, #862).
   (`src/simulation/economy/treasury.ts:507`), the owner's second ruling on
   #771, and `isFreshUnfurnishedPrison` is read live from
   `roomInstances.totalResidentCapacity === 0`
-  (`src/simulation/runtime/session-commands.ts:392`). It reserves the **plank**
+  (`src/simulation/runtime/session-commands.ts:403`). It reserves the **plank**
   and assumes the **enclosure is already built**, which act B's prison never
   did, and `'wages'` walks straight through it.
 - **A loan exists and is switched off.** `LoanBook`

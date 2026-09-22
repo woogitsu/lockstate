@@ -198,8 +198,8 @@ commit the document was touched at.
 | `src/ui/hud/projection.ts:928` | the line ending *"since ADR 0064 the state withholds part of the"* | **`:939`** |
 | `src/ui/hud/projection.ts:1233-1235` | *"\* (#703 ruling A, ADR 0083 §2), so a purchase this thread refuses on money has"* | **`:1244-1246`** |
 | `src/ui/hud/view-model.ts:347` | the ADR 0083 link line of the `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` doc comment, whose line above reads *"(\`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS\`, #703 ruling A of 2026-08-31,"* | **`:374`** |
-| `src/ui/hud/view-model.ts:833` | *"   \* This order's revision as of this publication (ADR 0107), carried"* | **`:860`** |
-| `src/ui/hud/view-model.ts:1848` | the ADR 0048 link line opening that doc comment's citation | **`:1895`** |
+| `src/ui/hud/view-model.ts:869` | *"   \* This order's revision as of this publication (ADR 0107), carried"* | **`:860`** |
+| `src/ui/hud/view-model.ts:1884` | the ADR 0048 link line opening that doc comment's citation | **`:1895`** |
 
 (Thirteen rows for eleven spans: two of the spans name two coordinates each.)
 
@@ -313,7 +313,7 @@ in this corpus does not mean "not built". It means "not signed".
 | ADR | evidence | tier |
 | --- | --- | --- |
 | 0043 Account session states | `AccountSessionState` union, `src/ui/account/account-session.ts:53-62`; decision 1 cited at `:156`, decision 4 at `src/ui/account/cloud-slot-availability.ts:25` | VERIFIED |
-| 0048 What a sector's occupants are | 29 files under `src/` cite it; `src/ui/hud/view-model.ts:1848` (**dead; live at `:1895`**), `src/ui/hud/messages.ts:883,897`, `src/ui/hud/staff-panel.ts:51` (*"Since ADR 0048, a …"*) | REFERENCE |
+| 0048 What a sector's occupants are | 29 files under `src/` cite it; `src/ui/hud/view-model.ts:1884` (**dead; live at `:1895`**), `src/ui/hud/messages.ts:883,897`, `src/ui/hud/staff-panel.ts:51` (*"Since ADR 0048, a …"*) | REFERENCE |
 | 0049 What a prison that cannot make payroll owes | arrears carried as history, `src/simulation/runtime/session-systems.ts:429,981`; `src/simulation/presentation/status-strip-projection.ts:135` | REFERENCE |
 | 0050 When a sentence ends | decision 2 at `src/simulation/prisoners/room-instance-registry.ts:1245` and `src/simulation/runtime/new-session.ts:528`; decision 4 at `src/simulation/prisoners/discharge-system.ts:79`, `new-session.ts:1495` | REFERENCE |
 | 0052 Drawing the world with the source-art sheets | decision 2's typed manifest is `src/rendering/assets/environment-sprites.ts`; the painter is `src/rendering/world/environment-art.ts`, whose `:63` records that *"ADR-0052's own consequence 'Adding art for a new object is a row in a data module' … is now true"* | VERIFIED |
@@ -330,7 +330,7 @@ in this corpus does not mean "not built". It means "not signed".
 | 0067 What an assault costs its instigator | `src/simulation/prisoners/sanction-system.ts:12`, wired at `prisoner-operations-runtime.ts:276` | VERIFIED |
 | 0068 Classifying a pending room's enclosure on the client | the synchronous host query the decision names: `classifyArea` at `src/ui/hud/rooms-panel.ts:206`, asked once per rectangle at `:918`, with `pendingEnclosure` at `:1385` | VERIFIED |
 | 0069 How long a prisoner is held for | `sentenceLengthTicks` as a per-prisoner array in the save envelope, `src/persistence/save-schema.ts:404,449` (**dead; live at `:413,458`**); read at `src/simulation/presentation/prisoner-projection.ts:751` | VERIFIED |
-| 0070 Dismissing a staff member | `DismissStaff` consumed at `src/simulation/runtime/session-commands.ts:1025`, keyed by `dismissStaffSupersessionKey` at `:1060`; the roster reader at `src/ui/simulation-staff-roster.ts:19` | VERIFIED |
+| 0070 Dismissing a staff member | `DismissStaff` consumed at `src/simulation/runtime/session-commands.ts:1054`, keyed by `dismissStaffSupersessionKey` at `:1060`; the roster reader at `src/ui/simulation-staff-roster.ts:19` | VERIFIED |
 | 0071 What bounds a room whose activity consumes no object | `concurrentUseCapacityFor` in `src/simulation/objects/room-capacity.ts`; decision 4's import ban stated at `src/content/room-catalog.ts:74` | VERIFIED |
 | 0073 Who orders a contraband search | `SearchSystem` wired at `src/simulation/runtime/new-session.ts:1153,1181` and `session-systems.ts:1061`. **The ADR's own Status block already says so**: *"Implemented, 2026-08-29, on `agent/552-contraband-search` — Part 1 and Part 2 Option A, on the owner's instruction to implement under this document."* | VERIFIED |
 | 0074 What a restored room that recorded no rectangle is | `src/persistence/save-schema.ts:507,1410` (**dead; live at `:516,1420`**) (*"the restore reads the rectangle back off it (ADR 0074)"*), `src/persistence/save-migrations.ts:271` | REFERENCE |
@@ -341,7 +341,7 @@ in this corpus does not mean "not built". It means "not signed".
 | 0083 What opens the negative balance | `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (`src/ui/hud/view-model.ts:347` (**dead; live at `:374`**), `messages.ts:1488`) and `escalatedDiversionRateBasisPoints` (`src/simulation/economy/loans.ts`) | VERIFIED |
 | 0086 What refreshes a pulled HUD readout | Option E (recommended) shipped: `tests/foundation/hud-refresh-cadence-contract.test.ts` exists and owns the sentence, and `docs/HUD_PROJECTIONS.md:534` states it (**dead since `563ed7fc`; live at `docs/HUD_PROJECTIONS.md:559`** — see the repin note under the second correction) — *"And what makes the main thread ask is the clock heartbeat, not the counts."* | VERIFIED |
 | 0090 Medium as a warning, not a skipped step | `src/simulation/prisoners/classification-early-warning-system.ts` exists, with `EARLY_WARNING_TIER_CEILING` at `src/simulation/prisoners/classification.ts:249` | VERIFIED |
-| 0107 What a stale build-order cancellation is refused for | the revision counter the decision invents: `BuildOrderSource.revisionOf` at `src/simulation/presentation/construction-projection.ts:131`, carried per publication at `src/ui/hud/view-model.ts:833` (**dead; live at `:860`**) and read at `src/ui/hud/build-panel.ts:2432` (**dead; live at `:2447`**) | VERIFIED |
+| 0107 What a stale build-order cancellation is refused for | the revision counter the decision invents: `BuildOrderSource.revisionOf` at `src/simulation/presentation/construction-projection.ts:131`, carried per publication at `src/ui/hud/view-model.ts:869` (**dead; live at `:860`**) and read at `src/ui/hud/build-panel.ts:2432` (**dead; live at `:2447`**) | VERIFIED |
 
 ## Bucket 2 — overtaken in part
 
@@ -455,9 +455,9 @@ no band-only 'last decided outcome' state anywhere under `src/` — a grep for i
 returns nothing"* are both refuted. `routeDecidedSince` landed in `563ed7fc` and
 `grep -rn "routeDecidedSince" src/` returns sixteen lines in six files:
 `src/simulation/protocol/types.ts:1525` (the wire field),
-`src/simulation/refusals/refusal-log.ts:237-241` (where the flag is set, and set
+`src/simulation/refusals/refusal-log.ts:279-283` (where the flag is set, and set
 monotonically), `src/simulation/worker/state-machine.ts:599`,
-`src/ui/hud/view-model.ts:1685`, `src/ui/simulation-alerts.ts:452` (forwarded,
+`src/ui/hud/view-model.ts:1721`, `src/ui/simulation-alerts.ts:470` (forwarded,
 not acted on — the list keeps its row) and `src/ui/hud/hud.ts:1731`, where a
 notice carrying the flag is treated as no notice at all.
 
