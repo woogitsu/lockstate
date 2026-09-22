@@ -62,6 +62,10 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * ever pressed it. That is precisely the hole this file was written to make
  * visible, and it was invisible to both ends separately: the command gate sees
  * a producer, and the sweep sees a control it is allowed to skip.
+ *
+ * **"Which needs a tick" is the necessary half of the reason and not the
+ * sufficient one (#1357 §3, corrected 2026-09-22)**; the entry below carries
+ * the correction and the spec that now presses the control outside the sweep.
  */
 
 const ROOT = resolve(__dirname, '../..');
@@ -97,6 +101,24 @@ const NO_CONTROL_ISSUES_IT: Readonly<Record<string, string>> = {
  * exemption lists are about *controls*; this list is about *commands*, and an
  * entry here says a press that the rest of the repository treats as gated is
  * in fact ungated.
+ *
+ * **`ReleaseGuardAssignment`'s entry stated the wrong mechanism until
+ * 2026-09-22, and the superseded reason is kept here rather than deleted.** It
+ * read, in its middle: *"a guard becomes **held** only when
+ * `DeploymentSystem.assignUnassignedGuards` claims it, which runs from its
+ * `update` and so needs a tick, and the sweep holds the clock paused for the
+ * whole of its five viewports."* Every clause of that is true, and the fix it
+ * points at -- run the clock -- does nothing: issue #1357 §3 measured three
+ * hired guards, Play, 8 % of a day and nobody held. The binding reason is
+ * issue #533 / ADR 0070 decision 1 -- an empty prison requires zero guards --
+ * so the clock is necessary and not sufficient, and the entry now says so.
+ * Its last two sentences are superseded too, in the narrower direction --
+ * *"what is unmeasured is that the control is laid out and clear of anything
+ * covering it"* and *"Recorded rather than fixed"*: the press is measured
+ * now, by a spec of its own,
+ * but the entry stays because this list is about the `#88` sweep and the
+ * sweep still never lays the row out -- the gate below would call a deletion
+ * stale in the other direction.
  */
 const SWEEP_NEVER_PRESSES_ITS_CONTROL: Readonly<Record<string, string>> = {
   ReleaseGuardAssignment:
@@ -104,13 +126,17 @@ const SWEEP_NEVER_PRESSES_ITS_CONTROL: Readonly<Record<string, string>> = {
     'same block that creates `hud-staff__held-row`, and those three rows are the whole of ' +
     '`app-shell.spec.ts`\'s `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`. That constant\'s own comment says why they are ' +
     'exempt and it is not a layout decision: the sweep can *hire* -- one press -- but a guard becomes **held** only ' +
-    'when `DeploymentSystem.assignUnassignedGuards` claims it, which runs from its `update` and so needs a tick, ' +
-    'and the sweep holds the clock paused for the whole of its five viewports. So the row is in the inventory, is ' +
-    'exempt at every viewport, and has never been pressed by that sweep at any width. Reachability of the press ' +
-    'itself is measured elsewhere (`tests/browser/ui-pooled-rows-aim.spec.ts` aims the pooled row); what is ' +
-    'unmeasured is that the control is laid out and clear of anything covering it, which is the sweep\'s question ' +
-    'and not that spec\'s. Recorded rather than fixed: unexempting it needs the sweep to reach a state with a held ' +
-    'guard, which is the sweep\'s own design and not this gate\'s to change.',
+    'when `DeploymentSystem.assignUnassignedGuards` claims it, and that needs far more than the tick the sweep\'s ' +
+    'paused clock withholds. An empty prison requires zero guards (issue #533, ADR 0070 decision 1: ' +
+    '`resolveOccupancyScaledGuardCount` answers 0 for the derived sector while it holds nobody), so no number of ' +
+    'ticks claims one; a held guard needs a walled perimeter, a `ZoneRoom`, an `AdmitPrisoner`, a hire and then a ' +
+    'deployment tick, and the sweep does only the hire (#1357 section 3). So the row is in the inventory, is exempt ' +
+    'at every viewport, and has never been pressed by that sweep at any width. Outside the sweep it is measured: ' +
+    '`tests/browser/ui-held-guard-release-reachable.spec.ts` drives those five steps in a real session and proves ' +
+    'the row\'s `Release` laid out, unobscured and pressed, with the guard back in the free pool, at all five of ' +
+    'the sweep\'s viewports (and `tests/browser/ui-pooled-rows-aim.spec.ts` aims the pooled row). The entry stays ' +
+    'because it is about the sweep: unexempting it needs the sweep itself to reach a held guard, which #1357 ' +
+    'section 4 priced at more than the sweep\'s remaining budget.',
 };
 
 function collectTypeScript(directory: string, acc: string[] = []): string[] {
