@@ -2704,6 +2704,33 @@ const INTERACTIVE_SELECTOR =
  * back to being the stronger one: with the clock this sweep runs under, the game
  * cannot reach the state these three rows need.
  *
+ * **THE MECHANISM IN THAT PARAGRAPH IS NECESSARY AND NOT SUFFICIENT, AND IT IS
+ * KEPT BECAUSE OF THE CHEAP FIX IT INVITES (#1357 §3, corrected 2026-09-22).**
+ * Every clause of it is true. The inference it leads a reader to -- *let the
+ * clock run and the rows appear* -- is false, for a reason the paragraph never
+ * names: issue #533 / ADR 0070 decision 1. `resolveOccupancyScaledGuardCount`
+ * answers `0` for a sector whose occupant count is complete and zero
+ * (`src/simulation/security/sector-staffing.ts:189`), the derived sector is the
+ * one whose count *is* complete, and `assignUnassignedGuards` then skips it on
+ * `if (shortage <= 0) continue;`
+ * (`src/simulation/security/deployment-system.ts:332`). **An empty prison asks
+ * for no guards, so no number of ticks claims one** -- #1357 measured three
+ * hired guards, Play, 8 % of a day, and `0 held · 3 free`. What one held row
+ * actually needs is five things, of which this sweep does one: a walled
+ * perimeter (`room.cell` authors `enclosed`), a `ZoneRoom`, an `AdmitPrisoner`
+ * (refused `no-accommodation` without the room), the hire, and only then a
+ * deployment tick. So the conclusion above holds far more strongly than it
+ * claims, and a future agent who restarts the clock in this sweep will watch
+ * nothing happen.
+ *
+ * **These three entries stay, and none is retired by the spec that now presses
+ * the control.** `tests/browser/ui-held-guard-release-reachable.spec.ts` builds
+ * those five steps in a real session and lays out, clears and presses this
+ * `Release` at all five of this sweep's viewports -- but this constant is about
+ * what *this* sweep lays out, and this sweep still lays out none of them. #1357
+ * §4 is why the preamble is not paid for here: this part ran 2.7 of its 3.0
+ * minutes before any of it.
+ *
  * ## What would remove it, and how much
  *
  * This section read:
