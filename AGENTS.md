@@ -1328,6 +1328,100 @@ requirement is the surviving half of reservation 4 and this ruling does not
 touch it.
 
 
+**TWO RULINGS ON 2026-09-22, BOTH OF THE WEAKER PROVENANCE, AND NEITHER
+HEADING ABOVE IS CORRECTED.** They were put as clickable options **written by
+the integrating session**, in Polish, one chosen from each. **What is recorded
+below is the label of an option this session authored and the owner picked, not
+a sentence they typed** -- the distinction every entry in this document since
+2026-09-08 draws about itself. Read each as authorising what its label says and
+nothing wider.
+
+**The numbering was checked against this file before it was used, because the
+last pass through this section nearly got it wrong.** The four-plus-one of
+2026-09-19 and the three of 2026-09-21 run 1 to 10 with no gap and no
+repetition, the highest on disk is 10, and the numbers below are 11 and 12.
+The entry above headed *"THE NUMBERING HERE IS LOAD-BEARING AND WAS NEARLY GOT
+WRONG"* records what the check is for: a number drafted from a stale reading
+while another agent added one on a branch. The branches open at the time of
+writing were read as well as this file, which is the half of that check the
+earlier pass had missed.
+
+Neither of these is a release inside the four reservations, which is why they
+are here.
+
+**11. ADR 0122 -- a pressable message row with no action-verb label is an
+acceptable delivery of the delivery's `Akcja` column.** That document's §7
+reserved one question to the owner and answered nothing else: whether the row
+being the press is an acceptable delivery, or whether the labelled button must
+arrive at the horizontal-budget price its §5b measures -- the corner past the
+width the owner's own 2026-09-01 ruling set, or the four-line-box property
+`tests/browser/ui-alerts-column.spec.ts` gates. It was reserved because it is
+about whether a promise is made to a player at all, which is the fourth
+reservation and the half of it the 2026-09-04 partial release did not release.
+Offered the row without the verb, the labelled button at that price, or no
+action for now, the owner chose:
+
+> Naciskany wiersz, bez czasownika (zalecane)
+
+("A pressable row, without the verb.") So the message row itself becomes the
+press and leads to the place, and no action-verb label is owed.
+
+**What it authorises, exactly.** The affordance and its absence of a label,
+and the reading of the delivery's table that goes with it: the table's third
+column is not a list of buttons this repository owes. **It authorises no new
+player-visible string** -- a row that is pressable and says nothing new says
+nothing new -- and none was needed. **It releases no reservation**: the
+requirement that a player-visible sentence be true is the surviving half of the
+fourth and is untouched, and any wording that does change still goes through
+the 2026-09-04 release's terms, quoted verbatim in the commit message and the
+pull request body beside the code that proves it true.
+
+**What it does not decide, named because the ADR's recommendation is four
+bullets and the ruling reaches one of them.** It does not decide the
+worker-protocol change that document identifies as the first step -- the
+optional location member on the refusal and event payloads -- nor the
+sequencing that puts it ahead of any affordance, nor the instruction not to
+widen the HUD corner for this, nor the instruction to say nothing to the player
+until the press works. Those stay that document's own proposals, and its status
+keyword is unchanged for that reason. **The measurement it asks for is also
+still owed**: whether a pressable row inside a scroll container behaves on a
+touch device is a browser run nobody has taken, and the document names it as
+its own weakest claim.
+
+**12. Which vendored copy of the `Akcja` table binds -- `projekt.md`.** ADR
+0122 found the table vendored **twice** inside the 2026-09-13 delivery with
+material differences and neither copy marked as superseding the other: the copy
+under `DOKUMENTACJA/` heads the column `Akcja`, and the copy inside the patch
+under `HISTORIA/ZMIANY/` heads it `Działanie`. Offered either copy, or
+checking the dates and deciding without the owner, they chose:
+
+> `projekt.md` jest wiążący (zalecane)
+
+("`projekt.md` binds.") So the copy under `DOKUMENTACJA/` is operative and the
+one under `HISTORIA/ZMIANY/` is a historical record, which is what that
+directory's own name says it is.
+
+**The delivery is not annotated, and that is not a detail.** The vendored
+directory is never edited, so the mark that one copy is history lives in ADR
+0122's §1b and here. A reader of the patch gets no warning from the patch.
+
+**Both copies were re-read cell by cell before this was recorded, and the
+ADR's own description of them was thin in three particulars.** The differences
+it names all hold -- the column heads, `Brak` against `Bez dodatkowej akcji`,
+the `Brak wyposażenia` row present in one table only, the `Funkcja
+niedostępna` row present in the other only. What it missed: a second differing
+cell, where one copy calls the situation `Konflikt lokalny` and the other
+`Zapis odmówiony` above the same message and the same action; that the row
+missing from the patch's table has its whole content in the patch's prose ahead
+of it, so the ask is not missing from the delivery even where the row is; and
+that the two captions are different sentences, the historical one being the
+**stronger** -- it requires a working button where the binding one requires
+proof in code. That last one argues against ruling 11 rather than for it, and
+it is recorded in both documents for that reason. All three are corrections to
+a description, not to a ruling: the ruling picks a copy, and the copy is the
+same copy whatever the count of differing cells.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
