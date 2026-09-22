@@ -331,7 +331,7 @@ as one that opens onto the world."*
 
 - **A spawn point.** There is none. Prisoners and staff materialise at an
   `originTile` carried on the command
-  (`src/simulation/runtime/session-commands.ts:689` →
+  (`src/simulation/runtime/session-commands.ts:700` →
   `PrisonerOperationsRuntime.admitPrisoner`, `guard-roster.ts:89`), which the
   *player* picks per admission and which nothing retains. Inventing a spawn
   anchor means new persisted state, which means the save format, which is a

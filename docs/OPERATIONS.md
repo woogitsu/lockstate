@@ -462,7 +462,7 @@ production chains; detailed HVAC/CFD or electrical engineering simulation
 final UI/visual effects (a session UI does now exist -- the HUD and save
 panel mounted by `src/main.ts` -- and since `0e70f14` (#367) the Build queue
 surfaces an order in `'materials-pending'`, the state this document's
-`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:777` carries it,
+`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:813` carries it,
 `src/content/simulation-message-keys.ts:510` labels it "Awaiting Materials" and
 `src/rendering/world/structures.ts:31` draws it. Nothing surfaces containers,
 jobs or the utility networks. **This clause read "nothing in it surfaces any of

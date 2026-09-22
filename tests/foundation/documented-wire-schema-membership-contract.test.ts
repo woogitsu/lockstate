@@ -124,6 +124,29 @@ const RESOLVED_ENUMERATIONS: readonly string[] = [
   'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
   'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
   'docs/AGENT_WORKFLOW.md {reason, sequence, tick} -> refusal',
+  // **A seventh row, and the first that resolves to something other than
+  // `refusal`** (2026-09-22). `refusalSchema.tile` put the first `x`/`y` pair
+  // on the validated wire -- commands ride as an opaque `versionedPayload`, so
+  // until now nothing declared either key -- and the docblock above records
+  // that `{ x, y }` "resolves to nothing" as a measurement of the tree it was
+  // written against. It resolves now, and it resolves to the new shape.
+  //
+  // **It is a false positive of the resolution rule and it is added rather
+  // than excluded, deliberately.** ADR 0106's enumeration is describing
+  // `RemoveObject`'s *command* payload, not a refusal's place; it matches
+  // because the rule is subset-by-key-set and the two shapes genuinely share
+  // their whole key set. Teaching the contract to tell them apart would need
+  // the very ADR-to-schema table the docblock above declines to keep, so the
+  // row is pinned instead -- which costs nothing here, because the membership
+  // assertion below is satisfied without touching ADR 0106: it names `x` and
+  // `y` twice each, and `tile` declares nothing else.
+  //
+  // What this row does buy is the failure a reader would want: a `width` or a
+  // `height` added to `tile` later makes ADR 0106 -- a document about walls,
+  // which contains neither word -- fail the membership check, and that is the
+  // honest signal that a rectangle on this member needs a decision rather
+  // than an edit.
+  'docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md {x, y} -> tile',
 ];
 
 /**
@@ -274,7 +297,12 @@ describe('documented wire schema membership', () => {
     // The one shape the whole contract turns on, asserted in full rather than
     // by presence: this is the positive control for the walk itself, and it is
     // what goes red first if `.optional()` stops being unwrapped.
-    expect(shapes.get('refusal')).toEqual([['reason', 'routeDecidedSince', 'sequence', 'tick']]);
+    expect(shapes.get('refusal')).toEqual([['reason', 'routeDecidedSince', 'sequence', 'tick', 'tile']]);
+    // And the shape `tile` itself declares, asserted for the reason `refusal`
+    // is: it is the first nested object this record has ever carried, so it is
+    // also the first thing here that the walk has to descend *into* rather
+    // than merely unwrap an `.optional()` off.
+    expect(shapes.get('tile')).toEqual([['x', 'y']]);
   });
 
   it('still sees brace enumerations in the documents, so a regex that stops matching fails', async () => {

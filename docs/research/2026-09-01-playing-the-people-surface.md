@@ -388,7 +388,7 @@ numbers; all three layers this pass could find read the *same* live signal.
 The host's pre-flight (`src/main.ts:2537-2551` for purchases, `:2748-2757` for
 hiring) computes `pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
 viewModel.counts.roomCapacity === 0)`; the kernel's own gate
-(`src/simulation/runtime/session-commands.ts:375`) computes
+(`src/simulation/runtime/session-commands.ts:386`) computes
 `isFreshUnfurnishedPrison` from `roomInstances.totalResidentCapacity === 0`;
 and the FUNDS badge (`src/ui/hud/projection.ts:504-508`) computes
 `isFreshUnfurnishedPrison = counts.roomCapacity === 0` for the same

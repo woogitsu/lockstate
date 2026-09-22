@@ -658,6 +658,42 @@ export interface HudAlertViewModel extends HudLabelParametersViewModel {
    * row dismissable.
    */
   readonly occurrences?: HudAlertOccurrencesViewModel;
+  /**
+   * Where in the world this row is about, on the rows that are about somewhere
+   * (ADR 0122 option D step 2).
+   *
+   * **Carried, and read by nothing yet, which is the sequencing rather than an
+   * oversight.** ADR 0122 §7 -- adopted by the owner on 2026-09-22 as the
+   * option labelled *"Naciskany wiersz, bez czasownika"* ("a pressable row,
+   * without the verb"), on the weaker provenance an option label carries --
+   * asks for the destination to travel through the protocol *before* any
+   * affordance is written: "nothing about a press is decidable while every
+   * inbound message is place-blind". Making the row pressable and moving the
+   * camera is option D steps 3 and 4 and is not in this change.
+   *
+   * Absent on every row that has no place, which is most of them: the
+   * `protocol/error` fault rows (a malformed message is not anywhere), every
+   * event row `src/ui/simulation-events.ts` builds, and the refusals from the
+   * ten `RefusalLog` domains that name an item, an order, a person or nothing
+   * -- see `SimulationRefusal.tile` for the six that do and why the other ten
+   * do not.
+   *
+   * `{ x, y }` in tile coordinates, the same shape and the same spelling
+   * `HudRoomNeedViewModel.tile` already uses, so the one thing in this view
+   * model that already says where something is and the new one say it the same
+   * way. Not a screen position and not a minimap fraction:
+   * `WorldScene.navigateToMinimapPoint` takes a fraction of the minimap box
+   * and therefore does not answer this case, which is a finding ADR 0122 §6
+   * option D records and this field does not silently work around.
+   *
+   * **No sentence may name it until something renders it.** Four
+   * `hud.alert.refusal.build.*` strings say *"that tile"* and they are
+   * deliberately untouched here: a string that promises specificity the
+   * interface does not yet deliver is what `AGENTS.md`'s fourth reservation
+   * exists to stop, and `docs/LOCALIZATION.md` already carries the standing
+   * instruction.
+   */
+  readonly tile?: { readonly x: number; readonly y: number };
 }
 
 /**

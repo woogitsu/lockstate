@@ -110,7 +110,7 @@ option 1 below is not free.
 
 `ConstructionSystem.registerTransactionOrder` (`src/simulation/construction/system.ts:599`)
 has exactly two producers in `src/`: a `PlaceBuildOrder`
-(`src/simulation/construction/handler.ts:120`) and a `PlaceObject`
+(`src/simulation/construction/handler.ts:129`) and a `PlaceObject`
 (`src/simulation/objects/object-placement-service.ts:566`). A hire, a
 designation, an admission, a regime change, a dismissal and an unzone write
 nothing onto it and cannot.

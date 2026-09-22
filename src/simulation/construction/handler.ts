@@ -111,7 +111,16 @@ export function createConstructionCommandHandler(
           resolveBuildEdge(order),
         );
         if (order.state === 'failed' && order.failReason !== undefined) {
-          refusals.record(BUILD_REFUSAL_REASONS[order.failReason], context.tick, buildKey);
+          // The tile the order was aimed at, from the order the system
+          // just decided on -- the same two values `buildKey` above is built
+          // from, read from the same place for the same reason its own
+          // comment gives: the order is the one authority on what happened
+          // to it. This is the domain whose four *"that tile"* sentences are
+          // why `SimulationRefusal.tile` exists at all.
+          refusals.record(BUILD_REFUSAL_REASONS[order.failReason], context.tick, buildKey, {
+            x: order.location.x,
+            y: order.location.y,
+          });
         } else {
           // Issue #492: the same tile, buildable and edge, accepted this
           // time. A wall placed elsewhere must not silence a standing

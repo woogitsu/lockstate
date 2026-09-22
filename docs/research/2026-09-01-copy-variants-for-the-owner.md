@@ -155,7 +155,7 @@ up two more:
    (`src/simulation/economy/just-in-time-materials.ts:556`) calls
    `this.treasury.canAfford(orderCostMinorUnits, 'construction')` — correctly
    rung-aware — and on refusal, `reportMaterialsFunding`
-   (`src/simulation/construction/handler.ts:239`) writes the same
+   (`src/simulation/construction/handler.ts:248`) writes the same
    `insufficient-funds` `RefusalReason` that a Buy-press refusal writes, which
    `REFUSAL_LABEL_KEYS` maps to the identical alert key regardless of which
    rung actually fired. So a prison at −1,800 gets `hud.alert.refusal.purchase.insufficient-funds`

@@ -142,7 +142,7 @@ docblock records the mutation that turns it red, with the instrument in
 ### #1191 — confident zeros before any prison reported
 
 Fixed by `c9cdcb63` (PR #1197). `EMPTY_HUD_VIEW_MODEL` no longer carries a
-counts row at all, `src/ui/hud/view-model.ts:2295-2297`:
+counts row at all, `src/ui/hud/view-model.ts:2331-2333`:
 
 ```ts
 export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {

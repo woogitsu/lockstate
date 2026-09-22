@@ -146,7 +146,7 @@ each was re-found by its text on this tree rather than trusted from either.
   value `ConstructionSystem` wrote and the `'completed'` order that wrote it.
   Falling through both arms returns `{ kind: 'refused', reason:
   'nothing-to-remove' }` (`RemoveObjectRefusalReason`, `:207`), which
-  `src/simulation/runtime/session-commands.ts:782` turns into the sentence
+  `src/simulation/runtime/session-commands.ts:793` turns into the sentence
   the issue quotes.
 
 ### 2. The positive control, re-opened from the issue's own comment
@@ -191,7 +191,7 @@ producer**, `src/main.ts:2498`, under `case 'cancel-build-order':` at `:2497`,
 fed by the queue row's intent. `CancelBuildOrder`'s own decode
 (`src/simulation/protocol/commands.ts`) carries only `orderId` on the wire —
 no location, no edge — and its handler
-(`src/simulation/construction/handler.ts:124-151`) reads the order by that id,
+(`src/simulation/construction/handler.ts:133-160`) reads the order by that id,
 tries `cancelOrder`, and swallows a `not found` or `not cancellable` silently
 by design (`:148-151`, "cancellation is intentionally idempotent at the
 command boundary"). **A completed wall's order id reaches no surface a player

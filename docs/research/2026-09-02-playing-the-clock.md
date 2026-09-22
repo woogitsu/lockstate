@@ -256,7 +256,7 @@ consistent rather than a defect: nothing in the save format or the worker's
 paused clock has no speed field at all — `src/simulation/clock/fixed-step-
 clock.ts:21`), and the HUD's own memory of "the last speed it saw" is a
 fresh-page default of ×1 (`UNKNOWN_HUD_CLOCK.speed`,
-`src/ui/hud/view-model.ts:1781-1787`) until a `simulation/clock-state`
+`src/ui/hud/view-model.ts:1817-1823`) until a `simulation/clock-state`
 message says otherwise. So: **a reload does not survive the same speed —
 every reload returns to a paused session that, if played, starts at ×1**,
 whatever speed was active when the save was made. This is **checked and

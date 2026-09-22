@@ -105,7 +105,7 @@ DOCUMENT'S OWN DECISION HAS SHIPPED.** `expectedRevision` is on
 `cancelBuildOrderSchema` (`src/simulation/protocol/commands.ts:77`);
 `ConstructionSystem.revisionOf` and the private `setState` Decision §3 asks for
 both exist (`src/simulation/construction/system.ts:1440`, `:1458`); the handler
-refuses on a mismatch (`src/simulation/construction/handler.ts:168-171`); the
+refuses on a mismatch (`src/simulation/construction/handler.ts:177-180`); the
 row carries the counter
 (`src/simulation/presentation/construction-projection.ts:381`); the per-command
 lead exists as `CANCEL_BUILD_ORDER_LEAD_TICKS`
@@ -213,7 +213,7 @@ This document's design has to say what it does in both regimes, and it does
 > `cancelBuildOrderSchema` is `src/simulation/protocol/commands.ts:63-78` and
 > carries `expectedRevision` at `:77`; the handler reads the order's revision
 > and refuses on a mismatch at
-> `src/simulation/construction/handler.ts:168-171`, **before** `cancelOrder`,
+> `src/simulation/construction/handler.ts:177-180`, **before** `cancelOrder`,
 > exactly as Decision §4 below asks. **The gap is closed, and the block below
 > is kept because it is what the gap looked like** — re-aiming its anchors
 > onto the schema that now has the field would make a sentence about an
@@ -238,7 +238,7 @@ rule for that state. **Nothing here is a bug in `cancelOrder`.** The bug, if
 it is one, is that the row and the press can disagree about which order this
 is a cancellation *of*, and the protocol gives the worker no way to tell.
 
-`src/simulation/construction/handler.ts:126-192`'s `CancelBuildOrder` branch
+`src/simulation/construction/handler.ts:135-201`'s `CancelBuildOrder` branch
 (VERIFIED) reads the order's state **before** calling `cancelOrder`, purely so
 it can pick the right cancellation-event sentence afterward
 (`recordBuildOrderCancelled(stateAtCancellation, ...)`, `:183`) — it does not
@@ -258,9 +258,9 @@ accepted 2026-09-10, added a sibling command, `RemoveWall`
 both consult for what a cancellation destroys rather than pays for
 (`system.ts:84-86`). Both are already implemented on this tree, not merely
 proposed — `RemoveWallRefusalReason`, its mapping in
-`src/simulation/refusals/refusal-log.ts:325-327`, its wire id
+`src/simulation/refusals/refusal-log.ts:367-369`, its wire id
 `'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1382`,
-and its session-command branch in `src/simulation/runtime/session-commands.ts:910`
+and its session-command branch in `src/simulation/runtime/session-commands.ts:931`
 are all present and VERIFIED.
 
 **`RemoveWall` has no analogue of this document's hazard, and that is worth

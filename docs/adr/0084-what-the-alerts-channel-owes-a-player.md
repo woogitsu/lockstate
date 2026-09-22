@@ -204,7 +204,7 @@ import `src/simulation/**`):
 - **The alerts list** (`HudViewModel.alerts`, a flat `HudAlertViewModel[]`) —
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
-  (`src/ui/simulation-alerts.ts:318-391`), `hudEventAlertsFromWorkerMessage`
+  (`src/ui/simulation-alerts.ts:318-409`), `hudEventAlertsFromWorkerMessage`
   for domain events (`src/ui/simulation-events.ts:861-943`), and each keeps
   the others' rows untouched by filtering on an id prefix
   (`REFUSAL_ROW_PREFIX` / `FAULT_ROW_PREFIX`, `simulation-alerts.ts:191-192`;

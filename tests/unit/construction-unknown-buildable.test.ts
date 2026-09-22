@@ -134,7 +134,16 @@ describe('a build order naming a buildable nothing declares (BUG-01)', () => {
     // what the simulation then decided. `build.unknown-buildable` is the wire
     // id, namespaced against `place-object.unknown-buildable`, which is the
     // same condition refusing a different command.
-    expect(refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'build.unknown-buildable' });
+    // And the tile it was aimed at, since 2026-09-22: `refusalSchema.tile`
+    // carries the place a refused command named (ADR 0122 option D step 1), so
+    // a refusal about a buildable nothing declares still says where the player
+    // was pointing.
+    expect(refusals.last).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.unknown-buildable',
+      tile: { x: 4, y: 6 },
+    });
   });
 
   it('leaves the construction system able to tick, and a later valid order still completes', () => {

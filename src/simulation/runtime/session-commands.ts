@@ -267,6 +267,12 @@ export function createSessionCommandHandler(
           ZONE_REFUSAL_REASONS[outcome.reason],
           context.tick,
           zoneRefusalSupersessionKey(outcome.reason, simCommand.roomId, simCommand.x, simCommand.y, simCommand.width, simCommand.height),
+          // The rectangle's **anchor**, not its extent -- see
+          // `SimulationRefusal.tile` for why the width and height stay off
+          // the wire. Both key shapes above carry the whole rectangle and
+          // this carries its corner, which is not a disagreement: the key is
+          // an equality token and this is a place to look.
+          { x: simCommand.x, y: simCommand.y },
         );
       } else {
         // Issue #492: this exact rectangle, for this exact room type, is what
@@ -352,7 +358,12 @@ export function createSessionCommandHandler(
       );
       const unzoneKey = unzoneSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height);
       if (outcome.kind === 'refused') {
-        refusals.record(UNZONE_REFUSAL_REASONS[outcome.reason], context.tick, unzoneKey);
+        // The anchor of the rectangle the removal named, on `ZoneRoom`'s own
+        // terms above.
+        refusals.record(UNZONE_REFUSAL_REASONS[outcome.reason], context.tick, unzoneKey, {
+          x: simCommand.x,
+          y: simCommand.y,
+        });
       } else {
         // Issue #492, the same mechanism as `ZoneRoom`'s: this rectangle just
         // cleared, so a standing refusal about it -- `nothing-to-remove` on a
@@ -788,7 +799,13 @@ export function createSessionCommandHandler(
       );
       const placeKey = placeObjectSupersessionKey(simCommand.definitionId, simCommand.x, simCommand.y);
       if (outcome.kind === 'refused') {
-        refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, placeKey);
+        // The tile the placement named, which `placeKey` beside it already
+        // folds in -- read from the command rather than re-derived, so the
+        // two cannot disagree about which tile this refusal is standing on.
+        refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, placeKey, {
+          x: simCommand.x,
+          y: simCommand.y,
+        });
       } else {
         // Issue #492: the buildable and the tile, not the order id -- see the
         // key module's section comment.
@@ -838,7 +855,11 @@ export function createSessionCommandHandler(
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       const removeKey = removeObjectSupersessionKey(simCommand.x, simCommand.y);
       if (outcome.kind === 'refused') {
-        refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, removeKey);
+        // The tile the removal named, on `PlaceObject`'s own terms above.
+        refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, removeKey, {
+          x: simCommand.x,
+          y: simCommand.y,
+        });
       } else {
         // Issue #492: the tile. A removal elsewhere must not silence a
         // standing `nothing-to-remove` about this one.
@@ -957,7 +978,15 @@ export function createSessionCommandHandler(
       );
       const wallKey = removeWallSupersessionKey(simCommand.x, simCommand.y, simCommand.edge);
       if (wallOrder === undefined) {
-        refusals.record(REMOVE_WALL_REFUSAL_REASONS['nothing-to-remove'], context.tick, wallKey);
+        // The tile the press resolved to, and **not the edge beside it**:
+        // `wallKey` keeps the edge because two standing facts about one tile
+        // must not withdraw each other (`removeWallSupersessionKey`), while a
+        // place to look is the tile either edge sits on. See
+        // `SimulationRefusal.tile`.
+        refusals.record(REMOVE_WALL_REFUSAL_REASONS['nothing-to-remove'], context.tick, wallKey, {
+          x: simCommand.x,
+          y: simCommand.y,
+        });
         return;
       }
 

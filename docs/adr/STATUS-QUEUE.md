@@ -2567,7 +2567,7 @@ telemetry row added five; **eight** of the 33 are in this window —
 `src/ui/hud/view-model.ts`, the new migration, `supabase/tests/003_data_api_grants.test.sql`,
 `supabase/tests/012_telemetry_ingest.test.sql` and
 `tests/unit/simulation-message-keys.test.ts` — and every one was opened. Seven
-hold; `src/ui/hud/view-model.ts:1806` is the one that moved, to **`:1840`**, and
+hold; `src/ui/hud/view-model.ts:1842` is the one that moved, to **`:1840`**, and
 it is a **live** citation inside the ADR 0093 entry's *"Verified rather than
 assumed"* clause rather than a record inside a dated pass, which is why it is
 corrected where the `staff-panel.ts:526` decoy is not. **The five §2 paths #965
@@ -2923,7 +2923,7 @@ first; what this instance adds is that an absence expressed as a **command** is
 worse than one expressed as a path, because the intersection cannot see it at
 all. Corrected in both directions in §2, with the entry's price unchanged: the
 panel exists and still says nothing about a carried item, because
-`HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1806`) deliberately
+`HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1842`) deliberately
 carries no current action, and its own docblock gives this reservation as the
 reason.
 
@@ -4698,7 +4698,7 @@ line-numbered citations, of which 64 are governed by a sha and cannot rot —
 and closed it at eleven readings, two of which were wrong.
 
 **One of its own readings did not survive one window, and it is recorded above
-rather than here.** `src/ui/hud/view-model.ts:1840` is the number this anchor
+rather than here.** `src/ui/hud/view-model.ts:1876` is the number this anchor
 set, correcting `:1806` and writing in the next paragraph that the durable form
 is the symbol; it was stale nine releases later. **That is not a failure of
 care either** — it is what a line number is, and it is the reason the pass
@@ -9883,7 +9883,7 @@ settled, items 2 and 3 as still owed.
    window rather than offset: `src/main.ts:1495` → **`:1664`**
    (`grep -n 'new PrisonerDetailReader(client)'`; **1500** at `d57b97ba`, so
    five lines were already wrong before the window and 164 were added inside
-   it, first by `c714f522`/#1189); `src/ui/hud/view-model.ts:1954` →
+   it, first by `c714f522`/#1189); `src/ui/hud/view-model.ts:1990` →
    **`:2049`** (`grep -n 'export interface HudPrisonerDetailViewModel'`;
    **1970** at `d57b97ba`, sixteen inherited and seventy-nine added across four
    commits — and `:1954` now lands on `readonly classificationGroupId?:
@@ -10139,7 +10139,7 @@ settled, items 2 and 3 as still owed.
 
    **The entry's price is unchanged by the correction, and item 3 below still
    asks the owner exactly what it asked.** Verified rather than assumed:
-   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1954`) carries the
+   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1990`) carries the
    entity id, the name, the standing label, the classification group, the risk
    tier and all six needs — and **no current action**, deliberately.
 
@@ -13028,7 +13028,7 @@ intersects §2's rooted paths against the window's files and this claim names no
 path, only a grep over two directories, so no arrival under `src/ui/` can ever
 land in the intersection. Corrected in both directions in §2. **The entry's
 price does not move**: `HudPrisonerDetailViewModel`
-(`src/ui/hud/view-model.ts:1806`) carries the entity id, name, standing label,
+(`src/ui/hud/view-model.ts:1842`) carries the entity id, name, standing label,
 classification group, risk tier and all six needs and deliberately carries no
 current action, its own docblock naming `AGENTS.md`'s fourth exclusion as the
 reason — so the panel exists and still says nothing about goods in hand, which
@@ -17283,7 +17283,7 @@ CONFLATED WITH ACCEPTANCE.** `docs/adr/0107-…md:24` still opens
 facts and this window only did the first. `CancelBuildOrder` carries
 `expectedRevision`: the schema field at `src/simulation/protocol/commands.ts:76`
 (`expectedRevision: z.number().int().nonnegative()`), the refusal comparison
-at `src/simulation/construction/handler.ts:168`
+at `src/simulation/construction/handler.ts:177`
 (`constructionSystem.revisionOf(simCommand.orderId) !== simCommand.expectedRevision`),
 and the field carried into the wire-serialised command at `commands.ts:769`
 (old `:757` — the file's one twelve-line hunk at old `:65` shifts everything
@@ -19204,7 +19204,7 @@ of the pass.
   sites, and `if (action.target.kind !== 'room-catalog-id') return true;` is
   verbatim at **`:1295`**.
 - **§2's ADR 0093 quartet holds, all four, for the second time running** —
-  `src/ui/hud/view-model.ts:2131`, `src/main.ts:1665`,
+  `src/ui/hud/view-model.ts:2167`, `src/main.ts:1665`,
   `src/ui/simulation-prisoner-detail.ts:212` (`'hud/prisoner-detail'`) and
   `regime-panel.ts:743`, each opened — **although
   `docs/adr/0093-a-carry-is-an-action.md` is a member of this window** (88
@@ -19405,7 +19405,7 @@ first of the three shapes this file separates.
   **Both were exact at `90d62621`**, so this is drift the window caused.
 - **`docs/adr/0025-guard-hiring-surface.md:74-76` → `:87-89`**, +13, from
   #1239.
-- **`src/ui/hud/view-model.ts:2131` → `:2132`**, +1, §2's ADR 0093 quartet.
+- **`src/ui/hud/view-model.ts:2167` → `:2132`**, +1, §2's ADR 0093 quartet.
 - **`docs/DEPLOYMENT.md:255` → `:265`**, +10, §4's *"What currently serves
   lockstate.io"* — the only one of §4's five that the window's insertion at
   `:239` sits above.

@@ -911,11 +911,21 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      * - `src/simulation/construction/system.ts:266` in ADR 0019 is cited as
      *   *"-- `submitOrder`, the one named"* in a list of `canBuildAt` call
      *   sites. That line is prose inside `DoorConstructionService`'s docblock.
-     * - `src/simulation/refusals/refusal-log.ts:325-327` in ADR 0107 is cited
-     *   beside `RemoveWallRefusalReason`; `:327` declares
+     * - `src/simulation/refusals/refusal-log.ts:367-369` in ADR 0107 is cited
+     *   beside `RemoveWallRefusalReason`; `:369` declares
      *   `ADMIT_REFUSAL_REASONS`, a different refusal family in the same file.
      *   This is the sweep's shape exactly: right file, right subject, wrong
      *   table.
+     *
+     *   **It read `:325-327` until 2026-09-22 and both ends moved by 42**, when
+     *   `refusalSchema.tile` added two paragraphs to `RefusalLog`'s class
+     *   comment and four lines to `record`. The row was re-aimed rather than
+     *   left, for the reason the `actor-identity.ts` row above gives: an
+     *   anchor the scan can no longer find returns a *string* here and would
+     *   otherwise fail this control by having its subject vanish. **The defect
+     *   it pins survived the move intact** -- the cited range still lands on
+     *   `ADMIT_REFUSAL_REASONS` rather than on the wall table -- which is why
+     *   this stays a negative and the document's budget is not lowered.
      *
      * If a future commit fixes one of the five, this control goes red naming
      * it -- move that row up into the verifying group and lower the document's
@@ -946,7 +956,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
       'new-session.ts:1400': control('docs/adr/0093-a-carry-is-an-action.md', 'src/simulation/runtime/new-session.ts:1400'),
       'actor-identity.ts:210': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:210'),
       'system.ts:266': control('docs/adr/0019-tile-ownership-under-overlapping-parcels.md', 'src/simulation/construction/system.ts:266'),
-      'refusal-log.ts:325-327': control('docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md', 'src/simulation/refusals/refusal-log.ts:325-327'),
+      'refusal-log.ts:367-369': control('docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md', 'src/simulation/refusals/refusal-log.ts:367-369'),
     }).toEqual({
       'regime.ts:12': true,
       'gangs.ts:71': true,
@@ -955,7 +965,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
       'new-session.ts:1400': false,
       'actor-identity.ts:210': false,
       'system.ts:266': false,
-      'refusal-log.ts:325-327': false,
+      'refusal-log.ts:367-369': false,
     });
   });
 

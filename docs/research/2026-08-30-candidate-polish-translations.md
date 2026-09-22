@@ -355,7 +355,7 @@ and four assertions in `tests/unit/services-localization.test.ts` — which,
 tellingly, already test Polish (`'1 więzień'`, `'3 więźniów'`, `'25 więźniów'` at
 `:146-148`). The HUD's own interface is
 `interface HudLocalizer { format(...); formatNumber(...); }` —
-**`src/ui/hud/view-model.ts:1385-1388`** — and `messages.ts:389` states the
+**`src/ui/hud/view-model.ts:1421-1424`** — and `messages.ts:389` states the
 consequence outright: *"No plural form: `HudLocalizer` exposes `format` and not
 `formatPlural`."*
 

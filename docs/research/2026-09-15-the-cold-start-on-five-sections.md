@@ -388,7 +388,7 @@ band*. `SimulationRefusal.routeDecidedSince` carries it across the worker
 boundary (`src/simulation/protocol/types.ts:1525`,
 `` routeDecidedSince: z.literal(true).optional(), ``, added to `refusalSchema`
 by #1261); `RefusalLog.noteRouteDecided` sets it
-(`src/simulation/refusals/refusal-log.ts:235-242`,
+(`src/simulation/refusals/refusal-log.ts:277-284`,
 `` private noteRouteDecided(key: string): void { ``); and the band retires on it
 (`src/ui/hud/hud.ts:1731`,
 `` if (notice === undefined || notice.routeDecidedSince === true) { ``).
@@ -556,7 +556,7 @@ a prison that did nothing"* — the gate is a sentence, not good play — so a n
 acknowledgement is only one if a player's own action produces it. Both
 producers were opened:
 
-- **`rooms.zoned`** is recorded at `src/simulation/runtime/session-commands.ts:314`,
+- **`rooms.zoned`** is recorded at `src/simulation/runtime/session-commands.ts:320`,
   inside the `DesignateRoom` branch and only after `zone` returned an accepted
   outcome. The comment beside it notes the refused press *"takes the other arm,
   which records a `RefusalLog` reason and calls nothing here"*. **It is the

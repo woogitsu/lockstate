@@ -83,6 +83,29 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   route is a command name the protocol already spells out in every
  *   `RefusalReason`, so this adds no target, no tile and no id to the
  *   payload; the sentence above is narrowed rather than withdrawn.
+ *
+ *   **THAT BULLET IS NOW WRONG ABOUT THE TILE AND IS KEPT RATHER THAN
+ *   REWRITTEN, BECAUSE THE TILE IS EXACTLY THE HALF THAT MOVED (2026-09-22).**
+ *   `SimulationRefusal.tile` carries two integers -- the coordinate the
+ *   refused command was aimed at -- on the six domains that are aimed
+ *   somewhere, and is absent on the other ten. So *"holds no coordinates"* is
+ *   history; *"holds no order id or item id"* is still true and still the
+ *   rule. The paragraph's reasoning is not refuted either: it says carrying a
+ *   tile "needs a decision about how the HUD renders it", and that decision
+ *   is ADR 0122 -- §7's recommendation, adopted by the owner on 2026-09-22 as
+ *   the option labelled *"Naciskany wiersz, bez czasownika"* ("a pressable
+ *   row, without the verb"), on the weaker provenance an option label
+ *   carries. It is not a second copy of the order's position either: the
+ *   order id is still absent, so the tile is the only identity of the target
+ *   this payload has.
+ *
+ *   **The key is still not the route the tile takes, and that is deliberate.**
+ *   A supersession key encodes a tile as text -- `build:wall-brick:5:7:north`
+ *   -- and parsing it back would make the key's *spelling* load-bearing for
+ *   something other than equality, which is the one thing every comment in
+ *   the "Supersession keys" section below is careful not to do. `record`
+ *   takes the tile as its own parameter instead, from the same command
+ *   arguments the key beside it is built from at the same call site.
  * - **It orders nothing.** There is exactly one record, so there is no
  *   iteration here for `docs/DETERMINISM.md`'s canonical-order rule to
  *   govern -- the rule is satisfied by there being no list, not by a sort.
@@ -154,14 +177,33 @@ export class RefusalLog {
    * @param key See `supersede`. Omitted by a caller with no supersession
    * story of its own; `supersede` can then never match this record, which is
    * the correct, inert default rather than a caller having to opt out.
+   * @param tile Where in the world this refusal is aimed, on the six domains
+   * that are aimed somewhere -- see `SimulationRefusal.tile` for which six,
+   * why the other ten pass nothing, and why a rectangle's anchor rather than
+   * its extent. Omitted rather than defaulted: a coordinate invented for a
+   * refusal about a wage bill would be a location the code cannot stand
+   * behind, which is the opposite of what carrying one is for. It is passed
+   * separately from `key` and not parsed out of it, deliberately; the class
+   * comment's "no coordinates" bullet says why.
    */
-  public record(reason: RefusalReason, tick: number, key?: string): void {
+  public record(
+    reason: RefusalReason,
+    tick: number,
+    key?: string,
+    tile?: { readonly x: number; readonly y: number },
+  ): void {
     this._sequence += 1;
     // No `routeDecidedSince`: a refusal decided *now* has by definition had
     // nothing decided since. A replacement therefore also clears the flag the
     // record it replaces may have carried, which is why this assigns a whole
     // value rather than mutating the old one.
-    this._current = { sequence: this._sequence, tick, reason };
+    //
+    // `tile` is spread rather than assigned, because `exactOptionalPropertyTypes`
+    // is on and `SimulationRefusal.tile` is absent-or-present rather than
+    // nullable: an explicit `undefined` would be a different value from the
+    // wire's own reading of "this refusal is aimed nowhere", and
+    // `refusalSchema` is `.strict()` about the difference.
+    this._current = { sequence: this._sequence, tick, reason, ...(tile === undefined ? {} : { tile }) };
     this._currentKey = key;
   }
 

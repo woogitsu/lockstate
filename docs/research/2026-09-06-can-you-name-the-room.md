@@ -327,7 +327,7 @@ that matters: **there is no swatch.**
 The tint really is computed for the catalogue —
 `tint: zoningTint(definition.numericId) ?? 0,` (`src/main.ts:980`) — and it
 really does travel to the interface as `readonly tint: number;`
-(`src/ui/hud/view-model.ts:1066`), whose docblock states the intent in its own
+(`src/ui/hud/view-model.ts:1102`), whose docblock states the intent in its own
 words: *"The colour the world tints this room's tiles, so the catalogue row and
 the designation on the map agree without the player having to learn a legend."*
 
