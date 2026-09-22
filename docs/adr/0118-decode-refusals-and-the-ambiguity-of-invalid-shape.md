@@ -1,4 +1,15 @@
-# ADR draft: what a *decode* refusal says, and the one code that says two things
+# ADR 0118: What a *decode* refusal says, and the one code that says two things
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0118.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0118, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0118 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -15,7 +26,7 @@ ask. That split is the whole point of the document and is set out under
 "What this draft asks for" below.
 
 The order — implementation ahead of the record — is the one
-[ADR 0065](../0065-what-happens-to-a-save-this-build-cannot-read.md) took for
+[ADR 0065](./0065-what-happens-to-a-save-this-build-cannot-read.md) took for
 the same reason, in its own words: *"the defect is live rather than
 hypothetical, and this document is what the branch should be judged against."*
 
@@ -23,7 +34,7 @@ hypothetical, and this document is what the branch should be judged against."*
 
 ADR 0065 decided what happens to a save this build cannot read, and it decided
 it at **one** boundary: the restore layer. Its table is over
-[ADR 0063](../0063-what-a-refused-restore-says-and-whose-fault-it-is.md)'s three
+[ADR 0063](./0063-what-a-refused-restore-says-and-whose-fault-it-is.md)'s three
 reasons — `unsupported-by-this-build` is quarantined, `damaged-payload` is
 deleted, `restore-code-fault` costs the generation nothing — and
 `SessionController.loadPrison` has honoured that since #432.

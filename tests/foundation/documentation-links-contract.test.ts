@@ -286,6 +286,51 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
     'docs/research/audit-2026-08-26/09-bug-hunt.md -> tests/unit/operations-job-system.test.ts',
     'named by the 2026-08-26 bug hunt; ADR 0093 renamed the file operations-carry-executor.test.ts with the class it tests',
   ],
+  /*
+   * **Four dated records naming three drafts that were numbered rather than
+   * deleted.** The central numbering pass gave the six files in
+   * `docs/adr/drafts/` their numbers and moved them into `docs/adr/`, and
+   * re-aimed every *live* citation in `src/`, `tests/`, `scripts/` and the
+   * standing documents. These four are not live citations. Each is a statement
+   * about the tree on a dated day, and in two of them the draft path is the
+   * *point* of the sentence rather than a pointer: STATUS-QUEUE's §6 census
+   * reading says the file was **"unnumbered and outside the census"**, which
+   * re-aiming it at `docs/adr/0119-...` would turn into a contradiction, and
+   * the §3 pass account of 2026-09-21 (second) lists it among the paths a
+   * commit window touched.
+   *
+   * `docs/research/README.md` settles the two research entries without
+   * weighing anything: *"wrong, it becomes older. Do not update one to match
+   * current `main`"*. That is the same position the four ADR 0093 entries
+   * above take, and the same one
+   * `documentation-source-anchor-contract.test.ts` takes from the other side
+   * by not policing ranges under `docs/research/` at all.
+   *
+   * The numbers, so a reader need not go looking: the second-tab draft is
+   * [ADR 0120](../../docs/adr/0120-what-a-second-tab-follows.md), the language
+   * draft is [ADR 0119](../../docs/adr/0119-how-a-language-change-reaches-a-running-page.md),
+   * and the gang draft is
+   * [ADR 0121](../../docs/adr/0121-what-decides-whether-a-prison-ever-meets-its-gangs.md).
+   * Each is keyed on the pair, so none of them excuses a *new* citation of a
+   * draft path anywhere else -- which is what makes this an exemption for four
+   * sentences rather than a hole in the check.
+   */
+  [
+    'docs/research/2026-09-17-is-the-open-issue-list-an-index.md -> docs/adr/drafts/what-a-second-tab-follows.md',
+    'named by the 2026-09-17 open-issue-list record, at a commit where the draft sat at that path; numbered ADR 0120 by the central pass',
+  ],
+  [
+    'docs/research/2026-09-17-is-the-open-issue-list-an-index.md -> docs/adr/drafts/how-a-language-change-reaches-a-running-page.md',
+    'named by the same record for #1195; numbered ADR 0119 by the central pass',
+  ],
+  [
+    'docs/adr/STATUS-QUEUE.md -> docs/adr/drafts/what-decides-whether-a-prison-ever-meets-its-gangs.md',
+    "named by the dated 2026-09-21 (second) anchor pass account as one of eleven paths in its commit window; numbered ADR 0121 by the central pass",
+  ],
+  [
+    'docs/adr/STATUS-QUEUE.md -> docs/adr/drafts/how-a-language-change-reaches-a-running-page.md',
+    'named by the dated 2026-09-14 (second) census reading as the addition that was unnumbered and outside the census, which is the sentence\'s point; numbered ADR 0119 by the central pass',
+  ],
 ]);
 
 /** `source -> path`, the key `ABSENT_BY_DESIGN` is written in. */

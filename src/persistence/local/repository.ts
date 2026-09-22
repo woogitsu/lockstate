@@ -482,7 +482,7 @@ function defaultGenerationId(): string {
  * genuine corruption. Routing it either way is an amendment to ADR 0065's
  * taxonomy, and `AGENTS.md` and `CLAUDE.md` both put an absent architectural
  * decision in an ADR rather than in implementation code.
- * `docs/adr/drafts/decode-refusals-and-the-ambiguity-of-invalid-shape.md` is
+ * `docs/adr/0118-decode-refusals-and-the-ambiguity-of-invalid-shape.md` is
  * that proposal. Until it is ruled on, this arm behaves as it always has.
  *
  * `no-migration-path` is grouped with the migrator faults rather than with the

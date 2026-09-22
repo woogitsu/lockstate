@@ -526,7 +526,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
    *   resolved, so under this sweep it reads `en-XA` rather than `en` --
    *   which is a fact about the page and still not a string a translator would
    *   see. (There is still no *in-place* switch: a language change reloads,
-   *   see `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`,
+   *   see `docs/adr/0119-how-a-language-change-reaches-a-running-page.md`,
    *   and `installPseudoLocale`'s comment above is still why the sweep has to
    *   rewrite the served module to reach `en-XA` at all.)
    *
