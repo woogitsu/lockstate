@@ -1061,8 +1061,8 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       const history = page.locator('.hud-strip__history');
       await expect(history).toHaveAttribute('role', 'group');
-      await history.getByRole('button', { name: 'Undo the last change to the build queue' }).click();
-      await history.getByRole('button', { name: 'Redo the last undone change to the build queue' }).click();
+      await history.getByRole('button', { name: 'Undo the last placement' }).click();
+      await history.getByRole('button', { name: 'Redo the last undone placement' }).click();
 
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
       expect(intents.filter((intent) => intent.includes('undo') || intent.includes('redo'))).toEqual([
@@ -1076,7 +1076,7 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
       await page
         .locator('.hud-strip__history')
-        .getByRole('button', { name: 'Undo the last change to the build queue' })
+        .getByRole('button', { name: 'Undo the last placement' })
         .click();
 
       await expect
@@ -1087,7 +1087,7 @@ test.describe('HUD shell', () => {
       expect(probe.text).toContain('Nothing was undone');
       // The button that was pressed, and nothing else -- unlike the key, which
       // marks nothing because nothing on screen was pressed.
-      expect(probe.failedControls).toEqual(['Undo the last change to the build queue']);
+      expect(probe.failedControls).toEqual(['Undo the last placement']);
       expect(probe.describedByRefusal).toBe(true);
 
       // The same kind, now from the key: the refusal is about a press the

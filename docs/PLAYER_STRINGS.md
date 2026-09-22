@@ -126,8 +126,8 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.transport.play` | Play at normal speed | `src/content/default-locale-en.ts:522` |
 | `hud.transport.fast-forward` | Fast forward | `src/content/default-locale-en.ts:523` |
 | `hud.history.group-label` | Undo and redo | `src/content/default-locale-en.ts:550` |
-| `hud.history.undo-last-change` | Undo the last change to the build queue | `src/content/default-locale-en.ts:551` |
-| `hud.history.redo-last-undone` | Redo the last undone change to the build queue | `src/content/default-locale-en.ts:552` |
+| `hud.history.undo-last-change` | Undo the last placement | `src/content/default-locale-en.ts:551` |
+| `hud.history.redo-last-undone` | Redo the last undone placement | `src/content/default-locale-en.ts:552` |
 | `hud.tabs.title` | Prison sections | `src/content/default-locale-en.ts:554` |
 | `hud.tab.overview` | Overview | `src/content/default-locale-en.ts:632` |
 | `hud.tab.build` | Build | `src/content/default-locale-en.ts:633` |

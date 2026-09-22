@@ -282,18 +282,25 @@
  * Undo and Redo (#1356), after the transport and never inside it: the
  * transport group is labelled as the clock's controls, and these are not.
  *
- * Measured on the assembled page against `main` before this landed, at 100 %
- * interface scale: **no change** in strip height, visible chips or Build panel
- * box at 1280x720, 1280x800, 1440x900, 1024x768, 900x600 and 390x844 -- the
- * pair takes its 92px from the clock group, which is `flex: 1` on that row and
- * was stretched far past its content. At 375x812 the second row (clock beside
- * the transport) is already 341 of 359px, so the pair wraps to a row of its
- * own: the strip goes 103.7 -> 151.7px and the Build panel's box 446 -> 410px,
- * with nothing inside it clipped. That is the price of a touch route on the
- * narrowest phone, and it was chosen over the one arrangement that avoided it
- * -- the pair beside the brand badge -- because there it lands on the Layout
- * button, which sits over that row's right end at this width (255..343
- * against 327..371).
+ * What the pair costs, measured on the assembled page against `main` at
+ * `4a7215f7` (New prison; Build and Overview tabs) with the three rules that
+ * place it -- this one, the metrics' basis in the `max-width: 2559px` block,
+ * and the clock/metrics swap below 720px:
+ *
+ * - **100 % interface scale: no height anywhere.** Strip, visible chips and
+ *   the Build panel's box are unchanged at 1280x720, 1280x800, 1440x900,
+ *   1024x768 and 900x600, where the pair takes its 92px out of the clock
+ *   group's `flex: 1` stretch. At 390x844 and 375x812 the strip stays 103.7px
+ *   and the counters show two chips whole where they showed three: the day
+ *   readout moved onto their row to make room beside the transport.
+ * - **150 % and 200 %:** +19.5px at 1280x720/1280x800@150 and on both phones
+ *   @150, +26.6px at 900x600 and both phones @200, nothing at the rest. The
+ *   200 % page-zoom sweep's ceiling of twelve is unchanged.
+ *
+ * Rejected on measurement: the pair beside the brand badge (at 375x812 it
+ * lands on the Layout button, 255..343 against 327..371), and the pair on a
+ * row of its own below 720px (+48px at 375x812, and five sweep combinations
+ * that pass on `main` went red).
  */
 .hud-strip__history {
   display: flex;
@@ -5292,6 +5299,35 @@
     order: 1;
   }
 
+  /*
+   * ...LESS THE WIDTH OF UNDO AND REDO, SO THAT WHEN THE PAIR HAS TO WRAP IT
+   * SHARES THE METRICS' ROW INSTEAD OF TAKING ONE OF ITS OWN (#1356).
+   *
+   * The pair sits after the transport and, wherever that row has room -- every
+   * desktop viewport the sweep visits at 100 % -- it rides there and this rule
+   * changes nothing: the metrics are alone on their row and `flex-grow` takes
+   * them back to its full width. Where that row is full (the clock and the
+   * transport are 341 of 359px at 375x812), the pair wraps, and it wraps to
+   * the start of a new line; the metrics come next in visual order, and a basis
+   * of the row less the pair and one gap is exactly what fits beside it. So the
+   * wrap costs the difference between a 44px button row and the chips' own
+   * row, not a whole row.
+   *
+   * Measured at 375x812 before this rule: strip 103.7 -> 151.7px, and five
+   * combinations of the 200 % page-zoom sweep that pass on `main` went red
+   * (`.save-panel` pushed below the window, `.display-scale__cycle` covered).
+   * The price moves from height to width: the metrics row, which already
+   * scrolls sideways, shows less of itself at once where the pair is on it.
+   *
+   * No `order` on the pair, deliberately: it is after the transport in DOM
+   * order and stays after it on screen, so the keyboard and the eye meet it at
+   * the same point -- the check `order` needs on a focusable, which is why the
+   * metrics can carry one and the transport could not.
+   */
+  .hud-strip__metrics {
+    flex-basis: calc(100% - 2 * var(--tap-target) - var(--space-1) - var(--space-4));
+  }
+
   /* The clock shares the first row with the badge and the transport now, and
      the border it draws on its left would sit against the badge rather than
      between two readouts. */
@@ -5455,6 +5491,52 @@
     gap: var(--space-1) var(--space-2);
     padding: 0 var(--space-2);
   }
+
+  /*
+   * BELOW THIS BREAKPOINT THE CLOCK READOUT JOINS THE METRICS ROW, AND UNDO AND
+   * REDO TAKE ITS PLACE BESIDE THE TRANSPORT (#1356).
+   *
+   * Here the clock and the transport share the strip's second row and fill it
+   * -- 341 of 359px at 375x812 -- so the pair had nowhere on that row, and
+   * sharing the metrics' row (the rule above this block) still cost the
+   * difference between a tap target and a chip: at a 200 % page zoom and a
+   * 175 % interface scale on a 1280x720 window, 21px of strip, which pushed
+   * `.save-panel` 10px below the window in a combination the page-zoom sweep
+   * passes on `main`.
+   *
+   * The clock is a readout, and the metrics row is the strip's row of
+   * readouts, so the swap is the one that moves nothing a player presses: the
+   * pair sits after the transport exactly as it does on a desktop, and the
+   * day readout moves down one row to sit after the counters. Measured at
+   * 390x844 and 375x812 at 100 %: the strip is its `main` height, 103.7px.
+   *
+   * `order` on the clock is safe for the reason it is on the metrics: nothing
+   * in it is focusable. The metrics' 40 % floor is what keeps the two on
+   * the last row together and off the rows above -- a basis of zero alone
+   * would let them join the transport's row at a few pixels wide -- and the
+   * clock, later in DOM order, can only ever land after them. The clock is
+   * `flex: none` here so that the counters, not the day readout, take whatever
+   * the row has left.
+   *
+   * **Not below 320px**, which no phone is and a 200 % page zoom on one is:
+   * there the transport alone overflows its row, the pair cannot join it
+   * either way, and moving the clock only added a row -- measured, it put a
+   * tab over `.display-scale__cycle` at 390x844 and 375x812 halved at a 125 %
+   * interface scale, two combinations the sweep passes on `main`. Below it
+   * the rule above this block is the whole arrangement: the pair wraps and
+   * shares the metrics' row.
+   */
+  @media (min-width: 320px) {
+    .hud-strip__clock {
+      order: 1;
+      flex: none;
+    }
+    .hud-strip__metrics {
+      flex: 1 1 0%;
+      min-width: 40%;
+    }
+  }
+
 
   /* `.hud-strip__metrics` and `.hud-strip__clock` used to be laid out here,
      under the comment *"Squeezing all three onto one line left the metrics
