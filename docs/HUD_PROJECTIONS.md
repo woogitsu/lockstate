@@ -405,6 +405,41 @@ that reached a bounded in-worker window and stopped there.
   of the weaker kind, an option label rather than a typed sentence. The four
   `hud.alert.refusal.build.*` sentences that say *"that tile"* are
   deliberately unchanged until something puts a coordinate on the screen.
+
+  **THE FIRST HALF OF THAT PARAGRAPH STOPPED BEING TRUE LATER THE SAME DAY
+  AND IS KEPT, BECAUSE IT IS THE STATE THE SEQUENCE PASSED THROUGH.** ADR 0122
+  option D steps 3 and 4 landed on 2026-09-22: a refusal row that carries a
+  tile is now a real `<button>`, a press on it is one `show-alert-place`
+  `HudIntent`, and `src/main.ts` routes that to `WorldScene.navigateToTile`,
+  which centres the camera on the tile. So the member has a reader and the
+  member is read.
+
+  **The second half did not move, and that is the half that is a reservation.**
+  **No player-visible string was authored for the press**, and none is owed:
+  the row's accessible name is the catalogue sentence it already carried plus
+  the severity word beside it, because `createIcon` marks the glyph
+  `aria-hidden` and the row holds nothing else. The four *"that tile"*
+  sentences are still unchanged. What would change them is a sentence that
+  names a coordinate, and that is `AGENTS.md`'s fourth reservation and
+  `docs/LOCALIZATION.md`'s standing instruction, neither of which the 2026-09-22
+  ruling touched.
+
+  **One measurement came back with the affordance and belongs here rather than
+  only in a test.** ADR 0122 §8 asked whether a pressable row inside a scroll
+  container works at 200 % page zoom.
+  `tests/browser/ui-alert-row-presses-to-its-place.spec.ts` took that run on
+  the assembled page: the press clears `--tap-target` at every combination and
+  `.ui-row--interactive` declares that floor for itself, the focus ring is
+  drawn **outside** the row (`outline-offset: +2px`, not the inside offset §8
+  assumed of this stylesheet), and no dismiss control shares the row because a
+  dismissable row never becomes a press. What the run also found is that at
+  200 % page zoom **the alerts log is not on screen at any of the six
+  viewports that harness measures** — the Overview panel that holds it below
+  720 px collapses to a 2 px box and clips its own content — measured
+  identically at `--ui-scale: 1` in the same halved viewport and identically
+  with the press suppressed, so it is the deferred zero-sum vertical budget
+  those twelve `KNOWN_FAILING` combinations share rather than anything the
+  press introduced.
 - **A stable id, never a sentence** (ADR 0011).
   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
   reason onto a `hud.alert.refusal.*` message key through a `Record` over the

@@ -789,7 +789,54 @@ export type HudIntent =
    * names the incident the player pressed or names nothing, and can never
    * quietly name a different one.
    */
-  | { readonly kind: 'select-incident'; readonly incidentId: string | undefined };
+  | { readonly kind: 'select-incident'; readonly incidentId: string | undefined }
+  /**
+   * The player pressed a message row that is about somewhere, and the place it
+   * names is where they want to be looking (the owner's ruling of 2026-09-22
+   * on
+   * [ADR 0122](../../../docs/adr/0122-what-an-action-column-is-and-whether-a-message-can-carry-a-next-step.md),
+   * option D step 3).
+   *
+   * **The ruling is what this member is, and it is narrower than a
+   * destination system.** The owner chose the option labelled *"Naciskany
+   * wiersz, bez czasownika"* -- *"a pressable row, without the verb"* -- from
+   * three, the other two being a labelled button at the horizontal budget's
+   * price and no action at all. So the row is the press, no action-verb label
+   * is owed, and **no player-visible string is authored for it**: the row
+   * already carries the sentence and the severity word, and those two are the
+   * whole of what a screen reader announces. The provenance is the weaker kind
+   * `AGENTS.md` flags of every ruling since 2026-09-08 -- the label of a
+   * clickable option this repository wrote and the owner picked, not a
+   * sentence they typed.
+   *
+   * **A tile and nothing else**, forwarded rather than decided: it is
+   * `HudAlertViewModel.tile`, which is `SimulationRefusal.tile` read off the
+   * wire, and that field's own comment carries which six of the sixteen
+   * refusal domains publish one and why the other ten honestly cannot. The
+   * HUD does not know what a tile *is* beyond two numbers -- it does not know
+   * how many world units one spans, which is the renderer's
+   * (`src/rendering/tile-metrics.ts` owns that constant) -- so it hands the
+   * pair on unconverted.
+   *
+   * **Not a *command* in the gated sense**, for `dismiss-alert`'s reasons one
+   * step further along: moving a camera never reaches the simulation at all
+   * (`AGENTS.md` boundary 1), so there is nothing for the intent gate to
+   * serialise against and no refusal for `.hud__refusal` to paint. A second
+   * press while the first is still settling centres the same camera on the
+   * same tile twice, which is the same thing once.
+   *
+   * **Routed through `HudIntent` even though the minimap's camera gesture is
+   * not, and that is ADR 0122's choice rather than an inconsistency this file
+   * introduces.** `onMinimapNavigate` is a direct callback precisely because a
+   * camera move is not a command; option D step 3 nonetheless names *"the HUD
+   * intent union gains one member ... and `src/main.ts` routes it"*, and the
+   * reason holds: the minimap's callback is a *surface* handing over a point
+   * it owns, while this is a *row in a log* reporting which message was
+   * pressed. Keeping it on the intent union is what puts it in
+   * `hudIntents()`'s inventory, so a browser test can watch the press become
+   * one intent rather than inferring it from a camera that moved.
+   */
+  | { readonly kind: 'show-alert-place'; readonly tile: { readonly x: number; readonly y: number } };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -2864,6 +2911,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   // ---- alerts ------------------------------------------------------
   const alertRows = new Map<string, ListRow>();
+  /**
+   * Whether the row `alertRows` holds under this id was built as a press.
+   *
+   * A second map rather than a field on `ListRow`, because it is a fact about
+   * what this caller asked for and not about the primitive: `createListRow`
+   * takes `onActivate` at construction and exposes no way to ask afterwards,
+   * and reading the answer back off the DOM (`instanceof HTMLButtonElement`)
+   * would make the paint depend on a tag this file only ever writes
+   * indirectly. Kept in step with `alertRows` at every insertion and every
+   * deletion, so a stale entry cannot outlive the row it describes.
+   */
+  const alertPressable = new Map<string, boolean>();
   let emptyRow: ListRow | undefined;
 
   function paintAlerts(): void {
@@ -2891,6 +2950,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       for (const [id, row] of alertRows) {
         row.element.remove();
         alertRows.delete(id);
+        alertPressable.delete(id);
       }
       if (emptyRow !== undefined) {
         emptyRow.element.remove();
@@ -2961,8 +3021,58 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
           }
         : undefined;
 
+      /*
+       * **THE ROW ITSELF IS THE PRESS, ON THE ROWS THAT ARE ABOUT SOMEWHERE**
+       * -- the owner's ruling of 2026-09-22 on
+       * [ADR 0122](../../../docs/adr/0122-what-an-action-column-is-and-whether-a-message-can-carry-a-next-step.md),
+       * the option labelled *"Naciskany wiersz, bez czasownika"* ("a pressable
+       * row, without the verb"), option D step 3's half of it.
+       *
+       * **No label is added and none is owed.** The ruling bought a pressable
+       * row, not a button with a verb on it, and `HudIntent`'s
+       * `show-alert-place` member carries the reading. The accessible name is
+       * the row's own two visible texts -- the catalogue sentence and the
+       * severity word -- because `createIcon` marks the glyph `aria-hidden`
+       * and `createListRow` puts nothing else inside the element. So a screen
+       * reader announces exactly what a sighted player reads, and this change
+       * authors no string.
+       *
+       * **Mutually exclusive with the dismiss control above, enforced here
+       * rather than assumed.** `createListRow` makes the whole row a
+       * `<button>` when it is given `onActivate`, and `ListRowAction`'s own
+       * comment states the consequence: a row with both *"would be a button
+       * inside a button, which is invalid HTML"*. No producer sends both today
+       * -- `src/ui/simulation-alerts.ts` puts the tile only on refusal rows,
+       * which carry no `occurrences` and so are never dismissible, while every
+       * row `src/ui/simulation-events.ts` builds carries `occurrences` and no
+       * tile (`tests/unit/ui-hud-alert-row-press.test.ts` pins that split) --
+       * and *"no producer does"* is a fact about today rather than a
+       * guarantee, so the dismissable row keeps its control and gives up the
+       * press. A row a player cannot reverse a mis-tap on is the one the owner
+       * already ruled about, on 2026-09-01, and it does not get quietly
+       * widened here.
+       *
+       * **Pressability is a function of the row's current state, and a row
+       * whose state crosses the line is rebuilt rather than reused.** That is
+       * issue #764's lesson taken at the one place `createListRow` cannot
+       * take it: `setAction` can add or remove a trailing control on a live
+       * row, but `onActivate` decides the root's *tag*, and a `<div>` cannot
+       * become a `<button>` in place. Today no row crosses the line -- a
+       * refusal row's id carries the refusal's own ordinal, so its reason and
+       * therefore its tile never change -- and the rebuild is here so that a
+       * producer which one day does cross it gets a row that agrees with the
+       * view model instead of the one its first paint happened to build.
+       */
+      const place = alert.tile !== undefined && !dismissible ? alert.tile : undefined;
+
       const existing = alertRows.get(alert.id);
       let row = existing;
+      if (existing !== undefined && alertPressable.get(alert.id) !== (place !== undefined)) {
+        existing.element.remove();
+        alertRows.delete(alert.id);
+        alertPressable.delete(alert.id);
+        row = undefined;
+      }
       if (row === undefined) {
         /*
          * `wrap: true` is the fix for #720 and the only place in the HUD
@@ -2979,9 +3089,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
          * item name -- the part rulings 3 and 13 of #703 added the sentence
          * for -- was always the part cut.
          */
-        row = createListRow({ icon: 'incident', label: text, badge, wrap: true });
+        row = createListRow({
+          icon: 'incident',
+          label: text,
+          badge,
+          wrap: true,
+          // Read from `place` rather than from `alert.tile`, so the one
+          // decision above is the only place the two producers' rows are told
+          // apart, and the closure captures the tile it was built with -- the
+          // same tile the id it is keyed by will keep carrying.
+          ...(place === undefined
+            ? {}
+            : {
+                onActivate: () => {
+                  const intent: HudIntent = { kind: 'show-alert-place', tile: place };
+                  runReported(intent.kind, () => options.onIntent?.(intent), reportError);
+                },
+              }),
+        });
         row.element.dataset['alert'] = alert.id;
         alertRows.set(alert.id, row);
+        alertPressable.set(alert.id, place !== undefined);
       } else {
         row.setLabel(text);
         row.setBadge(badge);
@@ -3019,6 +3147,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       if (seen.has(id)) continue;
       row.element.remove();
       alertRows.delete(id);
+      alertPressable.delete(id);
     }
 
     // An empty list must say it is empty. A blank rectangle is indistinguishable

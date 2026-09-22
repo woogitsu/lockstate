@@ -42,7 +42,14 @@ import { HomeIndicatorLayer } from '../phaser/home-indicator-layer';
 import { RoomConditionLayer } from '../phaser/room-condition-layer';
 import { RoomLabelLayer } from '../phaser/room-label-layer';
 import { TileLayer } from '../phaser/tile-layer';
-import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
+import {
+  TILE_SIZE_PX,
+  tileCentreToWorld,
+  tileToWorld,
+  visibleTileRange,
+  type TileBounds,
+  type TileRange,
+} from '../tile-metrics';
 import { VOID_COLOR } from '../world/appearance';
 
 /**
@@ -1531,6 +1538,75 @@ export class WorldScene extends Phaser.Scene {
     const tileX = bounds.minTileX + clampedX * (bounds.maxTileX - bounds.minTileX + 1);
     const tileY = bounds.minTileY + clampedY * (bounds.maxTileY - bounds.minTileY + 1);
     this.cameras.main.centerOn(tileToWorld(tileX), tileToWorld(tileY));
+    return true;
+  }
+
+  /**
+   * Moves the camera to one named tile -- the tile-targeted sibling
+   * [ADR 0122](../../../docs/adr/0122-what-an-action-column-is-and-whether-a-message-can-carry-a-next-step.md)
+   * option D step 4 asks for, so a message that carries a place can lead to
+   * it (the owner's ruling of 2026-09-22, *"Naciskany wiersz, bez
+   * czasownika"*).
+   *
+   * **Why `navigateToMinimapPoint` above could not answer this case.** It
+   * takes `fx`/`fy` -- a *fraction of the minimap box* -- and reparameterises
+   * the whole `[0,1]x[0,1]` square onto `lastLoadedBounds`. A tile is neither
+   * a fraction nor bounded by that rectangle, and converting one into the
+   * other would mean dividing by the loaded extent and then multiplying it
+   * back, which is a round trip through a rectangle that has nothing to do
+   * with the question. `src/ui/hud/view-model.ts`'s own field comment records
+   * the same finding from the other end.
+   *
+   * ## `tileCentreToWorld`, and ADR 0122 option D step 4 names the other one
+   *
+   * **Checked against the source rather than taken from the ADR, and the ADR
+   * is half a tile out.** Step 4 describes the call as *"the same
+   * `centerOn(tileToWorld(x), tileToWorld(y))` call `frameCameraOnFirstWorld`
+   * already makes"*, and both halves of that are wrong in a way worth writing
+   * down once. `frameCameraOnFirstWorld` does not call `tileToWorld` at all
+   * -- it multiplies by `TILE_SIZE_PX` inline, and the value it multiplies is
+   * `(minTile + maxTile + 1) / 2`, whose `+ 1` is what makes the result the
+   * *centre* of the bounds rectangle rather than the top-left corner of its
+   * middle tile. And `tileToWorld`'s own docstring is *"World coordinate of a
+   * tile's top-left corner"*, so `centerOn(tileToWorld(x), tileToWorld(y))`
+   * would put the tile's **corner** in the middle of the screen and the tile
+   * itself a quarter-tile down and right of centre -- 32 world units in each
+   * axis at `TILE_SIZE_PX` 64.
+   *
+   * On a whole tile the right conversion is therefore `tileCentreToWorld`,
+   * which is the function this file's own actor layer uses to plant a body on
+   * a tile and whose docstring says what it is for. `navigateToMinimapPoint`
+   * is not wrong to use `tileToWorld`: its argument is a *fractional* tile
+   * read continuously across a rectangle, where "the corner of tile 3.5" and
+   * "the centre of tile 3" are the same point.
+   *
+   * ## What it does not do, each because doing it would lie
+   *
+   * **It does not clamp to `lastLoadedBounds`.** `build.out-of-bounds` and
+   * `zone.out-of-bounds` are refusals *about* a tile being off the map, so
+   * they are exactly the payloads most likely to name a tile outside the
+   * loaded rectangle -- and clamping would silently take the player somewhere
+   * else and let the interface imply that was the place. Panning has no clamp
+   * in any direction for any other gesture either (`ZOOM_BOUNDS` bounds the
+   * zoom and nothing bounds the scroll), so this matches the drag, the wheel
+   * and the keyboard rather than inventing a rule for one caller.
+   *
+   * **It refuses while no world has ever been published**, reported as
+   * `false` exactly as `navigateToMinimapPoint` reports its own one
+   * unmappable input, and here the reason is mechanical rather than only
+   * honest: `frameCameraOnFirstWorld` fires inside the `update()` that first
+   * sees a world and would overwrite anything written before it, so a `true`
+   * returned then would be a claim the next frame took back.
+   *
+   * Presentational only, per `AGENTS.md` boundary 1: it reads
+   * `lastLoadedBounds` (already read for rendering) and writes only
+   * `this.cameras.main`, building and sending no simulation command -- the
+   * same boundary every other camera gesture on this scene keeps.
+   */
+  public navigateToTile(tileX: number, tileY: number): boolean {
+    if (this.lastLoadedBounds === undefined) return false;
+    if (!Number.isFinite(tileX) || !Number.isFinite(tileY)) return false;
+    this.cameras.main.centerOn(tileCentreToWorld(tileX), tileCentreToWorld(tileY));
     return true;
   }
 

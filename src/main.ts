@@ -3172,6 +3172,33 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           return;
         }
 
+        /*
+         * The other press on the same log, and the only intent in this switch
+         * that reaches the *renderer* instead of the simulation or the view
+         * model (ADR 0122 option D step 3, the owner's ruling of 2026-09-22).
+         *
+         * **Nothing is submitted, nothing is gated and nothing is refused.**
+         * Moving a camera is not a simulation command -- `AGENTS.md` boundary
+         * 1 -- which is why `onMinimapNavigate` above is a callback straight
+         * to the scene rather than an intent at all. This one travels as an
+         * intent because ADR 0122 option D step 3 asks for that in as many
+         * words, and the reason survives the inconsistency: the minimap hands
+         * over a point on a surface it owns, while this reports *which
+         * message the player pressed*, and the intent union is where this
+         * repository keeps that.
+         *
+         * `worldScene` unconditionally, for `onMinimapNavigate`'s stated
+         * reason: it exists from the top of this module whether or not a
+         * worker ever started. The `false` a tile-less session returns is
+         * read by nobody here and is deliberately not turned into a sentence
+         * -- a refusal row cannot exist without a session that published one,
+         * so the branch is unreachable from this press, and inventing a
+         * message for it would be a sentence with no state behind it.
+         */
+        case 'show-alert-place':
+          worldScene.navigateToTile(intent.tile.x, intent.tile.y);
+          return;
+
         case 'place-build-order': {
           const sender = requireSimulation(commands);
           /*

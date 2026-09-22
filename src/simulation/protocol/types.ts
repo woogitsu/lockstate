@@ -1667,6 +1667,16 @@ export const refusalSchema = z
      * `navigateToMinimapPoint`, which is the same `centerOn(tileToWorld(x),
      * tileToWorld(y))` call `frameCameraOnFirstWorld` already makes", and a
      * `width`/`height` pair would be two integers no consumer reads --
+     *
+     * **That quotation is accurate and the sentence it quotes is not, which
+     * changes nothing here and is worth one line where the next reader will
+     * find it.** `WorldScene.navigateToTile`, built on 2026-09-22, calls
+     * `tileCentreToWorld` rather than `tileToWorld`:
+     * `frameCameraOnFirstWorld` never calls `tileToWorld` at all, and
+     * `tileToWorld` is "World coordinate of a tile's top-left corner" by its
+     * own docstring, so the literal shape the ADR names would centre the
+     * screen half a tile off the tile. The member is still a tile and still
+     * not a rectangle, for the reason the clause above gives.
      * `zoningNoticeSchema` beside this one declines a room id, a tile and a
      * text for exactly that reason, and says so in as many words. And an
      * anchor is what the player named: `hud.rooms.area-value` reads the

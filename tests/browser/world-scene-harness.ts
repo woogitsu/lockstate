@@ -374,6 +374,7 @@ const harness: LockstateWorldSceneHarness = {
     });
   },
   navigateToMinimapPoint: (fx, fy) => scene.navigateToMinimapPoint(fx, fy),
+  navigateToTile: (tileX, tileY) => scene.navigateToTile(tileX, tileY),
   displaceCamera: (scrollX, scrollY) => {
     scene.cameras.main.setScroll(scrollX, scrollY);
   },

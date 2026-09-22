@@ -671,6 +671,14 @@ export interface HudAlertViewModel extends HudLabelParametersViewModel {
    * inbound message is place-blind". Making the row pressable and moving the
    * camera is option D steps 3 and 4 and is not in this change.
    *
+   * **Steps 3 and 4 landed later the same day, so "read by nothing yet" is
+   * history; the paragraph is kept because it is what the sequence looked
+   * like from inside it.** `src/ui/hud/hud.ts` now builds a row carrying this
+   * field as a `<button>`, a press is one `show-alert-place` `HudIntent`, and
+   * `src/main.ts` routes it to `WorldScene.navigateToTile`. **The paragraph
+   * below did not move**: no sentence names the coordinate, and the four
+   * `hud.alert.refusal.build.*` strings are still untouched.
+   *
    * Absent on every row that has no place, which is most of them: the
    * `protocol/error` fault rows (a malformed message is not anywhere), every
    * event row `src/ui/simulation-events.ts` builds, and the refusals from the

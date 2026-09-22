@@ -53,7 +53,21 @@ nothing is drawn.
 
 **The rectangle it points at is `WorldRenderView.loadedBounds` in world units**,
 which is the same rectangle `frameCameraOnFirstWorld` centres a session's first
-paint on and the same one `navigateToMinimapPoint` maps the minimap across. A
+paint on and the same one `navigateToMinimapPoint` maps the minimap across.
+
+**A second addressed entry point joined those two on 2026-09-22 and does
+`loadedBounds` one thing less, deliberately.** `WorldScene.navigateToTile`
+centres the camera on a named tile, so a message that carries a place can lead
+to it (ADR 0122 option D step 4, on the owner's ruling of that date). It reads
+`loadedBounds` for one purpose only — to refuse while no world has ever been
+published, because `frameCameraOnFirstWorld` fires inside the `update()` that
+first sees one and would overwrite anything written before it — and it
+**does not clamp the tile into that rectangle**. A refusal is often *about* a
+tile being off the map (`build.out-of-bounds` exists), so clamping would take
+the player somewhere the message is not about; and nothing bounds the pan for
+any other gesture either, which is the paragraph below. It converts with
+`tileCentreToWorld`, not `tileToWorld`: the latter is a tile's top-left
+corner, and centring on a corner leaves the tile a quarter-tile off centre. A
 third definition here — the owned chunks, or a bounding box over placed
 geometry — would disagree with both, and the owned chunks in particular exclude
 the unowned-but-loaded ground the scene already draws.
