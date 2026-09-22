@@ -23,7 +23,7 @@ import { LANGUAGE_MESSAGE_KEY } from './language-messages';
  * language is the page load itself. The composition root persists the
  * preference and reloads; the reasoning, the measurement behind it and the
  * alternative it rejects are in
- * `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`.
+ * `docs/adr/0119-how-a-language-change-reaches-a-running-page.md`.
  *
  * So this module is the control and nothing else: it reports which preference
  * the player asked for, and it renders which one is in force.

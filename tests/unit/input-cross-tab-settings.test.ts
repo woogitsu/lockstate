@@ -14,7 +14,7 @@ import {
 /**
  * What a second tab is told, and what it is deliberately not told (#1199).
  *
- * `docs/adr/drafts/what-a-second-tab-follows.md` is the decision: the
+ * `docs/adr/0120-what-a-second-tab-follows.md` is the decision: the
  * interface scale, the theme and the HUD layout follow across tabs; the
  * language does not, because nothing in this interface can be handed a
  * different `Localizer` after boot.
@@ -113,7 +113,7 @@ describe('a preference written by another tab', () => {
     // well. Nineteen modules under `src/ui/` hold the one `Localizer` built at
     // boot and none of them can be handed another, so a tab that acted on this
     // could only turn part of itself Polish -- see
-    // `docs/adr/drafts/what-a-second-tab-follows.md`.
+    // `docs/adr/0120-what-a-second-tab-follows.md`.
     target.fire({
       key: 'lockstate.settings.language',
       newValue: JSON.stringify({ version: 1, preference: 'pl' }),

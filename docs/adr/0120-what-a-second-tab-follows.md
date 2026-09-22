@@ -1,4 +1,15 @@
-# ADR draft: what a second tab follows
+# ADR 0120: What a second tab follows
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0120.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0120, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0120 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -60,7 +71,7 @@ to the DOM. Each already has a second caller — the local control — so
   (`src/ui/hud/hud.ts:1080`).
 
 **The language has no such function and cannot be given one cheaply.**
-`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md` measured the
+`docs/adr/0119-how-a-language-change-reaches-a-running-page.md` measured the
 surface: 19 modules under `src/ui/` hold a `Localizer` across 331 formatting
 call sites, and `grep -rnE "setLocalizer|withLocale|retranslate|relocalize"
 src/ui src/rendering` returns nothing. `Localizer`'s own contract is that

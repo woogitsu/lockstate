@@ -20,7 +20,7 @@ import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
  * 2. **That `location.reload()` is an application of the change rather than a
  *    loss of one.** The decision this control implements is that a language
  *    change takes effect on reload
- *    (`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), and
+ *    (`docs/adr/0119-how-a-language-change-reaches-a-running-page.md`), and
  *    the thing that decision has to be held to is that a prison survives it.
  * 3. **That `navigator.languages` and the stored preference are read in the
  *    right order.** Vitest runs in `environment: 'node'`, where there is no

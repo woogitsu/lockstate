@@ -1,4 +1,15 @@
-# ADR draft: what an "action column" is, and whether a message can carry a next step
+# ADR 0122: What an "action column" is, and whether a message can carry a next step
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0122.** The note below is kept rather
+> than deleted, because it is the sentence the assignment answers and
+> `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"this draft deliberately carries no number"* as the state
+> this document was drafted in, not as its state now: the heading above, the
+> filename and the row in [the index](./README.md) all carry ADR 0122, and every
+> citation the note lists was re-aimed in the same commit that moved the file.
+> The number was **swept rather than trusted** before it was taken — the sweep
+> is recorded in the index's own next-free block — and ADR 0122 was free on every
+> one of the 510 remote heads readable at `517d92e1` (v0.0.745).
 
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
@@ -11,6 +22,30 @@
 **Proposed. It asks and stops.** Nothing below is decided, implemented or
 self-approved by the agent that wrote it. One question in §7 is named as the
 owner's rather than answered, and it is the only one.
+
+**THE NUMBERING PASS CARRIED THAT QUESTION FORWARD AND DID NOT ANSWER IT, AND
+THIS PARAGRAPH IS THE RECORD OF THE ABSTENTION.** Assigning ADR 0122 gives this
+document a number and a row in [the index](./README.md); it gives it no ruling.
+§7's recommendation -- **B + D, the message row itself becomes the press, with
+no action-verb label** -- is **still a recommendation and is explicitly not
+adopted**, and the question under §7's heading *"The one question that is the
+owner's"* is **still open and still the owner's**:
+
+> **Is a pressable message row, with no action-verb label on it, an acceptable
+> delivery of the `Akcja` column -- or must the labelled button arrive, at the
+> cost §5b prices?**
+
+It is the owner's for the reason §7 gives rather than for a reason this
+paragraph invents: it is a question about **whether a promise is made to a
+player at all**, which is `AGENTS.md`'s fourth reservation and is the half of
+it that the partial release of 2026-09-04 did *not* release -- that release
+gave agents the *choice of words* in a player-facing string and nothing more.
+A numbering pass has no standing to answer it, and neither had the pass that
+drafted the document. **Nothing in this repository may be built on §7's
+recommendation until it is answered**, and §8's own weakest-claim section is
+the second reason to wait: option B's zero-cost claim is an argument from the
+DOM's shape and not a measurement, and the Playwright run that would settle it
+was not taken.
 
 **What it is a response to.** The 2026-09-13 identity delivery
 (`docs/design/2026-09-13-identity-v5/`, vendored verbatim and never edited

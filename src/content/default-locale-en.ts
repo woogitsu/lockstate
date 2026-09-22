@@ -4312,7 +4312,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // does reload the page, and a tooltip that did not say so would be the
   // interface hiding a consequence the player is about to meet. The reload is
   // what makes the change whole -- see
-  // `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md` -- and
+  // `docs/adr/0119-how-a-language-change-reaches-a-running-page.md` -- and
   // `src/main.ts` saves the prison and awaits that save before it happens, so
   // the sentence promises nothing the code does not do.
   'display.language.cycle': 'Change the interface language and reload the game',
