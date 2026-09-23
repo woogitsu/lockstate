@@ -92,6 +92,8 @@ const FIXTURE: HarnessWorldFixture = {
   stoveTileY: 4,
   washingMachineTileX: 34,
   washingMachineTileY: 4,
+  fridgeTileX: 36,
+  fridgeTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -255,6 +257,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'washing-machine-brick',
       tileX: FIXTURE.washingMachineTileX,
       tileY: FIXTURE.washingMachineTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-fridge',
+      definitionId: 'fridge-brick',
+      tileX: FIXTURE.fridgeTileX,
+      tileY: FIXTURE.fridgeTileY,
       phase: 'built',
     },
   ];

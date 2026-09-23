@@ -64,6 +64,8 @@ PALETTE = {
     "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
     "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
     "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
+    "fridge_steel": ((0.20, 0.29, 0.38, 1), 0.62),
+    "fridge_enamel": ((0.95, 0.91, 0.78, 1), 0.38),
 }
 
 MODELS = (
@@ -89,6 +91,7 @@ MODELS = (
     ("furniture.laundry.washing_machine.twin", (2, 1)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.kitchen.fridge", (1, 1)),
 )
 
 
@@ -311,7 +314,31 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.kitchen.fridge":
+        # Four-view original reference: assets/source/concepts/fridge-multiview-v1.png.
+        # The top seam and front lip survive the overhead view at 64 px.
+        for x in (-0.36, 0.36):
+            for y in (-0.34, 0.34):
+                cylinder(collection, root, f"Adjustable foot.{x}.{y}", (x, y, 0.055), 0.045, 0.11, "steel", 16)
+        box(collection, root, "Black insulated plinth", (0, 0, 0.12), (0.82, 0.79, 0.18), "shade", 0.024)
+        box(collection, root, "Blue-grey steel cabinet", (0, -0.01, 0.86), (0.86, 0.83, 1.37), "fridge_steel", 0.048)
+        box(collection, root, "Roof rim", (0, -0.01, 1.56), (0.88, 0.85, 0.055), "steel", 0.03)
+        box(collection, root, "Roof panel", (0, -0.01, 1.594), (0.80, 0.77, 0.022), "fridge_steel", 0.025)
+        for y in (-0.29, -0.20, -0.11):
+            box(collection, root, f"Rear ventilation slot.{y}", (0, y, 1.609), (0.51, 0.022, 0.009), "steel", 0.005)
+        box(collection, root, "Cream front roof cap", (0, 0.26, 1.617), (0.80, 0.27, 0.035), "fridge_enamel", 0.028)
+        box(collection, root, "Roof compartment joint", (0, 0.176, 1.639), (0.79, 0.016, 0.008), "steel", 0.006)
+        box(collection, root, "Visible top handle", (0.30, 0.30, 1.665), (0.06, 0.16, 0.045), "galvanized_edge", 0.016)
+        box(collection, root, "Front gasket", (0, 0.415, 0.90), (0.79, 0.024, 1.20), "shade", 0.018)
+        box(collection, root, "Cream enamel refrigerator door", (0, 0.447, 0.77), (0.78, 0.068, 0.95), "fridge_enamel", 0.042)
+        box(collection, root, "Cream freezer hatch", (0, 0.447, 1.38), (0.78, 0.068, 0.24), "fridge_enamel", 0.04)
+        box(collection, root, "Compartment seam", (0, 0.487, 1.245), (0.75, 0.014, 0.023), "steel", 0.008)
+        box(collection, root, "Raised door lip", (0, 0.43, 1.57), (0.81, 0.11, 0.06), "porcelain", 0.025)
+        box(collection, root, "Door handle upper foot", (0.28, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
+        box(collection, root, "Door handle lower foot", (0.28, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
+        box(collection, root, "Brushed steel pull", (0.28, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
+        box(collection, root, "Visible top door reveal", (0, 0.44, 1.613), (0.80, 0.07, 0.028), "shade", 0.006)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):

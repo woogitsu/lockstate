@@ -83,6 +83,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.bed',
   'env.object.medical-bed',
   'env.object.medicine-cabinet',
+  'env.object.fridge',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
@@ -252,6 +253,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Twin-bay institutional washer with two visible drum hatches and paired controls. Drawn on object.washing-machine.',
+  },
+  'env.object.fridge': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.fridge',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Insulated kitchen refrigerator with blue-grey steel top, cream enamel front cap and separated freezer door. Drawn on object.fridge.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

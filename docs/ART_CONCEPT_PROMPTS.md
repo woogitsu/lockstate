@@ -172,6 +172,19 @@ The two original generated references and modeling decisions are recorded in
 translates the oblique front loaders into top access hatches that the actual
 orthographic game camera can show.
 
+### Kitchen cold storage — `furniture.kitchen.fridge`
+
+> one upright institutional refrigerator, 1×1 tile, shown directly overhead
+> and from three consistent oblique views — blue-grey steel cabinet, broad
+> cream enamel front cap and doors, dark insulated seam dividing the freezer
+> hatch, brushed metal pull, black plinth
+> …the steel roof and cream cap must remain distinct at 64×64 px, with the
+> front door and handle guiding the 3D form rather than being flattened into a
+> plain square.
+
+The original concept and model provenance are recorded in
+`assets/source/concepts/fridge-v1.md`.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 For `furniture.kitchen.stove`, keep a commercial 2×1 cooker legible from above:

@@ -178,6 +178,31 @@
       }
     },
     {
+      "assetId": "furniture.kitchen.fridge",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.fridge.68663ee7bc8f.png",
+      "sha256": "68663ee7bc8f014328c9b61d42317b0210f1bb73bd24e96d582ee492f85ec613",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.kitchen.stove",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.kitchen.stove.c036bb9ad7d5.png",
