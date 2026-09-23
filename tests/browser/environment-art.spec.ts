@@ -514,6 +514,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.stove',
       tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
     },
+    {
+      label: 'security console',
+      buildableId: 'security-console-brick',
+      catalogueId: 'object.security-console',
+      expectedSpriteId: 'env.object.security-console',
+      tileOf: (fixture) => [fixture.securityConsoleTileX, fixture.securityConsoleTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

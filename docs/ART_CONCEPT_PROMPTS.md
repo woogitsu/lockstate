@@ -183,6 +183,12 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 
 ### Security — `security.access_reader.variants`, `security.camera.wall.variants`, `security.checkpoint.turnstile.variants`
 
+The 2×1 `furniture.security.surveillance_console` is a separate buildable
+control station: three low monitor hoods face the vertical game camera; a
+keyboard, paired sticks and grouped lights identify the control deck.
+Its original four-view reference and packed monochrome CCTV texture are
+documented in `assets/source/concepts/security-console-v1.md`.
+
 These carry the palette's action teal as an indicator colour and nothing else
 does — a reader's status light is the one warm-cool contrast in an otherwise
 grey object, and it is how a player finds it.

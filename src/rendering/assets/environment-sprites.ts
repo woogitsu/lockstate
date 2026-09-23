@@ -92,6 +92,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.chair',
   'env.object.dining-table',
   'env.object.stove',
+  'env.object.security-console',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -244,6 +245,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
+  },
+  'env.object.security-console': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.security.surveillance_console',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Blue-grey security console with three overhead-visible CCTV monitors, keyboard, joysticks and guarded control. Drawn on object.security-console.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

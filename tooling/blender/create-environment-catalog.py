@@ -88,6 +88,7 @@ MODELS = (
     ("furniture.medical.bed.single", (1, 2)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.security.surveillance_console", (2, 1)),
 )
 
 
@@ -142,6 +143,26 @@ def canteen_wood_material():
     texture.extension = "CLIP"
     links.new(coords.outputs["Generated"], texture.inputs["Vector"])
     links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def console_screen_material():
+    """Pack the original CCTV concept swatch inside the source scene."""
+    texture_path = ROOT / "assets/source/textures/security-console-cctv-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Console monitor texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Surveillance monitor CCTV glass", (0.025, 0.22, 0.25, 1), 0.27)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    shader = nodes.get("Principled BSDF")
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if shader.inputs.get("Emission Color") is not None:
+        links.new(texture.outputs["Color"], shader.inputs["Emission Color"])
+        shader.inputs["Emission Strength"].default_value = 0.32
     return item
 
 
@@ -295,7 +316,44 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.security.surveillance_console":
+        # assets/source/concepts/security-console-multiview-v1.png.
+        # Low monitor hoods expose all three teal screens to the overhead camera.
+        for x in (-0.86, 0.86):
+            for y in (-0.36, 0.36):
+                box(collection, root, f"Grounded steel foot.{x}.{y}", (x, y, 0.09), (0.17, 0.17, 0.18), "steel", 0.015)
+                box(collection, root, f"Foot collar.{x}.{y}", (x, y, 0.19), (0.19, 0.19, 0.06), "galvanized_edge", 0.009)
+        box(collection, root, "Deep cabinet shadow", (0, 0, 0.30), (1.87, 0.85, 0.20), "steel", 0.025)
+        box(collection, root, "Powder-coated cabinet", (0, 0, 0.67), (1.87, 0.85, 0.64), "console_enamel", 0.035)
+        box(collection, root, "Recessed front door", (0, 0.432, 0.62), (1.45, 0.018, 0.42), "galvanized", 0.009)
+        for x in (-0.12, 0.12):
+            box(collection, root, f"Door pull.{x}", (x, 0.449, 0.65), (0.043, 0.012, 0.13), "steel", 0.005)
+        box(collection, root, "Bevelled control deck", (0, 0, 1.015), (1.96, 0.96, 0.12), "console_enamel", 0.035)
+        box(collection, root, "Dark monitor rail", (0, -0.23, 1.092), (1.85, 0.42, 0.03), "steel", 0.014)
+        for index, (x, width) in enumerate(((-0.64, 0.47), (0, 0.65), (0.64, 0.47))):
+            box(collection, root, f"Monitor raised housing.{index}", (x, -0.23, 1.215), (width, 0.38, 0.23), "console_enamel", 0.022)
+            box(collection, root, f"Monitor black rebate.{index}", (x, -0.23, 1.344), (width - 0.055, 0.31, 0.023), "shade", 0.007)
+            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), "console_screen", 0.007)
+            box(collection, root, f"Monitor hood.{index}", (x, -0.413, 1.372), (width, 0.075, 0.055), "console_enamel", 0.012)
+            box(collection, root, f"Monitor footer.{index}", (x, -0.047, 1.373), (width, 0.034, 0.047), "steel", 0.007)
+        box(collection, root, "Keyboard inset shadow", (0, 0.255, 1.084), (0.66, 0.28, 0.014), "shade", 0.011)
+        box(collection, root, "Keyboard deck", (0, 0.255, 1.096), (0.61, 0.23, 0.016), "steel", 0.007)
+        for row, y in enumerate((0.17, 0.23, 0.29, 0.35)):
+            for col, x in enumerate((-0.25, -0.18, -0.11, -0.04, 0.03, 0.10, 0.17, 0.24)):
+                box(collection, root, f"Key.{row}.{col}", (x, y, 1.108), (0.045, 0.038, 0.008), "galvanized", 0.003)
+        for x in (-0.60, 0.60):
+            cylinder(collection, root, f"Control stick base.{x}", (x, 0.25, 1.103), 0.105, 0.03, "steel", 24)
+            cylinder(collection, root, f"Control stick shaft.{x}", (x, 0.25, 1.175), 0.037, 0.13, "galvanized_edge", 20)
+            cylinder(collection, root, f"Control stick knob.{x}", (x, 0.25, 1.252), 0.066, 0.05, "steel", 24)
+        for x in (-0.84, -0.76, 0.75):
+            for y in (0.18, 0.27):
+                cylinder(collection, root, f"Action lens.{x}.{y}", (x, y, 1.107), 0.032, 0.016, "console_amber" if x < 0 else "console_teal", 16)
+        box(collection, root, "Red guarded switch base", (0.83, 0.34, 1.104), (0.12, 0.11, 0.024), "shade", 0.008)
+        box(collection, root, "Red guarded switch", (0.83, 0.34, 1.13), (0.071, 0.069, 0.039), "console_red", 0.008)
+        for x in (-0.91, 0.91):
+            for y in (-0.43, 0.43):
+                cylinder(collection, root, f"Deck bolt.{x}.{y}", (x, y, 1.085), 0.014, 0.012, "galvanized_edge", 12)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):
@@ -695,6 +753,11 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["console_enamel"] = material("Worn blue-grey surveillance enamel", (0.17, 0.23, 0.30, 1), 0.58)
+    MATERIALS["console_screen"] = console_screen_material()
+    MATERIALS["console_amber"] = material("Amber console indicator", (0.94, 0.45, 0.045, 1), 0.27)
+    MATERIALS["console_teal"] = material("Teal console indicator", (0.035, 0.65, 0.64, 1), 0.27)
+    MATERIALS["console_red"] = material("Guarded emergency control", (0.65, 0.06, 0.04, 1), 0.36)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)

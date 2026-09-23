@@ -550,6 +550,33 @@
       }
     },
     {
+      "assetId": "furniture.security.surveillance_console",
+      "image": "furniture.security.surveillance_console.png",
+      "sha256": "893043d50573a18e96e8aeea7f7ec495dc2ca09072f4c09d37292361d3fae4a9",
+      "pixelSha256": "6fc38c77545a8ef19d6ae68087a694e3a62b4b24802f498035a6ea4e81ae0441",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 31,
+        "y": 17,
+        "width": 450,
+        "height": 222,
+        "opaquePixels": 99812
+      }
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "image": "furniture.storage.rack.wooden.png",
       "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",

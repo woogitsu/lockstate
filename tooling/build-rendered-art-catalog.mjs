@@ -102,6 +102,7 @@ export const PUBLISHED_ASSET_IDS = [
   'furniture.medical.bed.single',
   'furniture.medical.cabinet',
   'furniture.office.desk.employee.variants',
+  'furniture.security.surveillance_console',
   'furniture.storage.rack.wooden',
 ];
 
