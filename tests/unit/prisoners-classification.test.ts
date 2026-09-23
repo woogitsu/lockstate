@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar';
 import { classifyPrisoner } from '../../src/simulation/prisoners/classification';
+import { drawPriorIncidents } from '../../src/simulation/prisoners/prior-incidents';
+import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
+import { MAX_SENTENCE_DAYS, MIN_SENTENCE_DAYS } from '../../src/simulation/prisoners/sentence';
 
 function rngFromSeed(seed: number, stream = 'test'): Xoshiro128StarStar {
   return new Xoshiro128StarStar(deriveXoshiroState(seed, stream).words);
@@ -77,7 +80,14 @@ describe('classifyPrisoner', () => {
       return [...tiers].sort((a, b) => a - b);
     }
 
-    it('cannot reach high-risk from what the Intake panel asks for, at any seed', () => {
+    it('cannot reach high-risk from an arrival with no prior incidents, at any seed', () => {
+      // **This case was titled "from what the Intake panel asks for", and the
+      // panel stopped asking for this on 2026-09-23.** ADR 0124 deleted
+      // `ADMISSION_REQUEST`, so the panel sends no `priorIncidents` and the
+      // worker draws one. What the case still pins is true of the 60 % of
+      // arrivals who draw 0, and the next case enumerates the panel's request
+      // as it now is. The original comment follows, kept as it stood:
+      //
       // What the Intake panel asks for. `priorIncidents: 0` is still
       // `ADMISSION_REQUEST` in `src/main.ts`; the 10,000 was too until #535
       // decision 5 made the length a draw.
@@ -108,6 +118,30 @@ describe('classifyPrisoner', () => {
       expect(reachableTiers({ sentenceLengthTicks: 201_600, priorIncidents: 0 })).toEqual([0, 1, 2]);
       expect(reachableTiers({ sentenceLengthTicks: 216_000, priorIncidents: 0 })).toEqual([0, 1, 2]);
     });
+
+    it('reaches high-risk from what the Intake panel asks for since ADR 0124, at exactly the derived rate', () => {
+      // The panel's request is now "draw both": a sentence uniform over the 77
+      // whole days of `[14, 90]` and a prior count from one `nextInt(100)`
+      // into `PRIOR_INCIDENT_WEIGHTS_PERCENT`. Enumerated over the whole joint
+      // space, 77 x 100 x 3 = 23,100 equally likely outcomes, through the real
+      // `drawPriorIncidents` and `classifyPrisoner`. These counts are ADR
+      // 0124's 47.27 / 33.03 / 15.15 / 4.55 %. They were computed independently
+      // of this code before it was written, so a change to the weights, the
+      // draw or the score fails here.
+      const counts = [0, 0, 0, 0];
+      for (let day = MIN_SENTENCE_DAYS; day <= MAX_SENTENCE_DAYS; day += 1) {
+        for (let roll = 0; roll < 100; roll += 1) {
+          const priorIncidents = drawPriorIncidents({ nextInt: () => roll } as unknown as Xoshiro128StarStar);
+          for (const tier of reachableTiersWithMultiplicity({ sentenceLengthTicks: day * DAY_LENGTH_TICKS, priorIncidents })) counts[tier]! += 1;
+        }
+      }
+      expect(counts).toEqual([10_920, 7_630, 3_500, 1_050]);
+    });
+
+    /** Like `reachableTiers`, but one tier per screening draw, so a caller can count outcomes rather than list them. */
+    function reachableTiersWithMultiplicity(input: { sentenceLengthTicks: number; priorIncidents: number }): readonly number[] {
+      return DRAWS.map((draw) => classifyPrisoner(input, { nextInt: () => draw } as unknown as Xoshiro128StarStar).riskTier);
+    }
 
     it('reaches high-risk from two priors alone, or from one plus a long sentence', () => {
       // The boundary in both directions, so a change to either term of the

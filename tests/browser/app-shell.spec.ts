@@ -12058,6 +12058,16 @@ test.describe('the assembled application', () => {
    * worker rather than from zeros baked into the page* above, which injects a 9
    * through the real decoder. This test proves the chip is *seen*.
    *
+   * **THAT PARAGRAPH IS HISTORY FROM 2026-09-23.**
+   * [ADR 0124](../../docs/adr/0124-what-a-prisoner-brings-with-them.md)
+   * deleted `ADMISSION_REQUEST`. The Admit control now sends no
+   * `priorIncidents`, and the worker draws one, flat 60/30/10, so about 4.55 %
+   * of arrivals are tier 3 at intake. With twelve admissions, a high-risk
+   * prisoner in this prison is likely rather than impossible. The case's
+   * assertions never depended on the chip's value. The one that did depend on
+   * the paragraph, *"every painted row is `general-population`"*, now asserts
+   * what it stood for: the group agrees with the tier.
+   *
    * The cell is zoned and left **empty**, with no bed in it, which is the
    * cheapest prison that admits: `src/main.ts` refuses `AdmitPrisoner` only when
    * the prison has no accommodation-target instance at all, and an arrival then
@@ -12449,10 +12459,14 @@ test.describe('the assembled application', () => {
     // And the badge word agrees with the tier the row carries, so the
     // reordering and the readout are the same fact.
     expect(painted[0]!.badge).toBe(localeText(`risk-tier.${String(painted[0]!.tier)}.name`));
-    // The group is the tier's other grain, and the panel's tone reads it: no
-    // prisoner this page can admit is high-risk (see the header), so a
-    // `high-risk` group here would mean the two had come apart.
-    for (const row of painted) expect(row.group).toBe('general-population');
+    // The group is the tier's other grain, and the panel's tone reads it. This
+    // read: "no prisoner this page can admit is high-risk (see the header), so
+    // a `high-risk` group here would mean the two had come apart", and it
+    // asserted `general-population` for every row. Since ADR 0124 this page can
+    // admit a high-risk prisoner, so the assertion is now the property it
+    // protected: tier 3 and `high-risk` go together, and nothing else is
+    // `high-risk`.
+    for (const row of painted) expect(row.group).toBe(row.tier >= 3 ? 'high-risk' : 'general-population');
   });
 });
 

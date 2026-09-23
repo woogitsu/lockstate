@@ -25,6 +25,17 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * `ClassificationReviewSystem` now carries the same `IntakeGangAssigner` port
  * the intake stage does.
  *
+ * **Since 2026-09-23 the exact request `src/main.ts` sends carries no
+ * `priorIncidents` at all**
+ * ([ADR 0124](../../docs/adr/0124-what-a-prisoner-brings-with-them.md)): the
+ * worker draws the count, flat 60/30/10. This file follows the interface and
+ * omits it, and was re-measured with the real draw. Seed `0x0cc0` draws
+ * `0, 0, 1, 0, 0, 1, 1, 0` for entities 0–7, and no arrival reaches tier 3 at
+ * intake (the tiers are `0, 1, 2, 1, 1, 1, 0, 1`). So every figure below held:
+ * nobody at intake, all eight at 48,000 and the same split. What moved is
+ * the reason nobody joins at intake. It is this seed's draw now, not the only
+ * value the interface could send.
+ *
  * ## The prison
  *
  * The neglected, unguarded shape `risk-tier-neglect-reachability.test.ts`
@@ -47,8 +58,12 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 
 const SEED = 0x0cc0;
 const SENTENCE_LENGTH_TICKS = 60_000;
-/** The exact request `src/main.ts` sends. `priorIncidents: 0` is the whole point of this file. */
-const ADMISSION = { sentenceLengthTicks: SENTENCE_LENGTH_TICKS, priorIncidents: 0 } as const;
+/**
+ * The request `src/main.ts` sends: no `priorIncidents`, so the worker draws
+ * it (ADR 0124). This read `priorIncidents: 0`, "the whole point of this
+ * file". The point is still the interface's own request; the request changed.
+ */
+const ADMISSION = { sentenceLengthTicks: SENTENCE_LENGTH_TICKS } as const;
 
 const CELL_COUNT = 8;
 const ARRIVAL = { x: 16, y: 16 } as const;
@@ -96,7 +111,7 @@ function allMembers(runtime: SimulationRuntime): readonly number[] {
 }
 
 describe('ADR 0103 decision 6, at the site the owner chose (open question 5)', () => {
-  it('assigns nobody at intake, because the only admission a player can make is priorIncidents: 0', () => {
+  it('assigns nobody at intake on this seed, where no drawn count reaches tier 3', () => {
     const runtime = buildNeglectedPrison(CELL_COUNT);
 
     // The two gangs exist from session creation -- decision 1, unchanged.
@@ -105,8 +120,16 @@ describe('ADR 0103 decision 6, at the site the owner chose (open question 5)', (
     // And nobody is in either of them. This is the inertness open question 5
     // was about, reproduced rather than argued: the intake gate is sound and
     // the interface cannot feed it.
-    expect(allMembers(runtime), 'no arrival classifies high-risk at intake from priorIncidents: 0').toEqual([]);
-    expect(runtime.prisoners.records.priorIncidentsAtIntake[0]).toBe(0);
+    // Straight after the commands, before any intake stage has run, every
+    // slot holds the "not drawn yet" sentinel (ADR 0124 §4.4).
+    expect(Array.from(runtime.prisoners.records.priorIncidentsAtIntake.slice(0, CELL_COUNT))).toEqual(Array.from({ length: CELL_COUNT }, () => 255));
+    stepTo(runtime, 1_200);
+    expect(allMembers(runtime), 'no arrival on this seed classifies high-risk at intake').toEqual([]);
+    // The draw, read off the record. Three arrivals carry one prior each and
+    // still land below tier 3, because the screening variance and the
+    // 60,000-tick sentence score no more.
+    expect(Array.from(runtime.prisoners.records.priorIncidentsAtIntake.slice(0, CELL_COUNT))).toEqual([0, 0, 1, 0, 0, 1, 1, 0]);
+    expect(Array.from(runtime.prisoners.records.riskTier.slice(0, CELL_COUNT)).every((tier) => tier < 3)).toBe(true);
   });
 
   it('assigns every arrival at the first review that carries them into high-risk, split on entity-id parity', () => {
@@ -121,9 +144,9 @@ describe('ADR 0103 decision 6, at the site the owner chose (open question 5)', (
 
     expect(runtime.gangs.membersOf('gang.alpha')).toEqual([0, 2, 4, 6]);
     expect(runtime.gangs.membersOf('gang.beta')).toEqual([1, 3, 5, 7]);
-    // Every one of them was admitted at priorIncidents: 0 and is high-risk now.
+    // Every one of them is high-risk now, whatever they drew at intake. The
+    // tier came from what happened in the prison, not from the gate.
     for (let index = 0; index < CELL_COUNT; index += 1) {
-      expect(runtime.prisoners.records.priorIncidentsAtIntake[index]).toBe(0);
       expect(runtime.prisoners.records.riskTier[index]).toBe(3);
     }
   });

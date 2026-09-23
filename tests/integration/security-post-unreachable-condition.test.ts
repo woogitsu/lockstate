@@ -125,7 +125,10 @@ function sealedPrison(segments: number): Session {
   run(900);
 
   send({ type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 0, y: 0 });
-  send({ type: 'AdmitPrisoner', priorIncidents: 0, x: 12, y: 20 });
+  // The interface's own request: no sentence and, since ADR 0124, no
+  // `priorIncidents` either, so the worker draws both. This read
+  // `priorIncidents: 0` while that was what `src/main.ts` sent.
+  send({ type: 'AdmitPrisoner', x: 12, y: 20 });
   run(600);
 
   // A refused command would make every reading below a measurement of a
@@ -266,7 +269,7 @@ describe('a guard post nothing can route to is reported (ADR 0117)', () => {
       send({ type: 'PlaceBuildOrder', orderId: `seal-${String(index)}`, definitionId: 'wall-brick', ...segment });
     }
     run(900);
-    send({ type: 'AdmitPrisoner', priorIncidents: 0, x: 12, y: 20 });
+    send({ type: 'AdmitPrisoner', x: 12, y: 20 });
     run(600);
 
     // The post is just as sealed; what is missing is anybody who could take
