@@ -453,6 +453,11 @@ numbers:
 > day, which missed its first payday on day 10, now misses it on day 24; the
 > order of the rungs is unchanged. §4's open question — whether the rungs move
 > when the floor does — is still not decided by this; only the floor moved.
+> **Ruled the same day:** asked whether the floor and the arrears bound should
+> grow with the treasury (−10,000 and 10,000), the owner chose *"Tak, rośnie ze
+> skarbcem (zalecane)"* — an option label the integrating session wrote, the
+> weaker provenance — so rung 3 at −10,000 is now a ruling and not only a
+> derivation, while rungs 1 and 2 stay the absolute −1,250.
 
 ### 2. What of decision 8 is superseded, and what survives
 
@@ -619,7 +624,11 @@ deferred one, this is the sentence to correct**, and it is marked as theirs in
   live; the day a second floor exists, the choice between "the rungs are these
   three numbers" and "the rungs are these three fractions of whatever the floor
   is" is the owner's, and the clamp is what keeps the ladder coherent until it
-  is made.
+  is made. *(Dated 2026-09-23: the owner ruled, choosing the option labelled
+  "Tak, rośnie ze skarbcem (zalecane)", that the floor — and with it rung 3 and
+  ADR 0096's arrears bound — grows with the treasury, so at the 100,000 grant
+  they are −10,000 and 10,000; rungs 1 and 2 were not asked about and stay
+  absolute, so the "three fractions" reading is still not taken.)*
 - **Whether hiring deserves a rung of its own.** §3c gives it the first rung's
   threshold because a fourth threshold is a fourth ruling.
 - **Whether an unpaid wage is deferred or skipped.** §3f implements ADR 0049's
