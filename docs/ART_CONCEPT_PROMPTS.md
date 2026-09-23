@@ -335,3 +335,11 @@ the exact prompt that produced the delivery's single 1536×1024 world
 illustration. It is the model for the shape of a prompt here, and the
 illustration itself stays a reference with nothing cut out of it — the other
 half of the same ruling.
+
+### Cell waste bin — `fixture.cell.waste_bin`
+
+The refined 1×1 pedal bin has a raised lid, dark liner, a few pale paper scraps,
+restrained teal enamel band and a ribbed foot pedal. This keeps its opening
+recognizable at 64 px without turning the scrap into a patterned texture.
+Its original four-view reference and Blender decisions are recorded in
+`assets/source/concepts/waste-bin-v3.md`.

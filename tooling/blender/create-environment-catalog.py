@@ -139,6 +139,21 @@ def galvanized_material():
     return item
 
 
+def bin_enamel_material():
+    """Worn blue-grey coating on the bin shell, kept subtle at 64 pixels."""
+    item = material("Waste bin worn blue-grey enamel", (0.22, 0.30, 0.35, 1), 0.62)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 19
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.17, 0.24, 0.28, 1)
+    ramp.color_ramp.elements[1].color = (0.32, 0.39, 0.42, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
 def toilet_porcelain_material():
     """Quiet ceramic speckling from the four-view reference, visible up close only."""
     item = material("Cell toilet warm glazed porcelain", (0.82, 0.80, 0.73, 1), 0.29)
@@ -946,20 +961,36 @@ def architectural(collection, root, asset_id):
                      (-0.16, 0.09), (0.16, 0.09), (-0.16, 0.18), (0.16, 0.18)):
             cylinder(collection, root, f"Jet nozzle.{x}.{y}", (x, y, 0.931), 0.018, 0.014, "galvanized_edge", 12)
     elif asset_id == "fixture.cell.waste_bin":
-        # Four-view reference: assets/source/concepts/waste-bin-multiview-v2.png.
-        # A dark opening, raised lid at the back and pedal at the front make
-        # the galvanized bin identifiable from the game's overhead view.
-        cylinder(collection, root, "Pedal-bin body", (0, 0.04, 0.34), 0.32, 0.68, "galvanized", 48)
-        cylinder(collection, root, "Lower reinforcing band", (0, 0.04, 0.12), 0.335, 0.045, "steel", 48)
-        cylinder(collection, root, "Dark bin cavity", (0, 0.04, 0.689), 0.27, 0.02, "metal_recess", 48)
-        torus(collection, root, "Rolled bright rim", (0, 0.04, 0.69), 0.29, 0.038, "galvanized_edge")
-        cylinder(collection, root, "Recessed inner bottom", (0, 0.04, 0.694), 0.13, 0.008, "shade", 32)
-        box(collection, root, "Rear hinge", (0, -0.315, 0.73), (0.29, 0.07, 0.10), "steel", 0.018)
-        cylinder(collection, root, "Lid shell", (0, -0.45, 0.79), 0.25, 0.045, "galvanized", 48)
-        torus(collection, root, "Lid rolled edge", (0, -0.45, 0.817), 0.22, 0.028, "galvanized_edge")
-        cylinder(collection, root, "Lid inset", (0, -0.45, 0.821), 0.17, 0.008, "metal_recess", 32)
-        box(collection, root, "Pedal stem", (0, 0.36, 0.05), (0.10, 0.16, 0.055), "steel", 0.013)
-        box(collection, root, "Foot pedal", (0, 0.44, 0.072), (0.23, 0.12, 0.045), "galvanized_edge", 0.022)
+        # Four-view reference: waste-bin-multiview-v3.png. Pale paper and one
+        # orange card break the cavity's single flat circle at world scale.
+        cylinder(collection, root, "Tapered blue-grey bin shell", (0, 0.045, 0.34), 0.34, 0.68, "bin_enamel", 64)
+        cylinder(collection, root, "Lower dark reinforcing band", (0, 0.045, 0.11), 0.345, 0.045, "steel", 64)
+        torus(collection, root, "Teal upper enamel band", (0, 0.045, 0.65), 0.328, 0.025, "bin_teal")
+        cylinder(collection, root, "Deep open bin cavity", (0, 0.045, 0.688), 0.285, 0.024, "bin_liner", 64)
+        cylinder(collection, root, "Cavity bottom shadow", (0, 0.045, 0.702), 0.22, 0.010, "shade", 48)
+        for index, (x, y, angle) in enumerate(((-0.11, 0.03, 0.42), (0.09, -0.06, -0.36), (-0.02, 0.15, -0.48))):
+            scrap = box(collection, root, f"Crumpled pale paper.{index}", (x, y, 0.73 + index * 0.006), (0.13, 0.11, 0.04), "bin_paper", 0.028)
+            scrap.rotation_euler.z = angle
+            crease = box(collection, root, f"Folded paper facet.{index}", (x + 0.025, y, 0.756 + index * 0.006), (0.062, 0.09, 0.009), "light", 0.004)
+            crease.rotation_euler.z = angle
+        card = box(collection, root, "Discarded orange cardboard", (0.12, 0.12, 0.762), (0.13, 0.10, 0.024), "bin_card", 0.010)
+        card.rotation_euler.z = 0.27
+        torus(collection, root, "Broad brushed steel rolled rim", (0, 0.045, 0.716), 0.303, 0.044, "galvanized_edge")
+        torus(collection, root, "Dark liner fold beneath rim", (0, 0.045, 0.735), 0.251, 0.010, "bin_liner")
+        box(collection, root, "Heavy rear hinge", (0, -0.315, 0.76), (0.32, 0.085, 0.11), "steel", 0.017)
+        for x in (-0.12, 0.12):
+            cylinder(collection, root, f"Hinge pin.{x}", (x, -0.315, 0.827), 0.027, 0.016, "galvanized_edge", 16)
+        lid = cylinder(collection, root, "Raised oval lid shell", (0, -0.445, 0.87), 0.26, 0.058, "bin_enamel", 64)
+        lid.rotation_euler.x = 0.78
+        lid_rim = torus(collection, root, "Lid bright rolled edge", (0, -0.445, 0.91), 0.231, 0.028, "galvanized_edge")
+        lid_rim.rotation_euler.x = 0.78
+        lid_inset = cylinder(collection, root, "Dark underside of open lid", (0, -0.445, 0.915), 0.20, 0.010, "metal_recess", 48)
+        lid_inset.rotation_euler.x = 0.78
+        box(collection, root, "Pedal linkage", (0, 0.37, 0.052), (0.09, 0.17, 0.056), "steel", 0.012)
+        box(collection, root, "Foot pedal steel rim", (0, 0.455, 0.080), (0.27, 0.13, 0.045), "galvanized_edge", 0.018)
+        box(collection, root, "Foot pedal dark grip", (0, 0.455, 0.109), (0.20, 0.092, 0.012), "metal_recess", 0.008)
+        for y in (0.427, 0.455, 0.483):
+            box(collection, root, f"Foot pedal rib.{y}", (0, y, 0.119), (0.17, 0.008, 0.008), "galvanized_edge", 0.002)
     elif "toilet" in asset_id:
         # Reference: cell-toilet-multiview-v3.png. The buildable object is a
         # toilet; the historical collection ID remains stable for consumers.
@@ -1024,6 +1055,11 @@ def main():
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
+    MATERIALS["bin_enamel"] = bin_enamel_material()
+    MATERIALS["bin_teal"] = material("Waste bin muted teal band", (0.05, 0.31, 0.34, 1), 0.65)
+    MATERIALS["bin_liner"] = material("Waste bin black liner", (0.025, 0.032, 0.037, 1), 0.90)
+    MATERIALS["bin_paper"] = material("Crumpled waste paper", (0.69, 0.66, 0.57, 1), 0.94)
+    MATERIALS["bin_card"] = material("Discarded ochre carton", (0.52, 0.31, 0.14, 1), 0.91)
     MATERIALS["toilet_porcelain"] = toilet_porcelain_material()
     MATERIALS["toilet_water"] = material("Cell toilet dark still water", (0.075, 0.18, 0.23, 1), 0.21)
     MATERIALS["canteen_wood"] = canteen_wood_material()
