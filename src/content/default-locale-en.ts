@@ -475,14 +475,13 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *
    * Authored by an agent under the owner's release of 2026-09-04 (*"Sam
    * decyduj zawsze, jak zacznę grać to ujednolicimy"*), so the voice is open
-   * to a unifying pass; the clauses above are not. **What is still the
-   * owner's is loudness** -- whether this should also be a badge visible
-   * without hovering, which #890's own re-measurement names as the judgement
-   * worth putting to them. Nothing here pre-empts that: a description costs
-   * no chip width and paints no colour.
+   * to a unifying pass; the clauses above are not. The owner later chose a
+   * visible badge as well (AGENTS.md ruling 17); its short text below reports
+   * the same published amount, while this sentence still explains the cause.
    */
   'hud.status.earned-withheld':
     "Unmet needs have withheld {withheld} of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
+  'hud.status.earned-withheld-badge': 'Withheld {withheld}',
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',

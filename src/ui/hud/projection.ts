@@ -838,6 +838,13 @@ function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | 
   return { textKey: HUD_MESSAGE_KEY.earnedWithheld, numberParameters: { withheld } };
 }
 
+/** The same published shortfall, visible in the strip under ruling 17 (#890). */
+function earnedWithheldBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
+  const withheld = counts.stateIncomeWithheldTodayMinorUnits;
+  if (withheld === undefined || withheld <= 0) return undefined;
+  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.earnedWithheldBadge, numberParameters: { withheld } };
+}
+
 /**
  * The top strip, left to right.
  *
@@ -1263,20 +1270,11 @@ export function projectStatusMetrics(
       // adds a column without moving one.
       value: counts.stateIncomeAccruedTodayMinorUnits,
       capacity: undefined,
-      // No tone and no badge, for the same reason `funds` has neither: "a good
-      // day" is a threshold, and nobody has set one.
-
+      // No tone on the total: nobody has defined a "good day" threshold.
+      // A positive withheld amount is a separate measured shortfall and gets
+      // the owner's visible badge, with the long explanation still in title.
       tone: undefined,
-      badge: undefined,
-      // **And a description, which is not a tone and not a badge** (issue
-      // #890). The two lines above refuse a threshold nobody has set; this
-      // states a figure the simulation already computes and the player has no
-      // other way to read -- what today's grant is not paying because
-      // residents have needs going unmet. `funds` above is the precedent for
-      // the placement as well as the shape: the owner's ruling of 2026-09-01
-      // put a sentence here rather than in a badge because `.ui-sr-only` and
-      // `title` cost no chip width, and this row's width is measured
-      // (`tests/browser/ui-strip-badged-width.spec.ts`).
+      badge: earnedWithheldBadge(counts),
       description: earnedWithheldDescription(counts),
     },
   ];

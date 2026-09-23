@@ -12,20 +12,16 @@ import './ui-harness-api';
  * proven headlessly -- `tests/unit/ui-hud-projection.test.ts` for the chip's
  * choice and `tests/integration/needs-state-grant-loop.test.ts` for the money,
  * against two prisons built by a real runtime. What neither can reach is
- * **the rendered sentence**. `vitest.config.ts` is `environment: 'node'` with
+ * **the rendered sentence and badge**. `vitest.config.ts` is `environment: 'node'` with
  * no jsdom, so `status-strip.ts` is unreachable there, and the whole point of
  * `HudMetricText.numberParameters` is that the figure goes through the strip's
  * own `Intl` formatter rather than `String()`. `96,400` and `96400` are
  * indistinguishable to every unit test in this repository and different on
  * screen, beside a chip that writes its own number the first way.
  *
- * It is also where #890's own finding is closed the way #890 asked: that
- * comment's weakest claim was that no *reachable* surface names the money, and
- * a grep cannot answer reachability. `.hud-strip__metrics` is `overflow-x:
- * auto` with its scrollbar suppressed, so a chip that does not fit is in the
- * DOM and visible to nobody -- which #629 says does not count. This asserts
- * the chip is still inside the row's own visible box with the sentence on it,
- * which is the property a description was chosen for over a badge.
+ * The badge consumes width; the 900px probe below measures that cost, and the
+ * wide probe verifies it is visible without hovering. The separate #719 fix
+ * gives overflowed strips a visible route to every counter.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -127,26 +123,27 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     // A hover reaches one player and not the other, so the same sentence is in
     // the DOM as screen-reader text.
     expect(withholding.screenReaderText).toBe(withholding.title);
-    // No threshold was set and no colour is painted: the judgement #890 leaves
-    // with the owner is loudness, and this is the quiet half.
-    expect(withholding.badgeText).toBeNull();
+    // Ruling 17 makes the withheld amount visible without hovering. It does
+    // not invent a threshold for whether the total earned today is good.
+    expect(withholding.badgeText).toBe('Withheld 96,400');
     expect(withholding.tone).toBeNull();
-    // **And the sentence costs the row nothing, which is what a description
-    // buys over a badge.** Asserted against the same chip with no sentence on
-    // it rather than against a pinned number, so it holds at any wording:
-    // `.ui-sr-only` is out of flow and `title` is an attribute, so neither the
-    // chip nor the row it sits in may move by a hundredth of a pixel.
+    // The badge is width the player can see; the description still costs no
+    // separate pixels and supplies the causal explanation on hover and speech.
     const unpublished = await show(page, counts());
-    expect(withholding.width).toBe(unpublished.width);
-    expect(withholding.rowScrollWidth).toBe(unpublished.rowScrollWidth);
-    expect(withholding.onScreen).toBe(unpublished.onScreen);
+    expect(withholding.width).toBeGreaterThan(unpublished.width);
+    expect(withholding.rowScrollWidth).toBeGreaterThanOrEqual(unpublished.rowScrollWidth);
 
     // A prison meeting every need carries no sentence at all -- the tooltip is
     // removed rather than blanked, so a hover opens nothing.
     const clear = await show(page, counts({ stateIncomeWithheldTodayMinorUnits: 0 }));
     expect(clear.title).toBeNull();
     expect(clear.screenReaderText).toBe('');
+    expect(clear.badgeText).toBeNull();
     expect(clear.value).toBe(withholding.value);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const wide = await show(page, counts({ stateIncomeWithheldTodayMinorUnits: 96_400 }));
+    expect(wide.onScreen).toBe(true);
+    expect(wide.badgeText).toBe('Withheld 96,400');
   });
 
   test('says nothing about a shortfall the worker did not publish', async ({ page }) => {
