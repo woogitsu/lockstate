@@ -596,4 +596,51 @@ describe('a save taken during a lockdown restores the routes the lift revives (#
     const result = scan(PRISONERS_ONLY, saveTicks, liftAt + 600, events);
     expect(result.failures).toEqual([]);
   });
+
+  /**
+   * A lockdown lifted **just before the budget binds**, arranged so the entries
+   * it invalidated are still cached when it lifts -- the case that
+   * distinguishes carrying entries from carrying keys.
+   *
+   * The case above does not bind the budget, and in it most legs the lockdown
+   * invalidates are asked for again *during* it (the prisoners still want
+   * their meal), which evicts each stale entry and caches the refusal in its
+   * place. Here only the yard is locked, from after the day-2 yard block to
+   * before the day-3 one, once the fixture has finished building (its
+   * geometry changes until about tick 3600, and each change retires every
+   * entry). Nobody asks for the yard while it is shut, so its legs stay cached
+   * and invalid; measured, 9 of them at the lift. On the day-3 block the
+   * budget binds on ticks 8241 and 8242, which it does not on day 3 without
+   * the lockdown.
+   *
+   * **Measured against the design ADR 0007's amendment rejects**: carrying only
+   * the entries valid at the save, with this case's non-vacuity floor off,
+   * makes this case fail and leaves every other case in the file green.
+   */
+  it('24 prisoners: the yard locked between two yard blocks and lifted before the binding one', { timeout: 300_000 }, () => {
+    const lockAt = 6_400;
+    const liftAt = 8_150;
+    const yardDoor = 'door:top:20:28';
+    const events: Events = new Map([
+      [lockAt, (runtime: SimulationRuntime) => runtime.navigation.doors.setState(yardDoor, 'locked')],
+      [liftAt, (runtime: SimulationRuntime) => runtime.navigation.doors.setState(yardDoor, 'open')],
+    ]);
+    const saveTicks: number[] = [];
+    for (let tick = lockAt + 1; tick < liftAt; tick += 149) saveTicks.push(tick);
+    saveTicks.push(liftAt - 1, liftAt);
+
+    const continuous = buildPrison(TWENTY_FOUR);
+    stepTo(continuous, liftAt, events);
+    const stale = continuous.navigation.getInFlightSnapshot().caches?.routes.filter((entry) => entry.dependencies.changed !== undefined).length ?? 0;
+    expect(stale, 'the save must carry legs the lockdown invalidated, or the case is vacuous').toBeGreaterThan(0);
+    let binds = 0;
+    while (continuous.kernel.tick < 8_300) {
+      stepTo(continuous, continuous.kernel.tick + 1, events);
+      if (deferredRequests(continuous) > 0) binds += 1;
+    }
+    expect(binds, 'the budget must bind after the lift, or the case is vacuous').toBeGreaterThan(0);
+
+    const result = scan(TWENTY_FOUR, saveTicks, 8_300 + 400, events);
+    expect(result.failures).toEqual([]);
+  });
 });
