@@ -269,7 +269,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
   'object.fridge',
   'object.loading-dock-door',
-  'object.medical-bed',
   'object.medicine-cabinet',
   'object.prep-counter',
   'object.security-console',
@@ -333,6 +332,7 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
+  'object.medical-bed': 'env.object.medical-bed',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',

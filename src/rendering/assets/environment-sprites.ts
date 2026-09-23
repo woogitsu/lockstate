@@ -81,6 +81,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.door.interior.face',
   'env.door.interior.cap',
   'env.object.bed',
+  'env.object.medical-bed',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
@@ -221,6 +222,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     quarterTurns: 0,
     note: 'Single steel-frame cell bed with grey mattress and folded orange blanket, pillow north. Drawn on object.bed.',
   },
+  'env.object.medical-bed': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.medical.bed.single',
+    runtimeSizePx: { width: 128, height: 256 },
+    quarterTurns: 0,
+    note: 'Adjustable medical bed with teal washable cover, white safety rails and a marked foot panel. Drawn on object.medical-bed.',
+  },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR
    * 0100's second publishing lane rather than from an owner sheet.
@@ -263,8 +271,8 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
    * `furniture.corridor.bench.variants` is a straight name match for
    * `object.bench` and its footprint (2x1) is exact -- no stretch in either
    * direction. Viewed at the actual on-screen size (128x64 world px at zoom
-   * 1, half of `runtimeSizePx` below), the three wooden slats and their two
-   * mounting brackets stay legible; this is the render this ADR's
+   * 1, half of `runtimeSizePx` below), the four wooden slats and steel
+   * supports stay legible; this is the render this ADR's
    * "does it read as the thing it names" test was written for.
    *
    * `quarterTurns: 0` for the same reason `env.object.toilet` carries it:
@@ -276,13 +284,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'furniture.corridor.bench.variants',
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
-    note: 'Corridor bench, three wooden slats on brackets, rendered top-down (ADR 0100). Drawn on object.bench.',
+    note: 'Corridor bench with four worn wooden slats, steel frame and floor anchors, drawn on object.bench.',
   },
   /**
    * `furniture.office.desk.employee.variants` is a straight name match for
-   * `object.desk` and its footprint (2x1) is exact. Viewed at 128x64: a wood
-   * desktop, a dark blotter/mat and a small pale object beside it (a
-   * keyboard or a stack of paper, seen top-down and flat) -- distinct enough
+   * `object.desk` and its footprint (2x1) is exact. Viewed at 128x64: a
+   * grey-oak laminate top, an olive paperwork tray and a projecting drawer
+   * pedestal stay distinct enough
    * from a bare rectangle to read as furniture with something on it, which is
    * the property the bench above and the toilet already have and `object.chair`'s
    * rejected render does not (`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK`
@@ -293,7 +301,7 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'furniture.office.desk.employee.variants',
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
-    note: 'Employee desk with a dark blotter, rendered top-down (ADR 0100). Drawn on object.desk.',
+    note: 'Employee desk with grey-oak top, paperwork tray and steel drawer pedestal, drawn on object.desk.',
   },
   'env.object.shower-head': {
     kind: 'rendered-art',

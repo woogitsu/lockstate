@@ -84,6 +84,8 @@ const FIXTURE: HarnessWorldFixture = {
   chairTileY: 4,
   diningTableTileX: 24,
   diningTableTileY: 4,
+  medicalBedTileX: 28,
+  medicalBedTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -219,6 +221,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'dining-table-wooden',
       tileX: FIXTURE.diningTableTileX,
       tileY: FIXTURE.diningTableTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-medical-bed',
+      definitionId: 'medical-bed-wooden',
+      tileX: FIXTURE.medicalBedTileX,
+      tileY: FIXTURE.medicalBedTileY,
       phase: 'built',
     },
   ];

@@ -63,6 +63,7 @@ PALETTE = {
     "galvanized": ((0.53, 0.57, 0.57, 1), 0.59),
     "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
     "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
+    "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
 }
 
 MODELS = (
@@ -84,6 +85,7 @@ MODELS = (
     ("furniture.storage.rack.wooden", (1, 1)),
     ("furniture.chair.wooden", (1, 1)),
     ("furniture.dining.table.wooden", (3, 2)),
+    ("furniture.medical.bed.single", (1, 2)),
 )
 
 
@@ -291,7 +293,32 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if "bed" in asset_id:
+    if asset_id == "furniture.medical.bed.single":
+        # assets/source/concepts/medical-bed-multiview-v1.png: rails and the
+        # medical cross separate this from the ordinary cell bed at game scale.
+        for x in (-0.39, 0.39):
+            for y in (-0.84, 0.84):
+                cylinder(collection, root, f"Inset caster.{x}.{y}", (x, y, 0.09), 0.064, 0.12, "steel", 16)
+                cylinder(collection, root, f"Caster hub.{x}.{y}", (x, y, 0.16), 0.026, 0.012, "galvanized_edge", 12)
+        box(collection, root, "Medical steel base", (0, 0, 0.39), (0.87, 1.78, 0.12), "galvanized", 0.025)
+        box(collection, root, "Adjustable head base", (0, -0.51, 0.54), (0.76, 0.64, 0.10), "galvanized_edge", 0.025)
+        box(collection, root, "Washable mattress edge", (0, 0, 0.58), (0.76, 1.67, 0.20), "porcelain", 0.055)
+        box(collection, root, "Teal medical mattress", (0, 0, 0.695), (0.71, 1.62, 0.035), "medical_fabric", 0.022)
+        box(collection, root, "Raised head cover", (0, -0.51, 0.725), (0.71, 0.56, 0.06), "medical_fabric", 0.035)
+        box(collection, root, "Cream medical pillow", (0, -0.57, 0.79), (0.58, 0.30, 0.075), "light", 0.05)
+        box(collection, root, "Teal blanket fold", (0, 0.17, 0.731), (0.70, 0.09, 0.035), "medical_fabric", 0.018)
+        # Pair of short safety rails on each side, with a visible break.
+        for x in (-0.44, 0.44):
+            for y in (-0.27, 0.35):
+                box(collection, root, f"Safety rail.{x}.{y}", (x, y, 0.77), (0.065, 0.47, 0.18), "porcelain", 0.02)
+                box(collection, root, f"Rail slot.{x}.{y}", (x, y, 0.866), (0.035, 0.27, 0.01), "shade", 0.004)
+        for y in (-0.88, 0.88):
+            box(collection, root, f"End panel.{y}", (0, y, 0.65), (0.78, 0.09, 0.34), "porcelain", 0.028)
+            for x in (-0.32, 0.32):
+                cylinder(collection, root, f"Panel bolt.{x}.{y}", (x, y, 0.826), 0.018, 0.01, "steel", 12)
+        box(collection, root, "Foot cross horizontal", (0, 0.88, 0.832), (0.19, 0.042, 0.01), "medical_teal", 0.003)
+        box(collection, root, "Foot cross vertical", (0, 0.88, 0.838), (0.045, 0.078, 0.01), "medical_teal", 0.003)
+    elif "bed" in asset_id:
         # Four-view reference: assets/source/concepts/cell-bed-multiview-v2.png.
         # Rails, pillow and orange blanket fold are legible from directly above.
         box(collection, root, "Steel mattress support", (0, 0, 0.38), (0.85, 1.76, 0.11), "steel", 0.025)
@@ -620,6 +647,7 @@ def main():
     MATERIALS["desk_laminate"] = employee_desk_laminate_material()
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
+    MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)

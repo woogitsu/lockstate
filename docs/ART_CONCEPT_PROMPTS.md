@@ -137,6 +137,17 @@ coping proud of the quarter-tile edge.
 before prompting: it declares `(1, 1)` while the shipped sheet is a 1:2.5
 combined column, and its basin overhangs its own tile by 0.02.
 
+### Infirmary — `furniture.medical.bed.single`
+
+> a medical bed, 1×2 tiles, shown in a true overhead view and three consistent
+> oblique views — teal washable cover, raised head section, white segmented
+> side rails, and a marked foot panel
+> …the rails and teal cover must distinguish it from the ordinary cell bed at
+> the game's 64×128 px size; the caster wheels stay inside the footprint.
+
+The resulting original reference and packed fabric swatch are recorded in
+`assets/source/concepts/medical-bed-v1.md`.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 > a fixed corridor bench, 2×1 tiles, seen from directly above with its sides

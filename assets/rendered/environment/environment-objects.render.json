@@ -415,6 +415,33 @@
       }
     },
     {
+      "assetId": "furniture.medical.bed.single",
+      "image": "furniture.medical.bed.single.png",
+      "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",
+      "pixelSha256": "8b18e7610a7820bdd432769cefb791a82a1e7b0a5648cd3e9f8ca54ac15ecb50",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 2.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 2.24
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 512
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 43,
+        "width": 218,
+        "height": 426,
+        "opaquePixels": 89330
+      }
+    },
+    {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
       "sha256": "1dbdd9274f826bd2c02f5c3b06b11adb06b06b7c41582d55377254713cdfdf49",
