@@ -25,7 +25,9 @@ import { StaffCoverageReader, staffCoverageFromProjection } from '../../src/ui/s
  * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md)
  * consequence 1).
  *
- * Three claims, different in kind.
+ * Three claims, different in kind. The original three posting figures and
+ * states are retained below; ADR 0095 adds a fourth panel presentation state
+ * and two reserve figures, without changing the simulation posting ladder.
  *
  * **That the mapping decides nothing the simulation decided.** The three
  * figures are the projection's own. In particular `shortage` is *carried* and
@@ -50,6 +52,17 @@ import { StaffCoverageReader, staffCoverageFromProjection } from '../../src/ui/s
 
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
+/** Posting-only fixtures have one eligible free guard unless a case overrides it. */
+function describeCoverage(coverage: {
+  readonly required: number;
+  readonly assigned: number;
+  readonly shortage: number;
+  readonly availableReserve?: number;
+  readonly targetReserve?: number;
+}) {
+  return describeStaffCoverage({ availableReserve: 1, targetReserve: 5, ...coverage });
+}
+
 /**
  * A `hud/staff` reply with the totals written out.
  *
@@ -64,7 +77,7 @@ function staffView(totals: { required: number; assigned: number; shortage: numbe
     countsByRoleId: [],
     countsByDeploymentPhase: [],
     coverage: [],
-    totals: { hired: 0, unassigned: 0, ...totals },
+    totals: { hired: 0, unassigned: 0, availableReserve: 2, targetReserve: 5, ...totals },
   } as unknown as StaffViewModel;
 }
 
@@ -74,6 +87,8 @@ describe('the mapping carries three figures and computes none of them', () => {
       required: 2,
       assigned: 1,
       shortage: 1,
+      availableReserve: 2,
+      targetReserve: 5,
     });
   });
 
@@ -86,13 +101,22 @@ describe('the mapping carries three figures and computes none of them', () => {
     expect(model.shortage).toBe(2);
     expect(model.required - model.assigned).toBe(0);
     // And the readout says so, which is the half that reaches the player.
-    expect(describeStaffCoverage(model).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageShort);
+    expect(describeCoverage(model).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageShort);
   });
 });
 
-describe('the block says one of three things, and which one is a decision', () => {
+describe('the block distinguishes posting from a free response reserve', () => {
+  it('names a full set of posts with no guard free to respond or search', () => {
+    expect(describeCoverage({ required: 2, assigned: 2, shortage: 0, availableReserve: 0, targetReserve: 5 })).toEqual({
+      tone: 'caution',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageNoReserveHint,
+      consequenceKey: HUD_MESSAGE_KEY.securityCoverageNoReserveConsequence,
+      hireCount: 5,
+    });
+  });
   it('says the prison has what it asks for when nothing is short', () => {
-    expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 })).toEqual({
+    expect(describeCoverage({ required: 2, assigned: 2, shortage: 0 })).toEqual({
       tone: 'success',
       badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
       hintKey: HUD_MESSAGE_KEY.securityCoverageMetHint,
@@ -103,7 +127,7 @@ describe('the block says one of three things, and which one is a decision', () =
   it('says understaffed, and how many more, when some of the requirement is met', () => {
     // The exact state a 12-bed prison holding 12 with one guard is in: the
     // requirement went to 2 at the ninth prisoner and one hire has answered it.
-    expect(describeStaffCoverage({ required: 2, assigned: 1, shortage: 1 })).toEqual({
+    expect(describeCoverage({ required: 2, assigned: 1, shortage: 1 })).toEqual({
       tone: 'warning',
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
@@ -115,7 +139,7 @@ describe('the block says one of three things, and which one is a decision', () =
     // ADR 0048 decision 5: a prison missing toilets, showers and a yard riots
     // *only if it is also unguarded*, so this is a different prison from the
     // one above rather than a worse one, and it gets a different word.
-    expect(describeStaffCoverage({ required: 2, assigned: 0, shortage: 2 })).toEqual({
+    expect(describeCoverage({ required: 2, assigned: 0, shortage: 2 })).toEqual({
       tone: 'danger',
       badgeKey: HUD_MESSAGE_KEY.securityCoverageUnguarded,
       hintKey: HUD_MESSAGE_KEY.securityCoverageUnguardedHint,
@@ -124,29 +148,29 @@ describe('the block says one of three things, and which one is a decision', () =
     });
   });
 
-  it('says what the rung costs on the unguarded rung and on neither other', () => {
+  it('keeps the safety consequence on the unguarded rung alone', () => {
     // The owner's wording of 2026-09-03 is a *second* fact about one rung, not
-    // a fourth state, so the assertion that carries it is which rungs have it.
-    // `undefined` on the other two is the multiplier and not a choice about
+    // the no-reserve message. This assertion pins its distinct safety wording.
+    // `undefined` on the historical posting-only inputs is the multiplier and not a choice about
     // emphasis -- the coupling test below is where that is nailed down.
-    expect(describeStaffCoverage({ required: 2, assigned: 0, shortage: 2 }).consequenceKey).toBe(
+    expect(describeCoverage({ required: 2, assigned: 0, shortage: 2 }).consequenceKey).toBe(
       HUD_MESSAGE_KEY.securityCoverageUnguardedConsequence,
     );
-    expect(describeStaffCoverage({ required: 2, assigned: 1, shortage: 1 }).consequenceKey).toBeUndefined();
-    expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 }).consequenceKey).toBeUndefined();
+    expect(describeCoverage({ required: 2, assigned: 1, shortage: 1 }).consequenceKey).toBeUndefined();
+    expect(describeCoverage({ required: 2, assigned: 2, shortage: 0 }).consequenceKey).toBeUndefined();
     // And a prison that asks for nobody, which reads `covered` rather than
     // `unguarded` (ADR 0048 decision 3's exemption): it has no occupant for
     // `SafetyCoverageSystem` to fail to provision, so the sentence would be a
     // warning about a prison the simulation is asking nothing of.
-    expect(describeStaffCoverage({ required: 0, assigned: 0, shortage: 0 }).consequenceKey).toBeUndefined();
+    expect(describeCoverage({ required: 0, assigned: 0, shortage: 0 }).consequenceKey).toBeUndefined();
   });
 
   it('puts the boundary between unguarded and understaffed at the first assigned guard', () => {
     // One guard, in a prison that wants three, is understaffed and not
     // unguarded -- the boundary the tone rule turns on, asserted either side of
     // itself rather than only inside each band.
-    expect(describeStaffCoverage({ required: 3, assigned: 0, shortage: 3 }).tone).toBe('danger');
-    expect(describeStaffCoverage({ required: 3, assigned: 1, shortage: 2 }).tone).toBe('warning');
+    expect(describeCoverage({ required: 3, assigned: 0, shortage: 3 }).tone).toBe('danger');
+    expect(describeCoverage({ required: 3, assigned: 1, shortage: 2 }).tone).toBe('warning');
   });
 
   it('calls a prison that asks for nobody covered rather than unguarded', () => {
@@ -154,13 +178,13 @@ describe('the block says one of three things, and which one is a decision', () =
     // 0048 decision 3), not a small requirement. "Unguarded" would be a warning
     // about a prison the simulation is not asking anything of. Unreachable from
     // `applyDefaultSecuritySector`, which authors a floor of one.
-    expect(describeStaffCoverage({ required: 0, assigned: 0, shortage: 0 }).tone).toBe('success');
+    expect(describeCoverage({ required: 0, assigned: 0, shortage: 0 }).tone).toBe('success');
   });
 });
 
 describe('every sentence the block can render is real text with its placeholders filled', () => {
   const render = (coverage: { required: number; assigned: number; shortage: number }): string => {
-    const readout = describeStaffCoverage(coverage);
+    const readout = describeCoverage(coverage);
     return readout.hireCount > 0
       ? localizer.format(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })
       : localizer.format(readout.hintKey);
@@ -268,20 +292,21 @@ describe('every sentence the block can render is real text with its placeholders
     expect(summary).not.toContain('{');
   });
 
-  it('gives each of the three states a badge word, so the colour never stands alone', () => {
+  it('gives each presentation state a badge word, so the colour never stands alone', () => {
     const words = [
       HUD_MESSAGE_KEY.securityCoverageMet,
+      HUD_MESSAGE_KEY.securityCoverageNoReserve,
       HUD_MESSAGE_KEY.securityCoverageShort,
       HUD_MESSAGE_KEY.securityCoverageUnguarded,
     ].map((key) => localizer.format(key));
     for (const word of words) expect(word.trim().length).toBeGreaterThan(0);
-    // Three words, not one word three times: a badge that read the same in
+    // Four distinct words: a badge that read the same in
     // every state would be a colour standing alone after all.
-    expect(new Set(words).size).toBe(3);
+    expect(new Set(words).size).toBe(4);
   });
 
   it('renders the consequence sentence whole, and it declares no placeholder to leave unfilled', () => {
-    const readout = describeStaffCoverage({ required: 1, assigned: 0, shortage: 1 });
+    const readout = describeCoverage({ required: 1, assigned: 0, shortage: 1 });
     // Narrowed rather than asserted non-null: the field is optional and the
     // test above is what proves this rung has it.
     const key = readout.consequenceKey;
@@ -442,7 +467,7 @@ describe('the reader asks for the figures and none of the rows', () => {
     const reader = new StaffCoverageReader(channel, { generateMessageId: () => 'req-1', replyTimeoutMs: 1_000 });
     const pending = reader.read();
     channel.reply(0, staffView({ required: 2, assigned: 0, shortage: 2 }));
-    await expect(pending).resolves.toEqual({ required: 2, assigned: 0, shortage: 2 });
+    await expect(pending).resolves.toEqual({ required: 2, assigned: 0, shortage: 2, availableReserve: 2, targetReserve: 5 });
     reader.dispose();
   });
 
@@ -461,7 +486,7 @@ describe('the reader asks for the figures and none of the rows', () => {
     expect(channel.sent).toHaveLength(1);
 
     channel.reply(0, staffView({ required: 1, assigned: 1, shortage: 0 }));
-    await expect(first).resolves.toEqual({ required: 1, assigned: 1, shortage: 0 });
+    await expect(first).resolves.toEqual({ required: 1, assigned: 1, shortage: 0, availableReserve: 2, targetReserve: 5 });
 
     // And it is a latch rather than a one-shot: the next cadence asks again.
     const third = reader.read().catch(() => undefined);

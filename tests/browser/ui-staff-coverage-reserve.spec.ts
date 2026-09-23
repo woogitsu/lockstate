@@ -102,7 +102,7 @@ const COVERAGE_VIEWPORTS = [
 const HINT = '.hud-staff__coverage > .hud-staff__note:not(.hud-staff__coverage-consequence)';
 
 /** The prison #941 measured: the requirement met exactly, with one guard left over. */
-const COVERED = { required: 3, assigned: 3, shortage: 0 } as const;
+const COVERED = { required: 3, assigned: 3, shortage: 0, availableReserve: 1, targetReserve: 5 } as const;
 
 /**
  * Both readouts on one view model, because the harness cannot publish them one
@@ -278,7 +278,7 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
      */
     await page.evaluate(
       (model) => window.lockstateUiHarness.setHudViewModel(model),
-      coveredPrison({ required: 2, assigned: 3, shortage: 0 }),
+      coveredPrison({ required: 2, assigned: 3, shortage: 0, availableReserve: 1, targetReserve: 5 }),
     );
     const surplus = await readHint(page);
     expect(surplus.tone, 'a prison past its requirement is not on the covered rung').toBe('success');
@@ -313,5 +313,34 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
       ).toBeLessThanOrEqual(probe.panelVisibleBottom);
       expect(probe.hireLabel.length, `the hire control is gone at ${where}`).toBeGreaterThan(0);
     }
+  });
+});
+
+test.describe('a staffed prison with no response reserve (#893)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(HARNESS_URL);
+  });
+
+  test('shows the missing reserve and the hiring target without clipping on a short screen', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
+    await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), coveredPrison({
+      required: 3, assigned: 3, shortage: 0, availableReserve: 0, targetReserve: 5,
+    }));
+
+    const reading = await readHint(page);
+    expect(reading.badge).toBe('No reserve');
+    expect(reading.tone).toBe('caution');
+    expect(reading.text).toBe('Hire 5 for the largest response.');
+    expect(await page.locator('.hud-staff__coverage-consequence').innerText()).toBe(
+      'No free guards for incidents or searches.',
+    );
+    await expectNotClipped(page, HINT, 'the no-reserve hiring target');
+    await expectNotClipped(page, '.hud-staff__coverage-consequence', 'the no-reserve consequence');
+    const hireBox = await page.locator('.hud-staff__hire').boundingBox();
+    const fold = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).panelVisibleBottom;
+    expect(hireBox, 'the hiring control has no box').not.toBeNull();
+    expect(hireBox!.y + hireBox!.height, 'the hiring control fell below the panel fold').toBeLessThanOrEqual(fold);
   });
 });

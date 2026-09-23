@@ -2502,6 +2502,10 @@ export interface HudStaffCoverageViewModel {
   readonly assigned: number;
   /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
   readonly shortage: number;
+  /** Guards free and eligible for incident response or a search. */
+  readonly availableReserve: number;
+  /** Number needed for the highest incident severity this build produces. */
+  readonly targetReserve: number;
 }
 
 /*

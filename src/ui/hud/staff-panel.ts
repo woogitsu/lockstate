@@ -327,6 +327,11 @@ export function formatHeldGuardText(
  * - **Understaffed** (`warning`): it has some of what it asks for.
  * - **Covered** (`success`): it has all of it.
  *
+ * **Superseded for the panel by ADR 0095 decision 1 (2026-09-24):** the
+ * simulation's posting ladder above is still three states, but the Staff
+ * panel now distinguishes filled posts with no free responder as a fourth
+ * presentation state. Posting and response remain separate budgets.
+ *
  * A `success` tone for the third rather than no tone, which is where this
  * departs from `occupancyTone` deliberately. That function returns `undefined`
  * below its warning band because *"a status strip where several things are
@@ -444,16 +449,13 @@ export interface StaffCoverageReadout {
   readonly hintKey: LocalizationKey;
   /**
    * A second sentence saying what the rung *costs*, where the cost is total
-   * and stateable -- the `unguarded` rung and no other. Absent, not
-   * present-and-`undefined`, because `exactOptionalPropertyTypes` is on and
-   * the two other branches have nothing to say here rather than a nothing to
-   * say it with.
+   * and stateable -- the `unguarded` and `no reserve` rungs. The latter says
+   * that neither incident response nor searches can start with an empty pool.
    */
   readonly consequenceKey?: LocalizationKey;
   /**
-   * How many more hires clear the shortage -- the projection's own summed
-   * figure, not `required - assigned`. Zero when nothing is short, and then it
-   * fills no placeholder because `securityCoverageMetHint` declares none.
+   * Hires to clear the posting shortage, or the worst-case response reserve
+   * on the no-reserve rung. Zero on the ordinary covered rung.
    */
   readonly hireCount: number;
 }
@@ -477,6 +479,17 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
       hireCount: coverage.shortage,
+    };
+  }
+  // A filled post is not a free responder. Keep the posting readout intact,
+  // and name the empty claimable pool before calling this prison Covered.
+  if (coverage.required > 0 && coverage.availableReserve === 0) {
+    return {
+      tone: 'caution',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageNoReserveHint,
+      consequenceKey: HUD_MESSAGE_KEY.securityCoverageNoReserveConsequence,
+      hireCount: coverage.targetReserve,
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
@@ -835,7 +848,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     const readout = describeStaffCoverage(coverage);
     // The block's own handle for a browser probe, in the shape `data-held` and
     // `data-guard` already use one section down: it lets a spec assert *which of
-    // the three states the panel decided* without matching translated text, so
+    // the state the panel decided without matching translated text, so
     // the assertion survives a reworded sentence. No stylesheet reads it -- the
     // colour is the badge's, and the badge carries the word beside it.
     coverageBlock.dataset['tone'] = readout.tone;

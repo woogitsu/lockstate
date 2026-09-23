@@ -146,6 +146,11 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * from one pool is ADR 0095's question and it is open. Not that the copy should
  * say something in particular either: `hud.security.coverage-met-hint` is
  * player-visible text and `AGENTS.md`'s fourth exclusion reserves it.
+ *
+ * **Superseded 2026-09-24:** ADR 0095 decision 1 is accepted. The simulation
+ * still draws both duties from one pool, but the panel now marks the zero-free
+ * row as `No reserve` and keeps `Covered` for rows with a free guard. The
+ * historical measurements above remain the evidence for that distinction.
  */
 
 /** Distinct from every other seed in the suite, so a shared fixture cannot make these figures true by accident. */
@@ -283,14 +288,15 @@ function readAfterSixteenDays(guardCount: number, scheduledGuardCount?: number):
 }
 
 const COVERED = 'hud.security.coverage-met';
+const NO_RESERVE = 'hud.security.coverage-no-reserve';
 const UNDERSTAFFED = 'hud.security.coverage-short';
 
 describe('coverage and response draw from one pool, and the panel speaks about the first', () => {
-  it('reports the prison Covered at the exact hire count that leaves nothing able to respond', () => {
+  it('reports filled posts and no reserve at the exact hire count that leaves nothing able to respond', () => {
     const reading = readAfterSixteenDays(REQUIRED_AT_POPULATION);
 
     // What a player sees.
-    expect(reading.badgeKey).toBe(COVERED);
+    expect(reading.badgeKey).toBe(NO_RESERVE);
     expect([reading.assigned, reading.required, reading.shortage]).toEqual([2, 2, 0]);
 
     // What a player does not.
@@ -315,7 +321,7 @@ describe('coverage and response draw from one pool, and the panel speaks about t
 
     // The badge moves. It is the only thing that moves.
     expect(short.badgeKey).toBe(UNDERSTAFFED);
-    expect(covered.badgeKey).toBe(COVERED);
+    expect(covered.badgeKey).toBe(NO_RESERVE);
     expect(short.shortage).toBe(1);
 
     // `lapsed + open` rather than `lapsed` since #586: the two prisons now
@@ -330,13 +336,11 @@ describe('coverage and response draw from one pool, and the panel speaks about t
     ]);
   });
 
-  it('publishes the same badge, character for character, across every hire count from the requirement to three times it', () => {
-    // The panel's whole vocabulary for this block is three rungs, and the top
-    // rung covers the entire interesting range. Six guards contained every
-    // riot until #586 (seven does since) and two guards answers nothing; a
-    // player reading the badge cannot tell those prisons apart.
+  it('separates the empty reserve from every hire count above the requirement', () => {
+    // The accepted fourth presentation rung makes the two-guard prison legible;
+    // the incident outcomes below remain a separate simulation measurement.
     const badges = [2, 3, 4, 6].map((count) => readAfterSixteenDays(count).badgeKey);
-    expect(badges).toEqual([COVERED, COVERED, COVERED, COVERED]);
+    expect(badges).toEqual([NO_RESERVE, COVERED, COVERED, COVERED]);
   });
 });
 
@@ -449,9 +453,9 @@ describe('raising the requirement to the number a player should hire makes it st
     expect([sevenSpare.required, sevenSpare.assigned, sevenSpare.spare]).toEqual([2, 2, 5]);
     expect([sevenPosted.required, sevenPosted.assigned, sevenPosted.spare]).toEqual([7, 7, 0]);
 
-    // Both read `Covered`, which is the point: the badge cannot tell them apart
-    // any more than it can tell two guards from seven.
-    expect([sevenSpare.badgeKey, sevenPosted.badgeKey]).toEqual([COVERED, COVERED]);
+    // The same seven hires now read differently because all seven are posted
+    // under the authored requirement, leaving no free responder.
+    expect([sevenSpare.badgeKey, sevenPosted.badgeKey]).toEqual([COVERED, NO_RESERVE]);
 
     expect([sevenSpare.resolved, sevenSpare.lapsed, sevenSpare.dispatched]).toEqual([9, 0, 41]);
     expect([sevenPosted.resolved, sevenPosted.lapsed, sevenPosted.dispatched]).toEqual([0, 8, 0]);
@@ -495,9 +499,8 @@ describe('what a prison at its requirement can still do about a riot, and is nev
     const after = read(runtime);
     expect(after.resolved).toBeGreaterThan(0);
     expect(after.dispatched).toBeGreaterThanOrEqual(needed);
-    // And the badge said `Covered` before the rescue and says it after: the
-    // one gesture that changed the outcome is invisible to the block that is
-    // supposed to be about having enough guards.
-    expect([before.badgeKey, after.badgeKey]).toEqual([COVERED, COVERED]);
+    // The response hire also changes the badge: the empty reserve is no longer
+    // hidden behind a posting-only `Covered` state.
+    expect([before.badgeKey, after.badgeKey]).toEqual([NO_RESERVE, COVERED]);
   });
 });

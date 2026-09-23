@@ -1,4 +1,6 @@
 import type { EntityId } from '../entity/entity-store';
+/** Highest severity produced by the incident trigger; the response readout plans against it. */
+export const MAX_INCIDENT_SEVERITY = 10;
 
 export const INCIDENT_RECORD_SCHEMA_VERSION = 1 as const;
 

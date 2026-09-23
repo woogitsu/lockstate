@@ -109,6 +109,8 @@ function readout(runtime: SimulationRuntime): {
   readonly required: number;
   readonly assigned: number;
   readonly shortage: number;
+  readonly availableReserve: number;
+  readonly targetReserve: number;
   readonly badgeKey: string;
   readonly tone: string;
   readonly hireCount: number;
@@ -128,6 +130,10 @@ function admit(runtime: SimulationRuntime, ordinal: number): void {
 
 function hire(runtime: SimulationRuntime, ordinal: number): void {
   submit(runtime, `hire-${String(ordinal)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));
+}
+
+function hireNurse(runtime: SimulationRuntime): void {
+  submit(runtime, 'hire-nurse', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.nurse', ...ORIGIN }));
 }
 
 describe('the requirement a player has to act on moves, and the panel is told', () => {
@@ -177,9 +183,9 @@ describe('the requirement a player has to act on moves, and the panel is told', 
       required: 1,
       assigned: 1,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve,
+      tone: 'caution',
+      hireCount: 5,
     });
 
     admit(runtime, NINTH);
@@ -237,13 +243,18 @@ describe('the requirement a player has to act on moves, and the panel is told', 
  * docblock argues is untouched -- the figures still cannot distinguish the two
  * prisons, and the sentence still asserts no state of the reserve.
  *
+ * **Superseded 2026-09-24 by ADR 0095 decision 1:** the panel now receives
+ * `availableReserve` and the ceiling-based `targetReserve`. Exactly two posted
+ * guards read `No reserve`, and one eligible free guard reads `Covered`.
+ * The old paragraph records why a posting figure could not tell them apart.
+ *
  * **This asserts nothing about balance and must not.** How large the reserve
  * should be is issue #941 option 1 and `AGENTS.md` reserves it to the owner;
  * `src/simulation/staff/dismissal.ts` is the precedent. What is asserted here
  * is only that the panel's figures do not distinguish the two prisons.
  */
-describe('the rung the panel calls covered does not say whether anyone can answer (#941)', () => {
-  it('has an empty responder pool at exactly the requirement, and reads the same one hire later', () => {
+describe('the reserve readout distinguishes filled posts from a free responder (#893)', () => {
+  it('has an empty responder pool at exactly the requirement, and changes one eligible hire later', () => {
     const runtime = twelveCellPrison();
     for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
     stepTo(runtime, runtime.kernel.tick + 60);
@@ -261,9 +272,9 @@ describe('the rung the panel calls covered does not say whether anyone can answe
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve,
+      tone: 'caution',
+      hireCount: 5,
     });
     /*
      * **The whole defect, in one figure.** `claimableGuardIds` is the function
@@ -274,14 +285,19 @@ describe('the rung the panel calls covered does not say whether anyone can answe
      * watch every incident lapse."
      */
     expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(0);
+    expect(atRequirement).toMatchObject({ availableReserve: 0, targetReserve: 5, badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve });
+
+    hireNurse(runtime);
+    stepTo(runtime, runtime.kernel.tick + 20);
+    expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(0);
+    expect(readout(runtime)).toMatchObject({ availableReserve: 0, badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve });
 
     hire(runtime, 3);
     stepTo(runtime, runtime.kernel.tick + 20);
 
-    // One guard free -- and the coverage readout is byte-identical to the
-    // prison above it, which is why the sentence cannot be about the reserve.
+    // One guard free changes the reserve readout; a nurse did not.
     expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
-    expect(readout(runtime)).toEqual(atRequirement);
+    expect(readout(runtime)).toMatchObject({ availableReserve: 1, targetReserve: 5, badgeKey: HUD_MESSAGE_KEY.securityCoverageMet });
   });
 
   it('needs two of that pool for the mildest incident the simulation can open', () => {
@@ -344,7 +360,7 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * Nothing here rules on how big the requirement should be. That is balance and
  * `AGENTS.md` reserves it to the owner; this file establishes the arithmetic.
  */
-describe('the rung the panel calls covered does not say whether anyone can search (#989)', () => {
+describe('the search pool and the displayed reserve (#989, #996)', () => {
   /**
    * `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS`, and long enough for several of it.
    *
@@ -378,7 +394,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
    * reads the same for all three -- which is the defect #989 named and #996
    * did not close.
    */
-  it('orders no sweep at the requirement or one hire past it, orders them two hires past, and reads the same either way (#989, #996)', () => {
+  it('orders no sweep at the requirement or one hire past it, and distinguishes the empty reserve', () => {
     const atRequirement = prisonWithGuards(2);
     const oneHirePast = prisonWithGuards(3);
     const twoHiresPast = prisonWithGuards(4);
@@ -391,13 +407,10 @@ describe('the rung the panel calls covered does not say whether anyone can searc
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
     };
-    expect(readout(atRequirement)).toMatchObject(covered);
-    expect(readout(oneHirePast)).toEqual(readout(atRequirement));
-    expect(readout(twoHiresPast)).toEqual(readout(atRequirement));
+    expect(readout(atRequirement)).toMatchObject({ ...covered, availableReserve: 0, badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve });
+    expect(readout(oneHirePast)).toMatchObject({ ...covered, availableReserve: 1, badgeKey: HUD_MESSAGE_KEY.securityCoverageMet });
+    expect(readout(twoHiresPast)).toMatchObject({ ...covered, availableReserve: 2, badgeKey: HUD_MESSAGE_KEY.securityCoverageMet });
 
     // The pool the two duties compete for, through the function both of them
     // call rather than a re-derivation of it.
@@ -433,10 +446,13 @@ describe('the rung the panel calls covered does not say whether anyone can searc
   it('renders the sentence that says so, as real text from the bundled catalog', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const runtime = prisonWithGuards(2);
-    const described = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 });
+    const described = describeStaffCoverage(staffCoverageFromProjection(projectStaff({
+      staff: runtime.securityGuards,
+      deployment: runtime.deploymentSystem,
+    }, runtime.kernel.tick)));
 
-    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
-    const sentence = localizer.format(described.hintKey);
+    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageNoReserve);
+    const sentence = localizer.format(described.consequenceKey!);
     // Both duties named, in the prison that can do neither. Pinned verbatim in
     // `tests/unit/ui-simulation-staff-coverage.test.ts`; what this asserts is
     // that the two words are the ones this prison's own systems are short of.
@@ -546,8 +562,8 @@ describe('hiring visibly fixes it, through the same command a player presses', (
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoReserve,
+      hireCount: 5,
     });
   });
 

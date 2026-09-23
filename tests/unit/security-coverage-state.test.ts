@@ -88,7 +88,7 @@ describe('the simulation ladder and the Staff panel ladder', () => {
   it('agree on every triple a prison can be in', () => {
     for (const row of grid()) {
       const state = resolveSectorCoverageState(row);
-      expect(describeStaffCoverage(row).badgeKey, `required ${String(row.required)}, assigned ${String(row.assigned)}`).toBe(
+      expect(describeStaffCoverage({ ...row, availableReserve: 1, targetReserve: 5 }).badgeKey, `required ${String(row.required)}, assigned ${String(row.assigned)}`).toBe(
         PANEL_BADGE[state],
       );
     }
@@ -106,7 +106,7 @@ describe('the simulation ladder and the Staff panel ladder', () => {
     const summed: SectorCoverageCounts = { required: 3, assigned: 3, shortage: 1 };
     expect(summed.required - summed.assigned).toBe(0);
     expect(resolveSectorCoverageState(summed)).toBe('understaffed');
-    expect(describeStaffCoverage(summed).badgeKey).toBe(PANEL_BADGE.understaffed);
+    expect(describeStaffCoverage({ ...summed, availableReserve: 1, targetReserve: 5 }).badgeKey).toBe(PANEL_BADGE.understaffed);
   });
 });
 
