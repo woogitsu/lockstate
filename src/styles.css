@@ -411,9 +411,35 @@ canvas {
  */
 .hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale > .ui-icon,
 .hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control > .ui-icon,
-.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale__legend,
-.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control__legend {
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .display-scale > .display-scale__legend,
+.hud-chrome-prefs[data-hud-chrome-row-narrow='true'] > .theme-control > .theme-control__legend {
   display: none;
+}
+
+/*
+ * **THE LAST TWO SELECTORS ABOVE READ `> .display-scale__legend` AND
+ * `> .theme-control__legend` UNTIL 2026-09-23, AND MATCHED NOTHING.** Each
+ * legend is a child of its own control, not of the row (`display-scale.ts`,
+ * `theme.ts`), so the narrow step hid the two icons and left both legends
+ * laid out -- which is why the paragraph above could say it "costs no height"
+ * and be believed: the half the legends took was never given back.
+ *
+ * The first, cheaper step (`observeChromeRowOverflow` in `src/main.ts`
+ * carries the measurement): where a legend or a reading would be truncated
+ * side by side, the legends go and the icons stay, and each half takes the
+ * width its own content needs rather than an equal share -- the scale's
+ * *"100%"* needs far less than *"Systemowy"*, and equal halves are what cut
+ * the longer reading short with room to spare in the shorter half.
+ */
+.hud-chrome-prefs[data-hud-chrome-row-legends='hidden'] > .display-scale > .display-scale__legend,
+.hud-chrome-prefs[data-hud-chrome-row-legends='hidden'] > .theme-control > .theme-control__legend {
+  display: none;
+}
+
+.hud-chrome-prefs[data-hud-chrome-row-legends='hidden'] > .display-scale,
+.hud-chrome-prefs[data-hud-chrome-row-legends='hidden'] > .theme-control {
+  flex: 1 1 auto;
+  justify-content: center;
 }
 
 /* With the legend gone, nothing else in the half claims the flexible share

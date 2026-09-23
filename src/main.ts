@@ -4269,6 +4269,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
  */
 function observeChromeRowOverflow(row: HTMLElement, halves: readonly HTMLElement[]): void {
   const attribute = 'data-hud-chrome-row-narrow';
+  const legendsAttribute = 'data-hud-chrome-row-legends';
+
+  /*
+   * A LEGEND IS WHOLE OR ABSENT, AND UNTIL 2026-09-23 IT WAS NEITHER.
+   *
+   * The step this function had was all-or-nothing: the icons and the legends
+   * went together, and only where a *button* stopped being pressable. Short of
+   * that the legends stayed and were ellipsised into their share of a 264px
+   * row, which is every rail at 100 %: measured on the assembled page at
+   * 1280x720 through 1920x1080, `.display-scale__legend` held
+   * *"Skala interfejsu"* (128px) in **30px** and painted *"SK…"*; the theme's
+   * legend got 0px in Polish and 11px of *"Theme"* in English; and the Polish
+   * theme reading *"Systemowy"* (86px) was cut to *"System…"* in 67 -- the
+   * *"Aa SK… 100% System…"* of the owner's screenshot of v0.0.755. A legend
+   * cut to two letters names nothing, and a reading cut short misreads the
+   * setting.
+   *
+   * So there is a first step now, cheaper than the second: where either
+   * legend or either reading would be truncated side by side, the legends
+   * alone go and each half takes the width its own content needs
+   * (`src/styles.css`). Both legends are `aria-hidden` and the group's own
+   * `aria-label` carries the same words, exactly as the second step's
+   * docblock says, so a screen reader loses nothing; a sighted player loses
+   * two words that were not legible anyway and keeps the icon, which is what
+   * the second step would also have taken. Only if a reading or a button
+   * still does not fit does the second step engage as before.
+   */
+  const truncated = (node: Element | null): boolean =>
+    node !== null && node.getBoundingClientRect().width > 0 && node.scrollWidth > node.clientWidth;
+  const anyTruncated = (selector: string): boolean =>
+    halves.some((half) => [...half.querySelectorAll(selector)].some(truncated));
 
   const measure = (): void => {
     // Forces the side-by-side CSS before reading a single box below, so the
@@ -4276,10 +4307,16 @@ function observeChromeRowOverflow(row: HTMLElement, halves: readonly HTMLElement
     // time -- see the docblock above this function for the measurement this
     // replaced and what it got wrong.
     row.removeAttribute(attribute);
+    row.removeAttribute(legendsAttribute);
 
     const rowBox = row.getBoundingClientRect();
     // Not laid out yet -- nothing to stack around.
     if (rowBox.width === 0) return;
+
+    const readings = '.display-scale__value, .theme-control__value';
+    if (anyTruncated('.display-scale__legend, .theme-control__legend') || anyTruncated(readings)) {
+      row.setAttribute(legendsAttribute, 'hidden');
+    }
 
     /*
      * The button's own *edge* overflowing its half is not the condition to
@@ -4297,8 +4334,10 @@ function observeChromeRowOverflow(row: HTMLElement, halves: readonly HTMLElement
      * `elementFromPoint`, so this reads the same two things it does, on the
      * same element, rather than a proxy for them.
      */
-    let narrow = false;
-    for (const half of halves) {
+    // A reading still cut short with the legends gone is the second step's
+    // case as much as an unreachable button is.
+    let narrow = row.hasAttribute(legendsAttribute) && anyTruncated(readings);
+    for (const half of narrow ? [] : halves) {
       const button = half.querySelector('button');
       if (button === null) continue;
       const buttonBox = button.getBoundingClientRect();
@@ -4340,6 +4379,15 @@ function observeChromeRowOverflow(row: HTMLElement, halves: readonly HTMLElement
    */
   const observer = new ResizeObserver(measure);
   observer.observe(row);
+
+  /*
+   * And the words, which `ResizeObserver` cannot hear: pressing the theme
+   * control swaps *"Jasny"* for *"Systemowy"* inside a row whose own box does
+   * not move, and a locale's readings are not the same length as another's.
+   * Text and child changes only -- `measure` writes attributes on the row, so
+   * observing those would be this function hearing itself.
+   */
+  new MutationObserver(measure).observe(row, { subtree: true, childList: true, characterData: true });
 
   measure();
 }

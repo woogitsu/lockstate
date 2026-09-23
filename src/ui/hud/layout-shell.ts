@@ -342,6 +342,45 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     // out of the Build panel.
     toggleHosts[region].prepend(toggle.element);
   }
+  mountInspectorArrow(geometry.phone);
+
+  /**
+   * Where the inspector's arrow lives, which is a question of the tier -- the
+   * same shape `createInspectorSeparator` answers for the separator.
+   *
+   * **On a desktop it is the rail's sibling, not its child** (2026-09-23).
+   * Inside the rail it had two places, and both were wrong once the fold
+   * started actually hiding the rail's content: at the rail's top-left corner
+   * it sat over the chrome row's icon and legend while open -- the ">" drawn
+   * over "Aa" in the owner's screenshot of v0.0.755 -- and once the rail was
+   * folded to nothing the rail's own left edge was the viewport's right edge,
+   * so the arrow that brings the panels back was laid out at `x = 1440..1484`
+   * of a 1440px window: off screen, and clipped by the rail's
+   * `overflow: hidden` besides. As the rail's sibling it is a `middle`-row grid
+   * item like the rail, the corner and the column, placed by `hud.css` on the
+   * map side of the rail's leading edge -- where the delivery puts it
+   * (`.edge-right { right: var(--inspector-width) }`) -- and at the window's
+   * edge when the rail is folded.
+   *
+   * **On a phone it stays where it was**, at the rail's top-left corner above
+   * the sheet: that tier's rail is the full width and none of the above
+   * applies, and every phone measurement in `app-shell.spec.ts` was taken with
+   * it there. Directly before the rail in document order either way, so the
+   * tab order still meets it before what it hides.
+   */
+  function mountInspectorArrow(phone: boolean): void {
+    const arrow = toggles.inspector.element;
+    const rail = options.inspector.container;
+    const hadFocus = arrow === document.activeElement;
+    if (phone) {
+      if (arrow.parentElement !== rail) rail.prepend(arrow);
+    } else if (arrow.nextElementSibling !== rail) {
+      rail.before(arrow);
+    }
+    // Moving a focused node blurs it; the player was standing on this control
+    // and the tier changing under them is not a reason to drop them to <body>.
+    if (hadFocus && arrow !== document.activeElement) arrow.focus({ preventScroll: true });
+  }
 
   /**
    * Fold or unfold one region.
@@ -658,6 +697,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       // Built against the new tier, and appended to that tier's own host: the
       // rail's leading edge on a desktop, the sheet's top edge on a phone.
       inspectorSeparator = createInspectorSeparator(geometry);
+      mountInspectorArrow(geometry.phone);
     }
 
     /*

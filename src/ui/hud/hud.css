@@ -2676,12 +2676,20 @@
 
 /* The sentinel sentence. An eyebrow's default single-line uppercase treatment
    would clip it, so it wraps and keeps its case, exactly as
-   `.hud-intake__note` does one panel down. */
+   `.hud-intake__note` does one panel down.
+
+   **And at the body size** (2026-09-23). The alerts list's sentinel was copied
+   from this rule and given `--text-size-body` on the way (#1184), so before a
+   prison exists the one sentence *"Żadne więzienie nie przesyła danych."* was
+   on screen twice at once, at 15px in the minimap corner and at 11px here --
+   the "tiny text" under *Finanse* in the owner's screenshot of v0.0.755. It is
+   the panel's whole content in that state, not a caption to it. */
 .hud-overview__none:not([hidden]) {
   display: block;
   white-space: normal;
   text-transform: none;
   letter-spacing: 0;
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -6638,4 +6646,166 @@
   position: absolute;
   right: var(--space-3);
   bottom: 100%;
+}
+
+/* ------------------------------------------------------------------ */
+/* The shell's two side regions, finished (2026-09-23)                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Four defects the owner saw on v0.0.755 -- *"powłoka hud itp nie wygląda na
+ * zakończone, jest zbugowane"* -- live in the rules above and are repaired
+ * here, after them, so the rules they correct stay readable as what shipped.
+ *
+ * 1. **A separator painted a full-height line through the world.** Both
+ *    separators drew `--border` down their middle at rest, `top: 0; bottom: 0`
+ *    of a region that is transparent almost everywhere: the navigation
+ *    column is the middle row's full height with six tabs at its top, and the
+ *    rail is the full height with a gap of bare world between the save panel
+ *    and the panel at its foot. Measured at 1724x972 the navigation's hairline
+ *    ran `x = 174, y = 81..972`, through the zoom control and the minimap, and
+ *    the inspector's ran `x = 1442` through the gap. The delivery draws no
+ *    line at rest at all -- `.pane-splitter:after { background: transparent }`
+ *    with the teal on `:hover` and `:focus-visible` only
+ *    (`HISTORIA/ZMIANY/03-panele-i-resize.patch`) -- because its side panels
+ *    are opaque columns whose own edges are the line. So is ours now, for the
+ *    two vertical separators; the phone sheet's horizontal one keeps its bar,
+ *    which the delivery also draws on that tier.
+ *
+ * 2. **The navigation's separator took presses meant for the minimap.** Its
+ *    12px hit area was the column's full height and sits above `.hud__corner`
+ *    in paint order, so at every viewport tall enough for the corner to sit
+ *    under the column (>= 781px) `elementFromPoint(174, y)` returned the
+ *    separator from `y = 84` to the bottom of the window -- across the
+ *    zoom-in button's right edge and the minimap -- and a press there started
+ *    a resize. Constitution article 17: a gesture has one owner. The column
+ *    is now a *multi-line* flex container, whose one line is exactly as tall
+ *    as the tabs, and the separator is an in-flow item that stretches to that
+ *    line rather than to the column. The column itself keeps stretching, so
+ *    `.hud-tabs__inner`'s `max-height: 100%` still resolves against a definite
+ *    height and the scroll fallback above still engages.
+ *
+ * 3. **At the delivery's own minimum width the tabs were eight pixels wide.**
+ *    The arrow lived *inside* the width the player sets: 12px of padding, the
+ *    44px arrow and a 4px gap came out of `--hud-navigation-width` before the
+ *    tabs got any, so dragging to the ruled 72px left them 12px of box
+ *    (measured: labels and icons clipped to a sliver). The delivery's arrow
+ *    sits outside its rail (`.edge-left { left: var(--nav-width) }`), and so
+ *    does this one, on the map side of the column's trailing edge. The tabs
+ *    now fill the column less its two 12px gutters -- 156px at the 180px
+ *    default, 48px at 72 -- so the width a player drags is the width they see.
+ *
+ * 4. **The inspector's arrow drew over the chrome row, and folded it went off
+ *    screen.** `layout-shell.ts`'s `mountInspectorArrow` carries the
+ *    measurement; the rule here places it as the rail's sibling.
+ */
+@media (min-width: 721px) {
+  .hud-layout__separator[aria-orientation='vertical']::before {
+    background: transparent;
+  }
+
+  .hud-layout__separator[aria-orientation='vertical']:is(:hover, :focus-visible, [aria-busy='true'])::before {
+    background: var(--accent);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    column-gap: 0;
+  }
+
+  /* A zero basis, so the line never breaks: a multi-line container wraps on
+     hypothetical sizes before it shrinks anything, and the tabs' max-content
+     width is wider than a 72px column. */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner {
+    flex: 1 1 0;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__separator--navigation {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    flex: 0 0 var(--space-3);
+    align-self: stretch;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow {
+    position: absolute;
+    top: var(--space-3);
+    left: 100%;
+  }
+
+  /* Folded, the column is only its arrow, and the arrow comes back into flow
+     at the window's leading edge: the handle is where the column was. */
+  .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__tabs > .hud-layout__arrow {
+    position: static;
+  }
+
+  .hud > .hud-layout__arrow[data-layout-region='inspector'] {
+    grid-area: middle;
+    justify-self: end;
+    align-self: start;
+    margin-top: var(--space-3);
+    margin-right: calc(var(--hud-inspector-width) + 2 * var(--space-3));
+  }
+
+  .hud[data-layout-inspector='collapsed'] > .hud-layout__arrow[data-layout-region='inspector'] {
+    margin-right: var(--space-3);
+  }
+
+  /*
+   * Over the map, a control needs a surface of its own. Inside the column and
+   * the rail these two were `quiet` icon buttons -- a bare glyph, drawn on the
+   * panels' own background -- and out on the world a bare `--text-subtle`
+   * chevron over the dark canvas is the faint "<" at the top-left of the
+   * owner's screenshot. The zoom pair beside it is the precedent: `bordered`,
+   * which is `--surface-raised` inside `--border` (`primitives.css`), and no
+   * shadow, which `tokens.css` rules out. `:not(:hover)` so the primitive's
+   * own hover and active states still read.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow:not(:hover, :active),
+  .hud > .hud-layout__arrow[data-layout-region='inspector']:not(:hover, :active) {
+    background: var(--surface-raised);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow,
+  .hud > .hud-layout__arrow[data-layout-region='inspector'] {
+    border-color: var(--border);
+  }
+}
+
+/*
+ * A FOLDED REGION IS OFF THE SCREEN, AND UNTIL 2026-09-23 NONE OF THE THREE
+ * WERE (the owner's "powłoka hud ... jest zbugowane", on v0.0.755).
+ *
+ * `layout-shell.ts` folds a region by setting `hidden` on its content --
+ * `.hud-tabs__inner`, `.hud__aside`, `.hud__side` (`hud.ts`'s `regions`) --
+ * and every one of those three carries an author `display: flex`, which
+ * outranks the user agent's `[hidden] { display: none }`. This is the trap
+ * `primitives.css` names at `.ui-panel[hidden]` and this file closes a dozen
+ * times over (`.hud__refusal[hidden]`, `.hud-staff__note[hidden]`, ...), met
+ * again by the one module that hides whole regions. Measured on the assembled
+ * page at 1440x900 with each arrow pressed: the navigation's six tabs stayed
+ * laid out at 104x280 with `hidden` set; the inspector's `.hud__aside` kept a
+ * 50px-wide box and the save panel inside it was squeezed to 26px, its text
+ * one letter per line; "map only" left all three on screen. At 375x812 the
+ * same three leaked. `hud-layout-shell.spec.ts`'s fold test read the
+ * `data-layout-*` attribute and `aria-expanded`, both of which were right, and
+ * never asked whether anything had left the screen.
+ *
+ * The selector carries the `.hud` prefix and the attribute so it outranks
+ * every placement rule in this file that gives these three a `display`
+ * (`.hud[data-layout-navigation-placement='rail'] .hud-tabs__inner` is three
+ * simple selectors; this is four) and it is the last rule in the file, so a
+ * tie would still resolve its way. `tests/browser/hud-shell-integrity.spec.ts`
+ * asserts the general form -- no element under `.hud` with `hidden` set has a
+ * rendered box -- after every fold at all three device widths.
+ */
+.hud .hud-tabs__inner[hidden],
+.hud .hud__rail > .hud__aside[hidden],
+.hud .hud__rail > .hud__side[hidden],
+.hud .hud__aside[hidden],
+.hud .hud__side[hidden] {
+  display: none;
 }
