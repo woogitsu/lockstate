@@ -1901,6 +1901,20 @@ export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
   readonly severity: HudSeverity;
 }
 
+/**
+ * Whether a press of each history control would do anything the player is
+ * told about (#1370) -- copied field for field from the worker's
+ * `editHistory` publication, which defines both bits.
+ *
+ * `true` includes the press ADR 0104 refuses with a sentence: that press has
+ * an answer. `false` is a press that would pass through the worker and change
+ * nothing and say nothing, which is what an empty history does.
+ */
+export interface HudEditHistoryViewModel {
+  readonly undo: boolean;
+  readonly redo: boolean;
+}
+
 export interface HudViewModel {
   /**
    * The status strip's nine numbers, or **absent because no prison is
@@ -2025,6 +2039,18 @@ export interface HudViewModel {
    * prison is making.
    */
   readonly overview?: HudOverviewViewModel;
+  /**
+   * Whether the status strip's Undo and Redo would each do something, or
+   * **absent because no prison is reporting** (#1370).
+   *
+   * Published, never computed -- the edit history is the worker's, and the
+   * main thread holds no copy of it to compute from. Set from every
+   * `simulation/status-counts` and deleted on `simulation/stopped`, on the
+   * three-state contract `overview` above uses. Absent is not `false`: the
+   * strip reads it as *no opinion* and leaves both buttons as they were before
+   * the worker had anything to say (`createStatusStrip`'s `paintHistory`).
+   */
+  readonly editHistory?: HudEditHistoryViewModel;
   /**
    * What has been bought and has not arrived, or absent because nothing asked.
    *

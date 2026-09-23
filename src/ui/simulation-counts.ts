@@ -1,7 +1,7 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
 import { isPostUnreachable } from './simulation-conditions';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
-import type { HudCountsViewModel, HudOverviewViewModel } from './hud/view-model';
+import type { HudCountsViewModel, HudEditHistoryViewModel, HudOverviewViewModel } from './hud/view-model';
 
 /**
  * Turns what the worker said about its population into what the HUD paints.
@@ -327,6 +327,43 @@ export function hudOverviewFromWorkerMessage(message: WorkerToMainMessage): HudO
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
         dailyWageBillMinorUnits: counts.dailyWageBillMinorUnits,
       };
+    }
+
+    case 'simulation/stopped':
+      return 'none';
+
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Whether the status strip's Undo and Redo would each do anything, off the
+ * same publication as the counts (#1370).
+ *
+ * In this module rather than one of its own for the reason
+ * `hudOverviewFromWorkerMessage` above is: it reads one field of a
+ * `simulation/status-counts` and nothing else, and it has the same three
+ * answers -- the pair, `'none'` for a session that has ended, and `undefined`
+ * for a message that said nothing about it.
+ *
+ * **Copied, not computed.** The two bits are `editHistoryAvailability`'s in
+ * the worker, which is the only place the stacks and the order states behind
+ * them exist; the main thread cannot know what a press would reach and does
+ * not guess.
+ *
+ * `'none'` on `simulation/stopped` takes the field off rather than writing
+ * `false, false`, and the difference is what the strip paints: a session that
+ * has ended is not a history that is known to be empty, it is no history at
+ * all, and absence is how `HudViewModel` says *nobody is reporting*.
+ */
+export function hudEditHistoryFromWorkerMessage(
+  message: WorkerToMainMessage,
+): HudEditHistoryViewModel | 'none' | undefined {
+  switch (message.kind) {
+    case 'simulation/status-counts': {
+      const { editHistory } = message.payload;
+      return { undo: editHistory.undo, redo: editHistory.redo };
     }
 
     case 'simulation/stopped':

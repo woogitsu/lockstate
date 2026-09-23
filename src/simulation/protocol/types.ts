@@ -1759,6 +1759,50 @@ const zoningNoticeSchema = z
 export type SimulationZoningNotice = DeepReadonly<z.infer<typeof zoningNoticeSchema>>;
 
 /**
+ * Whether a press of `Undo` and a press of `Redo` would each do something the
+ * player is told about, as of the publication's `tick` (#1370).
+ *
+ * The status strip's Undo and Redo buttons (#1356) are marked unavailable on
+ * it. Before this the main thread had no way to know: the edit history is
+ * `ConstructionSystem`'s, in the worker, and no message carried anything about
+ * it, so both buttons read as live whether or not a press could do anything.
+ *
+ * **What each bit means is defined by the command handler, not here.**
+ * `editHistoryAvailability` in `src/simulation/construction/handler.ts` is the
+ * producer, and `true` there means the command would now record an event --
+ * a success sentence, or ADR 0104's refusal -- while `false` means it would
+ * pass through and record nothing. A refused Undo is therefore `true`: it is
+ * a press with an answer, not a dead one.
+ *
+ * **A sibling of `counts` for the reason `refusal` and `zoning` are**: it comes
+ * from the construction system rather than from
+ * `src/simulation/presentation/`, and `counts` is that projection's own block
+ * field for field. **A level rather than an event**, like the counts beside
+ * it and unlike those two siblings: exactly one answer is current, so
+ * re-asserting it on every publication is true, and a listener that starts
+ * late reads it correctly.
+ *
+ * **Required rather than optional, unlike both of them.** Their absence means
+ * "nothing has been refused" or "nothing has been designated", which are facts;
+ * there is no fact an absent `editHistory` could state that `false, false`
+ * does not already state, so an optional field would only have made room for
+ * a publisher that forgot it.
+ *
+ * Two booleans, so it does not grow with anything: a stack of any depth
+ * answers the same two bits, and `docs/HUD_PROJECTIONS.md` contract 5 has
+ * nothing to bound. Derived state, and it enters no save -- the stacks it is
+ * computed from are `ConstructionSnapshot`'s, and those are.
+ */
+export const editHistoryAvailabilitySchema = z
+  .object({
+    undo: z.boolean(),
+    redo: z.boolean(),
+  })
+  .strict();
+
+export type SimulationEditHistoryAvailability = DeepReadonly<z.infer<typeof editHistoryAvailabilitySchema>>;
+
+/**
  * The status-strip counts, as the worker sees them.
  *
  * **Always unsolicited.** Nothing requests it, so it has no `replyTo` field
@@ -1794,7 +1838,10 @@ export type SimulationZoningNotice = DeepReadonly<z.infer<typeof zoningNoticeSch
  *
  * `zoning` is the third field of the payload and the second sibling of
  * `counts`, for exactly the reasons `refusal` is one; `zoningNoticeSchema`
- * above states them.
+ * above states them. *
+ * `editHistory` is the fourth field and the third sibling (#1370), and the
+ * first that is required: `editHistoryAvailabilitySchema` above says why, and
+ * why it is a level where the other two are the last of a series of events.
  */
 const statusCountsMessageSchema = z
   .object({
@@ -1807,6 +1854,7 @@ const statusCountsMessageSchema = z
         counts: statusCountsSchema,
         refusal: refusalSchema.optional(),
         zoning: zoningNoticeSchema.optional(),
+        editHistory: editHistoryAvailabilitySchema,
       })
       .strict(),
   })

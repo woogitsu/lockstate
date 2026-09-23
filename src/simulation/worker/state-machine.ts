@@ -32,6 +32,7 @@ import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } fro
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
 import { collectRoomConditions, type RoomConditionRow } from './room-conditions';
+import { editHistoryAvailability } from '../construction/handler';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -342,6 +343,21 @@ export class SimulationWorkerStateMachine {
    * one gesture a player is most likely to repeat.
    */
   private _publishedZoningSequence = 0;
+  /**
+   * The edit-history availability the main thread was last told about, `null`
+   * before the first publication (#1370).
+   *
+   * A level, not a sequence, so this is the value itself rather than an
+   * ordinal -- and it is tracked for the zoning notice's reason one field up:
+   * a build order, an undo or a redo can move neither bit's neighbours, so
+   * `statusCountsEqual` alone would suppress the very publication that says
+   * the history changed. A change of either bit opens the interval gate as
+   * well, on the terms the refusal does: it is the answer to the player's own
+   * press, so waiting up to 500 ms to show it would be a delay they feel on
+   * their own action, and it can open the gate at most once per change of
+   * the pair -- which only a command or an order failing on its own can make.
+   */
+  private _publishedEditHistory: { readonly undo: boolean; readonly redo: boolean } | null = null;
   /**
    * The `sequence` of the last event the main thread was told about, `0` for
    * none (issue #507).
@@ -695,7 +711,15 @@ export class SimulationWorkerStateMachine {
     const zoning = this._runtime.roomZoning.lastNotice;
     const zoningSequence = zoning?.sequence ?? 0;
     const zoningIsNew = zoningSequence !== this._publishedZoningSequence;
-    const eventIsNew = refusalIsNew || zoningIsNew || dispatchedWhilePaused;
+    // Read before the gate for the reason `refusal` is: a change here has to
+    // be able to open it. Two field reads and at most one short walk of the
+    // transaction a press would reach -- see `undoWouldReverseSomething`.
+    const editHistory = editHistoryAvailability(this._runtime.construction);
+    const editHistoryIsNew =
+      this._publishedEditHistory === null ||
+      editHistory.undo !== this._publishedEditHistory.undo ||
+      editHistory.redo !== this._publishedEditHistory.redo;
+    const eventIsNew = refusalIsNew || zoningIsNew || editHistoryIsNew || dispatchedWhilePaused;
     if (!eventIsNew && nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
     this._countsProjectedAtMs = nowMilliseconds;
 
@@ -707,6 +731,7 @@ export class SimulationWorkerStateMachine {
     this._publishedRefusalRouteDecided = refusalRouteDecided;
     this._publishedRefusalOutlivedBand = refusalOutlivedBand;
     this._publishedZoningSequence = zoningSequence;
+    this._publishedEditHistory = editHistory;
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -739,6 +764,9 @@ export class SimulationWorkerStateMachine {
         // enclosed requirement" is a statement a listener that starts late can
         // read correctly; an event would not be.
         ...(zoning === undefined ? {} : { zoning }),
+        // Always present, unlike the two above: a level with no "nothing yet"
+        // state of its own (#1370, `editHistoryAvailabilitySchema`).
+        editHistory,
       },
     });
   }

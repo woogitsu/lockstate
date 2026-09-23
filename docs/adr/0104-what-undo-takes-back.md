@@ -73,6 +73,14 @@ not be waived, and this document proposes the option rather than the string.
 > reader who copies a reservation out of an acceptance block sees it being got
 > wrong once.
 
+**Amended by the owner on 2026-09-23: a placement the simulation refuses is
+not the player's latest action.** See the section *"Amendment, 2026-09-23"* at
+the end of this document. Option 2 stands. The amendment settles what
+"the newest accepted player command" means when that command was a placement
+refused on its content. The provenance is the weaker kind, the same as the
+acceptance's: the label of a clickable option this session wrote, *"Opcja A
+(zalecane)"*, and not a sentence the owner typed.
+
 ## Claim tiers used below
 
 - **MEASURED** — a number a run produced, on the tree named beside it.
@@ -406,3 +414,104 @@ Two smaller ones, stated rather than buried:
    touch device"*, and [#928](https://github.com/woogitsu/lockstate/issues/928)
    carries that half. This document changes what the key does, not how it is
    reached.
+
+## Amendment, 2026-09-23: a placement the simulation refuses is not the player's latest action
+
+**Ruled by the owner on 2026-09-23.** From three options this session wrote,
+they chose the one labelled:
+
+> Opcja A (zalecane)
+
+("Option A (recommended).") **The provenance is the weaker kind**, as the
+acceptance above records of its own: the label of an option this session
+wrote and the owner picked, not a sentence they typed. It was given against a
+summary of the options and the measurement below, not against this text.
+
+### The question it settles
+
+Option 2 refuses a press when the newest construction transaction is older
+than *"the newest accepted player command of any kind"*. It does not say what
+happens when that newest command was a **placement the simulation refused on
+its content**. The kernel accepted the command, and the simulation decided
+the order `failed`.
+
+The question was forced by
+[#1370](https://github.com/woogitsu/lockstate/issues/1370), which marks the
+status strip's Undo unavailable when a press would do nothing. A refused
+placement left a dead transaction on top of the stack, so Undo went dim while
+a live wall sat beneath it.
+
+### What the code did before, measured and verified
+
+- **Refused walls were registered.** `PlaceBuildOrder` called
+  `registerTransactionOrder` after its `failed` branch, so a refused wall
+  entered the history. That opened a dead transaction, emptied the redo stack
+  and reset `newerActionThanTheStackTop`.
+- **The consequence, measured through the real kernel and router.** Place a
+  live wall at 12,12, then `HireStaff`, then a wall at 900,900 (refused), then
+  press Undo twice. The result was
+  `{"dead":"failed","p1":[],"p2":["construction.undone"],"live":"cancelled"}`.
+  The first press recorded nothing. The second reversed a wall placed
+  **before the hire**, which is §3's loss, reachable in two presses despite
+  option 2.
+- **Refused objects were never registered.** `ObjectPlacementService` returns
+  through `refuse(...)` on every refusal before it registers anything, so the
+  wall path and the object path disagreed.
+
+### The decision (option A)
+
+**A placement the simulation refuses is not written to the undo history.**
+- It opens no transaction.
+- It leaves the redo stack as it was.
+- It leaves the newer-action flag as it was.
+
+For option 2, "the newest accepted player command" is therefore the newest one
+that changed something. A refused placement changed nothing, and it has
+already told the player so with a refusal of its own.
+
+Implemented in `createConstructionCommandHandler`'s `PlaceBuildOrder` branch
+(`src/simulation/construction/handler.ts`, the
+`if (order.state !== 'failed')` guard around `registerTransactionOrder`).
+
+**Pinned by** `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`,
+under *"Undo, after a placement the simulation refused"*. Each case was
+watched red on the code before the change:
+- **One press.** A refused wall over a live one is reversed in one press.
+- **Refused after a hire.** Live wall, hire, refused wall: both presses give a
+  visible refusal.
+- **Redo survives.** A refused wall no longer empties the redo stack. This is
+  the one change a player can see.
+
+### The options not taken
+
+**The three options the owner was offered were:** option A, the one chosen;
+*"Odrzucone = nowsza akcja"* ("refused = newer action"), the second bullet
+below; and *"Na razie bez zmian"* ("no change for now"), which would have left
+this document as it stood, shipped #1370's mark dimming Undo over a dead top,
+and filed the two-press hole as a separate issue. **The first bullet below was
+never offered.** It is the proposal that raised the question, and it was
+withdrawn before the question was put, for the reason that bullet gives. It is
+recorded here so a later reader does not propose it again without that
+reason, not as something the owner declined.
+
+- **Skip dead transactions inside `undo()`.** This fixes the dim button in one
+  press, but it widens the hole above from two presses to one. Take a live
+  wall, a hire and a refused wall: the refused wall resets the flag, and a
+  skipping press lands on the wall placed before the hire. Closing that would
+  need a per-transaction "superseded" mark, which is save state, and so a
+  migration. This document's own field comment on
+  `newerActionThanTheStackTop` rejects a per-transaction tick for that cost.
+- **Treat a refused placement as a newer action.** That is the literal reading
+  of option 2: the next Undo would refuse. It keeps the dead-transaction
+  shape, and it would have required the object path to change to match.
+
+### What it leaves
+
+- **A dead top can still arise two ways.** Either `update()` fails an order
+  whose content was withdrawn mid-session, or a save written before this
+  amendment is restored carrying one; the stacks are restored as saved,
+  #108. `ConstructionSystem.undoWouldReverseSomething` still answers both
+  correctly.
+- **No save-format change.** The snapshot's shape is untouched.
+- **Open question 2 above**, about a stale redo, is not answered by this.
+

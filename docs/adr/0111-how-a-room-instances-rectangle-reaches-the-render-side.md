@@ -229,7 +229,7 @@ wrong:
   schema in `src/simulation/protocol/types.ts` are `.strict()`, and so is
   `statusCountsSchema` (`src/simulation/protocol/types.ts:710`). An unlisted
   field fails closed as `invalid-payload` —
-  `tests/contract/simulation-worker-protocol.test.ts:592-598` pins exactly that
+  `tests/contract/simulation-worker-protocol.test.ts:639-645` pins exactly that
   with an `x: 100`, and zod's own message for it at this version is
   `Unrecognized key: "x"`.
 - **Free on add:** everything riding `versionedPayloadSchema`'s generic

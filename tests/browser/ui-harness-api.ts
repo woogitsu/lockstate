@@ -1558,6 +1558,17 @@ export interface LockstateUiHarness {
    * reaches the view model through `hudZoningFromWorkerMessage`; here it is set
    * directly, because what the specs exercise is what the *panel* does with it.
    */
+  /**
+   * Publishes whether the strip's Undo and Redo would each do anything (#1370).
+   *
+   * In the running application this arrives on `simulation/status-counts` as
+   * `editHistory` and reaches the view model through
+   * `hudEditHistoryFromWorkerMessage`; here it is set directly, because what
+   * the specs exercise is what the *strip* does with it. `undefined` is "no
+   * prison is reporting", which the strip must paint differently from a known
+   * empty history.
+   */
+  reportEditHistory(pair: { readonly undo: boolean; readonly redo: boolean } | undefined): void;
   reportZoning(
     notice: { readonly sequence: number; readonly enclosure: 'sealed' | 'open'; readonly requirement: 'enclosed' | 'outdoors' | 'none' } | undefined,
   ): void;

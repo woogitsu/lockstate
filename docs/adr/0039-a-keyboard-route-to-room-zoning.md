@@ -434,7 +434,7 @@ cannot catch this class at all.
 
    What the stylesheet suggests, which is a hypothesis and not the measurement:
    the two figures may not name the same box. `.ui-section__header` carries
-   `min-height: var(--tap-target)` (`src/ui/primitives/primitives.css:540-545`) and
+   `min-height: var(--tap-target)` (`src/ui/primitives/primitives.css:549-554`) and
    `--tap-target` is `44px`, while `.ui-section`
    itself carries `border-top: var(--hairline)` (`primitives.css:537`) with
    `--hairline: 1px` (`tokens.css:582`) — so a collapsed *header* would be 44px

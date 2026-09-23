@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { ZEROED_COUNTS, reportedCounts } from '../helpers/hud-counts';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { hudCountsFromWorkerMessage, hudEditHistoryFromWorkerMessage } from '../../src/ui/simulation-counts';
 
 /**
  * The main thread's counts translation: the whole of what the HUD strip
@@ -404,5 +404,43 @@ describe('the HUD counts are read from the worker', () => {
       }
       expect(Number.isInteger(value), `counts.${key} is not an integer`).toBe(true);
     }
+  });
+});
+
+describe('the strip history controls are read from the worker (#1370)', () => {
+  const withPair = (editHistory: { readonly undo: boolean; readonly redo: boolean }): WorkerToMainMessage =>
+    ({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'counts-history',
+      kind: 'simulation/status-counts',
+      payload: { tick: 7, schemaVersion: 1, counts: { ...COUNTS }, editHistory },
+    }) as WorkerToMainMessage;
+
+  it('copies both bits, each from its own field', () => {
+    // Unequal in both orders, so a translator that swapped the two or read one
+    // for both cannot pass.
+    expect(hudEditHistoryFromWorkerMessage(withPair({ undo: true, redo: false }))).toEqual({ undo: true, redo: false });
+    expect(hudEditHistoryFromWorkerMessage(withPair({ undo: false, redo: true }))).toEqual({ undo: false, redo: true });
+  });
+
+  it('takes the pair off for a session that has ended, rather than claiming an empty history', () => {
+    const stopped: WorkerToMainMessage = {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'stopped-history',
+      replyTo: 'shutdown-history',
+      kind: 'simulation/stopped',
+      payload: { tick: 9, reason: 'shutdown-requested' },
+    };
+    expect(hudEditHistoryFromWorkerMessage(stopped)).toBe('none');
+  });
+
+  it('says nothing for a message that is not about it', () => {
+    const clock = {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'clock-history',
+      kind: 'simulation/clock-state',
+      payload: { sessionId: 's', tick: 3, clock: { mode: 'paused' } },
+    } as WorkerToMainMessage;
+    expect(hudEditHistoryFromWorkerMessage(clock)).toBeUndefined();
   });
 });

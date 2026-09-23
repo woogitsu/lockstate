@@ -25369,10 +25369,10 @@ one direction.
     notation, because quoting a dead coordinate that way registers it again
     against this document's anchor budget.
   - The three `protocol/handshake` receivers **hold**; the first is
-    `src/simulation/worker/state-machine.ts:1085`,
+    `src/simulation/worker/state-machine.ts:1113`,
     `case 'protocol/handshake':`, with `:1115` and `:1124` beside it. The four
     `this.transition()` sites **hold** —
-    `src/simulation/worker/state-machine.ts:999` is
+    `src/simulation/worker/state-machine.ts:1027` is
     `if (!recoverable) this.transition('faulted');`, and `:1253`, `:1313` and
     `:1656` are the other three — and the `'ready'` union member **holds** at
     `src/simulation/worker/state-machine.ts:37-43`, carrying `| 'ready'`. That

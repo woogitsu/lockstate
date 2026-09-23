@@ -415,7 +415,16 @@
   border-color: var(--accent-deep);
 }
 
-.ui-icon-button:disabled {
+/* One appearance for a press that cannot happen and for one that would do
+ * nothing (#1370). `[aria-disabled='true']` is `IconButton.setUnavailable`:
+ * the press still goes through -- a verdict published up to one cadence ago
+ * must not swallow a press that has since become live -- but a player needs
+ * to read "nothing to do here" off it before pressing, so it looks the way a
+ * disabled glyph does. After `:hover` in source order and of equal
+ * specificity, so a dimmed glyph does not light up under the pointer as
+ * though it would act. */
+.ui-icon-button:disabled,
+.ui-icon-button[aria-disabled='true'] {
   color: var(--text-muted);
   background: transparent;
   cursor: default;

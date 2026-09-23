@@ -2145,6 +2145,13 @@ window.lockstateUiHarness = {
   },
 
   /** Publishes a zoning notice, which in the real app arrives on `simulation/status-counts`. */
+  reportEditHistory(pair: { readonly undo: boolean; readonly redo: boolean } | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(pair === undefined ? {} : { editHistory: pair }),
+    });
+  },
+
   reportZoning(notice: HudZoningNoticeViewModel | undefined): void {
     hud?.update({
       ...BASE_VIEW_MODEL,

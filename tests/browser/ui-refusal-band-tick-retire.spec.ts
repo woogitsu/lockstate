@@ -9,6 +9,7 @@ import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation
 import { REFUSAL_BAND_TICK_CEILING_AT_X1, refusalBandTickCeiling } from '../../src/simulation/refusals/refusal-band-lifetime';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
 import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudSpeed, HudViewModel } from '../../src/ui/hud';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import { type Page, expect, test } from './network-changed-fixture';
@@ -102,6 +103,8 @@ function publication(runtime: SimulationRuntime, refusal: SimulationRefusal): Wo
       schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
       counts: projectStatusCounts(runtime, runtime.kernel.tick),
       refusal,
+      // The worker's own pair off the same runtime -- required since #1370.
+      editHistory: editHistoryAvailability(runtime.construction),
     },
   }) as WorkerToMainMessage;
 }

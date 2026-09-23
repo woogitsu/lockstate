@@ -89,7 +89,7 @@ which refreshes **all nine** pulled readouts:
 `hudClockFromWorkerMessage` (`src/ui/simulation-clock.ts:22-57`) returns a view
 model for **every** `simulation/clock-state`, unconditionally — it has no
 "nothing changed" arm. And `publishClockState`
-(`src/simulation/worker/state-machine.ts:438-462`) posts one every 250 ms for
+(`src/simulation/worker/state-machine.ts:454-478`) posts one every 250 ms for
 the whole life of a running session; its own docblock says so, and
 `src/rendering/feed/simulation-snapshot-feed.ts:264-268` says it again from the
 other side: *"the worker posts one of these up to four times a second for the

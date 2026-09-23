@@ -598,6 +598,55 @@ Two things deliberately do **not** cross:
   over. `roomCapacity` stays exactly what it was: the Rooms readout's total,
   with no reader in `src/ui/` yet.
 
+#### The edit-history pair it also carries (#1370)
+
+A fourth field beside `counts`, `refusal` and `zoning`: `editHistory`, two
+booleans saying whether a press of `Undo` and a press of `Redo` would each do
+something the player is told about. The status strip's Undo and Redo buttons
+(#1356) are marked `aria-disabled` on it; before it existed they were always
+live, because the edit history is `ConstructionSystem`'s and nothing carried
+anything about it across the boundary.
+
+- **What each bit means is the command handler's, not this channel's.**
+  `editHistoryAvailability` in `src/simulation/construction/handler.ts`
+  computes it, and `true` means dispatching the command now would record an
+  event: `construction.undone` (or its spend-destroyed sibling),
+  `construction.redone`, or ADR 0104's `construction.undo-refused-newer-action`.
+  A refused Undo is therefore *available* — it is a press with an answer.
+  `tests/unit/construction-edit-history-availability.test.ts` holds the pair to
+  the handler by pressing and reading the event log.
+- **Narrower than "the stack is not empty", on purpose.** A transaction whose
+  every order has failed stays on the stack and `undo()` pops it silently; a
+  wall typed onto a tile outside the prison is the ordinary way to make one,
+  because a placement refused on its content is still registered on its
+  transaction. `ConstructionSystem.undoWouldReverseSomething` reads the
+  transaction `undo()` would reach and asks `isCancellable`, as `undo()` does.
+  **The middle of that sentence stopped being true on 2026-09-23**, the day it
+  was written: ADR 0104's amendment of that date (option A, ruled by the
+  owner) stops a refused placement entering the history, as a refused object
+  never did. A dead top is now reached only from content withdrawn
+  mid-session or from a save written before the amendment, and the narrower
+  test stays for those.
+- **A level, not an event**, unlike its two siblings — so it is **required**
+  rather than optional. Their absence states a fact ("nothing refused",
+  "nothing designated"); an absent pair could state nothing `false, false`
+  does not.
+- **It opens the interval gate when either bit changes**, on the refusal's
+  terms: it is the answer to the player's own press, and a change happens only
+  when a command or an order failing on its own moves the history — bounded by
+  how fast a player can press. `_publishedEditHistory` in
+  `src/simulation/worker/state-machine.ts` is the watermark.
+- **Derived, and not in the save.** The stacks are in `ConstructionSnapshot`
+  and this is a function of them and of the order states beside them.
+- **On the main thread**, `hudEditHistoryFromWorkerMessage`
+  (`src/ui/simulation-counts.ts`) copies it into `HudViewModel.editHistory` on
+  the three-state contract `overview` uses: a pair, `'none'` for a stopped
+  session, `undefined` for a message that said nothing. **Absent is "no
+  opinion"**, and the strip removes `aria-disabled` rather than writing
+  `"false"` for it. The `disabled` property is never written — `createBusyGroup`
+  owns it, and a hard disable would let a verdict one publication stale
+  swallow a press the worker would honour.
+
 What this did **not** close, and section 9 does: the other nine projections
 in this directory had no route at all. Rosters, room lists, staff, security,
 contraband and incidents were reachable only from their own tests, and each
@@ -654,7 +703,7 @@ Four properties are worth stating because each is a decision:
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
-  (`src/simulation/worker/state-machine.ts:438-462`), which is twice the rate
+  (`src/simulation/worker/state-machine.ts:454-478`), which is twice the rate
   of the counts channel and, crucially, **not change-gated on the counts**.
 
   Measured on the **harness** (`SimulationWorkerStateMachine`, fake timers, no

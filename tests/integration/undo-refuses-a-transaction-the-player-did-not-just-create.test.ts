@@ -186,3 +186,67 @@ describe('Undo, when the newest thing the player did was not a build', () => {
     ).toBe('cancelled');
   });
 });
+
+/**
+ * **A placement the simulation refuses is not the player's latest action**
+ * (ADR 0104's amendment of 2026-09-23, option A, ruled by the owner).
+ *
+ * Before it, a wall refused on its content was still registered on the
+ * history: it opened a dead transaction, emptied the redo stack and reset
+ * `newerActionThanTheStackTop`. So a refused wall over a live one took two
+ * presses to reach the live one, the first saying nothing -- and with a hire
+ * in between, the second press reversed a wall placed *before* the hire,
+ * which is the loss option 2 exists to stop. `ObjectPlacementService` never
+ * registered a refused object; this makes the wall path agree.
+ */
+describe('Undo, after a placement the simulation refused', () => {
+  /** Far outside any parcel a new session owns: decided `failed` at placement. */
+  const REFUSED = { x: 900, y: 900 } as const;
+
+  it('reverses the live wall beneath in one press, because the refused one never entered the history', () => {
+    const session = createSession(0x9566);
+    session.placeWall('live', FIRST, 'tl');
+    session.placeWall('refused', REFUSED, 'tr');
+    expect(session.stateOf('refused'), 'the precondition: the simulation refused it').toBe('failed');
+    const before = session.types().length;
+
+    session.send({ type: 'Undo' });
+
+    expect(session.stateOf('live'), 'one press reaches the live wall').toBe('cancelled');
+    expect(session.types().slice(before), 'and says it worked').toEqual(['construction.undone']);
+  });
+
+  it('still refuses after a hire, because a refused wall does not make the older wall the latest action', () => {
+    const session = createSession(0x9567);
+    session.placeWall('before-hire', FIRST, 'tb');
+    session.send({ type: 'HireStaff', staffRoleId: GUARD, x: 4, y: 4 });
+    session.placeWall('refused', REFUSED, 'tr');
+    expect(session.stateOf('refused'), 'the precondition: the simulation refused it').toBe('failed');
+    const before = session.types().length;
+
+    session.send({ type: 'Undo' });
+    session.send({ type: 'Undo' });
+
+    expect(session.stateOf('before-hire'), 'neither press reaches past the hire').not.toBe('cancelled');
+    expect(
+      session.types().slice(before),
+      'both presses are refused visibly -- the first is not a silent pop of the refused wall',
+    ).toEqual(['construction.undo-refused-newer-action', 'construction.undo-refused-newer-action']);
+  });
+
+  it('leaves the redo stack as it was, so an undone wall can still be put back after a refused one', () => {
+    const session = createSession(0x9568);
+    session.placeWall('undone', FIRST, 'tu');
+    session.send({ type: 'Undo' });
+    expect(session.stateOf('undone')).toBe('cancelled');
+
+    session.placeWall('refused', REFUSED, 'tr');
+    expect(session.stateOf('refused'), 'the precondition: the simulation refused it').toBe('failed');
+    const before = session.types().length;
+
+    session.send({ type: 'Redo' });
+
+    expect(session.stateOf('undone'), 'the refused wall did not empty the redo stack').toBe('approved');
+    expect(session.types().slice(before)).toEqual(['construction.redone']);
+  });
+});

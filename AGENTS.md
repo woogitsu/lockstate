@@ -1423,6 +1423,54 @@ it is recorded in both documents for that reason. All three are corrections to
 a description, not to a ruling: the ruling picks a copy, and the copy is the
 same copy whatever the count of differing cells.
 
+**A RULING ON 2026-09-23, OF THE WEAKER PROVENANCE.** It was put as a
+clickable option **written by the integrating session**, in Polish. **What is
+recorded below is the label of an option this session authored and the owner
+picked, not a sentence they typed.** Read it as authorising what its label
+says and nothing wider.
+
+**The numbering was checked before it was used.** At the time of writing, the
+rulings of 2026-09-19 to 2026-09-22 in this file ran 1 to 12 with no gap. Every
+remote branch's copy of this file was also read, and none carries a 13. That
+is a statement about the file and the branches as they stood, not a standing
+claim.
+
+It is not a release inside the four reservations, which is why it is here.
+
+**13. ADR 0104: a placement the simulation refuses is not the player's latest
+action.** #1370 marks the status strip's Undo unavailable when a press would
+do nothing. That exposed the problem: a wall refused on its content was still
+registered on the undo history, as a dead transaction.
+- Undo went dim over a live wall that two presses would still take back.
+- The refused placement also reset the newer-action flag, so the second press
+  could reverse a wall placed before a hire. That was measured through the
+  real kernel: the loss ADR 0104 option 2 exists to stop.
+
+Refused objects were already kept out of the history. Offered three choices:
+- keep refused placements out of the history (option A);
+- treat a refused placement as a newer action, so the next Undo refuses;
+- change nothing for now, ship #1370's mark as it stood, and file the two-press
+  hole separately;
+
+the owner chose:
+
+> Opcja A (zalecane)
+
+("Option A (recommended).") So a `PlaceBuildOrder` the simulation refuses opens
+no transaction, leaves the redo stack alone, and leaves the newer-action flag
+alone.
+
+**What it authorises, exactly.** That reading of option 2's *"the newest
+accepted player command"*: the newest command that changed something. It also
+authorises the one change a player can see, which is that redo survives a
+refused placement. It is recorded as ADR 0104's *"Amendment, 2026-09-23"*,
+beside that document's own Status block.
+- **No player-visible string** is authorised or needed.
+- **No save-format change** is involved. The snapshot's shape is untouched,
+  and a save written before the amendment can still carry a dead transaction,
+  which #1370's availability getter still answers.
+- **It does not decide ADR 0104's open question 2**, about a stale redo.
+
 
 ## Required workflow for every issue
 Before coding:
