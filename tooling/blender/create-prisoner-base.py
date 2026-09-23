@@ -137,9 +137,13 @@ def face(object_, target):
 def build_detailed_actor(root, asset_id):
     """Model each eight-view concept without changing the actor rig contract."""
     guard = asset_id == "actor.guard.base"
+    medic = asset_id == "actor.medic.base"
     if guard:
         fabric = actor_fabric("guard-uniform-navy-v2.png", "Guard worn navy cotton", (0.025, 0.045, 0.085))
         dark_seam = mat("Navy seam shadow", (0.011, 0.018, 0.035), 0.85)
+    elif medic:
+        fabric = actor_fabric("medic-scrubs-blue-v2.png", "Medic washed blue scrubs", (0.075, 0.23, 0.31))
+        dark_seam = mat("Blue scrub seam shadow", (0.028, 0.09, 0.13), 0.85)
     else:
         fabric = actor_fabric("prisoner-jumpsuit-orange-v2.png", "Prisoner worn orange cotton", (0.64, 0.23, 0.07))
         dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
@@ -150,6 +154,8 @@ def build_detailed_actor(root, asset_id):
     button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
     badge = mat("Guard badge and patches", (0.49, 0.55, 0.57), 0.46) if guard else None
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
+    medical_white = mat("Medic patch and ID", (0.78, 0.83, 0.82), 0.76) if medic else None
+    cap_blue = mat("Medic pale blue cap", (0.31, 0.47, 0.60), 0.86) if medic else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
     # displayed scale. The old single bevelled cube made every role a crate.
@@ -180,6 +186,16 @@ def build_detailed_actor(root, asset_id):
         cube("Radio antenna", (-0.395, -0.06, 1.795), (0.012, 0.012, 0.13), belt, root, 0.003)
         cylinder("Key ring", (0.36, -0.22, 1.58), 0.035, 0.012, badge, root)
         cube("Chest badge", (0.245, -0.323, 2.47), (0.055, 0.012, 0.07), badge, root, 0.012)
+    if medic:
+        # A pale cap and white sleeve crosses give the medical role a distinct
+        # top-down silhouette while the scrub-pocket and ID read from oblique.
+        for side in (-1, 1):
+            cube(f"Sleeve cross vertical.{side}", (side * 0.43, -0.23, 2.35), (0.022, 0.012, 0.10), medical_white, root, 0.004)
+            cube(f"Sleeve cross horizontal.{side}", (side * 0.43, -0.239, 2.35), (0.09, 0.010, 0.022), medical_white, root, 0.004)
+            cube(f"Scrub hip pocket.{side}", (side * 0.245, -0.277, 1.94), (0.13, 0.017, 0.11), fabric, root, 0.014)
+        cube("Medical ID clip", (0.19, -0.331, 2.43), (0.025, 0.013, 0.05), button, root, 0.004)
+        cube("Medical ID card", (0.19, -0.341, 2.34), (0.055, 0.010, 0.075), medical_white, root, 0.007)
+        cube("Scrub hem", (0, -0.287, 1.78), (0.35, 0.015, 0.020), dark_seam, root, 0.003)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
@@ -194,6 +210,10 @@ def build_detailed_actor(root, asset_id):
         cylinder("Cap band", (0, 0.035, 3.345), 0.29, 0.055, belt, root)
         cube("Cap visor", (0, -0.295, 3.330), (0.24, 0.12, 0.025), belt, root, 0.025)
         cube("Cap emblem", (0, -0.213, 3.480), (0.045, 0.015, 0.06), badge, root, 0.012)
+    elif medic:
+        sphere("Medical cap", (0, 0.045, 3.380), (0.303, 0.278, 0.122), cap_blue, root)
+        box_tie = cube("Medical cap tie", (0, 0.281, 3.29), (0.065, 0.09, 0.025), cap_blue, root, 0.006)
+        box_tie.rotation_euler.z = math.radians(8)
     cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
 
     for side in (-1, 1):
@@ -227,7 +247,7 @@ def main():
     patch = mat("Role patch", profile["patch"], 0.8)
     root = pivot("SpriteRoot", (0, 0, 0), None)
     pivot("SpriteTarget", (0, 0, 0), None)
-    if options.asset_id in ("actor.prisoner.base", "actor.guard.base"):
+    if options.asset_id in ("actor.prisoner.base", "actor.guard.base", "actor.medic.base"):
         build_detailed_actor(root, options.asset_id)
     else:
         cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
