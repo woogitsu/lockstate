@@ -764,6 +764,13 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   nothing is the precondition for any such claim, and re-running one test while
   another suite runs proves nothing at all. Let the PR's own `browser` job be the
   gate.
+  **A `ps` check before the run says nothing about the run itself**: another
+  agent can start a suite while both the branch and baseline are being measured.
+  Record whether the machine stayed idle throughout each failing run; if that
+  cannot be established, mark the red result inconclusive and repeat it when
+  idle. Two reds collected under contention are two inconclusive measurements,
+  not evidence that the branch and baseline fail for the same reason. A pass
+  still stands: this contention class causes timeout failures, not false passes.
   **Do not wrap that check in `until ! ps … | grep -q "[p]laywright/test/cli"; do
   sleep …; done`.** It deadlocks: the waiting shell's own command line contains
   the pattern, so the loop matches itself and waits for ever. Two agents sat
