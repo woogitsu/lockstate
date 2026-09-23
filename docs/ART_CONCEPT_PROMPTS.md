@@ -206,6 +206,12 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 > …the slat gaps must stay visible at thumbnail size rather than merging into a
 > solid plank.
 
+The 2026-09-24 refinement has an original four-view reference at
+`assets/source/concepts/corridor-bench-multiview-v3.png` with provenance at
+`assets/source/concepts/corridor-bench-v3.md`. Individual wood grain offsets,
+dark steel end brackets and compact floor plates make the fixed bench distinct
+at 128×64 world pixels while preserving its existing 2×1 footprint.
+
 ### Reception and offices — `furniture.office.desk.employee.variants`, `furniture.reception.counter.variants`, `furniture.visitor.chair.variants`
 
 > an employee desk, 2×1 tiles, seen from directly above with its sides slightly
