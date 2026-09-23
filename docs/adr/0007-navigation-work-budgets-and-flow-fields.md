@@ -575,10 +575,24 @@ is rejected for two reasons, the first of which is decisive on its own:
    keeps that entry through the lockdown; a key-and-rebuild save taken during
    it has nothing to rebuild the entry *from*, because rebuilding means
    searching against the present doors, which give the other verdict. So a
-   save during a lockdown would restore to a session that pays, after the
-   lift, for searches the continuous one gets free — the divergence this
-   amendment exists to remove, moved to the most eventful ticks a prison has.
-   `tests/determinism/restore-mid-walk-exactness.test.ts` carries that case.
+   restore of such a save pays, after the lift, for a search the continuous
+   session gets free, and on a tick where the budget binds that is the
+   divergence this amendment exists to remove.
+   `tests/unit/navigation-cache-snapshot.test.ts` pins the revival itself: a
+   restored cache answers a revived leg at 0 expansions where a cold one has
+   to search.
+
+   **What was not shown, measured after building:** that this ever changes a
+   whole session. Two lockdown cases were added to
+   `tests/determinism/restore-mid-walk-exactness.test.ts`, the second built to
+   leave nine invalidated legs cached at a lift just before the budget binds.
+   With the capture changed to carry only the entries valid at the save — the
+   rejected design — and their non-vacuity floors off, **every case in that
+   file stayed green**. In these fixtures a leg a lockdown invalidates is
+   either asked for again during it, which replaces the stale entry with a
+   refusal, or not asked for on a binding tick. So this reason is a
+   correctness argument about a mechanism, not a measured divergence, and the
+   decision rests as much on the second.
 2. **A rebuild is exact only by argument; carrying the entry is exact by
    construction.** A rebuilt entry equals the original only if the route
    `findRoute` returns now equals the one either `findRoute` or
@@ -664,6 +678,10 @@ shape or meaning, so `SAVE_SCHEMA_VERSION` does not move, on
 
 ### Measured before building, 2026-09-23
 
+*This table is the draft encoding's, measured before the code landed as the
+ruling required, and is kept as that record. The shipped encoding is measured
+under "Measured after building" below; it is about 5 % smaller.*
+
 On `fc5474de`, with the encoding above drafted outside the tree and applied to
 the live caches of #1373's own fixture (one chunk; one prisoner per cell, two
 guards) and of that fixture tiled over 2×2 and 3×3 chunks. "Capture" is the
@@ -699,15 +717,48 @@ would carry about 4.9 MB against that tier's 2.86 MiB envelope. That is an
 extrapolation from prisons a hundred times smaller whose routes are shorter,
 and it is the number to measure before a prison that size is playable.
 
+### Measured after building, 2026-09-23
+
+The shipped `simulation.inFlight.navigation.caches`, read off
+`captureSessionSnapshot` on the same fixtures; "rest" is the rest of the
+capture.
+
+| fixture | tick | entries | flow fields | caches JSON | share of rest | gzip share | per entry |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 12 prisoners | 15,000 | 77 | 1 | 19.6 KB | 60 % | 40 % | 255 B |
+| 24 prisoners | 15,000 | 148 | 1 | 37.6 KB | 72 % | 49 % | 254 B |
+| 36 prisoners | 7,800 | 211 | 2 | 55.1 KB | 78 % | 56 % | 261 B |
+| 36 prisoners | 15,000 | 219 | 2 | 57.1 KB | 82 % | 58 % | 261 B |
+
+Capturing the caches and loading them each took about 1 ms at 36 prisoners
+(a mean over 20 runs, 0.6–3.7 ms across the table's rows, in a container
+under other load; wall clock, so directional only).
+
+**Red before green.** On the build before this change, the 24-prisoner save
+one tick before the tick-3461 block change served a different set of
+requests by tick 3463 — the case was pinned as a known divergence, and it
+went red with its own message (*"the divergence this case pins has gone"*)
+the moment the caches were carried. Mutations of the change, each turning
+cases in `restore-mid-walk-exactness.test.ts` red:
+
+| mutation | red |
+| --- | --- |
+| the restore does not load the caches | every whole-session case: 7 of 11 |
+| a changed dependency's verdict is dropped and it is read as unchanged | the lockdown case, and 3 unit cases |
+| the caches are loaded before the restore re-applies control states | `snapshot-restore-fidelity`'s in-flight fixed point |
+| only entries valid at the save are carried (keys and rebuild) | **none** of the whole-session cases; see Decision 1 |
+
 ### The gate
 
 - `tests/determinism/restore-mid-walk-exactness.test.ts` — the 24-prisoner
-  binding case that was pinned as a known divergence now requires exactness,
-  and scans binding ticks the way its other cases scan the timetable. A case
-  saves during a lockdown and lifts it after the restore, which is the case a
-  key-and-rebuild save could not carry.
-- `tests/unit/navigation-cache-snapshot.test.ts` — the codec's round trip, its
-  refusals, and the rebase of door versions.
+  binding case that was pinned as a known divergence now requires exactness.
+  Beside it: every save in the 40 ticks that used to diverge at 24 prisoners,
+  saves across the 600 that did at 36, a save one tick before **every** tick
+  the budget binds on in a day at both sizes, found by scanning, and two
+  lockdown cases.
+- `tests/unit/navigation-cache-snapshot.test.ts` — the codec's round trip, the
+  revival of an invalidated entry, the rebase of door versions onto a
+  re-registered registry, eleven refusals, and the `unload` premise.
 
 What this amendment does **not** touch: the work-unit budget and what it
 charges, the fairness rule, sharing's position behind the route cache, and

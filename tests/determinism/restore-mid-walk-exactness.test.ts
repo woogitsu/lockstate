@@ -550,8 +550,21 @@ describe('a save taken before the navigation budget binds restores to the same p
 });
 
 /**
- * **The case a key-and-rebuild save could not carry**, which is why ADR 0007's
- * 2026-09-23 amendment carries the entries themselves.
+ * **Saves taken during a lockdown**, where a cache holds entries a locked door
+ * has invalidated and a lift can make answer again -- the mechanism ADR 0007's
+ * 2026-09-23 amendment carries entries rather than keys for.
+ *
+ * **What these two cases do not show, measured rather than assumed:** with
+ * the capture changed to carry only the entries valid at the save (the
+ * key-and-rebuild design the amendment rejects) and both cases' non-vacuity
+ * floors switched off, **every case in this file stays green**. In these
+ * fixtures a leg a lockdown invalidates is either asked for again during the
+ * lockdown, which replaces the stale entry with a refusal, or not asked for on
+ * a tick where the budget binds, so losing it changes no service. The
+ * revival itself is pinned where it is visible, in
+ * `tests/unit/navigation-cache-snapshot.test.ts`. What these cases do pin is
+ * that a save taken during a lockdown -- carrying the invalidated entries, as
+ * the floors require -- continues to the same prison.
  *
  * A cached route is valid while every door it depends on gives the traversal
  * verdict it was computed under (`doorDependenciesStillHold`). Locking the
@@ -599,8 +612,7 @@ describe('a save taken during a lockdown restores the routes the lift revives (#
 
   /**
    * A lockdown lifted **just before the budget binds**, arranged so the entries
-   * it invalidated are still cached when it lifts -- the case that
-   * distinguishes carrying entries from carrying keys.
+   * it invalidated are still cached when it lifts.
    *
    * The case above does not bind the budget, and in it most legs the lockdown
    * invalidates are asked for again *during* it (the prisoners still want
@@ -613,9 +625,8 @@ describe('a save taken during a lockdown restores the routes the lift revives (#
    * budget binds on ticks 8241 and 8242, which it does not on day 3 without
    * the lockdown.
    *
-   * **Measured against the design ADR 0007's amendment rejects**: carrying only
-   * the entries valid at the save, with this case's non-vacuity floor off,
-   * makes this case fail and leaves every other case in the file green.
+   * It was built to make the key-and-rebuild design fail and **it does not**:
+   * see the note on this `describe`.
    */
   it('24 prisoners: the yard locked between two yard blocks and lifted before the binding one', { timeout: 300_000 }, () => {
     const lockAt = 6_400;
