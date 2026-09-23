@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BUILD_EDGES, BUILD_ORDER_FAIL_REASONS, isBuildEdge } from '../../src/simulation/construction/build-order';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
+import { MAX_REFUSAL_HISTORY_RECORDS, REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
 import {
   ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
@@ -1379,6 +1379,124 @@ describe('ADR 0091 "Amendment, 2026-09-23" (#1270): remove-wall and remove-objec
     expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'the un-zoning has to succeed').toHaveLength(0);
     expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
     expect(runtime.refusals.last?.routeDecidedSince, 'unzone shares a sentence shape with the removals, not a route').toBeUndefined();
+  });
+});
+
+describe('ruling 26 (#985): every refusal leaves a row in the history, and the band still reads only the last', () => {
+  // The owner's ruling of 2026-09-23 (`AGENTS.md` ruling 26), designed in
+  // `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`. Each case
+  // asserts `last` beside `history`, because the ruling is a split: the
+  // history keeps what `record` used to lose, and the band's reading must not
+  // move at all.
+
+  it('keeps the refusal a newer one replaces -- the loss article 6 names', () => {
+    const runtime = createNewSimulationRuntime(0x985);
+    placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
+    placeWall(runtime, 1, OWNED_TILE);
+    placeWall(runtime, 2, { x: -100, y: -100 });
+
+    expect(runtime.refusals.history).toEqual([
+      { sequence: 1, tick: 0, reason: 'build.out-of-bounds', tile: OUT_OF_BOUNDS_TILE },
+      { sequence: 2, tick: 2, reason: 'build.out-of-bounds', tile: { x: -100, y: -100 } },
+    ]);
+    expect(runtime.refusals.last?.sequence, 'the band still reads the newest alone').toBe(2);
+  });
+
+  it('keeps a burst decided inside one tick whole -- gap 34s eleven-of-twelve, below the bound', () => {
+    // One dispatch pass, several refusals: the reduction gap 34 measured
+    // happened because only `last` was published. Three commands queued for
+    // the same tick are the smallest burst there is.
+    const runtime = createNewSimulationRuntime(0x985);
+    const tile = (index: number) => ({ x: 100 + index, y: 100 });
+    for (let index = 0; index < 3; index += 1) {
+      runtime.kernel.submitCommand(
+        `burst-${String(index)}`,
+        index,
+        runtime.kernel.tick,
+        packCommand({ type: 'PlaceBuildOrder', orderId: `burst-${String(index)}`, definitionId: 'wall-brick', ...tile(index) }),
+      );
+    }
+    runtime.kernel.step();
+
+    expect(runtime.refusals.history.map((entry) => entry.tile)).toEqual([tile(0), tile(1), tile(2)]);
+    expect(runtime.refusals.history.every((entry) => entry.tick === 0), 'one tick, one pass').toBe(true);
+  });
+
+  it('bounds the history at MAX_REFUSAL_HISTORY_RECORDS, dropping the oldest', () => {
+    const log = new RefusalLog();
+    const total = MAX_REFUSAL_HISTORY_RECORDS + 2;
+    for (let index = 1; index <= total; index += 1) {
+      log.record('build.out-of-bounds', index, buildSupersessionKey('wall-brick', 100 + index, 100, 'north'));
+    }
+    expect(MAX_REFUSAL_HISTORY_RECORDS, 'the bound the ADR draft argues for').toBe(8);
+    expect(log.history.map((entry) => entry.sequence)).toEqual([3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(log.count, 'the tally is not bounded, only what is kept').toBe(total);
+  });
+
+  it("withdraws an older entry when its own command succeeds, leaving the standing refusal and the band alone (#492's rule)", () => {
+    const runtime = createNewSimulationRuntime(0x985);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+    placeWall(runtime, 1, OUT_OF_BOUNDS_TILE);
+    expect(runtime.refusals.history).toHaveLength(2);
+
+    // `zone-area`'s own #780 case: a yard needs no enclosure, so zoning one
+    // at the identical rectangle disproves the older refusal.
+    submit(runtime, 2, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 20, width: 8, height: 8 }));
+
+    expect(runtime.refusals.history, 'the disproved refusal leaves the history').toEqual([
+      { sequence: 2, tick: 1, reason: 'build.out-of-bounds', tile: OUT_OF_BOUNDS_TILE },
+    ]);
+    expect(runtime.refusals.last, 'the standing refusal is a different one, and untouched').toEqual({
+      sequence: 2,
+      tick: 1,
+      reason: 'build.out-of-bounds',
+      tile: OUT_OF_BOUNDS_TILE,
+    });
+  });
+
+  it('does not withdraw an entry about a different target, and never copies option F mark into it', () => {
+    // #492's guarding sequence again: a different rectangle succeeding. The
+    // standing record is marked for the band; the history entry is the
+    // refusal as it was decided.
+    const runtime = createNewSimulationRuntime(0x985);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 2, height: 3 });
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 10, y: 10, width: 2, height: 3 }));
+
+    expect(runtime.refusals.last?.routeDecidedSince).toBe(true);
+    expect(runtime.refusals.history).toEqual([
+      { sequence: 1, tick: 0, reason: 'zone.not-enclosed', tile: { x: 2, y: 2 } },
+    ]);
+  });
+
+  it('changes historyRevision on every change to the history and on nothing else', () => {
+    const log = new RefusalLog();
+    const key = removeObjectSupersessionKey(3, 3);
+    log.record('remove-object.nothing-to-remove', 1, key);
+    log.record('build.out-of-bounds', 2, buildSupersessionKey('wall-brick', 100, 100, 'north'));
+    const afterRecords = log.historyRevision;
+    log.supersede(removeObjectSupersessionKey(9, 9));
+    expect(log.historyRevision, 'a miss changes nothing in the history').toBe(afterRecords);
+    log.supersede(key);
+    expect(log.historyRevision, 'an older entry withdrawn moves no ordinal, so the revision must move').not.toBe(afterRecords);
+    expect(log.last?.sequence).toBe(2);
+  });
+
+  it('holds the same history on two runs of the same commands', () => {
+    const histories = [0, 1].map(() => {
+      const runtime = createNewSimulationRuntime(0x985);
+      placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
+      submit(runtime, 1, packCommand({ type: 'RemoveObject', x: 11, y: 13 }));
+      submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 3, y: 4, width: 2, height: 2 }));
+      return runtime.refusals.history;
+    });
+    expect(histories[0]?.map((entry) => entry.reason)).toEqual([
+      'build.out-of-bounds',
+      'remove-object.nothing-to-remove',
+      'unzone.nothing-to-remove',
+    ]);
+    expect(histories[1]).toEqual(histories[0]);
   });
 });
 

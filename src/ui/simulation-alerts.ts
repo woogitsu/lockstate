@@ -1,6 +1,6 @@
 import { refusalBandCeilingPassed } from '../simulation/refusals/refusal-band-lifetime';
 import type { LocalizationKey } from '../content/localization';
-import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
+import type { ProtocolFaultCode, RefusalReason, SimulationRefusal, WorkerToMainMessage } from '../simulation/protocol/types';
 import { PROTOCOL_FAULT_CODES } from '../simulation/protocol/types';
 import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudSpeed } from './hud/view-model';
 
@@ -220,6 +220,16 @@ const FAULT_ROW_PREFIX = 'fault-';
  * producer: an uncorrelated `protocol/error`, which is the fault nobody else
  * reads.
  *
+ * **"Exactly one row or none" stopped being true on 2026-09-23, and the
+ * sentence is kept because what replaced it is still not a queue.** The
+ * owner's ruling 26 on #985 put refusals under constitution article 6, so the
+ * same snapshot now also carries `refusalHistory`: every refusal the history
+ * still holds, at most `MAX_REFUSAL_HISTORY_RECORDS` of them, republished
+ * whole on every readout. This function paints one row per entry. The band
+ * below still reads `refusal` alone.
+ * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` carries the
+ * design.
+ *
  * They arrive on separate messages and neither may erase the other. Returning
  * the complete list from the message alone cannot express that -- a
  * status-counts publication arrives up to twice a second, so a fault row
@@ -231,12 +241,15 @@ const FAULT_ROW_PREFIX = 'fault-';
  *
  * The list stays bounded -- at most one refusal row and at most one row per
  * fault code -- so `docs/HUD_PROJECTIONS.md` contract 5 still has nothing to
- * page here.
+ * page here. *(At most `MAX_REFUSAL_HISTORY_RECORDS` refusal rows since
+ * 2026-09-23. It is still a fixed bound, so there is still nothing to page.)*
  *
  * ## Why it stays up
  *
  * Nothing clears a row: "the last refusal was X" stays true until another
- * refusal replaces it or the session ends, and the same holds of a fault --
+ * refusal replaces it or the session ends *(since ruling 26, a newer refusal
+ * no longer clears it either -- only a #492 withdrawal, the history's bound,
+ * or the session ending do)*, and the same holds of a fault --
  * "this session has seen an `invalid-message` fault" does not stop being true. This channel has no way to say
  * "dismissed" -- that would be a main-to-worker message and a piece of
  * simulation state to hold it, which is a decision rather than a detail, so
@@ -322,40 +335,20 @@ export function hudAlertsFromWorkerMessage(
 ): readonly HudAlertViewModel[] | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
-      const { refusal } = message.payload;
+      const { refusal, refusalHistory } = message.payload;
       const standing = previous.filter((row) => !row.id.startsWith(REFUSAL_ROW_PREFIX));
-      if (refusal === undefined) return standing;
-      return [
-        ...standing,
-        {
-          // The refusal's own ordinal, so a readout that repeats an
-          // unchanged refusal beside a changed count updates the row the
-          // player is looking at instead of rebuilding it -- which is what
-          // `HudAlertViewModel.id` exists for -- while a *new* refusal is a
-          // new row rather than the old one silently rewritten.
-          id: `${REFUSAL_ROW_PREFIX}${refusal.sequence}`,
-          labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
-          severity: 'warning',
-          // Forwarded, not decided: the place a refusal is about is the
-          // simulation's fact and this module's job is to put it where the
-          // HUD can reach it (ADR 0122 option D step 2, adopted 2026-09-22).
-          // Absent on the ten `RefusalLog` domains that are aimed nowhere, so
-          // spread rather than passed as `undefined` --
-          // `exactOptionalPropertyTypes` is on and the two are different
-          // values, exactly as `routeDecidedSince` below is spread on the
-          // band.
-          //
-          // **The band does not get it and that asymmetry is deliberate.**
-          // `HudRefusalNoticeViewModel` is one sentence in an always-laid-out
-          // corner with no row to press; ADR 0122's recommendation is that
-          // *the alerts row* becomes the press, and option D step 2 names
-          // `HudAlertViewModel` and nothing else. Giving the band a
-          // destination nothing can press would be a field with no reader on
-          // the surface that has no gesture, which is a different thing from
-          // the field with no reader *yet* on the surface that will get one.
-          ...(refusal.tile === undefined ? {} : { tile: refusal.tile }),
-        },
-      ];
+      // **One row per refusal the history still holds, not one row for the
+      // last refusal** -- the owner's ruling 26 of 2026-09-23 on #985
+      // (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`).
+      //
+      // A publisher that carries `refusal` and no `refusalHistory` is read as
+      // a history of one. That is exactly what the payload meant before the
+      // ruling, so an older producer or a fixture keeps its meaning. The
+      // worker always sends the history when it sends a refusal, and
+      // `tests/unit/worker-status-counts.test.ts` pins that, so this fallback
+      // cannot quietly become the only path.
+      const history = refusalHistory ?? (refusal === undefined ? [] : [refusal]);
+      return [...standing, ...history.map(refusalRow)];
     }
 
     case 'protocol/error': {
@@ -407,6 +400,47 @@ export function hudAlertsFromWorkerMessage(
     default:
       return undefined;
   }
+}
+
+/**
+ * One refusal the history holds, as the alerts row it paints.
+ *
+ * Unchanged from the single row this module built before ruling 26, apart
+ * from being built once per entry. It has the same id scheme, the same key
+ * table, the same uniform severity and the same forwarded tile, so each row
+ * is still the press ADR 0122 made it. It still carries no `occurrences`, so
+ * it still cannot be dismissed: `docs/HUD_PROJECTIONS.md` gap 34's dismissal
+ * half is untouched.
+ */
+function refusalRow(refusal: SimulationRefusal): HudAlertViewModel {
+  return {
+    // The refusal's own ordinal, so a readout that repeats an
+    // unchanged refusal beside a changed count updates the row the
+    // player is looking at instead of rebuilding it -- which is what
+    // `HudAlertViewModel.id` exists for -- while a *new* refusal is a
+    // new row rather than the old one silently rewritten.
+    id: `${REFUSAL_ROW_PREFIX}${refusal.sequence}`,
+    labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
+    severity: 'warning',
+    // Forwarded, not decided: the place a refusal is about is the
+    // simulation's fact and this module's job is to put it where the
+    // HUD can reach it (ADR 0122 option D step 2, adopted 2026-09-22).
+    // Absent on the ten `RefusalLog` domains that are aimed nowhere, so
+    // spread rather than passed as `undefined` --
+    // `exactOptionalPropertyTypes` is on and the two are different
+    // values, exactly as `routeDecidedSince` below is spread on the
+    // band.
+    //
+    // **The band does not get it and that asymmetry is deliberate.**
+    // `HudRefusalNoticeViewModel` is one sentence in an always-laid-out
+    // corner with no row to press; ADR 0122's recommendation is that
+    // *the alerts row* becomes the press, and option D step 2 names
+    // `HudAlertViewModel` and nothing else. Giving the band a
+    // destination nothing can press would be a field with no reader on
+    // the surface that has no gesture, which is a different thing from
+    // the field with no reader *yet* on the surface that will get one.
+    ...(refusal.tile === undefined ? {} : { tile: refusal.tile }),
+  };
 }
 
 /**

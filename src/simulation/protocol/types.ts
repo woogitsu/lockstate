@@ -1733,6 +1733,20 @@ export const refusalSchema = z
 export type SimulationRefusal = DeepReadonly<z.infer<typeof refusalSchema>>;
 
 /**
+ * How many refusals the message history keeps at once
+ * ([`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`](../../../docs/adr/drafts/what-a-refusal-leaves-in-the-history.md)
+ * decision 5, implementing the owner's ruling 26 of 2026-09-23 on #985).
+ *
+ * The same eight as `MAX_EVENT_ALERT_ROWS`, the event history's own row cap
+ * in the same list. The refusal family has its own bound, as the fault family
+ * is bounded by its twelve codes, so neither family evicts the other. Declared
+ * here rather than in `RefusalLog` because it is also the wire bound
+ * `statusCountsMessageSchema` enforces on `refusalHistory`: a publisher that
+ * carried a ninth record would be rejected at decode, not merely unusual.
+ */
+export const MAX_REFUSAL_HISTORY_RECORDS = 8;
+
+/**
  * What the last accepted room designation says about itself.
  *
  * A second sibling of `counts`, declared for the reason `refusal` is one: it
@@ -1868,6 +1882,31 @@ const statusCountsMessageSchema = z
         schemaVersion: schemaVersionSchema,
         counts: statusCountsSchema,
         refusal: refusalSchema.optional(),
+        /**
+         * The refusals the message history still holds, oldest first (the
+         * owner's ruling 26 of 2026-09-23 on #985: *"each refusal leaves a
+         * row in the message history"*).
+         *
+         * A **level**, like `refusal` beside it, and republished with every
+         * readout for the same reason: "the refusals that still stand in the
+         * history are these" is true at any tick, so it survives a
+         * publication that is late, coalesced or dropped. It is not the
+         * queue `RefusalLog`'s docblock argues this channel cannot carry --
+         * nothing drains it and it cannot grow past
+         * `MAX_REFUSAL_HISTORY_RECORDS`, which is enforced here at decode.
+         *
+         * **`refusalSchema` itself rather than a narrower shape.** An entry
+         * never carries `routeDecidedSince`, which is a fact about the band
+         * and not about the history; reusing the schema keeps the wire at one
+         * refusal shape, which is what
+         * `tests/foundation/documented-wire-schema-membership-contract.test.ts`
+         * resolves every documented `{ sequence, tick, reason }` against.
+         *
+         * Absent while the history is empty, never an empty array, on the
+         * payload's own convention. See
+         * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`.
+         */
+        refusalHistory: z.array(refusalSchema).min(1).max(MAX_REFUSAL_HISTORY_RECORDS).optional(),
         zoning: zoningNoticeSchema.optional(),
         editHistory: editHistoryAvailabilitySchema,
       })

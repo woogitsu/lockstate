@@ -296,6 +296,18 @@ export class SimulationWorkerStateMachine {
    */
   private _publishedRefusalRouteDecided = false;
   /**
+   * The `RefusalLog.historyRevision` the main thread was last told about (the
+   * owner's ruling 26 of 2026-09-23, #985).
+   *
+   * A third watermark, for the same reason as the two above. A #492
+   * withdrawal of an *older* history entry moves no ordinal, no count and no
+   * flag on the standing record, so without this the gate would suppress the
+   * one publication that tells the alerts list the row is gone. A revision is
+   * a counter rather than a boolean because the history can change any number
+   * of times while one record stands.
+   */
+  private _publishedRefusalHistoryRevision = 0;
+  /**
    * Whether the refusal the main thread was last told about had already
    * outlived the band's tick ceiling when that publication left
    * (`refusalBandTickCeiling`, ruled in ticks by the owner 2026-09-20 and
@@ -630,7 +642,10 @@ export class SimulationWorkerStateMachine {
    * mistaken for a statement about a later state, and no list crosses at all
    * -- twenty-one integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
-   * here yet. It was eleven until #29's income line added
+   * here yet. *(Since 2026-09-23 a list does cross: `refusalHistory`, at most
+   * `MAX_REFUSAL_HISTORY_RECORDS` records, bounded at decode. Contract 5 still
+   * has nothing to page, because the bound is fixed and small; ruling 26 on
+   * #985 is why the list exists.)* It was eleven until #29's income line added
    * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`
    * gave the strip's occupancy bar a denominator, thirteen until payroll
    * (ADR 0042 step 3) added the daily wage bill and the arrears beside it,
@@ -697,8 +712,10 @@ export class SimulationWorkerStateMachine {
       control.mode === 'paused'
         ? this._publishedRefusalOutlivedBand
         : refusal !== undefined && refusalBandCeilingPassed(refusal.tick, this._kernel.tick, control.speed);
+    const refusalHistoryRevision = this._runtime.refusals.historyRevision;
     const refusalIsNew =
       refusalSequence !== this._publishedRefusalSequence ||
+      refusalHistoryRevision !== this._publishedRefusalHistoryRevision ||
       refusalRouteDecided !== this._publishedRefusalRouteDecided ||
       refusalOutlivedBand !== this._publishedRefusalOutlivedBand;
     // A newly designated room opens the interval gate for the reason a
@@ -730,8 +747,10 @@ export class SimulationWorkerStateMachine {
     this._publishedRefusalSequence = refusalSequence;
     this._publishedRefusalRouteDecided = refusalRouteDecided;
     this._publishedRefusalOutlivedBand = refusalOutlivedBand;
+    this._publishedRefusalHistoryRevision = refusalHistoryRevision;
     this._publishedZoningSequence = zoningSequence;
     this._publishedEditHistory = editHistory;
+    const refusalHistory = this._runtime.refusals.history;
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -757,6 +776,14 @@ export class SimulationWorkerStateMachine {
         // remember a message it saw, and a listener that starts late sees the
         // same state as one that was there all along.
         ...(refusal === undefined ? {} : { refusal }),
+        // The message history's refusals (ruling 26, #985), on the same
+        // snapshot discipline: absent while there are none, and republished
+        // with every readout. This is what reaches the alerts list, and it is
+        // why the eleven-of-twelve reduction `docs/HUD_PROJECTIONS.md` gap 34
+        // measured no longer happens below `MAX_REFUSAL_HISTORY_RECORDS`: a
+        // burst decided inside one dispatch pass is in the history whole,
+        // though `last` above still holds only its newest member.
+        ...(refusalHistory.length === 0 ? {} : { refusalHistory }),
         // The same snapshot discipline as `refusal`, one field over: absent
         // until this session has designated a room, and then republished with
         // every later readout for as long as it is still the most recent

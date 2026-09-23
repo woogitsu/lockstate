@@ -5,7 +5,7 @@ import type { PurchaseCancelRefusalReason, PurchaseRefusalReason, SellStockRefus
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { EditRegimeBlockRefusalReason } from '../prisoners/regime-registry';
-import type { RefusalReason, SimulationRefusal } from '../protocol/types';
+import { MAX_REFUSAL_HISTORY_RECORDS, type RefusalReason, type SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { GuardReleaseRefusalReason } from '../security/guard-release';
 import type { StaffDismissRefusalReason } from '../staff/dismissal';
@@ -66,6 +66,17 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   `docs/HUD_PROJECTIONS.md` gap 33 already records as not surviving a
  *   restore, and it is recorded there and in `docs/PERSISTENCE.md` rather
  *   than left to be discovered.
+ *
+ *   **The history added on 2026-09-23 is not snapshotted either, for the same
+ *   reason and one more.** No gesture dismisses a refusal row, so up to
+ *   `MAX_REFUSAL_HISTORY_RECORDS` notices about presses from a session that
+ *   has ended would stand in a restored prison until eight fresh refusals
+ *   pushed them out. The event log escaped this argument through ADR 0084's
+ *   dismissal and its `restored: true` replay, and a refusal row has neither.
+ *   Ruling 26 did not rule on the save.
+ *   `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` decision 6 and
+ *   its *"Choices the owner may want the other way"* item 2 price the
+ *   alternative.
  * - **`SimulationRefusal` -- what crosses the worker boundary -- holds no
  *   coordinates, order id or item id.** The alert says what was refused and
  *   why, not where. Carrying a tile on the wire would put a second copy of
@@ -109,6 +120,20 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * - **It orders nothing.** There is exactly one record, so there is no
  *   iteration here for `docs/DETERMINISM.md`'s canonical-order rule to
  *   govern -- the rule is satisfied by there being no list, not by a sort.
+ *
+ *   **THAT BULLET IS NOW HALF WRONG (2026-09-23), AND THE HALF THAT MOVED IS
+ *   THE ONE THE OWNER RULED ON.** Ruling 26 on #985 put refusals under
+ *   constitution article 6 -- *"Ostrzeżenia nie znikają dlatego, że przyszło
+ *   nowsze zdarzenie"* -- so `record` no longer loses the refusal it replaces.
+ *   There is still exactly one *standing* record, and it is still what `last`
+ *   returns and what the band reads. Beside it there is now a list, `history`,
+ *   of at most `MAX_REFUSAL_HISTORY_RECORDS` entries. The canonical-order rule
+ *   is met by that list being in record order, which is `sequence` order.
+ *   Nothing iterates a map or a set to build it.
+ *   `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` carries the
+ *   design. That also makes the "Why this shape and not a queue" section above
+ *   narrower: the history is a bounded window republished as a level, not a
+ *   queue that anything drains.
  *
  * Writing to it is deterministic: it is written only from the kernel's
  * command handler, at the tick the command executes, from values the command
@@ -178,9 +203,32 @@ export class RefusalLog {
    * `session-commands.ts`/`construction/handler.ts` ever inspects one.
    */
   private _currentKey: string | undefined;
+  /**
+   * Every refusal still in the message history, oldest first, each beside the
+   * supersession key it was recorded under (ruling 26, #985).
+   *
+   * The key is here for the reason `_currentKey` is, and it never leaves this
+   * class either: `supersede` compares it to withdraw a refusal whose own
+   * command has since succeeded, and `history` hands out the records alone.
+   * An entry holds the record **as it was decided**, so option F's
+   * `routeDecidedSince` mark, which rebuilds `_current`, never reaches it.
+   */
+  private _history: { readonly refusal: SimulationRefusal; readonly key: string | undefined }[] = [];
+  /**
+   * Bumped on every change to `_history`, so the publisher can open its gate
+   * on a change that moves no ordinal: a #492 withdrawal of an *older* entry
+   * leaves `last` and `count` exactly as they were.
+   */
+  private _historyRevision = 0;
 
   /**
    * Records a refusal at `tick`, replacing whatever was last recorded.
+   *
+   * **Replacing the standing record, and no longer losing it (2026-09-23,
+   * ruling 26).** The record it replaces stays in `history`. Only the band's
+   * reading, `last`, is replaced, which is what the ruling keeps: *"the band
+   * still shows only the current refusal"*. The paragraph below is kept
+   * because the half about the standing record still holds.
    *
    * Replacing rather than accumulating is the whole design: see the class
    * comment. The count is not lost by replacing -- it is `sequence`.
@@ -216,6 +264,18 @@ export class RefusalLog {
     // `refusalSchema` is `.strict()` about the difference.
     this._current = { sequence: this._sequence, tick, reason, ...(tile === undefined ? {} : { tile }) };
     this._currentKey = key;
+    // The same value, not a copy: it is readonly all the way down, and
+    // `noteRouteDecided` rebuilds `_current` rather than mutating it, so the
+    // entry keeps the record as it was decided.
+    this._history.push({ refusal: this._current, key });
+    // Trimmed at the append, oldest first, so two runs of the same commands
+    // trim identically -- the rule `SimulationEventLog.append` states for its
+    // own buffer. The bound is the wire's, and a ninth entry would fail
+    // `refusalHistory`'s `.max()` at decode.
+    if (this._history.length > MAX_REFUSAL_HISTORY_RECORDS) {
+      this._history.splice(0, this._history.length - MAX_REFUSAL_HISTORY_RECORDS);
+    }
+    this._historyRevision += 1;
   }
 
   /**
@@ -256,6 +316,18 @@ export class RefusalLog {
    * comparison on a path that already did one.
    */
   public supersede(key: string): void {
+    // The history first, on exactly the rule below: an entry recorded under
+    // *this* key is a refusal whose own command has just succeeded at the same
+    // target, so it is no longer true and leaves the history as it leaves the
+    // band (#492). A different key -- a different target, a different route,
+    // no key at all -- removes nothing, which is article 6: a refusal does not
+    // leave the history because something newer happened. `some` before
+    // `filter`, because this runs on every success of every route and almost
+    // always matches nothing.
+    if (this._history.some((entry) => entry.key === key)) {
+      this._history = this._history.filter((entry) => entry.key !== key);
+      this._historyRevision += 1;
+    }
     if (this._currentKey !== undefined && this._currentKey === key) {
       this._current = undefined;
       this._currentKey = undefined;
@@ -322,6 +394,25 @@ export class RefusalLog {
   /** The most recent refusal, or `undefined` while the session has refused nothing or the last one was superseded. */
   public get last(): SimulationRefusal | undefined {
     return this._current;
+  }
+
+  /**
+   * The refusals the message history still holds, oldest first: at most
+   * `MAX_REFUSAL_HISTORY_RECORDS`, each exactly as it was recorded, and none
+   * that a later success of its own command has withdrawn (ruling 26, #985).
+   *
+   * `last`, when there is one, is always the newest entry here, less option
+   * F's `routeDecidedSince` mark: `record` writes both, and a `supersede` that
+   * withdraws `last` withdraws its entry too. The reverse does not hold. An older entry can outlive the standing
+   * record, which is the whole point.
+   */
+  public get history(): readonly SimulationRefusal[] {
+    return this._history.map((entry) => entry.refusal);
+  }
+
+  /** Changes whenever `history` does; see `_historyRevision`. */
+  public get historyRevision(): number {
+    return this._historyRevision;
   }
 
   /**
