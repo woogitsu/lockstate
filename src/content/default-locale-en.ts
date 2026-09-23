@@ -155,6 +155,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // not a head start. `tests/unit/ui-hud-messages.test.ts` is still the gate.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
+  'hud.status.all-stats': 'All stats',
+  'hud.status.all-stats-close': 'Close',
   'hud.status.prisoners': 'Prisoners',
   // How many prisoners hold no residency place (#609). The owner approved
   // *"{count} with no bed"* before it was built, and what is kept from that
