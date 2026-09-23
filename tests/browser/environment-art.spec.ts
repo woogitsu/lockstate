@@ -521,6 +521,27 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.washing-machine',
       tileOf: (fixture) => [fixture.washingMachineTileX, fixture.washingMachineTileY],
     },
+    {
+      label: 'security console',
+      buildableId: 'security-console-brick',
+      catalogueId: 'object.security-console',
+      expectedSpriteId: 'env.object.security-console',
+      tileOf: (fixture) => [fixture.securityConsoleTileX, fixture.securityConsoleTileY],
+    },
+    {
+      label: 'utility panel',
+      buildableId: 'utility-panel-brick',
+      catalogueId: 'object.utility-panel',
+      expectedSpriteId: 'env.object.utility-panel',
+      tileOf: (fixture) => [fixture.utilityPanelTileX, fixture.utilityPanelTileY],
+    },
+    {
+      label: 'loading dock door',
+      buildableId: 'loading-dock-door-wooden',
+      catalogueId: 'object.loading-dock-door',
+      expectedSpriteId: 'env.object.loading-dock-door',
+      tileOf: (fixture) => [fixture.loadingDockDoorTileX, fixture.loadingDockDoorTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

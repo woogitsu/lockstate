@@ -92,6 +92,12 @@ const FIXTURE: HarnessWorldFixture = {
   stoveTileY: 4,
   washingMachineTileX: 34,
   washingMachineTileY: 4,
+  securityConsoleTileX: 42,
+  securityConsoleTileY: 4,
+  utilityPanelTileX: 44,
+  utilityPanelTileY: 4,
+  loadingDockDoorTileX: 45,
+  loadingDockDoorTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -255,6 +261,27 @@ function buildFrame(): RenderFrame {
       definitionId: 'washing-machine-brick',
       tileX: FIXTURE.washingMachineTileX,
       tileY: FIXTURE.washingMachineTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-security-console',
+      definitionId: 'security-console-brick',
+      tileX: FIXTURE.securityConsoleTileX,
+      tileY: FIXTURE.securityConsoleTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-utility-panel',
+      definitionId: 'utility-panel-brick',
+      tileX: FIXTURE.utilityPanelTileX,
+      tileY: FIXTURE.utilityPanelTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-loading-dock-door',
+      definitionId: 'loading-dock-door-wooden',
+      tileX: FIXTURE.loadingDockDoorTileX,
+      tileY: FIXTURE.loadingDockDoorTileY,
       phase: 'built',
     },
   ];

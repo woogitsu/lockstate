@@ -98,12 +98,15 @@ export const PUBLISHED_ASSET_IDS = [
   'furniture.chair.wooden',
   'furniture.corridor.bench.variants',
   'furniture.dining.table.wooden',
+  'furniture.delivery.dock_gate.closed',
   'furniture.kitchen.stove',
   'furniture.laundry.washing_machine.twin',
   'furniture.medical.bed.single',
   'furniture.medical.cabinet',
   'furniture.office.desk.employee.variants',
+  'furniture.security.surveillance_console',
   'furniture.storage.rack.wooden',
+  'furniture.utility.control_panel',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));

@@ -153,6 +153,31 @@
       }
     },
     {
+      "assetId": "furniture.delivery.dock_gate.closed",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.d86b5d3fd8c2.png",
+      "sha256": "d86b5d3fd8c256023abb9ad4fb9b7582a1a3d530d37d2c1054a8f30624785da8",
+      "dimensionsPx": {
+        "width": 768,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 3,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.dining.table.wooden",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.dining.table.wooden.cc5f82b333f7.png",
@@ -303,10 +328,60 @@
       }
     },
     {
+      "assetId": "furniture.security.surveillance_console",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.security.surveillance_console.8cd35ea6e373.png",
+      "sha256": "8cd35ea6e3735fb9ada2b5af21bb01a1e4a2d5a0727680394e56e167c8b6f4c0",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.storage.rack.wooden.01f0d0b4745c.png",
       "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.utility.control_panel",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.utility.control_panel.92f018c05430.png",
+      "sha256": "92f018c054309894a4d919b0f01764e489d00caa2e67bca6a5c425a344e21ca5",
       "dimensionsPx": {
         "width": 256,
         "height": 256

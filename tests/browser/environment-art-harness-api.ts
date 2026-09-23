@@ -101,6 +101,12 @@ export interface HarnessWorldFixture {
   readonly washingMachineTileY: number;
   readonly stoveTileX: number;
   readonly stoveTileY: number;
+  readonly securityConsoleTileX: number;
+  readonly securityConsoleTileY: number;
+  readonly utilityPanelTileX: number;
+  readonly utilityPanelTileY: number;
+  readonly loadingDockDoorTileX: number;
+  readonly loadingDockDoorTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {
