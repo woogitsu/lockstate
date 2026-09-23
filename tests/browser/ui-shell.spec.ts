@@ -1529,6 +1529,11 @@ test.describe('HUD shell', () => {
    * something raises it and exactly 32px afterwards, and every one of those
    * pixels comes out of the middle row.
    *
+   * **The 32px figure expired.** The band has no authored height: its current
+   * font, vertical padding and border produce 34px at 900x600. The contract
+   * is that its rendered height comes out of the middle row and returns when
+   * the band leaves, whatever the font metrics become.
+   *
    * Until 2026-09-05 nothing ever put them back: `event-band-dwell.ts` replaced
    * an incumbent and never released one, so a single event cost the rail 32px
    * for the rest of the session. This is the assertion that it now lets go, and
@@ -1591,7 +1596,7 @@ test.describe('HUD shell', () => {
           .map((row) => Math.round(Number.parseFloat(row) * 10) / 10);
       });
 
-    test('takes 32px of the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
+    test('takes its rendered height from the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
       await page.setViewportSize({ width: 900, height: 600 });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       const band = page.locator('.hud__event');
@@ -1606,13 +1611,13 @@ test.describe('HUD shell', () => {
 
       await expect(band, 'the event never reached the band at all').toBeVisible();
       const raised = await rows(page);
-      expect(raised[EVENT_ROW], 'the band is on screen and costing the grid nothing, which cannot both be true').toBe(
-        32,
-      );
+      const bandHeight = await band.evaluate((node) => Math.round(node.getBoundingClientRect().height * 10) / 10);
+      expect(bandHeight).toBeGreaterThan(0);
+      expect(raised[EVENT_ROW], 'the event row disagrees with the visible band').toBe(bandHeight);
       expect(
-        (raised[MIDDLE_ROW] ?? 0) + 32,
-        'the 32px did not come out of the middle row, so it came from somewhere this test cannot see',
-      ).toBe(before[MIDDLE_ROW]);
+        (raised[MIDDLE_ROW] ?? 0) + bandHeight,
+        'the band height did not come out of the middle row, so it came from somewhere this test cannot see',
+      ).toBeCloseTo(before[MIDDLE_ROW] ?? 0, 1);
 
       // The floor first: the band owes this sentence its dwell, so a ceiling
       // that fired early would be the floor's defect wearing this fix's name.
@@ -1656,7 +1661,9 @@ test.describe('HUD shell', () => {
       // release rather than a band that has stopped working.
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(2));
       await expect(band, 'the band was retired rather than released: a newer event could not raise it').toBeVisible();
-      expect((await rows(page))[EVENT_ROW]).toBe(32);
+      const bandHeight = await band.evaluate((node) => Math.round(node.getBoundingClientRect().height * 10) / 10);
+      expect(bandHeight).toBeGreaterThan(0);
+      expect((await rows(page))[EVENT_ROW]).toBe(bandHeight);
     });
   });
 
