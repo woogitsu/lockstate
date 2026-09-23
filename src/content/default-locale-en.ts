@@ -3487,7 +3487,16 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // at a control the player cannot see while reading it is worth naming. Filed
   // rather than fixed here: fixing it means either moving a control or naming a
   // tab in copy, and both are the owner's.
+  //
+  // **The placement and conclusion above expired.** Intake moved to Manage
+  // under the owner's 2026-09-14 navigation ruling. For #889 the roster now
+  // keeps both sentences and places an explicit Open Build / Open Manage
+  // control next to the one it draws. The press uses the tab bar's own
+  // `select-tab` route and focuses that tab, so the action and the keyboard
+  // position move together. This adds no claim about whether a cell exists or
+  // admission will succeed; those remain the destination panels' answers.
   'hud.regime.roster-emptied': 'This prison is empty. Take somebody in to start again.',
+  'hud.regime.roster-open-tab': 'Open {tab}',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
