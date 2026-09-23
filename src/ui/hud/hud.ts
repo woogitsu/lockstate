@@ -1115,6 +1115,8 @@ export interface HudHandle {
    * Empty, it collapses to nothing and the rail is exactly what it was before.
    */
   readonly asideSlot: HTMLElement;
+  /** Host-owned local save list on Manage; the HUD supplies only its tab-scoped box. */
+  readonly manageSavesSlot: HTMLElement;
   /**
    * The status strip's left-hand chrome slot, passed straight through.
    *
@@ -2692,11 +2694,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       buildPanel.element,
       roomsPanel.element,
       staffPanel.element,
+      element('div', { className: 'hud__manage-saves' }),
       regimePanel.element,
       rosterPanel.element,
       securityPanel.element,
     ],
   });
+  const manageSavesSlot = side.querySelector<HTMLElement>('.hud__manage-saves')!;
 
   /**
    * The other route to the same command: a run dragged along the world
@@ -2996,6 +3000,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // ever laid out there and none pays for the others' height.
     overviewPanel.setVisible(state.activeTab === 'overview');
     intakePanel.setVisible(state.activeTab === 'manage');
+    manageSavesSlot.hidden = state.activeTab !== 'manage';
     // The fifth, on the tab that had none (issue #451). With this line every
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
@@ -3427,6 +3432,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   return {
     element: hud,
     asideSlot: aside,
+    manageSavesSlot,
     brandSlot: strip.brandSlot,
     preferencesSlot: layout.preferencesSlot,
     update,
