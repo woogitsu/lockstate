@@ -764,6 +764,15 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   nothing is the precondition for any such claim, and re-running one test while
   another suite runs proves nothing at all. Let the PR's own `browser` job be the
   gate.
+  **Clarification, 2026-09-23 (#667): a `ps` check before a run says nothing
+  about what ran alongside it.** Check that the machine was idle at the start
+  *and throughout* both the branch run and any baseline run, or say plainly
+  that you could not establish that. Two red runs under contention are two
+  non-measurements, not evidence that the branch shares a failure with `main`:
+  another agent's suite started during both PR #650 comparisons after the
+  pre-run check. Contention can produce false reds, not false greens; a pass
+  still stands, while a failure under contention needs an uncontended rerun
+  before it supports a diagnosis on either tree.
   **Do not wrap that check in `until ! ps … | grep -q "[p]laywright/test/cli"; do
   sleep …; done`.** It deadlocks: the waiting shell's own command line contains
   the pattern, so the loop matches itself and waits for ever. Two agents sat
