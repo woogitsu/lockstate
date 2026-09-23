@@ -1521,7 +1521,15 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
     const panelElement = panel.element;
     const panelTop = panelElement.getBoundingClientRect().top + panelElement.clientTop;
     const box = detailBlock.getBoundingClientRect();
-    const below = box.bottom - (panelTop + panelElement.clientHeight);
+    // The sentence is the last line in this block. Chromium can paint its
+    // glyph box a fraction of a CSS pixel below the block's layout box; at
+    // 900x600 that was 0.25px beyond the clipped panel even though the block
+    // itself fitted. Include the text range and one CSS pixel of breathing
+    // room, so the scroll brings what the player reads fully inside the fold.
+    const sentenceRange = document.createRange();
+    sentenceRange.selectNodeContents(detailSentence);
+    const sentenceBottom = Math.max(box.bottom, ...Array.from(sentenceRange.getClientRects(), (rect) => rect.bottom));
+    const below = Math.max(box.bottom, sentenceBottom + 1) - (panelTop + panelElement.clientHeight);
     const above = box.top - panelTop;
     // Down to bring the bottom in, but never so far that the top leaves: a
     // block taller than the fold is shown from its top, which is where the name
