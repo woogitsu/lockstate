@@ -345,7 +345,15 @@ describe('an errand saved mid-leg: the measured cost of a restore', () => {
     for (const captureTick of walking) {
       expect(completionTick(restoreAt(captureTick)), `captured mid-walk at tick ${captureTick}`).toBe(continuous);
     }
-  });
+    /*
+     * An explicit budget, on the pattern `loan-ledger-restore-boundary.test.ts`
+     * uses, and for a deterministic workload rather than a race: one restore
+     * and one run to completion per walking tick. Measured 2.06 s in the
+     * container, and past the 5 s default on runner `woogitsu-ci-06` (PR #1376,
+     * job 107188538301). Sampling the walk would make it cheap and would break
+     * the claim this case exists for -- "no tick of the walk costs anything".
+     */
+  }, 30_000);
 
   /**
    * **SUPERSEDED FOR A CURRENT SAVE BY THE CASE ABOVE, AND KEPT, NOT REWRITTEN.**
