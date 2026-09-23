@@ -306,3 +306,116 @@ describe('a save taken while somebody is walking restores to the same prison (#1
     expect(result.failures).toEqual([]);
   });
 });
+
+/**
+ * The older-save half of the compatibility rule (ADR 0038 decision 1): a save
+ * written before issue #1373 has no `simulation.inFlight` section, and it must
+ * still decode through the real boundary and restore exactly as those builds
+ * restored it -- walks cleared, travellers idle, the navigation queue empty.
+ * The expected values are the old reset's own outcome read off the saved
+ * runtime, not a restore of it.
+ */
+describe('a save written before the walk was saved (#1373 compatibility)', () => {
+  function savedWithWalkers(): SimulationRuntime {
+    const base = buildPrison(PRISONERS_ONLY);
+    // The first save tick of case 1 that has walkers, found rather than chosen.
+    for (let tick = DAY + 1; tick < 2 * DAY; tick += 37) {
+      stepTo(base, tick);
+      if (walkingPrisoners(base) > 0 && base.prisoners.locomotion.walkingCount > 0) return base;
+    }
+    throw new Error('no save tick in the day had a prisoner walking');
+  }
+
+  function envelopeWithout(saved: SimulationRuntime, drop: boolean): unknown {
+    const bundle = captureSessionSnapshot(saved);
+    if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
+    const { inFlight: _inFlight, ...older } = bundle.simulation;
+    const envelope = createSaveEnvelope({
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+      gameVersion: 'lockstate-0.0.0',
+      prisonId: 'before-1373',
+      revision: 1,
+      createdAt: 1,
+      updatedAt: 2,
+      kernel: bundle.kernel,
+      world: bundle.world,
+      construction: bundle.construction,
+      ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      simulation: drop ? older : bundle.simulation,
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    });
+    return JSON.parse(JSON.stringify(envelope)) as unknown;
+  }
+
+  it('decodes and restores with the old reset: nobody walking, nobody travelling, nothing queued', () => {
+    const saved = savedWithWalkers();
+    const walkersAtSave = walkingPrisoners(saved);
+    expect(walkersAtSave).toBeGreaterThan(0);
+
+    const decoded = decodeSaveEnvelope(envelopeWithout(saved, true));
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    expect((decoded.value.payload as { simulation?: { inFlight?: unknown } }).simulation?.inFlight).toBeUndefined();
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, SEED).runtime;
+
+    expect(walkingPrisoners(restored)).toBe(0);
+    expect(restored.prisoners.locomotion.walkingCount).toBe(0);
+    expect(restored.navigation.pendingCount() + restored.navigation.resultCount()).toBe(0);
+    // Every prisoner who was travelling is idle on the tile they had reached.
+    const store = saved.prisoners.entityStore;
+    for (let index = 0; index <= store.maxActiveIndex; index += 1) {
+      if (!store.isIndexAlive(index) || saved.prisoners.currentAction.phase[index] !== TRAVELLING) continue;
+      expect(restored.prisoners.currentAction.phase[index]).toBe(ACTION_PHASES.indexOf('idle'));
+      expect(restored.prisoners.position.tileX[index]).toBe(saved.prisoners.position.tileX[index]);
+      expect(restored.prisoners.position.tileY[index]).toBe(saved.prisoners.position.tileY[index]);
+    }
+
+    // And it plays on: a restored older save is a session, not a dead end.
+    stepTo(restored, restored.kernel.tick + 400);
+    let alive = 0;
+    for (let index = 0; index <= restored.prisoners.entityStore.maxActiveIndex; index += 1) if (restored.prisoners.entityStore.isIndexAlive(index)) alive += 1;
+    expect(alive).toBe(CELL_COUNT);
+  });
+
+  it('decodes the same save with the section present, which is the shape this build writes', () => {
+    const decoded = decodeSaveEnvelope(envelopeWithout(savedWithWalkers(), false));
+    expect(decoded.ok).toBe(true);
+  });
+
+  it('resets only the traveller whose carried request the restored queue does not hold', () => {
+    // A tick where somebody holds an outstanding request *and* somebody else is
+    // mid-walk, found by stepping rather than chosen.
+    const saved = buildPrison(PRISONERS_ONLY);
+    stepTo(saved, DAY + 1);
+    while (saved.prisoners.coldState.getPathRequestSnapshot().length === 0 || saved.prisoners.locomotion.walkingCount === 0) {
+      if (saved.kernel.tick > 2 * DAY) throw new Error('no tick had both a request outstanding and a walk in progress');
+      saved.kernel.step();
+    }
+    const bundle = JSON.parse(JSON.stringify(captureSessionSnapshot(saved))) as SessionSnapshotBundle;
+    const inFlight = bundle.simulation!.inFlight!;
+    // A hand-edited save: one waiting-or-resolved request removed from the
+    // queue while its owner still names it. No writer produces this.
+    const [victim] = inFlight.prisoners.pathRequestIds;
+    if (victim === undefined) throw new Error('the save had no outstanding prisoner request to remove');
+    const [entityId, requestId] = victim;
+    const edited: SessionSnapshotBundle = {
+      ...bundle,
+      simulation: {
+        ...bundle.simulation!,
+        inFlight: {
+          ...inFlight,
+          navigation: {
+            pending: inFlight.navigation.pending.filter((entry) => entry.id !== requestId),
+            results: inFlight.navigation.results.filter((entry) => entry.id !== requestId),
+          },
+        },
+      },
+    };
+    const restored = restoreSimulationRuntime(edited, SEED).runtime;
+    const index = restored.prisoners.entityStore.getIndex(entityId);
+    expect(restored.prisoners.currentAction.phase[index]).toBe(ACTION_PHASES.indexOf('idle'));
+    expect(restored.prisoners.coldState.getPathRequestId(entityId)).toBeUndefined();
+    // Everyone else's walk came back untouched.
+    expect(restored.prisoners.locomotion.walkingCount).toBe(saved.prisoners.locomotion.walkingCount);
+  });
+});
