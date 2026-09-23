@@ -476,6 +476,7 @@ export const CANCEL_BUILD_ORDER_REFUSAL_REASONS: Readonly<Record<CancelBuildOrde
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */
 export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, RefusalReason>> = {
+  'delivery-capacity': 'purchase.delivery-capacity',
   'duplicate-order': 'purchase.duplicate-order',
   'insufficient-funds': 'purchase.insufficient-funds',
   'invalid-quantity': 'purchase.invalid-quantity',

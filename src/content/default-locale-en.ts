@@ -1261,6 +1261,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.remove-wall.nothing-to-remove':
     'Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
+  'hud.alert.refusal.purchase.delivery-capacity': 'The materials were not ordered — there is not enough storage space for them. Use stock, cancel a delivery, or add storage racks.',
   // Ruling 23's other half -- see `hire.insufficient-funds` above for the
   // whole argument, and note that this key has a second producer:
   // `reportMaterialsFunding` (`src/simulation/construction/handler.ts`)

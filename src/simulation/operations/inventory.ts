@@ -36,6 +36,11 @@ export class Container {
     return this.quantityOf(itemId) - this.reservedOf(itemId);
   }
 
+  /** Units physically present, including stock claimed by an in-flight carry. */
+  public totalUnits(): number {
+    return this.getSnapshot().reduce((total, [, quantity]) => total + quantity, 0);
+  }
+
   /** Adds stock directly -- e.g. a delivery job's final drop-off, or scenario/session seeding. Never itself reserved. */
   public deposit(itemId: string, quantity: number): void {
     if (!Number.isInteger(quantity) || quantity <= 0) throw new RangeError('deposit quantity must be a positive integer.');

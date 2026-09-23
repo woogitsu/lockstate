@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import {
   SAVE_SCHEMA_VERSION,
@@ -158,6 +159,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  */
 function insolventSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(0x9a6e5);
+  addBulkPurchaseStorage(runtime);
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));

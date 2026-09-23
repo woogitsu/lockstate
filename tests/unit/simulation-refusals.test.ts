@@ -241,6 +241,7 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
     });
     expect(PURCHASE_CANCEL_REFUSAL_REASONS).toEqual({ 'not-pending': 'cancel-purchase.not-pending' });
     expect(PURCHASE_REFUSAL_REASONS).toEqual({
+      'delivery-capacity': 'purchase.delivery-capacity',
       'duplicate-order': 'purchase.duplicate-order',
       'insufficient-funds': 'purchase.insufficient-funds',
       'invalid-quantity': 'purchase.invalid-quantity',

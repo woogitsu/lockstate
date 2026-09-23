@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { formatNumber } from '../../src/services/localization/format';
 import { PayrollSystem, staffDailyWageMinorUnits, Treasury } from '../../src/simulation/economy';
 import { editHistoryAvailability } from '../../src/simulation/construction/handler';
@@ -172,6 +173,7 @@ describe('the status channel carries a negative balance instead of refusing the 
 
   it('still accepts the identical prison one minor unit above the boundary', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    addBulkPurchaseStorage(runtime);
     runtime.treasury.setOverdraftFloor(-2_000);
     submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 625 });
     expect(runtime.treasury.balanceMinorUnits).toBe(0);

@@ -96,9 +96,56 @@ export interface RoomInstanceSource {
   allByRoomCatalogId(roomCatalogId: string): readonly {
     readonly instanceId: string;
     readonly anchorTile: TilePosition;
+    readonly width?: number;
+    readonly height?: number;
     /** The union of the capabilities of the objects standing in the rectangle. Derived by `deriveRoomCapacity`, never authored per instance. */
     readonly objectCapabilities: readonly string[];
   }[];
+}
+
+/**
+ * The gate and warehouse share one finite stock budget. An incoming purchase
+ * claims space before it is charged, so neither the direct fallback nor a
+ * later carry can turn an accepted delivery into an overflowing one.
+ * Pending deliveries are added by ProcurementSystem, which owns that queue.
+ */
+export class DeliveryGateCapacity {
+  // #587's first fixture is 625 bricks for all 25,000 opening funds. A 600-unit
+  // unfurnished gate refuses that press while still fitting a large ordinary
+  // build order; even 600 bricks leave 1,000 for the first plank and staff.
+  public static readonly BASE_UNITS = 600;
+  // A furnished storage room needs two racks, so its first useful step raises
+  // the ceiling to 1,000. Each additional rack keeps adding physical space.
+  public static readonly UNITS_PER_RACK = 200;
+
+  public constructor(
+    private readonly rooms: RoomInstanceSource,
+    private readonly objects: {
+      inRect(bounds: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): readonly { readonly objectId: string }[];
+    },
+    private readonly containers: ContainerRegistry,
+    private readonly jobs: JobBoard,
+  ) {}
+
+  public capacityUnits(): number {
+    let racks = 0;
+    for (const room of this.rooms.allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)) {
+      if (room.width === undefined || room.height === undefined || room.width < 1 || room.height < 1) continue;
+      racks += this.objects.inRect({ x: room.anchorTile.x, y: room.anchorTile.y, width: room.width, height: room.height })
+        .filter((object) => object.objectId === 'object.storage-rack').length;
+    }
+    return DeliveryGateCapacity.BASE_UNITS + racks * DeliveryGateCapacity.UNITS_PER_RACK;
+  }
+
+  public stockedUnits(): number {
+    const inContainers = this.containers.all().reduce((total, container) => total + container.totalUnits(), 0);
+    // After pickup, a carry's stock is in neither container until drop-off.
+    // Keeping that quantity claimed closes a mid-route overbooking gap.
+    const inHands = this.jobs.activeJobs()
+      .filter((job) => job.leg === 'dropoff')
+      .reduce((total, job) => total + job.quantity, 0);
+    return inContainers + inHands;
+  }
 }
 
 /**

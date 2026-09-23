@@ -92,7 +92,7 @@ export interface ProcurementSnapshot {
  * fails to compile until somebody decides what the player is told. Inline, it
  * could only have been mapped with a fallback.
  */
-export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds';
+export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds' | 'delivery-capacity';
 
 /** What a purchase did. `ok` is not a refusal. */
 export type PurchaseOutcome =
@@ -288,6 +288,7 @@ export class ProcurementSystem implements SystemRegistration {
      * takes its answer rather than branching on whether it exists.
      */
     private readonly carryRoute?: DeliveryCarryRoute,
+    private readonly deliveryCapacity?: { capacityUnits(): number; stockedUnits(): number },
   ) {}
 
   /**
@@ -383,6 +384,20 @@ export class ProcurementSystem implements SystemRegistration {
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
     const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
+    if (!this.treasury.canAfford(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
+      return { ok: false, reason: 'insufficient-funds' };
+    }
+
+    // A paid delivery reserves room for its full quantity until it lands.
+    // Count physical stock (including bay stock and reserved carries) and every
+    // other pending purchase. This check must precede the treasury mutation.
+    if (this.deliveryCapacity !== undefined) {
+      const committed = this.pending.reduce((total, delivery) => total + delivery.quantity, this.deliveryCapacity.stockedUnits());
+      if (quantity > this.deliveryCapacity.capacityUnits() - committed) {
+        return { ok: false, reason: 'delivery-capacity' };
+      }
+    }
+
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
       return { ok: false, reason: 'insufficient-funds' };
     }

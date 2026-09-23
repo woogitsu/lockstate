@@ -501,9 +501,10 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     // The vacuity guard first: every count below is over a regular expression
     // against a source file, and a pattern that stopped matching would leave
     // the set comparisons passing over two empty sets.
-    expect(reasonSuffixes.length).toBe(48);
-    expect(alertKeys.length).toBe(48);
-    expect(alertKeysPl.length).toBe(48);
+    // #587 adds a storage-capacity refusal to the plan's historical 48.
+    expect(reasonSuffixes.length).toBe(49);
+    expect(alertKeys.length).toBe(49);
+    expect(alertKeysPl.length).toBe(49);
     expect(hostKeys.length).toBe(16);
     expect(hostKeysPl.length).toBe(16);
 

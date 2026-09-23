@@ -829,6 +829,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.remove-wall.nothing-to-remove':
     'Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.',
   'hud.alert.refusal.purchase.duplicate-order': 'Nie zamówiono materiałów — takie zlecenie już istnieje.',
+  'hud.alert.refusal.purchase.delivery-capacity': 'Nie zamówiono materiałów — brakuje miejsca na tę dostawę. Zużyj zapasy, anuluj dostawę lub dodaj regały.',
   'hud.alert.refusal.purchase.insufficient-funds':
     'Nic nie kupiono — dostawy są wstrzymane, dopóki więzienie nie zarobi.',
   'hud.alert.refusal.purchase.invalid-quantity': 'Nie zamówiono materiałów — takiej ilości nie da się kupić.',

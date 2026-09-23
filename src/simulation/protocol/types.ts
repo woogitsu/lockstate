@@ -1480,6 +1480,7 @@ export const REFUSAL_REASONS = [
   'place-object.tile-occupied',
   'place-object.unknown-buildable',
   'place-object.unowned-land',
+  'purchase.delivery-capacity',
   'purchase.duplicate-order',
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',
