@@ -272,7 +272,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.prep-counter',
   'object.security-console',
   'object.sink',
-  'object.stove',
   'object.utility-panel',
   'object.washing-machine',
 ];
@@ -333,6 +332,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
   'object.medical-bed': 'env.object.medical-bed',
   'object.medicine-cabinet': 'env.object.medicine-cabinet',
+  'object.stove': 'env.object.stove',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',

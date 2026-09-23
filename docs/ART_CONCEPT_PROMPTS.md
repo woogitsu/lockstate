@@ -160,6 +160,12 @@ The original reference and Blender model are recorded in
 
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
+For `furniture.kitchen.stove`, keep a commercial 2×1 cooker legible from above:
+four circular dark burners in two rows, a raised rear splash guard and steel
+deck. The front oven doors and controls guide the Blender model's depth, while
+the burner pattern is the overhead silhouette. The original multi-view
+reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
+
 > a fixed corridor bench, 2×1 tiles, seen from directly above with its sides
 > slightly visible
 > — slatted seat on a steel underframe, bolted feet, no backrest

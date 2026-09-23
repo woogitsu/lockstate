@@ -507,6 +507,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.medicine-cabinet',
       tileOf: (fixture) => [fixture.medicineCabinetTileX, fixture.medicineCabinetTileY],
     },
+    {
+      label: 'stove',
+      buildableId: 'stove-brick',
+      catalogueId: 'object.stove',
+      expectedSpriteId: 'env.object.stove',
+      tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

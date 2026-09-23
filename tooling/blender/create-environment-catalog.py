@@ -87,6 +87,7 @@ MODELS = (
     ("furniture.dining.table.wooden", (3, 2)),
     ("furniture.medical.bed.single", (1, 2)),
     ("furniture.medical.cabinet", (1, 1)),
+    ("furniture.kitchen.stove", (2, 1)),
 )
 
 
@@ -294,7 +295,31 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.medical.cabinet":
+    if asset_id == "furniture.kitchen.stove":
+        # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
+        # Four burner discs and the raised rear guard are visible from above.
+        for x in (-0.82, 0.82):
+            for y in (-0.34, 0.34):
+                box(collection, root, f"Heavy foot.{x}.{y}", (x, y, 0.07), (0.20, 0.17, 0.14), "steel", 0.012)
+        box(collection, root, "Oven carcass", (0, 0, 0.49), (1.88, 0.87, 0.88), "canteen_steel", 0.028)
+        box(collection, root, "Dark top lip", (0, 0, 0.965), (1.95, 0.92, 0.09), "steel", 0.018)
+        box(collection, root, "Worn cooking deck", (0, 0, 1.02), (1.89, 0.85, 0.034), "canteen_steel", 0.016)
+        box(collection, root, "Rear splash guard", (0, -0.425, 1.15), (1.95, 0.055, 0.31), "galvanized", 0.012)
+        box(collection, root, "Guard dark rim", (0, -0.424, 1.31), (1.95, 0.06, 0.018), "steel", 0.006)
+        for x in (-0.53, 0.53):
+            for y in (-0.20, 0.20):
+                cylinder(collection, root, f"Burner rim.{x}.{y}", (x, y, 1.055), 0.205, 0.04, "galvanized_edge", 48)
+                cylinder(collection, root, f"Dark burner plate.{x}.{y}", (x, y, 1.081), 0.176, 0.018, "shade", 48)
+                cylinder(collection, root, f"Burner centre.{x}.{y}", (x, y, 1.094), 0.058, 0.01, "steel", 32)
+        box(collection, root, "Control fascia", (0, 0.40, 0.82), (1.88, 0.07, 0.22), "galvanized_edge", 0.012)
+        for x in (-0.69, -0.23, 0.23, 0.69):
+            cylinder(collection, root, f"Control knob.{x}", (x, 0.425, 0.84), 0.055, 0.04, "steel", 24)
+            box(collection, root, f"Knob mark.{x}", (x, 0.455, 0.86), (0.012, 0.008, 0.04), "light", 0.002)
+        for x in (-0.47, 0.47):
+            box(collection, root, f"Oven door frame.{x}", (x, 0.442, 0.42), (0.85, 0.025, 0.58), "galvanized_edge", 0.012)
+            box(collection, root, f"Oven window.{x}", (x, 0.456, 0.42), (0.62, 0.008, 0.30), "metal_recess", 0.018)
+            box(collection, root, f"Oven handle.{x}", (x, 0.46, 0.68), (0.57, 0.05, 0.04), "steel", 0.014)
+    elif asset_id == "furniture.medical.cabinet":
         # Four-view reference: assets/source/concepts/medicine-cabinet-multiview-v1.png.
         # The top cross and white rim stay visible in a one-tile overhead sprite.
         for x in (-0.38, 0.38):

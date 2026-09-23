@@ -97,6 +97,8 @@ export interface HarnessWorldFixture {
   readonly medicalBedTileY: number;
   readonly medicineCabinetTileX: number;
   readonly medicineCabinetTileY: number;
+  readonly stoveTileX: number;
+  readonly stoveTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

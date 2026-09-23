@@ -178,6 +178,31 @@
       }
     },
     {
+      "assetId": "furniture.kitchen.stove",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.stove.c036bb9ad7d5.png",
+      "sha256": "c036bb9ad7d5f49b0cbd7ac6ce038c16721dbb15a0a7b45d035057e1bfe0d4be",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.medical.bed.single",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.medical.bed.single.81c72f1c30c6.png",

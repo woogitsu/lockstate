@@ -91,6 +91,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.storage-rack',
   'env.object.chair',
   'env.object.dining-table',
+  'env.object.stove',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -236,6 +237,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Locking infirmary cabinet with pale enamel top and teal medical cross. Drawn on object.medicine-cabinet.',
+  },
+  'env.object.stove': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.stove',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR
