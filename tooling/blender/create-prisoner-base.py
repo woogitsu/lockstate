@@ -207,6 +207,7 @@ def build_detailed_actor(root, asset_id):
     apron = mat("Cook ochre canvas apron", (0.58, 0.29, 0.07), 0.88) if cook else None
     cook_teal = mat("Cook cap teal marking", (0.025, 0.22, 0.23), 0.84) if cook else None
     staff_blue = mat("Staff blue role marking", (0.035, 0.20, 0.55), 0.68) if staff else None
+    staff_canvas = mat("Staff utility pouch canvas", (0.34, 0.25, 0.17), 0.91) if staff else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
     # displayed scale. The old single bevelled cube made every role a crate.
@@ -286,12 +287,21 @@ def build_detailed_actor(root, asset_id):
         # ID badge and pockets add depth in side and three-quarter views.
         box_yoke = cube("Blue shoulder yoke", (0, -0.12, 2.63), (0.405, 0.21, 0.045), staff_blue, root, 0.018)
         box_yoke.rotation_euler.x = math.radians(8)
-        cube("Blue back yoke", (0, 0.245, 2.59), (0.42, 0.030, 0.08), staff_blue, root, 0.012)
+        cube("Blue back yoke", (0, 0.254, 2.58), (0.42, 0.034, 0.14), staff_blue, root, 0.014)
+        for side in (-1, 1):
+            cube(f"Blue top shoulder panel.{side}",
+                 (side * 0.31, 0.025, 2.635), (0.125, 0.26, 0.028), staff_blue, root, 0.016)
         cube("Staff badge clip", (0.22, -0.324, 2.46), (0.020, 0.010, 0.04), button, root, 0.003)
         cube("Staff blue ID", (0.22, -0.339, 2.36), (0.060, 0.012, 0.09), staff_blue, root, 0.006)
         for side in (-1, 1):
             cube(f"Jacket pocket.{side}", (side * 0.27, -0.287, 1.98), (0.12, 0.015, 0.11), fabric, root, 0.016)
         cube("Jacket hem", (0, -0.284, 1.76), (0.35, 0.019, 0.035), dark_seam, root, 0.007)
+        cube("Staff canvas tool pouch", (-0.415, -0.04, 1.55),
+             (0.08, 0.155, 0.16), staff_canvas, root, 0.018)
+        cube("Staff pouch flap", (-0.468, -0.04, 1.65),
+             (0.017, 0.16, 0.045), staff_canvas, root, 0.004)
+        cube("Staff folded work cloth", (0.405, -0.08, 1.50),
+             (0.038, 0.075, 0.20), undershirt, root, 0.008)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
