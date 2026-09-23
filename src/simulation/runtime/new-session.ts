@@ -50,6 +50,7 @@ import { CarryJobExecutor, Container, ContainerMaterialsProvider, ContainerRegis
 import {
   NEED_IDS,
   NEED_MAX,
+  PRISONER_PRIORS_RNG_STREAM,
   PRISONER_SENTENCE_RNG_STREAM,
   PrisonerOperationsRuntime,
   SafetyCoverageSystem,
@@ -481,6 +482,25 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * its own comment says it should.
      */
     { name: PRISONER_SENTENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_SENTENCE_RNG_STREAM) },
+    /**
+     * Intake's third draw: an arrival's prior-incident count, for an admission
+     * that did not name one
+     * ([ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md),
+     * `src/simulation/prisoners/prior-incidents.ts`). This is the seventh
+     * registration.
+     *
+     * **Its own stream, for the argument the sentence stream's docblock above
+     * makes.** A shared stream would shift `prisoners.classification` or
+     * `prisoners.sentence` by one draw per admission. Isolated, it moves
+     * nothing: every admission that names its count (every fixture in
+     * `tests/`, and every queued admission in a save written before ADR 0124)
+     * draws nothing here, and every other stream's position is unchanged.
+     *
+     * Adding it is **not** a save-format change, for the same reason (ADR 0038
+     * §2). A bundle that predates the stream restores with it seeded from its
+     * own `masterSeed`.
+     */
+    { name: PRISONER_PRIORS_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_PRIORS_RNG_STREAM) },
     { name: CONTRABAND_DETECTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_DETECTION_RNG_STREAM) },
     { name: CONTRABAND_INTELLIGENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTELLIGENCE_RNG_STREAM) },
     { name: CONTRABAND_INTRODUCTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTRODUCTION_RNG_STREAM) },

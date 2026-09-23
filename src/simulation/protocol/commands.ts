@@ -335,7 +335,7 @@ export const sellMaterialsSchema = z.object({
 export const admitPrisonerSchema = z.object({
   type: z.literal('AdmitPrisoner'),
   sentenceLengthTicks: z.number().int().positive().max(MAX_SENTENCE_LENGTH_TICKS).optional(),
-  priorIncidents: z.number().int().min(0).max(MAX_PRIOR_INCIDENTS),
+  priorIncidents: z.number().int().min(0).max(MAX_PRIOR_INCIDENTS).optional(),
   x: z.number().int(),
   y: z.number().int(),
 }).strict();
@@ -861,7 +861,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         // sentence to the simulation must not put a `sentenceLengthTicks:
         // undefined` on the wire for `.strict()` to judge.
         ...(command.sentenceLengthTicks === undefined ? {} : { sentenceLengthTicks: command.sentenceLengthTicks }),
-        priorIncidents: command.priorIncidents,
+        ...(command.priorIncidents === undefined ? {} : { priorIncidents: command.priorIncidents }),
         x: command.x,
         y: command.y,
       };

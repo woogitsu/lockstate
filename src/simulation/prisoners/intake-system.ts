@@ -6,6 +6,7 @@ import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import { classifyPrisoner, type AdmissionRequest } from './classification';
 import { drawSentenceLengthTicks, PRISONER_SENTENCE_RNG_STREAM, SENTENCE_UNSET_TICKS } from './sentence';
+import { drawPriorIncidents, MAX_RECORDED_PRIOR_INCIDENTS, PRIOR_INCIDENTS_UNSET, PRISONER_PRIORS_RNG_STREAM } from './prior-incidents';
 import {
   CLASSIFICATION_GROUP_IDS,
   classificationGroupIdFromIndex,
@@ -320,6 +321,20 @@ export class IntakeSystem implements SystemRegistration {
      * existing call site's positional arguments move.
      */
     private readonly housedNotice?: IntakeHousedNotice,
+    /**
+     * The stream an arrival's prior-incident count is drawn from, when the
+     * admission did not name one
+     * ([ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md)).
+     *
+     * A name with a default, like `sentenceRngStreamName`, and for the same
+     * reason: **a session that has not registered this stream is never asked
+     * for it** unless an admission omitted the count. Every fixture that
+     * names one reaches `NamedRngStreams.get` for it exactly as often as it
+     * did before this parameter existed, which is never.
+     *
+     * Last in the list, so no existing call site's positional arguments move.
+     */
+    private readonly priorsRngStreamName: string = PRISONER_PRIORS_RNG_STREAM,
   ) {}
 
   /**
@@ -337,7 +352,12 @@ export class IntakeSystem implements SystemRegistration {
   public submitIntake(entityId: EntityId, input: AdmissionRequest): void {
     const index = this.store.getIndex(entityId);
     this.records.sentenceLengthTicks[index] = input.sentenceLengthTicks ?? SENTENCE_UNSET_TICKS;
-    this.records.priorIncidentsAtIntake[index] = Math.min(255, input.priorIncidents);
+    // ADR 0124 §4.4: an omitted count is stored as the sentinel for the
+    // `classification` stage to draw, and an explicit one as `min(254, v)` so
+    // the sentinel can mean nothing else. Both readers saturate at 2, so the
+    // clamp moves no behaviour for any value `admitPrisonerSchema` accepts.
+    this.records.priorIncidentsAtIntake[index] =
+      input.priorIncidents === undefined ? PRIOR_INCIDENTS_UNSET : Math.min(MAX_RECORDED_PRIOR_INCIDENTS, input.priorIncidents);
     this.records.intakeStage[index] = intakeStageIndex('queued');
   }
 
@@ -561,6 +581,16 @@ export class IntakeSystem implements SystemRegistration {
         //     screening variance of every seed is where it always was.
         if (this.records.sentenceLengthTicks[index] === SENTENCE_UNSET_TICKS) {
           this.records.sentenceLengthTicks[index] = drawSentenceLengthTicks(context.rng.get(this.sentenceRngStreamName));
+        }
+        // The prior-incident count, for an admission that did not name one
+        // (ADR 0124). Here for the same reasons as the sentence above: it is
+        // inside the ascending-entity-id walk, it is on its own stream
+        // (`prisoners.priors`), and its one reader is the next statement. It
+        // comes after the sentence because ADR 0124 fixes that order, so that
+        // a distribution conditioned on the sentence (its Option B) would move
+        // one expression rather than the draw's position.
+        if (this.records.priorIncidentsAtIntake[index] === PRIOR_INCIDENTS_UNSET) {
+          this.records.priorIncidentsAtIntake[index] = drawPriorIncidents(context.rng.get(this.priorsRngStreamName));
         }
         const rng = context.rng.get(this.rngStreamName);
         const result = classifyPrisoner(

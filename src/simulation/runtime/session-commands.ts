@@ -452,7 +452,9 @@ export function createSessionCommandHandler(
           // forwards what the command carried, or the fact that it carried
           // nothing.
           ...(simCommand.sentenceLengthTicks === undefined ? {} : { sentenceLengthTicks: simCommand.sentenceLengthTicks }),
-          priorIncidents: simCommand.priorIncidents,
+          // The same conditional spread, for the same reason: an absent
+          // count asks the simulation to draw one (ADR 0124).
+          ...(simCommand.priorIncidents === undefined ? {} : { priorIncidents: simCommand.priorIncidents }),
         },
         { x: simCommand.x, y: simCommand.y },
       );

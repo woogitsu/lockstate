@@ -30,7 +30,13 @@ export interface ClassificationInput {
 export interface AdmissionRequest {
   /** Omitted: drawn inside the simulation. Present: used exactly as given, and `admitPrisonerSchema` has already refused a non-positive or out-of-range one. */
   readonly sentenceLengthTicks?: number;
-  readonly priorIncidents: number;
+  /**
+   * Omitted: drawn inside the simulation at the `classification` stage, from
+   * `prisoners.priors` ([ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md)).
+   * This is what `src/main.ts` sends. Present: used exactly as given and never
+   * redrawn, which is what every fixture that names a count relies on.
+   */
+  readonly priorIncidents?: number;
 }
 
 export interface ClassificationResult {

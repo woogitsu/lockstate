@@ -10,6 +10,7 @@ export * from './disciplinary-record';
 export * from './intake-system';
 export * from './needs';
 export * from './needs-system';
+export * from './prior-incidents';
 export * from './prisoner-operations-runtime';
 export * from './regime';
 export * from './release';
