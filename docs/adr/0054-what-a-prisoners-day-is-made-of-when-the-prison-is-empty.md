@@ -2,7 +2,56 @@
 
 ## Status
 
-**Proposed, 2026-08-28.** Not self-approved.
+**Accepted by the owner on 2026-09-23, together with
+[ADR 0052](./0052-drawing-the-world-with-the-source-art-sheets.md), without the
+review pass that decision 8 of 2026-08-29 made a condition.** Offered a choice
+that included that review pass as the recommended option, they chose the one
+labelled:
+
+> Akceptuj oba
+
+("Accept both.") What is accepted is the Decision section as written, all four
+decisions. **`hygiene` and `recreation` are room-gated by design**, no regime
+block may leave a housed prisoner with nothing to start, `work` is authored as
+`action.laundry-work` in `room.laundry`, and ADR 0041's candidate walk stays
+unbounded.
+
+**The provenance is the weaker kind, and one part of it is a refusal.** The
+ruling is the *label of a clickable option the integrating session wrote and
+the owner chose*, not a sentence they typed. `AGENTS.md` records it as ruling
+21 of the section *"Instructions recorded that are not releases"*. **The review
+pass was put to the owner as the recommended option and they declined it**, so
+this acceptance waives #535 decision 8's condition and does not show it was
+met. ADR 0052's Status block records the one review that was posted on #535
+(2026-08-29, *"Recommend: Accept — and read it knowing the dependency it names
+is being closed as it lands"*) and the later comments that said no review had
+happened. Neither is resolved here.
+
+**Where later ADRs have overtaken this one: nowhere in its decisions, which
+was checked rather than assumed.** Every later ADR that cites this one builds
+on it:
+
+- [ADR 0078](./0078-what-keeps-a-prisoner-safe.md) decision 3 leaves
+  `hygiene`'s and `recreation`'s rates, their room gating and *"ADR 0054
+  decision 1"* untouched in terms.
+- [ADR 0113](./0113-how-a-regime-is-edited-and-whose-day-it-is.md) (accepted
+  2026-09-14) enforces decision 2's invariant at decode time:
+  `allowedCategories.min(1)` is *"the same invariant ADR 0054 added
+  `'free-association'` to guarantee"*.
+
+What moved is one dependency that decision 1 names. Its third leg quotes HUD
+gap 7, *"the simulation defines no warning or critical threshold for any
+need"*, and open question 2 asks what that threshold is. The per-prisoner need
+bar #542 built bands on `STATE_INCOME_UNMET_NEED_LEVEL`. So a need that is
+withholding grant is now shown to the player, as #535's 2026-08-29 review
+predicted. That change is not an ADR, and it does not answer open question 2 as
+a statement of what is *bad*. The question stays open, and the sentence that
+would answer it is still the owner's to have true.
+
+---
+
+**Proposed, 2026-08-28.** Not self-approved. *(The state of this document
+before the ruling above.)*
 
 It answers issue #440 — *"two of seven action categories have no action, so half
 the general-population day has nothing to do"* — and issue #436 — *"two needs
