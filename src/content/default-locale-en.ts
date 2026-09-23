@@ -3451,6 +3451,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // one state only, and the fix was a second sentence rather than a wider
   // claim in this one.
   'hud.regime.roster-empty': 'No prisoners yet. Build a cell — big enough, walled all round, with a bed and a toilet in it — to take somebody in.',
+  // #788: this badge is a risk classification after intake, but an intake
+  // stage before classification. The two keys keep that distinction true.
+  'hud.regime.risk-tier-explanation': '{standing} risk tier. Classification uses sentence length, prior incidents and conduct, and is reviewed over time.',
+  'hud.regime.intake-standing-explanation': '{standing} intake status. A risk tier has not been assigned yet.',
   // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
   // and choosing it in their own words: *"This prison is empty. Take somebody
   // in to start again."* It is the sentence the key above has never been able

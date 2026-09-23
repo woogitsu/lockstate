@@ -725,6 +725,13 @@ export interface RosterPanel {
 export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
   const { localizer } = options;
   const t: Translate = (key, parameters) => (parameters === undefined ? localizer.format(key) : localizer.format(key, parameters));
+  const explainStanding = (prisoner: PrisonerStandingSource, standing: string): string =>
+    t(
+      prisoner.classificationGroupId === undefined
+        ? HUD_MESSAGE_KEY.regimeIntakeStandingExplanation
+        : HUD_MESSAGE_KEY.regimeRiskTierExplanation,
+      { standing },
+    );
 
   // ---- who is in the prison -----------------------------------------
   /**
@@ -1223,6 +1230,9 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       row.name.textContent = formatPrisonerName(t, prisoner);
       row.activity.textContent = formatPrisonerActivity(t, prisoner);
       row.badge.update({ tone: readout.tone, text: t(readout.badgeKey) });
+      const standingExplanation = explainStanding(prisoner, t(readout.badgeKey));
+      row.badge.element.title = standingExplanation;
+      row.badge.element.setAttribute('aria-label', standingExplanation);
       row.needName.textContent = needWord;
       const needValueText = formatNeedValueText(localizer, need.permille);
       // `label` on every update, not just the first: the row is pooled and the
@@ -1555,6 +1565,9 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
     detailName.textContent = formatPrisonerName(t, shown);
     const standing = describePrisonerRow(shown);
     detailBadge.update({ tone: standing.tone, text: t(standing.badgeKey) });
+    const standingExplanation = explainStanding(shown, t(standing.badgeKey));
+    detailBadge.element.title = standingExplanation;
+    detailBadge.element.setAttribute('aria-label', standingExplanation);
 
     detailNeedRows.forEach((row, index) => {
       const need = shown.needs[index];

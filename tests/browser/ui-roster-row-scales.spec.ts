@@ -1,4 +1,4 @@
-import type { HudPrisonerRosterViewModel, HudRegimeViewModel } from '../../src/ui/hud';
+import type { HudPrisonerDetailViewModel, HudPrisonerRosterViewModel, HudRegimeViewModel } from '../../src/ui/hud';
 import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
@@ -386,5 +386,39 @@ test.describe('a Regime roster row says which scale each value is on (issue #909
         expect(row.badgeText, `the standing pill for ${where} reads as a figure`).not.toMatch(/\d/u);
       }
     }
+  });
+
+  test('a standing badge explains risk classification and distinguishes an unfinished intake (#788)', async ({ page }) => {
+    await openRegime(page);
+    const badges = await page.locator('.hud-regime__roster-row:not([hidden]) .hud-regime__roster-standing').evaluateAll(
+      (nodes) => nodes.map((node) => ({ title: node.getAttribute('title'), spoken: node.getAttribute('aria-label') })),
+    );
+    expect(badges).toHaveLength(4);
+    for (const [index, badge] of badges.entries()) {
+      expect(badge.title, `missing explanation for row ${index}`).toBeTruthy();
+      expect(badge.spoken).toBe(badge.title);
+    }
+    expect(badges[0]?.title).toContain('Low risk tier');
+    expect(badges[1]?.title).toContain('High risk tier');
+    expect(badges[2]?.title).toContain('risk tier has not been assigned');
+    expect(badges[3]?.title).toContain('Minimal risk tier');
+
+    const detail: HudPrisonerDetailViewModel = {
+      entityId: 3,
+      name: { givenName: 'Mara', familyName: 'Ostrowska' },
+      standingLabelKey: 'risk-tier.1.name',
+      classificationGroupId: 'general-population',
+      riskTier: 1,
+      remainingSentenceTicks: 3_600,
+      needs: [
+        { needId: 'hunger', labelKey: 'need.hunger.name', permille: 200, unmetForStateIncome: true },
+      ],
+    };
+    await page.locator('.hud-regime__roster-row:not([hidden])').first().click();
+    await page.evaluate(([regime, roster, selected]) => window.lockstateUiHarness.reportRegime(regime, roster, selected),
+      [TIMETABLE, ROSTER, detail] as const);
+    const detailBadge = page.locator('.hud-regime__detail-header .ui-badge');
+    await expect(detailBadge).toHaveAttribute('title', badges[0]!.title!);
+    await expect(detailBadge).toHaveAttribute('aria-label', badges[0]!.title!);
   });
 });
