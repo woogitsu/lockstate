@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { simulationCommandSchema } from '../../src/simulation/protocol/commands';
@@ -296,8 +296,11 @@ const producerSources = collectTypeScriptFiles(join(ROOT, 'src'))
   // issue prose all name these commands in sentences saying they have no
   // producer. An unstripped scan would report them produced by the comments
   // explaining that they are not.
-  .map((path) => ({ where: relative(ROOT, path), text: stripComments(readFileSync(path, 'utf8')) }))
-  .filter((source) => !source.where.startsWith(join('src', 'simulation', 'protocol')));
+  .map((path) => ({
+    where: relative(ROOT, path).split(sep).join('/'),
+    text: stripComments(readFileSync(path, 'utf8')),
+  }))
+  .filter((source) => !source.where.startsWith('src/simulation/protocol/'));
 
 const COMMAND_TYPES: readonly string[] = simulationCommandSchema.options.map((option) => option.shape.type.value);
 
@@ -442,7 +445,7 @@ describe('every declared simulation command either has a producer or is accounte
     // not the producer" while naming the file that *is* is the strongest form
     // available, and it is the form that keeps working as commands gain
     // producers.
-    const handler = producerSources.find((source) => source.where === join('src', 'simulation', 'construction', 'handler.ts'));
+    const handler = producerSources.find((source) => source.where === 'src/simulation/construction/handler.ts');
     expect(handler, 'the construction command handler moved; this control needs its new path').toBeDefined();
     expect(handler!.text).toContain(`case 'CancelBuildOrder':`);
     expect(producerPattern('CancelBuildOrder').test(handler!.text)).toBe(false);
