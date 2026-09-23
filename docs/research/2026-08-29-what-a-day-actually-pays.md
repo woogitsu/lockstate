@@ -203,7 +203,7 @@ the one control it offers:
   `no-accommodation` (no room instance of an accommodation type at all) and
   `population-full`. A zoned cell with three beds accepts a twelfth admission
   as readily as the first. The Intake panel states this, verbatim from
-  `src/content/default-locale-en.ts:598`: *"A prison needs a cell before it can
+  `src/content/default-locale-en.ts:625`: *"A prison needs a cell before it can
   admit anyone. It does not need a free bed: an arrival with none waits until a
   bed is free."*
 - **The warning fires and is accurate.** After twelve presses,

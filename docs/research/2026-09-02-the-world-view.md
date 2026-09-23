@@ -349,7 +349,7 @@ pixel table above is why this section does not rest on eyeballing them).
 **READ.** The only player-facing sentence describing camera controls at all:
 `hud.build.arm-hint` — *"Click a tile edge to place a wall. Drag along it to
 lay a run. Two fingers, the middle button or the arrow keys still move the
-camera."* (`src/content/default-locale-en.ts:1029`) — rendered unconditionally
+camera."* (`src/content/default-locale-en.ts:1056`) — rendered unconditionally
 inside the Build panel (`build-panel.ts:1119,2062`; its *text* toggles between
 arm and remove hints, its presence does not). Three gaps, each grepped rather
 than assumed:

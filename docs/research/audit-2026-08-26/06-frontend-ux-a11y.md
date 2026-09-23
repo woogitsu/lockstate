@@ -64,7 +64,7 @@ and a submit); the Rooms panel shipped without one.
 
 Player impact — **keyboard-only player and screen-reader user**: zoning is not merely awkward, it is
 impossible. And it is load-bearing: `hud.intake.hint` reads *"A prisoner can only be admitted into a
-prison that has a room to hold them"* (`src/content/default-locale-en.ts:463`), so every press of
+prison that has a room to hold them"* (`src/content/default-locale-en.ts:465`), so every press of
 Admit is refused forever. A player who cannot use a pointer can build walls and buy bricks and can
 never start the game's core loop.
 

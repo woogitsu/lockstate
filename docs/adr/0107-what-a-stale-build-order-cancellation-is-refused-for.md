@@ -110,8 +110,8 @@ row carries the counter
 (`src/simulation/presentation/construction-projection.ts:381`); the per-command
 lead exists as `CANCEL_BUILD_ORDER_LEAD_TICKS`
 (`src/ui/simulation-commands.ts:183`); and Decision §7's candidate sentence
-shipped **verbatim** at `src/content/default-locale-en.ts:886`, with a Polish
-translation at `src/content/locale-pl.ts:694`.
+shipped **verbatim** at `src/content/default-locale-en.ts:913`, with a Polish
+translation at `src/content/locale-pl.ts:701`.
 
 **Three things follow, and the third is the one a reader should hold onto.**
 (1) The `Status` line is **not** moved by this re-read — that is the owner's,
@@ -334,7 +334,7 @@ fires when `ProcurementSystem.cancel`'s id lookup fails
 already landed or was never pending), mapped to the wire id
 `'cancel-purchase.not-pending'` (`refusal-log.ts:403`) and surfaced as *"Nothing
 was refunded — that delivery is not on its way any more"*
-(`src/content/default-locale-en.ts:902`, VERIFIED).
+(`src/content/default-locale-en.ts:929`, VERIFIED).
 
 **That check is a pure identity check — does this id still name a pending
 record — and it is sufficient there because a delivery's lifecycle has no
@@ -353,7 +353,7 @@ for *what the check compares*.
 
 ### 9. A second, unrelated existing key with the same command name
 
-`hud.refusal.cancel-build-order` (`src/content/default-locale-en.ts:3086`,
+`hud.refusal.cancel-build-order` (`src/content/default-locale-en.ts:3113`,
 VERIFIED) already exists: *"The order is still queued — the request was
 refused."* This is a **main-thread-only** refusal — `hud.ts:564-565`'s own
 comment says so in terms, *"the refusal this can paint is about *this thread*
@@ -624,8 +624,8 @@ promise is not true of any code yet, since none of this is implemented):
 > document"* holds — this document still writes no string, and that is the
 > reservation-4 point it is making. *"None of this is implemented"* does not:
 > the sentence below shipped **verbatim, every character**, at
-> `src/content/default-locale-en.ts:886`, and is translated at
-> `src/content/locale-pl.ts:694`. So the promise is now true of code, which is
+> `src/content/default-locale-en.ts:913`, and is translated at
+> `src/content/locale-pl.ts:701`. So the promise is now true of code, which is
 > the condition reservation 4's release attaches to the wording rather than a
 > licence this document granted itself.
 

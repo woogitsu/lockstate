@@ -233,7 +233,7 @@ one."* It is fixed on `origin/main` at v0.0.451 (`0e614c71`):
 `incidents.all-clear-after-lapse` is its own event type
 (`src/simulation/protocol/types.ts:1783`), the UI grades it `'warning'` rather
 than `'info'` (`src/ui/simulation-events.ts:283-284`), and it has its own
-sentence at `src/content/default-locale-en.ts:1064` — the one quoted above. The
+sentence at `src/content/default-locale-en.ts:1091` — the one quoted above. The
 five lapses this run measured are what proved it renders.
 
 ---
@@ -496,7 +496,7 @@ above:
 - **That a room nobody can walk into is not finished.** The place is the Rooms
   panel's completion warning, which already exists and already has the right
   shape — `'{room} at {x}, {y} is missing'` plus `'{count} × {object}'`
-  (`src/content/default-locale-en.ts:2001-2005`) — and already has the wrong
+  (`src/content/default-locale-en.ts:2028-2032`) — and already has the wrong
   predicate: `unfinishedRoomIds` filters on a missing *object*
   (`src/ui/simulation-room-needs.ts:101-111`), so a room short of a *way in* is
   short of nothing. What is missing on the projection side is a reachability
@@ -523,7 +523,7 @@ above:
 | what one occupied place pays per in-game day | **300** | `src/simulation/economy/income.ts:115` |
 | a guard's daily wage — the *bottom* of the band, always | **80** | `src/content/staff-role-catalog.ts:148-151`, applied by `src/simulation/economy/wages.ts:44-46` (`return role.wageBand.minPerDay`) |
 | occupants one guard covers | **8** | `src/simulation/security/sector-staffing.ts:147` |
-| every class of money the prison can spend | `'deliveries' \| 'construction' \| 'wages' \| 'hiring'` | `src/simulation/economy/treasury.ts:332` |
+| every class of money the prison can spend | `'deliveries' \| 'construction' \| 'wages' \| 'hiring'` | `src/simulation/economy/treasury.ts:402` |
 
 **DERIVED.** Three of those four spend classes are player-initiated: a delivery,
 a build order and a hire happen only when somebody presses something. **Wages
@@ -903,7 +903,7 @@ rate, the unit, or that an empty bed pays nothing.**
 **What the strip does carry, and it is more than the brief credited.** The
 `PRISONERS` chip has a segmented occupancy bar labelled `Cell occupancy` with
 `{value} of {capacity}` (`src/ui/hud/status-strip.ts:270-286`,
-`src/content/default-locale-en.ts:340-341`), fed from `occupiedPlaces` against
+`src/content/default-locale-en.ts:342-343`), fed from `occupiedPlaces` against
 `accommodationCapacity` — and `src/ui/simulation-counts.ts:66-87` records on the
 spot why it is `occupiedPlaces` and not `roomOccupants`: *"a badge fed from
 `roomOccupants` would read '0 with no bed' for a prison the state has already
@@ -1105,7 +1105,7 @@ the bank and a band full of assaults would not.
 
 **What would change my mind:** a second recurring cost. The 1:30 ratio is fixed
 by two constants, so it never arrives by growth. `SpendClass`
-(`src/simulation/economy/treasury.ts:332`) is the four-member list I checked it
+(`src/simulation/economy/treasury.ts:402`) is the four-member list I checked it
 against, and a fifth member is what would refute it. Restoring the unmet-need
 withholding would not add a *cost*, but it would make §2's shower room worth
 300 × 6 × places a day, which changes the answer to the whole question — which
@@ -1125,7 +1125,7 @@ staff. The narrow claim is that **no sentence in any state this run reached
 named a room**: not *shower room*, not *yard*, not *canteen*, with `Hygiene 0%`
 on every prisoner on screen. The room-needs readout that exists
 (`'{room} at {x}, {y} is missing'`, `'{count} × {object}'`,
-`src/content/default-locale-en.ts:2001-2005`) is driven by `unfinishedRoomIds`,
+`src/content/default-locale-en.ts:2028-2032`) is driven by `unfinishedRoomIds`,
 which filters the rooms that already exist
 (`src/ui/simulation-room-needs.ts:101-111`), so it can say *"the Shower Room you
 built is missing 2 × Shower Head"* and can never say *"you have no shower

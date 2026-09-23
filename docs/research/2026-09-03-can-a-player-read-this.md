@@ -92,7 +92,7 @@ Worker counts at the read: `prisoners: 6`, `staff: 3`,
 **The two "coverage" readouts are different quantities off different
 derivations, and neither says so.** `projectStatusMetrics`' `coverage`
 descriptor is `value: counts.prisonersCovered`
-(`src/ui/hud/projection.ts:844`) with its word from `coverageBadge` over the
+(`src/ui/hud/projection.ts:875`) with its word from `coverageBadge` over the
 prisoner rungs `prisonersUnguarded` / `prisonersUnderstaffed`. The panel's
 summary is `hud.security.coverage-summary`, `'{assigned} of {required}'`, over
 `HudStaffCoverageViewModel` — `required` is *"Guards the prison asks for,

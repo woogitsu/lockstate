@@ -413,7 +413,7 @@ finding that stands regardless is the *silence*: nothing on screen distinguishes
    directly above it reads *"Cell designated. Day 2"*. Two rows in one list, one
    dated and one not.
 3. **A machine id is shown to the player.** The PRISONS panel reads
-   `Saved (generation gen-mtpbjpn8-4).` — `src/content/default-locale-en.ts:2639`
+   `Saved (generation gen-mtpbjpn8-4).` — `src/content/default-locale-en.ts:2666`
    is `'save.status.saved': 'Saved (generation {generation}).'`, and the
    substitution is an internal generation handle. It is true, which is what the
    fourth exclusion requires, and it is not a sentence a player has any use for.

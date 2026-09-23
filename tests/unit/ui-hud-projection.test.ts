@@ -1288,26 +1288,41 @@ describe('refusalMessageKey: what a refused control says', () => {
  * (a prison meeting every need) and a positive figure.
  */
 describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
-  it('carries the withheld figure as a description, and never as a badge or a tone', () => {
+  /*
+   * **This case was titled *"carries the withheld figure as a description, and
+   * never as a badge or a tone"* and asserted `chip.badge` undefined**, with
+   * the comment *"no threshold has been set and no colour is painted, which is
+   * the half of this readout that is still the owner's (#890's re-measurement
+   * names loudness as their judgement)"*. The owner judged it on 2026-09-23 --
+   * *"Tak, znaczek na pasku (zalecane)"*, `AGENTS.md` entry 17 -- so the
+   * figure is a badge as well. The chip's own tone is still unset: the ruling
+   * is a badge, not a colour for the chip.
+   */
+  it('carries the withheld figure as a description and as a badge, and never as a tone', () => {
     const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
 
     expect(chip.description).toEqual({
       textKey: 'hud.status.earned-withheld',
       numberParameters: { withheld: 640 },
     });
-    // The two lines beside it are unchanged: no threshold has been set and no
-    // colour is painted, which is the half of this readout that is still the
-    // owner's (#890's re-measurement names loudness as their judgement).
-    expect(chip.badge).toBeUndefined();
+    expect(chip.badge, 'the same figure, visible without hovering (#890, 2026-09-23)').toEqual({
+      tone: 'warning',
+      textKey: 'hud.status.earned-withheld-badge',
+      numberParameters: { withheld: 640 },
+    });
     expect(chip.tone).toBeUndefined();
   });
 
   it('says nothing when a prison is meeting every need, and nothing when no payload carried the field', () => {
-    expect(
-      metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }), 'earned-today')
-        .description,
-    ).toBeUndefined();
-    expect(metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today').description).toBeUndefined();
+    const meeting = metric(
+      counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }),
+      'earned-today',
+    );
+    expect(meeting.description).toBeUndefined();
+    expect(meeting.badge, 'no badge at zero: the ruling is "whenever it is above zero"').toBeUndefined();
+    const unpublished = metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today');
+    expect(unpublished.description).toBeUndefined();
+    expect(unpublished.badge, 'and none for a payload that never carried the field').toBeUndefined();
   });
 
   it('names the figure rather than formatting it, so the strip groups it exactly as it groups the value', () => {
@@ -1322,5 +1337,8 @@ describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', ()
     );
     expect(chip.description?.numberParameters).toEqual({ withheld: 96_400 });
     expect(typeof chip.description?.numberParameters?.['withheld']).toBe('number');
+    // And the badge names the identical quantity, so the two cannot read two
+    // different numbers.
+    expect(chip.badge?.numberParameters).toEqual(chip.description?.numberParameters);
   });
 });

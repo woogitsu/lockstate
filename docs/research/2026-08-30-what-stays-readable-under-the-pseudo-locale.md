@@ -96,7 +96,7 @@ A rendered example from the run, the brand badge:
 ```
 
 The second line is `brand.build` = `v{version} · {commit}`
-(`src/content/default-locale-en.ts:1065`): the `v` is accented because it is
+(`src/content/default-locale-en.ts:1092`): the `v` is accented because it is
 template text, and `0.0.252` and `898a16a` are not, because they arrived as
 parameters.
 
@@ -223,7 +223,7 @@ instanceof Error) return error.message"*).
 
 **Why this is a defect and not a judgement call.** The catalogue *already
 carries* the localised sentence for this exact fault:
-`src/content/default-locale-en.ts:414` holds
+`src/content/default-locale-en.ts:416` holds
 `'hud.alert.fault.already-initialized': 'A simulation request was refused — this
 session already has a prison loaded.'`, and
 `src/ui/simulation-alerts.ts:108` maps the code `'already-initialized'` to that
@@ -265,7 +265,7 @@ The catalogue already localises the *sibling* landmarks: `brand.region`
 
 **Rendered:** `Lockstate.io` (document title, never bracketed)
 **At:** `<title>`, `index.html:8`
-**The same name, as a key:** `src/content/default-locale-en.ts:1048` —
+**The same name, as a key:** `src/content/default-locale-en.ts:1075` —
 `'brand.wordmark': 'LockState.io'` — which the sweep saw come back as
 `⟦ĻóçķŠţáţé.íó·····⟧`, i.e. it *is* localisable today.
 

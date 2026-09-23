@@ -482,9 +482,34 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * without hovering, which #890's own re-measurement names as the judgement
    * worth putting to them. Nothing here pre-empts that: a description costs
    * no chip width and paints no colour.
+   *
+   * **The owner judged it on 2026-09-23, and the key directly under this one
+   * is the answer** (#890, `AGENTS.md` entry 17, *"Tak, znaczek na pasku
+   * (zalecane)"*): `hud.status.earned-withheld-badge`, the same figure as a
+   * badge on the chip, visible without hovering. The paragraph above is kept
+   * as what stood while the question was open.
+   *
+   * `hud.status.earned-withheld-badge` is drawn by `earnedWithheldBadge`
+   * (`src/ui/hud/projection.ts`) exactly when this sentence is -- the
+   * published `counts.stateIncomeWithheldTodayMinorUnits` above zero -- so
+   * the two can never disagree about whether anything is withheld. **What it
+   * claims, and where that is true.** *"{withheld} withheld"*: that this much
+   * has been withheld. `{withheld}` is the same field this sentence names, and
+   * the first bullet above proves it is today's accrual at the undiminished
+   * rate less the accrual the chip itself shows -- the money unmet needs are
+   * holding back, so far today, and never negative. The badge sits on the chip
+   * whose label is *Earned today*, so "today" and "of the grant" are said by
+   * its position and in full by this sentence, which a hover or a screen
+   * reader reaches; it names no cause of its own and so cannot name the wrong
+   * one. The shape is `hud.status.funds-remaining`'s (*"{remaining} left"*)
+   * and `hud.status.prisoners-without-bed`'s (*"{count} not housed"*): the
+   * number first, grouped by the strip's formatter, then one lower-case word.
+   * Short because the strip's width is measured
+   * (`tests/browser/ui-strip-badged-width.spec.ts`, #719).
    */
   'hud.status.earned-withheld':
     "Unmet needs have withheld {withheld} of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
+  'hud.status.earned-withheld-badge': '{withheld} withheld',
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',

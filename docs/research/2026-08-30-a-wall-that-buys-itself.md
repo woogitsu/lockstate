@@ -325,7 +325,7 @@ on the refusal band at 1440x32, unfolded, on the press that caused it:
 Three things about that sentence, and only the first is good news.
 
 1. **It is legible and it is true.** It is `hud.alert.refusal.purchase.insufficient-funds`
-   (**VERIFIED, read:** `src/content/default-locale-en.ts:326`), the same
+   (**VERIFIED, read:** `src/content/default-locale-en.ts:328`), the same
    sentence a hand-pressed *Buy* gets, and the materials genuinely were not
    ordered and genuinely for that reason. #640 authored no new string, which is
    correct under `AGENTS.md`.
@@ -496,7 +496,7 @@ not a new finding here.
 and in the copy this pass had made of it.**
 
 `hud.build.queue-count` is `'{count} waiting · {started} being built'`
-(**VERIFIED, read:** `src/content/default-locale-en.ts:540`), so a queue of ten
+(**VERIFIED, read:** `src/content/default-locale-en.ts:567`), so a queue of ten
 renders `10 waiting · 0 being built` — and `waitForQueueEmpty`'s
 `/0 waiting . 0 being built/` matches that as a substring of `1` + `0 waiting ·
 0 being built`. So do 20, 30, 40 and every other multiple of ten.

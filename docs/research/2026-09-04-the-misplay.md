@@ -174,7 +174,7 @@ The dismissal, quoted from act 5:
   defect.** What is measured here is that nothing on the screen says the 80 is
   gone, in a game whose owner's recorded reasoning is *"silence about a loss is
   the worst option"* (quoted in #927 from
-  `src/content/default-locale-en.ts:852-856`).
+  `src/content/default-locale-en.ts:879-883`).
 
 ### What this costs a player, and how sure I am
 
@@ -541,7 +541,7 @@ three rows — because the pool refills as each order goes. **ARITHMETIC** agree
 
 > `and 3 more behind these — undo takes back a whole run.`
 
-**VERIFIED, read:** `src/content/default-locale-en.ts:1375`,
+**VERIFIED, read:** `src/content/default-locale-en.ts:1402`,
 `'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.'`
 That is ADR 0031 decision 4 keeping its promise — *"The sentence under the rows
 says so, so the absence is stated to the player rather than left as a gap."*
@@ -587,7 +587,7 @@ overdraft the prison is allowed:
   `spendableMinorUnits = balanceMinorUnits - overdraftFloorMinorUnits`, and
   `:319` — the shortfall is `chargeMinorUnits - spendableMinorUnits`.
 - **ARITHMETIC** from constants opened:
-  `src/simulation/economy/treasury.ts:354`,
+  `src/simulation/economy/treasury.ts:424`,
   `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS = -1_250`; `:507`, the starter
   floor is that plus `STARTER_RUNG_MARGIN_MINOR_UNITS`, which is
   `STARTER_PLANK_PRICE_MINOR_UNITS` (`:504`) — and a plank is **65**

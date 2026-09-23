@@ -191,7 +191,7 @@ label between them**.
 `this.controller.createPrison(prisonId, 'New Prison')`
 (`src/ui/save-panel.ts:726`). The row is
 `'save.list.item': '{name} ({count} gen)'`
-(`src/content/default-locale-en.ts:2049`) fed with
+(`src/content/default-locale-en.ts:2076`) fed with
 `name: prison.displayName ?? prison.prisonId` (`src/ui/save-panel.ts:679`).
 `displayName` is on the slot schema (`src/persistence/local/slot-metadata-schema.ts`)
 and `PrisonSaveRepository.create` writes whatever it is given
@@ -449,7 +449,7 @@ Three separate things in that:
 
 **The one honest sentence is the idle state, and it is gone after the first
 press.** `'save.status.idle': 'Local saves only — no network required.'`
-(**VERIFIED**, `src/content/default-locale-en.ts:2051`) is set once in the
+(**VERIFIED**, `src/content/default-locale-en.ts:2078`) is set once in the
 constructor (`src/ui/save-panel.ts:580`) and every subsequent `setStatus`
 replaces it. Filtering the whole page for any sentence containing *save*,
 *local*, *network*, *account*, *cloud*, *browser*, *device* or *sign*, after

@@ -310,7 +310,7 @@ reads *"So a `'sealed'` answer no longer implies \"no way in\""*, and
 non-zero value with no registered door is an impassable wall"*. The single
 player-visible string is
 `'hud.rooms.enclosure-sealed': 'Walled in on every side'` — **at
-`src/content/default-locale-en.ts:2022`**, not `:1792` as issue #604 records it.
+`src/content/default-locale-en.ts:2049`**, not `:1792` as issue #604 records it.
 The fact holds; the line moved, because that file grew today. This is exactly
 the rot the corpus already has a name for (*"pinning does not stop rot, it makes
 rot diagnosable"*), and it is the reason I re-opened rather than quoted.

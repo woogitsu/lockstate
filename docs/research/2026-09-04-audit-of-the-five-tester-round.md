@@ -399,7 +399,7 @@ Each is exact by the byte test above and wrong on inspection. This is the
 category §7 could not have found by the method it used, and it is why a reading
 pass is not the same as a diff.
 
-- **`src/content/default-locale-en.ts:852-856`** (the misplay §1), cited for the
+- **`src/content/default-locale-en.ts:879-883`** (the misplay §1), cited for the
   owner's reasoning *"silence about a loss is the worst option"*. That range is
   a comment about `ProtocolFaultCode` locale entries and contains no such
   quote. The quote is in the same file at **`:929-933`** — at `:931` on

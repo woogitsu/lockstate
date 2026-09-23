@@ -34,7 +34,7 @@ so neither is an agent's to take.
 ### The mechanism was built and left without content
 
 A prisoner reads as `Prisoner 4` today. The message key is
-`hud.regime.roster-unnamed` (`src/content/default-locale-en.ts:2235`), which
+`hud.regime.roster-unnamed` (`src/content/default-locale-en.ts:2262`), which
 the HUD uses for a prisoner with no name at all.
 
 Everything under the name is already built and argued. ADR 0012 and ADR 0015

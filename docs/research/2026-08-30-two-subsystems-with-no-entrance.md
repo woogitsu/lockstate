@@ -192,7 +192,7 @@ Utilities are not invisible to a player. They are half-visible:
   `{ type: 'object', objectId: 'object.utility-panel', minQuantity: 1 }`.
 - `src/content/default-locale-en.ts:43`, `:64`, `:102` — *"Utility Room"*,
   *"Utility Panel"*, *"Utility"*.
-- `src/content/default-locale-en.ts:1007` —
+- `src/content/default-locale-en.ts:1034` —
   `'save.scope.operations': 'jobs, containers and utility networks'`, which is
   what the save panel tells a player their file contains. It is true: the file
   does contain two empty networks.

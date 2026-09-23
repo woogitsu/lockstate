@@ -589,7 +589,7 @@ them: `hud/prisoner-detail` is the answer and nothing asks it.
 **The one shipped sentence that mentions a sentence at all arrives when it is
 over.** `hud.alert.event.prisoners.discharged` is
 *"{count} released — their sentences are served."*
-(`src/content/default-locale-en.ts:437`), recorded by
+(`src/content/default-locale-en.ts:439`), recorded by
 `PrisonerDischargeSystem` at `src/simulation/prisoners/discharge-system.ts:231`
 and rendered on the `.hud__event` band. That is the first and only moment the
 word appears.
@@ -1006,7 +1006,7 @@ Designate is never rendered. Playwright's page snapshot at the moment the run
 died shows exactly that state: the panel expanded, `radio "Cell Selected"
 [checked]`, no Designate control anywhere, and the arm button reading
 **"Draw on map"** — which is `hud.rooms.arm`, the *disarmed* label
-(`src/content/default-locale-en.ts:803-804`; the armed one is "Stop drawing").
+(`src/content/default-locale-en.ts:830-831`; the armed one is "Stop drawing").
 
 **The label does tell the truth, and that is the whole of the mitigation**: a
 player who opens the panel and reads the button before pressing it is told the

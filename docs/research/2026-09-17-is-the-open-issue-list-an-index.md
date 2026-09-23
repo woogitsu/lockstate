@@ -67,7 +67,7 @@ gained the member the issue asked for — `src/ui/host-refusal.ts:69`:
 export type HostRefusalReason = 'past-the-overdraft-floor' | 'no-room-to-hold-anybody';
 ```
 
-`src/main.ts:3435` throws it and `src/ui/hud/projection.ts:1275-1276` maps it to
+`src/main.ts:3435` throws it and `src/ui/hud/projection.ts:1312-1313` maps it to
 a sentence. Pinned by `tests/unit/ui-hud-projection.test.ts`. Note the issue's
 premise that the existing key `hud.alert.refusal.admit.no-accommodation` would
 be reached was **not** how it was answered: a new key
@@ -77,7 +77,7 @@ issue's ask — that the refusal name the missing thing — is met.
 ### #868 — half 1 only
 
 The hire note now says what the first day costs,
-`src/content/default-locale-en.ts:2532`:
+`src/content/default-locale-en.ts:2559`:
 
 ```ts
 'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages, including today.',

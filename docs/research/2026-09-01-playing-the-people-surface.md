@@ -359,7 +359,7 @@ plank press 5: -1130 -> -1130 | refusal band: "Nothing was bought — deliveries
 
 `-1130 - 65 = -1195`, which is below `-1185` — the **starter** rung
 (`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`,
-`src/simulation/economy/treasury.ts:506-508`) — but *above* the ordinary
+`src/simulation/economy/treasury.ts:578-580`) — but *above* the ordinary
 `-1250` rung a furnished prison would be judged against. The refusal fired at
 exactly the shallower, starter-aware threshold, not the ordinary one.
 
@@ -407,7 +407,7 @@ hired — that would go past what the state will carry."* This pass, against
 `HostRefusalError` path —
 *"Nobody was hired — hiring is refused until the state pays what it owes."*
 **Both are correct readings of their own commit.**
-`src/content/default-locale-en.ts:1082-1083`'s own comment names the reason:
+`src/content/default-locale-en.ts:1109-1110`'s own comment names the reason:
 the owner's **ruling 23** of 2026-08-31 (*"Te same słowa co host"*) rewrote
 `hud.refusal.hire-staff-past-floor` and `hud.refusal.purchase-materials-past-
 floor` to say the same words the worker-side `insufficient-funds` sentences
@@ -486,7 +486,7 @@ stopped taking orders.`) — but **one merged row** for both resolutions,
 — no incident is still open."* — names no incident at all, by design.
 
 **VERIFIED, read** — this is not a bug in the merging mechanism.
-`src/content/default-locale-en.ts:335-346`'s own comment states the rule the
+`src/content/default-locale-en.ts:337-348`'s own comment states the rule the
 owner supplied on 2026-09-01: *"Two arrivals of one sentence on day 3 are one
 row reading `2× Day 3`; two different sentences on day 3 are two rows, each
 naming itself."* The merge is working exactly as specified — it merges

@@ -218,7 +218,7 @@ shortfall line: {"present":true,"hidden":false,"laidOut":true,"text":"Waiting fo
 ```
 
 **VERIFIED, read**: `hud.build.queue-shortfall` is
-*"Waiting for {total} to buy materials."* (`src/content/default-locale-en.ts:583`),
+*"Waiting for {total} to buy materials."* (`src/content/default-locale-en.ts:610`),
 `queueShortfall` is appended to the panel body **after** `queueSection.element`
 rather than inside it (`src/ui/hud/build-panel.ts:1520`) with the reason written
 beside it — *"A player who never opens the fold still reads it"* — and it is
@@ -371,7 +371,7 @@ claim one … Taking a **wall** down is `Undo` for a finished one, and … a pre
 on its row for one that is still queued."*
 
 **The consequence is the finding, not the refusal.** `hud.build.remove-hint`
-(`src/content/default-locale-en.ts:529`) is the **only** shipped sentence that
+(`src/content/default-locale-en.ts:556`) is the **only** shipped sentence that
 tells a player what happens to materials when they take something back — *"its
 materials come back; a finished one is not refunded"* — and it is attached to
 the one tool that cannot touch a wall. A player who spent 24,960 on walls and
@@ -393,7 +393,7 @@ reading 40, which is the comparison
 good screen. **What the refusal says is the problem.**
 
 `hud.refusal.purchase-materials` is *"Nothing was bought — the purchase was
-refused and no money was spent."* (`src/content/default-locale-en.ts:796`). It
+refused and no money was spent."* (`src/content/default-locale-en.ts:823`). It
 does not mention money, the price, the balance or the shortfall. **The exact
 diagnosis exists and goes to the console:**
 

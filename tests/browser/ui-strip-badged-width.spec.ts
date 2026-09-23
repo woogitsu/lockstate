@@ -120,6 +120,30 @@ import './ui-harness-api';
  * because that is the widest that chip can be, and a chip cannot be at seven
  * figures and below zero at once. The two worst cases are therefore different
  * states, and the second one is `tests/browser/ui-overdraft-badge.spec.ts`.
+ *
+ * **And a sixth, on 2026-09-23: `earned-today`'s `{withheld} withheld`**, the
+ * owner's ruling on #890 (`AGENTS.md` entry 17) that the grant unmet needs are
+ * holding back is visible without hovering. It *is* folded into `EVERY_BADGE`,
+ * because unlike the overdraft badge it can be drawn beside every other one,
+ * at the widest figure that fixture's own occupancy can produce. And it gets
+ * a state of its own, `WITHHOLDING`: the ordinary prison with the badge drawn,
+ * which is the state a player whose prison has cells and no shower room or
+ * yard spends most of the game in -- #890 measured 40% of the grant withheld at
+ * steady state in exactly that prison.
+ *
+ * **Measured on the harness, 2026-09-23, on top of PR #1375's strip:** the
+ * badge costs its chip **111.7px** at five digits (`53,400 withheld` and
+ * `42,600 withheld` alike) and **92.9px** at three. The ordinary row is
+ * **1,248.8px** in 1,256px at 1280, so 7.2px of headroom; with the badge it
+ * is **1,360.5px**, and `earned-today` -- the last chip -- leaves the row at
+ * 1280x800 and 1280x720: 8 of 9 on screen. At 1440 (1,416px of row) and 1920
+ * it fits. **No shorter form fits at 1280 either**, and that was measured
+ * rather than assumed: the number alone (`−53,400`) costs 66.8px and three
+ * digits 48.0px, because a badge's own padding and the trailing gap are more
+ * than 7.2px before it holds a glyph. So the word form ships -- the same chips
+ * are on screen with either -- and the 1280 overflow joins the one this
+ * docblock already hands to the owner (#719). `EVERY_BADGE` with the badge is
+ * **1,622.1px**, which still fits 1920's 1,896px.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -148,10 +172,21 @@ const POPULATED: HudCountsViewModel = {
   stateIncomeAccruedTodayMinorUnits: 284_500,
 };
 
+/**
+ * The ordinary prison with the #890 badge drawn: the widest figure its own 178
+ * occupied places can produce -- 178 x 300, the whole of a day's headline grant
+ * -- so the badge is at its widest rather than at a figure a test happened to
+ * pick.
+ */
+const WITHHOLDING: HudCountsViewModel = { ...POPULATED, stateIncomeWithheldTodayMinorUnits: 53_400 };
+
 /** The same prison, with every badge the strip can draw drawn at once. */
 const EVERY_BADGE: HudCountsViewModel = {
   ...POPULATED,
   occupiedPlaces: 142,
+  // The #890 badge (2026-09-23) at the widest this fixture can carry: 142
+  // occupied places x 300 is the whole day's headline grant.
+  stateIncomeWithheldTodayMinorUnits: 42_600,
   prisonersCovered: 100,
   prisonersUnderstaffed: 42,
   prisonersUnguarded: 36,
@@ -282,7 +317,8 @@ test.describe('the status strip carries nine chips and the prison’s own state 
 
       // The premise again, and it is the stronger one: four badges, each the
       // widest word its namespace authors.
-      expect(badged.badges.length, `the four-badge state drew ${badged.badges.length} badges at ${at}`).toBe(4);
+      // Five since 2026-09-23 (#890's badge); four before.
+      expect(badged.badges.length, `the five-badge state drew ${badged.badges.length} badges at ${at}`).toBe(5);
       expect(badged.badges.map((text) => text.trim()), `the badges drawn at ${at}`).toEqual([
         '36 not housed',
         // Ruling 21: the worst rung, in one word. `EVERY_BADGE` has 36
@@ -291,6 +327,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
         'Unguarded',
         'Gang Retaliation',
         'Currency',
+        '42,600 withheld',
       ]);
 
       /*
@@ -348,6 +385,36 @@ test.describe('the status strip carries nine chips and the prison’s own state 
         `${at}: ${badged.fullyVisible} of ${badged.chipCount} chips are on screen with every badge drawn, but the row is ${badged.clientWidth}px wide and has room for ${badged.fitsInRowWidth} -- so something other than the screen's width is cutting a chip off`,
       ).toBe(badged.fitsInRowWidth);
       expect(badged.fullyVisible, `${at}: not one status chip is on screen`).toBeGreaterThan(0);
+
+      /*
+       * **The ordinary prison with #890's badge on it** (2026-09-23). The
+       * premise first: the one badge it adds is drawn, with its figure grouped
+       * the way the chip's value is.
+       */
+      const withholding = await show(page, WITHHOLDING);
+      expect(withholding.badges.map((text) => text.trim()).sort(), `the withholding prison's badges at ${at}`).toEqual([
+        '53,400 withheld',
+        'Clear',
+        'Covered',
+      ]);
+      expect(withholding.stripHeight, `the withheld badge moved the strip's height at ${at}`).toBe(ordinary.stripHeight);
+      expect(
+        withholding.fullyVisible,
+        `${at}: #634's property with the withheld badge drawn -- ${withholding.fullyVisible} on screen, room for ${withholding.fitsInRowWidth}`,
+      ).toBe(withholding.fitsInRowWidth);
+      /*
+       * **It fits from 1440 up, and that is pinned; at 1280 it does not, and
+       * that is not.** See the docblock: 1,360.5px against 1,256px, no shorter
+       * form fits the 7.2px of headroom, and the overflow is #719's, which is
+       * the owner's. Pinning "8 of 9 at 1280" would make the fix fail here.
+       */
+      if (width >= 1440) {
+        expect(
+          withholding.contentWidth,
+          `the withholding prison's row is ${withholding.contentWidth}px in ${withholding.clientWidth}px at ${at}, so the withheld badge is pushing a chip off a row it used to fit`,
+        ).toBeLessThanOrEqual(withholding.clientWidth);
+        expect(withholding.fullyVisible, `chips on screen with the withheld badge at ${at}`).toBe(9);
+      }
     }
   });
 
@@ -366,6 +433,10 @@ test.describe('the status strip carries nine chips and the prison’s own state 
      * locale spend, and this fails when they have spent it. **The 1627px is a
      * pre-ruling-21 reading**; the slack is wider now by whatever the coverage
      * badge gave back, which this file is the place to measure.
+     *
+     * **Measured, 2026-09-23:** 1,510.4px with the four badges, and
+     * **1,622.1px** with #890's `42,600 withheld` as the fifth -- 273.9px of
+     * slack left at 1920, which is what the next chip, badge and locale spend.
      */
     expect(
       badged.contentWidth,

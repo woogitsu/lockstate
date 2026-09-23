@@ -216,7 +216,7 @@ Each of them also moves for a discharge, which is the whole of the problem:
 every one of these needles moves for *"their sentence ended"* and for *"they are
 over the wall"* alike, and the one row that could tell them apart —
 `prisoners.discharged`, *"{count} released — their sentences are served."*
-(`src/content/default-locale-en.ts:437`) — is emitted only by
+(`src/content/default-locale-en.ts:439`) — is emitted only by
 `PrisonerDischargeSystem` (`src/simulation/prisoners/discharge-system.ts:231`).
 `releasePrisoner` itself records no event at all: `src/simulation/prisoners/release.ts`
 contains no reference to the event log.

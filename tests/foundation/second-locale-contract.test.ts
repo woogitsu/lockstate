@@ -104,8 +104,14 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * (the base this issue works from) and `731` after both keys were added,
    * via `auditLocaleCatalog(messageCatalogPl, defaultMessageCatalogEn)
    * .translatedKeyCount` -- a `+2` this time, not a `729 + 2` guess.
+   *
+   * Raised to `737` on 2026-09-23 by #890's strip badge, which translates the
+   * one key it adds, `hud.status.earned-withheld-badge`. Measured the same way:
+   * `736` on unmodified `8a78fca7` -- five keys of slack the floor had not been
+   * turned for -- and `737` with the badge's Polish entry, so the floor lands on
+   * the measurement again and the attribution is written here.
    */
-  pl: 731,
+  pl: 737,
 };
 
 /*

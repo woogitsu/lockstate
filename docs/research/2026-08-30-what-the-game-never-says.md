@@ -221,7 +221,7 @@ Three properties, each measured above, compose:
 2. **The readout is identical to #627's.** A paused prison's Build panel says
    `24 waiting · 0 being built`. #625's brick-shortage stall says
    `12 waiting · 0 being built`. `{count} waiting · {started} being built`
-   (`src/content/default-locale-en.ts:531`) cannot distinguish *no materials*,
+   (`src/content/default-locale-en.ts:558`) cannot distinguish *no materials*,
    *no crew* and *no clock* — so the player who diagnoses one of the three has
    learned nothing about the other two.
 3. **The delivery block is a promise the pause does not keep.** *"ON THE WAY …
@@ -273,7 +273,7 @@ the roles the panel offers: [{"id":"staff-role.guard","text":"Guard | Selected"}
 ```
 
 `Hire {role} · {total}` and *"Taken from the treasury **on hire**. A new guard
-starts unassigned."* (`src/content/default-locale-en.ts:632-633`). Both
+starts unassigned."* (`src/content/default-locale-en.ts:659-660`). Both
 sentences are true and both describe a **one-off**. Nothing on the panel, the
 strip or anywhere else says the 80 comes back tomorrow.
 
@@ -364,7 +364,7 @@ ON THE PAYROLL unfolded by hand:
 ```
 
 and the sentence that turns it true is
-`hud.security.roster-hint` (`src/content/default-locale-en.ts:670`):
+`hud.security.roster-hint` (`src/content/default-locale-en.ts:697`):
 
 > A dismissed staff member leaves the prison for good, and **their wage stops**.
 
@@ -374,7 +374,7 @@ no cadence, and it is behind a fold nothing opens — which is #627's
 *"Awaiting Materials"* — `src/content/simulation-message-keys.ts:472`, inside
 the Build panel's shut queue fold — restated on a different panel. The panel's own
 authoring comment already knew the mechanism, at
-`src/content/default-locale-en.ts:661-666`: *"`hud.security.hire-hint` two
+`src/content/default-locale-en.ts:688-693`: *"`hud.security.hire-hint` two
 blocks up already told them the wage is taken on hire, and `PayrollSystem` goes
 on taking it every in-game day until this control is pressed."* The player is
 not told the second half of that sentence anywhere.
@@ -484,7 +484,7 @@ no-place attribute: 3
 ```
 
 That is `hud.intake.no-place` — *"{count} waiting with no bed to sleep in"*
-(`src/content/default-locale-en.ts:608`) — and the pipeline block beneath it.
+(`src/content/default-locale-en.ts:635`) — and the pipeline block beneath it.
 The count tracked the population on every one of the four presses (`1`, `2`,
 `3` after admissions two, three and four) and was still correct an in-game day
 later:
@@ -500,7 +500,7 @@ that moment carries `3 waiting with no bed to sleep in` and
 
 **What #538 asks for beyond this is a remedy, and the locale deliberately does
 not give one** — its own comment says the line *"states the prison's condition
-and promises no remedy"* (`src/content/default-locale-en.ts:602-607`). Under #629 that is
+and promises no remedy"* (`src/content/default-locale-en.ts:629-634`). Under #629 that is
 the right side of the line: the requirement is not hidden. Whether the *remedy*
 should be named is a copy decision and therefore the owner's.
 

@@ -62,9 +62,9 @@ appear below and both are marked as such; no other figure here is a timing.
 | --- | --- | --- |
 | opening grant | 25,000 | `TREASURY_STARTING_BALANCE_MINOR_UNITS` |
 | overdraft floor | −2,500 | `src/simulation/economy/treasury.ts:293` (one tenth of the grant) |
-| deliveries rung | −1,250 | `src/simulation/economy/treasury.ts:339` |
-| construction rung | −2,000 | `src/simulation/economy/treasury.ts:351` |
-| wages rung | `-Infinity`, clamping to the floor | `src/simulation/economy/treasury.ts:377-382` |
+| deliveries rung | −1,250 | `src/simulation/economy/treasury.ts:409` |
+| construction rung | −2,000 | `src/simulation/economy/treasury.ts:421` |
+| wages rung | `-Infinity`, clamping to the floor | `src/simulation/economy/treasury.ts:447-452` |
 | a brick | 40 | `src/content/procurement-catalog.ts:100` |
 | a wood plank | 65 | `src/content/procurement-catalog.ts:101` |
 | a brick wall segment | 2 bricks = 80 | `src/simulation/construction/definition.ts:89` |
@@ -164,7 +164,7 @@ deliveries rung, −1,250 — read on the host's pre-flight at
 `grep -n "HostRefusalError('past-the-overdraft-floor'" src/main.ts` rather than
 trusted from a Vite-transformed stack trace — and matched on
 the worker's own side by `Treasury.canAfford` at
-`src/simulation/economy/treasury.ts:516` against `floorFor('deliveries')` /
+`src/simulation/economy/treasury.ts:588` against `floorFor('deliveries')` /
 `floorFor('hiring')`, both −1,250 (`treasury.ts:378,381`).
 
 **The exact balance, precisely stated, because "becomes false" undersells it.**
@@ -243,7 +243,7 @@ subtractions that were one subtraction until this morning:
   `rungFloorMinorUnits('deliveries', −2,500)` = **−1,250**
   (`src/ui/affordability.ts:152`);
 - the worker is `Treasury.canAfford`, `balance - amount >= this.floorFor(spendClass)`
-  (`src/simulation/economy/treasury.ts:516`), the same −1,250 for `'deliveries'`
+  (`src/simulation/economy/treasury.ts:588`), the same −1,250 for `'deliveries'`
   and `'hiring'`.
 
 `overdraftRemaining − judgeAffordability's spendable` is therefore
@@ -304,7 +304,7 @@ Ten wall segments, **800 spent, at a balance where the shop had just refused
 40.** The ladder is doing exactly what ruling 19 says: the press is the
 `'deliveries'` rung at −1,250 and a queued order is the `'construction'` rung at
 −2,000 (`src/simulation/economy/procurement.ts:194-211`,
-`src/simulation/economy/just-in-time-materials.ts:556`). It is correct, and it
+`src/simulation/economy/just-in-time-materials.ts:557`). It is correct, and it
 is also **the game's largest piece of hidden functionality on this surface**:
 when the shop shuts, the way to keep spending is to stop using the shop.
 
@@ -330,7 +330,7 @@ a construction floor of −2,000. 320 is the **cost of the four unfunded orders*
 and it is not what the queue is waiting for: 5 of room is already there, so the
 money that has to arrive is **315** for all four and **75** for the first one.
 The sentence is `'hud.build.queue-shortfall'`, *"Waiting for {total} to buy
-materials."* (`src/content/default-locale-en.ts:820`), and "waiting for" names a
+materials."* (`src/content/default-locale-en.ts:847`), and "waiting for" names a
 sum a player will try to earn. Also the owner's, for the same reason as D1.
 
 ---

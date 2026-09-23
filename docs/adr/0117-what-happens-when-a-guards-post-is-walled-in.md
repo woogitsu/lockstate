@@ -186,7 +186,7 @@ ticks: **100 ticks report `shortage: 0` and 100 report `shortage: 1`.** Exactly
 half.
 
 `shortage: 0` is what the Staff panel renders as
-`hud.security.coverage-met` — **"Covered"** (`src/content/default-locale-en.ts:2685`)
+`hud.security.coverage-met` — **"Covered"** (`src/content/default-locale-en.ts:2712`)
 — beside `hud.security.coverage-summary`, **"{assigned} of {required}"**
 (`:2684`), i.e. **"1 of 1 · Covered"**. The other half of the time it renders
 `hud.security.coverage-unguarded`, **"Unguarded"** (`:2861`), with

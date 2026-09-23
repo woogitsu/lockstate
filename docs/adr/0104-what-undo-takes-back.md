@@ -96,7 +96,7 @@ acceptance's: the label of a clickable option this session wrote, *"Opcja A
 contexts and nowhere else (`src/input/bindings.ts:64`; the action's own
 declaration repeats the pair at `src/input/actions.ts:78-79`). The whole of
 what a player is told about it is one word:
-`'input.action.edit.undo': 'Undo'` (`src/content/default-locale-en.ts:2754`).
+`'input.action.edit.undo': 'Undo'` (`src/content/default-locale-en.ts:2781`).
 
 There is no pointer route. The key is recognised in the scene
 (`src/rendering/scene/world-scene.ts:853`, `case 'edit.undo':
@@ -150,7 +150,7 @@ figures: 24,840 − 80 = 24,760, and no other term appears. The guard count
 settles the other half: the hire was never on the stack.
 
 The one event maps to `'hud.alert.event.construction.undone-spend-destroyed'`
-(`src/content/default-locale-en.ts:1104-1105`), *"The last change to the build
+(`src/content/default-locale-en.ts:1131-1132`), *"The last change to the build
 queue was undone — anything already spent past the point of no return stays
 spent."*, graded `'warning'` on `band-and-log`
 (`src/ui/simulation-events.ts:482-486`). So the loss **is** reported — that is

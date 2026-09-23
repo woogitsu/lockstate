@@ -260,7 +260,7 @@ Three things are true at once and each matters:
    nothing on the money surface suggests the problem is money.
 2. **The queue says the crew is idle, not that materials are short.**
    `{count} waiting · {started} being built`
-   (`src/content/default-locale-en.ts:531`) renders `12 waiting · 0 being
+   (`src/content/default-locale-en.ts:558`) renders `12 waiting · 0 being
    built`. "0 being built" is the true reading of a stalled crew and reads as
    *nothing is happening*, not as *something is missing*.
 3. **The word "Materials" is nowhere on screen.** It exists — `'materials-pending':
@@ -379,7 +379,7 @@ correctly absent from it).
 **No figure anywhere on any of these dumps states how much material the prison
 holds.** The only occurrence of the word "stock" in the shipped locale is inside
 the buy hint — *"Arrives while the clock runs, into the stock a build draws
-from"* (`src/content/default-locale-en.ts:510`) — which names the stock without
+from"* (`src/content/default-locale-en.ts:537`) — which names the stock without
 ever showing it.
 
 **This paragraph is a measurement and not a diagnosis.** What would establish

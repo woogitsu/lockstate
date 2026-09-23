@@ -206,7 +206,7 @@ key:
 ```
 
 **The specific sentence this situation needs already exists in the locale
-file, unused for this path.** `src/content/default-locale-en.ts:403`:
+file, unused for this path.** `src/content/default-locale-en.ts:405`:
 
 ```
 'hud.alert.refusal.admit.no-accommodation': 'Nobody was admitted — there is no room to put a prisoner in yet.'
@@ -316,7 +316,7 @@ any point this pass measured, including the moment a player has a resident,
 a room, income and a balance all at once — the state a genuinely successful
 first five minutes actually reaches.
 
-**Not a gap in the mechanism — a gap in when it fires.** `src/ui/hud/projection.ts:958-970`
+**Not a gap in the mechanism — a gap in when it fires.** `src/ui/hud/projection.ts:989-1001`
 carries exactly one chip's description, `funds`' `overdraftDescription`, added
 by *"the owner's ruling of 2026-09-01"* specifically so a screen-reader user
 and a non-hovering player both learn what the `FUNDS` badge's `{remaining}

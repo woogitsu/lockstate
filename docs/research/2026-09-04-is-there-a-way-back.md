@@ -198,7 +198,7 @@ words it says for a free undo of a queued order.
   materials again. That is the 240.
 - **VERIFIED, read.** The two sentences are
   `'hud.alert.event.construction.undone': 'The last change to the build queue was undone.'`
-  and its `redone` twin (`src/content/default-locale-en.ts:883-884`), raised by
+  and its `redone` twin (`src/content/default-locale-en.ts:910-911`), raised by
   `createConstructionCommandHandler` at
   `src/simulation/construction/handler.ts:183` and `:178`.
 
@@ -342,7 +342,7 @@ build queue block is not on the screen at all.**
   `construction.undone` whenever `undo()` answers `true`
   (`handler.ts:174`), and the string is
   `'The last change to the build queue was undone.'`
-  (`src/content/default-locale-en.ts:883`). It cannot say which transaction it
+  (`src/content/default-locale-en.ts:910`). It cannot say which transaction it
   took, because the owner's ruling on #749 is that the sentence names no count
   and `ConstructionSystem` deliberately keeps the transaction size to itself
   (`system.ts:532-553`). **Naming no count is not the same as naming no
@@ -419,7 +419,7 @@ was a look-around — cost 160 with no warning.**
   (`world-scene.ts:1099-1103`) — three *gestures*, and `setArmed` is not among
   them.
 - **VERIFIED, read.** Nothing overstates it. `input.action.build.cancel` is
-  the one word `'Cancel'` (`src/content/default-locale-en.ts:1997`) and
+  the one word `'Cancel'` (`src/content/default-locale-en.ts:2024`) and
   `docs/INPUT.md:8` describes the action as *"cancelling a wall run"*, which
   is exactly what it does. **So this is not a promise the code does not
   keep** — it is a key a player will press for a purpose the game never
@@ -502,7 +502,7 @@ conclusion from the other end: `ProcurementSystem.refundMaterials` and
 `previewRefundMaterials` (`src/simulation/economy/procurement.ts:367`, `:389`)
 are reached only from
 `JustInTimeMaterialsService.refundAllocatedMaterials` and its preview twin
-(`src/simulation/economy/just-in-time-materials.ts:822` and `:927`), whose own
+(`src/simulation/economy/just-in-time-materials.ts:823` and `:927`), whose own
 callers are `ConstructionSystem.cancelOrder` and the queue row's price
 preview. **Every path into them starts at an order**, and there is none that
 starts at a container.
@@ -629,7 +629,7 @@ which pops the transaction the run was drawn in. So the two controls divide the
 work: `Undo` takes back a gesture, and a row takes back one order."* The
 player-facing half of that is `'hud.build.queue-more'`:
 *"and {count} more behind these — undo takes back a whole run."*
-(`src/content/default-locale-en.ts:1209`). **That sentence is true while the
+(`src/content/default-locale-en.ts:1236`). **That sentence is true while the
 run is pending and becomes a bad recommendation the moment it is built** — and
 §1 is the price.
 
@@ -725,7 +725,7 @@ one, it is the owner's, and it was written for exactly this reason** —
 
 > *"The order was cancelled. Anything already spent past the point of no return
 > stays spent."*
-> — `src/content/default-locale-en.ts:881`
+> — `src/content/default-locale-en.ts:908`
 
 and the docblock above it (`:852-856`) records the owner's reasoning for why a second
 sentence exists at all:
@@ -740,7 +740,7 @@ sentence exists at all:
 in the tree reason it out. Both give the same two grounds, and **both grounds
 are false against the code as it stands.**
 
-`src/content/default-locale-en.ts:872-878`:
+`src/content/default-locale-en.ts:899-905`:
 
 > *"A cancelled order that had already **finished** gets no sentence here.
 > Neither of the two below is true of it — the money did not come back and

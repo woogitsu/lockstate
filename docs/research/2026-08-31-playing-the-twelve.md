@@ -551,7 +551,7 @@ is never disabled (`disabled` and `aria-disabled` both `null`).
 `'hud.alert.refusal.admit.no-accommodation': 'Nobody was admitted — there is no
 room to put a prisoner in yet.'` — and `src/ui/simulation-alerts.ts:35` maps the
 worker's reason id to it. What a player meets instead is
-`src/content/default-locale-en.ts:995`, the generic
+`src/content/default-locale-en.ts:1022`, the generic
 `'hud.refusal.admit-prisoner'`.
 
 **REASONED, and this is why it is a small finding rather than a large one.**

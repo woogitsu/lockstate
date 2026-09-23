@@ -196,7 +196,7 @@ destroyed fraction is zero.
 
 **And nothing on screen says the 27 bricks exist.** The Build panel has a
 deliveries block for material *on the way*
-(`'hud.build.deliveries': 'On the way'`, `src/content/default-locale-en.ts:566`)
+(`'hud.build.deliveries': 'On the way'`, `src/content/default-locale-en.ts:593`)
 and the whole locale file contains no readout of material **held**: the only
 other occurrence of the word is `'hud.build.buy-hint': 'Arrives while the clock
 runs, into the stock a build draws from.'` (`:519`). A player who undoes a
@@ -261,7 +261,7 @@ the order, so `materialsAllocated` is never released. Removing an order still
 so much of #629's sweep found the opposite: `'hud.build.remove-hint'` reads
 *"Press any tile of an object to take it away. One still being built is
 cancelled and its materials come back; a finished one is not refunded."*
-(`src/content/default-locale-en.ts:506`). ADR 0076's decision B — full refund by
+(`src/content/default-locale-en.ts:533`). ADR 0076's decision B — full refund by
 either route — is not implemented, and this is what "not implemented" costs a
 player: 65 per change of mind, disclosed.
 

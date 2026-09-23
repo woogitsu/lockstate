@@ -646,7 +646,7 @@ none of it. What is owed is at least one of:
    regime deliberately; #788 introduces the first tier change that is meant to
    be noticed and cannot move the regime. Somebody has to say which rule wins.
 4. **A number for the `HIGH RISK` chip, or a second chip**, if a prison-wide
-   count of warnings is wanted at all. `src/ui/hud/projection.ts:783-790`
+   count of warnings is wanted at all. `src/ui/hud/projection.ts:785-792`
    declines a tone for that chip for a stated reason that survives; it does not
    decide whether tier 2 should be counted anywhere on the strip.
 

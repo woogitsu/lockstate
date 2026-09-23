@@ -57,7 +57,7 @@ Dossier 1 prices the alerts fold's worst case off
 namespace"*. That superlative was re-checked on the merge commit rather than
 carried: sorting every `'hud.alert.refusal.*'` value in
 `src/content/default-locale-en.ts` by length puts it first at 114 characters
-(`src/content/default-locale-en.ts:1215`), ahead of
+(`src/content/default-locale-en.ts:1242`), ahead of
 `hud.alert.refusal.hire.no-duty-for-role` at 109. Option F changes **when the
 band retires**, not what any row says and not how tall the fold is — and #1261,
 which implemented it, is one line of behaviour in `src/ui/hud/hud.ts`

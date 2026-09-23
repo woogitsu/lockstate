@@ -152,7 +152,7 @@ up two more:
    halted construction queue reports `hud.alert.refusal.purchase.insufficient-funds`
    through `reportMaterialsFunding`, which is rung 1's sentence on rung 2's
    event"). Verified against the code: `JustInTimeMaterialsService`
-   (`src/simulation/economy/just-in-time-materials.ts:556`) calls
+   (`src/simulation/economy/just-in-time-materials.ts:557`) calls
    `this.treasury.canAfford(orderCostMinorUnits, 'construction')` — correctly
    rung-aware — and on refusal, `reportMaterialsFunding`
    (`src/simulation/construction/handler.ts:248`) writes the same
@@ -222,7 +222,7 @@ pins this, per the comment at `:341`–`343`). That means:
 - A hard-coded literal is a second copy of a constant that already lives at
   `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS = -1_250` and
   `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = -2_000`
-  (`src/simulation/economy/treasury.ts:339`, `:351`), with no test tying the
+  (`src/simulation/economy/treasury.ts:409`, `:351`), with no test tying the
   *prose* to the constant the way `tests/foundation/localization-key-completeness.test.ts`
   ties keys to reasons. If a future ruling moves either number, a candidate
   that spells it out goes stale silently — which is exactly the failure mode

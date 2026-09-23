@@ -26,6 +26,14 @@ import './ui-harness-api';
  * DOM and visible to nobody -- which #629 says does not count. This asserts
  * the chip is still inside the row's own visible box with the sentence on it,
  * which is the property a description was chosen for over a badge.
+ *
+ * **Since the owner's ruling of 2026-09-23 on #890 (`AGENTS.md` entry 17) the
+ * chip carries a badge as well** -- *"{withheld} withheld"*, visible without
+ * hovering -- so the description is no longer the quiet half on its own and
+ * this file's width assertion changes with it: the sentence still costs
+ * nothing, and the badge costs exactly its own box. What the badge costs the
+ * row at each desktop width is `tests/browser/ui-strip-badged-width.spec.ts`'s
+ * measurement, not this file's.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -61,6 +69,10 @@ interface ChipReading {
   /** The same sentence as screen-reader text, which is the half a hover cannot reach. */
   readonly screenReaderText: string | null;
   readonly badgeText: string | null;
+  /** The badge's own tone, which is not the chip's. */
+  readonly badgeTone: string | null;
+  /** The badge's own width, `0` when there is none. */
+  readonly badgeWidth: number;
   readonly tone: string | null;
   readonly value: string | null;
   /** Whether the chip's box lies inside the metrics row's own visible box. */
@@ -88,10 +100,13 @@ async function show(page: Page, next: HudCountsViewModel): Promise<ChipReading> 
     if (chip === null || row === null) throw new Error('no EARNED TODAY chip in the mounted HUD');
     const rowBox = row.getBoundingClientRect();
     const chipBox = chip.getBoundingClientRect();
+    const badge = chip.querySelector<HTMLElement>('.ui-badge');
     return {
       title: chip.getAttribute('title'),
       screenReaderText: chip.querySelector<HTMLElement>('.ui-sr-only')?.textContent ?? null,
-      badgeText: chip.querySelector<HTMLElement>('.ui-badge')?.textContent?.trim() ?? null,
+      badgeText: badge?.textContent?.trim() ?? null,
+      badgeTone: badge?.dataset['tone'] ?? null,
+      badgeWidth: badge === null ? 0 : badge.getBoundingClientRect().width,
       tone: chip.dataset['tone'] ?? null,
       value: chip.querySelector<HTMLElement>('.ui-stat__value')?.textContent ?? null,
       onScreen: chipBox.left >= rowBox.left - 0.5 && chipBox.right <= rowBox.right + 0.5,
@@ -127,25 +142,46 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     // A hover reaches one player and not the other, so the same sentence is in
     // the DOM as screen-reader text.
     expect(withholding.screenReaderText).toBe(withholding.title);
-    // No threshold was set and no colour is painted: the judgement #890 leaves
-    // with the owner is loudness, and this is the quiet half.
-    expect(withholding.badgeText).toBeNull();
+    /*
+     * **The badge, grouped by the same formatter as the sentence and the
+     * value** (the owner's ruling of 2026-09-23). This read
+     * `expect(withholding.badgeText).toBeNull()` under the comment *"No
+     * threshold was set and no colour is painted: the judgement #890 leaves
+     * with the owner is loudness, and this is the quiet half."* The owner
+     * judged it. Still no colour on the chip itself: the badge carries the
+     * `warning` tone, the chip carries none.
+     */
+    expect(withholding.badgeText).toBe('96,400 withheld');
+    expect(withholding.badgeTone).toBe('warning');
     expect(withholding.tone).toBeNull();
-    // **And the sentence costs the row nothing, which is what a description
-    // buys over a badge.** Asserted against the same chip with no sentence on
-    // it rather than against a pinned number, so it holds at any wording:
-    // `.ui-sr-only` is out of flow and `title` is an attribute, so neither the
-    // chip nor the row it sits in may move by a hundredth of a pixel.
+    /*
+     * **And the sentence still costs the row nothing; only the badge does.**
+     * This asserted the chip and row identical with and without the figure,
+     * which was the property a description bought over a badge. With a badge
+     * the chip grows, so what is asserted now is that it grows by exactly the
+     * badge's own box -- the trailing slot it goes into is on every chip
+     * already, badge or not, so it adds no gap of its own -- with the sentence
+     * adding not a hundredth of a pixel on top, and that the row grows by
+     * exactly what the chip did.
+     */
     const unpublished = await show(page, counts());
-    expect(withholding.width).toBe(unpublished.width);
-    expect(withholding.rowScrollWidth).toBe(unpublished.rowScrollWidth);
-    expect(withholding.onScreen).toBe(unpublished.onScreen);
+    expect(unpublished.badgeText).toBeNull();
+    expect(withholding.width, 'the chip grows by the badge, and by nothing else').toBeCloseTo(
+      unpublished.width + withholding.badgeWidth,
+      2,
+    );
+    expect(withholding.rowScrollWidth - unpublished.rowScrollWidth, 'and the row by what the chip grew').toBeCloseTo(
+      withholding.width - unpublished.width,
+      0,
+    );
 
     // A prison meeting every need carries no sentence at all -- the tooltip is
     // removed rather than blanked, so a hover opens nothing.
     const clear = await show(page, counts({ stateIncomeWithheldTodayMinorUnits: 0 }));
     expect(clear.title).toBeNull();
     expect(clear.screenReaderText).toBe('');
+    expect(clear.badgeText, 'and no badge: the ruling is "whenever it is above zero"').toBeNull();
+    expect(clear.width).toBe(unpublished.width);
     expect(clear.value).toBe(withholding.value);
   });
 
@@ -156,5 +192,6 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     const unpublished = await show(page, counts());
     expect(unpublished.title).toBeNull();
     expect(unpublished.screenReaderText).toBe('');
+    expect(unpublished.badgeText).toBeNull();
   });
 });

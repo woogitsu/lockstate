@@ -578,6 +578,13 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.status.earned-withheld':
     'Niezaspokojone potrzeby wstrzymały jak dotąd {withheld} z dzisiejszej dotacji — państwo płaci mniej za osadzonego, którego potrzeby nie są zaspokajane, a zaspokojenie jednej z nich przywraca tę część.',
+  // The badge beside it (#890, the owner's ruling of 2026-09-23). Verb first,
+  // the shape `hud.status.funds-remaining` already has (*Zostało {remaining}*):
+  // rule 2's impersonal past, so no subject and no gender, and `{withheld}` a
+  // bare grouped number as the object -- its accusative is its nominative at
+  // every count, the same argument the sentence above makes, so no plural forms
+  // are needed. The cause is left to the sentence, as in English.
+  'hud.status.earned-withheld-badge': 'Wstrzymano {withheld}',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
   'hud.status.incidents-clear': 'Spokój',

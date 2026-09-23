@@ -75,7 +75,7 @@ is empty and the outer loop body never runs; the incident is constructed at
 The same correction applies to the issue's second citation, and there it is a
 plain off-by-one: `hud.build.note` is keyed at `src/ui/hud/messages.ts:**157**`
 (`buildNote: 'hud.build.note',`), not `:156`, which is `buildSubmit`. The
-locale entry at `src/content/default-locale-en.ts:492` is exactly where the
+locale entry at `src/content/default-locale-en.ts:519` is exactly where the
 issue says.
 
 ---
@@ -236,7 +236,7 @@ Shapes, as #642 defines them:
 | 5 | **Both utility networks** | `src/simulation/operations/utility-network.ts:40` (`addNode`), `:47` (`connect`), `:57` (`setFailed`), `:101` (`evaluate`); constructed `src/simulation/runtime/new-session.ts:657-658` | **A** | **No caller in `src/` for any of the four**, and none in any commit on any branch — `git log --all -S '.addNode(' -- src/` returns nothing. Snapshotted (`session-systems.ts:586-587`) and restored (`:819-820`), permanently empty. |
 | 6 | **Parcels and the land-purchase economy** | `src/simulation/world/sparse-world.ts:521` (`registerParcel`), `:550` (`setParcelOwned`), `:621` (`canPurchaseParcel`), `:630` (`getParcelPrice`); hooks `src/simulation/world/parcel.ts:142`, `:167` | **A** | No caller in `src/` for any of the four methods, except `registerParcel` from `SparseWorld.fromSnapshot` at `:763`. Already stated at `src/simulation/world/tile-ownership.ts:17-19`: *"the only `registerParcel` call site there is `SparseWorld.fromSnapshot` re-registering what a save carried."* `git log --all -S 'setParcelOwned' -- src/` names only `a71c955`, the commit that declared it. |
 | 7 | `'medical-supply'` capability | declared `src/content/object-catalog.ts:111` on `object.medicine-cabinet` | **A** | Zero occurrences anywhere else in `src/`. The player can build the cabinet; the capability gates nothing. |
-| 8 | `hud.build.note` | `src/content/default-locale-en.ts:492`, keyed `src/ui/hud/messages.ts:157` | **B** | Its renderer was **deleted**: `67e366e` (2026-08-23, #74) removed the only call site, `children: [submit.element, eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note')]`. |
+| 8 | `hud.build.note` | `src/content/default-locale-en.ts:519`, keyed `src/ui/hud/messages.ts:157` | **B** | Its renderer was **deleted**: `67e366e` (2026-08-23, #74) removed the only call site, `children: [submit.element, eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note')]`. |
 
 **Item 8 is the shape #642 guessed for item 1, and it is the only one that is.**
 The issue put the two findings side by side as *"the same class"*; they are the

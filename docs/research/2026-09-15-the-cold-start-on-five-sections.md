@@ -295,7 +295,7 @@ different ways.**
    **The reading under which this is not a contradiction is stated rather than
    argued away, because it is available and I cannot rule it out from a
    run.** **VERIFIED, read:** the locale comment at
-   `src/content/default-locale-en.ts:1099-1108` says the `RemoveWall` branch
+   `src/content/default-locale-en.ts:1126-1135` says the `RemoveWall` branch
    *"tries the object arm first, so this sentence is only ever what the player
    reads when that arm **also** found nothing … 'none being built there' is
    carried over from `remove-object.*`'s own sentence"*. So `being built` may

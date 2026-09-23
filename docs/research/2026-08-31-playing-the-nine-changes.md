@@ -1021,7 +1021,7 @@ HUD action failed {"actionId":"admit-prisoner","error":{"message":
   `if (viewModel.counts.rooms === 0) throw new Error('This prison has no room to
   hold a prisoner, so nobody can be admitted into it.')`. It never reaches the
   worker.
-- `src/content/default-locale-en.ts:943` — the band's sentence is
+- `src/content/default-locale-en.ts:970` — the band's sentence is
   `hud.refusal.admit-prisoner`, *"Nobody was admitted — the request was
   refused."*, and the family's own comment states the design: *"No sentence here
   names a cause … The cause travels to the host as the thrown `Error`, which is

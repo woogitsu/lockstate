@@ -146,7 +146,7 @@ added the delivery's action-verb pattern without also wiring the actions.
 
 ### 3a. A live risk in the current catalogue, cited
 
-**`'hud.alerts.empty'`: `'No active alerts'`** (`src/content/default-locale-en.ts:541`).
+**`'hud.alerts.empty'`: `'No active alerts'`** (`src/content/default-locale-en.ts:568`).
 
 This is exactly the pair article 5 and the delivery's voice section both name
 by example — *"'Brak incydentów' i 'brak danych' to różne stany"* / *"Nie

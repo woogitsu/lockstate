@@ -293,7 +293,7 @@ are unreachable by this device. That is the same shape as #903 and #928 —
 
 ### 5. The one sentence that teaches the world tool is written for a mouse and a keyboard
 
-**VERIFIED, read.** `src/content/default-locale-en.ts:1216`:
+**VERIFIED, read.** `src/content/default-locale-en.ts:1243`:
 
 > `'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.'`
 

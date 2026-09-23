@@ -103,7 +103,7 @@ the merge's diff:
 - `src/ui/save-panel-delete.ts` exists (`git ls-tree origin/main -- src/ui/`),
   with `pressDeleteConfirmation` at `:91`, `retainDeleteArming` at `:108`,
   `describeSaveAge` at `:161` and `describeDeleteConfirmation` at `:196`.
-- `save.delete.confirm` exists at `src/content/default-locale-en.ts:3260`, and
+- `save.delete.confirm` exists at `src/content/default-locale-en.ts:3287`, and
   `save-panel-messages.ts:154` binds it.
 - `'save.action.delete': 'Delete'` has moved from `:3131` to `:3153` — so even
   the coordinate this document cited for the key that *was* there has drifted,
@@ -415,7 +415,7 @@ would make each state's sentence true:
 
 ## 5. The clause that must change, and in which commit
 
-`save.delete.confirm` (`src/content/default-locale-en.ts:3260`, on `main` since
+`save.delete.confirm` (`src/content/default-locale-en.ts:3287`, on `main` since
 PR #1173 merged as `a29699ff`; **this read "on `agent/1142-delete-confirmation`
 at `08e65d4f`, not yet on `main`"** when it was written eleven hours earlier):
 

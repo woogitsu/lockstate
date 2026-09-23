@@ -147,14 +147,14 @@ that caused it.)
 ### Then the code
 
 - The sentence is `'hud.rooms.needs-doorway': 'a door — nobody can get in'`
-  (`src/content/default-locale-en.ts:2412`), completing the header
+  (`src/content/default-locale-en.ts:2439`), completing the header
   `'hud.rooms.needs-room': '{room} at {x}, {y} is missing'` (`:2367`) under
   `'hud.rooms.needs': 'Not ready'` (`:2361`).
 - It is rendered in exactly one place:
   `if (need.kind === 'doorway') return t(HUD_MESSAGE_KEY.roomsNeedsDoorway);`
   — `src/ui/hud/rooms-panel.ts:1471`. There is no second render site; a
   repository-wide grep for `needs-doorway` finds the key definition
-  (`src/ui/hud/messages.ts:1157`), the locale entry, that render, one browser
+  (`src/ui/hud/messages.ts:1164`), the locale entry, that render, one browser
   spec and one unit test.
 - `src/ui/hud/messages.ts` states the tab-scoping as a property, not an
   accident: *"This block is pulled fresh off the projection while the Rooms tab
@@ -189,7 +189,7 @@ Wall clock for the long run 180 s at load averages 4.94–8.51.
 **The panel contradicts itself, in a reassuring direction.** Two lines under
 *"a door — nobody can get in"* the same panel prints the rule list
 `MUST BE ENCLOSED`, and under that the readout `ENCLOSURE  Walled in on every
-side` — `'hud.rooms.enclosure-sealed'` (`src/content/default-locale-en.ts:2324`),
+side` — `'hud.rooms.enclosure-sealed'` (`src/content/default-locale-en.ts:2351`),
 whose sibling for the failing case is `'Open on at least one side'` (`:2325`).
 In every other context in this panel *"Walled in on every side"* is the pass
 state: it is what the designation gate wants. A player who reads top to bottom

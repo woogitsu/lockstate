@@ -369,7 +369,7 @@ half was already testing the right thing):
 finished object -- bed or wall -- returns nothing when taken away.**
 
 One thing named rather than measured: `hud.build.remove-hint`
-(`src/content/default-locale-en.ts:766`) still reads *"One still being built
+(`src/content/default-locale-en.ts:793`) still reads *"One still being built
 is cancelled and its materials come back; a finished one is not refunded"* --
 the first clause has been false since ruling 20 (an in-progress order returns
 money only while the crew has not started, and nothing once it has) and this

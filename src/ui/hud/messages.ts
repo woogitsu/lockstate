@@ -265,6 +265,13 @@ export const HUD_MESSAGE_KEY = {
    * it formats the chip's own value.
    */
   earnedWithheld: 'hud.status.earned-withheld',
+  /**
+   * The same figure as a badge on the `Earned today` chip, visible without
+   * hovering -- the loudness the description above left to the owner, who
+   * ruled for it on 2026-09-23 (#890, `AGENTS.md` entry 17). Drawn exactly
+   * when `earnedWithheld` is; see `earnedWithheldBadge` in `projection.ts`.
+   */
+  earnedWithheldBadge: 'hud.status.earned-withheld-badge',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',

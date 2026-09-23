@@ -60,7 +60,7 @@ crew is already working before they can react to the row saying so.
 
 ## 1. The row itself: what a player has to go on before pressing Cancel
 
-`src/content/default-locale-en.ts:1141`:
+`src/content/default-locale-en.ts:1168`:
 
 ```
 'hud.build.queue-order': '{buildable} · {x}, {y} · {edge}',
@@ -148,7 +148,7 @@ object to take it away. One still being built is cancelled and its materials
 come back; a finished one is not refunded."
 ```
 
-`src/content/default-locale-en.ts:1070`. **The string itself has carried a
+`src/content/default-locale-en.ts:1097`. **The string itself has carried a
 comment since 2026-08-31 (`:1049-1059`) saying it is false:**
 
 > `remove-hint` IS FALSE AS OF 2026-08-31 AND NO REPLACEMENT IS WRITTEN HERE,

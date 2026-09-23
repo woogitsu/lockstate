@@ -285,7 +285,7 @@ by the tee (92 samples over one run) rather than from the act's own two
 checkpoint reads — see the instrument note below for why those checkpoints
 themselves were vacuous. The series holds a real day boundary at tick 14399
 (the `tick % 2,400 === 2,399` phase both `PayrollSystem`
-(`src/simulation/economy/payroll.ts:227`) and the state-income system
+(`src/simulation/economy/payroll.ts:233`) and the state-income system
 (`src/simulation/economy/income.ts:647`) schedule on), bracketed by the
 closest two published samples:
 

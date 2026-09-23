@@ -120,7 +120,7 @@ derived from `occupiesTileEdge` (`src/ui/hud/view-model.ts:641`), and
 the tile, and the hint names the wrong one.
 
 There is one arm-hint key — `hud.build.arm-hint`
-(`src/content/default-locale-en.ts:1087`) — and `build-panel.ts:1271` swaps it
+(`src/content/default-locale-en.ts:1114`) — and `build-panel.ts:1271` swaps it
 out only for the *Remove* hint:
 
 ```ts
@@ -250,7 +250,7 @@ general — the second press does exactly the right thing.
   the worker tee.
 
 The sentence is `hud.alert.event.construction.undone`
-(`src/content/default-locale-en.ts:883`), and the simulation is emitting it, so
+(`src/content/default-locale-en.ts:910`), and the simulation is emitting it, so
 the kernel believes it undid something. Whatever it undid, it was not the run
 the player had just drawn.
 

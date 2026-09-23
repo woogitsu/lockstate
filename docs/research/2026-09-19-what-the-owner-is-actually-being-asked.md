@@ -268,7 +268,7 @@ no ruling until the draft returns.
 ] },
 ```
 
-Four. The sentence a newcomer gets is `src/content/default-locale-en.ts:3196`:
+Four. The sentence a newcomer gets is `src/content/default-locale-en.ts:3223`:
 
 > `'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',`
 

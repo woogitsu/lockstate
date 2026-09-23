@@ -105,7 +105,7 @@ each was re-found by its text on this tree rather than trusted from either.
 
 - **`Remove` does not claim the job the docblock hands it, and says so.** The
   control's own locale string, `hud.build.remove-hint`
-  (`src/content/default-locale-en.ts:2424`; the anchor read `:1739`, which was
+  (`src/content/default-locale-en.ts:2451`; the anchor read `:1739`, which was
   a *mention* of the key inside another string's docblock rather than the
   declaration, and was re-aimed onto the declaration itself on 2026-09-19 after
   #1292 grew this file, then `:2318` -- the same declaration, before the two
@@ -120,7 +120,7 @@ each was re-found by its text on this tree rather than trusted from either.
   > started it. A finished one is not refunded.
 
   > **AND IT NO LONGER READS THAT WAY, WHICH IS FOUND HERE RATHER THAN FIXED
-  > HERE.** Opened at `src/content/default-locale-en.ts:2362` (now `:2424`) on 2026-09-19
+  > HERE.** Opened at `src/content/default-locale-en.ts:2389` (now `:2424`) on 2026-09-19
   > while re-aiming the anchor above, the string begins *"Press any tile of an
   > object, **or a finished wall**, to take it away"* — the rest is word for
   > word what is quoted. So the sentence under the quotation, *"Every clause is

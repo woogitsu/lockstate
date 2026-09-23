@@ -1159,6 +1159,19 @@ decision about what to build next.
    figure should also be a badge visible without hovering is the owner's, and
    #890 holds it.
 
+   **Settled on 2026-09-23: it is a badge as well** — the owner's ruling on
+   #890, `AGENTS.md` entry 17 (*"Tak, znaczek na pasku (zalecane)"*, the
+   weaker provenance). The chip now carries `hud.status.earned-withheld-badge`
+   (*"{withheld} withheld"*, *"Wstrzymano {withheld}"*) whenever the published
+   figure is above zero, from the same field the description reads, toned
+   `warning` with the chip's own tone left unset. What it costs the strip is
+   measured in `tests/browser/ui-strip-badged-width.spec.ts`: 111.7px at five
+   digits, which fits from 1440 up and pushes `Earned today` off the row at
+   1280 — no shorter form fits the 7.2px of headroom an ordinary prison leaves
+   there, so that overflow is #719's, the owner's. The sentence above
+   (*"what is not settled is loudness"*) is kept as the state this entry
+   described until then.
+
    **Half-answered by #535 decision 6, and the half that moved is the first
    one.** `PrisonerNeedViewModel` now carries `unmetForStateIncome` — computed
    by `isNeedUnmetForStateIncome`, the same predicate `unmetNeedCount` sums to

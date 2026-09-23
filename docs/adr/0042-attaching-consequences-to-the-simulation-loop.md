@@ -373,7 +373,7 @@ both one-off;
 > command rather than by trusting it, and marked rather than rewritten
 > (2026-09-17).** `grep -rn "\.spend(" src/` returns
 > `src/simulation/economy/procurement.ts:386`,
-> `src/simulation/economy/payroll.ts:391` and
+> `src/simulation/economy/payroll.ts:398` and
 > `src/simulation/staff/hiring.ts:217`. The new one is payroll, which is
 > **step 3 of this document's own decision having shipped** — a recurring debit
 > the player cannot decline — so the finding that the economy was monotone is
@@ -642,7 +642,7 @@ revisited to connect it.
 
 *Persistence:* **this is the step with a save-format cost, and it is the reason
 it is not first.** `Treasury` validates non-negative in four places
-(`src/simulation/economy/treasury.ts:707`, `:790`, `:840`, `:864`; those four
+(`src/simulation/economy/treasury.ts:779`, `:790`, `:840`, `:864`; those four
 anchors read `:73`, `:83`, `:120` and `:134`, all docblock lines in what is now a
 900-line file) and the save
 schema pins it: `balanceMinorUnits: z.number().int().nonnegative().safe()`

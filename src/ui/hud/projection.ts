@@ -841,6 +841,35 @@ function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | 
 }
 
 /**
+ * The short form of `earnedWithheldDescription`, on the chip itself, so the
+ * figure is on screen without hovering (issue #890, the owner's ruling of
+ * 2026-09-23 -- *"Tak, znaczek na pasku (zalecane)"*, `AGENTS.md` entry 17).
+ *
+ * **Drawn exactly when the description is**, from the same published field:
+ * `overdraftBadge` and `overdraftDescription` are the precedent, and the
+ * reason is the same -- a number whose explanation is missing, or an
+ * explanation with no number beside it, would be the strip disagreeing with
+ * itself. Absent and `0` both draw nothing, for the reasons the description's
+ * own docblock gives; the ruling says *whenever the field is above zero*.
+ *
+ * **`warning`, not `danger`, and the chip's own `tone` stays unset.** Money
+ * withheld for unmet needs is the ordinary state of a prison that has not yet
+ * built a shower room or a yard -- #890 measured 40% withheld at steady state
+ * in a prison of cells -- so this is the `roomsNotReadyBadge` case: a badge
+ * that puts the number on screen, one signal for one fact, and nothing louder
+ * left over for a state that really is worse. Nobody has set a threshold at
+ * which withholding becomes a failure, and this sets none.
+ *
+ * `numberParameters` for `prisonersWithoutBedBadge`'s reason: a badge that
+ * states a quantity must group it the way the chip above it groups its own.
+ */
+function earnedWithheldBadge(counts: HudCountsViewModel): HudMetricBadge | undefined {
+  const withheld = counts.stateIncomeWithheldTodayMinorUnits;
+  if (withheld === undefined || withheld <= 0) return undefined;
+  return { tone: 'warning', textKey: HUD_MESSAGE_KEY.earnedWithheldBadge, numberParameters: { withheld } };
+}
+
+/**
  * The top strip, left to right.
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
@@ -1267,9 +1296,15 @@ export function projectStatusMetrics(
       capacity: undefined,
       // No tone and no badge, for the same reason `funds` has neither: "a good
       // day" is a threshold, and nobody has set one.
-
+      //
+      // **The tone half still holds; the badge half is overtaken by the
+      // owner's ruling of 2026-09-23 on #890** (`AGENTS.md` entry 17): the
+      // withheld figure gets a badge whenever it is above zero. That badge is
+      // not a "good day" threshold -- it states an amount the simulation
+      // computed, and draws nothing when nothing is withheld -- so the reason
+      // above still refuses what it was written to refuse.
       tone: undefined,
-      badge: undefined,
+      badge: earnedWithheldBadge(counts),
       // **And a description, which is not a tone and not a badge** (issue
       // #890). The two lines above refuse a threshold nobody has set; this
       // states a figure the simulation already computes and the player has no

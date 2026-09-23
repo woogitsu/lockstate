@@ -119,7 +119,7 @@ length — `{understaffed} understaffed · {unguarded} unguarded`, +140px — bu
 `coverageBadge` (`src/ui/hud/projection.ts:368-381`) renders exactly one of
 `Understaffed` / `Unguarded` / nothing (`Covered`), from
 `hud.security.coverage-short` / `-unguarded`
-(`src/content/default-locale-en.ts:2146`, `:2148`). **#719's route 1 is done.**
+(`src/content/default-locale-en.ts:2173`, `:2148`). **#719's route 1 is done.**
 
 **And the overflow persists regardless.** D9 (MEASURED, act 6, post-#723): a
 twelve-prisoner, four-guard prison measured `scrollWidth 1389` in `clientWidth
