@@ -180,7 +180,54 @@
 import { procurableMaterial } from '../../content/procurement-catalog';
 
 /**
- * What a new prison starts with.
+ * What a new prison starts with: **100,000**, the owner's ruling of 2026-09-23.
+ *
+ * **The ruling, and its provenance.** On 2026-08-30 the owner ruled that the
+ * opening balance be raised (#641) and left the figure open; on 2026-09-23,
+ * offered figures, they chose the option labelled *"100 000 (zalecane)"* --
+ * the waste-multiplier measurement's recommendation, the smallest balance it
+ * measured that keeps the drag-wall trap outside ordinary drawing
+ * (`AGENTS.md` entry 14; `docs/research/2026-08-30-the-waste-multiplier.md`).
+ * That is the weaker provenance: an option label this repository wrote, not a
+ * sentence the owner typed. It sets a number and decides nothing else.
+ *
+ * **What it buys, in the game's own units, re-derived at 100,000 from the
+ * shipped catalogue:** 2,500 bricks at 40; about 127 standalone 2×3 cells'
+ * worth of perimeter at 785 each (nine `wall-brick` at 80 and one
+ * `door-wooden` at 65 -- the ten edges of `room.cell`'s authored minimum), or
+ * 117 with a bed in each at 65; and 333 prisoner-days of income at 300
+ * (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`). The drag that used to reach
+ * ADR 0075's lock does so after 1,265 wall segments rather than 328
+ * (`tests/integration/construction-just-in-time-materials.test.ts`).
+ *
+ * **What moves with it, because it is derived from it:** the standing
+ * overdraft (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`, one tenth, now −10,000),
+ * the wage rung (the floor, wherever it is), and the arrears bound
+ * (`ARREARS_BOUND_MINOR_UNITS` in `./payroll.ts`, the floor's magnitude, now
+ * 10,000). The delivery and construction rungs are absolute and did not move.
+ * **What a save keeps, and what it does not, read off the restore path.** A
+ * save with an economy section carries its own `treasury.balanceMinorUnits`,
+ * and `restoreSessionSystems` (`src/simulation/runtime/session-systems.ts`)
+ * writes it over whatever the constructor opened with -- so a saved prison
+ * keeps its balance and only a new session opens on 100,000. Two things are
+ * **not** in a save and do change on reload: the overdraft floor, which
+ * `restoreSimulationRuntime` re-applies through `createNewSimulationRuntime`
+ * (so a reloaded prison has the −10,000 facility), and therefore the arrears
+ * bound. And a save written before the economy existed, with no economy
+ * section, lands on this constant, so it now opens on 100,000
+ * (`tests/migrations/save-v5-negative-balance.test.ts` reads the constant,
+ * not a literal).
+ *
+ * ---
+ *
+ * **Everything below is the docblock this constant carried at 25,000, kept
+ * rather than deleted because its first sentence is the claim both 2026 rulings
+ * overturned.** *"The answer was to keep 25,000"* was true when written and is
+ * **superseded twice**: by the ruling of 2026-08-30 that the balance be raised,
+ * which made it false, and by the ruling of 2026-09-23 that set the figure. The
+ * figures in its second paragraph are the 25,000 readings -- and "22 cells at
+ * 1,105" does not reproduce from today's catalogue, where a 2×3 cell's ten
+ * edges cost 785, so it was a reading of an earlier price list.
  *
  * **No longer a placeholder: 25,000 is the owner's decision, and the decision
  * was to leave it where it was.** It used to say here that this figure should
@@ -200,7 +247,7 @@ import { procurableMaterial } from '../../content/procurement-catalog';
  * of running the place, which is what makes "keep it" a judgement rather than
  * an omission.
  */
-export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
+export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 100_000;
 
 /**
  * How far under water every prison may go, as a standing facility rather than
@@ -212,6 +259,29 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * [ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
  * §2 carries all three readings with what each costs; this is the one that was
  * taken.
+ *
+ * **−10,000 since the owner's ruling of 2026-09-23 set the opening grant to
+ * 100,000 (#641, `AGENTS.md` entry 14).** Every figure below this paragraph
+ * was written when it was −2,500, and they are kept as those readings. What the
+ * move means, stated rather than left for a reader to work out from them:
+ *
+ * - **The worst measured need is cleared by 8.8x rather than 2.2x** (−1,130
+ *   against −10,000). §10a below swept floors from 1,500 to 25,000, so −10,000
+ *   is inside what was measured, and the room a prison *uses* to house anybody
+ *   was identical at every size in it.
+ * - **The build-queue reason not to raise this number no longer scales with
+ *   it.** It was written while the queue spent at this floor. Since ruling 19
+ *   and the #771 equalisation, the queue spends at the `'construction'` rung,
+ *   −1,250, an absolute number that `Treasury.floorFor` clamps only *up* to
+ *   this floor -- so a standing queue still stops at −1,250 whatever this is.
+ * - **What does scale with it now is payroll.** The wage rung is this floor, so
+ *   a mature prison's wages are paid out of the overdraft down to −10,000
+ *   rather than −2,500 before a payday is missed -- measured, the
+ *   over-committed prison in `tests/integration/economy-payroll-loop.test.ts`
+ *   misses its first payday on day 24 rather than day 10 -- and the arrears
+ *   bound, which is this floor's magnitude, is 10,000. Neither was a separate
+ *   decision: both follow from the derivation the next paragraph defends, and
+ *   ruling 19's table puts the third rung *"(the floor)"*.
  *
  * **One tenth of the opening grant, and the derivation is the point.** It is
  * `-TREASURY_STARTING_BALANCE_MINOR_UNITS / 10` and not a literal, so it moves
@@ -406,7 +476,8 @@ export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_DE
  *
  * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
  * "no rung of its own above the treasury's floor".** Ruling 19 puts the third
- * rung *at* the floor (−2,500 today), and the floor already has an owner --
+ * rung *at* the floor (−2,500 when this was written; −10,000 since the grant
+ * of 2026-09-23), and the floor already has an owner --
  * `Treasury.setOverdraftFloor`, fed by `createNewSimulationRuntime` from
  * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`. Writing −2,500 here would be a second
  * copy of a number that is already defined once, and the two copies would
@@ -493,8 +564,9 @@ const STARTER_PLANK_PRICE_MINOR_UNITS = procurableMaterial('item.wood-plank')!.u
  * construction order never needs more than one plank (`BUILDABLE_REGISTRY`'s
  * two sleep-surface rows both cost exactly one `item.wood-plank`, pinned in
  * the hard-lock test) and that `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` stays at
- * least as deep as `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` (today
- * −2,500 against −1,250, 1,250 minor units of margin) — `Treasury.floorFor`'s
+ * least as deep as `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` (−2,500
+ * against −1,250, 1,250 minor units of margin, when written; −10,000 against
+ * −1,250, 8,750 of margin, since the grant of 2026-09-23) — `Treasury.floorFor`'s
  * clamp would otherwise pull construction's rung shallower than −1,250 and the
  * 65-unit gap this constant relies on would close. Both are measured facts
  * about the shipped catalogue and the shipped constant, not proved for all

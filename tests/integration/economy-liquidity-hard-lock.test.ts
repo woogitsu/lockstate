@@ -219,16 +219,23 @@ const SEED = 0x0ec002;
  * untouched -- it is still `[rung, rung + 65)` in the balance, 65 wide -- and
  * only where it sits has moved, which is the same correction #703 ruling A made
  * to the same sentence one ruling earlier.
+ *
+ * **10,000 since the owner's ruling of 2026-09-23 set the grant to 100,000
+ * (#641)**, one tenth of it -- and the overdraft *has* moved this time. It
+ * reaches no case in this file except through the wage rung: every press is
+ * bounded by a delivery rung, which did not move, and the two brick counts
+ * below grow by exactly the 75,000 the grant did, which by the arithmetic of 40
+ * lands both on the same balances they always did.
  */
-const OVERDRAFT_ROOM = 2_500;
+const OVERDRAFT_ROOM = 10_000;
 /**
  * The first rung, which is what bounds a press (ruling 19). Written out and
  * pinned beside `OVERDRAFT_ROOM` for the same reason.
  */
 const DELIVERY_RUNG_ROOM = 1_250;
-/** 26,250 / 40, rounded down: the largest whole brick order a new prison can press. */
-const BRICKS_TO_THE_RUNG = 656;
-/** 25,000 - 656 x 40. The 10 that is left is unspendable on a 65 plank, exactly as the pre-ruling 40 was. */
+/** 101,250 / 40, rounded down: the largest whole brick order a new prison can press. It was 26,250 / 40 = 656 at the 25,000 grant. */
+const BRICKS_TO_THE_RUNG = 2_531;
+/** 100,000 - 2,531 x 40 (25,000 - 656 x 40 before 2026-09-23). The 10 that is left is unspendable on a 65 plank, exactly as the pre-ruling 40 was. */
 const BALANCE_AT_THE_RUNG = -1_240;
 /**
  * The owner's second ruling on #771 (2026-09-01): the starter rung shifts a
@@ -240,13 +247,13 @@ const BALANCE_AT_THE_RUNG = -1_240;
  */
 const STARTER_RUNG_ROOM = DELIVERY_RUNG_ROOM - 65;
 /**
- * 26,185 / 40, rounded down: the largest whole brick order a **fresh,
+ * 101,185 / 40 (26,185 / 40 = 654 at the 25,000 grant), rounded down: the largest whole brick order a **fresh,
  * unfurnished** prison can press under the shallower starter rung — three
  * fewer than `BRICKS_TO_THE_RUNG`, because the starter rung stops the press
  * before it ever reaches the neighbourhood the mature rung's own 656 does.
  */
-const STARTER_BRICKS_TO_THE_RUNG = 654;
-/** 25,000 - 654 x 40. 25 of press room left: short of a 65 plank via a second press, and exactly enough for one at the unaffected construction rung. */
+const STARTER_BRICKS_TO_THE_RUNG = 2_529;
+/** 100,000 - 2,529 x 40, and 25,000 - 654 x 40 before the grant of 2026-09-23 (#641) -- the same balance. 25 of press room left: short of a 65 plank via a second press, and exactly enough for one at the unaffected construction rung. */
 const STARTER_BALANCE_AT_THE_RUNG = -1_160;
 const CELL = 'room.cell';
 /** `room.cell`'s authored minimum, the rectangle every object fixture in this repository uses. */
@@ -270,7 +277,8 @@ const stockOf = (runtime: SimulationRuntime, itemId: string): number =>
 
 describe('the treasury spent to nothing on one legal purchase (ECON-002)', () => {
   it('pins every figure the sequences below are written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    // 25,000 until the owner's ruling of 2026-09-23 (#641).
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(procurableMaterial('item.brick')?.unitPriceMinorUnits).toBe(40);
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
     /*
@@ -453,7 +461,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     ]);
   });
 
-  it('spends the grant and the starter rung on 654 bricks, and the ECON-002 lock stays shut since the owner`s second ruling on #771', () => {
+  it('spends the grant and the starter rung on 2,529 bricks, and the ECON-002 lock stays shut since the owner`s second ruling on #771', () => {
     /*
      * **The title said "25,000 on 625 bricks", then "687 bricks" (#703 ruling
      * A), then "656 bricks and the ECON-002 lock reopens since #771 equalised
@@ -481,7 +489,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * "this press is now refused" is itself half of the proof.
      */
     const runtime = createNewSimulationRuntime(SEED);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the facility is standing, unpressed').toBe(-OVERDRAFT_ROOM);
 
     // The exact press that used to reach ECON-002 (quoted above) is refused
@@ -492,7 +500,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       runtime.refusals.last?.reason,
       'a fresh, unfurnished prison cannot press its way to the balance that used to lock it',
     ).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits, 'refused outright -- nothing was spent').toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits, 'refused outright -- nothing was spent').toBe(100_000);
 
     // The largest press a fresh, unfurnished prison **can** make: 654 bricks,
     // landing on -1,160 -- 25 short of the mature rung, not 10, because the
@@ -810,7 +818,14 @@ describe('the same lock reached by a charge the player cannot decline', () => {
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
     // and it never presses a purchase again.
-    send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 616 });
+    //
+    // **2,491 bricks since the owner's ruling of 2026-09-23 set the grant to
+    // 100,000 (#641)**: 99,640, which keeps the same 360. At two bricks a
+    // segment that is 1,245 segments, which still fits the 1,922 wall edges of
+    // the starter chunk (see the drag case in
+    // `tests/integration/construction-just-in-time-materials.test.ts`). The
+    // walk from 360 is what this case is about, and it is unchanged.
+    send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 2_491 });
     expect(runtime.treasury.balanceMinorUnits).toBe(360);
 
     send(runtime, 'hire', { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
@@ -867,22 +882,32 @@ describe('the same lock reached by a charge the player cannot decline', () => {
      * exactly 2,500 instead -- forgiven, per decision 3(c)'s own words,
      * rather than deferred.
      */
-    stepTo(runtime, 34 * 2_400);
+    /*
+     * **The bound is 10,000 since the owner's ruling of 2026-09-23 set the
+     * grant to 100,000 (#641)** -- it derives from the floor -- so the steps
+     * above, at days 34, 35 and 40 against 2,500, are re-taken where the new
+     * bound binds. At 25,000 they read 2,450, then 2,530 capped to 2,500, then
+     * 2,500. From 690 on day 12, 80 a day: 690 + 116 x 80 = 9,970 on day 128,
+     * one payday short, and day 129's 80 would land on 10,050, capped to
+     * exactly 10,000 -- forgiven, not deferred.
+     */
+    stepTo(runtime, 128 * 2_400);
     expect(runtime.treasury.balanceMinorUnits, 'the reserve holds: no payday may pass it while unfurnished').toBe(-55);
-    expect(runtime.payroll.unpaidWagesMinorUnits, '690 + 22 whole paydays at 80').toBe(2_450);
+    expect(runtime.payroll.unpaidWagesMinorUnits, '690 + 116 whole paydays at 80').toBe(9_970);
 
-    stepTo(runtime, 35 * 2_400);
+    stepTo(runtime, 129 * 2_400);
     expect(runtime.treasury.balanceMinorUnits).toBe(-55);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'the bound: 2,450 + 80 would be 2,530, forgiven down to 2,500').toBe(
-      2_500,
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the bound: 9,970 + 80 would be 10,050, forgiven down to 10,000').toBe(
+      10_000,
     );
 
-    stepTo(runtime, 40 * 2_400);
+    stepTo(runtime, 134 * 2_400);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'and it stays there -- nothing past the bound is ever remembered').toBe(
-      2_500,
+      10_000,
     );
 
-    // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (-2,500) is cited here rather than
+    // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (-2,500 then, -10,000 since
+    // 2026-09-23) is cited here rather than
     // silently dropped: it is what this same fixture reached under ruling 19
     // alone, and it is now unreachable for as long as this prison stays
     // unfurnished, which is exactly ADR 0096 decision 2's point.

@@ -423,6 +423,15 @@ and ADR 0075 decision 1's development grant — already Accepted, and what the
 costing recommended first — is still the thing that closes it. A larger opening
 balance postpones; the grant restores.
 
+> **Dated note, 2026-09-23: the owner took this recommendation** (#641,
+> `AGENTS.md` entry 14; an option labelled *"100 000 (zalecane)"*). The table
+> above divides the grant alone by 80, which is how it was measured here; the
+> kernel since measures the lock as the grant *plus* the construction rung's
+> 1,250, so the drag reaches it after **1,265** segments at 100,000 rather than
+> 1,250 (`tests/integration/construction-just-in-time-materials.test.ts`, the
+> drag case). The overdraft floor moved with the grant, from −2,500 to −10,000.
+> Nothing in this record's measurement is re-run by that note.
+
 ## 8. What was not reached
 
 - **Real players.** Every mistake here was scripted by me. §9.

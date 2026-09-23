@@ -555,17 +555,27 @@ describe('cancelling one order by id, which is the command this read model exist
      * more at the (freshness-unaffected) wage rung is still **-1,930** -- the
      * same target the mature derivation reached, from one fewer plank and 65
      * more at the wage rung.
+     *
+     * **The owner's ruling of 2026-09-23 set the opening grant to 100,000
+     * (#641), and the two figures above that were written from 25,000 are
+     * re-derived rather than kept.** A fresh press may now spend 101,185.
+     * 101,130 is not a whole number of planks, so the -1,130 above is not
+     * reachable from this grant: 1,556 planks at 65 is 101,140, leaving
+     * **-1,140**, ten deeper and still inside the starter rung's -1,185. 790
+     * more at the wage rung lands on the same **-1,930** every assertion below
+     * is written against, so what this case measures -- a wall's 80 against no
+     * construction room at all -- is unchanged.
      */
     const runtime = createNewSimulationRuntime(SEED);
     runtime.kernel.submitCommand(
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 402 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 1_556 }),
     );
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 402 x 65, which is the starter delivery rung').toBe(-1_130);
-    expect(runtime.treasury.spend(800, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits, '100,000 - 1,556 x 65, inside the starter delivery rung').toBe(-1_140);
+    expect(runtime.treasury.spend(790, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
 
     // Dated at the tick the kernel has reached rather than at 0, because the
     // wage-rung drain above had to happen after the purchase was dispatched and

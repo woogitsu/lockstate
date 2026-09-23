@@ -92,6 +92,20 @@ const WALL_COST = 80;
 /** The thirteen orders the playtest read as *"Waiting for 1,040 to buy materials."* at the bottom. */
 const UNFUNDED_TAIL = 13;
 const STANDING_SHORTFALL = UNFUNDED_TAIL * WALL_COST;
+/**
+ * The wall segments the opening grant pays for before the tail, and what it
+ * leaves over.
+ *
+ * **312 and 40 at the 25,000 grant** -- `floor(25,000 / 80)` and its remainder,
+ * which is the "312 x 80 of 25,000" and the "40" every paragraph in this file
+ * quotes. **1,250 and 0 since the owner's ruling of 2026-09-23 set the grant to
+ * 100,000 (#641)**: 100,000 is a whole number of walls, so the grant is spent
+ * to the minor unit and the position at the bottom is the tail alone,
+ * -1,040, rather than -1,000. Re-measured through the real router: all 1,263
+ * segments stand by the end of day 32 and nothing is refused.
+ */
+const FUNDED_SEGMENTS = 1_250;
+const GRANT_REMAINDER = 0;
 
 interface Edge {
   readonly x: number;
@@ -152,17 +166,19 @@ function lockedPosition(): LockedPosition {
   const ring = cellRingEdges();
   const doorway = ring[ring.length - 1] as Edge;
   const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
-  for (let index = 0; index < 312; index += 1) {
+  for (let index = 0; index < FUNDED_SEGMENTS; index += 1) {
     send(runtime, { type: 'PlaceBuildOrder', orderId: `wall-${String(index)}`, definitionId: 'wall-brick', ...(order[index] as Edge) });
   }
   const unfunded: string[] = [];
   for (let extra = 0; extra < UNFUNDED_TAIL; extra += 1) {
     const orderId = `tail-${String(extra)}`;
-    send(runtime, { type: 'PlaceBuildOrder', orderId, definitionId: 'wall-brick', ...(order[312 + extra] as Edge) });
+    send(runtime, { type: 'PlaceBuildOrder', orderId, definitionId: 'wall-brick', ...(order[FUNDED_SEGMENTS + extra] as Edge) });
     unfunded.push(orderId);
   }
-  // Twenty in-game days: long enough for all 312 funded segments to stand.
-  stepDays(runtime, 20);
+  // Twenty in-game days were long enough for all 312 funded segments to stand.
+  // 1,263 segments are all standing by the end of day 32, measured; forty
+  // leaves margin.
+  stepDays(runtime, 40);
   return { runtime, doorway, unfunded };
 }
 
@@ -218,24 +234,25 @@ describe('the locked position, reached by playing into it', () => {
     const { runtime } = lockedPosition();
 
     // 325 x 80 = 26,000, against 25,000 of grant: 1,000 of the facility spent.
-    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + 40);
+    // Since 2026-09-23: 1,263 x 80 = 101,040 against 100,000, 1,040 spent.
+    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + GRANT_REMAINDER);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(0);
     const states: Record<string, number> = {};
     for (const order of runtime.construction.snapshot().orders) states[order.state] = (states[order.state] ?? 0) + 1;
     expect(states, 'the tail the grant could not reach was bought with no press').toEqual({
-      completed: 312 + UNFUNDED_TAIL,
+      completed: FUNDED_SEGMENTS + UNFUNDED_TAIL,
     });
 
     // The press the old case watched being refused.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'plank', itemId: 'item.wood-plank', quantity: 1 });
-    expect(runtime.refusals.last, 'a plank is affordable out of the 1,500 of room left').toBeUndefined();
-    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + 40 - 65);
+    expect(runtime.refusals.last, 'a plank is affordable out of the room left').toBeUndefined();
+    expect(runtime.treasury.balanceMinorUnits).toBe(-STANDING_SHORTFALL + GRANT_REMAINDER - 65);
 
     // Stationary, which is the half that has not changed: no bed, so no income,
     // so nothing moves the balance in either direction.
     stepDays(runtime, 20);
     expect(runtime.treasury.balanceMinorUnits, 'twenty more in-game days and nothing moves').toBe(
-      -STANDING_SHORTFALL + 40 - 65,
+      -STANDING_SHORTFALL + GRANT_REMAINDER - 65,
     );
   }, 30_000);
 
@@ -297,13 +314,19 @@ describe('what a loan does to the locked position, and what it does not', () => 
      * spendable.
      */
     runtime.loans?.draw(1_000, runtime.kernel.tick);
-    expect(runtime.treasury.balanceMinorUnits, 'the principal, on top of -1,000').toBe(0);
+    // 0 on top of -1,000 at the 25,000 grant; -40 on top of -1,040 since the
+    // grant of 2026-09-23 (#641).
+    expect(runtime.treasury.balanceMinorUnits, 'the principal, on top of the position').toBe(
+      -STANDING_SHORTFALL + GRANT_REMAINDER + 1_000,
+    );
 
     const { zoneRefusal } = furnishCell(runtime, doorway, 1);
 
     expect(zoneRefusal, 'the door is affordable now, so the rectangle is a room').toBeUndefined();
     expect(runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)?.residentCapacity).toBe(1);
-    expect(runtime.treasury.balanceMinorUnits, 'a door at 65 and a bed at 65, out of the principal').toBe(-130);
+    expect(runtime.treasury.balanceMinorUnits, 'a door at 65 and a bed at 65, out of the principal').toBe(
+      -STANDING_SHORTFALL + GRANT_REMAINDER + 1_000 - 130,
+    );
 
     send(runtime, { type: 'AdmitPrisoner', ...ARRIVAL, sentenceLengthTicks: 5_000_000, priorIncidents: 0 });
     stepDays(runtime, 5);
@@ -344,11 +367,12 @@ describe('what a loan does to the locked position, and what it does not', () => 
     const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
     const ring = cellRingEdges();
     const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
-    for (let index = 0; index < 312; index += 1) {
+    for (let index = 0; index < FUNDED_SEGMENTS; index += 1) {
       send(runtime, { type: 'PlaceBuildOrder', orderId: `wall-${String(index)}`, definitionId: 'wall-brick', ...(order[index] as Edge) });
     }
-    stepDays(runtime, 20);
-    expect(runtime.treasury.balanceMinorUnits, '312 x 80 of 25,000, and the facility untouched').toBe(40);
+    stepDays(runtime, 40);
+    // `toBe(40)`, "312 x 80 of 25,000", before the grant of 2026-09-23.
+    expect(runtime.treasury.balanceMinorUnits, '1,250 x 80 of 100,000, and the facility untouched').toBe(GRANT_REMAINDER);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the whole of it still standing').toBe(
       TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
     );
@@ -369,7 +393,7 @@ describe('what a loan does to the locked position, and what it does not', () => 
       // unchanged because none of the thirteen was ever funded, so there is
       // no delivery in flight for `cancelOrder` to turn into a refund.
       'cancelling after the fact gives back nothing, because nothing was ever spent on the unfunded tail',
-    ).toBe(-STANDING_SHORTFALL + 40);
+    ).toBe(-STANDING_SHORTFALL + GRANT_REMAINDER);
   }, 60_000);
 
   it('houses a prisoner on the second day once the loan clears the queue as well as the plank', () => {

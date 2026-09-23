@@ -204,6 +204,12 @@ export interface PayrollResidencySource {
  * that it is already the size of 'what this prison may owe' in the one other
  * place the repository states such a number."*
  *
+ * **10,000 since the owner's ruling of 2026-09-23 set the opening grant to
+ * 100,000 (#641)**, and that is this derivation working rather than a new
+ * decision: the floor is a tenth of the grant and this is the floor's
+ * magnitude, so both moved together. The 2,500 in the quotation above is the
+ * figure ADR 0096 named at the 25,000 grant.
+ *
  * **Derived from `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` rather than written
  * out a second time**, for the reason every other rung in this corpus derives
  * rather than duplicates: two constants holding the same value by coincidence
@@ -356,7 +362,8 @@ export class PayrollSystem implements SystemRegistration {
      * 0017 decision 8's third rung reachable"*. Under a single floor that was
      * right — a payroll that drew on the overdraft would have had no rung of
      * its own at all. Ruling 19 gives it one: **wages are unpaid below −2,500**,
-     * which is the floor, so the third rung is reached by drawing down to it
+     * which is the floor (−10,000 since the grant of 2026-09-23, #641; the rung
+     * is the floor wherever the floor is), so the third rung is reached by drawing down to it
      * rather than by refusing to draw at all.
      *
      * `floorFor('wages')` and not `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`: the

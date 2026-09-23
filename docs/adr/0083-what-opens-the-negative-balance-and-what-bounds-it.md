@@ -535,6 +535,16 @@ Three things recommend it and one warns against it:
   that sweep is run**, and whoever implements this must run it and report if
   −2,500 is wrong rather than shipping it on this paragraph's authority.
 
+> **Dated note, 2026-09-23.** The rule is unchanged and the value it gives is
+> not: the owner set the opening grant to 100,000 (#641, `AGENTS.md` entry 14),
+> so one tenth of it is **−10,000**, not `-2_500`. The derivation in
+> `src/simulation/economy/treasury.ts` moved it with the grant, as this section
+> intended. The unmeasured band below −1,500 that this section warns about is
+> now wider; `tests/integration/economy-payroll-loop.test.ts` and
+> `tests/integration/economy-insolvency-ladder.test.ts` re-measure the ladder
+> down to −10,000 and it stays bounded there, which is a measurement of those
+> fixtures and not the §10 sweep this section asks for.
+
 ### 3. `escalatedDiversionRateBasisPoints` is proposed at **5,000 bp (50%)**, and is not set here
 
 Ruled terms 25% / 15% / 45 days leave the fourth member open. 50% is *"the

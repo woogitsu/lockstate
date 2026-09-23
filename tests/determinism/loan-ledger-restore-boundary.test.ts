@@ -182,9 +182,14 @@ describe('a negative balance survives a save, and the debt that produced it does
     // session reached rather than one assigned to it.
     const spendable = runtime.treasury.balanceMinorUnits - floor;
     const walls = Math.floor(spendable / WALL_COST);
+    // North edges from row 12 held the 25,000 grant's ~310 walls. The owner's
+    // ruling of 2026-09-23 set the grant to 100,000 (#641), which is ~1,250
+    // walls, so the sweep takes both edges of every tile from row 11 down --
+    // clear of the cell, whose ring ends on row 9 -- which is 1,302 edges.
     const edges: Edge[] = [];
-    for (let y = 12; y < 32 && edges.length < walls; y += 1) {
+    for (let y = 11; y < 32 && edges.length < walls; y += 1) {
       for (let x = 1; x < 32 && edges.length < walls; x += 1) edges.push({ x, y, edge: 'north' });
+      for (let x = 1; x < 32 && edges.length < walls; x += 1) edges.push({ x, y, edge: 'west' });
     }
     expect(edges.length, 'the sweep must be able to place every wall the money reaches').toBe(walls);
     edges.forEach((edge, index) => {

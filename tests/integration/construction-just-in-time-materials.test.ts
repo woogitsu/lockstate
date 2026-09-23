@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
+  INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
@@ -34,7 +35,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * ## What every figure here is written from
  *
- * `wall-brick` needs 2 `item.brick`, a brick is 40, a prison opens on 25,000.
+ * `wall-brick` needs 2 `item.brick`, a brick is 40, a prison opens on 25,000
+ * -- **100,000 since the owner's ruling of 2026-09-23 (#641)**, the one of the
+ * three that moved; every figure written from it below is re-derived and says
+ * so where it stands.
  * Those three are pinned as literals in the first case and every arithmetic
  * below is written out from them rather than read back off the code — a
  * balance computed from a price the code under test supplied would agree with
@@ -129,14 +133,14 @@ function placeWalls(runtime: SimulationRuntime, count: number): string[] {
 
 describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () => {
   it('pins the three figures every case below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(BRICKS_PER_WALL).toBe(2);
     expect(BRICK_PRICE).toBe(40);
     expect(BRICKS_PER_WALL * BRICK_PRICE).toBe(WALL_COST);
     expect(PLANK_PRICE).toBe(65);
   });
 
-  it('builds the owner\'s forty walls with 25,000 in the bank and no Buy press at all', () => {
+  it('builds the owner\'s forty walls with the opening grant in the bank and no Buy press at all', () => {
     /*
      * #627, played. Forty orders, an empty container, and not one
      * `PurchaseMaterials` command in the stream.
@@ -152,8 +156,8 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
     placeWalls(runtime, 40);
 
     // 40 x 2 bricks at 40 = 3,200, spent at the press and not a minor unit more.
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 40 * WALL_COST);
-    expect(runtime.treasury.balanceMinorUnits).toBe(21_800);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000 - 40 * WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits).toBe(96_800);
     expect(
       runtime.procurement.pendingDeliveries.reduce((total, delivery) => total + delivery.quantity, 0),
       'eighty bricks are on their way, and none of them is here yet',
@@ -166,7 +170,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
 
     expect(statesOf(runtime), 'every wall the owner drew is standing').toEqual({ completed: 40 });
     expect(stockOf(runtime, BRICK), 'and nothing was over-bought').toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(21_800);
+    expect(runtime.treasury.balanceMinorUnits).toBe(96_800);
   });
 
   it('buys nothing for a player who bought the bricks themselves', () => {
@@ -183,7 +187,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
     const runtime = createNewSimulationRuntime(SEED);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 40 });
     const afterOwnPurchase = runtime.treasury.balanceMinorUnits;
-    expect(afterOwnPurchase).toBe(25_000 - 40 * BRICK_PRICE);
+    expect(afterOwnPurchase).toBe(100_000 - 40 * BRICK_PRICE);
 
     // In flight.
     for (let index = 0; index < 10; index += 1) {
@@ -231,7 +235,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
       ['jit:0:item.brick:0', BRICK, 2],
       ['jit:0:item.brick:2', BRICK, 2],
     ]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 2 * WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000 - 2 * WALL_COST);
 
     step(runtime, 4_000);
     expect(statesOf(runtime), 'both walls, not one').toEqual({ completed: 2 });
@@ -340,8 +344,15 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * (2026-09-01).** `prisonWith`'s press is now 402 planks against the starter
    * rung rather than 403 against the mature one (see its own docblock), so
    * `-1,930 + 402 x 65 = 24,200` is what the cancelled delivery hands back.
+   *
+   * **99,210 since the owner's ruling of 2026-09-23 set the opening grant to
+   * 100,000 (#641).** The press is now `floor((100,000 + 1,185) / 65)` = 1,556
+   * planks, leaving -1,140 before the wage-rung stretch, so the cancelled
+   * delivery hands back `-1,930 + 1,556 x 65 = 99,210`. `CANNOT_FUND_A_WALL`
+   * does not move: the wage-rung stretch is 790 instead of 855, and it still
+   * lands on -1,930.
    */
-  const REFUNDED_BALANCE = 24_200;
+  const REFUNDED_BALANCE = 99_210;
 
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
@@ -499,7 +510,8 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
      * only the press is a delivery there is anything to cancel. What the refund
      * has to do for this case is put the prison back above a wall's 80, and it
      * does that with 24,200 to spare (see `REFUNDED_BALANCE`'s own docblock for
-     * why 24,200 and not 24,265).
+     * why 24,200 and not 24,265, and why 99,210 since the grant moved to 100,000
+     * on 2026-09-23).
      */
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'order-buy' });
     expect(runtime.treasury.balanceMinorUnits).toBe(REFUNDED_BALANCE);
@@ -643,8 +655,14 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * always measured, at the rung the queue itself now sits at. The prison
      * holds bricks a bed cannot use either way, which is the property the
      * fixture was chosen for.
+     *
+     * **2,529 bricks since the owner's ruling of 2026-09-23 set the grant to
+     * 100,000 (#641).** The largest press is now `floor(101,185 / 40)` = 2,529,
+     * and `100,000 - 2,529 x 40` is **-1,160** -- the same balance, because
+     * 101,185 and 26,185 are both 25 over a multiple of 40. Everything after the
+     * press is unchanged to the minor unit.
      */
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 654 });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 2_529 });
     expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches while fresh and unfurnished').toBe(-1_160);
     expect(runtime.treasury.spend(70, 'wages'), 'and the rest, the way a payday would').toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(-1_230);
@@ -1024,14 +1042,37 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      */
     const runtime = createNewSimulationRuntime(SEED);
 
+    /*
+     * **The owner's ruling of 2026-09-23 set the opening grant to 100,000
+     * (#641, `AGENTS.md` entry 14), and the lock moves roughly four times
+     * further out without going away.** Every figure above is the 25,000
+     * reading and is kept. The queue's spending power is now
+     * 100,000 + 1,250 = 101,250:
+     *
+     *   floor(101,250 / 80) = 1,265 wall segments, leaving 50 of the rung.
+     *
+     * 1,265 is more segments than the old 28-wide tile layout could hold, so
+     * the walk is over tile *edges* now -- a wall order names the `north` or
+     * `west` edge of a tile, and the one 32x32 chunk a new prison owns has
+     * 1,922 of them inside its border, the same set
+     * `tests/integration/economy-loan-recovery.test.ts`'s `fillerEdges` walks.
+     * So the drag still reaches the lock on the land a new prison already
+     * owns, about two thirds of the way through every edge it has. That is the
+     * waste-multiplier measurement's reason for recommending 100,000 -- the
+     * trap outside ordinary drawing, not closed -- measured through the kernel
+     * rather than in screenfuls.
+     */
+    const edges: { readonly x: number; readonly y: number; readonly edge: 'north' | 'west' }[] = [];
+    for (let y = 1; y < 32; y += 1) {
+      for (let x = 1; x < 32; x += 1) {
+        edges.push({ x, y, edge: 'north' }, { x, y, edge: 'west' });
+      }
+    }
     let funded = 0;
     let firstRefusedAt = -1;
-    for (let index = 0; index < 360; index += 1) {
-      const orderId = `order-${String(index).padStart(3, '0')}`;
-      send(
-        runtime,
-        { type: 'PlaceBuildOrder', orderId, definitionId: WALL, x: 2 + (index % 28), y: 2 + Math.floor(index / 28) },
-      );
+    for (let index = 0; index < 1_300; index += 1) {
+      const orderId = `order-${String(index).padStart(4, '0')}`;
+      send(runtime, { type: 'PlaceBuildOrder', orderId, definitionId: WALL, ...edges[index]! });
       if (runtime.justInTimeMaterials.lastReport.unfunded.length === 0) funded += 1;
       else if (firstRefusedAt < 0) firstRefusedAt = index;
     }
@@ -1064,13 +1105,20 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      * only the number under it moves. See
      * `tests/integration/economy-liquidity-hard-lock.test.ts` for what this
      * means for ADR 0075's lock on the exact fixture that used to escape it.
+     *
+     * The assertions below read 328, 328 and -1,240 at the 25,000 grant.
      */
-    expect(funded, '(25,000 + 1,250) / 80').toBe(328);
-    expect(firstRefusedAt, 'zero-based, so the 329th wall is the first the game refuses to buy for').toBe(328);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 328 x 80').toBe(-1_240);
+    const segmentsToTheLock = Math.floor(
+      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS) / WALL_COST,
+    );
+    expect(segmentsToTheLock, '(100,000 + 1,250) / 80, the lock by arithmetic').toBe(1_265);
+    expect(edges.length, 'and the starter chunk has more wall edges than that').toBeGreaterThan(segmentsToTheLock);
+    expect(funded, '(100,000 + 1,250) / 80').toBe(1_265);
+    expect(firstRefusedAt, 'zero-based, so the 1,266th wall is the first the game refuses to buy for').toBe(1_265);
+    expect(runtime.treasury.balanceMinorUnits, '100,000 - 1,265 x 80').toBe(-1_200);
     expect(
       runtime.treasury.canAfford(PLANK_PRICE, 'construction'),
-      'and the 10 of room still standing is below the 65 that would end this',
+      'and the 50 of room still standing is below the 65 that would end this',
     ).toBe(false);
 
     // The lock itself, confirmed rather than inferred: the one thing that
@@ -1080,7 +1128,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
     // queue can do something a Buy press cannot.
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-plank', itemId: PLANK, quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_240);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_200);
   });
 });
 
@@ -1123,13 +1171,13 @@ describe('the money loop this must not create (ADR 0076)', () => {
 
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4, transactionId: 'gesture-1' });
     const afterPlacing = runtime.treasury.balanceMinorUnits;
-    expect(afterPlacing).toBe(25_000 - WALL_COST);
+    expect(afterPlacing).toBe(100_000 - WALL_COST);
 
     // Round trip while the delivery is still in flight, which is the only
     // window in which a naive "cancel the purchase too" would do anything.
     send(runtime, { type: 'Undo' });
     expect(runtime.construction.getOrder('order-a')?.state).toBe('cancelled');
-    expect(runtime.treasury.balanceMinorUnits, 'the crew had not started, so the money came back').toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits, 'the crew had not started, so the money came back').toBe(100_000);
     expect(runtime.procurement.pendingDeliveries, 'and the delivery it had bought was turned around').toHaveLength(0);
 
     send(runtime, { type: 'Redo' });
@@ -1145,7 +1193,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
       creditSpy.mock.calls.map(([amount]) => amount),
       'two cancellations, two refunds, each of exactly one wall',
     ).toEqual([WALL_COST, WALL_COST]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
 
     // And past the delivery, where nothing lands because nothing is still paid
     // for -- which is what makes the refund survive the clock (#687's failure
@@ -1153,7 +1201,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 20);
     expect(stockOf(runtime, BRICK), 'no bricks, because none were paid for').toBe(0);
     expect(creditSpy.mock.calls, 'and nothing paid a third time').toHaveLength(2);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
   });
 
   it('does not buy a second time for an order that is undone and redone', () => {
@@ -1199,7 +1247,7 @@ describe('a save taken mid-purchase', () => {
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     step(runtime, 20);
     expect(runtime.procurement.pendingDeliveries, 'the save must be taken mid-flight for this to mean anything').toHaveLength(1);
-    const spentBefore = 25_000 - runtime.treasury.balanceMinorUnits;
+    const spentBefore = 100_000 - runtime.treasury.balanceMinorUnits;
 
     const bundle = captureSessionSnapshot(runtime);
     const restored = restoreSimulationRuntime(bundle, SEED).runtime;
@@ -1209,7 +1257,7 @@ describe('a save taken mid-purchase', () => {
 
     step(restored, 4_000);
     expect(restored.construction.getOrder('order-a')?.state).toBe('completed');
-    expect(25_000 - restored.treasury.balanceMinorUnits, 'the restored session paid nothing further').toBe(spentBefore);
+    expect(100_000 - restored.treasury.balanceMinorUnits, 'the restored session paid nothing further').toBe(spentBefore);
     expect(spentBefore).toBe(WALL_COST);
   });
 });

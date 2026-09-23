@@ -40,8 +40,14 @@ import {
  * refused build order. This file is the arithmetic.
  */
 
-/** The shipped facility, pinned so a change to it fails here with the reason named. */
-const FLOOR = -2_500;
+/**
+ * The shipped facility, pinned so a change to it fails here with the reason named.
+ *
+ * It was `-2_500`, one tenth of a 25,000 grant, and it failed here by name on
+ * 2026-09-23 when the owner set the grant to 100,000 (#641, `AGENTS.md` entry
+ * 14) -- which is this pin doing its job.
+ */
+const FLOOR = -10_000;
 
 /**
  * **The floor a *press* is judged against, which since the owner's ruling 19 of
@@ -149,11 +155,14 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
      * that divergence is this branch's job, and choosing what the chip should
      * say is the owner's under `AGENTS.md`'s fourth exclusion.
      */
-    expect(judgeAffordability(65, 25_000).spendableMinorUnits, 'the grant plus the first rung').toBe(26_250);
+    // Re-measured at the grant of 2026-09-23 (#641): 100,000 plus the first rung
+    // is 101,250, and plus the whole facility -- -10,000 now, one tenth of that
+    // grant -- is 110,000. The paragraph above quotes the 25,000-grant figures.
+    expect(judgeAffordability(65, 100_000).spendableMinorUnits, 'the grant plus the first rung').toBe(101_250);
     expect(
-      judgeAffordability(65, 25_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
+      judgeAffordability(65, 100_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
       'the grant plus the whole facility, which is what the FUNDS chip still shows',
-    ).toBe(27_500);
+    ).toBe(110_000);
   });
 
   /**

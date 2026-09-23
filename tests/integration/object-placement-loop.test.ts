@@ -153,7 +153,9 @@ describe('a bed placed in a zoned cell gives that cell a capacity', () => {
   it('houses an admitted prisoner, and pays for the place they occupy', () => {
     const runtime = prisonWithBedOrdered();
     stepTo(runtime, 200);
-    const spentOnPlank = 25_000 - runtime.treasury.balanceMinorUnits;
+    // The opening grant: 25,000 until the owner's ruling of 2026-09-23 (#641),
+    // here and in the closing balance below.
+    const spentOnPlank = 100_000 - runtime.treasury.balanceMinorUnits;
     expect(spentOnPlank, 'one plank at its placeholder price').toBe(65);
 
     submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
@@ -181,7 +183,7 @@ describe('a bed placed in a zoned cell gives that cell a capacity', () => {
     const beforeTheDayEnds = runtime.treasury.balanceMinorUnits;
     stepTo(runtime, 2_400);
     expect(runtime.treasury.balanceMinorUnits - beforeTheDayEnds).toBe(300);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 + 300);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000 - 65 + 300);
   });
 
   it('lets the prisoner sleep, which is the whole point of the bed', () => {

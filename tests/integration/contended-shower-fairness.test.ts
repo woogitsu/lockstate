@@ -497,7 +497,8 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // 38 planks at 65 and 32 bricks at 40, from `src/content/procurement-catalog.ts`.
     const spent = PLANKS * 65 + BRICKS * 40;
     expect(spent).toBe(3_750);
-    expect(contended.treasury.balanceMinorUnits).toBe(25_000 - spent);
+    // The opening grant: 25,000 until the owner's ruling of 2026-09-23 (#641).
+    expect(contended.treasury.balanceMinorUnits).toBe(100_000 - spent);
     expect(control.treasury.balanceMinorUnits).toBe(contended.treasury.balanceMinorUnits);
 
     // And both prisons really are finished: an unbuilt order would make every

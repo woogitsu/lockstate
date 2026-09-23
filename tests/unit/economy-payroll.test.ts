@@ -265,15 +265,28 @@ describe('the day the treasury cannot pay', () => {
      * subject -- arrears climbing without limit while the prison is left
      * alone -- now stops at the bound on day 2 (2,500 of a 1,400-a-day bill is
      * under two days) and stays there for the other twenty-eight.
+     *
+     * **The bound is 10,000 since the owner's ruling of 2026-09-23 set the
+     * opening grant to 100,000 (#641)**, because it derives from the overdraft
+     * floor, which derives from the grant. The sentence above is about 2,500 and
+     * is kept as the reading it was. Re-measured: 10,000 of a 1,400-a-day bill is
+     * reached on day 8 (the first day's 100 is paid, so day 7 closes at 9,700,
+     * still under it), and the arrears stay there for the other twenty-two.
      */
-    expect(payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(payroll.unpaidWagesMinorUnits).toBe(10_000);
   });
 
   it('stops accruing at the bound and forgives what a day would have added past it (ADR 0096 decision 3(c))', () => {
     // One chief at 700/day against a treasury with nothing in it: arrears
-    // climbs 700 a day, uncapped, until it would cross 2,500.
+    // climbs 700 a day, uncapped, until it would cross the bound. The bound was
+    // 2,500 and this read `[700, 1_400, 2_100, 2_500, 2_500, 2_500]`; it is
+    // 10,000 since the 2026-09-23 grant of 100,000 (#641), so the climb is
+    // fourteen days long (14 x 700 = 9,800) and day 15 is the first one whose
+    // 700 would cross it -- 300 of it accrues and 400 is forgiven.
     const { kernel, payroll } = payrollOnlyKernel(rosterOf(CHIEF), 0);
-    const expected = [700, 1_400, 2_100, 2_500, 2_500, 2_500];
+    const expected = [
+      700, 1_400, 2_100, 2_800, 3_500, 4_200, 4_900, 5_600, 6_300, 7_000, 7_700, 8_400, 9_100, 9_800, 10_000, 10_000,
+    ];
     for (let day = 1; day <= expected.length; day += 1) {
       step(kernel, DAY_LENGTH_TICKS);
       expect(payroll.unpaidWagesMinorUnits, `end of day ${String(day)}`).toBe(expected[day - 1]);
