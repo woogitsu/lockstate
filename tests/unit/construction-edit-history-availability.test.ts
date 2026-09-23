@@ -25,6 +25,9 @@ import {
  * the history on -- so the walks are written to pass through every branch the
  * handler has: an empty history, a live transaction, a refused one, a dead one
  * (every order failed), a redo stack emptied by a new placement, and a restore.
+ * The dead one is built from a save written before ADR 0104's amendment of
+ * 2026-09-23, because since that amendment a refused placement no longer
+ * enters the history and a live session cannot make one by a press.
  */
 
 const WALL = 'wall-brick';
@@ -63,6 +66,29 @@ function createSession(seed: number) {
       send({ type: 'PlaceBuildOrder', orderId, definitionId: WALL, x, y, edge: 'north', transactionId });
     },
     availability: () => editHistoryAvailability(runtime.construction),
+    /**
+     * Restores the session with `deadOrderId` as the open gesture, on top of
+     * whatever was open -- the history a save written **before ADR 0104's
+     * amendment of 2026-09-23** carries after a refused placement. The
+     * amendment stopped refused placements entering the history, so a live
+     * session can no longer build this shape by a press; a save from before it
+     * still holds one, and a restore reads it back unchanged (#108), which is
+     * why the availability getters still have to answer it.
+     */
+    restoreAnOlderSaveWithADeadTop(deadOrderId: string): void {
+      const bundle = structuredClone(captureSessionSnapshot(runtime));
+      const construction = bundle.construction as unknown as {
+        undoStack: string[][];
+        currentTransaction?: string[];
+        currentTransactionId?: string;
+      };
+      if (construction.currentTransaction !== undefined && construction.currentTransaction.length > 0) {
+        construction.undoStack.push(construction.currentTransaction);
+      }
+      construction.currentTransaction = [deadOrderId];
+      construction.currentTransactionId = 'pre-amendment';
+      runtime = restoreSimulationRuntime(bundle).runtime;
+    },
     restore(): void {
       // Through a structured clone, so nothing the restored session reads can be
       // shared with the one that was saved.
@@ -132,19 +158,33 @@ describe('edit-history availability agrees with what a press of Undo or Redo doe
     const session = createSession(0x1376);
     session.placeWall('dead', 900, 900, 'td');
     expect(session.runtime.construction.getOrder('dead')?.state, 'the precondition: the order failed').toBe('failed');
+    session.restoreAnOlderSaveWithADeadTop('dead');
     session.send({ type: 'HireStaff', staffRoleId: GUARD, x: 4, y: 4 });
     expect(session.runtime.construction.undoWouldReverseSomething, 'nothing on top could be reversed').toBe(false);
     expect(agreed('Undo after a hire, over a dead transaction', session.probe('Undo'))).toBe(true);
   });
 
+  it('a refused placement no longer reaches the history at all, so it leaves the pair as it was', () => {
+    // ADR 0104's amendment of 2026-09-23: the ordinary route to a dead top is
+    // closed. A refused wall over a live one leaves Undo offered, and one press
+    // takes the live one back.
+    const session = createSession(0x1377);
+    session.placeWall('good', 12, 12, 'tg');
+    session.placeWall('refused', 900, 900, 'tr');
+    expect(session.runtime.construction.getOrder('refused')?.state, 'the precondition: the order failed').toBe('failed');
+    expect(session.availability()).toEqual({ undo: true, redo: false });
+    expect(agreed('Undo over a refused placement', session.probe('Undo'))).toBe(true);
+    expect(session.runtime.construction.getOrder('good')?.state).toBe('cancelled');
+  });
+
   it('a transaction whose every order failed is not offered, though the stack is not empty', () => {
+    // Reachable now only from a save written before the amendment (or content
+    // withdrawn mid-session, which `update()` fails on its own).
     const session = createSession(0x1374);
     session.placeWall('good', 12, 12, 'tg');
-    // Far outside any parcel the new session owns, so the order is decided
-    // `failed` at placement -- and is still registered on its transaction,
-    // which is what makes this shape reachable from one ordinary press.
     session.placeWall('dead', 900, 900, 'td');
     expect(session.runtime.construction.getOrder('dead')?.state, 'the precondition: the order failed').toBe('failed');
+    session.restoreAnOlderSaveWithADeadTop('dead');
     expect(session.runtime.construction.hasSomethingToUndo, 'and the history is not empty').toBe(true);
 
     expect(agreed('Undo of a dead transaction', session.probe('Undo'))).toBe(false);

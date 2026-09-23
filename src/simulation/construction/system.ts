@@ -2196,6 +2196,10 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing in the world changes. A control that read `hasSomethingToUndo`
    * would offer that press as live.
    *
+   * Rare since ADR 0104's amendment of 2026-09-23, which keeps a refused
+   * placement out of the history: what is left is an order `update()` fails
+   * after its content was withdrawn, and a save written before the amendment.
+   *
    * It reads exactly the transaction `undo()` would pop -- the open gesture if
    * there is one, because `undo()` flushes it onto the stack first, and the top
    * of `undoStack` otherwise -- and asks `isCancellable`, the same test the

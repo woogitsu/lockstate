@@ -128,7 +128,24 @@ export function createConstructionCommandHandler(
           refusals.supersede(buildKey);
           reportMaterialsFunding(constructionSystem.procureQueuedMaterials(context.tick), refusals, context.tick);
         }
-        constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);
+        /*
+         * **Only an order the simulation accepted enters the undo history**
+         * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md)'s
+         * amendment of 2026-09-23, option A, ruled by the owner).
+         *
+         * A refused order changed nothing, and the refusal above already told
+         * the player so. Registering it anyway opened a dead transaction that
+         * `undo()` popped silently, emptied the redo stack, and reset
+         * `newerActionThanTheStackTop` -- so a live wall, a hire and a refused
+         * wall let the second press reverse the wall placed before the hire.
+         * `ObjectPlacementService` has never registered a refused object; this
+         * is the wall path agreeing with it. A dragged run keeps its accepted
+         * segments in one transaction, because `registerTransactionOrder`
+         * groups by the id and a skipped segment neither opens nor closes one.
+         */
+        if (order.state !== 'failed') {
+          constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);
+        }
         break;
       }
 
@@ -501,6 +518,13 @@ export function undoPressIsRefused(constructionSystem: ConstructionSystem): bool
  * transaction whose every order has since failed on its own is on the stack,
  * `undo()` pops it, and nothing happens -- see `undoWouldReverseSomething`.
  * `redo()` has the same second shape.
+ *
+ * **Since ADR 0104's amendment of 2026-09-23 that shape is rare, not
+ * ordinary.** A placement the simulation refuses no longer enters the history
+ * (the `PlaceBuildOrder` branch above), so a live session reaches a dead top
+ * only when `update()` fails an order whose content was withdrawn. A save
+ * written before the amendment can still carry one, and a restore reads it
+ * back unchanged, which is why the narrower test stays.
  *
  * Derived on every call and stored nowhere: the stacks it reads are in the save
  * (`ConstructionSnapshot`), and this is a function of them and of the order

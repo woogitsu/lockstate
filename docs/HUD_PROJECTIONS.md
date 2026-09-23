@@ -621,6 +621,12 @@ anything about it across the boundary.
   because a placement refused on its content is still registered on its
   transaction. `ConstructionSystem.undoWouldReverseSomething` reads the
   transaction `undo()` would reach and asks `isCancellable`, as `undo()` does.
+  **The middle of that sentence stopped being true on 2026-09-23**, the day it
+  was written: ADR 0104's amendment of that date (option A, ruled by the
+  owner) stops a refused placement entering the history, as a refused object
+  never did. A dead top is now reached only from content withdrawn
+  mid-session or from a save written before the amendment, and the narrower
+  test stays for those.
 - **A level, not an event**, unlike its two siblings — so it is **required**
   rather than optional. Their absence states a fact ("nothing refused",
   "nothing designated"); an absent pair could state nothing `false, false`
