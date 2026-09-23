@@ -374,8 +374,27 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * Written as the literal it is, not as a subtraction or as the control's
      * balance read back, either of which the code under test could satisfy with
      * any pair of numbers.
+     *
+     * **It is 25,945 since issue #586, and this is the sixth move of this
+     * literal -- the first caused by crowding rather than by a ruling about
+     * money or materials.** Three residents on one standing bed is three
+     * times this prison's accommodation, so the crowding term runs at its cap:
+     * `safety` falls at 50 stored units a tick rather than 10 and `hygiene` at
+     * 12 rather than 4, for every resident. Measured at each day boundary this
+     * tick settles, the paying resident (entity 2) was unmet on
+     *
+     * | boundary | before #586 | since |
+     * | --- | --- | --- |
+     * | 2,399 | -- | safety |
+     * | 4,799 | -- | hygiene, safety |
+     * | 7,199 | safety | hygiene, safety |
+     * | 9,599 | safety | hygiene, safety |
+     * | 11,999 | hygiene, safety | hygiene, safety |
+     *
+     * -- four 40s before, nine since: `26,145 - 5 x 40 = 25,945`. The finding
+     * this file exists for is untouched: one place is paid for, not three.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_145);
+    expect(runtime.treasury.balanceMinorUnits).toBe(25_945);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -430,8 +449,15 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * a value it already held while the other arm returns to one it already
      * held is what makes the pair's relation below a measurement rather than
      * two coincidences.
+     *
+     * **It is 26,075 since issue #586**: the same crowding the case above
+     * records, at the same cap, on this arm's paying resident (entity 0). It
+     * was unmet on safety at the 4,799, 7,199 and 9,599 boundaries and on
+     * safety and hygiene at 11,999 -- five 40s -- and is now unmet on safety
+     * at 2,399 and on both at every boundary after: nine. `26,235 - 4 x 40 =
+     * 26,075`. **Nine and nine**, which is what moves the relation below.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_075);
     /*
      * The relation between the two arms, asserted against **production content**
      * rather than against literals -- so a change to what an unmet need costs
@@ -469,10 +495,20 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * right-hand side is two pieces of production content neither test
      * computes.
      */
-    expect(runtime.treasury.balanceMinorUnits - 26_145).toBe(
-      2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits -
-        STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
-    );
+    /*
+     * **And since issue #586 the 40 is gone from the right-hand side, because
+     * the accident it was paying for is gone.** The one-day difference in when
+     * the two arms' paying residents crossed the `safety` line was a property
+     * of `safety` falling slowly enough for arrival ticks 805 apart to land on
+     * opposite sides of a day boundary. At three residents to one bed both
+     * arms fall five times as fast and both cross inside day one, so both are
+     * withheld exactly the same nine 40s and the whole gap between them is the
+     * two planks the recycled arm's undos cost -- the plainest form this
+     * relation has had. `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is
+     * asserted to still be charged in both, in the equal counts, by the
+     * sibling literal above rather than here.
+     */
+    expect(runtime.treasury.balanceMinorUnits - 25_945).toBe(2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits);
   });
 
   it('undo and removal agree now: neither gives the plank back', () => {

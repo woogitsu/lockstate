@@ -343,8 +343,19 @@ describe('an incident is triggered, responded to and closed, in a session starte
    * threshold faster than it used to, and the same prison with a guard on post
    * never reaches it at all
    * (`tests/integration/room-gated-needs.test.ts`).
+   *
+   * **3,450 until issue #586, and 2,050 since.** Three prisoners and one bed
+   * is three times this prison's accommodation, so the crowding term runs at
+   * its cap: `safety` falls at 0.25 a tick rather than 0.05 and `hygiene` at
+   * 0.06 rather than 0.02, for all three. `needsPressure` therefore reaches
+   * the level that tips the score over the line 1,400 ticks sooner, and the
+   * riot opens at 2,050 with the same severity and the same participants.
+   * Measured, on this seed and on `security-post-eligibility.test.ts`'s
+   * `0x456`, which agree to the tick as they did before: the riot at 2,050,
+   * lapsing at 2,660 with nobody hired; the assault before it at 1,400 rather
+   * than 2,400.
    */
-  const RIOT_TICK = 3_450;
+  const RIOT_TICK = 2_050;
 
   it('opens a riot in the derived sector from real needs and real understaffing', () => {
     const runtime = overcrowdedPrison();
@@ -413,7 +424,15 @@ describe('an incident is triggered, responded to and closed, in a session starte
      * 0.05 a tick along with `hunger`. The riot fires 550 ticks sooner for
      * exactly that reason -- see `RIOT_TICK` above.
      */
-    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.4427, 4);
+    /*
+     * **0.3969 since issue #586, and it went *down*, which is the tick moving
+     * rather than the prison improving.** The riot opens 1,400 ticks earlier
+     * (see `RIOT_TICK`), and at 2,050 the needs crowding does not touch --
+     * `hunger`, `bladder`, `sleep` -- have had 1,400 fewer ticks to fall. The
+     * threshold the streak needs is the same; `safety` and `hygiene` falling
+     * faster is what reaches it sooner, at a lower mean.
+     */
+    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3969, 4);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'contraband-pressure')?.value).toBe(0);
   });
 

@@ -121,7 +121,20 @@ export interface SectorRiskPolicy {
  *   So what this decision moved is the population a built prison rides out,
  *   not the existence of the content
  *   (`tests/integration/incident-trigger-reachability.test.ts`, "and it starts
- *   rioting again one prisoner later").
+ *   rioting again one prisoner later" -- a describe renamed by #586, below).
+ *
+ *   **Issue #586 moved every figure in the three bullets above without
+ *   touching this policy.** A prison over its beds now decays `safety` and
+ *   `hygiene` faster for everybody (`../prisoners/crowding.ts`), and every
+ *   fixture named here is at least twice its beds, where that term is at its
+ *   cap. Re-measured on seed `0x0cc0`: sixteen on one guard riot 5 times, not
+ *   0; seventeen 6, not 1; ninety-six staffed riot 6 and provisioned for that
+ *   many 5, not 3 and 0. Staffed to requirement at twice capacity, sixteen
+ *   still do not riot (score 0.5222, and 11 assaults on this seed). So the
+ *   population a built prison rides out is now bounded by its *beds* as well
+ *   as by its rooms, which is the ruling on #586 reading as it was meant to.
+ *   The re-measured table is in the same test file, under the ADR 0102
+ *   describe.
  *
  *   **And since
  *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)

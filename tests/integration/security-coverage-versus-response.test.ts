@@ -101,6 +101,37 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * exactly the reserve the raise was meant to buy, and the same six guards go
  * from containing everything to containing nothing at an identical wage bill.
  *
+ * ## The ladder since issue #586, and why it moved
+ *
+ * Twelve prisoners on one bed is twelve times this prison's accommodation, so
+ * since #586 crowding runs at its cap for everybody in it: `safety` falls at
+ * 0.25 a tick and `hygiene` at 0.06. The prison riots more and harder -- eight
+ * riots rather than seven, severities 7, 9, 9, 10, 10, 10, 10, 10 rather than
+ * 7s and 8s, and one assault rather than three. Re-measured on the same seed
+ * and window:
+ *
+ * | hired | panel badge | spare pool | resolved | lapsed | dispatched | contraband |
+ * | --- | --- | --- | --- | --- | --- | --- |
+ * | 1 | `Understaffed` | 0 | 0 | 9 | 0 | 0 |
+ * | **2** | **`Covered`** | 0 | **0** | 8, and one still open | **0** | **0** |
+ * | 3 | `Covered` | 1 | 0 | 8 | 0 | 0 |
+ * | 4 | `Covered` | 2 | 1 | 7 | 2 | 2 |
+ * | 6 | `Covered` | 4 | 2 | 6 | 6 | 2 |
+ * | 7 | `Covered` | 5 | **9** | **0** | **41** | 2 |
+ * | 7, `scheduled: 7` | `Covered` | 0 | **0** | 8 | **0** | **0** |
+ *
+ * **Every one of the four findings above survives, and the ladder is one rung
+ * taller.** The advice still buys nothing (rows 1 and 2 answer nothing; they
+ * differ only in whether the last riot of the window has lapsed yet). The
+ * thresholds are still `required` plus what a claimant asks for -- but a
+ * severity-9 or -10 riot asks for `ceil(10 * 0.5) = 5`, so "everything
+ * answerable" is `required + 5` now where it was `+ 4`, and the severity-7
+ * riot is the only one four spare guards can take. 41 is exact: one assault x
+ * 2, one severity-7 riot x 4, seven severity-9-or-10 riots x 5. And raising the
+ * requirement still posts the reserve it was raised to buy, shown at seven
+ * guards rather than six because seven is now the wage bill that answers
+ * everything.
+ *
  * ## Why an integration test and not a unit test
  *
  * Because there is no wrong function to unit-test. A unit test supplies the
@@ -204,6 +235,8 @@ interface Reading {
   readonly dispatched: number;
   readonly routeFailures: number;
   readonly contraband: number;
+  /** Incidents still open when the window closes -- neither resolved nor lapsed yet (added for #586, whose riots last long enough to straddle the end). */
+  readonly open: number;
 }
 
 function read(runtime: SimulationRuntime): Reading {
@@ -239,6 +272,7 @@ function read(runtime: SimulationRuntime): Reading {
     dispatched: metrics.respondersDispatched,
     routeFailures: metrics.routeFailures,
     contraband: strip.contrabandDiscovered,
+    open: runtime.incidents.openIncidents().length,
   };
 }
 
@@ -263,7 +297,10 @@ describe('coverage and response draw from one pool, and the panel speaks about t
     expect(reading.spare).toBe(0);
     expect(reading.dispatched).toBe(0);
     expect(reading.resolved).toBe(0);
-    expect(reading.lapsed).toBe(9);
+    // 9 lapsed until #586; 8 since, with the ninth riot still open when the
+    // sixteen days end -- crowding's riots are longer and start earlier.
+    expect(reading.lapsed).toBe(8);
+    expect(reading.open).toBe(1);
     expect(reading.contraband).toBe(0);
 
     // The obvious confound, refuted rather than assumed: nobody failed to
@@ -281,9 +318,13 @@ describe('coverage and response draw from one pool, and the panel speaks about t
     expect(covered.badgeKey).toBe(COVERED);
     expect(short.shortage).toBe(1);
 
-    expect([short.resolved, short.lapsed, short.dispatched, short.contraband]).toEqual([
+    // `lapsed + open` rather than `lapsed` since #586: the two prisons now
+    // differ in whether the window's last riot has lapsed by day sixteen (9 +
+    // 0 against 8 + 1), which is a question of when it opened and not of
+    // anything the extra hire answered.
+    expect([short.resolved, short.lapsed + short.open, short.dispatched, short.contraband]).toEqual([
       covered.resolved,
-      covered.lapsed,
+      covered.lapsed + covered.open,
       covered.dispatched,
       covered.contraband,
     ]);
@@ -291,9 +332,9 @@ describe('coverage and response draw from one pool, and the panel speaks about t
 
   it('publishes the same badge, character for character, across every hire count from the requirement to three times it', () => {
     // The panel's whole vocabulary for this block is three rungs, and the top
-    // rung covers the entire interesting range. Six guards contains every riot
-    // and two guards answers nothing; a player reading the badge cannot tell
-    // those two prisons apart.
+    // rung covers the entire interesting range. Six guards contained every
+    // riot until #586 (seven does since) and two guards answers nothing; a
+    // player reading the badge cannot tell those prisons apart.
     const badges = [2, 3, 4, 6].map((count) => readAfterSixteenDays(count).badgeKey);
     expect(badges).toEqual([COVERED, COVERED, COVERED, COVERED]);
   });
@@ -343,25 +384,40 @@ describe('the thresholds above the requirement, which are three and not one', ()
     expect(oneSpare.lapsed).toBe(atRequirement.lapsed);
   });
 
-  it('answers assaults two spare guards above the requirement and riots four above it', () => {
+  /*
+   * **Titled "answers assaults two spare guards above the requirement and
+   * riots four above it" until issue #586**, when every riot here was
+   * severity 7 or 8. Crowding made seven of this prison's eight riots severity
+   * 9 or 10, which ask for five responders, so the riot gate splits in two and
+   * the case pins three rungs where it pinned two.
+   */
+  it('answers assaults two spare guards above the requirement, a severity-7 riot four above it, and every riot five above it', () => {
     const twoSpare = readAfterSixteenDays(REQUIRED_AT_POPULATION + 2);
     const fourSpare = readAfterSixteenDays(REQUIRED_AT_POPULATION + 4);
+    const fiveSpare = readAfterSixteenDays(REQUIRED_AT_POPULATION + 5);
 
-    // Two spare: `ceil(3 * 0.5) = 2` is met, so the three assaults are
-    // answered -- and `ceil(8 * 0.5) = 4` is not, so every riot still lapses.
+    // Two spare: `ceil(3 * 0.5) = 2` is met, so the one assault is answered --
+    // and no riot's `ceil(severity * 0.5)` is, so every riot still lapses.
     expect(twoSpare.spare).toBe(2);
-    expect(twoSpare.resolved).toBe(3);
-    expect(twoSpare.dispatched).toBe(6); // 3 assaults x 2 responders
-    expect(twoSpare.lapsed).toBe(6);
+    expect(twoSpare.resolved).toBe(1);
+    expect(twoSpare.dispatched).toBe(2); // 1 assault x 2 responders
+    expect(twoSpare.lapsed).toBe(7);
 
-    // Four spare: every incident this prison produces is answerable.
+    // Four spare: `ceil(7 * 0.5) = 4` is met for the one severity-7 riot, and
+    // `ceil(9 * 0.5) = 5` is not for the rest.
     expect(fourSpare.spare).toBe(4);
-    expect(fourSpare.resolved).toBe(10);
-    expect(fourSpare.lapsed).toBe(0);
-    // 3 assaults x 2 plus 7 riots x 4. Exact arithmetic, not a range: it is
-    // what makes the two gates identifiable as `requiredResponderCount` rather
-    // than as an unexplained step.
-    expect(fourSpare.dispatched).toBe(34);
+    expect(fourSpare.resolved).toBe(2);
+    expect(fourSpare.lapsed).toBe(6);
+    expect(fourSpare.dispatched).toBe(6); // 1 x 2 + 1 x 4
+
+    // Five spare: every incident this prison produces is answerable.
+    expect(fiveSpare.spare).toBe(5);
+    expect(fiveSpare.resolved).toBe(9);
+    expect(fiveSpare.lapsed).toBe(0);
+    // 1 assault x 2, 1 severity-7 riot x 4, 7 severity-9-or-10 riots x 5.
+    // Exact arithmetic, not a range: it is what makes the gates identifiable
+    // as `requiredResponderCount` rather than as an unexplained step.
+    expect(fiveSpare.dispatched).toBe(41);
   });
 });
 
@@ -377,22 +433,29 @@ describe('raising the requirement to the number a player should hire makes it st
    * posting cap and the advice, and raising it posts exactly the reserve it was
    * raised to buy.
    */
+  /*
+   * **Seven guards since issue #586, where it was six**: seven is now the
+   * wage bill that answers everything (see the ladder in the file's
+   * docblock), and the finding is about that wage bill. Six still reads the
+   * same way at a smaller scale -- 2 resolved against 0 -- but "answered
+   * everything" would no longer be true of it.
+   */
   it('posts the whole force and answers nothing, at the same wage bill that answered everything', () => {
-    const sixSpare = readAfterSixteenDays(6);
-    const sixPosted = readAfterSixteenDays(6, 6);
+    const sevenSpare = readAfterSixteenDays(7);
+    const sevenPosted = readAfterSixteenDays(7, 7);
 
-    // Six guards, one seed, one population, and the only difference is what the
-    // sector asks for.
-    expect([sixSpare.required, sixSpare.assigned, sixSpare.spare]).toEqual([2, 2, 4]);
-    expect([sixPosted.required, sixPosted.assigned, sixPosted.spare]).toEqual([6, 6, 0]);
+    // Seven guards, one seed, one population, and the only difference is what
+    // the sector asks for.
+    expect([sevenSpare.required, sevenSpare.assigned, sevenSpare.spare]).toEqual([2, 2, 5]);
+    expect([sevenPosted.required, sevenPosted.assigned, sevenPosted.spare]).toEqual([7, 7, 0]);
 
     // Both read `Covered`, which is the point: the badge cannot tell them apart
-    // any more than it can tell two guards from six.
-    expect([sixSpare.badgeKey, sixPosted.badgeKey]).toEqual([COVERED, COVERED]);
+    // any more than it can tell two guards from seven.
+    expect([sevenSpare.badgeKey, sevenPosted.badgeKey]).toEqual([COVERED, COVERED]);
 
-    expect([sixSpare.resolved, sixSpare.lapsed, sixSpare.dispatched]).toEqual([10, 0, 34]);
-    expect([sixPosted.resolved, sixPosted.lapsed, sixPosted.dispatched]).toEqual([0, 9, 0]);
-    expect([sixSpare.contraband, sixPosted.contraband]).toEqual([2, 0]);
+    expect([sevenSpare.resolved, sevenSpare.lapsed, sevenSpare.dispatched]).toEqual([9, 0, 41]);
+    expect([sevenPosted.resolved, sevenPosted.lapsed, sevenPosted.dispatched]).toEqual([0, 8, 0]);
+    expect([sevenSpare.contraband, sevenPosted.contraband]).toEqual([2, 0]);
   });
 });
 
@@ -417,7 +480,8 @@ describe('what a prison at its requirement can still do about a riot, and is nev
     expect(before.spare).toBe(0);
 
     // An incident is open right now, so this is a rescue rather than a fresh
-    // prison: the run above ends with `incident.riot.10` still `'active'`.
+    // prison: the run above ends with `incident.riot.10` still `'active'`
+    // (`incident.riot.9` since #586, severity 10, on the same seed).
     const open = runtime.incidents.openIncidents();
     expect(open.length).toBeGreaterThan(0);
     const severity = Math.max(...open.map((incident) => incident.severity));

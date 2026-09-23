@@ -326,8 +326,15 @@ describe('a riot is answered by guards, and only by guards', () => {
    * sample 550 ticks forward. That reinforces this file's own claim rather
    * than disturbing it: hiring an administrator, a nurse and a cook still
    * changes nothing about either number.
+   *
+   * **3,450 until issue #586, and 2,050 since**, in both files again: three
+   * prisoners on one bed is three times capacity, crowding runs at its cap,
+   * and `safety` and `hygiene` fall fast enough to bring the streak 1,400
+   * ticks forward (`security-default-sector.test.ts` carries the reading).
+   * Still nobody post-eligible on duty, still nothing about it changed by
+   * hiring an administrator, a nurse or a cook.
    */
-  const RIOT_TICK = 3_450;
+  const RIOT_TICK = 2_050;
 
   it('still riots with a prison full of non-security staff, because they are not coverage', () => {
     const runtime = overcrowdedPrison();

@@ -160,7 +160,30 @@ describe('what a second cell buys, now that a room type may author a resident ce
     // paid days, the third day's payment landing on the last tick of day three.
     // Asserted as the gap as well as the direction, so a change that paid the
     // crowded prison for places it does not have fails here.
+    //
+    // **1,840 since issue #586, and the extra 240 is that issue's whole point
+    // measured in one fixture.** The crowded arm holds four prisoners against
+    // two places -- twice its capacity, the cap of the crowding term -- so
+    // its two paying residents' `safety` and `hygiene` decay faster than the
+    // subdivided arm's four. This fixture hires nobody, so `safety` is
+    // unopposed in both arms and crosses the unmet line inside day one for the
+    // crowded pair (816 ticks from full at -50 stored units a tick) and inside
+    // day two for everybody (4,080 at -10); `hygiene` crosses for the crowded
+    // pair on day two (3,400 ticks at -12) and not at all for the subdivided
+    // four inside three days (10,200 at -4). So the crowded arm is withheld
+    // two extra 40s on each of the three paid days -- safety on day one,
+    // hygiene on days two and three -- and 6 x 40 = 240. Measured rather than
+    // summed, at the last tick of each day: the crowded arm's day reads 520 /
+    // 440 / 440 where the tree before #586 read 600 / 520 / 520, and the
+    // subdivided arm's 1,200 / 1,040 / 1,040 is unchanged. (Its `safety` is
+    // not: 109 rather than 136 at the end of day one, because its four beds
+    // complete one build order at a time and the prison is briefly over its
+    // capacity while they do. It crosses no line a day earlier for that.)
+    // The gap between
+    // places is still the 1,600 above; what the second cell now also buys is
+    // relief from crowding, and that is the ruling's *"a packed prison loses
+    // income through the line the player is already watching"*.
     expect(subdividedFunds).toBeGreaterThan(crowdedFunds);
-    expect(subdividedFunds - crowdedFunds).toBe(1_600);
+    expect(subdividedFunds - crowdedFunds).toBe(1_840);
   });
 });

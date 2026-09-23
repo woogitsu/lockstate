@@ -711,6 +711,23 @@ prisoners are sharing the rooms.
 
 ---
 
+
+> **Added 2026-09-23 for issue #586, and kept inside this section because it
+> changes what the section's numbers mean rather than what this decision
+> decided.** Crowding is a cost of its own since #586: a prison over its beds
+> decays `safety` and `hygiene` faster for everybody in it
+> (`src/simulation/prisoners/crowding.ts`), and every over-admitted fixture this
+> section measured is at least twice its beds, where that term is at its cap.
+> Re-measured on seed `0x0cc0` over the same 30,000 ticks: sixteen prisoners on
+> one guard riot 5 times where this decision had taken them to 0; seventeen 6
+> where it had taken them to 1; ninety-six staffed riot 6 (3) and, with the
+> canteen and shower room built for that many, 5 (0). Staffed to requirement,
+> sixteen in eight beds still open no riot. **This decision is untouched** --
+> an unhoused prisoner may still eat, wash and take recreation, and still
+> relieves the needs crowding does not move -- but the population a built
+> prison rides out is now bounded by its beds as well as by its rooms.
+> `tests/integration/incident-trigger-reachability.test.ts` carries the table.
+
 ## Consequences for existing sentences
 
 `tests/integration/over-admission-signal.test.ts`'s own docblock argues, in
