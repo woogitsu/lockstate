@@ -97,6 +97,8 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.security-console',
   'env.object.utility-panel',
   'env.object.loading-dock-door',
+  'env.object.prep-counter',
+  'env.object.bookshelf',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -284,6 +286,20 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 384, height: 128 },
     quarterTurns: 0,
     note: 'Closed three-tile timber delivery gate with steel tracks. Drawn on object.loading-dock-door; it is not a navigable door edge.',
+  },
+  'env.object.prep-counter': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.prep_counter',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Brushed steel kitchen work counter with a walnut board and three recessed ingredient pans. Drawn on object.prep-counter.',
+  },
+  'env.object.bookshelf': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.library.bookshelf',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Low institutional bookshelf with two open rows of books and three steel-framed bays. Drawn on object.bookshelf.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

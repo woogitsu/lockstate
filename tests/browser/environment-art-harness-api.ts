@@ -101,6 +101,10 @@ export interface HarnessWorldFixture {
   readonly washingMachineTileY: number;
   readonly fridgeTileX: number;
   readonly fridgeTileY: number;
+  readonly prepCounterTileX: number;
+  readonly prepCounterTileY: number;
+  readonly bookshelfTileX: number;
+  readonly bookshelfTileY: number;
   readonly stoveTileX: number;
   readonly stoveTileY: number;
   readonly securityConsoleTileX: number;

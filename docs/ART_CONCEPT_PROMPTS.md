@@ -208,6 +208,32 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 > …the pedestal must read as a separate mass from the top; the desk must be
 > recognisable at 128×64 px without the grommet being legible.
 
+### Kitchen preparation — `furniture.kitchen.prep_counter`
+
+> an institutional food preparation counter, 2×1 tiles, shown in true
+> overhead and three matching oblique views
+> — steel cabinet and rolled worktop, a broad walnut cutting board on the
+> left, and three recessed ingredient pans on the right with separate red,
+> green and pale contents
+> …the board and three ingredient wells must remain separate at 128×64 px,
+> with the raised rear hygiene lip defining its north edge.
+
+The original four-view reference and Blender modeling decisions are in
+`assets/source/concepts/prep-counter-v1.md`. This is a dedicated counter
+rather than a renamed shipping-container render.
+
+### Library — `furniture.library.bookshelf`
+
+> a 2×1 tile low institutional bookshelf, direct overhead plus three coherent
+> oblique views — blue-grey reinforced steel cheeks and uprights, warm timber
+> shelves, two open rows across three bays, irregular books with cream, rust,
+> olive and navy covers; keep some short empty gaps
+> …the two rows of individually colored book spines and the three bay dividers
+> must remain distinct at 128×64 px.
+
+The original concept and Blender model are recorded in
+`assets/source/concepts/bookshelf-v1.md`.
+
 ### Security — `security.access_reader.variants`, `security.camera.wall.variants`, `security.checkpoint.turnstile.variants`
 
 The 2×1 `furniture.security.surveillance_console` is a separate buildable

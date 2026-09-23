@@ -100,6 +100,10 @@ const FIXTURE: HarnessWorldFixture = {
   utilityPanelTileY: 4,
   loadingDockDoorTileX: 45,
   loadingDockDoorTileY: 4,
+  prepCounterTileX: 38,
+  prepCounterTileY: 4,
+  bookshelfTileX: 40,
+  bookshelfTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -291,6 +295,20 @@ function buildFrame(): RenderFrame {
       definitionId: 'loading-dock-door-wooden',
       tileX: FIXTURE.loadingDockDoorTileX,
       tileY: FIXTURE.loadingDockDoorTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-prep-counter',
+      definitionId: 'prep-counter-brick',
+      tileX: FIXTURE.prepCounterTileX,
+      tileY: FIXTURE.prepCounterTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-bookshelf',
+      definitionId: 'bookshelf-wooden',
+      tileX: FIXTURE.bookshelfTileX,
+      tileY: FIXTURE.bookshelfTileY,
       phase: 'built',
     },
   ];

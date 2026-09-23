@@ -101,6 +101,8 @@ export const PUBLISHED_ASSET_IDS = [
   'furniture.kitchen.fridge',
   'furniture.delivery.dock_gate.closed',
   'furniture.kitchen.stove',
+  'furniture.kitchen.prep_counter',
+  'furniture.library.bookshelf',
   'furniture.laundry.washing_machine.twin',
   'furniture.medical.bed.single',
   'furniture.medical.cabinet',

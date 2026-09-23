@@ -272,8 +272,6 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * guarded switch to the overhead view, so it no longer needs a coloured slab.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bookshelf',
-  'object.prep-counter',
   'object.sink',
 ];
 
@@ -339,6 +337,8 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.security-console': 'env.object.security-console',
   'object.utility-panel': 'env.object.utility-panel',
   'object.loading-dock-door': 'env.object.loading-dock-door',
+  'object.prep-counter': 'env.object.prep-counter',
+  'object.bookshelf': 'env.object.bookshelf',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
