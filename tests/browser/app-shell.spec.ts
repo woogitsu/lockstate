@@ -2204,6 +2204,18 @@ interface WallOrderOptions {
    * specs and `#703` do not pass this and do not move. Asked for by name for
    * the same reason `SMALL_ROOM_DRAG_DELTAS_PX` and
    * `chooseRoomTypeFromTheKeyboard`'s `backwards` are.
+   *
+   * **`#411`'s two specs now do pass it, and the sentence above is kept
+   * because the reading it rested on was wrong.** Their subject is the Rooms
+   * panel's keyboard route, and the walls are ADR 0045's precondition in
+   * front of it: this helper types tile coordinates, asserts nothing about a
+   * viewport, and runs under the same pointer tripwire at 375x812 as at
+   * 1280x800, so the route stays keyboard-only either way. The desktop
+   * viewport's wall route is still walked by the two callers that keep it --
+   * `every command hands the keyboard back` and `#703`, both at 1280x800.
+   * What forced it: on the `woogitsu-ci-wsl` pool (run 35849375154 attempt 2)
+   * `takes a room back` spent 127 s of its 180 s here and timed out before
+   * reaching the Rooms panel, and `zones a room` passed at 2.9 m of 3.0.
    */
   readonly orderAt?: { readonly width: number; readonly height: number };
 }
@@ -7753,9 +7765,23 @@ test.describe('the assembled application', () => {
      *
      * The rectangle is the one typed below, so the room and its walls cannot
      * drift apart.
+     *
+     * Ordered at the phone viewport, and restored to 1280x800 before the Rooms
+     * panel is reached -- the cut `#331` took, for the reason `WallOrderOptions`
+     * measures. Every press of the wall route is still a key and the tripwire
+     * still runs, so "every press of it is a key" above holds as written; what
+     * moves is only the canvas each press queues behind while the orders are
+     * typed. The route to the room this test is about starts after the helper
+     * returns, at 1280x800.
+     *
+     * Why now: on the `woogitsu-ci-wsl` pool (run 35849375154 attempt 2,
+     * runner `woogitsu-wsl-04`) this test passed at **2.9 m** of its 3.0 m cap,
+     * and its sibling below timed out with **127 s of 180 s** inside this one
+     * helper, `Tab` at a 329 ms mean. The same commit on the retired
+     * `lockstate-wsl-DOM-NEW-01` (attempt 1) ran this test in 30.7 s.
      */
     const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
-    await wallRectanglesFromTheKeyboard(page, [cell]);
+    await wallRectanglesFromTheKeyboard(page, [cell], { orderAt: { width: 375, height: 812 } });
 
     // ---- the Rooms tab, and what the room is for ----------------------
     // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
@@ -8036,7 +8062,12 @@ test.describe('the assembled application', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
 
-    await wallRectanglesFromTheKeyboard(page, [cell]);
+    // At the phone viewport, restored before the Rooms panel, for the reason
+    // the test above gives at the same call. This is the test that went red:
+    // run 35849375154 attempt 2's trace puts 127 s of its 180 s inside this
+    // helper (12.6 s -> 139.7 s), ~7 s per wall segment, before the Rooms
+    // panel -- the subject -- was reached at all.
+    await wallRectanglesFromTheKeyboard(page, [cell], { orderAt: { width: 375, height: 812 } });
 
     // Backwards, for the reason the test above gives at the same point: the
     // wall helper leaves the keyboard on *Pause* and the tab bar is the last

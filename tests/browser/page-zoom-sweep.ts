@@ -152,14 +152,30 @@ async function measure(page: Page): Promise<Pick<CombinationReport, 'outside' | 
  *
  * `onCombination` is called as each one lands, so the playtest can print its
  * research log while the spec prints nothing. The whole sweep is one page
- * driven through 36 reloads rather than 36 pages, which is what keeps it
- * around two minutes.
+ * driven through 36 reloads rather than 36 pages, and one `goto` before the
+ * first of them -- one boot per combination.
  */
 export async function sweep(
   page: Page,
   onCombination?: (report: CombinationReport, css: { readonly width: number; readonly height: number }) => void,
 ): Promise<readonly CombinationReport[]> {
   const reports: CombinationReport[] = [];
+
+  // The page has to exist before its origin has a `localStorage` to write to,
+  // so it is opened once, here. Every combination after that writes its scale
+  // on the page the previous one left loaded and boots once, on the reload.
+  //
+  // **This used to be a `goto` inside the loop, before every write**, which
+  // booted the whole application twice per combination -- 72 boots for 36
+  // measurements -- where only the first iteration is on `about:blank`. The
+  // measurement never saw the extra boot: the `goto`'s page was only ever the
+  // page the scale was written on, and the reload below is what is measured,
+  // exactly as before. What it cost is recorded because it is what turned the
+  // ratchet red: run 35849375154 attempt 2's trace (runner `woogitsu-wsl-04`)
+  // prices `goto` at a 1.88 s mean and `reload` at 1.65 s, ~5.3 s a
+  // combination all in, and the test reached combination 34 of 36 when
+  // `test.slow()`'s 180 s ran out.
+  await page.goto(APP_URL);
 
   for (const [windowWidth, windowHeight] of WINDOWS) {
     // A 200 % page zoom halves the CSS viewport in each axis.
@@ -169,12 +185,10 @@ export async function sweep(
     for (const scale of UI_SCALES) {
       await page.setViewportSize({ width, height });
 
-      // The page has to exist before its origin has a `localStorage` to write
-      // to, so the scale is written on the page already loaded and picked up
-      // by the reload below. `addInitScript` is deliberately not used: it
+      // The scale is written on the page already loaded and picked up by the
+      // reload below. `addInitScript` is deliberately not used: it
       // accumulates across a loop of 36, and a harness that quietly runs 36
       // copies of itself is not one whose numbers should be believed.
-      await page.goto(APP_URL);
       await page.evaluate(
         ({ key, uiScale }) => {
           try {
