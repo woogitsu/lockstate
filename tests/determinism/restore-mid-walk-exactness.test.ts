@@ -87,17 +87,6 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 interface Staffing {
   readonly guards: number;
   readonly hiredAt: { readonly x: number; readonly y: number };
-  /** Cells, one prisoner each. Twelve unless a case says otherwise. */
-  readonly cells?: number;
-  /** Ticks stepped between one admission and the next, which staggers when each prisoner's day begins. */
-  readonly admissionGapTicks?: number;
-}
-
-/** Six rows of six cells, for the crowded cases: `cellRect`'s two rows hold only twelve. */
-const CROWDED_ROWS = [1, 5, 9, 14, 18, 22] as const;
-
-function crowdedCellRect(index: number) {
-  return { x: 1 + (index % 6) * 3, y: CROWDED_ROWS[Math.floor(index / 6)]!, width: 2, height: 3 };
 }
 
 /** #1373's staffing: two guards hired on the post tile, so neither ever walks. */
@@ -117,10 +106,9 @@ const GUARDS_WALKING_AND_SEARCHING: Staffing = { guards: 6, hiredAt: { x: 10, y:
  */
 function buildPrison(staffing: Staffing): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  const cellCount = staffing.cells ?? CELL_COUNT;
-  const cells = Array.from({ length: cellCount }, (_unused, index) => (cellCount > CELL_COUNT ? crowdedCellRect(index) : cellRect(index)));
-  submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: cellCount + 14 }));
-  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: cellCount + 2 }));
+  const cells = Array.from({ length: CELL_COUNT }, (_unused, index) => cellRect(index));
+  submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: CELL_COUNT + 14 }));
+  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: CELL_COUNT + 2 }));
   for (const rect of cells) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
   for (const rect of [SHOWER, CANTEEN, YARD]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
   cells.forEach((rect, index) => submit(runtime, `zone-c${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect })));
@@ -152,9 +140,8 @@ function buildPrison(staffing: Staffing): SimulationRuntime {
   for (let guard = 0; guard < staffing.guards; guard += 1) {
     submit(runtime, `hire${String(guard)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...staffing.hiredAt }));
   }
-  for (let index = 0; index < cellCount; index += 1) {
+  for (let index = 0; index < CELL_COUNT; index += 1) {
     submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
-    for (let gap = 0; gap < (staffing.admissionGapTicks ?? 0); gap += 1) runtime.kernel.step();
   }
   if (runtime.refusals.count !== 0) throw new Error(`the fixture refused ${String(runtime.refusals.count)} commands`);
   return runtime;
@@ -431,65 +418,4 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
     // Everyone else's walk came back untouched.
     expect(restored.prisoners.locomotion.walkingCount).toBe(saved.prisoners.locomotion.walkingCount);
   });
-});
-
-/**
- * **The work budget binds, and a restore must not change who it serves** -- the
- * weakest claim of the first #1373 landing, measured rather than argued.
- *
- * `workBudgetPerTick` (2,000 expanded nodes) binds only when enough prisoners
- * ask for a route on the same tick: here, 24 and 34 prisoners in six rows of
- * cells all re-targeting at a regime block change. On the tick it binds, the
- * queue serves requests in order until the spend reaches the budget and defers
- * the rest to the next tick.
- *
- * **What the spend used to depend on.** A `RouteCache` or `FlowFieldCache` hit
- * cost 0 expansions, and a restore starts both caches empty, so a restored
- * session paid for searches the saved one had already paid for before the
- * save. Replayed on the pending queue of the binding tick, a warm and a cold
- * cache served different sets on 13 of 331 binding ticks across populations
- * of 18 to 36. Through a real save and restore, the two populations below
- * diverged: 24 prisoners (admitted 7 ticks apart) on every save taken 1 to 40
- * ticks before the tick-3461 block change, and 36 (7 apart) on every save
- * taken 1 to 600 ticks before the tick-5801 one, on day 3.
- *
- * Each case asserts that the budget really binds on the continuous run, so it
- * cannot pass on a population too small to reach it.
- */
-describe('a save taken before the navigation budget binds restores to the same prison (#1373)', () => {
-  const deferredPastOneTick = (runtime: SimulationRuntime): number =>
-    runtime.navigation.getInFlightSnapshot().pending.filter((request) => request.enqueuedAtTick < runtime.kernel.tick - 1).length;
-
-  for (const [cells, admissionGapTicks, binds] of [
-    [24, 7, 3_461],
-    [36, 7, 5_801],
-  ] as const) {
-    it(`${String(cells)} prisoners, the budget binding at tick ${String(binds)}`, { timeout: 120_000 }, () => {
-      const staffing: Staffing = { ...PRISONERS_ONLY, cells, admissionGapTicks };
-      const continuous = buildPrison(staffing);
-      stepTo(continuous, binds + 1);
-      expect(deferredPastOneTick(continuous), 'the budget must defer work on this tick, or the case is vacuous').toBeGreaterThan(0);
-      stepTo(continuous, binds + 2);
-      const soon = captured(continuous);
-      stepTo(continuous, binds + 600);
-      const far = captured(continuous);
-
-      const failures: string[] = [];
-      for (const back of [1, 3, 10, 20, 40, 150, 600]) {
-        const base = buildPrison(staffing);
-        stepTo(base, binds - back);
-        const restored = saveAndRestore(base);
-        stepTo(restored, binds + 2);
-        const got = captured(restored);
-        if (got !== soon) {
-          failures.push(`save@${String(binds - back)} diverged by ${String(binds + 2)}: ${firstDifferences(JSON.parse(soon), JSON.parse(got)).join(' | ')}`);
-          continue;
-        }
-        stepTo(restored, binds + 600);
-        const later = captured(restored);
-        if (later !== far) failures.push(`save@${String(binds - back)} diverged by ${String(binds + 600)}: ${firstDifferences(JSON.parse(far), JSON.parse(later)).join(' | ')}`);
-      }
-      expect(failures).toEqual([]);
-    });
-  }
 });

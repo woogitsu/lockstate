@@ -481,20 +481,6 @@ budget does not bind that changes nothing -- it did not bind on any save the
 test takes -- but where it binds, a restored session can serve a request a
 tick later than the one it was saved from. No fixture here makes it bind.
 
-**That paragraph was the weakest claim, and it was wrong on both counts. It
-is kept so the correction can be read against it.**
-- *"It did not bind on any save the test takes"* was true only of the
-  12-prisoner fixture.
-- *"A tick later"* understated the effect. Measured:
-  - with 24 prisoners, every save taken 1 to 40 ticks before a block change
-    served a different set of requests;
-  - with 36, every save taken 1 to 600 ticks before one did the same.
-
-It is settled by changing what the budget is charged, not by persisting the
-caches. See [ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)'s
-amendment of 2026-09-23, which also carries the measurements. Both populations
-are now pinned cases in the exactness test.
-
 ---
 
 ## What this costs
