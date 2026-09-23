@@ -2,7 +2,62 @@
 
 ## Status
 
-**Proposed, 2026-08-28.** Not self-approved.
+**Accepted by the owner on 2026-09-23, together with
+[ADR 0054](./0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+without the review pass that decision 8 of 2026-08-29 made a condition.**
+Offered a choice that included that review pass as the recommended option,
+they chose the one labelled:
+
+> Akceptuj oba
+
+("Accept both.") What is accepted is the Decision section as written: the
+runtime draws the world from the published source-art sheets through a
+reviewed, typed extraction manifest, cut and resampled in the browser, keyed by
+zoning rather than terrain, with a declared and enforced fallback.
+
+**The provenance is the weaker kind, and one part of it is a refusal.** The
+ruling is the *label of a clickable option the integrating session wrote and
+the owner chose*, not a sentence they typed. `AGENTS.md` flags the same shape
+for its entries of 2026-09-08, 2026-09-09 and 2026-09-10, and it records this
+ruling as ruling 21 of the section *"Instructions recorded that are not
+releases"*. **The review pass was put to the owner as the recommended option
+and they declined it.** #535 decision 8 had accepted this document on the
+condition that it be reviewed against the code and reported back first. So
+this acceptance is the owner waiving their own condition. It does not show
+that the condition was met. For the record: a review of this document against
+`origin/main` was posted on #535 on 2026-08-29 and recommended *"Accept,
+unchanged"*. Comments on #703 on 2026-08-31 then said neither 0052 nor 0054
+*"has had one"*. This block does not resolve that disagreement. The acceptance
+rests on the owner's choice, not on either reading.
+
+**Where later ADRs have overtaken this one, noted here and not reconciled.**
+The decision is unchanged. What moved around it:
+
+- **Decision 1's count of sheets.** *"That is **three** sheets today"* no longer
+  describes the runtime. `src/rendering/assets/environment-sprites.ts` also
+  cuts a bed from `furniture.cell.bed.single.variants`, a fourth owner sheet.
+  And [ADR 0100](./0100-whether-a-rendered-object-sprite-can-be-published-art.md)
+  (accepted 2026-09-06) added a second publishing lane:
+  Blender-rendered object sprites with their own catalogue,
+  `public/game-content/rendered-art.v1.json`, beside `source-art.v1.json`. So
+  the published sheets are no longer the only art the renderer reads. The
+  4.40 MiB figure is this document's measurement at the time and was not
+  re-taken.
+- **The open question at the foot of this document.** *"Whether the twenty
+  catalogued objects should be drawn from the furniture sheets"* was answered in
+  part by ADR 0100's lane, which draws objects from renders rather than from
+  sheets. [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)
+  decision 5 (ruled 2026-09-13) asks for new production prompts covering tiles
+  and objects in the delivery's style, and makes that work stage 7 of the
+  identity rollout. So the sheets this document draws from are the art the game
+  has now, not the direction later art is produced in. That ruling authorises
+  prompts, not an edit here. No replacement sheet exists at the time of
+  writing, and every decision below still describes the code.
+
+---
+
+**Proposed, 2026-08-28.** Not self-approved. *(The state of this document
+before the ruling above.)*
 
 **The number is provisional, and it has already moved once.** This document was
 drafted as 0051 and reassigned to 0052 while it was still on its branch, because

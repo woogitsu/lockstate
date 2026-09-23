@@ -2,7 +2,68 @@
 
 ## Status
 
-**Proposed, 2026-09-02. Not self-approved.** **One of the eight decisions is
+**Accepted by the owner on 2026-09-23: every decision the 2026-09-02 rulings
+left open is accepted as this document recommends it.** Asked what to do with
+the decisions still open, they chose the option labelled:
+
+> Pozostałe wg rekomendacji
+
+("The rest as recommended.") The option names no decision, so which decisions
+it reaches was worked out by reading this document against its own section
+*"The owner ruled on five of these, 2026-09-02"*. **The five rulings of
+2026-09-02 stand unchanged**, including the rejection of decision 2's
+`redefine`. The list below is that reading, decision by decision:
+
+| Decision | Before 2026-09-23 | What the 2026-09-23 ruling does |
+|---|---|---|
+| 1 — a post is a property of the sector (option A) | open | **accepted**, option A, guards stacking on one tile included |
+| 2 — a narrow `redefine` | **rejected** 2026-09-02 (ruling 2: a placed post is a new sector) | nothing; stays rejected |
+| 3 — the save payload is authoritative | **confirmed** 2026-09-02 (ruling 3), built in #825 | nothing |
+| 4 — a route is an ordered list of waypoints | **storage confirmed** 2026-09-02 (ruling 4), gesture decided differently | nothing new; the storage was already ruled |
+| 5 — an unreachable post or waypoint is kept and reported (option A) | open | **accepted**, option A |
+| 6 — a shortened route's index is clamped where it is read | open | **accepted as written**, its own condition included: if the hazard proves unreachable, the decision is dropped |
+| 7 — two commands, neither undoable, each with its own refusal namespace | open | **accepted**, except the route gesture, which ruling 4 of 2026-09-02 already replaced |
+| 8 — out of scope | open, and **partly overtaken** by ruling 1 of 2026-09-02 (a duty shift is in scope) | **accepted** for every bullet except the duty-shift one, which stays overtaken |
+
+**Two readings in that table are judgements, and they are named here so a
+reader can check them.**
+
+- **Decision 4 is listed as already ruled.** The comment on
+  [#557](https://github.com/matmaxalez/lockstate/issues/557) that records this
+  ruling names *"a route is stored as ordered waypoints"* among the decisions
+  accepted now. This document's own decision 4 heading reads *"CONFIRMED as to
+  storage"* from 2026-09-02, so that clause adds nothing. Either reading gives
+  the same result: ordered waypoints, owned by the sector.
+- **Decision 6 is accepted together with its self-cancelling clause.** It was
+  written as a guard against a hazard that only decision 2's `redefine` made
+  reachable, and decision 2 was rejected. Under ruling 2 a player-placed post
+  is a new sector. A `redefine` does exist, but only on decision 3's restore
+  path, and a restore clears the walking index. Whether `SetSectorPatrolRoute`
+  can shorten a route under a walking guard depends on how that unbuilt
+  command changes an authored sector's definition. The decision's own words
+  already cover this: *"If an intervening guard clamps it already, this
+  decision is about nothing and should be dropped."* The acceptance does not
+  go further than those words.
+
+**The open questions are not decisions and the label does not reach them.**
+Open questions 1 and 6 were answered on 2026-09-02. Questions 2, 3, 4, 5 and 7
+carry no recommendation to accept, and they stay open. The same applies to
+every player-facing sentence this feature needs. The 2026-09-04 partial release
+of reservation 4 makes the wording ours and leaves its truth the owner's.
+
+**The provenance is the weaker kind.** The ruling is the *label of a clickable
+option the integrating session wrote and the owner chose*, not a sentence they
+typed. `AGENTS.md` flags the same shape for its entries of 2026-09-08,
+2026-09-09 and 2026-09-10. It is recorded there as ruling 20 of the section
+*"Instructions recorded that are not releases"*. The `Proposed` block below is
+kept rather than replaced, on the pattern
+[ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)'s Status
+block sets.
+
+---
+
+**Proposed, 2026-09-02. Not self-approved.** *(The state of this document
+before the ruling above.)* **One of the eight decisions is
 now implemented and the other seven are not**; a reader who disagrees with any
 of them should still treat the document as open, because the argument is the
 whole of the warrant and the owner has signed no part of it beyond what is
@@ -83,6 +144,12 @@ as written and each affected one is marked in place.** The document stays
 not. The fifth ruling answers open question 6, which had itself been *created*
 by the first four — so the count of answered questions and the count of open
 ones both moved on the same day, in opposite directions.
+
+> **"The document stays `Proposed` as a whole" stopped being true on
+> 2026-09-23.** The owner accepted the rest as recommended, and the Status
+> block above records which decisions that reaches. The sentence is kept
+> because it was true for three weeks, and this section is the record of what
+> the 2026-09-02 rulings did and did not settle.
 
 > **The sentence this replaces is kept, because the shape it describes is the
 > finding.** It read: *"four questions of its seven now have answers, three do
