@@ -1450,8 +1450,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note hud-build__arm-hint');
 
   /*
-   * `hud.build.note` -- "An order is queued now and built while the clock
-   * runs." -- and the sentence a paused newcomer needs (#920, and the owner's
+   * `hud.build.note` -- originally "An order is queued now and built while the
+   * clock runs.", now shortened for the 900x600 panel -- and the sentence a paused newcomer needs (#920, and the owner's
    * first ruling of 2026-08-30 in #639).
    *
    * ### What this block said until 2026-09-04, and why both directions are kept

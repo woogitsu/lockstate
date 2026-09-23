@@ -2385,9 +2385,8 @@
  * is what "net zero" bought and it is the whole argument for taking the height
  * from a line rather than from nowhere.
  *
- * **900x600 is not in that table, and it is the honest gap in this fix.** See
- * `.hud-build__order-note` in the `max-height: 700px` block at the foot of this
- * file for why the sentence is not shown there at all.
+ * This was the first pass. The shorter sentence now also fits at 900x600;
+ * see the `max-height: 700px` block below.
  */
 @media (min-height: 701px) {
   .hud-build[data-queued] .hud-build__arm-hint {
@@ -2434,9 +2433,8 @@
  * agent's `[hidden] { display: none }`. A class and an attribute beats one
  * class, which is what makes one rule enough.
  *
- * It does **not** have to beat that block's own `.hud-build__order-note
- * { display: none }`, and does not try to: below 701px tall the sentence is not
- * shown in any state, so the two rules agree there rather than compete.
+ * It also beats the short-viewport display rule when `hidden` is present:
+ * arrival must not reserve a line for a note about a queue that does not exist.
  *
  * It is hidden in the arrival state, which is every state a player loads the
  * game into, and that is exactly the state this panel has no height for: an
@@ -4007,46 +4005,12 @@
   }
 
   /*
-     The Build panel's queued-order sentence, and the one place it is **not**
-     shown. This is the honest gap in the fix for #920 and it is written out
-     rather than left to be discovered.
-
-     PR #647's shape, which the block above cites, exempted
-     `.hud-build__order-note` from this clamp so the sentence could be two lines
-     here. That is the right instinct and it does not fit. At 900x600 the arm
-     hint is already on this block's one-line clamp, so the 26.4px the sentence
-     needs has nowhere to come from -- and the three assertions named beside the
-     `[data-queued]` clamp above all require net zero in the queued state. An
-     exempted two-line note measured 204px of panel overflow against 178px
-     without it, and pushed the first refund's Cancel to y=518.6 against a fold
-     at 521.7: inside by 3.1px in the state with deliveries, and 26px over the
-     box in the state without them, where `app-shell.spec.ts`'s #390 test pins
-     the panel at exactly 0.
-
-     And **one line is worse than none here**, which is what rules out simply
-     letting the clamp apply. Clipped to one line at 238px the box is 238x13.2
-     and what survives is *"An order is queued now and built while the..."* --
-     the half saying the order was taken, with the half saying nothing happens
-     until the clock runs cut off. A player who has just spent 1,920 on
-     twenty-four orders reads that as a confirmation. PR #647 measured the same
-     `scrollHeight` 26 against `clientHeight` 13 at this viewport in August and
-     drew the same conclusion.
-
-     So below 701px tall the sentence is not rendered, and the dead end issue
-     #920 is about stays open at that one viewport.
-     `tests/browser/ui-build-order-note.spec.ts` asserts this rather than
-     hiding it: it requires the sentence laid out at the four taller viewports
-     and requires it to have no box here, so a change that closes the gap fails
-     the test and has to say so.
-
-     **What would close it is a shorter sentence** -- one that fits 238px on a
-     single line and still names the clock. That is wording, and wording is
-     recorded for the owner rather than invented in a layout fix.
-
-     This rule beats `.hud-build__order-note`'s own `margin-top` above and the
-     `[hidden]` guard is unaffected: both are `display`-neutral, and a hidden
-     element is hidden either way. */
-  .hud-build__order-note { display: none; }
+     The original two-line sentence did not fit at 900x600: it increased panel
+     overflow by 26px and pushed the first refund to the fold. A one-line clamp
+     cut off the important clock condition. The shorter EN/PL sentence keeps
+     that condition and fits on one line. The `[hidden]` guard above still wins
+     when nothing is queued; the #390 panel-budget test covers the queued state. */
+  .hud-build__order-note { display: block; }
 
   /* The priced hire sentence itself, exempted on the same terms as the other
      exemptions in this block -- and this one was forced by the owner's second

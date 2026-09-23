@@ -43,12 +43,11 @@ import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
  *   an unconditionally laid-out line costs 27px of overflow at 1280x720 and 9px
  *   at 900x600, measured on 2026-09-04 by injecting it from a test.
  * - **Queued**: the sentence must be laid out, unclipped, and **inside the
- *   panel's unscrolled fold**, at every viewport 701px tall or taller. Not
+ *   panel's unscrolled fold**, at every viewport. Not
  *   merely "in the DOM": PR #647's own review found a variant that resolved to
  *   one element with a 0x0 box inside a shut fold, which is issue #627's defect
- *   exactly. And at 900x600 it must have **no box at all** -- the panel cannot
- *   pay for it there, and that gap fails this test the moment it closes rather
- *   than passing quietly either way.
+ *   exactly. At 900x600 the shorter sentence must take the existing arm hint's
+ *   one line rather than growing the panel.
  * - **Queued, and what the sentence is paid for with**: the arm hint is clamped
  *   to two of its lines while a queue exists, and the deliveries block below the
  *   sentence keeps #703 ruling 2's guarantee. That coupling is the assertion the
@@ -208,7 +207,10 @@ async function readNote(page: Page, sentence: string, pausedWord: string): Promi
         inDocument: carriers.length,
         box: rect === null ? null : { width: Math.round(rect.width * 10) / 10, height: Math.round(rect.height * 10) / 10 },
         foldedAncestors,
-        clipped: subject === null ? false : subject.scrollHeight > subject.clientHeight + 0.5,
+        // Chromium rounds scrollHeight to an integer while clientHeight keeps
+        // the 13.2px line box. A real second line exceeds it by ~13px; 1px
+        // absorbs only that rounding, not clipped text.
+        clipped: subject === null ? false : subject.scrollHeight > subject.clientHeight + 1,
         bottom: rect === null ? null : Math.round(rect.bottom * 10) / 10,
         fold: Math.round(fold * 10) / 10,
         panelOverflow: panel.scrollHeight - panel.clientHeight,
@@ -348,38 +350,6 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       // The state is the one this test claims to be about.
       expect(queued.queueLaidOut, `nothing is queued at ${width}x${height}`).toBe(true);
 
-      /*
-       * The one viewport where this fix does not reach the player, asserted
-       * rather than left to be discovered.
-       *
-       * Below 701px tall `hud.css` does not render the sentence at all, because
-       * the arm hint it is paid for out of is already on that block's one-line
-       * clamp and there is nothing to take -- and because one clipped line of
-       * this sentence reads as a confirmation that the order is being built.
-       * The reasoning is beside `.hud-build__order-note { display: none }` in
-       * that block.
-       *
-       * This is a **failing-closed** assertion, not an exemption: a change that
-       * makes the sentence fit here fails this test and has to come and say so,
-       * which is the opposite of the silence that let `hud.build.note` go
-       * unrendered for twelve days.
-       */
-      if (height <= 700) {
-        expect(
-          queued.matches,
-          `the sentence is laid out at ${width}x${height}, which is below the 701px boundary hud.css suppresses it under`,
-        ).toBe(0);
-        expect(
-          queued.spendInFold,
-          `the spend line left the panel's fold at ${width}x${height} with no sentence on the panel at all`,
-        ).toBe(true);
-        expect(
-          queued.firstRefundInFold,
-          `the first refund's Cancel left the panel's fold at ${width}x${height} with no sentence on the panel at all`,
-        ).toBe(true);
-        continue;
-      }
-
       expect(queued.matches, `laid-out carriers of "${NOTE_TEXT}" at ${width}x${height}`).toBe(1);
       expect(
         queued.box?.height ?? 0,
@@ -435,8 +405,8 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       // the rail's width and the 13.2px it costs at 375px. Asserted as "two,
       // and not fewer" -- the number is the price, so a clamp that drifted
       // tighter would be taking more from the hint than the sentence needs.
-      expect(queued.armHintLinesShown, `the arm hint is not clamped to two lines at ${width}x${height}`).toBe(
-        Math.min(2, queued.armHintLinesTotal ?? 2),
+      expect(queued.armHintLinesShown, `the arm hint has the wrong clamp at ${width}x${height}`).toBe(
+        Math.min(height <= 700 ? 1 : 2, queued.armHintLinesTotal ?? 2),
       );
       // The text itself is never replaced -- the clamp cuts the box, and a
       // screen reader still gets the whole sentence.
