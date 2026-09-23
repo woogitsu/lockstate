@@ -216,15 +216,26 @@ async function refuseAnOrderOffTheMap(page: Page): Promise<void> {
   await page.getByRole('spinbutton', { name: 'Tile Y' }).fill(String(OFF_MAP_TILE.y));
   await page.locator('.hud-build__coordinates .ui-action').click();
 
-  // The sentence rather than the count: the log holds at most one refusal row
-  // at a time -- `hudAlertsFromWorkerMessage` replaces it by ordinal -- so a
-  // row that is present may be an *earlier* refusal, which is exactly the trap
-  // the camera probe below sets (its own `RemoveWall` is refused too, and
-  // `remove-wall.*` is one of the six domains that carry a tile).
-  await expect(page.locator(ROW), 'the simulation refused the order and the alerts list never heard about it').toContainText(
-    'that tile is outside the map',
-    { timeout: 20_000 },
-  );
+  // The sentence rather than the count: a row that is present may be an
+  // *earlier* refusal, which is exactly the trap the camera probe below sets
+  // (its own `RemoveWall` is refused too, and `remove-wall.*` is one of the
+  // six domains that carry a tile).
+  //
+  // **The comment here used to say the log holds at most one refusal row at a
+  // time, replaced by ordinal. Since the owner's ruling 26 of 2026-09-23
+  // (#985) it keeps every refusal its history still holds**
+  // (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`). So the
+  // probe's refusal is now a *second* row beside this one rather than a row
+  // this one replaces. The row under test is therefore found by its sentence,
+  // `offMapRow`, and never by being the only row.
+  await expect(offMapRow(page), 'the simulation refused the order and the alerts list never heard about it').toHaveCount(1, {
+    timeout: 20_000,
+  });
+}
+
+/** The build refusal's own row, found by its sentence -- see `refuseAnOrderOffTheMap`. */
+function offMapRow(page: Page) {
+  return page.locator(ROW).filter({ hasText: 'that tile is outside the map' });
 }
 
 /**
@@ -556,16 +567,28 @@ test.describe('a refusal row that carries a tile is the press (ADR 0122, the own
      * `probeCameraTile` submits a `RemoveWall` to take its reading, the
      * simulation refuses it -- there is no wall on that tile -- and
      * `remove-wall.*` is one of the six refusal domains that publish a tile.
-     * The log holds one refusal row at a time, replaced by ordinal, so a probe
+     * The log held one refusal row at a time, replaced by ordinal, so a probe
      * taken after the build order silently swapped the row under test for one
      * aimed at the tile the probe had just pressed. The press then moved the
      * camera by a tile and the test read that as the affordance not working.
      * Reading first leaves the build refusal as the newest, which
      * `refuseAnOrderOffTheMap` waits for by its sentence rather than by a
      * count for the same reason.
+     *
+     * **Since ruling 26 (2026-09-23, #985) the probe's refusal stays as a
+     * second row instead of replacing this one**, so the press below targets
+     * `offMapRow` by its sentence. The ordering is kept anyway: it still
+     * guarantees the camera reading is taken before anything is pressed.
      */
     const before = await probeCameraTile(page);
     await refuseAnOrderOffTheMap(page);
+
+    // Ruling 26 (2026-09-23, #985), seen on the assembled page: the probe's
+    // refused `RemoveWall` and the refused build order are two rows in the
+    // history, and the newer one did not erase the older. Before the ruling
+    // this read 1, because the list held one refusal row replaced by ordinal.
+    await expect(page.locator(ROW), 'the older refusal left the history when a newer one arrived').toHaveCount(2);
+    await expect(page.locator(ROW).filter({ hasText: 'no finished wall there either' })).toHaveCount(1);
 
     // Paused, so nothing the simulation does moves the world under the probe
     // between the two readings.
@@ -574,7 +597,7 @@ test.describe('a refusal row that carries a tile is the press (ADR 0122, the own
 
     const submittedBefore = (await sentCommands(page)).length;
 
-    await page.locator(ROW).click();
+    await offMapRow(page).click();
     // The camera move is synchronous inside the click handler; the probe below
     // takes a real press of its own, which is several round trips of settling
     // on its own account.
