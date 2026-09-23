@@ -139,6 +139,23 @@ def galvanized_material():
     return item
 
 
+def toilet_porcelain_material():
+    """Quiet ceramic speckling from the four-view reference, visible up close only."""
+    item = material("Cell toilet warm glazed porcelain", (0.82, 0.80, 0.73, 1), 0.29)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 32
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.22
+    ramp.color_ramp.elements[0].color = (0.70, 0.68, 0.62, 1)
+    ramp.color_ramp.elements[1].position = 0.77
+    ramp.color_ramp.elements[1].color = (0.89, 0.87, 0.79, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
 def washer_enamel_material():
     """Very fine scuffs break up broad cabinet planes without noisy 64px output."""
     item = material("Worn blue-grey washer enamel", (0.28, 0.37, 0.44, 1), 0.42)
@@ -909,30 +926,31 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Pedal stem", (0, 0.36, 0.05), (0.10, 0.16, 0.055), "steel", 0.013)
         box(collection, root, "Foot pedal", (0, 0.44, 0.072), (0.23, 0.12, 0.045), "galvanized_edge", 0.022)
     elif "toilet" in asset_id:
-        # Four-view reference: assets/source/concepts/cell-toilet-sink-multiview-v2.png.
-        # The 1x1 catalogue footprint requires a joined unit rather than the
-        # owner's tall 1:2.5 sheet. The recessed sink at north, bolted bridge
-        # and raised oval toilet seat at south remain separate at 64 px.
-        box(collection, root, "Institutional rear panel", (0, -0.42, 0.76), (0.74, 0.14, 1.12), "galvanized", 0.045)
-        box(collection, root, "Rear panel bright top", (0, -0.42, 1.34), (0.78, 0.17, 0.045), "galvanized_edge", 0.014)
-        for x in (-0.30, 0.30):
-            cylinder(collection, root, f"Rear bolt.{x}", (x, -0.42, 1.37), 0.035, 0.018, "steel", 12)
-        box(collection, root, "Steel sink body", (0, -0.24, 0.65), (0.76, 0.47, 0.29), "galvanized", 0.06)
-        box(collection, root, "Sink rolled rim", (0, -0.24, 0.808), (0.79, 0.50, 0.05), "galvanized_edge", 0.045)
-        box(collection, root, "Dark recessed basin", (0, -0.22, 0.84), (0.57, 0.29, 0.015), "metal_recess", 0.075)
-        box(collection, root, "Basin inner bottom", (0, -0.21, 0.853), (0.42, 0.18, 0.01), "galvanized", 0.06)
-        cylinder(collection, root, "Sink drain", (0, -0.19, 0.865), 0.05, 0.012, "shade", 20)
-        cylinder(collection, root, "Short faucet base", (0, -0.38, 0.91), 0.07, 0.16, "galvanized_edge", 24)
-        box(collection, root, "Faucet spout", (0, -0.29, 0.98), (0.072, 0.19, 0.05), "galvanized_edge", 0.024)
-        box(collection, root, "Bolted joining bridge", (0, 0.02, 0.56), (0.65, 0.13, 0.26), "steel", 0.025)
-        for x in (-0.31, 0.31):
-            cylinder(collection, root, f"Bridge bolt.{x}", (x, 0.02, 0.705), 0.025, 0.012, "steel", 12)
-        box(collection, root, "Toilet base", (0, 0.22, 0.28), (0.57, 0.56, 0.55), "galvanized", 0.11)
-        cylinder(collection, root, "Ceramic toilet bowl", (0, 0.20, 0.51), 0.28, 0.15, "porcelain", 48)
-        cylinder(collection, root, "Deep bowl cavity", (0, 0.21, 0.60), 0.20, 0.02, "metal_recess", 48)
-        cylinder(collection, root, "Dark bowl throat", (0, 0.21, 0.613), 0.10, 0.014, "shade", 32)
-        seat = torus(collection, root, "Raised ceramic oval seat", (0, 0.21, 0.625), 0.23, 0.06, "light")
+        # Reference: cell-toilet-multiview-v3.png. The buildable object is a
+        # toilet; the historical collection ID remains stable for consumers.
+        box(collection, root, "Anchored pedestal foot", (0, 0.15, 0.07), (0.54, 0.69, 0.13), "toilet_porcelain", 0.065)
+        box(collection, root, "Tapered pedestal", (0, 0.16, 0.29), (0.41, 0.47, 0.47), "toilet_porcelain", 0.13)
+        bowl = cylinder(collection, root, "Sculpted ceramic bowl", (0, 0.16, 0.52), 0.34, 0.30, "toilet_porcelain", 64)
+        bowl.scale.y = 1.20
+        cavity = cylinder(collection, root, "Bowl depth shadow", (0, 0.16, 0.683), 0.25, 0.026, "shade", 64)
+        cavity.scale.y = 1.19
+        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.16, 0.016, "toilet_water", 64)
+        water.scale.y = 1.13
+        inner = torus(collection, root, "Inner glazed bowl contour", (0, 0.16, 0.711), 0.21, 0.037, "porcelain")
+        inner.scale.y = 1.20
+        seat = torus(collection, root, "Broad oval raised seat", (0, 0.16, 0.738), 0.293, 0.061, "toilet_porcelain")
         seat.scale.y = 1.18
+        box(collection, root, "Seat rear hinge", (0, -0.24, 0.73), (0.34, 0.10, 0.08), "galvanized_edge", 0.025)
+        box(collection, root, "Cistern teal ceramic band", (0, -0.375, 0.70), (0.77, 0.24, 0.30), "medical_teal", 0.07)
+        box(collection, root, "Cistern glazed body", (0, -0.375, 0.87), (0.77, 0.25, 0.30), "toilet_porcelain", 0.075)
+        box(collection, root, "Cistern lip", (0, -0.375, 1.047), (0.81, 0.28, 0.046), "light", 0.02)
+        box(collection, root, "Top-visible teal front trim", (0, -0.218, 1.071), (0.69, 0.038, 0.016), "medical_teal", 0.008)
+        cylinder(collection, root, "Flush button outer ring", (0, -0.38, 1.081), 0.085, 0.022, "galvanized_edge", 48)
+        cylinder(collection, root, "Flush button centre", (0, -0.38, 1.095), 0.052, 0.015, "steel", 48)
+        cylinder(collection, root, "Supply pipe", (0.43, -0.38, 0.44), 0.037, 0.77, "galvanized_edge", 24)
+        cylinder(collection, root, "Supply floor flange", (0.43, -0.38, 0.045), 0.09, 0.035, "steel", 32)
+        for x in (-0.22, 0.22):
+            cylinder(collection, root, f"Foot anchor.{x}", (x, 0.40, 0.15), 0.035, 0.017, "galvanized_edge", 16)
     else:
         box(collection, root, "Housing", (0, 0.02, 1.7), (1.4, 0.5, 0.24), "steel")
         box(collection, root, "Ceiling panel", (0, 0, 1.87), (1.2, 0.45, 0.18), "light", 0.01)
@@ -971,6 +989,8 @@ def main():
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
+    MATERIALS["toilet_porcelain"] = toilet_porcelain_material()
+    MATERIALS["toilet_water"] = material("Cell toilet dark still water", (0.075, 0.18, 0.23, 1), 0.21)
     MATERIALS["canteen_wood"] = canteen_wood_material()
     MATERIALS["bench_wood"] = corridor_bench_wood_material()
     MATERIALS["desk_laminate"] = employee_desk_laminate_material()

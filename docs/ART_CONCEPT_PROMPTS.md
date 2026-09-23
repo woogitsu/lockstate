@@ -137,6 +137,13 @@ coping proud of the quarter-tile edge.
 before prompting: it declares `(1, 1)` while the shipped sheet is a 1:2.5
 combined column, and its basin overhangs its own tile by 0.02.
 
+The 2026-09-24 toilet refinement uses a new original four-view reference at
+`assets/source/concepts/cell-toilet-multiview-v3.png` and provenance at
+`assets/source/concepts/cell-toilet-v3.md`. Its historic collection ID is
+retained, while the model reads as the actual buildable 1×1 toilet: an oval
+ceramic rim and dark basin beneath a compact cistern. The generated reference
+guides the Blender model and is not copied into the runtime sprite.
+
 ### Infirmary — `furniture.medical.bed.single`
 
 > a medical bed, 1×2 tiles, shown in a true overhead view and three consistent
