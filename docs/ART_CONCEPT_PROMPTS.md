@@ -144,6 +144,15 @@ retained, while the model reads as the actual buildable 1×1 toilet: an oval
 ceramic rim and dark basin beneath a compact cistern. The generated reference
 guides the Blender model and is not copied into the runtime sprite.
 
+### Shower fixture — `fixture.shower.head`
+
+The one-tile wall-mounted shower has a 2026-09-24 original
+four-view reference at `assets/source/concepts/shower-head-multiview-v3.png`
+and provenance at `assets/source/concepts/shower-head-v3.md`. Model a broad
+dark perforated face with two readable nozzle rings, a teal edge, a north-side
+mounting plate and the short exposed supply arm. Keep the head and wall mount
+distinct at the game's 64×64 world size.
+
 ### Infirmary — `furniture.medical.bed.single`
 
 > a medical bed, 1×2 tiles, shown in a true overhead view and three consistent

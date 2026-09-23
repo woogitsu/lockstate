@@ -39,6 +39,7 @@ Nothing here is textured, because nothing in this pipeline is: these are flat
 materials under two suns. That ceiling is real and is stated in the pull
 request rather than implied away.
 """
+import math
 import sys
 from pathlib import Path
 
@@ -134,6 +135,21 @@ def galvanized_material():
     ramp.color_ramp.elements[1].position = 0.75
     ramp.color_ramp.elements[1].color = (0.68, 0.70, 0.68, 1)
     links.new(coords.outputs["Generated"], noise.inputs["Vector"])
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def shower_enamel_material():
+    """Restrained enamel wear from the four-view mount reference."""
+    item = material("Shower blue-grey enamel", (0.17, 0.27, 0.34, 1), 0.51)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 24
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.12, 0.20, 0.27, 1)
+    ramp.color_ramp.elements[1].color = (0.24, 0.34, 0.40, 1)
     links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
     return item
@@ -928,23 +944,33 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Tap lever.{x}", (x, -0.285, 0.69), (0.15, 0.035, 0.035), "steel", 0.012)
         box(collection, root, "Spout", (0, -0.20, 0.69), (0.07, 0.22, 0.07), "steel", 0.025)
     elif asset_id == "fixture.shower.head":
-        # Four-view reference: assets/source/concepts/shower-head-multiview-v2.png.
-        # The fixed wall plate, elbow and perforated disc have separate depths,
-        # so the silhouette remains clear when projected onto one 64 px tile.
-        box(collection, root, "Mounting plate", (0, -0.39, 0.85), (0.50, 0.16, 0.22), "galvanized", 0.035)
-        box(collection, root, "Plate inset", (0, -0.39, 0.976), (0.38, 0.12, 0.015), "galvanized_edge", 0.018)
-        for x in (-0.19, 0.19):
-            cylinder(collection, root, f"Mount bolt.{x}", (x, -0.39, 0.991), 0.025, 0.014, "steel", 12)
-        cylinder(collection, root, "Pipe socket", (0, -0.30, 0.95), 0.09, 0.10, "galvanized_edge", 24)
-        box(collection, root, "Exposed pipe", (0, -0.15, 0.94), (0.11, 0.40, 0.11), "galvanized", 0.05)
-        cylinder(collection, root, "Elbow collar", (0, 0.05, 0.94), 0.105, 0.13, "galvanized_edge", 24)
-        cylinder(collection, root, "Shower head body", (0, 0.13, 0.82), 0.29, 0.18, "galvanized", 48)
-        torus(collection, root, "Rolled shower rim", (0, 0.13, 0.91), 0.25, 0.035, "galvanized_edge")
-        cylinder(collection, root, "Recessed perforated face", (0, 0.13, 0.914), 0.23, 0.02, "metal_recess", 48)
-        for x, y in ((0, 0.13), (-0.10, 0.13), (0.10, 0.13),
-                     (-0.05, 0.045), (0.05, 0.045), (-0.05, 0.215), (0.05, 0.215),
-                     (-0.16, 0.09), (0.16, 0.09), (-0.16, 0.18), (0.16, 0.18)):
-            cylinder(collection, root, f"Jet nozzle.{x}.{y}", (x, y, 0.931), 0.018, 0.014, "galvanized_edge", 12)
+        # Reference: shower-head-multiview-v3.png. Broad dark face and two
+        # nozzle rings survive the one-tile downsample; colored service valves
+        # flank the pipe without becoming a separate buildable object.
+        box(collection, root, "Enamel wall mounting plate", (0, -0.40, 0.86), (0.68, 0.18, 0.25), "shower_enamel", 0.034)
+        box(collection, root, "Worn raised plate rim", (0, -0.40, 0.996), (0.71, 0.20, 0.028), "galvanized_edge", 0.017)
+        box(collection, root, "Inset blue-grey face", (0, -0.40, 1.014), (0.61, 0.13, 0.014), "shower_enamel", 0.012)
+        for x in (-0.27, 0.27):
+            for y in (-0.45, -0.35):
+                cylinder(collection, root, f"Dark plate bolt.{x}.{y}", (x, y, 1.032), 0.023, 0.014, "steel", 12)
+        cylinder(collection, root, "Wall pipe socket", (0, -0.30, 1.05), 0.105, 0.13, "galvanized_edge", 32)
+        box(collection, root, "Bent brushed-steel arm", (0, -0.175, 1.055), (0.105, 0.30, 0.10), "galvanized", 0.045)
+        cylinder(collection, root, "Coupling dark joint", (0, -0.085, 0.88), 0.095, 0.058, "steel", 32)
+        cylinder(collection, root, "Head coupling bright sleeve", (0, -0.075, 0.89), 0.108, 0.062, "galvanized_edge", 32)
+        cylinder(collection, root, "Shallow shower head shell", (0, 0.155, 0.81), 0.32, 0.20, "galvanized", 64)
+        torus(collection, root, "Teal rolled head ring", (0, 0.155, 0.920), 0.277, 0.031, "shower_teal")
+        cylinder(collection, root, "Deep charcoal nozzle face", (0, 0.155, 0.918), 0.263, 0.018, "metal_recess", 64)
+        for ring_index, (radius, count) in enumerate(((0.115, 8), (0.204, 13))):
+            for hole_index in range(count):
+                angle = 2 * math.pi * hole_index / count
+                x = radius * math.cos(angle)
+                y = 0.155 + radius * math.sin(angle)
+                cylinder(collection, root, f"Nozzle.{ring_index}.{hole_index}", (x, y, 0.936), 0.016, 0.012, "shower_nozzle", 12)
+        cylinder(collection, root, "Centre diffuser surround", (0, 0.155, 0.937), 0.055, 0.012, "galvanized_edge", 32)
+        cylinder(collection, root, "Centre dark diffuser", (0, 0.155, 0.946), 0.032, 0.010, "shade", 32)
+        for x, surface in ((-0.255, "shower_hot"), (0.255, "shower_cold")):
+            cylinder(collection, root, f"Service valve body.{x}", (x, -0.20, 0.88), 0.070, 0.13, "galvanized_edge", 24)
+            cylinder(collection, root, f"Service valve lens.{x}", (x, -0.20, 0.955), 0.038, 0.014, surface, 24)
     elif asset_id == "fixture.cell.waste_bin":
         # Four-view reference: assets/source/concepts/waste-bin-multiview-v2.png.
         # A dark opening, raised lid at the back and pedal at the front make
@@ -1024,6 +1050,11 @@ def main():
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
+    MATERIALS["shower_enamel"] = shower_enamel_material()
+    MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)
+    MATERIALS["shower_nozzle"] = material("Shower pale nozzle jets", (0.68, 0.72, 0.68, 1), 0.39)
+    MATERIALS["shower_hot"] = material("Shower hot service mark", (0.58, 0.13, 0.09, 1), 0.54)
+    MATERIALS["shower_cold"] = material("Shower cold service mark", (0.09, 0.26, 0.55, 1), 0.54)
     MATERIALS["toilet_porcelain"] = toilet_porcelain_material()
     MATERIALS["toilet_water"] = material("Cell toilet dark still water", (0.075, 0.18, 0.23, 1), 0.21)
     MATERIALS["canteen_wood"] = canteen_wood_material()
