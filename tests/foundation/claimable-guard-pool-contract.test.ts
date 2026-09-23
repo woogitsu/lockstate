@@ -156,6 +156,14 @@ describe('who draws on the free guard pool', () => {
       // The responder claim (#941), which #996 deliberately did not narrow:
       // a response is what the reserve is held for.
       'src/simulation/incidents/response-system.ts claimableGuardIds x1',
+      // A READER, not a claimant (ADR 0095 decision 1, 2026-09-23): the
+      // coverage read model's `spare` figure is this pool's size, counted
+      // through the function the responder claim calls so the number the
+      // panel compares against the reserve is the pool a response draws on.
+      // It claims nobody, so it is excluded from the duty count below by
+      // name -- and a second call site in it, or a move to the search pool,
+      // still fails this row.
+      'src/simulation/security/response-reserve.ts claimableGuardIds x1',
     ].sort());
   });
 
@@ -168,7 +176,13 @@ describe('who draws on the free guard pool', () => {
      * sentence enumerates -- two -- so that adding a third fails here with the
      * reason attached rather than leaving a true-sounding sentence in place.
      */
-    const claimants = poolConsumers().filter((entry) => !entry.startsWith('src/simulation/security/deployment-system.ts'));
+    const claimants = poolConsumers().filter(
+      (entry) =>
+        !entry.startsWith('src/simulation/security/deployment-system.ts') &&
+        // The read model's counter (ADR 0095 decision 1), which is a reader
+        // and not a duty; see its row above.
+        !entry.startsWith('src/simulation/security/response-reserve.ts'),
+    );
     expect(
       new Set(claimants.map((entry) => entry.split('/')[2])),
       'the covered rung says "Incidents and searches need free guards." -- two duties, and this is the set it names',

@@ -10,6 +10,8 @@ import {
   type SectorPostSource,
 } from '../security/deployment-phase';
 import type { CoverageReportEntry } from '../security/deployment-system';
+import { isPostEligibleStaffRoleId } from '../security/post-eligibility';
+import { responseReserveGuardCount, spareGuardCount, type ResponderCountSource } from '../security/response-reserve';
 import type { TilePosition } from '../world/coordinates';
 import {
   compareStableIds,
@@ -70,6 +72,17 @@ export interface StaffProjectionSource {
    * (`projection-catalog.ts`, `hud/staff`).
    */
   readonly sectors?: SectorPostSource;
+  /**
+   * `IncidentResponseSystem`, asked one question: how many responders the
+   * worst incident needs (`responseReserveGuardCount`, ADR 0095 decision 1).
+   *
+   * **Optional, and absent means `totals.reserve` is absent** -- not zero. A
+   * reserve of `0` would say the prison needs nobody free to answer anything,
+   * which is a claim about incident response a session without a response
+   * system cannot make; the Staff panel reads an absent reserve as "no reserve
+   * rung to decide" and falls back to the three rungs it had before.
+   */
+  readonly responders?: ResponderCountSource;
 }
 
 export interface StaffProjectionOptions {
@@ -139,6 +152,20 @@ export interface StaffViewModel {
     readonly required: number;
     readonly assigned: number;
     readonly shortage: number;
+    /**
+     * Guards an incident response could claim now: `claimableGuardIds`'
+     * size, post-eligible roles in phase `'unassigned'` only
+     * (`spareGuardCount`). **Not `unassigned`**, which counts every role --
+     * a nurse standing free is not a spare guard (ADR 0053 decision 3).
+     */
+    readonly spare: number;
+    /**
+     * Free guards the worst incident needs before any responder is claimed
+     * for it (`responseReserveGuardCount`, ADR 0095 decision 1): prison-wide,
+     * not summed over sectors (that ADR's open question 2). Absent when no
+     * response system was supplied.
+     */
+    readonly reserve?: number;
   };
   /** Absent unless the corresponding system was supplied. */
   readonly patrolMetrics?: {
@@ -260,6 +287,7 @@ export function projectStaff(
 
   const patrolMetrics = source.patrol?.getMetrics();
   const deploymentMetrics = source.deployment?.getMetrics();
+  const reserve = source.responders === undefined ? undefined : responseReserveGuardCount(source.responders);
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -281,6 +309,8 @@ export function projectStaff(
       required,
       assigned,
       shortage,
+      spare: spareGuardCount(source.staff, (staffRoleId) => isPostEligibleStaffRoleId(staffRoleId, staffRoles)),
+      ...(reserve !== undefined ? { reserve } : {}),
     },
     ...(patrolMetrics !== undefined ? { patrolMetrics } : {}),
     ...(deploymentMetrics !== undefined ? { deploymentMetrics } : {}),

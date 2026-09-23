@@ -1268,6 +1268,16 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.coverage-overcrowded': 'Przeludnienie',
   'hud.security.coverage-overcrowded-hint':
     'Więcej więźniów niż łóżek: bezpieczeństwo każdego więźnia spada szybciej, a powyżej pewnego progu także higiena — dopóki dla każdego nie będzie łóżka.',
+  // ADR 0095 decision 1. *"Na styk"* is the ordinary Polish for "just barely
+  // enough" -- every post filled and nothing to spare -- which is this rung
+  // exactly, and it is shorter than *"Obsadzone"*, already on this badge. The
+  // hint keeps `coverage-short-hint`'s *"Zatrudnij jeszcze {count}"* with no
+  // noun after the count, so it agrees at every count; *"najgorszy bunt"* is
+  // the English *"the worst riot"*, argued in the English entry.
+  'hud.security.coverage-stretched': 'Na styk',
+  'hud.security.coverage-stretched-hint': 'Zatrudnij jeszcze {count}, aby odpowiedzieć na najgorszy bunt.',
+  'hud.security.coverage-stretched-description':
+    'Wszystkie posterunki są obsadzone, ale wolnych strażników jest za mało, by odpowiedzieć na najgorszy bunt.',
 
   // =====================================================================
   // Regime panel -- `hud.regime.*`.

@@ -85,7 +85,9 @@ import {
  *
  * ## What it computes, which is nothing
  *
- * Three numbers copied across the boundary. It does not derive `required` from
+ * Five numbers copied across the boundary -- the three coverage figures and,
+ * since ADR 0095 decision 1, the free pool and the reserve it is measured
+ * against. It does not derive `required` from
  * the population, does not recompute `shortage` from the other two, and holds no
  * threshold: `DeploymentSystem.requiredGuardCountFor` is the one place a
  * requirement is decided (ADR 0048 decision 3) and `projectStaff` is the one
@@ -98,6 +100,12 @@ export function staffCoverageFromProjection(view: StaffViewModel): HudStaffCover
     required: view.totals.required,
     assigned: view.totals.assigned,
     shortage: view.totals.shortage,
+    // ADR 0095 decision 1: the second budget, copied like the first. `spare`
+    // is always published; `reserve` only by a session with a response
+    // system, and an absent one stays absent rather than becoming a `0` that
+    // would say a riot needs nobody.
+    spare: view.totals.spare,
+    ...(view.totals.reserve !== undefined ? { reserve: view.totals.reserve } : {}),
   };
 }
 

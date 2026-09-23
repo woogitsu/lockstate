@@ -327,6 +327,24 @@ export function formatHeldGuardText(
  * - **Understaffed** (`warning`): it has some of what it asks for.
  * - **Covered** (`success`): it has all of it.
  *
+ * **Four, since ADR 0095 decision 1 (accepted by the owner on 2026-09-23), and
+ * the list above is kept as the three it was.** A fourth rung sits between the
+ * last two:
+ *
+ * - **Stretched** (`caution`): every post is filled, and fewer guards are free
+ *   than the worst incident needs -- `spare < reserve`, both published by
+ *   `projectStaff` (`StaffViewModel.totals`). `Covered` is now the prison that
+ *   has its posts **and** that reserve.
+ *
+ * It is decided only when both figures crossed the boundary; a view model
+ * without them (a harness, an older fixture) gets the three rungs above,
+ * unchanged. `'caution'` rather than `'warning'`, on decision 1's instruction
+ * that the rung *"must not read as a failure -- the posts really are filled --
+ * and it must not read as sufficiency either"*. The simulation ladder in
+ * `src/simulation/security/coverage-state.ts` keeps three rungs, and this one
+ * maps to its `'covered'`: a filled post provisions `safety` in full whatever
+ * is free, and decision 1 changes no simulation behaviour.
+ *
  * A `success` tone for the third rather than no tone, which is where this
  * departs from `occupancyTone` deliberately. That function returns `undefined`
  * below its warning band because *"a status strip where several things are
@@ -454,6 +472,11 @@ export interface StaffCoverageReadout {
    * How many more hires clear the shortage -- the projection's own summed
    * figure, not `required - assigned`. Zero when nothing is short, and then it
    * fills no placeholder because `securityCoverageMetHint` declares none.
+   *
+   * On the reserve rung (ADR 0095 decision 1) it is `reserve - spare`: the
+   * hires that bring the free pool to what the worst incident needs. Still the
+   * number of presses, because a hire made with every post filled is not
+   * posted -- `DeploymentSystem` posts only into a shortage.
    */
   readonly hireCount: number;
 }
@@ -477,6 +500,39 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
       hireCount: coverage.shortage,
+    };
+  }
+  // Every post filled, and fewer guards free than the worst incident needs
+  // (ADR 0095 decision 1, accepted by the owner on 2026-09-23). Below the two
+  // rungs above because it is only asked of a prison whose posts are filled,
+  // and above `Covered` because it is the state `Covered` used to be silent
+  // about: ADR 0095's measured prison read `Covered` at `2 of 2` and resolved
+  // 0 incidents in sixteen days.
+  //
+  // **`spare < reserve`, not `spare === 0`**, on decision 1's own statement of
+  // what `Covered` must mean once this rung exists -- *"that the prison can
+  // both hold its posts and answer what happens"* -- which a prison with two
+  // free guards against a reserve of five cannot, for the worst riot. The
+  // simulation side decides the same rung for the `COVERAGE` chip in
+  // `isResponseReserveShort` (`src/simulation/security/response-reserve.ts`),
+  // and `tests/unit/security-response-reserve.test.ts` drives both over one
+  // grid, because boundary 1 keeps them from sharing a function.
+  //
+  // `required > 0` is implied by the branch above having not fired with
+  // `assigned > 0`, and stated anyway: a prison that asks for nobody holds
+  // nobody who could open an incident, and stays on `Covered` below.
+  if (
+    coverage.spare !== undefined &&
+    coverage.reserve !== undefined &&
+    coverage.required > 0 &&
+    coverage.assigned > 0 &&
+    coverage.spare < coverage.reserve
+  ) {
+    return {
+      tone: 'caution',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageStretched,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageStretchedHint,
+      hireCount: coverage.reserve - coverage.spare,
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an

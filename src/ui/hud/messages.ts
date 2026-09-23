@@ -1059,6 +1059,29 @@ export const HUD_MESSAGE_KEY = {
    */
   securityCoverageOvercrowded: 'hud.security.coverage-overcrowded',
   securityCoverageOvercrowdedHint: 'hud.security.coverage-overcrowded-hint',
+  /**
+   * **The rung between `Covered` and `Understaffed`**
+   * ([ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+   * decision 1, accepted by the owner on 2026-09-23): every post is filled and
+   * fewer guards are free than the worst incident needs.
+   *
+   * Three keys, on the division the two sets above already use.
+   * `...Stretched` is the badge word, in the one-state-in-a-word register of
+   * "Covered", "Understaffed" and "Unguarded", and the Staff panel and the
+   * `COVERAGE` chip both render it so the two cannot come to call one rung two
+   * things. `...StretchedHint` is the panel's sentence under it, which names
+   * the action and its count exactly as `securityCoverageShortHint` does --
+   * `{count}` is the presses, `reserve - spare`. `...StretchedDescription` is
+   * the chip's `title` and screen-reader text, and it carries **no figure**
+   * because the chip learns this rung from `PrisonCondition`, which is a set
+   * of names with no magnitude (`src/ui/simulation-conditions.ts`).
+   *
+   * The locale entries carry the clause-by-clause reading of why each is
+   * true.
+   */
+  securityCoverageStretched: 'hud.security.coverage-stretched',
+  securityCoverageStretchedHint: 'hud.security.coverage-stretched-hint',
+  securityCoverageStretchedDescription: 'hud.security.coverage-stretched-description',
 
   /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content

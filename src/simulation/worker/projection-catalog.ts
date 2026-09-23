@@ -389,6 +389,11 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
           // `hud/security` below reads, and the one the deployment system
           // routes against, so the panel and the walk cannot disagree.
           sectors: runtime.securitySectors,
+          // Asked one question -- how many responders the worst incident
+          // needs -- so the coverage block can say how many free guards a
+          // riot takes (ADR 0095 decision 1). The same system that claims
+          // them, so the figure and the claim share one formula.
+          responders: runtime.incidentResponseSystem,
         },
         tick,
         pageRequest(request),

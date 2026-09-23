@@ -2502,6 +2502,23 @@ export interface HudStaffCoverageViewModel {
   readonly assigned: number;
   /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
   readonly shortage: number;
+  /**
+   * Guards an incident response could claim right now -- `StaffViewModel.totals.spare`,
+   * post-eligible staff in phase `'unassigned'` and nobody else
+   * ([ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+   * decision 1). Optional together with `reserve`: the reserve rung is decided
+   * only when both crossed the boundary.
+   */
+  readonly spare?: number;
+  /**
+   * Free guards the worst incident needs before a single responder is claimed
+   * for it -- `StaffViewModel.totals.reserve`, which the simulation asks of
+   * `IncidentResponseSystem.requiredResponderCount` at
+   * `INCIDENT_SEVERITY_CEILING`. Carried, never derived here: the HUD knows
+   * neither the ceiling nor the responder policy and must not learn them.
+   * Absent when the session published none.
+   */
+  readonly reserve?: number;
 }
 
 /*

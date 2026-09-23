@@ -2,6 +2,36 @@ import type { EntityId } from '../entity/entity-store';
 
 export const INCIDENT_RECORD_SCHEMA_VERSION = 1 as const;
 
+/**
+ * **The highest severity any incident this build opens can carry** -- the top
+ * of `IncidentRecord.severity`'s 0-10 band, as a number something can read
+ * ([ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+ * decision 1).
+ *
+ * Until this constant existed the ceiling was written inline three times in
+ * `IncidentTriggerSystem` -- the escape attempt, the riot and the gang
+ * retaliation each clamp with `Math.min(10, ...)` -- and ADR 0095 recorded
+ * that as the obstacle to its recommended reserve: *"There is no exported
+ * ceiling constant to reach for ... so taking this option means authoring
+ * that ceiling somewhere it can be read by both the response system and a
+ * projection."* This is that authoring. The three clamp sites now read it,
+ * so **no incident's severity moved**: the value is the literal it replaces.
+ *
+ * `ASSAULT_SEVERITY_CEILING` (`./flashpoint.ts`, 5) is a *lower* ceiling for
+ * one type inside this band, not a second top of it;
+ * `tests/unit/security-response-reserve.test.ts` pins that it stays at or
+ * below this one, which is what makes "the highest severity the game can
+ * produce" a statement about this number alone.
+ *
+ * **What reads it besides the trigger system.** `responseReserveGuardCount`
+ * (`src/simulation/security/response-reserve.ts`) asks
+ * `IncidentResponseSystem.requiredResponderCount` how many free guards an
+ * incident at this severity needs, which is the reserve the Staff panel and
+ * the status strip compare the free pool against. A retuned ceiling moves
+ * that figure with it, which is the point of it being one number.
+ */
+export const INCIDENT_SEVERITY_CEILING = 10;
+
 /** The representative incident types issue #28 names. */
 export type IncidentType = 'assault' | 'escape-attempt' | 'riot' | 'gang-retaliation';
 

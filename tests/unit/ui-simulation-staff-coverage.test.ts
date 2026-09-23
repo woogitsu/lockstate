@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import {
   SIMULATION_PROTOCOL_VERSION,
   type MainToWorkerMessage,
@@ -479,5 +480,71 @@ describe('the reader asks for the figures and none of the rows', () => {
     channel.reply(0, undefined);
     await expect(pending).resolves.toBeUndefined();
     reader.dispose();
+  });
+});
+
+/**
+ * **The reserve rung (ADR 0095 decision 1, accepted by the owner on
+ * 2026-09-23)**: the mapping carries the two figures it is decided from, and
+ * the three strings it renders are pinned verbatim in both shipped languages
+ * so the record `AGENTS.md` reservation 4 owes the owner cannot drift from what
+ * the game says. Why each clause is true is argued in the English locale entry
+ * for `hud.security.coverage-stretched`.
+ */
+describe('the reserve rung between covered and understaffed', () => {
+  const polish = new Localizer({ locale: 'pl', catalogs: [messageCatalogPl, defaultMessageCatalogEn] });
+
+  it('copies spare and reserve off the projection’s totals, and leaves an absent reserve absent', () => {
+    const withReserve = { ...staffView({ required: 2, assigned: 2, shortage: 0 }) };
+    const totals = { ...withReserve.totals, spare: 1, reserve: 5 };
+    expect(staffCoverageFromProjection({ ...withReserve, totals })).toEqual({
+      required: 2,
+      assigned: 2,
+      shortage: 0,
+      spare: 1,
+      reserve: 5,
+    });
+    const withoutReserve = staffCoverageFromProjection({ ...withReserve, totals: { ...withReserve.totals, spare: 1 } });
+    expect('reserve' in withoutReserve).toBe(false);
+  });
+
+  it('renders the badge, the hint with its count, and the chip description, verbatim in English', () => {
+    const readout = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, spare: 0, reserve: 5 });
+    expect(localizer.format(readout.badgeKey)).toBe('Stretched');
+    expect(localizer.format(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })).toBe(
+      'Hire 5 more to answer the worst riot.',
+    );
+    expect(localizer.format(HUD_MESSAGE_KEY.securityCoverageStretchedDescription)).toBe(
+      'Every post is staffed, but too few guards are free to answer the worst riot.',
+    );
+  });
+
+  it('renders the same three, verbatim in Polish', () => {
+    const readout = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, spare: 4, reserve: 5 });
+    expect(polish.format(readout.badgeKey)).toBe('Na styk');
+    expect(polish.format(readout.hintKey, { count: polish.formatNumber(readout.hireCount) })).toBe(
+      'Zatrudnij jeszcze 1, aby odpowiedzieć na najgorszy bunt.',
+    );
+    expect(polish.format(HUD_MESSAGE_KEY.securityCoverageStretchedDescription)).toBe(
+      'Wszystkie posterunki są obsadzone, ale wolnych strażników jest za mało, by odpowiedzieć na najgorszy bunt.',
+    );
+  });
+
+  it('gives the four rungs four badge words and four hints', () => {
+    const rungs = [
+      { required: 2, assigned: 2, shortage: 0, spare: 5, reserve: 5 },
+      { required: 2, assigned: 2, shortage: 0, spare: 0, reserve: 5 },
+      { required: 2, assigned: 1, shortage: 1, spare: 0, reserve: 5 },
+      { required: 2, assigned: 0, shortage: 2, spare: 0, reserve: 5 },
+    ].map((coverage) => describeStaffCoverage(coverage));
+    expect(rungs.map((readout) => readout.badgeKey)).toEqual([
+      HUD_MESSAGE_KEY.securityCoverageMet,
+      HUD_MESSAGE_KEY.securityCoverageStretched,
+      HUD_MESSAGE_KEY.securityCoverageShort,
+      HUD_MESSAGE_KEY.securityCoverageUnguarded,
+    ]);
+    expect(new Set(rungs.map((readout) => localizer.format(readout.badgeKey))).size).toBe(4);
+    expect(new Set(rungs.map((readout) => readout.hintKey)).size).toBe(4);
+    expect(new Set(rungs.map((readout) => readout.tone))).toEqual(new Set(['success', 'caution', 'warning', 'danger']));
   });
 });

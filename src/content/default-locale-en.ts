@@ -3302,6 +3302,88 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.coverage-overcrowded-hint':
     "More prisoners than beds: every prisoner's safety runs down faster, and past a point their hygiene does too, until there is a bed for each of them.",
   /*
+   * **The rung ADR 0095 decision 1 adds between "Covered" and "Understaffed"**
+   * (accepted by the owner on 2026-09-23, `AGENTS.md` ruling 18), authored
+   * under the 2026-09-04 partial release of reservation 4: the words are ours,
+   * the truth is not, so each clause is argued at the code that decides it.
+   *
+   * ## When it is on screen
+   *
+   * `describeStaffCoverage` (`src/ui/hud/staff-panel.ts`) picks it when
+   * `required > 0`, `assigned > 0`, `shortage <= 0` and `spare < reserve`;
+   * `isResponseReserveShort` (`src/simulation/security/response-reserve.ts`)
+   * is the same predicate on the simulation side and raises
+   * `PrisonCondition`'s `'security.response-reserve-short'` for the strip.
+   * `spare` is `claimableGuardIds`' size -- the pool
+   * `IncidentResponseSystem.claimableResponders` claims from -- and `reserve`
+   * is `requiredResponderCount(INCIDENT_SEVERITY_CEILING)`, 5 under the
+   * default policy. **Which reserve definition is ADR 0095's recommendation
+   * (the ceiling constant), not a separate owner choice**: the ruling
+   * accepted decision 1 and named neither, so its open question 1 is open.
+   *
+   * ## "Stretched" / the badge
+   *
+   * A word for a state that is neither failure nor sufficiency, which is what
+   * decision 1 asks of this rung: *"It must not read as a failure -- the
+   * posts really are filled -- and it must not read as sufficiency either."*
+   * Toned `'caution'`, below `Understaffed`'s `'warning'`. Nine characters,
+   * between "Covered" (7) and "Overcrowded" (11), both of which already stand
+   * on the strip's `COVERAGE` badge; measured in
+   * `tests/browser/ui-strip-badged-width.spec.ts`.
+   *
+   * ## "Hire {count} more to answer the worst riot." / the panel hint
+   *
+   * - *"Hire {count} more"*: `{count}` is `reserve - spare`, the presses that
+   *   bring the free pool to the reserve. **A hire made here stays free.**
+   *   `DeploymentSystem.assignUnassignedGuards` posts a guard only into a
+   *   shortage, and this rung is only reached at `shortage <= 0`, so the hire
+   *   is `'unassigned'` and joins `claimableGuardIds` -- the mechanism
+   *   `tests/integration/security-coverage-versus-response.test.ts`'s rescue
+   *   case measures, a riot resolved by guards hired while it was open. The
+   *   shape of `hud.security.coverage-short-hint`, with no noun after the
+   *   count, so it reads correctly at every count.
+   * - *"to answer the worst riot"*: a riot's severity is clamped to
+   *   `INCIDENT_SEVERITY_CEILING` (`IncidentTriggerSystem`, the riot branch),
+   *   and `claimableResponders` claims a response only when
+   *   `requiredResponderCount(severity)` guards are free -- so `reserve` free
+   *   guards is exactly what the worst riot asks for, and fewer claims nobody
+   *   for it. **Severity 10 is reached, not only permitted**: the instrument
+   *   above records riots at severity 9 and 10 in its crowded prison, and its
+   *   five-spare row (`spare 5`) answers every incident the prison produced,
+   *   9 resolved and 0 lapsed, with sweeps running in the same window.
+   * - **"answer", not "contain"**: the sentence is about the claim, which is
+   *   what the free pool decides. It promises no containment, for the reason
+   *   `hud.security.coverage-met-hint` gives -- `claimableResponders`
+   *   returning a set is not `advanceResponse` reaching `'resolved'`.
+   * - **"the worst", and deliberately not "a" riot.** A prison with four free
+   *   guards answers a severity-7 riot today (`ceil(7 x 0.5) = 4`), so
+   *   "hire one more to answer a riot" would imply it cannot; the ceiling is
+   *   the only riot the count is exact for.
+   *
+   * **What it does not cover, stated because it is the weakest clause.** A
+   * contraband sweep may take one guard out of a pool of exactly `reserve`
+   * (`claimableSearchGuardIds` holds back only
+   * `INCIDENT_RESPONSE_GUARD_RESERVE`, one), and two incidents open at once
+   * each ask for their own responders. Either delays a worst-case claim
+   * until a guard comes back; #996 measured that delay at 11 to 26 ticks a
+   * day against a 600-tick deadline, never a lapse. The sentence is about one
+   * riot and a pool it can claim from, and says nothing about both.
+   *
+   * ## The description, on the `COVERAGE` chip
+   *
+   * The chip's `title` and screen-reader text while its badge reads
+   * "Stretched". No figure, because the chip learns the rung from
+   * `PrisonCondition`, which carries names and no magnitude; the count is on
+   * the Staff panel. *"Every post is staffed"*: `shortage <= 0` with
+   * `assigned > 0`, where `assigned` counts guards on post **and** walking to
+   * it, hence *staffed* rather than *manned*. *"too few guards are free to
+   * answer the worst riot"*: `spare < reserve`, argued above.
+   */
+  'hud.security.coverage-stretched': 'Stretched',
+  'hud.security.coverage-stretched-hint': 'Hire {count} more to answer the worst riot.',
+  'hud.security.coverage-stretched-description':
+    'Every post is staffed, but too few guards are free to answer the worst riot.',
+  /*
    * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
    * unguarded rung only.
    *
