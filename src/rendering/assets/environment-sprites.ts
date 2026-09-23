@@ -83,6 +83,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.bed',
   'env.object.medical-bed',
   'env.object.medicine-cabinet',
+  'env.object.prep-counter',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
@@ -236,6 +237,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Locking infirmary cabinet with pale enamel top and teal medical cross. Drawn on object.medicine-cabinet.',
+  },
+  'env.object.prep-counter': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.prep_counter',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Brushed steel kitchen work counter with a walnut board and three recessed ingredient pans. Drawn on object.prep-counter.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

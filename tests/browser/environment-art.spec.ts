@@ -507,6 +507,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.medicine-cabinet',
       tileOf: (fixture) => [fixture.medicineCabinetTileX, fixture.medicineCabinetTileY],
     },
+    {
+      label: 'prep counter',
+      buildableId: 'prep-counter-brick',
+      catalogueId: 'object.prep-counter',
+      expectedSpriteId: 'env.object.prep-counter',
+      tileOf: (fixture) => [fixture.prepCounterTileX, fixture.prepCounterTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

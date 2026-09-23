@@ -264,12 +264,14 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * The dining table also leaves the fallback: its new 3x2 render shows three
  * fixed stools, matching the simulation's three dining places, rather than
  * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
+ * A separate 2x1 food-preparation counter now leaves it as well: the cutting
+ * board and three ingredient wells are visible from directly overhead. The
+ * earlier shipping-container substitution remains rejected.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
   'object.fridge',
   'object.loading-dock-door',
-  'object.prep-counter',
   'object.security-console',
   'object.sink',
   'object.stove',
@@ -333,6 +335,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
   'object.medical-bed': 'env.object.medical-bed',
   'object.medicine-cabinet': 'env.object.medicine-cabinet',
+  'object.prep-counter': 'env.object.prep-counter',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',

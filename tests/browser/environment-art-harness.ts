@@ -88,6 +88,8 @@ const FIXTURE: HarnessWorldFixture = {
   medicalBedTileY: 4,
   medicineCabinetTileX: 30,
   medicineCabinetTileY: 4,
+  prepCounterTileX: 32,
+  prepCounterTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -237,6 +239,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'medicine-cabinet-wooden',
       tileX: FIXTURE.medicineCabinetTileX,
       tileY: FIXTURE.medicineCabinetTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-prep-counter',
+      definitionId: 'prep-counter-brick',
+      tileX: FIXTURE.prepCounterTileX,
+      tileY: FIXTURE.prepCounterTileY,
       phase: 'built',
     },
   ];

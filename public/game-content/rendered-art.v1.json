@@ -178,6 +178,31 @@
       }
     },
     {
+      "assetId": "furniture.kitchen.prep_counter",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.prep_counter.60155f944103.png",
+      "sha256": "60155f9441033f4f0fb90af2d53ab9bc9fa37ef9861b0a82dbc65f90f32ca013",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.medical.bed.single",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.medical.bed.single.81c72f1c30c6.png",
