@@ -173,7 +173,7 @@ Nothing here changes a status; this table only reports them.
 | # | Title | Status |
 | --- | --- | --- |
 | [0001](./0001-core-platform.md) | Core platform and runtime boundaries | Accepted |
-| [0002](./0002-cloudflare-static-assets.md) | Cloudflare Workers Static Assets delivery | Accepted |
+| [0002](./0002-cloudflare-static-assets.md) | Cloudflare Workers Static Assets delivery | Accepted. **Amended 2026-09-23: issue #274's Q9 is answered**, with production as the separate Worker `lockstate` on `lockstate.io`, switched on later, and `lockstate-staging` staying staging (*"Osobny „lockstate”, później"*, the label of a clickable option the integrating session wrote, the weaker provenance `AGENTS.md` names). The deployment bullets stand as decided. Reservation 3 is untouched, and no deploy configuration moves |
 | [0003](./0003-simulation-worker-protocol.md) | Versioned simulation worker protocol | Accepted |
 | [0004](./0004-chunk-size-selection.md) | Chunk size selection and parcel decoupling | Accepted |
 | [0005](./0005-entity-storage-model.md) | Entity Storage Model | Accepted |

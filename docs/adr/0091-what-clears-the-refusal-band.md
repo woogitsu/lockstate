@@ -94,6 +94,15 @@ by nothing at all. What scales is the threshold. It is recorded in the same
 amendment below, in its own subsection, so a reader sees the first ruling and
 its correction in one place rather than having to reconcile two.
 
+**A FOURTH RULING, 2026-09-23, IS RECORDED AS A SECOND AMENDMENT.** Issue
+#1270 measured that `RemoveWall`'s object arm records under a different route
+from its wall arm, so option F left the contradiction this document says it
+kills standing on that arm. Asked whether the two count as one route for the
+band, the owner chose *"Tak, jedna trasa (zalecane)"* ("Yes, one route
+(recommended)"). Same weaker provenance: an option label, not a sentence they
+typed. It is band-only, and #492's keying is unchanged everywhere else. See
+*"Amendment, 2026-09-23"* below.
+
 **Neither ruling is self-approved and this document says so in the terms
 `docs/AGENT_WORKFLOW.md` §3 requires.** The sessions that implemented option F
 and this amendment did not decide them; they recorded a decision the owner
@@ -606,6 +615,12 @@ here, and it is D with one comparison added.
 - **Kills the measured contradiction**: act 3 step E was a **successful
   `RemoveWall`** while a `remove-wall.nothing-to-remove` refusal stood. Same
   route, so F retires it — the two bands stop disagreeing about one press.
+
+  > **Marked 2026-09-23: false for `RemoveWall`'s object arm, as #1270
+  > measured.** That arm records under `remove-object`, which is a different
+  > route, so F leaves the contradiction standing there. Kept as the argument
+  > the owner was shown. The owner's ruling that the two count as one route for
+  > the band is in *"Amendment, 2026-09-23"* at the foot of this document.
 - **What it does not fix, stated plainly**: #780's plain different-location
   case for a route the player never repeats. A `zone.not-enclosed` refusal
   about a rectangle the player abandons stands until they zone something else
@@ -952,3 +967,81 @@ would be a truer reading of "fifteen seconds of wall clock". It was not built
 because it is state on a record that has none today, and because accumulating
 wall-clock-weighted time is one short step from the wall-clock timer this band
 was ruled not to have. That reasoning is a judgement, not a measurement.
+
+## Amendment, 2026-09-23 — `remove-wall` and `remove-object` are one route, for retiring the band only
+
+**Ruled by the repository owner on 2026-09-23. This is their decision and not
+a recommendation of this repository's.** It is recorded here with its date,
+its wording and the weakness of its provenance, per `docs/AGENT_WORKFLOW.md`
+§3's rule that an implementing agent does not approve its own work.
+
+### The question
+
+Issue #1270 measured, on screen, that option F does not deliver one of the
+things it was chosen on. The Recommendation section's bullet *"Kills the
+measured contradiction"* says act 3 step E was a successful `RemoveWall` while
+a `remove-wall.nothing-to-remove` refusal stood: *"Same route, so F retires
+it"*. That holds for `RemoveWall`'s **wall arm** and fails for its **object
+arm**. A `RemoveWall` press that removes a standing object records its decided
+outcome under a `remove-object:<x>:<y>` key, and `supersessionKeyRoute` reads
+that as the route `remove-object`, not `remove-wall`. So the band kept saying
+*"there is no object on that tile"* one grid row away from an event band
+reporting that the object was removed. #1270 records `noteRouteDecided`
+returning unmarked, and a 20 ms recorder logging no transition.
+
+### What the owner chose, and in which words
+
+Offered treating the two as one route for the band, they chose the option
+labelled:
+
+> Tak, jedna trasa (zalecane)
+
+("Yes, one route (recommended).")
+
+**The provenance is the weaker of the two kinds this repository
+distinguishes**, exactly as option F's and the 2026-09-20 amendment's are: the
+label of an option the integrating session wrote, not a sentence the owner
+typed. `AGENTS.md` records it as ruling 27 of the section *"Instructions
+recorded that are not releases"*. **The option's own label is the whole of what
+was agreed.**
+
+### What it decides, exactly
+
+- **For the band's retirement under option F, `remove-wall` and `remove-object`
+  are one route.** A decided outcome under either retires a standing refusal
+  filed under either. The comment on #1270 that records the ruling describes
+  one direction, the object arm retiring a standing `remove-wall` refusal.
+  *"One route"* says both directions, and this amendment reads it as both.
+- **For the band only.** This is the move #1270 itself described as *"the same
+  move one step further"*. Option F is already a band-only widening. `RefusalLog`'s
+  record, `supersede`, #492's exact-target keying and the two guarding tests
+  that assert on the log (`tests/unit/simulation-refusals.test.ts`, the
+  different-rectangle and different-tile cases) are untouched.
+- **Nothing else about option F or the 2026-09-20 amendment moves.** The tick
+  ceiling, its speed scaling, and every other route's prefix stay as they are.
+
+**What it does not decide.** It does not decide how the two prefixes become one
+comparison. `supersessionKeyRoute`'s docblock names the precedent in
+this code: `zone` and `zone-area` are two prefixes for one route, handled by
+the success path calling `supersede` with both keys rather than by an alias
+table. Whether this pair is handled the same way is the implementation's
+choice, and it should say which it took. **No player-visible string is
+authorised or needed.** The band retires, and its sentence does not change.
+
+### The sentence this corrects, kept
+
+The *"Kills the measured contradiction"* bullet above is left as written and
+now carries a dated mark pointing here. It was the argument put to the owner on
+2026-09-16. It was false for the object arm when written, and after this
+amendment is implemented it will be true for both arms.
+
+### A neighbouring ruling of the same day, which does not reach this band's rule
+
+On 2026-09-23 the owner also ruled, on #985, that constitution article 6 covers
+refusals: each refusal leaves a row in the message history instead of being
+lost when the next one replaces it (`AGENTS.md` ruling 26). That changes what
+the *history* keeps. It does not change what the band shows, which is still
+the one standing refusal, and it leaves every lifetime rule in this document
+as it is. It is named here so a reader of this amendment does not take
+*"`RefusalLog` is untouched"* above to mean the refusal record will never
+change. It means this amendment does not change it.

@@ -41,6 +41,8 @@ That is why the anchors are not repaired with better line numbers. `docs/AGENT_W
 
 This note records the discrepancy; it does not resolve it. Which of the two Workers is *meant* to be production is an open decision for the owner (issue #274, Q9), so the deployment bullets above are deliberately left standing as the decision they are rather than rewritten to describe `lockstate-staging`. The live binding cannot be read from this repository at all — that same section says so itself, *"Nothing here can confirm that binding either … only Cloudflare → Workers → `lockstate-staging` → Settings → Domains & Routes shows the live state"* — so the operating state above is what that document records, not something this repository can verify.
 
+*(Marked 2026-09-23: Q9 is answered, and the answer keeps the deployment bullets as decided. See* **Amendment, 2026-09-23** *below. The paragraph is kept because it was the open question, and the reason the bullets were left standing is now the reason they are right.)*
+
 **A SECOND INSTANCE OF THE SAME CLASS, IN THIS NOTE'S OWN FIRST SENTENCE, CORRECTED 2026-09-16 — AND THIS ONE NO DELTA PASS COULD HAVE RAISED.** Until this edit that sentence cited `wrangler.jsonc` by line: *"`:11-18` for `lockstate-staging` … `:19-32` for `lockstate`"*. Both spans were exact on 2026-08-24 and both died in one commit, `b2aaa3f1` of 2026-09-03 — the telemetry entry point, 26 inserted lines, 18 of them above `env`: a `main` key with a five-line comment, and a ten-line comment plus `binding` and `run_worker_first` inside the top-level `assets` block. The staging block is now `:29-42` and the production block `:43-58`, so **both stale anchors land inside the top-level worker rather than in `env` at all** — `:11-18` opens on `"workers_dev": true` and runs into that new comment, and `:19` and `:20` are two of its lines. That is precisely the *"drifts onto plausible-looking code"* failure the paragraph above names: a reader following `:12` finds a real `preview_urls` key on the development worker and no reason to keep looking.
 
 **Why it outlived thirteen days of sweeps, and what replaced it.** `wrangler.jsonc` has been changed exactly twice in this repository's life and not at all since `b2aaa3f1`, which touched neither this ADR nor anything else citing it — so the file has been in no delta window since the day it invalidated these anchors, and a pass that reads what changed was never going to look. Nor does the mechanical gate reach it: `tests/foundation/documentation-source-anchor-contract.test.ts` extracts only a backtick span that is *entirely* a rooted path plus `:N`, and `:11-18` continuing a sentence is not that. The repair is the one this note already applied to `docs/DEPLOYMENT.md` one paragraph up — the two blocks are named by their JSON key path, `env.staging` and `env.production`, which grep answers and which no insertion above them can move. **`wrangler.jsonc` was read and not touched: it is deploy configuration and the owner's under `AGENTS.md`'s third reservation.**
@@ -102,6 +104,60 @@ in particular still describes what governs every asset response, because those
 responses still come from Static Assets. What it does *not* reach is a response
 the Worker writes itself, so the ingest handler sets its own headers; that is a
 new fact about a new surface rather than a change to this decision.
+
+### Amendment, 2026-09-23: issue #274's Q9 is answered — production is a separate `lockstate` Worker on `lockstate.io`, switched on later
+
+*Ruled by the owner on 2026-09-23. It is not self-approved, and this ADR's
+status is unchanged: **Accepted**. The ruling is the **weaker kind of
+provenance**: the label of a clickable option the integrating session wrote
+and the owner chose, not a sentence they typed. `AGENTS.md` flags the same
+shape for its entries of 2026-09-08, 2026-09-09 and 2026-09-10, and records
+this ruling as ruling 24 of the section "Instructions recorded that are not
+releases".*
+
+**The question.** Issue #274's Q9 asked whether this ADR should be amended to
+record the topology that actually serves traffic, or whether the topology
+should be moved to match this ADR. The operational note above left the
+deployment bullets standing because that question was open. Put to the owner,
+they chose the option labelled:
+
+> Osobny „lockstate”, później
+
+("A separate `lockstate`, later.")
+
+**What that answers.** The topology moves to match this ADR, and this ADR is
+not rewritten to describe the arrangement in force. Concretely:
+
+- **`lockstate-staging` stays staging**, on `workers.dev`, and every merge to
+  `main` whose CI concludes `success` keeps publishing there.
+- **Production is the separate Worker `lockstate`, bound to `lockstate.io`**,
+  exactly as the Decision bullet *"Deploy production as Worker `lockstate` on
+  the Custom Domain `lockstate.io`…"* says.
+- **"Later" is part of the ruling.** Production is switched on when the owner
+  decides, not now. Until then the bullet *"Keep production publishing outside
+  ordinary CI until a protected release workflow and credential policy are
+  accepted"* governs unchanged.
+
+**What it does not do, stated because it is the part most easily read too
+widely.** **Reservation 3 is untouched.** Nothing in `wrangler.jsonc`,
+`.github/workflows/deploy.yml`, `public/_headers` or either dashboard moves
+because of this ruling, and this amendment moves nothing there. It authorises
+no dispatch of the `production` job. The trap `docs/DEPLOYMENT.md` names under
+*"What currently serves lockstate.io"* stands exactly as written. The ruling
+settles which Worker production *is*. It does not settle how or when the
+domain is moved onto it, and those steps are deploy configuration and remain
+the owner's.
+
+**One discrepancy this amendment does not resolve, named so it is not read as
+resolved.** The operational note above, written 2026-08-24, says
+`lockstate.io` is served by `lockstate-staging` and *"a merge to `main` already
+updates the public site"*. `docs/DEPLOYMENT.md`'s *"What currently serves
+lockstate.io"* opens with a later record, measured 2026-08-27, that
+*"`lockstate.io` does not receive the deploy, and that is deliberate — the owner
+has it switched off"*. The live binding cannot be read from this repository
+(the note above says so). Which Worker holds the domain today is therefore
+unverified here. The ruling does not depend on it: whichever holds it now,
+production is to be `lockstate`.
 
 ## Alternatives considered
 
