@@ -3062,6 +3062,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // well as at several.
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
+  'hud.security.coverage-no-posts': 'No posts',
+  'hud.security.coverage-no-posts-hint': 'No guard posts are required right now.',
   'hud.security.coverage-met': 'Covered',
   'hud.security.coverage-no-reserve': 'No reserve',
   'hud.security.coverage-no-reserve-hint': 'Hire {count} for the largest response.',

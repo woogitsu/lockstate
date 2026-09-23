@@ -105,6 +105,17 @@ all**. Hiding the block would have needed a new rendering rule and would have
 removed a readout that starts mattering at the first admission; a block that
 appears without warning is worse than one that says "nothing is required yet".
 
+**Presentation amendment, 2026-09-24 (#868).** The paragraph above describes
+the first implementation, not the current wording. A prison with no required
+posts still has a simulation shortage of zero, and the coverage block still
+appears. The Staff panel now labels that case *No posts* with a neutral badge
+and says that no guard posts are required right now. It reserves *Covered* and
+its green badge for a positive requirement that guards actually fill. This
+changes neither the guard requirement nor the availability of an unassigned
+guard for incident response or searches. The earlier *Covered* wording was
+technically true of `0 of 0`, but read as a claim that the prison was guarded
+when the first hire stood unassigned.
+
 ### What the floor's own argument survives
 
 `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` argues the floor from two facts,

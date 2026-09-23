@@ -29,7 +29,9 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * `tests/unit/ui-hud-messages.test.ts` enforces it, so neither can call the
  * other. A test can import both, and that is the whole reason the second case
  * below exists: it is the only place in the repository where the two
- * definitions meet, and it fails the day they disagree about any triple.
+ * definitions meet. The panel alone splits the simulation's mathematically
+ * covered zero-requirement case into a neutral presentation (#868): nobody
+ * needs a post, but green "Covered" suggests a staffed prison.
  */
 
 /** Every `(required, assigned)` pair a small prison can be in, plus the shortage each implies. */
@@ -85,11 +87,11 @@ describe('the simulation ladder and the Staff panel ladder', () => {
     unguarded: HUD_MESSAGE_KEY.securityCoverageUnguarded,
   } as const;
 
-  it('agree on every triple a prison can be in', () => {
+  it('agree on every positive requirement and present zero as no posts', () => {
     for (const row of grid()) {
       const state = resolveSectorCoverageState(row);
       expect(describeStaffCoverage({ ...row, availableReserve: 1, targetReserve: 5 }).badgeKey, `required ${String(row.required)}, assigned ${String(row.assigned)}`).toBe(
-        PANEL_BADGE[state],
+        row.required === 0 ? HUD_MESSAGE_KEY.securityCoverageNoPosts : PANEL_BADGE[state],
       );
     }
   });

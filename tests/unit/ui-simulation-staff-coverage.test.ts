@@ -105,7 +105,7 @@ describe('the mapping carries three figures and computes none of them', () => {
   });
 });
 
-describe('the block distinguishes posting from a free response reserve', () => {
+describe('the block distinguishes no posts, posting, and a free response reserve', () => {
   it('names a full set of posts with no guard free to respond or search', () => {
     expect(describeCoverage({ required: 2, assigned: 2, shortage: 0, availableReserve: 0, targetReserve: 5 })).toEqual({
       tone: 'caution',
@@ -173,12 +173,11 @@ describe('the block distinguishes posting from a free response reserve', () => {
     expect(describeCoverage({ required: 3, assigned: 1, shortage: 2 }).tone).toBe('warning');
   });
 
-  it('calls a prison that asks for nobody covered rather than unguarded', () => {
-    // A `DeploymentSchedule` of zero is an *exemption* a save can carry (ADR
-    // 0048 decision 3), not a small requirement. "Unguarded" would be a warning
-    // about a prison the simulation is not asking anything of. Unreachable from
-    // `applyDefaultSecuritySector`, which authors a floor of one.
-    expect(describeCoverage({ required: 0, assigned: 0, shortage: 0 }).tone).toBe('success');
+  it('does not call an empty prison covered before any guard post is needed (#868)', () => {
+    const readout = describeStaffCoverage({ required: 0, assigned: 0, shortage: 0 });
+    expect(readout.tone).toBe('neutral');
+    expect(readout.badgeKey).toBe('hud.security.coverage-no-posts');
+    expect(readout.hintKey).toBe('hud.security.coverage-no-posts-hint');
   });
 });
 
