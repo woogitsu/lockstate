@@ -120,15 +120,15 @@
     {
       "assetId": "fixture.cell.toilet_sink",
       "image": "fixture.cell.toilet_sink.png",
-      "sha256": "bc8b067ea1469da66cf09e25d495105666ec101f02c2d3f227852a467a9bba1e",
-      "pixelSha256": "98ecca3241d5032f134077720d7b46bc754c35029da98e5c21d8108ebd659f50",
+      "sha256": "174633e075fba58b30ba2253fdb6f8781306bd94a8ec37bfad1a6d52bddd5709",
+      "pixelSha256": "0b798aeea8ef81394f8dc723261f5c393344e4c4af72ca7e312d5292dd7a9bb1",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.1648,
-        "height": 1.1648
+        "width": 1.236928,
+        "height": 1.236928
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -137,11 +137,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 59,
-        "y": 13,
-        "width": 138,
-        "height": 202,
-        "opaquePixels": 20684
+        "x": 45,
+        "y": 22,
+        "width": 166,
+        "height": 221,
+        "opaquePixels": 30694
       }
     },
     {

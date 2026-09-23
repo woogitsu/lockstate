@@ -462,20 +462,30 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Pedal stem", (0, 0.36, 0.05), (0.10, 0.16, 0.055), "steel", 0.013)
         box(collection, root, "Foot pedal", (0, 0.44, 0.072), (0.23, 0.12, 0.045), "galvanized_edge", 0.022)
     elif "toilet" in asset_id:
-        # The one model whose shipped sheet cannot be used at all: the owner's
-        # sheet holds a 1:2.5 combined column and the catalogue declares (1, 1).
-        # Built to be read from directly above -- a rectangular cistern with a
-        # basin sunk into it at the north, a seat with a dark opening at the
-        # south, and the two joined by a visible spine.
-        box(collection, root, "Cistern", (0, -0.33, 0.31), (0.62, 0.28, 0.62), "porcelain", 0.04)
-        cylinder(collection, root, "Basin", (0, -0.33, 0.6), 0.19, 0.06, "porcelain")
-        cylinder(collection, root, "Basin well", (0, -0.33, 0.625), 0.13, 0.03, "steel")
-        cylinder(collection, root, "Drain", (0, -0.33, 0.641), 0.045, 0.02, "shade", 8)
-        box(collection, root, "Tap", (0, -0.45, 0.68), (0.07, 0.1, 0.1), "steel", 0.02)
-        box(collection, root, "Spine", (0, -0.11, 0.46), (0.12, 0.2, 0.12), "porcelain", 0.03)
-        cylinder(collection, root, "Bowl", (0, 0.12, 0.21), 0.25, 0.42, "porcelain")
-        cylinder(collection, root, "Seat", (0, 0.12, 0.445), 0.27, 0.05, "light")
-        cylinder(collection, root, "Opening", (0, 0.12, 0.462), 0.155, 0.06, "shade")
+        # Four-view reference: assets/source/concepts/cell-toilet-sink-multiview-v2.png.
+        # The 1x1 catalogue footprint requires a joined unit rather than the
+        # owner's tall 1:2.5 sheet. The recessed sink at north, bolted bridge
+        # and raised oval toilet seat at south remain separate at 64 px.
+        box(collection, root, "Institutional rear panel", (0, -0.42, 0.76), (0.74, 0.14, 1.12), "galvanized", 0.045)
+        box(collection, root, "Rear panel bright top", (0, -0.42, 1.34), (0.78, 0.17, 0.045), "galvanized_edge", 0.014)
+        for x in (-0.30, 0.30):
+            cylinder(collection, root, f"Rear bolt.{x}", (x, -0.42, 1.37), 0.035, 0.018, "steel", 12)
+        box(collection, root, "Steel sink body", (0, -0.24, 0.65), (0.76, 0.47, 0.29), "galvanized", 0.06)
+        box(collection, root, "Sink rolled rim", (0, -0.24, 0.808), (0.79, 0.50, 0.05), "galvanized_edge", 0.045)
+        box(collection, root, "Dark recessed basin", (0, -0.22, 0.84), (0.57, 0.29, 0.015), "metal_recess", 0.075)
+        box(collection, root, "Basin inner bottom", (0, -0.21, 0.853), (0.42, 0.18, 0.01), "galvanized", 0.06)
+        cylinder(collection, root, "Sink drain", (0, -0.19, 0.865), 0.05, 0.012, "shade", 20)
+        cylinder(collection, root, "Short faucet base", (0, -0.38, 0.91), 0.07, 0.16, "galvanized_edge", 24)
+        box(collection, root, "Faucet spout", (0, -0.29, 0.98), (0.072, 0.19, 0.05), "galvanized_edge", 0.024)
+        box(collection, root, "Bolted joining bridge", (0, 0.02, 0.56), (0.65, 0.13, 0.26), "steel", 0.025)
+        for x in (-0.31, 0.31):
+            cylinder(collection, root, f"Bridge bolt.{x}", (x, 0.02, 0.705), 0.025, 0.012, "steel", 12)
+        box(collection, root, "Toilet base", (0, 0.22, 0.28), (0.57, 0.56, 0.55), "galvanized", 0.11)
+        cylinder(collection, root, "Ceramic toilet bowl", (0, 0.20, 0.51), 0.28, 0.15, "porcelain", 48)
+        cylinder(collection, root, "Deep bowl cavity", (0, 0.21, 0.60), 0.20, 0.02, "metal_recess", 48)
+        cylinder(collection, root, "Dark bowl throat", (0, 0.21, 0.613), 0.10, 0.014, "shade", 32)
+        seat = torus(collection, root, "Raised ceramic oval seat", (0, 0.21, 0.625), 0.23, 0.06, "light")
+        seat.scale.y = 1.18
     else:
         box(collection, root, "Housing", (0, 0.02, 1.7), (1.4, 0.5, 0.24), "steel")
         box(collection, root, "Ceiling panel", (0, 0, 1.87), (1.2, 0.45, 0.18), "light", 0.01)
