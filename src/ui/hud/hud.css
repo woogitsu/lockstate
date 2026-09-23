@@ -278,6 +278,31 @@
   gap: var(--space-1);
 }
 
+/* A paused queue points at Play without adding a row or narrowing the clock.
+   The small number is the queue's own total, not a second estimate (#936). */
+.hud-strip__transport button[data-queued-work='true'] {
+  position: relative;
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  border-color: var(--accent-deep);
+}
+
+.hud-clock__queued-count:not([hidden]) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: var(--space-3);
+  height: var(--space-3);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  color: var(--accent-deep);
+  background: var(--surface-raised);
+  font-size: var(--text-size-label);
+  line-height: var(--space-3);
+  text-align: center;
+  pointer-events: none;
+}
+
 /*
  * Undo and Redo (#1356), after the transport and never inside it: the
  * transport group is labelled as the clock's controls, and these are not.

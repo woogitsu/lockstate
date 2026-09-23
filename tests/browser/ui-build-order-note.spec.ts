@@ -445,4 +445,31 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       );
     }
   });
+
+  test('paused queued work points to Play without taking another strip row (#936)', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.goto(APP_URL);
+    await page.waitForSelector('#game-root canvas');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    const play = page.locator('.hud-strip__transport button').nth(1);
+    const strip = page.locator('.hud-strip');
+    const initialHeight = (await strip.boundingBox())?.height;
+    expect(initialHeight).toBeGreaterThan(0);
+    await expect(play).toHaveAttribute('data-queued-work', 'false');
+    await expect(play.locator('.hud-clock__queued-count')).toBeHidden();
+    const restingBorder = await play.evaluate((button) => getComputedStyle(button).borderColor);
+
+    await queueSixOrders(page);
+    await expect(play).toHaveAttribute('data-queued-work', 'true');
+    await expect(play.locator('.hud-clock__queued-count')).toHaveText('6');
+    await expect(play.locator('.hud-clock__queued-count')).toBeVisible();
+    expect((await strip.boundingBox())?.height).toBe(initialHeight);
+    const cueColor = await play.evaluate((button) => getComputedStyle(button).borderColor);
+    expect(cueColor).not.toBe(restingBorder);
+
+    await play.click();
+    await expect(play).toHaveAttribute('data-queued-work', 'false');
+    await expect(play.locator('.hud-clock__queued-count')).toBeHidden();
+  });
 });

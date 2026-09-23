@@ -228,6 +228,14 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       pressed: false,
     }),
   };
+  // The queue is already projected for the Build panel. Reuse that count on
+  // Play while stopped: it connects waiting work to the clock without taking
+  // another line from the crowded status strip (#936).
+  const queuedCount = element('span', {
+    className: 'hud-clock__queued-count',
+    attributes: { 'aria-hidden': 'true', hidden: '' },
+  });
+  transport.play.element.append(queuedCount);
 
   /*
    * Undo and Redo, on the one band every viewport lays out (#1356).
@@ -480,6 +488,10 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     transport.play.setPressed(pressed.play);
     transport['fast-forward'].setPressed(pressed.fastForward);
     root.dataset['clockMode'] = viewModel.clock.mode;
+    const queuedWhilePaused = paused && (viewModel.buildQueue?.total ?? 0) > 0;
+    transport.play.element.dataset['queuedWork'] = queuedWhilePaused ? 'true' : 'false';
+    queuedCount.hidden = !queuedWhilePaused;
+    queuedCount.textContent = queuedWhilePaused ? localizer.formatNumber(viewModel.buildQueue?.total ?? 0) : '';
   };
 
   return {
