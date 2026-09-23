@@ -500,9 +500,9 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `save.status.exported` | Exported the current save. | `src/content/default-locale-en.ts:4177` |
 | `save.status.importing` | Reading the save file… | `src/content/default-locale-en.ts:4184` |
 | `save.status.imported` | Imported the save file into this prison (generation {generation}). | `src/content/default-locale-en.ts:4185` |
-| `save.status.imported-migrated` | Imported a save from an older version of Lockstate and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:4186` |
-| `save.status.import-not-a-save` | That file is not a Lockstate save — choose a file exported from this game. | `src/content/default-locale-en.ts:4188` |
-| `save.status.import-unsupported-version` | That save was written by a newer version of Lockstate than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:4189` |
+| `save.status.imported-migrated` | Imported a save from an older version of LockState.io and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:4186` |
+| `save.status.import-not-a-save` | That file is not a LockState.io save — choose a file exported from this game. | `src/content/default-locale-en.ts:4188` |
+| `save.status.import-unsupported-version` | That save was written by a newer version of LockState.io than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:4189` |
 | `save.status.import-corrupt` | That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported. | `src/content/default-locale-en.ts:4191` |
 | `save.status.import-invalid` | That save file could not be read: {detail} | `src/content/default-locale-en.ts:4193` |
 | `save.failure.create` | Creating the prison failed: {detail} | `src/content/default-locale-en.ts:4195` |
@@ -552,22 +552,22 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:4366` |
 | `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:4370` |
 | `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:4371` |
-| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:4376` |
-| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:4379` |
-| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:4387` |
-| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:4396` |
-| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:4400` |
-| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:4416` |
-| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:4417` |
-| `display.theme.region` | Theme | `src/content/default-locale-en.ts:4433` |
-| `display.theme.system` | System | `src/content/default-locale-en.ts:4434` |
-| `display.theme.light` | Light | `src/content/default-locale-en.ts:4435` |
-| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:4436` |
-| `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:4437` |
-| `display.language.region` | Language | `src/content/default-locale-en.ts:4462` |
-| `display.language.automatic` | Automatic ({language}) | `src/content/default-locale-en.ts:4463` |
-| `display.language.english` | English | `src/content/default-locale-en.ts:4464` |
-| `display.language.polish` | Polski | `src/content/default-locale-en.ts:4465` |
-| `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:4473` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:4483` |
+| `brand.region` | LockState.io build | `src/content/default-locale-en.ts:4383` |
+| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:4386` |
+| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:4394` |
+| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:4403` |
+| `brand.description` | LockState.io, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:4407` |
+| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:4423` |
+| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:4424` |
+| `display.theme.region` | Theme | `src/content/default-locale-en.ts:4440` |
+| `display.theme.system` | System | `src/content/default-locale-en.ts:4441` |
+| `display.theme.light` | Light | `src/content/default-locale-en.ts:4442` |
+| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:4443` |
+| `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:4444` |
+| `display.language.region` | Language | `src/content/default-locale-en.ts:4469` |
+| `display.language.automatic` | Automatic ({language}) | `src/content/default-locale-en.ts:4470` |
+| `display.language.english` | English | `src/content/default-locale-en.ts:4471` |
+| `display.language.polish` | Polski | `src/content/default-locale-en.ts:4472` |
+| `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:4480` |
+| `app.shell.label` | LockState.io game application | `src/content/default-locale-en.ts:4491` |
 

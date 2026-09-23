@@ -515,7 +515,11 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
    * - `document.title` (`kind: 'document'`, `where: '<title>'`). The owner's
    *   ruling that opened this change is explicit that the title stays exactly
    *   as it is -- `Lockstate.io` is the brand name, not player-facing prose,
-   *   and routing it through the catalogue was never asked for.
+   *   and routing it through the catalogue was never asked for. (The title
+   *   reads `LockState.io` since the owner's spelling ruling of 2026-09-23 on
+   *   #703; it is still a literal in `index.html` and still exempt, for the
+   *   same reason. `tests/foundation/product-name-spelling-contract.test.ts`
+   *   is what checks its spelling.)
    * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). It is a BCP
    *   47 tag rather than prose: it names no catalogue entry, so there is no
    *   entry for it to be missing from, and no translator ever sees it.

@@ -212,7 +212,7 @@ test.describe('importing a save file (issue #287)', () => {
     await chooseFile(page, SAVE_TEXT);
 
     // The player-visible evidence that the migration chain ran on the way in.
-    await expect(status(page)).toContainText('older version of Lockstate');
+    await expect(status(page)).toContainText('older version of LockState.io');
     await expect(status(page)).toContainText('imported-gen-2');
     expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual(['prison-1']);
   });
@@ -220,7 +220,7 @@ test.describe('importing a save file (issue #287)', () => {
   test('a file that is not JSON is refused here and never reaches persistence', async ({ page }) => {
     await chooseFile(page, '<html>a web page, not a save</html>', 'not-a-save.json');
 
-    await expect(status(page)).toHaveText('That file is not a Lockstate save — choose a file exported from this game.');
+    await expect(status(page)).toHaveText('That file is not a LockState.io save — choose a file exported from this game.');
     await expectLaidOut(page, '.save-panel__status', 'the save panel status line');
     expect(await page.evaluate(() => window.lockstateUiHarness.importedRaw())).toEqual([]);
     expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual([]);
@@ -240,8 +240,8 @@ test.describe('importing a save file (issue #287)', () => {
     // Four refusals, four sentences. One "import failed" for all four would
     // pass every assertion above.
     expect(new Set(sentences).size, sentences.join(' | ')).toBe(4);
-    expect(sentences[0]).toContain('not a Lockstate save');
-    expect(sentences[1]).toContain('newer version of Lockstate');
+    expect(sentences[0]).toContain('not a LockState.io save');
+    expect(sentences[1]).toContain('newer version of LockState.io');
     expect(sentences[2]).toContain('could not be read');
     expect(sentences[3]).toContain('checksum');
     // The file reached the importer every time -- these are the importer's own

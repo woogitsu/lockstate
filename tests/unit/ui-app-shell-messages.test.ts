@@ -44,7 +44,9 @@ describe('the app-shell message registry', () => {
     // The owner ruled on the mechanism -- route it through the catalogue --
     // not on new wording. This pins the sentence `index.html` used to hard-code
     // as `aria-label="Lockstate game application"`, so a future edit to this
-    // entry has to be a deliberate word choice and not a silent one.
-    expect(localizer.format(APP_SHELL_MESSAGE_KEY.label)).toBe('Lockstate game application');
+    // entry has to be a deliberate word choice and not a silent one. The one
+    // deliberate change since is the name's spelling, `LockState.io`, by the
+    // owner's ruling of 2026-09-23 on #703.
+    expect(localizer.format(APP_SHELL_MESSAGE_KEY.label)).toBe('LockState.io game application');
   });
 });

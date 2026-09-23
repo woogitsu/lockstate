@@ -4184,10 +4184,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.status.importing': 'Reading the save file…',
   'save.status.imported': 'Imported the save file into this prison (generation {generation}).',
   'save.status.imported-migrated':
-    'Imported a save from an older version of Lockstate and brought it up to date (generation {generation}).',
-  'save.status.import-not-a-save': 'That file is not a Lockstate save — choose a file exported from this game.',
+    'Imported a save from an older version of LockState.io and brought it up to date (generation {generation}).',
+  'save.status.import-not-a-save': 'That file is not a LockState.io save — choose a file exported from this game.',
   'save.status.import-unsupported-version':
-    'That save was written by a newer version of Lockstate than this one. Update the game, then import it again.',
+    'That save was written by a newer version of LockState.io than this one. Update the game, then import it again.',
   'save.status.import-corrupt':
     'That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported.',
   'save.status.import-invalid': 'That save file could not be read: {detail}',
@@ -4373,7 +4373,14 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // The brand badge in the top-left corner (`src/ui/brand-badge.ts`). Page
   // chrome rather than a projection of prison state, which is why the namespace
   // is `brand.` and not `hud.`.
-  'brand.region': 'Lockstate build',
+  //
+  // **Every product name in this catalogue is spelled `LockState.io` since the
+  // owner's ruling of 2026-09-23 on #703 (`AGENTS.md` entry 15)**, the spelling
+  // `brand.wordmark` below already carried. Six entries read `Lockstate`
+  // until then: this one, `brand.description`, `app.shell.label` and the three
+  // `save.status.import-*` sentences. Only the spelling moved, so each
+  // sentence claims exactly what it claimed before.
+  'brand.region': 'LockState.io build',
   // The wordmark, in the catalog rather than as a literal in the DOM builder,
   // for the reason `src/ui/brand-messages.ts` gives.
   'brand.wordmark': 'LockState.io',
@@ -4397,7 +4404,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // The whole badge as one sentence, for a screen reader. The visible fragments
   // are `aria-hidden`, because "PRE-ALPHA", "v0.0.7" and seven hex characters
   // read out in sequence name nothing.
-  'brand.description': 'Lockstate, {stage} build, version {version}, commit {commit}.',
+  'brand.description': 'LockState.io, {stage} build, version {version}, commit {commit}.',
 
   // The interface-scale control in the status strip (`src/ui/display-scale.ts`,
   // #545). Page chrome like the brand badge above, hence `display.` and not
@@ -4480,7 +4487,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // this catalogue or the pseudo-locale sweep that checks it. `src/main.ts`
   // now sets it here, on the same element, as soon as the localizer is built.
   // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
-  'app.shell.label': 'Lockstate game application',
+  // The name in it is `LockState.io` since the ruling of 2026-09-23 (#703).
+  'app.shell.label': 'LockState.io game application',
 };
 
 /**

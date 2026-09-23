@@ -176,7 +176,7 @@ export default defineConfig({
      * run 847's `error-context.md` holds is the accessibility snapshot
      *
      *     - generic [active]:
-     *       - main "Lockstate game application"
+     *       - main "LockState.io game application"
      *
      * which is `index.html` and nothing else: the static `<main id="app">` is
      * there and no part of `/src/main.ts` has run. That is equally consistent

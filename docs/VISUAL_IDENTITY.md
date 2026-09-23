@@ -160,6 +160,24 @@ specification carries a ten-row table of worked examples. Those rows are
 `AGENTS.md`'s fourth reservation makes the truth of a player-visible sentence
 the owner's, not ours, however free we are with its wording.
 
+> **The product's name, dated 2026-09-23 — and this note restates a ruling
+> that is not ADR 0112's, so it binds through `AGENTS.md` rather than through
+> the delivery.** The delivery names the product `Lockstate` —
+> `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md` opens *"Nazwa: Lockstate"*, and
+> `DOKUMENTACJA/projekt.md` reads *"Nazwa produktu: Lockstate. Wordmark w UI:
+> **lockstate.**"* — and the constitution uses the same spelling in its prose.
+> The owner ruled on 2026-09-23 (#703, `AGENTS.md` entry 15; the option
+> labelled *"LockState.io"*, the weaker provenance) that **the product is
+> spelled `LockState.io` everywhere a player sees it**, which is the spelling
+> `brand.wordmark` already carried. Where the delivery's spelling and that
+> ruling differ, the ruling wins; the delivery is not edited
+> (`docs/design/README.md`). Nothing about the wordmark's *design* — the
+> delivery's modular `l`, the dropped final dot — is decided by this note:
+> the ruling is about spelling, and the shipped badge renders the text
+> `LockState.io`. Code identifiers, the package and the repository keep their
+> own names. `tests/foundation/product-name-spelling-contract.test.ts` pins
+> the page shell and both shipped catalogues to the one spelling.
+
 ### The palettes
 
 **Restates ADR 0112 decision 2: two themes, the light one the default, the dark

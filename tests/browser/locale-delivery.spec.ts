@@ -34,8 +34,8 @@ import { expect, test } from './network-changed-fixture';
  */
 
 const APP_URL = '/index.html';
-const ENGLISH_SHELL_LABEL = 'Lockstate game application';
-const POLISH_SHELL_LABEL = 'Aplikacja gry Lockstate';
+const ENGLISH_SHELL_LABEL = 'LockState.io game application';
+const POLISH_SHELL_LABEL = 'Aplikacja gry LockState.io';
 
 /** The dev server's URL for the chunk `src/main.ts` registers for `pl`. */
 const PL_CHUNK_URL = '**/services/localization/pl-catalog.ts*';

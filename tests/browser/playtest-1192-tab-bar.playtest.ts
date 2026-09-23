@@ -16,7 +16,7 @@ import { expect, test } from './network-changed-fixture';
  */
 
 const APP_URL = '/index.html';
-const POLISH_SHELL_LABEL = 'Aplikacja gry Lockstate';
+const POLISH_SHELL_LABEL = 'Aplikacja gry LockState.io';
 
 /** Each candidate as the CSS it would be, injected over the live page. */
 const VARIANTS: readonly { readonly name: string; readonly css: string }[] = [

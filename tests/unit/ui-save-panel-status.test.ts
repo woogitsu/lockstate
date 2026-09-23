@@ -436,11 +436,11 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
 
   it('says which of the four, in the player\'s terms rather than the decoder\'s', () => {
     expect(rejections.notASave.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportNotASave);
-    expect(resolve(rejections.notASave)).toContain('not a Lockstate save');
+    expect(resolve(rejections.notASave)).toContain('not a LockState.io save');
     // A newer save is not a broken save, and the advice differs: update the
     // game rather than distrust the file.
     expect(rejections.newerBuild.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportUnsupportedVersion);
-    expect(resolve(rejections.newerBuild)).toMatch(/newer version of Lockstate/i);
+    expect(resolve(rejections.newerBuild)).toMatch(/newer version of LockState\.io/i);
     expect(resolve(rejections.newerBuild)).not.toMatch(/corrupt|damaged/i);
     expect(rejections.corrupt.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportCorrupt);
     expect(resolve(rejections.corrupt)).toMatch(/checksum/i);

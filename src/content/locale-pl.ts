@@ -1471,10 +1471,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.status.importing': 'Odczytywanie pliku zapisu…',
   'save.status.imported': 'Zaimportowano plik zapisu do tego więzienia (generacja {generation}).',
   'save.status.imported-migrated':
-    'Zaimportowano zapis ze starszej wersji Lockstate i uaktualniono go (generacja {generation}).',
-  'save.status.import-not-a-save': 'Ten plik nie jest zapisem Lockstate — wybierz plik wyeksportowany z tej gry.',
+    'Zaimportowano zapis ze starszej wersji LockState.io i uaktualniono go (generacja {generation}).',
+  'save.status.import-not-a-save': 'Ten plik nie jest zapisem LockState.io — wybierz plik wyeksportowany z tej gry.',
   'save.status.import-unsupported-version':
-    'Ten zapis powstał w nowszej wersji Lockstate niż ta. Uaktualnij grę i zaimportuj go jeszcze raz.',
+    'Ten zapis powstał w nowszej wersji LockState.io niż ta. Uaktualnij grę i zaimportuj go jeszcze raz.',
   'save.status.import-corrupt':
     'Ten zapis nie zgadza się z własną sumą kontrolną — został uszkodzony albo zmieniony po eksporcie, więc go nie zaimportowano.',
   'save.status.import-invalid': 'Nie udało się odczytać tego pliku zapisu: {detail}',
@@ -1530,7 +1530,12 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // =====================================================================
   // Brand badge, display controls and the application's own accessible name.
   // =====================================================================
-  'brand.region': 'Kompilacja Lockstate',
+  // `LockState.io`, uninflected, in every entry that names the product, since
+  // the owner's ruling of 2026-09-23 on #703 (`AGENTS.md` entry 15). A foreign
+  // brand name with a domain suffix is left uninflected after a noun
+  // (*wersji LockState.io*, *zapisem LockState.io*), exactly as `Lockstate`
+  // was in the same six entries until then.
+  'brand.region': 'Kompilacja LockState.io',
   // Not translated: a wordmark is a name.
   'brand.wordmark': 'LockState.io',
   // Left in English. *PREALFA* exists and looks odd; *WERSJA WSTĘPNA* is
@@ -1538,7 +1543,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // untranslated wordmark, which argues for leaving it.
   'brand.stage': 'PRE-ALPHA',
   'brand.build': 'v{version} · {commit}',
-  'brand.description': 'Lockstate, kompilacja {stage}, wersja {version}, commit {commit}.',
+  'brand.description': 'LockState.io, kompilacja {stage}, wersja {version}, commit {commit}.',
   'display.scale.region': 'Skala interfejsu',
   'display.scale.cycle': 'Zmień skalę interfejsu',
   // The three option labels agree with *motyw* (masculine), which is the noun
@@ -1570,7 +1575,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // refreshed in place, and `src/main.ts` saves the prison and awaits that
   // save first -- so both halves of the sentence are true of the code.
   'display.language.cycle': 'Zmień język interfejsu i przeładuj grę',
-  'app.shell.label': 'Aplikacja gry Lockstate',
+  'app.shell.label': 'Aplikacja gry LockState.io',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);

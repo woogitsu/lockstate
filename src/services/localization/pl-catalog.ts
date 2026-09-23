@@ -103,7 +103,8 @@ const SERVICE_MESSAGES_PL: Readonly<Record<string, MessageEntry>> = {
   // nothing in the tree says which it is.
   'challenge.result.rejected': 'Wynik odrzucony: {reason}',
 
-  'telemetry.consent.title': 'Pomóc w ulepszaniu Lockstate?',
+  // `LockState.io` since the owner's ruling of 2026-09-23 on #703.
+  'telemetry.consent.title': 'Pomóc w ulepszaniu LockState.io?',
   'telemetry.consent.body':
     'Nic nie jest wysyłane, dopóki nie zaznaczysz pola. Możesz to zmienić w każdej chwili, a twój wybór jest zapisany tylko na tym urządzeniu.',
   'telemetry.consent.diagnostics': 'Wysyłaj diagnostykę awarii i błędów',

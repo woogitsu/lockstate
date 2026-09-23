@@ -40,7 +40,8 @@ const SERVICE_MESSAGES: Readonly<Record<string, MessageEntry>> = {
   // by a build that has an ingestion destination configured. The first four
   // of these shipped inside the bundle for months with nothing rendering them
   // (ADR 0044); the last three arrive with the code that renders all seven.
-  'telemetry.consent.title': 'Help improve Lockstate?',
+  // `LockState.io` since the owner's ruling of 2026-09-23 on #703.
+  'telemetry.consent.title': 'Help improve LockState.io?',
   'telemetry.consent.body':
     'Nothing is sent unless you tick a box. You can change this at any time, and your choice is stored on this device only.',
   'telemetry.consent.diagnostics': 'Send crash and error diagnostics',
