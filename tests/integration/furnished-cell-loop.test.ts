@@ -314,7 +314,8 @@ describe('what the toilet does and does not change in the running prison', () =>
       // docblock. The three facts stay separate for the reason they always
       // did: a prison of one occupied place earns 600 over two days, one
       // unmet need is charged on the second of them, and the charge is 40.
-      expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600 - 40);
+      // The opening grant: 25,000 until the owner's ruling of 2026-09-23 (#641).
+      expect(runtime.treasury.balanceMinorUnits).toBe(100_000 - 65 - 40 + 600 - 40);
     }
 
     // **The measurement that keeps this phase honest.** `action.use-toilet`

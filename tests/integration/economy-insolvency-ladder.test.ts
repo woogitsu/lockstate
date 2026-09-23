@@ -220,7 +220,10 @@ describe('the thresholds ruling 19 gives ADR 0017 decision 8`s rungs, equalised 
     expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS, 'construction halted below -1,250, the same rung').toBe(
       -1_250,
     );
-    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages unpaid below -2,500, which is the floor').toBe(-2_500);
+    // -2,500 when ruling 19 was given, at the 25,000 grant; -10,000 since the
+    // owner's ruling of 2026-09-23 set the grant to 100,000 (#641). Ruling 19's
+    // table says "(the floor)" beside the number, and the floor is what moved.
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages unpaid below the floor, -10,000').toBe(-10_000);
 
     /*
      * The equality, asserted on the numbers themselves and not just on their
@@ -362,8 +365,12 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * construction are both still refused, exactly as they were 1,191 minor
      * units higher up -- there is no depth left between them at which one
      * fires and the other does not.
+     *
+     * **-9,941 since the owner's ruling of 2026-09-23 moved the floor to
+     * -10,000 (#641)**: the same 59 above it, and 8,690 below position 2
+     * rather than 1,190.
      */
-    sinkTo(runtime, -2_441);
+    sinkTo(runtime, -9_941);
     expect(pressBuy(runtime, 'buy-near-floor'), 'still refused').toBe(false);
     expect(queueFunded(runtime, `wall-${String(wall)}`, 2 + wall), 'still halted').toBe(false);
     wall += 1;
@@ -371,7 +378,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
       paid: 59,
       owed: GUARD_DAY - 59,
     });
-    expect(runtime.treasury.balanceMinorUnits, 'exactly the floor').toBe(-2_500);
+    expect(runtime.treasury.balanceMinorUnits, 'exactly the floor').toBe(-10_000);
 
     /*
      * **Position 4: at the floor.** Every rung has fired. The payday takes
@@ -379,7 +386,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * owed -- which is what makes the floor the last rung.
      */
     expect(payday(runtime, 3)).toEqual({ paid: 0, owed: GUARD_DAY });
-    expect(runtime.treasury.balanceMinorUnits, 'no payday may pass the floor').toBe(-2_500);
+    expect(runtime.treasury.balanceMinorUnits, 'no payday may pass the floor').toBe(-10_000);
     expect(pressBuy(runtime, 'buy-at-the-floor'), 'still refused').toBe(false);
     expect(queueFunded(runtime, `wall-${String(wall)}`, 2 + wall), 'still halted').toBe(false);
 
@@ -390,7 +397,8 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * than off the walk above, so a rung that fired in the wrong order, or
      * came apart from its twin, would fail here as well.
      */
-    for (const balance of [-1_210, -1_251, -2_441, -2_500]) {
+    // The walk's four positions; -2,441 and -2,500 before the floor moved.
+    for (const balance of [-1_210, -1_251, -9_941, -10_000]) {
       const probe = createNewSimulationRuntime(SEED);
       probe.treasury.restore({ balanceMinorUnits: balance });
       const deliveriesFired = !probe.treasury.canAfford(BRICK_PRICE, 'deliveries');

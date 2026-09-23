@@ -152,10 +152,11 @@ a deadlock and not a rule.
 | a brick | 40 minor units | `PROCUREMENT_CATALOG`, `src/content/procurement-catalog.ts` |
 | so a wall segment | 80 minor units | derived |
 | a 2×3 cell's perimeter | `2 × (2 + 3)` = 10 segments = 800 minor units | derived |
-| a new prison's treasury | `TREASURY_STARTING_BALANCE_MINOR_UNITS` = 25 000 | `src/simulation/economy/treasury.ts` |
+| a new prison's treasury | `TREASURY_STARTING_BALANCE_MINOR_UNITS` = 25 000 — **100 000 since the owner's ruling of 2026-09-23 (#641)**; the table is otherwise as measured | `src/simulation/economy/treasury.ts` |
 | does work need a hired worker? | **no** — `ConstructionSystem.update` advances an in-progress order by a fixed 10 per scheduled tick, one order at a time | `src/simulation/construction/system.ts` |
 
 A fresh prison can therefore afford roughly thirty-one 2×3 cells' worth of wall
+(125 at the 100 000 grant of 2026-09-23)
 out of its opening balance, and the work drains without anyone being hired. The
 bootstrap is not deadlocked: buy bricks, order the walls, wait, zone. There is
 no path in which the player needs a room in order to get the money or the labour

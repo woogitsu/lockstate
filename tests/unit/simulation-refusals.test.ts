@@ -621,16 +621,18 @@ describe('a build order the simulation refuses reaches the session log', () => {
 describe('a purchase the treasury refuses reaches the session log', () => {
   it('records a purchase the balance cannot cover', () => {
     const runtime = createNewSimulationRuntime(0x261);
-    // The starting balance is 25,000 minor units and a brick is 40, so 1,000
-    // bricks is 40,000 and cannot be paid for. The quantity is well inside
+    // The starting balance is 100,000 minor units (the owner's ruling of
+    // 2026-09-23, #641; this read 25,000 and 1,000 bricks until then) and a
+    // brick is 40, so 5,000 bricks is 200,000 and cannot be paid for even with
+    // the whole standing overdraft. The quantity is well inside
     // `MAX_PURCHASE_QUANTITY`, so this is the treasury refusing and not the
     // quantity bound.
-    submit(runtime, 0, packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 1_000 }));
+    submit(runtime, 0, packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 5_000 }));
 
     expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'purchase.insufficient-funds' });
     // And the refusal left the treasury alone, which is what makes it a
     // refusal rather than a failure.
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
   });
 
   it('records a purchase of something that is not for sale', () => {
@@ -655,7 +657,8 @@ describe('a purchase the treasury refuses reaches the session log', () => {
     // refusals is more recent, which is a decision with no basis.
     const runtime = createNewSimulationRuntime(0x261);
     placeWall(runtime, 0, OUT_OF_BOUNDS_TILE);
-    submit(runtime, 1, packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 1_000 }));
+    // 5,000 bricks, 200,000, past the 100,000 grant and its overdraft (#641).
+    submit(runtime, 1, packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 5_000 }));
 
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
     expect(runtime.refusals.count).toBe(2);
@@ -1547,11 +1550,12 @@ describe('ADR 0122 option D step 1: a refusal carries the place it is about, or 
 
   it('carries no tile for a purchase, which names an item and a quantity and no place at all', () => {
     const runtime = createNewSimulationRuntime(0x122);
-    // 1,000 bricks at 40 minor units is 40,000 against a starting 25,000.
+    // 5,000 bricks at 40 minor units is 200,000 against a starting 100,000
+    // (#641, 2026-09-23; this was 1,000 bricks against 25,000 before).
     submit(
       runtime,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-0', itemId: 'item.brick', quantity: 1_000 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-0', itemId: 'item.brick', quantity: 5_000 }),
     );
 
     expect(runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');

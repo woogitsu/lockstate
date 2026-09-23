@@ -159,8 +159,10 @@ describe('"a fresh, unfurnished prison" has one definition, and the host reads i
 
     // 25,000 - 655 x 40 = -1,200: past the starter rung (-1,185), short of the
     // mature one (-1,250), which is the only window in which the two floors
-    // give different answers to the same press.
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 655 });
+    // give different answers to the same press. Since the owner's ruling of
+    // 2026-09-23 set the grant to 100,000 (#641) it is 100,000 - 2,530 x 40,
+    // the same -1,200.
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_530 });
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     expect(runtime.treasury.balanceMinorUnits, 'the balance this case is built at').toBe(-1_200);
 
@@ -187,7 +189,8 @@ describe('"a fresh, unfurnished prison" has one definition, and the host reads i
 
   it('states a remainder the same press will honour', () => {
     const runtime = prisonRestoredWithAnOffCatalogueRoom();
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 655 });
+    // 655 at the 25,000 grant; 2,530 since 2026-09-23 (#641), to the same -1,200.
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_530 });
 
     const counts = reportedCounts(publication(runtime));
     const fundsMetric = projectStatusMetrics(counts).find((descriptor) => descriptor.id === 'funds');

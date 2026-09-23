@@ -182,7 +182,10 @@ writing the hierarchy down.
   `residentCapacity: 1`, the arrival reaches `completed` and occupies it, and the
   balance rises by exactly 300 on the day's last tick, closing at
   `25_000 - 65 + 300`. `tests/integration/object-placement-loop.test.ts` asserts
-  every one of those figures as a literal.
+  every one of those figures as a literal. *(Dated note, 2026-09-23: the
+  opening grant is 100,000 since the owner's ruling on #641 (`AGENTS.md` entry
+  14), so that literal reads `100_000 - 65 + 300`; nothing else in this
+  paragraph moved.)*
 
   So decision 3 is built and its consequence — "income scales with population,
   and so does trouble" — is observable for the first time. The *population* half
@@ -438,6 +441,18 @@ numbers:
 | 1 | deliveries refused | balance below **−1,250** |
 | 2 | construction halted | balance below **−2,000** |
 | 3 | wages unpaid | balance below **−2,500** (the floor) |
+
+> **Dated note, 2026-09-23: rung 3 is −10,000 since the owner set the opening
+> grant to 100,000 (#641, `AGENTS.md` entry 14).** The table is the ruling as
+> given and is not edited. Its third row says *"(the floor)"*, §3a below makes
+> rung 3 *the floor, whatever the floor is*, and the floor is one tenth of the
+> grant (ADR 0083 §2), so the grant moved it from −2,500 to −10,000. Rungs 1
+> and 2 are absolute and did not move: deliveries and construction still stop
+> at −1,250. What this changes for a player, measured in
+> `tests/integration/economy-payroll-loop.test.ts`: a prison sinking at 520 a
+> day, which missed its first payday on day 10, now misses it on day 24; the
+> order of the rungs is unchanged. §4's open question — whether the rungs move
+> when the floor does — is still not decided by this; only the floor moved.
 
 ### 2. What of decision 8 is superseded, and what survives
 

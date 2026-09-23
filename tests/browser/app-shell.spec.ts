@@ -9886,12 +9886,15 @@ test.describe('the assembled application', () => {
      * session and a real page.
      *
      * 1,000 bricks at 40 is 40,000 against a 25,000 starting balance, less
-     * the 200 already spent above.
+     * the 200 already spent above. **5,000 bricks since the owner's ruling of
+     * 2026-09-23 set the starting balance to 100,000 (#641)**: 1,000 became
+     * affordable, and 5,000 is 200,000 -- past the grant and the whole
+     * facility under it.
      */
     const sentBefore = (await purchases()).length;
-    await page.locator('.hud-build__buy .ui-number__input').fill('1000');
+    await page.locator('.hud-build__buy .ui-number__input').fill('5000');
     await page.locator('.hud-build__buy .ui-number__input').press('Enter');
-    await expect(buy).toHaveText('Buy 1000 × Brick · 40,000');
+    await expect(buy).toHaveText('Buy 5000 × Brick · 200,000');
     // Which the control now says before it is pressed, and is still pressed --
     // see `pressBuyExpectingRefusal` for why both halves matter and why the
     // press is forced.

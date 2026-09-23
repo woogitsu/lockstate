@@ -62,7 +62,9 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  *
  * ## Why every figure is a literal
  *
- * `wall-brick` needs 2 `item.brick`, a brick is 40, a prison opens on 25,000.
+ * `wall-brick` needs 2 `item.brick`, a brick is 40, a prison opens on 25,000
+ * -- **100,000 since the owner's ruling of 2026-09-23 (#641)**, so every
+ * `100_000` below read `25_000` until then and the differences are unchanged.
  * A balance computed from a price this code read back off the catalogue would
  * agree with a refund of the wrong amount, which is the defect class
  * `docs/TESTING.md` records. The three are pinned in the first case.
@@ -248,10 +250,27 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  * of which #771 touches (either ruling), and the property only ever needed *a*
  * window in which the queue can fund three orders and not four -- not a
  * specific distance from any one rung.
+ *
+ * **The owner's ruling of 2026-09-23 set the opening grant to 100,000 (#641),
+ * and the window is re-derived rather than carried.** It needs a balance `B`
+ * after the planks such that the six-brick press lands at or above the starter
+ * rung (`B - 240 >= -1,185`), leaves under one wall order of construction room
+ * (`B - 240 + 1,250 < 80`), and, once refunded, funds three wall orders and not
+ * four (`240 <= B + 1,250 < 320`). Together that is `-945 <= B < -931`, and
+ * the one whole number of planks that lands there is 1,553:
+ *
+ * - 1,553 planks at 65 is 100,945, leaving **-945** of the 100,000 grant.
+ * - Six bricks at 40 is 240: balance **-1,185**, exactly on the starter rung,
+ *   which a press may land on -- and 65 of room to the construction rung, below
+ *   the 80 one wall order costs.
+ * - Cancelling the six bricks leaves **-945** again, 305 of room -- above the
+ *   240 three wall orders cost and below the 320 that four cost.
+ *
+ * The 399 / -935 / -1,175 bullets above are the 25,000-grant reading.
  */
 function drainedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 399 });
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 1_553 });
   step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
   send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
   expect(runtime.refusals.count, 'the fixture must afford everything it presses').toBe(0);
@@ -263,14 +282,14 @@ function drainedPrison(): SimulationRuntime {
   return runtime;
 }
 
-/** 25,000 - 399 x 65 - 6 x 40, with the six bricks refunded. 315 of room to the (unaffected) construction rung. */
-const DRAINED_BALANCE = -935;
-/** `DRAINED_BALANCE` less six bricks at 40: -1,175, ten short of the starter rung and 75 of room to the construction rung, below one wall order. */
-const DRAINED_AFTER_SIX_BRICKS = -1_175;
+/** 100,000 - 1,553 x 65 - 6 x 40, with the six bricks refunded. 305 of room to the (unaffected) construction rung. Was -935 at the 25,000 grant. */
+const DRAINED_BALANCE = -945;
+/** `DRAINED_BALANCE` less six bricks at 40: -1,185, on the starter rung and 65 of room to the construction rung, below one wall order. Was -1,175 at the 25,000 grant. */
+const DRAINED_AFTER_SIX_BRICKS = -1_185;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(BUILDABLE_REGISTRY.get(WALL)!.materialsRequired).toEqual([{ itemId: BRICK, quantity: 2 }]);
     expect(procurableMaterial(BRICK)!.unitPriceMinorUnits).toBe(40);
     expect(2 * 40).toBe(WALL_COST);
@@ -281,14 +300,14 @@ describe('a refund survives the clock (#687)', () => {
     placeWalls(runtime, 15);
 
     // The measurement issue #687 opens with: fifteen segments, 1,200 spent.
-    expect(balanceOf(runtime)).toBe(25_000 - 15 * WALL_COST);
-    expect(balanceOf(runtime)).toBe(23_800);
+    expect(balanceOf(runtime)).toBe(100_000 - 15 * WALL_COST);
+    expect(balanceOf(runtime)).toBe(98_800);
     // And the fold's own promise, which is this sum: "1,200 back if cancelled".
     expect(projectPendingDeliveries(runtime.procurement).refundableMinorUnits).toBe(1_200);
 
     for (const id of deliveryIds(runtime)) send(runtime, { type: 'CancelMaterialPurchase', orderId: id });
 
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
     // The demand went with the supply, which is the whole of the fix: nothing
     // is left queued to want bricks.
@@ -298,7 +317,7 @@ describe('a refund survives the clock (#687)', () => {
     // pass in that window has had its chance to buy the run back.
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS * 2);
 
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
     expect(stockOf(runtime, BRICK)).toBe(0);
   });
@@ -306,7 +325,7 @@ describe('a refund survives the clock (#687)', () => {
   it('withdraws one segment per delivery cancelled, and leaves the rest of the run alone', () => {
     const runtime = createNewSimulationRuntime(SEED);
     placeWalls(runtime, 5);
-    expect(balanceOf(runtime)).toBe(25_000 - 5 * WALL_COST);
+    expect(balanceOf(runtime)).toBe(100_000 - 5 * WALL_COST);
 
     const [first] = deliveryIds(runtime);
     send(runtime, { type: 'CancelMaterialPurchase', orderId: first! });
@@ -314,14 +333,14 @@ describe('a refund survives the clock (#687)', () => {
     // Exactly one order withdrawn -- not the queue, and not none.
     expect(cancelled(runtime)).toBe(1);
     expect(queued(runtime)).toBe(4);
-    expect(balanceOf(runtime)).toBe(25_000 - 4 * WALL_COST);
+    expect(balanceOf(runtime)).toBe(100_000 - 4 * WALL_COST);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(4);
 
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS);
 
     // The four that were not cancelled still get their bricks and still build:
     // the withdrawal took the demand it was answering and nothing beside it.
-    expect(balanceOf(runtime)).toBe(25_000 - 4 * WALL_COST);
+    expect(balanceOf(runtime)).toBe(100_000 - 4 * WALL_COST);
     expect(stockOf(runtime, BRICK) + 2 * (orderStates(runtime).completed ?? 0)).toBeGreaterThanOrEqual(2);
   });
 
@@ -387,7 +406,7 @@ describe('a refund survives the clock (#687)', () => {
     placeWalls(runtime, 3);
 
     expect(deliveryIds(runtime)).toEqual(['buy-1']);
-    expect(balanceOf(runtime)).toBe(25_000 - 6 * 40);
+    expect(balanceOf(runtime)).toBe(100_000 - 6 * 40);
 
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
 
@@ -400,7 +419,7 @@ describe('a refund survives the clock (#687)', () => {
     // name.
     expect(cancelled(runtime)).toBe(0);
     expect(queued(runtime)).toBe(3);
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
 
     step(runtime, 10);
 
@@ -409,7 +428,7 @@ describe('a refund survives the clock (#687)', () => {
     // being undone here, because the money that came back was never the
     // queue's.
     expect(queued(runtime)).toBe(3);
-    expect(balanceOf(runtime)).toBe(25_000 - 6 * 40);
+    expect(balanceOf(runtime)).toBe(100_000 - 6 * 40);
   });
 
   it('withdraws nothing when what the prison already has coming covers the queue', () => {
@@ -440,7 +459,7 @@ describe('a refund survives the clock (#687)', () => {
     // And nothing was bought back: the walls are built out of the stock the
     // player chose to hold, which is ADR 0017 decision 7's *"holding is
     // permitted, never required"* seen from the permitted side.
-    expect(balanceOf(runtime)).toBe(25_000 - 6 * 40);
+    expect(balanceOf(runtime)).toBe(100_000 - 6 * 40);
     expect(orderStates(runtime).completed).toBe(2);
   });
 
@@ -458,7 +477,7 @@ describe('a refund survives the clock (#687)', () => {
     }
 
     for (const id of deliveryIds(runtime)) send(runtime, { type: 'CancelMaterialPurchase', orderId: id });
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
     expect(cancelled(runtime)).toBe(3);
 
     // **The withdrawal goes through `cancelOrder` and not through `undo()`**,
@@ -469,12 +488,12 @@ describe('a refund survives the clock (#687)', () => {
     send(runtime, { type: 'Undo' });
     send(runtime, { type: 'Redo' });
 
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
     expect(cancelled(runtime)).toBe(3);
     expect(queued(runtime)).toBe(0);
 
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS);
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
   });
 
   it('withdraws nothing when the cancellation itself was refused', () => {
@@ -527,17 +546,18 @@ describe('a refund survives the clock (#687)', () => {
    * defect wearing a different hat. `24_760` is written from the figures the
    * first case in this file pins -- 25,000 open, 2 bricks a segment, 40 a
    * brick -- so a price change fails there rather than being absorbed here.
+   * **It is `99_760` since the grant moved to 100,000 on 2026-09-23 (#641).**
    */
   it('gives the money back and spends it again at the same price, and costs only the delivery delay', () => {
     const withCancel = createNewSimulationRuntime(SEED);
     send(withCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
     placeWalls(withCancel, 3);
-    expect(balanceOf(withCancel)).toBe(25_000 - 6 * 40);
+    expect(balanceOf(withCancel)).toBe(100_000 - 6 * 40);
     // The fold's promise, read at the moment the player would read it.
     expect(projectPendingDeliveries(withCancel.procurement).refundableMinorUnits).toBe(240);
 
     send(withCancel, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
-    expect(balanceOf(withCancel)).toBe(25_000);
+    expect(balanceOf(withCancel)).toBe(100_000);
 
     const cancelledCompletedAt = runToQuiet(withCancel);
     const withoutCancel = createNewSimulationRuntime(SEED);
@@ -551,7 +571,7 @@ describe('a refund survives the clock (#687)', () => {
 
     // 3 segments at 2 bricks at 40: the same 240, whichever way the player got there.
     for (const runtime of [withCancel, withoutCancel, neverBought]) {
-      expect(balanceOf(runtime)).toBe(24_760);
+      expect(balanceOf(runtime)).toBe(99_760);
       expect(orderStates(runtime).completed).toBe(3);
     }
 
@@ -585,10 +605,10 @@ describe('a refund survives the clock (#687)', () => {
     // Ten bricks in flight against six of demand, so nothing just-in-time was
     // bought and the only delivery is the player's.
     expect(deliveryIds(runtime)).toEqual(['buy-1']);
-    expect(balanceOf(runtime)).toBe(25_000 - 10 * 40);
+    expect(balanceOf(runtime)).toBe(100_000 - 10 * 40);
 
     send(runtime, { type: 'CancelMaterialPurchase', orderId: 'buy-1' });
-    expect(balanceOf(runtime)).toBe(25_000);
+    expect(balanceOf(runtime)).toBe(100_000);
     expect(cancelled(runtime)).toBe(0);
 
     // **This is the ungated shape, run against the state the gate protected.**

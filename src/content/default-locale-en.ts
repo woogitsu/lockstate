@@ -290,7 +290,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * `tests/unit/ui-hud-funds-threshold-named.test.ts` fails if either stops.
    * A player who never hovers still meets the sentence.
    *
-   * "Materials" rather than "anything": a payday can still spend to -2,500,
+   * "Materials" rather than "anything": a payday can still spend to the
+   * floor (-2,500 when this was written; -10,000 since the grant became
+   * 100,000 on 2026-09-23, #641),
    * so a sentence saying *nothing* can be bought would be false about the
    * prison even while it is true about every press the player can make. And
    * *"until the prison earns the money"* is the tail every sibling refusal
