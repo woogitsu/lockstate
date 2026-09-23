@@ -334,6 +334,13 @@ the follow-up starts from a list rather than a re-measurement.
    > more tree" comment for the reasoning and `docs/CLOUD_SAVE.md`'s "What has
    > and has not been executed" for the one line of this document's own prose it
    > has since made imprecise.
+   >
+   > **Correction, 2026-09-24 (#1168).** The local-save half now has a
+   > production consumer: `src/ui/account/manage-saves-panel.ts` renders
+   > `projectSaveList` in Zarządzaj. The reachability gate records
+   > `src/ui/account/` as wired and keeps its unused account-preferences and
+   > cloud-slot modules individually accounted for. `src/persistence/cloud/`
+   > remains parked: no Supabase client, identity flow or sync was connected.
 5. **The rule that `src/simulation/**` must not import `src/persistence/**`** is true today —
    measured, zero such imports — and **no test holds it.** The services-layer
    gate holds the simulation-must-not-import-services direction and this one has
