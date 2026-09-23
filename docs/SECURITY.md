@@ -348,7 +348,8 @@ and what the projections publish cannot disagree.
 **That single reading is also a bound worth stating, because the number is
 doing two jobs** ([#893](https://github.com/matmaxalez/lockstate/issues/893);
 [ADR 0095](./adr/0095-what-the-guard-requirement-is-a-requirement-for.md),
-`Proposed`). `requiredGuardCountFor` is the *posting cap* as well as the figure
+accepted for decision 1 on 2026-09-23; this citation read `Proposed` until
+then). `requiredGuardCountFor` is the *posting cap* as well as the figure
 the Staff panel renders, and posting spends the whole cap out of
 `claimableGuardIds` -- so a prison that hires exactly its requirement is
 `Covered` with **nothing spare**, and a response, a sector sweep and a search
@@ -360,7 +361,12 @@ resolved and 34 dispatched, with the badge reading `Covered` in both. **Raising
 the requirement does not fix that and makes it worse**: the same six guards
 under a `scheduled: 6` schedule are all posted, and that prison resolves 0 and
 lapses 9 at an identical wage bill. Whether to publish a second figure for the
-reserve is ADR 0095's question and it is open.
+reserve is ADR 0095's question and it is open. **Answered 2026-09-23, and the
+sentence is kept because it was true until then:** the owner accepted ADR 0095
+decision 1. So a reserve figure is to be published beside the requirement, and
+the coverage block is to gain a rung for *every post filled, nothing spare*.
+Neither is built at the time of writing. How the reserve is defined is still
+that document's open question 1.
 
 **What it does not bring back**, measured in
 `tests/integration/security-default-sector.test.ts`:

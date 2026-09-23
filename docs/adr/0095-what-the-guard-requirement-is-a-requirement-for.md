@@ -2,7 +2,68 @@
 
 ## Status
 
-**Proposed, 2026-09-03. Not self-approved.**
+**Accepted by the owner on 2026-09-23 for decision 1 only. Decisions 2 and 3
+stay rejected, as this document recommends.** Asked whether to accept decision
+1, they chose the option labelled:
+
+> Akceptuj decyzję 1 (zalecane)
+
+("Accept decision 1 (recommended).") That is this document's own
+recommendation, taken as written: the coverage read model publishes a response
+and search reserve beside `required`/`assigned`/`shortage`, and
+`describeStaffCoverage` gains a rung between `Covered` and `Understaffed` for
+*every post filled, nothing spare*. **No simulation behaviour changes**, which
+is decision 1's own boundary. Decision 4 (*nothing here retunes a number*) was
+not put to the owner separately; it restates decision 1's boundary and moves
+with it. The `Proposed` block is kept below rather than replaced, on the
+pattern [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)'s
+Status block sets: `docs/AGENT_WORKFLOW.md` §4 asks for both directions to be
+marked.
+
+**The provenance is the weaker kind.** The ruling is the *label of a clickable
+option the integrating session wrote and the owner chose*, not a sentence they
+typed. `AGENTS.md` flags the same shape for its entries of 2026-09-08,
+2026-09-09 and 2026-09-10 and for its numbered rulings of 2026-09-19 onwards.
+The ruling is recorded there too, as ruling 18 of its section *"Instructions
+recorded that are not releases"*. Read it as accepting what the label says and
+nothing wider.
+
+**What the acceptance does not settle, named because decision 1 carries it.**
+
+- **The reserve figure's definition.** Decision 1 recommends the ceiling
+  constant (`requiredResponderCount` at the highest severity the game can
+  produce) and, in the same section, says it *"does not choose between them
+  because the choice is balance rather than architecture"*. Open question 1
+  says the same. The label accepts decision 1 and does not name a definition,
+  so **the recommendation stands as a recommendation, and open question 1 stays
+  open.** An implementing change that takes the ceiling constant is inside the
+  recommendation, and it should say that the number is still #29's.
+- **The rung's sentence.** This document was written on 2026-09-03 and treats
+  that sentence as the owner's. Since the 2026-09-04 partial release of
+  reservation 4, the *choice of words* is ours and the *truth* of the sentence
+  is not. So the implementing change authors it, quotes it verbatim in its
+  commit message and pull request body, and puts it beside the code that makes
+  it true.
+
+**Two sentences below are overtaken, and neither is rewritten.**
+
+- Decision 1 says the current `Covered` sentence, *"This prison has the guards
+  it asks for"*, *"would become true of exactly this state and could stand"*.
+  That sentence left the catalogue in #941 and #989 (2026-09-04 and
+  2026-09-05); `hud.security.coverage-met-hint` has read *"Incidents and
+  searches need free guards."* since then, as the 2026-09-15 comment on #893
+  records. The rung's wording has to be read against today's sentence, not the
+  one this document quotes.
+- The measured ladder's search threshold is `required + 1`. Since #996 a search
+  may not claim the last free guard, so searching also starts at
+  `required + 2`. The Context section already carries that correction in a
+  marked note. The reserve figure covers it either way, because a reserve that
+  answers a riot also covers a search (open question 3).
+
+---
+
+**Proposed, 2026-09-03. Not self-approved.** *(The state of this document
+before the ruling above.)*
 
 **Nothing here is implemented.** This branch carries this document and one
 measurement instrument,

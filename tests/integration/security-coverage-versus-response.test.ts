@@ -13,8 +13,11 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * **What the guard requirement is a requirement *for***
  * ([issue #893](https://github.com/matmaxalez/lockstate/issues/893);
  * [ADR 0095](../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
- * proposes what to do about it and is `Proposed`, so nothing below asserts a
- * decision).
+ * proposes what to do about it. It was `Proposed` when this file was written,
+ * so nothing below asserts a decision. The owner accepted its decision 1 on
+ * 2026-09-23 -- a published reserve and a new coverage rung, no simulation
+ * change -- and nothing below asserts that either: this file characterises
+ * the behaviour the decision is about, which the decision leaves as it is).
  *
  * ## What this file is
  *

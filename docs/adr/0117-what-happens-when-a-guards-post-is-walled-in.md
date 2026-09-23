@@ -305,7 +305,12 @@ this document was commissioned to price, recommends **keep and report**, and
 notes that the condition-shaped refusal it wants is *"a shape this repository
 does not have yet"*.
 
-**Its status is the part to read.** ADR 0092 is `Proposed`. The owner ruled on
+**Its status is the part to read.** ADR 0092 was `Proposed` when this was
+written. *(Marked 2026-09-23: the owner has since accepted every decision the
+2026-09-02 rulings left open, decision 5 included, as ADR 0092 recommends them.
+The paragraph is kept as written, because the case it goes on to separate is
+unchanged: decision 5 is about a post the player placed, and this document is
+about the derived one.)* The owner ruled on
 **five** of its questions on 2026-09-02 — scope, a placed post being a new
 sector, the payload being authoritative, the route gesture, and which sector
 wins a contested guard — and **decision 5 was not one of them**. Of its eight

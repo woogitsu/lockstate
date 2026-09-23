@@ -24,7 +24,40 @@
 
 ## Status
 
-**Proposed, 2026-09-02. Not self-approved.**
+**Accepted by the owner on 2026-09-23, as written.** Asked whether to accept
+the mechanism this document chose, they picked the option labelled:
+
+> Akceptuj (zalecane)
+
+("Accept (recommended).") What is accepted is the Decision section as it
+stands: a daily `ClassificationEarlyWarningSystem` that reuses the
+authoritative review's scoring, can only raise a tier, and never raises one
+above `Medium`. The pacing to `High` is unchanged, which is the constraint the
+owner's own ruling of 2026-09-01 set. The `Proposed` block is kept below rather
+than replaced, on the pattern
+[ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)'s Status
+block sets.
+
+**The provenance is the weaker kind.** The ruling is the *label of a clickable
+option the integrating session wrote and the owner chose*, not a sentence they
+typed. That is the same shape `AGENTS.md` flags for its entries of 2026-09-08,
+2026-09-09 and 2026-09-10. It is recorded there as ruling 19 of the section
+*"Instructions recorded that are not releases"*.
+
+**This accepts a mechanism that is already built.** The system landed on
+`main` in #798 (`75a3797b`, v0.0.351) while this document was `Proposed`, so
+the acceptance moves no code. It does not re-open anything under *"What this
+does not decide"* below either. Item 2 there, whether `priorIncidents` ever
+gets a non-zero source, was answered separately the same day: ruling 25 in
+`AGENTS.md` says admitted prisoners arrive with prior incidents, and an ADR
+comes before any code. Until that ADR is decided, `ADMISSION_REQUEST`'s `0`
+stands, and so does this document's statement that both systems read that
+field.
+
+---
+
+**Proposed, 2026-09-02. Not self-approved.** *(The state of this document
+before the ruling above.)*
 
 This document is not offered as one of several options for the owner to choose
 among — the owner has already ruled, in a comment on
