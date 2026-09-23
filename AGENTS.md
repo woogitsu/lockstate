@@ -1687,6 +1687,53 @@ route"* as both directions. #492's keying, `RefusalLog` and its guarding tests
 are unchanged. The ADR's *"Kills the measured contradiction"* bullet, false for
 the object arm as #1270 measured, is kept with a dated mark.
 
+**TWO MORE RULINGS OF 2026-09-23, ASKED AFTER THE FOURTEEN ABOVE, SAME WEAKER
+PROVENANCE.** Each was put as a clickable option written by the integrating
+session, in Polish, and the owner picked one. Before these were numbered, this
+file was read at `57118f11` and ran 1 to 27 with no gap. That is a statement
+about the file at that commit, not a standing claim.
+
+**28. Crowding accelerates need decay, and the riots it adds stay
+([#586](https://github.com/matmaxalez/lockstate/issues/586)).** The only ruling
+comment on #586 (2026-08-29) was **written by an agent and posted from the
+owner's account**; the sentence it quotes is the design corpus's. The owner was
+told that, and was shown the built mechanism:
+- safety decays at an extra slope of 40 and hygiene at an extra slope of 8
+  whenever prisoners outnumber beds (`accommodationCapacityOf`);
+- the strip's "Covered" becomes "Overcrowded";
+- nothing is lost up to about 115 % of beds, and about an eighth of daily
+  earnings is lost from day 5 at 125 %.
+
+They were also shown the side effect through the existing needs-to-incidents
+coupling. With 16 prisoners in 8 beds and 2 guards, riots went from 0 to 5 over
+10 days; staffed to the requirement, they stayed at 0. They chose:
+
+> Scal, bunty zostają (zalecane)
+
+("Merge, the riots stay (recommended).") **This confirms the mechanism, the
+numbers as built, and the incident side effect**, where the 2026-08-29 comment
+alone could only be read as authorising the mechanism. The strings it ships are
+wording under the 2026-09-04 release, and are quoted verbatim in that pull
+request.
+
+**29. A save carries a walk in progress, so that save, restore and continue is
+the same game as continuing
+([#1373](https://github.com/matmaxalez/lockstate/issues/1373)).** Measured on
+`ceb6865e`, 41 of 41 saves taken while a prisoner was travelling restored to a
+permanently different prison, and 0 of 24 saves without a traveller did. The
+cause is `PrisonerOperationsRuntime.loadSnapshot` resetting every `travelling`
+prisoner to `idle`, the trade-off ADR 0059 records and leaves as its open
+question 3. They chose:
+
+> Zapisuj marsz (zalecane)
+
+("Save the walk (recommended).") **This answers ADR 0059's open question 3 with
+its option 5**, and is recorded there by the change that implements it. It
+authorises a save-format addition. The field is optional, so an older save
+restores exactly as it does today. It does not decide whether
+`SAVE_SCHEMA_VERSION` moves; ADR 0038's rule does. It is not a reservation
+release: nothing under `supabase/migrations/` is involved.
+
 
 ## Required workflow for every issue
 Before coding:
