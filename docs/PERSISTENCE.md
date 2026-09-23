@@ -465,9 +465,16 @@ work are not.**
   (`PrisonerOperationsRuntime`, `GuardRoster`, `JobBoard`, `SearchSystem`) drop
   it on restore and re-request on their next scheduled tick, and each of those
   resets is proven idempotent in `tests/determinism/snapshot-restore-fidelity.test.ts`.
-  For those four the visible cost is a bounded delay, not lost progress; the
-  alternative — persisting request ids into a queue that never received them —
-  leaves actors stuck forever.
+  That test deliberately has no actor travelling at the save point; it proves
+  the reset can be repeated, not that a restored prison continues identically.
+  For a travelling prisoner, `PrisonerOperationsRuntime.loadSnapshot` also
+  clears the walk and action target. Issue #1373 measured 41 divergent
+  restore-versus-continuous runs out of 41 saves with a traveller, with none
+  reconverging by day six, versus zero divergences in 24 saves without one.
+  Thus "a bounded delay, not lost progress" is not a valid claim for the
+  prison as a whole. Persisting only the old request id would still be wrong:
+  the rebuilt navigation queue never received that request and the actor
+  would remain stuck.
 
   **`IncidentResponseSystem` was listed here as a fifth and does not belong,
   which was measured rather than reasoned (#352).** It cannot re-request: the
@@ -509,7 +516,8 @@ work are not.**
 
   So `IncidentResponseSystem` still does **not** belong in the group above, and
   the reason is worth stating precisely rather than filed as fixed. The other
-  four pay *"a bounded delay, not lost progress"*. This one loses progress on
+  four reset their in-flight requests, but #1373 shows the prisoner's reset can
+  permanently change the subsequent simulation. This one loses progress on
   purpose — the interrupted response really is abandoned, not resumed — and then
   redoes it, so what a player pays is **time, not the outcome**:
 
