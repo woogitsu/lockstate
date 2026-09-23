@@ -381,7 +381,7 @@ whole suite was not built; see §8):
 | --- | --- |
 | `tests/determinism/session-replay.test.ts:172`, `streams.map((entry) => entry.name)` | asserts the exact list of six registered stream names |
 | `tests/determinism/rng-stream-isolation.test.ts:199`, `expect(names).toEqual(` | the same list |
-| `tests/determinism/save-rng-stream-compatibility.test.ts:74` | `REGISTERED_STREAMS`, the same list. Per ADR 0069, this file *"had to be extended by hand"* for the sixth stream, which is the file working as intended |
+| `tests/determinism/save-rng-stream-compatibility.test.ts:74` | `REGISTERED_STREAMS`, the same list. `new-session.ts`'s docblock for the sixth stream records that this file *"had to be extended by hand"*, which is the file working as intended |
 | `tests/integration/gang-retaliation-from-the-admission-surface.test.ts` | stays green but **stops being what its name says**: it sends `priorIncidents: 0` because that was the interface's value. To keep its claim, it must omit the field, and then its measured ticks (`FIRST_REVIEW_TICK = 48_000`, the grudge at 53,261, retaliation at 55,700, and `0x0cc3`'s 7 retaliations) have to be re-measured |
 | `tests/integration/gang-membership-at-review.test.ts` | the same situation: its docblock cites `ADMISSION_REQUEST.priorIncidents` |
 | `tests/integration/security-post-unreachable-condition.test.ts` | sends `{ type: 'AdmitPrisoner', priorIncidents: 0, ... }` as the interface's shape |
@@ -409,8 +409,8 @@ Drawn unconditionally. DERIVED intake tiers: **47.27 / 33.03 / 15.15 / 4.55 %**.
 After the first early warning: **36.36 / 40.00 / 19.09 / 4.55 %**.
 
 **Why this option:** ADR 0080's six reasons still stand. It dominates
-`always 1`, and it is the smallest weighted table that gives a well-run prison
-a weapon at a rate that exists without taking over the game. In ADR 0080's
+`always 1`, and in ADR 0080's words it *"closes it at a rate that exists
+without becoming the game"*. In ADR 0080's
 600-day run, 8 of 10 well-run prisons saw a weapon and **0 of 70 runs lost a
 prisoner**. Since then two things have changed, and §6 re-measures both. The
 early warning makes the effective tier-2 share about 19 % rather than 15 %.
@@ -443,7 +443,9 @@ warning: **48.48 / 38.18 / 11.06 / 2.27 %**. Tier 2 is spent at the best
 ratio of the safe candidates, according to ADR 0080. **It is a fair choice if
 the owner wants tier 3 at the gate to be rare rather than occasional.** ADR
 0080 put it this way: *"the difference is a taste about frequency"*. §6
-measures its effect as about half of Option A's everywhere.
+measures its effect at about half of Option A's or less: well-run gang
+members 2 against 5, neglected-prison assaults over 30 days 40 against 89,
+and retaliating seeds 1 against 3.
 
 **The draft's recommendation is Option A.** It is a recommendation, not a
 decision.
@@ -454,8 +456,10 @@ decision.
 
 ### 6.1 Method, and what it cannot establish
 
-The balance figures come from `a-540/priors-balance.probe.ts`, reproduced in
-full in Appendix A. It builds each prison from player commands on an
+The balance figures come from `a-540/priors-balance.probe.ts`. Its
+load-bearing parts are reproduced in Appendix A. The whole file lives in this
+session's scratchpad and will not outlast it, so the appendix is the durable
+record. It builds each prison from player commands on an
 **unmodified** `430906af`. For each admission, the probe draws the sentence
 from `deriveXoshiroState(seed, "prisoners.sentence")` and the priors from
 `deriveXoshiroState(seed, "prisoners.priors")`, then sends both as explicit
@@ -496,7 +500,7 @@ published tier rows exactly for `always 0`, `80/15/5`, `70/25/5` and
 MEASURED, summed over 12 seeds. Tiers are read at tick 1,200 (at intake) and
 at tick 2,401 (after the first early warning).
 
-| table | priors 0/1/2 drawn | W and N, t0/t1/t2/t3 at intake (96 arrivals) | after day 1 | C at intake (192) | after day 1 |
+| table | priors 0/1/2 drawn (W, N) | W and N, t0/t1/t2/t3 at intake (96 arrivals) | after day 1 | C at intake (192) | after day 1 |
 | --- | --- | --- | --- | --- | --- |
 | today (all 0) | 96/0/0 | 59/32/5/**0** | 57/34/5/**0** | 118/63/11/**0** | 114/67/11/**0** |
 | C: `80/15/5` | 76/16/4 | 51/32/11/**2** | 45/36/13/**2** | 105/61/21/**5** | 93/70/24/**4** |
@@ -631,8 +635,8 @@ count, the hypothesis holds. If they do not, something else is going on and
 it has to be found before Option A ships.
 
 **Third: short windows and batch admissions.** Thirty days and one batch of
-arrivals at tick 1,000 is ADR 0080's *"property of a metronome"* weakness in
-a sharper form. ADR 0080's 600-day, 10-seed well-built run is the stronger
+arrivals at tick 1,000 is the weakness #540's research comment of 2026-08-30
+named as its own (*"a property of a metronome"*), in a sharper form. ADR 0080's 600-day, 10-seed well-built run is the stronger
 evidence for Option A's well-run behaviour. This draft's runs add only the
 gang and early-warning dimensions ADR 0080 could not have measured.
 
