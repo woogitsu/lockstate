@@ -1471,6 +1471,222 @@ beside that document's own Status block.
   which #1370's availability getter still answers.
 - **It does not decide ADR 0104's open question 2**, about a stale redo.
 
+**FOURTEEN FURTHER RULINGS ON 2026-09-23, ALL OF THE WEAKER PROVENANCE, AND
+THE HEADING OF THE ENTRY ABOVE STILL SAYS "A RULING" IN THE SINGULAR.** That
+heading is left standing. A heading rewritten in place is a heading whose
+earlier value nobody can see. All fourteen were put as clickable options
+**written by the integrating session**, in Polish, one chosen from each. **What
+is recorded below is the label of an option that session authored and the
+owner picked, not a sentence the owner typed.** Every entry in this section
+since 2026-09-08 draws the same distinction about itself. Read each as
+authorising what its label says and nothing wider. Each ruling is also posted
+in English as a comment on its issue, and those comments were read for the
+wording below.
+
+**The numbering was checked before it was used.** At the time of writing, the
+rulings of 2026-09-19 to 2026-09-23 in this file ran 1 to 13 with no gap. Every
+one of the 514 remote branches' copies of this file was also read, and none
+carries a 14 or higher. That is a statement about the file and the branches as
+they stood, not a standing claim.
+
+**None of the fourteen is a release inside the four reservations.** Rulings
+22, 23 and 24 touch reservations 2 and 3 and release nothing in either, and
+each says so in its own entry. Where a ruling accepts or amends an ADR, the ADR
+carries it in its own conventions and is the document to open.
+
+**14. The starting treasury is 100 000
+([#641](https://github.com/matmaxalez/lockstate/issues/641)).** The owner's
+ruling of 2026-08-30 was to raise the opening balance, and it left the figure
+open. Offered figures, they chose:
+
+> 100 000 (zalecane)
+
+("100 000 (recommended).") That is the waste-multiplier measurement's
+recommendation: the smallest balance of those measured that keeps the
+drag-wall trap outside ordinary drawing, at about four screenfuls. **It sets a
+number and moves none here.** `TREASURY_STARTING_BALANCE_MINOR_UNITS` is still
+`25_000` at `src/simulation/economy/treasury.ts:203`. **Its docblock at
+`:185-188` says the owner decided *"to keep 25,000"*, and that sentence is
+false.** It was already false after 2026-08-30. It is left alone on purpose, so
+that an implementation agent changes the constant and its docblock in one
+commit. The overdraft floor at `:295` derives from the constant and moves with
+it (#976).
+
+**15. The product name is spelled `LockState.io` everywhere a player sees it
+([#703](https://github.com/matmaxalez/lockstate/issues/703)).** #703's ruling 8
+of 2026-08-31 said the product stops spelling its own name two ways, and it
+left which spelling wins to the owner. They chose:
+
+> LockState.io
+
+That is the spelling `'brand.wordmark'` already carries. `index.html`'s
+`<title>` and its `description` meta still read `Lockstate.io`, and they are the
+player-visible spellings to change. **Code identifiers, package names and the
+repository name are not affected.** Neither is anything in deploy
+configuration: a spelling there is reservation 3's, and it is reported rather
+than touched. This is a choice of words inside the 2026-09-04 partial release
+of reservation 4. The sentence stays true because only the spelling moves.
+
+**16. The mid-game should force money choices; research the levers first and
+move no numbers ([#962](https://github.com/matmaxalez/lockstate/issues/962)).**
+They chose:
+
+> Tak — zbadaj dźwignie (zalecane)
+
+("Yes, research the levers (recommended).") **This authorises research and no
+balance change.** Candidate levers, for example room upkeep and running costs,
+are measured over simulated days against ruling 14's new balance. The numbers
+go back to the owner as options before any value moves.
+
+**17. The withheld grant also gets a strip badge visible without hovering
+([#890](https://github.com/matmaxalez/lockstate/issues/890)).** #1302 built the
+description half: `stateIncomeWithheldTodayMinorUnits` on the status strip,
+carried as a description only. The remaining question was loudness. They
+chose:
+
+> Tak, znaczek na pasku (zalecane)
+
+("Yes, a badge on the strip (recommended).") So a badge beside the earnings
+chip shows whenever the field is above zero. Its width is measured against
+#719's strip budget. Any string it adds is quoted verbatim, beside the code
+that makes it true, under the 2026-09-04 release's terms.
+
+**18. ADR 0095 decision 1 is accepted; decisions 2 and 3 stay rejected
+([#893](https://github.com/matmaxalez/lockstate/issues/893)).** They chose:
+
+> Akceptuj decyzję 1 (zalecane)
+
+("Accept decision 1 (recommended).") **Recorded in ADR 0095's Status block.**
+The coverage read model publishes a response-and-search reserve, and
+`describeStaffCoverage` gains a rung between `Covered` and `Understaffed`. No
+simulation behaviour changes. **One thing is left open, and the ADR's block
+names it:** the reserve figure's definition. Decision 1 recommends the ceiling
+constant and also says it does not choose, and the label names neither.
+
+**19. ADR 0090 is accepted
+([#788](https://github.com/matmaxalez/lockstate/issues/788)).** They chose:
+
+> Akceptuj (zalecane)
+
+("Accept (recommended).") **Recorded in ADR 0090's Status block.** This is the
+daily `ClassificationEarlyWarningSystem` that raises a tier only upward and
+never above `Medium`, and it leaves the pace to `High` unchanged. **It accepts
+a mechanism already on `main`** (#798, `75a3797b`). The comment on #788 says
+*"then implemented"*, and that is not needed: nothing is owed to the code.
+
+**20. ADR 0092: the rest, as recommended
+([#557](https://github.com/matmaxalez/lockstate/issues/557)).** They chose:
+
+> Pozostałe wg rekomendacji
+
+("The rest as recommended.") **The label names no decision, so ADR 0092's
+Status block tabulates all eight.** Accepted now: decision 1 (the post stays
+on the sector), 5 (an unreachable post is kept and reported), 6 (the index is
+clamped, with its own drop-if-unreachable clause), 7 (without the route gesture
+that 2026-09-02's ruling 4 replaced), and 8 without its already overtaken
+duty-shift bullet. **The five rulings of 2026-09-02 stand**, including the
+rejection of decision 2's `redefine`. The #557 comment lists *"a route is
+stored as ordered waypoints"* among the decisions accepted now. Decision 4's
+storage was already confirmed on 2026-09-02, so that clause adds nothing. The
+open questions are not decisions and stay open.
+
+**21. ADR 0052 and ADR 0054 are accepted, and the review pass was declined
+([#535](https://github.com/matmaxalez/lockstate/issues/535)).** #535 decision 8
+of 2026-08-29 accepted both on condition of a review pass reported to the
+owner. Offered that pass as the recommended option, they chose instead:
+
+> Akceptuj oba
+
+("Accept both.") **So the owner waived their own condition.** The acceptance
+does not show it was met, and both Status blocks say so. One disagreement in
+the record is noted there and not resolved. A review of both was posted on
+#535 on 2026-08-29. #703's comments of 2026-08-31 say neither document had one.
+ADR 0052 also carries a dated note on what ADR 0100 and ADR 0112 decision 5
+have overtaken: the sheet count, and its open question about furniture art.
+The decision itself is unchanged. ADR 0054 carries a note that no later ADR
+overtakes any of its decisions.
+
+**22. The owner reads PR #355's SQL themselves
+([#343](https://github.com/matmaxalez/lockstate/issues/343),
+[#355](https://github.com/matmaxalez/lockstate/pull/355)).** They chose:
+
+> Przeczytam SQL sam
+
+("I will read the SQL myself.") **Reservation 2 is untouched, and this is not
+a release inside it.** `supabase/migrations/` stays the owner's, #355 merges
+only by the owner, and nothing merges because of this ruling. What it settles
+is who reads the SQL. The permitted help is a short summary on #355 to make the
+read quicker. #355's own 2026-09-12 reading records that merging it as it stood
+would turn `verify:sql` red on two assertions that pin the defect on purpose.
+That is part of what the owner will be reading.
+
+**23. The owner checks the hosted staging migrations in the Supabase panel
+([#342](https://github.com/matmaxalez/lockstate/issues/342)).** They chose:
+
+> Sprawdzę w panelu sam
+
+("I will check in the panel myself.") **Reservations 2 and 3 are untouched,
+and neither is released.** Nothing runs against the hosted project from here.
+That includes a `dry_run` of `migrate-database.yml`, which #342's triage had
+named as the one action that would settle it. When the owner reports what is
+applied, the documents record it with the date.
+
+**24. ADR 0002 Q9: production is a separate `lockstate` Worker on
+`lockstate.io`, switched on later
+([#274](https://github.com/matmaxalez/lockstate/issues/274)).** They chose:
+
+> Osobny „lockstate”, później
+
+("A separate `lockstate`, later.") **Recorded as ADR 0002's *"Amendment,
+2026-09-23"*.** The topology moves to match that ADR. The ADR is not rewritten
+to match the topology. `lockstate-staging` stays staging. **Reservation 3 is
+untouched and nothing is released inside it.** No `wrangler.jsonc`, workflow,
+`public/_headers` or dashboard change is authorised, and no dispatch of the
+`production` job. Moving the domain onto `lockstate` is the owner's, when they
+switch it on.
+
+**25. Admitted prisoners arrive with prior incidents, and an ADR comes before
+any code ([#540](https://github.com/matmaxalez/lockstate/issues/540)).** They
+chose:
+
+> Tak, z historią (zalecane)
+
+("Yes, with a history (recommended).") **This authorises an ADR and no code.**
+It covers a seeded, deterministic, tier-dependent draw of prior incidents, how
+that draw feeds classification and gang membership (ADR 0121), and what it
+means for saves and for the intake queue (#594). `ADMISSION_REQUEST =
+{ priorIncidents: 0 }` at `src/main.ts:1190` stays until that ADR is decided.
+It answers the question ADR 0090 lists under *"What this does not decide"*,
+item 2.
+
+**26. Constitution article 6 covers refusals, so each refusal leaves a row in
+the message history ([#985](https://github.com/matmaxalez/lockstate/issues/985)).**
+Article 6 says warnings do not disappear because a newer event arrived, and
+that the event history stays available. Today `RefusalLog.record` replaces the
+standing refusal, and a second refusal deletes the first with no trace. They
+chose:
+
+> Tak, odmowy do historii
+
+("Yes, refusals into the history.") **This is a reading of an article ADR 0112
+decision 1 made binding.** The band still shows only the current refusal and
+keeps ADR 0091's lifetime rules. What changes is that the history keeps each
+one. The design is owed against ADR 0084, ADR 0091 and `docs/HUD_PROJECTIONS.md`
+gap 34 before the code is written.
+
+**27. `remove-wall` and `remove-object` count as one route for retiring the
+refusal band only
+([#1270](https://github.com/matmaxalez/lockstate/issues/1270)).** They chose:
+
+> Tak, jedna trasa (zalecane)
+
+("Yes, one route (recommended).") **Recorded as ADR 0091's *"Amendment,
+2026-09-23"*.** A decided outcome of `RemoveWall`'s object arm now retires a
+standing `remove-wall` refusal under option F. The amendment reads *"one
+route"* as both directions. #492's keying, `RefusalLog` and its guarding tests
+are unchanged. The ADR's *"Kills the measured contradiction"* bullet, false for
+the object arm as #1270 measured, is kept with a dated mark.
+
 
 ## Required workflow for every issue
 Before coding:
