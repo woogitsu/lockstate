@@ -1,3 +1,4 @@
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { projectStatusStrip } from '../../src/simulation/presentation/status-strip-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -160,7 +161,13 @@ function countsFor(seed: number): {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: '00000000-0000-4000-8000-000000000703',
     kind: 'simulation/status-counts',
-    payload: { tick: runtime.kernel.tick, schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION, counts: projected },
+    payload: {
+      tick: runtime.kernel.tick,
+      schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
+      counts: projected,
+      // The worker's own pair off the same runtime -- required since #1370.
+      editHistory: editHistoryAvailability(runtime.construction),
+    },
   }) as WorkerToMainMessage;
 
   // Through the shared narrowing helper since #1191 made the translator's

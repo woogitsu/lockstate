@@ -445,6 +445,11 @@ const INJECTED_STATUS_COUNTS = {
       dailyWageBillMinorUnits: 620,
       unpaidWagesMinorUnits: 1_700,
     },
+    // Required since #1370, for the `.strict()` reason every count above
+    // gives: a publication without it is dropped whole by the decoder. Undo
+    // live and Redo not -- the pair a prison that has just placed something
+    // publishes.
+    editHistory: { undo: true, redo: false },
   },
 } as const;
 

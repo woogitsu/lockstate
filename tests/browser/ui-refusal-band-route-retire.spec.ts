@@ -8,6 +8,7 @@ import {
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
 import type { HudAlertViewModel, HudRefusalNoticeViewModel, HudViewModel } from '../../src/ui/hud';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import { type Page, expect, test } from './network-changed-fixture';
@@ -90,6 +91,8 @@ function publication(runtime: SimulationRuntime, refusal: SimulationRefusal): Wo
       schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
       counts: projectStatusCounts(runtime, runtime.kernel.tick),
       refusal,
+      // The worker's own pair off the same runtime -- required since #1370.
+      editHistory: editHistoryAvailability(runtime.construction),
     },
   }) as WorkerToMainMessage;
 }
