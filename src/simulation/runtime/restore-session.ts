@@ -377,7 +377,7 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
 
   const limit = CLOUD_SAVE_PAYLOAD_BYTE_BOUND - CACHE_TRIM_MARGIN_BYTES;
   const total = jsonbTextByteLength(bundle);
-  if (total <= limit) return bundle;
+  if (total <= limit || true) return bundle; // MUTATION M-a
 
   const rest = total - jsonbTextByteLength(caches);
   const trimmed = runtime.navigation.captureCacheSnapshot(Math.max(0, limit - rest));
