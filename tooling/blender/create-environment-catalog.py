@@ -629,26 +629,42 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Oven window.{x}", (x, 0.456, 0.42), (0.62, 0.008, 0.30), "metal_recess", 0.018)
             box(collection, root, f"Oven handle.{x}", (x, 0.46, 0.68), (0.57, 0.05, 0.04), "steel", 0.014)
     elif asset_id == "furniture.medical.cabinet":
-        # Four-view reference: assets/source/concepts/medicine-cabinet-multiview-v1.png.
-        # The top cross and white rim stay visible in a one-tile overhead sprite.
+        # V3 four-view reference: the raised lid exposes an organized dark tray.
+        # Separate supplies must survive reduction to a one-tile game sprite.
         for x in (-0.38, 0.38):
             for y in (-0.36, 0.36):
-                box(collection, root, f"Rubber foot.{x}.{y}", (x, y, 0.055), (0.14, 0.14, 0.11), "steel", 0.01)
-        box(collection, root, "Cabinet enclosure", (0, 0, 0.62), (0.86, 0.82, 1.13), "galvanized", 0.035)
+                box(collection, root, f"Rubber foot.{x}.{y}", (x, y, 0.055), (0.14, 0.14, 0.11), "shade", 0.01)
+        box(collection, root, "Worn blue-grey enclosure", (0, 0, 0.62), (0.86, 0.82, 1.13), "medical_enamel", 0.045)
         box(collection, root, "Recessed front shadow", (0, 0.416, 0.63), (0.75, 0.014, 0.92), "metal_recess", 0.004)
         for x in (-0.19, 0.19):
-            box(collection, root, f"Locking door.{x}", (x, 0.433, 0.63), (0.35, 0.018, 0.89), "galvanized_edge", 0.012)
+            box(collection, root, f"Locking door.{x}", (x, 0.433, 0.63), (0.35, 0.018, 0.89), "medical_enamel", 0.012)
             box(collection, root, f"Recessed handle.{x}", (x * 0.38, 0.45, 0.67), (0.055, 0.012, 0.19), "metal_recess", 0.006)
             cylinder(collection, root, f"Door lock.{x}", (x * 0.4, 0.454, 0.92), 0.021, 0.013, "steel", 16)
             for z in (0.37, 0.86):
                 box(collection, root, f"Hinge.{x}.{z}", (x * 2.13, 0.444, z), (0.024, 0.04, 0.09), "steel", 0.006)
-        box(collection, root, "Cream enamel top rim", (0, 0, 1.225), (0.94, 0.90, 0.09), "porcelain", 0.04)
-        box(collection, root, "Inset lid panel", (0, 0, 1.273), (0.79, 0.75, 0.012), "light", 0.016)
-        box(collection, root, "Medical cross horizontal", (0, 0, 1.285), (0.39, 0.125, 0.008), "medical_teal", 0.003)
-        box(collection, root, "Medical cross vertical", (0, 0, 1.290), (0.125, 0.39, 0.008), "medical_teal", 0.003)
+        box(collection, root, "Rolled enamel tray outer", (0, 0, 1.225), (0.94, 0.90, 0.09), "medical_enamel", 0.045)
+        box(collection, root, "Dark recessed supply tray", (0, 0, 1.274), (0.77, 0.72, 0.012), "metal_recess", 0.028)
+        for x in (-0.42, 0.42):
+            box(collection, root, f"Bright tray side lip.{x}", (x, 0, 1.286), (0.055, 0.83, 0.035), "galvanized_edge", 0.018)
+        for y in (-0.39, 0.39):
+            box(collection, root, f"Bright tray end lip.{y}", (0, y, 1.286), (0.85, 0.045, 0.035), "galvanized_edge", 0.018)
+        cylinder(collection, root, "Cream rolled bandage", (-0.23, -0.06, 1.325), 0.105, 0.085, "paper_cream", 24)
+        box(collection, root, "Bandage retaining strap", (-0.23, -0.06, 1.375), (0.21, 0.045, 0.015), "shade", 0.006)
+        for index, y in enumerate((-0.17, 0.08)):
+            box(collection, root, f"Teal medicine carton.{index}", (0.13, y, 1.33), (0.16, 0.20, 0.10), "medical_teal", 0.012)
+            box(collection, root, f"Carton cream label.{index}", (0.13, y, 1.385), (0.12, 0.11, 0.008), "paper_cream", 0.003)
+        cylinder(collection, root, "Ochre antiseptic bottle", (0.17, 0.27, 1.35), 0.075, 0.12, "medical_ochre", 24)
+        cylinder(collection, root, "Bottle pale cap", (0.17, 0.27, 1.42), 0.058, 0.018, "paper_cream", 24)
+        for x in (-0.25, 0.25):
+            box(collection, root, f"Steel lid hinge.{x}", (x, -0.46, 1.30), (0.13, 0.11, 0.08), "steel", 0.012)
+        box(collection, root, "Raised lid dark gasket", (0, -0.63, 1.51), (0.82, 0.39, 0.055), "metal_recess", 0.030)
+        box(collection, root, "Raised lid enamel", (0, -0.63, 1.55), (0.78, 0.35, 0.05), "medical_enamel", 0.030)
+        box(collection, root, "Lid cross horizontal", (0, -0.63, 1.583), (0.23, 0.065, 0.009), "medical_red", 0.003)
+        box(collection, root, "Lid cross vertical", (0, -0.63, 1.588), (0.065, 0.23, 0.009), "medical_red", 0.003)
+        box(collection, root, "Front latch", (0, 0.47, 1.29), (0.12, 0.10, 0.07), "steel", 0.011)
         for x in (-0.38, 0.38):
             for y in (-0.36, 0.36):
-                cylinder(collection, root, f"Lid corner rivet.{x}.{y}", (x, y, 1.285), 0.012, 0.009, "steel", 12)
+                cylinder(collection, root, f"Rim corner rivet.{x}.{y}", (x, y, 1.306), 0.014, 0.009, "steel", 12)
     elif asset_id == "furniture.laundry.washing_machine.twin":
         # Multi-angle original concept and overhead adaptation under assets/source/concepts/.
         # Two deep portholes and paired amber controls stay legible at 128x64 px.
@@ -1110,6 +1126,9 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["medical_enamel"] = material("Worn blue-grey first aid enamel", (0.48, 0.58, 0.61, 1), 0.58)
+    MATERIALS["medical_red"] = material("Muted red first aid cross", (0.57, 0.18, 0.16, 1), 0.72)
+    MATERIALS["medical_ochre"] = material("Amber antiseptic vial", (0.58, 0.34, 0.09, 1), 0.45)
     MATERIALS["washer_enamel"] = washer_enamel_material()
     MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
     MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)

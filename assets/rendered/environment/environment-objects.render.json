@@ -606,28 +606,28 @@
     {
       "assetId": "furniture.medical.cabinet",
       "image": "furniture.medical.cabinet.png",
-      "sha256": "92087837004d913f08588b1def3af44d8b3856d668387f55d9ccf22410c2f9fa",
-      "pixelSha256": "01ba56408588bfcffa8eef212af396dec08702cbde8819e8251f9abf1aea72e6",
+      "sha256": "ecbbc209a594167b974b3f8ab2e17f2960ccc997c814852fbf7b8e2bddb5677f",
+      "pixelSha256": "0b0aabeebbe61537aa41c53e2d93aa158fc3f6ebd1da517a99cd85da20d7f32d",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.12,
-        "height": 1.12
+        "width": 1.848002,
+        "height": 1.848002
       },
-      "overhangsFootprint": false,
+      "overhangsFootprint": true,
       "sizePx": {
         "width": 256,
         "height": 256
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 19,
-        "y": 24,
-        "width": 218,
-        "height": 214,
-        "opaquePixels": 45362
+        "x": 62,
+        "y": 13,
+        "width": 132,
+        "height": 188,
+        "opaquePixels": 22943
       }
     },
     {

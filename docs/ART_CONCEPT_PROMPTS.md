@@ -359,3 +359,10 @@ The 1×1 institutional chair now has three separate walnut seat boards, two
 back planks with an overhead air gap, steel support tubes and dark feet. The
 four-view concept and model decisions are recorded in
 `assets/source/concepts/chair-v3.md`.
+
+### Medicine cabinet refinement — `furniture.medical.cabinet`
+
+The 1×1 infirmary cabinet now shows its purpose from above: a raised lid with
+a muted first-aid cross, a dark supply tray, a bandage roll, two medicine
+cartons and an amber vial. The original four-view reference and Blender choices
+are recorded in `assets/source/concepts/medicine-cabinet-v3.md`.
