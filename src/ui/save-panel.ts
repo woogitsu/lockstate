@@ -592,6 +592,7 @@ export class SavePanel {
   private readonly gate: AsyncActionGate;
   /** Monotonic guard so an older in-flight `refresh` can never repaint over a newer one. */
   private refreshToken = 0;
+  private onInventoryChanged: (() => void) | undefined;
 
   private readonly localizer: SavePanelLocalizer;
 
@@ -723,6 +724,11 @@ export class SavePanel {
     this.root.remove();
   }
 
+  /** Keep another view of the same local inventory in sync after a repaint. */
+  public setOnInventoryChanged(listener: () => void): void {
+    this.onInventoryChanged = listener;
+  }
+
   public setStatus(status: SaveStatus): void {
     this.statusElement.textContent = this.text(status.messageKey, status.messageParameters);
     this.statusElement.dataset.kind = status.kind;
@@ -801,6 +807,7 @@ export class SavePanel {
       empty.className = 'save-panel__empty';
       empty.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listEmpty);
       this.listElement.append(empty);
+      this.onInventoryChanged?.();
       return;
     }
 
@@ -869,6 +876,7 @@ export class SavePanel {
     for (const gone of orderDeletedPrisonsForDisplay(deleted)) {
       this.listElement.append(this.deletedPrisonRow(gone));
     }
+    this.onInventoryChanged?.();
   }
 
   /**

@@ -38,6 +38,7 @@ import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
+import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
   HUD_MESSAGE_KEY,
@@ -1371,6 +1372,8 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
  * worker boundary (issue #149) -- a later one failing in `bootPersistence`.
  */
 const SIMULATION_UNAVAILABLE_NOTICE: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
+
+let manageSavesPanel: ManageSavesPanel | undefined;
 
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const { client, commands, tool, rooms, objects } = host;
@@ -2730,6 +2733,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'select-tab': {
           activeTab = intent.tab;
+          if (activeTab === 'manage') void manageSavesPanel?.refresh();
           /*
            * **Asked for on arrival at every tab now, and never cleared on
            * leaving** (#1006 finding 1). The paragraph above is the state this
@@ -4427,9 +4431,14 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
     controller = new SessionController(repository, host, {
       gameVersion: GAME_VERSION,
       generateMasterSeed,
-      onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
+      onSaveResult: (_prisonId: string, result: SaveResult) => {
+        panel.reportBackgroundSave(result);
+        void manageSavesPanel?.refresh();
+      },
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
+    manageSavesPanel = new ManageSavesPanel(controller, hud.manageSavesSlot, localizer, () => panel.refresh());
+    panel.setOnInventoryChanged(() => { void manageSavesPanel?.refresh(); });
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
