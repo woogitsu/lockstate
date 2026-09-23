@@ -352,3 +352,10 @@ restrained teal enamel band and a ribbed foot pedal. This keeps its opening
 recognizable at 64 px without turning the scrap into a patterned texture.
 Its original four-view reference and Blender decisions are recorded in
 `assets/source/concepts/waste-bin-v3.md`.
+
+### Wooden chair refinement — `furniture.chair.wooden`
+
+The 1×1 institutional chair now has three separate walnut seat boards, two
+back planks with an overhead air gap, steel support tubes and dark feet. The
+four-view concept and model decisions are recorded in
+`assets/source/concepts/chair-v3.md`.
