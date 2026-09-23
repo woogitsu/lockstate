@@ -442,6 +442,33 @@
       }
     },
     {
+      "assetId": "furniture.laundry.washing_machine.twin",
+      "image": "furniture.laundry.washing_machine.twin.png",
+      "sha256": "e04bfc5dea754cb94f5408e64243048e2228748a096e375f46a302d92e9575be",
+      "pixelSha256": "3746eaa452756372e8ed716bf4146c87c80e2638ba737b8a85877b1eafd6ec4f",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 35,
+        "y": 19,
+        "width": 442,
+        "height": 218,
+        "opaquePixels": 93296
+      }
+    },
+    {
       "assetId": "furniture.medical.bed.single",
       "image": "furniture.medical.bed.single.png",
       "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",

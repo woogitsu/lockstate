@@ -92,6 +92,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.chair',
   'env.object.dining-table',
   'env.object.stove',
+  'env.object.washing-machine',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -244,6 +245,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
+  },
+  'env.object.washing-machine': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.laundry.washing_machine.twin',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Twin-bay institutional washer with two visible drum hatches and paired controls. Drawn on object.washing-machine.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

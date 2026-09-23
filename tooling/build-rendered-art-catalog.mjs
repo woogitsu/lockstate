@@ -99,6 +99,7 @@ export const PUBLISHED_ASSET_IDS = [
   'furniture.corridor.bench.variants',
   'furniture.dining.table.wooden',
   'furniture.kitchen.stove',
+  'furniture.laundry.washing_machine.twin',
   'furniture.medical.bed.single',
   'furniture.medical.cabinet',
   'furniture.office.desk.employee.variants',

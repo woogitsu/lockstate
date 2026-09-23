@@ -86,6 +86,7 @@ MODELS = (
     ("furniture.chair.wooden", (1, 1)),
     ("furniture.dining.table.wooden", (3, 2)),
     ("furniture.medical.bed.single", (1, 2)),
+    ("furniture.laundry.washing_machine.twin", (2, 1)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
 )
@@ -120,6 +121,21 @@ def galvanized_material():
     ramp.color_ramp.elements[1].position = 0.75
     ramp.color_ramp.elements[1].color = (0.68, 0.70, 0.68, 1)
     links.new(coords.outputs["Generated"], noise.inputs["Vector"])
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def washer_enamel_material():
+    """Very fine scuffs break up broad cabinet planes without noisy 64px output."""
+    item = material("Worn blue-grey washer enamel", (0.28, 0.37, 0.44, 1), 0.42)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 45
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.19, 0.27, 0.33, 1)
+    ramp.color_ramp.elements[1].color = (0.38, 0.47, 0.54, 1)
     links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
     return item
@@ -340,6 +356,37 @@ def furniture(collection, root, asset_id):
         for x in (-0.38, 0.38):
             for y in (-0.36, 0.36):
                 cylinder(collection, root, f"Lid corner rivet.{x}.{y}", (x, y, 1.285), 0.012, 0.009, "steel", 12)
+    elif asset_id == "furniture.laundry.washing_machine.twin":
+        # Multi-angle original concept and overhead adaptation under assets/source/concepts/.
+        # Two deep portholes and paired amber controls stay legible at 128x64 px.
+        box(collection, root, "Raised dark plinth", (0, 0, 0.10), (1.91, 0.91, 0.19), "steel", 0.034)
+        box(collection, root, "Blue-grey enamel cabinet", (0, 0, 0.61), (1.91, 0.92, 0.89), "washer_enamel", 0.036)
+        box(collection, root, "Top deck gasket", (0, 0, 1.058), (1.82, 0.83, 0.025), "steel", 0.026)
+        box(collection, root, "Top service deck", (0, 0, 1.075), (1.78, 0.79, 0.023), "washer_enamel", 0.026)
+        box(collection, root, "Black control rail", (0, -0.35, 1.103), (1.74, 0.12, 0.022), "shade", 0.01)
+        box(collection, root, "Central bay seam", (0, 0.05, 1.098), (0.018, 0.70, 0.012), "steel", 0.002)
+        for x in (-0.48, 0.48):
+            # A dark sunken well and elevated broad nickel ring give the depth
+            # that the first top-down blockout lacked.
+            cylinder(collection, root, f"Drum recess.{x}", (x, 0.092, 1.110), 0.335, 0.019, "shade", 64)
+            cylinder(collection, root, f"Teal laundry under glass.{x}", (x, 0.092, 1.122), 0.267, 0.012, "medical_teal", 64)
+            cylinder(collection, root, f"Smoked glazing.{x}", (x, 0.092, 1.145), 0.274, 0.019, "washer_glass", 64)
+            for stripe, y, angle in ((-0.085, 0.025, 0.35), (0.035, 0.10, -0.4), (0.12, 0.17, 0.52)):
+                cloth = box(collection, root, f"Cloth visible through drum.{x}.{stripe}", (x + stripe, y, 1.164), (0.10, 0.20, 0.014), "washer_fabric", 0.045)
+                cloth.rotation_euler.z = angle
+            torus(collection, root, f"Machined steel door bezel.{x}", (x, 0.092, 1.165), 0.293, 0.038, "galvanized_edge")
+            torus(collection, root, f"Inner rubber seal.{x}", (x, 0.092, 1.171), 0.252, 0.012, "shade")
+            box(collection, root, f"Door handle.{x}", (x - 0.32, 0.09, 1.186), (0.085, 0.17, 0.045), "galvanized_edge", 0.014)
+            cylinder(collection, root, f"Dial body.{x}", (x + 0.31, -0.35, 1.129), 0.038, 0.028, "galvanized_edge", 32)
+            cylinder(collection, root, f"Dial face.{x}", (x + 0.31, -0.35, 1.148), 0.021, 0.011, "shade", 32)
+            for shift in (-0.18, -0.11):
+                box(collection, root, f"Amber indicator.{x}.{shift}", (x + shift, -0.35, 1.124), (0.045, 0.036, 0.016), "washer_amber", 0.005)
+            for screw_y in (-0.36, 0.4):
+                cylinder(collection, root, f"Deck screw.{x}.{screw_y}", (x, screw_y, 1.111), 0.014, 0.009, "galvanized_edge", 12)
+        for x in (-0.91, 0.91):
+            for y in (-0.42, 0.42):
+                box(collection, root, f"Bolted corner.{x}.{y}", (x, y, 1.095), (0.10, 0.10, 0.025), "galvanized_edge", 0.007)
+                cylinder(collection, root, f"Corner bolt.{x}.{y}", (x, y, 1.115), 0.014, 0.01, "steel", 12)
     elif asset_id == "furniture.medical.bed.single":
         # assets/source/concepts/medical-bed-multiview-v1.png: rails and the
         # medical cross separate this from the ordinary cell bed at game scale.
@@ -695,6 +742,10 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["washer_enamel"] = washer_enamel_material()
+    MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
+    MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
+    MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
