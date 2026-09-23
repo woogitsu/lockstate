@@ -90,6 +90,8 @@ const FIXTURE: HarnessWorldFixture = {
   medicineCabinetTileY: 4,
   stoveTileX: 32,
   stoveTileY: 4,
+  utilityPanelTileX: 35,
+  utilityPanelTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -246,6 +248,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'stove-brick',
       tileX: FIXTURE.stoveTileX,
       tileY: FIXTURE.stoveTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-utility-panel',
+      definitionId: 'utility-panel-brick',
+      tileX: FIXTURE.utilityPanelTileX,
+      tileY: FIXTURE.utilityPanelTileY,
       phase: 'built',
     },
   ];

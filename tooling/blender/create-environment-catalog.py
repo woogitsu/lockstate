@@ -88,6 +88,7 @@ MODELS = (
     ("furniture.medical.bed.single", (1, 2)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.utility.control_panel", (1, 1)),
 )
 
 
@@ -295,7 +296,39 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.utility.control_panel":
+        # Four-view original reference: assets/source/concepts/utility-panel-multiview-v1.png.
+        # The overhead read is six cream breakers, two lenses and one red guarded switch.
+        box(collection, root, "Anchor plinth", (0, 0, 0.075), (0.91, 0.91, 0.15), "steel", 0.018)
+        box(collection, root, "Powder-coated steel cabinet", (0, 0, 0.57), (0.83, 0.81, 0.98), "utility_enamel", 0.035)
+        box(collection, root, "Front access hatch shadow", (0, 0.414, 0.54), (0.64, 0.011, 0.60), "steel", 0.009)
+        box(collection, root, "Front access hatch", (0, 0.426, 0.54), (0.58, 0.015, 0.54), "utility_enamel", 0.012)
+        for z in (0.32, 0.76):
+            box(collection, root, f"Front hinge.{z}", (0.32, 0.438, z), (0.04, 0.032, 0.10), "galvanized_edge", 0.007)
+        box(collection, root, "Top angled housing", (0, 0, 1.105), (0.94, 0.91, 0.15), "utility_enamel", 0.055)
+        box(collection, root, "Deep inset control shadow", (0, 0, 1.195), (0.77, 0.72, 0.025), "steel", 0.025)
+        box(collection, root, "Dark breaker panel", (-0.035, 0, 1.212), (0.62, 0.62, 0.012), "metal_recess", 0.015)
+        for x in (-0.14, 0.075):
+            box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
+            for row, y in enumerate((-0.18, 0, 0.18)):
+                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
+                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+        for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
+            cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
+            cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
+        box(collection, root, "Master switch guard base", (0.30, -0.01, 1.23), (0.15, 0.26, 0.035), "shade", 0.011)
+        box(collection, root, "Red master switch", (0.30, -0.01, 1.277), (0.095, 0.15, 0.065), "utility_red", 0.014)
+        for y in (-0.11, 0.11):
+            box(collection, root, f"Steel switch guard.{y}", (0.30, y, 1.296), (0.15, 0.025, 0.08), "galvanized_edge", 0.009)
+        # Alternating hazard paint is a nonverbal 64px recognition cue.
+        box(collection, root, "Hazard stripe ground", (0.397, 0, 1.206), (0.063, 0.68, 0.012), "shade", 0.004)
+        for index, y in enumerate((-0.25, -0.09, 0.07, 0.23)):
+            stripe = box(collection, root, f"Yellow hazard diagonal.{index}", (0.397, y, 1.216), (0.056, 0.09, 0.008), "utility_yellow", 0.002)
+            stripe.rotation_euler.z = 0.38
+        for x in (-0.40, 0.40):
+            for y in (-0.39, 0.39):
+                cylinder(collection, root, f"Top bolt.{x}.{y}", (x, y, 1.19), 0.017, 0.011, "galvanized_edge", 12)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):
@@ -695,6 +728,11 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["utility_enamel"] = material("Aged utility cabinet enamel", (0.20, 0.30, 0.39, 1), 0.60)
+    MATERIALS["utility_amber"] = material("Utility amber indicator", (0.95, 0.45, 0.05, 1), 0.30)
+    MATERIALS["utility_teal"] = material("Utility teal indicator", (0.02, 0.53, 0.55, 1), 0.30)
+    MATERIALS["utility_red"] = material("Utility red master switch", (0.61, 0.065, 0.04, 1), 0.37)
+    MATERIALS["utility_yellow"] = material("Utility hazard yellow", (0.92, 0.56, 0.06, 1), 0.64)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)

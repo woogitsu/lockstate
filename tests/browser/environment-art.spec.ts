@@ -514,6 +514,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.stove',
       tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
     },
+    {
+      label: 'utility panel',
+      buildableId: 'utility-panel-brick',
+      catalogueId: 'object.utility-panel',
+      expectedSpriteId: 'env.object.utility-panel',
+      tileOf: (fixture) => [fixture.utilityPanelTileX, fixture.utilityPanelTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

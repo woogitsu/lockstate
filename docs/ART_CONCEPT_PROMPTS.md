@@ -183,8 +183,8 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 
 ### Security — `security.access_reader.variants`, `security.camera.wall.variants`, `security.checkpoint.turnstile.variants`
 
-These carry the palette's action teal as an indicator colour and nothing else
-does — a reader's status light is the one warm-cool contrast in an otherwise
+These three security fixtures carry the palette's action teal as an indicator
+colour — a reader's status light is the one warm-cool contrast in an otherwise
 grey object, and it is how a player finds it.
 
 > a wall-mounted card reader, a quarter tile, seen from above at a steep angle
@@ -193,6 +193,13 @@ grey object, and it is how a player finds it.
 
 Camera and turnstile **overhang their footprints** by design; the reference
 should show the lens and the arms outside the declared rectangle.
+
+### Utility control — `furniture.utility.control_panel`
+
+Keep a 1×1 electrical control kiosk readable from straight above: six cream
+breaker levers, two colored status lenses and a red guarded switch on a dark
+inset hatch. Its original four-view reference and Blender model decisions
+are recorded in `assets/source/concepts/utility-panel-v1.md`.
 
 ### Perimeter and yard — `perimeter.fence.modules`, `perimeter.light.pole.variants`, `perimeter.vehicle_gate.sliding.variants`, `perimeter.watchtower.variants`
 

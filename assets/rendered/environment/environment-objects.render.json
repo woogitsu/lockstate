@@ -577,6 +577,33 @@
       }
     },
     {
+      "assetId": "furniture.utility.control_panel",
+      "image": "furniture.utility.control_panel.png",
+      "sha256": "6b6e4a6ede84a3b57ee606cec50573f900b84a4a7d5809d647bc2d103049c17d",
+      "pixelSha256": "35b885599a130481eaf5bfb9bd2f0ceaf10d749d0db6b81097dbdda9fbbb2446",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 23,
+        "width": 218,
+        "height": 210,
+        "opaquePixels": 45608
+      }
+    },
+    {
       "assetId": "furniture.visitor.chair.variants",
       "image": "furniture.visitor.chair.variants.png",
       "sha256": "d35e0c08df9aaa6d20052b340f2c023adb022eceede80ec9806726389c076406",

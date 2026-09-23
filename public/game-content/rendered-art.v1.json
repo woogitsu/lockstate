@@ -301,6 +301,31 @@
         "catalog": "assets/source/blender/environment.mvp.catalog.blend",
         "blenderVersion": "5.2.1"
       }
+    },
+    {
+      "assetId": "furniture.utility.control_panel",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.utility.control_panel.6b6e4a6ede84.png",
+      "sha256": "6b6e4a6ede84a3b57ee606cec50573f900b84a4a7d5809d647bc2d103049c17d",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
     }
   ]
 }
