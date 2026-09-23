@@ -6,6 +6,7 @@ import type { NavigationCacheSnapshot } from '../../src/simulation/navigation/ca
 import { DoorRegistry } from '../../src/simulation/navigation/door';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
+import { jsonbTextByteLength } from '../../src/shared/save-size';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { buildCellBlockFixture, type CellBlockFixture } from '../helpers/navigation-fixture';
 
@@ -186,6 +187,92 @@ describe('a restored route cache answers what the saved one would, at the same c
     const tile = fixture.canteenTiles[0]!;
     fixture.world.setLeftEdge(tile, fixture.world.getLeftEdge(tile) === 0 ? 7 : 0);
     expect(caches(saved)).toEqual({ doorIds: [], contexts: [], routes: [], flowFields: [] });
+  });
+});
+
+/**
+ * **Where ADR 0013's bound makes a save drop entries** -- ADR 0007's amendment
+ * of 2026-09-23. `captureSessionSnapshot` hands `captureCacheSnapshot` what the
+ * rest of the payload leaves under 4 MiB; these cases drive the budget
+ * directly, so a failure names the mechanism rather than a prison size.
+ */
+describe('under a byte budget, a save carries the most recently used entries, and the rest are searched again', () => {
+  /** Every leg once, in order, then the first three again -- so recency, most recent first, is legs 2, 1, 0, 9, 8, ... 3. */
+  function warmed() {
+    const { fixture, legs, saved } = setup();
+    for (const leg of legs) resolveLegs(saved, [leg]);
+    for (const leg of legs.slice(0, 3)) resolveLegs(saved, [leg]);
+    const mostRecentFirst = [2, 1, 0, 9, 8, 7, 6, 5, 4, 3].map((index) => legs[index]!);
+    return { fixture, legs, saved, mostRecentFirst };
+  }
+  const keyOf = ([origin, destination, context]: readonly [TilePosition, TilePosition, RouteContext]) =>
+    `${String(origin.x)},${String(origin.y)}->${String(destination.x)},${String(destination.y)}#${context.role}`;
+  const carriedKeys = (snapshot: NavigationCacheSnapshot) =>
+    snapshot.routes.map((route) => `${String(route.origin.x)},${String(route.origin.y)}->${String(route.destination.x)},${String(route.destination.y)}#${snapshot.contexts[route.context]!.role}`);
+
+  it('carries a recency prefix that fits, and everything when it all fits', () => {
+    const { saved, mostRecentFirst } = warmed();
+    const all = saved.navigation.captureCacheSnapshot();
+    expect(all.routes).toHaveLength(10);
+    expect(saved.navigation.captureCacheSnapshot(jsonbTextByteLength(all))).toEqual(all);
+
+    const budget = Math.floor(jsonbTextByteLength(all) / 2);
+    const trimmed = saved.navigation.captureCacheSnapshot(budget);
+    expect(jsonbTextByteLength(trimmed)).toBeLessThanOrEqual(budget);
+    const kept = trimmed.routes.length;
+    expect(kept, 'half the bytes must drop some entries and keep some').toBeGreaterThan(0);
+    expect(kept).toBeLessThan(10);
+    expect(new Set(carriedKeys(trimmed))).toEqual(new Set(mostRecentFirst.slice(0, kept).map(keyOf)));
+    // Ranked among the carried alone, 1 the least recent.
+    expect([...trimmed.routes].sort((a, b) => b.recency - a.recency).map((route) => route.recency)).toEqual(
+      Array.from({ length: kept }, (_unused, index) => kept - index),
+    );
+  });
+
+  it('carries nothing when nothing fits, not a partial entry', () => {
+    const { saved } = warmed();
+    expect(saved.navigation.captureCacheSnapshot(0)).toEqual({ doorIds: [], contexts: [], routes: [], flowFields: [] });
+  });
+
+  /**
+   * **The divergence, pinned.** Where the budget binds, the restored session
+   * searches for a leg that was not carried, costing expansions the saved
+   * session's hit did not -- which is what changes whom `workBudgetPerTick`
+   * serves on a tick where that binds too -- and a carried leg is still free.
+   */
+  it('a dropped leg costs a search after the restore and a carried one does not; the saved session answers both free', () => {
+    const { fixture, saved, mostRecentFirst } = warmed();
+    const trimmed = saved.navigation.captureCacheSnapshot(Math.floor(jsonbTextByteLength(saved.navigation.captureCacheSnapshot()) / 2));
+    const kept = trimmed.routes.length;
+    const carried = mostRecentFirst[0]!;
+    const dropped = mostRecentFirst[mostRecentFirst.length - 1]!;
+    expect(kept).toBeLessThan(mostRecentFirst.length);
+
+    const restored = harness(fixture, reRegistered(fixture.doors));
+    restored.navigation.loadCacheSnapshot(trimmed);
+    expect(restored.navigation.captureCacheSnapshot(), 'a trimmed save restores to exactly what it carried').toEqual(trimmed);
+
+    expect(resolveLegs(saved, [carried, dropped]).map((leg) => leg.expansions)).toEqual([0, 0]);
+    const [carriedAfter, droppedAfter] = resolveLegs(restored, [carried, dropped]);
+    expect(carriedAfter!.expansions).toBe(0);
+    expect(droppedAfter!.expansions, 'the leg the budget dropped is searched again').toBeGreaterThan(0);
+  });
+
+  it('refuses recency ranks that are not 1 to n, each once', () => {
+    const { fixture, saved } = warmed();
+    const snapshot = JSON.parse(JSON.stringify(saved.navigation.captureCacheSnapshot())) as { routes: { recency: number }[] };
+    snapshot.routes[0]!.recency = snapshot.routes[1]!.recency;
+    const restored = harness(fixture, reRegistered(fixture.doors));
+    expect(() => restored.navigation.loadCacheSnapshot(snapshot as unknown as NavigationCacheSnapshot)).toThrow(RangeError);
+  });
+
+  it('lets go of every entry computed against old geometry when the graph is rebuilt, rather than holding it for ever', () => {
+    const { fixture, saved } = warmed();
+    expect(saved.navigation.getRouteCacheMetrics().size).toBe(10);
+    const tile = fixture.canteenTiles[0]!;
+    fixture.world.setLeftEdge(tile, fixture.world.getLeftEdge(tile) === 0 ? 7 : 0);
+    saved.kernel.step();
+    expect(saved.navigation.getRouteCacheMetrics()).toMatchObject({ size: 0, geometryInvalidations: 10 });
   });
 });
 
