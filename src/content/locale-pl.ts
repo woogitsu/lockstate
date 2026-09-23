@@ -1239,6 +1239,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.roster-wage-bill': '{total} dziennie',
   'hud.security.coverage': 'Obsada strażników',
   'hud.security.coverage-summary': '{assigned} z {required}',
+  'hud.security.coverage-no-posts': 'Bez posterunków',
+  'hud.security.coverage-no-posts-hint': 'Teraz nie trzeba obsadzać żadnego posterunku.',
   'hud.security.coverage-met': 'Obsadzone',
   'hud.security.coverage-met-hint': 'Incydenty i przeszukania potrzebują wolnych strażników.',
   'hud.security.coverage-short': 'Niedobór obsady',
