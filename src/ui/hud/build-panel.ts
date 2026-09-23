@@ -1339,6 +1339,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       removing = false;
       armed = (wasRemoving || !armed) && selectedId !== undefined;
       paintArmed();
+      revealWorldForPhoneGesture();
       options.onArm(armed, selectedId, removing);
     },
   });
@@ -1427,6 +1428,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       removing = nextArming.removing;
       paintArmed();
       paintBuy();
+      revealWorldForPhoneGesture();
       options.onArm(armed, selectedId, removing);
     },
   });
@@ -3118,6 +3120,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // (`.ui-panel > .ui-panel__body[hidden]`) and now asserted against the body's
   // *box* in `tests/browser/ui-shell.spec.ts`, because an assertion on the
   // attribute agreed with the defect.
+  // Issue #517 found the remaining phone trap: the fold worked, but the player
+  // had to discover it after being told to point at a map hidden by this sheet.
+  // The map-action toggles now fold it at the phone breakpoint; the header
+  // still reopens it without cancelling the armed tool.
   let panelCollapsed = false;
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.buildTitle),
@@ -3133,6 +3139,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  function revealWorldForPhoneGesture(): void {
+    // At the phone breakpoint this sheet occupies the world the armed gesture
+    // needs. Rooms already folds on arming for the same reason. Keep the Build
+    // controls open on wider layouts, where the map remains beside the rail.
+    if (!armed || panelCollapsed || !window.matchMedia('(max-width: 720px)').matches) return;
+    panelCollapsed = true;
+    panel.setCollapsed(true);
+  }
   panel.body.append(
     catalogue.element,
     element('div', {

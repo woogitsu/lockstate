@@ -9439,6 +9439,11 @@ test.describe('the assembled application', () => {
     // removing* and then pressed a tile was placing, not removing, and had
     // spent materials. Now the toggle itself stands the tool down, the arm
     // control is untouched here, and pressing it would *arm* instead.
+    // The phone sheet now folds when removal is armed (#517), so reopen it
+    // before pressing that same toggle again. The world press above happened
+    // on the newly exposed map.
+    await expect(page.locator('.hud-build')).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-build > .ui-panel__header > .ui-panel__toggle').click();
     await remove.click();
     await expect(remove).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
