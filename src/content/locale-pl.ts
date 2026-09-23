@@ -1176,8 +1176,16 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // extra line and pushed the Staff panel's payroll figure below its fold
   // (`tests/browser/ui-staff-wage.spec.ts:377`). *"Czeka na miejsce"* is the
   // same claim in fewer characters, and the pair stays parallel.
+  //
+  // **Rewritten whole with the English original for #935 and #937**; the
+  // English key carries the proof of each clause and the length budget. The
+  // second sentence is `hud.status.funds-treasury-floor-exhausted`'s rule in
+  // shorter words -- *"Państwo płaci na koniec każdego dnia i tylko za
+  // osadzonych, którzy mają miejsce do spania"* there. *Zakwaterowanie* with
+  // the verb elided after the dash, the way Polish carries a repeated
+  // *wymaga*.
   'hud.intake.hint':
-    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka na miejsce.',
+    'Przyjęcie wymaga celi, a zakwaterowanie — łóżka. Państwo płaci na koniec każdego dnia, tylko za osadzonych z miejscem do spania.',
   // Reshaped: the numeral moves out of the verb's way entirely.
   //
   // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the

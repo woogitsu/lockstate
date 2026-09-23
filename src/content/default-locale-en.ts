@@ -2756,8 +2756,60 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *
    * The first clause is untouched and is still true: a prison with no free bed
    * can still admit, and the arrival waits rather than being refused.
+   *
+   * **Rewritten whole for #935 and #937, and the sentence above is the one this
+   * replaced**: *"A prison needs a cell before it can admit anyone. It does not
+   * need a free bed: an arrival with none waits for a place."* It was true, and
+   * it disagreed on screen with the one instruction a new prison draws --
+   * `hud.regime.roster-empty`, *"Build a cell … with a bed and a toilet in it —
+   * to take somebody in"* -- because the two answered different questions and
+   * the Intake tab answered the less useful one: that a bed is not needed to
+   * admit, and not what the bed is for. So this now says what each of the two
+   * things does, which is compatible with that instruction rather than a
+   * denial of it, and it adds the rule #937 found no readout states. Authored
+   * under reservation 4's 2026-09-04 release; each clause proved:
+   *
+   * - *"Admitting needs a cell"* -- the first clause above, unchanged in
+   *   substance: `IntakeSystem.hasAccommodationTarget` asks for **any**
+   *   instance of a housing type (`src/simulation/prisoners/intake-system.ts`),
+   *   not a free place, so it is a necessary condition and is not stated as a
+   *   sufficient one (`population-full` is a second refusal).
+   * - *"housing needs a bed"* -- a place is a `'sleep-surface'`
+   *   (`SLEEP_SURFACE_CAPABILITY`, `src/simulation/objects/room-capacity.ts`),
+   *   which `object.bed` and `object.medical-bed` declare, capped by the room
+   *   type's `maxResidents`. Necessary, and again not claimed as sufficient: a
+   *   third bed in a two-resident cell houses nobody. It does not say a bed is
+   *   needed to *admit*, which is the #549 claim this key was corrected from.
+   * - *"The state pays at the end of each day"* --
+   *   `StateIncomeSystem.schedule` is
+   *   `{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }`
+   *   (`src/simulation/economy/income.ts`).
+   * - *"only for prisoners with a place"* --
+   *   `stateIncomeForCompletedDay` folds `stateIncomeForOccupiedPlaces` over
+   *   `residentIdsWithExistingPlace()` and over nothing else, so an arrival
+   *   waiting for a place contributes nothing at all. It says *only for* and
+   *   quotes no amount, so it is true at any value of
+   *   `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` -- the constraint
+   *   #937 sets, since that rate has moved twice on owner rulings.
+   *
+   * The second sentence is `hud.status.funds-treasury-floor-exhausted`'s rule
+   * in shorter words -- *"The state pays at the end of each day and only for
+   * prisoners who have a place to sleep"* there -- so the owner's harmonising
+   * pass finds one rule in two lengths rather than two rules. That string
+   * states it only at the treasury floor, which a growing prison has left
+   * behind (#937's comment); this one states it where the Admit control is.
+   * *"a place"* and not *"a place to sleep"* because `hud.intake.no-place`,
+   * the line this panel draws beneath it, already says *"with no place to
+   * sleep"*.
+   *
+   * **Its length is a measured budget, not a style.** A first draft of 151
+   * characters wrapped the note to another line and put the Staff panel's
+   * payroll figure below its fold -- `tests/browser/ui-staff-wage.spec.ts`,
+   * *"states the standing daily bill on the payroll header, with the fold
+   * still shut"*, red on it with nothing else changed, exactly as the #961
+   * paragraph above records. This is 116, against the 118 it replaces.
    */
-  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits for a place.',
+  'hud.intake.hint': 'Admitting needs a cell; housing needs a bed. The state pays at the end of each day, only for prisoners with a place.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no place" and not "no cell": a zoned cell with nothing in it houses
   // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces
