@@ -274,6 +274,34 @@ const WIDTHS = [
   [1920, 1080],
 ] as const;
 
+test('MEASURE', async ({ page }) => {
+  await page.goto(HARNESS_URL);
+  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+  const variants: Record<string, string> = {
+    base: '',
+    emptyTrailing: '.hud-metric__trailing:empty { display: none; }',
+    rowGap12: '.hud-strip__metrics { gap: 12px !important; }',
+    both: '.hud-metric__trailing:empty { display: none; } .hud-strip__metrics { gap: 12px !important; }',
+  };
+  const out: Record<string, unknown> = {};
+  for (const [name, css] of Object.entries(variants)) {
+    await page.evaluate((text) => {
+      document.getElementById('measure-css')?.remove();
+      const el = document.createElement('style'); el.id = 'measure-css'; el.textContent = text; document.head.append(el);
+    }, css);
+    for (const [width, height] of [[1280, 800], [1440, 900], [1920, 1080]] as const) {
+      await page.setViewportSize({ width, height });
+      for (const [state, c] of [['ordinary', POPULATED], ['withholding', WITHHOLDING], ['every', EVERY_BADGE]] as const) {
+        const r = await show(page, c);
+        out[`${name} ${width} ${state}`] = [r.contentWidth, r.clientWidth, r.fullyVisible, r.stripHeight];
+      }
+    }
+  }
+  const valueW = await page.evaluate(() => document.querySelector<HTMLElement>('[data-metric="earned-today"] .ui-stat__value')!.getBoundingClientRect().width);
+  out['earnedValueSpanW'] = valueW;
+  (await import('node:fs')).writeFileSync('/tmp/claude-0/-workspace-lockstate/28a078f0-be53-5485-bb1d-2937df0c6309/scratchpad/a-rulings2/variants.json', JSON.stringify(out, null, 0));
+});
+
 test.describe('the status strip carries nine chips and the prison’s own state (#703)', () => {
   test('an ordinary prison’s row fits at every desktop width, and the badges cost the strip no height', async ({
     page,
