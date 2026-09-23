@@ -34,7 +34,21 @@ export function createIconButton(options: IconButtonOptions): IconButton {
     attributes: { type: 'button', title: options.label },
     children: [createIcon(options.icon, options.size ?? 'md'), label],
   });
-  button.addEventListener('click', options.onActivate);
+  /*
+   * A closure that calls `onActivate` rather than `onActivate` itself, and the
+   * difference is not only style (#1356).
+   *
+   * Passed bare, the listener hands `onActivate` the `MouseEvent` as an
+   * argument its type says it never receives. And it is invisible to
+   * `tests/helpers/control-reachability.ts`, which follows a callback option to
+   * the place it is *called* -- `options.onActivate(` -- and found none here,
+   * so every command whose only control was an icon button read to that gate
+   * as a callback nothing wires. `action-button.ts` has always been written
+   * this way, for the same first reason.
+   */
+  button.addEventListener('click', () => {
+    options.onActivate();
+  });
 
   const setPressed = (pressed: boolean): void => {
     button.setAttribute('aria-pressed', pressed ? 'true' : 'false');

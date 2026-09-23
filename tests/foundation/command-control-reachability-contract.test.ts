@@ -43,8 +43,9 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * two or three hops, and all sixteen bottom out on
  * `src/ui/primitives/action-button.ts` or `src/ui/primitives/toggle-group.ts`.
  *
- * **`Undo` and `Redo` reach no control at all**, and that is a finding rather
- * than a gap in the scan. Their only dispatch is
+ * **`Undo` and `Redo` reached no control at all**, and that was a finding
+ * rather than a gap in the scan. *(Kept as it read on `ea02b4d2`; the
+ * paragraph after it says what closed it.)* Their only dispatch is
  * `dispatchCommand({ kind: direction })` in `src/ui/hud/hud.ts`, reached from
  * `BuildTool`'s `KeyZ`/`KeyY` bindings through `attachHistory`; `hud.ts` says
  * so in its own words at that line -- *"the player pressed a key on the world,
@@ -52,6 +53,14 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * already records as the reason `RemoveObject` had to exist: *"undo is bound
  * to `KeyZ` and nothing else, so on a touch device a misplaced object was
  * permanent for the session."* A touch player can undo nothing.
+ *
+ * **Closed by #1356: the pair has a control now, in the status strip.**
+ * `src/ui/hud/hud.ts` dispatches `kind: 'undo'` and `kind: 'redo'` as literals
+ * from `createStatusStrip`'s `onUndo`/`onRedo`, which the strip hands to two
+ * `createIconButton` controls -- so both commands reach a `<button>` through
+ * `src/ui/primitives/icon-button.ts`, the third primitive the count below
+ * names. The keyboard's computed-kind dispatch is still there and still
+ * invisible to the scan; it no longer has to be the only route.
  *
  * **`ReleaseGuardAssignment`'s only control is one the `#88` sweep never
  * presses.** It is built in the block that creates `hud-staff__held-row`, and
@@ -79,18 +88,11 @@ const ROOT = resolve(__dirname, '../..');
  * one.
  */
 const NO_CONTROL_ISSUES_IT: Readonly<Record<string, string>> = {
-  Undo:
-    'Keyboard only, and deliberately so at the seam: the one dispatch is `dispatchCommand({ kind: direction })` ' +
-    'in `src/ui/hud/hud.ts`, whose `direction` comes from `HudEditHistory.attachHistory` and so from `BuildTool`\'s ' +
-    '`KeyZ` binding on the world. No HUD control calls it, `hud.ts` states that in the comment above the call, and ' +
-    'the scan cannot see a computed kind in any case. It is on this list rather than silently absent because a ' +
-    'command with no control is a command a touch player cannot issue -- which `hud.ts` itself gives as the reason ' +
-    '`RemoveObject` had to be added, and that reason applies to this pair unanswered.',
-  Redo:
-    'The other half of the same key pair and the same seam: `KeyY` through `BuildTool.attachHistory` into the one ' +
-    'computed-kind dispatch in `src/ui/hud/hud.ts`. Recorded separately rather than folded into `Undo` because the ' +
-    'two are separate schema literals and separate `HudIntent` members, and a fix that gave one of them a control ' +
-    'and not the other has to fail this list rather than pass it.',
+  // Empty since #1356. `Undo` and `Redo` were the two entries -- keyboard-only,
+  // reached from `BuildTool`'s `KeyZ`/`KeyY` through the one computed-kind
+  // dispatch in `src/ui/hud/hud.ts` -- and both now reach the status strip's
+  // Undo and Redo buttons. The next entry here is a command a touch player
+  // cannot issue, which is a defect to file rather than a line to add.
 };
 
 /**
@@ -417,24 +419,40 @@ describe('every declared command has a control the layout sweep can press, or is
     ).toEqual([]);
   });
 
-  it('measures sixteen commands with a control, two with none, and one the sweep never presses', () => {
+  it('measures eighteen commands with a control, none without, and one the sweep never presses', () => {
     // The denominators, stated so the gate reports facts rather than only
     // guarding them, and exact in both directions for the reason the command
     // gate gives: adding an entry to a list is a smaller act than changing a
     // number that says two of eighteen actions have no control at all.
     const withControl = verdicts.filter((verdict) => verdict.control !== undefined);
-    expect(withControl.length).toBe(16);
-    expect(COMMAND_TYPES.length - withControl.length).toBe(2);
+    // Sixteen and two until #1356 gave `Undo` and `Redo` the status strip's
+    // buttons.
+    expect(withControl.length).toBe(18);
+    expect(COMMAND_TYPES.length - withControl.length).toBe(0);
     expect(verdicts.filter((verdict) => verdict.exemptClasses.length > 0).map((verdict) => verdict.command)).toEqual([
       'ReleaseGuardAssignment',
     ]);
-    // All sixteen through the two primitives that build a `<button>`, which is
-    // what makes the join a single fact rather than sixteen. A seventeenth
-    // route arriving through a third primitive is a thing to look at, not a
-    // thing to wave through.
+    // All eighteen through the three primitives that build a `<button>`, which
+    // is what makes the join a single fact rather than eighteen. A route
+    // arriving through a fourth primitive is a thing to look at, not a thing to
+    // wave through -- and the third was looked at: `icon-button.ts` joined this
+    // list with #1356, when its listener became a closure that calls
+    // `options.onActivate()` rather than the bare reference this walk cannot
+    // follow. The chain is pinned whole below so that it is the strip's own
+    // buttons that answer for the pair, not some other icon button.
     expect([...new Set(withControl.map((verdict) => fileOf(verdict.control?.at ?? '')))].sort()).toEqual([
       'src/ui/primitives/action-button.ts',
+      'src/ui/primitives/icon-button.ts',
       'src/ui/primitives/toggle-group.ts',
     ]);
+    for (const command of ['Undo', 'Redo']) {
+      expect(verdictFor(command).control?.trail.map(fileOf), `${command}'s route to a control`).toEqual([
+        'src/ui/hud/hud.ts',
+        'src/ui/hud/status-strip.ts',
+        'src/ui/primitives/icon-button.ts',
+      ]);
+    }
+    expect(verdictFor('Undo').control?.trail.some((hop) => hop.includes('createStatusStrip({ onUndo })'))).toBe(true);
+    expect(verdictFor('Redo').control?.trail.some((hop) => hop.includes('createStatusStrip({ onRedo })'))).toBe(true);
   });
 });

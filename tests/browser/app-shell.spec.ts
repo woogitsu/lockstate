@@ -1121,11 +1121,33 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * as every entry above describes -- which leaves the 8.4 this number moved by.
  * The other two viewports do not move, because the rule is inside
  * `@media (max-width: 720px)`.
+ *
+ * **`375x812` MOVED 447.7 -> 429 ON 2026-09-22 (#1356), AND IT IS LENT TO THE
+ * ONE TOUCH ROUTE UNDO AND REDO HAVE.** Until #1356 the pair was `KeyZ` and
+ * `KeyY` and nothing else, so a phone could take back nothing. The strip's new
+ * Undo and Redo buttons sit in its top-right corner below 721px, beside the
+ * Layout button, and the first strip row -- the brand badge alone, 19px -- is
+ * floored at one tap target so the second row starts below them. That is the
+ * cheapest arrangement measured: in flow the pair took a strip row of its own
+ * (103.7 -> 151.7) and moved `.save-panel` over the centre of the screen, and
+ * sharing the counters' row broke #634. `hud.css`'s note on
+ * `.hud-strip__history` below 720px carries the rest.
+ *
+ * The chain, measured on this page in two worktrees, `main` at `4a7215f7`
+ * against the branch:
+ *
+ *     viewport    strip            rail             aside            this panel
+ *     375x812    103.7 -> 128.7    650.3 -> 625.3   162.6 -> 156.3   447.7 -> 429
+ *
+ * 25px comes out of the middle row; `.hud__aside`'s `min-height: 25%` gives up
+ * 6.3 of it and this panel the other 18.7. The two desktop viewports do not
+ * move: there the pair rides the strip's first row, out of the clock group's
+ * `flex: 1` stretch.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 447.5,
   '900x600': 365.5,
-  '375x812': 447.7,
+  '375x812': 429,
 };
 
 /**
@@ -11136,6 +11158,62 @@ test.describe('the assembled application', () => {
     // Only the button that was pressed, though all three were disabled while
     // the command was in flight.
     expect(await page.locator('.hud-strip__transport [data-action-failed="true"]').count()).toBe(1);
+  });
+
+  /**
+   * Undo and Redo have a pointer and touch route, on a phone, and a refused
+   * press says so on the button that was pressed (#1356).
+   *
+   * Until #1356 the pair was `KeyZ` and `KeyY` and nothing else, so a touch
+   * player could take back nothing. The route this proves is the whole chain
+   * on the assembled page -- the strip's button, `mountHud`'s gate, and
+   * `src/main.ts`'s `case 'undo'`, whose `requireSimulation(commands).submit`
+   * throws while no prison is open -- at 375x812, the narrowest viewport the
+   * sweep visits and the one where `.hud__corner` does not exist.
+   *
+   * With no session the host refuses, which is the one refusal this page can
+   * reach without a gesture to take back; it is the same path a refused
+   * transport press takes in the test above, and the marking is asserted the
+   * same way: the pressed button, and only it.
+   */
+  test('Undo and Redo can be pressed on a phone, and a refusal is marked on the button pressed (#1356)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openApp(page);
+
+    const history = page.locator('.hud-strip__history');
+    const undo = history.getByRole('button', { name: localeText('hud.history.undo-last-change') });
+    const redo = history.getByRole('button', { name: localeText('hud.history.redo-last-undone') });
+    await expect(undo).toBeVisible();
+    await expect(redo).toBeVisible();
+
+    // Inside the window and not covered: `elementFromPoint` at the centre is
+    // the button or its glyph, which is the #88 property for these two alone.
+    for (const button of [undo, redo]) {
+      const hit = await button.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return {
+          inside: box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && box.bottom <= window.innerHeight,
+          hitsItself: top !== null && element.contains(top),
+        };
+      });
+      expect(hit).toEqual({ inside: true, hitsItself: true });
+    }
+
+    const refusal = page.locator('.hud__refusal');
+    await undo.click();
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toContainText(localeText('hud.refusal.undo'));
+    await expect(refusal).toHaveAttribute('data-action', 'undo');
+    await expect(undo).toHaveAttribute('data-action-failed', 'true');
+    expect(await page.locator('.hud-strip [data-action-failed="true"]').count()).toBe(1);
+
+    await redo.click();
+    await expect(refusal).toContainText(localeText('hud.refusal.redo'));
+    await expect(refusal).toHaveAttribute('data-action', 'redo');
+    await expect(redo).toHaveAttribute('data-action-failed', 'true');
   });
 
   test('names the build it is, in the top-left corner, from a real injected define', async ({ page }) => {

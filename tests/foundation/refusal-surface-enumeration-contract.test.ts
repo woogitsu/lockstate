@@ -375,6 +375,35 @@ const TRIPLES: readonly Triple[] = [
     },
   },
 
+  // -- the strip's Undo and Redo (#1356) -----------------------------------
+  // Two presses, not one: they dispatch two intents with two different
+  // artifacts, which is the rule the transport's three-buttons-one-press row
+  // does not reach.
+  {
+    press: 'Status strip · Undo',
+    intent: 'undo',
+    command: 'Undo',
+    artifact: 'the last gesture is taken back',
+    producer: 'host',
+    reach: 'createStatusStrip({ onUndo })',
+    drivenBy: {
+      spec: 'tests/browser/app-shell.spec.ts',
+      quote: "await expect(refusal).toHaveAttribute('data-action', 'undo');",
+    },
+  },
+  {
+    press: 'Status strip · Redo',
+    intent: 'redo',
+    command: 'Redo',
+    artifact: 'the taken-back gesture returns',
+    producer: 'host',
+    reach: 'createStatusStrip({ onRedo })',
+    drivenBy: {
+      spec: 'tests/browser/app-shell.spec.ts',
+      quote: "await expect(refusal).toHaveAttribute('data-action', 'redo');",
+    },
+  },
+
   // -- the keyboard pair ----------------------------------------------------
   {
     press: 'Keyboard · KeyZ on the world',
@@ -607,10 +636,25 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
       ).toBe(true);
     }
 
-    // And the undo pair still reaches nothing, which is what puts it on the
-    // second of the two defensible totals below.
+    // And the key pair is still the shape it was: a computed-kind dispatch the
+    // walk cannot see, so every route the walk finds for `undo` and `redo` is
+    // the strip's button and none is the key. This read "the undo pair still
+    // reaches nothing" until #1356 gave the pair its buttons; the key rows are
+    // kept because the key is still a press, and it is still the one the
+    // second of the two defensible totals below leaves out.
+    const hud = stripComments(read('src/ui/hud/hud.ts'));
+    expect(hud, 'the keys no longer dispatch through the computed-kind seam').toContain(
+      'dispatchCommand({ kind: direction });',
+    );
     for (const triple of TRIPLES.filter((entry) => entry.reach === 'keyboard')) {
-      expect(routesForIntent(uiSources, triple.intent), `${triple.intent} gained a route`).toEqual([]);
+      const routes = routesForIntent(uiSources, triple.intent);
+      expect(routes.length, `${triple.intent} has no route at all`).toBeGreaterThan(0);
+      for (const route of routes) {
+        expect(
+          route.trail.some((hop) => hop.includes('createStatusStrip(')),
+          `${triple.intent} gained a route that is not the strip's: ${route.trail.join(' -> ')}`,
+        ).toBe(true);
+      }
     }
   });
 
@@ -620,17 +664,18 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
   });
 
   it('counts the enumeration, and the two totals that differ over the keyboard pair', () => {
-    expect(TRIPLES.length).toBe(32);
-    expect(pointerTriples.length).toBe(30);
+    // 32 / 30 / 14 / 21 until #1356 added the strip's Undo and Redo rows.
+    expect(TRIPLES.length).toBe(34);
+    expect(pointerTriples.length).toBe(32);
     expect(simulationTriples.length).toBe(18);
-    expect(hostTriples.length).toBe(14);
+    expect(hostTriples.length).toBe(16);
     expect(simulationTriples.length + hostTriples.length).toBe(TRIPLES.length);
-    // Twenty-one distinct presses, of which nineteen a pointer can make.
-    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(21);
+    // Twenty-three distinct presses, of which twenty-one a pointer can make.
+    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(23);
   });
 
   it('checks every coverage claim against the spec file that is supposed to carry it', () => {
-    expect(driven.length).toBe(8);
+    expect(driven.length).toBe(10);
     expect(proven.length).toBe(3);
     for (const triple of TRIPLES) {
       if (triple.drivenBy === undefined) {
@@ -649,15 +694,15 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     }
     // The number owed, derived rather than typed: a triple is owed a spec
     // until one drives its press and finds its artifact missing.
-    expect(TRIPLES.length - proven.length).toBe(29);
-    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(27);
+    expect(TRIPLES.length - proven.length).toBe(31);
+    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(29);
   });
 
   it('is the number the rollout plan states, so the document cannot drift from the table', () => {
     const plan = read('docs/IDENTITY_V5_ROLLOUT.md');
     const section = plan.slice(plan.indexOf('### The enumeration criterion 4 was restated in terms of'));
     expect(section.length, 'the stage 4 enumeration subsection was renamed or removed').toBeGreaterThan(500);
-    for (const figure of ['32', '30', '29', '27', '18', '14', '21']) {
+    for (const figure of ['34', '32', '31', '29', '18', '16', '23']) {
       expect(section, `the plan no longer states ${figure}`).toContain(figure);
     }
   });

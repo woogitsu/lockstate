@@ -521,6 +521,35 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.transport.pause': 'Pause',
   'hud.transport.play': 'Play at normal speed',
   'hud.transport.fast-forward': 'Fast forward',
+  /*
+   * The status strip's Undo/Redo pair (#1356), until which the commands were
+   * `KeyZ`/`KeyY` and nothing else. Authored under the 2026-09-04 release of
+   * `AGENTS.md`'s fourth reservation, each argued here against the code:
+   *
+   * - *"placement"* -- the undo stack holds nothing else.
+   *   `ConstructionSystem.registerTransactionOrder` is the only thing that puts
+   *   a new transaction on it, and its two producers are a `PlaceBuildOrder`
+   *   (`construction/handler.ts`) and a `PlaceObject`
+   *   (`objects/object-placement-service.ts`): walls and objects placed. Naming
+   *   it is what `input.action.edit.undo`'s one-word label cannot do, and it is
+   *   the misreading #956 measured -- a player who hires a guard and presses
+   *   Undo expecting the hire back. Not "build", which every spec's
+   *   `getByRole('button', { name: 'Build' })` would also match, since a
+   *   role query matches a substring of the accessible name.
+   * - *"Undo the last placement"* -- `undo()` pops the newest transaction. When
+   *   something else has happened since, ADR 0104's handler refuses rather
+   *   than reaching past it, and the refusal band says so in its own sentence;
+   *   the label names what the press asks for, not a guarantee it is granted.
+   * - *"Redo the last undone placement"* -- `redo()` pops the newest entry of
+   *   the redo stack, which only `undo()` pushes and a new stack write clears.
+   *
+   * Neither says the press will do something: on an empty history it does
+   * nothing, as the key does, and the main thread cannot know the history is
+   * empty, so the buttons are never disabled on a guess.
+   */
+  'hud.history.group-label': 'Undo and redo',
+  'hud.history.undo-last-change': 'Undo the last placement',
+  'hud.history.redo-last-undone': 'Redo the last undone placement',
 
   'hud.tabs.title': 'Prison sections',
   /*

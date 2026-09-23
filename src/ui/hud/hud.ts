@@ -331,9 +331,12 @@ export type HudHistoryDirection = 'undo' | 'redo';
  * surface reports it -- the shape of the defect #225 removed for the build
  * gesture.
  *
- * There is no control on screen for either. That is not an omission this
- * interface papers over -- the refusal line is laid out at every viewport and
- * needs no control to name (`reportError`, and the `worldBuild` attachment
+ * ~~There is no control on screen for either.~~ **False since #1356**: the
+ * status strip carries an Undo and a Redo button, which dispatch the same two
+ * intents through `createStatusStrip`'s `onUndo`/`onRedo`. This source is still
+ * the *key's* route and still carries no control, and the rest of the
+ * paragraph still holds of it: the refusal line is laid out at every viewport
+ * and needs no control to name (`reportError`, and the `worldBuild` attachment
  * below).
  */
 export interface HudEditHistorySource {
@@ -420,7 +423,11 @@ export type HudIntent =
    * **Why this exists at all**, since `Undo` already took a placement back: undo
    * is bound to `KeyZ` and nothing else, so on a touch device a misplaced object
    * was permanent for the session. That is the trap the Rooms tab shipped with
-   * and had to fix in a follow-up, and it is not worth repeating.
+   * and had to fix in a follow-up, and it is not worth repeating. *(The first
+   * clause stopped being true with #1356, which put Undo and Redo buttons in
+   * the status strip; the intent does not lean on it any more, because Undo
+   * reaches only the newest transaction and only while it is the player's
+   * latest action -- ADR 0104 -- and a removal reaches any object.)*
    *
    * **`edge`, added by ADR 0106, is optional and carries the same asymmetry as
    * `HudObjectGesture`'s own `remove` arm.** Present only when the world
@@ -1990,6 +1997,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onTransport: (kind: TransportIntentKind) => {
       dispatchCommand(transportIntent(kind, viewModel), strip.controlFor(kind));
     },
+    /*
+     * The pointer and touch route to Undo and Redo (#1356), through the gate
+     * the keys already use. The control *is* passed here, unlike the key's
+     * dispatch below: the player pressed a button in the HUD, so a refusal
+     * the host raises is marked on that button, exactly as a refused
+     * transport press is. Literal kinds rather than a direction, so
+     * `tests/foundation/command-control-reachability-contract.test.ts` can
+     * follow each intent to its `<button>`.
+     */
+    onUndo: () => {
+      dispatchCommand({ kind: 'undo' }, strip.historyControlFor('undo'));
+    },
+    onRedo: () => {
+      dispatchCommand({ kind: 'redo' }, strip.historyControlFor('redo'));
+    },
   });
 
   // ---- bottom-left minimap frame -----------------------------------
@@ -2691,6 +2713,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * player pressed a key on the world, not a button in the HUD, so there is
    * nothing on screen for a refusal to be marked on. The refusal line still
    * says what happened.
+   *
+   * **The key is no longer the only route (#1356).** The status strip's Undo
+   * and Redo buttons dispatch the same two intents through the same gate, with
+   * their own control passed; this seam stays control-less for the reason
+   * above, and `dispatchCommand` unmarks the button when a key press takes the
+   * kind over, so a stale mark never outlives the press it was about.
    */
   options.editHistory?.attachHistory((direction) => {
     dispatchCommand({ kind: direction });
@@ -2851,7 +2879,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // Only the controls that issue a *command* are disabled while one is in
   // flight. One busy signal for the three of them, so they can never
   // disagree about whether the clock is being changed. Chrome controls are
-  // deliberately absent: see `dispatchShell`.
+  // deliberately absent: see `dispatchShell`. The strip's Undo and Redo
+  // (#1356) are in `strip.controls` too: each is a command, so a second tap
+  // while one is in flight must not hand the host two undos.
   for (const control of strip.controls) busy.add(control);
   // The Build panel's controls join the same group: its "Place order" is a
   // command too, so a second tap while one is in flight must not queue a

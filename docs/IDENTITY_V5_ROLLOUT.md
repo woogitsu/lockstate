@@ -937,6 +937,8 @@ appears on success and therefore what only a browser can find missing.
 | Staff panel · staff row · Dismiss, armed then confirmed | `dismiss-staff` → `DismissStaff` | the row leaves the roster | owed | — (silent) |
 | Schedule panel · block toggle | `edit-regime-block` → `EditRegimeBlock` | the block reads the chosen activity | owed | — (silent) |
 | Status strip · transport | `set-clock` → *(no command)* | the clock reads what was asked | — (no reason) | driven, absence unproved |
+| Status strip · Undo *(added by #1356)* | `undo` → `Undo` | the last gesture is taken back | — (no reason) | driven, absence unproved |
+| Status strip · Redo *(added by #1356)* | `redo` → `Redo` | the taken-back gesture returns | — (no reason) | driven, absence unproved |
 | Keyboard · KeyZ on the world | `undo` → `Undo` | the last gesture is taken back | — (no reason) | owed |
 | Keyboard · KeyY on the world | `redo` → `Redo` | the taken-back gesture returns | — (no reason) | owed |
 
@@ -959,6 +961,21 @@ records with a named entry apiece.
   against the assembled application **and** asserts the success artifact
   missing, which is the thing the criterion says a browser uniquely adds.
 - **29 owed**, or **27** on the pointer-only reading.
+
+> **AMENDED 2026-09-22 BY #1356, AND THE FOUR BULLETS ABOVE ARE LEFT AS THEY
+> READ AT THE MERGE BASE** (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+> The undo pair gained a pointer route — Undo and Redo buttons in the status
+> strip — so the table carries two more presses, both host-only for the reason
+> the key rows are: no `RefusalReason` has an `undo.` or `redo.` domain. The
+> figures are now **34 triples** (eighteen simulation, **sixteen** host), **32**
+> on the reading that leaves the key chords out, **23 presses** of which **21**
+> a pointer can make, **3 discharged**, and **31 owed**, or **29** on the
+> pointer-only reading. The strip rows are driven on the assembled page by
+> `app-shell.spec.ts`'s *"Undo and Redo can be pressed on a phone, and a refusal
+> is marked on the button pressed (#1356)"*, which makes **ten driven**; neither
+> proves its artifact absent, because with no session open there is no gesture
+> for the refusal to leave standing. The sentence under the table that calls
+> the undo pair *"a key chord and nothing else"* is history in the same way.
 
 **Eight triples are driven and only three are discharged, and the gap is the
 useful part of this pass.** Five specs reach a real refusal through a real

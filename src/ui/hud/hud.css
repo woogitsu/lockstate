@@ -278,6 +278,92 @@
   gap: var(--space-1);
 }
 
+/*
+ * Undo and Redo (#1356), after the transport and never inside it: the
+ * transport group is labelled as the clock's controls, and these are not.
+ *
+ * Above 720px at the default interface scale this is the whole arrangement,
+ * and it costs **nothing**: measured on the assembled page against `main` at
+ * `4a7215f7` (New prison; Build and Overview tabs), strip height, visible
+ * chips and the Build panel's box are unchanged at 1280x720, 1280x800,
+ * 1440x900, 1024x768 and 900x600, because the pair takes its 92px out of the
+ * clock group's `flex: 1` stretch on the first row. Below 720px it is placed
+ * in the strip's top-right corner instead (the phone block beside the Layout
+ * slot's), and above 100 % it takes the clock's place beside the transport
+ * (the next rule); each carries its own measurement.
+ *
+ * Rejected on measurement: the pair beside the brand badge in flow (at
+ * 375x812 it lands on the Layout button, 255..343 against 327..371), and any
+ * arrangement that puts the pair or the clock on the counters' row at 100 %,
+ * which `app-shell.spec.ts`'s #634 test refuses (*"every chip the strip has
+ * room for"*: 4 of 5 at 600x800).
+ */
+.hud-strip__history {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/*
+ * ...AND AT AN ENLARGED INTERFACE SCALE, WHERE HEIGHT IS WHAT RUNS OUT, THE
+ * PAIR TAKES THE CLOCK'S PLACE BESIDE THE TRANSPORT AND THE CLOCK READOUT
+ * MOVES ONTO THE COUNTERS' ROW (#1356).
+ *
+ * In flow, above 100 % the pair wraps at many more viewports, and a row of
+ * 44px-and-up tap targets is exactly what the vertical budget there cannot
+ * lend: it made `app-shell.spec.ts`'s #545 test report the rail scrolling 22px
+ * at 900x600 and 200 %, and put five combinations of the 200 % page-zoom
+ * sweep that pass on `main` over the ceiling (`.save-panel` below the window,
+ * `.display-scale__cycle` covered).
+ *
+ * The clock is a readout and the metrics row is the strip's row of readouts,
+ * so the swap moves nothing a player presses. `order` is safe on the clock
+ * for the reason it is on the metrics -- nothing in it is focusable -- and the
+ * pair keeps its DOM place after the transport, so the keyboard and the eye
+ * still meet it at the same point. The metrics' 40 % floor keeps them and the
+ * clock together on the last row and off the rows above (a zero basis alone
+ * would let them join the transport's row a few pixels wide), and `flex: none`
+ * on the clock lets the counters, not the day readout, take what is left.
+ *
+ * The first rule is the fallback for where the swap cannot help: the metrics'
+ * basis is the row less the pair and one gap, so a pair that still wraps
+ * lands at the start of a line with the metrics fitting beside it, and costs
+ * the difference between a tap-target row and a chip row rather than a whole
+ * row. Where the pair does not wrap the metrics are alone and `flex-grow`
+ * gives them their full width back.
+ *
+ * **The swap is not applied below 320px**, which no phone is and a 200 % page
+ * zoom on one is: there the transport alone overflows its row, the pair cannot
+ * join it either way, and moving the clock only added a row -- measured, it
+ * put a tab over `.display-scale__cycle` at 390x844 and 375x812 halved at a
+ * 125 % scale.
+ *
+ * Measured with both rules against `main` (the same probe, Build tab, New
+ * prison): the 200 % sweep reads "12 of 36 fail, ceiling 12". At 150 % the
+ * strip is unchanged at 1280x720, 1280x800 and 1440x900, **shorter** at
+ * 1024x768 (154 -> 139px) and 900x600 (154 -> 132.3px), and 19.5px taller on
+ * both phones (184.8 -> 204.3px); at 200 % it is shorter at 1280x720 and
+ * 1280x800 (204.4 -> 176px) and 1440x900 (-> 185px), unchanged at 1024x768 and
+ * 900x600, and 26.6px taller on both phones (245.4 -> 272px). What that buys is
+ * paid in counters: one to three fewer chips wholly on screen wherever the
+ * clock joins their row, and none wholly on screen on either phone at 200 %,
+ * where one was.
+ */
+:root[data-ui-scale-enlarged='true'] .hud-strip__metrics {
+  flex-basis: calc(100% - 2 * var(--tap-target) - var(--space-1) - var(--space-4));
+}
+
+@media (min-width: 320px) {
+  :root[data-ui-scale-enlarged='true'] .hud-strip__clock {
+    order: 1;
+    flex: none;
+  }
+  :root[data-ui-scale-enlarged='true'] .hud-strip__metrics {
+    flex: 1 1 0%;
+    min-width: 40%;
+  }
+}
+
 .hud-clock__speed-group {
   display: inline-flex;
   align-items: center;
@@ -5433,6 +5519,7 @@
     padding: 0 var(--space-2);
   }
 
+
   /* `.hud-strip__metrics` and `.hud-strip__clock` used to be laid out here,
      under the comment *"Squeezing all three onto one line left the metrics
      about 50px wide, which is not a readout."* That comment was right about
@@ -5770,6 +5857,45 @@
   .hud-strip { padding-right: var(--space-2); }
   /* Nothing to reclaim: the gutter here is the padding the strip already had. */
   .hud-strip__metrics { margin-right: 0; }
+}
+
+/*
+ * ON A PHONE, UNDO AND REDO SIT IN THE STRIP'S TOP-RIGHT CORNER BESIDE THE
+ * LAYOUT BUTTON, AND THE FIRST ROW IS HELD TO ONE TAP TARGET TALL (#1356).
+ *
+ * In flow the pair has nowhere free here. The clock and the transport are 341
+ * of 359px of the second row at 375x812, so the pair wrapped onto a row of its
+ * own -- 103.7 -> 151.7px of strip -- and that moved `.save-panel` over the
+ * centre of the screen (`app-shell.spec.ts`: *"a click in the middle of the
+ * screen reaches the world, not the HUD"* went red there). Sharing a row with
+ * the counters or with the clock instead was refused by #634's *"every chip the
+ * strip has room for"*.
+ *
+ * The first row is the one with room: the brand badge and nothing else, 19px
+ * tall, with the Layout button already laid over its right end. So the pair is
+ * placed the way that button is -- absolutely, at the top, a gap to its left --
+ * and costs the difference between that 19px row and a 44px one. The badge is
+ * bounded so it wraps rather than running under the pair, and the row is
+ * floored at one tap target so the second row starts below the buttons rather
+ * than under them.
+ *
+ * Focus order is DOM order -- transport, then the pair, then Layout -- which is
+ * the order the Layout button already has against what it sits beside here.
+ *
+ * Not at an enlarged interface scale, where the rules beside
+ * `.hud-strip__history` above already put the pair on the transport's row.
+ */
+@media (max-width: 720px) {
+  :root:not([data-ui-scale-enlarged='true']) .hud-strip__history {
+    position: absolute;
+    top: 0;
+    right: calc(var(--space-1) + var(--tap-target) + var(--space-1));
+    height: var(--tap-target);
+  }
+  :root:not([data-ui-scale-enlarged='true']) .hud-strip__brand {
+    min-height: var(--tap-target);
+    max-width: calc(100% - 3 * var(--tap-target) - 3 * var(--space-1) - var(--space-2));
+  }
 }
 
 /* ---- the Layout menu --------------------------------------------- */

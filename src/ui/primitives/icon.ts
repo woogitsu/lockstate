@@ -34,6 +34,8 @@ export const ICON_IDS = [
   'dismiss',
   'zoom-in',
   'zoom-out',
+  'undo',
+  'redo',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
@@ -182,6 +184,19 @@ export const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
     'M14.85 14.85 19.25 19.25',
     'M7.75 10.5h5.5',
   ],
+  // Undo and redo, in the status strip (#1356): a hooked arrow that turns
+  // back on itself, pointing left for undo and right for redo -- the glyph a
+  // player already reads as "take that back" in every editor. Strokes only and
+  // on the same 24-unit grid and 4.75/19.25 inset as the rest, so the pair
+  // sits level with the transport glyphs beside it.
+  //
+  // The two are exact mirror images about x = 12, so the only difference a
+  // player has to read is the direction -- the same property `zoom-in` and
+  // `zoom-out` keep by sharing everything but the bar. Deliberately not a
+  // circular arrow: `theme` and `language` are circles in the chrome row, and
+  // a third circle beside them would be read before its arrowhead is.
+  undo: ['M9.25 4.75 4.75 9.25l4.5 4.5', 'M4.75 9.25h9.5a5 5 0 0 1 0 10h-3.5'],
+  redo: ['M14.75 4.75l4.5 4.5-4.5 4.5', 'M19.25 9.25h-9.5a5 5 0 0 0 0 10h3.5'],
   brand: [
     'M8 10.25V7.5a4 4 0 0 1 8 0v2.75',
     'M5.75 10.25h12.5v9.5H5.75z',

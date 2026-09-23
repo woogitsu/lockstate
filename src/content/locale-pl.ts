@@ -591,6 +591,11 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.transport.pause': 'Pauza',
   'hud.transport.play': 'Odtwarzaj z normalną prędkością',
   'hud.transport.fast-forward': 'Przyspiesz',
+  // #1356: the strip's Undo/Redo pair. The English entry carries the argument
+  // for each clause; these say the same three things.
+  'hud.history.group-label': 'Cofanie i ponawianie',
+  'hud.history.undo-last-change': 'Cofnij ostatnie postawienie',
+  'hud.history.redo-last-undone': 'Ponów ostatnie cofnięte postawienie',
   /*
    * The Layout menu and the three collapse arrows, translated on 2026-09-14.
    *

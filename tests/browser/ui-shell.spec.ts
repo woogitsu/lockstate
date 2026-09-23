@@ -1054,6 +1054,54 @@ test.describe('HUD shell', () => {
       ]);
     });
 
+    test('the status strip\'s Undo and Redo dispatch the same two intents the keys do (#1356)', async ({ page }) => {
+      // The pointer route beside the key. Exact intent list, for the reason the
+      // test above gives: a Redo button that sent `undo` would reverse the
+      // player's work instead of restoring it.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const history = page.locator('.hud-strip__history');
+      await expect(history).toHaveAttribute('role', 'group');
+      await history.getByRole('button', { name: 'Undo the last placement' }).click();
+      await history.getByRole('button', { name: 'Redo the last undone placement' }).click();
+
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('undo') || intent.includes('redo'))).toEqual([
+        JSON.stringify({ kind: 'undo' }),
+        JSON.stringify({ kind: 'redo' }),
+      ]);
+    });
+
+    test('a refused strip Undo is marked on its button, and a key press takes the mark back (#1356)', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page
+        .locator('.hud-strip__history')
+        .getByRole('button', { name: 'Undo the last placement' })
+        .click();
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible))
+        .toBe(true);
+      let probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('undo');
+      expect(probe.text).toContain('Nothing was undone');
+      // The button that was pressed, and nothing else -- unlike the key, which
+      // marks nothing because nothing on screen was pressed.
+      expect(probe.failedControls).toEqual(['Undo the last placement']);
+      expect(probe.describedByRefusal).toBe(true);
+
+      // The same kind, now from the key: the refusal is about a press the
+      // button did not make, so the button's mark must not outlive it.
+      expect(await page.evaluate(() => window.lockstateUiHarness.pressWorldUndo('undo'))).toBe(true);
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().failedControls))
+        .toEqual([]);
+      probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.visible).toBe(true);
+      expect(probe.action).toBe('undo');
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
     test('the refusal line is there at 375px, where the map corner is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.
