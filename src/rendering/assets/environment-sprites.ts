@@ -82,6 +82,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.door.interior.cap',
   'env.object.bed',
   'env.object.medical-bed',
+  'env.object.medicine-cabinet',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
@@ -228,6 +229,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 256 },
     quarterTurns: 0,
     note: 'Adjustable medical bed with teal washable cover, white safety rails and a marked foot panel. Drawn on object.medical-bed.',
+  },
+  'env.object.medicine-cabinet': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.medical.cabinet',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Locking infirmary cabinet with pale enamel top and teal medical cross. Drawn on object.medicine-cabinet.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

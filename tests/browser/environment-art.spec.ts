@@ -500,6 +500,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.medical-bed',
       tileOf: (fixture) => [fixture.medicalBedTileX, fixture.medicalBedTileY],
     },
+    {
+      label: 'medicine cabinet',
+      buildableId: 'medicine-cabinet-wooden',
+      catalogueId: 'object.medicine-cabinet',
+      expectedSpriteId: 'env.object.medicine-cabinet',
+      tileOf: (fixture) => [fixture.medicineCabinetTileX, fixture.medicineCabinetTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

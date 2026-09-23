@@ -86,6 +86,7 @@ MODELS = (
     ("furniture.chair.wooden", (1, 1)),
     ("furniture.dining.table.wooden", (3, 2)),
     ("furniture.medical.bed.single", (1, 2)),
+    ("furniture.medical.cabinet", (1, 1)),
 )
 
 
@@ -293,7 +294,28 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.medical.bed.single":
+    if asset_id == "furniture.medical.cabinet":
+        # Four-view reference: assets/source/concepts/medicine-cabinet-multiview-v1.png.
+        # The top cross and white rim stay visible in a one-tile overhead sprite.
+        for x in (-0.38, 0.38):
+            for y in (-0.36, 0.36):
+                box(collection, root, f"Rubber foot.{x}.{y}", (x, y, 0.055), (0.14, 0.14, 0.11), "steel", 0.01)
+        box(collection, root, "Cabinet enclosure", (0, 0, 0.62), (0.86, 0.82, 1.13), "galvanized", 0.035)
+        box(collection, root, "Recessed front shadow", (0, 0.416, 0.63), (0.75, 0.014, 0.92), "metal_recess", 0.004)
+        for x in (-0.19, 0.19):
+            box(collection, root, f"Locking door.{x}", (x, 0.433, 0.63), (0.35, 0.018, 0.89), "galvanized_edge", 0.012)
+            box(collection, root, f"Recessed handle.{x}", (x * 0.38, 0.45, 0.67), (0.055, 0.012, 0.19), "metal_recess", 0.006)
+            cylinder(collection, root, f"Door lock.{x}", (x * 0.4, 0.454, 0.92), 0.021, 0.013, "steel", 16)
+            for z in (0.37, 0.86):
+                box(collection, root, f"Hinge.{x}.{z}", (x * 2.13, 0.444, z), (0.024, 0.04, 0.09), "steel", 0.006)
+        box(collection, root, "Cream enamel top rim", (0, 0, 1.225), (0.94, 0.90, 0.09), "porcelain", 0.04)
+        box(collection, root, "Inset lid panel", (0, 0, 1.273), (0.79, 0.75, 0.012), "light", 0.016)
+        box(collection, root, "Medical cross horizontal", (0, 0, 1.285), (0.39, 0.125, 0.008), "medical_teal", 0.003)
+        box(collection, root, "Medical cross vertical", (0, 0, 1.290), (0.125, 0.39, 0.008), "medical_teal", 0.003)
+        for x in (-0.38, 0.38):
+            for y in (-0.36, 0.36):
+                cylinder(collection, root, f"Lid corner rivet.{x}.{y}", (x, y, 1.285), 0.012, 0.009, "steel", 12)
+    elif asset_id == "furniture.medical.bed.single":
         # assets/source/concepts/medical-bed-multiview-v1.png: rails and the
         # medical cross separate this from the ordinary cell bed at game scale.
         for x in (-0.39, 0.39):

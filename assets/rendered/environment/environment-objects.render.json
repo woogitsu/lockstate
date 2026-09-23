@@ -442,6 +442,33 @@
       }
     },
     {
+      "assetId": "furniture.medical.cabinet",
+      "image": "furniture.medical.cabinet.png",
+      "sha256": "92087837004d913f08588b1def3af44d8b3856d668387f55d9ccf22410c2f9fa",
+      "pixelSha256": "01ba56408588bfcffa8eef212af396dec08702cbde8819e8251f9abf1aea72e6",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 24,
+        "width": 218,
+        "height": 214,
+        "opaquePixels": 45362
+      }
+    },
+    {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
       "sha256": "1dbdd9274f826bd2c02f5c3b06b11adb06b06b7c41582d55377254713cdfdf49",

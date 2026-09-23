@@ -148,6 +148,16 @@ combined column, and its basin overhangs its own tile by 0.02.
 The resulting original reference and packed fabric swatch are recorded in
 `assets/source/concepts/medical-bed-v1.md`.
 
+### Infirmary storage — `furniture.medical.cabinet`
+
+> one waist-high locking medicine cabinet, 1×1 tile, viewed directly overhead
+> and from three consistent oblique angles — pale enamel lid with a teal medical
+> cross, blue-grey metal enclosure, two lockable doors and short feet
+> …the cross and light top rim must remain distinguishable at 64×64 px.
+
+The original reference and Blender model are recorded in
+`assets/source/concepts/medicine-cabinet-v1.md`.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 > a fixed corridor bench, 2×1 tiles, seen from directly above with its sides

@@ -120,12 +120,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 30 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 31 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(30);
+    expect(sidecar.entries.length).toBe(31);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {
