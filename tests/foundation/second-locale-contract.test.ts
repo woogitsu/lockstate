@@ -409,6 +409,10 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security-section.search-progress',
   'hud.security-section.sector-open-incidents',
   'hud.security-section.sector-short',
+  // "Hire {count} for the largest response" / "Zatrudnij {count} na
+  // najcięższy incydent" use a bare numeral after an imperative in both
+  // locales. Neither sentence has a count-governed noun to inflect (#893).
+  'hud.security.coverage-no-reserve-hint',
   'hud.security.coverage-short-hint',
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',

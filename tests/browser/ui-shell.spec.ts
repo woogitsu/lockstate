@@ -2924,6 +2924,11 @@ test.describe('HUD shell', () => {
 
         // And with the mode on, where the buy toggle leaves the row.
         await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+        // #517 folds the phone sheet on arming so the map can be touched.
+        // Reopen it to measure this row while keeping removal armed.
+        if (width <= 600) {
+          await page.locator('.hud-build .ui-panel__toggle').click();
+        }
         const removing = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
         expect(removing.removeLaidOut, `no box while removing at ${width}x${height}`).toBe(true);
         expect(

@@ -268,7 +268,15 @@ describe('a roster a save carries cannot cover a post with a role that has no du
     // projection the HUD actually reads, with `hired` unchanged -- the three
     // are staff, they are simply not guards.
     const staff = projectStaff({ staff: runtime.securityGuards, deployment: runtime.deploymentSystem }, runtime.kernel.tick, { limit: 0 });
-    expect(staff.totals).toEqual({ hired: 3, unassigned: 3, required: 1, assigned: 0, shortage: 0 + 1 });
+    expect(staff.totals).toEqual({
+      hired: 3,
+      unassigned: 3,
+      required: 1,
+      assigned: 0,
+      shortage: 1,
+      availableReserve: 0,
+      targetReserve: 5,
+    });
   });
 
   it('survives a save round trip: a restored session does not post them either', () => {

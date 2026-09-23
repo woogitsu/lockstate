@@ -519,8 +519,10 @@ producer rather than an argument against it.
 ### 5. Every gang retaliation that opens locks the whole prison down — ARITHMETIC
 
 - Severity is
-  `severity: Math.max(1, Math.min(10, Math.round(risk * 10))),` (verbatim in
-  `src/simulation/incidents/trigger-system.ts`), at `:538`.
+  `severity: Math.max(1, Math.min(MAX_INCIDENT_SEVERITY, Math.round(risk * MAX_INCIDENT_SEVERITY))),`
+  (verbatim in `src/simulation/incidents/trigger-system.ts`), at `:624`.
+  Since #893, `MAX_INCIDENT_SEVERITY` names the same ceiling of 10 in
+  `src/simulation/incidents/incident.ts`; the arithmetic below is unchanged.
 - `risk ≥ 0.6` by the gate above, so **severity ≥ 6**, always.
 - The lockdown line is
   `if (incident.severity >= this.policy.lockdownSeverityThreshold) {` (verbatim
