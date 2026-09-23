@@ -1618,6 +1618,12 @@ export const refusalSchema = z
      * `src/ui/hud/hud.ts`), which retires the corner on it. The alerts list
      * ignores it on purpose; that divergence is what option F buys and ADR
      * 0091 prices.
+     *
+     * **Amendment, 2026-09-23 (#1270).** The prefix rule above still holds
+     * for every key and for exact-target withdrawal. For the band's lifetime
+     * alone, `remove-wall` and `remove-object` now count as one route in both
+     * directions. `RefusalLog.noteRouteDecided` makes that one comparison;
+     * it leaves the standing record and both distinct key prefixes intact.
      */
     routeDecidedSince: z.literal(true).optional(),
     /**

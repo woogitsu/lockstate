@@ -83,6 +83,10 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   route is a command name the protocol already spells out in every
  *   `RefusalReason`, so this adds no target, no tile and no id to the
  *   payload; the sentence above is narrowed rather than withdrawn.
+ *   **Amended 2026-09-23 (#1270):** for band retirement only, the
+ *   `remove-wall` and `remove-object` prefixes count as one route in either
+ *   direction. The key names, exact-target withdrawal and alert row do not
+ *   change; `noteRouteDecided` contains the exception.
  *
  *   **THAT BULLET IS NOW WRONG ABOUT THE TILE AND IS KEPT RATHER THAN
  *   REWRITTEN, BECAUSE THE TILE IS EXACTLY THE HALF THAT MOVED (2026-09-22).**
@@ -279,7 +283,16 @@ export class RefusalLog {
     if (current === undefined || current.routeDecidedSince === true) return;
     const standingRoute = this._currentKey;
     if (standingRoute === undefined) return;
-    if (supersessionKeyRoute(standingRoute) !== supersessionKeyRoute(key)) return;
+    const standingPrefix = supersessionKeyRoute(standingRoute);
+    const decidedPrefix = supersessionKeyRoute(key);
+    // ADR 0091's 2026-09-23 amendment counts the two removal arms as one
+    // route for the band's lifetime only. Do not alias the keys themselves:
+    // supersede's exact-target withdrawal above must still distinguish an
+    // object tile from a wall edge, even when both occupy the same tile.
+    const otherRemovalArmDecided =
+      (standingPrefix === 'remove-wall' && decidedPrefix === 'remove-object') ||
+      (standingPrefix === 'remove-object' && decidedPrefix === 'remove-wall');
+    if (standingPrefix !== decidedPrefix && !otherRemovalArmDecided) return;
     this._current = { ...current, routeDecidedSince: true };
   }
 

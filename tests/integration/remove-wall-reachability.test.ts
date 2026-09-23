@@ -88,6 +88,29 @@ function createSession(seed = 0x106) {
 }
 
 describe('a finished wall is reachable through RemoveWall (ADR 0106)', () => {
+  it('retires a wall-removal refusal band when RemoveWall next succeeds through its object arm (#1270)', () => {
+    const session = createSession();
+    const { runtime } = session;
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-1', definitionId: BED, x: BED_TILE.x, y: BED_TILE.y });
+    session.runUntilState('bed-1', 'completed');
+
+    session.send({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' });
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.last?.routeDecidedSince).toBeUndefined();
+
+    session.send({ type: 'RemoveWall', x: BED_TILE.x, y: BED_TILE.y, edge: 'north' });
+    const instanceId = `${CELL}:${CELL_RECT.x}:${CELL_RECT.y}`;
+    expect(runtime.prisoners.roomInstances.getById(instanceId)?.objectCapabilities).not.toContain('sleep-surface');
+    expect(runtime.refusals.last).toMatchObject({
+      sequence: 1,
+      reason: 'remove-wall.nothing-to-remove',
+      routeDecidedSince: true,
+    });
+    expect(runtime.refusals.count).toBe(1);
+  });
+
   it('removes the completed wall, keeps every coin already spent, and accepts a re-drag at the catalogue price again', () => {
     const session = createSession();
     const { runtime } = session;
