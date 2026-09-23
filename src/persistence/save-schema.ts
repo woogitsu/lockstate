@@ -1619,6 +1619,30 @@ const inFlightSectionSchema = z
  * default a reader could apply, and `migrateSaveEnvelopeV5ToV6` manufactures
  * the section instead.
  */
+/**
+ * What each crossing notice last saw (issue #1373) --
+ * `EncodedSessionSystems.crossingNotices` carries the argument. Optional, V6
+ * alone, and absent means the old silent re-seed, on the same three conditions
+ * as `inFlight`; `SAVE_SCHEMA_VERSION` does not move, with ADR 0038 §4's cost.
+ */
+const crossingNoticesSectionSchema = z
+  .object({
+    roomsNeedsCleared: z
+      .object({
+        seeded: z.boolean(),
+        readyInstanceIds: z.array(z.string().min(1)),
+      })
+      .strict(),
+    insolvencyRungs: z
+      .object({
+        seeded: z.boolean(),
+        /** Mirrors `WatchedInsolvencyRung` (`src/simulation/economy/insolvency-rung-system.ts`). */
+        standing: z.array(z.enum(['deliveries', 'construction'])),
+      })
+      .strict(),
+  })
+  .strict();
+
 const sessionSystemsV6Schema = z
   .object({
     ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5),
@@ -1626,6 +1650,7 @@ const sessionSystemsV6Schema = z
     alerts: alertsSectionSchema.optional(),
     regimeSchedules: regimeSchedulesSectionSchema,
     inFlight: inFlightSectionSchema.optional(),
+    crossingNotices: crossingNoticesSectionSchema.optional(),
   })
   .strict();
 

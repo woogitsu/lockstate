@@ -23,6 +23,13 @@ import type { RoomRegionGraphSource } from './reachability';
  */
 const UNPAGED_ROOM_LIST_LIMIT = Number.MAX_SAFE_INTEGER;
 
+/** What `RoomNeedsClearedNoticeSystem.getSnapshot` carries: see that method. */
+export interface RoomNeedsClearedNoticeSnapshot {
+  readonly seeded: boolean;
+  /** Ascending. */
+  readonly readyInstanceIds: readonly string[];
+}
+
 /**
  * Fires a one-off, per-instance notice the day a room stops being short of
  * anything the Rooms panel's own `NOT READY` block checks for
@@ -124,6 +131,20 @@ const UNPAGED_ROOM_LIST_LIMIT = Number.MAX_SAFE_INTEGER;
  * steps -- seeds every instance's current state silently, so a session that
  * reloads with every room already fine announces nothing. Only a transition
  * observed *between* two of this system's own reads is a real crossing.
+ *
+ * **CORRECTED 2026-09-23 (issue #1373): "a session that reloads with every
+ * room already fine announces nothing" was the right outcome for the wrong
+ * set of rooms.** Re-seeding on the first read after a load treats every room
+ * that became ready *since the last read before the save* as already known,
+ * so a room repaired across a save was never announced -- measured, 8
+ * `rooms.needs-cleared` notices missing from a 34-prisoner crowded fixture,
+ * and every save taken during the day of a repair losing its notice
+ * (`tests/determinism/restore-crossing-notices.test.ts`). The window is up to
+ * a whole day wide, because this reads once a day. The paragraph above is
+ * kept because it is still exactly how a save written before the fix
+ * restores. A save now carries `ready` and `seeded` (`getSnapshot`), so the
+ * first read after a load compares against what the last read before the
+ * save saw, and announces what the continuous session announces.
  */
 export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
   public readonly id = 'rooms.needs-cleared-notice';
@@ -158,6 +179,33 @@ export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
     private readonly objects: ContentRegistry<ObjectDefinition> = defaultObjectRegistry,
   ) {}
+
+  /**
+   * What the last read saw, for a save: the instances it found not short of
+   * anything, ascending, and whether that read has happened at all. `seeded`
+   * is carried rather than implied by a non-empty set, because a prison whose
+   * first read found no room ready has taken its baseline too, and a restore
+   * of it must not take a second one silently.
+   */
+  public getSnapshot(): RoomNeedsClearedNoticeSnapshot {
+    return { seeded: this.seeded, readyInstanceIds: [...this.ready].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)) };
+  }
+
+  /**
+   * Replaces what the last read saw with a save's. Called by a restore
+   * carrying the section; without one, the system stays as constructed and
+   * its first read seeds silently, which is how every older save restores.
+   * An id no instance holds any more is kept, as it is live: the next read
+   * drops it.
+   */
+  public loadSnapshot(snapshot: RoomNeedsClearedNoticeSnapshot): void {
+    if (new Set(snapshot.readyInstanceIds).size !== snapshot.readyInstanceIds.length) {
+      throw new RangeError('A room instance appears twice in the needs-cleared notice snapshot.');
+    }
+    this.ready.clear();
+    for (const instanceId of snapshot.readyInstanceIds) this.ready.add(instanceId);
+    this.seeded = snapshot.seeded;
+  }
 
   public update(context: SimulationContext): void {
     const list = projectRoomList(

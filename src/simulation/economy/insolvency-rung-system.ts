@@ -11,6 +11,15 @@ import { rungFloorMinorUnits, type Treasury } from './treasury';
  */
 const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
 
+export type WatchedInsolvencyRung = (typeof WATCHED_RUNGS)[number];
+
+/** What `InsolvencyRungSystem.getSnapshot` carries: see that method. */
+export interface InsolvencyRungSnapshot {
+  readonly seeded: boolean;
+  /** In `WATCHED_RUNGS` order: deliveries, then construction. */
+  readonly standing: readonly WatchedInsolvencyRung[];
+}
+
 /**
  * Announces the moment the treasury falls to or below the deliveries or the
  * construction rung -- the owner's ruling of 2026-09-01 on issue
@@ -86,6 +95,22 @@ const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
  * on that first payload. What this class adds is the notice for the moment a
  * rung is crossed *during* a session, which a restore is not.
  *
+ * **CORRECTED 2026-09-23 (issue #1373): "deliberately unsnapshotted, and
+ * safely so" was measured false, in a one-tick window.** Seeding on the first
+ * `update()` after a load is right when the balance has not moved since the
+ * last `update()` before the save -- and a save is taken *between* ticks, so
+ * the first `update()` after a load runs on the tick the saved session was
+ * about to run. On the tick a payday or a purchase crosses a rung, the
+ * continuous session announces the crossing and a session restored from a
+ * save taken just before that tick seeds it silently. Measured on
+ * `economy-payroll-loop.test.ts`'s overcommitted prison: of four saves around
+ * the day-7 crossing, the one taken on the crossing tick lost both
+ * `economy.*-refused` notices and the other three did not
+ * (`tests/determinism/restore-crossing-notices.test.ts`). The paragraph above
+ * is kept because it is still exactly how a save written before the fix
+ * restores; a save now carries `standing` and `seeded` (`getSnapshot`). What it
+ * says about the FUNDS chip telling a reloading player at once is unchanged.
+ *
  * **Corrected 2026-09-15 (issue #930).** This paragraph named
  * `statusCountsSchema.conditions` as what tells that player. The field is
  * published on that first payload and does record the standing rung -- but it
@@ -149,7 +174,7 @@ export class InsolvencyRungSystem implements SystemRegistration {
   public readonly order = 135;
   public readonly schedule = { intervalTicks: 1, phaseTicks: 0 };
 
-  private standing = new Set<(typeof WATCHED_RUNGS)[number]>();
+  private standing = new Set<WatchedInsolvencyRung>();
   private seeded = false;
 
   public constructor(
@@ -157,6 +182,23 @@ export class InsolvencyRungSystem implements SystemRegistration {
     private readonly events: SimulationEventLog,
     private readonly roomInstances: RoomInstanceRegistry,
   ) {}
+
+  /** The rungs standing at the last `update()`, and whether one has run -- for a save; see the class comment's 2026-09-23 correction. */
+  public getSnapshot(): InsolvencyRungSnapshot {
+    return { seeded: this.seeded, standing: WATCHED_RUNGS.filter((rung) => this.standing.has(rung)) };
+  }
+
+  /** Replaces what the last `update()` saw with a save's. Without one, the first `update()` after a load seeds silently, as every older save restores. */
+  public loadSnapshot(snapshot: InsolvencyRungSnapshot): void {
+    const standing = new Set<WatchedInsolvencyRung>();
+    for (const rung of snapshot.standing) {
+      if (!(WATCHED_RUNGS as readonly string[]).includes(rung)) throw new RangeError(`"${String(rung)}" is not a rung this system watches.`);
+      if (standing.has(rung)) throw new RangeError(`Rung "${rung}" appears twice in the insolvency rung snapshot.`);
+      standing.add(rung);
+    }
+    this.standing = standing;
+    this.seeded = snapshot.seeded;
+  }
 
   public update(context: SimulationContext): void {
     const isFreshUnfurnishedPrison = this.roomInstances.totalResidentCapacity === 0;

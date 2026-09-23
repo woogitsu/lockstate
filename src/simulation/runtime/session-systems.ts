@@ -1,5 +1,7 @@
 import { isOpenAreaRoom } from '../../content/room-catalog';
 import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
+import type { InsolvencyRungSnapshot } from '../economy/insolvency-rung-system';
+import type { RoomNeedsClearedNoticeSnapshot } from '../rooms/room-needs-cleared-notice';
 import type { ConfiscationEvent } from '../contraband/confiscation';
 import { applyDefaultSearchPolicies } from '../contraband/default-search-policies';
 import type { InformantRecord } from '../contraband/informants';
@@ -447,6 +449,31 @@ export interface EncodedSessionSystems {
    * `sessionSystemsShapeFor`, and this section is declared on V6 alone.
    */
   readonly inFlight?: EncodedInFlightWork;
+  /**
+   * What each crossing notice last saw (issue #1373): the rooms
+   * `RoomNeedsClearedNoticeSystem`'s last daily read found ready, and the
+   * rungs `InsolvencyRungSystem`'s last update found standing, each with
+   * whether that read has happened yet.
+   *
+   * **Why a save carries a notifier's memory.** Both announce an *edge*, which
+   * is a comparison with the previous read, and both re-seeded that memory
+   * silently on their first read after a load -- so a crossing between the
+   * last read before a save and the first after it was never announced
+   * (measured: `tests/determinism/restore-crossing-notices.test.ts`).
+   *
+   * **Optional, and absent means the old re-seed**, which is what every save
+   * written before it restored to, on `docs/PERSISTENCE.md`'s optional-field
+   * rule: a live capture writes it unconditionally, so absence is unambiguous,
+   * and no existing field changes. V6 alone, beside `inFlight`, since no
+   * V3-V5 build could write it.
+   */
+  readonly crossingNotices?: EncodedCrossingNotices;
+}
+
+/** See `EncodedSessionSystems.crossingNotices`. */
+export interface EncodedCrossingNotices {
+  readonly roomsNeedsCleared: RoomNeedsClearedNoticeSnapshot;
+  readonly insolvencyRungs: InsolvencyRungSnapshot;
 }
 
 /** See `EncodedSessionSystems.inFlight`. */
@@ -784,6 +811,13 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
         patrolRequestSequence: runtime.patrolSystem.getRequestSequence(),
       },
       search: runtime.searchSystem.getInFlightSnapshot(),
+    },
+    // Emitted unconditionally, like `inFlight`: a session whose notices have
+    // never read writes `seeded: false`, which says so, where an absent
+    // section says "this save predates carrying it".
+    crossingNotices: {
+      roomsNeedsCleared: runtime.roomNeedsClearedNotice.getSnapshot(),
+      insolvencyRungs: runtime.insolvencyRungs.getSnapshot(),
     },
     incidents: {
       log: runtime.incidents.getSnapshot(),
@@ -1204,6 +1238,19 @@ export function restoreSessionSystems(
    *     back saying nothing is exactly what those saves recorded.
    */
   if (systems.alerts !== undefined) runtime.events.loadSnapshot(systems.alerts);
+
+  /*
+   * 10b. What each crossing notice last saw (issue #1373), so the first read
+   *      after the load compares against the last read before the save rather
+   *      than taking a new baseline silently. Order-free: both are read only by
+   *      their own systems' updates, and nothing in this function steps one.
+   *      Absent, both stay as constructed and re-seed on their first read,
+   *      which is how every older save restores.
+   */
+  if (systems.crossingNotices !== undefined) {
+    runtime.roomNeedsClearedNotice.loadSnapshot(systems.crossingNotices.roomsNeedsCleared);
+    runtime.insolvencyRungs.loadSnapshot(systems.crossingNotices.insolvencyRungs);
+  }
 
   /*
    * 11. The route and flow-field caches' warmth, **last**, and the position is

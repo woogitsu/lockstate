@@ -202,6 +202,12 @@ export interface SimulationRuntime {
    */
   readonly insolvencyRungs: InsolvencyRungSystem;
   /**
+   * The one-off `rooms.needs-cleared` notice. On the runtime because a save
+   * carries what its last daily read saw (issue #1373), so the capture and the
+   * restore have to reach it.
+   */
+  readonly roomNeedsClearedNotice: RoomNeedsClearedNoticeSystem;
+  /**
    * What the simulation last refused, and how many times (#261).
    *
    * Session state rather than system state, because three routes write to
@@ -1648,6 +1654,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     loans,
     payroll,
     insolvencyRungs,
+    roomNeedsClearedNotice,
     refusals,
     events,
     actorIdentity,
