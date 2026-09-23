@@ -131,7 +131,13 @@ below -- an optional `refusal`. **It has carried a second optional sibling,
 and `statusCountsMessageSchema` in `src/simulation/protocol/types.ts` are the
 definition, and `docs/adr/STATUS-QUEUE.md` §5 carries the gap as the owner's
 call rather than an editor's. Read every sentence below that enumerates this
-payload as naming two siblings, not one. It is deliberately not a
+payload as naming two siblings, not one. **It has carried a third since
+#1370, `editHistory`** -- two booleans saying whether a press of `Undo` and of
+`Redo` would each do anything, and the first sibling that is required rather
+than optional, because it is a level with no "nothing yet" state of its own.
+`editHistoryAvailabilitySchema` is its definition and `docs/HUD_PROJECTIONS.md`
+section 8 its reading; read the enumerations below as naming three. It is
+deliberately not a
 `versionedPayload`: that type exists to move an *opaque* `data` blob, and
 here the message kind already names which schema the payload follows, so
 declaring every field lets the boundary reject a negative or fractional

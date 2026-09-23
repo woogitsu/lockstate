@@ -251,7 +251,7 @@ export function createConstructionCommandHandler(
          * sentence about a change that never existed. An empty history says
          * nothing, which is what it has always done.
          */
-        if (constructionSystem.hasSomethingToUndo && constructionSystem.undoWouldReachPastTheLatestAction) {
+        if (undoPressIsRefused(constructionSystem)) {
           events.recordConstructionUndoRefused(context.tick);
           break;
         }
@@ -460,4 +460,58 @@ export function reportMaterialsFunding(
     return;
   }
   refusals.record(CONSTRUCTION_FUNDING_REFUSAL_REASONS['materials-unfunded'], tick, materialsFundingSupersessionKey());
+}
+
+/**
+ * Whether a press of `Undo` is refused with ADR 0104's sentence rather than
+ * carried out -- the one test `createConstructionCommandHandler`'s `Undo`
+ * branch makes before it calls `undo()`, named so that
+ * `editHistoryAvailability` reads the same rule rather than a copy of it
+ * (#1370).
+ *
+ * The emptiness half is first for the reason that branch's comment gives: a
+ * history with nothing in it says nothing, it does not refuse.
+ */
+export function undoPressIsRefused(constructionSystem: ConstructionSystem): boolean {
+  return constructionSystem.hasSomethingToUndo && constructionSystem.undoWouldReachPastTheLatestAction;
+}
+
+/**
+ * Whether a press of `Undo` and a press of `Redo` would each **do something
+ * the player is told about**, as of now (#1370).
+ *
+ * This is what the status strip's two buttons are marked unavailable on, so
+ * the question is defined by `createConstructionCommandHandler` and by
+ * nothing else: `true` exactly when dispatching that command now would record
+ * an event -- `construction.undone`, `construction.undone-spend-destroyed` or
+ * `construction.redone` on success, or ADR 0104's
+ * `construction.undo-refused-newer-action` -- and `false` exactly when the
+ * press would pass through that handler and record nothing, which is the
+ * silent no-op #1370 is about. `tests/unit/construction-edit-history-availability.test.ts` holds the
+ * two to each other by dispatching the command and reading the event log, so a
+ * branch added to its `Undo` or `Redo` case that this function does not know
+ * about fails there.
+ *
+ * **A refused Undo counts as available, deliberately.** The press is not a
+ * no-op: it answers with a sentence saying why, and a control marked
+ * unavailable over it would pre-empt that sentence with a dimmed glyph that
+ * explains nothing.
+ *
+ * **Why not `hasSomethingToUndo` alone**, which is what #1370 names: a
+ * transaction whose every order has since failed on its own is on the stack,
+ * `undo()` pops it, and nothing happens -- see `undoWouldReverseSomething`.
+ * `redo()` has the same second shape.
+ *
+ * Derived on every call and stored nowhere: the stacks it reads are in the save
+ * (`ConstructionSnapshot`), and this is a function of them and of the order
+ * states beside them, so it enters no snapshot and needs no migration.
+ */
+export function editHistoryAvailability(constructionSystem: ConstructionSystem): {
+  readonly undo: boolean;
+  readonly redo: boolean;
+} {
+  return {
+    undo: undoPressIsRefused(constructionSystem) || constructionSystem.undoWouldReverseSomething,
+    redo: constructionSystem.redoWouldReapplySomething,
+  };
 }

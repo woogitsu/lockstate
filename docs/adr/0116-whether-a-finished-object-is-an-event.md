@@ -150,7 +150,7 @@ Issue #960's title claims **"twenty event types and not one reports something
 going right"**, and its §2 lists the twenty it counted at v0.0.465. **The
 surface was 27 members when this section was written and is 28 at
 `460ef077`** (`SIMULATION_EVENT_TYPES`,
-`src/simulation/protocol/types.ts:2070-2099`; the correction under the table
+`src/simulation/protocol/types.ts:2118-2147`; the correction under the table
 below names the member that moved it, and it is this document's own),
 and #960's own §6 names the one thing that would refute it: *"A shipped event
 type that reports a success which the census missed — the census is a read of
@@ -604,7 +604,7 @@ thirty of forty-four `Proposed` ADRs are already implemented in full, so
 
 | Check | Result |
 | --- | --- |
-| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:2070-2099`) | **27 members at `ca82e946`**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo. **28 at `460ef077`**, the seventh `construction.*` being `order-completed`, which is the absence this row measures, filled by `78cd9d2a` |
+| `SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:2118-2147`) | **27 members at `ca82e946`**, six of them `construction.*`: `order-cancelled`, `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — every one a cancellation, an undo or a refusal of an undo. **28 at `460ef077`**, the seventh `construction.*` being `order-completed`, which is the absence this row measures, filled by `78cd9d2a` |
 | `EVENT_PRESENTATION` (`src/ui/simulation-events.ts:458`) | a `Record` over that closed union, so a member cannot exist unrouted and cannot be hiding |
 | `src/content/default-locale-en.ts` | 37 `hud.alert.event*` occurrences and no completion key among them |
 | `src/simulation/events/event-log.ts` | twenty `public record*` methods, none for a completion |
@@ -624,7 +624,7 @@ one member longer than §1 counted."* Three separate things in one sentence:
   `src/simulation/protocol/types.ts`, five of them not merges, and none of the
   nine touched this document. A coordinate re-aimed against *today* rots on the
   next insertion above it, which is why every anchor into the tuple here now
-  reads `src/simulation/protocol/types.ts:2070-2099` with
+  reads `src/simulation/protocol/types.ts:2118-2147` with
   `SIMULATION_EVENT_TYPES` quoted beside it.
 - **The first row of the table above disagreed with it by 28 lines**, citing
   `:1892-1920` for the same tuple in the same subsection. At `ca82e946`,

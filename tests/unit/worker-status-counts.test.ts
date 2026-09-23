@@ -7,9 +7,11 @@ import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode'
 import {
   PRISON_CONDITIONS,
   REFUSAL_REASONS,
+  editHistoryAvailabilitySchema,
   refusalSchema,
   SIMULATION_PROTOCOL_VERSION,
   type MainToWorkerMessage,
+  type SimulationEditHistoryAvailability,
   type SimulationRefusal,
 } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -101,6 +103,8 @@ interface Published {
      * caught was real.
      */
     readonly refusal?: SimulationRefusal;
+    /** The edit-history pair (#1370), tied to its schema for `refusal`'s reason. */
+    readonly editHistory?: SimulationEditHistoryAvailability;
   };
 }
 
@@ -871,6 +875,46 @@ describe('publishing the status counts', () => {
     expectOk(decoded, 'the status-counts publication once it carries a refusal');
   });
 
+  /**
+   * The edit-history pair (#1370): carried on every publication, and a change
+   * of it is published on the wake it happened rather than up to an interval
+   * later -- the press it answers is the player's own.
+   */
+  test('carries the edit-history pair, and publishes a change of it on the same wake', () => {
+    const harness = new Harness();
+    harness.run(1);
+    const machine = harness['machine'];
+    const submit = (sequence: number, executeAtTick: number, command: Parameters<typeof packCommand>[0]): void => {
+      machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: `history-${String(sequence)}`,
+        kind: 'simulation/submit-command',
+        payload: { commandId: `history-${String(sequence)}`, sequence, executeAtTick, command: packCommand(command) as never },
+      });
+    };
+
+    expect(harness.publications()[0]?.payload.editHistory, 'a new session has nothing to take back').toEqual({
+      undo: false,
+      redo: false,
+    });
+
+    // A wall on a tile the new session owns, so it is accepted and live.
+    submit(0, 0, { type: 'PlaceBuildOrder', orderId: 'history-wall', definitionId: 'wall-brick', x: 12, y: 12, edge: 'north', transactionId: 'th' });
+    harness.advance(50);
+    expect(harness.elapsedMs, 'one wake, a tenth of the interval').toBeLessThan(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+    expect(harness.publications(), 'published on the wake the placement ran, not an interval later').toHaveLength(2);
+    expect(harness.publications()[1]?.payload.editHistory).toEqual({ undo: true, redo: false });
+
+    submit(1, 1, { type: 'Undo' });
+    harness.advance(50);
+    expect(harness.publications()).toHaveLength(3);
+    expect(harness.publications()[2]?.payload.editHistory, 'the undone gesture is on the redo side').toEqual({
+      undo: false,
+      redo: true,
+    });
+    expectOk(decodeWorkerToMainMessage(harness.publications()[2]), 'the publication carrying the pair');
+  });
+
   test('publishes nothing once the session has stopped', () => {
     const harness = new Harness(scenarioSnapshot());
     harness.run(1);
@@ -1009,6 +1053,12 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           // because the minus sign is a byte too and a player may type one.
           tile: { x: -Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER },
         },
+        // **And since #1370 the edit-history pair, which every publication
+        // carries** -- required rather than optional, so this is not a forced
+        // worst case of an optional member but the member itself. At its
+        // widest: `false` is one character longer than `true`, so the pair a
+        // prison with nothing to take back publishes is the larger one.
+        editHistory: { undo: false, redo: false },
       };
       const cloneStartedAt = performance.now();
       structuredClone(payload);
@@ -1411,7 +1461,21 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // 805 + 52 = 857 and 807 + 52 = 859 against the 805/807 the 825 bound
       // was derived from, so the new member changes no other field's cost and
       // every arithmetic above survives being combined.
-      expect(JSON.stringify(payload).length).toBeLessThan(877);
+      //
+      // **919 and not 877, and the raise is #1370's `editHistory`**, measured
+      // on this branch at the same worst case every previous raise used:
+      // `payloadJsonBytes=899` at 250 actors and `901` at 1,000, 2,500 and
+      // 5,000 -- still the two-byte digit spread between tiers rather than
+      // growth. Two booleans are two booleans whatever the depth of the
+      // stacks behind them. 901 + 18 = **919**, the same 18 bytes of head room.
+      // **The check that makes it a measurement rather than a sum**:
+      // `,"editHistory":{"undo":false,"redo":false}` is 42 characters, and
+      // 857 + 42 = 899, 859 + 42 = 901.
+      expect(
+        Object.keys(payload.editHistory).sort(),
+        'the worst-case fixture no longer carries every member `editHistoryAvailabilitySchema` declares -- re-measure the byte bound',
+      ).toEqual(Object.keys(editHistoryAvailabilitySchema.shape).sort());
+      expect(JSON.stringify(payload).length).toBeLessThan(919);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

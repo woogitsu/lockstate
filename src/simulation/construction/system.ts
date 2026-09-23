@@ -2184,4 +2184,65 @@ export class ConstructionSystem implements SystemRegistration {
     this.currentTransaction = data.currentTransaction === undefined ? [] : [...data.currentTransaction];
     this.currentTransactionId = data.currentTransactionId;
   }
+
+  /**
+   * Whether the next `undo()` would reverse anything -- `{ reversed: true }` --
+   * rather than only whether it has a transaction to reach (#1370).
+   *
+   * Narrower than `hasSomethingToUndo`, and the difference is the second
+   * no-op shape `undo()`'s own docblock warns a caller would miss: a
+   * transaction whose every order has since reached `'cancelled'` or
+   * `'failed'` on its own is still on the stack, `undo()` still pops it, and
+   * nothing in the world changes. A control that read `hasSomethingToUndo`
+   * would offer that press as live.
+   *
+   * It reads exactly the transaction `undo()` would pop -- the open gesture if
+   * there is one, because `undo()` flushes it onto the stack first, and the top
+   * of `undoStack` otherwise -- and asks `isCancellable`, the same test the
+   * loop in `undo()` applies. A read and nothing else: the buffer is not
+   * flushed, which is the one thing `undo()` does before it looks.
+   *
+   * **Cost is the length of one transaction at worst, and one lookup in the
+   * ordinary case**: `some` stops at the first order still cancellable, which
+   * for a gesture the player just made is its first. It is read on every
+   * status-counts wake (`publishStatusCounts`), so the worst case -- a long
+   * dragged run whose every order has failed -- is the case this sentence is
+   * for; it is bounded by the size of one gesture, not by the session.
+   */
+  public get undoWouldReverseSomething(): boolean {
+    const transaction =
+      this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack[this.undoStack.length - 1];
+    if (transaction === undefined) return false;
+    return transaction.some((orderId) => {
+      const order = this.orders.get(orderId);
+      return order !== undefined && isCancellable(order.state);
+    });
+  }
+
+  /**
+   * Whether the next `redo()` would re-apply anything -- answer `true` -- which
+   * is the mirror of `undoWouldReverseSomething` just above (#1370).
+   *
+   * `redo()` pops the top of `redoStack` and restores only an order still in
+   * `'cancelled'`; this asks the same question of the same transaction, and
+   * does not pop it.
+   *
+   * **In every state reachable today this answers exactly what "the redo stack
+   * is not empty" would**, and that is measured rather than hoped: the only
+   * writer that moves an order out of `'cancelled'` is `redo()` itself
+   * (`setState(order, 'approved')`), `update()` skips cancelled orders, and
+   * `orders` is never purged -- so a transaction `undo()` pushed here stays
+   * all-cancelled until `redo()` pops it. A mutation of this getter to the
+   * bare emptiness test was run against
+   * `tests/unit/construction-edit-history-availability.test.ts` and survived,
+   * for that reason. It mirrors `redo()`'s guard anyway, because the two
+   * answering different questions is the defect `undoWouldReverseSomething`
+   * exists for, and a second writer of `'cancelled'`-to-anything would bring
+   * it here with nothing else changing.
+   */
+  public get redoWouldReapplySomething(): boolean {
+    const transaction = this.redoStack[this.redoStack.length - 1];
+    if (transaction === undefined) return false;
+    return transaction.some((orderId) => this.orders.get(orderId)?.state === 'cancelled');
+  }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatNumber } from '../../src/services/localization/format';
 import { PayrollSystem, staffDailyWageMinorUnits, Treasury } from '../../src/simulation/economy';
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
 import { Kernel } from '../../src/simulation/kernel';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -144,6 +145,10 @@ describe('the status channel carries a negative balance instead of refusing the 
         tick: runtime.kernel.tick,
         schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
         counts,
+        // Read off the same runtime rather than written as a literal, for the
+        // reason `counts` is: this is the payload the worker would post
+        // (#1370's required sibling).
+        editHistory: editHistoryAvailability(runtime.construction),
       },
     });
 

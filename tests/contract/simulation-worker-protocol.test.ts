@@ -238,6 +238,10 @@ describe('simulation worker protocol', () => {
             // asserted from a hand-written envelope.
             unpaidWagesMinorUnits: 0,
           },
+          // Undo would act and Redo would not: the pair a session that has
+          // just placed something publishes. Unequal on purpose, so a decoder
+          // that swapped the two bits cannot pass (#1370).
+          editHistory: { undo: true, redo: false },
         },
       },
       {
@@ -442,6 +446,16 @@ describe('simulation worker protocol', () => {
       // carrying the same figure as the fixture at the top of this file for
       // the same reason it carries it there (issue #585).
       occupiedPlaces: 2,
+      // **Missing from this copy until #1370, and the paragraphs below
+      // predicted exactly this.** The guard-coverage rungs (#588) and
+      // `isFreshUnfurnishedPrison` were added to the fixture at the top of this
+      // file and not here, so every refusal in this test was again refused for
+      // four *missing counts* -- found because #1370's accepted case, built on
+      // this copy, failed on them. Same figures as the top fixture.
+      prisonersCovered: 1,
+      prisonersUnderstaffed: 2,
+      prisonersUnguarded: 1,
+      isFreshUnfurnishedPrison: false,
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 7,
@@ -469,6 +483,10 @@ describe('simulation worker protocol', () => {
       dailyWageBillMinorUnits: 400,
       unpaidWagesMinorUnits: 0,
     };
+    // Present in every payload below for `treasuryMinorUnits`' reason: since
+    // #1370 a publication without it is invalid for a *missing sibling*, so
+    // each refusal below would pass while proving nothing about what it names.
+    const editHistory = { undo: false, redo: false };
 
     // Nothing ever requests this message, so ADR 0003 decision 2 says it must
     // not carry a `replyTo` -- and its schema has no slot for one at all,
@@ -479,7 +497,7 @@ describe('simulation worker protocol', () => {
       decodeWorkerToMainMessage({
         ...responseEnvelope,
         kind: 'simulation/status-counts',
-        payload: { tick: 12, schemaVersion: 1, counts },
+        payload: { tick: 12, schemaVersion: 1, counts, editHistory },
       }),
       'invalid-payload',
     );
@@ -492,7 +510,7 @@ describe('simulation worker protocol', () => {
       decodeWorkerToMainMessage({
         ...eventEnvelope,
         kind: 'simulation/status-counts',
-        payload: { tick: 12, schemaVersion: 1, counts: withoutStaff },
+        payload: { tick: 12, schemaVersion: 1, counts: withoutStaff, editHistory },
       }),
       'invalid-payload',
     );
@@ -500,7 +518,7 @@ describe('simulation worker protocol', () => {
       decodeWorkerToMainMessage({
         ...eventEnvelope,
         kind: 'simulation/status-counts',
-        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, undeclared: 1 } },
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, undeclared: 1 }, editHistory },
       }),
       'invalid-payload',
     );
@@ -510,7 +528,7 @@ describe('simulation worker protocol', () => {
       decodeWorkerToMainMessage({
         ...eventEnvelope,
         kind: 'simulation/status-counts',
-        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, prisoners: -1 } },
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, prisoners: -1 }, editHistory },
       }),
       'invalid-payload',
     );
@@ -518,10 +536,35 @@ describe('simulation worker protocol', () => {
       decodeWorkerToMainMessage({
         ...eventEnvelope,
         kind: 'simulation/status-counts',
-        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, rooms: 1.5 } },
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, rooms: 1.5 }, editHistory },
       }),
       'invalid-payload',
     );
+
+    // The edit-history pair (#1370) is required, closed and boolean: a
+    // publisher that forgets it, adds a third bit, or sends a count in place of
+    // a verdict fails here, rather than reaching the strip as an `undefined`
+    // it would read as "no opinion". Built on the same `counts` as every case
+    // above, so each is refused for the pair and for nothing else -- the first
+    // line proves the base is otherwise valid.
+    const withEditHistory = (pair: unknown): unknown => ({
+      ...eventEnvelope,
+      kind: 'simulation/status-counts',
+      payload: { tick: 12, schemaVersion: 1, counts, editHistory: pair },
+    });
+    const accepted = decodeWorkerToMainMessage(withEditHistory({ undo: true, redo: false }));
+    expectOk(accepted, 'the status-counts publication with its edit-history pair');
+    expect(accepted.value.kind === 'simulation/status-counts' ? accepted.value.payload.editHistory : undefined).toEqual({
+      undo: true,
+      redo: false,
+    });
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({ ...eventEnvelope, kind: 'simulation/status-counts', payload: { tick: 12, schemaVersion: 1, counts } }),
+      'invalid-payload',
+    );
+    for (const pair of [{ undo: true, redo: false, extra: true }, { undo: 1, redo: 0 }, { undo: true }, null]) {
+      expectDecodeErrorCode(decodeWorkerToMainMessage(withEditHistory(pair)), 'invalid-payload');
+    }
   });
 
   /**
@@ -570,10 +613,14 @@ describe('simulation worker protocol', () => {
       dailyWageBillMinorUnits: 0,
       unpaidWagesMinorUnits: 0,
     };
+    // A prison at tick 0 has placed nothing, so neither press would do
+    // anything -- and present for `counts`' reason: without it every payload
+    // here is invalid for a missing sibling (#1370).
+    const editHistory = { undo: false, redo: false };
     const withRefusal = (refusal: unknown): unknown => ({
       ...eventEnvelope,
       kind: 'simulation/status-counts',
-      payload: { tick: 12, schemaVersion: 1, counts, refusal },
+      payload: { tick: 12, schemaVersion: 1, counts, refusal, editHistory },
     });
 
     const accepted = decodeWorkerToMainMessage(withRefusal({ sequence: 3, tick: 9, reason: 'build.unowned-land' }));
@@ -583,7 +630,7 @@ describe('simulation worker protocol', () => {
     const withoutRefusal = decodeWorkerToMainMessage({
       ...eventEnvelope,
       kind: 'simulation/status-counts',
-      payload: { tick: 12, schemaVersion: 1, counts },
+      payload: { tick: 12, schemaVersion: 1, counts, editHistory },
     });
     expectOk(withoutRefusal, 'the publication a session that has refused nothing sends');
 
