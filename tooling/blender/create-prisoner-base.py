@@ -14,19 +14,19 @@ from mathutils import Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_common  # noqa: E402  (Blender does not add the script directory to sys.path)
 
-PROFILES = {
-    "actor.prisoner.base": {"uniform": (0.75, 0.12, 0.015), "patch": (0.55, 0.57, 0.58), "headwear": None},
-    "actor.guard.base": {"uniform": (0.018, 0.06, 0.2), "patch": (0.82, 0.7, 0.22), "headwear": "cap"},
-    "actor.medic.base": {"uniform": (0.08, 0.38, 0.72), "patch": (0.9, 0.92, 0.94), "headwear": "medical"},
-    "actor.cook.base": {"uniform": (0.72, 0.72, 0.68), "patch": (0.95, 0.95, 0.92), "headwear": "chef"},
-    "actor.staff.base": {"uniform": (0.22, 0.24, 0.29), "patch": (0.35, 0.58, 0.9), "headwear": None},
-}
+ACTOR_IDS = (
+    "actor.prisoner.base",
+    "actor.guard.base",
+    "actor.medic.base",
+    "actor.cook.base",
+    "actor.staff.base",
+)
 
 
 def arguments():
     separator = sys.argv.index("--") if "--" in sys.argv else len(sys.argv)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--asset-id", choices=sorted(PROFILES), required=True)
+    parser.add_argument("--asset-id", choices=sorted(ACTOR_IDS), required=True)
     # The output path used to be hard-coded relative to this file, which forced
     # anything wanting a scratch build -- the determinism runner in particular --
     # to clone the whole tooling tree at the same directory depth.
@@ -176,6 +176,7 @@ def build_detailed_actor(root, asset_id):
     guard = asset_id == "actor.guard.base"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
+    staff = asset_id == "actor.staff.base"
     if guard:
         fabric = actor_fabric("guard-uniform-navy-v2.png", "Guard worn navy cotton", (0.025, 0.045, 0.085))
         dark_seam = mat("Navy seam shadow", (0.011, 0.018, 0.035), 0.85)
@@ -185,6 +186,9 @@ def build_detailed_actor(root, asset_id):
     elif cook:
         fabric = actor_fabric("cook-uniform-canvas-v2.png", "Cook washed canvas", (0.69, 0.66, 0.60))
         dark_seam = mat("Cook jacket seams", (0.24, 0.23, 0.21), 0.87)
+    elif staff:
+        fabric = actor_fabric("staff-workwear-charcoal-v2.png", "Staff charcoal workwear", (0.13, 0.13, 0.13))
+        dark_seam = mat("Staff jacket seams", (0.030, 0.030, 0.033), 0.85)
     else:
         fabric = actor_fabric("prisoner-jumpsuit-orange-v2.png", "Prisoner worn orange cotton", (0.64, 0.23, 0.07))
         dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
@@ -198,6 +202,7 @@ def build_detailed_actor(root, asset_id):
     medical_white = mat("Medic patch and ID", (0.78, 0.83, 0.82), 0.76) if medic else None
     cap_blue = mat("Medic pale blue cap", (0.31, 0.47, 0.60), 0.86) if medic else None
     apron = mat("Cook worn tan apron", (0.30, 0.23, 0.15), 0.93) if cook else None
+    staff_blue = mat("Staff blue role marking", (0.035, 0.20, 0.55), 0.68) if staff else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
     # displayed scale. The old single bevelled cube made every role a crate.
@@ -251,6 +256,17 @@ def build_detailed_actor(root, asset_id):
             cube(f"Double jacket button.{side}", (side * 0.15, -0.34, 2.44), (0.018, 0.012, 0.018), dark_seam, root, 0.005)
             cube(f"Lower jacket button.{side}", (side * 0.15, -0.34, 2.27), (0.018, 0.012, 0.018), dark_seam, root, 0.005)
         cube("Folded kitchen towel", (0.38, -0.16, 1.44), (0.07, 0.025, 0.22), undershirt, root, 0.009)
+    if staff:
+        # Broad blue shoulder bands survive the downscaled game camera; the
+        # ID badge and pockets add depth in side and three-quarter views.
+        box_yoke = cube("Blue shoulder yoke", (0, -0.12, 2.63), (0.405, 0.21, 0.045), staff_blue, root, 0.018)
+        box_yoke.rotation_euler.x = math.radians(8)
+        cube("Blue back yoke", (0, 0.245, 2.59), (0.42, 0.030, 0.08), staff_blue, root, 0.012)
+        cube("Staff badge clip", (0.22, -0.324, 2.46), (0.020, 0.010, 0.04), button, root, 0.003)
+        cube("Staff blue ID", (0.22, -0.339, 2.36), (0.060, 0.012, 0.09), staff_blue, root, 0.006)
+        for side in (-1, 1):
+            cube(f"Jacket pocket.{side}", (side * 0.27, -0.287, 1.98), (0.12, 0.015, 0.11), fabric, root, 0.016)
+        cube("Jacket hem", (0, -0.284, 1.76), (0.35, 0.019, 0.035), dark_seam, root, 0.007)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
@@ -277,6 +293,8 @@ def build_detailed_actor(root, asset_id):
     for side in (-1, 1):
         arm = pivot(f"Arm.{side}", (side * 0.445, 0, 2.54), root)
         sphere(f"Sleeve.{side}", (side * 0.445, 0, 2.30), (0.148, 0.16, 0.30), fabric, arm)
+        if staff:
+            cylinder(f"Blue sleeve band.{side}", (side * 0.445, 0, 2.28), 0.153, 0.08, staff_blue, arm)
         cylinder(f"Sleeve cuff.{side}", (side * 0.445, 0, 2.05), 0.132, 0.045, dark_seam, arm)
         limb(f"Forearm.{side}", (side * 0.445, 0, 1.85), 0.096, 0.35, skin, arm)
         sphere(f"Hand.{side}", (side * 0.445, 0, 1.66), (0.096, 0.090, 0.15), skin, arm)
@@ -294,40 +312,13 @@ def build_detailed_actor(root, asset_id):
 def main():
     pipeline_common.require_blender_version()
     options = arguments()
-    profile = PROFILES[options.asset_id]
     output = options.output or Path(__file__).resolve().parents[2] / f"assets/source/blender/{options.asset_id}.blend"
     output = output.resolve()
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
-    uniform = mat("Uniform", profile["uniform"], 0.72)
-    skin = mat("Skin", (0.42, 0.16, 0.07), 0.65)
-    black = mat("Rubber black", (0.012, 0.014, 0.018), 0.4)
-    patch = mat("Role patch", profile["patch"], 0.8)
     root = pivot("SpriteRoot", (0, 0, 0), None)
     pivot("SpriteTarget", (0, 0, 0), None)
-    if options.asset_id in ("actor.prisoner.base", "actor.guard.base", "actor.medic.base", "actor.cook.base"):
-        build_detailed_actor(root, options.asset_id)
-    else:
-        cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
-        cube("Chest patch", (0, -0.281, 2.38), (0.13, 0.01, 0.07), patch, root, 0.01)
-        sphere("Head", (0, 0, 3.12), (0.28, 0.27, 0.33), skin, root)
-        if profile["headwear"] is None:
-            sphere("Hair", (0, 0.02, 3.35), (0.285, 0.275, 0.13), black, root)
-        elif profile["headwear"] == "cap":
-            cylinder("Cap", (0, 0, 3.39), 0.3, 0.12, uniform, root)
-            cube("Cap visor", (0, -0.27, 3.34), (0.24, 0.13, 0.03), uniform, root, 0.03)
-        else:
-            sphere("Headwear", (0, 0, 3.39), (0.31, 0.3, 0.18), patch, root)
-        cube("Neck", (0, 0, 2.82), (0.11, 0.11, 0.18), skin, root, 0.04)
-        for side in (-1, 1):
-            arm = pivot(f"Arm.{side}", (side * 0.54, 0, 2.55), root)
-            limb(f"UpperArm.{side}", (side * 0.54, 0, 2.15), 0.13, 0.62, uniform, arm)
-            sphere(f"Hand.{side}", (side * 0.54, 0, 1.78), (0.14, 0.13, 0.18), skin, arm)
-            animate(arm, 1 if side == -1 else -1)
-            leg = pivot(f"Leg.{side}", (side * 0.23, 0, 1.57), root)
-            limb(f"LegMesh.{side}", (side * 0.23, 0, 0.9), 0.17, 1.15, uniform, leg)
-            cube(f"Boot.{side}", (side * 0.23, -0.09, 0.28), (0.19, 0.31, 0.12), black, leg, 0.07)
-            animate(leg, -1 if side == -1 else 1)
+    build_detailed_actor(root, options.asset_id)
     bpy.ops.object.light_add(type="AREA", location=(3.5, -4, 6))
     key = bpy.context.object
     key.name, key.data.energy, key.data.shape, key.data.size = "Key light", 850, "DISK", 5
