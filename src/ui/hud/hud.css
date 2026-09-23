@@ -3007,6 +3007,9 @@
    `.hud-build__deliveries-more` documents one panel over. */
 .hud-regime__note[hidden] { display: none; }
 
+.hud-regime__empty-action { align-self: flex-start; }
+.hud-regime__empty-action[hidden] { display: none; }
+
 /* The timetable, first in the panel body. A `border-bottom` rather than the
    `border-top` its sibling carries, because it is above it rather than below
    something -- the choice `.hud-staff__coverage` makes for the same position.
