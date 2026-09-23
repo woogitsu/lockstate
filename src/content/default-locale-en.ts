@@ -3271,6 +3271,37 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.post-unreachable-hint':
     'No guard can reach the post, so nobody is on duty. Taking down a wall beside it opens the way back.',
   /*
+   * The `COVERAGE` chip's word and sentence while crowding is making needs run
+   * down faster (issue #586, under the owner's ruling recorded on that issue
+   * on 2026-08-29 -- *"Without that attribution this is an invisible
+   * punishment"*). Authored under `AGENTS.md`'s fourth reservation as partly
+   * released on 2026-09-04: the words are ours, their truth is checked here
+   * against `src/simulation/prisoners/crowding.ts`, clause by clause.
+   *
+   * - *"More prisoners than beds"*: the condition stands only when
+   *   `crowdingExcessPermille` is above zero, which needs `population >
+   *   accommodationCapacity` -- the summed `residentCapacity` of the rooms an
+   *   arrival may sleep in, i.e. beds.
+   * - *"every prisoner's safety runs down faster"*: the condition is
+   *   `isCrowdingAcceleratingDecay`, some need's extra rate above zero, and
+   *   `safety`'s slope (40) is five times `hygiene`'s (8), so whenever any
+   *   extra rate is above zero `safety`'s is. `NeedsDecaySystem` applies it to
+   *   every prisoner its query returns, housed or not.
+   * - *"past a point their hygiene does too"*: `hygiene`'s extra rate is
+   *   `floor(8 x excess / 1000)`, first above zero at 12.5% over capacity.
+   * - *"until there is a bed for each of them"*: at `population <=
+   *   accommodationCapacity` the excess, and so every extra rate, is zero.
+   *
+   * It says *runs down faster*, not *is falling*: a fully covered sector's
+   * provision keeps pace with the extra `safety` decay up to 15% over
+   * capacity, so the
+   * sentence is about the rate crowding adds and not about the level a player
+   * will see move.
+   */
+  'hud.security.coverage-overcrowded': 'Overcrowded',
+  'hud.security.coverage-overcrowded-hint':
+    "More prisoners than beds: every prisoner's safety runs down faster, and past a point their hygiene does too, until there is a bed for each of them.",
+  /*
    * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
    * unguarded rung only.
    *

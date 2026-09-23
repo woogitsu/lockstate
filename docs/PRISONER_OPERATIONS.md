@@ -209,6 +209,26 @@ of the day — no longer touches it. The rung comes from
 `Covered` / `Understaffed` / `Unguarded`, and the status strip's `Coverage` chip
 reports how many prisoners are standing on each.
 
+**Two needs decay faster in a prison over its beds**
+([#586](https://github.com/matmaxalez/lockstate/issues/586), under the owner's
+ruling of 2026-08-29: *"Do not add a new overcrowding tax. The 40-withhold IS the
+tax. Give it something to read."*). `crowding.ts` measures the living population
+against `accommodationCapacityOf` -- the beds in the rooms an arrival may sleep
+in, the same figure the status strip's `PRISONERS` bar is drawn against -- and
+adds `floor(slope x excess / 1000)` stored units a tick to `safety` (slope 40)
+and `hygiene` (slope 8) for every prisoner, the excess in permille of capacity
+and capped at twice capacity. The slope is authored in whole stored units, not
+as a multiplier, so the linearity below survives it. `NeedsDecaySystem` samples
+the excess once per update; an uncrowded prison runs the loop exactly as
+before. Nothing is persisted -- the excess is derived from entity liveness and
+room capacities already in the save. A fully covered prison absorbs up to 15%
+over capacity; past that its housed prisoners pay the `safety` 40 within days
+however many guards it hires, and the strip's `COVERAGE` chip reads
+*Overcrowded* where it would have read *Covered* (`PrisonCondition`
+`'prisoners.overcrowded'`). The measured income and incident effects are in
+`tests/integration/crowding-need-decay.test.ts` and
+`tests/integration/incident-trigger-reachability.test.ts`.
+
 Levels are **stored scaled** by `NEED_SCALE` (200) rather than as whole
 0-255 levels, and `decayNeed` works in those stored units. Every rate is a
 whole number of stored units per tick at that scale, so decay is exactly

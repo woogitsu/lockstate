@@ -542,6 +542,15 @@ and the riot is `resolved` with `propertyDamage: 3` and nobody injured.
 > The same prison **with a guard on post** does not riot at all, which is the
 > half of the change worth reading and is measured in
 > `tests/integration/room-gated-needs.test.ts`.
+>
+> **And again with issue #586**, for a reason that is about the prison being
+> over its beds: 0.4427 became **0.3969** and tick 3,450 became **2,050**.
+> Three prisoners on one bed is three times this prison's accommodation, so
+> crowding makes `safety` and `hygiene` fall faster for all three
+> (`src/simulation/prisoners/crowding.ts`), and the streak completes 1,400 ticks
+> sooner at a *lower* mean -- the needs crowding does not touch have simply had
+> less time to fall. Severity, participants and the response that follows are
+> unchanged.
 
 `tests/integration/incident-trigger-reachability.test.ts` is the other half of
 that claim and the more important one -- a trigger that fires in every prison is
@@ -559,6 +568,19 @@ and the assertions about the quiet ones are its subject:
 
 So: needs cause unrest, staffing amplifies it, and past about three times bed
 capacity staffing stops buying prevention and starts buying containment.
+
+> **Two rows of that table are false since issue #586, and the sentence under
+> it is narrower.** The file's fixtures have since changed as well -- the
+> 16-for-8 prison is measured *without* amenities since ADR 0102 -- so read the
+> file rather than this table for its current shape. What #586 moved, on the
+> file's own seed: sixteen prisoners for eight beds with **two** guards now
+> riots five times (it was quiet), and four guards do not stop it -- twice the
+> beds is a crowding cost no hire answers; and sixteen for four beds needs
+> **eight** guards to contain every riot, where six did. Crowding is the
+> ruling on #586 working as it reads -- a prison over its beds is punished
+> through the needs it already prices -- and its incident half is recorded in
+> `tests/integration/incident-trigger-reachability.test.ts`'s ADR 0102
+> describe, with the before-and-after table.
 
 
 **The bound is worth naming, because it decides the shape of the play.**

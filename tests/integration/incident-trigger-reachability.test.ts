@@ -464,12 +464,31 @@ describe('a prison outgrows its staffing, and the coverage report says so before
     expect(incidentsOfType(runtime, 'riot').length).toBeGreaterThan(0);
   });
 
-  it('stops rioting once the second guard is hired, without a single cell being built', () => {
-    const runtime = cachedRun({ ...OVERCROWDED, guards: 2 });
-    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
-      { sectorId: 'security-sector.prison', required: 2, assigned: 2, shortage: 0 },
-    ]);
-    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+  /**
+   * **This case was titled "stops rioting once the second guard is hired,
+   * without a single cell being built" and asserted an empty riot list, and
+   * since issue #586 that is false -- which is the ruling on that issue doing
+   * what it says.** Sixteen prisoners in eight beds is twice this prison's
+   * accommodation, the cap of the crowding term: every prisoner's `safety`
+   * falls at 50 stored units a tick against a covered sector's 16, so coverage
+   * no longer holds it up, and the sector's needs term crosses the line on
+   * its own. Measured on this file's seed over its 30,000 ticks: **5 riots**
+   * (severities 7, 8, 8, 8, 8, every one lapsing) with two guards where there
+   * were none, and the same 5 with three guards and with four, the score
+   * standing at 0.8116 against 0.6456 before #586 with the requirement met
+   * throughout. So what the prison lacks is the cells, and no hire is a
+   * substitute for them -- the reverse of what this case used to say, and the
+   * reason the ruling exists.
+   */
+  it('keeps rioting once the second guard is hired, and the fourth, because since #586 what it lacks is cells', () => {
+    for (const guards of [2, 4]) {
+      const runtime = cachedRun({ ...OVERCROWDED, guards });
+      expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+        { sectorId: 'security-sector.prison', required: 2, assigned: 2, shortage: 0 },
+      ]);
+      expect(incidentsOfType(runtime, 'riot').length, `${String(guards)} guards`).toBe(5);
+      expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeGreaterThan(0.65);
+    }
   });
 
   /**
@@ -513,17 +532,30 @@ describe('a prison outgrows its staffing, and the coverage report says so before
    * recovering for these eight all along -- which is the same mechanism
    * `19482be6` above landed, and the reason the mean fell then.
    */
+  /*
+   * **Nine prisoners rather than sixteen since issue #586**, and the case's
+   * title is kept because at nine it is still exactly true. At sixteen the
+   * crowding term now lifts the whole population's deficit -- the case above
+   * records five riots and a score of 0.8116 -- so the sector mean no longer
+   * hides anybody and the split this case shows cannot be seen there. One
+   * prisoner over eight beds is 12.5% over: `safety`'s extra 5 stored units a
+   * tick is inside what a covered sector provisions, so the mean stays where
+   * it was (0.4996 at the end of the run, measured both before and after
+   * #586) while the one unhoused prisoner's own deficit does not. Measured on
+   * this seed after #586: 10 assaults, no riot, the first assault opening at a
+   * need deficit of 0.651 with no contraband behind it.
+   */
   it('and the prisoners it never housed produce assaults the sector score cannot see', () => {
-    const runtime = cachedRun({ ...OVERCROWDED, guards: 2 });
+    const runtime = cachedRun({ ...OVERCROWDED, prisoners: 9, guards: 2 });
 
     expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
     // The sector is calm by its own measure, throughout: `getScore` is the last
     // sample and the run ends on one.
     expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
 
-    // The state that produced it, read back rather than arranged: half the
-    // population never left `accommodation-assignment`, because eight beds do
-    // not house sixteen people.
+    // The state that produced it, read back rather than arranged: the ninth
+    // prisoner never left `accommodation-assignment`, because eight beds do
+    // not house nine people.
     const housed = runtime.prisoners.roomInstances
       .allByRoomCatalogId('room.cell')
       .reduce((total, instance) => total + runtime.prisoners.roomInstances.occupantsOf(instance.instanceId).length, 0);
@@ -559,6 +591,17 @@ describe('a prison outgrows its staffing, and the coverage report says so before
  * exists to catch, and it would have been the second one in it.
  */
 describe('past a point, staffing buys containment rather than prevention -- in a prison that built nothing', () => {
+  /*
+   * **Eight guards since issue #586, where it was six.** At four times its
+   * beds the crowding term runs at its cap and the riots are worse: on this
+   * seed, six riots rather than four, severities 7, 8, 9, 9, 9, 9 rather than
+   * four 7s -- and with six guards three of them lapse and one is still open
+   * at the end of the run, so six no longer buys containment. Eight does:
+   * the same six riots, every one resolved and nobody injured (and ten
+   * guards read identically). The claim is kept at the payroll that still
+   * carries it, and the price of containment rising by two hires is the
+   * crowding cost showing up in the one place this describe measures.
+   */
   it('riots at four times its bed capacity however many guards are on the payroll, and contains every one of them', () => {
     // Twelve of sixteen prisoners homeless: `needsPressure` alone is over
     // `hotThreshold`, so the `staffingShortfall` term is not what fires it and
@@ -573,7 +616,7 @@ describe('past a point, staffing buys containment rather than prevention -- in a
     // threshold, and this prison produced nothing at all. The claim -- that
     // past a point staffing buys containment rather than prevention -- is kept
     // on the prison that still reaches it.
-    const runtime = run({ cells: 4, toilets: true, amenities: false, prisoners: 16, guards: 6 });
+    const runtime = run({ cells: 4, toilets: true, amenities: false, prisoners: 16, guards: 8 });
 
     const riots = runtime.incidents.all();
     expect(riots.length).toBeGreaterThan(0);
@@ -872,14 +915,64 @@ describe('who the prison agreed to take is a decision too, and an unguarded pris
  * and by a factor of three where it is not (32 to 96) -- and that past that
  * population the riots are the same riots in the same numbers. The describe
  * below pins both ends of it.
+ *
+ * ## SINCE ISSUE #586, CROWDING IS A COST OF ITS OWN, AND HALF OF THE ABOVE HAS MOVED
+ *
+ * Every table above is kept as the record of what ADR 0102 did. Issue #586
+ * then made a prison over its beds decay `safety` and `hygiene` faster for
+ * everybody in it, at a rate that grows with the excess and stops growing at
+ * twice capacity -- and every prison in this describe is at least twice its
+ * capacity. Re-measured on seed `0x0cc0`, 30,000 ticks, before #586 -> after:
+ *
+ * | prison | guards | riots | assaults | score at 30,000 |
+ * | --- | --- | --- | --- | --- |
+ * | 8 cells, 16 prisoners | 1 (short 1) | 0 -> **5** | 11 -> 7 | 0.6195 -> 0.6610 |
+ * | 8 cells, 16 prisoners | 2 (covered) | 0 -> 0 | 0 -> **11** | 0.2838 -> 0.5222 |
+ * | 4 cells, 16 prisoners | 6 | 0 -> 0 | 0 -> **11** | 0.3462 -> 0.5956 |
+ * | 8 cells, 16 prisoners | 0 | 6 -> 6 | 2 -> 1 | 0.7651 -> 0.8900 |
+ * | 8 cells, 17 prisoners | 1 (short 2) | 1 -> **6** | 10 -> 1 | 0.6722 -> 0.8085 |
+ * | 8 cells, 96 prisoners | 12 (covered) | 3 -> **6** | 11 -> 1 | 0.6435 -> 0.8036 |
+ * | the same, rooms built for 96 | 12 | 0 -> **5** | 11 -> 2 | 0.5158 -> 0.7746 |
+ *
+ * The riot counts are the same on all eight seeds measured for every row that
+ * has a multi-seed case below, as they were before.
+ *
+ * **What survives is the half of ADR 0102's finding that is about staffing:**
+ * an over-admitted prison that built the rooms and is staffed to requirement
+ * still does not riot, at two and at four times its beds (the second and
+ * third rows, and the eight-seed case below at four, eight and sixteen times
+ * with six guards). **What does not survive is everything that rested on a
+ * guard short**: one guard below the requirement at twice capacity riots five
+ * times where it was quiet, so the "one prisoner later" boundary the
+ * describe after this one pinned is gone -- both sides of it riot -- and at
+ * twelve times its beds even a prison staffed and provisioned for its
+ * population riots, because provisioning the canteen and the shower room
+ * answers contention for them and crowding is not contention. The pressure
+ * that no longer comes out as riots in the covered rows comes out as fights,
+ * which is what the assault column is.
+ *
+ * That is the ruling on #586 working as it reads -- a packed prison is
+ * punished through the needs it already prices -- and it is a real balance
+ * shift in the incident content, stated here rather than left for the next
+ * reader to rediscover.
  */
-describe('an over-admitted prison that built the rooms stops rioting, if a guard is on post', () => {
+// Titled "..., if a guard is on post" until issue #586: one guard short at
+// twice capacity riots again since then (see the docblock above).
+describe('an over-admitted prison that built the rooms stops rioting, if it is staffed to requirement', () => {
   /** The `OVERCROWDED` prison above, with the canteen, shower room and yard it used to have. */
   const OVERCROWDED_WITH_AMENITIES = { cells: 8, toilets: true, amenities: true, prisoners: 16 } as const;
   /** Eight consecutive seeds starting at this file's own, so a claim that needs more than one seed can have them without a sweep. */
   const SEEDS = Array.from({ length: 8 }, (_unused, index) => SEED + index);
 
-  it('has no riots at all on one guard, where it had four -- the pressure comes out as fights instead', () => {
+  /*
+   * **Titled "has no riots at all on one guard, where it had four -- the
+   * pressure comes out as fights instead" until issue #586, and asserting an
+   * empty riot list.** At twice its beds and a guard short, crowding puts the
+   * riots back: five, every one lapsing, on each of the eight seeds measured.
+   * The assault half is kept as it was -- "not none" -- and the sector score
+   * now stands over the line rather than under it.
+   */
+  it('riots again on one guard since #586 -- five, where ADR 0102 had taken it to none and the tree before it to four', () => {
     const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 1 });
 
     // The prison is still over-admitted and still short a guard: neither the
@@ -895,12 +988,21 @@ describe('an over-admitted prison that built the rooms stops rioting, if a guard
     // asserted only as "not none": this row opens assaults on every one of
     // those 40 seeds, 11 of them here, which is what the staffing shortfall
     // still buys an individual score over the line.
-    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+    expect(incidentsOfType(runtime, 'riot').length).toBe(5);
     expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
-    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeGreaterThan(0.65);
   });
 
-  it('opens nothing at all on this file’s own seed once it is staffed to requirement -- and that emptiness is the seed’s', () => {
+  /*
+   * **The riot half of this case survives issue #586 and the "nothing at
+   * all" half does not.** Staffed to requirement at twice its beds, the prison
+   * still opens no riot -- but crowding lifts its score from 0.2838 to 0.5222,
+   * and on this seed it now opens 11 assaults where its log was empty. The
+   * case asserted `incidents.all()` empty and a score under 0.35; it now
+   * asserts the riot list empty, the assaults present, and the score under
+   * the 0.65 line that decides riots, which is what is still true.
+   */
+  it('opens no riot on this file’s own seed once it is staffed to requirement -- and since #586 it fights instead', () => {
     const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 2 });
 
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
@@ -912,27 +1014,43 @@ describe('an over-admitted prison that built the rooms stops rioting, if a guard
     expect(housedPrisoners(runtime)).toBe(8);
     expect(livingPrisoners(runtime)).toBe(16);
 
-    // Pinned as the seed-level fact it is. On 19 of the 40 seeds measured this
-    // log is *not* empty -- see the docblock -- so this line says "0x0cc0 is
-    // quiet", never "this prison is quiet". The riot half of it is the general
-    // claim, and it has its own case below.
-    expect(runtime.incidents.all()).toEqual([]);
-    // 0.4895 before ADR 0102, against a `hotThreshold` the sector never
-    // reaches now.
-    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.35);
+    // Pinned as the seed-level fact it was: on 19 of the 40 seeds measured
+    // before #586 this log was *not* empty -- see the docblock -- so the empty
+    // log said "0x0cc0 is quiet", never "this prison is quiet". Since #586 it
+    // is not quiet on this seed either; the riot half is the general claim,
+    // and it has its own case below.
+    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+    expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
+    // 0.4895 before ADR 0102, 0.2838 after it, 0.5222 since #586 -- still
+    // under the `hotThreshold` a riot needs. Pinned to the measurement as well
+    // as bounded by the line, so the bound moving to the threshold is not a
+    // looser claim than the 0.35 it replaced.
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.5222, 3);
   });
 
-  it('opens nothing on this file’s own seed at four times its bed capacity either, where it had three riots and ten assaults', () => {
+  /*
+   * **Riots still none since issue #586; assaults are back**, for the same
+   * reason as the case above: 11 on this seed, every one contained (six
+   * guards against a requirement of two leave four to respond), and the score
+   * 0.5956 rather than 0.3462. The title said "opens nothing"; it now says
+   * what is still true.
+   */
+  it('opens no riot on this file’s own seed at four times its bed capacity either, where it had three riots and ten assaults', () => {
     const runtime = run({ cells: 4, toilets: true, amenities: true, prisoners: 16, guards: 6 });
 
     expect(housedPrisoners(runtime)).toBe(4);
     expect(livingPrisoners(runtime)).toBe(16);
-    expect(runtime.incidents.all()).toEqual([]);
+    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+    expect(runtime.incidentResponseSystem.getMetrics().incidentsLapsed, 'the assaults it opens are all contained').toBe(0);
     // 0.6513 before ADR 0102 -- over `hotThreshold` on the needs term alone,
     // which is what the describe above this one says no number of hires could
     // hold back. Twelve homeless prisoners with somewhere to eat, wash and
-    // exercise now read 0.3462.
-    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.4);
+    // exercise read 0.3462 after ADR 0102, and 0.5956 since #586 -- the
+    // crowding cost, under the line a riot needs -- and pinned, for the reason
+    // the case above gives.
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.5956, 3);
   });
 
   /**
@@ -971,15 +1089,20 @@ describe('an over-admitted prison that built the rooms stops rioting, if a guard
    * prison is milder riots -- severities 9 become 7 and 8 -- and nothing else.
    */
   it('still riots six times with no guard at all, exactly as often as before', () => {
+    // Six before ADR 0102, six after it, six since #586 -- the count is the
+    // one figure in this describe that no change has moved.
     for (const seed of SEEDS) {
       const runtime = runOnSeed({ ...OVERCROWDED_WITH_AMENITIES, guards: 0 }, seed);
       const riots = incidentsOfType(runtime, 'riot');
       expect(riots.length, `seed ${String(seed)}`).toBe(6);
       expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeGreaterThan(0.65);
       // The change is visible in the severities rather than the count: every
-      // one of these was 9 before ADR 0102 except the first, and none of them
-      // reaches 9 now.
-      expect(riots.every((incident) => incident.severity <= 8)).toBe(true);
+      // one of these was 9 before ADR 0102 except the first, and after it
+      // they read 7, 7, 7, 7, 7, 8. **Since issue #586 they read 7, 8, 8, 9,
+      // 8, 8** on every seed -- crowding gives back part of what ADR 0102 took
+      // off, and one of the six reaches 9 again. Pinned exactly, because a
+      // bound that merely admitted the 9 would say less than either reading.
+      expect(riots.map((incident) => incident.severity)).toEqual([7, 8, 8, 9, 8, 8]);
     }
   }, 60_000);
 });
@@ -995,14 +1118,26 @@ describe('an over-admitted prison that built the rooms stops rioting, if a guard
  * 1 at seventeen prisoners, 5 rather than 3 at ninety-six -- so neither can
  * pass by being vacuous about a prison that never rioted.
  */
-describe('and it starts rioting again one prisoner later, which is what bounds the finding above', () => {
+// Titled "and it starts rioting again one prisoner later, which is what
+// bounds the finding above" until issue #586, which erased the quiet side of
+// that boundary; the cases record both sides as they now are.
+describe('and the population boundary that bounded it, which crowding (#586) has erased', () => {
   /** The same eight consecutive seeds the describe above uses, for the same reason and with the opposite result. */
   const SEEDS = Array.from({ length: 8 }, (_unused, index) => SEED + index);
 
-  it('is quiet at sixteen prisoners and riots at seventeen, on every one of those seeds', () => {
+  /*
+   * **Titled "is quiet at sixteen prisoners and riots at seventeen" until
+   * issue #586, and the boundary it pinned is gone.** Both populations are
+   * twice their beds or more, where crowding runs at its cap, and on one guard
+   * both now riot: five times at sixteen and six at seventeen, on every one of
+   * the eight seeds. The seventeenth prisoner still costs a riot -- the
+   * arithmetic of `required` going 2 to 3 is unchanged -- but there is no
+   * quiet side to cost it from. The variable names are kept for the diff.
+   */
+  it('riots at sixteen prisoners and once more at seventeen, on every one of those seeds -- since #586 there is no quiet side', () => {
     for (const seed of SEEDS) {
       const quiet = runOnSeed({ cells: 8, toilets: true, amenities: true, prisoners: 16, guards: 1 }, seed);
-      expect(incidentsOfType(quiet, 'riot'), `16 prisoners, seed ${String(seed)}`).toEqual([]);
+      expect(incidentsOfType(quiet, 'riot').length, `16 prisoners, seed ${String(seed)}`).toBe(5);
       // `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so sixteen occupants ask for
       // two guards and this prison is short exactly one of them.
       expect(quiet.deploymentSystem.getCoverageReport(quiet.kernel.tick)).toEqual([
@@ -1010,11 +1145,11 @@ describe('and it starts rioting again one prisoner later, which is what bounds t
       ]);
 
       const loud = runOnSeed({ cells: 8, toilets: true, amenities: true, prisoners: 17, guards: 1 }, seed);
-      // One more prisoner, one more required guard, and one riot where the
-      // unmodified tree opens five. Not "some riots": the count is a property
-      // of the change, and a sweep that found it seed-dependent would refute
-      // the whole of the docblock above.
-      expect(incidentsOfType(loud, 'riot').length, `17 prisoners, seed ${String(seed)}`).toBe(1);
+      // One more prisoner, one more required guard, and -- since #586 -- six
+      // riots where ADR 0102's tree opened one and the tree before it five.
+      // Not "some riots": the count is a property of the change, and a sweep
+      // that found it seed-dependent would refute the docblock above.
+      expect(incidentsOfType(loud, 'riot').length, `17 prisoners, seed ${String(seed)}`).toBe(6);
       expect(loud.deploymentSystem.getCoverageReport(loud.kernel.tick)).toEqual([
         { sectorId: 'security-sector.prison', required: 3, assigned: 1, shortage: 2 },
       ]);
@@ -1027,7 +1162,19 @@ describe('and it starts rioting again one prisoner later, which is what bounds t
     }
   }, 60_000);
 
-  it('riots at ninety-six prisoners with a guard for every eight of them, and stops again when the canteen and the shower room are built for that many', () => {
+  /*
+   * **The second half of this title -- "and stops again when the canteen and
+   * the shower room are built for that many" -- is false since issue #586,
+   * and the case now pins what replaced it.** Ninety-six prisoners in eight
+   * beds is twelve times capacity: crowding runs at its cap, and provisioning
+   * the canteen and the shower room answers *contention* for them, which is
+   * not what crowding is. Measured on this seed: six riots staffed (three
+   * before #586), five provisioned (none before), the provisioned prison's
+   * score 0.7746 against 0.8036 -- so the rooms still buy something, and the
+   * assertion that they do is kept as an ordering rather than an absence.
+   * What stops it now is beds.
+   */
+  it('riots at ninety-six prisoners with a guard for every eight of them, and since #586 the rooms built for that many no longer stop it', () => {
     const STAFFED_96 = { cells: 8, toilets: true, amenities: true, prisoners: 96, guards: 12 } as const;
 
     const crowded = run(STAFFED_96);
@@ -1037,7 +1184,7 @@ describe('and it starts rioting again one prisoner later, which is what bounds t
     // Fully staffed, so `staffingShortfall` contributes nothing and this is the
     // needs term alone reaching `hotThreshold`: ninety-six prisoners against a
     // `'dining'` ceiling of six and a `'hygiene'` ceiling of two.
-    expect(incidentsOfType(crowded, 'riot').length).toBe(3);
+    expect(incidentsOfType(crowded, 'riot').length).toBe(6);
 
     // The same prison, the same population, the same twelve guards, and still
     // a canteen built to `room.canteen`'s authored requirements: four tables
@@ -1045,8 +1192,12 @@ describe('and it starts rioting again one prisoner later, which is what bounds t
     // two. `'dining'` goes 6 to 12 and `'hygiene'` 2 to 6, and nothing else
     // about this prison moves.
     const provisioned = run({ ...STAFFED_96, tables: 4, benches: 4, showerHeads: 6 });
-    expect(incidentsOfType(provisioned, 'riot')).toEqual([]);
-    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.55);
+    expect(incidentsOfType(provisioned, 'riot').length).toBe(5);
+    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeLessThan(
+      crowded.sectorRisk.getScore('security-sector.prison'),
+    );
+    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.7746, 3);
+    expect(crowded.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.8036, 3);
 
     // Non-vacuous: both prisons are the same eight beds and the same
     // ninety-six people, and the second is not quiet because it lost anybody.

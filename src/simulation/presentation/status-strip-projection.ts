@@ -6,11 +6,8 @@ import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { ClockControl } from '../clock/fixed-step-clock';
 import type { EntityId } from '../entity/entity-store';
 import type { IncidentType } from '../incidents/incident';
-import {
-  DEFAULT_ACCOMMODATION_POLICY,
-  resolveAccommodationTargets,
-  type AccommodationPolicy,
-} from '../prisoners/intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy } from '../prisoners/intake-system';
+import { accommodationCapacityOf, isCrowdingAcceleratingDecay } from '../prisoners/crowding';
 import {
   DAY_LENGTH_TICKS,
   DEFAULT_REGIME_SCHEDULES,
@@ -300,6 +297,14 @@ export function computeStandingPrisonConditions(input: {
    * where every other live source is read.
    */
   readonly securityPostUnreachable: boolean;
+  /**
+   * Whether crowding is accelerating `safety` or `hygiene` decay right now --
+   * `isCrowdingAcceleratingDecay` over the population and the accommodation
+   * capacity `NeedsDecaySystem` reads (issue #586). Required rather than
+   * defaulted, for `securityPostUnreachable`'s reason: a caller that forgot it
+   * would silently report an over-full prison as not paying for it.
+   */
+  readonly overcrowded: boolean;
 }): readonly PrisonCondition[] {
   const standing: PrisonCondition[] = [];
   for (const condition of PRISON_CONDITIONS) {
@@ -309,6 +314,8 @@ export function computeStandingPrisonConditions(input: {
           return input.buildQueueUnfunded;
         case 'intake.no-place':
           return input.waitingWithoutPlace > 0;
+        case 'prisoners.overcrowded':
+          return input.overcrowded;
         case 'security.post-unreachable':
           return input.securityPostUnreachable;
         case 'treasury.construction-refused':
@@ -718,40 +725,16 @@ function clockViewModel(tick: number, control: ClockControl | undefined): ClockV
  * `findAvailableResidence` asks, so the denominator cannot be smaller than the
  * set of beds intake will actually fill.
  *
- * **The capability is checked, not assumed.** For the shipped policy it is
- * redundant -- `residentCapacity` is nonzero only when a `'sleep-surface'`
- * object stands in the room, so the two conditions coincide -- but a policy
- * naming any other capability would make them come apart, and the gate
- * `findAvailableResidence` applies is the capability one.
- *
- * **Instances are counted once.** Two targets may name one room type, and a
- * room with four beds is four places however many ways a prisoner could be
- * sent to it.
- *
- * Deterministic: `allByRoomCatalogId` returns its cached ascending-instance-id
- * sort, the target list is authored, and the `Set` is membership-tested rather
- * than iterated. `O(accommodation instances)`, which is a subset of the
- * `O(roomInstances)` walk this function already pays for.
+ * **The walk itself lives in `accommodationCapacityOf`
+ * (`src/simulation/prisoners/crowding.ts`) since issue #586**, which is where
+ * the capability check, the once-per-instance rule and the determinism
+ * argument that used to sit here are now written. It moved rather than being
+ * copied because the crowding term measures the prison against the same
+ * figure this chip is drawn against, and two copies of one walk are two
+ * chances to disagree about when a prison is full.
  */
-function accommodationCapacityOf(source: RoomProjectionSource, policy: AccommodationPolicy): number {
-  let capacity = 0;
-  const counted = new Set<string>();
-
-  for (const target of resolveAccommodationTargets(policy)) {
-    for (const instance of source.roomInstances.allByRoomCatalogId(target.roomCatalogId)) {
-      if (counted.has(instance.instanceId)) continue;
-      if (
-        target.requiredObjectCapability !== undefined &&
-        !instance.objectCapabilities.includes(target.requiredObjectCapability)
-      ) {
-        continue;
-      }
-      counted.add(instance.instanceId);
-      capacity += instance.residentCapacity;
-    }
-  }
-
-  return capacity;
+function accommodationCapacityOfRooms(source: RoomProjectionSource, policy: AccommodationPolicy): number {
+  return accommodationCapacityOf(source.roomInstances, policy);
 }
 
 /**
@@ -851,7 +834,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   const accommodationCapacity =
     source.rooms === undefined
       ? 0
-      : accommodationCapacityOf(source.rooms, source.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY);
+      : accommodationCapacityOfRooms(source.rooms, source.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY);
 
   let roomCount = 0;
   let roomCapacity = 0;
@@ -953,6 +936,16 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     // the tick this readout is reporting. Absent source reports `false` --
     // a runtime with no deployment system has no post to strand.
     securityPostUnreachable: source.deployment?.hasUnreachablePost(source.tick) ?? false,
+    // Over `source.prisoners`' own registry and policy -- the pair
+    // `PrisonerOperationsRuntime` hands `NeedsDecaySystem` -- and the same
+    // live population `population.total` walked, so this reads the rate's
+    // own inputs rather than the `accommodationCapacity` above, which is
+    // taken from `source.rooms` and would read 0 for a session that reports
+    // no rooms while its prisoners' needs are still being crowded.
+    overcrowded: isCrowdingAcceleratingDecay(
+      population.total,
+      accommodationCapacityOf(source.prisoners.roomInstances, source.prisoners.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY),
+    ),
   });
 
   return {

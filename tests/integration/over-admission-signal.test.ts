@@ -80,6 +80,14 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * that built the rooms too, once it has admitted more people than the rooms
  * were built for.
  *
+ * **Those counts moved again with issue #586, which made crowding a cost of
+ * its own** -- a prison over its beds decays `safety` and `hygiene` faster for
+ * everybody in it. Sixteen prisoners on one guard now riot 5 times rather than
+ * 0, seventeen 6 rather than 1, on every seed measured; staffed to requirement
+ * the sixteen still do not riot. So over-admission is a route into the
+ * incident content wherever the prison is short a guard, and
+ * `incident-trigger-reachability.test.ts` carries the re-measured table.
+ *
  * **What this file asserts is untouched by that**, which is why nothing below
  * moved: every expectation here is about the admission being accepted and the
  * panel saying so, and none of them is about an incident. The decision the

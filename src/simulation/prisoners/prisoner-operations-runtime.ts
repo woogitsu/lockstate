@@ -40,6 +40,7 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
+import { accommodationCapacityOf } from './crowding';
 import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import { RegimeScheduleRegistry } from './regime-registry';
 import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
@@ -441,7 +442,13 @@ export class PrisonerOperationsRuntime {
       options.gangAssigner,
       options.housedNotice,
     );
-    this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
+    // The crowding term's denominator (issue #586), asked live on every update
+    // of the policy this runtime's intake houses arrivals under -- the same
+    // function and the same policy the status strip's capacity bar is drawn
+    // from, so the rate and the readout share one definition of "full".
+    this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs, () =>
+      accommodationCapacityOf(this.roomInstances, this.accommodationPolicy),
+    );
     this.classificationReviewSystem = new ClassificationReviewSystem(
       this.entityStore,
       this.query,

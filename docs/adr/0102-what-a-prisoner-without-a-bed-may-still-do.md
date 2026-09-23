@@ -194,15 +194,26 @@ their group.
 `NeedsDecaySystem.update` walks every live prisoner the query returns and
 decays all six needs, with no stage check anywhere in the loop:
 
-`public update(_context: SimulationContext): void {
-    for (const entityId of this.query.execute()) {
+`const extra = crowdingExtraDecayTable(excessPermille);
+    for (const entityId of entityIds) {
       const index = this.store.getIndex(entityId);
       for (const needId of NEED_IDS) {
-        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks));
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId]));
       }
-    }
-  }`
+    }`
 (verbatim in `src/simulation/prisoners/needs-system.ts`)
+
+**Re-quoted on 2026-09-23 for issue #586, and the finding above it is
+unchanged.** The loop this section quoted gained a crowding term -- one
+extra rate per need, read once per update from the population and the
+accommodation capacity and added to every prisoner's decay alike, with the
+uncrowded prison keeping the original loop as its own branch -- so the
+quotation was replaced with the crowded branch of the code as it now stands
+(the uncrowded branch is the same loop without `extra[needId]`, and carries a
+comment this gate cannot quote across). What the section
+argues from it still holds, and is if anything sharper: there is still no
+stage check anywhere in the loop, and the new term reads *how many* prisoners
+there are, never *which stage* any of them is at.
 
 Decay runs on a prisoner from the tick they are admitted, before
 classification, before an accommodation target is even known.
@@ -699,6 +710,23 @@ row describes a real prison on its own — which row applies depends on how many
 prisoners are sharing the rooms.
 
 ---
+
+
+> **Added 2026-09-23 for issue #586, and kept inside this section because it
+> changes what the section's numbers mean rather than what this decision
+> decided.** Crowding is a cost of its own since #586: a prison over its beds
+> decays `safety` and `hygiene` faster for everybody in it
+> (`src/simulation/prisoners/crowding.ts`), and every over-admitted fixture this
+> section measured is at least twice its beds, where that term is at its cap.
+> Re-measured on seed `0x0cc0` over the same 30,000 ticks: sixteen prisoners on
+> one guard riot 5 times where this decision had taken them to 0; seventeen 6
+> where it had taken them to 1; ninety-six staffed riot 6 (3) and, with the
+> canteen and shower room built for that many, 5 (0). Staffed to requirement,
+> sixteen in eight beds still open no riot. **This decision is untouched** --
+> an unhoused prisoner may still eat, wash and take recreation, and still
+> relieves the needs crowding does not move -- but the population a built
+> prison rides out is now bounded by its beds as well as by its rooms.
+> `tests/integration/incident-trigger-reachability.test.ts` carries the table.
 
 ## Consequences for existing sentences
 

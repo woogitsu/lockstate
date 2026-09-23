@@ -1471,11 +1471,26 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // **The check that makes it a measurement rather than a sum**:
       // `,"editHistory":{"undo":false,"redo":false}` is 42 characters, and
       // 857 + 42 = 899, 859 + 42 = 901.
+      //
+      // **942 and not 919, and the raise is issue #586's
+      // `'prisoners.overcrowded'` -- the first raise that is a condition id
+      // rather than a count.** Measured on this branch: `payloadJsonBytes=899`
+      // at 250 actors, unchanged, and `924` at 1,000, 2,500 and 5,000 -- where
+      // they read 901 before. The 23 bytes over 901 are not a digit spread and
+      // not growth: this fixture's 300 rooms
+      // hold fewer beds than 1,000 prisoners and more than 250, so the three
+      // larger tiers are over capacity by enough that crowding is accelerating
+      // decay and the condition stands, and the smallest is not. It is one
+      // member of a closed union whose length `statusCountsSchema` bounds, so
+      // the payload still cannot grow with the population -- it crossed a
+      // threshold once. `"prisoners.overcrowded"` is 23 characters with its
+      // quotes, into a `conditions` array that was empty: 901 + 23 = 924.
+      // 924 + 18 = **942**, the same head room.
       expect(
         Object.keys(payload.editHistory).sort(),
         'the worst-case fixture no longer carries every member `editHistoryAvailabilitySchema` declares -- re-measure the byte bound',
       ).toEqual(Object.keys(editHistoryAvailabilitySchema.shape).sort());
-      expect(JSON.stringify(payload).length).toBeLessThan(919);
+      expect(JSON.stringify(payload).length).toBeLessThan(942);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

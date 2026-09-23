@@ -1,5 +1,5 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
-import { isPostUnreachable } from './simulation-conditions';
+import { isOvercrowded, isPostUnreachable } from './simulation-conditions';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudCountsViewModel, HudEditHistoryViewModel, HudOverviewViewModel } from './hud/view-model';
 
@@ -150,6 +150,10 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * distinction `activeIncidentTypeLabelKey` below draws.
          */
         postUnreachable: isPostUnreachable(counts.conditions),
+        // Issue #586: `'prisoners.overcrowded'`, read through the table for
+        // the reason the line above gives. Published, never derived here --
+        // the predicate is the simulation's `isCrowdingAcceleratingDecay`.
+        overcrowded: isOvercrowded(counts.conditions),
         prisonersCovered: counts.prisonersCovered,
         prisonersUnderstaffed: counts.prisonersUnderstaffed,
         prisonersUnguarded: counts.prisonersUnguarded,

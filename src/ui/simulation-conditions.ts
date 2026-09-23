@@ -63,7 +63,16 @@ export type PrisonConditionPresentation =
    * rendering of a fact already painted is what #930 recommends against, and
    * this value is that recommendation held by the compiler.
    */
-  | 'painted-elsewhere';
+  | 'painted-elsewhere'
+  /**
+   * The `COVERAGE` chip carries this one too, under a word and a sentence of
+   * its own -- `hud.security.coverage-overcrowded` and its hint, through
+   * `HudCountsViewModel.overcrowded` (issue #586). A separate value from
+   * `'coverage-chip'` rather than a second member under it, for the reason
+   * claim 1 below gives: `isPostUnreachable` collapses its whole class to one
+   * sentence about a post, and crowding is not that sentence.
+   */
+  | 'coverage-chip-crowding';
 
 /**
  * **Exported for `tests/unit/ui-simulation-conditions.test.ts` and read
@@ -95,6 +104,7 @@ export type PrisonConditionPresentation =
 export const PRISON_CONDITION_PRESENTATION: Readonly<Record<PrisonCondition, PrisonConditionPresentation>> = {
   'construction.unfunded': 'painted-elsewhere',
   'intake.no-place': 'painted-elsewhere',
+  'prisoners.overcrowded': 'coverage-chip-crowding',
   'security.post-unreachable': 'coverage-chip',
   'treasury.construction-refused': 'painted-elsewhere',
   'treasury.deliveries-refused': 'painted-elsewhere',
@@ -115,4 +125,17 @@ export const PRISON_CONDITION_PRESENTATION: Readonly<Record<PrisonCondition, Pri
 export function isPostUnreachable(conditions: readonly PrisonCondition[] | undefined): boolean {
   if (conditions === undefined) return false;
   return conditions.some((condition) => PRISON_CONDITION_PRESENTATION[condition] === 'coverage-chip');
+}
+
+/**
+ * Whether the published condition set says crowding is accelerating needs
+ * decay (issue #586) -- `'prisoners.overcrowded'`, read through the table for
+ * `isPostUnreachable`'s reason: the id is spelled once.
+ *
+ * `undefined` answers `false`, which is what a publication naming no
+ * condition says.
+ */
+export function isOvercrowded(conditions: readonly PrisonCondition[] | undefined): boolean {
+  if (conditions === undefined) return false;
+  return conditions.some((condition) => PRISON_CONDITION_PRESENTATION[condition] === 'coverage-chip-crowding');
 }

@@ -269,7 +269,7 @@ names the weaker of its own two gates first**
 
 `DEFAULT_SECTOR_RISK_POLICY` is
 `needsPressureWeight: 0.5, staffingShortfallWeight: 0.3, contrabandPressureWeight: 0.2, hotThreshold: 0.6`
-(`src/simulation/incidents/sector-risk.ts:154-160`; the anchor read `:34-40`, a
+(`src/simulation/incidents/sector-risk.ts:167-173`, re-aimed from `:154-160` when issue #586 added a paragraph above it; the anchor read `:34-40` before that, a
 docblock quoting a design note).
 
 > **The quoted policy is no longer the policy, found by opening that line rather

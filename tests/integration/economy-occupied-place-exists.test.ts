@@ -313,7 +313,21 @@ describe('two residents over one remaining bed, in one cell', () => {
     // bed out of a two-bed cell.
     expect(runtime.prisoners.roomInstances.residentIdsWithExistingPlace()).toHaveLength(1);
     expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(300);
-    expect(earnedOverOneDay(runtime), 'and the treasury is credited what the walk says').toBe(300);
+    /*
+     * **260 since issue #586, and the 40 is the ruling's, not a second rule
+     * about places.** Two residents in a cell with one bed is twice that
+     * cell's capacity -- and this prison's only accommodation -- so the
+     * crowding term runs at its cap: `safety` falls 50 stored units a tick
+     * rather than 10 in a prison with nobody on post, and the resident who
+     * holds the place crosses `STATE_INCOME_UNMET_NEED_LEVEL` about 816 ticks
+     * after admission rather than 4,080. The walk above is read at tick 1,212,
+     * before that; the day is settled at its boundary, after it. Measured at
+     * the end of this day: that resident's `safety` is 0 and every other need
+     * is above the line, so the day pays one place less one 40:
+     * `300 - 40 = 260`. Still one place, not two and not none -- the claim
+     * this case exists for is unmoved.
+     */
+    expect(earnedOverOneDay(runtime), 'and the treasury is credited the one place, less the safety 40 crowding costs it').toBe(260);
   });
 
   it('publishes two occupants and one occupied place off the same prison state', () => {

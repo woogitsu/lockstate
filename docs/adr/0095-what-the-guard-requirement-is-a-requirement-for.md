@@ -218,6 +218,16 @@ days, and the *only* difference between rows is the hire count:
 | 4 | `Covered` | 2 | 3 | 6 | 6 | 2 | 0 |
 | 6 | `Covered` | 4 | **10** | **0** | **34** | 2 | 0 |
 
+> **Re-measured after issue #586 (crowding accelerates `safety` and `hygiene`
+> decay), and the ladder is one rung taller rather than a different shape.**
+> Twelve prisoners on one bed is at the crowding term's cap, the riots come out
+> at severity 9 and 10, and they ask for five responders: 1 hire 0/9/0; 2 hires
+> 0 resolved, 8 lapsed and one still open, 0 dispatched; 4 hires 1/7/2; 6 hires
+> 2/6/6; **7 hires 9 resolved, 0 lapsed, 41 dispatched**; 7 under `scheduled: 7`
+> 0/8/0. Every argument below holds with "six" read as "seven".
+> `tests/integration/security-coverage-versus-response.test.ts` carries the
+> table.
+
 > **Re-measured on `09384b9f`, the base this branch was brought up to, and one
 > row of the ladder moved.** Contraband switches on at **two** spare guards
 > rather than one: `claimableSearchGuardIds` holds

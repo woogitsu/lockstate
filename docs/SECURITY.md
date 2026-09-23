@@ -368,6 +368,14 @@ the coverage block is to gain a rung for *every post filled, nothing spare*.
 Neither is built at the time of writing. How the reserve is defined is still
 that document's open question 1.
 
+> **Those figures are from before issue #586 and the shape is unchanged since.**
+> The fixture holds twelve prisoners on one bed, so crowding now drives its
+> riots to severity 9 and 10: the prison at its requirement still resolves 0 and
+> dispatches 0, and the wage bill that answers everything is **seven** hires
+> (9 resolved, 41 dispatched) rather than six, with the same seven under a
+> `scheduled: 7` schedule resolving 0. The test file's docblock carries the
+> re-measured ladder.
+
 **What it does not bring back**, measured in
 `tests/integration/security-default-sector.test.ts`:
 

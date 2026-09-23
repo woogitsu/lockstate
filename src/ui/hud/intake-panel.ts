@@ -144,6 +144,15 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * `required` from 2 to 3. What changed is the population an over-admitted
  * prison rides out, not whether over-admission reaches the incident content.
  *
+ * **THE SIXTEEN/SEVENTEEN FIGURES ABOVE PREDATE #586's CROWDING TERM, AND ARE
+ * KEPT RATHER THAN RE-AIMED (corrected 2026-09-23).** Since crowding speeds up
+ * safety and hygiene decay whenever prisoners outnumber beds, an over-admitted
+ * prison one guard short riots again. Re-measured by #586: sixteen prisoners on
+ * one guard went 0 -> 5 riots, and seventeen went 1 -> 6. The updated records
+ * are in `tests/integration/crowding-need-decay.test.ts` and the re-measured
+ * integration suites that commit touched. The paragraph above stays true of
+ * the tree it was measured on.
+ *
  * Nothing about this control changes either way -- the admission is still
  * accepted and the player is still told -- which is why the decision above
  * stands as written.

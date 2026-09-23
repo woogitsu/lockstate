@@ -681,10 +681,25 @@ void _statusCountsIncidentTypeMirrorsIncidentType;
  * and every member's index moves rather than a new one being appended -- which
  * is safe precisely because nothing persists this union: see the paragraph
  * above on why no member is snapshotted.
+ *
+ * **`'prisoners.overcrowded'` is the sixth member** (issue #586, under the
+ * owner's ruling recorded on that issue on 2026-08-29: *"The 40-withhold IS
+ * the tax. Give it something to read."*). It stands while the prison holds
+ * more prisoners than it has accommodation for **by enough that `safety` or
+ * `hygiene` is decaying faster for it** -- `isCrowdingAcceleratingDecay` in
+ * `src/simulation/prisoners/crowding.ts`, the same predicate over the same
+ * two figures `NeedsDecaySystem` applies the extra rate from, so the strip
+ * cannot say the prison is paying for crowding while nothing decays faster, or
+ * the reverse. The ruling's accepted cost is why it exists at all: *"Without
+ * that attribution this is an invisible punishment, which is worse than a
+ * visible tax."* `prisoners.` sorts between `intake.` and `security.`, so it
+ * goes third and the members after it move one index, which is safe for the
+ * reason the paragraph above gives.
  */
 export const PRISON_CONDITIONS = [
   'construction.unfunded',
   'intake.no-place',
+  'prisoners.overcrowded',
   'security.post-unreachable',
   'treasury.construction-refused',
   'treasury.deliveries-refused',
