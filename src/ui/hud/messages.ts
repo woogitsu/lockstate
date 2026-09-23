@@ -1600,6 +1600,8 @@ export const HUD_MESSAGE_KEY = {
   regimeRosterEmpty: 'hud.regime.roster-empty',
   regimeRosterEmptied: 'hud.regime.roster-emptied',
   regimeRosterOpenTab: 'hud.regime.roster-open-tab',
+  regimeRiskTierExplanation: 'hud.regime.risk-tier-explanation',
+  regimeIntakeStandingExplanation: 'hud.regime.intake-standing-explanation',
 
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
