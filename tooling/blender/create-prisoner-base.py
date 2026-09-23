@@ -46,14 +46,14 @@ def mat(name, color, roughness=0.6):
     return material
 
 
-def prisoner_fabric():
-    """Use the approved concept's worn cotton swatch, packed for reproducibility."""
-    texture_path = Path(__file__).resolve().parents[2] / "assets/source/textures/prisoner-jumpsuit-orange-v2.png"
+def actor_fabric(texture_name, material_name, color):
+    """Pack the role-specific worn cotton swatch for reproducible rendering."""
+    texture_path = Path(__file__).resolve().parents[2] / "assets/source/textures" / texture_name
     if not texture_path.is_file():
         raise FileNotFoundError(texture_path)
     image = bpy.data.images.load(str(texture_path), check_existing=True)
     image.pack()
-    fabric = mat("Prisoner worn orange cotton", (0.64, 0.23, 0.07), 0.85)
+    fabric = mat(material_name, color, 0.85)
     nodes = fabric.node_tree.nodes
     coords = nodes.new("ShaderNodeTexCoord")
     texture = nodes.new("ShaderNodeTexImage")
@@ -134,15 +134,22 @@ def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
 
-def build_prisoner(root):
-    """Model the eight-view concept without changing the actor rig contract."""
-    fabric = prisoner_fabric()
-    dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
+def build_detailed_actor(root, asset_id):
+    """Model each eight-view concept without changing the actor rig contract."""
+    guard = asset_id == "actor.guard.base"
+    if guard:
+        fabric = actor_fabric("guard-uniform-navy-v2.png", "Guard worn navy cotton", (0.025, 0.045, 0.085))
+        dark_seam = mat("Navy seam shadow", (0.011, 0.018, 0.035), 0.85)
+    else:
+        fabric = actor_fabric("prisoner-jumpsuit-orange-v2.png", "Prisoner worn orange cotton", (0.64, 0.23, 0.07))
+        dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
     skin = mat("Warm skin", (0.39, 0.22, 0.14), 0.76)
     hair = mat("Short dark hair", (0.014, 0.010, 0.009), 0.88)
     shoe = mat("Worn charcoal shoes", (0.018, 0.020, 0.021), 0.85)
     undershirt = mat("Pale undershirt", (0.76, 0.72, 0.65), 0.91)
     button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
+    badge = mat("Guard badge and patches", (0.49, 0.55, 0.57), 0.46) if guard else None
+    belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
     # displayed scale. The old single bevelled cube made every role a crate.
@@ -160,6 +167,19 @@ def build_prisoner(root):
     for z in (2.50, 2.36, 2.22, 2.08):
         sphere(f"Button.{z}", (0.03, -0.335, z), (0.020, 0.014, 0.020), button, root)
     cube("Waist seam", (0, -0.289, 1.75), (0.35, 0.014, 0.014), dark_seam, root, 0.002)
+    if guard:
+        # The high-contrast belt and cap are the guard's defining features at
+        # 64 px. Radio pouch and keys also break the silhouette in side views.
+        cube("Utility belt front", (0, -0.304, 1.72), (0.41, 0.053, 0.065), belt, root, 0.018)
+        cube("Belt buckle", (0, -0.34, 1.73), (0.075, 0.012, 0.055), badge, root, 0.008)
+        for side in (-1, 1):
+            cube(f"Duty belt side.{side}", (side * 0.38, 0, 1.72), (0.055, 0.27, 0.065), belt, root, 0.012)
+            cube(f"Shoulder patch.{side}", (side * 0.38, -0.215, 2.39), (0.075, 0.018, 0.10), badge, root, 0.013)
+            cube(f"Cargo pocket.{side}", (side * 0.387, -0.07, 1.10), (0.022, 0.12, 0.14), fabric, root, 0.012)
+        cube("Radio pouch", (-0.395, -0.06, 1.67), (0.075, 0.11, 0.13), belt, root, 0.018)
+        cube("Radio antenna", (-0.395, -0.06, 1.795), (0.012, 0.012, 0.13), belt, root, 0.003)
+        cylinder("Key ring", (0.36, -0.22, 1.58), 0.035, 0.012, badge, root)
+        cube("Chest badge", (0.245, -0.323, 2.47), (0.055, 0.012, 0.07), badge, root, 0.012)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
@@ -169,6 +189,11 @@ def build_prisoner(root):
     for side in (-1, 1):
         cube(f"Brow.{side}", (side * 0.105, -0.252, 3.19), (0.078, 0.017, 0.020), hair, root, 0.006)
         sphere(f"Eye.{side}", (side * 0.105, -0.260, 3.155), (0.024, 0.015, 0.020), hair, root)
+    if guard:
+        sphere("Navy cap crown", (0, 0.06, 3.405), (0.325, 0.285, 0.145), fabric, root)
+        cylinder("Cap band", (0, 0.035, 3.345), 0.29, 0.055, belt, root)
+        cube("Cap visor", (0, -0.295, 3.330), (0.24, 0.12, 0.025), belt, root, 0.025)
+        cube("Cap emblem", (0, -0.213, 3.480), (0.045, 0.015, 0.06), badge, root, 0.012)
     cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
 
     for side in (-1, 1):
@@ -202,8 +227,8 @@ def main():
     patch = mat("Role patch", profile["patch"], 0.8)
     root = pivot("SpriteRoot", (0, 0, 0), None)
     pivot("SpriteTarget", (0, 0, 0), None)
-    if options.asset_id == "actor.prisoner.base":
-        build_prisoner(root)
+    if options.asset_id in ("actor.prisoner.base", "actor.guard.base"):
+        build_detailed_actor(root, options.asset_id)
     else:
         cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
         cube("Chest patch", (0, -0.281, 2.38), (0.13, 0.01, 0.07), patch, root, 0.01)
