@@ -60,10 +60,20 @@ const order = (orderId: string, ...requirements: MaterialRequirement[]): QueuedO
  */
 const oneOrder = (...requirements: MaterialRequirement[]): QueuedOrderDemand[] => [order('order-1', ...requirements)];
 
-function fixture(startingBalance = 25_000) {
+/**
+ * A bare `Treasury` at the shipped opening grant, spent down to `startingBalance`.
+ *
+ * **Every `100_000` in this file was `25_000` until the owner's ruling of
+ * 2026-09-23 set the grant (#641, `AGENTS.md` entry 14).** It is the balance
+ * `new Treasury()` opens at, and nothing in this file is about its size: every
+ * case subtracts a price from it or spends it down to a stated balance first,
+ * so the move is the same number on both sides and no measured difference
+ * changed.
+ */
+function fixture(startingBalance = 100_000) {
   const treasury = new Treasury();
-  if (startingBalance < 25_000) {
-    expect(treasury.spend(25_000 - startingBalance, 'construction'), 'the fixture must be able to reach its own opening balance').toBe(true);
+  if (startingBalance < 100_000) {
+    expect(treasury.spend(100_000 - startingBalance, 'construction'), 'the fixture must be able to reach its own opening balance').toBe(true);
   }
   const stock = new Container('construction-materials');
   const procurement = new ProcurementSystem(treasury, stock);
@@ -79,7 +89,7 @@ describe('what a just-in-time pass buys', () => {
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 8, costMinorUnits: 320 }]);
     expect(report.unfunded).toEqual([]);
-    expect(treasury.balanceMinorUnits).toBe(25_000 - 320);
+    expect(treasury.balanceMinorUnits).toBe(100_000 - 320);
     expect(procurement.pendingDeliveries.map((delivery) => [delivery.quantity, delivery.arrivesAtTick])).toEqual([
       [8, PROCUREMENT_DELIVERY_DELAY_TICKS],
     ]);
@@ -94,7 +104,7 @@ describe('what a just-in-time pass buys', () => {
     const report = service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0);
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
-    expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
+    expect(treasury.balanceMinorUnits).toBe(100_000 - 80);
   });
 
   it('counts reserved stock as unavailable, because a reservation is somebody else\'s', () => {
@@ -138,14 +148,14 @@ describe('what a just-in-time pass buys', () => {
 
     const second = service.procureForPendingOrders(oneOrder(need(BRICK, 12)), 10);
     expect(second.purchased).toEqual([{ itemId: BRICK, quantity: 4, costMinorUnits: 160 }]);
-    expect(treasury.balanceMinorUnits).toBe(25_000 - 320 - 160);
+    expect(treasury.balanceMinorUnits).toBe(100_000 - 320 - 160);
   });
 
   it('buys nothing at all when the queue wants nothing', () => {
     const { treasury, service } = fixture();
     const report = service.procureForPendingOrders([], 0);
     expect(report).toEqual({ tick: 0, purchased: [], unfunded: [], unprocurable: [], nextOrderShortfallMinorUnits: 0 });
-    expect(treasury.balanceMinorUnits).toBe(25_000);
+    expect(treasury.balanceMinorUnits).toBe(100_000);
   });
 
   it('separates two purchases of one item at one tick, so neither is refused as a duplicate', () => {
@@ -237,7 +247,7 @@ describe('what a just-in-time pass cannot buy', () => {
 
     expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
     expect(report.unfunded).toEqual([]);
-    expect(treasury.balanceMinorUnits).toBe(25_000);
+    expect(treasury.balanceMinorUnits).toBe(100_000);
     // Blocked, and not for money: `nextOrderShortfallMinorUnits` stays 0
     // rather than naming an amount that would not actually unblock anything.
     expect(report.nextOrderShortfallMinorUnits).toBe(0);
@@ -252,7 +262,7 @@ describe('what a just-in-time pass cannot buy', () => {
 
     expect(report.unprocurable).toEqual([{ itemId: BRICK, quantity: 100_001, reason: 'quantity-refused' }]);
     expect(report.unfunded).toEqual([]);
-    expect(treasury.balanceMinorUnits).toBe(25_000);
+    expect(treasury.balanceMinorUnits).toBe(100_000);
   });
 });
 
@@ -475,7 +485,7 @@ describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () =
     );
 
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
-    expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
+    expect(treasury.balanceMinorUnits).toBe(100_000 - 80);
   });
 
   it('lets an item nobody sells block its own order and no other', () => {
@@ -496,7 +506,7 @@ describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () =
     expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
     expect(report.unfunded).toEqual([]);
     expect(report.purchased).toEqual([{ itemId: BRICK, quantity: 2, costMinorUnits: 80 }]);
-    expect(treasury.balanceMinorUnits).toBe(25_000 - 80);
+    expect(treasury.balanceMinorUnits).toBe(100_000 - 80);
   });
 
   it('does not buy the affordable half of an order whose other half nobody sells', () => {
@@ -509,7 +519,7 @@ describe('the unit a partly filled purchase is atomic at (#703 ruling 12)', () =
 
     expect(report.purchased).toEqual([]);
     expect(report.unprocurable).toEqual([{ itemId: SINK, quantity: 1, reason: 'unpurchasable' }]);
-    expect(treasury.balanceMinorUnits).toBe(25_000);
+    expect(treasury.balanceMinorUnits).toBe(100_000);
   });
 });
 

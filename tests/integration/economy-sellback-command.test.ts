@@ -63,7 +63,8 @@ function buyAndReceiveBricks(runtime: SimulationRuntime, orderId: string, quanti
 
 describe('selling stock back through SellMaterials', () => {
   it('pins the two figures every credit below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    // The opening grant: 25,000 until the owner's ruling of 2026-09-23 (#641).
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(packCommand({ type: 'SellMaterials', itemId: 'item.brick', quantity: 5 }).data).toEqual({
       type: 'SellMaterials',
       itemId: 'item.brick',
@@ -75,7 +76,7 @@ describe('selling stock back through SellMaterials', () => {
     const runtime = createNewSimulationRuntime(SEED);
     buyAndReceiveBricks(runtime, 'buy-1', 10);
     const balanceAfterBuying = runtime.treasury.balanceMinorUnits;
-    expect(balanceAfterBuying, '25,000 - 10 x 40').toBe(24_600);
+    expect(balanceAfterBuying, '100,000 - 10 x 40 (25,000 until 2026-09-23, #641)').toBe(99_600);
     expect(brickStock(runtime)).toBe(10);
 
     send(runtime, 'cmd-sell', { type: 'SellMaterials', itemId: 'item.brick', quantity: 6 });

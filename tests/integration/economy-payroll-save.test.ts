@@ -160,7 +160,10 @@ function insolventSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(0x9a6e5);
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
-  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));
+  // 649 bricks at the 25,000 grant; 2,524 since the owner's ruling of
+  // 2026-09-23 set it to 100,000 (#641) -- 100,000 less two hires (160), 2,524
+  // bricks (100,960) and one plank (65) lands on the same -1,185.
+  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 2_524 }));
   submit(runtime, 'buy-p', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: 1 }));
   expect(runtime.refusals.count, 'the fixture must afford everything it buys').toBe(0);
   expect(runtime.treasury.balanceMinorUnits, 'exactly the starter delivery rung, with nothing left to press').toBe(

@@ -53,6 +53,13 @@ import {
  * | one wall, cancelled at `'assigned'` | `25,000`, no bricks | unchanged |
  * | 328 walls in one drag, cancelled after the bricks land | **`−1,240` and 656 bricks** | `25,000`, no bricks |
  *
+ * **Every figure in that table and in the section below is the 25,000-grant
+ * reading.** The owner's ruling of 2026-09-23 set the grant to 100,000 (#641)
+ * and the overdraft to 10,000 with it; the cases re-measure the same gestures
+ * at 1,265 and 1,277 walls, landing on −1,200 with 2,530 bricks, and a cancel
+ * still gives the whole drag back as money. The mechanism the table is about
+ * did not move.
+ *
  * The third row is what makes the second a defect rather than a rule: the
  * currency changed between two adjacent states of the same order and changed
  * back again, for a reason a player cannot see. It is the same inversion the
@@ -141,11 +148,21 @@ interface Edge {
   readonly edge: 'north' | 'west';
 }
 
-/** Distinct north edges inside the one 32x32 chunk a new session owns. */
+/**
+ * Distinct wall edges inside the one 32x32 chunk a new session owns.
+ *
+ * **North edges only until the owner's ruling of 2026-09-23 set the grant to
+ * 100,000 (#641)**: there are 961 of them, which held the 340-wall drag this
+ * file's largest case made at 25,000 and does not hold the 1,277 it makes now.
+ * The north edges come first, in the order they always did, and the west edges
+ * after them, so every drag that fitted before lands on the same edges.
+ */
 function edges(count: number): readonly Edge[] {
   const out: Edge[] = [];
-  for (let y = 1; y < 32 && out.length < count; y += 1) {
-    for (let x = 1; x < 32 && out.length < count; x += 1) out.push({ x, y, edge: 'north' });
+  for (const edge of ['north', 'west'] as const) {
+    for (let y = 1; y < 32 && out.length < count; y += 1) {
+      for (let x = 1; x < 32 && out.length < count; x += 1) out.push({ x, y, edge });
+    }
   }
   if (out.length < count) throw new RangeError(`only ${String(out.length)} edges available for ${String(count)}`);
   return out;
@@ -263,7 +280,11 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
      * sitting in bricks the rest of the queue is about to consume. The press
      * shortens the queue by one order and leaves the supply where it is.
      */
-    const walls = 340;
+    // 340 at the 25,000 grant: 328 funded and a tail of twelve. 1,277 since
+    // the grant of 2026-09-23 (#641): the rung stops the queue at 1,265, so the
+    // tail is the same twelve, and the shelf holds 2,530 bricks against the
+    // 2,554 the queue wants rather than 656 against 680.
+    const walls = 1_277;
     const session = createSession();
     const orderIds = Array.from({ length: walls }, (unused, index) => `wall-${String(index)}`);
 
@@ -310,13 +331,16 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
      * the state counts here is what stops the case passing vacuously if the
      * schedules ever move.
      */
-    const walls = 328;
+    // 328 at the 25,000 grant, landing on -1,240. 1,265 since the grant of
+    // 2026-09-23 (#641): 101,200 spent, landing on -1,200 -- 50 above the
+    // rung and 15 short of one plank, where -1,240 was 55 short.
+    const walls = 1_265;
     const session = createSession();
     const orderIds = Array.from({ length: walls }, (unused, index) => `wall-${String(index)}`);
 
     session.atOneTick(placements(orderIds));
     const strandedBalance = session.runtime.treasury.balanceMinorUnits;
-    expect(strandedBalance, '328 walls at 80, out of a 25,000 facility').toBe(
+    expect(strandedBalance, 'the walls at 80, out of the grant').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS - walls * WALL_COST,
     );
     expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
@@ -342,7 +366,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
 
     // The undo. Before #717 this moved neither figure: −1,240 and 656 bricks.
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 101,200 (26,240 at 25,000), in money').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it').toBe(0);

@@ -1756,7 +1756,9 @@ decision about what to build next.
       `objectCapabilities: ['sleep-surface']`; an admitted prisoner reaches
       `completed` and occupies it; the balance moves *up* by 300 on the day's
       last tick. `tests/integration/object-placement-loop.test.ts` asserts all
-      of it in literals, including the closing balance as `25_000 - 65 + 300`.
+      of it in literals, including the closing balance as `25_000 - 65 + 300`
+      — `100_000 - 65 + 300` since the owner's ruling of 2026-09-23 set the
+      opening grant to 100,000 (#641, `AGENTS.md` entry 14).
 
     So the balance a player can observe no longer only goes down — it rises
     once per in-game day per occupied place, and the "earned today" readout

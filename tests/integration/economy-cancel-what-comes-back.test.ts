@@ -114,11 +114,19 @@ interface Edge {
   readonly edge: 'north' | 'west';
 }
 
-/** Distinct north edges inside the one 32x32 chunk a new session owns. */
+/**
+ * Distinct wall edges inside the one 32x32 chunk a new session owns.
+ *
+ * North edges only until the owner's ruling of 2026-09-23 set the grant to
+ * 100,000 (#641): there are 961, and the drag below is 1,265 now. North edges
+ * first, in the order they always were, then west.
+ */
 function edges(count: number): readonly Edge[] {
   const out: Edge[] = [];
-  for (let y = 1; y < 32 && out.length < count; y += 1) {
-    for (let x = 1; x < 32 && out.length < count; x += 1) out.push({ x, y, edge: 'north' });
+  for (const edge of ['north', 'west'] as const) {
+    for (let y = 1; y < 32 && out.length < count; y += 1) {
+      for (let x = 1; x < 32 && out.length < count; x += 1) out.push({ x, y, edge });
+    }
   }
   if (out.length < count) throw new RangeError(`only ${String(out.length)} edges available for ${String(count)}`);
   return out;
@@ -189,8 +197,15 @@ function cancels(runtime: SimulationRuntime, orderIds: readonly string[]): reado
   return orderIds.map((orderId) => cancelOrder(runtime, orderId));
 }
 
-/** The 328 walls the overdraft funds: 26,240 out of a 25,000 facility, ending at −1,240. */
-const DRAG = 328;
+/**
+ * The walls a press-rung-bounded drag funds.
+ *
+ * 328 at the 25,000 grant: 26,240, ending at −1,240. **1,265 since the owner's
+ * ruling of 2026-09-23 set the grant to 100,000 (#641)**: 101,200, ending at
+ * −1,200 -- still past the delivery rung by less than a plank (50 of room
+ * against 65), which is the position every case below needs.
+ */
+const DRAG = 1_265;
 
 describe('what a cancelled drag gives back, and when (#717)', () => {
   it('gives back every minor unit while the bricks are still on the road', () => {
@@ -204,13 +219,13 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     const orderIds = Array.from({ length: DRAG }, (unused, index) => `wall-${String(index)}`);
 
     session.atOneTick(placements(orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits, '328 walls at 80, out of 25,000').toBe(
+    expect(session.runtime.treasury.balanceMinorUnits, 'the drag at 80 a wall, out of the grant').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS - DRAG * WALL_COST,
     );
     expect(session.runtime.procurement.pendingDeliveries, 'one delivery per funded order').toHaveLength(DRAG);
 
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole drag, in money').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);

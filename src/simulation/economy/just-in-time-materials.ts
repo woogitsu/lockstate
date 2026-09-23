@@ -357,7 +357,8 @@ function largestSurplusDelivery(
  * **"Toward the floor" was a figure of speech and is now literal**, which is
  * the one thing #703 ruling A changed about this paragraph: the floor is
  * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` and there is 2,500 of it under every
- * prison. The decision is still ADR 0081's and still not taken here.
+ * prison -- 10,000 since the owner's ruling of 2026-09-23 set the grant it is
+ * a tenth of to 100,000 (#641). The decision is still ADR 0081's and still not taken here.
  *
  * **AND THE DECISION HAS SINCE BEEN TAKEN, ELSEWHERE AND NOT HERE, WHICH IS
  * WHY EVERY PARAGRAPH ABOVE IS MARKED RATHER THAN DELETED.** #703 ruling 9 --

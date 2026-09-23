@@ -96,7 +96,14 @@ describe('ADR 0096 decision 2: a fresh, unfurnished prison can still build one c
     // room, and 60 guards at 80 is 4,800 a day against 300 a day of income
     // from nothing yet housed -- the class every §6 row of this repository's
     // own loan-pricing instrument fails.
-    stepTo(runtime, 8 * DAY_LENGTH_TICKS);
+    //
+    // **Day 21, not day 8, since the owner's ruling of 2026-09-23 set the
+    // opening grant to 100,000 (#641).** 100,000 less the 4,800 of hires is
+    // 95,200, and 4,800 a day with nothing housed takes it to the -55 reserve
+    // on day 20 (95,200 - 19 x 4,800 = 4,000 left on day 19). At 25,000 the
+    // same walk took under five days and day 8 was well past it. The position
+    // reached is the same; only the time it takes to press nothing moved.
+    stepTo(runtime, 21 * DAY_LENGTH_TICKS);
     expect(runtime.treasury.balanceMinorUnits, 'pinned at the wages starter rung, not the treasury floor').toBe(
       INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS,
     );
@@ -153,7 +160,9 @@ describe('ADR 0096 decision 2: a fresh, unfurnished prison can still build one c
    * corrective press, `residentCapacity` arrives at 841, and state income goes
    * strictly positive at **861 ticks -- 0.36 in-game days** from the reached
    * state, in-game day 8.36 absolute, with **all sixty guards still
-   * employed**.
+   * employed**. (Day 21.36 absolute since the grant of 2026-09-23 (#641)
+   * moved the reached state to day 21; the 0.36 is measured from it and is
+   * not re-measured here, only bounded.)
    *
    * The assertion is deliberately the bound and not the measured figure: 0.36
    * is what this kernel does today and a build-time change may move it, while
@@ -177,7 +186,10 @@ describe('ADR 0096 decision 2: a fresh, unfurnished prison can still build one c
     const DAY_BOUND_IN_GAME_DAYS = 10;
 
     const runtime = hireOnly(60);
-    stepTo(runtime, 8 * DAY_LENGTH_TICKS);
+    // Day 21 since the grant of 2026-09-23 (#641), for the reason the case
+    // above gives; day 8 at 25,000. The clock below starts from the reached
+    // state, so this moves nothing it measures.
+    stepTo(runtime, 21 * DAY_LENGTH_TICKS);
     expect(runtime.treasury.balanceMinorUnits, 'the reached state this measurement starts from').toBe(
       INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS,
     );
@@ -226,7 +238,10 @@ describe('ADR 0096 decision 2: a fresh, unfurnished prison can still build one c
     // floor, so twenty guards and sixty guards must be pinned at the
     // identical balance, only reaching it on a different day.
     const runtime = hireOnly(20);
-    stepTo(runtime, 20 * DAY_LENGTH_TICKS);
+    // Day 62 since the grant of 2026-09-23 (#641): 98,400 after the hires and
+    // 1,600 a day reaches -55 on day 62 (800 left on day 61). It was day 20 at
+    // 25,000.
+    stepTo(runtime, 62 * DAY_LENGTH_TICKS);
     expect(runtime.treasury.balanceMinorUnits).toBe(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS);
 
     queueTheWholeCell(runtime);

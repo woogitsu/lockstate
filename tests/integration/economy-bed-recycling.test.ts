@@ -188,7 +188,7 @@ const planksInStock = (runtime: SimulationRuntime): number =>
 function prisonWithOnePlankAndThreeCells(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 });
-  expect(runtime.treasury.balanceMinorUnits, 'one plank at 65, and this is the only money either prison spends').toBe(24_935);
+  expect(runtime.treasury.balanceMinorUnits, 'one plank at 65, and this is the only money either prison spends').toBe(99_935);
   for (const rect of RECTS) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
   RECTS.forEach((rect, index) => send(runtime, `zone-${index}`, { type: 'ZoneRoom', roomId: CELL, ...rect }));
   stepTo(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
@@ -198,7 +198,9 @@ function prisonWithOnePlankAndThreeCells(): SimulationRuntime {
 
 describe('a bed recycled by undo, with the resident left behind (ECON-003)', () => {
   it('pins the price the whole comparison rests on', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    // 25,000 until the owner's ruling of 2026-09-23 (#641); every balance in
+    // this file is 75,000 higher since then and every difference is unchanged.
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
   });
 
@@ -394,7 +396,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * -- four 40s before, nine since: `26,145 - 5 x 40 = 25,945`. The finding
      * this file exists for is untouched: one place is paid for, not three.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_945);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_945);
   });
 
   it('control: the same prison, the same plank, the same ticks, without the undo', () => {
@@ -457,7 +459,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * at 2,399 and on both at every boundary after: nine. `26,235 - 4 x 40 =
      * 26,075`. **Nine and nine**, which is what moves the relation below.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_075);
+    expect(runtime.treasury.balanceMinorUnits).toBe(101_075);
     /*
      * The relation between the two arms, asserted against **production content**
      * rather than against literals -- so a change to what an unmet need costs
@@ -508,7 +510,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * asserted to still be charged in both, in the equal counts, by the
      * sibling literal above rather than here.
      */
-    expect(runtime.treasury.balanceMinorUnits - 25_945).toBe(2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits);
+    expect(runtime.treasury.balanceMinorUnits - 100_945).toBe(2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits);
   });
 
   it('undo and removal agree now: neither gives the plank back', () => {

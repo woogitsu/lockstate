@@ -46,6 +46,15 @@ document was designed against, and it is the same person answering the same
 question one level down: they ruled the principle on 2026-09-04 and the
 mechanism on 2026-09-10.
 
+> **Dated note, 2026-09-23: the bound is 10,000, not 2,500.** Decision 3(c)
+> names *"the overdraft floor's own"* magnitude as its ground, and
+> `ARREARS_BOUND_MINOR_UNITS` (`src/simulation/economy/payroll.ts`) is derived
+> from the floor, which is one tenth of the opening grant. The owner set the
+> grant to 100,000 on 2026-09-23 (#641, `AGENTS.md` entry 14), so the floor is
+> −10,000 and the bound 10,000. The acceptance above is quoted as given and is
+> not edited. Decision 2's wages reserve is anchored to the construction rung
+> and did not move: a fresh prison's payroll still pins at −55.
+
 > **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
 > UP.** The ruling is the label of a clickable option this session wrote and
 > the owner chose — *"Przyjmij rekomendację w całości"* ("Accept the
@@ -205,7 +214,7 @@ and they close the first question this document had to ask: is the floor doing
 what the ruled constants say it does?** It is, exactly. **ARITHMETIC** over
 constants that were opened: a fresh, unfurnished prison's `'deliveries'` and
 `'hiring'` rung is `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
-= −1,250 + 65 = **−1,185** (`src/simulation/economy/treasury.ts:507`), and
+= −1,250 + 65 = **−1,185** (`src/simulation/economy/treasury.ts:579`), and
 `Treasury.canAfford` requires `balance − amount ≥ floor`. So one brick at 40
 needs a balance of at least −1,145, and from −2,500 the shortfall is
 **1,355**; one hire at 80 needs at least −1,105, and the shortfall is
@@ -224,14 +233,14 @@ income.**
   (`src/simulation/economy/income.ts:115`).
 - **VERIFIED, read.** `PayrollSystem` pays
   `Math.max(0, Math.min(due, balance − floorFor('wages')))`
-  (`src/simulation/economy/payroll.ts:314`) and carries the remainder as
+  (`src/simulation/economy/payroll.ts:320`) and carries the remainder as
   arrears. At the floor that expression is **0**, so arrears never decay, and
   every minor unit that later arrives is billed against them before it can be
   spent ([ADR 0049](./0049-what-a-prison-that-cannot-make-payroll-owes.md)
   decision 3: *"Arrears are paid before the day they precede"*).
 - **VERIFIED, read.** `'wages'` is the one spend class with **no rung of its
   own**: `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages` is
-  `Number.NEGATIVE_INFINITY` (`src/simulation/economy/treasury.ts:430`),
+  `Number.NEGATIVE_INFINITY` (`src/simulation/economy/treasury.ts:501`),
   clamped by `rungFloorMinorUnits` only to the overdraft floor of −2,500. So
   the undeclinable charge spends the 65 minor units of headroom that
   `STARTER_RUNG_FLOORS_MINOR_UNITS` exists to reserve, and the reserve's own
@@ -287,7 +296,7 @@ able to cancel (#860, #861, #862).
 
 - **A reserve exists and is one plank wide.**
   `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
-  (`src/simulation/economy/treasury.ts:507`), the owner's second ruling on
+  (`src/simulation/economy/treasury.ts:579`), the owner's second ruling on
   #771, and `isFreshUnfurnishedPrison` is read live from
   `roomInstances.totalResidentCapacity === 0`
   (`src/simulation/runtime/session-commands.ts:403`). It reserves the **plank**

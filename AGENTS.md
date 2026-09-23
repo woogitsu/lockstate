@@ -1505,12 +1505,23 @@ open. Offered figures, they chose:
 recommendation: the smallest balance of those measured that keeps the
 drag-wall trap outside ordinary drawing, at about four screenfuls. **It sets a
 number and moves none here.** `TREASURY_STARTING_BALANCE_MINOR_UNITS` is still
-`25_000` at `src/simulation/economy/treasury.ts:203`. **Its docblock at
+`25_000` at line 203 of `src/simulation/economy/treasury.ts` (as of `8a78fca7`;
+re-aimed below). **Its docblock at
 `:185-188` says the owner decided *"to keep 25,000"*, and that sentence is
 false.** It was already false after 2026-08-30. It is left alone on purpose, so
 that an implementation agent changes the constant and its docblock in one
 commit. The overdraft floor at `:295` derives from the constant and moves with
 it (#976).
+
+**Implemented 2026-09-23, and the three coordinates above are re-aimed rather
+than left pointing at lines that no longer hold what they name.** The constant
+is `100_000` at `src/simulation/economy/treasury.ts:250`
+(`TREASURY_STARTING_BALANCE_MINOR_UNITS`); the kept sentence *"the answer was to
+keep 25,000"* stays in that constant's docblock, under a new head that marks it
+superseded by both rulings; and the floor is
+`src/simulation/economy/treasury.ts:365` (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`),
+now −10,000. The paragraph above is the state this entry described when it was
+written, and is kept.
 
 **15. The product name is spelled `LockState.io` everywhere a player sees it
 ([#703](https://github.com/matmaxalez/lockstate/issues/703)).** #703's ruling 8

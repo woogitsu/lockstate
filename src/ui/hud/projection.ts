@@ -550,7 +550,9 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * the badge is read *before* pressing.
  *
  * **Why the deliveries rung and not the deepest one a prison can still reach.**
- * A payday may still spend to the treasury's floor (-2,500), so a badge over
+ * A payday may still spend to the treasury's floor (-2,500 at the 25,000
+ * grant; -10,000 since the owner's ruling of 2026-09-23 set it to 100,000,
+ * #641), so a badge over
  * the deliveries rung understates what the *prison* will spend. It states what
  * the *player* can spend, which is what a number beside a control is for: a
  * payday happens without a press and is not a choice the badge could inform.
