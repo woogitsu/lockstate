@@ -484,6 +484,16 @@ watched red on the code before the change:
 
 ### The options not taken
 
+**The three options the owner was offered were:** option A, the one chosen;
+*"Odrzucone = nowsza akcja"* ("refused = newer action"), the second bullet
+below; and *"Na razie bez zmian"* ("no change for now"), which would have left
+this document as it stood, shipped #1370's mark dimming Undo over a dead top,
+and filed the two-press hole as a separate issue. **The first bullet below was
+never offered.** It is the proposal that raised the question, and it was
+withdrawn before the question was put, for the reason that bullet gives. It is
+recorded here so a later reader does not propose it again without that
+reason, not as something the owner declined.
+
 - **Skip dead transactions inside `undo()`.** This fixes the dim button in one
   press, but it widens the hole above from two presses to one. Take a live
   wall, a hire and a refused wall: the refused wall resets the flag, and a

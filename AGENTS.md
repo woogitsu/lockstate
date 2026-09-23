@@ -1448,8 +1448,9 @@ registered on the undo history, as a dead transaction.
 
 Refused objects were already kept out of the history. Offered three choices:
 - keep refused placements out of the history (option A);
-- skip dead transactions inside `undo()`;
 - treat a refused placement as a newer action, so the next Undo refuses;
+- change nothing for now, ship #1370's mark as it stood, and file the two-press
+  hole separately;
 
 the owner chose:
 
