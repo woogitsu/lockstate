@@ -236,6 +236,9 @@ newer ones have been recorded, not because one newer one arrived.
 
 ## Weakest claim, named
 
+*Measured after acceptance; see the addendum at the foot. The paragraph is kept
+as it was put.*
+
 **That eight is the right bound.** It is chosen to match the event list, and it
 has not been measured against the rail. A refusal family of eight rows plus the
 event family's eight could make the list's scroll container sixteen rows tall
@@ -246,3 +249,47 @@ this change runs place at most two refusals.
 **What would change my mind:** a measurement showing that a full refusal
 history pushes a panel past its own fold (issue #985's own subject). The answer
 then is a smaller constant, not a different design.
+
+## Addendum, 2026-09-23: the bound, measured
+
+**The weakest claim above was settled by measuring, and the bound stays at 8.**
+`tests/browser/ui-refusal-history-fits-the-rail.spec.ts` puts one refusal and
+then a full history of eight on screen (refused off-map build orders), in one
+page load, and pins the result at 900x600, 1280x720 and 375x812.
+
+- **900x600 and 1280x720.** No rail panel moves: `.hud__aside`, `.save-panel`
+  and `.hud-build` keep their heights, and the rail never scrolls. The corner
+  grows one row at a time until it reaches the rail's height: 484.3 px at
+  900x600, reached at three rows; 604.3 px at 1280x720, reached at six. From
+  there the list scrolls inside itself: 164 of 375 px, and 246 of 375 px. The
+  corner covers more of the world as it grows. Eight *event* rows already cause
+  the same growth.
+- **375x812.** Here the alerts fold is inside the Overview panel (#1201), and
+  the list has no height bound. Each row costs about 47 px, taken from the
+  aside. The save panel spills past its own fold from two rows on (211 of
+  246 px) and stays scrollable. The aside reaches its 25 % floor at five rows
+  (143 of 572 px). After that the Overview panel scrolls (387 of 538 px at
+  eight rows). Nothing is stuck, nothing leaves the viewport, and the rail never
+  scrolls.
+- **The #88 sweep** passed with eight refusals loaded into its shell at the
+  three viewports. **The 200 % refusal-row case** in
+  `ui-alert-row-presses-to-its-place.spec.ts` stayed at 6 of 6 unreachable
+  with eight rows, the same set as its `UNREACHABLE_AT_200` ceiling.
+  **`ui-200-percent-zoom-sweep-ratchet.spec.ts`** read 12 of 36 against a
+  ceiling of 12. It measures the boot screen, where no session exists and
+  therefore no refusal can. Both of the first two runs used temporarily patched
+  copies of their specs, which were not committed.
+
+**Why the constant was not lowered.** "No panel past its fold" holds at the
+phone only for a history of one: from two rows on, the save panel's content
+spills and has to be scrolled. The only value that meets that criterion there
+is 1, which is the state before ruling 26, and choosing it would undo the
+ruling. By the suite's own rule for a rail panel — it may hold more than its
+box, as long as it scrolls and owns its edge (`railIntegrity`,
+`app-shell.spec.ts`) — eight breaks nothing at any of the three viewports.
+
+**What that leaves open.** The phone tier's alerts list has no height of its
+own, so any rows, refusals or events, take height from the aside. That was true
+before this ADR: two event rows do the same. A height bound on
+`.hud-alerts__list` below 720 px would fix it. It is a layout decision about
+the Overview panel and is not taken here.
