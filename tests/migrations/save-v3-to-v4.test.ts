@@ -107,8 +107,9 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    *     `migrateSaveEnvelopeV4ToV5` relies on in the other direction.
    */
   // `inFlight` beside them, since issue #1373: a V6-only optional section no
-  // build before it wrote.
-  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulationWithoutObjects } = bundle.simulation;
+  // build before it wrote -- and `crossingNotices`, the second such section
+  // the same issue added.
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, crossingNotices: _crossingNotices, ...simulationWithoutObjects } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,

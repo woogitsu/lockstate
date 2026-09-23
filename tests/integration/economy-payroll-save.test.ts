@@ -363,8 +363,9 @@ describe('the historical chain still walks a save older than the field', () => {
     const { bundle } = captured;
     // `regimeSchedules` removed beside them for the same reason, since ADR
     // 0113: it is V6's required section and no V4 build wrote one. `inFlight`
-    // too, since issue #1373, and for the same reason.
-    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = captured.simulation;
+    // too, since issue #1373, and for the same reason -- and `crossingNotices`,
+    // the V6 section the same issue added for the crossing notices' memory.
+    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, crossingNotices: _crossingNotices, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,

@@ -105,8 +105,9 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   // under the same optional-field rule), and a room instance carried a
   // capacity and a capability list instead of a rectangle.
   // `inFlight` beside them, since issue #1373: a V6-only optional section no
-  // build before it wrote.
-  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = bundle.simulation;
+  // build before it wrote -- and `crossingNotices`, the second such section
+  // the same issue added.
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, crossingNotices: _crossingNotices, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
