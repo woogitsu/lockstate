@@ -10,7 +10,8 @@ import {
   type PathRequestQueueMetrics,
   type ResolvedPathRequest,
 } from './path-request-queue';
-import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
+import { captureNavigationCacheSnapshot, loadNavigationCacheSnapshot, type NavigationCacheSnapshot } from './cache-snapshot';
+import { buildNavigationGraph, currentGeometrySignature, isNavigationGraphStale, type NavigationGraph } from './region-graph';
 import type { Route, RouteResult } from './route';
 import { RouteCache, type RouteCacheMetrics } from './route-cache';
 import type { RouteContext } from './route-context';
@@ -30,6 +31,14 @@ export interface ResolvedPathRequestSnapshot {
 export interface NavigationInFlightSnapshot {
   readonly pending: readonly PendingPathRequestSnapshot[];
   readonly results: readonly ResolvedPathRequestSnapshot[];
+  /**
+   * The two caches' warmth (ADR 0007's 2026-09-23 amendment). **Optional, and
+   * absent means cold caches**, which is what every save written before it
+   * restored to -- including those of the build that added this section.
+   * `getInFlightSnapshot` always writes it. It is loaded by `loadCacheSnapshot`,
+   * not `loadInFlightSnapshot`: see the former for why.
+   */
+  readonly caches?: NavigationCacheSnapshot;
 }
 
 function copyRoute(route: Route): Route {
@@ -222,6 +231,14 @@ export class NavigationSystem implements SystemRegistration {
    * and the door registry, both persisted, which is ADR 0007's line and is
    * unchanged.
    *
+   * **The route and flow-field caches are carried since 2026-09-23 (`caches`),
+   * and the sentence above is kept because it was the reasoning the section
+   * shipped with.** Their *answers* are derived from the world and the doors;
+   * what a hit costs against `workBudgetPerTick` is not, and that is what
+   * changed whom a binding budget served. ADR 0007's amendment of that date
+   * records the owner's ruling and the design. The region graph is still not
+   * carried: it is rebuilt from the world alone and costs no budget.
+   *
    * ## Why a result is carried without `expansions`, `usedFlowField` and `waitedTicks`
    *
    * **Measured, not tidied.** With all five fields carried, a save taken with
@@ -254,6 +271,11 @@ export class NavigationSystem implements SystemRegistration {
    * cache warmth was built and withdrawn for its latency cost. ADR 0059's
    * amendment under "Determinism" carries the numbers and the open choice.
    *
+   * **Closed the same day by carrying the caches (`caches`).** The known
+   * divergence is inverted to require exactness. The three diagnostics above
+   * stay out of a carried *result* all the same: they describe how one search
+   * went, which a restored session did not perform.
+   *
    * Deterministic: both lists ascending by id.
    */
   public getInFlightSnapshot(): NavigationInFlightSnapshot {
@@ -262,10 +284,19 @@ export class NavigationSystem implements SystemRegistration {
       results: [...this.results.values()]
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+      caches: captureNavigationCacheSnapshot(this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature()),
     };
   }
 
-  /** Replaces the waiting set and the uncollected results with a snapshot's. For a restore, before any owner's `loadSnapshot` asks `knowsRequest`. */
+  /**
+   * Replaces the waiting set and the uncollected results with a snapshot's. For a restore, before any owner's `loadSnapshot` asks `knowsRequest`.
+   *
+   * A snapshot's `caches` are **not** loaded here, and must not be: they are
+   * rebased onto the door registry's versions (`rebaseDoorDependencies`), and
+   * a restore goes on changing those after this call -- it re-applies every
+   * sector's control state, which sets each governed door's state again. See
+   * `loadCacheSnapshot`.
+   */
   public loadInFlightSnapshot(snapshot: NavigationInFlightSnapshot): void {
     this.queue.loadSnapshot(snapshot.pending);
     this.results.clear();
@@ -307,6 +338,27 @@ export class NavigationSystem implements SystemRegistration {
     return [...waiting, ...resolved].filter((id) => id.startsWith(prefix)).sort();
   }
 
+  /**
+   * Replaces both caches' entries with a save's (ADR 0007's 2026-09-23
+   * amendment). **For a restore, after its last door mutation**:
+   * `restoreSessionSystems` calls it last.
+   *
+   * The order is the whole contract. What a carried entry keeps of its door
+   * versions is only whether each was still the one captured when the save was
+   * taken, and this rebases that onto the restored registry's versions as they
+   * stand now. A door whose state a restore sets *after* this call would be
+   * read as having changed since the save, and its entries would stop
+   * answering from the fast path -- and one whose change a later restore step
+   * undid would look unchanged when it was not.
+   *
+   * Every carried entry was computed against the saved world's current
+   * geometry, so each is stamped with the restored world's, which is the same
+   * signature because the world restores its chunks' revisions exactly.
+   */
+  public loadCacheSnapshot(snapshot: NavigationCacheSnapshot): void {
+    loadNavigationCacheSnapshot(snapshot, this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature());
+  }
+
   public getQueueMetrics(): PathRequestQueueMetrics {
     return this.queue.getMetrics();
   }
@@ -346,10 +398,19 @@ export class NavigationSystem implements SystemRegistration {
     return isEdgeTraversable(this.world, this.doors, from, to, context);
   }
 
-  private ensureGraph(): NavigationGraph {
-    const chunkStates = this.loadedChunkPositions
+  private loadedChunkStates(): readonly ChunkState[] {
+    return this.loadedChunkPositions
       .map((position) => this.world.getChunk(position))
       .filter((state): state is ChunkState => state !== undefined);
+  }
+
+  /** The signature the next `ensureGraph` builds against, without building anything. */
+  private worldGeometrySignature(): string {
+    return currentGeometrySignature(this.loadedChunkStates());
+  }
+
+  private ensureGraph(): NavigationGraph {
+    const chunkStates = this.loadedChunkStates();
     if (isNavigationGraphStale(this.graph, this.doors, chunkStates)) {
       this.graph = buildNavigationGraph(this.world, this.doors, chunkStates);
     }

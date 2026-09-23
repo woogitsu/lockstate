@@ -1204,4 +1204,17 @@ export function restoreSessionSystems(
    *     back saying nothing is exactly what those saves recorded.
    */
   if (systems.alerts !== undefined) runtime.events.loadSnapshot(systems.alerts);
+
+  /*
+   * 11. The route and flow-field caches' warmth, **last**, and the position is
+   *     the contract rather than tidiness (ADR 0007's amendment of
+   *     2026-09-23). A carried entry keeps of its door versions only whether
+   *     each was still the one captured; `NavigationSystem.loadCacheSnapshot`
+   *     rebases that onto the registry's versions as they stand when it runs,
+   *     so it has to run after every door this function sets -- step 1's
+   *     registrations and the control states re-applied over them. Absent (any
+   *     save written before it), the caches stay cold, which is what those
+   *     saves restored to.
+   */
+  if (systems.inFlight?.navigation.caches !== undefined) runtime.navigation.loadCacheSnapshot(systems.inFlight.navigation.caches);
 }

@@ -1467,12 +1467,109 @@ const locomotionSnapshotSchema = z
 /** Mirrors `SearchJobState` (`src/simulation/contraband/search-system.ts`), pinned in `tests/foundation/save-schema-enum-union-contract.test.ts`. */
 const searchJobStateSchema = z.enum(['travelling', 'searching']);
 
+/**
+ * The route and flow-field caches' warmth, `simulation.inFlight.navigation.caches`
+ * (ADR 0007's amendment of 2026-09-23, the owner's ruling *"Zapisywać pamięć
+ * tras (zalecane)"* -- an option label, the weaker provenance).
+ * `NavigationCacheSnapshot` (`src/simulation/navigation/cache-snapshot.ts`)
+ * carries the argument for every choice in the shape.
+ *
+ * **Optional inside an optional section**, on the same three conditions as
+ * the section itself: absent means cold caches, which is what every save
+ * written before it restored to -- including the ones the build that added
+ * `inFlight` wrote -- a live capture always writes it, and nothing existing
+ * changes shape or meaning. So `SAVE_SCHEMA_VERSION` does not move, with ADR
+ * 0038 §4's cost: an older build refuses a save carrying it as
+ * `invalid-shape`.
+ *
+ * Structural only. Tables sorted, indices in range and a route that walks from
+ * its origin to its destination are refused by `loadNavigationCacheSnapshot`.
+ */
+const doorDependenciesEncodedSchema = z
+  .object({
+    revisionUnchanged: z.boolean(),
+    unchanged: z.array(z.number().int().min(0)),
+    changed: z.array(z.tuple([z.number().int().min(0), z.boolean(), z.number().min(0)])).min(1).optional(),
+  })
+  .strict();
+
+const routeCacheEntrySchema = z
+  .object({
+    origin: tilePositionSchema,
+    destination: tilePositionSchema,
+    context: z.number().int().min(0),
+    result: z.union([
+      z
+        .object({
+          ok: z.literal(true),
+          path: z.string().regex(/^[EWSN]*$/),
+          totalCost: z.number().min(0),
+          segments: z
+            .array(
+              z.union([
+                z.tuple([z.number().int(), z.number().int().min(1)]),
+                z.tuple([z.number().int(), z.number().int().min(1), z.number().int().min(0)]),
+              ]),
+            )
+            .min(1),
+        })
+        .strict(),
+      z
+        .object({
+          ok: z.literal(false),
+          failure: z
+            .object({
+              reason: routeFailureReasonSchema,
+              blockedBy: z
+                .object({ doorId: z.string().min(1), reason: doorAccessDenialReasonSchema })
+                .strict()
+                .optional(),
+            })
+            .strict(),
+        })
+        .strict(),
+    ]),
+    dependencies: doorDependenciesEncodedSchema,
+  })
+  .strict();
+
+const flowFieldSnapshotSchema = z
+  .object({
+    destinationRegion: z.number().int(),
+    context: z.number().int().min(0),
+    steps: z.array(
+      z.tuple([
+        z.number().int(),
+        z.number().int().min(0),
+        z.number().int(),
+        z.number().int(),
+        z.number().int(),
+        z.number().int(),
+        z.number().int(),
+        z.number().int(),
+        z.number().min(0),
+      ]),
+    ),
+    dependencies: doorDependenciesEncodedSchema,
+  })
+  .strict();
+
+const navigationCachesSchema = z
+  .object({
+    doorIds: z.array(z.string().min(1)),
+    contexts: z.array(routeContextSchema),
+    routes: z.array(routeCacheEntrySchema),
+    flowFields: z.array(flowFieldSnapshotSchema),
+  })
+  .strict();
+
 const inFlightSectionSchema = z
   .object({
     navigation: z
       .object({
         pending: z.array(pendingPathRequestSchema),
         results: z.array(resolvedPathRequestSchema),
+        caches: navigationCachesSchema.optional(),
       })
       .strict(),
     prisoners: z

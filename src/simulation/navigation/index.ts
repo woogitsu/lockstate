@@ -1,3 +1,4 @@
+export * from './cache-snapshot';
 export * from './door';
 export * from './flow-field';
 export * from './local-search';

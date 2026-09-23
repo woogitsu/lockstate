@@ -52,3 +52,25 @@ export function routeContextFingerprint(context: RouteContext): string {
   const permissions = [...(context.permissions ?? [])].sort().join(',');
   return `${context.role}|${context.securityClearance}|${permissions}|${context.emergencyOverride === true ? '1' : '0'}`;
 }
+
+/**
+ * A copy of `context` in the one shape its fingerprint names: permissions
+ * sorted and omitted when there are none, `emergencyOverride` present only
+ * when it is `true`.
+ *
+ * Two contexts with one fingerprint are interchangeable everywhere a context
+ * is read -- `checkDoorAccess` consults the clearance, the permission set and
+ * the override, all three of which the fingerprint states, and nothing reads
+ * `role` except the fingerprint itself. So a cache may keep this copy in place
+ * of whichever of them it was handed, and a save may carry one per
+ * fingerprint (ADR 0007's 2026-09-23 amendment).
+ */
+export function canonicalRouteContext(context: RouteContext): RouteContext {
+  const permissions = [...(context.permissions ?? [])].sort();
+  return {
+    role: context.role,
+    securityClearance: context.securityClearance,
+    ...(permissions.length === 0 ? {} : { permissions }),
+    ...(context.emergencyOverride === true ? { emergencyOverride: true } : {}),
+  };
+}

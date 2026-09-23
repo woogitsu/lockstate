@@ -207,6 +207,19 @@ export function isNavigationGraphStale(
   chunks: Iterable<ChunkState>,
 ): boolean {
   if (graph.doorStructuralRevision !== doors.structuralRevision) return true;
-  const loadedChunks = [...chunks].filter((chunk) => chunk.lifecycle === 'loaded');
-  return computeGeometrySignature(loadedChunks) !== graph.geometrySignature;
+  return currentGeometrySignature(chunks) !== graph.geometrySignature;
+}
+
+/**
+ * The `geometrySignature` a graph built over `chunks` now would carry, without
+ * building one -- the loaded chunks' geometry revisions, exactly as
+ * `buildNavigationGraph` and `isNavigationGraphStale` compute it.
+ *
+ * Exported for the save (ADR 0007's 2026-09-23 amendment): a capture reads it
+ * to tell a cache entry the next read would still answer from one it would
+ * delete, and must not rebuild the graph to find out, because a capture has no
+ * business changing when the graph is rebuilt.
+ */
+export function currentGeometrySignature(chunks: Iterable<ChunkState>): string {
+  return computeGeometrySignature([...chunks].filter((chunk) => chunk.lifecycle === 'loaded'));
 }

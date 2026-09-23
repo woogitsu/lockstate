@@ -4,7 +4,7 @@ import { boundedLocalSearch, type SearchStats } from './local-search';
 import type { DoorRegistry } from './door';
 import type { NavigationGraph, Portal, RegionId } from './region-graph';
 import { portalCannotBeCrossedBetween, runRegionDijkstra } from './region-dijkstra';
-import { checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
+import { canonicalRouteContext, checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
 import { sliceIntoSegments } from './router';
 import type { Route, RouteResult } from './route';
@@ -35,6 +35,12 @@ export interface RegionFlowFieldStep {
 export interface RegionFlowField {
   readonly destinationRegion: RegionId;
   readonly contextFingerprint: string;
+  /**
+   * The context the field was computed for, in `canonicalRouteContext`'s shape
+   * -- one per fingerprint. Kept so a restore can re-derive an unchanged
+   * dependency's verdict (ADR 0007's 2026-09-23 amendment).
+   */
+  readonly context: RouteContext;
   readonly geometrySignature: string;
   readonly steps: ReadonlyMap<RegionId, RegionFlowFieldStep>;
   /**
@@ -79,6 +85,7 @@ export function computeRegionFlowField(
   return {
     destinationRegion,
     contextFingerprint: routeContextFingerprint(context),
+    context: canonicalRouteContext(context),
     geometrySignature: graph.geometrySignature,
     steps,
     doorDependencies: captureDoorDependencies(dependencyDoorIds, doors, context),
@@ -227,6 +234,28 @@ export class FlowFieldCache {
 
   public set(field: RegionFlowField): void {
     this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), field);
+  }
+
+  /**
+   * Every field computed against `geometrySignature`, ascending by cache key --
+   * what a save carries. The same rule and the same argument as
+   * `RouteCache.entriesComputedAgainst`.
+   */
+  public fieldsComputedAgainst(geometrySignature: string): readonly RegionFlowField[] {
+    return [...this.entries]
+      .filter(([, field]) => field.geometrySignature === geometrySignature)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([, field]) => field);
+  }
+
+  /** Replaces every field with `fields`, each stamped with `geometrySignature`. Counters are left alone. */
+  public loadFields(fields: readonly Omit<RegionFlowField, 'geometrySignature'>[], geometrySignature: string): void {
+    this.entries.clear();
+    for (const field of fields) {
+      const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
+      if (this.entries.has(key)) throw new RangeError(`Flow field appears twice in a snapshot: ${key}`);
+      this.entries.set(key, { ...field, geometrySignature });
+    }
   }
 
   public size(): number {

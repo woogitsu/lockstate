@@ -1,7 +1,7 @@
 import { tileKey, type TilePosition } from '../world/coordinates';
 import type { DoorRegistry } from './door';
 import type { NavigationGraph } from './region-graph';
-import { routeContextFingerprint, type RouteContext } from './route-context';
+import { canonicalRouteContext, routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
 import type { RouteResult } from './route';
 
@@ -26,9 +26,27 @@ function crossedDoorIds(result: RouteResult): readonly string[] {
 }
 
 interface CacheEntry {
+  /**
+   * The request this answers. The key already encodes it, but only as a
+   * fingerprint of the context; the context itself is kept because a restore
+   * re-derives an unchanged dependency's verdict from it (ADR 0007's
+   * 2026-09-23 amendment).
+   */
+  readonly origin: TilePosition;
+  readonly destination: TilePosition;
+  readonly context: RouteContext;
   readonly result: RouteResult;
   readonly geometrySignature: string;
   /** Every door this result depended on and what the search concluded about each, captured at compute time. */
+  readonly dependencies: DoorDependencies;
+}
+
+/** One entry, as `RouteCache.entriesComputedAgainst` reports it and `loadEntries` takes it back. */
+export interface RouteCacheEntryView {
+  readonly origin: TilePosition;
+  readonly destination: TilePosition;
+  readonly context: RouteContext;
+  readonly result: RouteResult;
   readonly dependencies: DoorDependencies;
 }
 
@@ -116,6 +134,9 @@ export class RouteCache {
     dependencyDoorIds: Iterable<string>,
   ): void {
     this.entries.set(cacheKey(origin, destination, context), {
+      origin: { x: origin.x, y: origin.y },
+      destination: { x: destination.x, y: destination.y },
+      context: canonicalRouteContext(context),
       result,
       geometrySignature: graph.geometrySignature,
       dependencies: captureDoorDependencies([...dependencyDoorIds, ...crossedDoorIds(result)], doors, context),
@@ -124,6 +145,53 @@ export class RouteCache {
 
   public size(): number {
     return this.entries.size;
+  }
+
+  /**
+   * Every entry computed against `geometrySignature`, ascending by cache key --
+   * what a save carries (ADR 0007's 2026-09-23 amendment).
+   *
+   * An entry computed against any *other* signature is left out, and that
+   * changes nothing a later tick can see: `get` deletes such an entry and
+   * misses, which is exactly what a restored cache without it does, and a
+   * signature the world has moved past never comes back (it is every loaded
+   * chunk's `geometryRevision`, and those only rise). Ascending by key because
+   * nothing iterates this map to decide anything, so its insertion order is
+   * history rather than state.
+   */
+  public entriesComputedAgainst(geometrySignature: string): readonly RouteCacheEntryView[] {
+    return [...this.entries]
+      .filter(([, entry]) => entry.geometrySignature === geometrySignature)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([, entry]) => ({
+        origin: entry.origin,
+        destination: entry.destination,
+        context: entry.context,
+        result: entry.result,
+        dependencies: entry.dependencies,
+      }));
+  }
+
+  /**
+   * Replaces every entry with `views`, each stamped with `geometrySignature` --
+   * the restored world's, which is the one every carried entry was computed
+   * against. Hit, miss and eviction counters are left alone: they are
+   * diagnostics of this instance's own work, like `PathRequestQueue`'s.
+   */
+  public loadEntries(views: readonly RouteCacheEntryView[], geometrySignature: string): void {
+    this.entries.clear();
+    for (const view of views) {
+      const key = cacheKey(view.origin, view.destination, view.context);
+      if (this.entries.has(key)) throw new RangeError(`Route cache entry appears twice in a snapshot: ${key}`);
+      this.entries.set(key, {
+        origin: { x: view.origin.x, y: view.origin.y },
+        destination: { x: view.destination.x, y: view.destination.y },
+        context: canonicalRouteContext(view.context),
+        result: view.result,
+        geometrySignature,
+        dependencies: view.dependencies,
+      });
+    }
   }
 
   public getMetrics(): RouteCacheMetrics {
