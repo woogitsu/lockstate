@@ -2253,7 +2253,9 @@ interface WallOrderOptions {
  * The third caller does pass `orderAt`, which is a statement about the
  * *viewport* and not about the route: see `WallOrderOptions` for what a
  * software rasteriser charges per pixel and why a spec whose subject is the
- * keyboard route must not ask for it.
+ * keyboard route must not ask for it. (**`#411`'s two specs now pass it as
+ * well** -- `WallOrderOptions` records why the "must not" above was the wrong
+ * reading of what those specs are about.)
  *
  * **The `~3 s` is a per-press figure multiplied as though a segment were one
  * press, and a segment is four or fourteen hops.** Measured on this container
@@ -2436,8 +2438,9 @@ async function orderWallRectangles(
    * And the frame itself is a *size*, which nothing here had treated as
    * anything but a constant: at 640x480 the same presses cost 28 ms and 30 ms
    * against 164 ms and 222 ms at 1280x800, on the same page in the same run.
-   * `WallOrderOptions.orderAt` is that, offered to the one caller whose
-   * subject is not the keyboard route. Neither of those is a cheaper press in
+   * `WallOrderOptions.orderAt` is that, offered to the callers whose subject
+   * is not this helper's own route (`#331`, and since run 35849375154 the two
+   * `#411` specs -- see `WallOrderOptions`). Neither of those is a cheaper press in
    * the sense this block meant -- the renderer is still what a press waits
    * for -- and both are fewer things for it to wait on.
    *
@@ -7271,7 +7274,7 @@ test.describe('the assembled application', () => {
     /*
      * Typed at the phone viewport, and restored to 1280x800 before the drag
      * below -- see `WallOrderOptions.orderAt` for the measurement and for why
-     * this is the one caller that asks for it.
+     * this was the first caller to ask for it (`#411`'s two specs followed).
      *
      * 375x812 is not an arbitrary small box: it is one of the two viewports
      * the block above just asserted the empty readout at, and one of the three
