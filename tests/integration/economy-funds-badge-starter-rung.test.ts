@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
@@ -78,6 +79,7 @@ function send(runtime: SimulationRuntime, command: SimulationCommand): void {
 /** A walled, zoned cell with no bed built -- fresh and unfurnished for its whole life so far. */
 function prisonWithACell(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  addBulkPurchaseStorage(runtime);
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
   return runtime;
