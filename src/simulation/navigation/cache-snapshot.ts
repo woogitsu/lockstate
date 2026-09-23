@@ -1,10 +1,11 @@
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { DoorRegistry } from './door';
-import type { FlowFieldCache, RegionFlowField, RegionFlowFieldStep } from './flow-field';
+import type { FlowFieldCache, FlowFieldCacheEntry, RegionFlowField, RegionFlowFieldStep } from './flow-field';
 import type { RegionId } from './region-graph';
 import { routeWaypoints, type RouteFailure, type RouteResult, type RouteSegment } from './route';
 import { decodeStepPath, encodeStepPath } from '../world/step-path';
-import type { RouteCache } from './route-cache';
+import type { CacheUseClock, RouteCache, RouteCacheEntryView } from './route-cache';
+import { jsonbTextByteLength } from '../../shared/save-size';
 import { canonicalRouteContext, routeContextFingerprint, type RouteContext } from './route-context';
 import {
   rebaseDoorDependencies,
@@ -99,6 +100,8 @@ export interface DoorDependenciesEncoded {
 }
 
 export interface RouteCacheEntrySnapshot {
+  /** Rank among every carried entry, routes and fields together, by last use: 1 is the least recent. */
+  readonly recency: number;
   readonly origin: TilePosition;
   readonly destination: TilePosition;
   /** Index into `NavigationCacheSnapshot.contexts`. */
@@ -116,6 +119,8 @@ export interface RouteCacheEntrySnapshot {
 export type FlowFieldStepSnapshot = readonly [number, number, number, number, number, number, number, number, number];
 
 export interface FlowFieldSnapshot {
+  /** See `RouteCacheEntrySnapshot.recency`. */
+  readonly recency: number;
   readonly destinationRegion: number;
   readonly context: number;
   /** Ascending by region. */
@@ -219,15 +224,81 @@ function encodeResult(result: RouteResult, origin: TilePosition, destination: Ti
  * What a save carries of the two caches, read against the registry and the
  * geometry as they stand now. Pure: it reads the caches and changes nothing,
  * not even when the graph is next rebuilt.
+ *
+ * ## `byteBudget`: the owner's ruling honoured up to ADR 0013's bound
+ *
+ * The carried caches are the one part of a save that can be dropped without
+ * losing a fact the game needs -- a missing entry is a search the restored
+ * session pays for, not a wrong answer -- so they are the part that gives way
+ * when a save nears ADR 0013's 4 MiB cloud bound (`captureSessionSnapshot`
+ * computes the budget: what the rest of the payload leaves). Under a budget
+ * this carries the **most recently used** entries, routes and fields in one
+ * order (`CacheUseClock`), as many as fit: the largest recency prefix whose
+ * `jsonbTextByteLength` is within `byteBudget`. Sizes grow with the prefix --
+ * an entry only ever adds bytes, and a door it adds to the table can only
+ * lengthen other entries' indices -- so the prefix is found by bisection.
+ *
+ * **Where the budget binds, the restore is no longer exact, and exactly this
+ * diverges:** a request for a leg that was not carried searches in the
+ * restored session where the saved one would have answered from its cache. That
+ * costs expansions against `workBudgetPerTick`, which changes which requests
+ * are served on a tick where that budget binds too, and it leaves the restored
+ * cache holding a freshly computed entry -- the same route, with dependencies
+ * captured anew -- where the saved one holds the original. From the first such
+ * request on, the two sessions' captures differ.
+ * `tests/unit/navigation-cache-snapshot.test.ts` pins both halves.
+ *
+ * Each carried entry records its **recency rank** among the carried entries,
+ * 1 for the least recent, so a restore resumes the same order and a later save
+ * of it drops what the saved session's would have dropped.
  */
 export function captureNavigationCacheSnapshot(
   routeCache: RouteCache,
   flowFieldCache: FlowFieldCache,
   doors: DoorRegistry,
   geometrySignature: string,
+  byteBudget: number = Number.POSITIVE_INFINITY,
 ): NavigationCacheSnapshot {
   const routes = routeCache.entriesComputedAgainst(geometrySignature);
   const fields = flowFieldCache.fieldsComputedAgainst(geometrySignature);
+  // Most recent first. `lastUse` values are unique across both caches: one
+  // shared clock hands each out once.
+  const byRecency = [...routes.map((route) => route.lastUse), ...fields.map((field) => field.lastUse)].sort((a, b) => b - a);
+
+  const encodeMostRecent = (count: number): NavigationCacheSnapshot => {
+    const cutoff = count === 0 ? Number.POSITIVE_INFINITY : byRecency[count - 1]!;
+    return encodeSelection(
+      routes.filter((route) => route.lastUse >= cutoff),
+      fields.filter((field) => field.lastUse >= cutoff),
+      doors,
+    );
+  };
+
+  const everything = encodeMostRecent(byRecency.length);
+  if (!Number.isFinite(byteBudget) || jsonbTextByteLength(everything) <= byteBudget) return everything;
+
+  let best = encodeMostRecent(0);
+  let low = 1;
+  let high = byRecency.length - 1;
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const candidate = encodeMostRecent(middle);
+    if (jsonbTextByteLength(candidate) <= byteBudget) {
+      best = candidate;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return best;
+}
+
+function encodeSelection(
+  routes: readonly RouteCacheEntryView[],
+  fields: readonly FlowFieldCacheEntry[],
+  doors: DoorRegistry,
+): NavigationCacheSnapshot {
+  const ranks = new Map([...routes.map((route) => route.lastUse), ...fields.map((field) => field.lastUse)].sort((a, b) => a - b).map((lastUse, index) => [lastUse, index + 1]));
 
   const tables = new Tables();
   for (const entry of routes) {
@@ -237,7 +308,7 @@ export function captureNavigationCacheSnapshot(
       for (const segment of entry.result.route.segments) if (segment.enteredViaDoorId !== undefined) tables.addDoor(segment.enteredViaDoorId);
     }
   }
-  for (const field of fields) {
+  for (const { field } of fields) {
     tables.addContext(field.context);
     tables.addDependencies(field.doorDependencies);
     for (const [, step] of [...field.steps].sort(([a], [b]) => a - b)) tables.addDoor(step.nextPortal.doorId);
@@ -248,13 +319,15 @@ export function captureNavigationCacheSnapshot(
     doorIds,
     contexts,
     routes: routes.map((entry) => ({
+      recency: ranks.get(entry.lastUse)!,
       origin: { x: entry.origin.x, y: entry.origin.y },
       destination: { x: entry.destination.x, y: entry.destination.y },
       context: tables.context(entry.context),
       result: encodeResult(entry.result, entry.origin, entry.destination, tables),
       dependencies: encodeDependencies(entry.dependencies, doors, tables),
     })),
-    flowFields: fields.map((field) => ({
+    flowFields: fields.map(({ field, lastUse }) => ({
+      recency: ranks.get(lastUse)!,
       destinationRegion: field.destinationRegion,
       context: tables.context(field.context),
       steps: [...field.steps]
@@ -355,8 +428,13 @@ export function loadNavigationCacheSnapshot(
   flowFieldCache: FlowFieldCache,
   doors: DoorRegistry,
   geometrySignature: string,
+  clock: CacheUseClock,
 ): void {
   const { doorIds, contexts } = snapshot;
+  const recencies = [...snapshot.routes.map((entry) => entry.recency), ...snapshot.flowFields.map((field) => field.recency)].sort((a, b) => a - b);
+  recencies.forEach((recency, index) => {
+    if (recency !== index + 1) refuse('recency ranks are not 1 to the number of entries, each once.');
+  });
   doorIds.forEach((doorId, index) => {
     if (index > 0 && !(doorIds[index - 1]! < doorId)) refuse(`door ids are not ascending and unique at "${doorId}".`);
   });
@@ -371,6 +449,7 @@ export function loadNavigationCacheSnapshot(
     snapshot.routes.map((entry) => {
       const context = indexInto(contexts, entry.context, 'context');
       return {
+        lastUse: entry.recency,
         origin: entry.origin,
         destination: entry.destination,
         context,
@@ -382,7 +461,7 @@ export function loadNavigationCacheSnapshot(
   );
 
   flowFieldCache.loadFields(
-    snapshot.flowFields.map((field): Omit<RegionFlowField, 'geometrySignature'> => {
+    snapshot.flowFields.map((field) => {
       const context = indexInto(contexts, field.context, 'context');
       const steps = new Map<RegionId, RegionFlowFieldStep>();
       let lastRegion = Number.NEGATIVE_INFINITY;
@@ -401,14 +480,16 @@ export function loadNavigationCacheSnapshot(
           costToDestination,
         });
       }
-      return {
+      const loaded: Omit<RegionFlowField, 'geometrySignature'> = {
         destinationRegion: field.destinationRegion as RegionId,
         contextFingerprint: routeContextFingerprint(context),
         context,
         steps,
         doorDependencies: rebaseDoorDependencies(decodeDependencies(field.dependencies, doorIds), doors, context),
       };
+      return { field: loaded, lastUse: field.recency };
     }),
     geometrySignature,
   );
+  clock.resumeFrom(recencies.length);
 }

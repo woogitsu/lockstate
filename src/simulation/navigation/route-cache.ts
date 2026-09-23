@@ -25,7 +25,38 @@ function crossedDoorIds(result: RouteResult): readonly string[] {
     .filter((doorId): doorId is string => doorId !== undefined);
 }
 
+/**
+ * A counter both caches of one `NavigationSystem` share, advanced every time an
+ * entry is written or answers a read (ADR 0007's amendment of 2026-09-23).
+ *
+ * It exists for one reader: a save that cannot afford every entry carries the
+ * most recently used ones, and "most recently" has to be one order across the
+ * route and flow-field caches. A counter rather than a tick because a cache is
+ * never told the tick, and because two uses in one tick still have an order.
+ * Nothing reads it to decide a route.
+ */
+export class CacheUseClock {
+  private current = 0;
+
+  public get value(): number {
+    return this.current;
+  }
+
+  public advance(): number {
+    this.current += 1;
+    return this.current;
+  }
+
+  /** For a restore, which renumbers the entries it carried `1..n` and resumes from `n`. */
+  public resumeFrom(value: number): void {
+    if (!Number.isInteger(value) || value < 0) throw new RangeError('A cache use clock resumes from a non-negative integer.');
+    this.current = value;
+  }
+}
+
 interface CacheEntry {
+  /** `CacheUseClock` value when this entry was last written or last answered a read. */
+  lastUse: number;
   /**
    * The request this answers. The key already encodes it, but only as a
    * fingerprint of the context; the context itself is kept because a restore
@@ -43,6 +74,7 @@ interface CacheEntry {
 
 /** One entry, as `RouteCache.entriesComputedAgainst` reports it and `loadEntries` takes it back. */
 export interface RouteCacheEntryView {
+  readonly lastUse: number;
   readonly origin: TilePosition;
   readonly destination: TilePosition;
   readonly context: RouteContext;
@@ -88,6 +120,9 @@ export interface RouteCacheMetrics {
  */
 export class RouteCache {
   private readonly entries = new Map<string, CacheEntry>();
+
+  public constructor(private readonly clock: CacheUseClock = new CacheUseClock()) {}
+
   private hits = 0;
   private misses = 0;
   private evictions = 0;
@@ -120,6 +155,7 @@ export class RouteCache {
       return undefined;
     }
     this.hits += 1;
+    entry.lastUse = this.clock.advance();
     return entry.result;
   }
 
@@ -134,6 +170,7 @@ export class RouteCache {
     dependencyDoorIds: Iterable<string>,
   ): void {
     this.entries.set(cacheKey(origin, destination, context), {
+      lastUse: this.clock.advance(),
       origin: { x: origin.x, y: origin.y },
       destination: { x: destination.x, y: destination.y },
       context: canonicalRouteContext(context),
@@ -164,12 +201,37 @@ export class RouteCache {
       .filter(([, entry]) => entry.geometrySignature === geometrySignature)
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([, entry]) => ({
+        lastUse: entry.lastUse,
         origin: entry.origin,
         destination: entry.destination,
         context: entry.context,
         result: entry.result,
         dependencies: entry.dependencies,
       }));
+  }
+
+  /**
+   * Deletes every entry computed against any signature but `geometrySignature`,
+   * counting each as a geometry invalidation, and returns how many went.
+   *
+   * `get` already deletes such an entry when it is next read and never answers
+   * from it, because a signature the world has moved past does not come back
+   * (see `entriesComputedAgainst`). So this changes no answer and no charge; it
+   * stops the entries that are never read again from being held for ever.
+   * Measured before it existed: 1,422 of the 1,427 entries a 324-prisoner
+   * prison held at day 6 were of this kind, because a prison under
+   * construction changes its geometry with every object it finishes.
+   * `NavigationSystem` calls it when it rebuilds its graph over new geometry.
+   */
+  public retireEntriesNotComputedAgainst(geometrySignature: string): number {
+    let retired = 0;
+    for (const [key, entry] of [...this.entries]) {
+      if (entry.geometrySignature === geometrySignature) continue;
+      this.entries.delete(key);
+      retired += 1;
+    }
+    this.geometryInvalidations += retired;
+    return retired;
   }
 
   /**
@@ -184,6 +246,7 @@ export class RouteCache {
       const key = cacheKey(view.origin, view.destination, view.context);
       if (this.entries.has(key)) throw new RangeError(`Route cache entry appears twice in a snapshot: ${key}`);
       this.entries.set(key, {
+        lastUse: view.lastUse,
         origin: { x: view.origin.x, y: view.origin.y },
         destination: { x: view.destination.x, y: view.destination.y },
         context: canonicalRouteContext(view.context),

@@ -1,3 +1,4 @@
+import { CLOUD_SAVE_PAYLOAD_BYTE_BOUND, jsonbTextByteLength } from '../../shared/save-size';
 import type { JsonValue } from '../../shared/json';
 import type { ConstructionSnapshot } from '../construction/system';
 import type { ActorIdentitySnapshot } from '../identity';
@@ -328,11 +329,65 @@ function toKernelSnapshot(kernel: SessionSnapshotBundle['kernel']): KernelSnapsh
 }
 
 /**
+ * How far under ADR 0013's cloud bound a capture keeps its payload when it has
+ * to trim the carried route caches -- 64 KiB, 1.6 % of 4 MiB.
+ *
+ * It is a margin for the measurement, not headroom for growth: every capture
+ * re-measures, so a payload that grows is trimmed again at its next save.
+ * `jsonbTextByteLength` matched Postgres to the byte on the payloads it was
+ * checked against; what it cannot see is a number Postgres prints longer than
+ * JavaScript does (`1e-7` as `0.0000001`), and the envelope the payload
+ * travels in, which the bound does not count.
+ */
+export const CACHE_TRIM_MARGIN_BYTES = 65_536;
+
+/**
  * Captures the current simulation state of a live runtime as a bundle
  * suitable for both the worker protocol and a save envelope. Reads only
  * the runtime's own snapshot methods -- never renderer state.
+ *
+ * ## The one section that gives way to ADR 0013's bound
+ *
+ * `simulation.inFlight.navigation.caches` -- the route and flow-field caches'
+ * warmth, carried under the owner's ruling *"Zapisywać pamięć tras
+ * (zalecane)"* (ADR 0007's amendment of 2026-09-23) -- is the only part of a
+ * payload that can be dropped without losing a fact: an entry not carried is a
+ * search the restored session pays for, not a wrong answer. So it is the part
+ * that yields when the payload nears the cloud bound. The capture measures the
+ * payload as the cloud does (`jsonbTextByteLength`, the trigger's
+ * `octet_length(payload::text)`); if it is over
+ * `CLOUD_SAVE_PAYLOAD_BYTE_BOUND - CACHE_TRIM_MARGIN_BYTES`, the caches are
+ * captured again within whatever the rest leaves, most recently used first,
+ * and with nothing if the rest leaves nothing.
+ *
+ * **What that guarantees, and what it does not.** The caches never take a
+ * payload over the bound: a save the cloud refuses would have been refused
+ * without them. It does not keep a payload *under* the bound -- measured
+ * 2026-09-23, a 3,240-prisoner prison is 6.2 MB with the caches empty, which
+ * is ADR 0013's to answer and not this function's. The ruling is honoured up
+ * to the bound, and where the bound binds the restore stops being exact in the
+ * way `captureNavigationCacheSnapshot` states.
  */
 export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnapshotBundle {
+  const bundle = captureUnboundedSessionSnapshot(runtime);
+  const simulation = bundle.simulation;
+  const inFlight = simulation?.inFlight;
+  const caches = inFlight?.navigation.caches;
+  if (simulation === undefined || inFlight === undefined || caches === undefined) return bundle;
+
+  const limit = CLOUD_SAVE_PAYLOAD_BYTE_BOUND - CACHE_TRIM_MARGIN_BYTES;
+  const total = jsonbTextByteLength(bundle);
+  if (total <= limit) return bundle;
+
+  const rest = total - jsonbTextByteLength(caches);
+  const trimmed = runtime.navigation.captureCacheSnapshot(Math.max(0, limit - rest));
+  return {
+    ...bundle,
+    simulation: { ...simulation, inFlight: { ...inFlight, navigation: { ...inFlight.navigation, caches: trimmed } } },
+  };
+}
+
+function captureUnboundedSessionSnapshot(runtime: SimulationRuntime): SessionSnapshotBundle {
   return {
     // Read off the runtime, which either was created at this seed or was
     // restored from a bundle that recorded it -- so a save taken after a load

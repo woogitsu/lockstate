@@ -13,7 +13,7 @@ import {
 import { captureNavigationCacheSnapshot, loadNavigationCacheSnapshot, type NavigationCacheSnapshot } from './cache-snapshot';
 import { buildNavigationGraph, currentGeometrySignature, isNavigationGraphStale, type NavigationGraph } from './region-graph';
 import type { Route, RouteResult } from './route';
-import { RouteCache, type RouteCacheMetrics } from './route-cache';
+import { CacheUseClock, RouteCache, type RouteCacheMetrics } from './route-cache';
 import type { RouteContext } from './route-context';
 import { isEdgeTraversable } from './traversal';
 
@@ -94,8 +94,10 @@ export class NavigationSystem implements SystemRegistration {
 
   public readonly doors: DoorRegistry;
 
-  private readonly routeCache = new RouteCache();
-  private readonly flowFieldCache = new FlowFieldCache();
+  /** One order of use across both caches, for a save that cannot carry every entry -- see `CacheUseClock`. */
+  private readonly cacheClock = new CacheUseClock();
+  private readonly routeCache = new RouteCache(this.cacheClock);
+  private readonly flowFieldCache = new FlowFieldCache(this.cacheClock);
   private readonly queue: PathRequestQueue;
   private readonly results = new Map<string, ResolvedPathRequest>();
   private loadedChunkPositions: readonly ChunkPosition[] = [];
@@ -284,8 +286,19 @@ export class NavigationSystem implements SystemRegistration {
       results: [...this.results.values()]
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
-      caches: captureNavigationCacheSnapshot(this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature()),
+      caches: this.captureCacheSnapshot(),
     };
+  }
+
+  /**
+   * The caches as a save carries them, within `byteBudget` bytes as the cloud
+   * measures a payload (`jsonbTextByteLength`), the most recently used first --
+   * see `captureNavigationCacheSnapshot` for what is dropped and what that
+   * costs. `getInFlightSnapshot` carries them unbounded; `captureSessionSnapshot`
+   * calls this with what the rest of the payload leaves under ADR 0013's bound.
+   */
+  public captureCacheSnapshot(byteBudget: number = Number.POSITIVE_INFINITY): NavigationCacheSnapshot {
+    return captureNavigationCacheSnapshot(this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature(), byteBudget);
   }
 
   /**
@@ -356,7 +369,7 @@ export class NavigationSystem implements SystemRegistration {
    * signature because the world restores its chunks' revisions exactly.
    */
   public loadCacheSnapshot(snapshot: NavigationCacheSnapshot): void {
-    loadNavigationCacheSnapshot(snapshot, this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature());
+    loadNavigationCacheSnapshot(snapshot, this.routeCache, this.flowFieldCache, this.doors, this.worldGeometrySignature(), this.cacheClock);
   }
 
   public getQueueMetrics(): PathRequestQueueMetrics {
@@ -413,6 +426,12 @@ export class NavigationSystem implements SystemRegistration {
     const chunkStates = this.loadedChunkStates();
     if (isNavigationGraphStale(this.graph, this.doors, chunkStates)) {
       this.graph = buildNavigationGraph(this.world, this.doors, chunkStates);
+      // Entries computed against geometry the world has moved past are never
+      // answered again (`RouteCache.retireEntriesNotComputedAgainst`); letting
+      // them go here is what keeps a prison under construction from holding
+      // every leg it ever walked.
+      this.routeCache.retireEntriesNotComputedAgainst(this.graph.geometrySignature);
+      this.flowFieldCache.retireEntriesNotComputedAgainst(this.graph.geometrySignature);
     }
     return this.graph;
   }

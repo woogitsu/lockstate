@@ -6,6 +6,7 @@ import type { NavigationGraph, Portal, RegionId } from './region-graph';
 import { portalCannotBeCrossedBetween, runRegionDijkstra } from './region-dijkstra';
 import { canonicalRouteContext, checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
+import { CacheUseClock } from './route-cache';
 import { sliceIntoSegments } from './router';
 import type { Route, RouteResult } from './route';
 
@@ -202,8 +203,17 @@ function flowFieldCacheKey(destinationRegion: RegionId, contextFingerprint: stri
 }
 
 /** Caches `RegionFlowField`s keyed by destination region + route-context fingerprint, mirroring `RouteCache`'s invalidation and metrics shape. */
+/** A cached field and when it was last written or last answered a read -- see `CacheUseClock`. */
+export interface FlowFieldCacheEntry {
+  readonly field: RegionFlowField;
+  readonly lastUse: number;
+}
+
 export class FlowFieldCache {
-  private readonly entries = new Map<string, RegionFlowField>();
+  private readonly entries = new Map<string, { field: RegionFlowField; lastUse: number }>();
+
+  public constructor(private readonly clock: CacheUseClock = new CacheUseClock()) {}
+
   private hits = 0;
   private misses = 0;
   private evictions = 0;
@@ -216,24 +226,37 @@ export class FlowFieldCache {
       this.misses += 1;
       return undefined;
     }
-    if (entry.geometrySignature !== graph.geometrySignature) {
+    if (entry.field.geometrySignature !== graph.geometrySignature) {
       this.entries.delete(key);
       this.geometryInvalidations += 1;
       this.misses += 1;
       return undefined;
     }
-    if (!doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
+    if (!doorDependenciesStillHold(entry.field.doorDependencies, doors, context)) {
       this.entries.delete(key);
       this.evictions += 1;
       this.misses += 1;
       return undefined;
     }
     this.hits += 1;
-    return entry;
+    entry.lastUse = this.clock.advance();
+    return entry.field;
   }
 
   public set(field: RegionFlowField): void {
-    this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), field);
+    this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), { field, lastUse: this.clock.advance() });
+  }
+
+  /** The same rule and the same argument as `RouteCache.retireEntriesNotComputedAgainst`. */
+  public retireEntriesNotComputedAgainst(geometrySignature: string): number {
+    let retired = 0;
+    for (const [key, entry] of [...this.entries]) {
+      if (entry.field.geometrySignature === geometrySignature) continue;
+      this.entries.delete(key);
+      retired += 1;
+    }
+    this.geometryInvalidations += retired;
+    return retired;
   }
 
   /**
@@ -241,20 +264,20 @@ export class FlowFieldCache {
    * what a save carries. The same rule and the same argument as
    * `RouteCache.entriesComputedAgainst`.
    */
-  public fieldsComputedAgainst(geometrySignature: string): readonly RegionFlowField[] {
+  public fieldsComputedAgainst(geometrySignature: string): readonly FlowFieldCacheEntry[] {
     return [...this.entries]
-      .filter(([, field]) => field.geometrySignature === geometrySignature)
+      .filter(([, entry]) => entry.field.geometrySignature === geometrySignature)
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([, field]) => field);
+      .map(([, entry]) => ({ field: entry.field, lastUse: entry.lastUse }));
   }
 
   /** Replaces every field with `fields`, each stamped with `geometrySignature`. Counters are left alone. */
-  public loadFields(fields: readonly Omit<RegionFlowField, 'geometrySignature'>[], geometrySignature: string): void {
+  public loadFields(fields: readonly { readonly field: Omit<RegionFlowField, 'geometrySignature'>; readonly lastUse: number }[], geometrySignature: string): void {
     this.entries.clear();
-    for (const field of fields) {
+    for (const { field, lastUse } of fields) {
       const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
       if (this.entries.has(key)) throw new RangeError(`Flow field appears twice in a snapshot: ${key}`);
-      this.entries.set(key, { ...field, geometrySignature });
+      this.entries.set(key, { field: { ...field, geometrySignature }, lastUse });
     }
   }
 

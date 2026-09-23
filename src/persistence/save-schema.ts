@@ -1496,6 +1496,7 @@ const doorDependenciesEncodedSchema = z
 
 const routeCacheEntrySchema = z
   .object({
+    recency: z.number().int().min(1),
     origin: tilePositionSchema,
     destination: tilePositionSchema,
     context: z.number().int().min(0),
@@ -1536,6 +1537,7 @@ const routeCacheEntrySchema = z
 
 const flowFieldSnapshotSchema = z
   .object({
+    recency: z.number().int().min(1),
     destinationRegion: z.number().int(),
     context: z.number().int().min(0),
     steps: z.array(
