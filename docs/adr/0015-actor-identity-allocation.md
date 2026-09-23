@@ -267,7 +267,7 @@ amendment and ADR 0034 §9's: the old wording is quoted rather than overwritten.
 >
 > **One of the replacements is worse than stale and is the reason the "no
 > offsets" rule exists.** `new-session.ts:496` is cited in the table as
-> `new GuardRoster(...)`. Today `src/simulation/runtime/new-session.ts:496` is
+> `new GuardRoster(...)`. Today `src/simulation/runtime/new-session.ts:502` is
 > `const actorIdentity = new ActorIdentityRegistry();` — a different line of
 > this ADR's own wiring, which reads correct to anyone checking the file name
 > and the neighbourhood rather than the sentence.
@@ -303,13 +303,13 @@ on `main`:
 | subject | the table's column | 2026-09-15 |
 | --- | --- | --- |
 | `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1228` |
-| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1533` |
-| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1563` |
+| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1655` |
+| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1685` |
 | `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1035` |
-| registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
-| constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
-| passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1029` |
+| registers the stream | `:292` | `src/simulation/runtime/new-session.ts:493` |
+| constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:502` |
+| passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:602` |
+| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1035` |
 
 The seven-key list is still exactly the seven keys, at
 `src/persistence/save-schema.ts:1233-1239`.
@@ -352,8 +352,8 @@ schema bump and neither of the current forms did.
 > whole point of it.** The heading says *"`identity` is in three payload
 > versions rather than two"*. It is in **four**: `savePayloadV6Schema` carries
 > `identity: actorIdentitySnapshotSchema.optional()` at
-> `src/persistence/save-schema.ts:1669`, beside V3's `src/persistence/save-schema.ts:1533`, V4's `:1391` and
-> V5's `src/persistence/save-schema.ts:1632`. A section written to condemn *"both the V3 and the V4"* as a
+> `src/persistence/save-schema.ts:1791`, beside V3's `src/persistence/save-schema.ts:1655`, V4's `:1391` and
+> V5's `src/persistence/save-schema.ts:1754`. A section written to condemn *"both the V3 and the V4"* as a
 > rotting enumeration replaced it with a different tally in its own title, and
 > that tally rotted in nineteen days — which is `docs/AGENT_WORKFLOW.md` §4's
 > *"a correction is no more durable than the claim it corrected"* arriving on
@@ -368,7 +368,7 @@ Every claim the decision rests on holds, and each was re-run rather than
 inherited:
 
 - **The wiring is all there**, at the corrected lines:
-  `src/simulation/runtime/new-session.ts:292` registers `ACTOR_IDENTITY_RNG_STREAM`
+  `src/simulation/runtime/new-session.ts:298` registers `ACTOR_IDENTITY_RNG_STREAM`
   as one of four streams derived from `masterSeed`, `:301` is `new
   ActorIdentityRegistry()`, `:325` constructs `PrisonerOperationsRuntime` with it,
   and `:496` is `new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () =>
@@ -419,7 +419,7 @@ inherited:
 
   > **Re-verified 2026-09-15: the claim holds and both anchors have moved.**
   > There are still exactly two draw sites and both still hand the stream
-  > straight to the registry. They are `src/simulation/runtime/new-session.ts:1029`
+  > straight to the registry. They are `src/simulation/runtime/new-session.ts:1035`
   > (the `GuardRoster` construction) and
   > `src/simulation/prisoners/intake-system.ts:517`, which is still
   > `this.identity.assign('prisoner', entityId, context.rng.get(this.identityRngStreamName));` (verbatim in `src/simulation/prisoners/intake-system.ts`).

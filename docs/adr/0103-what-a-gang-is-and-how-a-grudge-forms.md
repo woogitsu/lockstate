@@ -644,7 +644,7 @@ and both projections enumerate all four types
 
 **The registry's whole state is already in the save envelope** — definitions,
 members, reputation and grudges — at `src/persistence/save-schema.ts:972-978`,
-written at `src/simulation/runtime/session-systems.ts:728` and read back at
+written at `src/simulation/runtime/session-systems.ts:755` and read back at
 `:964`. So issue #979's expectation that a save round trip is "free" is
 correct, with one caveat worth pricing: the definition schema is
 `.strict()`, so **adding any field to `GangDefinition` is a schema edit**, not
@@ -696,13 +696,13 @@ of signature rather than a different design.
 
 `grep -c "rng" src/simulation/incidents/*.ts` returns **0** for all ten files
 on this tree, exactly as the issue says. Six named RNG streams are registered
-in a new session (`src/simulation/runtime/new-session.ts:446-487`; the
+in a new session (`src/simulation/runtime/new-session.ts:452-493`; the
 constants are at `:83`, `:86`, `:88`, `:109`,
 `src/simulation/prisoners/sentence.ts:47` and
 `src/simulation/identity/actor-identity.ts:210`; those six anchors read
 `:440-483`, `:78`, `:81`, `:83`, `:104` and `:188`, and `sentence.ts:47` is the
 one of the seven that never moved). A seventh would be a
-save-compatibility question that `src/simulation/runtime/new-session.ts:471-478`
+save-compatibility question that `src/simulation/runtime/new-session.ts:477-484`
 sets out in full. **This document proposes no new stream** (Decision §5).
 
 ### 11. The issue's provenance note is not on `main` — VERIFIED
@@ -805,7 +805,7 @@ narrowing above it is untouched, so a consumer may still rely on the incident
 being an `'assault'` that carries an `instigatorId`. In a
 real session that port is
 `prisoners.imposeSolitarySanction(entityId, tick)`
-(`src/simulation/runtime/new-session.ts:1430-1432`), carried out by
+(`src/simulation/runtime/new-session.ts:1436-1438`), carried out by
 `SanctionSystem` (`src/simulation/prisoners/sanction-system.ts`), whose own
 comment records that the sanction *"is the only state
 `PrisonerOperationsRuntime.imposeSolitarySanction` writes"*
@@ -1328,7 +1328,7 @@ Two properties this buys, both of which matter more than the rule's elegance:
 
 - **It is deterministic and adds no draw**, so no existing seed's prisoner
   classification shifts — the failure mode
-  `src/simulation/runtime/new-session.ts:446-452` spells out at length for a
+  `src/simulation/runtime/new-session.ts:452-458` spells out at length for a
   shared stream.
 - **It ties gang membership to the one prisoner attribute the player can
   already see and already influences**, so "why is my prison full of gang
@@ -1478,7 +1478,7 @@ see what was given up, and every one of these will be proposed again.
 1. **A scheduled or random injection** — "gangs act up every N ticks", or a
    per-sample draw on a new RNG stream.
    *What it would have cost:* a seventh named RNG stream, which
-   `src/simulation/runtime/new-session.ts:476-481` sets out as a
+   `src/simulation/runtime/new-session.ts:482-487` sets out as a
    save-compatibility question in full, and the loss of the property Context 10
    establishes — that nothing in `src/simulation/incidents/` draws a random
    number. *What it would have bought:* a retaliation reachable in a prison that
@@ -1563,7 +1563,7 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
 - *"No producer of any kind: zero calls to `register`, `addMember` or
   `addGrudge` outside `loadSnapshot`"* — **there are four.**
   `src/simulation/incidents/default-gangs.ts:82` registers,
-  `src/simulation/runtime/new-session.ts:671` adds a member at the site
+  `src/simulation/runtime/new-session.ts:677` adds a member at the site
   Decision 6 named, and `src/simulation/incidents/default-gangs.ts:313-314` add
   the grudge pair. The count was the claim and the count has moved.
 - *"No guard against a retaliation with an empty participant list"* — **the

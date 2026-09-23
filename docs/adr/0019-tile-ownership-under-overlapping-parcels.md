@@ -356,7 +356,7 @@ overlap case still needs two parcels covering one tile, and `registerParcel`'s
 half of the argument re-verifies exactly — `sparse-world.ts:505` declares it,
 `:740` is the sole call and is inside `fromSnapshot` (`:674`), and
 `createNewSimulationRuntime` still builds `new SparseWorld(32)` with one loaded,
-owned chunk and no parcels (`src/simulation/runtime/new-session.ts:279-281`). So
+owned chunk and no parcels (`src/simulation/runtime/new-session.ts:285-287`). So
 "no player can reach the divergence today" survives.
 
 > **Re-verified 2026-09-15: every structural claim in that sentence still
@@ -365,7 +365,7 @@ owned chunk and no parcels (`src/simulation/runtime/new-session.ts:279-281`). So
 > `src/simulation/world/sparse-world.ts:844`, that call is still inside
 > `fromSnapshot` (`src/simulation/world/sparse-world.ts:771`), and
 > `world = new SparseWorld(32);` is at
-> `src/simulation/runtime/new-session.ts:436`, still followed immediately by the
+> `src/simulation/runtime/new-session.ts:442`, still followed immediately by the
 > one `load` and the one `setOwned` on `:437-438`. **So the reachability
 > argument is intact in exactly the form this amendment left it**: a parcel is
 > still registered only on a snapshot restore, and a new session still has

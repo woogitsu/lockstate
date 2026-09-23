@@ -266,7 +266,7 @@ both checked here rather than taken from the docblock that asserts the second:
 2. **Nothing runs it.** `topology.update` is called from
    `tests/unit/construction-geometry.test.ts` and
    `tests/unit/construction-doors.test.ts` and from nowhere in `src/`. It is
-   constructed at `src/simulation/runtime/new-session.ts:440` and exposed at
+   constructed at `src/simulation/runtime/new-session.ts:446` and exposed at
    `:1606`, and it appears in no `registerSystem` block — so no tick
    recomputes it and `getTopologyId` answers `0` for every tile in a running
    session. `enclosure.ts:51-54` says this already and it is true.
@@ -284,7 +284,7 @@ in these places:
 | 1 | `src/ui/simulation-room-needs.ts:146` (`shortfallOf`) | `missingCapability + (access === 'no-way-in' ? 1 : 0)` — the panel's readiness count, feeding the sort key, the unfinished predicate and the header's `totalNeeds` |
 | 2 | `src/ui/simulation-room-needs.ts:354` | turns `'no-way-in'` into a `kind: 'doorway'` need entry |
 | 3 | `src/ui/hud/rooms-panel.ts:1631` | draws `hud.rooms.needs-doorway`, *"a door — nobody can get in"* |
-| 4 | `src/simulation/rooms/room-needs-cleared-notice.ts:171` | the **same expression as #1**, restated worker-side, deciding when to announce `hud.alert.event.rooms.needs-cleared` |
+| 4 | `src/simulation/rooms/room-needs-cleared-notice.ts:219` | the **same expression as #1**, restated worker-side, deciding when to announce `hud.alert.event.rooms.needs-cleared` |
 | 5 | `tests/foundation/room-shortfall-parity-contract.test.ts` | pins #1 and #4 to each other **as literal source text** |
 
 **#5 is the one a reader is most likely to miss, and it is a hard constraint

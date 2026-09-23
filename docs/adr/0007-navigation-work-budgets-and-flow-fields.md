@@ -21,7 +21,7 @@ When this ADR was written, no real prisoner/staff entity model existed
 `security/deployment-system.ts:128` and `security/patrol-system.ts:103`. The
 decision below is unaffected by that and remains correct: `NavigationSystem`
 is still generic over `id: string`
-(`src/simulation/navigation/navigation-system.ts:112`, in the `requestRoute`
+(`src/simulation/navigation/navigation-system.ts:121`, in the `requestRoute`
 signature declared at `:69`) and each of the six supplies its own id shape,
 which is precisely what this Context argued for.
 

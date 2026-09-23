@@ -23502,7 +23502,7 @@ one direction.
   > - **"No producer of any kind"** — false now. `gangs.register(...)` at
   >   `src/simulation/incidents/default-gangs.ts:82` (`gangs.register({ id: gangId`),
   >   `gangs.addGrudge(...)` at `:186`, and `gangs.addMember(gangId, entityId)`
-  >   at `src/simulation/runtime/new-session.ts:651`. Found by grepping every
+  >   at `src/simulation/runtime/new-session.ts:657`. Found by grepping every
   >   `.ts` under `src/` at both anchors for `.addMember(`, `.addGrudge(` and
   >   `.register(`: at `3399b1f9` the only hits on the registry are `:123` and
   >   `:124` of `gangs.ts`, both inside `loadSnapshot`, exactly as this entry

@@ -90,7 +90,7 @@ AND BECAUSE THE SENTENCE IS WHAT A LATER READER WAS TOLD.** Swept by hand on
 them no longer have a subject at all, and one sentence is now false in a
 direction worth knowing about.
 
-- *"`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860`
+- *"`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:866`
   and registered at `src/simulation/runtime/new-session.ts:1400`"* — **the class
   is gone.** `job-system.ts` was deleted by `cd41a1d6`, the implementation of
   this document's own decision 4, and nothing in `src/` declares `JobSystem`
@@ -210,7 +210,7 @@ was written. No save version moves.
 
 ### The job system runs and is handed nothing
 
-`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860` and
+`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:866` and
 registered at `src/simulation/runtime/new-session.ts:1400`. It declares
 `id = 'operations.jobs'`, `order = 260` and `schedule = { intervalTicks: 5 }`
 (`job-system.ts:78-80`, a file this decision **deletes**), and the order is pinned at

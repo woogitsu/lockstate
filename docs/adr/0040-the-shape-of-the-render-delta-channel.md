@@ -155,7 +155,7 @@ real motion vectors and `ActorLayer` draws them — so what is missing is simula
 state, not transport.
 
 **Guards do not need this channel at all.**
-`src/simulation/runtime/session-systems.ts:219-222` already carries
+`src/simulation/runtime/session-systems.ts:221-224` already carries
 `guards.records` with `tileX`/`tileY` in every bundle;
 `src/rendering/feed/actors-from-snapshot.ts:49-52` states that it deliberately does
 not decode them. That is a renderer-side omission with a fix in one file.

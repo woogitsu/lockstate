@@ -58,7 +58,7 @@ restores **silently**, and dies later. Verified on `main` @ `54418b6`
 
 - `Kernel.restoreState` did `this._rng = new NamedRngStreams(snapshot.rngStates)`
   — **replace, not merge**. The four streams `createNewSimulationRuntime` derived
-  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:288-293`,
+  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:294-299`,
   handed to the kernel at `:294`) were discarded. Nothing compared the two sets.
 
   **This bullet is now history, and is kept in the past tense rather than
@@ -174,9 +174,9 @@ stream states, and `restoreState` overwrites all four.
 > - *"`masterSeed` is absent from the save payload — 0 hits in
 >   `src/persistence/save-schema.ts`"*. It is a declared optional field there
 >   now, in V6 and in the envelope: `masterSeed: uint32Schema.optional()`
->   (`src/persistence/save-schema.ts:1626` and `:1491`), with
+>   (`src/persistence/save-schema.ts:1748` and `:1491`), with
 >   `readonly masterSeed?: number;` on the envelope input
->   (`src/persistence/save-schema.ts:1996`). That file's own V6 note records the
+>   (`src/persistence/save-schema.ts:2118`). That file's own V6 note records the
 >   change — *"V5 gained one more optional field after it shipped: `masterSeed`
 >   (#412)"*.
 > - *"Both production restore paths take the `= 0` default"*. Neither does.

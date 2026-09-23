@@ -105,7 +105,7 @@ Three constants and one call site, each verified at the line on `898a16a`
    (inside `introduceContrabandOnIntake`) and `intake-system.ts:502`, which
    calls the injected `IntakeContrabandIntroducer` port with `result.riskTier`
    — the tier `classifyPrisoner` returned one statement earlier at `:491`. The
-   port is wired in `src/simulation/runtime/new-session.ts:531`, and that
+   port is wired in `src/simulation/runtime/new-session.ts:537`, and that
    closure is `introduceContrabandOnIntake`'s only caller in `src/`.
 
    > **A small correction to #677 and to #676's §7, in both directions.** Both

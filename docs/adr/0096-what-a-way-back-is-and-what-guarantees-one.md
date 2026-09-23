@@ -295,7 +295,7 @@ able to cancel (#860, #861, #862).
   did, and `'wages'` walks straight through it.
 - **A loan exists and is switched off.** `LoanBook`
   (`src/simulation/economy/loans.ts:177`) is built only when
-  `options.loanTerms !== undefined` (`src/simulation/runtime/new-session.ts:909`)
+  `options.loanTerms !== undefined` (`src/simulation/runtime/new-session.ts:915`)
   and **nothing in `src/` passes it**, so no session has a ledger. The four
   magnitudes are ruled — 25% diversion, 15% fee, 45 in-game days, 50% escalated
   (#703 ruling 10 and ADR 0083 §3) — and recorded rather than wired. There is no

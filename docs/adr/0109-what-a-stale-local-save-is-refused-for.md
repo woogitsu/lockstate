@@ -284,7 +284,7 @@ where it classifies cloud drift.
 > named commit, and a reader who greps rather than trusting either number is
 > doing the right thing. Both ends were re-opened to get these.
 
-`createSaveEnvelope` (`src/persistence/save-schema.ts:1919-1941`) hashes the
+`createSaveEnvelope` (`src/persistence/save-schema.ts:2041-2063`) hashes the
 **payload** and puts `revision` in the metadata beside it, not inside it:
 
   `checksum: computeSaveChecksum(payload as JsonValue),`

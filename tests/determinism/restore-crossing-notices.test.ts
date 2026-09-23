@@ -20,7 +20,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * between the last read before a save and the first read after it was never
  * announced: the restored session read the new state as its baseline.
  *
- * Measured before the fix, on `d31d0b39`:
+ * Measured before the fix -- this file run against the tree with the route
+ * caches already carried and neither notice's memory saved:
  * - `rooms.needs-cleared`: 8 notices were missing from a 34-prisoner crowded
  *   fixture (#1373), and the 36-prisoner binding-tick scan in
  *   `restore-mid-walk-exactness.test.ts` diverged at its far checkpoint on

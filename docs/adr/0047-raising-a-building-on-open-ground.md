@@ -141,7 +141,7 @@ exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
 (`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
-block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
+block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1613`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
 `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:99`)
@@ -149,7 +149,7 @@ partitions every loaded chunk's tiles into maximal sets connected across
 zero-valued edges (`src/simulation/navigation/region-graph.ts:148`), returns
 `tileToRegion` and `regionTiles`, caches the result against a geometry
 signature, and `NavigationSystem.getGraph()`
-(`src/simulation/navigation/navigation-system.ts:315`) hands it out already
+(`src/simulation/navigation/navigation-system.ts:367`) hands it out already
 rebuilt if stale. `docs/NAVIGATION.md` describes it in the same words
 `TopologyManager` would need: *"the world's tiles are partitioned into regions —
 maximal sets of tiles connected by plain open boundaries (no wall, no door)"*.
@@ -201,7 +201,7 @@ Every anchor below was opened.
 
 - A new session owns exactly one chunk: `new SparseWorld(32)`, `world.load(...)`,
   `world.setOwned(initialChunk, true)`
-  (`src/simulation/runtime/new-session.ts:436-438`). Chunk size 32, so the playable
+  (`src/simulation/runtime/new-session.ts:442-444`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
   (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
@@ -307,7 +307,7 @@ design is not inventing a layer; it is landing a listed one.
 ### 1. Owned land is grass, and that is one line
 
 `fillTerrain(initialChunk, 'grass')` beside
-`src/simulation/runtime/new-session.ts:436-438`. The definition exists, the
+`src/simulation/runtime/new-session.ts:442-444`. The definition exists, the
 appearance row exists, and RLE makes a uniform chunk one run.
 
 **This is separable and should ship on its own**, because it is the visible half

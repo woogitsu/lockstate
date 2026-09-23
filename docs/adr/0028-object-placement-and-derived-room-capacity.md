@@ -364,7 +364,7 @@ Three reasons it is wrong here.
 combinations requires walking up to `maxActiveIndex`. The runtime allocates
 5,000 slots for prisoners and a separate 500-slot store for guards
 (`DEFAULT_PRISONER_CAPACITY` and `DEFAULT_GUARD_CAPACITY`,
-`src/simulation/runtime/new-session.ts:244-246`; the anchor read `:156-158`,
+`src/simulation/runtime/new-session.ts:250-252`; the anchor read `:156-158`,
 which was correct when this document was written at `ca5bb3f` and has drifted 88
 lines since — [ADR 0005](./0005-entity-storage-model.md) carries the same pair
 and the account of why naming the constants is the durable half). Furniture is one to two

@@ -359,7 +359,7 @@ names the guard and never the claim.
 > v0.0.108), which landed **47 minutes** after this document was accepted at
 > `1dcee50` (v0.0.106). `src/simulation/security/default-sector.ts:253` calls
 > `targets.sectors.register(definition)`, reached through
-> `applyDefaultSecuritySector`, which `src/simulation/runtime/session-systems.ts:29`
+> `applyDefaultSecuritySector`, which `src/simulation/runtime/session-systems.ts:31`
 > imports for both a new session and a restore.
 > `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT = 1` (`default-sector.ts:99`), so
 > the first hire is posted and held.
@@ -470,7 +470,7 @@ Three things follow, and the second is the one the owner may want to overrule.
    decision recorded as
    [ADR 0036](./0036-a-derived-default-security-sector.md). A new session now
    registers a sector: `createNewSimulationRuntime` calls
-   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:589`),
+   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:595`),
    which registers the derived definition at
    `src/simulation/security/default-sector.ts:253`, so the tier is reachable
    from the front door. The amendment at the top of this document already said

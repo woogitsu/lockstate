@@ -25,7 +25,7 @@
 Three decisions. **Nothing under `src/` reads any of them**, and that is
 deliberate rather than incidental: this branch ships the authored name data
 and its gates, and leaves the one line that would put it into a session
-(`src/simulation/runtime/new-session.ts:481`) exactly as it is. Decision 2
+(`src/simulation/runtime/new-session.ts:487`) exactly as it is. Decision 2
 reaches the save envelope and decision 3 changes a validator that guards it,
 so neither is an agent's to take.
 
@@ -43,7 +43,7 @@ only ever carried — and `src/simulation/identity/actor-identity.ts` states the
 case at length, including the three facts about `EntityStore` that rule out
 deriving a name from an entity id. Names are minted from a dedicated
 `identity.actor-name` stream in canonical entity order and snapshotted into
-the save's `identity` field (`src/persistence/save-schema.ts:1568`).
+the save's `identity` field (`src/persistence/save-schema.ts:1690`).
 
 What was never built is the content. `src/simulation/identity/name-pool.ts`
 ships `PLACEHOLDER_ACTOR_NAME_POOL` — 32 given names by 32 family names — and
@@ -122,7 +122,7 @@ forbids `localeCompare` because *collation* varies with ICU data; nothing
 here collates.
 
 **"hashed into determinism state" — yes, and this one is load-bearing.** The
-save payload carries `identity` (`src/persistence/save-schema.ts:1568`, and
+save payload carries `identity` (`src/persistence/save-schema.ts:1690`, and
 `:1297`/`:1327` for the earlier envelopes) and its checksum is
 `computeSaveChecksum(payload)` (`:1765`), which is `deterministicStateHash`
 (`src/persistence/checksum.ts:10`) — FNV-1a over
@@ -214,7 +214,7 @@ built. What does not exist is the *choosing*, and it reaches the save.
 option is `masterSeed % pools.length`: nothing stored, the same prison always
 naming the same way. It fails on this repository's own facts, and it fails the
 same way deriving a *name* from an entity id failed. `masterSeed` is
-**optional** in the save schema (`src/persistence/save-schema.ts:1562`, added
+**optional** in the save schema (`src/persistence/save-schema.ts:1684`, added
 by #412 after V5 shipped), so a save written before that has no seed to
 re-derive from. Restoring one is safe for the existing population — stored
 names win, and `loadSnapshot` tolerates a `poolId` it disagrees with by
@@ -285,7 +285,7 @@ loosening a gate that currently passes.
   eight re-draws often enough for repeats to be routine, and at 19,200 a
   repeated full name reads as the coincidence a real prison contains.
 - No behaviour changes. `new ActorIdentityRegistry()`
-  (`src/simulation/runtime/new-session.ts:481`) still takes the placeholder by
+  (`src/simulation/runtime/new-session.ts:487`) still takes the placeholder by
   default (`actor-identity.ts:205`), so a save written before this branch and
   a save written after it are byte-identical.
 - **Zero bundle cost while unwired**, measured on the production build rather

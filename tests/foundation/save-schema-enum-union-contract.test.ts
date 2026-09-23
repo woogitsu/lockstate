@@ -13,6 +13,7 @@ import type { DoorSide, DoorState } from '../../src/simulation/navigation/door';
 import type { RouteFailureReason } from '../../src/simulation/navigation/route';
 import type { DoorAccessDenialReason } from '../../src/simulation/navigation/route-context';
 import type { JobLifecycleState, CarryLeg } from '../../src/simulation/operations/job';
+import type { WatchedInsolvencyRung } from '../../src/simulation/economy/insolvency-rung-system';
 import type { UtilityNodeKind, UtilityType } from '../../src/simulation/operations/utility-network';
 import type { DeploymentPhase } from '../../src/simulation/security/guard-roster';
 import type { SectorControlState } from '../../src/simulation/security/sector';
@@ -295,6 +296,14 @@ const PAIRS: readonly EnumUnionPair[] = [
     site: 'searchJobStateSchema',
     union: 'SearchJobState (src/simulation/contraband/search-system.ts:22)',
     members: unionMembers<SearchJobState>()(['travelling', 'searching']),
+    readerOnly: [],
+  },
+  // Arrived with `simulation.crossingNotices` (issue #1373), which carries the
+  // rungs `InsolvencyRungSystem`'s last update found standing.
+  {
+    site: 'crossingNoticesSectionSchema.standing',
+    union: 'WatchedInsolvencyRung (src/simulation/economy/insolvency-rung-system.ts:14)',
+    members: unionMembers<WatchedInsolvencyRung>()(['deliveries', 'construction']),
     readerOnly: [],
   },
 ];

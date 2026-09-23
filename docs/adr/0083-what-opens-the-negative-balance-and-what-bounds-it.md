@@ -106,7 +106,7 @@ remembered:**
    (`src/simulation/economy/loans.ts:184`) — it hands the prison *money*. It
    never touches the floor, and neither does anything else in `loans.ts`.
 3. `LoanBook` is built only when `options.loanTerms !== undefined`
-   (`src/simulation/runtime/new-session.ts:794`), and nothing in `src/` passes
+   (`src/simulation/runtime/new-session.ts:800`), and nothing in `src/` passes
    `loanTerms`, so **no session has a `LoanBook` at all**.
 4. `LoanTerms` has **four** members
    (`src/simulation/economy/loans.ts:74-100`):
@@ -408,7 +408,7 @@ without a version bump"* are all met by either shape:
   `restoreSimulationRuntime` builds its runtime through
   `createNewSimulationRuntime` (`src/simulation/runtime/restore-session.ts:375`),
   so a floor applied where the `Treasury` is constructed
-  (`src/simulation/runtime/new-session.ts:683`) is applied on the new-session and
+  (`src/simulation/runtime/new-session.ts:689`) is applied on the new-session and
   the restore path alike. Nothing to persist, nothing to migrate.
 - **A loan-opened floor needs two optional fields and still no bump.** Absence
   is unambiguous *as a fact about the corpus* — no build that could write a V5

@@ -416,9 +416,9 @@ time a sector has a perimeter.
 > **CONFIRMED by the owner, 2026-09-02, as written.**
 
 `restoreSessionSystems` step 1 currently skips any sector id the runtime
-already holds (`src/simulation/runtime/session-systems.ts:793-795`), and
+already holds (`src/simulation/runtime/session-systems.ts:827-829`), and
 `createNewSimulationRuntime` has already registered the derived default
-(`src/simulation/runtime/new-session.ts:1137`). So the payload's row for the
+(`src/simulation/runtime/new-session.ts:1143`). So the payload's row for the
 default sector is never read. **Measured:** a bundle hand-edited to carry
 `postTile: (20,20)` and a two-waypoint route restores to `postTile: (16,16)`
 with no route, silently — research record §4. A player who drew a route and
