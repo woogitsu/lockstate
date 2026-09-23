@@ -17,6 +17,7 @@ import {
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 
 /**
  * **A legal purchase can spend a new prison out of the game.**
@@ -482,6 +483,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      */
     const runtime = createNewSimulationRuntime(SEED);
     expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    addBulkPurchaseStorage(runtime);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the facility is standing, unpressed').toBe(-OVERDRAFT_ROOM);
 
     // The exact press that used to reach ECON-002 (quoted above) is refused
@@ -560,7 +562,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       runtime.construction.getOrder('bed-1')?.state,
       'the queue buys what the press could not, at the unaffected construction rung',
     ).toBe('completed');
-    expect(runtime.placedObjects.size, 'a bed is standing').toBe(1);
+    expect(runtime.placedObjects.size, 'a bed and the two fixture racks are standing').toBe(3);
     const cellInstanceId = `${CELL}:${CELL_RECT.x}:${CELL_RECT.y}`;
     expect(
       runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity,
@@ -702,6 +704,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * rulings later.
      */
     const runtime = createNewSimulationRuntime(SEED);
+    addBulkPurchaseStorage(runtime);
     send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG });
     expect(runtime.treasury.balanceMinorUnits).toBe(STARTER_BALANCE_AT_THE_RUNG);
     stepTo(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
@@ -717,6 +720,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     // bricks leaves -1,120, which is exactly 65 of press room, and the plank
     // goes through by a direct press -- no construction order needed here.
     const escaped = createNewSimulationRuntime(SEED);
+    addBulkPurchaseStorage(escaped);
     send(escaped, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG - 1 });
     expect(escaped.treasury.balanceMinorUnits).toBe(-1_120);
     send(escaped, 'buy-plank', { type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 });
@@ -807,6 +811,7 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    */
   it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    addBulkPurchaseStorage(runtime);
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
     // and it never presses a purchase again.

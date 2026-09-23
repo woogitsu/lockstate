@@ -46,7 +46,7 @@ import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
-import { CarryJobExecutor, Container, ContainerMaterialsProvider, ContainerRegistry, DeliveryBayCarryRoute, JobBoard, UtilityNetwork } from '../operations';
+import { CarryJobExecutor, Container, ContainerMaterialsProvider, ContainerRegistry, DeliveryBayCarryRoute, DeliveryGateCapacity, JobBoard, UtilityNetwork } from '../operations';
 import {
   NEED_IDS,
   NEED_MAX,
@@ -834,7 +834,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
   const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
-  const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
+  const procurement = new ProcurementSystem(
+    treasury, constructionMaterials, deliveryCarryRoute,
+    new DeliveryGateCapacity(prisoners.roomInstances, placedObjects, containers, jobs),
+  );
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
    * whole or not at all, so the service has to ask whether the *order's* cost is
