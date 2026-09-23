@@ -247,6 +247,13 @@ export class NavigationSystem implements SystemRegistration {
    * takes. Where it binds, a restored session can serve a request a tick later
    * than the session it was saved from.
    *
+   * **Corrected the same day, 2026-09-23: it binds, and the effect is not one
+   * tick.** At 24 and 36 prisoners in six rows of cells, a save taken before
+   * a block change served a different set of requests. That is pinned as a
+   * known divergence in the test above. The fix that makes the budget ignore
+   * cache warmth was built and withdrawn for its latency cost. ADR 0059's
+   * amendment under "Determinism" carries the numbers and the open choice.
+   *
    * Deterministic: both lists ascending by id.
    */
   public getInFlightSnapshot(): NavigationInFlightSnapshot {

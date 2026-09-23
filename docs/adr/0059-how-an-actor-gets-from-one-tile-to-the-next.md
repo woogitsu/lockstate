@@ -481,6 +481,37 @@ budget does not bind that changes nothing -- it did not bind on any save the
 test takes -- but where it binds, a restored session can serve a request a
 tick later than the one it was saved from. No fixture here makes it bind.
 
+**That paragraph was the weakest claim, and it was wrong on both counts. It is
+kept so the correction can be read against it, and the question is open.**
+Measured on 2026-09-23:
+
+- *"It did not bind on any save the test takes"* was true only of the
+  12-prisoner fixture.
+- *"A tick later"* understated the effect. In six rows of cells with 24
+  prisoners, every save taken 1 to 40 ticks before a block change served a
+  different set of requests. With 36 prisoners, every save taken 1 to 600
+  ticks before one did.
+- Replaying each binding tick's pending queue warm against cold, the served
+  set differed on 13 of 331 binding ticks.
+
+`tests/determinism/restore-mid-walk-exactness.test.ts` pins the 24-prisoner
+case as a **known divergence**. It goes red when the divergence is removed.
+
+**A fix was built and withdrawn** in the same series of commits, the revert carrying its measurements. It
+charged the budget what a request costs cold, however warm the caches are. It
+made both cases exact, but a warm session could then be no faster than a cold
+one. `navigation.production.meal-rush` at 5,000 actors went from 26 ticks to
+drain to 211, and from 51,901 counted expansions to 57,903, over its ceiling
+of 54,500.
+
+**The decision is ADR 0007's, and it has three options:**
+1. **Persist the caches' warmth**: the keys of valid entries plus a
+   deterministic rebuild at load, or the entries themselves. Save size and
+   load time grow with distinct legs.
+2. **Charge cold, as built**: exact, at the latency above.
+3. **Accept the divergence**, which is bounded to ticks on which the budget
+   binds.
+
 ---
 
 ## What this costs

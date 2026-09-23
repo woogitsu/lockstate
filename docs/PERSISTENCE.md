@@ -530,6 +530,13 @@ work are not.**
   binds, that can move a request's service by a tick. It did not bind on any
   save the exactness test takes.
 
+  **CORRECTED 2026-09-23, THE SAME DAY: THIS IS REAL, AND IT IS OPEN.** At 24
+  and 36 prisoners the budget binds at block changes, and a save taken before
+  one served a different set of requests. The measurements, the fix built and
+  withdrawn, and the three options are under ADR 0059's amendment,
+  "Determinism". `tests/determinism/restore-mid-walk-exactness.test.ts` pins
+  the case as a known divergence.
+
   **`IncidentResponseSystem` was listed here as a fifth and does not belong,
   which was measured rather than reasoned (#352).** It cannot re-request: the
   incident lifecycle is forward-only, so `advanceResponse`'s no-record path can
