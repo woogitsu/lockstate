@@ -514,6 +514,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.stove',
       tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
     },
+    {
+      label: 'loading dock door',
+      buildableId: 'loading-dock-door-wooden',
+      catalogueId: 'object.loading-dock-door',
+      expectedSpriteId: 'env.object.loading-dock-door',
+      tileOf: (fixture) => [fixture.loadingDockDoorTileX, fixture.loadingDockDoorTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

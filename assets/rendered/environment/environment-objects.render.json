@@ -388,6 +388,33 @@
       }
     },
     {
+      "assetId": "furniture.delivery.dock_gate.closed",
+      "image": "furniture.delivery.dock_gate.closed.png",
+      "sha256": "2a8dedf2c28f2fe451fbda84edf6c6cf16a54a913c1ed1cd1f9bb4a51bd94a6d",
+      "pixelSha256": "24020999908aefa0ee518e76016c52a0aea52243e3935b3e33e91cc687ea079c",
+      "footprintTiles": {
+        "width": 3.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 768,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 42,
+        "y": 19,
+        "width": 684,
+        "height": 218,
+        "opaquePixels": 142804
+      }
+    },
+    {
       "assetId": "furniture.dining.table.wooden",
       "image": "furniture.dining.table.wooden.png",
       "sha256": "cc5f82b333f7276af3f413955de4ce050db519ec441a7b2fefbe41b8662d4bbd",

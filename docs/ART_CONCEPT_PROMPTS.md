@@ -205,6 +205,18 @@ should show the lens and the arms outside the declared rectangle.
 The watchtower's roof is 2.35 tiles across a two-tile footprint; the reference
 should show that overhang rather than a tower cropped to its base.
 
+### Delivery bay — `furniture.delivery.dock_gate.closed`
+
+> a solid closed 3×1 tile loading-dock gate, true overhead plus three
+> consistent oblique views — weathered muted-walnut horizontal timber slats,
+> dark seams, galvanized side tracks, diagonal steel braces and two restrained
+> amber reflector plates on the threshold
+> …the slats, dark joints and end tracks stay legible at 192×64 px; no opening
+> or walkable doorway is suggested.
+
+The original reference and the object's current non-navigable limitation are
+recorded in `assets/source/concepts/loading-dock-door-v1.md`.
+
 ### Lighting and storage — `fixture.ceiling_light.panel.variants`, `storage.container.variants`
 
 A ceiling light is the one object drawn **above** everything else and its

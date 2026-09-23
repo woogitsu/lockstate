@@ -64,6 +64,7 @@ PALETTE = {
     "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
     "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
     "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
+    "dock_amber": ((0.72, 0.36, 0.045, 1), 0.63),
 }
 
 MODELS = (
@@ -88,6 +89,7 @@ MODELS = (
     ("furniture.medical.bed.single", (1, 2)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.delivery.dock_gate.closed", (3, 1)),
 )
 
 
@@ -295,7 +297,37 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.delivery.dock_gate.closed":
+        # Concept: assets/source/concepts/loading-dock-door-multiview-v1.png.
+        # This buildable is a closed, tile-addressed object, not a navigable
+        # door edge. The continuous slatted surface makes that clear overhead.
+        box(collection, root, "Recessed gate shadow", (0, 0, 0.25), (2.88, 0.85, 0.48), "shade", 0.018)
+        box(collection, root, "Heavy timber backing", (0, 0, 0.56), (2.78, 0.74, 0.12), "wood", 0.012)
+        for row, y in enumerate((-0.30, -0.18, -0.06, 0.06, 0.18, 0.30)):
+            box(collection, root, f"Gate timber slat.{row}", (0, y, 0.655),
+                (2.72, 0.10, 0.055), "canteen_wood", 0.008)
+            box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
+                (2.74, 0.012, 0.009), "shade", 0.002)
+        for x in (-1.43, 1.43):
+            box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
+                (0.12, 0.94, 0.91), "canteen_steel", 0.016)
+            box(collection, root, f"Track dark channel.{x}", (x, 0, 1.055),
+                (0.047, 0.84, 0.016), "shade", 0.004)
+            for y in (-0.37, 0.37):
+                cylinder(collection, root, f"Track bolt.{x}.{y}", (x, y, 1.07),
+                         0.024, 0.02, "galvanized_edge", 16)
+        box(collection, root, "North steel header", (0, -0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        box(collection, root, "South steel threshold", (0, 0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
+                (0.17, 0.045, 0.018), "dock_amber", 0.004)
+        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
+                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+            brace.rotation_euler.z = angle
+            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+                     0.026, 0.016, "steel", 16)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):

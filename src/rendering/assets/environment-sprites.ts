@@ -92,6 +92,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.chair',
   'env.object.dining-table',
   'env.object.stove',
+  'env.object.loading-dock-door',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -244,6 +245,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
+  },
+  'env.object.loading-dock-door': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.delivery.dock_gate.closed',
+    runtimeSizePx: { width: 384, height: 128 },
+    quarterTurns: 0,
+    note: 'Closed three-tile timber delivery gate with steel tracks. Drawn on object.loading-dock-door; it is not a navigable door edge.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

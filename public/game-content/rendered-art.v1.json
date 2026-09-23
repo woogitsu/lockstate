@@ -153,6 +153,31 @@
       }
     },
     {
+      "assetId": "furniture.delivery.dock_gate.closed",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.2a8dedf2c28f.png",
+      "sha256": "2a8dedf2c28f2fe451fbda84edf6c6cf16a54a913c1ed1cd1f9bb4a51bd94a6d",
+      "dimensionsPx": {
+        "width": 768,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 3,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.dining.table.wooden",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.dining.table.wooden.cc5f82b333f7.png",
