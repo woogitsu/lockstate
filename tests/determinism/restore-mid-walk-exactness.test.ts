@@ -80,8 +80,19 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
   runtime.kernel.step();
 }
 
-function stepTo(runtime: SimulationRuntime, tick: number): void {
-  while (runtime.kernel.tick < tick) runtime.kernel.step();
+/**
+ * Something a case does to the prison from outside the timetable, keyed by the
+ * tick it happens on: applied just before that tick is stepped, so a save taken
+ * *at* that tick has not seen it and the restored runtime applies it itself --
+ * exactly where the continuous run does.
+ */
+type Events = ReadonlyMap<number, (runtime: SimulationRuntime) => void>;
+
+function stepTo(runtime: SimulationRuntime, tick: number, events?: Events): void {
+  while (runtime.kernel.tick < tick) {
+    events?.get(runtime.kernel.tick)?.(runtime);
+    runtime.kernel.step();
+  }
 }
 
 interface Staffing {
@@ -244,16 +255,16 @@ const SOON_AFTER_THE_SAVE = 50;
  * continuous run is a separate runtime that is never saved, so it cannot be
  * perturbed by a capture.
  */
-function scan(staffing: Staffing, saveTicks: readonly number[], checkpoint: number): ScanResult {
+function scan(staffing: Staffing, saveTicks: readonly number[], checkpoint: number, events?: Events): ScanResult {
   const continuous = buildPrison(staffing);
   const expectedSoon = new Map<number, string>();
   for (const tick of saveTicks) {
     const soon = tick + SOON_AFTER_THE_SAVE;
     if (soon >= checkpoint) throw new Error(`save@${String(tick)} is too close to the checkpoint to be compared soon after`);
-    stepTo(continuous, soon);
+    stepTo(continuous, soon, events);
     expectedSoon.set(soon, captured(continuous));
   }
-  stepTo(continuous, checkpoint);
+  stepTo(continuous, checkpoint, events);
   const expected = captured(continuous);
 
   const base = buildPrison(staffing);
@@ -263,7 +274,7 @@ function scan(staffing: Staffing, saveTicks: readonly number[], checkpoint: numb
   let withGuardWalking = 0;
   const failures: string[] = [];
   for (const tick of saveTicks) {
-    stepTo(base, tick);
+    stepTo(base, tick, events);
     if (walkingPrisoners(base) > 0) withWalker += 1;
     if (base.navigation.pendingCount() + base.navigation.resultCount() > 0) withPendingRequest += 1;
     if (base.securityGuards.locomotion.walkingCount > 0) withGuardWalking += 1;
@@ -280,7 +291,7 @@ function scan(staffing: Staffing, saveTicks: readonly number[], checkpoint: numb
       [tick + SOON_AFTER_THE_SAVE, expectedSoon.get(tick + SOON_AFTER_THE_SAVE)!],
       [checkpoint, expected],
     ] as const) {
-      stepTo(restored, at);
+      stepTo(restored, at, events);
       const got = captured(restored);
       if (got !== want) {
         failures.push(`save@${String(tick)} diverged by ${String(at)}: ${firstDifferences(JSON.parse(want), JSON.parse(got)).join(' | ')}`);
@@ -434,49 +445,155 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
 });
 
 /**
- * **A KNOWN DIVERGENCE, PINNED SO IT CANNOT BE FORGOTTEN OR SILENTLY FIXED.**
- * This case asserts that the save *does not* restore to the same prison, and
- * it is written to go red the day that stops being true. The case that goes
- * red then should be inverted to require equality, not deleted.
+ * **FORMERLY A KNOWN DIVERGENCE, AND INVERTED THE DAY IT WAS FIXED.** The case
+ * below used to assert that the save does *not* restore to the same prison,
+ * and said so in capitals. It read, in part:
  *
- * `workBudgetPerTick` (2,000 expanded nodes) binds when enough prisoners ask
- * for a route on the same tick. Here that is 24 prisoners in six rows of
- * cells, admitted 7 ticks apart, all re-targeting at the tick-3461 regime
- * block change. A `RouteCache` or `FlowFieldCache` hit costs 0 against the
- * budget. A restore starts both caches empty. So a restored session pays for
- * searches the saved one had already paid for, and on a binding tick it stops
- * serving at a different request.
+ * > `workBudgetPerTick` (2,000 expanded nodes) binds when enough prisoners ask
+ * > for a route on the same tick. Here that is 24 prisoners in six rows of
+ * > cells, admitted 7 ticks apart, all re-targeting at the tick-3461 regime
+ * > block change. A `RouteCache` or `FlowFieldCache` hit costs 0 against the
+ * > budget. A restore starts both caches empty. So a restored session pays for
+ * > searches the saved one had already paid for, and on a binding tick it
+ * > stops serving at a different request.
+ * >
+ * > Measured through a real save and restore: every save taken 1 to 40 ticks
+ * > before the block change served a different set by tick 3463. With 36
+ * > prisoners admitted 7 apart, the same happened for every save taken 1 to
+ * > 600 ticks before tick 5801.
  *
- * Measured through a real save and restore: every save taken 1 to 40 ticks
- * before the block change served a different set by tick 3463. With 36
- * prisoners admitted 7 apart, the same happened for every save taken 1 to 600
- * ticks before tick 5801. Replaying each binding tick's pending queue warm
- * against cold, the served set differed on 13 of 331 binding ticks.
+ * The owner then ruled *"Zapisywać pamięć tras (zalecane)"* (an option label,
+ * the weaker provenance) and ADR 0007's amendment of 2026-09-23 carries the
+ * design: a save carries both caches' warmth, in
+ * `simulation.inFlight.navigation.caches`. The case went red on that change
+ * with its own message -- *"the divergence this case pins has gone: invert it
+ * to require equality"* -- and is inverted here as it asked.
  *
- * **Why it is pinned rather than fixed.** Charging the budget what a request
- * costs cold was built, made both cases equal, and was withdrawn by the commit after it, whose message carries the measurements:
- * the full `navigation.production.meal-rush` benchmark took 211 ticks to drain
- * instead of 26. The choice between that, persisting the caches' warmth, and
- * accepting this is ADR 0007's owner's to make, and ADR 0059's amendment under
- * "Determinism" states it.
+ * The cases after it widen the one save to the windows the quotation
+ * measured, and then to a save before **every** tick on which the budget
+ * deferred work, found by scanning rather than chosen: a binding tick is where
+ * the fix matters, so it is where the comparison has to be made.
  */
-describe('a save taken before the navigation budget binds (#1373, KNOWN DIVERGENCE)', () => {
-  it('24 prisoners at the tick-3461 block change: a save 1 tick before it serves a different set', { timeout: 120_000 }, () => {
-    const staffing: Staffing = { ...PRISONERS_ONLY, cells: 24, admissionGapTicks: 7 };
+function deferredRequests(runtime: SimulationRuntime): number {
+  // After `step()` the kernel is on the next tick, so `NavigationSystem` last
+  // ran on `tick - 1`. A request enqueued before that and still waiting was
+  // left over by a budget that ran out.
+  const lastServed = runtime.kernel.tick - 1;
+  return runtime.navigation.getInFlightSnapshot().pending.filter((request) => request.enqueuedAtTick < lastServed).length;
+}
+
+/** Every tick in `[from, to)` on which the navigation budget left work waiting, stepping a fresh prison. */
+function bindingTicks(staffing: Staffing, from: number, to: number): number[] {
+  const runtime = buildPrison(staffing);
+  stepTo(runtime, from);
+  const ticks: number[] = [];
+  while (runtime.kernel.tick < to) {
+    runtime.kernel.step();
+    if (deferredRequests(runtime) > 0) ticks.push(runtime.kernel.tick - 1);
+  }
+  return ticks;
+}
+
+const TWENTY_FOUR: Staffing = { ...PRISONERS_ONLY, cells: 24, admissionGapTicks: 7 };
+const THIRTY_SIX: Staffing = { ...PRISONERS_ONLY, cells: 36, admissionGapTicks: 7 };
+
+describe('a save taken before the navigation budget binds restores to the same prison (#1373, formerly a KNOWN DIVERGENCE)', () => {
+  it('24 prisoners at the tick-3461 block change: a save 1 tick before it serves the same set', { timeout: 120_000 }, () => {
     const binds = 3_461;
-    const continuous = buildPrison(staffing);
+    const continuous = buildPrison(TWENTY_FOUR);
     stepTo(continuous, binds + 1);
-    const deferred = continuous.navigation.getInFlightSnapshot().pending.filter((request) => request.enqueuedAtTick < continuous.kernel.tick - 1);
-    expect(deferred.length, 'the budget must defer work on this tick, or the case is vacuous').toBeGreaterThan(0);
+    expect(deferredRequests(continuous), 'the budget must defer work on this tick, or the case is vacuous').toBeGreaterThan(0);
     stepTo(continuous, binds + 2);
 
-    const base = buildPrison(staffing);
+    const base = buildPrison(TWENTY_FOUR);
     stepTo(base, binds - 1);
     const restored = saveAndRestore(base);
     expect(captured(restored), 'the restore itself is still a fixed point').toBe(captured(base));
     stepTo(restored, binds + 2);
-    const differences = firstDifferences(JSON.parse(captured(continuous)), JSON.parse(captured(restored)));
-    expect(differences.length, 'the divergence this case pins has gone: invert it to require equality').toBeGreaterThan(0);
-    expect(differences[0]).toMatch(/^\.simulation\.inFlight\.navigation\.pending/);
+    expect(firstDifferences(JSON.parse(captured(continuous)), JSON.parse(captured(restored)))).toEqual([]);
+  });
+
+  it('24 prisoners: every save in the 40 ticks before the block change, the window that used to diverge', { timeout: 300_000 }, () => {
+    const saveTicks: number[] = [];
+    for (let tick = 3_421; tick <= 3_460; tick += 1) saveTicks.push(tick);
+    const result = scan(TWENTY_FOUR, saveTicks, 3_461 + 600);
+
+    expect(result.saves).toBe(40);
+    expect(result.withPendingRequest).toBeGreaterThan(0);
+    expect(result.failures).toEqual([]);
+  });
+
+  it('36 prisoners: saves across the 600 ticks before tick 5801 that used to diverge', { timeout: 300_000 }, () => {
+    const saveTicks: number[] = [];
+    for (let tick = 5_201; tick <= 5_800; tick += 23) saveTicks.push(tick);
+    saveTicks.push(5_800);
+    const result = scan(THIRTY_SIX, saveTicks, 5_801 + 600);
+
+    expect(result.saves).toBe(saveTicks.length);
+    expect(result.withWalker).toBeGreaterThan(0);
+    expect(result.failures).toEqual([]);
+  });
+
+  it('a save one tick before every binding tick of a day, at 24 and at 36 prisoners', { timeout: 600_000 }, () => {
+    for (const staffing of [TWENTY_FOUR, THIRTY_SIX]) {
+      const binding = bindingTicks(staffing, DAY, 3 * DAY);
+      // Measured when this case was written: the budget defers work on a
+      // handful of ticks a day here, clustered at block changes. A day with
+      // none would make this case vacuous rather than green.
+      expect(binding.length, `cells=${String(staffing.cells)}: the budget must bind somewhere in the day`).toBeGreaterThan(0);
+      const saveTicks = [...new Set(binding.map((tick) => tick - 1))].sort((a, b) => a - b);
+      const last = saveTicks[saveTicks.length - 1]!;
+      const result = scan(staffing, saveTicks, last + SOON_AFTER_THE_SAVE + 400);
+      expect(result.failures, `cells=${String(staffing.cells)}, binding ticks ${binding.join(',')}`).toEqual([]);
+    }
+  });
+});
+
+/**
+ * **The case a key-and-rebuild save could not carry**, which is why ADR 0007's
+ * 2026-09-23 amendment carries the entries themselves.
+ *
+ * A cached route is valid while every door it depends on gives the traversal
+ * verdict it was computed under (`doorDependenciesStillHold`). Locking the
+ * canteen invalidates every cached leg into it -- and unlocking it makes them
+ * answer again, unrecomputed and unpaid for, because the verdict is back. A
+ * save taken *during* the lockdown has to carry those entries for the restored
+ * session to have them after the lift; rebuilding at load would search against
+ * a locked door and could only produce the refusal.
+ *
+ * The door is set through the registry directly, identically in both runs and
+ * at the same ticks, because that is all a sector lockdown does to a door
+ * (`SecuritySectorRegistry.setControlState`), and this fixture's doors belong
+ * to no sector. The non-vacuity floor counts saves that carried an entry whose
+ * door had changed since it was computed -- the thing under test.
+ */
+describe('a save taken during a lockdown restores the routes the lift revives (#1373)', () => {
+  it('locking the canteen and yard mid-morning and lifting it after the saves', { timeout: 300_000 }, () => {
+    const lockAt = DAY + 300;
+    const liftAt = DAY + 700;
+    const doorIds = ['door:top:19:12', 'door:top:20:28'] as const;
+    const setAll = (state: 'locked' | 'open') => (runtime: SimulationRuntime) => {
+      for (const id of doorIds) runtime.navigation.doors.setState(id, state);
+    };
+    const events: Events = new Map([
+      [lockAt, setAll('locked')],
+      [liftAt, setAll('open')],
+    ]);
+
+    const saveTicks: number[] = [];
+    for (let tick = lockAt + 1; tick < liftAt; tick += 19) saveTicks.push(tick);
+
+    const probe = buildPrison(PRISONERS_ONLY);
+    for (const id of doorIds) expect(probe.navigation.doors.getById(id), `${id} is the door this case locks`).toBeDefined();
+    let carriedAChangedDoor = 0;
+    for (const tick of saveTicks) {
+      stepTo(probe, tick, events);
+      const caches = probe.navigation.getInFlightSnapshot().caches;
+      if (caches?.routes.some((entry) => entry.dependencies.changed !== undefined)) carriedAChangedDoor += 1;
+    }
+    expect(carriedAChangedDoor, 'saves must carry entries the lockdown invalidated, or the case is vacuous').toBeGreaterThan(0);
+
+    const result = scan(PRISONERS_ONLY, saveTicks, liftAt + 600, events);
+    expect(result.failures).toEqual([]);
   });
 });

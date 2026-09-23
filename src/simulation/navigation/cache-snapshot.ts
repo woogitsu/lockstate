@@ -159,7 +159,7 @@ class Tables {
   }
 
   public addDependencies(dependencies: DoorDependencies): void {
-    for (const doorId of dependencies.perDoor.keys()) this.addDoor(doorId);
+    for (const doorId of [...dependencies.perDoor.keys()].sort(compareStrings)) this.addDoor(doorId);
   }
 
   public freeze(): { readonly doorIds: readonly string[]; readonly contexts: readonly RouteContext[] } {
@@ -257,7 +257,7 @@ export function captureNavigationCacheSnapshot(
   for (const field of fields) {
     tables.addContext(field.context);
     tables.addDependencies(field.doorDependencies);
-    for (const step of field.steps.values()) tables.addDoor(step.nextPortal.doorId);
+    for (const [, step] of [...field.steps].sort(([a], [b]) => a - b)) tables.addDoor(step.nextPortal.doorId);
   }
   const { doorIds, contexts } = tables.freeze();
 

@@ -115,6 +115,7 @@ export function rebaseDoorDependencies(
 ): DoorDependencies {
   const perDoor = new Map<string, DoorDependency>();
   let previous: string | undefined;
+  let anyChanged = false;
   for (const dependency of snapshot.doors) {
     if (previous !== undefined && !(previous < dependency.doorId)) {
       throw new RangeError(`Door dependencies are not in ascending id order at "${dependency.doorId}".`);
@@ -125,12 +126,13 @@ export function rebaseDoorDependencies(
       perDoor.set(dependency.doorId, verdict(doors, dependency.doorId, context));
     } else {
       if (dependency.verdict === undefined) throw new RangeError(`Changed door dependency "${dependency.doorId}" carries no verdict.`);
+      anyChanged = true;
       const { allowed, traversalCost } = dependency.verdict;
       if (!Number.isFinite(traversalCost) || traversalCost < 0) throw new RangeError(`Door dependency "${dependency.doorId}" has an invalid cost.`);
       perDoor.set(dependency.doorId, { accessVersion: NO_DOOR_VERSION, allowed, traversalCost: allowed ? traversalCost : 0 });
     }
   }
-  if (snapshot.revisionUnchanged && [...perDoor.values()].some((dependency) => dependency.accessVersion === NO_DOOR_VERSION)) {
+  if (snapshot.revisionUnchanged && anyChanged) {
     throw new RangeError('Door dependencies say nothing changed anywhere and that a door changed.');
   }
   return { accessRevision: snapshot.revisionUnchanged ? doors.accessRevision : NO_DOOR_VERSION, perDoor };
