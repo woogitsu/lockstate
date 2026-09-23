@@ -1734,6 +1734,36 @@ restores exactly as it does today. It does not decide whether
 `SAVE_SCHEMA_VERSION` moves; ADR 0038's rule does. It is not a reservation
 release: nothing under `supabase/migrations/` is involved.
 
+**NN. ADR 0124: an arrival's prior incidents are drawn flat 60/30/10, the
+early warning may act on them from day one, and no string is added
+([#540](https://github.com/woogitsu/lockstate/issues/540)).** This
+number is a placeholder for the integrator. At `430906af` this file ran 1 to
+29, and a read of `AGENTS.md` on every remote head found none higher than 29.
+Entry 25 asked for an ADR before any code. The draft came back with three
+questions, and the owner chose, in order:
+
+> 60/30/10, równo (zalecane)
+
+> Tak, od pierwszego dnia (zalecane)
+
+> Nie teraz (zalecane)
+
+("60/30/10, flat (recommended)"; "Yes, from the first day (recommended)";
+"Not now (recommended).") **This accepts ADR 0124 and authorises its
+implementation.** It covers:
+- the worker drawing `priorIncidents` from a seventh stream,
+  `prisoners.priors`;
+- `AdmitPrisoner.priorIncidents` becoming optional;
+- `src/main.ts` no longer sending `{ priorIncidents: 0 }`.
+
+ADR 0090's early warning is unchanged and may lift an arrival with priors to
+`Medium` at the end of their first day. **Nothing player-visible is added**:
+reservation 4 is not touched, because no string is written. The provenance is
+the weaker kind, the label of an option the coordinating session wrote, three
+times. The magnitude is the one ADR 0080 recommended to #29. It is balance
+data (ADR 0017 decision 5), not a reservation, and it stays open to
+re-measurement.
+
 
 ## Required workflow for every issue
 Before coding:

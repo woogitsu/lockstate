@@ -21734,13 +21734,20 @@ recorded it; §4 carries the correction to the note they left there.
 - **The index agrees independently.** `grep -cE '^\|.*\| *\*{0,2}Proposed'
   docs/adr/README.md` returns **47** at this anchor and **41** at
   `03e47695`, matching the census at both ends.
-- **Next free number: 0124**, re-derived at the commit this pass finishes on
-  rather than carried: `ls docs/adr/ | grep -E '^[0-9]{4}-' | sed 's/-.*//' |
+- **Next free number: 0125.** **This bullet read `0124`, and that reading was
+  correct at the commit this pass finishes on.** It is superseded rather than
+  deleted, for the reason the bullet above gives of its own earlier value.
+  ADR 0124 (#540) was numbered on 2026-09-23 by the coordinating session and
+  its row landed in `docs/adr/README.md`, so `max + 1` off disk is now 0125.
+  0125 is being assigned at the same time on a parallel branch (#985), and the
+  integrator reconciles the two. When it was written, the bullet named `0124`
+  as that number and went on, kept exactly: *"re-derived at the commit this
+  pass finishes on rather than carried: `ls docs/adr/ | grep -E '^[0-9]{4}-' | sed 's/-.*//' |
   sort -n | tail -1` returns **0123** across **117** ADR files, and 0123 + 1 is
   0124, which is what `docs/adr/README.md` states. **The figure was verified
   against disk rather than taken off the README**, which the brief that ordered
   this pass insisted on and which is this repository's standing lesson about
-  restated numbers.
+  restated numbers."*
 
 ### What this pass deliberately did not chase
 

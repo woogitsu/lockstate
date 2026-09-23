@@ -1,4 +1,12 @@
-# ADR XXXX: What a prisoner brings with them
+# ADR 0124: What a prisoner brings with them
+
+> **THE NUMBER IS ASSIGNED AND IT IS ADR 0124.** The coordinating session
+> assigned it on 2026-09-23 after checking `main` and every remote head. The
+> note below is kept because it is the state this document was drafted in,
+> and `docs/AGENT_WORKFLOW.md` §4 asks for a correction to be readable in both
+> directions. Read *"placeholder number"* in it as that state, not as the
+> state now. The file moved from `docs/adr/drafts/` in the same commit that
+> changed this heading.
 
 > **This draft carries a placeholder number, `XXXX`, and commits in advance to
 > being renumbered without argument.** ADR numbers are assigned centrally after
@@ -11,11 +19,56 @@
 
 ## Status
 
-**Proposed.** Nothing below is decided, implemented or approved by the agent
-that wrote it. No line in `src/` changed while the draft was written. Every
-measurement was taken on an unmodified tree, by sending the real kernel the
-commands a worker-side draw would produce (§6.1 says how, and what that
-method cannot establish).
+**Accepted by the owner on 2026-09-23, in three rulings, each the option this
+document recommended.** They are recorded on
+[#540](https://github.com/woogitsu/lockstate/issues/540) (comment of
+2026-09-23 15:21 UTC) and in `AGENTS.md`'s entry for this ADR. That entry's
+number is left for the integrator to set, because two parallel branches are
+adding entries on the same day.
+
+1. **Q1, the distribution:**
+
+   > 60/30/10, równo (zalecane)
+
+   ("60/30/10, flat (recommended).") **Option A.** 60 % of arrivals have no
+   prior incident, 30 % have one and 10 % have two. The draw does not depend
+   on the sentence.
+2. **Q2, the early warning:**
+
+   > Tak, od pierwszego dnia (zalecane)
+
+   ("Yes, from the first day (recommended).") The early warning of
+   [ADR 0090](./0090-medium-as-a-warning-not-a-skipped-step.md) may lift a
+   prisoner with priors to `Medium` at the end of their first day. ADR 0090's
+   mechanism is unchanged.
+3. **Q3, visibility:**
+
+   > Nie teraz (zalecane)
+
+   ("Not now (recommended).") No new player-visible string. Priors show only
+   through the existing tier badge, the high-risk chip and the regime.
+
+**The provenance is the weaker kind, all three times.** Each ruling is the
+label of a clickable option the coordinating session wrote and the owner
+chose, not a sentence the owner typed. `AGENTS.md` flags the same shape for
+its entries 19 to 29.
+
+**What is accepted** is §4 as written, together with Option A's table from §5.
+Options B and C are kept below as history. Q1 of §10 also answers entry 25's
+*"tier-dependent"* as reading (i) of §3: the tier depends on the priors.
+
+**It is implemented in the same branch that numbered it**, in separate
+commits. §11 records what the implementation measured against this
+document's own predictions.
+
+**What this Status section said while the document was a draft, kept because
+it records what was offered:**
+
+> **Proposed.** Nothing below is decided, implemented or approved by the agent
+> that wrote it. No line in `src/` changed while the draft was written. Every
+> measurement was taken on an unmodified tree, by sending the real kernel the
+> commands a worker-side draw would produce (§6.1 says how, and what that
+> method cannot establish).
 
 **What it answers.** The owner ruled on
 [#540](https://github.com/woogitsu/lockstate/issues/540) on 2026-09-23
@@ -29,12 +82,12 @@ option a session wrote, not a sentence they typed. Entry 25 lists what the ADR
 must cover: *"a seeded, deterministic, tier-dependent draw of prior incidents,
 how that draw feeds classification and gang membership (ADR 0121), and what it
 means for saves and for the intake queue (#594)"*. It also answers
-[ADR 0090](../0090-medium-as-a-warning-not-a-skipped-step.md)'s *"What this
+[ADR 0090](./0090-medium-as-a-warning-not-a-skipped-step.md)'s *"What this
 does not decide"*, item 2.
 
 **This is the second time the owner has said "yes" to this question, and the
 first answer is what this draft builds on.**
-[ADR 0080](../0080-when-the-prison-asks-what-a-prisoner-is-carrying.md)'s
+[ADR 0080](./0080-when-the-prison-asks-what-a-prisoner-is-carrying.md)'s
 Status records the owner's ruling on #677 of 2026-08-30: *"`priorIncidents`
 moves off zero"*. The same ruling says *"**Not decided: the magnitude**, and
 it is deliberately not mine."* ADR 0080 and
