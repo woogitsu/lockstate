@@ -95,6 +95,8 @@ export interface HarnessWorldFixture {
   readonly diningTableTileY: number;
   readonly medicalBedTileX: number;
   readonly medicalBedTileY: number;
+  readonly washingMachineTileX: number;
+  readonly washingMachineTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

@@ -82,6 +82,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.door.interior.cap',
   'env.object.bed',
   'env.object.medical-bed',
+  'env.object.washing-machine',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
@@ -228,6 +229,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 256 },
     quarterTurns: 0,
     note: 'Adjustable medical bed with teal washable cover, white safety rails and a marked foot panel. Drawn on object.medical-bed.',
+  },
+  'env.object.washing-machine': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.laundry.washing_machine.twin',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Twin-bay institutional washer with two visible drum hatches and paired controls. Drawn on object.washing-machine.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

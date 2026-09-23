@@ -148,6 +148,20 @@ combined column, and its basin overhangs its own tile by 0.02.
 The resulting original reference and packed fabric swatch are recorded in
 `assets/source/concepts/medical-bed-v1.md`.
 
+### Laundry — `furniture.laundry.washing_machine.twin`
+
+> a twin-bay institutional washer, 2×1 tiles, shown in four consistent
+> views and separately as a straight-down overhead refinement
+> — blue-grey worn enamel housing, two large nickel-ringed drum hatches,
+> teal laundry under dark glass, paired amber controls on a north-side rail
+> …the two drum circles and their separate control clusters must remain
+> recognizable at the game's 128×64 px drawing size.
+
+The two original generated references and modeling decisions are recorded in
+`assets/source/concepts/washing-machine-v1.md`. The overhead refinement
+translates the oblique front loaders into top access hatches that the actual
+orthographic game camera can show.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 > a fixed corridor bench, 2×1 tiles, seen from directly above with its sides
