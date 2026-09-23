@@ -46,6 +46,24 @@ def mat(name, color, roughness=0.6):
     return material
 
 
+def prisoner_fabric():
+    """Use the approved concept's worn cotton swatch, packed for reproducibility."""
+    texture_path = Path(__file__).resolve().parents[2] / "assets/source/textures/prisoner-jumpsuit-orange-v2.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(texture_path)
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    fabric = mat("Prisoner worn orange cotton", (0.64, 0.23, 0.07), 0.85)
+    nodes = fabric.node_tree.nodes
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "REPEAT"
+    fabric.node_tree.links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    fabric.node_tree.links.new(texture.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return fabric
+
+
 def cube(name, location, scale, material, parent, bevel=0.06):
     bpy.ops.mesh.primitive_cube_add(location=location)
     item = bpy.context.object
@@ -116,6 +134,60 @@ def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
 
+def build_prisoner(root):
+    """Model the eight-view concept without changing the actor rig contract."""
+    fabric = prisoner_fabric()
+    dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
+    skin = mat("Warm skin", (0.39, 0.22, 0.14), 0.76)
+    hair = mat("Short dark hair", (0.014, 0.010, 0.009), 0.88)
+    shoe = mat("Worn charcoal shoes", (0.018, 0.020, 0.021), 0.85)
+    undershirt = mat("Pale undershirt", (0.76, 0.72, 0.65), 0.91)
+    button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
+
+    # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
+    # displayed scale. The old single bevelled cube made every role a crate.
+    sphere("Jumpsuit torso", (0, 0.0, 2.13), (0.45, 0.31, 0.61), fabric, root)
+    sphere("Jumpsuit hips", (0, 0.015, 1.62), (0.40, 0.29, 0.29), fabric, root)
+    sphere("Shirt collar opening", (0, -0.235, 2.66), (0.15, 0.07, 0.085), undershirt, root)
+    for side in (-1, 1):
+        lapel = cube(f"Folded lapel.{side}", (side * 0.16, -0.300, 2.60), (0.13, 0.033, 0.10), fabric, root, 0.035)
+        lapel.rotation_euler.y = math.radians(18 * side)
+        cube(f"Chest pocket.{side}", (side * 0.235, -0.315, 2.31), (0.11, 0.018, 0.12), fabric, root, 0.025)
+        cube(f"Pocket flap.{side}", (side * 0.235, -0.335, 2.38), (0.115, 0.012, 0.018), dark_seam, root, 0.004)
+        cube(f"Back trouser pocket.{side}", (side * 0.21, 0.289, 1.59), (0.13, 0.015, 0.11), fabric, root, 0.018)
+        sphere(f"Ear.{side}", (side * 0.285, 0.0, 3.10), (0.07, 0.055, 0.09), skin, root)
+    cube("Front placket seam", (0, -0.323, 2.23), (0.018, 0.01, 0.36), dark_seam, root, 0.004)
+    for z in (2.50, 2.36, 2.22, 2.08):
+        sphere(f"Button.{z}", (0.03, -0.335, z), (0.020, 0.014, 0.020), button, root)
+    cube("Waist seam", (0, -0.289, 1.75), (0.35, 0.014, 0.014), dark_seam, root, 0.002)
+
+    sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
+    sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
+    for side in (-1, 1):
+        sphere(f"Sideburn.{side}", (side * 0.255, -0.06, 3.205), (0.035, 0.065, 0.075), hair, root)
+    sphere("Nose", (0, -0.265, 3.08), (0.060, 0.078, 0.078), skin, root)
+    for side in (-1, 1):
+        cube(f"Brow.{side}", (side * 0.105, -0.252, 3.19), (0.078, 0.017, 0.020), hair, root, 0.006)
+        sphere(f"Eye.{side}", (side * 0.105, -0.260, 3.155), (0.024, 0.015, 0.020), hair, root)
+    cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
+
+    for side in (-1, 1):
+        arm = pivot(f"Arm.{side}", (side * 0.445, 0, 2.54), root)
+        sphere(f"Sleeve.{side}", (side * 0.445, 0, 2.30), (0.148, 0.16, 0.30), fabric, arm)
+        cylinder(f"Sleeve cuff.{side}", (side * 0.445, 0, 2.05), 0.132, 0.045, dark_seam, arm)
+        limb(f"Forearm.{side}", (side * 0.445, 0, 1.85), 0.096, 0.35, skin, arm)
+        sphere(f"Hand.{side}", (side * 0.445, 0, 1.66), (0.096, 0.090, 0.15), skin, arm)
+        animate(arm, 1 if side == -1 else -1)
+
+        leg = pivot(f"Leg.{side}", (side * 0.215, 0, 1.50), root)
+        sphere(f"Trouser leg.{side}", (side * 0.215, 0, 0.94), (0.185, 0.19, 0.65), fabric, leg)
+        cylinder(f"Rolled hem.{side}", (side * 0.215, 0, 0.38), 0.174, 0.09, fabric, leg)
+        cube(f"Trouser seam.{side}", (side * 0.215, -0.19, 0.95), (0.014, 0.01, 0.48), dark_seam, leg, 0.002)
+        sphere(f"Work shoe upper.{side}", (side * 0.215, -0.12, 0.205), (0.19, 0.27, 0.16), shoe, leg)
+        cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
+        animate(leg, -1 if side == -1 else 1)
+
+
 def main():
     pipeline_common.require_blender_version()
     options = arguments()
@@ -130,26 +202,29 @@ def main():
     patch = mat("Role patch", profile["patch"], 0.8)
     root = pivot("SpriteRoot", (0, 0, 0), None)
     pivot("SpriteTarget", (0, 0, 0), None)
-    cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
-    cube("Chest patch", (0, -0.281, 2.38), (0.13, 0.01, 0.07), patch, root, 0.01)
-    sphere("Head", (0, 0, 3.12), (0.28, 0.27, 0.33), skin, root)
-    if profile["headwear"] is None:
-        sphere("Hair", (0, 0.02, 3.35), (0.285, 0.275, 0.13), black, root)
-    elif profile["headwear"] == "cap":
-        cylinder("Cap", (0, 0, 3.39), 0.3, 0.12, uniform, root)
-        cube("Cap visor", (0, -0.27, 3.34), (0.24, 0.13, 0.03), uniform, root, 0.03)
+    if options.asset_id == "actor.prisoner.base":
+        build_prisoner(root)
     else:
-        sphere("Headwear", (0, 0, 3.39), (0.31, 0.3, 0.18), patch, root)
-    cube("Neck", (0, 0, 2.82), (0.11, 0.11, 0.18), skin, root, 0.04)
-    for side in (-1, 1):
-        arm = pivot(f"Arm.{side}", (side * 0.54, 0, 2.55), root)
-        limb(f"UpperArm.{side}", (side * 0.54, 0, 2.15), 0.13, 0.62, uniform, arm)
-        sphere(f"Hand.{side}", (side * 0.54, 0, 1.78), (0.14, 0.13, 0.18), skin, arm)
-        animate(arm, 1 if side == -1 else -1)
-        leg = pivot(f"Leg.{side}", (side * 0.23, 0, 1.57), root)
-        limb(f"LegMesh.{side}", (side * 0.23, 0, 0.9), 0.17, 1.15, uniform, leg)
-        cube(f"Boot.{side}", (side * 0.23, -0.09, 0.28), (0.19, 0.31, 0.12), black, leg, 0.07)
-        animate(leg, -1 if side == -1 else 1)
+        cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
+        cube("Chest patch", (0, -0.281, 2.38), (0.13, 0.01, 0.07), patch, root, 0.01)
+        sphere("Head", (0, 0, 3.12), (0.28, 0.27, 0.33), skin, root)
+        if profile["headwear"] is None:
+            sphere("Hair", (0, 0.02, 3.35), (0.285, 0.275, 0.13), black, root)
+        elif profile["headwear"] == "cap":
+            cylinder("Cap", (0, 0, 3.39), 0.3, 0.12, uniform, root)
+            cube("Cap visor", (0, -0.27, 3.34), (0.24, 0.13, 0.03), uniform, root, 0.03)
+        else:
+            sphere("Headwear", (0, 0, 3.39), (0.31, 0.3, 0.18), patch, root)
+        cube("Neck", (0, 0, 2.82), (0.11, 0.11, 0.18), skin, root, 0.04)
+        for side in (-1, 1):
+            arm = pivot(f"Arm.{side}", (side * 0.54, 0, 2.55), root)
+            limb(f"UpperArm.{side}", (side * 0.54, 0, 2.15), 0.13, 0.62, uniform, arm)
+            sphere(f"Hand.{side}", (side * 0.54, 0, 1.78), (0.14, 0.13, 0.18), skin, arm)
+            animate(arm, 1 if side == -1 else -1)
+            leg = pivot(f"Leg.{side}", (side * 0.23, 0, 1.57), root)
+            limb(f"LegMesh.{side}", (side * 0.23, 0, 0.9), 0.17, 1.15, uniform, leg)
+            cube(f"Boot.{side}", (side * 0.23, -0.09, 0.28), (0.19, 0.31, 0.12), black, leg, 0.07)
+            animate(leg, -1 if side == -1 else 1)
     bpy.ops.object.light_add(type="AREA", location=(3.5, -4, 6))
     key = bpy.context.object
     key.name, key.data.energy, key.data.shape, key.data.size = "Key light", 850, "DISK", 5
