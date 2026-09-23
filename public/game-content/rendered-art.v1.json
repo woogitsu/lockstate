@@ -178,6 +178,31 @@
       }
     },
     {
+      "assetId": "furniture.kitchen.prep_counter",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.prep_counter.60155f944103.png",
+      "sha256": "60155f9441033f4f0fb90af2d53ab9bc9fa37ef9861b0a82dbc65f90f32ca013",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.kitchen.stove",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.kitchen.stove.c036bb9ad7d5.png",
@@ -207,6 +232,31 @@
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.laundry.washing_machine.twin.e04bfc5dea75.png",
       "sha256": "e04bfc5dea754cb94f5408e64243048e2228748a096e375f46a302d92e9575be",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.library.bookshelf",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.library.bookshelf.71ed21db2df6.png",
+      "sha256": "71ed21db2df62db0ac30ed37f50e3ab2200caf77bd59566786f5f2511a3c5814",
       "dimensionsPx": {
         "width": 512,
         "height": 256

@@ -99,6 +99,10 @@ export interface HarnessWorldFixture {
   readonly medicineCabinetTileY: number;
   readonly washingMachineTileX: number;
   readonly washingMachineTileY: number;
+  readonly prepCounterTileX: number;
+  readonly prepCounterTileY: number;
+  readonly bookshelfTileX: number;
+  readonly bookshelfTileY: number;
   readonly stoveTileX: number;
   readonly stoveTileY: number;
 }

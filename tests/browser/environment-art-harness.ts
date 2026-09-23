@@ -92,6 +92,10 @@ const FIXTURE: HarnessWorldFixture = {
   stoveTileY: 4,
   washingMachineTileX: 34,
   washingMachineTileY: 4,
+  prepCounterTileX: 38,
+  prepCounterTileY: 4,
+  bookshelfTileX: 40,
+  bookshelfTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -255,6 +259,20 @@ function buildFrame(): RenderFrame {
       definitionId: 'washing-machine-brick',
       tileX: FIXTURE.washingMachineTileX,
       tileY: FIXTURE.washingMachineTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-prep-counter',
+      definitionId: 'prep-counter-brick',
+      tileX: FIXTURE.prepCounterTileX,
+      tileY: FIXTURE.prepCounterTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-bookshelf',
+      definitionId: 'bookshelf-wooden',
+      tileX: FIXTURE.bookshelfTileX,
+      tileY: FIXTURE.bookshelfTileY,
       phase: 'built',
     },
   ];

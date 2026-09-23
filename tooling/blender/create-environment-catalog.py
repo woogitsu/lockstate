@@ -64,6 +64,10 @@ PALETTE = {
     "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
     "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
     "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
+    "book_cream": ((0.75, 0.66, 0.48, 1), 0.83),
+    "book_rust": ((0.45, 0.19, 0.10, 1), 0.84),
+    "book_olive": ((0.22, 0.29, 0.18, 1), 0.86),
+    "book_navy": ((0.09, 0.15, 0.23, 1), 0.87),
 }
 
 MODELS = (
@@ -89,6 +93,8 @@ MODELS = (
     ("furniture.laundry.washing_machine.twin", (2, 1)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.kitchen.prep_counter", (2, 1)),
+    ("furniture.library.bookshelf", (2, 1)),
 )
 
 
@@ -158,6 +164,25 @@ def canteen_wood_material():
     texture.extension = "CLIP"
     links.new(coords.outputs["Generated"], texture.inputs["Vector"])
     links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def prep_board_material():
+    """Reuse the packed grain with a deeper food-safe walnut stain."""
+    texture_path = ROOT / "assets/source/textures/dining-table-wood-v1.png"
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Walnut prep board", (0.30, 0.15, 0.07, 1), 0.82)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    tint = nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    tint.inputs[0].default_value = 1
+    tint.inputs[2].default_value = (0.46, 0.34, 0.25, 1)
+    links.new(texture.outputs["Color"], tint.inputs[1])
+    links.new(tint.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
     return item
 
 
@@ -311,7 +336,67 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.kitchen.prep_counter":
+        # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
+        # Board, three distinct ingredient wells and rear lip are the overhead read.
+        for x in (-0.88, 0.88):
+            for y in (-0.39, 0.39):
+                cylinder(collection, root, f"Adjustable foot.{x}.{y}", (x, y, 0.09), 0.065, 0.17, "steel", 20)
+                cylinder(collection, root, f"Foot collar.{x}.{y}", (x, y, 0.18), 0.075, 0.035, "galvanized_edge", 20)
+        box(collection, root, "Dark lower base", (0, 0, 0.28), (1.83, 0.83, 0.23), "steel", 0.033)
+        box(collection, root, "Brushed steel cabinet", (0, 0, 0.64), (1.87, 0.86, 0.64), "canteen_steel", 0.035)
+        box(collection, root, "Overhanging rolled worktop", (0, 0, 1.00), (1.96, 0.95, 0.11), "galvanized_edge", 0.027)
+        box(collection, root, "Brushed worktop face", (0, 0, 1.062), (1.88, 0.87, 0.026), "canteen_steel", 0.023)
+        box(collection, root, "Raised rear hygiene lip", (0, -0.43, 1.16), (1.93, 0.072, 0.22), "galvanized_edge", 0.024)
+        box(collection, root, "Back lip dark seam", (0, -0.384, 1.073), (1.81, 0.014, 0.01), "steel", 0.003)
+        # The board is one generous shape, rather than a row of tiny strokes.
+        box(collection, root, "Board dark inset", (-0.47, 0.055, 1.083), (0.86, 0.66, 0.029), "steel", 0.038)
+        box(collection, root, "Worn walnut cutting board", (-0.47, 0.055, 1.118), (0.82, 0.62, 0.060), "prep_board", 0.05)
+        for x in (-0.73, -0.69):
+            box(collection, root, f"Board knife mark.{x}", (x, 0.04, 1.151), (0.008, 0.35, 0.004), "wood", 0.002)
+        # Three open stainless hotel pans with different broad food colors.
+        for well_index, (x, food) in enumerate(((0.26, "prep_red"), (0.51, "prep_green"), (0.76, "prep_cream"))):
+            box(collection, root, f"Tray shadow.{well_index}", (x, 0.058, 1.079), (0.235, 0.68, 0.022), "steel", 0.016)
+            box(collection, root, f"Tray rolled rim.{well_index}", (x, 0.058, 1.095), (0.225, 0.66, 0.016), "galvanized_edge", 0.013)
+            box(collection, root, f"Recessed tray well.{well_index}", (x, 0.058, 1.105), (0.185, 0.57, 0.012), "metal_recess", 0.012)
+            for row, y in enumerate((-0.14, -0.01, 0.12, 0.25)):
+                for col, dx in enumerate((-0.045, 0.045)):
+                    box(collection, root, f"Prepared ingredient.{well_index}.{row}.{col}", (x + dx, y, 1.125), (0.075, 0.095, 0.033), food, 0.022)
+        # Cabinet drawers and recessed pulls survive oblique inspection without
+        # adding decorative clutter to the true-overhead sprite.
+        for z in (0.58, 0.82):
+            box(collection, root, f"Drawer front.{z}", (-0.48, 0.443, z), (0.70, 0.016, 0.20), "galvanized", 0.008)
+            box(collection, root, f"Drawer pull.{z}", (-0.48, 0.454, z), (0.18, 0.015, 0.045), "steel", 0.005)
+        box(collection, root, "Cupboard seam", (0.20, 0.445, 0.65), (0.014, 0.015, 0.59), "steel", 0.003)
+        for x in (0.33, 0.79):
+            box(collection, root, f"Recessed cupboard pull.{x}", (x, 0.451, 0.74), (0.035, 0.013, 0.14), "steel", 0.006)
+    elif asset_id == "furniture.library.bookshelf":
+        # Four-view concept: assets/source/concepts/bookshelf-multiview-v1.png.
+        # Two open, book-filled rows, three broad bays, and dark shelf voids
+        # remain legible when the 2x1 object is drawn at 128x64 world pixels.
+        box(collection, root, "Steel base plinth", (0, 0, 0.13), (1.88, 0.86, 0.25), "steel", 0.018)
+        box(collection, root, "Warm timber backing", (0, -0.015, 0.70), (1.76, 0.79, 0.11), "canteen_wood", 0.013)
+        for x in (-0.92, -0.32, 0.32, 0.92):
+            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.075, 0.89, 1.33), "canteen_steel", 0.016)
+            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.10, 0.90, 0.045), "galvanized_edge", 0.009)
+        for row, y in enumerate((-0.23, 0.22)):
+            box(collection, root, f"Dark open shelf.{row}", (0, y, 0.755), (1.77, 0.345, 0.095), "shade", 0.008)
+            box(collection, root, f"Timber shelf lip.{row}", (0, y + 0.19, 0.87), (1.79, 0.055, 0.14), "canteen_wood", 0.009)
+            for bay, centre in enumerate((-0.62, 0, 0.62)):
+                # Five individual spines per bay. Omitted volumes leave short
+                # dark gaps instead of an unbroken decorative stripe.
+                for slot, dx in enumerate((-0.22, -0.11, 0.0, 0.11, 0.22)):
+                    if (row, bay, slot) in ((0, 1, 3), (1, 0, 1), (1, 2, 4)):
+                        continue
+                    height = 0.27 + ((row * 7 + bay * 3 + slot * 2) % 4) * 0.035
+                    colour = ("book_cream", "book_rust", "book_olive", "book_navy")[(row + bay * 2 + slot) % 4]
+                    box(collection, root, f"Book.{row}.{bay}.{slot}", (centre + dx, y, 0.90 + height / 2),
+                        (0.085, 0.245, height), colour, 0.005)
+                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (centre + dx, y + 0.115, 0.90 + height),
+                        (0.065, 0.015, 0.012), "light", 0.002)
+        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "canteen_steel", 0.012)
+        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "canteen_steel", 0.012)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):
@@ -737,6 +822,7 @@ def main():
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["canteen_wood"] = canteen_wood_material()
+    MATERIALS["prep_board"] = prep_board_material()
     MATERIALS["bench_wood"] = corridor_bench_wood_material()
     MATERIALS["desk_laminate"] = employee_desk_laminate_material()
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
@@ -746,9 +832,21 @@ def main():
     MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
     MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
+    MATERIALS["prep_red"] = material("Prepared red vegetables", (0.65, 0.15, 0.08, 1), 0.66)
+    MATERIALS["prep_green"] = material("Prepared green vegetables", (0.13, 0.33, 0.11, 1), 0.77)
+    MATERIALS["prep_cream"] = material("Prepared pale vegetables", (0.78, 0.70, 0.46, 1), 0.78)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
-    for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
+    # These collections were authored on separate art branches. Keep their
+    # original origin slots when combining branches: EEVEE samples differ by a
+    # few pixels if a collection moves in world space, although the camera
+    # follows it. Rendering isolates collections, so shared slots are safe.
+    original_art_slots = {
+        "furniture.kitchen.prep_counter": 31,
+        "furniture.library.bookshelf": 32,
+    }
+    for index, (asset_id, footprint) in enumerate(MODELS):
+        create_model(asset_id, footprint, original_art_slots.get(asset_id, index))
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT))
 

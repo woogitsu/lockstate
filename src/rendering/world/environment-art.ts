@@ -265,12 +265,12 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * fixed stools, matching the simulation's three dining places, rather than
  * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
  * The twin laundry washer has its own 2x1 model with two top-visible drum windows.
+ * The 2x1 prep counter now shows a cutting board and three ingredient wells;
+ * the open library bookshelf shows two rows of books across three bays.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bookshelf',
   'object.fridge',
   'object.loading-dock-door',
-  'object.prep-counter',
   'object.security-console',
   'object.sink',
   'object.utility-panel',
@@ -334,6 +334,8 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.medicine-cabinet': 'env.object.medicine-cabinet',
   'object.stove': 'env.object.stove',
   'object.washing-machine': 'env.object.washing-machine',
+  'object.prep-counter': 'env.object.prep-counter',
+  'object.bookshelf': 'env.object.bookshelf',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
