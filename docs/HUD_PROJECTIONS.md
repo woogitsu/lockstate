@@ -474,6 +474,18 @@ that reached a bounded in-worker window and stopped there.
   the label of a clickable option, not a typed sentence — and the ADR's Status
   block says so.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
+- **A sibling since 2026-09-23: `refusalHistory`, the refusals the message
+  history still holds** (the owner's ruling 26 on #985, designed in
+  [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)).
+  It is an array of the same `refusalSchema` records, oldest first, one to
+  `MAX_REFUSAL_HISTORY_RECORDS` (8) long, and absent while empty. It is a
+  **level**, like `refusal`: republished whole on every readout and never
+  drained, so "a queue this channel cannot carry honestly" above still holds
+  and this is not one. The alerts list paints one row per entry. The band
+  still reads `refusal` alone. An entry never carries `routeDecidedSince`,
+  because that mark belongs to the band. A #492 withdrawal removes an entry,
+  exactly as it withdraws `refusal`, and `RefusalLog.historyRevision` opens
+  the publication gate for it. Not snapshotted either.
 
 #### The zoning notice it also carries (ADR 0022, amended)
 
@@ -703,7 +715,7 @@ Four properties are worth stating because each is a decision:
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
-  (`src/simulation/worker/state-machine.ts:454-478`), which is twice the rate
+  (`src/simulation/worker/state-machine.ts:466-490`), which is twice the rate
   of the counts channel and, crucially, **not change-gated on the counts**.
 
   Measured on the **harness** (`SimulationWorkerStateMachine`, fake timers, no
@@ -2144,6 +2156,14 @@ decision about what to build next.
     ruled on the events log and not on the refusal, and the two stop being
     siblings in this one respect.
 
+    **Still true after 2026-09-23, and it now covers a list.** Ruling 26 gave
+    `RefusalLog` a bounded history (gap 34), and that history stays out of the
+    save too. The argument above applies to it with more force, not less: a
+    history row cannot be dismissed, so a restored prison would keep up to
+    eight notices about presses from an ended session until eight new refusals
+    pushed them out. `drafts/what-a-refusal-leaves-in-the-history.md`
+    decision 6 records it.
+
     **What the log gives back is bounded by the buffer rather than by the
     list.** At most `MAX_BUFFERED_SIMULATION_EVENTS` records are retained and
     the list keeps eight rows chosen by *severity*, so a `danger` row the live
@@ -2342,16 +2362,16 @@ decision about what to build next.
     change):
 
     - `RefusalLog.record` replaces
-      (`src/simulation/refusals/refusal-log.ts:189-208`, `public record(`).
+      (`src/simulation/refusals/refusal-log.ts:248-279`, `public record(`).
       Two refusals leave `count === 2` and `last` holding only the second; the
       first is unreachable from the object.
     - The alerts list keeps exactly one refusal row, keyed by ordinal, and
       the previous one is filtered out before the new one is appended
-      (`src/ui/simulation-alerts.ts:325-338`). Probe: after
+      (`src/ui/simulation-alerts.ts:339-352`, `const standing = previous.filter(`). Probe: after
       `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
       is `[{"id":"refusal-2", …}]` — length 1.
     - The band carries the newest ordinal and nothing else
-      (`src/ui/simulation-alerts.ts:501-508`, `src/ui/hud/hud.ts:1730-1745`).
+      (`src/ui/simulation-alerts.ts:535-542`, `src/ui/hud/hud.ts:1730-1745`).
     - Neither surface shows the count. The row literal carries `id`,
       `labelKey` and `severity` only, and `sequence` reaches a player only as
       an opaque row id.
@@ -2374,7 +2394,7 @@ decision about what to build next.
     - **"The band carries the newest ordinal and nothing else" is false in both
       directions since #1261.** It carries one thing *more*: the notice now
       forwards `routeDecidedSince` as well
-      (`src/ui/simulation-alerts.ts:504`). And on that flag it carries *less*
+      (`src/ui/simulation-alerts.ts:538`). And on that flag it carries *less*
       than the newest ordinal — a notice marked `routeDecidedSince` is treated
       as no notice at all, so the corner is cleared while the refusal still
       stands in `RefusalLog` and still holds its row in the alerts list
@@ -2388,7 +2408,7 @@ decision about what to build next.
     449-453 and then 462-469 for the notice, and 452 and then 465 for the
     forwarded flag — they moved twice in one day, both times because this
     repository added prose beside the code rather than because the code moved.
-    The notice is now built at `src/ui/simulation-alerts.ts:501-508`, on
+    The notice is now built at `src/ui/simulation-alerts.ts:535-542`, on
     `sequence: refusal.sequence`, and `routeDecidedSince` is forwarded at
     `:486`. Nothing about those two findings changed — the same
     lines were re-read at the new coordinates — and the shift is this repository
@@ -2450,7 +2470,7 @@ decision about what to build next.
     the handler records one refusal per failed order
     (`src/simulation/construction/handler.ts:113-124`); the publisher reads
     `this._runtime.refusals.last` once per wake
-    (`src/simulation/worker/state-machine.ts:597`, called from `onTickLoop` at
+    (`src/simulation/worker/state-machine.ts:609`, called from `onTickLoop` at
     `:407`), so a burst decided inside one dispatch pass is reduced to its last
     member before anything is posted. Probe: twelve recorded refusals across
     three reasons leave one row, `refusal-12`, `build.out-of-bounds`; the
@@ -2479,7 +2499,7 @@ decision about what to build next.
     prison rather than the decline of a press the player has just made. The
     literal reading is unusually easy to reach here only because every refusal
     row is graded `severity: 'warning'` uniformly — and that grading was chosen
-    for an unrelated reason, stated at `src/ui/simulation-alerts.ts:262-268`:
+    for an unrelated reason, stated at `src/ui/simulation-alerts.ts:275-281`:
     grading one refusal above another is a balance judgement this layer has no
     basis for. **The question, in one sentence: does article 6's
     *"ostrzeżenia"* reach a refusal of a player's own command, or only a
@@ -2515,6 +2535,45 @@ decision about what to build next.
     > constitution, so *"warning"* in `src/` and *ostrzeżenie* in
     > `konstytucja.md` are now known to be different words. Nothing enforces
     > that distinction; this paragraph is the only place it is written down.
+
+    > **REVERSED BY THE OWNER ON 2026-09-23: ARTICLE 6 DOES COVER A REFUSAL.**
+    > The owner was asked again and chose the option labelled *"Tak, odmowy do
+    > historii"* ("Yes, refusals into the history"). That is the weaker
+    > provenance: an option label, not a typed sentence. It is `AGENTS.md`
+    > ruling 26. The 2026-09-15 blockquote above is kept, because it is what
+    > this section said for eight days and because its distinction between the
+    > two words is what the new ruling overturned. The ruling keeps the band as
+    > it was, showing only the current refusal under ADR 0091's lifetime rules,
+    > and makes the history keep each refusal.
+    >
+    > **What was built, designed in
+    > [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)
+    > (Proposed, unnumbered).** Three of the four measured bullets above are
+    > now false, and they are kept as the state the ruling found:
+    >
+    > - `RefusalLog.record` still replaces the **standing** record, which is
+    >   what the band reads. The record it replaces now stays in
+    >   `RefusalLog.history`, at most `MAX_REFUSAL_HISTORY_RECORDS` (8)
+    >   entries, oldest dropped first.
+    > - The alerts list keeps **one refusal row per history entry**, keyed by
+    >   the same ordinal, each keeping its tile and therefore its press
+    >   (ADR 0122). None carries `occurrences`, so none can be dismissed, and
+    >   the dismissal half of this gap is unchanged.
+    > - The eleven-of-twelve reduction is gone below the bound. The history
+    >   crosses whole on `simulation/status-counts` as `refusalHistory`, a level
+    >   republished on every readout. A twelve-refusal burst keeps its newest
+    >   eight.
+    > - The band still carries the newest ordinal and nothing from the history.
+    >
+    > **What still takes a refusal out of the history is its own command
+    > succeeding at the same target** (#492's rule, unchanged in width). A
+    > newer refusal, or a success elsewhere, does not. Article 6 forbids the
+    > first kind of disappearance and article 5 requires the second. The
+    > draft's *"Choices the owner may want the other way"* names this as the
+    > closest call.
+    >
+    > **Neither the refusal nor its history is in the save.** Gap 33 says why,
+    > and the draft prices the alternative.
 
     > **Every coordinate in this section was re-opened on 2026-09-17 against
     > `main` at `33c02a12`, and none of them moved.** Recorded with the commit

@@ -698,6 +698,17 @@ work are not.**
   `identity` arrived — which is why this entry is about what it would *buy*
   rather than what it would cost. Also recorded in
   `docs/HUD_PROJECTIONS.md` gap 33.
+
+  **Since 2026-09-23 it also holds a bounded history**, up to eight refusals
+  that a newer one no longer erases (the owner's ruling 26 on #985). **That
+  history is excluded too, and `SAVE_SCHEMA_VERSION` does not move.** The
+  reason above gets stronger: a history row cannot be dismissed, so restored
+  rows would stand until eight fresh refusals displaced them. Ruling 26 did not
+  rule on the save.
+  [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)
+  decision 6 and its *"Choices the owner may want the other way"* item 2 price
+  carrying it: an optional section and no version bump, once a dismissal or a
+  restored-row rule exists.
 - **`SimulationEventLog`** (`SimulationRuntime.events`, #507). **No longer
   excluded since 2026-09-01: the alerts log is in the payload, as an optional
   `simulation.alerts` section**

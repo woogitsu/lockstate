@@ -149,7 +149,7 @@ and the condition channel was never going to reach them.
 
 The integrator's brief cited `src/ui/hud/hud.ts:1244-1256` and `:1220-1223`
 for #777, and `src/ui/hud/hud.ts:1211-1259`,
-`src/simulation/runtime/session-commands.ts:137-166` and `:571-604` for #780.
+`src/simulation/runtime/session-commands.ts:139-168` and `:571-604` for #780.
 Re-opened at this branch's own cut:
 
 - `hud.ts`'s `applySimulationRefusal` was at **1346-1361** at this branch's
@@ -452,7 +452,7 @@ Read at `e044a3e8`, not inferred:
   `refusalSource === 'host'`, so no success of any kind touches a simulation
   refusal from the HUD side.
 - The only thing that can make `notice` go `undefined` is
-  `RefusalLog.supersede` (`src/simulation/refusals/refusal-log.ts:175-179`),
+  `RefusalLog.supersede` (`src/simulation/refusals/refusal-log.ts:234-238`),
   which returns without acting unless the standing refusal's own key matches —
   decision 1's narrow key, exactly as shipped.
 - There is **no second, band-only "last decided outcome" state** in `hud.ts`.
@@ -516,7 +516,7 @@ what is being priced here.
 **M4 — what a decided *success* looks like on the main thread today: nothing.**
 Measured over a 22-command session: 22 `simulation/command-result` messages and
 **0** `simulation/event`. And `command-result` is not a decision —
-`handleSubmitCommand` (`src/simulation/worker/state-machine.ts:1122-1151`)
+`handleSubmitCommand` (`src/simulation/worker/state-machine.ts:1149-1178`)
 answers `status: 'queued'` at receipt, which ADR 0003 decision 9 says is
 receipt and not effect, *before* the tick that decides anything. So **no
 existing channel tells the HUD that a command succeeded**, which is the
@@ -1079,3 +1079,11 @@ the one standing refusal, and it leaves every lifetime rule in this document
 as it is. It is named here so a reader of this amendment does not take
 *"`RefusalLog` is untouched"* above to mean the refusal record will never
 change. It means this amendment does not change it.
+
+**Implemented the same day, and it left this band's rule where this paragraph
+said it would.** `RefusalLog` now keeps a bounded history beside the standing
+record, and the alerts list paints one row per entry. `last`, which is the
+only thing the band reads, is built exactly as before. Option F's mark stays on
+the standing record and is never copied into a history entry. The design is
+[`drafts/what-a-refusal-leaves-in-the-history.md`](./drafts/what-a-refusal-leaves-in-the-history.md),
+Proposed and unnumbered.

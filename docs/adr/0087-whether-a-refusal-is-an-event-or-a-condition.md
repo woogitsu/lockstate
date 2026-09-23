@@ -118,7 +118,7 @@ So:
 
 **`refusal` is declared a level and implemented as an occurrence.** That one
 sentence is the whole of this ADR's problem. `RefusalLog.record`
-(`src/simulation/refusals/refusal-log.ts:139-143`) increments a monotonic
+(`src/simulation/refusals/refusal-log.ts:164-168`) increments a monotonic
 `_sequence` (`:93`), writes one slot, and is called from twelve command
 handlers and nothing else. A level does not have an ordinal, does not
 increment, and is not written by a handler; it is *read off the prison*.
@@ -140,7 +140,7 @@ below are what still differs.
 
 All three reach **the band only**. None of them reaches `HudViewModel.alerts`,
 and none of them increments any count: `hudAlertsFromWorkerMessage`
-(`src/ui/simulation-alerts.ts:287-317`) is the only producer of a
+(`src/ui/simulation-alerts.ts:300-330`) is the only producer of a
 `refusal-`-prefixed row and its sole input is `message.payload.refusal`, which
 comes from `RefusalLog`. A host refusal is told once and then is not anywhere.
 
@@ -425,7 +425,7 @@ than answering it the same way for a fact of a different kind.
 
 ### 3. The one answer already given, in passing, in one file
 
-`src/ui/simulation-alerts.ts:406-407` rules that a refusal appearing in both
+`src/ui/simulation-alerts.ts:399-400` rules that a refusal appearing in both
 the band and the list
 
 > is the intended reading rather than a duplication to be removed: **one is

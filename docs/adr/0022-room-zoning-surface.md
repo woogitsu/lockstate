@@ -126,7 +126,7 @@ because a command handler returns `void`.
 > and `roomNameKey` beside it. A count is the sentence shape §4 says rots
 > first, and this one rotted while the rest of the sentence stayed true.
 
-`src/simulation/runtime/session-commands.ts:46-72` already routes the command to
+`src/simulation/runtime/session-commands.ts:48-74` already routes the command to
 it, and records why the schema's field is named `roomId` while the service's
 parameter is `roomCatalogId`: the field was named before instances existed, and
 renaming a field a queued command in an existing save may already carry is a
@@ -630,8 +630,8 @@ most effort on.
   of `main`. All six `hud.alert.refusal.zone.*` strings are in
   `src/content/default-locale-en.ts:173-178`, their mapping is in
   `src/ui/simulation-alerts.ts:43-48`, and `ZONE_REFUSAL_REASONS`
-  (`src/simulation/refusals/refusal-log.ts:158`) is recorded from the handler at
-  `src/simulation/runtime/session-commands.ts:70`. Two of those files did not
+  (`src/simulation/refusals/refusal-log.ts:194`) is recorded from the handler at
+  `src/simulation/runtime/session-commands.ts:72`. Two of those files did not
   exist on `main` when this was written.
   Without that route a zone gesture the simulation refuses tells the player nothing —
   which is the defect #225 removed from the build drag, and it should not be

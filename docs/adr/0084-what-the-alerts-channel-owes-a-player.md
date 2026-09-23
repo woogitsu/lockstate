@@ -204,7 +204,7 @@ import `src/simulation/**`):
 - **The alerts list** (`HudViewModel.alerts`, a flat `HudAlertViewModel[]`) —
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
-  (`src/ui/simulation-alerts.ts:318-409`), `hudEventAlertsFromWorkerMessage`
+  (`src/ui/simulation-alerts.ts:331-402`), `hudEventAlertsFromWorkerMessage`
   for domain events (`src/ui/simulation-events.ts:861-943`), and each keeps
   the others' rows untouched by filtering on an id prefix
   (`REFUSAL_ROW_PREFIX` / `FAULT_ROW_PREFIX`, `simulation-alerts.ts:191-192`;
@@ -262,7 +262,7 @@ becoming visible in play.
 
 ### Finding 2 — no dismissal, in the module's own words
 
-`src/ui/simulation-alerts.ts:235-242` — **that docblock now carries a marked
+`src/ui/simulation-alerts.ts:246-255` — **that docblock now carries a marked
 correction of its own beside the passage (`:244-252`), because the list's rows
 can be dismissed since this ADR's decision 2; the bands still cannot**:
 

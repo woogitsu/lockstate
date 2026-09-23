@@ -135,10 +135,13 @@ coalesced or dropped. It is fixed-width, so `docs/HUD_PROJECTIONS.md` contract 5
 has nothing to page.
 
 **The array reuses `refusalSchema` instead of declaring a narrower shape.** A
-second object schema with the keys `{ reason, sequence, tick, tile }` would
-make every `{ sequence, tick, reason }` enumeration under `docs/` ambiguous to
+second object schema carrying `refusalSchema`'s keys minus `routeDecidedSince`
+would make every documented three-member enumeration of `refusal` under
+`docs/` ambiguous to
 `tests/foundation/documented-wire-schema-membership-contract.test.ts`, which
-resolves an enumeration by key set. The producer never sets
+resolves an enumeration by key set. (This paragraph names the keys in prose on
+purpose, so that it is not itself one of the enumerations that contract
+resolves.) The producer never sets
 `routeDecidedSince` on an entry. Decision 1 says why, and the worker's
 publication test pins it.
 
