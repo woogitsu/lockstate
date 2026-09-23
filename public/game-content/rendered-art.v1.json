@@ -355,8 +355,8 @@
     {
       "assetId": "furniture.medical.cabinet",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.medical.cabinet.92087837004d.png",
-      "sha256": "92087837004d913f08588b1def3af44d8b3856d668387f55d9ccf22410c2f9fa",
+      "image": "source-art/rendered.furniture.medical.cabinet.ecbbc209a594.png",
+      "sha256": "ecbbc209a594167b974b3f8ab2e17f2960ccc997c814852fbf7b8e2bddb5677f",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -366,8 +366,8 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1.12,
-        "height": 1.12
+        "width": 1.848002,
+        "height": 1.848002
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {

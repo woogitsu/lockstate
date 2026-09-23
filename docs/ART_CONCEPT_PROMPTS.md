@@ -344,3 +344,10 @@ the exact prompt that produced the delivery's single 1536×1024 world
 illustration. It is the model for the shape of a prompt here, and the
 illustration itself stays a reference with nothing cut out of it — the other
 half of the same ruling.
+
+### Medicine cabinet refinement — `furniture.medical.cabinet`
+
+The 1×1 infirmary cabinet now shows its purpose from above: a raised lid with
+a muted first-aid cross, a dark supply tray, a bandage roll, two medicine
+cartons and an amber vial. The original four-view reference and Blender choices
+are recorded in `assets/source/concepts/medicine-cabinet-v3.md`.
