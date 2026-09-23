@@ -206,7 +206,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.alert.refusal.zone.unknown-room-type` | The room was not zoned — that is not a room type this prison knows. | `src/content/default-locale-en.ts:1347` |
 | `hud.alert.refusal.zone.unowned-land` | The room was not zoned — you do not own all of that land. | `src/content/default-locale-en.ts:1348` |
 | `hud.alert.refusal.zone.below-minimum-size` | The room was not zoned — that area is smaller than this room type allows. | `src/content/default-locale-en.ts:1355` |
-| `hud.alert.refusal.zone.not-enclosed` | The room was not zoned — this room type needs a finished wall or door along every side, and yours has a gap. | `src/content/default-locale-en.ts:1397` |
+| `hud.alert.refusal.zone.not-enclosed` | The room was not zoned — finished walls or doors must line the tile edges around it; the outline still has a gap. | `src/content/default-locale-en.ts:1397` |
 | `hud.alert.refusal.unzone.invalid-area` | Nothing was removed — that area is not a valid rectangle. | `src/content/default-locale-en.ts:1402` |
 | `hud.alert.refusal.unzone.nothing-to-remove` | Nothing was removed — there is no room in that area. | `src/content/default-locale-en.ts:1403` |
 | `hud.alert.refusal.unzone.room-occupied` | Nothing was removed — somebody is using that room. | `src/content/default-locale-en.ts:1404` |
