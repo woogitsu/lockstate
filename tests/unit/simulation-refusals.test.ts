@@ -1103,6 +1103,33 @@ describe('issue #780: a zoning refusal is withdrawn by a different room type suc
  * weaker of the two kinds this repository distinguishes.
  */
 describe('ADR 0091 decision 2 (option F): the standing refusal reports when its own route decides again', () => {
+  it('treats wall and object removals as one band route in both directions, without withdrawing either record (#1270)', () => {
+    const wallRefusal = new RefusalLog();
+    wallRefusal.record('remove-wall.nothing-to-remove', 3, removeWallSupersessionKey(18, 19, 'north'));
+    wallRefusal.supersede(removeObjectSupersessionKey(4, 4));
+    expect(wallRefusal.last).toMatchObject({
+      sequence: 1,
+      reason: 'remove-wall.nothing-to-remove',
+      routeDecidedSince: true,
+    });
+    expect(wallRefusal.count).toBe(1);
+
+    const objectRefusal = new RefusalLog();
+    objectRefusal.record('remove-object.nothing-to-remove', 3, removeObjectSupersessionKey(18, 19));
+    // The same tile must still be a miss to #492's exact-key withdrawal:
+    // an empty object tile says nothing about the wall edge on that tile.
+    objectRefusal.supersede(removeWallSupersessionKey(18, 19, 'north'));
+    expect(objectRefusal.last).toMatchObject({
+      sequence: 1,
+      reason: 'remove-object.nothing-to-remove',
+      routeDecidedSince: true,
+    });
+    expect(objectRefusal.count).toBe(1);
+
+    expect(supersessionKeyRoute(removeObjectSupersessionKey(4, 4))).toBe('remove-object');
+    expect(supersessionKeyRoute(removeWallSupersessionKey(4, 4, 'north'))).toBe('remove-wall');
+  });
+
   it('derives the route of every supersession key this module builds from the key itself', () => {
     // Not a fixture supplying both sides (`docs/TESTING.md`): the expected
     // routes are written out here as the command names a reader would name,
