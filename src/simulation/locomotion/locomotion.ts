@@ -335,10 +335,14 @@ export class LocomotionStore {
     const walks: WalkSnapshot[] = [];
     for (const key of [...this.walks.keys()].sort((a, b) => a - b)) {
       const walk = this.walks.get(key)!;
+      // Only the legs still to walk, from the waypoint the actor last
+      // crossed: `advance` and `read` never look behind `next - 1`, so the
+      // tiles already walked are history, and a long walk nearly finished
+      // would otherwise carry its whole route. Re-based so `next` is 1.
       walks.push({
         key,
-        waypoints: walk.waypoints.map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
-        next: walk.next,
+        waypoints: walk.waypoints.slice(walk.next - 1).map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
+        next: 1,
         progress: walk.progress,
         headingX: walk.headingX,
         headingY: walk.headingY,
