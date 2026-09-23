@@ -303,8 +303,8 @@ on `main`:
 | subject | the table's column | 2026-09-15 |
 | --- | --- | --- |
 | `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1228` |
-| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1655` |
-| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1685` |
+| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1656` |
+| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1686` |
 | `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1035` |
 | registers the stream | `:292` | `src/simulation/runtime/new-session.ts:493` |
 | constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:502` |
@@ -352,8 +352,8 @@ schema bump and neither of the current forms did.
 > whole point of it.** The heading says *"`identity` is in three payload
 > versions rather than two"*. It is in **four**: `savePayloadV6Schema` carries
 > `identity: actorIdentitySnapshotSchema.optional()` at
-> `src/persistence/save-schema.ts:1791`, beside V3's `src/persistence/save-schema.ts:1655`, V4's `:1391` and
-> V5's `src/persistence/save-schema.ts:1754`. A section written to condemn *"both the V3 and the V4"* as a
+> `src/persistence/save-schema.ts:1792`, beside V3's `src/persistence/save-schema.ts:1656`, V4's `:1391` and
+> V5's `src/persistence/save-schema.ts:1755`. A section written to condemn *"both the V3 and the V4"* as a
 > rotting enumeration replaced it with a different tally in its own title, and
 > that tally rotted in nineteen days — which is `docs/AGENT_WORKFLOW.md` §4's
 > *"a correction is no more durable than the claim it corrected"* arriving on

@@ -627,7 +627,7 @@ A carry begins exactly as a room action begins: `beginNextAction`
 (`src/simulation/prisoners/action-system.ts:1010`) requests a route from the
 prisoner's tile to `job.sourceTile`, sets `travelling`, and
 `continueTravelling` hands the resolved route to `beginWalk`
-(`src/simulation/locomotion/locomotion.ts:253`). `prisoners.locomotion` (order
+(`src/simulation/locomotion/locomotion.ts:267`). `prisoners.locomotion` (order
 200, `src/simulation/prisoners/prisoner-operations-runtime.ts:413`) advances
 it one tile per two ticks (ADR 0059's 128 units a tick against 256 to a tile),
 and `onWalksArrived` (`src/simulation/prisoners/action-system.ts:764`)

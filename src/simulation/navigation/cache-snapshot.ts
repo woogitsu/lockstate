@@ -2,7 +2,8 @@ import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { DoorRegistry } from './door';
 import type { FlowFieldCache, RegionFlowField, RegionFlowFieldStep } from './flow-field';
 import type { RegionId } from './region-graph';
-import type { RouteFailure, RouteResult, RouteSegment } from './route';
+import { routeWaypoints, type RouteFailure, type RouteResult, type RouteSegment } from './route';
+import { decodeStepPath, encodeStepPath } from '../world/step-path';
 import type { RouteCache } from './route-cache';
 import { canonicalRouteContext, routeContextFingerprint, type RouteContext } from './route-context';
 import {
@@ -71,16 +72,13 @@ export interface NavigationCacheSnapshot {
   readonly flowFields: readonly FlowFieldSnapshot[];
 }
 
-/** A step of a carried route: `E` is x+1, `W` x-1, `S` y+1, `N` y-1. */
-export type RouteStepLetter = 'E' | 'W' | 'S' | 'N';
-
 /** `[regionId, waypointCount]`, or with the index of the door crossed to enter it. */
 export type RouteSegmentSnapshot = readonly [number, number] | readonly [number, number, number];
 
 export type RouteResultSnapshot =
   | {
       readonly ok: true;
-      /** One `RouteStepLetter` per step from the entry's origin; the route's waypoint count is one more than its length. */
+      /** One `StepLetter` (`world/step-path.ts`) per step from the entry's origin; the route's waypoint count is one more than its length. */
       readonly path: string;
       readonly totalCost: number;
       readonly segments: readonly RouteSegmentSnapshot[];
@@ -127,16 +125,6 @@ export interface FlowFieldSnapshot {
 
 function compareStrings(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
-}
-
-function letterFor(from: TilePosition, to: TilePosition): RouteStepLetter {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  if (dx === 1 && dy === 0) return 'E';
-  if (dx === -1 && dy === 0) return 'W';
-  if (dx === 0 && dy === 1) return 'S';
-  if (dx === 0 && dy === -1) return 'N';
-  throw new Error(`Invariant violated: a cached route steps from ${String(from.x)},${String(from.y)} to ${String(to.x)},${String(to.y)}, which is not one orthogonal step.`);
 }
 
 function samePosition(a: TilePosition, b: TilePosition): boolean {
@@ -210,18 +198,13 @@ function encodeResult(result: RouteResult, origin: TilePosition, destination: Ti
       },
     };
   }
-  let previous: TilePosition | undefined;
-  let path = '';
+  const waypoints = routeWaypoints(result.route);
+  const first = waypoints[0];
+  const previous = waypoints[waypoints.length - 1];
+  if (first === undefined || !samePosition(first, origin)) throw new Error('Invariant violated: a cached route does not start at its origin.');
+  const path = encodeStepPath(waypoints);
   const segments: RouteSegmentSnapshot[] = [];
   for (const segment of result.route.segments) {
-    for (const waypoint of segment.waypoints) {
-      if (previous === undefined) {
-        if (!samePosition(waypoint, origin)) throw new Error('Invariant violated: a cached route does not start at its origin.');
-      } else {
-        path += letterFor(previous, waypoint);
-      }
-      previous = waypoint;
-    }
     segments.push(
       segment.enteredViaDoorId === undefined
         ? [segment.regionId, segment.waypoints.length]
@@ -317,8 +300,6 @@ function decodeDependencies(encoded: DoorDependenciesEncoded, doorIds: readonly 
   return { revisionUnchanged: encoded.revisionUnchanged, doors: doors.sort((a, b) => compareStrings(a.doorId, b.doorId)) };
 }
 
-const STEP_OFFSETS: Readonly<Record<string, readonly [number, number]>> = { E: [1, 0], W: [-1, 0], S: [0, 1], N: [0, -1] };
-
 function decodeResult(encoded: RouteResultSnapshot, origin: TilePosition, destination: TilePosition, doorIds: readonly string[]): RouteResult {
   if (!encoded.ok) {
     const { failure } = encoded;
@@ -331,12 +312,11 @@ function decodeResult(encoded: RouteResultSnapshot, origin: TilePosition, destin
     };
   }
   if (!Number.isFinite(encoded.totalCost) || encoded.totalCost < 0) refuse('a route has an invalid cost.');
-  const waypoints: TilePosition[] = [{ x: tileCoordinate(origin.x), y: tileCoordinate(origin.y) }];
-  for (const letter of encoded.path) {
-    const offset = STEP_OFFSETS[letter];
-    if (offset === undefined) refuse(`a route step "${letter}" is not one of E, W, S, N.`);
-    const last = waypoints[waypoints.length - 1]!;
-    waypoints.push({ x: tileCoordinate(last.x + offset[0]), y: tileCoordinate(last.y + offset[1]) });
+  let waypoints: TilePosition[];
+  try {
+    waypoints = decodeStepPath(origin, encoded.path);
+  } catch (error) {
+    refuse(error instanceof Error ? error.message : 'a route step is not one of E, W, S, N.');
   }
   if (!samePosition(waypoints[waypoints.length - 1]!, destination)) refuse('a route does not end at its destination.');
   if (encoded.segments.length === 0) refuse('a route has no segments.');

@@ -1449,8 +1449,9 @@ const resolvedPathRequestSchema = z
 const walkSchema = z
   .object({
     key: z.number().int().min(0),
-    waypoints: z.array(tilePositionSchema).min(2),
-    next: z.number().int().min(1),
+    start: tilePositionSchema,
+    /** One `E`/`W`/`S`/`N` per remaining leg (`src/simulation/world/step-path.ts`). */
+    path: z.string().regex(/^[EWSN]+$/),
     progress: z.number().int().min(0).max(LOCOMOTION_SUBTILE_UNITS - 1),
     headingX: headingComponentSchema,
     headingY: headingComponentSchema,

@@ -143,10 +143,10 @@ const UNLABELLED: readonly UnlabelledEnum[] = [
       'Whether a catalogued projection takes no target, an entity id or a string id (#104). It is a property of the *catalog entry*, read only by the worker\'s own request validation to decide whether a request named the right kind of thing, and it never crosses the boundary in either direction: the wire carries `ProjectionTarget`, which is the target itself, and never this classification of it. Nothing projects it and no panel could render it.',
   },
   {
-    sourceFile: 'src/simulation/navigation/cache-snapshot.ts',
-    declaration: 'RouteStepLetter',
+    sourceFile: 'src/simulation/world/step-path.ts',
+    declaration: 'StepLetter',
     reason:
-      'One step of a route as a save carries it -- `E`, `W`, `S` or `N` for one tile along one axis (ADR 0007\'s amendment of 2026-09-23, issue #1373). It is an encoding of a waypoint list inside `simulation.inFlight.navigation.caches`, written by `captureNavigationCacheSnapshot` and read back by `loadNavigationCacheSnapshot` into the tile positions it stands for, and nothing else ever holds one: no projection, protocol message or panel carries a route cache at all. A derived `route-step-letter.E.name` reading "E" would have nowhere to be rendered.',
+      'One step of a path as a save carries it -- `E`, `W`, `S` or `N` for one tile along one axis (issue #1373). It is an encoding of a waypoint list inside `simulation.inFlight`, for walks in progress and for cached routes (ADR 0007\'s amendment of 2026-09-23), written by `encodeStepPath` and read back by `decodeStepPath` into the tile positions it stands for, and nothing else ever holds one: no projection, protocol message or panel carries either. A derived `step-letter.E.name` reading "E" would have nowhere to be rendered.',
   },
   {
     sourceFile: 'src/simulation/runtime/restore-refusal.ts',

@@ -174,9 +174,9 @@ stream states, and `restoreState` overwrites all four.
 > - *"`masterSeed` is absent from the save payload — 0 hits in
 >   `src/persistence/save-schema.ts`"*. It is a declared optional field there
 >   now, in V6 and in the envelope: `masterSeed: uint32Schema.optional()`
->   (`src/persistence/save-schema.ts:1748` and `:1491`), with
+>   (`src/persistence/save-schema.ts:1749` and `:1491`), with
 >   `readonly masterSeed?: number;` on the envelope input
->   (`src/persistence/save-schema.ts:2118`). That file's own V6 note records the
+>   (`src/persistence/save-schema.ts:2119`). That file's own V6 note records the
 >   change — *"V5 gained one more optional field after it shipped: `masterSeed`
 >   (#412)"*.
 > - *"Both production restore paths take the `= 0` default"*. Neither does.

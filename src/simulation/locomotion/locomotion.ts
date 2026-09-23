@@ -1,4 +1,5 @@
 import type { TilePosition } from '../world/coordinates';
+import { decodeStepPath, encodeStepPath } from '../world/step-path';
 
 /**
  * How an actor gets from one tile to the next
@@ -159,11 +160,24 @@ interface WalkState {
   headingY: HeadingComponent;
 }
 
-/** One walk as a save carries it: `WalkState` plus the key it belongs to. */
+/**
+ * One walk as a save carries it: the legs still to walk, from the waypoint the
+ * actor last crossed, plus the key it belongs to.
+ *
+ * **The legs are a start tile and one step letter per leg** (`step-path.ts`),
+ * not a tile object per waypoint, and `next` is not carried because it is
+ * always the first leg once the walk is re-based. Measured, 2026-09-23: a
+ * 1,080-prisoner prison with 1,024 prisoners walking to a meal carried 2.85 MB
+ * of walks as tile objects, which put its payload over ADR 0013's 4 MiB cloud
+ * bound on its own. This shape has not shipped in any build older than the one
+ * that added it (issue #1373), so it is changed rather than versioned.
+ */
 export interface WalkSnapshot {
   readonly key: number;
-  readonly waypoints: readonly TilePosition[];
-  readonly next: number;
+  /** The waypoint the actor last crossed. */
+  readonly start: TilePosition;
+  /** One letter per remaining leg, at least one. */
+  readonly path: string;
   readonly progress: number;
   readonly headingX: HeadingComponent;
   readonly headingY: HeadingComponent;
@@ -339,10 +353,11 @@ export class LocomotionStore {
       // crossed: `advance` and `read` never look behind `next - 1`, so the
       // tiles already walked are history, and a long walk nearly finished
       // would otherwise carry its whole route. Re-based so `next` is 1.
+      const remaining = walk.waypoints.slice(walk.next - 1);
       walks.push({
         key,
-        waypoints: walk.waypoints.slice(walk.next - 1).map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
-        next: 1,
+        start: { x: remaining[0]!.x, y: remaining[0]!.y },
+        path: encodeStepPath(remaining),
         progress: walk.progress,
         headingX: walk.headingX,
         headingY: walk.headingY,
@@ -369,23 +384,16 @@ export class LocomotionStore {
     this.headings.clear();
     for (const walk of snapshot.walks) {
       if (this.walks.has(walk.key)) throw new RangeError(`Locomotion snapshot carries two walks for key ${String(walk.key)}.`);
-      if (walk.waypoints.length < 2) throw new RangeError(`Walk ${String(walk.key)} has fewer than two waypoints.`);
-      for (let index = 1; index < walk.waypoints.length; index += 1) {
-        const from = walk.waypoints[index - 1]!;
-        const to = walk.waypoints[index]!;
-        if (Math.abs(to.x - from.x) + Math.abs(to.y - from.y) !== 1) {
-          throw new RangeError(`Walk ${String(walk.key)} leg ${String(index)} does not step one tile along one axis.`);
-        }
-      }
-      if (!Number.isInteger(walk.next) || walk.next < 1 || walk.next >= walk.waypoints.length) {
-        throw new RangeError(`Walk ${String(walk.key)} is not between its first and last waypoint.`);
-      }
+      // One letter per leg, so every leg is one tile along one axis by
+      // construction; `decodeStepPath` refuses any other letter.
+      if (walk.path.length < 1) throw new RangeError(`Walk ${String(walk.key)} has fewer than two waypoints.`);
+      const waypoints = decodeStepPath(walk.start, walk.path);
       if (!Number.isInteger(walk.progress) || walk.progress < 0 || walk.progress >= LOCOMOTION_SUBTILE_UNITS) {
         throw new RangeError(`Walk ${String(walk.key)} has progress outside one tile.`);
       }
       this.walks.set(walk.key, {
-        waypoints: walk.waypoints.map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
-        next: walk.next,
+        waypoints,
+        next: 1,
         progress: walk.progress,
         headingX: walk.headingX,
         headingY: walk.headingY,
