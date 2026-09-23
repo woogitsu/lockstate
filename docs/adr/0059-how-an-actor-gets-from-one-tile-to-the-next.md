@@ -597,7 +597,13 @@ designed for it, and is not claimed here.
    reconsideration cycle and the journey they were on. Saving it costs a
    save-schema field and ADR 0038's compatibility question. Nothing in this
    branch needs the answer; a player who saves mid-day will notice it before a
-   test does.
+   test does. **Later measurement (#1373, 2026-09-23):** this cost is not
+   confined to that one journey. In one fixture, all 41 saves taken while a
+   prisoner travelled diverged from uninterrupted play through day six; all
+   24 saves without a traveller remained byte-identical at the measured
+   checkpoints. The open question therefore also concerns whole-session
+   restore determinism. This note records the finding without deciding the
+   save format or changing this proposed ADR's earlier rationale.
 4. **Do guards walk, and when?** They are the other population the render
    channel will carry (ADR 0040 slice 2), and drawing them while they teleport
    between patrol waypoints would look worse than not drawing them. The two
