@@ -62,6 +62,22 @@ duplicate logical id, a drifting pivot, an oversized atlas, an out-of-bounds
 rectangle, a stale registry — so a validator that stopped rejecting anything
 fails `pnpm test` without needing any art at all.
 
+## Self-hosted runner prerequisites (`woogitsu-linux-*`)
+
+The workflows use Linux self-hosted runners. These are the boundaries between tools installed by a job and state the host operator must supply; a successful run on one persistent runner does not prove a newly rebuilt runner has the same state. This list describes repository requirements, not an inventory of every machine in the pool.
+
+| Capability | Repository setup or check | Required host state when the job cannot elevate |
+| --- | --- | --- |
+| Git, Bash, standard Linux shell tools and network access | GitHub Actions checks out the repository; provisioning scripts use `bash`, `curl`, `tar`, `mktemp` and `install`. | The Actions runner and these basic tools must already work. The repository does not install them. |
+| Node and package manager | CI, browser and database migration jobs use `actions/setup-node` with `.node-version`, then Corepack activates pnpm 11.22.0. | `version.yml` is an exception: it calls `npm version` without `setup-node` or `pnpm install`, so Node/npm must already be on that runner's `PATH`. |
+| PostgreSQL, `psql` and matching pgTAP | `scripts/provision-postgres.sh` checks, installs or starts the local cluster and verifies a login `SUPERUSER` role for the runner user before `pnpm verify:sql`. | Without root or passwordless sudo, preinstall the server, client and matching pgTAP extension; start the cluster and create the role. `DATABASE_URL` can instead select an already provisioned server. |
+| Git LFS client and asset content | `scripts/provision-git-lfs.sh` checks or installs the client in `assets` and `browser`; each job then runs a path-scoped `git lfs pull`. | Preinstall `git-lfs` if apt installation cannot elevate. LFS objects must be reachable; a checkout with pointer files is insufficient. |
+| Chromium and its shared libraries | `scripts/provision-playwright-browsers.sh` downloads Chromium into the runner user's cache and checks a real launch. It prints missing libraries and Playwright's package-install command. | Preinstall any missing system libraries; the script does not run apt or `playwright install --with-deps`. No display server is required. |
+| Supabase CLI | The database migration job calls `scripts/provision-supabase-cli.sh`, which installs the pinned standalone CLI if absent. | Give `SUPABASE_CLI_INSTALL_DIR` a writable directory on `PATH`, grant passwordless sudo, or preinstall the required CLI version. The download also needs `curl` and `tar`. |
+| Python 3 | `branch-gc.yml` checks for `python3` and fails with an actionable message when absent. | Preinstall `python3`; no repository step provisions it. |
+
+The PostgreSQL, Git LFS and Supabase scripts only need elevation when they must change host state. On a fully provisioned no-sudo runner they can succeed without it. Rebuilding a host requires checking these prerequisites again; do not infer them from a previous CI success on a different runner. The database migration workflow also needs its separately configured project credentials and approval environment; this table covers local tools only.
+
 ## Database provisioning for `pnpm verify:sql`
 
 `scripts/provision-postgres.sh` installs and starts what `pnpm verify:sql` needs on a Debian/Ubuntu machine and is safe to re-run:
