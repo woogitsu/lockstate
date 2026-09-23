@@ -549,3 +549,21 @@ diminishing return, and room upkeep has something real to price.
 choice whose recurring cost is close to its recurring benefit" is JUDGEMENT.
 Every other number here is MEASURED or DERIVED. That criterion is how they were
 ranked, and a different criterion would rank them differently.
+
+### Added later on 2026-09-23: the weakest claim, re-run
+
+After the owner chose B + A2, the M and L arms were re-run with
+`action.eat-in-cell` disabled in the probe only. It was retargeted at a room
+that does not exist, and the visit census confirmed 0 visits. `src/` was not
+edited.
+
+- **The canteen then earns** +320 (S), +932 (M) and +1,630 (L) a day, and a
+  second canteen earns +282 (L) and +315 (X) (MEASURED).
+- **So the §2 finding holds for the shipped tree, and its mechanism is
+  confirmed:** the in-cell fallback fully replaces the canteen.
+- **The same pass found a toilet decorative.** Cells with no toilet ran
+  `use-toilet` at exactly the same rate, because the `own-accommodation` branch
+  of `ActionSystem` never checks `requiredObjectCapability`.
+
+Both findings and the measured number sets are in
+[`docs/adr/drafts/XXXX-what-a-prison-costs-to-run.md`](../adr/drafts/XXXX-what-a-prison-costs-to-run.md).
