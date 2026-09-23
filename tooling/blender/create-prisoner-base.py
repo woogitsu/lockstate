@@ -199,6 +199,7 @@ def build_detailed_actor(root, asset_id):
     button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
     badge = mat("Guard badge and patches", (0.49, 0.55, 0.57), 0.46) if guard else None
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
+    epaulette = mat("Guard slate epaulettes", (0.24, 0.35, 0.45), 0.85) if guard else None
     medical_white = mat("Medic patch and ID", (0.78, 0.83, 0.82), 0.76) if medic else None
     cap_blue = mat("Medic pale blue cap", (0.31, 0.47, 0.60), 0.86) if medic else None
     apron = mat("Cook worn tan apron", (0.30, 0.23, 0.15), 0.93) if cook else None
@@ -228,6 +229,12 @@ def build_detailed_actor(root, asset_id):
         for side in (-1, 1):
             cube(f"Duty belt side.{side}", (side * 0.38, 0, 1.72), (0.055, 0.27, 0.065), belt, root, 0.012)
             cube(f"Shoulder patch.{side}", (side * 0.38, -0.215, 2.39), (0.075, 0.018, 0.10), badge, root, 0.013)
+            # Broad top-facing tabs survive the game's small overhead view;
+            # the original sleeve patch was only an elevation detail.
+            cube(f"Slate shoulder epaulette.{side}", (side * 0.35, -0.035, 2.635),
+                 (0.125, 0.17, 0.021), epaulette, root, 0.012)
+            cylinder(f"Epaulette anchor.{side}", (side * 0.35, -0.075, 2.652),
+                     0.014, 0.009, belt, root)
             cube(f"Cargo pocket.{side}", (side * 0.387, -0.07, 1.10), (0.022, 0.12, 0.14), fabric, root, 0.012)
         cube("Radio pouch", (-0.395, -0.06, 1.67), (0.075, 0.11, 0.13), belt, root, 0.018)
         cube("Radio antenna", (-0.395, -0.06, 1.795), (0.012, 0.012, 0.13), belt, root, 0.003)
@@ -281,6 +288,11 @@ def build_detailed_actor(root, asset_id):
         cylinder("Cap band", (0, 0.035, 3.345), 0.29, 0.055, belt, root)
         cube("Cap visor", (0, -0.295, 3.330), (0.24, 0.12, 0.025), belt, root, 0.025)
         cube("Cap emblem", (0, -0.213, 3.480), (0.045, 0.015, 0.06), badge, root, 0.012)
+        # A top-facing shield silhouette reads in every direction, unlike the
+        # small frontal emblem. The concept keeps the cap's crown unchanged.
+        cap_mark = cube("Silver cap shield", (0, -0.065, 3.555),
+                        (0.085, 0.085, 0.013), badge, root, 0.012)
+        cap_mark.rotation_euler.z = math.radians(45)
     elif medic:
         sphere("Medical cap", (0, 0.045, 3.380), (0.303, 0.278, 0.122), cap_blue, root)
         box_tie = cube("Medical cap tie", (0, 0.281, 3.29), (0.065, 0.09, 0.025), cap_blue, root, 0.006)
