@@ -78,6 +78,31 @@
       }
     },
     {
+      "assetId": "furniture.chair.wooden",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.chair.wooden.3529bb7a9819.png",
+      "sha256": "3529bb7a98194cb6ce3dfe73a1c132c48a260e59caef4261ead61c9243e10b5f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.corridor.bench.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.corridor.bench.variants.4afd4a1258e7.png",

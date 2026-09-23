@@ -102,11 +102,11 @@ describe('rendered-art pipeline contract', () => {
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 27 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 28 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
  * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
  * three more models, including the unpublished sink; the storage-rack batch
- * adds one more. It runs with no Blender,
+ * adds one more, and the wooden-chair batch another. It runs with no Blender,
  * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
@@ -124,7 +124,7 @@ describe('environment render aspect invariant (recomputed, not trusted)', () => 
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(27);
+    expect(sidecar.entries.length).toBe(28);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {
