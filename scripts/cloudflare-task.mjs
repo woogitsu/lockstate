@@ -101,7 +101,9 @@ function run(command, args, env = process.env) {
       cwd: repositoryRoot,
       env,
       stdio: 'inherit',
-      shell: process.platform === 'win32',
+      // Every call here launches Node itself. A shell would split workspace
+      // paths containing spaces before Node receives the script argument.
+      shell: false,
     });
 
     child.once('error', reject);
