@@ -78,7 +78,7 @@ import {
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from './ui/simulation-events';
-import { hudCountsFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
+import { hudCountsFromWorkerMessage, hudEditHistoryFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { ContrabandReader } from './ui/simulation-contraband';
@@ -2361,6 +2361,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      */
     const overview = hudOverviewFromWorkerMessage(message);
     /*
+     * Whether the strip's Undo and Redo would each do anything (#1370), off
+     * the same publication and on the same three-state contract as `overview`
+     * above: a pair, `'none'` for a session that has ended, `undefined` for a
+     * message that said nothing about it.
+     */
+    const editHistory = hudEditHistoryFromWorkerMessage(message);
+    /*
      * The alerts log, on the same three-state contract as `overview` above and
      * `zoning` and `refusal` below, as of issue #1184: a list, `'none'` for a
      * session that has ended, and `undefined` for a message that said nothing
@@ -2428,7 +2435,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       nextAlerts === undefined &&
       zoning === undefined &&
       refusal === undefined &&
-      event === undefined
+      event === undefined &&
+      editHistory === undefined
     )
       return;
     viewModel = {
@@ -2472,6 +2480,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // a session that has ended, and a notice is the event itself. Optional,
       // so clearing it deletes the key below rather than writing `undefined`.
       ...(event === undefined ? {} : event === 'none' ? {} : { event }),
+      // Three states, exactly as `overview` above: `'none'` takes the field
+      // off (the deletion is below) rather than claiming an empty history for
+      // a session that no longer exists.
+      ...(editHistory === undefined ? {} : editHistory === 'none' ? {} : { editHistory }),
     };
     if (counts === 'none' && viewModel.counts !== undefined) {
       const { counts: _stopped, ...withoutCounts } = viewModel;
@@ -2496,6 +2508,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (event === 'none' && viewModel.event !== undefined) {
       const { event: _ended, ...withoutEvent } = viewModel;
       viewModel = withoutEvent;
+    }
+    if (editHistory === 'none' && viewModel.editHistory !== undefined) {
+      const { editHistory: _ended, ...withoutEditHistory } = viewModel;
+      viewModel = withoutEditHistory;
     }
     hud?.update(viewModel);
 

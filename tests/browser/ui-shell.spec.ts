@@ -1102,6 +1102,59 @@ test.describe('HUD shell', () => {
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
 
+    test('the strip\'s Undo and Redo are marked unavailable exactly when the worker says a press would do nothing (#1370)', async ({
+      page,
+    }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const history = page.locator('.hud-strip__history');
+      const undo = history.getByRole('button', { name: 'Undo the last placement' });
+      const redo = history.getByRole('button', { name: 'Redo the last undone placement' });
+      const cursorOf = (button: typeof undo): Promise<string> => button.evaluate((element) => getComputedStyle(element).cursor);
+
+      // No prison has reported: no opinion, so neither is marked -- absent, not
+      // `"false"`, because the strip does not know that a press would act.
+      await expect(undo).not.toHaveAttribute('aria-disabled', /.*/);
+      await expect(redo).not.toHaveAttribute('aria-disabled', /.*/);
+
+      // Nothing to undo, something to redo: each button follows its own bit.
+      await page.evaluate(() => window.lockstateUiHarness.reportEditHistory({ undo: false, redo: true }));
+      await expect(undo).toHaveAttribute('aria-disabled', 'true');
+      await expect(redo).toHaveAttribute('aria-disabled', 'false');
+      // And it reads as unavailable, not only to assistive technology: the
+      // glyph takes the `:disabled` look, cursor included.
+      expect(await cursorOf(undo)).toBe('default');
+      expect(await cursorOf(redo)).toBe('pointer');
+
+      // Advice, not authority: the press still reaches the host, exactly as
+      // `KeyZ`'s would, so a verdict one cadence stale cannot swallow a press
+      // the worker would honour. `force`, because Playwright's actionability
+      // check reads `aria-disabled` as not enabled -- the same reason
+      // `pressBuyExpectingRefusal` in `app-shell.spec.ts` presses the Buy
+      // button this way. `toBeDisabled` reads `aria-disabled` too, so the
+      // `disabled` *property* is read directly: it is what would swallow a
+      // press, and it must not have been written.
+      const disabledProperty = (): Promise<boolean> => undo.evaluate((element) => (element as HTMLButtonElement).disabled);
+      expect(await disabledProperty()).toBe(false);
+      await undo.click({ force: true });
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('undo') || intent.includes('redo'))).toEqual([
+        JSON.stringify({ kind: 'undo' }),
+      ]);
+      // The busy group rewrote `disabled` on both buttons around that press;
+      // the verdict is on a different attribute and survives it.
+      await expect(undo).toHaveAttribute('aria-disabled', 'true');
+      await expect.poll(disabledProperty).toBe(false);
+
+      await page.evaluate(() => window.lockstateUiHarness.reportEditHistory({ undo: true, redo: false }));
+      await expect(undo).toHaveAttribute('aria-disabled', 'false');
+      await expect(redo).toHaveAttribute('aria-disabled', 'true');
+
+      // A prison that stops reporting takes the opinion away again.
+      await page.evaluate(() => window.lockstateUiHarness.reportEditHistory(undefined));
+      await expect(undo).not.toHaveAttribute('aria-disabled', /.*/);
+      await expect(redo).not.toHaveAttribute('aria-disabled', /.*/);
+    });
+
     test('the refusal line is there at 375px, where the map corner is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.

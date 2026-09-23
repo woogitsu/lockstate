@@ -11216,6 +11216,59 @@ test.describe('the assembled application', () => {
     await expect(redo).toHaveAttribute('data-action-failed', 'true');
   });
 
+  /**
+   * Undo and Redo say whether a press would do anything, and what they say is
+   * the worker's own history (#1370).
+   *
+   * The whole chain, joined: `ConstructionSystem`'s stacks, the handler's
+   * `editHistoryAvailability`, `simulation/status-counts`'s `editHistory`,
+   * `src/main.ts`'s listener, and the strip's `aria-disabled`. Every half has
+   * its own headless test; only this proves they are connected. With the clock
+   * paused throughout, so each answer is the forced publication behind the
+   * command (ADR 0051) rather than time passing.
+   */
+  test('Undo and Redo are marked unavailable exactly while the prison has nothing for them to do (#1370)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    const history = page.locator('.hud-strip__history');
+    const undo = history.getByRole('button', { name: localeText('hud.history.undo-last-change') });
+    const redo = history.getByRole('button', { name: localeText('hud.history.redo-last-undone') });
+
+    // No prison yet: the strip has no answer and paints none -- the press is
+    // answered by the host's own refusal, which the #1356 test above covers.
+    await expect(undo).not.toHaveAttribute('aria-disabled', /.*/);
+    await expect(redo).not.toHaveAttribute('aria-disabled', /.*/);
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await waitForSession(page);
+    // A new prison has placed nothing.
+    await expect(undo).toHaveAttribute('aria-disabled', 'true');
+    await expect(redo).toHaveAttribute('aria-disabled', 'true');
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+    await page.getByRole('spinbutton', { name: 'Tile X' }).fill('5');
+    await page.getByRole('spinbutton', { name: 'Tile Y' }).fill('5');
+    await page.locator('.hud-build__coordinates .ui-action').click();
+    await expect(page.locator('.hud-build')).toHaveAttribute('data-queued', '1', { timeout: 15_000 });
+    await expect(undo).toHaveAttribute('aria-disabled', 'false');
+    await expect(redo).toHaveAttribute('aria-disabled', 'true');
+
+    await undo.click();
+    await expect(undo).toHaveAttribute('aria-disabled', 'true');
+    await expect(redo).toHaveAttribute('aria-disabled', 'false');
+    await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /.*/);
+
+    await redo.click();
+    await expect(undo).toHaveAttribute('aria-disabled', 'false');
+    await expect(redo).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('.hud-build')).toHaveAttribute('data-queued', '1');
+    expect(await page.locator('.hud-strip [data-action-failed="true"]').count(), 'no press here was refused').toBe(0);
+  });
+
   test('names the build it is, in the top-left corner, from a real injected define', async ({ page }) => {
     await openApp(page);
 

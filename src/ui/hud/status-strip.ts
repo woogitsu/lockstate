@@ -248,6 +248,14 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
    * greyed itself out on a guess would be a promise the code does not keep in
    * the other direction.
    *
+   * **That paragraph stopped being true with #1370, and is kept because it is
+   * the reasoning the fix had to answer rather than route around.** The
+   * worker now publishes whether each press would do anything, as
+   * `simulation/status-counts`'s `editHistory`, and `paintHistory` below marks
+   * a button unavailable on it. The sentence's last clause still governs how:
+   * before any prison has reported, the strip has no answer and paints none,
+   * rather than greying both on a guess.
+   *
    * **Not in `foldable`.** The strip's collapse control is labelled as hiding
    * the counters and the clock, and this group is neither -- so folding the
    * readouts leaves the way back from a misplaced wall where it was.
@@ -307,7 +315,37 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     children: [brandSlot, metricsRow, clockGroup, transportGroup, historyGroup, layoutSlot],
   });
 
+  /*
+   * Undo and Redo marked unavailable when a press would do nothing (#1370).
+   *
+   * `aria-disabled` through `setUnavailable`, never `disabled`, for three
+   * reasons that each stand alone:
+   *
+   *   - **The press must keep working when the verdict is stale.** It is a
+   *     publication, read at most one cadence ago; a player who places a wall
+   *     and taps Undo inside that window would have a hard `disabled` eat a
+   *     press the worker would have honoured. With `aria-disabled` the press
+   *     reaches the worker, which is the authority, exactly as `KeyZ`'s does --
+   *     so the button and the key cannot disagree about what a press does.
+   *   - **`createBusyGroup` owns `disabled` on both buttons** (`hud.ts` adds
+   *     `strip.controls` to it) and rewrites it on every busy transition, so a
+   *     verdict written there would be cleared by the next command to settle.
+   *   - **A press on an unavailable button is still honest.** It does what an
+   *     empty history has always done -- the worker records nothing -- and the
+   *     dimmed glyph said so before the press.
+   *
+   * Absent is *no opinion*, not `false`: before any prison has reported, and
+   * after one has stopped, neither button is marked, because the strip does
+   * not know and the press answers for itself -- through the worker, or through
+   * the host's own refusal when there is no worker to reach.
+   */
+  const paintHistory = (editHistory: HudViewModel['editHistory']): void => {
+    history.undo.setUnavailable(editHistory === undefined ? undefined : !editHistory.undo);
+    history.redo.setUnavailable(editHistory === undefined ? undefined : !editHistory.redo);
+  };
+
   const update = (viewModel: HudViewModel): void => {
+    paintHistory(viewModel.editHistory);
     /*
      * `roomNeeds` beside the counts (#1006 finding 1). It is the only input
      * here that does not ride `simulation/status-counts`, and it is absent
