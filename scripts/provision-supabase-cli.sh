@@ -48,6 +48,14 @@ if command -v supabase >/dev/null 2>&1; then
   log "found ${current:-unknown}, wanted ${REQUIRED_VERSION} — replacing"
 fi
 
+# These are host prerequisites, not tools this unprivileged job can install.
+# Check before downloading so a rebuilt runner fails with the missing tool's
+# name and remedy, rather than a bare `command not found` after making a temp dir.
+for tool in curl tar; do
+  command -v "$tool" >/dev/null 2>&1 \
+    || fail "${tool} is required to provision the Supabase CLI; install it on the runner or add it to PATH"
+done
+
 case "$(uname -m)" in
   x86_64) arch="amd64" ;;
   aarch64 | arm64) arch="arm64" ;;
@@ -78,4 +86,12 @@ else
 [provision-supabase-cli] Three ways out, any one of which is enough: set SUPABASE_CLI_INSTALL_DIR to a directory the job can write (\$HOME/.local/bin on PATH is the usual one); grant the runner user passwordless sudo; or pre-install supabase v${REQUIRED_VERSION} on the host, which makes this script short-circuit at its first check."
 fi
 
-log "ready: $(supabase --version 2>/dev/null || echo 'version unavailable')"
+# The workflow's later steps invoke `supabase`, not `$INSTALL_DIR/supabase`.
+# Check that exact command and version; a writable custom directory outside
+# PATH must not turn this provisioning step green and fail at `supabase link`.
+command -v supabase >/dev/null 2>&1 \
+  || fail "installed the Supabase CLI into ${INSTALL_DIR}, but supabase is not on PATH"
+current="$(supabase --version 2>/dev/null | tr -d '[:space:]' || true)"
+[ "$current" = "$REQUIRED_VERSION" ] \
+  || fail "installed Supabase CLI v${REQUIRED_VERSION} into ${INSTALL_DIR}, but supabase on PATH reports v${current:-unknown}"
+log "ready: ${current}"
