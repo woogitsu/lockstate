@@ -5,8 +5,8 @@
     {
       "assetId": "fixture.cell.toilet_sink",
       "contentVersion": 1,
-      "image": "source-art/rendered.fixture.cell.toilet_sink.174633e075fb.png",
-      "sha256": "174633e075fba58b30ba2253fdb6f8781306bd94a8ec37bfad1a6d52bddd5709",
+      "image": "source-art/rendered.fixture.cell.toilet_sink.fe9e971698b8.png",
+      "sha256": "fe9e971698b855f47594a42d82d3ec417150d40ded2c6144507816c22d30a75c",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -16,8 +16,8 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1.236928,
-        "height": 1.236928
+        "width": 1.294093,
+        "height": 1.294093
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {
