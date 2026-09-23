@@ -515,3 +515,200 @@ What this amendment does **not** touch: the work-unit budget, the fairness rule,
 the "always at least one request per tick" rule, the deferred-status decision
 amended on 2026-08-25, and `docs/NAVIGATION.md`'s hierarchical-versus-flat-optimal
 caveat, which is a different claim and still stands.
+
+## Amendment, 2026-09-23: a save carries the caches' warmth, because a cold cache changes whom a binding budget serves
+
+*Issue [#1373](https://github.com/woogitsu/lockstate/issues/1373). The sections
+above are left exactly as accepted, and this amendment records the one line of
+this ADR's that a save now crosses.*
+
+### The ruling, and its provenance
+
+Offered three options on #1373 (ADR 0059's amendment under "Determinism" lists
+them: persist the caches' warmth, charge every request its cold cost, or accept
+the divergence), the owner chose the one labelled:
+
+> Zapisywać pamięć tras (zalecane)
+
+("Carry the route memory in the save (recommended).") **Weaker provenance, as
+for every ruling recorded this way:** it is the label of an option the session
+wrote, not a sentence the owner typed. This amendment records that ruling; it
+does not approve itself. What follows under "Decision" are the implementing
+choices the ruling left open — entries or keys, and exactly what is carried —
+which are made here under the owner's standing mandate and argued rather than
+asserted.
+
+### What the ruling moves
+
+Nothing above says in so many words that the caches stay out of a save, but
+the whole of the rest of the repository read it that way:
+`NavigationSystem.getInFlightSnapshot` called it *"ADR 0007's line"*, and
+`docs/PERSISTENCE.md` excluded `RouteCache` and flow fields because *"ADR 0007
+defines these as a budgeted caching layer over the world and the door
+registry, both of which are persisted; a restored session rebuilds them from
+the same inputs."*
+
+That is true of the **answers** and false of the **accounting**. The work-unit
+budget charges a request the expansions its search spent, and a cache hit
+spends none (`PathRequestQueue.processTick`, `usedBudget += stats.expansions`).
+A restore starts both caches empty, so on a tick where `workBudgetPerTick`
+binds, a restored session runs out of budget at a different request than the
+session it was saved from. Measured on #1373: 13 of 331 binding ticks served a
+different set warm than cold; through real saves, every save taken 1 to 40
+ticks before the tick-3461 block change diverged at 24 prisoners, and 1 to 600
+ticks before tick 5801 at 36. Charging every request its cold cost made both
+exact and was withdrawn for its latency (`navigation.production.meal-rush` at
+5,000 actors: 26 ticks to drain became 211).
+
+### Decision 1: the entries themselves, not their keys and a rebuild
+
+The alternative is to save each valid entry's key and recompute it on load.
+It would be much smaller (about 45 B an entry against about 270 B, below). It
+is rejected for two reasons, the first of which is decisive on its own:
+
+1. **An entry that is invalid now can become valid again, and a rebuild can
+   only ever produce what is valid now.** `doorDependenciesStillHold` compares
+   each dependency's *traversal verdict*, not whether its door changed (the
+   2026-08-26 amendment above): a route computed with a door open, invalidated
+   by a lockdown, is a hit again the moment the lockdown lifts and the verdict
+   returns — without being recomputed or re-charged. The continuous session
+   keeps that entry through the lockdown; a key-and-rebuild save taken during
+   it has nothing to rebuild the entry *from*, because rebuilding means
+   searching against the present doors, which give the other verdict. So a
+   save during a lockdown would restore to a session that pays, after the
+   lift, for searches the continuous one gets free — the divergence this
+   amendment exists to remove, moved to the most eventful ticks a prison has.
+   `tests/determinism/restore-mid-walk-exactness.test.ts` carries that case.
+2. **A rebuild is exact only by argument; carrying the entry is exact by
+   construction.** A rebuilt entry equals the original only if the route
+   `findRoute` returns now equals the one either `findRoute` or
+   `findRouteUsingFlowField` returned then, and records the same dependency
+   set. The 2026-08-26 amendment argues both, and they held here without
+   exception: **1,443 of 1,443** valid entries rebuilt to byte-identical
+   routes and identical dependency sets, across the five fixtures measured
+   below, over six days each. But those fixtures toggle no door, so they could
+   not have found a hole in the dependency-set argument, and a hole there is
+   silent: a different route, in a restored session only. An entry carried
+   verbatim needs neither argument.
+
+A rebuild would also search every carried leg at load, which carrying does
+not.
+
+### Decision 2: what an entry carries, exactly
+
+- **Only entries whose geometry is current.** Each entry records the
+  `geometrySignature` it was computed against, and an entry whose signature
+  differs from the world's is deleted on its next read and never answered
+  again: a signature is every loaded chunk's `geometryRevision`, which only
+  rises (`SparseWorld.markChanged`), and the set of loaded chunks is fixed at
+  construction (`setLoadedChunks`'s one caller is `createNewSimulationRuntime`).
+  Dropping those at capture changes no answer and no charge — the continuous
+  session's next read of such a key misses exactly as the restored session's
+  does — and it is most of the cache while a prison is still being built
+  (1,422 of 1,427 entries at 324 prisoners, below). **The one premise that
+  could make a stale signature current again is a chunk leaving the loaded set
+  and coming back** (`SparseWorld.unload` removes its term); nothing in `src/`
+  calls `unload`, and a test fails if something starts to.
+- **No signature at all.** Every carried entry's signature is, by the rule
+  above, the world's current one, so a restore stamps the restored world's.
+  Carried per entry it would cost one term per loaded chunk — about 10 KB an
+  entry at the 1,024-chunk x-large tier.
+- **No door access versions.** They are counters of how many times a door has
+  changed, and a restore re-registers every door and re-applies its sector's
+  control state, so the restored counters are not the saved ones. What an
+  entry's versions *mean* is carried instead: for each dependency, whether its
+  door's version is still the one captured (the proof that its verdict still
+  holds), and for the entry, whether the registry-wide `accessRevision` is. A
+  restore rebases each "still the one captured" onto the restored door's
+  current version, and each other onto a value no version takes, **after** the
+  restore's last door mutation. From then on each comparison answers exactly
+  what it answers in the continuous session, because both sessions apply the
+  same door changes to counters that only rise.
+- **A dependency whose version is still the one captured carries only its
+  door**, and a restore re-derives its verdict from the restored door and the
+  entry's own `RouteContext`. That is not a new inference: it is the one the
+  cache's own fast path already makes, skipping the verdict comparison
+  whenever the version is unchanged. A dependency whose door *has* changed
+  carries the verdict it was computed under, because that is what a revival is
+  compared against. The entry keeps its context for this, which it did not
+  before.
+- **A route as its first tile and a direction per step**, plus each segment's
+  region, length and entering door. A route is origin to destination,
+  inclusive, one orthogonal step at a time (`routeWaypoints`); measured, 0
+  violations in 7,020 steps, and a restore refuses a carried route that is not
+  one. Door ids and contexts are written once per save, in tables, and
+  referenced by index.
+- **Canonical order**: entries ascending by cache key, a field's steps
+  ascending by region, the two tables ascending. Neither cache is iterated to
+  decide anything, so insertion order is history.
+- **What is not carried**: hit, miss and eviction counters. They are
+  diagnostics of an instance, as the queue's own `getMetrics` counters are.
+
+**The residual, stated:** `DoorRegistry.unregister` forgets a door's version,
+so a door removed and rebuilt on the same edge starts again at 0, and an entry
+that depended on the old door can see a matching version by coincidence. That
+coincidence is the continuous session's too, and it is not reachable in
+practice: removing or building a door rewrites its edge, which moves the
+geometry signature, and a signature change retires every entry first.
+
+### Where it is, and compatibility
+
+`simulation.inFlight.navigation.caches`, an optional field inside the section
+issue #1373 already added. **Absent means cold caches**, which is what every
+earlier save restored to, including those written by the build that added
+`inFlight`. A live capture writes it unconditionally. No existing field changes
+shape or meaning, so `SAVE_SCHEMA_VERSION` does not move, on
+`docs/PERSISTENCE.md`'s optional-field rule and ADR 0038 decision 1, with ADR
+0038 §4's cost: an older build refuses a save that carries it as
+`invalid-shape`.
+
+### Measured before building, 2026-09-23
+
+On `fc5474de`, with the encoding above drafted outside the tree and applied to
+the live caches of #1373's own fixture (one chunk; one prisoner per cell, two
+guards) and of that fixture tiled over 2×2 and 3×3 chunks. "Capture" is the
+rest of `captureSessionSnapshot` as JSON, and the share is the caches' size
+against it.
+
+| fixture | tick | entries carried / held | flow fields | caches JSON | share | gzip share |
+| --- | --- | --- | --- | --- | --- | --- |
+| 12 prisoners | 15,000 (day 6) | 77 / 85 | 1 | 20.6 KB | 64 % | 41 % |
+| 24 prisoners | 15,000 | 148 / 161 | 1 | 39.5 KB | 77 % | 50 % |
+| 36 prisoners | 7,800 (day 3) | 211 / 225 | 2 | 57.9 KB | 83 % | 57 % |
+| 36 prisoners | 15,000 | 219 / 232 | 2 | 59.9 KB | 87 % | 60 % |
+| 144 prisoners, 4 chunks | 15,000 | 175 / 1,248 | 0 | 51.0 KB | 23 % | 22 % |
+| 324 prisoners, 9 chunks | 15,000 | 5 / 1,427 | 0 | 1.5 KB | 0.3 % | 1 % |
+
+- **Entries plateau at about six per prisoner** in a prison whose geometry has
+  stopped changing: 77 at day 6 against 76 at day 3 for 12 prisoners, 219
+  against 211 for 36. They are the distinct legs a timetable walks, not the
+  walks.
+- **A carried entry is about 270 B**, of which the step string is about 34
+  and the dependency list about 58. Written as the in-flight results are — a
+  tile object per waypoint, every door version, the signature — the same 36-
+  prisoner cache is 219 KB, 319 % of the capture.
+- **A prison still under construction carries almost nothing**, because
+  every geometry change retires every entry computed before it.
+- **The benchmark tiers carry nothing.** `tests/perf/fixtures/prison-fixture.ts`
+  populates prisoners and construction and never steps a route, so its caches
+  are empty at every tier and the field is 56 B.
+
+**Not measured, and the weakest part of the size claim:** a finished prison at
+the x-large tier. At six entries a prisoner and 270 B an entry, 3,000 prisoners
+would carry about 4.9 MB against that tier's 2.86 MiB envelope. That is an
+extrapolation from prisons a hundred times smaller whose routes are shorter,
+and it is the number to measure before a prison that size is playable.
+
+### The gate
+
+- `tests/determinism/restore-mid-walk-exactness.test.ts` — the 24-prisoner
+  binding case that was pinned as a known divergence now requires exactness,
+  and scans binding ticks the way its other cases scan the timetable. A case
+  saves during a lockdown and lifts it after the restore, which is the case a
+  key-and-rebuild save could not carry.
+- `tests/unit/navigation-cache-snapshot.test.ts` — the codec's round trip, its
+  refusals, and the rebase of door versions.
+
+What this amendment does **not** touch: the work-unit budget and what it
+charges, the fairness rule, sharing's position behind the route cache, and
+the dependency rule of the 2026-08-26 amendment.
