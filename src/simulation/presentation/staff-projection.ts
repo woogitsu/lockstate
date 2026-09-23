@@ -1,9 +1,12 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { StaffDepartment, StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
+import { MAX_INCIDENT_SEVERITY } from '../incidents/incident';
+import { DEFAULT_INCIDENT_RESPONSE_POLICY } from '../incidents/response-system';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import type { DeploymentPhase } from '../security/guard-roster';
+import { isPostEligibleStaffRoleId } from '../security/post-eligibility';
 import {
   displayedDeploymentPhase,
   type DisplayedDeploymentPhase,
@@ -56,6 +59,8 @@ export interface StaffPatrolMetricsSource {
 
 export interface StaffProjectionSource {
   readonly staff: StaffRosterSource;
+  /** Uses the active response policy when the session supplies one. */
+  readonly response?: { requiredResponderCount(severity: number): number };
   readonly deployment?: StaffCoverageSource;
   readonly patrol?: StaffPatrolMetricsSource;
   /**
@@ -139,6 +144,10 @@ export interface StaffViewModel {
     readonly required: number;
     readonly assigned: number;
     readonly shortage: number;
+    /** Unassigned, post-eligible guards that response and search may claim. */
+    readonly availableReserve: number;
+    /** Guards needed for the highest incident severity this build produces. */
+    readonly targetReserve: number;
   };
   /** Absent unless the corresponding system was supplied. */
   readonly patrolMetrics?: {
@@ -233,10 +242,14 @@ export function projectStaff(
 
   const countsByRoleId = new Map<string, number>();
   const countsByPhase = new Map<DisplayedDeploymentPhase, number>();
+  let availableReserve = 0;
   for (const row of rows) {
     countsByRoleId.set(row.staffRoleId, (countsByRoleId.get(row.staffRoleId) ?? 0) + 1);
     const phase = row.assignment.deploymentPhase;
     countsByPhase.set(phase, (countsByPhase.get(phase) ?? 0) + 1);
+    if (source.staff.getDeploymentPhase(row.entityId) === 'unassigned' && isPostEligibleStaffRoleId(row.staffRoleId, staffRoles)) {
+      availableReserve += 1;
+    }
   }
 
   const coverage: readonly StaffCoverageRowViewModel[] =
@@ -281,6 +294,9 @@ export function projectStaff(
       required,
       assigned,
       shortage,
+      availableReserve,
+      targetReserve: source.response?.requiredResponderCount(MAX_INCIDENT_SEVERITY)
+        ?? Math.max(1, Math.ceil(MAX_INCIDENT_SEVERITY * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint)),
     },
     ...(patrolMetrics !== undefined ? { patrolMetrics } : {}),
     ...(deploymentMetrics !== undefined ? { deploymentMetrics } : {}),

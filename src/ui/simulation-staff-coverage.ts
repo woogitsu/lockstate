@@ -85,19 +85,23 @@ import {
  *
  * ## What it computes, which is nothing
  *
- * Three numbers copied across the boundary. It does not derive `required` from
+ * Five numbers copied across the boundary. It does not derive `required` from
  * the population, does not recompute `shortage` from the other two, and holds no
  * threshold: `DeploymentSystem.requiredGuardCountFor` is the one place a
  * requirement is decided (ADR 0048 decision 3) and `projectStaff` is the one
  * place the per-sector rows are summed. A subtraction here would be a second
  * definition of "short" on a thread that owns no roster, and it would read
  * differently from the simulation's the day a second sector existed.
+ * ADR 0095 decision 1 adds `availableReserve` and `targetReserve` from the
+ * same worker projection; this client translator does not size the reserve.
  */
 export function staffCoverageFromProjection(view: StaffViewModel): HudStaffCoverageViewModel {
   return {
     required: view.totals.required,
     assigned: view.totals.assigned,
     shortage: view.totals.shortage,
+    availableReserve: view.totals.availableReserve,
+    targetReserve: view.totals.targetReserve,
   };
 }
 

@@ -3062,6 +3062,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
   'hud.security.coverage-met': 'Covered',
+  'hud.security.coverage-no-reserve': 'No reserve',
+  'hud.security.coverage-no-reserve-hint': 'Hire {count} for the largest response.',
+  'hud.security.coverage-no-reserve-consequence': 'No free guards for incidents or searches.',
   /*
    * **The sentence the block says once its figures are level, and it no longer
    * says the prison is finished hiring** (issue #941, authored here under the

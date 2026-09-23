@@ -182,7 +182,7 @@ function busyPrison(): HudViewModel {
         { entityId: 2, claimLabelKey: 'guard-claim.deployment.name', roleLabelKey: 'staff-role.guard.name' },
       ],
     },
-    staffCoverage: { required: 6, assigned: 4, shortage: 2 },
+    staffCoverage: { required: 6, assigned: 4, shortage: 2, availableReserve: 0, targetReserve: 5 },
     staffRoster: {
       hired: 9,
       staff: [

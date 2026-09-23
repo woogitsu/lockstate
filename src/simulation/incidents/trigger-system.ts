@@ -15,7 +15,7 @@ import {
   type PrisonerFlashpoint,
 } from './flashpoint';
 import { GangRegistry, resolveRetaliationRisk } from './gangs';
-import { IncidentLog, type IncidentCauseFactor, type IncidentType, type OpenIncidentInput } from './incident';
+import { IncidentLog, MAX_INCIDENT_SEVERITY, type IncidentCauseFactor, type IncidentType, type OpenIncidentInput } from './incident';
 import { SectorRiskTracker, type SectorRiskSample } from './sector-risk';
 
 /**
@@ -434,7 +434,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
         type: 'escape-attempt',
         sectorId,
         participantIds: [candidate.entityId],
-        severity: Math.max(1, Math.min(10, Math.round(candidate.score * 10))),
+        severity: Math.max(1, Math.min(MAX_INCIDENT_SEVERITY, Math.round(candidate.score * MAX_INCIDENT_SEVERITY))),
         causeFactors: [
           { kind: 'escape-pressure', value: candidate.score },
           { kind: 'sentence-remaining', value: source.sentenceRemaining },
@@ -574,7 +574,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
         type: 'riot',
         sectorId,
         participantIds: [...occupants].sort((a, b) => a - b),
-        severity: Math.max(1, Math.min(10, Math.round(score * 10))),
+        severity: Math.max(1, Math.min(MAX_INCIDENT_SEVERITY, Math.round(score * MAX_INCIDENT_SEVERITY))),
         causeFactors,
       },
       tick,
@@ -621,7 +621,7 @@ export class IncidentTriggerSystem implements SystemRegistration {
             type: 'gang-retaliation',
             sectorId,
             participantIds: participants,
-            severity: Math.max(1, Math.min(10, Math.round(risk * 10))),
+            severity: Math.max(1, Math.min(MAX_INCIDENT_SEVERITY, Math.round(risk * MAX_INCIDENT_SEVERITY))),
             causeFactors: [
               { kind: 'gang-grudge', value: this.gangs.getGrudge(offended, offending) },
               { kind: 'retaliation-risk', value: risk },

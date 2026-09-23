@@ -141,7 +141,7 @@ function viewModel(): HudViewModel {
     // anybody at -- and the state whose `hidden` list the issue's measurement
     // read by mistake.
     heldGuards: { held: 0, unassigned: 60, guards: [] },
-    staffCoverage: { required: 0, assigned: 0, shortage: 0 },
+    staffCoverage: { required: 0, assigned: 0, shortage: 0, availableReserve: 0, targetReserve: 5 },
     staffRoster: {
       hired: 60,
       staff: [

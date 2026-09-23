@@ -3566,7 +3566,7 @@ test.describe('HUD shell', () => {
         await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         await page.evaluate(() =>
-          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2, availableReserve: 0, targetReserve: 5 }),
         );
         const unguarded = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
 
@@ -3578,12 +3578,12 @@ test.describe('HUD shell', () => {
         // And it follows a second report rather than latching on the first,
         // which is what a player hiring a guard experiences.
         await page.evaluate(() =>
-          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1 }),
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1, availableReserve: 0, targetReserve: 5 }),
         );
         expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.tone).toBe('warning');
 
         await page.evaluate(() =>
-          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0 }),
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0, availableReserve: 1, targetReserve: 5 }),
         );
         expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.tone).toBe('success');
       });
@@ -3609,7 +3609,7 @@ test.describe('HUD shell', () => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
         await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         await page.evaluate(() =>
-          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2, availableReserve: 0, targetReserve: 5 }),
         );
 
         const probe = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
@@ -3653,7 +3653,7 @@ test.describe('HUD shell', () => {
           await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
           await page.evaluate(() =>
-            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2, availableReserve: 0, targetReserve: 5 }),
           );
           const unguarded = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
 
@@ -3685,7 +3685,7 @@ test.describe('HUD shell', () => {
           expect(unguarded.hintText, `the hint lost its count at ${width}x${height}`).toContain('2');
 
           await page.evaluate(() =>
-            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1 }),
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1, availableReserve: 0, targetReserve: 5 }),
           );
           expect(
             (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.consequenceText,
@@ -3693,7 +3693,7 @@ test.describe('HUD shell', () => {
           ).toBe('');
 
           await page.evaluate(() =>
-            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0 }),
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0, availableReserve: 1, targetReserve: 5 }),
           );
           expect(
             (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.consequenceText,
@@ -3712,7 +3712,7 @@ test.describe('HUD shell', () => {
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
           await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
           await page.evaluate(() =>
-            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2, availableReserve: 0, targetReserve: 5 }),
           );
 
           const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
