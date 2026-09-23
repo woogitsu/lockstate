@@ -41,6 +41,33 @@ interface SearchJobRecord {
   dwellStartedAtTick: number | undefined;
 }
 
+/**
+ * One active job's progress through its current target, as the save's
+ * `inFlight` section carries it (issue #1373) -- the four fields
+ * `getSnapshot` has never carried and `loadSnapshot` has always reset.
+ */
+export interface SearchJobInFlightSnapshot {
+  readonly id: string;
+  readonly state: SearchJobState;
+  readonly travelInFlight: boolean;
+  /** `[guardId, requestId]`, ascending by guard id. */
+  readonly pathRequestIdsByGuard: readonly (readonly [EntityId, string])[];
+  readonly dwellStartedAtTick?: number;
+}
+
+/** What `SearchSystem.getInFlightSnapshot` carries: see that method. */
+export interface SearchInFlightSnapshot {
+  readonly requestSequence: number;
+  /** Ascending by job id, the order `activeJobsInCanonicalOrder` walks them in. */
+  readonly jobs: readonly SearchJobInFlightSnapshot[];
+}
+
+/** A search in-flight snapshot to resume, and the question the resume asks of the restored `NavigationSystem`. */
+export interface SearchInFlightRestore {
+  readonly snapshot: SearchInFlightSnapshot;
+  readonly knowsRequest: (requestId: string) => boolean;
+}
+
 export interface SearchMetrics {
   readonly itemsDiscovered: number;
   readonly itemsMissed: number;
@@ -482,6 +509,39 @@ export class SearchSystem implements SystemRegistration {
   }
 
   /**
+   * Every active job's leg state and the counter that names its routes (issue
+   * #1373): what `getSnapshot` leaves out and `loadSnapshot` below reset on
+   * every restore until then.
+   *
+   * **Measured, which is why it is carried and not left to the "never losing
+   * search progress" argument below.** That argument is true of the *outcome*
+   * and not of the *timing*: with this left out,
+   * `tests/determinism/restore-mid-walk-exactness.test.ts` found 21 of its
+   * saves diverging within fifty ticks -- a sweep a target behind, a guard on
+   * the wrong tile, a route requested twice -- because a restored job re-walked
+   * a leg it had finished and re-dwelt a target it was part-way through. Some
+   * reconverged by the far checkpoint, since `contraband.detection` has no
+   * other consumer to interleave with; a save-then-continue that only agrees
+   * *eventually* is still not the continue the owner ruled for.
+   */
+  public getInFlightSnapshot(): SearchInFlightSnapshot {
+    return {
+      requestSequence: this.requestSequence,
+      jobs: this.activeJobsInCanonicalOrder().map((job) => ({
+        id: job.id,
+        state: job.state,
+        travelInFlight: job.travelInFlight,
+        pathRequestIdsByGuard: [...job.pathRequestIdsByGuard.entries()].sort(([a], [b]) => a - b),
+        ...(job.dwellStartedAtTick === undefined ? {} : { dwellStartedAtTick: job.dwellStartedAtTick }),
+      })),
+    };
+  }
+
+  /**
+   * **Since issue #1373 this paragraph describes the restore of a save with no
+   * `inFlight` section**, and of a job whose carried request the restored queue
+   * does not hold; a save this build writes resumes each job where it was.
+   *
    * A guard mid-leg referenced a path request against the *previous*
    * `NavigationSystem` instance's queue -- restored jobs always re-enter
    * `'travelling'` with a fresh dwell timer, matching #25/#26's "restart
@@ -491,21 +551,31 @@ export class SearchSystem implements SystemRegistration {
    * `sameTile` true and issues no requests), extending that leg's wait by
    * at most `dwellTicksPerTarget` -- never losing search progress.
    */
-  public loadSnapshot(snapshot: ReturnType<SearchSystem['getSnapshot']>): void {
+  public loadSnapshot(snapshot: ReturnType<SearchSystem['getSnapshot']>, inFlight?: SearchInFlightRestore): void {
     this.queue.length = 0;
     this.queue.push(...snapshot.queue.map((order) => ({ ...order })));
     this.active.clear();
+    const resumable = new Map<string, SearchJobInFlightSnapshot>();
+    if (inFlight !== undefined) {
+      this.requestSequence = inFlight.snapshot.requestSequence;
+      for (const job of inFlight.snapshot.jobs) resumable.set(job.id, job);
+    }
     for (const [id, job] of snapshot.active) {
+      const progress = resumable.get(id);
+      // Resumed only when every request the job names is one the restored
+      // queue holds -- which is every job a save this build writes can carry.
+      // Otherwise the paragraph above applies to this job as it always did.
+      const resume = progress !== undefined && progress.pathRequestIdsByGuard.every(([, requestId]) => inFlight!.knowsRequest(requestId));
       this.active.set(id, {
         id,
         scope: job.scope,
         targets: job.targets,
         guardIds: [...job.guardIds],
         currentTargetIndex: job.currentTargetIndex,
-        state: 'travelling',
-        travelInFlight: false,
-        pathRequestIdsByGuard: new Map(),
-        dwellStartedAtTick: undefined,
+        state: resume ? progress.state : 'travelling',
+        travelInFlight: resume ? progress.travelInFlight : false,
+        pathRequestIdsByGuard: resume ? new Map(progress.pathRequestIdsByGuard) : new Map(),
+        dwellStartedAtTick: resume ? progress.dwellStartedAtTick : undefined,
       });
     }
     this.itemsDiscovered = snapshot.metrics.itemsDiscovered;

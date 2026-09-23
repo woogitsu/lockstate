@@ -6,7 +6,7 @@ import type { InformantRecord } from '../contraband/informants';
 import type { IntelligenceLedger } from '../contraband/intelligence';
 import type { ContrabandRegistry } from '../contraband/item';
 import type { SearchPolicyDefinition } from '../contraband/search-policy';
-import type { SearchSystem } from '../contraband/search-system';
+import type { SearchInFlightSnapshot, SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
 import { SnapshotRefusedError } from './restore-refusal';
 import { applyDefaultGangs } from '../incidents/default-gangs';
@@ -18,6 +18,8 @@ import type { SectorRiskTracker } from '../incidents/sector-risk';
 import type { IncidentTriggerSystem } from '../incidents/trigger-system';
 import type { SimulationEventLogSnapshot } from '../events/event-log';
 import type { DoorDefinition } from '../navigation/door';
+import type { LocomotionSnapshot } from '../locomotion';
+import type { NavigationInFlightSnapshot } from '../navigation/navigation-system';
 import { Container } from '../operations/inventory';
 import type { CarryItemJob } from '../operations/job';
 import type { UtilityNetwork } from '../operations/utility-network';
@@ -28,6 +30,7 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
+import type { PrisonerTravelSnapshot } from '../prisoners/prisoner-operations-runtime';
 import type { EncodedRegimeSchedule } from '../prisoners/regime-registry';
 import type { PlacedObject } from '../objects';
 import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
@@ -418,6 +421,51 @@ export interface EncodedSessionSystems {
    * came back on the next load would make the owner's decisions 3 and 4 fight.
    */
   readonly alerts?: SimulationEventLogSnapshot;
+  /**
+   * The work in flight: every walk, every path request still waiting or
+   * resolved and uncollected, and the ids and counters that name them (issue
+   * #1373; the owner's ruling of 2026-09-23 on
+   * [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+   * open question 3, option 5, *"Zapisuj marsz (zalecane)"*).
+   *
+   * **Optional, and absence means "this save carries no work in flight"** --
+   * which is what every save written before this section existed meant, and
+   * such a save restores exactly as those builds restored it: walks cleared,
+   * travellers dropped to `idle`, the navigation queue empty. That is the
+   * optional-field pattern `docs/PERSISTENCE.md` describes, on its own three
+   * conditions (the section is optional; absent means what the older build
+   * already did; no existing field changes shape or meaning), so
+   * `SAVE_SCHEMA_VERSION` does not move and no migration step is added.
+   *
+   * **One section rather than a key on each owner's section, because the parts
+   * are only meaningful together.** A prisoner's request id names an entry in
+   * the navigation queue; a walk is the second half of a route that queue
+   * resolved. A save carrying one without the other would be a state no
+   * session was ever in. Grouping them makes "all or nothing" a property of the
+   * shape rather than of every reader's care, and it keeps every historical
+   * section shape (V3-V5) frozen: they are shared with this build through
+   * `sessionSystemsShapeFor`, and this section is declared on V6 alone.
+   */
+  readonly inFlight?: EncodedInFlightWork;
+}
+
+/** See `EncodedSessionSystems.inFlight`. */
+export interface EncodedInFlightWork {
+  readonly navigation: NavigationInFlightSnapshot;
+  readonly prisoners: PrisonerTravelSnapshot;
+  /**
+   * The guards' walks, keyed by `EntityId`, and the two counters that name
+   * their path requests. The rest of a guard's journey -- phase, request id,
+   * patrol waypoint -- was already on the roster record every save carries;
+   * what the old restore did was *discard* it, not fail to have it.
+   */
+  readonly guards: {
+    readonly locomotion: LocomotionSnapshot;
+    readonly deploymentRequestSequence: number;
+    readonly patrolRequestSequence: number;
+  };
+  /** Each active search job's leg state -- see `SearchSystem.getInFlightSnapshot`. */
+  readonly search: SearchInFlightSnapshot;
 }
 
 export interface EncodedObjects {
@@ -723,6 +771,20 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // writes an empty log, which says "this prison has said nothing", where an
     // *absent* section says "this save does not know".
     alerts: runtime.events.getSnapshot(),
+    // Emitted unconditionally by a live capture, empty lists and all, on the
+    // same terms as `objects` and `alerts` above: a prison where nobody is
+    // walking writes empty lists, which says "nothing is in flight", where an
+    // *absent* section says "this save predates carrying it".
+    inFlight: {
+      navigation: runtime.navigation.getInFlightSnapshot(),
+      prisoners: runtime.prisoners.getTravelSnapshot(),
+      guards: {
+        locomotion: runtime.securityGuards.getTravelSnapshot(),
+        deploymentRequestSequence: runtime.deploymentSystem.getRequestSequence(),
+        patrolRequestSequence: runtime.patrolSystem.getRequestSequence(),
+      },
+      search: runtime.searchSystem.getInFlightSnapshot(),
+    },
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -768,6 +830,13 @@ export function restoreSessionSystems(
   // 1. Navigation doors at baseline, then sectors (which snapshot that
   //    baseline), then the control states that cascade onto the doors.
   for (const door of systems.navigation.doors) runtime.navigation.doors.register({ ...door });
+  //    The navigation queue and its uncollected results, **before any owner
+  //    loads** (issue #1373): each owner asks `knowsRequest` about the id it
+  //    carried, and the answer has to be about the queue the save carried
+  //    rather than the empty one `createNewSimulationRuntime` built. Absent on
+  //    a save written before the section existed, and then the queue stays
+  //    empty, which is what every such save restored to.
+  if (systems.inFlight !== undefined) runtime.navigation.loadInFlightSnapshot(systems.inFlight.navigation);
   /*
    *    **A sector the runtime already holds gets the payload's definition
    *    applied over it, not skipped** ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
@@ -920,7 +989,8 @@ export function restoreSessionSystems(
   }
 
   // 3. Prisoners: liveness, components and occupancy in one call, so the
-  //    runtime's own bitset re-derivation and in-flight travel reset run.
+  //    runtime's own bitset re-derivation and in-flight travel run -- resumed
+  //    from `inFlight` where the save carries it, reset where it does not.
   //    The components are sized to **this runtime's** store, not to the
   //    capacity the save records, for the reason `EntityStore.loadSnapshot`
   //    now gives: the save's capacity is the length of the array the writing
@@ -950,7 +1020,10 @@ export function restoreSessionSystems(
   // `ActionMetrics.substitutionsCountedSinceTick`: the substitution counters
   // are per prisoner and no save carries them (issue #435), so a restore opens
   // a new counting window and this is the number that says so out loud.
-  runtime.kernel.tick);
+  runtime.kernel.tick,
+  systems.inFlight === undefined
+    ? undefined
+    : { snapshot: systems.inFlight.prisoners, knowsRequest: (requestId) => runtime.navigation.knowsRequest(requestId) });
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
@@ -980,14 +1053,23 @@ export function restoreSessionSystems(
 
   // 5. Security staffing. Schedules are read live off the runtime's own
   //    array, so restoring means refilling that array, not replacing it.
-  runtime.securityGuards.loadSnapshot({
-    entityStore: decodeEntityStoreSnapshot(systems.security.guards.entityStore),
-    records: systems.security.guards.records.map(([id, record]) => [id, { ...record }] as const),
-  });
+  runtime.securityGuards.loadSnapshot(
+    {
+      entityStore: decodeEntityStoreSnapshot(systems.security.guards.entityStore),
+      records: systems.security.guards.records.map(([id, record]) => [id, { ...record }] as const),
+    },
+    systems.inFlight === undefined
+      ? undefined
+      : { locomotion: systems.inFlight.guards.locomotion, knowsRequest: (requestId) => runtime.navigation.knowsRequest(requestId) },
+  );
   runtime.securitySchedules.length = 0;
   runtime.securitySchedules.push(...systems.security.schedules.map((schedule) => ({ ...schedule })));
   runtime.deploymentSystem.loadSnapshot(systems.security.deployment);
   runtime.patrolSystem.loadSnapshot(systems.security.patrol);
+  if (systems.inFlight !== undefined) {
+    runtime.deploymentSystem.setRequestSequence(systems.inFlight.guards.deploymentRequestSequence);
+    runtime.patrolSystem.setRequestSequence(systems.inFlight.guards.patrolRequestSequence);
+  }
 
   // 5b. Money and deliveries in flight (#96).
   //
@@ -1016,7 +1098,12 @@ export function restoreSessionSystems(
   for (const [containerId, position] of systems.contraband.searchContainerLocations) {
     runtime.searchContainerLocations.set(containerId, { x: tileCoordinate(position.x), y: tileCoordinate(position.y) });
   }
-  runtime.searchSystem.loadSnapshot(systems.contraband.search);
+  runtime.searchSystem.loadSnapshot(
+    systems.contraband.search,
+    systems.inFlight === undefined
+      ? undefined
+      : { snapshot: systems.inFlight.search, knowsRequest: (requestId) => runtime.navigation.knowsRequest(requestId) },
+  );
 
   // 7. Incidents.
   runtime.incidents.loadSnapshot(systems.incidents.log);
