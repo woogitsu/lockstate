@@ -148,6 +148,17 @@ export function supersessionKeyRoute(key: string): string {
   return separator === -1 ? key : key.slice(0, separator);
 }
 
+/**
+ * The route `removeObjectSupersessionKey` names, as a value a call site can
+ * pass to `RefusalLog.noteRouteDecided` without building a key it has no
+ * target for. The key builder below spells its prefix with this constant, so
+ * the two cannot drift apart.
+ */
+export const REMOVE_OBJECT_ROUTE = 'remove-object';
+
+/** The route `removeWallSupersessionKey` names; see `REMOVE_OBJECT_ROUTE`. */
+export const REMOVE_WALL_ROUTE = 'remove-wall';
+
 export class RefusalLog {
   /**
    * The total number of refusals ever recorded. Monotonic -- `supersede`
@@ -250,15 +261,17 @@ export class RefusalLog {
       this._currentKey = undefined;
       return;
     }
-    this.noteRouteDecided(key);
+    this.noteRouteDecided(supersessionKeyRoute(key));
   }
 
   /**
    * Records that the standing refusal's own **route** has decided something
    * else, without touching the refusal (ADR 0091 decision 2, option F).
    *
-   * Reached only from `supersede`, and only on the path that used to `return`
-   * having done nothing -- a key that misses. The withdrawal rule above is
+   * Reached from `supersede` only on the path that used to `return` having
+   * done nothing -- a key that misses -- and, since 2026-09-23, directly from
+   * the two removal routes' success paths (see the last paragraph; *"Reached
+   * only from `supersede`"* was true until then). The withdrawal rule above is
    * untouched: a match still withdraws, a miss still leaves `_current`,
    * `_currentKey`, `_sequence` and `count` exactly as they were. What is new
    * is that a *near* miss -- the same route, a different target -- is now
@@ -273,13 +286,36 @@ export class RefusalLog {
    * what it withdrew before. `tests/unit/simulation-refusals.test.ts`'s two
    * guarding cases assert on `last?.reason` after a different rectangle and a
    * different tile succeed, and both still read the standing refusal here.
+   *
+   * **Public since 2026-09-23, for one pair of routes** (ADR 0091
+   * *"Amendment, 2026-09-23"*, issue #1270). The owner ruled that
+   * `remove-wall` and `remove-object` count as one route *for retiring the
+   * band only*, in both directions, so a removal under either prefix has to
+   * mark a standing refusal filed under the other. The call sites in
+   * `session-commands.ts` say so explicitly, as the `ZoneRoom` success path
+   * says its two prefixes explicitly -- and this function stays free of an
+   * alias table for the reason `supersessionKeyRoute` gives.
+   *
+   * **Why a mark and not a second `supersede`, which is the one place this
+   * departs from the zone/zone-area precedent.** `ZoneRoom`'s success calls
+   * `supersede` with both of its keys because a success there genuinely
+   * disproves a refusal filed under either -- an exact match *should*
+   * withdraw. Here it must not: `removeWallSupersessionKey` keeps the two
+   * removals' keys apart because an object coming off a tile says nothing
+   * about whether a wall's edge is claimed there, and a `supersede` with the
+   * sibling's key would withdraw exactly that refusal from the log on an
+   * exact match. The amendment rules the log untouched, so the call sites
+   * reach the band's input and nothing else: this method can only ever set
+   * `routeDecidedSince`, never withdraw.
+   *
+   * @param route A route name as `supersessionKeyRoute` returns it.
    */
-  private noteRouteDecided(key: string): void {
+  public noteRouteDecided(route: string): void {
     const current = this._current;
     if (current === undefined || current.routeDecidedSince === true) return;
-    const standingRoute = this._currentKey;
-    if (standingRoute === undefined) return;
-    if (supersessionKeyRoute(standingRoute) !== supersessionKeyRoute(key)) return;
+    const standingKey = this._currentKey;
+    if (standingKey === undefined) return;
+    if (supersessionKeyRoute(standingKey) !== route) return;
     this._current = { ...current, routeDecidedSince: true };
   }
 
@@ -858,7 +894,7 @@ export function placeObjectSupersessionKey(definitionId: string, x: number, y: n
 
 /** `remove-object.*`'s key: the tile. `RemoveObject` names no order id at all. */
 export function removeObjectSupersessionKey(x: number, y: number): string {
-  return `remove-object:${x}:${y}`;
+  return `${REMOVE_OBJECT_ROUTE}:${x}:${y}`;
 }
 
 /**
@@ -872,7 +908,7 @@ export function removeObjectSupersessionKey(x: number, y: number): string {
  * says nothing about whether an object is standing on it.
  */
 export function removeWallSupersessionKey(x: number, y: number, edge: string): string {
-  return `remove-wall:${x}:${y}:${edge}`;
+  return `${REMOVE_WALL_ROUTE}:${x}:${y}:${edge}`;
 }
 
 /**

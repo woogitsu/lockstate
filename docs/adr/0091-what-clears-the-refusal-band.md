@@ -621,6 +621,8 @@ here, and it is D with one comparison added.
   > route, so F leaves the contradiction standing there. Kept as the argument
   > the owner was shown. The owner's ruling that the two count as one route for
   > the band is in *"Amendment, 2026-09-23"* at the foot of this document.
+  > **Implemented the same day**, so the bullet above now holds for both arms;
+  > that amendment's *"How it is built"* says how.
 - **What it does not fix, stated plainly**: #780's plain different-location
   case for a route the player never repeats. A `zone.not-enclosed` refusal
   about a rectangle the player abandons stands until they zone something else
@@ -1033,7 +1035,39 @@ authorised or needed.** The band retires, and its sentence does not change.
 The *"Kills the measured contradiction"* bullet above is left as written and
 now carries a dated mark pointing here. It was the argument put to the owner on
 2026-09-16. It was false for the object arm when written, and after this
-amendment is implemented it will be true for both arms.
+amendment is implemented it will be true for both arms. *(It was implemented
+on 2026-09-23; see the next subsection.)*
+
+### How it is built, and where it departs from the zone precedent
+
+**Implemented 2026-09-23.** The pair is handled at the call sites, as the
+zone precedent is, and not by an alias table in `supersessionKeyRoute`: the
+`RemoveObject` success path, `RemoveWall`'s object arm and `RemoveWall`'s wall
+arm in `src/simulation/runtime/session-commands.ts` each name the sibling
+route explicitly, beside the `supersede` they already made.
+
+**What they call is not a second `supersede`, and that is the one departure
+from the precedent.** `ZoneRoom`'s success calls `supersede` with both of its
+keys because a success there disproves a refusal filed under either, so an
+exact match *should* withdraw it from the log. For the removal pair an exact
+match must not: `removeWallSupersessionKey` keeps
+`remove-wall:<x>:<y>:<edge>` apart from `remove-object:<x>:<y>` because an
+object coming off a tile says nothing about whether a wall's edge is claimed
+there. A `supersede` with the sibling's key would withdraw exactly that refusal
+from the log, which widens #492's keying, and this amendment rules the log
+untouched. So the call sites use `RefusalLog.noteRouteDecided(route)`, which
+already existed privately as option F's mark and is now public. It can set
+`routeDecidedSince` and nothing else; it never withdraws. `REMOVE_OBJECT_ROUTE`
+and `REMOVE_WALL_ROUTE` are the constants the two key builders spell their
+prefixes with, so the route a call site names cannot drift from the route a
+key carries.
+
+`tests/unit/simulation-refusals.test.ts`'s block headed *"ADR 0091
+"Amendment, 2026-09-23" (#1270)"* pins all three directions, the guard that a
+mark at the refusal's own tile and edge does not withdraw it, and that no third
+route (`unzone`) is drawn in. Each call site was commented out in turn and its
+own case went red. Replacing the object arm's mark with a zone-style
+`supersede` of the sibling key turned the guard red on *"not withdrawn"*.
 
 ### A neighbouring ruling of the same day, which does not reach this band's rule
 

@@ -13,7 +13,9 @@ import {
   PURCHASE_REFUSAL_REASONS,
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
+  REMOVE_OBJECT_ROUTE,
   REMOVE_WALL_REFUSAL_REASONS,
+  REMOVE_WALL_ROUTE,
   SELL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
@@ -864,6 +866,12 @@ export function createSessionCommandHandler(
         // Issue #492: the tile. A removal elsewhere must not silence a
         // standing `nothing-to-remove` about this one.
         refusals.supersede(removeKey);
+        // ADR 0091 "Amendment, 2026-09-23" (#1270): for the band only,
+        // `remove-object` and `remove-wall` are one route, so this removal is
+        // a decided outcome of a standing `remove-wall.*` refusal's route too.
+        // A mark and never a withdrawal -- see `RefusalLog.noteRouteDecided`
+        // for why this is not a second `supersede`.
+        refusals.noteRouteDecided(REMOVE_WALL_ROUTE);
         /*
          * **A removal that destroyed a purchase says so, and this branch is not
          * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
@@ -959,6 +967,11 @@ export function createSessionCommandHandler(
         // same notice port already wired inside `objectPlacement.remove`,
         // same event for a cancelled pending order.
         refusals.supersede(removeObjectSupersessionKey(simCommand.x, simCommand.y));
+        // #1270's measured case: this arm files under `remove-object`, so
+        // option F alone left a standing `remove-wall.*` refusal up beside the
+        // event band reporting the removal. One route for the band (ADR 0091
+        // "Amendment, 2026-09-23"); the log is untouched.
+        refusals.noteRouteDecided(REMOVE_WALL_ROUTE);
         if (outcome.kind === 'order-cancelled') {
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
@@ -996,6 +1009,10 @@ export function createSessionCommandHandler(
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
       refusals.supersede(wallKey);
+      // The other direction of the same ruling: "one route" reads both ways
+      // (ADR 0091 "Amendment, 2026-09-23"), so a wall coming down marks a
+      // standing `remove-object.*` refusal for the band as well.
+      refusals.noteRouteDecided(REMOVE_OBJECT_ROUTE);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
       // arm already record, reused rather than a new sentence: the state this
       // order was cancelled from decides the same truth for a wall that it

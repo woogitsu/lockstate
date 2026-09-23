@@ -15,7 +15,9 @@ import {
   PURCHASE_REFUSAL_REASONS,
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
+  REMOVE_OBJECT_ROUTE,
   REMOVE_WALL_REFUSAL_REASONS,
+  REMOVE_WALL_ROUTE,
   SELL_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
@@ -1137,6 +1139,11 @@ describe('ADR 0091 decision 2 (option F): the standing refusal reports when its 
     for (const [key, route] of cases) {
       expect(supersessionKeyRoute(key), `${key} does not name its own route`).toBe(route);
     }
+    // The two route constants the removal call sites pass to
+    // `noteRouteDecided` (ADR 0091 "Amendment, 2026-09-23") must be the routes
+    // their own keys name, or the one-route rule silently marks nothing.
+    expect(REMOVE_OBJECT_ROUTE).toBe(supersessionKeyRoute(removeObjectSupersessionKey(4, 4)));
+    expect(REMOVE_WALL_ROUTE).toBe(supersessionKeyRoute(removeWallSupersessionKey(4, 4, 'north')));
   });
 
   it('marks a standing zoning refusal once a different rectangle is zoned -- without withdrawing it', () => {
@@ -1260,6 +1267,118 @@ describe('ADR 0091 decision 2 (option F): the standing refusal reports when its 
     log.supersede(removeWallSupersessionKey(4, 4, 'north'));
     expect(log.last?.routeDecidedSince).toBeUndefined();
     expect(log.last?.reason).toBe('remove-wall.nothing-to-remove');
+  });
+});
+
+describe('ADR 0091 "Amendment, 2026-09-23" (#1270): remove-wall and remove-object are one route, for the band only', () => {
+  // The owner's ruling of 2026-09-23 (`AGENTS.md` ruling 27): a decided
+  // outcome of either removal route marks a standing refusal of the other,
+  // and the log -- `record`, `supersede`, #492's exact-target keying -- is
+  // untouched. Each case below asserts both halves: the mark (the band's
+  // input) AND that `last`/`count` still say exactly what they said (the
+  // log's own reading). The fixture room and bed are the ones
+  // `tests/integration/remove-wall-reachability.test.ts` builds for ADR
+  // 0106's falsifier; a bed there is what makes `RemoveWall`'s object arm win.
+  const CELL_RECT = { x: 10, y: 20, width: 2, height: 3 } as const;
+  const BED_TILE = { x: 10, y: 20 } as const;
+
+  function furnishCell(runtime: SimulationRuntime, sequence: number): number {
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+    submit(runtime, sequence, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+    submit(
+      runtime,
+      sequence + 1,
+      packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: BED_TILE.x, y: BED_TILE.y }),
+    );
+    return sequence + 2;
+  }
+
+  it("#1270's measured case: RemoveWall's object arm marks a standing remove-wall refusal about another tile, without withdrawing it", () => {
+    const runtime = createNewSimulationRuntime(0x1270);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' }));
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+
+    const next = furnishCell(runtime, 1);
+    expect(runtime.refusals.last?.reason, 'zoning and placing refuse nothing and are other routes').toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.last?.routeDecidedSince, 'zoning and placing are not removals').toBeUndefined();
+
+    const instanceId = `room.cell:${String(CELL_RECT.x)}:${String(CELL_RECT.y)}`;
+    submit(runtime, next, packCommand({ type: 'RemoveWall', x: BED_TILE.x, y: BED_TILE.y, edge: 'north' }));
+    expect(
+      runtime.prisoners.roomInstances.getById(instanceId)?.objectCapabilities ?? [],
+      'the object arm has to have won, or this is the wall arm and proves nothing new',
+    ).not.toContain('sleep-surface');
+
+    expect(runtime.refusals.last?.reason, 'the log still holds the refusal: (18,19) still has nothing to remove').toBe(
+      'remove-wall.nothing-to-remove',
+    );
+    expect(runtime.refusals.count).toBe(1);
+    expect(runtime.refusals.last?.routeDecidedSince, 'one route for the band: the removal the player just made retires it').toBe(true);
+  });
+
+  it('marks a standing remove-wall refusal when a RemoveObject command succeeds -- the same rule from the other command', () => {
+    const runtime = createNewSimulationRuntime(0x1270);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' }));
+    const next = furnishCell(runtime, 1);
+
+    submit(runtime, next, packCommand({ type: 'RemoveObject', x: BED_TILE.x, y: BED_TILE.y }));
+
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.count).toBe(1);
+    expect(runtime.refusals.last?.routeDecidedSince).toBe(true);
+  });
+
+  it('reads "one route" as both directions: a wall coming down marks a standing remove-object refusal', () => {
+    const runtime = createNewSimulationRuntime(0x1270);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-1', definitionId: 'wall-brick', x: OWNED_TILE.x, y: OWNED_TILE.y, edge: 'north' }),
+    );
+    for (let step = 0; step < 600 && runtime.construction.getOrder('wall-1')?.state !== 'completed'; step += 1) {
+      runtime.kernel.step();
+    }
+    expect(runtime.construction.getOrder('wall-1')?.state, 'the wall arm needs a completed order to find').toBe('completed');
+
+    submit(runtime, 1, packCommand({ type: 'RemoveObject', x: 11, y: 13 }));
+    expect(runtime.refusals.last?.reason).toBe('remove-object.nothing-to-remove');
+
+    submit(runtime, 2, packCommand({ type: 'RemoveWall', x: OWNED_TILE.x, y: OWNED_TILE.y, edge: 'north' }));
+    expect(runtime.construction.getOrder('wall-1')?.state, 'the wall arm has to have won').toBe('cancelled');
+
+    expect(runtime.refusals.last?.reason, 'the log is untouched: (11,13) still holds no object').toBe('remove-object.nothing-to-remove');
+    expect(runtime.refusals.count).toBe(1);
+    expect(runtime.refusals.last?.routeDecidedSince).toBe(true);
+  });
+
+  it("marks rather than withdraws even at the refusal's own tile and edge -- #492's keying keeps the two facts apart in the log", () => {
+    // The case that separates this implementation from calling `supersede`
+    // with the sibling route's key (the zone/zone-area shape): that would
+    // match `remove-wall:10:20:north` exactly and withdraw it from the log,
+    // which is the widening of #492 the amendment rules out. An object coming
+    // off a tile says nothing about whether a wall's edge is claimed there
+    // (`removeWallSupersessionKey`'s own docblock).
+    const runtime = createNewSimulationRuntime(0x1270);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: BED_TILE.x, y: BED_TILE.y, edge: 'north' }));
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    const next = furnishCell(runtime, 1);
+
+    submit(runtime, next, packCommand({ type: 'RemoveWall', x: BED_TILE.x, y: BED_TILE.y, edge: 'north' }));
+
+    expect(runtime.refusals.last, 'not withdrawn').toBeDefined();
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.last?.sequence).toBe(1);
+    expect(runtime.refusals.last?.routeDecidedSince).toBe(true);
+  });
+
+  it('does not reach any third route: a successful un-zoning leaves a standing remove-wall refusal unmarked', () => {
+    const runtime = createNewSimulationRuntime(0x1270);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' }));
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 2, y: 2, width: 8, height: 8 }));
+    submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 8, height: 8 }));
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'the un-zoning has to succeed').toHaveLength(0);
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.last?.routeDecidedSince, 'unzone shares a sentence shape with the removals, not a route').toBeUndefined();
   });
 });
 
