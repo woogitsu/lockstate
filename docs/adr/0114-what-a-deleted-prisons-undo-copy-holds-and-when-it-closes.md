@@ -195,7 +195,7 @@ restore that is whole has to bypass both.
 
 ### `SAVE_SCHEMA_VERSION` is 5, and this proposal does not move it
 
-`export const SAVE_SCHEMA_VERSION = 5 as const;` (`src/persistence/save-schema.ts:36`,
+`export const SAVE_SCHEMA_VERSION = 5 as const;` (`src/persistence/save-schema.ts:37`,
 this tree). ADR 0113 (Proposed, unrelated to this document) would move it to
 6 for a regime-schedule payload section if accepted; that is orthogonal to
 everything below. **Nothing in this document changes the shape of a save

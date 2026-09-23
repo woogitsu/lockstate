@@ -177,7 +177,7 @@ finished walls. The carrier is `ConstructionSnapshot.currentTransaction`, and
 `undo()` after a restore then reached past it and cancelled the **previous**
 gesture instead"*
 ([#108](https://github.com/woogitsu/lockstate/issues/108)). All three fields
-are in the save envelope (`src/persistence/save-schema.ts:226`, wired at
+are in the save envelope (`src/persistence/save-schema.ts:227`, wired at
 `:1266`), so this is the real persistence path.
 
 **This is not an argument against #108.** #108 made the reach survive a reload
