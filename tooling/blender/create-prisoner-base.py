@@ -201,7 +201,9 @@ def build_detailed_actor(root, asset_id):
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
     epaulette = mat("Guard slate epaulettes", (0.24, 0.35, 0.45), 0.85) if guard else None
     medical_white = mat("Medic patch and ID", (0.78, 0.83, 0.82), 0.76) if medic else None
-    cap_blue = mat("Medic pale blue cap", (0.31, 0.47, 0.60), 0.86) if medic else None
+    cap_blue = mat("Medic pale linen cap", (0.87, 0.86, 0.81), 0.86) if medic else None
+    medical_red = mat("Medic cap and kit red", (0.70, 0.065, 0.035), 0.69) if medic else None
+    medical_bag = mat("Medic charcoal kit casing", (0.055, 0.065, 0.075), 0.82) if medic else None
     apron = mat("Cook worn tan apron", (0.30, 0.23, 0.15), 0.93) if cook else None
     staff_blue = mat("Staff blue role marking", (0.035, 0.20, 0.55), 0.68) if staff else None
 
@@ -250,6 +252,14 @@ def build_detailed_actor(root, asset_id):
         cube("Medical ID clip", (0.19, -0.331, 2.43), (0.025, 0.013, 0.05), button, root, 0.004)
         cube("Medical ID card", (0.19, -0.341, 2.34), (0.055, 0.010, 0.075), medical_white, root, 0.007)
         cube("Scrub hem", (0, -0.287, 1.78), (0.35, 0.015, 0.020), dark_seam, root, 0.003)
+        # The small chest crosses disappear from the game's overhead camera.
+        # A compact side kit gives the side views the same clear role cue.
+        cube("Medical kit case", (0.405, -0.07, 1.78),
+             (0.135, 0.22, 0.22), medical_red, root, 0.024)
+        cube("Medical kit white cross vertical", (0.477, -0.07, 1.79),
+             (0.007, 0.045, 0.125), medical_white, root, 0.002)
+        cube("Medical kit white cross horizontal", (0.481, -0.07, 1.79),
+             (0.007, 0.125, 0.043), medical_white, root, 0.002)
     if cook:
         # The apron is intentionally one broad, continuous panel. At 64 px it
         # matters more than individual jacket buttons and is visible in motion.
@@ -294,9 +304,14 @@ def build_detailed_actor(root, asset_id):
                         (0.085, 0.085, 0.013), badge, root, 0.012)
         cap_mark.rotation_euler.z = math.radians(45)
     elif medic:
-        sphere("Medical cap", (0, 0.045, 3.380), (0.303, 0.278, 0.122), cap_blue, root)
+        cylinder("Medical cap flat crown", (0, 0.045, 3.445), 0.295, 0.105, cap_blue, root)
         box_tie = cube("Medical cap tie", (0, 0.281, 3.29), (0.065, 0.09, 0.025), cap_blue, root, 0.006)
         box_tie.rotation_euler.z = math.radians(8)
+        # Large, top-facing mark from the original four-view reference.
+        cube("Medical cap red cross vertical", (0, 0.035, 3.504),
+             (0.080, 0.245, 0.009), medical_red, root, 0.002)
+        cube("Medical cap red cross horizontal", (0, 0.035, 3.506),
+             (0.245, 0.080, 0.009), medical_red, root, 0.002)
     elif cook:
         sphere("Compact chef cap", (0, 0.055, 3.405), (0.31, 0.285, 0.155), fabric, root)
         cylinder("Chef cap folded band", (0, 0.02, 3.342), 0.288, 0.07, apron, root)
