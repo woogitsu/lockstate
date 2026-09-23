@@ -64,6 +64,10 @@ PALETTE = {
     "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
     "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
     "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
+    "book_cream": ((0.75, 0.66, 0.48, 1), 0.83),
+    "book_rust": ((0.45, 0.19, 0.10, 1), 0.84),
+    "book_olive": ((0.22, 0.29, 0.18, 1), 0.86),
+    "book_navy": ((0.09, 0.15, 0.23, 1), 0.87),
 }
 
 MODELS = (
@@ -88,6 +92,7 @@ MODELS = (
     ("furniture.medical.bed.single", (1, 2)),
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.library.bookshelf", (2, 1)),
 )
 
 
@@ -295,7 +300,33 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if asset_id == "furniture.kitchen.stove":
+    if asset_id == "furniture.library.bookshelf":
+        # Four-view concept: assets/source/concepts/bookshelf-multiview-v1.png.
+        # Two open, book-filled rows, three broad bays, and dark shelf voids
+        # remain legible when the 2x1 object is drawn at 128x64 world pixels.
+        box(collection, root, "Steel base plinth", (0, 0, 0.13), (1.88, 0.86, 0.25), "steel", 0.018)
+        box(collection, root, "Warm timber backing", (0, -0.015, 0.70), (1.76, 0.79, 0.11), "canteen_wood", 0.013)
+        for x in (-0.92, -0.32, 0.32, 0.92):
+            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.075, 0.89, 1.33), "canteen_steel", 0.016)
+            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.10, 0.90, 0.045), "galvanized_edge", 0.009)
+        for row, y in enumerate((-0.23, 0.22)):
+            box(collection, root, f"Dark open shelf.{row}", (0, y, 0.755), (1.77, 0.345, 0.095), "shade", 0.008)
+            box(collection, root, f"Timber shelf lip.{row}", (0, y + 0.19, 0.87), (1.79, 0.055, 0.14), "canteen_wood", 0.009)
+            for bay, centre in enumerate((-0.62, 0, 0.62)):
+                # Five individual spines per bay. Omitted volumes leave short
+                # dark gaps instead of an unbroken decorative stripe.
+                for slot, dx in enumerate((-0.22, -0.11, 0.0, 0.11, 0.22)):
+                    if (row, bay, slot) in ((0, 1, 3), (1, 0, 1), (1, 2, 4)):
+                        continue
+                    height = 0.27 + ((row * 7 + bay * 3 + slot * 2) % 4) * 0.035
+                    colour = ("book_cream", "book_rust", "book_olive", "book_navy")[(row + bay * 2 + slot) % 4]
+                    box(collection, root, f"Book.{row}.{bay}.{slot}", (centre + dx, y, 0.90 + height / 2),
+                        (0.085, 0.245, height), colour, 0.005)
+                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (centre + dx, y + 0.115, 0.90 + height),
+                        (0.065, 0.015, 0.012), "light", 0.002)
+        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "canteen_steel", 0.012)
+        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "canteen_steel", 0.012)
+    elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
         for x in (-0.82, 0.82):

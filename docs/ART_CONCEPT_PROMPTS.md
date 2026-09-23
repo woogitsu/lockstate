@@ -158,6 +158,18 @@ The resulting original reference and packed fabric swatch are recorded in
 The original reference and Blender model are recorded in
 `assets/source/concepts/medicine-cabinet-v1.md`.
 
+### Library — `furniture.library.bookshelf`
+
+> a 2×1 tile low institutional bookshelf, direct overhead plus three coherent
+> oblique views — blue-grey reinforced steel cheeks and uprights, warm timber
+> shelves, two open rows across three bays, irregular books with cream, rust,
+> olive and navy covers; keep some short empty gaps
+> …the two rows of individually colored book spines and the three bay dividers
+> must remain distinct at 128×64 px.
+
+The original concept and Blender model are recorded in
+`assets/source/concepts/bookshelf-v1.md`.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 For `furniture.kitchen.stove`, keep a commercial 2×1 cooker legible from above:

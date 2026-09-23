@@ -442,6 +442,33 @@
       }
     },
     {
+      "assetId": "furniture.library.bookshelf",
+      "image": "furniture.library.bookshelf.png",
+      "sha256": "71ed21db2df62db0ac30ed37f50e3ab2200caf77bd59566786f5f2511a3c5814",
+      "pixelSha256": "4125dd619252af9b88506e027ed4385b4e4394e0db5643b14ac6f9018d9d5b17",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 33,
+        "y": 19,
+        "width": 446,
+        "height": 218,
+        "opaquePixels": 97064
+      }
+    },
+    {
       "assetId": "furniture.medical.bed.single",
       "image": "furniture.medical.bed.single.png",
       "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",

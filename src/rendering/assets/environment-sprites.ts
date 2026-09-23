@@ -92,6 +92,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.chair',
   'env.object.dining-table',
   'env.object.stove',
+  'env.object.bookshelf',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -244,6 +245,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
+  },
+  'env.object.bookshelf': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.library.bookshelf',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Low institutional bookshelf with two open rows of books and three steel-framed bays. Drawn on object.bookshelf.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

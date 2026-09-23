@@ -514,6 +514,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.stove',
       tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
     },
+    {
+      label: 'bookshelf',
+      buildableId: 'bookshelf-wooden',
+      catalogueId: 'object.bookshelf',
+      expectedSpriteId: 'env.object.bookshelf',
+      tileOf: (fixture) => [fixture.bookshelfTileX, fixture.bookshelfTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

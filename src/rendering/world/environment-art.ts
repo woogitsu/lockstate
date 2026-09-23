@@ -266,7 +266,6 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bookshelf',
   'object.fridge',
   'object.loading-dock-door',
   'object.prep-counter',
@@ -333,6 +332,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.medical-bed': 'env.object.medical-bed',
   'object.medicine-cabinet': 'env.object.medicine-cabinet',
   'object.stove': 'env.object.stove',
+  'object.bookshelf': 'env.object.bookshelf',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
