@@ -433,14 +433,9 @@ test.describe('the environment artwork', () => {
    * **A third row, a storage rack, stood here from 2026-09-06 to 2026-09-07
    * and is not a fourth case that quietly vanished.** `object.storage-rack`
    * was reverted to the colour fallback (#1059, `environment-art.ts`'s
-   * `OBJECTS_ON_COLOUR_FALLBACK` docblock) once a playtest found its render
-   * reads as a flat grey seam at every zoom the game draws it at, not as
-   * storage furniture -- the same "reads as a blob, not the thing it names"
-   * bar the same pass had already refused for `object.chair`. With
-   * `objectSprite('object.storage-rack')` now `undefined`, this case would
-   * fail its own first assertion (`${catalogueId} is no longer mapped to
-   * artwork`) rather than exercise anything real, which is why it is removed
-   * rather than left red.
+   * `OBJECTS_ON_COLOUR_FALLBACK` docblock) once a playtest found its closed
+   * locker render read as a flat grey seam. The row below uses a new open
+   * wooden rack and must pass the same drawn-pixel test.
    */
   const RENDERED_OBJECT_CASES: readonly {
     readonly label: string;
@@ -476,6 +471,13 @@ test.describe('the environment artwork', () => {
       catalogueId: 'object.waste-bin',
       expectedSpriteId: 'env.object.waste-bin',
       tileOf: (fixture) => [fixture.wasteBinTileX, fixture.wasteBinTileY],
+    },
+    {
+      label: 'storage rack',
+      buildableId: 'storage-rack-wooden',
+      catalogueId: 'object.storage-rack',
+      expectedSpriteId: 'env.object.storage-rack',
+      tileOf: (fixture) => [fixture.storageRackTileX, fixture.storageRackTileY],
     },
   ];
 

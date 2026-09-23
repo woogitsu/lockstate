@@ -75,13 +75,9 @@ export interface HarnessWorldFixture {
    * publishing lane (#1020) sits beside it: `deskTileX`/`Y`, far enough apart
    * that the two footprints do not touch.
    *
-   * **A third pair, `storageRackTileX`/`Y`, stood here from 2026-09-06 to
-   * 2026-09-07** for `object.storage-rack`, which joined the fallback in the
-   * same #1020 pass and left it again the next day (#1059) once a playtest
-   * found its render illegible at every zoom -- see
-   * `environment-art.spec.ts`'s note on `RENDERED_OBJECT_CASES`. Removed
-   * along with the fixture structure that used it rather than left standing
-   * with nothing reading it.
+   * `storageRackTileX`/`Y` stood here briefly in 2026-09-06, then left when
+   * the closed-locker render proved illegible as a rack (#1059). The current
+   * pair tests a purpose-built open wooden rack.
    */
   readonly benchTileX: number;
   readonly benchTileY: number;
@@ -91,6 +87,8 @@ export interface HarnessWorldFixture {
   readonly showerTileY: number;
   readonly wasteBinTileX: number;
   readonly wasteBinTileY: number;
+  readonly storageRackTileX: number;
+  readonly storageRackTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

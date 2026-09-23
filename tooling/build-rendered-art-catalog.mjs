@@ -68,6 +68,9 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  * list follows that file rather than the other way round, so it shrank back
  * to three the moment the sprite registry did, and a fourth object gets a row
  * here only once it has one there again.
+ *
+ * **2026-09-23:** The storage rack returns with its own open-shelf model,
+ * `furniture.storage.rack.wooden`; the closed locker remains unpublished.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -89,6 +92,7 @@ export const PUBLISHED_ASSET_IDS = [
   'fixture.shower.head',
   'furniture.corridor.bench.variants',
   'furniture.office.desk.employee.variants',
+  'furniture.storage.rack.wooden',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));
