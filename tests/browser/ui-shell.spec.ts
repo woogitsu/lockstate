@@ -3848,6 +3848,30 @@ test.describe('the Rooms panel', () => {
     await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
   });
 
+  test('shows every room minimum in its catalogue row before that room is selected', async ({ page }) => {
+    const rows = await page.locator('.hud-rooms__rows [data-room]').evaluateAll((elements) =>
+      elements.map((row) => ({
+        room: (row as HTMLElement).dataset['room'],
+        minimum: row.querySelector('.hud-rooms__row-minimum')?.textContent,
+      })),
+    );
+    expect(rows).toEqual([
+      { room: 'room.cell', minimum: '2 × 3' },
+      { room: 'room.canteen', minimum: '6 × 6' },
+      { room: 'room.yard', minimum: '8 × 8' },
+    ]);
+    expect(await page.locator('.hud-rooms__rows [data-room="room.yard"]').getAttribute('aria-checked')).toBe('false');
+    await page.setViewportSize({ width: 375, height: 812 });
+    const yardMinimum = page.locator('.hud-rooms__rows [data-room="room.yard"] .hud-rooms__row-minimum');
+    await yardMinimum.scrollIntoViewIfNeeded();
+    const fitsRow = await yardMinimum.evaluate((element) => {
+      const minimum = element.getBoundingClientRect();
+      const row = element.parentElement?.getBoundingClientRect();
+      return row !== undefined && minimum.width > 0 && minimum.left >= row.left && minimum.right <= row.right;
+    });
+    expect(fitsRow, 'the yard minimum remains readable on a narrow screen').toBe(true);
+  });
+
   /**
    * The swatch (#1021). Two prior passes (ADR 0098/#1032, #1038's playtest)
    * had found `HudRoomViewModel.tint` computed and read by nothing at all --

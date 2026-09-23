@@ -4533,6 +4533,15 @@
   border-radius: var(--radius-sm);
 }
 
+/* One short dimension beside every room name, visible before selection.
+   It shares the row's height and yields width to its clipped name. */
+.hud-rooms__row-minimum {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 /*
  * The typed route to a rectangle, inside the one box that can pay for it
  * (#411).

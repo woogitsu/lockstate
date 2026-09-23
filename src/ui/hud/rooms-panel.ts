@@ -788,6 +788,22 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     const labelElement = row.element.querySelector('.ui-row__label');
     row.element.insertBefore(swatch, labelElement);
 
+    // Keep the floor visible while the player compares rooms, before a room
+    // has been selected and its longer rule appears below the catalogue.
+    if (room.minimum !== undefined) {
+      const minimum = element('span', {
+        className: 'hud-rooms__row-minimum',
+        text: `${room.minimum.width} × ${room.minimum.height}`,
+        attributes: {
+          'aria-label': t(HUD_MESSAGE_KEY.roomsMinimum, {
+            width: room.minimum.width,
+            height: room.minimum.height,
+          }),
+        },
+      });
+      row.element.append(minimum);
+    }
+
     rows.set(room.roomId, row);
     catalogueRows.append(row.element);
   }
