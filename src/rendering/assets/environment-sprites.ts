@@ -327,14 +327,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'fixture.shower.head',
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Wall-mounted shower fixture with a perforated circular head, modelled for the 1x1 object.shower-head footprint.',
+    note: 'Wall-mounted shower fixture with a perforated circular head, modelled for the 1×1 object.shower-head footprint.',
   },
   'env.object.waste-bin': {
     kind: 'rendered-art',
     renderedArtId: 'fixture.cell.waste_bin',
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Open institutional waste bin with a pale rim and foot pedal, modelled for the 1x1 object.waste-bin footprint.',
+    note: 'Open institutional waste bin with a pale rim and foot pedal, modelled for the 1×1 object.waste-bin footprint.',
   },
   /*
    * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,
