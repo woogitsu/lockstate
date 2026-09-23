@@ -336,8 +336,8 @@
     {
       "assetId": "furniture.chair.wooden",
       "image": "furniture.chair.wooden.png",
-      "sha256": "3529bb7a98194cb6ce3dfe73a1c132c48a260e59caef4261ead61c9243e10b5f",
-      "pixelSha256": "79e91eff7a518d0710477649728eb3cd1e019ed016476d744b74c8d4508f6550",
+      "sha256": "d407f2efedfda63b86d46c0393340436fdf1cd5ccf5b6d54a18ae345b2a34967",
+      "pixelSha256": "46690289a6a9687913ba89c61d9e8259202d0d59b3b343d9b53aa5ed0315e9ee",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -353,11 +353,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 35,
-        "y": 34,
-        "width": 186,
-        "height": 203,
-        "opaquePixels": 30222
+        "x": 34,
+        "y": 33,
+        "width": 188,
+        "height": 204,
+        "opaquePixels": 32689
       }
     },
     {
@@ -471,8 +471,8 @@
     {
       "assetId": "furniture.storage.rack.wooden",
       "image": "furniture.storage.rack.wooden.png",
-      "sha256": "21d21c4dedec75b43f2a5b07fb48565d056a1e50e183462a3386009161ee75e7",
-      "pixelSha256": "4a26de5b01d25c50cfdd05ff9275c100baa1e85d27998b6ff11035a098e7c04c",
+      "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",
+      "pixelSha256": "ffa9148f12cb361a0d0a73c2187cc41ea8fb87475f4055bcbe42800e58c5d994",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -488,11 +488,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 21,
-        "y": 26,
-        "width": 214,
-        "height": 208,
-        "opaquePixels": 35810
+        "x": 14,
+        "y": 23,
+        "width": 228,
+        "height": 210,
+        "opaquePixels": 38829
       }
     },
     {

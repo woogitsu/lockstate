@@ -137,6 +137,23 @@ def canteen_steel_material():
     return item
 
 
+def chair_seat_material():
+    texture_path = ROOT / "assets/source/textures/wooden-chair-seat-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Wooden chair seat texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Worn chair seat planks", (0.47, 0.27, 0.10, 1), 0.80)
+    nodes = item.node_tree.nodes
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    item.node_tree.links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    item.node_tree.links.new(texture.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
 def move_to_collection(item, collection):
     for current in list(item.users_collection):
         current.objects.unlink(item)
@@ -188,32 +205,53 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Blanket", (0, 0.56, 0.695), (0.82, 0.56, 0.05), "blanket", 0.03)
         box(collection, root, "Pillow", (0, -0.62, 0.735), (0.64, 0.34, 0.13), "light", 0.06)
     elif asset_id == "furniture.storage.rack.wooden":
-        # Open cubbies, not the solid locker once mistaken for this object.
-        # Three separate shelves and their contents carry the silhouette at
-        # the 64 px in-game scale; the dark gaps are intentional negative space.
+        # The multiview concept in assets/source/concepts/ shows open shelf
+        # gaps, worn timber and bolted steel corners. From above the shelf
+        # boards, different stored goods and dark gaps must stay separate at
+        # the game's 1x1-tile size; a closed panel would repeat the old locker
+        # failure that sent this object back to a colour slab.
         for x in (-0.43, 0.43):
-            box(collection, root, f"Side post.{x}", (x, 0, 0.68), (0.07, 0.88, 1.36), "wood", 0.012)
-        box(collection, root, "Back rail", (0, 0.43, 1.24), (0.79, 0.06, 0.13), "steel", 0.008)
-        for index_shelf, y in enumerate((-0.28, 0, 0.28)):
-            box(collection, root, f"Shelf.{index_shelf}", (0, y, 1.19), (0.79, 0.20, 0.09), "wood", 0.01)
-        box(collection, root, "North crate", (-0.19, -0.28, 1.30), (0.26, 0.13, 0.14), "green", 0.012)
-        box(collection, root, "North bundle", (0.19, -0.28, 1.28), (0.25, 0.13, 0.10), "linen", 0.012)
-        box(collection, root, "Middle crate", (0.08, 0, 1.31), (0.36, 0.13, 0.16), "blue", 0.012)
-        box(collection, root, "South bundle", (-0.17, 0.28, 1.28), (0.29, 0.13, 0.10), "linen", 0.012)
-        box(collection, root, "South crate", (0.20, 0.28, 1.30), (0.20, 0.13, 0.14), "green", 0.012)
+            for y in (-0.39, 0.39):
+                box(collection, root, f"Corner post.{x}.{y}", (x, y, 0.68), (0.08, 0.08, 1.36), "canteen_wood", 0.012)
+                box(collection, root, f"Steel corner cap.{x}.{y}", (x, y, 1.36), (0.13, 0.13, 0.07), "canteen_steel", 0.012)
+                cylinder(collection, root, f"Corner bolt.{x}.{y}", (x, y, 1.402), 0.018, 0.012, "light", 12)
+        box(collection, root, "Rear brace", (0, 0.43, 0.96), (0.83, 0.045, 0.16), "canteen_steel", 0.008)
+        # The shelves descend towards the viewer. A straight-down camera can
+        # then see all three, while an oblique view still shows plausible
+        # distinct tiers instead of three boards floating at one height.
+        for index_shelf, (y, height) in enumerate(((-0.29, 1.17), (0, 0.83), (0.29, 0.49))):
+            box(collection, root, f"Worn shelf.{index_shelf}", (0, y, height), (0.81, 0.24, 0.085), "canteen_wood", 0.012)
+            box(collection, root, f"Shelf lip.{index_shelf}", (0, y + 0.13, height - 0.02), (0.81, 0.025, 0.05), "canteen_steel", 0.006)
+        # Unequal crates and folded bundles, with visible openings and bands.
+        box(collection, root, "North wooden crate", (-0.19, -0.29, 1.29), (0.27, 0.12, 0.16), "canteen_wood", 0.009)
+        box(collection, root, "North crate handle", (-0.19, -0.29, 1.377), (0.10, 0.025, 0.006), "shade", 0)
+        for index_fold, y in enumerate((-0.315, -0.265)):
+            box(collection, root, f"North folded blanket.{index_fold}", (0.19, y, 1.27 + index_fold * 0.035), (0.25, 0.07, 0.06), "green", 0.013)
+        box(collection, root, "North bundle strap", (0.19, -0.29, 1.352), (0.045, 0.14, 0.015), "canteen_steel", 0.003)
+        box(collection, root, "Middle steel toolbox", (-0.15, 0, 0.96), (0.29, 0.13, 0.17), "canteen_steel", 0.010)
+        box(collection, root, "Toolbox clasp", (-0.15, 0, 1.052), (0.05, 0.03, 0.010), "light", 0.003)
+        box(collection, root, "Middle carton", (0.20, 0, 0.94), (0.23, 0.12, 0.13), "linen", 0.008)
+        box(collection, root, "South carton", (-0.19, 0.29, 0.59), (0.25, 0.12, 0.13), "linen", 0.008)
+        for index_fold, y in enumerate((0.265, 0.315)):
+            box(collection, root, f"South folded bundle.{index_fold}", (0.18, y, 0.58 + index_fold * 0.035), (0.26, 0.07, 0.055), "light", 0.012)
+        box(collection, root, "South bundle strap", (0.18, 0.29, 0.66), (0.045, 0.15, 0.014), "canteen_steel", 0.003)
     elif asset_id == "furniture.chair.wooden":
-        # A chair must keep its back, seat and legs separate at 64 px. The
-        # older visitor-chair render was only a cushion-shaped blob when drawn
-        # in the game, so this one has a broad slatted back and splayed feet.
+        # The four-view concept supplies worn timber seat boards, two open
+        # back slats and a steel frame. The silhouette is still assembled for
+        # a 1x1 tile: back, seat and front feet must be distinct at 64 px.
         for x in (-0.30, 0.30):
-            box(collection, root, f"Back post.{x}", (x, -0.34, 0.63), (0.075, 0.08, 1.22), "wood", 0.01)
-        for index_slat, y in enumerate((-0.38, -0.29, -0.20)):
-            box(collection, root, f"Back slat.{index_slat}", (0, y, 1.12), (0.63, 0.055, 0.09), "wood", 0.01)
-        box(collection, root, "Seat frame", (0, 0.13, 0.50), (0.68, 0.62, 0.12), "wood", 0.025)
-        box(collection, root, "Seat cushion", (0, 0.13, 0.57), (0.55, 0.47, 0.035), "linen", 0.035)
+            box(collection, root, f"Steel back post.{x}", (x, -0.34, 0.63), (0.08, 0.09, 1.26), "canteen_steel", 0.012)
+            box(collection, root, f"Back foot.{x}", (x, -0.34, 0.02), (0.13, 0.14, 0.04), "steel", 0.009)
+        for index_slat, y in enumerate((-0.38, -0.25)):
+            box(collection, root, f"Worn back slat.{index_slat}", (0, y, 1.13), (0.67, 0.065, 0.10), "canteen_wood", 0.015)
+        box(collection, root, "Seat steel frame", (0, 0.12, 0.50), (0.72, 0.66, 0.12), "canteen_steel", 0.028)
+        box(collection, root, "Wooden seat", (0, 0.12, 0.58), (0.63, 0.56, 0.055), "chair_wood", 0.035)
         for x in (-0.34, 0.34):
-            box(collection, root, f"Front leg.{x}", (x, 0.40, 0.25), (0.085, 0.09, 0.50), "wood", 0.012)
-            box(collection, root, f"Foot tip.{x}", (x, 0.40, 0.015), (0.12, 0.14, 0.03), "shade", 0.01)
+            box(collection, root, f"Steel front leg.{x}", (x, 0.40, 0.25), (0.09, 0.10, 0.50), "canteen_steel", 0.012)
+            box(collection, root, f"Front foot.{x}", (x, 0.40, 0.02), (0.13, 0.14, 0.04), "steel", 0.009)
+        for x in (-0.26, 0.26):
+            for y in (-0.08, 0.32):
+                cylinder(collection, root, f"Seat bolt.{x}.{y}", (x, y, 0.615), 0.018, 0.010, "canteen_steel", 12)
     elif asset_id == "furniture.dining.table.wooden":
         # Modelled from assets/source/concepts/dining-table-multiview-v2.png:
         # a continuous worn timber top, bolted steel rim and three fixed
@@ -428,6 +466,7 @@ def main():
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["canteen_wood"] = canteen_wood_material()
     MATERIALS["canteen_steel"] = canteen_steel_material()
+    MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT))

@@ -417,6 +417,10 @@ hash, atlas and LFS checks. The material images themselves are fixed inputs,
 not reproducible from their prompts; with those inputs committed, two local
 Blender 5.2.1 renders produced identical PNG bytes. The old sentence about
 "no textures anywhere" describes the 2026-09-06 set, not this later model.
+The storage rack and wooden chair were then rebuilt against their own
+four-view references, reusing the packed wood and steel materials; the chair
+also has a fixed seat material under `assets/source/textures/`. Their runtime
+PNGs likewise come only from Blender.
 
 **Blender needs an EGL library even in `--background`.** On a container without
 one, every render fails with `Couldn't open libEGL.so.1` before writing
