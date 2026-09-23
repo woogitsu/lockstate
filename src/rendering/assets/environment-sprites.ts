@@ -88,6 +88,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.waste-bin',
   'env.object.storage-rack',
   'env.object.chair',
+  'env.object.dining-table',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -351,6 +352,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Wooden chair with three separated back slats, a framed seat and visible front feet, drawn on object.chair.',
+  },
+  'env.object.dining-table': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.dining.table.wooden',
+    runtimeSizePx: { width: 384, height: 256 },
+    quarterTurns: 0,
+    note: 'Wooden canteen table with three fixed stools and place settings, matching the three dining places on object.dining-table.',
   },
   /*
    * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,

@@ -388,6 +388,33 @@
       }
     },
     {
+      "assetId": "furniture.dining.table.wooden",
+      "image": "furniture.dining.table.wooden.png",
+      "sha256": "a0a5c71dad16f2df4fa8e81fd86eec0cdfe402a0ffc59724166f907ac46574cf",
+      "pixelSha256": "45cb8961dea560db9c01b55c4ffad3c28a0b9bc6fd6d6eff58cf01c07d719d0c",
+      "footprintTiles": {
+        "width": 3.0,
+        "height": 2.0
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 2.24
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 768,
+        "height": 512
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 65,
+        "y": 65,
+        "width": 638,
+        "height": 407,
+        "opaquePixels": 198884
+      }
+    },
+    {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
       "sha256": "70767a391cbec4bbb8f2aeddf099087fe643a5815ca5f85cff7a6fd0eed6c82d",

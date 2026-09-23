@@ -73,6 +73,8 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  * `furniture.storage.rack.wooden`; the closed locker remains unpublished.
  * `object.chair` now uses a separate slatted-back wooden model, not the
  * cushion-only visitor-chair render rejected by the same legibility pass.
+ * The 3x2 canteen table is a separate model with three seats; the existing
+ * 2x1 cell table-and-stool collection does not describe that buildable.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -94,6 +96,7 @@ export const PUBLISHED_ASSET_IDS = [
   'fixture.shower.head',
   'furniture.chair.wooden',
   'furniture.corridor.bench.variants',
+  'furniture.dining.table.wooden',
   'furniture.office.desk.employee.variants',
   'furniture.storage.rack.wooden',
 ];

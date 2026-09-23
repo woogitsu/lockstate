@@ -80,6 +80,7 @@ MODELS = (
     ("fixture.cell.waste_bin", (1, 1)),
     ("furniture.storage.rack.wooden", (1, 1)),
     ("furniture.chair.wooden", (1, 1)),
+    ("furniture.dining.table.wooden", (3, 2)),
 )
 
 
@@ -174,6 +175,20 @@ def furniture(collection, root, asset_id):
         for x in (-0.34, 0.34):
             box(collection, root, f"Front leg.{x}", (x, 0.40, 0.25), (0.085, 0.09, 0.50), "wood", 0.012)
             box(collection, root, f"Foot tip.{x}", (x, 0.40, 0.015), (0.12, 0.14, 0.03), "shade", 0.01)
+    elif asset_id == "furniture.dining.table.wooden":
+        # Three fixed seats match the simulation's three dining places. A
+        # broad top, separated place settings and visible stool circles must
+        # read as a canteen table when reduced to its 3x2 tile footprint.
+        box(collection, root, "Table underframe", (0, -0.27, 0.66), (2.66, 0.96, 0.12), "steel", 0.025)
+        for x in (-1.13, 1.13):
+            box(collection, root, f"Table leg.{x}", (x, -0.27, 0.34), (0.13, 0.74, 0.68), "steel", 0.02)
+        box(collection, root, "Wooden tabletop", (0, -0.27, 0.76), (2.78, 1.12, 0.12), "wood", 0.045)
+        box(collection, root, "Table edge band", (0, 0.23, 0.805), (2.64, 0.055, 0.025), "shade", 0.006)
+        for index, x in enumerate((-0.88, 0, 0.88)):
+            box(collection, root, f"Place mat.{index}", (x, -0.20, 0.833), (0.66, 0.56, 0.018), "blue", 0.025)
+            cylinder(collection, root, f"Plate.{index}", (x, -0.20, 0.849), 0.19, 0.018, "porcelain", 32)
+            cylinder(collection, root, f"Stool base.{index}", (x, 0.68, 0.27), 0.075, 0.54, "steel")
+            cylinder(collection, root, f"Stool seat.{index}", (x, 0.68, 0.57), 0.26, 0.10, "wood", 32)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which

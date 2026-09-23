@@ -486,6 +486,13 @@ test.describe('the environment artwork', () => {
       expectedSpriteId: 'env.object.chair',
       tileOf: (fixture) => [fixture.chairTileX, fixture.chairTileY],
     },
+    {
+      label: 'dining table',
+      buildableId: 'dining-table-wooden',
+      catalogueId: 'object.dining-table',
+      expectedSpriteId: 'env.object.dining-table',
+      tileOf: (fixture) => [fixture.diningTableTileX, fixture.diningTableTileY],
+    },
   ];
 
   for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {

@@ -261,10 +261,12 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * A new wooden chair likewise replaces the rejected cushion-only visitor
  * render: the back slats, seat frame and front feet are distinct in its frame.
  * The older chair finding above remains the reason this new model was needed.
+ * The dining table also leaves the fallback: its new 3x2 render shows three
+ * fixed stools, matching the simulation's three dining places, rather than
+ * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
-  'object.dining-table',
   'object.fridge',
   'object.loading-dock-door',
   'object.medical-bed',
@@ -338,6 +340,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.waste-bin': 'env.object.waste-bin',
   'object.storage-rack': 'env.object.storage-rack',
   'object.chair': 'env.object.chair',
+  'object.dining-table': 'env.object.dining-table',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

@@ -82,6 +82,8 @@ const FIXTURE: HarnessWorldFixture = {
   storageRackTileY: 4,
   chairTileX: 22,
   chairTileY: 4,
+  diningTableTileX: 24,
+  diningTableTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -210,6 +212,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'chair-wooden',
       tileX: FIXTURE.chairTileX,
       tileY: FIXTURE.chairTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-dining-table',
+      definitionId: 'dining-table-wooden',
+      tileX: FIXTURE.diningTableTileX,
+      tileY: FIXTURE.diningTableTileY,
       phase: 'built',
     },
   ];

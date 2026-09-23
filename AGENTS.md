@@ -668,6 +668,21 @@ outward-facing or unrevertable, which is the whole reason:
    - `public/game-content/source-art/rendered.furniture.chair.wooden.*.png`
 
    No other CI line, job, workflow or asset id is released by this decision.
+
+   **A FOURTH NARROW RELEASE ON 2026-09-23, FOR THE DINING TABLE.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko ten
+   glob"* or *"Nie — pozostaw tę partię na gałęzi"*. They chose:
+
+   > Tak — dopisz tylko ten glob
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner. It authorises exactly one comma-separated
+   segment on the `browser` job's existing `git lfs pull --include=` line in
+   `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.furniture.dining.table.wooden.*.png`
+
+   No other CI line, job, workflow or asset id is released by this decision.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
