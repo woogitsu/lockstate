@@ -363,8 +363,8 @@
     {
       "assetId": "furniture.corridor.bench.variants",
       "image": "furniture.corridor.bench.variants.png",
-      "sha256": "4afd4a1258e75bade1daa19094c74043843b348cc5d6992c7b1c29a708434737",
-      "pixelSha256": "dcaf055ea8a7607369db154a26056cdfb4d226ba4888b4ec453e5e7da62c1855",
+      "sha256": "148d604970b3a2a08003c264f7bf9610506d0d3d20f16101c9a9a80860708ed8",
+      "pixelSha256": "ba66488bd4c0a673a03c35e1bf6847a2a0bd84667b45a7d65b91194ebdd90b02",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -380,11 +380,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 54,
-        "y": 77,
-        "width": 404,
-        "height": 102,
-        "opaquePixels": 36713
+        "x": 47,
+        "y": 42,
+        "width": 418,
+        "height": 172,
+        "opaquePixels": 65470
       }
     },
     {

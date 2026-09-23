@@ -141,6 +141,26 @@ def canteen_wood_material():
     return item
 
 
+def corridor_bench_wood_material():
+    """Pack the multiview-concept wood swatch into the reproducible scene."""
+    texture_path = ROOT / "assets/source/textures/corridor-bench-wood-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Corridor bench wood texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Corridor bench worn wood", (0.48, 0.27, 0.11, 1), 0.76)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
 def canteen_steel_material():
     texture_path = ROOT / "assets/source/textures/dining-table-steel-v1.png"
     if not texture_path.is_file():
@@ -326,12 +346,19 @@ def furniture(collection, root, asset_id):
             cylinder(collection, root, f"Stool.{x}", (x, 0, 0.5), 0.22, 0.1, "wood")
             cylinder(collection, root, f"Stool base.{x}", (x, 0, 0.23), 0.06, 0.44, "steel")
     elif "bench" in asset_id:
-        # Three slats with gaps: the gaps are the only thing that reads from
-        # above, and one plank read as a shelf.
-        for index, y in enumerate((-0.15, 0.0, 0.15)):
-            box(collection, root, f"Slat.{index}", (0, y, 0.54), (1.76, 0.12, 0.06), "wood", 0.02)
-        for x in (-0.7, 0.7):
-            box(collection, root, f"Leg.{x}", (x, 0, 0.26), (0.08, 0.44, 0.52), "steel", 0.02)
+        # Four-view source: assets/source/concepts/corridor-bench-multiview-v2.png.
+        # Slat gaps and exposed corner fasteners remain visible in the game view.
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Steel seat bearer.{x}", (x, 0, 0.48), (0.095, 0.74, 0.075), "canteen_steel", 0.012)
+            for y in (-0.26, 0.26):
+                box(collection, root, f"Anchor plate.{x}.{y}", (x, y, 0.032), (0.25, 0.19, 0.064), "steel", 0.012)
+                box(collection, root, f"Angled support.{x}.{y}", (x, y * 0.55, 0.27), (0.075, 0.08, 0.43), "canteen_steel", 0.012)
+                cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.026, 0.016, "galvanized_edge", 12)
+        box(collection, root, "Lower steel tie", (0, 0, 0.24), (1.50, 0.055, 0.055), "canteen_steel", 0.008)
+        for index, y in enumerate((-0.27, -0.09, 0.09, 0.27)):
+            box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.075), "bench_wood", 0.022)
+            for x in (-0.79, 0.79):
+                cylinder(collection, root, f"Seat bolt.{index}.{x}", (x, y, 0.613), 0.023, 0.011, "galvanized_edge", 12)
     elif "desk" in asset_id or "reception" in asset_id:
         length = 2.7 if "reception" in asset_id else 1.7
         box(collection, root, "Counter", (0, 0, 0.92), (length, 0.72, 0.1), "wood", 0.03)
@@ -525,6 +552,7 @@ def main():
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["canteen_wood"] = canteen_wood_material()
+    MATERIALS["bench_wood"] = corridor_bench_wood_material()
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
