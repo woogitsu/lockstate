@@ -742,22 +742,28 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"South folded bundle.{index_fold}", (0.18, y, 0.58 + index_fold * 0.035), (0.26, 0.07, 0.055), "light", 0.012)
         box(collection, root, "South bundle strap", (0.18, 0.29, 0.66), (0.045, 0.15, 0.014), "canteen_steel", 0.003)
     elif asset_id == "furniture.chair.wooden":
-        # The four-view concept supplies worn timber seat boards, two open
-        # back slats and a steel frame. The silhouette is still assembled for
-        # a 1x1 tile: back, seat and front feet must be distinct at 64 px.
-        for x in (-0.30, 0.30):
-            box(collection, root, f"Steel back post.{x}", (x, -0.34, 0.63), (0.08, 0.09, 1.26), "canteen_steel", 0.012)
-            box(collection, root, f"Back foot.{x}", (x, -0.34, 0.02), (0.13, 0.14, 0.04), "steel", 0.009)
-        for index_slat, y in enumerate((-0.38, -0.25)):
-            box(collection, root, f"Worn back slat.{index_slat}", (0, y, 1.13), (0.67, 0.065, 0.10), "canteen_wood", 0.015)
-        box(collection, root, "Seat steel frame", (0, 0.12, 0.50), (0.72, 0.66, 0.12), "canteen_steel", 0.028)
-        box(collection, root, "Wooden seat", (0, 0.12, 0.58), (0.63, 0.56, 0.055), "chair_wood", 0.035)
-        for x in (-0.34, 0.34):
-            box(collection, root, f"Steel front leg.{x}", (x, 0.40, 0.25), (0.09, 0.10, 0.50), "canteen_steel", 0.012)
-            box(collection, root, f"Front foot.{x}", (x, 0.40, 0.02), (0.13, 0.14, 0.04), "steel", 0.009)
-        for x in (-0.26, 0.26):
-            for y in (-0.08, 0.32):
-                cylinder(collection, root, f"Seat bolt.{x}.{y}", (x, y, 0.615), 0.018, 0.010, "canteen_steel", 12)
+        # The v3 four-view concept keeps the air gaps readable from above.
+        # Three separate boards and two separate back planks avoid a flat tile.
+        for x in (-0.32, 0.32):
+            cylinder(collection, root, f"Rear tubular post.{x}", (x, -0.42, 0.64), 0.040, 1.28, "canteen_steel", 16)
+            cylinder(collection, root, f"Rear rubber foot.{x}", (x, -0.42, 0.035), 0.066, 0.07, "shade", 16)
+            cylinder(collection, root, f"Front tubular leg.{x}", (x, 0.43, 0.27), 0.043, 0.54, "canteen_steel", 16)
+            cylinder(collection, root, f"Front rubber foot.{x}", (x, 0.43, 0.035), 0.068, 0.07, "shade", 16)
+            box(collection, root, f"Side steel bearer.{x}", (x, 0.11, 0.49), (0.070, 0.67, 0.085), "canteen_steel", 0.018)
+        box(collection, root, "Steel rear seat tie", (0, -0.22, 0.47), (0.65, 0.055, 0.065), "canteen_steel", 0.018)
+        box(collection, root, "Steel front seat tie", (0, 0.40, 0.47), (0.65, 0.055, 0.065), "canteen_steel", 0.018)
+        for index, y in enumerate((-0.075, 0.13, 0.335)):
+            box(collection, root, f"Individual walnut seat plank.{index}", (0, y, 0.56),
+                (0.63, 0.185, 0.070), f"bench_wood_{index}", 0.027)
+            for x in (-0.26, 0.26):
+                cylinder(collection, root, f"Recessed seat rivet.{index}.{x}",
+                    (x, y, 0.601), 0.014, 0.008, "canteen_steel", 12)
+        for index, (z, y) in enumerate(((1.15, -0.49), (1.00, -0.34))):
+            box(collection, root, f"Separated walnut back plank.{index}",
+                (0, y, z), (0.64, 0.075, 0.105), f"bench_wood_{index + 1}", 0.026)
+            for x in (-0.27, 0.27):
+                cylinder(collection, root, f"Back plank rivet.{index}.{x}",
+                    (x, y, z + 0.057), 0.014, 0.008, "canteen_steel", 12)
     elif asset_id == "furniture.dining.table.wooden":
         # Modelled from assets/source/concepts/dining-table-multiview-v2.png:
         # a continuous worn timber top, bolted steel rim and three fixed

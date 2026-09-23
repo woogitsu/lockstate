@@ -336,28 +336,28 @@
     {
       "assetId": "furniture.chair.wooden",
       "image": "furniture.chair.wooden.png",
-      "sha256": "d407f2efedfda63b86d46c0393340436fdf1cd5ccf5b6d54a18ae345b2a34967",
-      "pixelSha256": "46690289a6a9687913ba89c61d9e8259202d0d59b3b343d9b53aa5ed0315e9ee",
+      "sha256": "628022aca4d9840a29ce9b48d7c6bf3d01538215b0a6083a703a08605dfaf5f7",
+      "pixelSha256": "138f168e0334284a893536d16a8cba7e712d0e2701c1ee4a48376167b65ed6b4",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.12,
-        "height": 1.12
+        "width": 1.1816,
+        "height": 1.1816
       },
-      "overhangsFootprint": false,
+      "overhangsFootprint": true,
       "sizePx": {
         "width": 256,
         "height": 256
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 34,
-        "y": 33,
-        "width": 188,
-        "height": 204,
-        "opaquePixels": 32689
+        "x": 43,
+        "y": 13,
+        "width": 170,
+        "height": 224,
+        "opaquePixels": 29334
       }
     },
     {

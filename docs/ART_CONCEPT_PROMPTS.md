@@ -344,3 +344,10 @@ the exact prompt that produced the delivery's single 1536×1024 world
 illustration. It is the model for the shape of a prompt here, and the
 illustration itself stays a reference with nothing cut out of it — the other
 half of the same ruling.
+
+### Wooden chair refinement — `furniture.chair.wooden`
+
+The 1×1 institutional chair now has three separate walnut seat boards, two
+back planks with an overhead air gap, steel support tubes and dark feet. The
+four-view concept and model decisions are recorded in
+`assets/source/concepts/chair-v3.md`.
