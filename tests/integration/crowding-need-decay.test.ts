@@ -179,7 +179,7 @@ describe('a prison over its beds pays for it through the withhold it already has
     expect(housedUnmet(runtime, 'safety')).toBe(0);
     expect(income.every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).conditions).not.toContain('prisoners.overcrowded');
-    expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageStretched);
+    expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageReserveShort);
   });
 
   it('carries 117% of its beds at no cost to safety, because full coverage keeps pace with the extra decay', () => {

@@ -3321,15 +3321,22 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * (the ceiling constant), not a separate owner choice**: the ruling
    * accepted decision 1 and named neither, so its open question 1 is open.
    *
-   * ## "Stretched" / the badge
+   * ## "Tight" / the badge
    *
    * A word for a state that is neither failure nor sufficiency, which is what
    * decision 1 asks of this rung: *"It must not read as a failure -- the
    * posts really are filled -- and it must not read as sufficiency either."*
-   * Toned `'caution'`, below `Understaffed`'s `'warning'`. Nine characters,
-   * between "Covered" (7) and "Overcrowded" (11), both of which already stand
-   * on the strip's `COVERAGE` badge; measured in
-   * `tests/browser/ui-strip-badged-width.spec.ts`.
+   * Toned `'caution'`, below `Understaffed`'s `'warning'`.
+   *
+   * **It was first authored as "Stretched", and a measurement refused it.**
+   * `tests/browser/ui-strip-badged-width.spec.ts` measured an ordinary
+   * populated prison's nine chips at **1248.8px** in a 1256px row at 1280x800
+   * on 2026-09-23 (7.2px of slack), and that prison is on this rung whenever
+   * fewer than five guards are free -- the commonest state there is.
+   * "Stretched" measured **1257.4px**, a chip off the row at 1280 by 1.4px,
+   * which the strip budget does not allow. "Tight" measures **1229.9px**,
+   * shorter than "Covered", so the rung costs the row nothing, and it says the
+   * same thing: every post held, no slack.
    *
    * ## "Hire {count} more to answer the worst riot." / the panel hint
    *
@@ -3372,16 +3379,16 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * ## The description, on the `COVERAGE` chip
    *
    * The chip's `title` and screen-reader text while its badge reads
-   * "Stretched". No figure, because the chip learns the rung from
+   * "Tight". No figure, because the chip learns the rung from
    * `PrisonCondition`, which carries names and no magnitude; the count is on
    * the Staff panel. *"Every post is staffed"*: `shortage <= 0` with
    * `assigned > 0`, where `assigned` counts guards on post **and** walking to
    * it, hence *staffed* rather than *manned*. *"too few guards are free to
    * answer the worst riot"*: `spare < reserve`, argued above.
    */
-  'hud.security.coverage-stretched': 'Stretched',
-  'hud.security.coverage-stretched-hint': 'Hire {count} more to answer the worst riot.',
-  'hud.security.coverage-stretched-description':
+  'hud.security.coverage-reserve-short': 'Tight',
+  'hud.security.coverage-reserve-short-hint': 'Hire {count} more to answer the worst riot.',
+  'hud.security.coverage-reserve-short-description':
     'Every post is staffed, but too few guards are free to answer the worst riot.',
   /*
    * The owner's chosen wording of 2026-09-03, verbatim, and it is on the

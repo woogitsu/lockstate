@@ -331,7 +331,7 @@ export function formatHeldGuardText(
  * the list above is kept as the three it was.** A fourth rung sits between the
  * last two:
  *
- * - **Stretched** (`caution`): every post is filled, and fewer guards are free
+ * - **Tight** (`caution`): every post is filled, and fewer guards are free
  *   than the worst incident needs -- `spare < reserve`, both published by
  *   `projectStaff` (`StaffViewModel.totals`). `Covered` is now the prison that
  *   has its posts **and** that reserve.
@@ -530,8 +530,8 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
   ) {
     return {
       tone: 'caution',
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageStretched,
-      hintKey: HUD_MESSAGE_KEY.securityCoverageStretchedHint,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
       hireCount: coverage.reserve - coverage.spare,
     };
   }

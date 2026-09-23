@@ -523,18 +523,18 @@ describe('status strip: tone and badges', () => {
    * - Every lower rung, and a stranded post, keep their word: each names a
    *   state costing `safety` now and a press that answers it.
    * - **Crowding outranks it.** "Overcrowded" drains every prisoner's
-   *   `safety` on this tick; "Stretched" costs nothing until an incident
-   *   finds nobody to claim. The Staff panel still says "Stretched" in that
+   *   `safety` on this tick; "Tight" costs nothing until an incident
+   *   finds nobody to claim. The Staff panel still says "Tight" in that
    *   prison, so the reserve is never unsaid.
    * - No chip tone, as "Covered" has none: decision 1 says the rung must not
    *   read as a failure. The badge carries `'caution'` and the word.
    */
-  it('says Stretched where it would have said Covered, below crowding and every staffing rung (ADR 0095)', () => {
-    const stretched = metric(counts({ prisonersCovered: 8, responseReserveShort: true }), 'coverage');
-    expect(stretched.tone).toBeUndefined();
-    expect(stretched.badge).toEqual({ tone: 'caution', textKey: HUD_MESSAGE_KEY.securityCoverageStretched });
-    expect(stretched.description).toEqual({ textKey: HUD_MESSAGE_KEY.securityCoverageStretchedDescription });
-    expect(stretched.badge?.numberParameters).toBeUndefined();
+  it('says Tight where it would have said Covered, below crowding and every staffing rung (ADR 0095)', () => {
+    const tight = metric(counts({ prisonersCovered: 8, responseReserveShort: true }), 'coverage');
+    expect(tight.tone).toBeUndefined();
+    expect(tight.badge).toEqual({ tone: 'caution', textKey: HUD_MESSAGE_KEY.securityCoverageReserveShort });
+    expect(tight.description).toEqual({ textKey: HUD_MESSAGE_KEY.securityCoverageReserveShortDescription });
+    expect(tight.badge?.numberParameters).toBeUndefined();
 
     const crowded = metric(counts({ prisonersCovered: 8, responseReserveShort: true, overcrowded: true }), 'coverage');
     expect(crowded.badge).toEqual({ tone: 'warning', textKey: HUD_MESSAGE_KEY.securityCoverageOvercrowded });

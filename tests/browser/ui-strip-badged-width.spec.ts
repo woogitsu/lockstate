@@ -351,6 +351,48 @@ test.describe('the status strip carries nine chips and the prison’s own state 
     }
   });
 
+  /**
+   * **The same ordinary prison on the reserve rung** (ADR 0095 decision 1,
+   * accepted by the owner on 2026-09-23). `POPULATED` has 27 staff for 178
+   * prisoners, a requirement of `ceil(178 / 8) = 23`, so at most four guards
+   * are free against the five the worst riot needs: a session publishing it
+   * raises `'security.response-reserve-short'` and the coverage badge reads
+   * `Tight` rather than `Covered`, in the state a player
+   * spends most of the game in. Measured on 2026-09-23 at 1280x800: the
+   * `Covered` row is **1248.8px** in 1256px (the "1238" the first test's
+   * comment gives is an older reading), so 7.2px of slack, and the word first
+   * authored for this rung, "Stretched", measured **1257.4px** and pushed a
+   * chip off the row. `Tight` is **1229.9px**. This case is what fails if a
+   * longer word is authored into the key again.
+   */
+  test('an ordinary prison on the reserve rung still fits at every desktop width, at the same height (ADR 0095)', async ({
+    page,
+  }) => {
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    const readings: string[] = [];
+
+    for (const [width, height] of WIDTHS) {
+      await page.setViewportSize({ width, height });
+      const at = `${width}x${height}`;
+      const ordinary = await show(page, POPULATED);
+      const tight = await show(page, { ...POPULATED, responseReserveShort: true });
+
+      expect(tight.badges.map((text) => text.trim()).sort(), `the tight prison's badges at ${at}`).toEqual([
+        'Clear',
+        'Tight',
+      ]);
+      expect(
+        tight.contentWidth,
+        `a tight ordinary prison is ${tight.contentWidth}px of content in ${tight.clientWidth}px of row at ${at}`,
+      ).toBeLessThanOrEqual(tight.clientWidth);
+      expect(tight.fullyVisible, `chips on screen in a tight ordinary prison at ${at}`).toBe(9);
+      expect(tight.stripHeight, `the reserve rung moved the strip's height at ${at}`).toBe(ordinary.stripHeight);
+      readings.push(`${at} covered ${ordinary.contentWidth} tight ${tight.contentWidth} of ${tight.clientWidth}`);
+    }
+    test.info().annotations.push({ type: 'row-width', description: readings.join(' | ') });
+  });
+
   test('the widest state the content can produce is wholly on screen at 1920', async ({ page }) => {
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());

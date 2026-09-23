@@ -1274,9 +1274,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // hint keeps `coverage-short-hint`'s *"Zatrudnij jeszcze {count}"* with no
   // noun after the count, so it agrees at every count; *"najgorszy bunt"* is
   // the English *"the worst riot"*, argued in the English entry.
-  'hud.security.coverage-stretched': 'Na styk',
-  'hud.security.coverage-stretched-hint': 'Zatrudnij jeszcze {count}, aby odpowiedzieć na najgorszy bunt.',
-  'hud.security.coverage-stretched-description':
+  'hud.security.coverage-reserve-short': 'Na styk',
+  'hud.security.coverage-reserve-short-hint': 'Zatrudnij jeszcze {count}, aby odpowiedzieć na najgorszy bunt.',
+  'hud.security.coverage-reserve-short-description':
     'Wszystkie posterunki są obsadzone, ale wolnych strażników jest za mało, by odpowiedzieć na najgorszy bunt.',
 
   // =====================================================================

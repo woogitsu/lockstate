@@ -489,7 +489,7 @@ describe('the reader asks for the figures and none of the rows', () => {
  * the three strings it renders are pinned verbatim in both shipped languages
  * so the record `AGENTS.md` reservation 4 owes the owner cannot drift from what
  * the game says. Why each clause is true is argued in the English locale entry
- * for `hud.security.coverage-stretched`.
+ * for `hud.security.coverage-reserve-short`.
  */
 describe('the reserve rung between covered and understaffed', () => {
   const polish = new Localizer({ locale: 'pl', catalogs: [messageCatalogPl, defaultMessageCatalogEn] });
@@ -510,11 +510,11 @@ describe('the reserve rung between covered and understaffed', () => {
 
   it('renders the badge, the hint with its count, and the chip description, verbatim in English', () => {
     const readout = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, spare: 0, reserve: 5 });
-    expect(localizer.format(readout.badgeKey)).toBe('Stretched');
+    expect(localizer.format(readout.badgeKey)).toBe('Tight');
     expect(localizer.format(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })).toBe(
       'Hire 5 more to answer the worst riot.',
     );
-    expect(localizer.format(HUD_MESSAGE_KEY.securityCoverageStretchedDescription)).toBe(
+    expect(localizer.format(HUD_MESSAGE_KEY.securityCoverageReserveShortDescription)).toBe(
       'Every post is staffed, but too few guards are free to answer the worst riot.',
     );
   });
@@ -525,7 +525,7 @@ describe('the reserve rung between covered and understaffed', () => {
     expect(polish.format(readout.hintKey, { count: polish.formatNumber(readout.hireCount) })).toBe(
       'Zatrudnij jeszcze 1, aby odpowiedzieć na najgorszy bunt.',
     );
-    expect(polish.format(HUD_MESSAGE_KEY.securityCoverageStretchedDescription)).toBe(
+    expect(polish.format(HUD_MESSAGE_KEY.securityCoverageReserveShortDescription)).toBe(
       'Wszystkie posterunki są obsadzone, ale wolnych strażników jest za mało, by odpowiedzieć na najgorszy bunt.',
     );
   });
@@ -539,7 +539,7 @@ describe('the reserve rung between covered and understaffed', () => {
     ].map((coverage) => describeStaffCoverage(coverage));
     expect(rungs.map((readout) => readout.badgeKey)).toEqual([
       HUD_MESSAGE_KEY.securityCoverageMet,
-      HUD_MESSAGE_KEY.securityCoverageStretched,
+      HUD_MESSAGE_KEY.securityCoverageReserveShort,
       HUD_MESSAGE_KEY.securityCoverageShort,
       HUD_MESSAGE_KEY.securityCoverageUnguarded,
     ]);

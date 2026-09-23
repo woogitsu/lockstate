@@ -419,7 +419,7 @@ const FLAT_MESSAGES_WITH_COUNT = [
   // {count} more to ...` / `Zatrudnij jeszcze {count}, aby ...` has no noun
   // after the number in either language, so forms would be one sentence
   // written four times.
-  'hud.security.coverage-stretched-hint',
+  'hud.security.coverage-reserve-short-hint',
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',
   'hud.status.prisoners-without-bed',

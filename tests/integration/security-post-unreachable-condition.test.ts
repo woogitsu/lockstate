@@ -296,10 +296,10 @@ describe('a guard post nothing can route to is reported (ADR 0117)', () => {
     // five guards free is on it -- so the assertion is what it always meant:
     // the ladder's word and the ladder's sentence, not the stranded post's.
     expect(coverageChip(walkable.runtime).badge?.textKey, 'an unsealed prison keeps the ladder it always had').toBe(
-      'hud.security.coverage-stretched',
+      'hud.security.coverage-reserve-short',
     );
     expect(coverageChip(walkable.runtime).description, 'and says nothing about a post').toEqual({
-      textKey: 'hud.security.coverage-stretched-description',
+      textKey: 'hud.security.coverage-reserve-short-description',
     });
   });
 });

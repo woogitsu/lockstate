@@ -315,3 +315,81 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
     }
   });
 });
+
+/**
+ * **The rung ADR 0095 decision 1 adds between Covered and Understaffed**,
+ * accepted by the owner on 2026-09-23, on screen and whole.
+ *
+ * The prison is the one #941 measured -- `3 of 3` beside `3 held · 1 free` --
+ * now carrying the two figures `projectStaff` publishes since that decision:
+ * one guard free against the five the worst riot needs. It is the state the
+ * rest of this file calls `Covered` *because its view model predates the
+ * reserve*; a session publishes `spare` and `reserve`, and a session showing
+ * this prison shows the reserve rung.
+ *
+ * The same clamp governs its hint: `.hud-staff__note` is one line at 900x600
+ * and 238px wide there, so *"Hire 4 more to answer the worst riot."* has to
+ * fit it, and `expectNotClipped` is what fails if it does not.
+ */
+const TIGHT = { required: 3, assigned: 3, shortage: 0, spare: 1, reserve: 5 } as const;
+
+test.describe('the reserve rung says what the worst riot costs (ADR 0095 decision 1)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(HARNESS_URL);
+  });
+
+  test('renders the Tight rung whole at every shipped viewport, clamp included', async ({ page }) => {
+    const widths: string[] = [];
+    for (const [width, height] of COVERAGE_VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), coveredPrison(TIGHT));
+      const reading = await readHint(page);
+      const where = `${String(width)}x${String(height)}`;
+
+      expect(reading.matched, `the hint selector matched ${String(reading.matched)} elements at ${where}`).toBe(1);
+      expect(reading.drawn, `the coverage hint has no box at ${where}`).toBe(true);
+      expect(reading.tone, `the panel did not pick the reserve rung at ${where}`).toBe('caution');
+      expect(reading.badge, `the badge word is wrong at ${where}`).toBe('Tight');
+      expect(reading.summary, `the header pair moved at ${where}`).toBe('3 of 3');
+      // `{count}` is reserve - spare: 5 - 1.
+      expect(reading.text, `the reserve sentence is wrong at ${where}`).toBe('Hire 4 more to answer the worst riot.');
+      expect(reading.heldSummary, `the On duty figures are not beside the sentence at ${where}`).toBe('3 held · 1 free');
+      await expectNotClipped(page, HINT, `the reserve rung's sentence at ${where}`);
+      // The sentence's own inked width, not its box's: a `Range` over the text,
+      // so the figure recorded is what the clamp is measured against.
+      const inked = await page.evaluate((selector) => {
+        const hint = document.querySelector<HTMLElement>(selector);
+        if (hint === null) return 0;
+        const range = document.createRange();
+        range.selectNodeContents(hint);
+        return Math.round(range.getBoundingClientRect().width * 10) / 10;
+      }, HINT);
+      expect(inked, `the sentence is wider than its box at ${where}`).toBeLessThanOrEqual(reading.width);
+      widths.push(`${where} text ${String(inked)}px in ${String(reading.width)}x${String(reading.height)} clamp=${String(reading.lineClamp)}`);
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
+      expect(
+        probe.coverage.blockBox?.bottom ?? Number.POSITIVE_INFINITY,
+        `the coverage block is below the Staff panel's fold at ${where}`,
+      ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+      expect(probe.hireLabel.length, `the hire control is gone at ${where}`).toBeGreaterThan(0);
+    }
+    test.info().annotations.push({ type: 'hint-box', description: widths.join(' | ') });
+  });
+
+  test('reads Covered once the reserve is free, with the covered sentence', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
+    await page.evaluate(
+      (model) => window.lockstateUiHarness.setHudViewModel(model),
+      coveredPrison({ ...TIGHT, spare: 5 }),
+    );
+    const reading = await readHint(page);
+    expect(reading.tone).toBe('success');
+    expect(reading.badge).toBe('Covered');
+    expect(reading.text).toBe('Incidents and searches need free guards.');
+  });
+});

@@ -75,7 +75,7 @@ export type PrisonConditionPresentation =
   | 'coverage-chip-crowding'
   /**
    * The `COVERAGE` chip carries this one as well, under
-   * `hud.security.coverage-stretched` -- the word the Staff panel's coverage
+   * `hud.security.coverage-reserve-short` -- the word the Staff panel's coverage
    * block uses for the same rung -- and its description, through
    * `HudCountsViewModel.responseReserveShort`
    * ([ADR 0095](../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)

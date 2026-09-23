@@ -137,11 +137,11 @@ describe('the simulation predicate and the Staff panel agree', () => {
     return rows;
   }
 
-  it('on every prison in the grid: the panel says Stretched exactly where the chip condition stands', () => {
+  it('on every prison in the grid: the panel says Tight exactly where the chip condition stands', () => {
     for (const row of grid()) {
       const panel = describeStaffCoverage(row);
       const label = JSON.stringify(row);
-      expect(panel.badgeKey === HUD_MESSAGE_KEY.securityCoverageStretched, label).toBe(isResponseReserveShort(row));
+      expect(panel.badgeKey === HUD_MESSAGE_KEY.securityCoverageReserveShort, label).toBe(isResponseReserveShort(row));
     }
   });
 
@@ -149,8 +149,8 @@ describe('the simulation predicate and the Staff panel agree', () => {
     const panel = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, spare: 2, reserve: 5 });
     expect(panel).toMatchObject({
       tone: 'caution',
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageStretched,
-      hintKey: HUD_MESSAGE_KEY.securityCoverageStretchedHint,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
       hireCount: 3,
     });
     expect(panel.consequenceKey).toBeUndefined();

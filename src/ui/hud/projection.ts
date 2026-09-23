@@ -522,7 +522,7 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
     // its top rung; the reserve rung costs nothing until an incident opens and
     // finds nobody to claim. That is the same argument #586 used to let the
     // staffing rungs keep their word over crowding -- the rung that is paying
-    // now is the one named. The Staff panel still says "Stretched" in that
+    // now is the one named. The Staff panel still says "Tight" in that
     // prison, because its coverage block is about guards and has no crowding
     // word, so the reserve is never unsaid anywhere, only second on the strip.
     //
@@ -534,7 +534,7 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
     // (`coverageTone`), so the precedence above is enforced by where this
     // branch sits rather than restated as a condition.
     return counts.responseReserveShort === true
-      ? { tone: 'caution', textKey: HUD_MESSAGE_KEY.securityCoverageStretched }
+      ? { tone: 'caution', textKey: HUD_MESSAGE_KEY.securityCoverageReserveShort }
       : { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
   }
   // Issue #586. Only where the ladder itself would have said "Covered": an
@@ -1067,8 +1067,8 @@ export function projectStatusMetrics(
             ? { textKey: HUD_MESSAGE_KEY.securityCoverageOvercrowdedHint }
             : // ADR 0095 decision 1, on the same rule: the sentence only while
               // the badge says the word it explains.
-              coverageBadge(counts).textKey === HUD_MESSAGE_KEY.securityCoverageStretched
-              ? { textKey: HUD_MESSAGE_KEY.securityCoverageStretchedDescription }
+              coverageBadge(counts).textKey === HUD_MESSAGE_KEY.securityCoverageReserveShort
+              ? { textKey: HUD_MESSAGE_KEY.securityCoverageReserveShortDescription }
               : undefined,
     },
     {
