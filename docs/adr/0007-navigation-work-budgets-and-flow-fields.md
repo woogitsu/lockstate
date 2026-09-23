@@ -738,8 +738,8 @@ under other load; wall clock, so directional only).
 one tick before the tick-3461 block change served a different set of
 requests by tick 3463 — the case was pinned as a known divergence, and it
 went red with its own message (*"the divergence this case pins has gone"*)
-the moment the caches were carried. Mutations of the change, each turning
-cases in `restore-mid-walk-exactness.test.ts` red:
+the moment the caches were carried. Mutations of the change, and what each
+turned red (cases in `restore-mid-walk-exactness.test.ts` unless named):
 
 | mutation | red |
 | --- | --- |
