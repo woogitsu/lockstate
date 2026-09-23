@@ -743,8 +743,8 @@ cases in `restore-mid-walk-exactness.test.ts` red:
 
 | mutation | red |
 | --- | --- |
-| the restore does not load the caches | every whole-session case: 7 of 11 |
-| a changed dependency's verdict is dropped and it is read as unchanged | the lockdown case, and 3 unit cases |
+| the restore does not load the caches | 8 of the 11 cases |
+| a changed dependency's verdict is dropped and it is read as unchanged | both lockdown cases, and 3 unit cases |
 | the caches are loaded before the restore re-applies control states | `snapshot-restore-fidelity`'s in-flight fixed point |
 | only entries valid at the save are carried (keys and rebuild) | **none** of the whole-session cases; see Decision 1 |
 
