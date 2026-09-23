@@ -783,8 +783,9 @@ def furniture(collection, root, asset_id):
             for x in (-0.79, 0.79):
                 cylinder(collection, root, f"Seat bolt.{index}.{x}", (x, y, 0.613), 0.023, 0.011, "galvanized_edge", 12)
     elif "desk" in asset_id:
-        # Multiview reference: assets/source/concepts/employee-desk-multiview-v2.png.
-        # Keep the drawer pedestal visibly separate beyond the worktop's south edge.
+        # Four-view reference: employee-desk-multiview-v3.png. The desk remains
+        # legible at 128x64: low lamp, wide open ledger and paper tray are
+        # separate large shapes on a textured top, not tiny printed details.
         for x in (-0.75, 0.75):
             for y in (-0.30, 0.30):
                 box(collection, root, f"Steel leg.{x}.{y}", (x, y, 0.44), (0.075, 0.075, 0.88), "canteen_steel", 0.012)
@@ -797,11 +798,30 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Drawer pull.{index}", (0.56, 0.471, height), (0.13, 0.023, 0.018), "galvanized_edge", 0.006)
         box(collection, root, "Dark worktop edge band", (0, -0.04, 0.91), (1.84, 0.78, 0.09), "steel", 0.018)
         box(collection, root, "Grey oak laminate", (0, -0.04, 0.965), (1.79, 0.73, 0.035), "desk_laminate", 0.018)
-        cylinder(collection, root, "Cable grommet dark surround", (-0.69, -0.30, 0.989), 0.055, 0.009, "steel", 24)
-        cylinder(collection, root, "Cable opening", (-0.69, -0.30, 0.996), 0.033, 0.01, "shade", 24)
-        box(collection, root, "Olive paperwork tray", (-0.48, -0.07, 0.998), (0.35, 0.26, 0.035), "green", 0.012)
-        box(collection, root, "Paper in tray", (-0.48, -0.07, 1.020), (0.29, 0.20, 0.012), "light", 0.004)
-        box(collection, root, "Cream notepad", (0.47, -0.07, 0.994), (0.18, 0.25, 0.012), "light", 0.004)
+        # A circular lamp hood reads from above; the slim angled arm records
+        # the actual construction without obscuring the papers beneath.
+        cylinder(collection, root, "Lamp bolted base", (-0.72, -0.27, 1.020), 0.078, 0.050, "desk_teal", 32)
+        cylinder(collection, root, "Lamp stem", (-0.72, -0.27, 1.105), 0.021, 0.17, "galvanized_edge", 16)
+        arm = box(collection, root, "Lamp articulated arm", (-0.57, -0.27, 1.177), (0.31, 0.027, 0.028), "galvanized_edge", 0.009)
+        arm.rotation_euler[1] = -0.12
+        cylinder(collection, root, "Lamp enamel hood", (-0.40, -0.27, 1.190), 0.115, 0.080, "desk_teal", 48)
+        cylinder(collection, root, "Lamp warm diffuser", (-0.40, -0.27, 1.145), 0.082, 0.008, "paper_cream", 48)
+        box(collection, root, "Olive paperwork tray", (-0.53, 0.10, 1.004), (0.34, 0.38, 0.052), "green", 0.014)
+        box(collection, root, "Terracotta folder in tray", (-0.53, 0.10, 1.038), (0.27, 0.30, 0.012), "paper_orange", 0.004)
+        box(collection, root, "Cream sheet in tray", (-0.54, 0.075, 1.054), (0.25, 0.24, 0.012), "paper_cream", 0.004)
+        box(collection, root, "Ledger dark cover", (0.04, 0.05, 1.004), (0.60, 0.38, 0.018), "desk_teal", 0.008)
+        box(collection, root, "Ledger left page", (-0.105, 0.05, 1.020), (0.28, 0.34, 0.013), "paper_cream", 0.006)
+        box(collection, root, "Ledger right page", (0.185, 0.05, 1.020), (0.28, 0.34, 0.013), "paper_cream", 0.006)
+        box(collection, root, "Ledger centre seam", (0.04, 0.05, 1.031), (0.012, 0.33, 0.008), "desk_ink", 0.002)
+        for index, y in enumerate((-0.075, -0.005, 0.065, 0.135)):
+            for x in (-0.10, 0.19):
+                box(collection, root, f"Ledger rule.{index}.{x}", (x, y, 1.033), (0.18, 0.006, 0.004), "desk_ink", 0)
+        cylinder(collection, root, "Pencil cup outer", (0.58, -0.12, 1.070), 0.073, 0.13, "desk_ink", 24)
+        cylinder(collection, root, "Pencil cup opening", (0.58, -0.12, 1.141), 0.052, 0.008, "shade", 24)
+        for index, x in enumerate((0.55, 0.59, 0.62)):
+            cylinder(collection, root, f"Pencil point.{index}", (x, -0.12, 1.165), 0.009, 0.050, "paper_orange" if index == 1 else "paper_cream", 8)
+        cylinder(collection, root, "Cable grommet dark surround", (0.72, -0.29, 0.989), 0.058, 0.009, "steel", 32)
+        cylinder(collection, root, "Cable opening", (0.72, -0.29, 0.996), 0.036, 0.01, "shade", 32)
     elif "reception" in asset_id:
         box(collection, root, "Counter", (0, 0, 0.92), (2.7, 0.72, 0.1), "wood", 0.03)
         box(collection, root, "Cabinet", (0, 0.2, 0.42), (2.43, 0.46, 0.82), "steel")
@@ -994,6 +1014,10 @@ def main():
     MATERIALS["canteen_wood"] = canteen_wood_material()
     MATERIALS["bench_wood"] = corridor_bench_wood_material()
     MATERIALS["desk_laminate"] = employee_desk_laminate_material()
+    MATERIALS["desk_teal"] = material("Desk blue-grey enamel", (0.13, 0.23, 0.29, 1), 0.55)
+    MATERIALS["desk_ink"] = material("Ledger ink and cup", (0.075, 0.12, 0.15, 1), 0.75)
+    MATERIALS["paper_cream"] = material("Aged desk paper", (0.87, 0.79, 0.63, 1), 0.92)
+    MATERIALS["paper_orange"] = material("Desk folder terracotta", (0.65, 0.31, 0.16, 1), 0.88)
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
