@@ -6159,6 +6159,42 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.everAdmitted, 'this is the true "nobody yet" state').toBe('false');
   });
 
+  test('empty roster guidance opens the tab with the action it names (#889)', async ({ page }) => {
+    await page.evaluate(
+      ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+      [TIMETABLE, EMPTY_ROSTER] as const,
+    );
+    const build = page.getByRole('button', { name: 'Open Build' });
+    await expect(build).toBeVisible();
+    for (const viewport of [{ width: 900, height: 600 }, { width: 375, height: 812 }]) {
+      await page.setViewportSize(viewport);
+      await expect(build, `Build guidance at ${viewport.width}×${viewport.height}`).toBeInViewport();
+    }
+    await build.click();
+    await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'build');
+    await expect(page.locator('button[data-tab="build"]')).toBeFocused();
+
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
+    await page.evaluate(
+      ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+      [TIMETABLE, DISCHARGED_ROSTER] as const,
+    );
+    const manage = page.getByRole('button', { name: 'Open Manage' });
+    await expect(manage).toBeVisible();
+    await expect(manage).toBeInViewport();
+    await manage.click();
+    await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'manage');
+    await expect(page.locator('button[data-tab="manage"]')).toBeFocused();
+    await expect(page.locator('.hud-intake__admit')).toBeVisible();
+
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
+    await page.evaluate(
+      ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+      [TIMETABLE, SOLO_ROSTER] as const,
+    );
+    await expect(page.locator('.hud-regime__empty-action')).toBeHidden();
+  });
+
   /**
    * **The owner's ruling of 2026-09-02 on issue #788, measured on the real
    * page.**

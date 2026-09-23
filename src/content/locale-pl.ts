@@ -1299,6 +1299,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.regime.roster-more': 'i jeszcze {count}',
   'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę — dość dużą, zamkniętą ścianami ze wszystkich stron, z łóżkiem i toaletą w środku — aby kogoś przyjąć.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
+  'hud.regime.roster-open-tab': 'Przejdź do: {tab}',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
   // Added by #1309 -- both post-date the 2026-09-14 catalogue and are
   // translated straight against `src/content/default-locale-en.ts`'s own
