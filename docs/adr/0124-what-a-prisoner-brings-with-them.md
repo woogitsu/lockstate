@@ -435,18 +435,19 @@ no existing stream's position changes. This is the property ADR 0069 bought
 for the sentence and then ADR 0079 spent. Here nothing spends it.
 
 **Moves, ASSERTED by opening each file** (a prototype that would have run the
-whole suite was not built; see §8):
+whole suite was not built; see §8). *§11.2 records what actually moved once
+this was implemented. The table is kept as the prediction it was.*
 
 | file | why it moves |
 | --- | --- |
 | `tests/determinism/session-replay.test.ts:172`, `streams.map((entry) => entry.name)` | asserts the exact list of six registered stream names |
-| `tests/determinism/rng-stream-isolation.test.ts:199`, `expect(names).toEqual(` | the same list |
-| `tests/determinism/save-rng-stream-compatibility.test.ts:74` | `REGISTERED_STREAMS`, the same list. `new-session.ts`'s docblock for the sixth stream records that this file *"had to be extended by hand"*, which is the file working as intended |
+| `tests/determinism/rng-stream-isolation.test.ts:203`, `expect(names).toEqual(` | the same list |
+| `tests/determinism/save-rng-stream-compatibility.test.ts:82` | `REGISTERED_STREAMS`, the same list. `new-session.ts`'s docblock for the sixth stream records that this file *"had to be extended by hand"*, which is the file working as intended |
 | `tests/integration/gang-retaliation-from-the-admission-surface.test.ts` | stays green but **stops being what its name says**: it sends `priorIncidents: 0` because that was the interface's value. To keep its claim, it must omit the field, and then its measured ticks (`FIRST_REVIEW_TICK = 48_000`, the grudge at 53,261, retaliation at 55,700, and `0x0cc3`'s 7 retaliations) have to be re-measured |
 | `tests/integration/gang-membership-at-review.test.ts` | the same situation: its docblock cites `ADMISSION_REQUEST.priorIncidents` |
 | `tests/integration/security-post-unreachable-condition.test.ts` | sends `{ type: 'AdmitPrisoner', priorIncidents: 0, ... }` as the interface's shape |
 | `tests/browser/app-shell.spec.ts` (#703 case) | plays the real interface, so its prisoners' tiers are now drawn and its comment in §4.7 becomes false |
-| `tests/unit/prisoners-classification.test.ts:81-104` | `reachableTiers` for *"what the Intake panel asks for"* at `priorIncidents: 0`. It stays true as a statement about 0 and false as a statement about the panel |
+| `tests/unit/prisoners-classification.test.ts:83-120` | `reachableTiers` for *"what the Intake panel asks for"* at `priorIncidents: 0`. It stays true as a statement about 0 and false as a statement about the panel |
 
 **Challenge replay (ADR 0009) is unaffected in kind.** Evidence recorded on
 an older build carries explicit `priorIncidents: 0` and replays exactly. New
@@ -733,6 +734,94 @@ option in each is this draft's recommendation.
   the only readout, and no new string is added (recommended)" / "Add a
   prisoner-detail line such as 'Prior incidents on record before admission:
   N' in the same change" / "Decide with #594's intake queue".
+
+## 11. What the implementation measured, against this document's predictions
+
+Written on 2026-09-23, after §4 was implemented as accepted. Every figure is
+MEASURED on the implemented tree, and the tests that pin it are named.
+
+### 11.1 The weakest claim holds
+
+§8 named as weakest *"that §6's numbers are what an implementation of §4 would
+produce"*. `tests/integration/prior-incidents-at-intake.test.ts` builds the
+same three prisons over the same twelve seeds. It admits exactly as the
+interface does, with no sentence and no count, so both values are drawn by
+the worker. **Every figure equals §6's Option A row**:
+- the priors drawn;
+- intake and day-one tiers;
+- gang members at intake;
+- incidents at 10 and 30 days;
+- members at 30 days;
+- early warnings;
+- retaliating seeds.
+
+The ordering argument of §6.1 holds.
+
+The same file checks the draw against an independent replay of the derived
+stream, with the weights written as literals. The unit enumeration in
+`tests/unit/prisoners-classification.test.ts` covers the panel's request over
+all 23,100 equally likely outcomes. It gives 10,920 / 7,630 / 3,500 / 1,050,
+which is §5's 47.27 / 33.03 / 15.15 / 4.55 % exactly.
+
+### 11.2 §4.10's prediction of what moves, against what moved
+
+- **Predicted and confirmed:**
+  - The three stream-list pins failed on the seventh stream: 6 cases across
+    `session-replay`, `rng-stream-isolation` and
+    `save-rng-stream-compatibility`. They were extended by hand.
+  - The four interface-mirroring tests stayed green on `priorIncidents: 0`,
+    exactly the "green and false" state §4.10 warned of. Each now omits the
+    field and was re-measured.
+  - No determinism hash and no save-compatibility case moved otherwise.
+- **Not predicted:**
+  - Deleting `ADMISSION_REQUEST`'s 90-line docblock shifted every
+    documentation anchor into `src/main.ts` below it. That drove three
+    foundation contracts red: range, quotation and anchor-quotation. 144
+    anchors were re-aimed mechanically, from a line-level diff, only where
+    the old target line survives. Four anchors in `STATUS-QUEUE.md`'s
+    telemetry readings had gone out of range and got a marked re-aim.
+  - The browser case #703 asserted *"every painted row is
+    `general-population`"*. It becomes *"the group agrees with the tier"*,
+    because a tier-3 arrival in its window is now likely.
+
+### 11.3 A finding this document did not predict: an intake member can put a fighting pair in one gang
+
+`tests/integration/gang-retaliation-from-the-admission-surface.test.ts`'s
+neglected prison: 8 bed-only cells, 1 guard, a 400,000-tick sentence, and 90
+in-game days on seeds `0x0cc0`–`0x0ccb`. Admitted with the count omitted, and
+compared with the same prison admitted at an explicit `priorIncidents: 0`,
+which is the old behaviour exactly:
+
+| | seeds that retaliate | retaliations |
+| --- | --- | --- |
+| before (`priorIncidents: 0`) | **7 / 12** | 41 |
+| after (drawn) | **5 / 12** | 33 |
+
+- **Lost:** `0x0cc0`, `0x0cc6` and `0x0cc9`.
+- **Gained:** `0x0cc4`.
+- **Earlier:** `0x0cc3` now retaliates from tick **22,000**, before any
+  review can run, because both of its fighters arrive at tier 3, one in each
+  gang.
+
+**The mechanism of the loss, shown on `0x0cc0`:**
+1. Entity 2 draws one prior incident, arrives at tier 3 and takes the empty
+   `gang.alpha` at intake.
+2. At the review at 48,000 the smaller gang is `gang.beta`, which goes to
+   entity 0.
+3. The tie that follows puts entity 1 in `gang.alpha`, beside entity 2.
+4. Entities 1 and 2 are the pair that fights: 69 of the 85 assaults.
+   Result: **0 grudges and 0 retaliations**.
+
+**It is ADR 0121's same-gang pair, arriving by a route the 2026-09-19
+amendment did not see.** The smaller-gang rule balances membership *counts*,
+and an intake member who never fights changes which gang is smaller when the
+fighters are assigned. The case is pinned as a measured negative, not as
+desirable. **ADR 0103 decision 6 is the owner's and is not changed here.**
+This is the one open consequence of this ADR, and it is put to the owner
+rather than fixed.
+
+The well-run prison meets the same rule without consequence: its intake
+members never fight (§6.3).
 
 ---
 
