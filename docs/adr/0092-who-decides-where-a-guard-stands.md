@@ -329,16 +329,16 @@ guard the sector's requirement posts stands the same tile.
 - **A. Keep it on the sector (recommended).** Nothing that reads a post tile
   changes: `DeploymentSystem` (three sites), `PatrolSystem`'s closing leg,
   `IncidentResponseSystem`'s responder destination
-  (`src/simulation/incidents/response-system.ts:427`), `sector-occupancy.ts`'s
+  (`src/simulation/incidents/response-system.ts:430`), `sector-occupancy.ts`'s
   post-tile occupant test (`src/simulation/security/sector-occupancy.ts:123`),
   `displayedDeploymentPhase`, and the projection. **Cost:** guards stack. A
   24-prisoner prison requires three posted guards
   (`src/simulation/security/sector-staffing.ts:147`) and
   `assignUnassignedGuards` sends all three to one tile
-  (`src/simulation/security/deployment-system.ts:196`). Prison Architect does
+  (`src/simulation/security/deployment-system.ts:212`). Prison Architect does
   not do this; its stationed guards roam a zone.
 - **B. A post per guard**, held on `GuardRecord`. **Cost:** `guardRecordSchema`
-  is `.strict()` (`src/persistence/save-schema.ts:727-738`), so a per-guard post
+  is `.strict()` (`src/persistence/save-schema.ts:728-739`), so a per-guard post
   is a new persisted field on a strict object — allowed without a version bump
   under [ADR 0038](./0038-what-makes-a-save-compatible.md) decision 1 while
   absence means "use the sector's", but it also makes *assignment* a player
@@ -416,7 +416,7 @@ time a sector has a perimeter.
 > **CONFIRMED by the owner, 2026-09-02, as written.**
 
 `restoreSessionSystems` step 1 currently skips any sector id the runtime
-already holds (`src/simulation/runtime/session-systems.ts:731-733`), and
+already holds (`src/simulation/runtime/session-systems.ts:793-795`), and
 `createNewSimulationRuntime` has already registered the derived default
 (`src/simulation/runtime/new-session.ts:1137`). So the payload's row for the
 default sector is never read. **Measured:** a bundle hand-edited to carry
@@ -431,7 +431,7 @@ decision 2's `redefine`**; for an id it does not hold, `register` as today.
 **`SAVE_SCHEMA_VERSION` stays 5, no persisted field is added and there is no
 migration.** `securitySectorDefinitionSchema` has carried `postTile` and
 `patrolRoute: z.array(tilePositionSchema).optional()` since V5
-(`src/persistence/save-schema.ts:717-726`). ADR 0038 decision 1's rule —
+(`src/persistence/save-schema.ts:718-727`). ADR 0038 decision 1's rule —
 *"every section the build needs and the save omits has exactly one meaning"* —
 is satisfied without argument: an absent `patrolRoute` means "this sector is
 not patrolled" today and would mean "the player has drawn no route" after, and
@@ -505,7 +505,7 @@ here.
 The prison keeps the player's intent. `DeploymentSystem` already counts
 `deploymentFailures` and retries next cycle; `PatrolSystem` already counts
 `loopsMissed`, settles the guard on `'on-post'` and re-paths from wherever it
-stands (`src/simulation/security/patrol-system.ts:141-152`). Neither behaviour
+stands (`src/simulation/security/patrol-system.ts:157-168`). Neither behaviour
 changes. What is added is that **the player is told**, through the refusal
 channel, and the sentence is owed (below).
 
@@ -540,11 +540,11 @@ that is a better home than either B or C.
 ### 6. A route may be shortened while a guard is walking it; the index is clamped where it is read
 
 `PatrolSystem.continueLeg` re-requests the stored waypoint index unchecked
-(`src/simulation/security/patrol-system.ts:131`) and `legTarget` throws a
+(`src/simulation/security/patrol-system.ts:147`) and `legTarget` throws a
 `RangeError` for an index past the end
-(`src/simulation/security/patrol-system.ts:91`). Today that is unreachable —
+(`src/simulation/security/patrol-system.ts:107`). Today that is unreachable —
 the registry cannot be mutated and `GuardRoster.loadSnapshot` clears the index
-on restore (`src/simulation/security/guard-roster.ts:288`). **Decision 2 makes
+on restore (`src/simulation/security/guard-roster.ts:315`). **Decision 2 makes
 it reachable**, and a `RangeError` out of `Kernel.step()` ends the session.
 
 So: an index at or past `patrolRoute.length` is treated as the closing leg

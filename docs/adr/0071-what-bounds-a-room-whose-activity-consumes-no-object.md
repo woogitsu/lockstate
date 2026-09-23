@@ -386,7 +386,7 @@ was not the cause of the exploit.** Measured at `05640b6`:
   the **concurrent-use** ceiling — `concurrentUseCapacityFor` case 1 — and no
   path connects it to residency.
 - **Only `room.yard` can reach case 1.** Its three production callers
-  (`src/simulation/prisoners/action-system.ts:820`, `:1067`, `:1082`) all pass
+  (`src/simulation/prisoners/action-system.ts:840`, `:1067`, `:1082`) all pass
   `action.requiredObjectCapability`, and all sit behind
   `target.kind === 'room-catalog-id'` — `claimUseIfNeeded` returns `true` for an
   `own-accommodation` target without claiming anything. Three actions in

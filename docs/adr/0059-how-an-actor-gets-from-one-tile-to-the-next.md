@@ -72,10 +72,10 @@ decision about simulation-side locomotion, and this ADR does not take it."* Its
 open question 1 asks who takes it. This is that decision.
 
 The same convention is stated in five other places, and they are the sweep:
-`src/simulation/security/patrol-system.ts:131-134`,
-`src/simulation/security/deployment-system.ts:191`,
-`src/simulation/incidents/response-system.ts:595`,
-`src/simulation/contraband/search-system.ts:298` and — until
+`src/simulation/security/patrol-system.ts:147-150`,
+`src/simulation/security/deployment-system.ts:207`,
+`src/simulation/incidents/response-system.ts:629`,
+`src/simulation/contraband/search-system.ts:325` and — until
 [ADR 0093](./0093-a-carry-is-an-action.md) **deleted the file** —
 `prisoners/job-worker-adapter.ts:30-31`. The fifth site is
 therefore no longer a site: a carry is a prisoner action now and walks like

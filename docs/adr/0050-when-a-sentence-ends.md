@@ -37,8 +37,8 @@ this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLength
 
 Every reader in `src/`, re-derived on this branch's base with
 `grep -rn "sentenceEndTick" src/`: the save schema
-(`src/persistence/save-schema.ts:367`, `:403`), the capture/restore pair
-(`src/simulation/runtime/session-systems.ts:111`, `:339`, `:381`), the HUD
+(`src/persistence/save-schema.ts:368`, `:403`), the capture/restore pair
+(`src/simulation/runtime/session-systems.ts:114`, `:339`, `:381`), the HUD
 projection (`src/simulation/presentation/prisoner-projection.ts:397`), and
 `classifiedAtTickOf`, which subtracts it from `sentenceLengthTicks` to recover
 *when* the prisoner arrived

@@ -533,7 +533,7 @@ threshold. There is no mild one. And because there is one sector and it covers
 the whole prison (Context §3), the lockdown is prison-wide: the responders'
 docblock states the scope in its own words — *"this system's own lockdown locks
 every door in the incident's sector"*
-(`src/simulation/incidents/response-system.ts:125-126`).
+(`src/simulation/incidents/response-system.ts:128-129`).
 
 Responder demand, same arithmetic:
 `return Math.max(1, Math.ceil(severity * this.policy.respondersPerSeverityPoint));`
@@ -545,7 +545,7 @@ already posted, or the incident lapses on `responseDeadlineTicks: 600`
 (`src/simulation/incidents/response-system.ts:27`).
 
 **The lockdown only fires if a response is actually mounted** — the line above
-sits inside `mountResponse` (`src/simulation/incidents/response-system.ts:545`),
+sits inside `mountResponse` (`src/simulation/incidents/response-system.ts:579`),
 which runs after guards are claimed. A prison with nobody spare gets the
 incident and the lapse without the lockdown.
 
@@ -634,7 +634,7 @@ position at v0.0.467).
 ### 8. Everything downstream is built and persisted, including the grudges — VERIFIED, read
 
 The incident type is in the persisted enum
-(`src/persistence/save-schema.ts:951`; the anchor read `:939`), the protocol
+(`src/persistence/save-schema.ts:952`; the anchor read `:939`), the protocol
 event is registered
 (`src/simulation/protocol/types.ts:1826`, payload schema at `:2032`), the
 message census carries a label (`src/content/simulation-message-keys.ts:268`),
@@ -643,14 +643,14 @@ and both projections enumerate all four types
 `src/simulation/presentation/status-strip-projection.ts:428`).
 
 **The registry's whole state is already in the save envelope** — definitions,
-members, reputation and grudges — at `src/persistence/save-schema.ts:971-977`,
-written at `src/simulation/runtime/session-systems.ts:680` and read back at
+members, reputation and grudges — at `src/persistence/save-schema.ts:972-978`,
+written at `src/simulation/runtime/session-systems.ts:728` and read back at
 `:964`. So issue #979's expectation that a save round trip is "free" is
 correct, with one caveat worth pricing: the definition schema is
 `.strict()`, so **adding any field to `GangDefinition` is a schema edit**, not
 a no-op. An *optional* field would not move `SAVE_SCHEMA_VERSION` under the
 three conditions `docs/PERSISTENCE.md` sets and
-`src/persistence/save-schema.ts:182-200` works through for two precedents, but
+`src/persistence/save-schema.ts:183-201` works through for two precedents, but
 it is still a reviewed edit rather than free.
 
 ### 9. The assault already carries everything a grudge producer needs — VERIFIED, read — HEADING CORRECTED 2026-09-08: the *record* does, the *seam* does not
@@ -668,12 +668,12 @@ it is still a reviewed edit rather than free.
   inside `adjudicateAssaultIfAny`, whose own docblock states why it is a single
   method: *"so the two call sites cannot drift about which incidents earn a
   sanction or which participant it lands on"*
-  (`src/simulation/incidents/response-system.ts:326`).
+  (`src/simulation/incidents/response-system.ts:329`).
 - That door already carries an injected, defaulted port of exactly the shape a
   second consumer needs — `onAssaultAdjudicated`
-  (`src/simulation/incidents/response-system.ts:218`) — whose docblock argues
+  (`src/simulation/incidents/response-system.ts:221`) — whose docblock argues
   the pattern: *"The same narrow injected-port shape `onPrisonerEscaped` is,
-  for the same reason"* (`src/simulation/incidents/response-system.ts:212-213`).
+  for the same reason"* (`src/simulation/incidents/response-system.ts:215-216`).
 
 So the issue's proposal — *"the natural producer is an existing incident: an
 assault whose two participants belong to different gangs"* — lands on a seam
@@ -685,7 +685,7 @@ carries everything a grudge producer needs", and that is true of the *record*
 and false of the *seam*.** The bullet above calls `onAssaultAdjudicated` a port
 *"of exactly the shape a second consumer needs"*, and Context 13 point 3 shows
 it is not: its shape is `(entityId: EntityId, tick: number) => void`
-(`src/simulation/incidents/response-system.ts:218`) and it is handed only
+(`src/simulation/incidents/response-system.ts:221`) and it is handed only
 `incident.instigatorId` (`:329`), so the second participant — the one a
 directional grudge needs — never crosses it. The heading and the bullet are
 kept because the *pattern* claim they make is sound and is what a second port
@@ -782,7 +782,7 @@ Context 9 identified.** `IncidentResponseSystem.adjudicateAssaultIfAny` is a
 single private method whose docblock states why it is single: *"The one thing
 both terminal transitions below do identically, so the two call sites cannot
 drift about which incidents earn a sanction or which participant it lands on"*
-(`src/simulation/incidents/response-system.ts:326`).
+(`src/simulation/incidents/response-system.ts:329`).
 
 What it takes as input:
 `if (incident.type !== 'assault' || incident.instigatorId === undefined) return;`
@@ -794,7 +794,7 @@ here as history rather than as live citations (`docs/AGENT_WORKFLOW.md` §4) —
 point 3 immediately below is what forced the change:
 
 > `this.onAssaultAdjudicated(incident.instigatorId, tick);`
-> at `src/simulation/incidents/response-system.ts:329`, against a port declared
+> at `src/simulation/incidents/response-system.ts:332`, against a port declared
 > `private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},`
 > at `:218`
 
@@ -923,7 +923,7 @@ key in the catalogue is the room's name,
 terminal-incident sentences that do exist — `incidents.all-clear` and
 `incidents.all-clear-after-lapse` — are about *the prison* returning to calm
 and fire only when nothing at all is open
-(`src/simulation/incidents/response-system.ts:316-324`). **So under a reading
+(`src/simulation/incidents/response-system.ts:319-327`). **So under a reading
 of the ruling where "shown" attaches to the adjudication, the ruling is not
 implementable at all today**: the player has never been shown an adjudication,
 of any incident, in any prison.
@@ -1108,7 +1108,7 @@ them rather than on the words alone.
 #### 2.1 What the ruling confirms, and what this document had already argued
 
 The producer is the seam Context 9 named and Decision 2 already proposed:
-`adjudicateAssaultIfAny` (`src/simulation/incidents/response-system.ts:346`),
+`adjudicateAssaultIfAny` (`src/simulation/incidents/response-system.ts:349`),
 the one door both terminal transitions of an assault go through. **Re-aimed
 2026-09-15 from `:327`**, which is where that method stood when this section was
 written and which `338b053b` — the implementation of this very decision — moved
@@ -1571,7 +1571,7 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
   Decision 4 built. This bullet called it *"the one defect in existing code this
   document asks to close"*; it is closed.
 - *"No way for the adjudication seam to name the victim"* — **the seam carries
-  the whole record now**, `src/simulation/incidents/response-system.ts:237`, so
+  the whole record now**, `src/simulation/incidents/response-system.ts:240`, so
   both participants are reachable from it. See the marked bullet under *What it
   costs in code* below, which prices this as still owed.
 - **The other three bullets were not re-checked on this pass and are not
@@ -1654,7 +1654,7 @@ ruling and wins.
   (`docs/AGENT_WORKFLOW.md` §4) BECAUSE IT IS WHAT THE PRICE WAS BEFORE IT WAS
   PAID.** The port was widened when this decision was implemented and today
   takes `(incident: IncidentRecord, tick: number)` at
-  `src/simulation/incidents/response-system.ts:237` — the record, which is the
+  `src/simulation/incidents/response-system.ts:240` — the record, which is the
   first of the two shapes the bullet named. Its anchor above is demoted to a
   bare basename for the same reason: `:218` is now a line of the docblock
   recording that widening, and that docblock marks both directions itself.
@@ -1672,7 +1672,7 @@ ruling and wins.
 Nothing, under Decision §1. The registry's four collections are already
 persisted (Context §8) and no field is added. If Open Question 8's `nameKey`
 is ever taken, that is an optional field against a `.strict()` schema and
-carries the review cost `src/persistence/save-schema.ts:182-200` describes.
+carries the review cost `src/persistence/save-schema.ts:183-201` describes.
 
 ### The chain in ticks — REASONED, not measured
 
