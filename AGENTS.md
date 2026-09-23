@@ -1338,6 +1338,11 @@ batch is still a separate release, still needs the owner's own dated words,
 and is still bounded to the `git lfs pull --include=` list in the `browser`
 job of `.github/workflows/ci.yml`.
 
+**Superseded on 2026-09-23 for future art globs by ruling 31 below.** This
+paragraph records the earlier decision and the batches released under it;
+the owner has since given standing permission to append needed art globs to
+this exact `browser` LFS include list without asking for each batch.
+
 **The first batch was researched and there is none, which is why this entry
 records a method with no spend against it.** The research is at
 `docs/research/2026-09-21-what-stage-7s-first-glob-request-would-have-to-name.md`.
@@ -1811,6 +1816,28 @@ the committed concept provenance does not claim it used GPT 2.5. The reference
 screenshots guide richness and readability; the assets remain original. This
 feedback does not release any additional `ci.yml` glob, PR or merge beyond the
 individually recorded releases above.
+
+**31. Standing permission to append the art LFS globs needed as work proceeds
+(2026-09-23).** For the new cell bed the owner was offered *"Tak — dopisz tylko
+ten glob"* or *"Nie — zostaw model bez publikacji"* and chose:
+
+> Tak — dopisz tylko ten glob
+
+This releases exactly
+`public/game-content/source-art/rendered.furniture.cell.bed.single.variants.*.png`
+in the `browser` job's `git lfs pull --include=` list in `.github/workflows/ci.yml`.
+Immediately afterwards, without a further multiple-choice prompt, the owner
+wrote:
+
+> daję ci odgórną zgodę żeby wszystko dopisywać na bieżąco, bez pytania
+
+In the context of the immediately preceding LFS-glob request, this gives
+standing permission to append the specific art globs needed by later Stage-7
+batches to that same `browser` include list without another per-batch request.
+The exact words are direct user wording, not an agent-written option; the
+preceding clickable choice has the weaker provenance used for such choices
+elsewhere in this file. The standing permission does not name another CI job,
+another workflow edit, a pull request, a merge, or another owner reservation.
 
 
 ## Required workflow for every issue

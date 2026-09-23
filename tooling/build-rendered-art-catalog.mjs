@@ -94,6 +94,7 @@ export const PUBLISHED_ASSET_IDS = [
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',
+  'furniture.cell.bed.single.variants',
   'furniture.chair.wooden',
   'furniture.corridor.bench.variants',
   'furniture.dining.table.wooden',

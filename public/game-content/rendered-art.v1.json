@@ -78,6 +78,31 @@
       }
     },
     {
+      "assetId": "furniture.cell.bed.single.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.cell.bed.single.variants.7d0ecb856553.png",
+      "sha256": "7d0ecb856553e46b9fe9a847000e9b761d920ac0ebaa5e95cb43d11b571e6967",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 512
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 2
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 2.24
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.chair.wooden",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.chair.wooden.d407f2efedfd.png",

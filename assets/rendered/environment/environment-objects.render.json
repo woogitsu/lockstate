@@ -255,8 +255,8 @@
     {
       "assetId": "furniture.cell.bed.single.variants",
       "image": "furniture.cell.bed.single.variants.png",
-      "sha256": "18fc1cc68ee4dded86cbfbd4fa55a370d2100cdebf45d7daed54440d3fe93ceb",
-      "pixelSha256": "57d0ecb3fa2cc0783a748f3e8af915138e86056c8e91dfba293a8516bdd01dd7",
+      "sha256": "7d0ecb856553e46b9fe9a847000e9b761d920ac0ebaa5e95cb43d11b571e6967",
+      "pixelSha256": "cff74a4de47a789fff14fa5f411847302019937066adf9e6ab3e24766cd1390b",
       "footprintTiles": {
         "width": 1.0,
         "height": 2.0
@@ -272,11 +272,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 19,
-        "y": 31,
-        "width": 218,
-        "height": 450,
-        "opaquePixels": 97972
+        "x": 18,
+        "y": 43,
+        "width": 220,
+        "height": 426,
+        "opaquePixels": 88944
       }
     },
     {

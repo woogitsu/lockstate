@@ -130,6 +130,17 @@ describe('environment extraction manifest', () => {
     }
   });
 
+  it('loads the cell bed from its full Blender render instead of the older owner-sheet crop', () => {
+    const sprite = ENVIRONMENT_SPRITES['env.object.bed'];
+    expect(sprite.kind).toBe('rendered-art');
+    expect(environmentSourceAssetIds()).not.toContain('furniture.cell.bed.single.variants');
+    const frame = planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog).frames.find((item) => item.spriteId === 'env.object.bed');
+    expect(frame?.sheetKey).toBe('rendered-art:furniture.cell.bed.single.variants');
+    expect(frame?.sourceRectPx).toEqual({ x: 0, y: 0, width: 256, height: 512 });
+    expect(frame?.atlasRectPx.width).toBe(128);
+    expect(frame?.atlasRectPx.height).toBe(256);
+  });
+
   it('turns a frame size with its quarter-turn', () => {
     const upright: EnvironmentSpriteDefinition = {
       kind: 'source-art',

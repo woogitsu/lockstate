@@ -263,8 +263,9 @@ declared footprint is an exact multiple of 1/20 of a tile, so the pixel size is
 taken from the footprint reduced to lowest integer terms and `res_x / res_y`
 equals `footprint_w / footprint_h` with no rounding. The recorded drift is `0`
 for all 23 models. A consumer reading one of these PNGs whole therefore needs
-`quarterTurns: 0`; the quarter-turn `env.object.bed` carries exists because the
-*owner's sheet* holds the bed lying east-west, not because a bed needs turning.
+`quarterTurns: 0`. The earlier owner-sheet crop needed a quarter-turn because
+that sheet holds the bed east-west; since the 2026-09-23 Blender revision,
+`env.object.bed` reads a north-up render and uses `quarterTurns: 0`.
 
 **The frame is the footprint plus a stated transparent margin**, 6% on each
 side, not a tight crop. Issue #1028 measured why: the alpha scan in
@@ -387,9 +388,9 @@ than the pinned one: `pipeline_common.require_blender_version()` refuses to
 run under any other, and this gate never sets
 `LOCKSTATE_ALLOW_BLENDER_MISMATCH` to get past that refusal.
 
-`assets/rendered/evidence/` holds three pictures, because a claim that art looks
-better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
-owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
+`assets/rendered/evidence/` holds three pictures from the 2026-09-06 pass.
+`bed-vs-owner-sheet.png` puts that pass's rendered bed beside the
+owner sheet's then-declared `env.object.bed` crop -- (740, 288, 460x230), resampled
 and quarter-turned exactly as `environment-textures.ts` would -- at 3x and at
 the 128x256 the game actually draws; `geometry-before-after.png` pairs six
 objects across the 2026-09-06 remodel; `all-23-objects.png` is the whole set.
