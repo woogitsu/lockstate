@@ -196,7 +196,11 @@ describe('named RNG stream isolation in the real session runtime', () => {
     // exactly what it should do for a command that decided its own sentence,
     // and is why every canonical state hash in `session-replay.test.ts` is
     // unchanged by this stream existing.
-    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence']);
+    //
+    // **`prisoners.priors` (ADR 0124) is absent from it for the same reason.**
+    // Every admission here names its `priorIncidents`, so the seventh stream
+    // is registered, snapshotted and never drawn from.
+    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.priors', 'prisoners.sentence']);
 
     // Seeding is checked against a session that has not been *used* yet.
     // `buildDeterminismScenario` hires five guards, and since #70 wired ADR

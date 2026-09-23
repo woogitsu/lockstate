@@ -56,6 +56,14 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * replaces, and the words pinned below are what say the merge seeded it from
  * the bundle's own `masterSeed` rather than from anywhere else.
  *
+ * **A third time, on 2026-09-23:** ADR 0124 added a seventh stream,
+ * `prisoners.priors`, the stream an arrival's prior-incident count is drawn
+ * from when an admission does not name one. Every case below failed until
+ * the list and both word tables were extended by hand. The words were derived
+ * independently of `deriveXoshiroState`, by a re-implementation of
+ * FNV-1a-64 and SplitMix64 that reproduces the `prisoners.sentence` rows
+ * above exactly, and were not read off the code under test.
+ *
  * The first time, for the record: ADR 0061 added a fifth stream,
  * `contraband.introduction`, and every case below failed until the list and
  * both word tables were extended by hand. That is this file working, and the
@@ -71,7 +79,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * Written out, never read from `new-session.ts`. If this list is wrong the
  * cases below fail; if it goes stale the cases below fail. That is the point.
  */
-const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence'] as const;
+const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.priors', 'prisoners.sentence'] as const;
 
 /**
  * `deriveXoshiroState(seed, name).words` for the two seeds these cases use,
@@ -89,6 +97,7 @@ const DERIVED_WORDS_AT_SCENARIO_SEED: Readonly<Record<string, readonly number[]>
   'contraband.introduction': [3484590104, 358788944, 3779368715, 3836528074],
   'identity.actor-name': [1389004806, 3929526187, 801062818, 758337395],
   'prisoners.classification': [3766015752, 2847574757, 3141289015, 3676423178],
+  'prisoners.priors': [3905103131, 162431245, 1935598549, 4222829448],
   'prisoners.sentence': [1659324535, 280634646, 2187164178, 2228777105],
 };
 
@@ -98,6 +107,7 @@ const DERIVED_WORDS_AT_SEED_ZERO: Readonly<Record<string, readonly number[]>> = 
   'contraband.introduction': [4191607977, 1599308922, 1831874870, 2722278899],
   'identity.actor-name': [53358203, 2080006951, 2778740427, 1505507477],
   'prisoners.classification': [1731836178, 401524879, 2842153704, 1358188498],
+  'prisoners.priors': [228843386, 2687992157, 3371641687, 2218521556],
   'prisoners.sentence': [2971190074, 2860075831, 2101535010, 3330131813],
 };
 
