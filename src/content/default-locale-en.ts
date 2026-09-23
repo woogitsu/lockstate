@@ -1384,18 +1384,18 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   //   (`src/simulation/construction/system.ts`), so a wall still queued or
   //   being built leaves its edge `0` and the room is refused. This is the
   //   case a newcomer meets first: walls drawn, room zoned at once.
-  // - *"along every side, and yours has a gap"* -- `'open'` means one or more
-  //   perimeter edges hold nothing, which is a gap and not necessarily a whole
-  //   missing side; "a gap" is true of one and of several.
-  // - *"this room type"* -- `zone` refuses on this only for an `enclosed`
-  //   requirement; `outdoors` and `none` accept any perimeter.
+  // - *"tile edges around it"* -- walls and doors occupy edges, not tile
+  //   centres (#886); `BuildOverlay` previews their exact placement.
+  // - *"the outline still has a gap"* -- `'open'` means one or more perimeter
+  //   edges hold nothing. `zone` refuses only for `enclosed`; `outdoors`
+  //   and `none` accept any perimeter.
   //
-  // 22 words, one fewer than the sentence it replaces. It is still the longest
+  // 22 words, the same budget as #935's sentence. It is still the longest
   // of the 48 refusal sentences `REFUSAL_LABEL_KEYS` maps (the next is
   // `cancel-build-order.stale-cancellation`, 21), which is the figure
   // `src/simulation/refusals/refusal-band-lifetime.ts` sizes its hold against;
-  // one word shorter only leaves that bound further from binding.
-  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type needs a finished wall or door along every side, and yours has a gap.',
+  // keeping that word count leaves the bound unchanged.
+  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — finished walls or doors must line the tile edges around it; the outline still has a gap.',
   // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
   // `zone.invalid-area` and a different *sentence*: a player told "the room was
   // not zoned" after asking to remove one would go and look at the wrong

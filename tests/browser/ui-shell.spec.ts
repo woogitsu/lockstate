@@ -1913,6 +1913,18 @@ test.describe('HUD shell', () => {
       })),
     });
 
+    test('an open room refusal explains that walls belong on tile edges (#886)', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(
+        (model) => window.lockstateUiHarness.setHudViewModel(model),
+        withSentences(1, LONGEST_REFUSAL_KEY),
+      );
+
+      const refusal = page.locator('.hud-alerts__list [data-alert="a"]');
+      await expect(refusal).toContainText('tile edges');
+      await expect(refusal).toContainText('finished walls or doors');
+    });
+
     for (const [width, height] of [
       [1280, 720],
       [1280, 800],

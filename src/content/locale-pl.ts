@@ -858,13 +858,12 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.unowned-land': 'Nie wyznaczono pomieszczenia — nie cała ta ziemia należy do ciebie.',
   'hud.alert.refusal.zone.below-minimum-size':
     'Nie wyznaczono pomieszczenia — ten obszar jest mniejszy, niż pozwala ten typ pomieszczenia.',
-  // Rewritten with the English original for #935: it named the rule and not
-  // what satisfies it. *Ukończonej* because only a finished order writes the
-  // edge (`ConstructionSystem.finalizeConstruction`); *ściany lub drzwi* after
-  // *wymaga* in the genitive, where *drzwi* is its own genitive plural; *luka*
-  // for the English *gap*, true of one open edge and of several.
+  // #935 named the finished wall or door that satisfies the rule; #886 now
+  // names the tile edge on which either is built. *Ukończone* is necessary:
+  // a queued order does not close an edge. *Luka* is true of one or more open
+  // perimeter edges.
   'hud.alert.refusal.zone.not-enclosed':
-    'Nie wyznaczono pomieszczenia — ten typ wymaga ukończonej ściany lub drzwi wzdłuż każdego boku, a w twoim obszarze jest luka.',
+    'Nie wyznaczono pomieszczenia — ukończone ściany lub drzwi muszą stać na krawędziach pól wokół niego; w obrysie nadal jest luka.',
   'hud.alert.refusal.unzone.invalid-area': 'Nic nie usunięto — ten obszar nie jest poprawnym prostokątem.',
   'hud.alert.refusal.unzone.nothing-to-remove': 'Nic nie usunięto — w tym obszarze nie ma pomieszczenia.',
   'hud.alert.refusal.unzone.room-occupied': 'Nic nie usunięto — ktoś korzysta z tego pomieszczenia.',
