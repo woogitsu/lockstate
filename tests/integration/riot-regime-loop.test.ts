@@ -576,12 +576,21 @@ describe('a riot survives a save, because nothing about it is stored', () => {
      * question than the old numbers were and a stronger result for this file's
      * own claim, so both are recorded: the divergence is a property of where
      * the window falls, not of the restore.
+     *
+     * **And since issue #1373 it is not a property of the window either.** The
+     * owner's ruling of 2026-09-23 answered ADR 0059 open question 3 -- a save
+     * carries the walk -- so a save taken mid-journey restores the walkers
+     * mid-stride, and the two censuses agree wherever the window falls. The
+     * last assertion below is that claim, added beside the pinned pair rather
+     * than in place of it; `tests/determinism/restore-mid-walk-exactness.test.ts`
+     * is where it is measured across every save tick of a day.
      */
     expect({ live: liveCensus, restored: restoredCensus }).toEqual({
       live: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
       restored: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
     });
     expect(restoredCensus.byAction['action.use-toilet']).toBeUndefined();
+    expect(restoredCensus).toEqual(liveCensus);
   });
 
   it('restores after the riot onto the ordinary timetable, which is the other half of the same proof', () => {

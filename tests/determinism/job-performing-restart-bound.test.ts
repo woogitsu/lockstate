@@ -56,6 +56,17 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   two**; see `RESTORED_TRAVEL_BOUND_TICKS` for why, and for why the
  *   prediction is corrected rather than the code.
  *
+ * ## And the profile after issue #1373, which moved the second bullet
+ *
+ * **A save taken mid-walk now costs nothing either**, for a save this build
+ * writes: the owner ruled on 2026-09-23 that a save carries the walk (ADR 0059
+ * open question 3, option 5), so the carrier comes back mid-stride with the
+ * path request it was waiting on, and the errand completes on the continuous
+ * run's tick at every walking tick of the scenario. The two-cycle bullet above
+ * is kept because it is still exactly true of a save written *before* the
+ * ruling -- such a save has no `simulation.inFlight` section and is restored
+ * with the old reset -- and the case that measures it now restores that shape.
+ *
  * The capture ticks are **found by running the scenario** rather than written
  * down, so a change to any cadence moves what is captured instead of making
  * the file assert against ticks the carrier is no longer at.
@@ -275,10 +286,22 @@ function containersWithoutEmptyRows(runtime: SimulationRuntime): readonly (reado
     .map(([id, rows]) => [id, rows.filter(([, quantity, reserved]) => quantity > 0 || reserved > 0)] as const);
 }
 
-function restoreAt(captureTick: number): SimulationRuntime {
+/**
+ * `asWritten: 'before-1373'` restores the bundle without its
+ * `simulation.inFlight` section -- the shape every save written before issue
+ * #1373 has, and which a current build still restores with the old travel
+ * reset. That is what keeps the two-cycle measurement below reachable now that
+ * a current save carries the walk.
+ */
+function restoreAt(captureTick: number, asWritten: 'current' | 'before-1373' = 'current'): SimulationRuntime {
   const interrupted = buildScenario();
   stepTo(interrupted, captureTick);
-  return restoreSimulationRuntime(captureSessionSnapshot(interrupted), SEED).runtime;
+  const bundle = captureSessionSnapshot(interrupted);
+  if (asWritten === 'before-1373' && bundle.simulation !== undefined) {
+    const { inFlight: _inFlight, ...simulation } = bundle.simulation;
+    return restoreSimulationRuntime({ ...bundle, simulation }, SEED).runtime;
+  }
+  return restoreSimulationRuntime(bundle, SEED).runtime;
 }
 
 describe('an errand saved mid-leg: the measured cost of a restore', () => {
@@ -311,19 +334,48 @@ describe('an errand saved mid-leg: the measured cost of a restore', () => {
     }
   });
 
-  it('costs no reconsideration cycle when a new save is taken mid-walk', () => {
+  it('costs nothing when the save is taken mid-walk, which is the exclusion #1373 removed', () => {
     const continuous = completionTick(buildScenario());
     const walking = ticksCarryingIn('travelling');
     expect(walking.length).toBeGreaterThan(0);
 
+    // Every walking tick rather than a sample: the claim is "no tick of the
+    // walk costs anything", and the case below already proved that some ticks
+    // used to cost 40.
+    for (const captureTick of walking) {
+      expect(completionTick(restoreAt(captureTick)), `captured mid-walk at tick ${captureTick}`).toBe(continuous);
+    }
+  });
+
+  /**
+   * **SUPERSEDED FOR A CURRENT SAVE BY THE CASE ABOVE, AND KEPT, NOT REWRITTEN.**
+   * Until issue #1373 this was the file's measurement of every mid-walk save:
+   * the ADR 0059 open question 3 exclusion, costing a carry up to
+   * `RESTORED_TRAVEL_BOUND_TICKS`. The owner's ruling of 2026-09-23 removed the
+   * exclusion for saves this build writes. It still describes every save
+   * written *before* the ruling, which a current build restores with the old
+   * reset, so it now runs against that shape (`restoreAt(..., 'before-1373')`)
+   * and every assertion in it -- the bound and the non-vacuity check -- is
+   * unchanged.
+   */
+  it('a save written before #1373 still costs at most two reconsideration cycles when taken mid-walk', () => {
+    const continuous = completionTick(buildScenario());
+    const walking = ticksCarryingIn('travelling');
+    expect(walking.length).toBeGreaterThan(0);
+
+    let anyDelay = false;
     for (const captureTick of sample(walking)) {
-      const restored = restoreAt(captureTick);
+      const restored = restoreAt(captureTick, 'before-1373');
       const completed = completionTick(restored);
       expect(completed, `captured mid-walk at tick ${captureTick}`).toBeGreaterThan(0);
       const delay = completed - continuous;
       expect(delay, `captured mid-walk at tick ${captureTick}`).toBeGreaterThanOrEqual(0);
-      expect(delay, `captured mid-walk at tick ${captureTick}`).toBe(0);
+      expect(delay, `captured mid-walk at tick ${captureTick}`).toBeLessThanOrEqual(RESTORED_TRAVEL_BOUND_TICKS);
+      if (delay > 0) anyDelay = true;
     }
+    // The bound is only interesting if some capture actually pays it: a run
+    // where every mid-walk save cost zero would pass the bound vacuously.
+    expect(anyDelay, 'no sampled mid-walk capture cost anything, so the bound above is untested').toBe(true);
   });
 
   it('gives the goods back to nobody and loses none of them, whichever phase the save caught', () => {

@@ -5,15 +5,57 @@ import { DoorRegistry } from './door';
 import { FlowFieldCache, type FlowFieldCacheMetrics } from './flow-field';
 import {
   PathRequestQueue,
+  type PendingPathRequestSnapshot,
   type PathRequestPriority,
   type PathRequestQueueMetrics,
   type PathRequestQueueSnapshot,
   type ResolvedPathRequest,
 } from './path-request-queue';
 import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
+import type { Route, RouteResult } from './route';
 import { RouteCache, type RouteCacheMetrics } from './route-cache';
 import type { RouteContext } from './route-context';
 import { isEdgeTraversable } from './traversal';
+
+/**
+ * A resolved route as a save carries it: the answer, without the three
+ * diagnostics of how it was reached. See `NavigationSystem.getInFlightSnapshot`
+ * for why those are left out.
+ */
+export interface ResolvedPathRequestSnapshot {
+  readonly id: string;
+  readonly result: RouteResult;
+}
+
+/** What `NavigationSystem.getInFlightSnapshot` carries: see that method. */
+export interface NavigationInFlightSnapshot {
+  readonly pending: readonly PendingPathRequestSnapshot[];
+  readonly results: readonly ResolvedPathRequestSnapshot[];
+}
+
+function copyRoute(route: Route): Route {
+  return {
+    segments: route.segments.map((segment) => ({
+      regionId: segment.regionId,
+      waypoints: segment.waypoints.map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
+      ...(segment.enteredViaDoorId === undefined ? {} : { enteredViaDoorId: segment.enteredViaDoorId }),
+    })),
+    totalCost: route.totalCost,
+  };
+}
+
+function copyResult(result: RouteResult): RouteResult {
+  if (result.ok) return { ok: true, route: copyRoute(result.route) };
+  const { failure } = result;
+  return {
+    ok: false,
+    failure: {
+      reason: failure.reason,
+      ...(failure.blockedBy === undefined ? {} : { blockedBy: { doorId: failure.blockedBy.doorId, reason: failure.blockedBy.reason } }),
+    },
+  };
+}
+
 
 export interface NavigationSystemOptions {
   /** Deterministic work-unit (expanded search node) budget spent per tick; see `PathRequestQueue.processTick`. */
@@ -152,6 +194,116 @@ export class NavigationSystem implements SystemRegistration {
    */
   public resultCount(): number {
     return this.results.size;
+  }
+
+  /**
+   * The work in flight: requests still waiting, and resolved routes nobody has
+   * collected yet (issue #1373, ADR 0059 option 5 -- the owner's ruling of
+   * 2026-09-23).
+   *
+   * ## Why the queue is carried rather than re-asked for by its owners
+   *
+   * The alternative is that each of the four owners that survive a restore
+   * (`ActionSystem`, `DeploymentSystem`, `PatrolSystem`, `SearchSystem`)
+   * re-enqueues its request on load. That was measured against what the queue
+   * does with a request, and it cannot be exact:
+   *
+   * - **Service order is `(effective priority, enqueuedAtTick, id)`**, and
+   *   effective priority ages by `enqueuedAtTick` (`processTick`). An owner
+   *   re-enqueuing on load enqueues at the *restore* tick, so a request that
+   *   had aged past a newer one sorts behind it, and under a binding
+   *   `workBudget` that is a different tick of service. Re-queuing "in the
+   *   original order" would need each owner to remember the enqueue tick, the
+   *   origin, the destination and the route context it asked with -- the whole
+   *   request, stored four times in four shapes instead of once here.
+   * - **A resolved result has no owner-side equivalent at all.** A route
+   *   resolves at order 150 and `ActionSystem` collects it at its next
+   *   reconsideration, up to twenty ticks later; a save in that window holds a
+   *   route that no owner could re-ask for without paying the search again at a
+   *   different tick, against caches a restore rebuilds cold.
+   *
+   * So the queue's own contents are the save's, ids and all, and every owner
+   * keeps the id it already held. Caches (`RouteCache`, flow fields, the
+   * region graph) are still **not** carried: they are derived from the world
+   * and the door registry, both persisted, which is ADR 0007's line and is
+   * unchanged.
+   *
+   * ## Why a result is carried without `expansions`, `usedFlowField` and `waitedTicks`
+   *
+   * **Measured, not tidied.** With all five fields carried, a save taken with
+   * nobody's result outstanding still diverged from the continuous run: the
+   * restored session's first route to the yard reported `expansions: 88`
+   * where the continuous one reported `0`, because the continuous session's
+   * `RouteCache` already held that leg and the restored one starts cold. The
+   * route was the same; the cost of finding it was not. Those three fields
+   * describe *how the search went* -- a cache's warmth, a flow field's group
+   * size, how long the request queued -- and nothing in `src/` reads any of
+   * them to decide anything (the owners read `result` alone). Carrying them
+   * would put cache state into a save's checksum, which is exactly what ADR
+   * 0007 keeps out of it. A restored result reports `0`, `false` and `0`:
+   * the search that produced it happened in a session that has ended, and
+   * this one did none of that work.
+   *
+   * **What this does not settle, and it is the weakest part of the exactness
+   * claim.** The same cold cache also means the restored session's *searches*
+   * cost more expansions against `workBudgetPerTick` than the continuous
+   * session's hits did. While the budget does not bind that changes nothing,
+   * because every waiting request is served that tick either way -- and it
+   * did not bind on any save `tests/determinism/restore-mid-walk-exactness.test.ts`
+   * takes. Where it binds, a restored session can serve a request a tick later
+   * than the session it was saved from.
+   *
+   * Deterministic: both lists ascending by id.
+   */
+  public getInFlightSnapshot(): NavigationInFlightSnapshot {
+    return {
+      pending: this.queue.getSnapshot(),
+      results: [...this.results.values()]
+        .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
+        .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+    };
+  }
+
+  /** Replaces the waiting set and the uncollected results with a snapshot's. For a restore, before any owner's `loadSnapshot` asks `knowsRequest`. */
+  public loadInFlightSnapshot(snapshot: NavigationInFlightSnapshot): void {
+    this.queue.loadSnapshot(snapshot.pending);
+    this.results.clear();
+    for (const outcome of snapshot.results) {
+      if (this.results.has(outcome.id) || this.queue.has(outcome.id)) {
+        throw new RangeError(`Path request id is both waiting and resolved, or resolved twice, in a snapshot: ${outcome.id}`);
+      }
+      this.results.set(outcome.id, { id: outcome.id, result: copyResult(outcome.result), usedFlowField: false, expansions: 0, waitedTicks: 0 });
+    }
+  }
+
+  /**
+   * Whether `id` names a request this system is holding, in either half.
+   *
+   * The question a restoring owner asks before trusting a request id its own
+   * snapshot carried: a save that restored the owner's id but not the queue
+   * entry would otherwise leave the actor waiting for ever on a result
+   * nothing will produce -- the exact failure the old blanket reset existed to
+   * prevent.
+   */
+  public knowsRequest(id: string): boolean {
+    return this.queue.has(id) || this.results.has(id);
+  }
+
+  /**
+   * Every request id this system holds, in either half, that begins with
+   * `prefix` -- ascending.
+   *
+   * For an owner that mints its ids under a namespace and, after a restore,
+   * holds no record of which ones it minted: `IncidentResponseSystem`, whose
+   * response records a save does not carry (ADR 0033). Its first update after
+   * a load gives back every request under its own prefix that no live record
+   * names, which is the one place the ids a carried queue brought back can be
+   * orphaned (issue #1373).
+   */
+  public requestIdsWithPrefix(prefix: string): readonly string[] {
+    const waiting = this.queue.getSnapshot().map(({ id }) => id);
+    const resolved = [...this.results.keys()].sort();
+    return [...waiting, ...resolved].filter((id) => id.startsWith(prefix)).sort();
   }
 
   public getQueueMetrics(): PathRequestQueueMetrics {
