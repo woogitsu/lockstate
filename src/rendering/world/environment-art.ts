@@ -267,7 +267,6 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
-  'object.fridge',
   'object.loading-dock-door',
   'object.prep-counter',
   'object.security-console',
@@ -333,6 +332,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
   'object.medical-bed': 'env.object.medical-bed',
   'object.medicine-cabinet': 'env.object.medicine-cabinet',
+  'object.fridge': 'env.object.fridge',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',

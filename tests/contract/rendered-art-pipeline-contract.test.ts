@@ -102,12 +102,13 @@ describe('rendered-art pipeline contract', () => {
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 30 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 32 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
  * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
  * three more models, including the unpublished sink; the storage-rack batch
  * adds one more, the wooden-chair batch another, and the dining-table batch
- * adds the 29th; the infirmary medical bed adds the 30th. It runs with no Blender,
+ * adds the 29th; the infirmary medical bed and medicine cabinet add the 30th
+ * and 31st; the kitchen fridge adds the 32nd. It runs with no Blender,
  * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
@@ -120,12 +121,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 31 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 32 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(31);
+    expect(sidecar.entries.length).toBe(32);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

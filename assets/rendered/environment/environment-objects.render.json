@@ -415,6 +415,33 @@
       }
     },
     {
+      "assetId": "furniture.kitchen.fridge",
+      "image": "furniture.kitchen.fridge.png",
+      "sha256": "72fd8383079eac1de2bd5fdedb0e382ecf097659315e9783841952598b48170c",
+      "pixelSha256": "b5dd1313992fad846b371b52d75cd0e4cd59c7001b209615aaca0d86d8e3d7b6",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 26,
+        "y": 27,
+        "width": 204,
+        "height": 215,
+        "opaquePixels": 43436
+      }
+    },
+    {
       "assetId": "furniture.medical.bed.single",
       "image": "furniture.medical.bed.single.png",
       "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",

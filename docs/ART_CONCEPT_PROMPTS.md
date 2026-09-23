@@ -158,6 +158,19 @@ The resulting original reference and packed fabric swatch are recorded in
 The original reference and Blender model are recorded in
 `assets/source/concepts/medicine-cabinet-v1.md`.
 
+### Kitchen cold storage — `furniture.kitchen.fridge`
+
+> one upright institutional refrigerator, 1×1 tile, shown directly overhead
+> and from three consistent oblique views — blue-grey steel cabinet, broad
+> cream enamel front cap and doors, dark insulated seam dividing the freezer
+> hatch, brushed metal pull, black plinth
+> …the steel roof and cream cap must remain distinct at 64×64 px, with the
+> front door and handle guiding the 3D form rather than being flattened into a
+> plain square.
+
+The original concept and model provenance are recorded in
+`assets/source/concepts/fridge-v1.md`.
+
 ### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
 
 > a fixed corridor bench, 2×1 tiles, seen from directly above with its sides

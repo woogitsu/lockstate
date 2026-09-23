@@ -88,6 +88,8 @@ const FIXTURE: HarnessWorldFixture = {
   medicalBedTileY: 4,
   medicineCabinetTileX: 30,
   medicineCabinetTileY: 4,
+  fridgeTileX: 31,
+  fridgeTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -237,6 +239,13 @@ function buildFrame(): RenderFrame {
       definitionId: 'medicine-cabinet-wooden',
       tileX: FIXTURE.medicineCabinetTileX,
       tileY: FIXTURE.medicineCabinetTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-fridge',
+      definitionId: 'fridge-brick',
+      tileX: FIXTURE.fridgeTileX,
+      tileY: FIXTURE.fridgeTileY,
       phase: 'built',
     },
   ];
