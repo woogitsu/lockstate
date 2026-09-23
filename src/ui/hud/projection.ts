@@ -478,6 +478,13 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
  * prison reads, which is correct for the same reason it is correct on the
  * panel: a prison with nobody in a sector has all the coverage it needs.
  *
+ * **A fourth since ADR 0095 decision 1 (2026-09-23), and the sentence above is
+ * kept as the three it was:** `securityCoverageReserveShort`, "Tight", the
+ * Staff panel's word for every post filled with fewer guards free than the
+ * worst riot needs, raised here by `HudCountsViewModel.responseReserveShort`.
+ * An empty prison still reads "Covered": it asks for nobody, so the
+ * simulation's `isResponseReserveShort` never stands for it.
+ *
  * ## What this badge used to say, and what the change costs
  *
  * Until the owner's **ruling 21 of 2026-08-31** the two lower rungs rendered

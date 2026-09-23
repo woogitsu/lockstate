@@ -136,7 +136,7 @@ below are what still differs.
 | --- | --- | --- | --- | --- |
 | A1 | `src/main.ts:2845` — `purchase-materials` pre-flight, via `judgeAffordability` (`src/ui/affordability.ts:167-189`) | the charge, the last published balance (≤500 ms old), the `'deliveries'` rung floor (`affordability.ts:152`) | `hud.refusal.purchase-materials-past-floor`, or the generic `hud.refusal.purchase-materials` | **your press failed** |
 | A2 | `src/main.ts:3067` — `hire-staff` pre-flight, same function | as A1, at the `'hiring'` rung, which shares the `'deliveries'` threshold | `hud.refusal.hire-staff-past-floor` / `hud.refusal.hire-staff` | **your press failed** |
-| A3 | `src/ui/hud/hud.ts:1476-1491` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:1246-1295`); `undefined` for a chrome intent | **your press failed** |
+| A3 | `src/ui/hud/hud.ts:1476-1491` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:1253-1302`); `undefined` for a chrome intent | **your press failed** |
 
 All three reach **the band only**. None of them reaches `HudViewModel.alerts`,
 and none of them increments any count: `hudAlertsFromWorkerMessage`

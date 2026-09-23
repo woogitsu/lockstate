@@ -961,6 +961,20 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
+**Since ADR 0095 decision 1 (accepted by the owner on 2026-09-23) the totals
+carry two more figures, and neither is summed per sector.** `spare` is the size
+of `claimableGuardIds` -- post-eligible staff in phase `'unassigned'`, the pool
+a response claims from, which is not `unassigned` (that counts a free nurse) --
+and `reserve`, present only when the session hands `projectStaff` its
+`IncidentResponseSystem`, is `requiredResponderCount(INCIDENT_SEVERITY_CEILING)`:
+the free guards the worst riot needs, 5 under the default policy, following the
+ADR's recommended ceiling definition (its open question 1 is still open). Both
+are prison-wide because the pool belongs to no sector, the ADR's own open
+question 2. The coverage block reads them into a fourth rung, `Tight`, and the
+status strip gets the same fact as `PrisonCondition`'s
+`'security.response-reserve-short'` -- a name with no magnitude, so the strip
+says the word and the panel says the count.
+
 **One** of the fifteen catalogued read models still has a route and nobody on
 the end of it: **fourteen are read, by thirteen modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.

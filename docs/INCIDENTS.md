@@ -636,6 +636,14 @@ it is a consequence of a single sector and it changes when a second one exists.
 > says to a player is the owner's under `AGENTS.md`'s fourth exclusion. What is
 > settled is that this paragraph may not go on saying the two conditions are
 > the same condition.
+>
+> **Settled for the panel on 2026-09-23** (ADR 0095 decision 1, accepted by the
+> owner): the coverage read model publishes the response reserve --
+> `requiredResponderCount` at `INCIDENT_SEVERITY_CEILING`, five free guards --
+> and the prison above now reads **`Tight`**, told to *"Hire 5 more to answer
+> the worst riot."* The reply the escape hatch needs is on screen; the response
+> rule itself is unchanged, and `docs/SECURITY.md`'s requirement section
+> carries the mechanism.
 
 ## Scale
 

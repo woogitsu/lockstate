@@ -368,6 +368,23 @@ the coverage block is to gain a rung for *every post filled, nothing spare*.
 Neither is built at the time of writing. How the reserve is defined is still
 that document's open question 1.
 
+**Built on 2026-09-23, and the sentence above is kept because it described the
+tree for the morning it was written.** The reserve is
+`responseReserveGuardCount` in `src/simulation/security/response-reserve.ts`:
+`IncidentResponseSystem.requiredResponderCount(INCIDENT_SEVERITY_CEILING)`,
+**5** under the default policy -- ADR 0095's *recommended* definition, the
+ceiling constant, and not an owner choice between its two (open question 1 is
+still open; the number is #29's). `projectStaff` publishes it prison-wide as
+`totals.reserve`, beside `totals.spare` (`spareGuardCount`, the size of
+`claimableGuardIds`), and the Staff panel's coverage block reads a fourth rung,
+**`Tight`**, whenever every post is filled and `spare < reserve`, with the hint
+*"Hire {count} more to answer the worst riot."* (`{count}` = `reserve - spare`).
+The status strip's `COVERAGE` chip says the same word through the
+`'security.response-reserve-short'` condition, below `Overcrowded` in
+precedence. `Covered` now means the posts **and** the reserve. No simulation
+behaviour moved: the instrument above reads the same outcomes and its badge
+column is the only thing that changed.
+
 > **Those figures are from before issue #586 and the shape is unchanged since.**
 > The fixture holds twelve prisoners on one bed, so crowding now drives its
 > riots to severity 9 and 10: the prison at its requirement still resolves 0 and

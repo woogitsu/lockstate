@@ -41,7 +41,7 @@
 > class remedy: `HostRefusalReason` gained a second member,
 > `'no-room-to-hold-anybody'` (`src/ui/host-refusal.ts:69`, not the one member
 > `:57` cited below), and `refusalMessageKey` grew a second `if` narrowing by
-> reason (`src/ui/hud/projection.ts:1366`,
+> reason (`src/ui/hud/projection.ts:1373`,
 > `if (reason === 'no-room-to-hold-anybody' && actionId === 'admit-prisoner') {`),
 > not the `Record` Option 2
 > recommends. So: H4 is no longer a miss (the "genuinely player-actionable...
@@ -131,7 +131,7 @@ orders in flight, and this thread holds none of them").
 
 | # | Site | Actioned by | Carries a reason today? | What it could say if it could |
 | --- | --- | --- | --- | --- |
-| H1 | `src/main.ts:1061-1065`, `requireSimulation` — shared by every command case that reaches it (at least eight: `purchase-materials`, `admit-prisoner`, `hire-staff`, `place-build-order`, `place-object`, `zone-room`, `unzone-room`, and every other case calling `requireSimulation(commands)`) | no session at all | No — plain `Error` | Nothing control-specific: "no session" is a cross-cutting fault, not a fact about the control pressed, and the per-`actionId` generic key (`refusalMessageKey`'s `undefined`-reason branch, `src/ui/hud/projection.ts:1267-1295`) is already the right sentence for it |
+| H1 | `src/main.ts:1061-1065`, `requireSimulation` — shared by every command case that reaches it (at least eight: `purchase-materials`, `admit-prisoner`, `hire-staff`, `place-build-order`, `place-object`, `zone-room`, `unzone-room`, and every other case calling `requireSimulation(commands)`) | no session at all | No — plain `Error` | Nothing control-specific: "no session" is a cross-cutting fault, not a fact about the control pressed, and the per-`actionId` generic key (`refusalMessageKey`'s `undefined`-reason branch, `src/ui/hud/projection.ts:1274-1302`) is already the right sentence for it |
 | H2 | `src/main.ts:2845-2847`, `purchase-materials` — unknown `itemId` | a schema-shaped defect: the requested material does not exist | No — plain `Error` | Nothing a player caused: nothing on the Build panel can name an item the catalogue does not carry, so this is the "malformed charge" case `host-refusal.ts:63-67` already reasons about for the sibling affordability check — a defect on this thread, and the generic sentence is the true one |
 | H3 | `src/main.ts:2845-2871`, `purchase-materials` — affordability | one of two: the standing overdraft floor (`verdict.refusal === 'past-the-floor'`), or a malformed charge | **Half of it.** `'past-the-floor'` throws `HostRefusalError('past-the-overdraft-floor', message)` (`main.ts:2868-2870`); the other branch throws a plain `Error` deliberately, for the same "malformed charge is a defect" reason as H2 | Already reaches `hud.refusal.purchase-materials-past-floor` (`src/content/default-locale-en.ts:2347`) |
 | H4 | `src/main.ts:2998-3001`, `admit-prisoner` — no room instance exists | genuinely player-actionable: nothing is zoned yet | **At the time, no — plain `Error`, the #791 defect. Fixed 2026-09-03, Option-1-shaped — see the status note.** | `hud.refusal.admit-prisoner-no-room` (`src/content/default-locale-en.ts:2369`): "Nobody was admitted — this prison has no room to hold anybody." — shipped, not `hud.alert.refusal.admit.no-accommodation`'s wording as guessed below |
@@ -201,7 +201,7 @@ different closed union. Both are exhaustive **by construction**: TypeScript
 refuses to compile a `Record<ClosedUnion, X>` missing a member, so a producer
 naming a fortieth `RefusalReason` breaks the build until somebody has decided
 its sentence — which is the property the current host-side function
-(`src/ui/hud/projection.ts:1246-1295`) does not have. **Re-anchored
+(`src/ui/hud/projection.ts:1253-1302`) does not have. **Re-anchored
 2026-09-06: it is no longer a plain `switch` alone — the 2026-09-03 ruling gave
 it a second `if (reason === …)` narrowing ahead of the switch, the same shape
 as the first, which is the point rather than a rebuttal of it.** Nothing there
@@ -297,7 +297,7 @@ one system rather than two.
 
 Add a member to `HostRefusalReason` per new case as it arises — exactly what
 #791 offered and the owner declined — and extend `refusalMessageKey`'s
-`switch` (`src/ui/hud/projection.ts:1147-1177`) with a new arm each time.
+`switch` (`src/ui/hud/projection.ts:1154-1184`) with a new arm each time.
 
 **What it costs:** almost nothing per case — a union member, a throw site, a
 switch arm, one new `default-locale-en.ts` entry. This is the cheapest option

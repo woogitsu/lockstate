@@ -3205,7 +3205,7 @@ handshake claim was therefore re-run rather than inherited and is unmoved:
 still `:34-40` and the four `this.transition()` sites still `:845`, `:1037`,
 `:1091` and `:1410`. §6's two cleared status references are **re-established
 rather than inherited**, both on files #917 edited: `src/ui/hud/messages.ts:95`
-still reads *"ADR 0017 -- Accepted"* and `src/ui/hud/projection.ts:979` still
+still reads *"ADR 0017 -- Accepted"* and `src/ui/hud/projection.ts:986` still
 *"ADR 0017 is Accepted without naming one either"*, and neither file names a
 currency, which is what the label rests on. `src/ui/hud/messages.ts:28` still
 carries the *"{count} waiting with no bed to sleep in"* comment it is cited for.

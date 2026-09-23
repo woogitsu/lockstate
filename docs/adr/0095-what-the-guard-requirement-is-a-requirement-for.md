@@ -45,6 +45,24 @@ nothing wider.
   commit message and pull request body, and puts it beside the code that makes
   it true.
 
+**Implemented on 2026-09-23**, on the terms above. The reserve is the ceiling
+constant this document recommends -- `responseReserveGuardCount` in
+`src/simulation/security/response-reserve.ts`, which asks
+`IncidentResponseSystem.requiredResponderCount` at a newly exported
+`INCIDENT_SEVERITY_CEILING` (10, the literal the trigger system's three clamps
+already used), so **5** -- and **that is this document's recommendation followed,
+not a separate owner choice: open question 1 stays open and the number is still
+#29's.** It is published prison-wide (`StaffViewModel.totals.reserve`, beside a
+new `totals.spare`) rather than as a per-row field and a sum, on open question
+2's own argument. The rung is `Tight` and is reached at `spare < reserve` rather
+than at `spare === 0`, because decision 1's second bullet says `Covered` must
+then mean *"that the prison can both hold its posts and answer what happens"*.
+Its sentences and their proofs are in the English locale entry for
+`hud.security.coverage-reserve-short`; the status strip carries the same rung
+below `Overcrowded`. No simulation behaviour changed, and
+`tests/integration/security-coverage-versus-response.test.ts` shows it: every
+outcome column is the figure it was and only the badge column moved.
+
 **Two sentences below are overtaken, and neither is rewritten.**
 
 - Decision 1 says the current `Covered` sentence, *"This prison has the guards
