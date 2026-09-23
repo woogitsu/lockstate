@@ -23,10 +23,12 @@ public/game-content/source-art/rendered.fixture.shower.head.*.png
 public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png
 ```
 
-No glob is released by this note. `AGENTS.md` reservation 3 and the owner's
-2026-09-21 per-batch ruling require a separate owner release. Until then,
-`tests/foundation/ci-configuration-contract.test.ts` fails on exactly those
-two ids. The branch must not be merged as a green art delivery.
+**Update, 2026-09-23:** The owner selected "Tak — dopisz tylko te dwa globy"
+against "Nie — pozostaw partię na gałęzi". `AGENTS.md` reservation 3 now
+records the narrow release, and the two segments were added to the existing
+line. Before that edit, `tests/foundation/ci-configuration-contract.test.ts`
+failed on exactly those two ids; the gate must be re-run after the edit and
+CI must still prove the real LFS fetch before merge.
 
 Local evidence: Blender 5.2.1 rendered the three new frames; the rendered-art
 catalog validator accepted five published entries; typecheck and production
