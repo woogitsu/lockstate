@@ -325,7 +325,7 @@ here rather than restated from memory:
 
 - *"Nie mów „zapisano", zanim zapis zostanie potwierdzony."* — do not say
   "saved" before a write is confirmed. `save.status.saved`
-  (`src/content/default-locale-en.ts:3400`, "Saved (generation
+  (`src/content/default-locale-en.ts:3482`, "Saved (generation
   {generation})") already ships only after a confirmed write; see
   `docs/PERSISTENCE.md` for the save/load contract this rests on.
 - *"Nie mów „wolne miejsce", jeśli znana jest wyłącznie liczba łóżek."* — do

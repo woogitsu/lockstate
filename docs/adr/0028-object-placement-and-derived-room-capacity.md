@@ -775,7 +775,7 @@ new `RoomInstanceRegistry.updateDerived`.
 
 **Visibly changes:** a bed the player placed is drawn in the world, and a zoned
 cell's `roomCapacity` on the status strip stops being 0 for the first time
-(`src/simulation/presentation/status-strip-projection.ts:150-155`).
+(`src/simulation/presentation/status-strip-projection.ts:157-162`).
 
 **Also fixes a shipped defect:** `door-wooden` stops being a catalogue row that
 consumes a plank and does nothing.

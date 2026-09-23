@@ -519,8 +519,11 @@ producer rather than an argument against it.
 ### 5. Every gang retaliation that opens locks the whole prison down — ARITHMETIC
 
 - Severity is
-  `severity: Math.max(1, Math.min(10, Math.round(risk * 10))),` (verbatim in
-  `src/simulation/incidents/trigger-system.ts`), at `:538`.
+  `severity: Math.max(1, Math.min(INCIDENT_SEVERITY_CEILING, Math.round(risk * 10))),`
+  (verbatim in `src/simulation/incidents/trigger-system.ts`), at `:538`.
+  *(Re-quoted 2026-09-23: the literal `10` became `INCIDENT_SEVERITY_CEILING`,
+  whose value is 10, when ADR 0095 decision 1 needed the ceiling readable by a
+  projection. Nothing below moves: the clamp is the same number.)*
 - `risk ≥ 0.6` by the gate above, so **severity ≥ 6**, always.
 - The lockdown line is
   `if (incident.severity >= this.policy.lockdownSeverityThreshold) {` (verbatim
@@ -636,11 +639,11 @@ position at v0.0.467).
 The incident type is in the persisted enum
 (`src/persistence/save-schema.ts:951`; the anchor read `:939`), the protocol
 event is registered
-(`src/simulation/protocol/types.ts:1826`, payload schema at `:2032`), the
+(`src/simulation/protocol/types.ts:1838`, payload schema at `:2032`), the
 message census carries a label (`src/content/simulation-message-keys.ts:268`),
 and both projections enumerate all four types
 (`src/simulation/presentation/incident-projection.ts:149`,
-`src/simulation/presentation/status-strip-projection.ts:428`).
+`src/simulation/presentation/status-strip-projection.ts:466`).
 
 **The registry's whole state is already in the save envelope** — definitions,
 members, reputation and grudges — at `src/persistence/save-schema.ts:971-977`,
@@ -883,7 +886,7 @@ payload is the envelope and the literal —
 `type: z.literal('incidents.assault-opened'),` (verbatim in
 `src/simulation/protocol/types.ts`), at `:2039` — because the channel
 deliberately carries no identity: *"No incident id, no sector id: the channel
-carries no identity"* (`src/simulation/protocol/types.ts:2095`). The place a
+carries no identity"* (`src/simulation/protocol/types.ts:2107`). The place a
 player would look one up does not exist: `hud/incidents` and
 `hud/incident-detail` are both listed in `UNPAINTED_PROJECTION_IDS`
 (`const UNPAINTED_PROJECTION_IDS`,
@@ -911,7 +914,7 @@ happened and is never told who was in it.**
 
 **(c) The adjudication — the moment the ruling names — is announced by
 nothing.** `SIMULATION_EVENT_TYPES`
-(`src/simulation/protocol/types.ts:1961-1989`; the anchor read `:1713-1735`) is
+(`src/simulation/protocol/types.ts:1973-2001`; the anchor read `:1713-1735`) is
 the closed list of everything
 the prison can say, and **no member of it is a sanction, a finding, a solitary
 term or an adjudication** — a count is deliberately not given, because the

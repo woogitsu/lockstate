@@ -19,6 +19,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * change -- and nothing below asserts that either: this file characterises
  * the behaviour the decision is about, which the decision leaves as it is).
  *
+ * **That last clause is half overtaken, 2026-09-23, and kept for §4's
+ * reason.** The simulation half still holds: every outcome column below is
+ * the figure it was, because decision 1 changes no behaviour. The *badge*
+ * column is the decision's deliverable and it moved as a diff, which is what
+ * this file said it was for: `read` now goes through `projectStaff` with the
+ * response system, as `hud/staff` does, and the rungs it asserts are
+ * `Stretched` wherever fewer than five guards are free and `Covered` where
+ * five are. Each changed case carries its old title and assertion.
+ *
  * ## What this file is
  *
  * A **measurement instrument**, not a fix. It runs one prison at five hire
@@ -225,6 +234,12 @@ function prisonHiring(guardCount: number, scheduledGuardCount?: number): Simulat
 interface Reading {
   /** What the Staff panel's coverage block decides, from the production function rather than a restatement of its rungs. */
   readonly badgeKey: string;
+  /** The panel hint's `{count}` -- on the reserve rung, the hires to the reserve (ADR 0095 decision 1). */
+  readonly hireCount: number;
+  /** Free guards the worst incident needs, as `projectStaff` publishes it. */
+  readonly reserve: number | undefined;
+  /** Whether the status strip's `COVERAGE` chip was told the reserve is short (`'security.response-reserve-short'`). */
+  readonly reserveShortOnStrip: boolean;
   readonly required: number;
   readonly assigned: number;
   readonly shortage: number;
@@ -249,8 +264,18 @@ function read(runtime: SimulationRuntime): Reading {
    * is what makes the badge below *the badge a player is shown* rather than a
    * restatement of how one is chosen.
    */
+  //
+  // **`responders` since ADR 0095 decision 1** (accepted 2026-09-23), because
+  // `hud/staff` passes it (`src/simulation/worker/projection-catalog.ts`), and
+  // so does `projectStatusCounts` for the strip: without it the reserve is
+  // unpublished and the badge below would be one no session shows.
   const view = projectStaff(
-    { staff: runtime.securityGuards, deployment: runtime.deploymentSystem, patrol: runtime.patrolSystem },
+    {
+      staff: runtime.securityGuards,
+      deployment: runtime.deploymentSystem,
+      patrol: runtime.patrolSystem,
+      responders: runtime.incidentResponseSystem,
+    },
     runtime.kernel.tick,
   );
   const totals = staffCoverageFromProjection(view);
@@ -262,10 +287,15 @@ function read(runtime: SimulationRuntime): Reading {
     staff: runtime.securityGuards,
     searchSystem: runtime.searchSystem,
     confiscations: runtime.confiscations,
+    deployment: runtime.deploymentSystem,
+    responders: runtime.incidentResponseSystem,
   }).counts;
   return {
     badgeKey: readout.badgeKey,
+    hireCount: readout.hireCount,
     ...totals,
+    reserve: totals.reserve,
+    reserveShortOnStrip: strip.conditions.includes('security.response-reserve-short'),
     spare: claimableGuardIds(runtime.securityGuards).length,
     resolved: metrics.incidentsResolved,
     lapsed: metrics.incidentsLapsed,
@@ -283,15 +313,28 @@ function readAfterSixteenDays(guardCount: number, scheduledGuardCount?: number):
 }
 
 const COVERED = 'hud.security.coverage-met';
+/** ADR 0095 decision 1's rung: every post filled, fewer free than the worst incident needs. */
+const STRETCHED = 'hud.security.coverage-stretched';
 const UNDERSTAFFED = 'hud.security.coverage-short';
 
 describe('coverage and response draw from one pool, and the panel speaks about the first', () => {
-  it('reports the prison Covered at the exact hire count that leaves nothing able to respond', () => {
+  /*
+   * **Titled "reports the prison Covered at the exact hire count that leaves
+   * nothing able to respond" until ADR 0095 decision 1 landed (2026-09-23),
+   * and asserted `COVERED` here.** That was the finding. The decision's
+   * whole deliverable is this line moving: the same prison, the same
+   * outcomes, and the badge now says what they are.
+   */
+  it('reports the prison Stretched at the exact hire count that leaves nothing able to respond, on the panel and on the strip', () => {
     const reading = readAfterSixteenDays(REQUIRED_AT_POPULATION);
 
     // What a player sees.
-    expect(reading.badgeKey).toBe(COVERED);
+    expect(reading.badgeKey).toBe(STRETCHED);
     expect([reading.assigned, reading.required, reading.shortage]).toEqual([2, 2, 0]);
+    // The reserve and the presses to it: `requiredResponderCount(10)` is 5,
+    // and nobody is free.
+    expect([reading.reserve, reading.hireCount]).toEqual([5, 5]);
+    expect(reading.reserveShortOnStrip).toBe(true);
 
     // What a player does not.
     expect(reading.spare).toBe(0);
@@ -313,9 +356,11 @@ describe('coverage and response draw from one pool, and the panel speaks about t
     const short = readAfterSixteenDays(REQUIRED_AT_POPULATION - 1);
     const covered = readAfterSixteenDays(REQUIRED_AT_POPULATION);
 
-    // The badge moves. It is the only thing that moves.
+    // The badge moves. It is the only thing that moves. (It moved to
+    // `COVERED` until ADR 0095 decision 1; it moves to `STRETCHED` now, which
+    // is a filled post and not a promise about incidents.)
     expect(short.badgeKey).toBe(UNDERSTAFFED);
-    expect(covered.badgeKey).toBe(COVERED);
+    expect(covered.badgeKey).toBe(STRETCHED);
     expect(short.shortage).toBe(1);
 
     // `lapsed + open` rather than `lapsed` since #586: the two prisons now
@@ -330,13 +375,22 @@ describe('coverage and response draw from one pool, and the panel speaks about t
     ]);
   });
 
-  it('publishes the same badge, character for character, across every hire count from the requirement to three times it', () => {
-    // The panel's whole vocabulary for this block is three rungs, and the top
-    // rung covers the entire interesting range. Six guards contained every
-    // riot until #586 (seven does since) and two guards answers nothing; a
-    // player reading the badge cannot tell those prisons apart.
-    const badges = [2, 3, 4, 6].map((count) => readAfterSixteenDays(count).badgeKey);
-    expect(badges).toEqual([COVERED, COVERED, COVERED, COVERED]);
+  /*
+   * **Titled "publishes the same badge, character for character, across every
+   * hire count from the requirement to three times it" until ADR 0095
+   * decision 1, and asserted four `COVERED`s.** The badge word is still one
+   * word across the four prisons that cannot answer the worst riot -- they are
+   * one rung -- but the panel's count now separates them, and the prison that
+   * answers everything is the one that reads `Covered`.
+   */
+  it('separates the prisons that cannot answer the worst riot from the one that can, and prices each in hires', () => {
+    const readings = [2, 3, 4, 6, 7].map((count) => readAfterSixteenDays(count));
+    expect(readings.map((reading) => reading.badgeKey)).toEqual([STRETCHED, STRETCHED, STRETCHED, STRETCHED, COVERED]);
+    expect(readings.map((reading) => reading.hireCount)).toEqual([5, 4, 3, 1, 0]);
+    expect(readings.map((reading) => reading.reserveShortOnStrip)).toEqual([true, true, true, true, false]);
+    // And the prison the badge now calls `Covered` is the one that lapsed
+    // nothing (the five-spare row of the ladder below).
+    expect([readings[4]!.resolved, readings[4]!.lapsed]).toEqual([9, 0]);
   });
 });
 
@@ -449,9 +503,12 @@ describe('raising the requirement to the number a player should hire makes it st
     expect([sevenSpare.required, sevenSpare.assigned, sevenSpare.spare]).toEqual([2, 2, 5]);
     expect([sevenPosted.required, sevenPosted.assigned, sevenPosted.spare]).toEqual([7, 7, 0]);
 
-    // Both read `Covered`, which is the point: the badge cannot tell them apart
-    // any more than it can tell two guards from seven.
-    expect([sevenSpare.badgeKey, sevenPosted.badgeKey]).toEqual([COVERED, COVERED]);
+    // Both read `Covered` until ADR 0095 decision 1, which was the point: the
+    // badge could not tell them apart any more than it could tell two guards
+    // from seven. It can now -- same wage bill, and the prison that posted its
+    // reserve is the one told it has none.
+    expect([sevenSpare.badgeKey, sevenPosted.badgeKey]).toEqual([COVERED, STRETCHED]);
+    expect(sevenPosted.hireCount).toBe(5);
 
     expect([sevenSpare.resolved, sevenSpare.lapsed, sevenSpare.dispatched]).toEqual([9, 0, 41]);
     expect([sevenPosted.resolved, sevenPosted.lapsed, sevenPosted.dispatched]).toEqual([0, 8, 0]);
@@ -495,9 +552,16 @@ describe('what a prison at its requirement can still do about a riot, and is nev
     const after = read(runtime);
     expect(after.resolved).toBeGreaterThan(0);
     expect(after.dispatched).toBeGreaterThanOrEqual(needed);
-    // And the badge said `Covered` before the rescue and says it after: the
-    // one gesture that changed the outcome is invisible to the block that is
-    // supposed to be about having enough guards.
-    expect([before.badgeKey, after.badgeKey]).toEqual([COVERED, COVERED]);
+    // The badge said `Covered` before the rescue and after it until ADR 0095
+    // decision 1: the one gesture that changed the outcome was invisible to
+    // the block about having enough guards. Before the rescue it now says
+    // `Stretched` and asks for exactly the hires that rescued it.
+    expect(before.badgeKey).toBe(STRETCHED);
+    expect(before.hireCount).toBe(needed);
+    // And once the riot is contained its responders are free again, five of
+    // them against a reserve of five, so the block reads `Covered`: the hint's
+    // count, pressed, is what took it there.
+    expect(needed).toBe(5);
+    expect(after.badgeKey).toBe(COVERED);
   });
 });

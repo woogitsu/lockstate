@@ -289,10 +289,18 @@ describe('a guard post nothing can route to is reported (ADR 0117)', () => {
     // this, the badge beside a permanently unguarded prison reads "Covered"
     // on half of all ticks.
     const walkable = sealedPrison(3);
+    //
+    // **Read `'hud.security.coverage-met'` and "says nothing extra" until ADR
+    // 0095 decision 1 (2026-09-23).** The ladder this prison keeps now has a
+    // reserve rung, and a walkable prison with its post filled and fewer than
+    // five guards free is on it -- so the assertion is what it always meant:
+    // the ladder's word and the ladder's sentence, not the stranded post's.
     expect(coverageChip(walkable.runtime).badge?.textKey, 'an unsealed prison keeps the ladder it always had').toBe(
-      'hud.security.coverage-met',
+      'hud.security.coverage-stretched',
     );
-    expect(coverageChip(walkable.runtime).description, 'and says nothing extra').toBeUndefined();
+    expect(coverageChip(walkable.runtime).description, 'and says nothing about a post').toEqual({
+      textKey: 'hud.security.coverage-stretched-description',
+    });
   });
 });
 

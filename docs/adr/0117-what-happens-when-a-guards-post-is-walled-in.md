@@ -156,7 +156,7 @@ not yet having cut the doorway.
 **Measured through the real build path**, on the same fixture: `PurchaseMaterials`
 for 12 `item.brick`, then the four `PlaceBuildOrder` presses above — **zero
 refusals**, all four accepted, all four completed. Nothing in `REFUSAL_REASONS`
-(`src/simulation/protocol/types.ts:1395`) concerns a security post, and no
+(`src/simulation/protocol/types.ts:1407`) concerns a security post, and no
 build refusal today looks at a sector.
 
 ### 1b. It is not silent — it is *worse* than silent, because the one readout a player has is false half the time
@@ -332,7 +332,7 @@ and [ADR 0087](./0087-whether-a-refusal-is-an-event-or-a-condition.md) decision
 of four members today — `construction.unfunded`, `intake.no-place`,
 `treasury.construction-refused`, `treasury.deliveries-refused` — produced by the
 pure function `computeStandingPrisonConditions`
-(`src/simulation/presentation/status-strip-projection.ts:253`) and published on
+(`src/simulation/presentation/status-strip-projection.ts:282`) and published on
 `statusCountsSchema.conditions`, an array bounded by the union's own length
 (`types.ts:1234`).
 

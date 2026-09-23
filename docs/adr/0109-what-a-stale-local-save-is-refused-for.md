@@ -327,7 +327,7 @@ One transaction, no tombstone, no way back.
 **And #582's own suggestion — a browser `confirm()` — is not what this
 repository does.** The HUD already has an owner-ruled arm-then-confirm for the
 one other irreversible player action, the staff roster dismissal of 2026-09-03:
-`src/ui/hud/staff-panel.ts:1302` holds `armedDismissal`, `:1417-1430` renders
+`src/ui/hud/staff-panel.ts:1358` holds `armedDismissal`, `:1417-1430` renders
 the armed row and its confirmation line, and the sentence it renders names its
 subject and its consequence —
 

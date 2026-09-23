@@ -582,7 +582,7 @@ why removal is a command of its own rather than a use of undo."*
 (`src/simulation/protocol/commands.ts:86-90`).
 
 **Refusal reasons are namespaced per command**, per
-`src/simulation/protocol/types.ts:1195-1207`, and the namespace does real work
+`src/simulation/protocol/types.ts:1207-1219`, and the namespace does real work
 here for exactly the reason that comment gives: "you cannot stand there" and
 "that round cannot be walked" are two sentences. `REFUSAL_LABEL_KEYS`
 (`src/ui/simulation-alerts.ts:34`) is total over the union, so a new member

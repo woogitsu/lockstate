@@ -104,7 +104,7 @@ Contraband **is** introduced — 10% per admission at risk tier 0, 20% at tier 1
 two carriers would be expected.
 
 The strip's figure is not how much contraband exists;
-`src/simulation/presentation/status-strip-projection.ts:471` sets
+`src/simulation/presentation/status-strip-projection.ts:509` sets
 `contrabandDiscovered` from `searchSystem.getMetrics().itemsDiscovered`, and its
 own comment says *"Cumulative items found by searches this session."* Searches
 never happen, so the number is structurally pinned at 0. Measured in play: twelve

@@ -695,12 +695,24 @@ void _statusCountsIncidentTypeMirrorsIncidentType;
  * visible tax."* `prisoners.` sorts between `intake.` and `security.`, so it
  * goes third and the members after it move one index, which is safe for the
  * reason the paragraph above gives.
+ *
+ * **`'security.response-reserve-short'` is the seventh member**
+ * ([ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+ * decision 1, accepted by the owner on 2026-09-23). It stands while every
+ * post is filled and fewer guards are free than the worst incident needs --
+ * `isResponseReserveShort` in `src/simulation/security/response-reserve.ts`,
+ * the predicate the Staff panel's `describeStaffCoverage` mirrors -- so the
+ * status strip's `COVERAGE` chip stops reading *Covered* over a prison that
+ * cannot answer its worst riot. `security.response-` sorts after
+ * `security.post-`, so it goes fifth and the two `treasury.` members move one
+ * index, safe for the same reason.
  */
 export const PRISON_CONDITIONS = [
   'construction.unfunded',
   'intake.no-place',
   'prisoners.overcrowded',
   'security.post-unreachable',
+  'security.response-reserve-short',
   'treasury.construction-refused',
   'treasury.deliveries-refused',
 ] as const;

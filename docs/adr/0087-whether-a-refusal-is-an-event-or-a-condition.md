@@ -113,8 +113,8 @@ So:
 | Channel | Shape | Carries | Survives a reload |
 | --- | --- | --- | --- |
 | **Occurrences** — `simulation/event` | push, once per event, coalesced by nothing (`event-log.ts:34-51`) | things that happened at a tick | **yes, since ADR 0084 decision 3** (`event-log.ts:73-105`) — see Cost 6 |
-| **Levels** — `simulation/status-counts` | snapshot on a cadence, ≤2/s, skipped when unchanged | `counts`, `refusal`, `zoning` (`src/simulation/protocol/types.ts:1359-1361`) | not applicable: recomputed, except `refusal` |
-| **Read models** — `simulation/request-projection` | pull, while a panel is showing; **absent is a real state, not a zeroed one** (`src/ui/hud/view-model.ts:1145-1153`) | build queue, room needs, intake pipeline | yes, for free — recomputed from persisted state |
+| **Levels** — `simulation/status-counts` | snapshot on a cadence, ≤2/s, skipped when unchanged | `counts`, `refusal`, `zoning` (`src/simulation/protocol/types.ts:1371-1373`) | not applicable: recomputed, except `refusal` |
+| **Read models** — `simulation/request-projection` | pull, while a panel is showing; **absent is a real state, not a zeroed one** (`src/ui/hud/view-model.ts:1160-1168`) | build queue, room needs, intake pipeline | yes, for free — recomputed from persisted state |
 
 **`refusal` is declared a level and implemented as an occurrence.** That one
 sentence is the whole of this ADR's problem. `RefusalLog.record`
@@ -136,7 +136,7 @@ below are what still differs.
 | --- | --- | --- | --- | --- |
 | A1 | `src/main.ts:2845` — `purchase-materials` pre-flight, via `judgeAffordability` (`src/ui/affordability.ts:167-189`) | the charge, the last published balance (≤500 ms old), the `'deliveries'` rung floor (`affordability.ts:152`) | `hud.refusal.purchase-materials-past-floor`, or the generic `hud.refusal.purchase-materials` | **your press failed** |
 | A2 | `src/main.ts:3067` — `hire-staff` pre-flight, same function | as A1, at the `'hiring'` rung, which shares the `'deliveries'` threshold | `hud.refusal.hire-staff-past-floor` / `hud.refusal.hire-staff` | **your press failed** |
-| A3 | `src/ui/hud/hud.ts:1476-1491` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:1215-1264`); `undefined` for a chrome intent | **your press failed** |
+| A3 | `src/ui/hud/hud.ts:1476-1491` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:1246-1295`); `undefined` for a chrome intent | **your press failed** |
 
 All three reach **the band only**. None of them reaches `HudViewModel.alerts`,
 and none of them increments any count: `hudAlertsFromWorkerMessage`
@@ -315,7 +315,7 @@ own floor, which is −2,500 (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`);
 `hiring` shares the first.
 
 `SimulationRefusal` carries `sequence`, `tick` and `reason` and nothing else
-(`src/simulation/protocol/types.ts:1570-1574`). There is one money reason per
+(`src/simulation/protocol/types.ts:1582-1586`). There is one money reason per
 command namespace, so **the wire cannot name which rung refused**: probe D
 asserts that a press-route refusal and a scheduled-construction-route refusal
 record byte-identical `reason` values. The shipped sentence for both was

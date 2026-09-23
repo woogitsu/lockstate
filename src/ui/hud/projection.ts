@@ -459,6 +459,11 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
   // chip has to say. Amber rather than red, because the cheapest remedy is a
   // bed rather than a hire and the rungs above are the ones that are red.
   if (counts.overcrowded === true) return 'warning';
+  // Below crowding and above "Covered" (ADR 0095 decision 1): every post is
+  // filled and fewer guards are free than the worst riot needs. No chip tone,
+  // exactly as "Covered" has none -- the rung is not a failure, and decision 1
+  // says it must not read as one -- so the signal is the badge's word and its
+  // `'caution'` tone in `coverageBadge`, not a coloured chip.
   return undefined;
 }
 
@@ -509,7 +514,29 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   // would otherwise read on half of all ticks (measured; see `coverageTone`).
   // So the rung is displaced rather than annotated.
   if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
-  if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  if (tone === undefined) {
+    // ADR 0095 decision 1, and **below crowding in precedence**, which is a
+    // decision with its reason: crowding is costing every prisoner `safety` on
+    // this tick, whatever happens next, and the #586 ruling (AGENTS.md ruling
+    // 28) put "Overcrowded" exactly where this ladder would otherwise have said
+    // its top rung; the reserve rung costs nothing until an incident opens and
+    // finds nobody to claim. That is the same argument #586 used to let the
+    // staffing rungs keep their word over crowding -- the rung that is paying
+    // now is the one named. The Staff panel still says "Stretched" in that
+    // prison, because its coverage block is about guards and has no crowding
+    // word, so the reserve is never unsaid anywhere, only second on the strip.
+    //
+    // Only where the ladder would have said "Covered", for the reason the
+    // crowding branch gives: a lower rung is costing `safety` already and a
+    // hire into a shortage is what it names.
+    //
+    // `tone === undefined` is exactly "no lower rung and not crowded"
+    // (`coverageTone`), so the precedence above is enforced by where this
+    // branch sits rather than restated as a condition.
+    return counts.responseReserveShort === true
+      ? { tone: 'caution', textKey: HUD_MESSAGE_KEY.securityCoverageStretched }
+      : { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  }
   // Issue #586. Only where the ladder itself would have said "Covered": an
   // understaffed or unguarded prison keeps its rung's word, because that rung
   // is costing `safety` on its own and a hire is what it names. The crowding
@@ -1038,7 +1065,11 @@ export function projectStatusMetrics(
             // what state the crowding there.
             coverageBadge(counts).textKey === HUD_MESSAGE_KEY.securityCoverageOvercrowded
             ? { textKey: HUD_MESSAGE_KEY.securityCoverageOvercrowdedHint }
-            : undefined,
+            : // ADR 0095 decision 1, on the same rule: the sentence only while
+              // the badge says the word it explains.
+              coverageBadge(counts).textKey === HUD_MESSAGE_KEY.securityCoverageStretched
+              ? { textKey: HUD_MESSAGE_KEY.securityCoverageStretchedDescription }
+              : undefined,
     },
     {
       id: 'rooms',

@@ -130,7 +130,7 @@ makes `stateIncomeAccruedTodayMinorUnits` a constant
 (`stateIncomeForOccupiedPlaces`, `src/simulation/economy/income.ts:456-465`,
 folded through `stateIncomeAccruedByTick`, `:502-513`), and with it constant
 there is no per-tick mover left among the twenty integers `statusCountsEqual`
-compares (`src/simulation/worker/status-counts.ts:105-111`).
+compares (`src/simulation/worker/status-counts.ts:111-117`).
 
 **And the readouts refresh 120 times anyway**, at worst 255 ms apart, because
 the clock is in the same predicate.
@@ -216,7 +216,7 @@ what follows.
 
 This is the part the brief called the most valuable, and the part nobody had
 done. `PROJECTION_IDS` has fifteen members; `PROJECTION_CATALOG`
-(`src/simulation/worker/projection-catalog.ts:209-445`) binds each to the
+(`src/simulation/worker/projection-catalog.ts:209-450`) binds each to the
 runtime state that answers it. **Nine have a reader; six do not.** The
 derivation is a grep for the quoted id under `src/` — `grep -rl "'hud/<id>'" src/ui/`
 for each of the fourteen `hud/` ids, and `grep -rn "world/render-snapshot" src/`

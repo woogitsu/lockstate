@@ -169,13 +169,17 @@ function coverageChip(runtime: SimulationRuntime) {
 }
 
 describe('a prison over its beds pays for it through the withhold it already has (#586)', () => {
-  it('control: a full prison, staffed to requirement, pays the whole grant on every day and reads Covered', () => {
+  // Titled "... and reads Covered" until ADR 0095 decision 1 (2026-09-23):
+  // staffed to the requirement means nobody is free, which is the reserve
+  // rung now. The control's subject is unchanged -- no crowding word -- and
+  // it is asserted as the staffing rung this prison is on.
+  it('control: a full prison, staffed to requirement, pays the whole grant on every day and reads its staffing rung, not crowding', () => {
     const runtime = prison(12, 2);
     const income = dailyIncome(runtime, 10);
     expect(housedUnmet(runtime, 'safety')).toBe(0);
     expect(income.every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).conditions).not.toContain('prisoners.overcrowded');
-    expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
+    expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageStretched);
   });
 
   it('carries 117% of its beds at no cost to safety, because full coverage keeps pace with the extra decay', () => {

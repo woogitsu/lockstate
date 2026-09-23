@@ -319,6 +319,21 @@ export interface HudCountsViewModel {
    */
   readonly overcrowded?: boolean;
   /**
+   * Whether every post is filled and fewer guards are free than the worst
+   * incident needs
+   * ([ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+   * decision 1) -- `PrisonCondition`'s `'security.response-reserve-short'`
+   * member, read through `isReserveShort` (`src/ui/simulation-conditions.ts`)
+   * and produced by the simulation's `isResponseReserveShort`, the predicate
+   * the Staff panel's `describeStaffCoverage` mirrors.
+   *
+   * It is what stops the `COVERAGE` chip reading "Covered" over a prison
+   * whose posts are filled and whose free pool cannot answer its worst riot.
+   * Optional, for `postUnreachable`'s reason; absent reads as "not short",
+   * which leaves the ladder exactly as it was.
+   */
+  readonly responseReserveShort?: boolean;
+  /**
    * How many prisoners are on the high-risk regime (issue #703, the owner's
    * fourth ruling of 2026-08-31).
    *

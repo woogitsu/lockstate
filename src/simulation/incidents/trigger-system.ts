@@ -15,13 +15,7 @@ import {
   type PrisonerFlashpoint,
 } from './flashpoint';
 import { GangRegistry, resolveRetaliationRisk } from './gangs';
-import {
-  INCIDENT_SEVERITY_CEILING,
-  IncidentLog,
-  type IncidentCauseFactor,
-  type IncidentType,
-  type OpenIncidentInput,
-} from './incident';
+import { INCIDENT_SEVERITY_CEILING, IncidentLog, type IncidentCauseFactor, type IncidentType, type OpenIncidentInput } from './incident';
 import { SectorRiskTracker, type SectorRiskSample } from './sector-risk';
 
 /**

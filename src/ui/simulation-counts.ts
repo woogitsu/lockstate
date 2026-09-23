@@ -1,5 +1,5 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
-import { isOvercrowded, isPostUnreachable } from './simulation-conditions';
+import { isOvercrowded, isPostUnreachable, isReserveShort } from './simulation-conditions';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudCountsViewModel, HudEditHistoryViewModel, HudOverviewViewModel } from './hud/view-model';
 
@@ -154,6 +154,10 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         // the reason the line above gives. Published, never derived here --
         // the predicate is the simulation's `isCrowdingAcceleratingDecay`.
         overcrowded: isOvercrowded(counts.conditions),
+        // ADR 0095 decision 1: `'security.response-reserve-short'`, the same
+        // way. Published, never derived here -- the predicate is the
+        // simulation's `isResponseReserveShort`.
+        responseReserveShort: isReserveShort(counts.conditions),
         prisonersCovered: counts.prisonersCovered,
         prisonersUnderstaffed: counts.prisonersUnderstaffed,
         prisonersUnguarded: counts.prisonersUnguarded,

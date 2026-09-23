@@ -194,7 +194,7 @@ investigation because a cheap answer would have changed the option space.
 carries `instanceId`, `roomCatalogId`, an optional `roomNameKey`, an optional
 `category` and **`anchorTile`** — one point, the north-west corner — alongside
 occupancy and requirement data. `HudRoomNeedViewModel.tile`
-(`src/ui/hud/view-model.ts:1297-1305`) and `HudRoomAtCapacityViewModel.tile`
+(`src/ui/hud/view-model.ts:1312-1320`) and `HudRoomAtCapacityViewModel.tile`
 (`:1335-1343`) carry the same single point.
 
 **`width` and `height` appear nowhere on any of them.** The rectangle is built
@@ -227,7 +227,7 @@ wrong:
 
 - **Breaking on add:** the protocol envelope and every message-kind payload
   schema in `src/simulation/protocol/types.ts` are `.strict()`, and so is
-  `statusCountsSchema` (`src/simulation/protocol/types.ts:710`). An unlisted
+  `statusCountsSchema` (`src/simulation/protocol/types.ts:722`). An unlisted
   field fails closed as `invalid-payload` —
   `tests/contract/simulation-worker-protocol.test.ts:639-645` pins exactly that
   with an `x: 100`, and zod's own message for it at this version is

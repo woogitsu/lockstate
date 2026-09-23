@@ -329,7 +329,7 @@ all, at `src/main.ts:1052`:
 
 `tint: zoningTint(definition.numericId) ?? 0,`
 (verbatim in `src/main.ts`), and the view-model field it fills states, in its
-own words at `src/ui/hud/view-model.ts:1095-1096`, what that swatch is *for*:
+own words at `src/ui/hud/view-model.ts:1110-1111`, what that swatch is *for*:
 
 `The colour the world tints this room's tiles, so the catalogue row and the designation on the map agree without the player having to learn a legend.`
 (verbatim in `src/ui/hud/view-model.ts`)
@@ -427,7 +427,7 @@ identification to the drawn name instead. A tint at 16.8 or 22.8 spread was
 never going to let a player tell Kitchen from Canteen by hue, and nothing in
 this document asks it to. What it asks is narrower and is already written
 down elsewhere in the tree: that the panel swatch and the map tile **agree**,
-in direction, about which colour this room is (`src/ui/hud/view-model.ts:1095-1096`,
+in direction, about which colour this room is (`src/ui/hud/view-model.ts:1110-1111`,
 quoted in Context §3) — and that a tinted tile not be visually
 indistinguishable from an untinted one.
 
@@ -598,7 +598,7 @@ through 3 would have added identification either**, because ADR 0098 Context
 
 **What doing nothing costs, precisely — and it is not identification.**
 Context §3 names it: the Rooms panel swatch and the map tile are supposed to
-agree (`src/ui/hud/view-model.ts:1095-1096`), and for eight rooms they do not
+agree (`src/ui/hud/view-model.ts:1110-1111`), and for eight rooms they do not
 — one shows a saturated colour at full strength, the other shows a value a
 player reads as no colour at all. That is a narrower, and real, cost: a
 prison that is correct by every test and reads as duller or as subtly broken

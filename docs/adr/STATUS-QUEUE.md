@@ -2560,7 +2560,7 @@ telemetry row added five; **eight** of the 33 are in this window —
 `src/ui/hud/view-model.ts`, the new migration, `supabase/tests/003_data_api_grants.test.sql`,
 `supabase/tests/012_telemetry_ingest.test.sql` and
 `tests/unit/simulation-message-keys.test.ts` — and every one was opened. Seven
-hold; `src/ui/hud/view-model.ts:1842` is the one that moved, to **`:1840`**, and
+hold; `src/ui/hud/view-model.ts:1857` is the one that moved, to **`:1840`**, and
 it is a **live** citation inside the ADR 0093 entry's *"Verified rather than
 assumed"* clause rather than a record inside a dated pass, which is why it is
 corrected where the `staff-panel.ts:526` decoy is not. **The five §2 paths #965
@@ -2916,7 +2916,7 @@ first; what this instance adds is that an absence expressed as a **command** is
 worse than one expressed as a path, because the intersection cannot see it at
 all. Corrected in both directions in §2, with the entry's price unchanged: the
 panel exists and still says nothing about a carried item, because
-`HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1842`) deliberately
+`HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1857`) deliberately
 carries no current action, and its own docblock gives this reservation as the
 reason.
 
@@ -3103,7 +3103,7 @@ has it without re-deriving it.
 
 **A DATED CITATION WAS ALREADY TWO MOVES BEHIND WHEN THIS WINDOW OPENED, AND
 LEAVING IT ALONE IS STILL THE RIGHT ANSWER.** §5's `HudIntent` passage cites
-`src/ui/hud/staff-panel.ts:526` for the setter comment that *"decides
+`src/ui/hud/staff-panel.ts:582` for the setter comment that *"decides
 nothing"*. Traced by running the grep out of every anchor tree in turn, the
 comment is at `:489` at `402453a9`, `:526` from `3f8c00b0` through `ac58c457`,
 `:559` from `33cf0701` through `2732e81e`, and **`:599` here** — so the number in
@@ -3205,7 +3205,7 @@ handshake claim was therefore re-run rather than inherited and is unmoved:
 still `:34-40` and the four `this.transition()` sites still `:845`, `:1037`,
 `:1091` and `:1410`. §6's two cleared status references are **re-established
 rather than inherited**, both on files #917 edited: `src/ui/hud/messages.ts:95`
-still reads *"ADR 0017 -- Accepted"* and `src/ui/hud/projection.ts:952` still
+still reads *"ADR 0017 -- Accepted"* and `src/ui/hud/projection.ts:979` still
 *"ADR 0017 is Accepted without naming one either"*, and neither file names a
 currency, which is what the label rests on. `src/ui/hud/messages.ts:28` still
 carries the *"{count} waiting with no bed to sleep in"* comment it is cited for.
@@ -3963,7 +3963,7 @@ argument for the full-path rule than three more coincidences would have been.
 
 **Two cited spans MOVED, both inside members, both by lines inserted above
 them, and both re-derived byte for byte rather than arithmetically.**
-`src/ui/hud/staff-panel.ts:489` is now **`:526`**, +37, from #857's coverage
+`src/ui/hud/staff-panel.ts:545` is now **`:526`**, +37, from #857's coverage
 readout and its three panel hunks landing above it; the sentence the citation
 exists for is byte-identical — the setter that *"decides nothing"*, with
 `BuildPanel.setTreasury` named beside it as *"the same setter for the same
@@ -4420,7 +4420,7 @@ for under pass 4 — each named so a reader can re-run it rather than take it:
      anchor recorded, one window later**: #807 gave the Hire button a real new
      behaviour — it now says whether it can act — and routed the treasury to
      the staff panel as a setter, not as an intent; the panel's own comment
-     on that setter (`src/ui/hud/staff-panel.ts:489`) says the line *"decides
+     on that setter (`src/ui/hud/staff-panel.ts:545`) says the line *"decides
      nothing"* and that `BuildPanel.setTreasury` *"is the same setter for the
      same reason on the Buy button"*. So this is the second consecutive window
      to add a control's behaviour to this file without adding a member, and a
@@ -4691,7 +4691,7 @@ line-numbered citations, of which 64 are governed by a sha and cannot rot —
 and closed it at eleven readings, two of which were wrong.
 
 **One of its own readings did not survive one window, and it is recorded above
-rather than here.** `src/ui/hud/view-model.ts:1876` is the number this anchor
+rather than here.** `src/ui/hud/view-model.ts:1891` is the number this anchor
 set, correcting `:1806` and writing in the next paragraph that the durable form
 is the symbol; it was stale nine releases later. **That is not a failure of
 care either** — it is what a line number is, and it is the reason the pass
@@ -4752,7 +4752,7 @@ own predecessor's published arithmetic coming true rather than as a new
 failure**, at eight of ten after a seven-merge drain spent in one sitting. Its
 result was one mover and two decoys: `src/ui/hud/build-panel.ts`'s *"7.8px is
 the entire budget"* comment moved `:1307` → `:1353` and cost nothing, because
-the live claim resting on it is a quotation; `src/ui/hud/staff-panel.ts:526` and
+the live claim resting on it is a quotation; `src/ui/hud/staff-panel.ts:582` and
 `docs/HUD_PROJECTIONS.md`'s three dated spans were left alone, correctly.
 **Its arithmetic re-derives exactly on this tree**: eleven members besides this
 file, the window `2732e81e..0e614c71` at 40 files across seven implementing
@@ -9876,7 +9876,7 @@ settled, items 2 and 3 as still owed.
    window rather than offset: `src/main.ts:1495` → **`:1664`**
    (`grep -n 'new PrisonerDetailReader(client)'`; **1500** at `d57b97ba`, so
    five lines were already wrong before the window and 164 were added inside
-   it, first by `c714f522`/#1189); `src/ui/hud/view-model.ts:1990` →
+   it, first by `c714f522`/#1189); `src/ui/hud/view-model.ts:2005` →
    **`:2049`** (`grep -n 'export interface HudPrisonerDetailViewModel'`;
    **1970** at `d57b97ba`, sixteen inherited and seventy-nine added across four
    commits — and `:1954` now lands on `readonly classificationGroupId?:
@@ -10132,7 +10132,7 @@ settled, items 2 and 3 as still owed.
 
    **The entry's price is unchanged by the correction, and item 3 below still
    asks the owner exactly what it asked.** Verified rather than assumed:
-   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1990`) carries the
+   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:2005`) carries the
    entity id, the name, the standing label, the classification group, the risk
    tier and all six needs — and **no current action**, deliberately.
 
@@ -10192,7 +10192,7 @@ settled, items 2 and 3 as still owed.
    that takes `:1806` to **`:1840`**. This one is **live**: it is the evidence for
    a sentence in §2 that a reader is meant to check today, not a record of where
    something stood at a named commit — which is exactly why it moves while
-   `src/ui/hud/staff-panel.ts:526`, three anchors stale and inside a dated pass
+   `src/ui/hud/staff-panel.ts:582`, three anchors stale and inside a dated pass
    account, correctly does not. **The durable form is the symbol and not the
    number**, which §6's recommendation 1 has said for eleven anchors: the
    declaration is `export interface HudPrisonerDetailViewModel` and
@@ -12821,7 +12821,7 @@ live §5 claim quotes the sentence; the two places that write the number are bot
 inside dated pass accounts and are both correctly left as they stand.
 
 **The decoy is the argument for the sentence over the number, twice over.**
-`src/ui/hud/staff-panel.ts:526` was two moves stale before this window opened —
+`src/ui/hud/staff-panel.ts:582` was two moves stale before this window opened —
 `:489` at `402453a9`, `:526` from `3f8c00b0` through `ac58c457`, `:559` from
 `33cf0701`, `:599` here — and it is still not to be re-pointed. Its clause
 states its own supersession in both directions, which makes it a record; and the
@@ -13021,7 +13021,7 @@ intersects §2's rooted paths against the window's files and this claim names no
 path, only a grep over two directories, so no arrival under `src/ui/` can ever
 land in the intersection. Corrected in both directions in §2. **The entry's
 price does not move**: `HudPrisonerDetailViewModel`
-(`src/ui/hud/view-model.ts:1842`) carries the entity id, name, standing label,
+(`src/ui/hud/view-model.ts:1857`) carries the entity id, name, standing label,
 classification group, risk tier and all six needs and deliberately carries no
 current action, its own docblock naming `AGENTS.md`'s fourth exclusion as the
 reason — so the panel exists and still says nothing about goods in hand, which
@@ -17283,7 +17283,7 @@ and the field carried into the wire-serialised command at `commands.ts:769`
 below it by **+12**, confirmed by opening `simulationCommandSchema`'s own
 declaration at both ends: old `:719` → new **`:731`**, exactly the predicted
 shift rather than assumed from it). `REFUSAL_REASONS` grew **45 → 46**
-(`src/simulation/protocol/types.ts:1348-1395`), the one new member being
+(`src/simulation/protocol/types.ts:1360-1407`), the one new member being
 `'cancel-build-order.stale-cancellation'`, confirmed by `diff`-ing the array
 at both ends rather than trusting the count. A per-command lead exists
 (`ADR 0107`'s own "measured not to help" framing, `tests/browser/command-lead-at-speed.spec.ts`)
@@ -17977,7 +17977,7 @@ experiment, SQL suite or historical measurement was re-run.
   `:44-52`, `:97`, `:100`, `:102-106`, `:103-110`, `:108` and `:158`;
   `docs/research/README.md`'s single hunk is `@@ -203,0 +204,4 @@`, so its
   rule at `:9` holds verbatim; `tests/foundation/unconsumed-command-contract`'s
-  `:224` and `:250` hold; `src/ui/hud/staff-panel.ts:526`,
+  `:224` and `:250` hold; `src/ui/hud/staff-panel.ts:582`,
   `src/services/challenges/verification.ts:136` (`export async function verifyChallengeSubmission(`) and `:324`,
   `src/simulation/rooms/zoning.ts:116-117` (`This deliberately takes **no** position under ADR 0012`) and `:125`,
   `tests/foundation/adr-status-reference-contract.test.ts:147-150` (`const EXEMPT = (path: string): boolean =>`), `:405`,
@@ -18741,7 +18741,7 @@ anchor's intersection and the largest this chain has recorded since 2026-09-11.
   `:223`, `:442`), which also hold. `transferables.ts:39`/`:55` hold on a file
   the window does not touch. The `'ready'` union member holds at `:34-40` for a
   seventh consecutive anchor.
-- **`src/ui/hud/hud.ts:271` and `:444-449` hold, and `src/ui/hud/staff-panel.ts:526`
+- **`src/ui/hud/hud.ts:271` and `:444-449` hold, and `src/ui/hud/staff-panel.ts:582`
   holds**, all three on files the window changed *below* them.
 
   **THAT BULLET IS FALSE IN ALL THREE OF ITS CLAIMS AND IS KEPT RATHER THAN
@@ -18756,7 +18756,7 @@ anchor's intersection and the largest this chain has recorded since 2026-09-11.
   decoys** — attached in their own sentences to `bb3a01e`, `cfab558` and the
   v0.0.402 anchor — and this file has twice ruled that a dated coordinate is a
   record and must not be moved: *"Neither points where it says any more, and
-  neither should be moved"*, and §2's *"`src/ui/hud/staff-panel.ts:526`, three
+  neither should be moved"*, and §2's *"`src/ui/hud/staff-panel.ts:582`, three
   anchors stale and inside a dated pass account, correctly does not"*. **So the
   three are still not repointed; what is corrected is the certificate.** The
   failure is the one the same passage names in the same breath — *"the
@@ -19032,7 +19032,7 @@ already wrong when the previous pass closed.
 
 1. **The previous pass certified three dated decoys as holding.** Its bullet
    *"`src/ui/hud/hud.ts:271` and `:444-449` hold, and
-   `src/ui/hud/staff-panel.ts:526` holds"* is false in all three clauses:
+   `src/ui/hud/staff-panel.ts:582` holds"* is false in all three clauses:
    `export type HudIntent =` is at **`:365`**, `'arm-build-tool'` at
    **`:524`** and `grep -n 'decides nothing' src/ui/hud/staff-panel.ts` answers
    **`:690`**. All three are numbers this file has twice ruled must **not** be
@@ -19197,7 +19197,7 @@ of the pass.
   sites, and `if (action.target.kind !== 'room-catalog-id') return true;` is
   verbatim at **`:1295`**.
 - **§2's ADR 0093 quartet holds, all four, for the second time running** —
-  `src/ui/hud/view-model.ts:2167`, `src/main.ts:1665`,
+  `src/ui/hud/view-model.ts:2182`, `src/main.ts:1665`,
   `src/ui/simulation-prisoner-detail.ts:212` (`'hud/prisoner-detail'`) and
   `regime-panel.ts:743`, each opened — **although
   `docs/adr/0093-a-carry-is-an-action.md` is a member of this window** (88
@@ -19398,7 +19398,7 @@ first of the three shapes this file separates.
   **Both were exact at `90d62621`**, so this is drift the window caused.
 - **`docs/adr/0025-guard-hiring-surface.md:74-76` → `:87-89`**, +13, from
   #1239.
-- **`src/ui/hud/view-model.ts:2167` → `:2132`**, +1, §2's ADR 0093 quartet.
+- **`src/ui/hud/view-model.ts:2182` → `:2132`**, +1, §2's ADR 0093 quartet.
 - **`docs/DEPLOYMENT.md:255` → `:265`**, +10, §4's *"What currently serves
   lockstate.io"* — the only one of §4's five that the window's insertion at
   `:239` sits above.
@@ -20610,7 +20610,7 @@ names, rather than offset from the diff.
   hunk list is.
 - **`refusalSchema` also changed in kind, and no line number records that.**
   It is `export const refusalSchema = z` at
-  `src/simulation/protocol/types.ts:1555` and was `const refusalSchema = z` at
+  `src/simulation/protocol/types.ts:1567` and was `const refusalSchema = z` at
   the previous anchor: #1306 exported it so a worst-case fixture could be tied
   to the schema rather than to a copy of it. **A coordinate re-aimed perfectly
   still hides this.** The number moved, the fragment §5 quotes beside it did
@@ -21595,7 +21595,7 @@ text at both ends rather than by adding a delta, and **both were exact at
 
 - **`src/simulation/protocol/types.ts`'s `zoningNoticeSchema` moves +97**, from
   the number §5's protocol bullet carried at the previous anchor to
-  `src/simulation/protocol/types.ts:1740` — `const zoningNoticeSchema = z`.
+  `src/simulation/protocol/types.ts:1752` — `const zoningNoticeSchema = z`.
   The cause is #1364's single hunk in that file, `@@ -1607,0 +1608,97 @@`, which
   adds the optional `tile` member to `refusalSchema`.
 - **`docs/adr/0003-simulation-worker-protocol.md`'s independent 4/2/3
@@ -25269,7 +25269,7 @@ one direction.
     the thing to carry forward, only the hunk list is.
   - **`refusalSchema` changed in kind as well as in place, which no line number
     records.** It is `export const refusalSchema = z` at
-    `src/simulation/protocol/types.ts:1555` and was `const refusalSchema = z` at
+    `src/simulation/protocol/types.ts:1567` and was `const refusalSchema = z` at
     the previous anchor — #1306 exported it so a worst-case fixture could be
     tied to the schema rather than to a copy of it. It still declares exactly
     the four keys #1261 left it with, and `zoningNoticeSchema` is still
@@ -25359,11 +25359,11 @@ one direction.
     `src/simulation/protocol/types.ts:12`, `'protocol/handshake',` — and so do
     `:23`, `:223` and `:442`. `src/simulation/protocol/types.ts:173` is still
     `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION),`, and
-    `src/simulation/protocol/types.ts:1555` is still
+    `src/simulation/protocol/types.ts:1567` is still
     `export const refusalSchema = z`.
   - **`zoningNoticeSchema` moved, and it is one of the two coordinates this
     window staled in this bullet.** It is now
-    `src/simulation/protocol/types.ts:1740` —
+    `src/simulation/protocol/types.ts:1752` —
     `const zoningNoticeSchema = z` — where the previous anchor read it at 1643,
     **+97**. The superseded number is written bare rather than in `file:line`
     notation, because quoting a dead coordinate that way registers it again
@@ -26929,7 +26929,7 @@ one direction.
   control's behaviour to this file without adding a member**: #807 gave the
   Hire button the same can-it-act state #799 gave the Buy button, and routed
   the treasury to the staff panel as a setter rather than as an intent — the
-  panel's comment on it (`src/ui/hud/staff-panel.ts:526` — **this read `:489`
+  panel's comment on it (`src/ui/hud/staff-panel.ts:582` — **this read `:489`
   through the v0.0.402 anchor; #857's staff-coverage readout added 37 lines
   above it in this window and the comment itself is byte-identical**;
   **`:526` is `:690` at `7e9c3043` and was `:690` at `d57b97ba` too** —

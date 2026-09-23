@@ -247,7 +247,7 @@ evict an escape row after **67 seconds at ×1** in a 289-resident prison, so
 `SEVERITY_EVICTION_ORDER` now evicts `info`
 before `warning` before `danger`, oldest-within-band
 (`simulation-events.ts:921-923`)  — **that constant left this file on 2026-09-01**
-and is declared at `src/ui/hud/view-model.ts:466-470` beside `HudSeverity`, because
+and is declared at `src/ui/hud/view-model.ts:481-485` beside `HudSeverity`, because
 the event band arbitrates a dwell floor by the same map (decision 4's ruling,
 *"one game, one ordering"*); `simulation-events.ts:12-19` records the move, which raised the same worst case to 23,390
 ticks. **That fix is what #741 says makes repetition more likely, not less**:
@@ -588,7 +588,7 @@ that actually closes the escape/all-clear collision has to say what the band
 does when a *second* event arrives inside the floor — hold the first and drop
 the second, queue the second behind the first, or promote by severity the
 way the list's cap already does (`SEVERITY_EVICTION_ORDER`,
-now `src/ui/hud/view-model.ts:466-470`) — and whichever answer is chosen slows down
+now `src/ui/hud/view-model.ts:481-485`) — and whichever answer is chosen slows down
 *every* other event's arrival on the one band a player watches without
 opening anything, which is the property #507 and #220 built that band to
 have in the first place (`hud.ts:1308-1400`, re-anchored and now the larger

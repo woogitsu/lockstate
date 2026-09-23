@@ -259,7 +259,7 @@ both consult for what a cancellation destroys rather than pays for
 (`system.ts:84-86`). Both are already implemented on this tree, not merely
 proposed — `RemoveWallRefusalReason`, its mapping in
 `src/simulation/refusals/refusal-log.ts:367-369`, its wire id
-`'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1382`,
+`'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1394`,
 and its session-command branch in `src/simulation/runtime/session-commands.ts:931`
 are all present and VERIFIED.
 

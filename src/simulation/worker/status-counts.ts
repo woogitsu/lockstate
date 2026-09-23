@@ -85,6 +85,12 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     // ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
     // accepted by the owner on 2026-09-17).
     deployment: runtime.deploymentSystem,
+    // `IncidentResponseSystem` itself, asked one question -- how many
+    // responders the worst incident needs -- for `PrisonCondition`'s
+    // `'security.response-reserve-short'` member (ADR 0095 decision 1). The
+    // same system `hud/staff` asks, so the chip and the Staff panel price the
+    // reserve with one formula.
+    responders: runtime.incidentResponseSystem,
   }).counts;
 }
 

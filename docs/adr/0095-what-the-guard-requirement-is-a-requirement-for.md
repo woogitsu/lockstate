@@ -189,7 +189,7 @@ nothing about the unassigned axis. One level down settles it.
 
 ### What the player is told
 
-`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:461`-`:520`,
+`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:484`-`:520`,
 `describeStaffCoverage`) has three
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`

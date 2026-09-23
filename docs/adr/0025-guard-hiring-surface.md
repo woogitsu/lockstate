@@ -204,7 +204,7 @@ tested:
 
 All four iterate an empty collection in every session a player can start. The
 status strip's `Staff` count is therefore structurally zero
-(`src/simulation/presentation/status-strip-projection.ts:798-803`, `let staff =
+(`src/simulation/presentation/status-strip-projection.ts:836-841`, `let staff =
 0; … for (const entityId of source.staff.allGuardIds()) { staff += 1;`; the
 anchor read `:163`, was re-aimed to `:782-787` when this branch was written, and
 **that went stale a second time** before it merged `origin/main` on 2026-09-16 —

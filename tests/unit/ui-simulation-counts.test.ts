@@ -128,6 +128,8 @@ describe('the HUD counts are read from the worker', () => {
       // all, which is what an ordinary prison publishes.
       postUnreachable: false,
       overcrowded: false,
+      // ADR 0095 decision 1, the same set of names: no condition published.
+      responseReserveShort: false,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -312,6 +314,8 @@ describe('the HUD counts are read from the worker', () => {
       // `isPostUnreachable` (ADR 0117).
       postUnreachable: false,
       overcrowded: false,
+      // ADR 0095 decision 1, the same set of names: no condition published.
+      responseReserveShort: false,
     });
   });
 
@@ -396,7 +400,14 @@ describe('the HUD counts are read from the worker', () => {
       // arriving as `0`/`1` would still fail.
       // **The fifth, and the third boolean** (issue #586): `overcrowded`, read
       // off the same set of names for the same reason, one member again.
-      if (key === 'isFreshUnfurnishedPrison' || key === 'postUnreachable' || key === 'overcrowded') {
+      // **The sixth, and the fourth boolean** (ADR 0095 decision 1):
+      // `responseReserveShort`, one member of the same set again.
+      if (
+        key === 'isFreshUnfurnishedPrison' ||
+        key === 'postUnreachable' ||
+        key === 'overcrowded' ||
+        key === 'responseReserveShort'
+      ) {
         expect(typeof value, `counts.${key} is not a boolean`).toBe('boolean');
         continue;
       }

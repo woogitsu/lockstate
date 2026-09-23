@@ -181,7 +181,7 @@ is the cheap falsifier any implementation of this document owes.
 ```
 $ grep -rn "CancelBuildOrder" src/ --include='*.ts' | grep -v "^src/simulation/"
 src/ui/hud/build-panel.ts:167, :1189(*), :2103        … comments
-src/ui/hud/view-model.ts:734, :768                     … comments
+src/ui/hud/view-model.ts:749, :768                     … comments
 src/ui/hud/projection.ts, messages.ts, hud.ts          … comments and refusal keys
 src/ui/simulation-*.ts (4 files)                       … comments
 src/content/default-locale-en.ts                        … comments

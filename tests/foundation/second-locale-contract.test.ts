@@ -350,6 +350,10 @@ describe('every non-default catalogue is well-formed, without being required to 
  *
  * What the list still does is unchanged: a counted message added without an
  * entry here fails on the commit that adds it.
+ *
+ * *(The "thirty-one" above is the count when it was written; the list has
+ * grown since, one entry of it being ADR 0095's reserve-rung hint of
+ * 2026-09-23. The list below is the number, not this paragraph.)*
  */
 const FLAT_MESSAGES_WITH_COUNT = [
   'hud.alert.occurrences',
@@ -410,6 +414,12 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security-section.sector-open-incidents',
   'hud.security-section.sector-short',
   'hud.security.coverage-short-hint',
+  // The reserve rung's hint (ADR 0095 decision 1, 2026-09-23), in
+  // `coverage-short-hint`'s shape one line up and for its reason: `Hire
+  // {count} more to ...` / `Zatrudnij jeszcze {count}, aby ...` has no noun
+  // after the number in either language, so forms would be one sentence
+  // written four times.
+  'hud.security.coverage-stretched-hint',
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',
   'hud.status.prisoners-without-bed',

@@ -72,7 +72,17 @@ export type PrisonConditionPresentation =
    * claim 1 below gives: `isPostUnreachable` collapses its whole class to one
    * sentence about a post, and crowding is not that sentence.
    */
-  | 'coverage-chip-crowding';
+  | 'coverage-chip-crowding'
+  /**
+   * The `COVERAGE` chip carries this one as well, under
+   * `hud.security.coverage-stretched` -- the word the Staff panel's coverage
+   * block uses for the same rung -- and its description, through
+   * `HudCountsViewModel.responseReserveShort`
+   * ([ADR 0095](../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+   * decision 1). Its own value for claim 1's reason: its sentence is about the
+   * free pool, not a post and not a bed.
+   */
+  | 'coverage-chip-reserve';
 
 /**
  * **Exported for `tests/unit/ui-simulation-conditions.test.ts` and read
@@ -106,6 +116,7 @@ export const PRISON_CONDITION_PRESENTATION: Readonly<Record<PrisonCondition, Pri
   'intake.no-place': 'painted-elsewhere',
   'prisoners.overcrowded': 'coverage-chip-crowding',
   'security.post-unreachable': 'coverage-chip',
+  'security.response-reserve-short': 'coverage-chip-reserve',
   'treasury.construction-refused': 'painted-elsewhere',
   'treasury.deliveries-refused': 'painted-elsewhere',
 };
@@ -138,4 +149,18 @@ export function isPostUnreachable(conditions: readonly PrisonCondition[] | undef
 export function isOvercrowded(conditions: readonly PrisonCondition[] | undefined): boolean {
   if (conditions === undefined) return false;
   return conditions.some((condition) => PRISON_CONDITION_PRESENTATION[condition] === 'coverage-chip-crowding');
+}
+
+/**
+ * Whether the published condition set says every post is filled and fewer
+ * guards are free than the worst incident needs (ADR 0095 decision 1) --
+ * `'security.response-reserve-short'`, read through the table for
+ * `isPostUnreachable`'s reason: the id is spelled once.
+ *
+ * `undefined` answers `false`, which is what a publication naming no
+ * condition says.
+ */
+export function isReserveShort(conditions: readonly PrisonCondition[] | undefined): boolean {
+  if (conditions === undefined) return false;
+  return conditions.some((condition) => PRISON_CONDITION_PRESENTATION[condition] === 'coverage-chip-reserve');
 }

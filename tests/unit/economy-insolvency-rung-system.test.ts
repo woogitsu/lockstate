@@ -337,6 +337,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: false,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual([]);
   });
@@ -361,6 +362,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: false,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual(['treasury.construction-refused', 'treasury.deliveries-refused']);
   });
@@ -381,6 +383,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: false,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual(['treasury.construction-refused', 'treasury.deliveries-refused']);
   });
@@ -395,6 +398,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: false,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual(['construction.unfunded', 'intake.no-place', 'treasury.construction-refused', 'treasury.deliveries-refused']);
   });
@@ -418,6 +422,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: true,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual(['treasury.deliveries-refused']);
 
@@ -430,6 +435,7 @@ describe('computeStandingPrisonConditions: the treasury boundary is inclusive', 
         isFreshUnfurnishedPrison: false,
         securityPostUnreachable: false,
         overcrowded: false,
+        responseReserveShort: false,
       }),
     ).toEqual([]);
   });

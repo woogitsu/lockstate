@@ -28,6 +28,13 @@ import type { ContrabandConfiscationSource, ContrabandSearchSource } from './con
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
 import { collectRoomInstances, type RoomProjectionSource } from './room-projection';
 import type { StaffRosterSource } from './staff-projection';
+import type { CoverageReportEntry } from '../security/deployment-system';
+import {
+  isResponseReserveShort,
+  responseReserveGuardCount,
+  spareGuardCount,
+  type ResponderCountSource,
+} from '../security/response-reserve';
 import {
   compareStableIds,
   HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -216,7 +223,29 @@ export interface StatusStripSource {
    * "no such system in this runtime": a session with no deployment system has
    * no post to strand.
    */
-  readonly deployment?: { hasUnreachablePost(tick: number): boolean };
+  readonly deployment?: {
+    hasUnreachablePost(tick: number): boolean;
+    /**
+     * Read for `'security.response-reserve-short'` (ADR 0095 decision 1):
+     * the same per-sector rows `projectStaff` sums for the Staff panel, so
+     * the chip and the panel decide the reserve rung from one report.
+     */
+    getCoverageReport(tick: number): readonly CoverageReportEntry[];
+  };
+  /**
+   * `IncidentResponseSystem`, asked how many responders the worst incident
+   * needs (`responseReserveGuardCount`,
+   * [ADR 0095](../../../docs/adr/0095-what-the-guard-requirement-is-a-requirement-for.md)
+   * decision 1) -- the reserve `PrisonCondition`'s
+   * `'security.response-reserve-short'` member compares the free pool with.
+   *
+   * Absent reports `false` for that member, and so does an absent
+   * `deployment` or `staff`: a runtime that cannot say how many responders an
+   * incident needs, or how many guards are free, cannot say the prison has
+   * too few, and a condition standing on a guess would be a sentence on the
+   * strip the code does not keep.
+   */
+  readonly responders?: ResponderCountSource;
 }
 
 /**
@@ -305,6 +334,13 @@ export function computeStandingPrisonConditions(input: {
    * would silently report an over-full prison as not paying for it.
    */
   readonly overcrowded: boolean;
+  /**
+   * Whether every post is filled and fewer guards are free than the worst
+   * incident needs -- `isResponseReserveShort` over the summed coverage
+   * report, the free pool and the reserve (ADR 0095 decision 1). Required
+   * rather than defaulted, for `securityPostUnreachable`'s reason.
+   */
+  readonly responseReserveShort: boolean;
 }): readonly PrisonCondition[] {
   const standing: PrisonCondition[] = [];
   for (const condition of PRISON_CONDITIONS) {
@@ -318,6 +354,8 @@ export function computeStandingPrisonConditions(input: {
           return input.overcrowded;
         case 'security.post-unreachable':
           return input.securityPostUnreachable;
+        case 'security.response-reserve-short':
+          return input.responseReserveShort;
         case 'treasury.construction-refused':
           return (
             input.treasuryMinorUnits <=
@@ -821,6 +859,31 @@ export function soleDiscoveredContrabandNameKey(
   return categories.getById(first)?.nameKey;
 }
 
+/**
+ * `isResponseReserveShort` over this readout's own sources (ADR 0095
+ * decision 1): the coverage report summed the way `projectStaff` sums it, the
+ * free pool through `spareGuardCount`, and the reserve asked of the response
+ * system. `false` when any of the three sources is absent.
+ */
+function standingResponseReserveShort(source: StatusStripSource): boolean {
+  if (source.deployment === undefined || source.responders === undefined || source.staff === undefined) return false;
+  let required = 0;
+  let assigned = 0;
+  let shortage = 0;
+  for (const entry of source.deployment.getCoverageReport(source.tick)) {
+    required += entry.required;
+    assigned += entry.assigned;
+    shortage += entry.shortage;
+  }
+  return isResponseReserveShort({
+    required,
+    assigned,
+    shortage,
+    spare: spareGuardCount(source.staff),
+    reserve: responseReserveGuardCount(source.responders),
+  });
+}
+
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
   const population = projectPrisonerPopulationCounts(source.prisoners);
@@ -946,6 +1009,10 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       population.total,
       accommodationCapacityOf(source.prisoners.roomInstances, source.prisoners.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY),
     ),
+    // ADR 0095 decision 1. Summed exactly as `projectStaff` sums the rows for
+    // the Staff panel, asked about `source.tick` for `securityPostUnreachable`'s
+    // reason, and `false` whenever a source it needs is absent.
+    responseReserveShort: standingResponseReserveShort(source),
   });
 
   return {
