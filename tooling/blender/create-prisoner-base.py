@@ -115,6 +115,43 @@ def cylinder(name, location, radius, length, material, parent):
     return item
 
 
+def apron_panel(parent, material):
+    """A shallow flared cloth panel with a curved fold instead of a box slab."""
+    mesh = bpy.data.meshes.new("Cook apron cloth mesh")
+    # Three front rows bow forward at the centre, and a thin rear shell gives
+    # the cloth a readable edge from the game's high oblique actor camera.
+    rows = (
+        ((-0.30, -0.34, 1.68), (0.0, -0.375, 1.68), (0.30, -0.34, 1.68)),
+        ((-0.35, -0.37, 1.22), (0.0, -0.415, 1.20), (0.35, -0.37, 1.22)),
+        ((-0.39, -0.31, 0.78), (0.0, -0.37, 0.75), (0.39, -0.31, 0.78)),
+    )
+    front = [vertex for row in rows for vertex in row]
+    rear = [(x, y + 0.027, z) for x, y, z in front]
+    vertices = front + rear
+    faces = []
+    for base in (0, 9):
+        for row in range(2):
+            for column in range(2):
+                index = base + row * 3 + column
+                faces.append((index, index + 1, index + 4, index + 3))
+    for column in range(2):
+        faces.append((column, column + 1, 10 + column, 9 + column))
+        bottom = 6 + column
+        faces.append((bottom, bottom + 1, 16 + column, 15 + column))
+    for row in range(2):
+        left, right = row * 3, row * 3 + 2
+        faces.append((left, left + 3, left + 12, left + 9))
+        faces.append((right, right + 3, right + 12, right + 9))
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    item = bpy.data.objects.new("Flared apron cloth", mesh)
+    bpy.context.collection.objects.link(item)
+    item.parent = parent
+    item.matrix_parent_inverse = parent.matrix_world.inverted()
+    item.data.materials.append(material)
+    return item
+
+
 def pivot(name, location, parent):
     bpy.ops.object.empty_add(type="PLAIN_AXES", location=location)
     item = bpy.context.object
@@ -138,12 +175,16 @@ def build_detailed_actor(root, asset_id):
     """Model each eight-view concept without changing the actor rig contract."""
     guard = asset_id == "actor.guard.base"
     medic = asset_id == "actor.medic.base"
+    cook = asset_id == "actor.cook.base"
     if guard:
         fabric = actor_fabric("guard-uniform-navy-v2.png", "Guard worn navy cotton", (0.025, 0.045, 0.085))
         dark_seam = mat("Navy seam shadow", (0.011, 0.018, 0.035), 0.85)
     elif medic:
         fabric = actor_fabric("medic-scrubs-blue-v2.png", "Medic washed blue scrubs", (0.075, 0.23, 0.31))
         dark_seam = mat("Blue scrub seam shadow", (0.028, 0.09, 0.13), 0.85)
+    elif cook:
+        fabric = actor_fabric("cook-uniform-canvas-v2.png", "Cook washed canvas", (0.69, 0.66, 0.60))
+        dark_seam = mat("Cook jacket seams", (0.24, 0.23, 0.21), 0.87)
     else:
         fabric = actor_fabric("prisoner-jumpsuit-orange-v2.png", "Prisoner worn orange cotton", (0.64, 0.23, 0.07))
         dark_seam = mat("Orange seam shadow", (0.31, 0.105, 0.028), 0.85)
@@ -156,6 +197,7 @@ def build_detailed_actor(root, asset_id):
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
     medical_white = mat("Medic patch and ID", (0.78, 0.83, 0.82), 0.76) if medic else None
     cap_blue = mat("Medic pale blue cap", (0.31, 0.47, 0.60), 0.86) if medic else None
+    apron = mat("Cook worn tan apron", (0.30, 0.23, 0.15), 0.93) if cook else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
     # displayed scale. The old single bevelled cube made every role a crate.
@@ -196,6 +238,19 @@ def build_detailed_actor(root, asset_id):
         cube("Medical ID clip", (0.19, -0.331, 2.43), (0.025, 0.013, 0.05), button, root, 0.004)
         cube("Medical ID card", (0.19, -0.341, 2.34), (0.055, 0.010, 0.075), medical_white, root, 0.007)
         cube("Scrub hem", (0, -0.287, 1.78), (0.35, 0.015, 0.020), dark_seam, root, 0.003)
+    if cook:
+        # The apron is intentionally one broad, continuous panel. At 64 px it
+        # matters more than individual jacket buttons and is visible in motion.
+        cube("Apron waistband", (0, -0.306, 1.72), (0.40, 0.052, 0.08), apron, root, 0.02)
+        apron_panel(root, apron)
+        cube("Apron pocket", (0, -0.424, 1.22), (0.19, 0.010, 0.11), apron, root, 0.009)
+        for x in (-0.21, 0.21):
+            cube(f"Apron fold.{x}", (x, -0.396, 1.16), (0.014, 0.009, 0.30), dark_seam, root, 0.003)
+        for side in (-1, 1):
+            cube(f"Apron side tie.{side}", (side * 0.375, 0.07, 1.69), (0.055, 0.18, 0.055), apron, root, 0.013)
+            cube(f"Double jacket button.{side}", (side * 0.15, -0.34, 2.44), (0.018, 0.012, 0.018), dark_seam, root, 0.005)
+            cube(f"Lower jacket button.{side}", (side * 0.15, -0.34, 2.27), (0.018, 0.012, 0.018), dark_seam, root, 0.005)
+        cube("Folded kitchen towel", (0.38, -0.16, 1.44), (0.07, 0.025, 0.22), undershirt, root, 0.009)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
@@ -214,6 +269,9 @@ def build_detailed_actor(root, asset_id):
         sphere("Medical cap", (0, 0.045, 3.380), (0.303, 0.278, 0.122), cap_blue, root)
         box_tie = cube("Medical cap tie", (0, 0.281, 3.29), (0.065, 0.09, 0.025), cap_blue, root, 0.006)
         box_tie.rotation_euler.z = math.radians(8)
+    elif cook:
+        sphere("Compact chef cap", (0, 0.055, 3.405), (0.31, 0.285, 0.155), fabric, root)
+        cylinder("Chef cap folded band", (0, 0.02, 3.342), 0.288, 0.07, apron, root)
     cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
 
     for side in (-1, 1):
@@ -247,7 +305,7 @@ def main():
     patch = mat("Role patch", profile["patch"], 0.8)
     root = pivot("SpriteRoot", (0, 0, 0), None)
     pivot("SpriteTarget", (0, 0, 0), None)
-    if options.asset_id in ("actor.prisoner.base", "actor.guard.base", "actor.medic.base"):
+    if options.asset_id in ("actor.prisoner.base", "actor.guard.base", "actor.medic.base", "actor.cook.base"):
         build_detailed_actor(root, options.asset_id)
     else:
         cube("Torso", (0, 0, 2.15), (0.46, 0.27, 0.64), uniform, root, 0.14)
