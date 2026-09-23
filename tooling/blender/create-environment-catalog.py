@@ -161,6 +161,26 @@ def corridor_bench_wood_material():
     return item
 
 
+def employee_desk_laminate_material():
+    """Pack the desk's original grey-oak swatch into the Blender source."""
+    texture_path = ROOT / "assets/source/textures/employee-desk-laminate-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Employee desk laminate texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Employee desk grey laminate", (0.48, 0.45, 0.40, 1), 0.78)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
 def canteen_steel_material():
     texture_path = ROOT / "assets/source/textures/dining-table-steel-v1.png"
     if not texture_path.is_file():
@@ -359,17 +379,31 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.075), "bench_wood", 0.022)
             for x in (-0.79, 0.79):
                 cylinder(collection, root, f"Seat bolt.{index}.{x}", (x, y, 0.613), 0.023, 0.011, "galvanized_edge", 12)
-    elif "desk" in asset_id or "reception" in asset_id:
-        length = 2.7 if "reception" in asset_id else 1.7
-        box(collection, root, "Counter", (0, 0, 0.92), (length, 0.72, 0.1), "wood", 0.03)
-        box(collection, root, "Cabinet", (0, 0.2, 0.42), (length * 0.9, 0.46, 0.82), "steel")
-        if "reception" in asset_id:
-            # A transaction ledge one step above the worktop: from above it is
-            # the band that tells a counter from a desk.
-            box(collection, root, "Ledge", (0, -0.28, 1.06), (length, 0.22, 0.12), "concrete", 0.03)
-        else:
-            box(collection, root, "Blotter", (-0.16, -0.04, 0.976), (0.86, 0.46, 0.012), "shade", 0)
-            box(collection, root, "Tray", (0.58, -0.06, 1.0), (0.4, 0.3, 0.06), "steel", 0.02)
+    elif "desk" in asset_id:
+        # Multiview reference: assets/source/concepts/employee-desk-multiview-v2.png.
+        # Keep the drawer pedestal visibly separate beyond the worktop's south edge.
+        for x in (-0.75, 0.75):
+            for y in (-0.30, 0.30):
+                box(collection, root, f"Steel leg.{x}.{y}", (x, y, 0.44), (0.075, 0.075, 0.88), "canteen_steel", 0.012)
+                box(collection, root, f"Leg foot.{x}.{y}", (x, y, 0.035), (0.12, 0.12, 0.07), "steel", 0.012)
+        box(collection, root, "Front frame rail", (0, 0.29, 0.77), (1.51, 0.055, 0.14), "steel", 0.01)
+        box(collection, root, "Drawer pedestal shell", (0.56, 0.25, 0.45), (0.50, 0.40, 0.78), "canteen_steel", 0.015)
+        box(collection, root, "Pedestal visible top", (0.56, 0.25, 0.85), (0.54, 0.42, 0.035), "steel", 0.01)
+        for index, height in enumerate((0.25, 0.45, 0.65)):
+            box(collection, root, f"Drawer front.{index}", (0.56, 0.458, height), (0.43, 0.012, 0.16), "steel", 0.006)
+            box(collection, root, f"Drawer pull.{index}", (0.56, 0.471, height), (0.13, 0.023, 0.018), "galvanized_edge", 0.006)
+        box(collection, root, "Dark worktop edge band", (0, -0.04, 0.91), (1.84, 0.78, 0.09), "steel", 0.018)
+        box(collection, root, "Grey oak laminate", (0, -0.04, 0.965), (1.79, 0.73, 0.035), "desk_laminate", 0.018)
+        cylinder(collection, root, "Cable grommet dark surround", (-0.69, -0.30, 0.989), 0.055, 0.009, "steel", 24)
+        cylinder(collection, root, "Cable opening", (-0.69, -0.30, 0.996), 0.033, 0.01, "shade", 24)
+        box(collection, root, "Olive paperwork tray", (-0.48, -0.07, 0.998), (0.35, 0.26, 0.035), "green", 0.012)
+        box(collection, root, "Paper in tray", (-0.48, -0.07, 1.020), (0.29, 0.20, 0.012), "light", 0.004)
+        box(collection, root, "Cream notepad", (0.47, -0.07, 0.994), (0.18, 0.25, 0.012), "light", 0.004)
+    elif "reception" in asset_id:
+        box(collection, root, "Counter", (0, 0, 0.92), (2.7, 0.72, 0.1), "wood", 0.03)
+        box(collection, root, "Cabinet", (0, 0.2, 0.42), (2.43, 0.46, 0.82), "steel")
+        # The higher transaction ledge distinguishes this from an employee desk.
+        box(collection, root, "Ledge", (0, -0.28, 1.06), (2.7, 0.22, 0.12), "concrete", 0.03)
     else:
         box(collection, root, "Chair seat", (0, 0, 0.46), (0.5, 0.46, 0.08), "blue", 0.04)
         box(collection, root, "Back gap", (0, 0.185, 0.51), (0.54, 0.04, 0.06), "shade", 0)
@@ -553,6 +587,7 @@ def main():
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["canteen_wood"] = canteen_wood_material()
     MATERIALS["bench_wood"] = corridor_bench_wood_material()
+    MATERIALS["desk_laminate"] = employee_desk_laminate_material()
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)

@@ -417,8 +417,8 @@
     {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
-      "sha256": "70767a391cbec4bbb8f2aeddf099087fe643a5815ca5f85cff7a6fd0eed6c82d",
-      "pixelSha256": "dbf3fdbd29b81ae1f43e4665afc410e9768bfa21db485ed5e1126d43b55489e5",
+      "sha256": "1dbdd9274f826bd2c02f5c3b06b11adb06b06b7c41582d55377254713cdfdf49",
+      "pixelSha256": "9feb617a6f5dec9990e34021a7e1a8b19f9db9a8cf2c379c0790632038a6285f",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -434,11 +434,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 61,
-        "y": 45,
-        "width": 390,
-        "height": 182,
-        "opaquePixels": 70296
+        "x": 45,
+        "y": 29,
+        "width": 422,
+        "height": 210,
+        "opaquePixels": 79372
       }
     },
     {
