@@ -204,7 +204,8 @@ def build_detailed_actor(root, asset_id):
     cap_blue = mat("Medic pale linen cap", (0.87, 0.86, 0.81), 0.86) if medic else None
     medical_red = mat("Medic cap and kit red", (0.70, 0.065, 0.035), 0.69) if medic else None
     medical_bag = mat("Medic charcoal kit casing", (0.055, 0.065, 0.075), 0.82) if medic else None
-    apron = mat("Cook worn tan apron", (0.30, 0.23, 0.15), 0.93) if cook else None
+    apron = mat("Cook ochre canvas apron", (0.58, 0.29, 0.07), 0.88) if cook else None
+    cook_teal = mat("Cook cap teal marking", (0.025, 0.22, 0.23), 0.84) if cook else None
     staff_blue = mat("Staff blue role marking", (0.035, 0.20, 0.55), 0.68) if staff else None
 
     # Torso, shoulder and hip volumes remain distinct at the sprite's 64 px
@@ -263,6 +264,13 @@ def build_detailed_actor(root, asset_id):
     if cook:
         # The apron is intentionally one broad, continuous panel. At 64 px it
         # matters more than individual jacket buttons and is visible in motion.
+        cube("Apron chest bib", (0, -0.331, 2.30), (0.29, 0.042, 0.38), apron, root, 0.026)
+        for side in (-1, 1):
+            strap = cube(f"Apron shoulder strap.{side}",
+                         (side * 0.19, -0.285, 2.59), (0.055, 0.06, 0.25), apron, root, 0.012)
+            strap.rotation_euler.y = math.radians(side * 18)
+            cube(f"Apron back strap.{side}",
+                 (side * 0.22, 0.279, 2.37), (0.052, 0.029, 0.41), apron, root, 0.012)
         cube("Apron waistband", (0, -0.306, 1.72), (0.40, 0.052, 0.08), apron, root, 0.02)
         apron_panel(root, apron)
         cube("Apron pocket", (0, -0.424, 1.22), (0.19, 0.010, 0.11), apron, root, 0.009)
@@ -313,8 +321,12 @@ def build_detailed_actor(root, asset_id):
         cube("Medical cap red cross horizontal", (0, 0.035, 3.506),
              (0.245, 0.080, 0.009), medical_red, root, 0.002)
     elif cook:
-        sphere("Compact chef cap", (0, 0.055, 3.405), (0.31, 0.285, 0.155), fabric, root)
-        cylinder("Chef cap folded band", (0, 0.02, 3.342), 0.288, 0.07, apron, root)
+        cylinder("Compact chef cap crown", (0, 0.045, 3.431), 0.305, 0.135, fabric, root)
+        cylinder("Chef cap folded band", (0, 0.025, 3.355), 0.31, 0.055, apron, root)
+        cube("Chef cap top teal stripe", (0, 0.045, 3.499),
+             (0.075, 0.37, 0.005), cook_teal, root, 0.003)
+        cube("Chef cap top ochre patch", (0, 0.045, 3.503),
+             (0.19, 0.16, 0.009), apron, root, 0.012)
     cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
 
     for side in (-1, 1):
