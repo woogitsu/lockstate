@@ -66,6 +66,7 @@ PALETTE = {
     "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
     "fridge_steel": ((0.20, 0.29, 0.38, 1), 0.62),
     "fridge_enamel": ((0.95, 0.91, 0.78, 1), 0.38),
+    "dock_amber": ((0.72, 0.36, 0.045, 1), 0.63),
 }
 
 MODELS = (
@@ -92,6 +93,9 @@ MODELS = (
     ("furniture.medical.cabinet", (1, 1)),
     ("furniture.kitchen.stove", (2, 1)),
     ("furniture.kitchen.fridge", (1, 1)),
+    ("furniture.security.surveillance_console", (2, 1)),
+    ("furniture.utility.control_panel", (1, 1)),
+    ("furniture.delivery.dock_gate.closed", (3, 1)),
 )
 
 
@@ -161,6 +165,26 @@ def canteen_wood_material():
     texture.extension = "CLIP"
     links.new(coords.outputs["Generated"], texture.inputs["Vector"])
     links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def console_screen_material():
+    """Pack the original CCTV concept swatch inside the source scene."""
+    texture_path = ROOT / "assets/source/textures/security-console-cctv-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Console monitor texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Surveillance monitor CCTV glass", (0.025, 0.22, 0.25, 1), 0.27)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    shader = nodes.get("Principled BSDF")
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if shader.inputs.get("Emission Color") is not None:
+        links.new(texture.outputs["Color"], shader.inputs["Emission Color"])
+        shader.inputs["Emission Strength"].default_value = 0.32
     return item
 
 
@@ -338,6 +362,105 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Door handle lower foot", (0.28, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
         box(collection, root, "Brushed steel pull", (0.28, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
         box(collection, root, "Visible top door reveal", (0, 0.44, 1.613), (0.80, 0.07, 0.028), "shade", 0.006)
+    elif asset_id == "furniture.security.surveillance_console":
+        # assets/source/concepts/security-console-multiview-v1.png.
+        # Low monitor hoods expose all three teal screens to the overhead camera.
+        for x in (-0.86, 0.86):
+            for y in (-0.36, 0.36):
+                box(collection, root, f"Grounded steel foot.{x}.{y}", (x, y, 0.09), (0.17, 0.17, 0.18), "steel", 0.015)
+                box(collection, root, f"Foot collar.{x}.{y}", (x, y, 0.19), (0.19, 0.19, 0.06), "galvanized_edge", 0.009)
+        box(collection, root, "Deep cabinet shadow", (0, 0, 0.30), (1.87, 0.85, 0.20), "steel", 0.025)
+        box(collection, root, "Powder-coated cabinet", (0, 0, 0.67), (1.87, 0.85, 0.64), "console_enamel", 0.035)
+        box(collection, root, "Recessed front door", (0, 0.432, 0.62), (1.45, 0.018, 0.42), "galvanized", 0.009)
+        for x in (-0.12, 0.12):
+            box(collection, root, f"Door pull.{x}", (x, 0.449, 0.65), (0.043, 0.012, 0.13), "steel", 0.005)
+        box(collection, root, "Bevelled control deck", (0, 0, 1.015), (1.96, 0.96, 0.12), "console_enamel", 0.035)
+        box(collection, root, "Dark monitor rail", (0, -0.23, 1.092), (1.85, 0.42, 0.03), "steel", 0.014)
+        for index, (x, width) in enumerate(((-0.64, 0.47), (0, 0.65), (0.64, 0.47))):
+            box(collection, root, f"Monitor raised housing.{index}", (x, -0.23, 1.215), (width, 0.38, 0.23), "console_enamel", 0.022)
+            box(collection, root, f"Monitor black rebate.{index}", (x, -0.23, 1.344), (width - 0.055, 0.31, 0.023), "shade", 0.007)
+            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), "console_screen", 0.007)
+            box(collection, root, f"Monitor hood.{index}", (x, -0.413, 1.372), (width, 0.075, 0.055), "console_enamel", 0.012)
+            box(collection, root, f"Monitor footer.{index}", (x, -0.047, 1.373), (width, 0.034, 0.047), "steel", 0.007)
+        box(collection, root, "Keyboard inset shadow", (0, 0.255, 1.084), (0.66, 0.28, 0.014), "shade", 0.011)
+        box(collection, root, "Keyboard deck", (0, 0.255, 1.096), (0.61, 0.23, 0.016), "steel", 0.007)
+        for row, y in enumerate((0.17, 0.23, 0.29, 0.35)):
+            for col, x in enumerate((-0.25, -0.18, -0.11, -0.04, 0.03, 0.10, 0.17, 0.24)):
+                box(collection, root, f"Key.{row}.{col}", (x, y, 1.108), (0.045, 0.038, 0.008), "galvanized", 0.003)
+        for x in (-0.60, 0.60):
+            cylinder(collection, root, f"Control stick base.{x}", (x, 0.25, 1.103), 0.105, 0.03, "steel", 24)
+            cylinder(collection, root, f"Control stick shaft.{x}", (x, 0.25, 1.175), 0.037, 0.13, "galvanized_edge", 20)
+            cylinder(collection, root, f"Control stick knob.{x}", (x, 0.25, 1.252), 0.066, 0.05, "steel", 24)
+        for x in (-0.84, -0.76, 0.75):
+            for y in (0.18, 0.27):
+                cylinder(collection, root, f"Action lens.{x}.{y}", (x, y, 1.107), 0.032, 0.016, "console_amber" if x < 0 else "console_teal", 16)
+        box(collection, root, "Red guarded switch base", (0.83, 0.34, 1.104), (0.12, 0.11, 0.024), "shade", 0.008)
+        box(collection, root, "Red guarded switch", (0.83, 0.34, 1.13), (0.071, 0.069, 0.039), "console_red", 0.008)
+        for x in (-0.91, 0.91):
+            for y in (-0.43, 0.43):
+                cylinder(collection, root, f"Deck bolt.{x}.{y}", (x, y, 1.085), 0.014, 0.012, "galvanized_edge", 12)
+    elif asset_id == "furniture.utility.control_panel":
+        # Four-view original reference: assets/source/concepts/utility-panel-multiview-v1.png.
+        # The overhead read is six cream breakers, two lenses and one red guarded switch.
+        box(collection, root, "Anchor plinth", (0, 0, 0.075), (0.91, 0.91, 0.15), "steel", 0.018)
+        box(collection, root, "Powder-coated steel cabinet", (0, 0, 0.57), (0.83, 0.81, 0.98), "utility_enamel", 0.035)
+        box(collection, root, "Front access hatch shadow", (0, 0.414, 0.54), (0.64, 0.011, 0.60), "steel", 0.009)
+        box(collection, root, "Front access hatch", (0, 0.426, 0.54), (0.58, 0.015, 0.54), "utility_enamel", 0.012)
+        for z in (0.32, 0.76):
+            box(collection, root, f"Front hinge.{z}", (0.32, 0.438, z), (0.04, 0.032, 0.10), "galvanized_edge", 0.007)
+        box(collection, root, "Top angled housing", (0, 0, 1.105), (0.94, 0.91, 0.15), "utility_enamel", 0.055)
+        box(collection, root, "Deep inset control shadow", (0, 0, 1.195), (0.77, 0.72, 0.025), "steel", 0.025)
+        box(collection, root, "Dark breaker panel", (-0.035, 0, 1.212), (0.62, 0.62, 0.012), "metal_recess", 0.015)
+        for x in (-0.14, 0.075):
+            box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
+            for row, y in enumerate((-0.18, 0, 0.18)):
+                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
+                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+        for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
+            cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
+            cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
+        box(collection, root, "Master switch guard base", (0.30, -0.01, 1.23), (0.15, 0.26, 0.035), "shade", 0.011)
+        box(collection, root, "Red master switch", (0.30, -0.01, 1.277), (0.095, 0.15, 0.065), "utility_red", 0.014)
+        for y in (-0.11, 0.11):
+            box(collection, root, f"Steel switch guard.{y}", (0.30, y, 1.296), (0.15, 0.025, 0.08), "galvanized_edge", 0.009)
+        # Alternating hazard paint is a nonverbal 64px recognition cue.
+        box(collection, root, "Hazard stripe ground", (0.397, 0, 1.206), (0.063, 0.68, 0.012), "shade", 0.004)
+        for index, y in enumerate((-0.25, -0.09, 0.07, 0.23)):
+            stripe = box(collection, root, f"Yellow hazard diagonal.{index}", (0.397, y, 1.216), (0.056, 0.09, 0.008), "utility_yellow", 0.002)
+            stripe.rotation_euler.z = 0.38
+        for x in (-0.40, 0.40):
+            for y in (-0.39, 0.39):
+                cylinder(collection, root, f"Top bolt.{x}.{y}", (x, y, 1.19), 0.017, 0.011, "galvanized_edge", 12)
+    elif asset_id == "furniture.delivery.dock_gate.closed":
+        # Concept: assets/source/concepts/loading-dock-door-multiview-v1.png.
+        # This buildable is a closed, tile-addressed object, not a navigable
+        # door edge. The continuous slatted surface makes that clear overhead.
+        box(collection, root, "Recessed gate shadow", (0, 0, 0.25), (2.88, 0.85, 0.48), "shade", 0.018)
+        box(collection, root, "Heavy timber backing", (0, 0, 0.56), (2.78, 0.74, 0.12), "wood", 0.012)
+        for row, y in enumerate((-0.30, -0.18, -0.06, 0.06, 0.18, 0.30)):
+            box(collection, root, f"Gate timber slat.{row}", (0, y, 0.655),
+                (2.72, 0.10, 0.055), "canteen_wood", 0.008)
+            box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
+                (2.74, 0.012, 0.009), "shade", 0.002)
+        for x in (-1.43, 1.43):
+            box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
+                (0.12, 0.94, 0.91), "canteen_steel", 0.016)
+            box(collection, root, f"Track dark channel.{x}", (x, 0, 1.055),
+                (0.047, 0.84, 0.016), "shade", 0.004)
+            for y in (-0.37, 0.37):
+                cylinder(collection, root, f"Track bolt.{x}.{y}", (x, y, 1.07),
+                         0.024, 0.02, "galvanized_edge", 16)
+        box(collection, root, "North steel header", (0, -0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        box(collection, root, "South steel threshold", (0, 0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
+                (0.17, 0.045, 0.018), "dock_amber", 0.004)
+        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
+                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+            brace.rotation_euler.z = angle
+            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+                     0.026, 0.016, "steel", 16)
     elif asset_id == "furniture.kitchen.stove":
         # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
         # Four burner discs and the raised rear guard are visible from above.
@@ -773,6 +896,16 @@ def main():
     MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
     MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
+    MATERIALS["console_enamel"] = material("Worn blue-grey surveillance enamel", (0.17, 0.23, 0.30, 1), 0.58)
+    MATERIALS["console_screen"] = console_screen_material()
+    MATERIALS["console_amber"] = material("Amber console indicator", (0.94, 0.45, 0.045, 1), 0.27)
+    MATERIALS["console_teal"] = material("Teal console indicator", (0.035, 0.65, 0.64, 1), 0.27)
+    MATERIALS["console_red"] = material("Guarded emergency control", (0.65, 0.06, 0.04, 1), 0.36)
+    MATERIALS["utility_enamel"] = material("Aged utility cabinet enamel", (0.20, 0.30, 0.39, 1), 0.60)
+    MATERIALS["utility_amber"] = material("Utility amber indicator", (0.95, 0.45, 0.05, 1), 0.30)
+    MATERIALS["utility_teal"] = material("Utility teal indicator", (0.02, 0.53, 0.55, 1), 0.30)
+    MATERIALS["utility_red"] = material("Utility red master switch", (0.61, 0.065, 0.04, 1), 0.37)
+    MATERIALS["utility_yellow"] = material("Utility hazard yellow", (0.92, 0.56, 0.06, 1), 0.64)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)

@@ -210,6 +210,12 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 
 ### Security — `security.access_reader.variants`, `security.camera.wall.variants`, `security.checkpoint.turnstile.variants`
 
+The 2×1 `furniture.security.surveillance_console` is a separate buildable
+control station: three low monitor hoods face the vertical game camera; a
+keyboard, paired sticks and grouped lights identify the control deck.
+Its original four-view reference and packed monochrome CCTV texture are
+documented in `assets/source/concepts/security-console-v1.md`.
+
 These carry the palette's action teal as an indicator colour and nothing else
 does — a reader's status light is the one warm-cool contrast in an otherwise
 grey object, and it is how a player finds it.
@@ -221,6 +227,13 @@ grey object, and it is how a player finds it.
 Camera and turnstile **overhang their footprints** by design; the reference
 should show the lens and the arms outside the declared rectangle.
 
+### Utility control — `furniture.utility.control_panel`
+
+Keep a 1×1 electrical control kiosk readable from straight above: six cream
+breaker levers, two colored status lenses and a red guarded switch on a dark
+inset hatch. Its original four-view reference and Blender model decisions
+are recorded in `assets/source/concepts/utility-panel-v1.md`.
+
 ### Perimeter and yard — `perimeter.fence.modules`, `perimeter.light.pole.variants`, `perimeter.vehicle_gate.sliding.variants`, `perimeter.watchtower.variants`
 
 > a section of perimeter fence, one tile wide, seen from directly above with its
@@ -231,6 +244,18 @@ should show the lens and the arms outside the declared rectangle.
 
 The watchtower's roof is 2.35 tiles across a two-tile footprint; the reference
 should show that overhang rather than a tower cropped to its base.
+
+### Delivery bay — `furniture.delivery.dock_gate.closed`
+
+> a solid closed 3×1 tile loading-dock gate, true overhead plus three
+> consistent oblique views — weathered muted-walnut horizontal timber slats,
+> dark seams, galvanized side tracks, diagonal steel braces and two restrained
+> amber reflector plates on the threshold
+> …the slats, dark joints and end tracks stay legible at 192×64 px; no opening
+> or walkable doorway is suggested.
+
+The original reference and the object's current non-navigable limitation are
+recorded in `assets/source/concepts/loading-dock-door-v1.md`.
 
 ### Lighting and storage — `fixture.ceiling_light.panel.variants`, `storage.container.variants`
 

@@ -94,6 +94,9 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.dining-table',
   'env.object.stove',
   'env.object.washing-machine',
+  'env.object.security-console',
+  'env.object.utility-panel',
+  'env.object.loading-dock-door',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -260,6 +263,27 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Insulated kitchen refrigerator with blue-grey steel top, cream enamel front cap and separated freezer door. Drawn on object.fridge.',
+  },
+  'env.object.security-console': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.security.surveillance_console',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Blue-grey security console with three overhead-visible CCTV monitors, keyboard, joysticks and guarded control. Drawn on object.security-console.',
+  },
+  'env.object.utility-panel': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.utility.control_panel',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Blue-grey utility-control cabinet with six top-visible breakers, two status lenses and a guarded red switch. Drawn on object.utility-panel.',
+  },
+  'env.object.loading-dock-door': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.delivery.dock_gate.closed',
+    runtimeSizePx: { width: 384, height: 128 },
+    quarterTurns: 0,
+    note: 'Closed three-tile timber delivery gate with steel tracks. Drawn on object.loading-dock-door; it is not a navigable door edge.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR

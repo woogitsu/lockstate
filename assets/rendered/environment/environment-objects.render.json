@@ -388,6 +388,33 @@
       }
     },
     {
+      "assetId": "furniture.delivery.dock_gate.closed",
+      "image": "furniture.delivery.dock_gate.closed.png",
+      "sha256": "670e4def64736a6480a37d3384fc2a5df151855120bbcc6eadce1893df932afb",
+      "pixelSha256": "404e41cd90ccdddc0f53e7c21e92b46f73c5b03cc9f86e59eebbbc20f1f94339",
+      "footprintTiles": {
+        "width": 3.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 768,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 42,
+        "y": 19,
+        "width": 684,
+        "height": 218,
+        "opaquePixels": 142804
+      }
+    },
+    {
       "assetId": "furniture.dining.table.wooden",
       "image": "furniture.dining.table.wooden.png",
       "sha256": "cc5f82b333f7276af3f413955de4ce050db519ec441a7b2fefbe41b8662d4bbd",
@@ -604,6 +631,33 @@
       }
     },
     {
+      "assetId": "furniture.security.surveillance_console",
+      "image": "furniture.security.surveillance_console.png",
+      "sha256": "ac5f77ba35eb5ecb2bf1cf1b321a8bc5848625c81db6886db54cf4016f5ddeb9",
+      "pixelSha256": "1e28291f2bcf992cc58fc879033f62bb0f4a656541b1c7c21926abb5c5983e1a",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 31,
+        "y": 17,
+        "width": 450,
+        "height": 222,
+        "opaquePixels": 99812
+      }
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "image": "furniture.storage.rack.wooden.png",
       "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",
@@ -628,6 +682,33 @@
         "width": 228,
         "height": 210,
         "opaquePixels": 38829
+      }
+    },
+    {
+      "assetId": "furniture.utility.control_panel",
+      "image": "furniture.utility.control_panel.png",
+      "sha256": "ac3a8e152b66662520579956c01a49602f14cccd20ffe07423b9868fa57a9305",
+      "pixelSha256": "9f695c41aec39b44c48adec37b54eb236331d94dcef3ac7afb855264d44b76c5",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 23,
+        "width": 218,
+        "height": 210,
+        "opaquePixels": 45608
       }
     },
     {

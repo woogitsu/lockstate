@@ -265,14 +265,16 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * fixed stools, matching the simulation's three dining places, rather than
  * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
  * The twin laundry washer has its own 2x1 model with two top-visible drum windows.
+ * The 2x1 surveillance console now has its own three-screen model rather
+ * than a generic desk or coloured slab; its low monitor hoods face the
+ * game's overhead camera.
+ * A purpose-built 1x1 utility panel now exposes its six large breakers and
+ * guarded switch to the overhead view, so it no longer needs a coloured slab.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
-  'object.loading-dock-door',
   'object.prep-counter',
-  'object.security-console',
   'object.sink',
-  'object.utility-panel',
 ];
 
 /**
@@ -334,6 +336,9 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.stove': 'env.object.stove',
   'object.fridge': 'env.object.fridge',
   'object.washing-machine': 'env.object.washing-machine',
+  'object.security-console': 'env.object.security-console',
+  'object.utility-panel': 'env.object.utility-panel',
+  'object.loading-dock-door': 'env.object.loading-dock-door',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
