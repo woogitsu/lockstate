@@ -1170,14 +1170,11 @@ describe('and the population boundary that bounded it, which crowding (#586) has
    * the canteen and the shower room answers *contention* for them, which is
    * not what crowding is. Measured on this seed: six riots staffed (three
    * before #586), five provisioned (none before), the provisioned prison's
-   * score 0.7746 against 0.8036 (0.762 against 0.814 since #1373 changed what
-   * the navigation budget charges; see the assertions) -- so the rooms still buy something, and the
+   * score 0.7746 against 0.8036 -- so the rooms still buy something, and the
    * assertion that they do is kept as an ordering rather than an absence.
    * What stops it now is beds.
    */
   it('riots at ninety-six prisoners with a guard for every eight of them, and since #586 the rooms built for that many no longer stop it', () => {
-    const PROVISIONED_SCORE = 0.762;
-    const CROWDED_SCORE = 0.814;
     const STAFFED_96 = { cells: 8, toilets: true, amenities: true, prisoners: 96, guards: 12 } as const;
 
     const crowded = run(STAFFED_96);
@@ -1199,15 +1196,8 @@ describe('and the population boundary that bounded it, which crowding (#586) has
     expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeLessThan(
       crowded.sectorRisk.getScore('security-sector.prison'),
     );
-    // **Re-measured for issue #1373, and both figures moved.** They read
-    // 0.7746 and 0.8036 when #586 landed. #1373 made the navigation work
-    // budget charge a cache hit what its leg costs cold, so that a restored
-    // session is charged what the saved one was. At ninety-six prisoners that
-    // budget binds at every block change, so a warm-cache tick now defers
-    // work it used to serve. The riot counts above and the ordering are
-    // unchanged; both scores moved, to 0.762 and 0.814.
-    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(PROVISIONED_SCORE, 3);
-    expect(crowded.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(CROWDED_SCORE, 3);
+    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.7746, 3);
+    expect(crowded.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.8036, 3);
 
     // Non-vacuous: both prisons are the same eight beds and the same
     // ninety-six people, and the second is not quiet because it lost anybody.

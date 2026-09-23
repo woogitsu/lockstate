@@ -25,37 +25,11 @@ function crossedDoorIds(result: RouteResult): readonly string[] {
     .filter((doorId): doorId is string => doorId !== undefined);
 }
 
-
-
-/**
- * What a cold computation of one leg costs, by method -- the number a cache
- * hit is charged against the work budget (issue #1373). `direct` is the full
- * search; `field` is the leg through a shared `RegionFlowField`, which
- * `PathRequestQueue` selects from how many requests share the destination on
- * the tick.
- *
- * `field` is tied to the field object it was measured against, because the
- * leg's own door dependencies are narrower than the field's: a field
- * recomputed after an invalidation can route the same leg through a
- * different local search while this entry stays valid.
- */
-export interface RoutePrices {
-  direct?: number;
-  field?: { readonly against: object; readonly expansions: number };
-}
-
 interface CacheEntry {
   readonly result: RouteResult;
   readonly geometrySignature: string;
   /** Every door this result depended on and what the search concluded about each, captured at compute time. */
   readonly dependencies: DoorDependencies;
-  readonly prices: RoutePrices;
-}
-
-/** A valid cached answer and the prices known for it. `prices` is the entry's own record, so a caller may fill in a method it has just measured. */
-export interface CachedRoute {
-  readonly result: RouteResult;
-  readonly prices: RoutePrices;
 }
 
 /**
@@ -108,17 +82,6 @@ export class RouteCache {
     graph: NavigationGraph,
     doors: DoorRegistry,
   ): RouteResult | undefined {
-    return this.lookup(origin, destination, context, graph, doors)?.result;
-  }
-
-  /** `get`, returning the entry's prices beside the answer. Validity and metrics are `get`'s exactly. */
-  public lookup(
-    origin: TilePosition,
-    destination: TilePosition,
-    context: RouteContext,
-    graph: NavigationGraph,
-    doors: DoorRegistry,
-  ): CachedRoute | undefined {
     const key = cacheKey(origin, destination, context);
     const entry = this.entries.get(key);
     if (entry === undefined) {
@@ -139,7 +102,7 @@ export class RouteCache {
       return undefined;
     }
     this.hits += 1;
-    return entry;
+    return entry.result;
   }
 
   public set(
@@ -151,14 +114,11 @@ export class RouteCache {
     result: RouteResult,
     /** Every door the computation consumed -- `findRoute`/`findRouteUsingFlowField` fill this via their `doorDependencies` parameter. */
     dependencyDoorIds: Iterable<string>,
-    /** What computing it cost, by the method that computed it, when the caller measured that. */
-    prices: RoutePrices = {},
   ): void {
     this.entries.set(cacheKey(origin, destination, context), {
       result,
       geometrySignature: graph.geometrySignature,
       dependencies: captureDoorDependencies([...dependencyDoorIds, ...crossedDoorIds(result)], doors, context),
-      prices: { ...prices },
     });
   }
 
@@ -186,15 +146,10 @@ export class RouteCache {
  * route crossed, just a coarser one, so a caller cannot silently produce an
  * entry with no dependencies at all.
  *
- * This was the only writer of `RouteCache` in `src/`, and since #359 the only
+ * This is the only writer of `RouteCache` in `src/`, and since #359 the only
  * reader on the request path too: flow-field sharing decides *how a miss is
  * computed* and sits inside `compute`, rather than in front of the cache where
- * it bypassed it entirely. **Since issue #1373 it is neither**:
- * `PathRequestQueue.processTick` calls `lookup` and `set` itself, because it
- * has to read and record the entry's `prices` to charge the work budget the
- * same whether the cache is warm or cold. The ordering #359 fixed -- cache
- * first, the field only deciding how a miss is computed -- is kept there. This
- * wrapper records no price and is kept for callers that need none.
+ * it bypassed it entirely.
  */
 export function findRouteCached(
   cache: RouteCache,

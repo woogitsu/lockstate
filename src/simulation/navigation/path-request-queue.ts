@@ -1,7 +1,7 @@
 import type { SparseWorld } from '../world/sparse-world';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import type { DoorRegistry } from './door';
-import { RouteCache } from './route-cache';
+import { findRouteCached, RouteCache } from './route-cache';
 import { findRouteUsingFlowField, FlowFieldCache, getOrComputeRegionFlowField, type RegionFlowField } from './flow-field';
 import type { SearchStats } from './local-search';
 import { routeContextFingerprint, type RouteContext } from './route-context';
@@ -271,148 +271,81 @@ export class PathRequestQueue {
     }
 
     const fieldsThisTick = new Map<string, RegionFlowField>();
-    /** Groups whose region pass has been charged this tick -- once per group, at its first request served. */
-    const chargedGroups = new Set<string>();
-    /** Groups a leg was computed through this tick: what `flowFieldActivations` has always counted. */
-    const activatedGroups = new Set<string>();
     const resolved: ResolvedPathRequest[] = [];
     let usedBudget = 0;
 
     for (const entry of entries) {
       if (resolved.length > 0 && usedBudget >= params.workBudget) break;
 
-      /** The work actually done, reported as `expansions` and summed into `totalExpansions`. */
       const stats: SearchStats = { expansions: 0 };
       const destinationRegion = params.graph.tileToRegion.get(tileKey(entry.request.destination));
       const groupKey = destinationRegion === undefined ? undefined : flowFieldGroupKey(destinationRegion, entry.request.context);
       const eligible = groupKey !== undefined && (groupCounts.get(groupKey) ?? 0) >= this.options.flowFieldActivationThreshold;
 
-      /*
-       * **What the budget is charged, which since issue #1373 is not the work
-       * done.** The budget is charged what this request costs *computed cold*:
-       * the region pass of its group's field once per group per tick, plus its
-       * own leg by the method the company it keeps this tick selects. A cache
-       * hit is charged the price recorded when that leg was last computed that
-       * way, not zero.
-       *
-       * Measured before the change: a `RouteCache` or `FlowFieldCache` hit cost
-       * nothing, a restore starts both empty, and so a restored session paid
-       * for searches the saved one had paid for before the save. On a tick the
-       * budget binds, that moved the point at which it stopped -- through a
-       * real save and restore, a 24-prisoner prison served a different set of
-       * requests at a regime block change (`tests/determinism/restore-mid-walk-exactness.test.ts`).
-       * Every term of the charge is a pure function of the pending set, the
-       * world and the doors, so a warm cache and a cold one charge the same;
-       * the caches still save the CPU, which is what they are for, and
-       * `expansions` still reports that saving honestly.
-       */
-      let charge = 0;
-      let field: RegionFlowField | undefined;
-      if (eligible && destinationRegion !== undefined && groupKey !== undefined) {
-        field = fieldsThisTick.get(groupKey);
-        if (field === undefined) {
-          // Fetched for the price even when every leg of the group is a cache
-          // hit, which is usually a `FlowFieldCache` hit and costs no search.
-          // `flowFieldActivations` still counts only the groups whose field a
-          // leg was actually computed through -- see `activatedGroups`.
-          field = getOrComputeRegionFlowField(params.flowFieldCache, params.graph, params.doors, destinationRegion, entry.request.context, stats);
-          fieldsThisTick.set(groupKey, field);
-        }
-        if (!chargedGroups.has(groupKey)) {
-          chargedGroups.add(groupKey);
-          charge += field.computationExpansions;
-        }
-      }
-
       let usedFlowField = false;
-      /**
-       * The leg, by the method this tick selects. Also used on a cache hit whose
-       * price for that method is not known yet, to measure it; the answer is
-       * discarded then, because `tests/determinism/navigation-cache-agreement.test.ts`
-       * and `navigation-shared-plan-equivalence.test.ts` pin that a cached
-       * answer and a fresh one are the same.
-       */
-      const computeLeg = (legStats: SearchStats, doorDependencies: Set<string>): { readonly result: RouteResult; readonly viaField: boolean } => {
-        if (field !== undefined && groupKey !== undefined) {
-          if (!activatedGroups.has(groupKey)) {
-            activatedGroups.add(groupKey);
-            this.flowFieldActivations += 1;
+
+      // The route cache is asked first and flow-field sharing decides only how
+      // a *miss* is computed (#359). It used to be the other way round: the
+      // field branch ran ahead of the cache and never wrote to it, so the one
+      // destination busy enough to trip `flowFieldActivationThreshold` -- the
+      // one whose legs repeat most -- was the only destination that got no
+      // cross-tick reuse at all, re-paying a full per-actor local A* every
+      // tick. `findRouteCached` reads and writes the cache around whichever of
+      // the two computed the answer, so the two mechanisms compose instead of
+      // excluding each other: the field pays the region pass once per group per
+      // tick, the cache pays the tile pass once per leg per generation.
+      const result = findRouteCached(
+        params.routeCache,
+        (doorDependencies) => {
+          if (eligible && destinationRegion !== undefined && groupKey !== undefined) {
+            let field = fieldsThisTick.get(groupKey);
+            if (field === undefined) {
+              field = getOrComputeRegionFlowField(params.flowFieldCache, params.graph, params.doors, destinationRegion, entry.request.context, stats);
+              fieldsThisTick.set(groupKey, field);
+              this.flowFieldActivations += 1;
+            }
+            const viaField = findRouteUsingFlowField(
+              field,
+              params.world,
+              params.doors,
+              params.graph,
+              entry.request.origin,
+              entry.request.destination,
+              stats,
+              doorDependencies,
+            );
+            if (viaField !== undefined) {
+              usedFlowField = true;
+              return viaField;
+            }
+            // The field could not answer (unreachable or blocked for this
+            // context): fall through to the full search, which owns the
+            // accurate diagnosis -- and drop what the field recorded, since
+            // `findRoute` records its own.
+            doorDependencies.clear();
           }
-          const viaField = findRouteUsingFlowField(
-            field,
-            params.world,
-            params.doors,
-            params.graph,
-            entry.request.origin,
-            entry.request.destination,
-            legStats,
-            doorDependencies,
-          );
-          if (viaField !== undefined) return { result: viaField, viaField: true };
-          // The field could not answer (unreachable or blocked for this
-          // context): fall through to the full search, which owns the
-          // accurate diagnosis -- and drop what the field recorded, since
-          // `findRoute` records its own.
-          doorDependencies.clear();
-        }
-        return {
-          result: findRoute(
+          return findRoute(
             params.world,
             params.doors,
             params.graph,
             entry.request.origin,
             entry.request.destination,
             entry.request.context,
-            legStats,
+            stats,
             doorDependencies,
-          ),
-          viaField: false,
-        };
-      };
-
-      // The route cache is asked first and flow-field sharing decides only how
-      // a *miss* is computed (#359): the field pays the region pass once per
-      // group per tick, the cache pays the tile pass once per leg per
-      // generation.
-      let result: RouteResult;
-      const cached = params.routeCache.lookup(entry.request.origin, entry.request.destination, entry.request.context, params.graph, params.doors);
-      if (cached !== undefined) {
-        result = cached.result;
-        const known = field !== undefined ? (cached.prices.field?.against === field ? cached.prices.field.expansions : undefined) : cached.prices.direct;
-        if (known !== undefined) {
-          charge += known;
-        } else {
-          const legStats: SearchStats = { expansions: 0 };
-          computeLeg(legStats, new Set<string>());
-          stats.expansions += legStats.expansions;
-          charge += legStats.expansions;
-          if (field !== undefined) cached.prices.field = { against: field, expansions: legStats.expansions };
-          else cached.prices.direct = legStats.expansions;
-        }
-      } else {
-        const legStats: SearchStats = { expansions: 0 };
-        const doorDependencies = new Set<string>();
-        const computed = computeLeg(legStats, doorDependencies);
-        result = computed.result;
-        usedFlowField = computed.viaField;
-        stats.expansions += legStats.expansions;
-        charge += legStats.expansions;
-        params.routeCache.set(
-          entry.request.origin,
-          entry.request.destination,
-          entry.request.context,
-          params.graph,
-          params.doors,
-          result,
-          doorDependencies,
-          field !== undefined ? { field: { against: field, expansions: legStats.expansions } } : { direct: legStats.expansions },
-        );
-      }
+          );
+        },
+        entry.request.origin,
+        entry.request.destination,
+        entry.request.context,
+        params.graph,
+        params.doors,
+      );
 
       this.pending.delete(entry.request.id);
       this.resolvedCount += 1;
       this.totalExpansions += stats.expansions;
-      usedBudget += charge;
+      usedBudget += stats.expansions;
 
       resolved.push({
         id: entry.request.id,

@@ -244,13 +244,14 @@ export class NavigationSystem implements SystemRegistration {
    * the search that produced it happened in a session that has ended, and
    * this one did none of that work.
    *
-   * **The budget half of the same question is settled in `PathRequestQueue`.**
-   * A cold cache also made a restored session's *searches* cost more against
-   * `workBudgetPerTick` than the continuous session's cache hits did, and where
-   * the budget bound, that moved which requests were served. Since issue #1373
-   * the budget is charged what a request costs cold, however warm the cache is
-   * ([ADR 0007](../../../docs/adr/0007-navigation-work-budgets-and-flow-fields.md)'s
-   * amendment of 2026-09-23), so the two sessions charge the same.
+   * **What this does not settle, and it is the weakest part of the exactness
+   * claim.** The same cold cache also means the restored session's *searches*
+   * cost more expansions against `workBudgetPerTick` than the continuous
+   * session's hits did. While the budget does not bind that changes nothing,
+   * because every waiting request is served that tick either way -- and it
+   * did not bind on any save `tests/determinism/restore-mid-walk-exactness.test.ts`
+   * takes. Where it binds, a restored session can serve a request a tick later
+   * than the session it was saved from.
    *
    * Deterministic: both lists ascending by id.
    */

@@ -53,14 +53,6 @@ export interface RegionFlowField {
    * origin.
    */
   readonly doorDependencies: DoorDependencies;
-  /**
-   * The expanded nodes the region pass that built this field cost (issue
-   * #1373). A pure function of the graph, the doors and the destination, so a
-   * cached field and a freshly computed one report the same number -- which is
-   * what lets `PathRequestQueue.processTick` charge the budget for the region
-   * pass whether or not a cache already held the field.
-   */
-  readonly computationExpansions: number;
 }
 
 export function computeRegionFlowField(
@@ -76,9 +68,7 @@ export function computeRegionFlowField(
   };
 
   const dependencyDoorIds = new Set<string>();
-  const own: SearchStats = { expansions: 0 };
-  const { dist, prevPortal } = runRegionDijkstra(graph, doors, destinationRegion, isPortalAllowed, own, undefined, dependencyDoorIds);
-  if (stats !== undefined) stats.expansions += own.expansions;
+  const { dist, prevPortal } = runRegionDijkstra(graph, doors, destinationRegion, isPortalAllowed, stats, undefined, dependencyDoorIds);
 
   const steps = new Map<RegionId, RegionFlowFieldStep>();
   for (const [regionId, portal] of prevPortal) {
@@ -92,7 +82,6 @@ export function computeRegionFlowField(
     geometrySignature: graph.geometrySignature,
     steps,
     doorDependencies: captureDoorDependencies(dependencyDoorIds, doors, context),
-    computationExpansions: own.expansions,
   };
 }
 
