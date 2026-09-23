@@ -297,9 +297,16 @@ export class NeedsComponent {
  * property holds for *any* split of the ticks, not merely for a fixed batch
  * size; `Math.round` inside the clamp is a no-op for whole `ticksElapsed`
  * and only guards a fractional argument.
+ *
+ * `extraScaledPerTick` is the crowding term (issue #586,
+ * `crowdingExtraDecayScaledPerTick` in `./crowding.ts`), added to the base
+ * rate rather than multiplied into it so that the rate stays a whole number of
+ * stored units and the linearity above survives it: the caller holds it fixed
+ * across the `ticksElapsed` it passes. Defaulted to `0`, which is every
+ * uncrowded prison and every caller that is not `NeedsDecaySystem`.
  */
-export function decayNeed(currentScaledLevel: number, needId: NeedId, ticksElapsed: number): number {
-  return clampScaled(currentScaledLevel - NEED_DECAY_SCALED_PER_TICK[needId] * ticksElapsed);
+export function decayNeed(currentScaledLevel: number, needId: NeedId, ticksElapsed: number, extraScaledPerTick = 0): number {
+  return clampScaled(currentScaledLevel - (NEED_DECAY_SCALED_PER_TICK[needId] + extraScaledPerTick) * ticksElapsed);
 }
 
 /**

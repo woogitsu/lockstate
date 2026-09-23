@@ -1259,6 +1259,14 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.post-unreachable': 'Posterunek odcięty',
   'hud.security.post-unreachable-hint':
     'Żaden strażnik nie dotrze na posterunek, więc nikt nie pełni służby. Rozebranie ściany obok otwiera drogę z powrotem.',
+  // Issue #586. *"Przeludnienie"* is the ordinary Polish word for an over-full
+  // prison, and it is two characters shorter than *"Niedobór obsady"*, which
+  // already stands on this badge, so it adds no width. The hint follows the
+  // English clause for clause; `need.safety.name` and `need.hygiene.name`
+  // above are why the two needs are *bezpieczeństwo* and *higiena*.
+  'hud.security.coverage-overcrowded': 'Przeludnienie',
+  'hud.security.coverage-overcrowded-hint':
+    'Więcej więźniów niż łóżek: bezpieczeństwo każdego więźnia spada szybciej, a powyżej pewnego progu także higiena — dopóki dla każdego nie będzie łóżka.',
 
   // =====================================================================
   // Regime panel -- `hud.regime.*`.

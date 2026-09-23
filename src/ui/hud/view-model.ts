@@ -301,6 +301,24 @@ export interface HudCountsViewModel {
    */
   readonly postUnreachable?: boolean;
   /**
+   * Whether crowding is accelerating `safety` (and past 12.5% over capacity,
+   * `hygiene`) decay for every prisoner (issue #586) --
+   * `PrisonCondition`'s `'prisoners.overcrowded'` member, read through
+   * `isOvercrowded` (`src/ui/simulation-conditions.ts`), and produced by
+   * `isCrowdingAcceleratingDecay` over the same two figures `NeedsDecaySystem`
+   * applies the extra rate from.
+   *
+   * **It is what lets the `COVERAGE` chip attribute a `safety` 40 it did not
+   * cause.** Past 15% over capacity a fully covered prisoner's `safety` falls
+   * however many guards are on post, and the badge would otherwise read
+   * "Covered" over the population paying for it -- the invisible punishment
+   * the owner's ruling on #586 names as worse than a visible tax.
+   *
+   * Optional, for `postUnreachable`'s reason immediately above; absent reads
+   * as "not overcrowded", which leaves the ladder exactly as it was.
+   */
+  readonly overcrowded?: boolean;
+  /**
    * How many prisoners are on the high-risk regime (issue #703, the owner's
    * fourth ruling of 2026-08-31).
    *

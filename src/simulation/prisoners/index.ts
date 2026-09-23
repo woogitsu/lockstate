@@ -3,6 +3,7 @@ export * from './actions';
 export * from './cell-sharing';
 export * from './classification';
 export * from './classification-review-system';
+export * from './crowding';
 export * from './components';
 export * from './discharge-system';
 export * from './disciplinary-record';

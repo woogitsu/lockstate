@@ -127,6 +127,7 @@ describe('the HUD counts are read from the worker', () => {
       // `false` here because this fixture's publication names no condition at
       // all, which is what an ordinary prison publishes.
       postUnreachable: false,
+      overcrowded: false,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -310,6 +311,7 @@ describe('the HUD counts are read from the worker', () => {
       // "nothing is standing" rather than as "unknown" -- see
       // `isPostUnreachable` (ADR 0117).
       postUnreachable: false,
+      overcrowded: false,
     });
   });
 
@@ -392,7 +394,9 @@ describe('the HUD counts are read from the worker', () => {
       // list this view model would have to re-declare. Checked as a boolean
       // for `isFreshUnfurnishedPrison`'s reason, so a field that started
       // arriving as `0`/`1` would still fail.
-      if (key === 'isFreshUnfurnishedPrison' || key === 'postUnreachable') {
+      // **The fifth, and the third boolean** (issue #586): `overcrowded`, read
+      // off the same set of names for the same reason, one member again.
+      if (key === 'isFreshUnfurnishedPrison' || key === 'postUnreachable' || key === 'overcrowded') {
         expect(typeof value, `counts.${key} is not a boolean`).toBe('boolean');
         continue;
       }

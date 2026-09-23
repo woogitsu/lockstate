@@ -453,6 +453,12 @@ function coverageTone(counts: HudCountsViewModel): BadgeTone | undefined {
   if (counts.postUnreachable === true) return 'danger';
   if (counts.prisonersUnguarded > 0) return 'danger';
   if (counts.prisonersUnderstaffed > 0) return 'warning';
+  // Below both lower rungs and above "Covered" (issue #586): past 15% over
+  // capacity crowding drains a covered prisoner's `safety` however many
+  // guards are on post, so the top rung is no longer the whole of what the
+  // chip has to say. Amber rather than red, because the cheapest remedy is a
+  // bed rather than a hire and the rungs above are the ones that are red.
+  if (counts.overcrowded === true) return 'warning';
   return undefined;
 }
 
@@ -504,6 +510,13 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
   // So the rung is displaced rather than annotated.
   if (counts.postUnreachable === true) return { tone: 'danger', textKey: HUD_MESSAGE_KEY.securityPostUnreachable };
   if (tone === undefined) return { tone: 'success', textKey: HUD_MESSAGE_KEY.securityCoverageMet };
+  // Issue #586. Only where the ladder itself would have said "Covered": an
+  // understaffed or unguarded prison keeps its rung's word, because that rung
+  // is costing `safety` on its own and a hire is what it names. The crowding
+  // half is still said there, in the chip's description below.
+  if (counts.overcrowded === true && counts.prisonersUnguarded === 0 && counts.prisonersUnderstaffed === 0) {
+    return { tone, textKey: HUD_MESSAGE_KEY.securityCoverageOvercrowded };
+  }
   // One ladder, read once: the tone and the word come off the same two rungs in
   // the same order, so a rung that changes the colour cannot fail to change the
   // word with it.
@@ -1014,7 +1027,18 @@ export function projectStatusMetrics(
        * only here -- see `HudMetricDescriptor.description`, which states that
        * as a constraint rather than a remark.
        */
-      description: counts.postUnreachable === true ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint } : undefined,
+      description:
+        counts.postUnreachable === true
+          ? { textKey: HUD_MESSAGE_KEY.securityPostUnreachableHint }
+          : // Issue #586: the sentence that says *why* the badge reads
+            // "Overcrowded", and only while it does. On a staffing rung the
+            // badge keeps the staffing word, and saying the crowding half here
+            // alone would make this the hiding place `description` may not be;
+            // the `PRISONERS` chip's red bar and its "with no bed" badge are
+            // what state the crowding there.
+            coverageBadge(counts).textKey === HUD_MESSAGE_KEY.securityCoverageOvercrowded
+            ? { textKey: HUD_MESSAGE_KEY.securityCoverageOvercrowdedHint }
+            : undefined,
     },
     {
       id: 'rooms',

@@ -1051,6 +1051,14 @@ export const HUD_MESSAGE_KEY = {
    */
   securityPostUnreachable: 'hud.security.post-unreachable',
   securityPostUnreachableHint: 'hud.security.post-unreachable-hint',
+  /**
+   * The `COVERAGE` chip's word and sentence while crowding is accelerating
+   * `safety` decay (issue #586) -- `PrisonCondition`'s `'prisoners.overcrowded'`
+   * member, read through `isOvercrowded` (`src/ui/simulation-conditions.ts`).
+   * The locale entries carry the clause-by-clause reading of why each is true.
+   */
+  securityCoverageOvercrowded: 'hud.security.coverage-overcrowded',
+  securityCoverageOvercrowdedHint: 'hud.security.coverage-overcrowded-hint',
 
   /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content

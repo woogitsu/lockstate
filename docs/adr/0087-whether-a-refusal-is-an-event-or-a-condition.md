@@ -315,7 +315,7 @@ own floor, which is −2,500 (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`);
 `hiring` shares the first.
 
 `SimulationRefusal` carries `sequence`, `tick` and `reason` and nothing else
-(`src/simulation/protocol/types.ts:1262-1270`). There is one money reason per
+(`src/simulation/protocol/types.ts:1570-1574`). There is one money reason per
 command namespace, so **the wire cannot name which rung refused**: probe D
 asserts that a press-route refusal and a scheduled-construction-route refusal
 record byte-identical `reason` values. The shipped sentence for both was
