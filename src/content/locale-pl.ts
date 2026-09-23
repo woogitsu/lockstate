@@ -857,8 +857,13 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.unowned-land': 'Nie wyznaczono pomieszczenia — nie cała ta ziemia należy do ciebie.',
   'hud.alert.refusal.zone.below-minimum-size':
     'Nie wyznaczono pomieszczenia — ten obszar jest mniejszy, niż pozwala ten typ pomieszczenia.',
+  // Rewritten with the English original for #935: it named the rule and not
+  // what satisfies it. *Ukończonej* because only a finished order writes the
+  // edge (`ConstructionSystem.finalizeConstruction`); *ściany lub drzwi* after
+  // *wymaga* in the genitive, where *drzwi* is its own genitive plural; *luka*
+  // for the English *gap*, true of one open edge and of several.
   'hud.alert.refusal.zone.not-enclosed':
-    'Nie wyznaczono pomieszczenia — ten typ musi być zamknięty, a narysowany obszar jest otwarty z co najmniej jednej strony.',
+    'Nie wyznaczono pomieszczenia — ten typ wymaga ukończonej ściany lub drzwi wzdłuż każdego boku, a w twoim obszarze jest luka.',
   'hud.alert.refusal.unzone.invalid-area': 'Nic nie usunięto — ten obszar nie jest poprawnym prostokątem.',
   'hud.alert.refusal.unzone.nothing-to-remove': 'Nic nie usunięto — w tym obszarze nie ma pomieszczenia.',
   'hud.alert.refusal.unzone.room-occupied': 'Nic nie usunięto — ktoś korzysta z tego pomieszczenia.',
@@ -1340,7 +1345,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.rooms.enclosure-none': 'Jeszcze nieocenione',
   'hud.rooms.enclosure-sealed': 'Otoczone ścianami — to nie jest sprawdzenie drzwi',
   'hud.rooms.enclosure-open': 'Otwarte z co najmniej jednej strony',
-  'hud.rooms.requirement-enclosed': 'Musi być zamknięte',
+  // With the English original for #935: what closes a side, not only that it
+  // must be closed. *Wymaga* for the voice `hud.rooms.requires-object` uses.
+  'hud.rooms.requirement-enclosed': 'Wymaga ścian lub drzwi dookoła',
   'hud.rooms.requirement-outdoors': 'Musi być na zewnątrz',
   'hud.rooms.requirement-none': 'Bez reguły zamknięcia',
   'hud.rooms.requires-object': 'Wymaga {count} × {object}',

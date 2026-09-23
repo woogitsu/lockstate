@@ -1307,7 +1307,7 @@ export const HUD_MESSAGE_KEY = {
    * about the selected room type:
    *
    *     Needs at least 6 x 6 tiles
-   *     Must be enclosed
+   *     Needs walls or doors all round
    *     Needs 2 x Dining Table
    *     Needs 4 x Bench
    *

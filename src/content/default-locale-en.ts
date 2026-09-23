@@ -1363,7 +1363,38 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // It names the rule and not the gap. `ZoneRoomRefusal` carries the first
   // gap's tile and edge for diagnosis, but `RefusalLog` deliberately holds no
   // coordinates, so nothing on this channel could render them.
-  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type must be enclosed, and the area you drew is open on at least one side.',
+  //
+  // **It read "this room type must be enclosed, and the area you drew is open
+  // on at least one side" until #935**, which #921 had measured as the one
+  // refusal a newcomer meets whose remedy is never named: the word "wall"
+  // appeared nowhere on screen at it. Rewritten under `AGENTS.md`
+  // reservation 4's 2026-09-04 release, and each clause is proved against the
+  // code rather than argued:
+  //
+  // - *"a wall or door"* -- `roomPerimeterEnclosure`
+  //   (`src/simulation/rooms/enclosure.ts`) calls a perimeter edge closed when
+  //   its edge layer holds a non-zero value, and `edgeNumericIdFor`
+  //   (`src/simulation/construction/definition.ts`) answers non-zero for a
+  //   `'wall'`-category buildable and for one that `placesDoor`, and `0` for
+  //   everything else. So those two, and nothing else a player can build, close
+  //   a side -- a door as well as a wall, which is why both are named.
+  // - *"finished"* -- the only writer of that value is
+  //   `ConstructionSystem.finalizeConstruction`, on completion
+  //   (`src/simulation/construction/system.ts`), so a wall still queued or
+  //   being built leaves its edge `0` and the room is refused. This is the
+  //   case a newcomer meets first: walls drawn, room zoned at once.
+  // - *"along every side, and yours has a gap"* -- `'open'` means one or more
+  //   perimeter edges hold nothing, which is a gap and not necessarily a whole
+  //   missing side; "a gap" is true of one and of several.
+  // - *"this room type"* -- `zone` refuses on this only for an `enclosed`
+  //   requirement; `outdoors` and `none` accept any perimeter.
+  //
+  // 22 words, one fewer than the sentence it replaces. It is still the longest
+  // of the 48 refusal sentences `REFUSAL_LABEL_KEYS` maps (the next is
+  // `cancel-build-order.stale-cancellation`, 21), which is the figure
+  // `src/simulation/refusals/refusal-band-lifetime.ts` sizes its hold against;
+  // one word shorter only leaves that bound further from binding.
+  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type needs a finished wall or door along every side, and yours has a gap.',
   // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
   // `zone.invalid-area` and a different *sentence*: a player told "the room was
   // not zoned" after asking to remove one would go and look at the wrong
@@ -3531,7 +3562,17 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.rooms.enclosure-sealed': 'Walled in — not a door check',
   'hud.rooms.enclosure-open': 'Open on at least one side',
-  'hud.rooms.requirement-enclosed': 'Must be enclosed',
+  // **It read "Must be enclosed" until #935**, which names the rule and not
+  // what satisfies it -- the gap #921 measured at the refusal, one step
+  // earlier. What closes a side is exactly a wall or a door: `edgeNumericIdFor`
+  // (`src/simulation/construction/definition.ts`) answers non-zero for those
+  // two and `0` for every other buildable, and `roomPerimeterEnclosure` reads
+  // nothing but that value. "Needs" for the voice `hud.rooms.minimum` and
+  // `hud.rooms.requires-object` share in this block, and "all round" for the
+  // words `hud.regime.roster-empty` already uses for the same requirement.
+  // "finished" is left to the refusal, which is where a wall still being built
+  // is met.
+  'hud.rooms.requirement-enclosed': 'Needs walls or doors all round',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
   // What the selected room type will need standing in it, before anything is

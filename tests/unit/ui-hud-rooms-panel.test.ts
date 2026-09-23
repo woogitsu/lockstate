@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_ZONE_SIDE_TILES } from '../../src/rendering/build/area-picking';
 import { MAX_ZONE_DIMENSION_TILES } from '../../src/simulation/rooms/zoning';
-import { MAX_ROOM_SIDE_TILES, tintToCssColor } from '../../src/ui/hud/rooms-panel';
+import { FIRST_CELL_ROOM_ID } from '../../src/content/room-catalog';
+import { MAX_ROOM_SIDE_TILES, initialRoomSelection, tintToCssColor } from '../../src/ui/hud/rooms-panel';
+import type { HudRoomViewModel } from '../../src/ui/hud/view-model';
 
 /**
  * One number, declared in three trees, held together here (#411).
@@ -93,5 +95,42 @@ describe('tintToCssColor', () => {
     // the mask rather than a behaviour any shipped input exercises today.
     expect(tintToCssColor(0xff123456)).toBe('#123456');
     expect(tintToCssColor(0xffffff)).toBe('#ffffff');
+  });
+});
+
+/**
+ * Which row the Rooms panel opens on (#935).
+ *
+ * The rows below are in the order `roomCatalogue()` in `src/main.ts` produces
+ * for the shipped catalogue -- `(category, id)`, so *Staff Room*
+ * (`administration`) before *Cell* (`housing`) -- written out by hand rather
+ * than sorted here, so the expectation is not computed by the ordering it is
+ * about. That the real app passes `initialRoomId` at all is asserted against
+ * the real registry in `tests/browser/app-shell.spec.ts`.
+ */
+describe('initialRoomSelection', () => {
+  const row = (roomId: string): HudRoomViewModel => ({
+    roomId,
+    labelKey: `${roomId}.name` as HudRoomViewModel['labelKey'],
+    tint: 0,
+    enclosure: 'enclosed',
+    objectRequirements: [],
+  });
+  const rooms = ['room.staff-room', 'room.classroom', 'room.canteen', 'room.kitchen', 'room.cell'].map(row);
+
+  it('opens on the room the first instruction names, not on the first row', () => {
+    expect(initialRoomSelection({ rooms, initialRoomId: FIRST_CELL_ROOM_ID })).toBe('room.cell');
+  });
+
+  it('falls back to the first row when the model names no room', () => {
+    expect(initialRoomSelection({ rooms })).toBe('room.staff-room');
+  });
+
+  it('falls back to the first row, rather than selecting nothing, when the named room is not listed', () => {
+    expect(initialRoomSelection({ rooms, initialRoomId: 'room.not-a-room' })).toBe('room.staff-room');
+  });
+
+  it('selects nothing from an empty catalogue', () => {
+    expect(initialRoomSelection({ rooms: [], initialRoomId: FIRST_CELL_ROOM_ID })).toBeUndefined();
   });
 });

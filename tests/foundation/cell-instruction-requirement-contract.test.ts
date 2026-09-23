@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
+import { FIRST_CELL_ROOM_ID, defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { defaultMessageCatalogEn } from '../../src/services/localization/default-catalog';
 import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 
@@ -94,8 +94,11 @@ const REQUIRED_PHRASES: Readonly<Record<string, { readonly en: RegExp; readonly 
 };
 
 function cellRequirementKeys(): readonly string[] {
-  const definition = defaultRoomContentRegistry.getById('room.cell');
-  expect(definition, 'the shipped catalogue no longer declares `room.cell`').toBeDefined();
+  // `FIRST_CELL_ROOM_ID` and not a literal (#935): the Rooms panel opens on
+  // the same id, so the room this sentence is checked against and the room the
+  // panel teaches first are one declaration.
+  const definition = defaultRoomContentRegistry.getById(FIRST_CELL_ROOM_ID);
+  expect(definition, `the shipped catalogue no longer declares \`${FIRST_CELL_ROOM_ID}\``).toBeDefined();
   return definition!.requirements.map((requirement) => requirementKey(requirement)).sort();
 }
 

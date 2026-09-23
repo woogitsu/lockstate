@@ -6628,6 +6628,73 @@ test.describe('the assembled application', () => {
    * `ROOMS_MODEL` and could not notice `roomCatalogue()` deriving a wrong
    * quantity, because both sides of that comparison are hand-written.
    */
+  /**
+   * The Rooms panel opens on the room the first instruction names (#935).
+   *
+   * Against the real registry, because the defect was the real catalogue's
+   * order: `roomCatalogue()` sorts by `(category, id)`, `'administration'`
+   * sorts first, and the panel took `model.rooms[0]` -- so the requirement block
+   * a newcomer read first described *Staff Room*. The harness suite cannot see
+   * this, since its `ROOMS_MODEL` fixture happens to list `room.cell` first.
+   *
+   * The rule block is read as well as the selection, because the selection is
+   * only the means: what a player needs is the cell's own four requirements on
+   * screen before the first drag. And the selected row is required to be
+   * inside the list's visible box, because a selection scrolled out of sight
+   * leaves a rule block that names no room.
+   */
+  test('the Rooms panel opens on a cell, with its rule on screen and its row in view (#935)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    for (const [width, height] of [
+      [1280, 720],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.locator('.ui-tab[data-tab="zones"]').click();
+      await expect(page.locator('.hud-rooms')).toBeVisible();
+
+      const reading = await page.evaluate(() => {
+        const rows = [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')];
+        const selected = rows.filter((row) => row.dataset['selected'] === 'true').map((row) => row.dataset['room']);
+        const cellRow = document.querySelector<HTMLElement>('.hud-rooms__rows [data-room="room.cell"]');
+        const list = document.querySelector<HTMLElement>('.hud-rooms__list');
+        const rowBox = cellRow?.getBoundingClientRect();
+        const listBox = list?.getBoundingClientRect();
+        return {
+          firstRow: rows[0]?.dataset['room'],
+          selected,
+          rule: [...document.querySelectorAll('.hud-rooms__rule-block .hud-rooms__rule')].map((line) =>
+            (line.textContent ?? '').trim(),
+          ),
+          rowInView:
+            rowBox !== undefined &&
+            listBox !== undefined &&
+            rowBox.height > 0 &&
+            rowBox.top >= listBox.top - 0.5 &&
+            rowBox.bottom <= listBox.bottom + 0.5,
+        };
+      });
+
+      // Vacuity guard: the defect only exists because the cell is not the first
+      // row, so a catalogue that put it first would make this test say nothing.
+      expect(reading.firstRow, 'the real catalogue now lists the cell first, so this no longer tests #935').not.toBe(
+        'room.cell',
+      );
+      expect(reading.selected, `the Rooms panel did not open on the cell at ${width}x${height}`).toEqual(['room.cell']);
+      expect(reading.rule, `the rule block is not the cell's at ${width}x${height}`).toEqual([
+        'Needs at least 2 × 3 tiles',
+        'Needs walls or doors all round',
+        'Needs 1 × Bed',
+        'Needs 1 × Toilet',
+      ]);
+      expect(reading.rowInView, `the selected Cell row is scrolled out of the list at ${width}x${height}`).toBe(true);
+    }
+  });
+
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
     /*
      * `test.slow()` triples the 60 s budget, and unlike its three siblings this

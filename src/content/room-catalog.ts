@@ -277,6 +277,26 @@ if (defaultRoomCatalog.errors.length > 0) {
 export const defaultRoomContentRegistry = defaultRoomCatalog.registry;
 
 /**
+ * The room type a newcomer is first told to build (#935).
+ *
+ * `hud.regime.roster-empty` -- the only instruction a prison with nobody in it
+ * draws -- says *"Build a cell"*, and
+ * `tests/foundation/cell-instruction-requirement-contract.test.ts` pins that
+ * sentence against **this** definition's authored requirements. The Rooms
+ * panel opens on the same id (`HudRoomsViewModel.initialRoomId`, set by
+ * `roomCatalogue()` in `src/main.ts`), so the requirement block a player reads
+ * first is the one for the room the instruction names -- and not, as #921 and
+ * #935 measured, *Staff Room*'s desk and chairs, which is what the panel's
+ * `(category, id)` order put first.
+ *
+ * One declaration read by both the contract test and the composition root, so
+ * the room the sentence is checked against and the room the panel opens on
+ * cannot name two different types. The contract test also requires that this
+ * id is declared in the shipped catalogue.
+ */
+export const FIRST_CELL_ROOM_ID = 'room.cell';
+
+/**
  * Whether `roomCatalogId` names a room type the owner tagged as an open area
  * (see `roomDefinitionSchema.openArea`).
  *

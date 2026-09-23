@@ -3827,7 +3827,7 @@ test.describe('the Rooms panel', () => {
      */
     expect(probe.ruleText).toEqual([
       'Needs at least 2 × 3 tiles',
-      'Must be enclosed',
+      'Needs walls or doors all round',
       'Needs 1 × Bed',
       'Needs 1 × Toilet',
     ]);
