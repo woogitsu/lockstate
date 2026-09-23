@@ -10,7 +10,7 @@ test.describe('an empty prison does not claim guard coverage (#868)', () => {
       expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 
       await page.evaluate(() =>
-        window.lockstateUiHarness.reportStaffCoverage({ required: 0, assigned: 0, shortage: 0 }),
+        window.lockstateUiHarness.reportStaffCoverage({ required: 0, assigned: 0, shortage: 0, availableReserve: 0, targetReserve: 0 }),
       );
       const coverage = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
       expect(coverage.blockLaidOut).toBe(true);

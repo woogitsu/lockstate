@@ -174,7 +174,7 @@ describe('the block distinguishes no posts, posting, and a free response reserve
   });
 
   it('does not call an empty prison covered before any guard post is needed (#868)', () => {
-    const readout = describeStaffCoverage({ required: 0, assigned: 0, shortage: 0 });
+    const readout = describeStaffCoverage({ required: 0, assigned: 0, shortage: 0, availableReserve: 0, targetReserve: 0 });
     expect(readout.tone).toBe('neutral');
     expect(readout.badgeKey).toBe('hud.security.coverage-no-posts');
     expect(readout.hintKey).toBe('hud.security.coverage-no-posts-hint');
