@@ -60,6 +60,9 @@ PALETTE = {
     "wood": ((0.28, 0.12, 0.035, 1), 0.6), "light": ((0.9, 0.92, 0.82, 1), 0.75),
     "porcelain": ((0.78, 0.8, 0.81, 1), 0.25), "linen": ((0.46, 0.45, 0.41, 1), 0.88),
     "blanket": ((0.1, 0.17, 0.24, 1), 0.92), "shade": ((0.035, 0.04, 0.045, 1), 0.9),
+    "galvanized": ((0.53, 0.57, 0.57, 1), 0.59),
+    "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
+    "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
 }
 
 MODELS = (
@@ -96,6 +99,26 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def galvanized_material():
+    """Subtle mottling keeps the fixture readable as aged zinc at game scale."""
+    item = material("Worn galvanized fixture metal", (0.53, 0.57, 0.57, 1), 0.59)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 18
+    noise.inputs["Detail"].default_value = 3
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.30, 0.33, 0.33, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.68, 0.70, 0.68, 1)
+    links.new(coords.outputs["Generated"], noise.inputs["Vector"])
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def canteen_wood_material():
@@ -177,6 +200,20 @@ def box(collection, root, name, offset, size, surface, bevel=0.03):
 
 def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
+    item = bpy.context.object
+    item.name, item.parent = name, root
+    item.matrix_parent_inverse = root.matrix_world.inverted()
+    item.data.materials.append(MATERIALS[surface])
+    move_to_collection(item, collection)
+    return item
+
+
+def torus(collection, root, name, offset, major_radius, minor_radius, surface):
+    bpy.ops.mesh.primitive_torus_add(
+        major_segments=48, minor_segments=8,
+        location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]),
+        major_radius=major_radius, minor_radius=minor_radius,
+    )
     item = bpy.context.object
     item.name, item.parent = name, root
     item.matrix_parent_inverse = root.matrix_world.inverted()
@@ -392,26 +429,38 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Tap lever.{x}", (x, -0.285, 0.69), (0.15, 0.035, 0.035), "steel", 0.012)
         box(collection, root, "Spout", (0, -0.20, 0.69), (0.07, 0.22, 0.07), "steel", 0.025)
     elif asset_id == "fixture.shower.head":
-        # The shower is wall-mounted. The broad perforated head and two valves
-        # read from above without painting a false floor into this sprite.
-        box(collection, root, "Wall bracket", (0, -0.38, 0.88), (0.62, 0.12, 0.16), "steel", 0.025)
-        box(collection, root, "Supply arm", (0, -0.21, 0.93), (0.10, 0.30, 0.10), "steel", 0.025)
-        cylinder(collection, root, "Shower head", (0, 0.04, 0.89), 0.25, 0.11, "steel", 32)
-        cylinder(collection, root, "Face", (0, 0.04, 0.956), 0.21, 0.018, "porcelain", 32)
-        for x in (-0.11, 0, 0.11):
-            for y in (-0.07, 0.04, 0.15):
-                cylinder(collection, root, f"Nozzle.{x}.{y}", (x, y, 0.971), 0.017, 0.012, "shade", 8)
-        for x in (-0.23, 0.23):
-            cylinder(collection, root, f"Valve.{x}", (x, -0.37, 0.96), 0.065, 0.05, "steel", 16)
-            box(collection, root, f"Valve grip.{x}", (x, -0.37, 1.0), (0.15, 0.035, 0.035), "porcelain", 0.01)
+        # Four-view reference: assets/source/concepts/shower-head-multiview-v2.png.
+        # The fixed wall plate, elbow and perforated disc have separate depths,
+        # so the silhouette remains clear when projected onto one 64 px tile.
+        box(collection, root, "Mounting plate", (0, -0.39, 0.85), (0.50, 0.16, 0.22), "galvanized", 0.035)
+        box(collection, root, "Plate inset", (0, -0.39, 0.976), (0.38, 0.12, 0.015), "galvanized_edge", 0.018)
+        for x in (-0.19, 0.19):
+            cylinder(collection, root, f"Mount bolt.{x}", (x, -0.39, 0.991), 0.025, 0.014, "steel", 12)
+        cylinder(collection, root, "Pipe socket", (0, -0.30, 0.95), 0.09, 0.10, "galvanized_edge", 24)
+        box(collection, root, "Exposed pipe", (0, -0.15, 0.94), (0.11, 0.40, 0.11), "galvanized", 0.05)
+        cylinder(collection, root, "Elbow collar", (0, 0.05, 0.94), 0.105, 0.13, "galvanized_edge", 24)
+        cylinder(collection, root, "Shower head body", (0, 0.13, 0.82), 0.29, 0.18, "galvanized", 48)
+        torus(collection, root, "Rolled shower rim", (0, 0.13, 0.91), 0.25, 0.035, "galvanized_edge")
+        cylinder(collection, root, "Recessed perforated face", (0, 0.13, 0.914), 0.23, 0.02, "metal_recess", 48)
+        for x, y in ((0, 0.13), (-0.10, 0.13), (0.10, 0.13),
+                     (-0.05, 0.045), (0.05, 0.045), (-0.05, 0.215), (0.05, 0.215),
+                     (-0.16, 0.09), (0.16, 0.09), (-0.16, 0.18), (0.16, 0.18)):
+            cylinder(collection, root, f"Jet nozzle.{x}.{y}", (x, y, 0.931), 0.018, 0.014, "galvanized_edge", 12)
     elif asset_id == "fixture.cell.waste_bin":
-        # Open top and pale inner liner distinguish this from a locker or a
-        # solid storage crate at the in-game 64 px scale.
-        cylinder(collection, root, "Outer bin", (0, 0, 0.31), 0.34, 0.62, "steel", 32)
-        cylinder(collection, root, "Rim", (0, 0, 0.635), 0.37, 0.055, "light", 32)
-        cylinder(collection, root, "Opening", (0, 0, 0.669), 0.28, 0.02, "shade", 32)
-        cylinder(collection, root, "Liner", (0, 0, 0.679), 0.19, 0.01, "linen", 32)
-        box(collection, root, "Foot pedal", (0, -0.36, 0.08), (0.22, 0.15, 0.07), "steel", 0.02)
+        # Four-view reference: assets/source/concepts/waste-bin-multiview-v2.png.
+        # A dark opening, raised lid at the back and pedal at the front make
+        # the galvanized bin identifiable from the game's overhead view.
+        cylinder(collection, root, "Pedal-bin body", (0, 0.04, 0.34), 0.32, 0.68, "galvanized", 48)
+        cylinder(collection, root, "Lower reinforcing band", (0, 0.04, 0.12), 0.335, 0.045, "steel", 48)
+        cylinder(collection, root, "Dark bin cavity", (0, 0.04, 0.689), 0.27, 0.02, "metal_recess", 48)
+        torus(collection, root, "Rolled bright rim", (0, 0.04, 0.69), 0.29, 0.038, "galvanized_edge")
+        cylinder(collection, root, "Recessed inner bottom", (0, 0.04, 0.694), 0.13, 0.008, "shade", 32)
+        box(collection, root, "Rear hinge", (0, -0.315, 0.73), (0.29, 0.07, 0.10), "steel", 0.018)
+        cylinder(collection, root, "Lid shell", (0, -0.45, 0.79), 0.25, 0.045, "galvanized", 48)
+        torus(collection, root, "Lid rolled edge", (0, -0.45, 0.817), 0.22, 0.028, "galvanized_edge")
+        cylinder(collection, root, "Lid inset", (0, -0.45, 0.821), 0.17, 0.008, "metal_recess", 32)
+        box(collection, root, "Pedal stem", (0, 0.36, 0.05), (0.10, 0.16, 0.055), "steel", 0.013)
+        box(collection, root, "Foot pedal", (0, 0.44, 0.072), (0.23, 0.12, 0.045), "galvanized_edge", 0.022)
     elif "toilet" in asset_id:
         # The one model whose shipped sheet cannot be used at all: the owner's
         # sheet holds a 1:2.5 combined column and the catalogue declares (1, 1).
@@ -464,6 +513,7 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["canteen_wood"] = canteen_wood_material()
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()

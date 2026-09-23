@@ -147,35 +147,35 @@
     {
       "assetId": "fixture.cell.waste_bin",
       "image": "fixture.cell.waste_bin.png",
-      "sha256": "fa89fbba885800ee56423fdba4ae47d1f4a6daf2238c6e0552ed16785ba0f7cb",
-      "pixelSha256": "8d54d24bf76c95bba80f5310de12d79946a2746b5a1f51986c2d68e1985acde4",
+      "sha256": "e4e3decacd39b8a69cad798bb632de8541a6807e763d3aae33d0a8309bd8fd59",
+      "pixelSha256": "81b04ef03e0653576ec67726edf6d639ac11b10ea5f65cb625d128ff7be23176",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.12,
-        "height": 1.12
+        "width": 1.568002,
+        "height": 1.568002
       },
-      "overhangsFootprint": false,
+      "overhangsFootprint": true,
       "sizePx": {
         "width": 256,
         "height": 256
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 42,
-        "y": 27,
-        "width": 172,
-        "height": 187,
-        "opaquePixels": 23826
+        "x": 72,
+        "y": 13,
+        "width": 112,
+        "height": 198,
+        "opaquePixels": 15475
       }
     },
     {
       "assetId": "fixture.shower.head",
       "image": "fixture.shower.head.png",
-      "sha256": "bb3bfecc78ce87f82ac169f973cacc21f8c37e3352931151ddd730fa3a50bf5f",
-      "pixelSha256": "edc763d84b325c0f32e063f3f8c3773f1daf00e730b3fbdc2493b57db5baa09c",
+      "sha256": "4aaeab7566dcc9350e13f2be583144606b9f32314a3b1aa94d6edef7510d9c22",
+      "pixelSha256": "7c57fb205f8d0de06e1e879f2f306a94fd53fdd821ef63e87f8f5a3769248fb5",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -191,11 +191,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 56,
-        "y": 26,
-        "width": 144,
-        "height": 169,
-        "opaquePixels": 15583
+        "x": 61,
+        "y": 19,
+        "width": 134,
+        "height": 206,
+        "opaquePixels": 19820
       }
     },
     {
