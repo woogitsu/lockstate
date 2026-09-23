@@ -470,7 +470,7 @@ Three things follow, and the second is the one the owner may want to overrule.
    decision recorded as
    [ADR 0036](./0036-a-derived-default-security-sector.md). A new session now
    registers a sector: `createNewSimulationRuntime` calls
-   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:589`),
+   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:609`),
    which registers the derived definition at
    `src/simulation/security/default-sector.ts:253`, so the tier is reachable
    from the front door. The amendment at the top of this document already said

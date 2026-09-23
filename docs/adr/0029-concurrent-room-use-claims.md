@@ -859,14 +859,14 @@ round after it, and the two point the same way. So the losing set is not merely
 **What the consequence is, bounded honestly.** `hunger` clamps at `NEED_MIN`
 (`src/simulation/prisoners/needs.ts`), and **no system in `src/` reads
 `hunger`** — the only need feeding a downstream consequence is `safety`, through
-`src/simulation/runtime/new-session.ts:598` into `IncidentTriggerSystem`.
+`src/simulation/runtime/new-session.ts:618` into `IncidentTriggerSystem`.
 
 > **Both halves of that clause are false as of
 > [ADR 0048](0048-what-a-sectors-occupants-are.md) decision 2, and the anchor
 > that carried it points at nothing related (2026-09-15).** `needsPressure` is
 > now *"the mean deficit over all six needs, not `safety` alone"*: `needDeficitOf`
 > sums over `NEED_IDS` in declared order
-> (`src/simulation/runtime/new-session.ts:1387`) and the sector sample averages
+> (`src/simulation/runtime/new-session.ts:1407`) and the sector sample averages
 > it over the sector's occupants (`:1420`–`:1424`), which
 > `IncidentTriggerSystem` reads as `{ kind: 'needs-pressure' }`
 > (`src/simulation/incidents/trigger-system.ts:515`). So **`hunger` does have a

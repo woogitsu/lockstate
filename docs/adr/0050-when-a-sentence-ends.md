@@ -29,7 +29,7 @@ this file, its row in `docs/adr/README.md`, and every citation of it
 ### What the code did
 
 `IntakeSystem` writes the field at the `classification` stage
-(`src/simulation/prisoners/intake-system.ts:359`):
+(`src/simulation/prisoners/intake-system.ts:379`):
 
 ```ts
 this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLengthTicks[index]!;

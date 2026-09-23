@@ -228,6 +228,9 @@ export interface PrisonerOperationsRuntimeOptions {
    * which is the only way the fifth entry of the `2 + tier` eligible band ever
    * gets a producer, `classifyPrisoner` at `priorIncidents: 0` being unable to
    * score 3 ([#677](https://github.com/matmaxalez/lockstate/issues/677)).
+   * *(Since [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md), the interface no longer sends 0. The count is drawn, so
+   * intake reaches tier 3 for about 4.55 % of arrivals. "The only way" is
+   * true of a `priorIncidents: 0` admission and no longer of the game.)*
    * Absent, neither introduces anything and neither draws.
    */
   readonly contrabandIntroducer?: IntakeContrabandIntroducer;
@@ -252,7 +255,9 @@ export interface PrisonerOperationsRuntimeOptions {
    * handed to `ClassificationReviewSystem` as well -- which is the site that
    * makes it reach anybody at all, since the game's only admission surface
    * sends `priorIncidents: 0` and `high-risk` is therefore unreachable at
-   * intake. One port, two callers, one rule.
+   * intake. One port, two callers, one rule. *(Since [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md) the interface
+   * sends no count and the worker draws one, so the intake caller assigns
+   * members too. It is no longer the review alone that reaches anybody.)*
    */
   readonly gangAssigner?: IntakeGangAssigner;
   /**

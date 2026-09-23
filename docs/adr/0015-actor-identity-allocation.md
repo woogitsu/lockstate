@@ -267,7 +267,7 @@ amendment and ADR 0034 §9's: the old wording is quoted rather than overwritten.
 >
 > **One of the replacements is worse than stale and is the reason the "no
 > offsets" rule exists.** `new-session.ts:496` is cited in the table as
-> `new GuardRoster(...)`. Today `src/simulation/runtime/new-session.ts:496` is
+> `new GuardRoster(...)`. Today `src/simulation/runtime/new-session.ts:516` is
 > `const actorIdentity = new ActorIdentityRegistry();` — a different line of
 > this ADR's own wiring, which reads correct to anyone checking the file name
 > and the neighbourhood rather than the sentence.
@@ -306,10 +306,10 @@ on `main`:
 | V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1361` |
 | V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1391` |
 | `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1034` |
-| registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
-| constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
-| passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1029` |
+| registers the stream | `:292` | `src/simulation/runtime/new-session.ts:507` |
+| constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:516` |
+| passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:616` |
+| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1049` |
 
 The seven-key list is still exactly the seven keys, at
 `src/persistence/save-schema.ts:1232-1238`.
@@ -368,7 +368,7 @@ Every claim the decision rests on holds, and each was re-run rather than
 inherited:
 
 - **The wiring is all there**, at the corrected lines:
-  `src/simulation/runtime/new-session.ts:292` registers `ACTOR_IDENTITY_RNG_STREAM`
+  `src/simulation/runtime/new-session.ts:293` registers `ACTOR_IDENTITY_RNG_STREAM`
   as one of four streams derived from `masterSeed`, `:301` is `new
   ActorIdentityRegistry()`, `:325` constructs `PrisonerOperationsRuntime` with it,
   and `:496` is `new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () =>
@@ -412,16 +412,16 @@ inherited:
   > can do; the edit is `src/`'s.
 - **"`identity.actor-name` is drawn from by this module and nothing else"** —
   still true. The two `kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM)` sites are
-  `new-session.ts:496` and `src/simulation/prisoners/intake-system.ts:293`, and
+  `new-session.ts:496` and `src/simulation/prisoners/intake-system.ts:294`, and
   both hand the stream to the registry rather than drawing from it themselves
   (`:293` is `this.identity.assign('prisoner', entityId,
   context.rng.get(this.identityRngStreamName))`).
 
   > **Re-verified 2026-09-15: the claim holds and both anchors have moved.**
   > There are still exactly two draw sites and both still hand the stream
-  > straight to the registry. They are `src/simulation/runtime/new-session.ts:1029`
+  > straight to the registry. They are `src/simulation/runtime/new-session.ts:1049`
   > (the `GuardRoster` construction) and
-  > `src/simulation/prisoners/intake-system.ts:517`, which is still
+  > `src/simulation/prisoners/intake-system.ts:542`, which is still
   > `this.identity.assign('prisoner', entityId, context.rng.get(this.identityRngStreamName));` (verbatim in `src/simulation/prisoners/intake-system.ts`).
 - **"`PLACEHOLDER_ACTOR_NAME_POOL` (32 given × 32 family names)"** — counted:
   32 and 32.
@@ -450,7 +450,7 @@ inherited:
   > §"The name is not localizable content" asks for (*"The projections expose
   > `givenName` and `familyName` separately rather than one composed string"*),
   > reaching the player through the localizer rather than as a composed string
-  > from the simulation. `src/ui/simulation-events.ts:1498-1502`,
+  > from the simulation. `src/ui/simulation-events.ts:1502-1506`,
   > `src/ui/simulation-prisoner-detail.ts:128` and
   > `src/ui/simulation-prisoner-roster.ts:204` carry it the rest of the way.
   >

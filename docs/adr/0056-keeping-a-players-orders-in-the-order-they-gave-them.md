@@ -80,8 +80,8 @@ end of this section was produced by executing the shipped classes.
   does contain the declaration it names. `ConstructionSystem` still holds the two stacks,
   now at `src/simulation/construction/system.ts:363-365`, cited above as
   `system.ts:358-424`. The per-gesture transaction id is minted at
-  `src/main.ts:2934` and the docblock recording why the grouping rule is what it
-  is runs `src/main.ts:2916-2933`, cited below as `main.ts:1915` and
+  `src/main.ts:2842` and the docblock recording why the grouping rule is what it
+  is runs `src/main.ts:2824-2841`, cited below as `main.ts:1915` and
   `main.ts:1900-1914`; those two are the furthest travelled — a thousand lines —
   and both land, in range, on code about the prisoner roster, which is
   `documentation-source-anchor-contract.test.ts`'s stated blind spot rather than
@@ -151,12 +151,12 @@ replaced" is a reason to re-measure and not a reason to assume.
 ### One correction to the issue's reproduction
 
 #437's script submits both build orders with **no `transactionId`**. The shipped
-HUD never does: `src/main.ts:1915` mints `build-${crypto.randomUUID()}` once per
+HUD never does: `src/main.ts:1823` mints `build-${crypto.randomUUID()}` once per
 intent, which is why a twelve-segment dragged wall undoes as one wall. With no
 id, `registerTransactionOrder` compares `undefined` with `undefined`, finds a
 match, and folds every order ever placed into a single open transaction — so one
 Undo takes back the whole session. That is a separate, pre-existing and
-deliberate property of the grouping rule (`src/main.ts:1900-1914` records the
+deliberate property of the grouping rule (`src/main.ts:1808-1822` records the
 day it was chosen), and measuring the two together would have confused them. The
 guard uses one id per gesture, which is what a player produces.
 

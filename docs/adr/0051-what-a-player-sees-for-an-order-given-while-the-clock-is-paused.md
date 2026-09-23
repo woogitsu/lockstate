@@ -126,7 +126,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
   document.** It reads *"Re-anchored 2026-09-06: the union is 21 members today,
   three more than this paragraph counts"*. `HudIntent` has **22** members, at
   `src/ui/hud/hud.ts:365-738`, and the twenty-second is `sell-materials` —
-  a command-submitter (`src/main.ts:3310`, `case 'sell-materials':`; this
+  a command-submitter (`src/main.ts:3218`, `case 'sell-materials':`; this
   branch wrote `:3297` and it was a comment line by the time the branch merged
   `origin/main` on 2026-09-16) and therefore a **fourteenth**
   against the *"Thirteen submit a command"* tally below, not a fourth piece of
@@ -139,7 +139,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
    state (`src/simulation/worker/state-machine.ts:786-787`), and reports that
    clock back on `simulation/ready` (`:802`). Nothing in `src/` starts the
    clock by itself: the only caller of `SimulationCommandSender.setClock` is
-   the `set-clock` intent branch in `src/main.ts:1636`, which runs when the
+   the `set-clock` intent branch in `src/main.ts:1544`, which runs when the
    player presses a transport control.
 2. **The interface says so.** `hudClockFromWorkerMessage` copies the worker's
    mode onto the view model (`src/ui/simulation-clock.ts:36-46`),
@@ -174,7 +174,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
    `planned` phase, i.e. a ghost (`src/rendering/world/structures.ts:26-42`).
    Nothing reaches it while paused.
 7. **Six panel readouts ride the counts cadence**, so they refresh only when a
-   `simulation/status-counts` arrives (`src/main.ts:1437-1443`): room needs,
+   `simulation/status-counts` arrives (`src/main.ts:1345-1351`): room needs,
    the build queue, the intake pipeline, pending deliveries, held guards and
    staff coverage. While paused, no such message is ever published.
 
@@ -207,7 +207,7 @@ While the clock is paused, **all thirteen produce no confirmation of any
 kind**: no world change, no panel row, no count, no sentence. Three of them
 can produce a *refusal* — `purchase-materials`, `admit-prisoner` and
 `hire-staff` carry main-thread pre-checks that throw before submitting
-(the `case` branches at `src/main.ts:1961`, `:2041` and `:2143`) — but only on the paths those
+(the `case` branches at `src/main.ts:1869`, `:2041` and `:2143`) — but only on the paths those
 checks cover, and a refusal is not a confirmation.
 
 ## Why the obvious fixes are the wrong ones

@@ -610,7 +610,7 @@ most effort on.
   header names — and it is the structural precondition for step 4, admitting a
   prisoner. `IntakeSystem` marks an arrival `'failed'` when
   `allByRoomCatalogId(target.roomCatalogId)` is empty
-  (`src/simulation/prisoners/intake-system.ts:124-130`), and with nothing able
+  (`src/simulation/prisoners/intake-system.ts:125-131`), and with nothing able
   to register an instance that is every arrival.
 - **Zoning alone does not complete an admission, and this ADR claims no more
   than it can.** A zoned room is registered with `capacity: 0` and

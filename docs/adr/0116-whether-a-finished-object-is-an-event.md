@@ -443,7 +443,7 @@ Against the two surfaces:
   completion stream sits **25 ms above** the floor rather than comfortably
   inside it, so the floor coalesces none of it.
 - **The log.** `MAX_EVENT_ALERT_ROWS` is 8, evicting least-severe-first
-  (`src/ui/simulation-events.ts:903-918`, the owner's ruling 11 of
+  (`src/ui/simulation-events.ts:907-922`, the owner's ruling 11 of
   2026-08-31). A completion at `'info'` is in the first class evicted — which
   protects warnings, and is exactly what article 6's *"Ostrzeżenia nie znikają
   dlatego, że przyszło nowsze zdarzenie"* requires — but it means forty

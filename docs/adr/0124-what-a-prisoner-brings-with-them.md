@@ -128,19 +128,25 @@ that work.** It adds three things:
 
 Each step below was opened at `430906af`.
 
+> **§1 IS NOW A READING OF THE TREE BEFORE THIS ADR WAS IMPLEMENTED.** The
+> implementation deleted steps 1 to 3's code, so those quotations are now
+> history. They say where each line stood at `430906af` and are no longer
+> checkable against the tree. The line anchors in steps 4 to 6 were re-aimed
+> to where the same code stands after the implementation. §11 records what
+> changed.
+
 1. **The interface.** `const ADMISSION_REQUEST = { priorIncidents: 0 } as const;`
-   (verbatim in `src/main.ts`), at `src/main.ts:1190`. It is sent at
-   `src/main.ts:3752` (`priorIncidents: ADMISSION_REQUEST`) as the only
-   `AdmitPrisoner` the interface builds, with
-   no `sentenceLengthTicks`, so the worker draws the sentence.
+   stood at line 1190 of `main.ts` at `430906af`. It was sent at line 3752 as
+   the only `AdmitPrisoner` the interface built, with no `sentenceLengthTicks`,
+   so the worker drew the sentence.
 2. **The wire.** `priorIncidents: z.number().int().min(0).max(MAX_PRIOR_INCIDENTS),`
-   (verbatim in `src/simulation/protocol/commands.ts`) is **required**, and
+   in `commands.ts` at `430906af` was **required**, and
    `MAX_PRIOR_INCIDENTS` is 255 (`src/simulation/prisoners/components.ts:75`),
    the ceiling of a `Uint8Array`.
 3. **The record.** `submitIntake` stores the value as given:
    `this.records.priorIncidentsAtIntake[index] = Math.min(255, input.priorIncidents);`
-   (verbatim in `src/simulation/prisoners/intake-system.ts`).
-4. **The classification stage**, `src/simulation/prisoners/intake-system.ts:562-571`.
+   in `intake-system.ts` at `430906af`.
+4. **The classification stage**, `src/simulation/prisoners/intake-system.ts:587-606`.
    It draws the sentence from `prisoners.sentence` if the admission named
    none. It then calls `classifyPrisoner`, which scores
    `score += Math.min(2, Math.max(0, input.priorIncidents));`
@@ -238,8 +244,9 @@ decision 1's shape for `sentenceLengthTicks`, reused as-is. The consequences:
   parsing. Making a required field optional accepts every payload the
   required version accepted.
 - `src/main.ts` stops sending the field. **`ADMISSION_REQUEST` then carries
-  nothing at all** and can be deleted, along with the docblock that defends
-  its 0 (`src/main.ts:1100-1189`).
+  nothing at all** and can be deleted, along with the docblock that defended
+  its 0 (lines 1100–1189 of `main.ts` at `430906af`). The implementation
+  deleted both.
 
 ### 4.2 The worker draws, at the `classification` stage, after the sentence and before `classifyPrisoner`
 
@@ -650,8 +657,8 @@ it is not a diff.
   `docs/AGENT_WORKFLOW.md` §4:
   - `src/simulation/incidents/default-gangs.ts:99-145`
   - `src/simulation/prisoners/classification-review-system.ts:329-339`
-  - `src/simulation/contraband/introduction.ts:95-193` (`ADMISSION_REQUEST`)
-  - `src/simulation/prisoners/prisoner-operations-runtime.ts:229-254`
+  - `src/simulation/contraband/introduction.ts:95-197` (`ADMISSION_REQUEST`)
+  - `src/simulation/prisoners/prisoner-operations-runtime.ts:229-257`
     (`priorIncidents: 0`)
   - `src/ui/simulation-events.ts:700` (`{ priorIncidents: 0 }`)
 - The tests in §4.10's table. Also a new test that admits through the real

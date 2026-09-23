@@ -87,7 +87,7 @@ and adding no new message kind, no envelope field and no envelope-version bump.*
 >   definition of the bytes.
 > - *"The simulation has no motion to publish"* — it has. Prisoners and guards
 >   both walk through a `LocomotionStore`
->   (`src/simulation/prisoners/prisoner-operations-runtime.ts:336`,
+>   (`src/simulation/prisoners/prisoner-operations-runtime.ts:341`,
 >   `src/simulation/security/guard-roster.ts:61`), the guard half landing with
 >   #740 and ADR 0059 answering the prisoner half.
 >

@@ -205,7 +205,7 @@ import `src/simulation/**`):
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
   (`src/ui/simulation-alerts.ts:318-409`), `hudEventAlertsFromWorkerMessage`
-  for domain events (`src/ui/simulation-events.ts:861-943`), and each keeps
+  for domain events (`src/ui/simulation-events.ts:865-947`), and each keeps
   the others' rows untouched by filtering on an id prefix
   (`REFUSAL_ROW_PREFIX` / `FAULT_ROW_PREFIX`, `simulation-alerts.ts:191-192`;
   `EVENT_ROW_PREFIX`, `simulation-events.ts:638`).
@@ -274,7 +274,7 @@ can be dismissed since this ADR's decision 2; the bands still cannot**:
 > a decision rather than a detail, so it is recorded in
 > `docs/HUD_PROJECTIONS.md` instead of guessed at here.
 
-`src/ui/simulation-events.ts:785-812` makes the same claim for the event
+`src/ui/simulation-events.ts:789-816` makes the same claim for the event
 family, on a different and stronger argument: a refusal is at least a fact
 about a control (*"the build order failed" stops being the current answer
 about that control*), so a *later* answer can retire it; an event has no

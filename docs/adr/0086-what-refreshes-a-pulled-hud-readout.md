@@ -53,9 +53,9 @@ the answer.
 
 ### 2. The correction: the pull layer does not ride the counts channel
 
-`src/main.ts:1702` opens one listener for every worker-to-main message. It
+`src/main.ts:1610` opens one listener for every worker-to-main message. It
 computes six translations, and it returns early **only if all six say nothing**
-(`src/main.ts:1735-1740`):
+(`src/main.ts:1643-1648`):
 
 ```ts
 if (
@@ -69,7 +69,7 @@ if (
   return;
 ```
 
-Every message that survives that check falls through to `src/main.ts:1795-1804`,
+Every message that survives that check falls through to `src/main.ts:1703-1712`,
 which refreshes **all nine** pulled readouts:
 
 ```ts
@@ -260,7 +260,7 @@ Two further observations from building the table:
   requested."* The identical argument applies to row 1 and has not been applied.
 - **Two readers ask the same projection on every refresh** (rows 7 and 8, with
   different windows), which is a deliberate decision recorded at
-  `src/main.ts:1265-1277`. It doubles whatever cadence is chosen, on the tab
+  `src/main.ts:1173-1185`. It doubles whatever cadence is chosen, on the tab
   that has three readers.
 
 ### 7. The precedent already in the tree, which is why this is not a green field

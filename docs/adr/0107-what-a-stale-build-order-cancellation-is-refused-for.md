@@ -260,7 +260,7 @@ both consult for what a cancellation destroys rather than pays for
 proposed — `RemoveWallRefusalReason`, its mapping in
 `src/simulation/refusals/refusal-log.ts:367-369`, its wire id
 `'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1382`,
-and its session-command branch in `src/simulation/runtime/session-commands.ts:931`
+and its session-command branch in `src/simulation/runtime/session-commands.ts:933`
 are all present and VERIFIED.
 
 **`RemoveWall` has no analogue of this document's hazard, and that is worth
@@ -591,7 +591,7 @@ implemented by `ConstructionSystem.revisionOf` (Decision §2) exactly as
 `previewCancelRefundMinorUnits` already is. The intent
 (`hud.ts:567`, `{ kind: 'cancel-build-order'; readonly orderId: string; readonly revision: number }`)
 gains `revision: number`, read off the row the player pressed
-(`hud.ts:2024`'s `dispatchCommand` call site). `src/main.ts:2757`'s producer
+(`hud.ts:2024`'s `dispatchCommand` call site). `src/main.ts:2665`'s producer
 becomes:
 
 ```ts
@@ -667,7 +667,7 @@ with its own measurement owed, not a corollary of this one.
 > `SimulationCommandSender.submit` currently supports"* a per-command lead:
 > `submit(command, options: { readonly leadTicks?: number } = {})` at
 > `src/ui/simulation-commands.ts:392`, and `CANCEL_BUILD_ORDER_LEAD_TICKS = 12`
-> at `:183` is the constant it was built for, passed by `src/main.ts:2773-2774`.
+> at `:183` is the constant it was built for, passed by `src/main.ts:2681-2682`.
 > **"Weakest claim" below records that this was built and what it measured**,
 > so the document has carried the fact and its own denial of the fact in the
 > same file; the denial is left standing because it is the premise the

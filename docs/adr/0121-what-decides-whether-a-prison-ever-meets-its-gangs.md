@@ -180,7 +180,7 @@ which is worth knowing before ruling.
 
 **RULED 2026-09-19, VIA #1322: (b) AND (c) TOGETHER ("Obie naraz").** Kept
 below exactly as put to the owner, because that is what the ruling chose
-between. `src/simulation/incidents/default-gangs.ts:107-186`, whose
+between. `src/simulation/incidents/default-gangs.ts:107-194`, whose
 `defaultGangIdForArrival` is (b) as built -- the smaller-gang assignment, not
 the id-parity split this section originally described as current -- and
 `DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION` is (c). This section is
@@ -259,14 +259,14 @@ const score = sentence + intakeHistory + findings + cleanConduct;
 const riskTier = clampTier(score);
 `
 
-(`src/simulation/prisoners/classification.ts:213-214`, quoted verbatim). Below
+(`src/simulation/prisoners/classification.ts:219-220`, quoted verbatim). Below
 `LONG_SENTENCE_THRESHOLD_TICKS`, `sentence` is 0; at `priorIncidents: 0`,
 `intakeHistory` is 0; `cleanConduct` is a decay term that is never positive.
 **`findings` is the only term that can raise the score at all**, and it is
 capped by `Math.min(MAX_FINDINGS_TERM, Math.max(0, disciplinary.points))`
-(`src/simulation/prisoners/classification.ts:196`) against
+(`src/simulation/prisoners/classification.ts:202`) against
 `export const MAX_FINDINGS_TERM = 3;`
-(`src/simulation/prisoners/classification.ts:127`). `disciplinary.points`
+(`src/simulation/prisoners/classification.ts:133`). `disciplinary.points`
 comes from exactly two sources: a terminal incident --
 `assault: 2,` among `DISCIPLINARY_POINTS_BY_INCIDENT_TYPE`
 (`src/simulation/prisoners/disciplinary-record.ts:46-51`), `+1` if it lapsed
@@ -297,7 +297,7 @@ and §7 traces into two other ADRs.
 
 `classificationGroupIdForTier` is the one door a tier crosses into
 `'high-risk'`: `return riskTier >= 3 ? 'high-risk' : 'general-population';`
-(`src/simulation/prisoners/classification.ts:58-59`). `default-gangs.ts` --
+(`src/simulation/prisoners/classification.ts:64-65`). `default-gangs.ts` --
 `defaultGangIdForArrival` and `recordGrudgeFromAdjudicatedAssault` alike --
 only ever reads that classification group; nothing under
 `src/simulation/incidents/` decides who reaches it. That is the whole of why

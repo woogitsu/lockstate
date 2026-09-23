@@ -58,7 +58,7 @@ restores **silently**, and dies later. Verified on `main` @ `54418b6`
 
 - `Kernel.restoreState` did `this._rng = new NamedRngStreams(snapshot.rngStates)`
   — **replace, not merge**. The four streams `createNewSimulationRuntime` derived
-  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:288-293`,
+  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:289-294`,
   handed to the kernel at `:294`) were discarded. Nothing compared the two sets.
 
   **This bullet is now history, and is kept in the past tense rather than
@@ -149,7 +149,7 @@ first Admit.
 
 **#412.** `masterSeed` is absent from the save payload — 0 hits in
 `src/persistence/save-schema.ts`. Both production restore paths take the `= 0`
-default (`restore-session.ts:321`; `session-controller.ts:66`; `src/main.ts:2100`
+default (`restore-session.ts:321`; `session-controller.ts:66`; `src/main.ts:2008`
 constructs `SessionController` with no `masterSeed` at all). It is currently
 **inert**, and that is measured rather than repeated from #412's comment:
 
@@ -186,16 +186,16 @@ stream states, and `restoreState` overwrites all four.
 >   seed, and `SessionController.createPrison` draws
 >   `this.masterSeed ?? this.generateMasterSeed()`
 >   (`src/persistence/session/session-controller.ts:460`).
-> - *"`src/main.ts:2100` constructs `SessionController` with no `masterSeed` at
+> - *"`src/main.ts:2008` constructs `SessionController` with no `masterSeed` at
 >   all"*. It passes a generator: `new SessionController(repository, host, {`
 >   with `generateMasterSeed` among its options
->   (`src/main.ts:4424-4427`; the anchor read `:4220-4223`, then
+>   (`src/main.ts:4343-4346`; the anchor read `:4220-4223`, then
 >   `:4381-4384`, re-aimed on 2026-09-21 by
 >   `grep -n 'new SessionController(repository, host, {'` after a chrome-row
 >   overflow fix added an unrelated function above it and again on 2026-09-22
 >   by the same search after ADR 0122's `show-alert-place` case was added to
 >   the intent switch above it), that function drawn from
->   `crypto.getRandomValues(drawn);` at `src/main.ts:4346` (the anchor read
+>   `crypto.getRandomValues(drawn);` at `src/main.ts:4265` (the anchor read
 >   `:4142`, then `:4303`). This is the same change §4's
 >   2026-08-28 amendment records, and this paragraph was not amended with it.
 > - *"It is currently **inert**"*. It is not, and the three sentences above are
@@ -298,7 +298,7 @@ in a way no error reports.
 
 The sentence #412 asks for, and it is a statement of fact rather than a
 convention: production has never supplied another value
-(`src/main.ts:2100` → `session-controller.ts:66` `?? 0`), so every save in
+(`src/main.ts:2008` → `session-controller.ts:66` `?? 0`), so every save in
 existence was written by a session seeded at 0.
 
 > **Amended 2026-08-28 (#479).** "Production has never supplied another value"

@@ -25,7 +25,7 @@
 Three decisions. **Nothing under `src/` reads any of them**, and that is
 deliberate rather than incidental: this branch ships the authored name data
 and its gates, and leaves the one line that would put it into a session
-(`src/simulation/runtime/new-session.ts:481`) exactly as it is. Decision 2
+(`src/simulation/runtime/new-session.ts:482`) exactly as it is. Decision 2
 reaches the save envelope and decision 3 changes a validator that guards it,
 so neither is an agent's to take.
 
@@ -285,7 +285,7 @@ loosening a gate that currently passes.
   eight re-draws often enough for repeats to be routine, and at 19,200 a
   repeated full name reads as the coincidence a real prison contains.
 - No behaviour changes. `new ActorIdentityRegistry()`
-  (`src/simulation/runtime/new-session.ts:481`) still takes the placeholder by
+  (`src/simulation/runtime/new-session.ts:482`) still takes the placeholder by
   default (`actor-identity.ts:205`), so a save written before this branch and
   a save written after it are byte-identical.
 - **Zero bundle cost while unwired**, measured on the production build rather

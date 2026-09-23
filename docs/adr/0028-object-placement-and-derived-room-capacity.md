@@ -48,7 +48,7 @@ not what other games do.
 > is honoured by editors. In this document the offender is `e6557d2a`
 > (2026-08-27) — *"Re-anchor ten ADRs' rotted code citations, and name what
 > actually rotted them"* — which moved
-> `src/simulation/runtime/new-session.ts:156-158` to `:244-246` at `§Two things
+> `src/simulation/runtime/new-session.ts:157-159` to `:244-246` at `§Two things
 > the single capacity field is being asked to be`, **below this line**, leaving
 > the pin untouched. Its own message names the rot and does not name the pin.
 > The replacement it installed has itself drifted: `:244-246` is
@@ -129,7 +129,7 @@ if (requiredObjectCapability !== undefined && !instance.objectCapabilities.inclu
 ```
 
 `DEFAULT_ACCOMMODATION_POLICY` asks for `'sleep-surface'`
-(`src/simulation/prisoners/intake-system.ts:27-34`), and `objectCapabilities` is
+(`src/simulation/prisoners/intake-system.ts:28-35`), and `objectCapabilities` is
 `[]`. So a capacity of 2 written onto `room.cell` changes nothing at all: the
 capability half of that predicate still fails and every arrival still accrues
 `accommodationBacklogTicks` forever. **Any decision that resolves only capacity
@@ -364,7 +364,7 @@ Three reasons it is wrong here.
 combinations requires walking up to `maxActiveIndex`. The runtime allocates
 5,000 slots for prisoners and a separate 500-slot store for guards
 (`DEFAULT_PRISONER_CAPACITY` and `DEFAULT_GUARD_CAPACITY`,
-`src/simulation/runtime/new-session.ts:244-246`; the anchor read `:156-158`,
+`src/simulation/runtime/new-session.ts:245-247`; the anchor read `:156-158`,
 which was correct when this document was written at `ca5bb3f` and has drifted 88
 lines since — [ADR 0005](./0005-entity-storage-model.md) carries the same pair
 and the account of why naming the constants is the durable half). Furniture is one to two

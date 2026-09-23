@@ -168,7 +168,7 @@ are kept below because the ruling is only legible against what it chose over:
 - **Per item across the whole queue** (today's granularity, with partial fill
   added). Cheapest to build and the worst to play: a partial buy is allocated by
   `orderedOrders()`, which sorts on the order **id** — and in a real session ids
-  are `order-${crypto.randomUUID()}` (`src/main.ts:2600`, `:2878`), so the
+  are `order-${crypto.randomUUID()}` (`src/main.ts:2508`, `:2878`), so the
   segment that gets the bricks is **random relative to placement order**. A
   player who drags a room's perimeter and can afford half of it gets a random
   half.

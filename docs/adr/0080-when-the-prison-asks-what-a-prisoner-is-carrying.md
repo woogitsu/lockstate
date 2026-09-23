@@ -86,7 +86,7 @@ Three constants and one call site, each verified at the line on `898a16a`
 1. **The eligible band is a prefix of an ascending-severity ordering.**
    `eligibleContrabandCategories` takes the
    `categoriesAtTierZero + categoriesPerRiskTier * riskTier` least severe
-   entries (`src/simulation/contraband/introduction.ts:240`), and
+   entries (`src/simulation/contraband/introduction.ts:250`), and
    `DEFAULT_CONTRABAND_INTRODUCTION_POLICY` is `2 + 1 x tier` (`:200-205`).
    Severities in `src/content/contraband-catalog.ts:40-44` are weapon 9, drug 7,
    tool 6, phone 4, currency 2, so the order is currency < phone < tool < drug <
@@ -105,7 +105,7 @@ Three constants and one call site, each verified at the line on `898a16a`
    (inside `introduceContrabandOnIntake`) and `intake-system.ts:502`, which
    calls the injected `IntakeContrabandIntroducer` port with `result.riskTier`
    — the tier `classifyPrisoner` returned one statement earlier at `:491`. The
-   port is wired in `src/simulation/runtime/new-session.ts:531`, and that
+   port is wired in `src/simulation/runtime/new-session.ts:551`, and that
    closure is `introduceContrabandOnIntake`'s only caller in `src/`.
 
    > **A small correction to #677 and to #676's §7, in both directions.** Both
@@ -119,7 +119,7 @@ Three constants and one call site, each verified at the line on `898a16a`
 3. **`classifyPrisoner` at `priorIncidents: 0` cannot return 3.** The score is
    `(sentence >= LONG_SENTENCE_THRESHOLD_TICKS ? 1 : 0) + min(2, max(0, priors))
    + screeningVariance` with the variance in `{-1, 0, +1}`
-   (`src/simulation/prisoners/classification.ts:83-89`), so the maximum is
+   (`src/simulation/prisoners/classification.ts:89-95`), so the maximum is
    `1 + 0 + 1 = 2` and `clampTier` cannot raise it. `src/main.ts:899` pins
    `const ADMISSION_REQUEST = { priorIncidents: 0 } as const`, and that is the
    only admission a player can make.
@@ -183,7 +183,7 @@ this pass. The third does not, and the correction is recorded here rather than
 in a footnote.**
 
 The accommodation preference lives in `DEFAULT_ACCOMMODATION_POLICY`
-(`src/simulation/prisoners/intake-system.ts:97-101`), which returns
+(`src/simulation/prisoners/intake-system.ts:98-102`), which returns
 `[SOLITARY_CELL, CELL]` for `'high-risk'`. The `'accommodation-assignment'`
 stage reads `classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!)`
 **freshly, on every scheduled retry** — and `'accommodation-assignment'` is one
@@ -387,7 +387,7 @@ sooner — which feeds the same review gate ADR 0080 just armed"*. The first hal
 is true; the second does not follow, and the reason is decision 1's own guard:
 the review asks the introduction question only when
 `assessment.riskTier > previousTier`
-(`src/simulation/prisoners/classification-review-system.ts:364`). **A prisoner
+(`src/simulation/prisoners/classification-review-system.ts:370`). **A prisoner
 who *arrives* at tier 3 is never *raised into* tier 3**, so a non-zero
 `priorIncidents` moves prisoners **from** the review producer **to** the intake
 producer instead of adding to both.

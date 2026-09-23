@@ -145,6 +145,14 @@ export function applyDefaultGangs(gangs: GangRegistry, sectorId: string): void {
  * `ADMISSION_REQUEST`, a held decision), so nothing reached this rule through
  * intake in play at all.
  *
+ * **THAT SENTENCE IS HISTORY FROM 2026-09-23.** [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md) deleted
+ * `ADMISSION_REQUEST`, and the worker draws the count flat 60/30/10, so about
+ * 4.55 % of arrivals are `high-risk` at intake and join here. Membership then
+ * outlives their tier: measured over twelve seeds of a well-run prison, all
+ * five intake members were below tier 3 by tick 48,001 and all five were
+ * still members. The review does not revoke, as that system's own docblock
+ * says.
+ *
  * **Calling it twice for one entity is safe by construction**, which is what
  * makes two sites cheap: the answer is a pure function of `entityId`, so both
  * sites compute the same gang, and `GangRegistry.addMember` moves-or-sets.

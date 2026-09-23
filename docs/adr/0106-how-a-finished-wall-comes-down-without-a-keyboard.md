@@ -149,7 +149,7 @@ each was re-found by its text on this tree rather than trusted from either.
   value `ConstructionSystem` wrote and the `'completed'` order that wrote it.
   Falling through both arms returns `{ kind: 'refused', reason:
   'nothing-to-remove' }` (`RemoveObjectRefusalReason`, `:207`), which
-  `src/simulation/runtime/session-commands.ts:793` turns into the sentence
+  `src/simulation/runtime/session-commands.ts:795` turns into the sentence
   the issue quotes.
 
 ### 2. The positive control, re-opened from the issue's own comment
@@ -190,7 +190,7 @@ src/main.ts:2498: requireSimulation(commands).submit({ type: 'CancelBuildOrder',
 ```
 
 Same finding the comment already closed, re-run on this tree: **one
-producer**, `src/main.ts:2498`, under `case 'cancel-build-order':` at `:2497`,
+producer**, `src/main.ts:2406`, under `case 'cancel-build-order':` at `:2497`,
 fed by the queue row's intent. `CancelBuildOrder`'s own decode
 (`src/simulation/protocol/commands.ts`) carries only `orderId` on the wire —
 no location, no edge — and its handler

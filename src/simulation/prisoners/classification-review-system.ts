@@ -338,6 +338,12 @@ export class ClassificationReviewSystem implements SystemRegistration {
      * port is what makes them reachable, because a review **can** carry a
      * prisoner admitted at `priorIncidents: 0` into tier 3.
      *
+     * **The premise of this section stopped being true on 2026-09-23.**
+     * [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md) deleted `ADMISSION_REQUEST`, and the worker now draws the
+     * count, so `high-risk` is reachable at intake too. The intake site
+     * assigns members from then on, and this port is one of two that do. The
+     * reasoning that follows about idempotence is unchanged by that.
+     *
      * ## The determinism question OQ5 raised, answered by the port's own shape
      *
      * `IntakeGangAssigner` takes **no `rng`** and says so in its own docblock:
@@ -449,7 +455,9 @@ export class ClassificationReviewSystem implements SystemRegistration {
         // ADR 0080. The contraband band is `2 + tier` categories of an
         // ascending-severity ordering, so the fifth slot -- the weapon -- opens
         // at tier 3 alone, and intake at `priorIncidents: 0` cannot score one
-        // (`1 + 0 + 1`, clamped). Asking the introduction question here, at the
+        // (`1 + 0 + 1`, clamped). Since ADR 0124 intake draws the count, so
+        // intake can score one for 4.55 % of arrivals. This guard still
+        // matters: an arrival already at tier 3 is never *raised* into it. Asking the introduction question here, at the
         // review that *raises* somebody into tier 3, is what gives that slot a
         // producer without moving a single balance number.
         //

@@ -698,7 +698,11 @@ const EVENT_ROW_PREFIX = 'event-';
  * `src/main.ts` asks for `sentenceLengthTicks: 10_000`, which ADR 0050 records
  * as about four in-game days"*. Since ADR 0069 that constant is
  * `{ priorIncidents: 0 }` and carries no sentence at all: the length is drawn
- * **inside the worker**, uniformly over whole in-game days.
+ * **inside the worker**, uniformly over whole in-game days. *(Since
+ * [ADR 0124](../../docs/adr/0124-what-a-prisoner-brings-with-them.md) the
+ * constant is gone as well: the prior-incident count is drawn in the worker
+ * too, and `src/main.ts` sends neither figure. The sentence arithmetic below
+ * is unaffected.)*
  *
  * **The range that sentence quoted, `[2, 16]` -- 4,800..38,400 ticks, mean
  * 21,600 -- is itself gone since the owner's 2026-08-30 ruling on

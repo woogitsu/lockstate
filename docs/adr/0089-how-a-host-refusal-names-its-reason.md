@@ -78,7 +78,7 @@ line. Nothing under `src/` is changed by this document.
 That is very likely the first refusal a new player ever meets, and it says
 nothing about what to do. **At the commit this document was drafted from, the
 throw behind it read** (re-anchored 2026-09-06; the throw now lives at
-`src/main.ts:2998-3001` and is no longer a plain `Error` — see the status note
+`src/main.ts:2906-2909` and is no longer a plain `Error` — see the status note
 above):
 
 > `throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');`
@@ -116,8 +116,8 @@ command it already accepted — is ADR 0087's subject, not this one; see
 Six `throw` statements in `src/main.ts` are reachable from a command's
 dispatch and land in the HUD's gate (`AsyncActionGate`, read by `reportError`
 at `src/ui/hud/hud.ts:1476-1491`). No other file throws a host refusal —
-`place-build-order` (`src/main.ts:2570-2609`), `place-object`
-(`src/main.ts:2645-2653`), `zone-room` and `unzone-room` submit without any
+`place-build-order` (`src/main.ts:2478-2517`), `place-object`
+(`src/main.ts:2553-2561`), `zone-room` and `unzone-room` submit without any
 pre-check at all, refusing only from the worker's side. **Re-anchored
 2026-09-06: the quoted line below is `place-object`'s own docblock, not
 `zone-room`/`unzone-room`'s — it was already misattributed to the zoning pair
@@ -125,18 +125,18 @@ at the commit this document was cut from, a pre-existing error this window's
 insertions only moved.** No comment beside `zone-room` or `unzone-room`
 themselves states the reason in these words; the closest is `place-object`'s
 neighbouring account of why *it* has no pre-check, which reasons identically
-for the same structural cause (`src/main.ts:2637-2640`: "every one of the seven
+for the same structural cause (`src/main.ts:2545-2548`: "every one of the seven
 refusal reasons is about the zoning plane, the objects already standing or the
 orders in flight, and this thread holds none of them").
 
 | # | Site | Actioned by | Carries a reason today? | What it could say if it could |
 | --- | --- | --- | --- | --- |
 | H1 | `src/main.ts:1061-1065`, `requireSimulation` — shared by every command case that reaches it (at least eight: `purchase-materials`, `admit-prisoner`, `hire-staff`, `place-build-order`, `place-object`, `zone-room`, `unzone-room`, and every other case calling `requireSimulation(commands)`) | no session at all | No — plain `Error` | Nothing control-specific: "no session" is a cross-cutting fault, not a fact about the control pressed, and the per-`actionId` generic key (`refusalMessageKey`'s `undefined`-reason branch, `src/ui/hud/projection.ts:1236-1264`) is already the right sentence for it |
-| H2 | `src/main.ts:2845-2847`, `purchase-materials` — unknown `itemId` | a schema-shaped defect: the requested material does not exist | No — plain `Error` | Nothing a player caused: nothing on the Build panel can name an item the catalogue does not carry, so this is the "malformed charge" case `host-refusal.ts:63-67` already reasons about for the sibling affordability check — a defect on this thread, and the generic sentence is the true one |
-| H3 | `src/main.ts:2845-2871`, `purchase-materials` — affordability | one of two: the standing overdraft floor (`verdict.refusal === 'past-the-floor'`), or a malformed charge | **Half of it.** `'past-the-floor'` throws `HostRefusalError('past-the-overdraft-floor', message)` (`main.ts:2868-2870`); the other branch throws a plain `Error` deliberately, for the same "malformed charge is a defect" reason as H2 | Already reaches `hud.refusal.purchase-materials-past-floor` (`src/content/default-locale-en.ts:2347`) |
-| H4 | `src/main.ts:2998-3001`, `admit-prisoner` — no room instance exists | genuinely player-actionable: nothing is zoned yet | **At the time, no — plain `Error`, the #791 defect. Fixed 2026-09-03, Option-1-shaped — see the status note.** | `hud.refusal.admit-prisoner-no-room` (`src/content/default-locale-en.ts:2369`): "Nobody was admitted — this prison has no room to hold anybody." — shipped, not `hud.alert.refusal.admit.no-accommodation`'s wording as guessed below |
-| H5 | `src/main.ts:3060`, `hire-staff` — unknown `staffRoleId` | a schema-shaped defect, same shape as H2 | No — plain `Error` | Nothing a player caused, for the same reason as H2 |
-| H6 | `src/main.ts:3090-3092`, `hire-staff` — affordability | same two-way split as H3 | **Half of it**, same mechanism as H3 | Already reaches `hud.refusal.hire-staff-past-floor` (`src/content/default-locale-en.ts:2348`) |
+| H2 | `src/main.ts:2753-2755`, `purchase-materials` — unknown `itemId` | a schema-shaped defect: the requested material does not exist | No — plain `Error` | Nothing a player caused: nothing on the Build panel can name an item the catalogue does not carry, so this is the "malformed charge" case `host-refusal.ts:63-67` already reasons about for the sibling affordability check — a defect on this thread, and the generic sentence is the true one |
+| H3 | `src/main.ts:2753-2779`, `purchase-materials` — affordability | one of two: the standing overdraft floor (`verdict.refusal === 'past-the-floor'`), or a malformed charge | **Half of it.** `'past-the-floor'` throws `HostRefusalError('past-the-overdraft-floor', message)` (`main.ts:2868-2870`); the other branch throws a plain `Error` deliberately, for the same "malformed charge is a defect" reason as H2 | Already reaches `hud.refusal.purchase-materials-past-floor` (`src/content/default-locale-en.ts:2347`) |
+| H4 | `src/main.ts:2906-2909`, `admit-prisoner` — no room instance exists | genuinely player-actionable: nothing is zoned yet | **At the time, no — plain `Error`, the #791 defect. Fixed 2026-09-03, Option-1-shaped — see the status note.** | `hud.refusal.admit-prisoner-no-room` (`src/content/default-locale-en.ts:2369`): "Nobody was admitted — this prison has no room to hold anybody." — shipped, not `hud.alert.refusal.admit.no-accommodation`'s wording as guessed below |
+| H5 | `src/main.ts:2968`, `hire-staff` — unknown `staffRoleId` | a schema-shaped defect, same shape as H2 | No — plain `Error` | Nothing a player caused, for the same reason as H2 |
+| H6 | `src/main.ts:2998-3000`, `hire-staff` — affordability | same two-way split as H3 | **Half of it**, same mechanism as H3 | Already reaches `hud.refusal.hire-staff-past-floor` (`src/content/default-locale-en.ts:2348`) |
 
 Two things this table makes precise that the issue's framing does not:
 

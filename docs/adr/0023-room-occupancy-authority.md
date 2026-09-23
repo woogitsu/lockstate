@@ -148,7 +148,7 @@ decision keeps.
   and there is no field called `capacity`** — and
   `IntakeSystem`/`ActionSystem` gate on capability tags that
   `src/content/object-catalog.ts` puts on objects
-  (`src/simulation/prisoners/intake-system.ts:93-97`,
+  (`src/simulation/prisoners/intake-system.ts:94-98`,
   `src/simulation/prisoners/actions.ts:28`; the intake anchor read `:30-32` until
   2026-09-16, where it was not a docblock about capability at all but one about
   `NamedRngStreams.get` throwing for an unregistered stream. `:93-97` is

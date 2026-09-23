@@ -239,7 +239,7 @@ third save ok: true | envelope revisions offered so far: 2, 2, 4
 ```
 
 **FINAL-006 — MEASURED, first reproduction.** Two `SessionController`s over one
-store, which is what two tabs are — `bootPersistence` (`src/main.ts:3353`)
+store, which is what two tabs are — `bootPersistence` (`src/main.ts:3261`)
 constructs one at `:3396` per page:
 
 ```

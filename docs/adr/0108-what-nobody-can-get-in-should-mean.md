@@ -266,7 +266,7 @@ both checked here rather than taken from the docblock that asserts the second:
 2. **Nothing runs it.** `topology.update` is called from
    `tests/unit/construction-geometry.test.ts` and
    `tests/unit/construction-doors.test.ts` and from nowhere in `src/`. It is
-   constructed at `src/simulation/runtime/new-session.ts:440` and exposed at
+   constructed at `src/simulation/runtime/new-session.ts:441` and exposed at
    `:1606`, and it appears in no `registerSystem` block — so no tick
    recomputes it and `getTopologyId` answers `0` for every tile in a running
    session. `enclosure.ts:51-54` says this already and it is true.
@@ -331,7 +331,7 @@ as one that opens onto the world."*
 
 - **A spawn point.** There is none. Prisoners and staff materialise at an
   `originTile` carried on the command
-  (`src/simulation/runtime/session-commands.ts:700` →
+  (`src/simulation/runtime/session-commands.ts:702` →
   `PrisonerOperationsRuntime.admitPrisoner`, `guard-roster.ts:89`), which the
   *player* picks per admission and which nothing retains. Inventing a spawn
   anchor means new persisted state, which means the save format, which is a

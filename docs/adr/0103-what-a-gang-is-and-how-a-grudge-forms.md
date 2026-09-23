@@ -157,7 +157,7 @@ at the site:
   **THAT SENTENCE STOPPED BEING TRUE ON 2026-09-11 AND IS CORRECTED RATHER THAN
   OVERWRITTEN (`docs/AGENT_WORKFLOW.md` §4), BECAUSE THE BALANCE PASS IT
   PREDICTED IS EXACTLY WHAT HAPPENED.** The constant is **`0.4`**
-  (`src/simulation/incidents/default-gangs.ts:231`), raised by the owner's
+  (`src/simulation/incidents/default-gangs.ts:239`), raised by the owner's
   ruling on this open question in `554984ec`. The reason is in that constant's
   own docblock and is worth carrying here: at `0.2` the mechanism was
   measurably close to unreachable — eight seeds, ninety in-game days each, a
@@ -169,7 +169,7 @@ at the site:
   **The two rulings interact, and neither bullet says so.** Open question 2 was
   answered *"both directions at half weight"*, and
   `recordGrudgeFromAdjudicatedAssault` splits the constant —
-  `src/simulation/incidents/default-gangs.ts:310-314` — so each direction of a
+  `src/simulation/incidents/default-gangs.ts:318-322` — so each direction of a
   cross-gang assault accrues `0.4 / 2`, which is the `0.2` this bullet names.
   The recommendation survives as the *per-direction* figure and is false as the
   *constant*. That is the distinction to hold, and it is why this is marked in
@@ -603,7 +603,7 @@ sees is a lie about their prison.
 The row is graded `severity: 'danger'` on both the band and the log
 (`src/ui/simulation-events.ts:537-541`), and it **takes no parameters at all**:
 its event kind falls through the `return {};` arm of both the parameter
-resolvers (`src/ui/simulation-events.ts:1207`, `:1335`). That is a useful fact
+resolvers (`src/ui/simulation-events.ts:1211`, `:1335`). That is a useful fact
 for this decision, not a defect — it means a gang needs no `nameKey` before
 this mechanism can ship, because no gang's id ever reaches the screen.
 
@@ -696,13 +696,13 @@ of signature rather than a different design.
 
 `grep -c "rng" src/simulation/incidents/*.ts` returns **0** for all ten files
 on this tree, exactly as the issue says. Six named RNG streams are registered
-in a new session (`src/simulation/runtime/new-session.ts:446-487`; the
+in a new session (`src/simulation/runtime/new-session.ts:447-507`; the
 constants are at `:83`, `:86`, `:88`, `:109`,
 `src/simulation/prisoners/sentence.ts:47` and
 `src/simulation/identity/actor-identity.ts:210`; those six anchors read
 `:440-483`, `:78`, `:81`, `:83`, `:104` and `:188`, and `sentence.ts:47` is the
 one of the seven that never moved). A seventh would be a
-save-compatibility question that `src/simulation/runtime/new-session.ts:471-478`
+save-compatibility question that `src/simulation/runtime/new-session.ts:472-479`
 sets out in full. **This document proposes no new stream** (Decision §5).
 
 ### 11. The issue's provenance note is not on `main` — VERIFIED
@@ -805,7 +805,7 @@ narrowing above it is untouched, so a consumer may still rely on the incident
 being an `'assault'` that carries an `instigatorId`. In a
 real session that port is
 `prisoners.imposeSolitarySanction(entityId, tick)`
-(`src/simulation/runtime/new-session.ts:1430-1432`), carried out by
+(`src/simulation/runtime/new-session.ts:1450-1452`), carried out by
 `SanctionSystem` (`src/simulation/prisoners/sanction-system.ts`), whose own
 comment records that the sanction *"is the only state
 `PrisonerOperationsRuntime.imposeSolitarySanction` writes"*
@@ -956,7 +956,7 @@ so only in the running app, never in a headless replay"*
 **(f) The one fact about the player's attention that does reach the kernel, and
 what it actually is.** A dismissal. `export const dismissAlertSchema = z.object({`
 (verbatim in `src/simulation/protocol/commands.ts`), at `:583`, applied from
-the command queue at `src/simulation/runtime/session-commands.ts:940` into
+the command queue at `src/simulation/runtime/session-commands.ts:942` into
 `public dismiss(fromSequence: number, throughSequence: number): number {`
 (verbatim in `src/simulation/events/event-log.ts`), at `:269`. Its far end is
 documented as exactly the thing the ruling asks for: *"`throughSequence` is the
@@ -1006,9 +1006,9 @@ fixture and what the earlier pass generalised from.
 **What the earlier pass missed is that intake is not the only writer.** ADR
 0032's `reviewClassification` recomputes the tier absolutely, every
 `CLASSIFICATION_REVIEW_INTERVAL_TICKS = 24_000`
-(`src/simulation/prisoners/classification.ts:105`), from
+(`src/simulation/prisoners/classification.ts:111`), from
 `sentence + intakeHistory + findings + cleanConduct`
-(`src/simulation/prisoners/classification.ts:213`), where
+(`src/simulation/prisoners/classification.ts:219`), where
 `const findings = Math.min(MAX_FINDINGS_TERM, Math.max(0, disciplinary.points));`
 (verbatim in `src/simulation/prisoners/classification.ts`), at `:196`, and
 `MAX_FINDINGS_TERM = 3` (`:127`). `ClassificationReviewSystem` writes the result
@@ -1317,7 +1317,7 @@ untouched.
 computes, and not by a new random draw.**
 
 Intake already classifies every arrival on the `prisoners.classification`
-stream (`src/simulation/prisoners/intake-system.ts:565-571`, re-aimed
+stream (`src/simulation/prisoners/intake-system.ts:600-606`, re-aimed
 2026-09-15 from `:224`) into a risk tier and a
 classification group. The recommendation is: **`high-risk` arrivals join a
 gang; everyone else joins none**, and which of the two gangs is chosen
@@ -1328,7 +1328,7 @@ Two properties this buys, both of which matter more than the rule's elegance:
 
 - **It is deterministic and adds no draw**, so no existing seed's prisoner
   classification shifts — the failure mode
-  `src/simulation/runtime/new-session.ts:446-452` spells out at length for a
+  `src/simulation/runtime/new-session.ts:447-453` spells out at length for a
   shared stream.
 - **It ties gang membership to the one prisoner attribute the player can
   already see and already influences**, so "why is my prison full of gang
@@ -1358,7 +1358,7 @@ criterion survives; the *timing* does not. A membership rule that reads
 high-risk prisoners are made rather than admitted. The repair is to evaluate
 membership wherever the tier is written — `ClassificationReviewSystem` already
 writes both fields at
-`src/simulation/prisoners/classification-review-system.ts:443-444` (re-aimed
+`src/simulation/prisoners/classification-review-system.ts:449-450` (re-aimed
 2026-09-15 from `:384-385`, which this document also carried in Open Question 5
 below) — but that is
 a second write site, a second determinism question and a decision this document
@@ -1478,7 +1478,7 @@ see what was given up, and every one of these will be proposed again.
 1. **A scheduled or random injection** — "gangs act up every N ticks", or a
    per-sample draw on a new RNG stream.
    *What it would have cost:* a seventh named RNG stream, which
-   `src/simulation/runtime/new-session.ts:476-481` sets out as a
+   `src/simulation/runtime/new-session.ts:477-482` sets out as a
    save-compatibility question in full, and the loss of the property Context 10
    establishes — that nothing in `src/simulation/incidents/` draws a random
    number. *What it would have bought:* a retaliation reachable in a prison that
@@ -1563,8 +1563,8 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
 - *"No producer of any kind: zero calls to `register`, `addMember` or
   `addGrudge` outside `loadSnapshot`"* — **there are four.**
   `src/simulation/incidents/default-gangs.ts:82` registers,
-  `src/simulation/runtime/new-session.ts:671` adds a member at the site
-  Decision 6 named, and `src/simulation/incidents/default-gangs.ts:313-314` add
+  `src/simulation/runtime/new-session.ts:691` adds a member at the site
+  Decision 6 named, and `src/simulation/incidents/default-gangs.ts:321-322` add
   the grudge pair. The count was the claim and the count has moved.
 - *"No guard against a retaliation with an empty participant list"* — **the
   guard is `src/simulation/incidents/trigger-system.ts:613-615`**, which is
@@ -2177,7 +2177,7 @@ a reader holding the earlier draft can follow.**
    > (**The anchor in this quoted block is left as it was written and demoted to
    > a bare basename**, which is this corpus's form for a number that is no
    > longer current; the live pair is
-   > `src/simulation/prisoners/classification-review-system.ts:443-444`, given
+   > `src/simulation/prisoners/classification-review-system.ts:449-450`, given
    > once in Decision 6 above.)
    > Assigning at both sites is the obvious repair and it is a second write
    > site with its own determinism question; assigning *only* at review means a

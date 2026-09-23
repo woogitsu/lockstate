@@ -148,7 +148,7 @@ same four blocks.
 
 [ADR 0048](./0048-what-a-sectors-occupants-are.md) decision 2 made
 `needsPressure` the mean deficit over all six needs across every prisoner
-standing on owned land (`src/simulation/runtime/new-session.ts:692-702`), and
+standing on owned land (`src/simulation/runtime/new-session.ts:712-722`), and
 decision 3 raised `needsPressureWeight` to `1` against a `hotThreshold` of
 `0.65` (`src/simulation/incidents/sector-risk.ts:71-77`). Two needs pinned at
 zero are therefore a **floor of 0.3333 on `needsPressure` that no play can

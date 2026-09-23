@@ -513,7 +513,7 @@ cannot undo again, and Redo offers back a wall they never asked to remove.
 >
 > **One correction to the paragraph above**, which ADR 0056 measured: the run it
 > quotes sent no `transactionId`, and the shipped HUD sends one per gesture
-> (`src/main.ts:2934`; the anchor read `:1915`). Re-run that way the redo stack is **empty too**, because
+> (`src/main.ts:2842`; the anchor read `:1915`). Re-run that way the redo stack is **empty too**, because
 > `second` arriving after the `Undo` opens a gesture of its own and
 > `registerTransactionOrder` clears it. So *"Redo offers back a wall they never
 > asked to remove"* understates it in turn: through the real front door there was

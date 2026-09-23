@@ -461,6 +461,11 @@ export class IntakeSystem implements SystemRegistration {
    *   `jsonValue` and re-dispatched verbatim on restore, so that shape is a
    *   carrier that exists today rather than a future producer. Measured:
    *   `priorIncidents: 5`, a 300,000-tick sentence, 191 of 300 seeds terminal.
+   *   **"Not reachable from the panel" stopped being true with
+   *   [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md).**
+   *   The panel now omits the count and the worker draws one, so about 4.55 %
+   *   of its arrivals are `high-risk`. The fix below is what makes that safe,
+   *   and it is unchanged.
    *
    * Both close the same way, and it is one line rather than a special case:
    * **the guard and the stage now ask the same private question**

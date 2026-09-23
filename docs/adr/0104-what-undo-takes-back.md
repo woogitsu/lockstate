@@ -103,7 +103,7 @@ There is no pointer route. The key is recognised in the scene
 this.editHistory?.undo();`), handed to the `BuildTool`
 (`src/ui/build-tool.ts:257-259`), turned into a HUD intent
 (`src/ui/hud/hud.ts:499`, `| { readonly kind: 'undo' }`) and submitted as a
-command (`src/main.ts:2455-2456`, `requireSimulation(commands).submit({ type:
+command (`src/main.ts:2363-2364`, `requireSimulation(commands).submit({ type:
 'Undo' })`).
 
 **And the tool argues, in its own words, against making the key conditional**

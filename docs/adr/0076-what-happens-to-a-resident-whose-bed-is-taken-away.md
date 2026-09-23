@@ -240,7 +240,7 @@ implementation hazardous, and it is what the consequences section is about.
 ### Look one module over: the mechanism a fix needs exists and has one caller
 
 `PrisonerOperationsRuntime.relocateResidentsOutOf`
-(`src/simulation/prisoners/prisoner-operations-runtime.ts:689`) moves every
+(`src/simulation/prisoners/prisoner-operations-runtime.ts:694`) moves every
 resident of named instances into other suitable accommodation. It is
 all-or-nothing — residents are visited in ascending entity id, each offered only
 the target their own classification group prefers, and the moment one has
@@ -394,7 +394,7 @@ replaced. Until 2026-08-30 the two paragraphs above read:
 > **A(i), the behaviour: a removal that drops a room's capacity below its
 > occupancy relocates the excess**, through
 > `PrisonerOperationsRuntime.relocateResidentsOutOf`
-> (`src/simulation/prisoners/prisoner-operations-runtime.ts:500`).
+> (`src/simulation/prisoners/prisoner-operations-runtime.ts:505`).
 >
 > This is the owner's ruling and it is the better game. […] The mechanism is
 > already written, already atomic, already deterministic, and already trusted by

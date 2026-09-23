@@ -173,7 +173,7 @@ and its restore path already reasons about a guard caught mid-travel.
 > **Not since this ADR's own surface shipped** (#302, and the Status block
 > above says so). `GuardRoster.hire` is called from
 > `src/simulation/staff/hiring.ts:221`, which
-> `src/simulation/runtime/session-commands.ts:736` reaches on a `HireStaff`
+> `src/simulation/runtime/session-commands.ts:738` reaches on a `HireStaff`
 > command. This paragraph and the *Consequences* bullet *"`GuardRoster.hire`
 > gains its first production caller"* have therefore disagreed with each other
 > inside one file for as long as the implementation has existed; the Context is

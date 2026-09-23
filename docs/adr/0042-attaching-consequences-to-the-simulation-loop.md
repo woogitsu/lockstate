@@ -244,7 +244,7 @@ belongs in whichever commit adds an action.
 ### #441 — a sentence never ends — **holds exactly**
 
 `IntakeSystem` writes the field
-(`src/simulation/prisoners/intake-system.ts:572`; the anchor read `:307`). Every
+(`src/simulation/prisoners/intake-system.ts:607`; the anchor read `:307`). Every
 reader in `src/`:
 
 ```
@@ -260,7 +260,7 @@ read `:397`), and
 *when the prisoner arrived*
 (`src/simulation/prisoners/classification-review-system.ts:57-59`). **Nothing
 compares it against `context.tick`.** `world.setOwned` likewise has exactly one
-call site, at session creation (`src/simulation/runtime/new-session.ts:438`; the anchor read
+call site, at session creation (`src/simulation/runtime/new-session.ts:439`; the anchor read
 `:281`), so
 the land is one chunk for the life of the session.
 
@@ -288,7 +288,7 @@ docblock quoting a design note).
 (`src/simulation/security/default-sector.ts:113`; the anchor read `:99`).
 `contrabandPressure` is read
 from `intelligence.forTarget('sector', sectorId)`
-(`src/simulation/runtime/new-session.ts:1428`; the anchor read `:622`), and the
+(`src/simulation/runtime/new-session.ts:1448`; the anchor read `:622`), and the
 only writer of that
 ledger is `IntelligenceLedger.report`, whose one caller in `src/` is
 `reportInformantTip` (`src/simulation/contraband/informants.ts:87`), which has
@@ -299,7 +299,7 @@ depend on anyone's run.
 **The issue's own "more fundamental half" is more fundamental than it says.**
 `resolveSectorOccupants` counts prisoners standing exactly on the sector's
 single post tile (`src/simulation/security/sector-occupancy.ts:132`; the anchor
-read `src/simulation/runtime/new-session.ts:591-604` — the function moved file,
+read `src/simulation/runtime/new-session.ts:611-624` — the function moved file,
 which is why no line in the old one could be right, and the correction block
 below had already re-aimed this document's *other* citation of it), and
 `ActionSystem` teleports an arriving prisoner onto their target room's anchor
@@ -397,7 +397,7 @@ The needs table holds. `NEED_IDS` is six
 of a need level
 outside the action table, the utility scorer and the HUD projection is
 `sampleSectorRisk`, and it reads `safety` alone
-(`src/simulation/runtime/new-session.ts:616`). `action.sleep` restores
+(`src/simulation/runtime/new-session.ts:636`). `action.sleep` restores
 `safety: 0.2` per tick (`src/simulation/prisoners/actions.ts:45`) against
 `NEED_DECAY_PER_TICK.safety` of `0.01`
 (`src/simulation/prisoners/needs.ts:56`) — the 20× surplus is exact.
@@ -437,15 +437,15 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
   resolved` pipeline, plus `lapse`, lockdown, responder claims and restore-time
   re-dispatch (`src/simulation/incidents/response-system.ts:473-491`; the anchor
   read `:227-249`), registered
-  at `src/simulation/runtime/new-session.ts:1617` (the anchor read `:662`). Its `update` iterates
+  at `src/simulation/runtime/new-session.ts:1637` (the anchor read `:662`). Its `update` iterates
   `this.incidents.openIncidents()` and does nothing when that is empty.
 - `ClassificationReviewSystem` — registered via
   `PrisonerOperationsRuntime.registerOn`
-  (`src/simulation/prisoners/prisoner-operations-runtime.ts:540`; the anchor read
+  (`src/simulation/prisoners/prisoner-operations-runtime.ts:545`; the anchor read
   `:142-147`), folds
   `IncidentLog` terminal records and `ConfiscationLedger` events into a derived
   `DisciplinaryRecord` and rewrites `riskTier` and `classificationGroupIndex`
-  (`src/simulation/prisoners/classification-review-system.ts:439-443`; the anchor
+  (`src/simulation/prisoners/classification-review-system.ts:445-449`; the anchor
   read `:229-233`).
 - The downstream of that rewrite is live in three places:
   `ActionSystem.beginNextAction` resolves the regime schedule from it every
@@ -529,7 +529,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 >   `src/simulation/security/sector-occupancy.ts:132`.
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
->   (`src/simulation/runtime/new-session.ts:1605`), and the save carries
+>   (`src/simulation/runtime/new-session.ts:1625`), and the save carries
 >   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1219`,
 >   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
 >   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by
@@ -624,7 +624,7 @@ a derivation over positions the save already carries. *Determinism:* the score
 is a pure weighted sum and the streak is a counter; a spatial or
 room-membership occupancy query must return a sorted list, as the current one
 does (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
-`src/simulation/runtime/new-session.ts:603`, the file the function left). No RNG.
+`src/simulation/runtime/new-session.ts:623`, the file the function left). No RNG.
 
 ### 3. One recurring debit, as ADR 0017 decision 8's precondition
 
@@ -742,7 +742,7 @@ constrained by it identically:
   throws for an unregistered name (`src/simulation/rng/streams.ts:20-24`), and a
   session registers its streams up front from
   `deriveXoshiroState(masterSeed, name)`
-  (`src/simulation/runtime/new-session.ts:446`, `:483-487`; the anchor read
+  (`src/simulation/runtime/new-session.ts:447`, `:483-487`; the anchor read
   `:288-293`) — today
   `prisoners.classification`, `contraband.detection`,
   `contraband.intelligence` and `identity.actor-name`.
@@ -769,7 +769,7 @@ constrained by it identically:
   before release (`AGENTS.md` boundary 7). Step 5's is ADR 0026's to specify.
 - **No step may reorder an existing iteration.** `resolveSectorOccupants` sorts
   (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
-  `src/simulation/runtime/new-session.ts:603`),
+  `src/simulation/runtime/new-session.ts:623`),
   `IncidentTriggerSystem.update` sorts its sector ids
   (`src/simulation/incidents/trigger-system.ts:360`; the anchor read `:63`), and
   `SectorRiskTracker.getSnapshot` sorts

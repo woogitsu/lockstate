@@ -221,8 +221,8 @@ calls `releasePrisoner`, which ends with `entityStore.destroy(entityId)`
 *first* one a later admission reuses, not a fallback. Confirmed live, not
 hypothetical: `PrisonerOperationsRuntime` wires `new-session.ts`'s real
 `actorIdentity`, `gangs`, `jobWorkers` and `contraband` into
-`releaseSurfaces` (`src/simulation/runtime/new-session.ts:410-432`,
-`src/simulation/prisoners/prisoner-operations-runtime.ts:290-303`), so a
+`releaseSurfaces` (`src/simulation/runtime/new-session.ts:411-433`,
+`src/simulation/prisoners/prisoner-operations-runtime.ts:295-308`), so a
 discharge in an actual session runs every one of the four release calls this
 ADR's Question 2 table used to list as uncalled — they are no longer uncalled,
 which is the rest of what this amendment re-verifies before deciding anything.

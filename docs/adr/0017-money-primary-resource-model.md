@@ -327,7 +327,7 @@ and the Consequences repeat it as a heading:
 > waits forever. The owner has decided the surface: a quantity stepper on the
 > Build panel.
 
-**All four sentences are false.** `src/main.ts:1863` is
+**All four sentences are false.** `src/main.ts:1771` is
 `sender.submit({ type: 'PurchaseMaterials', orderId: …, itemId: intent.itemId,
 quantity: intent.quantity })`, reached from the `'purchase-materials'` HUD intent
 at `:1795`. The stepper the last sentence describes as *decided* is **built**:

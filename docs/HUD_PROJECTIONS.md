@@ -690,12 +690,12 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:2164` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:2244-2253`) fires only when all
+  written.** `src/main.ts:2072` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:2152-2161`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
-  those falls through to the refresh block at `src/main.ts:2355-2364`, which
+  those falls through to the refresh block at `src/main.ts:2263-2272`, which
   calls ten refreshers. (**Those three citations read `1702`, `1735-1740` and
   `1795-1804` until 2026-09-02 and `1781`, `1822-1830` and `1886-1894` until
   2026-09-15, and the block this sentence called "nine-call" at both of those
@@ -2446,7 +2446,7 @@ decision about what to build next.
 
     **Eleven of twelve refusals from one gesture never cross the worker
     boundary at all**, which is stronger than "overwritten fast". One build
-    drag submits one `PlaceBuildOrder` per edge (`src/main.ts:2934-2949`) and
+    drag submits one `PlaceBuildOrder` per edge (`src/main.ts:2842-2857`) and
     the handler records one refusal per failed order
     (`src/simulation/construction/handler.ts:113-124`); the publisher reads
     `this._runtime.refusals.last` once per wake

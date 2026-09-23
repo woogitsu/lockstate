@@ -106,6 +106,10 @@ export interface ContrabandIntroductionPolicy {
  *     held deliberately -- and since ADR 0069 the sentence is no longer sent
  *     from there at all: it is *drawn inside the worker* from the
  *     `prisoners.sentence` stream. Neither number is a player decision.
+ *     **The first half of this bullet is no longer true of `main.ts`:** since
+ *     [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md) the constant is deleted and the count is drawn in the worker
+ *     from `prisoners.priors`, flat 60/30/10 over {0, 1, 2}. The bullet's
+ *     conclusion stands, because neither number is a player decision.
  *  2. **The revision is a phase lottery, and it used to be impossible for most
  *     sentences.** `ClassificationReviewSystem` is globally phased at
  *     `intervalTicks - 1`, so it runs at every tick congruent to 23,999 modulo
@@ -192,6 +196,12 @@ export interface ContrabandIntroductionPolicy {
  * and is recorded here rather than fixed, because fixing it means moving
  * `priorIncidents` and that is [#540](https://github.com/matmaxalez/lockstate/issues/540)'s
  * decision, not this file's.
+ *
+ * **#540 was decided on 2026-09-23 and the paragraph above is history from
+ * "`priorIncidents` is still pinned" onward.** [ADR 0124](../../../docs/adr/0124-what-a-prisoner-brings-with-them.md) draws the count in
+ * the worker, so a tier-3 arrival (4.55 % of arrivals, DERIVED) is eligible
+ * for the fifth step at intake, and `contraband.weapon` has an intake
+ * producer. No value in this file moved.
  *
  * The policy below is still the right shape for the game this comment
  * describes -- it was the reading of the *present tense* that was wrong, and it

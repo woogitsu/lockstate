@@ -106,7 +106,7 @@ remembered:**
    (`src/simulation/economy/loans.ts:184`) — it hands the prison *money*. It
    never touches the floor, and neither does anything else in `loans.ts`.
 3. `LoanBook` is built only when `options.loanTerms !== undefined`
-   (`src/simulation/runtime/new-session.ts:794`), and nothing in `src/` passes
+   (`src/simulation/runtime/new-session.ts:814`), and nothing in `src/` passes
    `loanTerms`, so **no session has a `LoanBook` at all**.
 4. `LoanTerms` has **four** members
    (`src/simulation/economy/loans.ts:74-100`):
@@ -381,7 +381,7 @@ without the schema moving:
 
 **One divergence rather than a break, and it is the interface's — as of this
 document's own drafting; re-anchored 2026-09-06, and the divergence is
-closed.** `src/main.ts:2428` and `:2607` (drafting-time coordinates; the
+closed.** `src/main.ts:2336` and `:2607` (drafting-time coordinates; the
 same pre-checks live at `main.ts:2845` and `:3067` today) pre-checked
 `total > viewModel.counts.treasuryMinorUnits`
 before submitting a purchase or a hire. Those comparisons were against a floor of
@@ -408,7 +408,7 @@ without a version bump"* are all met by either shape:
   `restoreSimulationRuntime` builds its runtime through
   `createNewSimulationRuntime` (`src/simulation/runtime/restore-session.ts:375`),
   so a floor applied where the `Treasury` is constructed
-  (`src/simulation/runtime/new-session.ts:683`) is applied on the new-session and
+  (`src/simulation/runtime/new-session.ts:703`) is applied on the new-session and
   the restore path alike. Nothing to persist, nothing to migrate.
 - **A loan-opened floor needs two optional fields and still no bump.** Absence
   is unambiguous *as a fact about the corpus* — no build that could write a V5
