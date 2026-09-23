@@ -160,7 +160,7 @@ dismissal half as it was.
 treats the refusal as a history of one.** That is exactly what the payload
 meant before this change. It keeps an older producer, or a test fixture, meaning
 what it meant. The real worker always sends the history whenever it sends a
-refusal, and `tests/unit/simulation-worker-state-machine-refusal-history.test.ts`
+refusal, and `tests/unit/worker-status-counts.test.ts`
 pins that. Without that test, a worker that stopped sending the history would
 fall back to one row without anyone noticing.
 

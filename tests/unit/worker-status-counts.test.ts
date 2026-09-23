@@ -103,6 +103,8 @@ interface Published {
      * caught was real.
      */
     readonly refusal?: SimulationRefusal;
+    /** The message history's refusals (ruling 26, #985), tied to the schema for `refusal`'s reason. */
+    readonly refusalHistory?: readonly SimulationRefusal[];
     /** The edit-history pair (#1370), tied to its schema for `refusal`'s reason. */
     readonly editHistory?: SimulationEditHistoryAvailability;
   };
@@ -230,6 +232,20 @@ function submitBuildOrder(
         y: tile.y,
       }) as never,
     },
+  });
+}
+
+function submitCommand(
+  machine: SimulationWorkerStateMachine,
+  sequence: number,
+  command: Parameters<typeof packCommand>[0],
+  executeAtTick: number,
+): void {
+  machine.handleMessage({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `command-${String(sequence)}`,
+    kind: 'simulation/submit-command',
+    payload: { commandId: `command-${String(sequence)}`, sequence, executeAtTick, command: packCommand(command) as never },
   });
 }
 
@@ -861,6 +877,91 @@ describe('publishing the status counts', () => {
     // already opened, so neither spent its allowance. Stated, so the bound
     // above cannot also be met by a channel that stopped projecting.
     expect(vi.mocked(projectStatusCounts).mock.calls.length).toBe(22);
+  });
+
+  /**
+   * **The owner's ruling 26 of 2026-09-23 (#985): the history crosses, and
+   * the burst gap 34 measured is no longer reduced to its last member.**
+   * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` decision 3.
+   */
+  test('carries every refusal of a burst decided in one wake, while `refusal` still carries only the last', () => {
+    const harness = new Harness();
+    harness.run(1);
+    for (let index = 0; index < 3; index += 1) {
+      submitBuildOrder(harness['machine'], index, { x: 100 + index, y: 100 }, 0);
+    }
+    harness.advance(50);
+
+    const published = harness.publications();
+    expect(published, 'one wake, so one publication for the whole burst').toHaveLength(2);
+    expect(published[1]?.payload.refusal?.sequence, 'the band still reads the newest alone').toBe(3);
+    expect(published[1]?.payload.refusalHistory).toEqual([
+      { sequence: 1, tick: 0, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } },
+      { sequence: 2, tick: 0, reason: 'build.out-of-bounds', tile: { x: 101, y: 100 } },
+      { sequence: 3, tick: 0, reason: 'build.out-of-bounds', tile: { x: 102, y: 100 } },
+    ]);
+    expectOk(decodeWorkerToMainMessage(published[1]), 'a publication carrying a history');
+  });
+
+  test('sends the history whenever it sends a refusal, so the translator fallback is never the path', () => {
+    // `hudAlertsFromWorkerMessage` reads a payload with `refusal` and no
+    // `refusalHistory` as a history of one. That keeps old fixtures meaning
+    // what they meant; this pins that the real worker never relies on it.
+    const harness = new Harness(scenarioSnapshot());
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 4, { x: 100, y: 100 }, 0);
+    for (let wake = 0; wake < 60; wake += 1) harness.advance(50);
+
+    const carrying = harness.publications().filter((publication) => publication.payload.refusal !== undefined);
+    expect(carrying.length).toBeGreaterThan(1);
+    for (const publication of carrying) {
+      const history = publication.payload.refusalHistory ?? [];
+      expect(history.at(-1)?.sequence, 'the standing refusal is the newest history entry').toBe(
+        publication.payload.refusal?.sequence,
+      );
+      expect(
+        history.every((entry) => entry.routeDecidedSince === undefined),
+        "option F's mark is the band's, never an entry's",
+      ).toBe(true);
+    }
+  });
+
+  test('publishes the withdrawal of an older history entry, though no ordinal, count or flag the gate knew moves', () => {
+    // A: `unzone.nothing-to-remove` at R. A yard is then zoned at R, and B,
+    // a build refusal elsewhere, becomes the standing refusal. Un-zoning R
+    // now succeeds: `supersede(unzone:R)` withdraws A from the history and
+    // leaves B standing. Nothing else about this press opens the gate --
+    // un-zoning moves no zoning notice, and the counts it moves are behind
+    // the interval check -- so without `_publishedRefusalHistoryRevision` the
+    // list would keep a row the worker had already dropped.
+    const R = { x: 20, y: 20, width: 8, height: 8 } as const;
+    const harness = new Harness();
+    harness.run(1);
+    submitCommand(harness['machine'], 0, { type: 'UnzoneRoom', ...R }, 0);
+    harness.advance(50);
+    submitCommand(harness['machine'], 1, { type: 'ZoneRoom', roomId: 'room.yard', ...R }, 1);
+    harness.advance(50);
+    submitBuildOrder(harness['machine'], 2, { x: 100, y: 100 }, 2);
+    harness.advance(50);
+    const before = harness.publications();
+    expect(before.at(-1)?.payload.refusalHistory?.map((entry) => entry.reason)).toEqual([
+      'unzone.nothing-to-remove',
+      'build.out-of-bounds',
+    ]);
+
+    // Past the interval, so the next wake's publication (if any) is not
+    // carried by the interval gate: advance once to let it open and close.
+    harness.advance(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+    const settled = harness.publications().length;
+    submitCommand(harness['machine'], 3, { type: 'UnzoneRoom', ...R }, harness.kernelTick());
+    harness.advance(50);
+
+    const after = harness.publications();
+    expect(after, 'the withdrawal is published on the wake it happened').toHaveLength(settled + 1);
+    expect(after.at(-1)?.payload.refusalHistory).toEqual([
+      { sequence: 2, tick: 2, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } },
+    ]);
+    expect(after.at(-1)?.payload.refusal?.sequence, 'the standing refusal is B, untouched').toBe(2);
   });
 
   test('is still a message the main thread accepts once it carries a refusal', () => {

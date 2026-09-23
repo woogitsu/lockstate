@@ -572,6 +572,83 @@ describe('the two producers of alert rows do not erase each other', () => {
   });
 });
 
+/**
+ * **The owner's ruling 26 of 2026-09-23 (#985): one row per refusal the
+ * history still holds** (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`
+ * decision 4). The fixtures above carry `refusal` alone, which is read as a
+ * history of one, so each of them still means what it meant; these carry
+ * `refusalHistory` as the worker does.
+ */
+describe('the message history keeps every refusal it still holds, and the band still reads one', () => {
+  function withHistory(
+    history: readonly { sequence: number; tick: number; reason: RefusalReason; tile?: { x: number; y: number } }[],
+    // `null` for "the standing refusal was withdrawn": a default parameter
+    // would swallow an explicit `undefined`.
+    standing: { sequence: number; tick: number; reason: RefusalReason } | null = history.at(-1) ?? null,
+  ): WorkerToMainMessage {
+    const base = publication(standing ?? undefined, history.at(-1)?.tick) as unknown as { payload: Record<string, unknown> };
+    return { ...base, payload: { ...base.payload, refusalHistory: history } } as unknown as WorkerToMainMessage;
+  }
+
+  it('paints one row per entry, oldest first, each keeping its own tile and its own press', () => {
+    const next = rows(
+      withHistory([
+        { sequence: 1, tick: 3, reason: 'build.water-blocked', tile: { x: 7, y: 8 } },
+        { sequence: 2, tick: 3, reason: 'purchase.insufficient-funds' },
+        { sequence: 3, tick: 4, reason: 'build.out-of-bounds', tile: { x: 100, y: 100 } },
+      ]),
+    );
+    expect(next).toEqual([
+      { id: 'refusal-1', labelKey: 'hud.alert.refusal.build.water-blocked', severity: 'warning', tile: { x: 7, y: 8 } },
+      { id: 'refusal-2', labelKey: 'hud.alert.refusal.purchase.insufficient-funds', severity: 'warning' },
+      { id: 'refusal-3', labelKey: 'hud.alert.refusal.build.out-of-bounds', severity: 'warning', tile: { x: 100, y: 100 } },
+    ]);
+    expect(
+      next.every((row) => row.occurrences === undefined),
+      'no refusal row carries occurrences, so none is dismissable and each tile row stays a press (ADR 0122)',
+    ).toBe(true);
+  });
+
+  it('keeps an older refusal when a newer one arrives -- the loss article 6 names', () => {
+    let alerts = rows(withHistory([{ sequence: 1, tick: 1, reason: 'build.unowned-land' }]));
+    alerts = rows(
+      withHistory([
+        { sequence: 1, tick: 1, reason: 'build.unowned-land' },
+        { sequence: 2, tick: 9, reason: 'zone.invalid-area' },
+      ]),
+      alerts,
+    );
+    expect(alerts.map((row) => row.id)).toEqual(['refusal-1', 'refusal-2']);
+  });
+
+  it('paints the history though the standing refusal was withdrawn, and the band says none', () => {
+    const message = withHistory([{ sequence: 1, tick: 1, reason: 'build.unowned-land' }], null);
+    expect(rows(message).map((row) => row.id)).toEqual(['refusal-1']);
+    expect(bandNotice(message), 'the band reads `refusal` alone').toBe('none');
+  });
+
+  it('drops a row the history no longer holds, and leaves a fault row alone', () => {
+    let alerts = rows(fault('invalid-message', { recoverable: true }));
+    alerts = rows(
+      withHistory([
+        { sequence: 1, tick: 1, reason: 'zone.not-enclosed' },
+        { sequence: 2, tick: 2, reason: 'build.out-of-bounds' },
+      ]),
+      alerts,
+    );
+    alerts = rows(withHistory([{ sequence: 2, tick: 2, reason: 'build.out-of-bounds' }]), alerts);
+    expect(alerts.map((row) => row.id)).toEqual(['fault-invalid-message', 'refusal-2']);
+  });
+
+  it('gives the band the standing refusal and nothing from the history', () => {
+    const message = withHistory([
+      { sequence: 1, tick: 1, reason: 'build.unowned-land' },
+      { sequence: 2, tick: 1, reason: 'zone.invalid-area' },
+    ]);
+    expect(bandNotice(message)).toEqual({ sequence: 2, labelKey: 'hud.alert.refusal.zone.invalid-area' });
+  });
+});
+
 describe('what the player is told about a fault is a key, and the key is real', () => {
   it('emits a distinct key for every code the protocol declares', () => {
     // Exhaustive over the enum rather than over what is reachable today: a
