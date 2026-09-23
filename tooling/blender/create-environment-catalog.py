@@ -780,25 +780,33 @@ def furniture(collection, root, asset_id):
                 cylinder(collection, root, f"Back plank rivet.{index}.{x}",
                     (x, y, z + 0.057), 0.014, 0.008, "canteen_steel", 12)
     elif asset_id == "furniture.dining.table.wooden":
-        # Modelled from assets/source/concepts/dining-table-multiview-v2.png:
-        # a continuous worn timber top, bolted steel rim and three fixed
-        # stools on one side. The stool count matches the simulation's three
-        # dining places. The orthographic game view must show the separation
-        # between the tabletop and the seats even at 192x128 pixels.
+        # V3 four-view concept: individual walnut planks and three wooden
+        # stools keep the three dining places legible from directly above.
         box(collection, root, "Table underframe", (0, -0.27, 0.65), (2.70, 1.04, 0.15), "canteen_steel", 0.025)
         for x in (-1.13, 1.13):
             box(collection, root, f"Trestle.{x}", (x, -0.27, 0.34), (0.16, 0.92, 0.68), "canteen_steel", 0.015)
             box(collection, root, f"Floor plate.{x}", (x, -0.27, 0.04), (0.34, 0.98, 0.08), "steel", 0.012)
         box(collection, root, "Stool support rail", (0, 0.50, 0.38), (2.58, 0.10, 0.14), "canteen_steel", 0.015)
-        box(collection, root, "Bolted metal tabletop rim", (0, -0.27, 0.76), (2.84, 1.18, 0.12), "canteen_steel", 0.045)
-        box(collection, root, "Worn wooden tabletop", (0, -0.27, 0.83), (2.72, 1.06, 0.055), "canteen_wood", 0.035)
-        for index_bolt, x in enumerate((-1.29, 1.29)):
-            cylinder(collection, root, f"Rim bolt.{index_bolt}", (x, 0.27, 0.834), 0.024, 0.014, "light", 12)
+        box(collection, root, "Deep bolted tabletop rim", (0, -0.27, 0.76), (2.84, 1.18, 0.12), "canteen_steel", 0.045)
+        box(collection, root, "Dark tabletop inset", (0, -0.27, 0.822), (2.70, 1.04, 0.019), "shade", 0.019)
+        for index, y in enumerate((-0.655, -0.395, -0.135, 0.125)):
+            box(collection, root, f"Individual walnut tabletop plank.{index}",
+                (0, y, 0.857), (2.69, 0.246, 0.052), f"bench_wood_{index}", 0.027)
+            for x in (-1.27, 1.27):
+                cylinder(collection, root, f"Recessed tabletop bolt.{index}.{x}",
+                    (x, y, 0.886), 0.017, 0.010, "canteen_steel", 12)
         for index, x in enumerate((-0.88, 0, 0.88)):
             cylinder(collection, root, f"Stool floor mount.{index}", (x, 0.69, 0.045), 0.14, 0.08, "steel", 16)
+            for bolt_x in (-0.08, 0.08):
+                cylinder(collection, root, f"Stool floor bolt.{index}.{bolt_x}",
+                    (x + bolt_x, 0.69, 0.088), 0.014, 0.009, "light", 12)
             cylinder(collection, root, f"Stool post.{index}", (x, 0.69, 0.30), 0.070, 0.53, "canteen_steel", 16)
-            cylinder(collection, root, f"Stool dark rim.{index}", (x, 0.69, 0.59), 0.27, 0.12, "steel", 32)
-            cylinder(collection, root, f"Stool brushed seat.{index}", (x, 0.69, 0.655), 0.235, 0.022, "canteen_steel", 32)
+            cylinder(collection, root, f"Stool dark rim.{index}", (x, 0.69, 0.59), 0.27, 0.12, "canteen_steel", 32)
+            cylinder(collection, root, f"Worn wooden stool seat.{index}",
+                (x, 0.69, 0.657), 0.225, 0.028, f"bench_wood_{index}", 32)
+            for bolt_x in (-0.18, 0.18):
+                cylinder(collection, root, f"Stool seat rivet.{index}.{bolt_x}",
+                    (x + bolt_x, 0.69, 0.675), 0.012, 0.009, "canteen_steel", 12)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which

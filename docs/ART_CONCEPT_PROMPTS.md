@@ -359,3 +359,11 @@ The 1×1 institutional chair now has three separate walnut seat boards, two
 back planks with an overhead air gap, steel support tubes and dark feet. The
 four-view concept and model decisions are recorded in
 `assets/source/concepts/chair-v3.md`.
+
+### Dining table refinement — `furniture.dining.table.wooden`
+
+The three-place canteen table keeps its 3×2 footprint. Four separate walnut
+planks and three wood-topped fixed stools read clearly from overhead, with
+recessed bolts and the existing dark steel support. The original four-view
+concept and Blender choices are recorded in
+`assets/source/concepts/dining-table-v3.md`.
