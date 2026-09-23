@@ -580,6 +580,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.status.earned-withheld':
     'Niezaspokojone potrzeby wstrzymały jak dotąd {withheld} z dzisiejszej dotacji — państwo płaci mniej za osadzonego, którego potrzeby nie są zaspokajane, a zaspokojenie jednej z nich przywraca tę część.',
+  'hud.status.earned-withheld-badge': 'Wstrzymano {withheld}',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
   'hud.status.incidents-clear': 'Spokój',

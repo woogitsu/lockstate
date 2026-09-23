@@ -1278,36 +1278,34 @@ describe('refusalMessageKey: what a refused control says', () => {
  *
  * #890 measured the state withholding 40% of a prison's grant at steady state
  * with no minor-unit figure for it anywhere a player could read. The
- * projection now publishes the figure and the chip carries it as a
- * description -- the tooltip and screen-reader shape the owner's ruling of
- * 2026-09-01 already chose for `funds`, because it costs no chip width on a
- * row whose overflow is measured.
+ * projection publishes the figure, the description explains the cause, and
+ * ruling 17 also puts the published amount in a visible warning badge.
  *
  * **Three states, and only one of them draws a sentence**, which is what
  * these cases pin: absent (a payload written before the field existed), `0`
  * (a prison meeting every need) and a positive figure.
  */
 describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
-  it('carries the withheld figure as a description, and never as a badge or a tone', () => {
+  it('carries the withheld figure as a description and visible warning badge', () => {
     const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
 
     expect(chip.description).toEqual({
       textKey: 'hud.status.earned-withheld',
       numberParameters: { withheld: 640 },
     });
-    // The two lines beside it are unchanged: no threshold has been set and no
-    // colour is painted, which is the half of this readout that is still the
-    // owner's (#890's re-measurement names loudness as their judgement).
-    expect(chip.badge).toBeUndefined();
+    // The badge signals a measured shortfall, not a judgement about whether
+    // today's total is good; the total therefore retains no tone.
+    expect(chip.badge).toEqual({ tone: 'warning', textKey: 'hud.status.earned-withheld-badge', numberParameters: { withheld: 640 } });
     expect(chip.tone).toBeUndefined();
   });
 
   it('says nothing when a prison is meeting every need, and nothing when no payload carried the field', () => {
-    expect(
-      metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }), 'earned-today')
-        .description,
-    ).toBeUndefined();
-    expect(metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today').description).toBeUndefined();
+    const clear = metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400, stateIncomeWithheldTodayMinorUnits: 0 }), 'earned-today');
+    const unpublished = metric(counts({ stateIncomeAccruedTodayMinorUnits: 2_400 }), 'earned-today');
+    expect(clear.description).toBeUndefined();
+    expect(clear.badge).toBeUndefined();
+    expect(unpublished.description).toBeUndefined();
+    expect(unpublished.badge).toBeUndefined();
   });
 
   it('names the figure rather than formatting it, so the strip groups it exactly as it groups the value', () => {
