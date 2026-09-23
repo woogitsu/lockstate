@@ -124,6 +124,12 @@ interface MetricParts {
   bar: SegmentedBar | undefined;
 }
 
+interface AllStatsParts {
+  readonly entry: HTMLElement;
+  readonly value: HTMLElement;
+  readonly badge: HTMLElement;
+}
+
 /**
  * The parameters a chip's message is formatted with, with every
  * `numberParameters` entry rendered through the strip's own number formatter.
@@ -175,6 +181,23 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   // ---- metrics -----------------------------------------------------
   const metrics = new Map<HudMetricId, MetricParts>();
   const metricsRow = element('div', { className: 'hud-strip__metrics' });
+  const allStatsEntries = new Map<HudMetricId, AllStatsParts>();
+  const allStatsList = element('div', { className: 'hud-strip__all-stats-list' });
+  const allStatsDialog = document.createElement('dialog');
+  allStatsDialog.className = 'hud-strip__all-stats-dialog';
+  allStatsDialog.setAttribute('aria-label', t(HUD_MESSAGE_KEY.allStats));
+  const allStatsButton = document.createElement('button');
+  allStatsButton.type = 'button';
+  allStatsButton.className = 'hud-strip__all-stats-button';
+  allStatsButton.textContent = t(HUD_MESSAGE_KEY.allStats);
+  allStatsButton.hidden = true;
+  allStatsButton.addEventListener('click', () => allStatsDialog.showModal());
+  const allStatsClose = document.createElement('button');
+  allStatsClose.type = 'button';
+  allStatsClose.className = 'hud-strip__all-stats-close';
+  allStatsClose.textContent = t(HUD_MESSAGE_KEY.allStatsClose);
+  allStatsClose.addEventListener('click', () => allStatsDialog.close());
+  allStatsDialog.append(allStatsClose, allStatsList);
 
   /*
    * The descriptor list is the single definition of which metrics exist and
@@ -198,6 +221,16 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     chip.element.dataset['metric'] = descriptor.id;
     metrics.set(descriptor.id, { chip, trailing, badge: undefined, bar: undefined });
     metricsRow.append(chip.element);
+    const entry = element('div', { className: 'hud-strip__all-stats-entry' });
+    const label = element('span');
+    label.textContent = t(descriptor.labelKey);
+    const value = element('span', { className: 'hud-strip__all-stats-value' });
+    value.textContent = metricValueText(descriptor.value, localizer);
+    const badge = element('span', { className: 'hud-strip__all-stats-badge' });
+    badge.hidden = true;
+    entry.append(label, value, badge);
+    allStatsEntries.set(descriptor.id, { entry, value, badge });
+    allStatsList.append(entry);
   }
 
   // ---- clock and transport -----------------------------------------
@@ -320,8 +353,23 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const root = element('div', {
     className: 'hud-strip',
     attributes: { role: 'region', 'aria-label': t(HUD_MESSAGE_KEY.statusRegion) },
-    children: [brandSlot, metricsRow, clockGroup, transportGroup, historyGroup, layoutSlot],
+    children: [brandSlot, metricsRow, clockGroup, transportGroup, historyGroup, layoutSlot, allStatsButton, allStatsDialog],
   });
+
+  // Badge text changes chip width after every publication. Observe both the
+  // viewport and its contents so the directory appears exactly when the
+  // invisible scrollbar would otherwise hide a live counter (#719).
+  const paintAllStatsButton = (): void => {
+    allStatsButton.hidden = metricsRow.hidden || metricsRow.scrollWidth <= metricsRow.clientWidth + 1;
+    if (allStatsButton.hidden) {
+      if (allStatsDialog.open) allStatsDialog.close();
+      return;
+    }
+    allStatsButton.style.top = `${metricsRow.offsetTop + Math.max(0, (metricsRow.offsetHeight - allStatsButton.offsetHeight) / 2)}px`;
+  };
+  const metricsObserver = new ResizeObserver(paintAllStatsButton);
+  metricsObserver.observe(metricsRow);
+  for (const { chip } of metrics.values()) metricsObserver.observe(chip.element);
 
   /*
    * Undo and Redo marked unavailable when a press would do nothing (#1370).
@@ -368,6 +416,17 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       if (parts === undefined) continue;
 
       parts.chip.setValue(metricValueText(descriptor.value, localizer));
+      const allStats = allStatsEntries.get(descriptor.id);
+      if (allStats !== undefined) {
+        allStats.value.textContent = metricValueText(descriptor.value, localizer);
+        allStats.badge.hidden = descriptor.badge === undefined;
+        allStats.badge.textContent = descriptor.badge === undefined
+          ? ''
+          : t(descriptor.badge.textKey, textParameters(descriptor.badge, localizer));
+        allStats.entry.title = descriptor.description === undefined
+          ? ''
+          : t(descriptor.description.textKey, textParameters(descriptor.description, localizer));
+      }
       parts.chip.setTone(descriptor.tone);
 
       /*

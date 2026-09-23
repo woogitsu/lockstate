@@ -16,6 +16,8 @@ import type { LocalizationKey } from '../../content/localization';
  */
 export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
+  allStats: 'hud.status.all-stats',
+  allStatsClose: 'hud.status.all-stats-close',
   prisoners: 'hud.status.prisoners',
   /**
    * How many prisoners hold no residency place, as a badge under the

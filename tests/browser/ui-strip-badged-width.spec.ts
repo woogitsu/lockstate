@@ -240,6 +240,36 @@ const WIDTHS = [
 ] as const;
 
 test.describe('the status strip carries nine chips and the prison’s own state (#703)', () => {
+  test('overflow exposes a keyboard reachable list of all live counters (#719)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(HARNESS_URL);
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    const ordinary = await show(page, POPULATED);
+    expect(ordinary.scrollWidth).toBe(ordinary.clientWidth);
+    await expect(page.getByRole('button', { name: 'All stats' })).toBeHidden();
+    const badged = await show(page, EVERY_BADGE);
+    expect(badged.scrollWidth).toBeGreaterThan(badged.clientWidth);
+
+    await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
+    await page.getByRole('button', { name: 'All stats' }).focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'All stats' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.hud-strip__all-stats-entry')).toHaveCount(9);
+    await expect(dialog.locator('.hud-strip__all-stats-entry').last()).toContainText('Earned today');
+    await expect(dialog.locator('.hud-strip__all-stats-entry').last()).toContainText('284,500');
+    await expect(dialog.locator('.hud-strip__all-stats-entry').filter({ hasText: 'Coverage' })).toContainText('Unguarded');
+    await dialog.getByRole('button', { name: 'Close' }).click();
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
+    await page.getByRole('button', { name: 'All stats' }).click();
+    await expect(dialog.locator('.hud-strip__all-stats-entry')).toHaveCount(9);
+    await dialog.getByRole('button', { name: 'Close' }).click();
+
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await expect(page.getByRole('button', { name: 'All stats' })).toBeHidden();
+  });
   test('an ordinary prison’s row fits at every desktop width, and the badges cost the strip no height', async ({
     page,
   }) => {

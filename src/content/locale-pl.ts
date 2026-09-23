@@ -497,6 +497,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // The HUD shell: status strip, clock, tabs, minimap, alert band.
   // =====================================================================
   'hud.status.title': 'Stan więzienia',
+  'hud.status.all-stats': 'Wszystkie statystyki',
+  'hud.status.all-stats-close': 'Zamknij',
   // Label, so *Osadzeni* under the owner's ruling.
   'hud.status.prisoners': 'Osadzeni',
   // *bez* takes the genitive singular and never changes with the count, so

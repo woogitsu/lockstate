@@ -251,6 +251,67 @@
 
 .hud-strip__metrics::-webkit-scrollbar { display: none; }
 
+/* A visible route to counters outside the scroll box when badges widen it. */
+.hud-strip__all-stats-button {
+  position: absolute;
+  right: var(--space-3);
+  z-index: 2;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+
+.hud-strip__all-stats-button[hidden] { display: none; }
+
+.hud-strip__all-stats-dialog {
+  width: min(calc(30 * var(--space-3)), calc(100vw - 2 * var(--space-4)));
+  max-height: min(70vh, calc(35 * var(--space-4)));
+  overflow-y: auto;
+  padding: var(--space-4);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-body);
+  background: var(--surface-raised);
+}
+
+.hud-strip__all-stats-dialog::backdrop {
+  background: color-mix(in srgb, var(--surface-sunken) 45%, transparent);
+}
+.hud-strip__all-stats-close {
+  display: block;
+  min-height: var(--tap-target);
+  margin-left: auto;
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-3);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  background: var(--surface-base);
+  cursor: pointer;
+}
+.hud-strip__all-stats-list { display: grid; gap: var(--space-1); }
+.hud-strip__all-stats-entry {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap-target);
+  align-items: center;
+  text-align: left;
+  color: var(--text-body);
+  background: var(--surface-base);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.hud-strip__all-stats-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hud-strip__all-stats-badge { width: 100%; color: var(--text-subtle); }
+.hud-strip__all-stats-badge[hidden] { display: none; }
+
 .hud-metric__trailing {
   display: inline-flex;
   align-items: center;
