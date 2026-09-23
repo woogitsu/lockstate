@@ -98,7 +98,7 @@ import { BuildTool } from './ui/build-tool';
 import { ObjectTool } from './ui/object-tool';
 import { RoomTool } from './ui/room-tool';
 import { OBJECT_CATEGORY_NAME_KEYS, defaultObjectRegistry } from './content/object-catalog';
-import { defaultRoomContentRegistry } from './content/room-catalog';
+import { FIRST_CELL_ROOM_ID, defaultRoomContentRegistry } from './content/room-catalog';
 import { PLANNED_OBJECT_TINT, zoningTint } from './rendering/world/appearance';
 import {
   BUILDABLE_REGISTRY,
@@ -1282,7 +1282,10 @@ function roomCatalogue(): HudRoomsViewModel {
       }),
     });
   }
-  return { rooms };
+  // The panel opens on the room the first instruction names (#935), not on
+  // whichever category sorts first -- see `FIRST_CELL_ROOM_ID`. The order of
+  // the list itself is unchanged.
+  return { rooms, initialRoomId: FIRST_CELL_ROOM_ID };
 }
 
 interface InterfaceHost {

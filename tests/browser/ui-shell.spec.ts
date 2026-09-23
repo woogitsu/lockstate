@@ -2127,8 +2127,20 @@ test.describe('HUD shell', () => {
       // twelve admissions (issue #549) -- so what is required now is that the
       // note states both halves of what the control really does, and that it no
       // longer denies the half that was measured.
-      expect(probe.hint).toContain('needs a cell before it can admit anyone');
-      expect(probe.hint).toContain('It does not need a free bed');
+      //
+      // **#935 rewrote it again** to stop it contradicting the Regime tab's
+      // first-cell instruction: it no longer denies that a bed is needed, it
+      // says what the cell and the bed are each needed *for* -- admitting, and
+      // housing -- and adds #937's income rule. What #549 required survives in
+      // that shape: the admission clause names the cell alone, and the bed is
+      // attached to housing, not to admitting.
+      expect(probe.hint).toContain('Admitting needs a cell');
+      expect(probe.hint).toContain('housing needs a bed');
+      expect(probe.hint).toContain('only for prisoners with a place');
+      expect(probe.hint).not.toMatch(/admit\w* needs a (free )?bed|bed (before it can|to) admit/i);
+      // And it does not flatly deny the bed the Regime tab's first-cell
+      // instruction asks for, which is the on-screen disagreement #935 names.
+      expect(probe.hint).not.toMatch(/(does not|doesn't) need a (free )?bed/i);
       expect(probe.hint).not.toContain('can only be admitted');
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
@@ -3827,7 +3839,7 @@ test.describe('the Rooms panel', () => {
      */
     expect(probe.ruleText).toEqual([
       'Needs at least 2 × 3 tiles',
-      'Must be enclosed',
+      'Needs walls or doors all round',
       'Needs 1 × Bed',
       'Needs 1 × Toilet',
     ]);

@@ -1334,6 +1334,17 @@ export interface HudRoomObjectRequirementViewModel {
  */
 export interface HudRoomsViewModel {
   readonly rooms: readonly HudRoomViewModel[];
+  /**
+   * Which row the panel opens selected on (#935). Absent, or naming a room
+   * `rooms` does not list, and the first row is selected, which is what every
+   * model did before this field existed.
+   *
+   * A separate field rather than a reordering of `rooms`: the list order is
+   * `(category, id)` for the reason `roomCatalogue()` in `src/main.ts` gives,
+   * and moving the housing rooms to the top would change a list a player
+   * reads to fix a selection a player never made.
+   */
+  readonly initialRoomId?: string;
 }
 
 /**

@@ -243,7 +243,14 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     // room to hold them" -- was false about exactly this prison.
     const hint = localizer.format(HUD_MESSAGE_KEY.intakeHint);
     expect(hint).not.toContain('can only be admitted');
-    expect(hint).toContain('It does not need a free bed');
+    // Since #935 the note attaches the bed to housing rather than denying it is
+    // needed; what this prison refutes is a bed being required to *admit*.
+    expect(hint).toContain('Admitting needs a cell');
+    expect(hint).toContain('housing needs a bed');
+    expect(hint).not.toMatch(/admit\w* needs a (free )?bed|bed (before it can|to) admit/i);
+    // And it does not flatly deny the bed the Regime tab's first-cell
+    // instruction asks for, which is the on-screen disagreement #935 names.
+    expect(hint).not.toMatch(/(does not|doesn't) need a (free )?bed/i);
   });
 
   it('warns about nobody in a prison with a bed to spare, while they are still at Cell Assignment', () => {

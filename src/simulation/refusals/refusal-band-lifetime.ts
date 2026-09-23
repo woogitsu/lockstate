@@ -54,6 +54,13 @@ import type { SimulationSpeed } from '../clock/fixed-step-clock';
  * 14.05 s. A tick is 50 ms (`FixedStepClock`'s `stepMilliseconds`), so 14.05 s
  * is 281 ticks and **300 is the round number above it**.
  *
+ * **That sentence was reworded for #935 and is one word shorter.** It now
+ * reads *"The room was not zoned — this room type needs a finished wall or door
+ * along every side, and yours has a gap."* -- 22 words, still the longest of
+ * the 48 (the next is 21). The quotation above is kept as the figure 300 was
+ * derived from; re-derived, 22 words is 13.2 s, 13.45 s with `SEEN_MS`, 269
+ * ticks, so 300 still clears it and nothing here moves.
+ *
  * **It must be short enough that the row comes back inside the game's own
  * time.** `DAY_LENGTH_TICKS` is 2,400, so this is one eighth of an in-game
  * day. And it sits the right side of the only comparable number this codebase

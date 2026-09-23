@@ -1363,7 +1363,38 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // It names the rule and not the gap. `ZoneRoomRefusal` carries the first
   // gap's tile and edge for diagnosis, but `RefusalLog` deliberately holds no
   // coordinates, so nothing on this channel could render them.
-  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type must be enclosed, and the area you drew is open on at least one side.',
+  //
+  // **It read "this room type must be enclosed, and the area you drew is open
+  // on at least one side" until #935**, which #921 had measured as the one
+  // refusal a newcomer meets whose remedy is never named: the word "wall"
+  // appeared nowhere on screen at it. Rewritten under `AGENTS.md`
+  // reservation 4's 2026-09-04 release, and each clause is proved against the
+  // code rather than argued:
+  //
+  // - *"a wall or door"* -- `roomPerimeterEnclosure`
+  //   (`src/simulation/rooms/enclosure.ts`) calls a perimeter edge closed when
+  //   its edge layer holds a non-zero value, and `edgeNumericIdFor`
+  //   (`src/simulation/construction/definition.ts`) answers non-zero for a
+  //   `'wall'`-category buildable and for one that `placesDoor`, and `0` for
+  //   everything else. So those two, and nothing else a player can build, close
+  //   a side -- a door as well as a wall, which is why both are named.
+  // - *"finished"* -- the only writer of that value is
+  //   `ConstructionSystem.finalizeConstruction`, on completion
+  //   (`src/simulation/construction/system.ts`), so a wall still queued or
+  //   being built leaves its edge `0` and the room is refused. This is the
+  //   case a newcomer meets first: walls drawn, room zoned at once.
+  // - *"along every side, and yours has a gap"* -- `'open'` means one or more
+  //   perimeter edges hold nothing, which is a gap and not necessarily a whole
+  //   missing side; "a gap" is true of one and of several.
+  // - *"this room type"* -- `zone` refuses on this only for an `enclosed`
+  //   requirement; `outdoors` and `none` accept any perimeter.
+  //
+  // 22 words, one fewer than the sentence it replaces. It is still the longest
+  // of the 48 refusal sentences `REFUSAL_LABEL_KEYS` maps (the next is
+  // `cancel-build-order.stale-cancellation`, 21), which is the figure
+  // `src/simulation/refusals/refusal-band-lifetime.ts` sizes its hold against;
+  // one word shorter only leaves that bound further from binding.
+  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type needs a finished wall or door along every side, and yours has a gap.',
   // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
   // `zone.invalid-area` and a different *sentence*: a player told "the room was
   // not zoned" after asking to remove one would go and look at the wrong
@@ -2725,8 +2756,60 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *
    * The first clause is untouched and is still true: a prison with no free bed
    * can still admit, and the arrival waits rather than being refused.
+   *
+   * **Rewritten whole for #935 and #937, and the sentence above is the one this
+   * replaced**: *"A prison needs a cell before it can admit anyone. It does not
+   * need a free bed: an arrival with none waits for a place."* It was true, and
+   * it disagreed on screen with the one instruction a new prison draws --
+   * `hud.regime.roster-empty`, *"Build a cell … with a bed and a toilet in it —
+   * to take somebody in"* -- because the two answered different questions and
+   * the Intake tab answered the less useful one: that a bed is not needed to
+   * admit, and not what the bed is for. So this now says what each of the two
+   * things does, which is compatible with that instruction rather than a
+   * denial of it, and it adds the rule #937 found no readout states. Authored
+   * under reservation 4's 2026-09-04 release; each clause proved:
+   *
+   * - *"Admitting needs a cell"* -- the first clause above, unchanged in
+   *   substance: `IntakeSystem.hasAccommodationTarget` asks for **any**
+   *   instance of a housing type (`src/simulation/prisoners/intake-system.ts`),
+   *   not a free place, so it is a necessary condition and is not stated as a
+   *   sufficient one (`population-full` is a second refusal).
+   * - *"housing needs a bed"* -- a place is a `'sleep-surface'`
+   *   (`SLEEP_SURFACE_CAPABILITY`, `src/simulation/objects/room-capacity.ts`),
+   *   which `object.bed` and `object.medical-bed` declare, capped by the room
+   *   type's `maxResidents`. Necessary, and again not claimed as sufficient: a
+   *   third bed in a two-resident cell houses nobody. It does not say a bed is
+   *   needed to *admit*, which is the #549 claim this key was corrected from.
+   * - *"The state pays at the end of each day"* --
+   *   `StateIncomeSystem.schedule` is
+   *   `{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }`
+   *   (`src/simulation/economy/income.ts`).
+   * - *"only for prisoners with a place"* --
+   *   `stateIncomeForCompletedDay` folds `stateIncomeForOccupiedPlaces` over
+   *   `residentIdsWithExistingPlace()` and over nothing else, so an arrival
+   *   waiting for a place contributes nothing at all. It says *only for* and
+   *   quotes no amount, so it is true at any value of
+   *   `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` -- the constraint
+   *   #937 sets, since that rate has moved twice on owner rulings.
+   *
+   * The second sentence is `hud.status.funds-treasury-floor-exhausted`'s rule
+   * in shorter words -- *"The state pays at the end of each day and only for
+   * prisoners who have a place to sleep"* there -- so the owner's harmonising
+   * pass finds one rule in two lengths rather than two rules. That string
+   * states it only at the treasury floor, which a growing prison has left
+   * behind (#937's comment); this one states it where the Admit control is.
+   * *"a place"* and not *"a place to sleep"* because `hud.intake.no-place`,
+   * the line this panel draws beneath it, already says *"with no place to
+   * sleep"*.
+   *
+   * **Its length is a measured budget, not a style.** A first draft of 151
+   * characters wrapped the note to another line and put the Staff panel's
+   * payroll figure below its fold -- `tests/browser/ui-staff-wage.spec.ts`,
+   * *"states the standing daily bill on the payroll header, with the fold
+   * still shut"*, red on it with nothing else changed, exactly as the #961
+   * paragraph above records. This is 116, against the 118 it replaces.
    */
-  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits for a place.',
+  'hud.intake.hint': 'Admitting needs a cell; housing needs a bed. The state pays at the end of each day, only for prisoners with a place.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no place" and not "no cell": a zoned cell with nothing in it houses
   // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces
@@ -3531,7 +3614,17 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.rooms.enclosure-sealed': 'Walled in — not a door check',
   'hud.rooms.enclosure-open': 'Open on at least one side',
-  'hud.rooms.requirement-enclosed': 'Must be enclosed',
+  // **It read "Must be enclosed" until #935**, which names the rule and not
+  // what satisfies it -- the gap #921 measured at the refusal, one step
+  // earlier. What closes a side is exactly a wall or a door: `edgeNumericIdFor`
+  // (`src/simulation/construction/definition.ts`) answers non-zero for those
+  // two and `0` for every other buildable, and `roomPerimeterEnclosure` reads
+  // nothing but that value. "Needs" for the voice `hud.rooms.minimum` and
+  // `hud.rooms.requires-object` share in this block, and "all round" for the
+  // words `hud.regime.roster-empty` already uses for the same requirement.
+  // "finished" is left to the refusal, which is where a wall still being built
+  // is met.
+  'hud.rooms.requirement-enclosed': 'Needs walls or doors all round',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
   // What the selected room type will need standing in it, before anything is

@@ -511,12 +511,34 @@ function requirementLabelKey(requirement: HudRoomEnclosureRequirement): Localiza
   }
 }
 
+/**
+ * The room type the panel opens selected on (#935).
+ *
+ * `model.initialRoomId` when the model lists that room, and otherwise the
+ * first row -- which is all this panel did before, and it is what opened the
+ * real catalogue on *Staff Room*: `roomCatalogue()` orders by `(category, id)`
+ * and `'administration'` sorts first, so the requirement block a newcomer read
+ * first taught a desk and two chairs to a player whose only instruction said
+ * "cell". An id the list does not carry falls back rather than selecting
+ * nothing, because a selection naming no row would draw a rule block for a
+ * room the player cannot see chosen.
+ *
+ * Pure and exported for `docs/AGENT_WORKFLOW.md` §2's reason, the same as
+ * `roomNeedsSubjectOf` above: `vitest.config.ts` has no DOM, so a decision
+ * taken inside `createRoomsPanel` is unobservable from `pnpm test`.
+ */
+export function initialRoomSelection(model: HudRoomsViewModel): string | undefined {
+  const preferred = model.initialRoomId;
+  if (preferred !== undefined && model.rooms.some((room) => room.roomId === preferred)) return preferred;
+  return model.rooms[0]?.roomId;
+}
+
 export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   const { localizer, model } = options;
   const t = (key: LocalizationKey, parameters?: MessageParameters): string =>
     parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
 
-  let selectedId = model.rooms[0]?.roomId;
+  let selectedId = initialRoomSelection(model);
   let armed = false;
   let removing = false;
   /*
@@ -656,6 +678,39 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * carrier of which room type is chosen. The badge stays as the visual one.
    */
   const rowOrder: string[] = model.rooms.map((room) => room.roomId);
+
+  /*
+   * Whether the opening selection has been scrolled into the list's view yet
+   * (#935).
+   *
+   * `initialRoomSelection` opens the panel on the cell, and in the real
+   * catalogue that row is fifth of eighteen inside a scroller -- measured at
+   * 1280x720 on the assembled page, below the list's visible box. A selection
+   * the player cannot see leaves a rule block that describes no visible room,
+   * which is the confusion the selection was moved to remove.
+   *
+   * **Once, on the first reveal that has a layout, and never again.**
+   * `hud.ts`'s `paintState` calls `setVisible(true)` on *every* state change
+   * while this tab is showing, so scrolling on each call would take the list
+   * back from a player who had scrolled it. And the first call may land while
+   * an ancestor is still hidden, with every box measuring zero -- so the flag
+   * is set only when the list actually has a height to scroll within.
+   *
+   * `scrollTop` on the list, not `scrollIntoView`: the latter scrolls every
+   * scrollable ancestor too, and `.hud-rooms` itself is one whose unscrolled
+   * state `app-shell.spec.ts` asserts before it measures the fold. Minimal, the
+   * way `block: 'nearest'` is: a row already inside the box moves nothing.
+   */
+  let selectionRevealed = false;
+  const revealInitialSelection = (): void => {
+    const row = selectedId === undefined ? undefined : rows.get(selectedId)?.element;
+    const listBox = catalogueList.getBoundingClientRect();
+    if (row === undefined || catalogueList.clientHeight === 0) return;
+    selectionRevealed = true;
+    const rowBox = row.getBoundingClientRect();
+    if (rowBox.bottom > listBox.bottom) catalogueList.scrollTop += rowBox.bottom - listBox.bottom;
+    else if (rowBox.top < listBox.top) catalogueList.scrollTop -= listBox.top - rowBox.top;
+  };
 
   const paintCatalogue = (): void => {
     const selectedIndex = selectedId === undefined ? undefined : rowOrder.indexOf(selectedId);
@@ -2102,6 +2157,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
+      if (visible && !selectionRevealed) revealInitialSelection();
       // Leaving the tab must hand the pointer back to the camera, exactly as
       // the Build panel does: a tool that stayed armed behind a hidden panel
       // would swallow every click on a world the player thought they were only
