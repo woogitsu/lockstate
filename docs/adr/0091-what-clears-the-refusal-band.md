@@ -1085,5 +1085,5 @@ said it would.** `RefusalLog` now keeps a bounded history beside the standing
 record, and the alerts list paints one row per entry. `last`, which is the
 only thing the band reads, is built exactly as before. Option F's mark stays on
 the standing record and is never copied into a history entry. The design is
-[`drafts/what-a-refusal-leaves-in-the-history.md`](./drafts/what-a-refusal-leaves-in-the-history.md),
-Proposed and unnumbered.
+[ADR 0125](./0125-what-a-refusal-leaves-in-the-history.md),
+Accepted by the owner the same day.

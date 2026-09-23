@@ -1,37 +1,41 @@
-# ADR draft: what a refusal leaves in the history
+# ADR 0125: What a refusal leaves in the history
 
-> **This draft has no number, on purpose.** ADR numbers are assigned centrally
-> after drafts return (`AGENTS.md`). It agrees in advance to be renumbered, along
-> with every citation of it the same branch adds. Each of those citations names
-> this file by path for that reason, so
-> `grep -rn "what-a-refusal-leaves-in-the-history" src/ docs/ tests/` finds all
-> of them.
+> **Numbered 0125 on 2026-09-23 by the central pass.** It was drafted as
+> `docs/adr/0125-what-a-refusal-leaves-in-the-history.md` and agreed in
+> advance to be renumbered. Every citation the same branch added now names
+> this file.
 
 ## Status
 
-**Proposed. It is implemented on the branch that carries it.** That follows the
-precedent of `what-a-second-tab-follows.md`: the owner has already ruled the
-product question, and the behaviour is the answer to it.
+**Accepted, 2026-09-23, by the repository owner, in two rulings.** Both have
+the weaker provenance: each is the label of a clickable option that an
+integrating session wrote, not a sentence the owner typed. Each option's label
+is the whole of what was agreed.
 
-**The ruling this implements is the owner's. The design below is not.** On
-2026-09-23 the owner ruled that constitution article 6 covers refusals
-(`AGENTS.md` ruling 26, the comment on
-[#985](https://github.com/matmaxalez/lockstate/issues/985)). They chose the
-option labelled *"Tak, odmowy do historii"* ("Yes, refusals into the
-history"). That is the weaker provenance: an option label, not a sentence they
-typed. What the label agreed to is two things:
+1. **The principle: constitution article 6 covers refusals** (`AGENTS.md`
+   ruling 26, recorded on
+   [#985](https://github.com/matmaxalez/lockstate/issues/985)). The owner chose:
 
-- each refusal leaves a row in the message history instead of being lost when
-  the next one replaces it;
-- the band still shows only the current refusal, under ADR 0091's lifetime
-  rules.
+   > Tak, odmowy do historii
 
-Ruling 26 also says that *"the design is owed against ADR 0084, ADR 0091 and
-`docs/HUD_PROJECTIONS.md` gap 34 before the code is written"*. This document is
-that design. **Its choices were made under the standing mandate and are not
-self-approved.** The section *"Choices the owner may want the other way"* lists
-the choices that were closest to even. For each it says what reversing it would
-cost.
+   ("Yes, refusals into the history.") Each refusal leaves a row in the message
+   history instead of being lost when the next one replaces it. The band still
+   shows only the current refusal, under ADR 0091's lifetime rules.
+
+2. **The exit rule: decision 2 below.** This draft put that rule to the owner
+   under *"Choices the owner may want the other way"*, item 1. The owner chose:
+
+   > Tak, znika po sukcesie (zalecane)
+
+   ("Yes, it disappears after a success (recommended).") A refusal leaves the
+   history when the same command later succeeds at the same target. That is
+   #492's rule, and it is what was built. This ruling is also recorded on #985.
+
+**The rest of the design was made under the standing mandate, and the owner has
+not ruled on it separately.** That covers the channel, the bound, the fact that
+the history is not saved, and the row shape. Decision 5's bound was measured
+after acceptance; the addendum at the foot of this document records the
+measurement.
 
 ## Context
 
@@ -204,8 +208,9 @@ newer ones have been recorded, not because one newer one arrived.
 
 ## Choices the owner may want the other way
 
-1. **A #492 withdrawal removes the history row (decision 2).** The literal
-   reading of *"each refusal leaves a row"* keeps it. Reversing this is one
+1. **A #492 withdrawal removes the history row (decision 2).** *Ruled by the
+   owner on 2026-09-23 as built; see Status. Kept here as the choice that was
+   put.* The literal reading of *"each refusal leaves a row"* keeps it. Reversing this is one
    filter in `RefusalLog.supersede`. It would also need a way to mark a row as
    resolved, because the sentences are phrased as the present state of that
    tile.

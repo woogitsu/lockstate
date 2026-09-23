@@ -74,7 +74,7 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   pushed them out. The event log escaped this argument through ADR 0084's
  *   dismissal and its `restored: true` replay, and a refusal row has neither.
  *   Ruling 26 did not rule on the save.
- *   `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` decision 6 and
+ *   `docs/adr/0125-what-a-refusal-leaves-in-the-history.md` decision 6 and
  *   its *"Choices the owner may want the other way"* item 2 price the
  *   alternative.
  * - **`SimulationRefusal` -- what crosses the worker boundary -- holds no
@@ -130,7 +130,7 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   of at most `MAX_REFUSAL_HISTORY_RECORDS` entries. The canonical-order rule
  *   is met by that list being in record order, which is `sequence` order.
  *   Nothing iterates a map or a set to build it.
- *   `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` carries the
+ *   `docs/adr/0125-what-a-refusal-leaves-in-the-history.md` carries the
  *   design. That also makes the "Why this shape and not a queue" section above
  *   narrower: the history is a bounded window republished as a level, not a
  *   queue that anything drains.

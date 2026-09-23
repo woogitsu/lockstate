@@ -1384,7 +1384,7 @@ describe('ADR 0091 "Amendment, 2026-09-23" (#1270): remove-wall and remove-objec
 
 describe('ruling 26 (#985): every refusal leaves a row in the history, and the band still reads only the last', () => {
   // The owner's ruling of 2026-09-23 (`AGENTS.md` ruling 26), designed in
-  // `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`. Each case
+  // `docs/adr/0125-what-a-refusal-leaves-in-the-history.md`. Each case
   // asserts `last` beside `history`, because the ruling is a split: the
   // history keeps what `record` used to lose, and the band's reading must not
   // move at all.
@@ -1428,7 +1428,7 @@ describe('ruling 26 (#985): every refusal leaves a row in the history, and the b
     for (let index = 1; index <= total; index += 1) {
       log.record('build.out-of-bounds', index, buildSupersessionKey('wall-brick', 100 + index, 100, 'north'));
     }
-    expect(MAX_REFUSAL_HISTORY_RECORDS, 'the bound the ADR draft argues for').toBe(8);
+    expect(MAX_REFUSAL_HISTORY_RECORDS, 'the bound ADR 0125 decision 5 argues for').toBe(8);
     expect(log.history.map((entry) => entry.sequence)).toEqual([3, 4, 5, 6, 7, 8, 9, 10]);
     expect(log.count, 'the tally is not bounded, only what is kept').toBe(total);
   });

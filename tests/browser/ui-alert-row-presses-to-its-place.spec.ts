@@ -224,7 +224,7 @@ async function refuseAnOrderOffTheMap(page: Page): Promise<void> {
   // **The comment here used to say the log holds at most one refusal row at a
   // time, replaced by ordinal. Since the owner's ruling 26 of 2026-09-23
   // (#985) it keeps every refusal its history still holds**
-  // (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`). So the
+  // (`docs/adr/0125-what-a-refusal-leaves-in-the-history.md`). So the
   // probe's refusal is now a *second* row beside this one rather than a row
   // this one replaces. The row under test is therefore found by its sentence,
   // `offMapRow`, and never by being the only row.

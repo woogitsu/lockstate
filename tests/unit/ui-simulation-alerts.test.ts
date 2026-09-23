@@ -574,7 +574,7 @@ describe('the two producers of alert rows do not erase each other', () => {
 
 /**
  * **The owner's ruling 26 of 2026-09-23 (#985): one row per refusal the
- * history still holds** (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`
+ * history still holds** (`docs/adr/0125-what-a-refusal-leaves-in-the-history.md`
  * decision 4). The fixtures above carry `refusal` alone, which is read as a
  * history of one, so each of them still means what it meant; these carry
  * `refusalHistory` as the worker does.

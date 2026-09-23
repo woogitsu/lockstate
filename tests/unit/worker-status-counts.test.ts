@@ -882,7 +882,7 @@ describe('publishing the status counts', () => {
   /**
    * **The owner's ruling 26 of 2026-09-23 (#985): the history crosses, and
    * the burst gap 34 measured is no longer reduced to its last member.**
-   * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` decision 3.
+   * `docs/adr/0125-what-a-refusal-leaves-in-the-history.md` decision 3.
    */
   test('carries every refusal of a burst decided in one wake, while `refusal` still carries only the last', () => {
     const harness = new Harness();

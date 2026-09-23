@@ -1734,7 +1734,7 @@ export type SimulationRefusal = DeepReadonly<z.infer<typeof refusalSchema>>;
 
 /**
  * How many refusals the message history keeps at once
- * ([`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`](../../../docs/adr/drafts/what-a-refusal-leaves-in-the-history.md)
+ * ([`docs/adr/0125-what-a-refusal-leaves-in-the-history.md`](../../../docs/adr/0125-what-a-refusal-leaves-in-the-history.md)
  * decision 5, implementing the owner's ruling 26 of 2026-09-23 on #985).
  *
  * The same eight as `MAX_EVENT_ALERT_ROWS`, the event history's own row cap
@@ -1904,7 +1904,7 @@ const statusCountsMessageSchema = z
          *
          * Absent while the history is empty, never an empty array, on the
          * payload's own convention. See
-         * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`.
+         * `docs/adr/0125-what-a-refusal-leaves-in-the-history.md`.
          */
         refusalHistory: z.array(refusalSchema).min(1).max(MAX_REFUSAL_HISTORY_RECORDS).optional(),
         zoning: zoningNoticeSchema.optional(),

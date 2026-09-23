@@ -227,7 +227,7 @@ const FAULT_ROW_PREFIX = 'fault-';
  * still holds, at most `MAX_REFUSAL_HISTORY_RECORDS` of them, republished
  * whole on every readout. This function paints one row per entry. The band
  * below still reads `refusal` alone.
- * `docs/adr/drafts/what-a-refusal-leaves-in-the-history.md` carries the
+ * `docs/adr/0125-what-a-refusal-leaves-in-the-history.md` carries the
  * design.
  *
  * They arrive on separate messages and neither may erase the other. Returning
@@ -339,7 +339,7 @@ export function hudAlertsFromWorkerMessage(
       const standing = previous.filter((row) => !row.id.startsWith(REFUSAL_ROW_PREFIX));
       // **One row per refusal the history still holds, not one row for the
       // last refusal** -- the owner's ruling 26 of 2026-09-23 on #985
-      // (`docs/adr/drafts/what-a-refusal-leaves-in-the-history.md`).
+      // (`docs/adr/0125-what-a-refusal-leaves-in-the-history.md`).
       //
       // A publisher that carries `refusal` and no `refusalHistory` is read as
       // a history of one. That is exactly what the payload meant before the

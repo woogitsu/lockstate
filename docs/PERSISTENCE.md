@@ -705,7 +705,7 @@ work are not.**
   reason above gets stronger: a history row cannot be dismissed, so restored
   rows would stand until eight fresh refusals displaced them. Ruling 26 did not
   rule on the save.
-  [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)
+  [ADR 0125](./adr/0125-what-a-refusal-leaves-in-the-history.md)
   decision 6 and its *"Choices the owner may want the other way"* item 2 price
   carrying it: an optional section and no version bump, once a dismissal or a
   restored-row rule exists.

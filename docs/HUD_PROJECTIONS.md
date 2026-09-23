@@ -476,7 +476,7 @@ that reached a bounded in-worker window and stopped there.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
 - **A sibling since 2026-09-23: `refusalHistory`, the refusals the message
   history still holds** (the owner's ruling 26 on #985, designed in
-  [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)).
+  [ADR 0125](./adr/0125-what-a-refusal-leaves-in-the-history.md)).
   It is an array of the same `refusalSchema` records, oldest first, one to
   `MAX_REFUSAL_HISTORY_RECORDS` (8) long, and absent while empty. It is a
   **level**, like `refusal`: republished whole on every readout and never
@@ -2161,7 +2161,7 @@ decision about what to build next.
     save too. The argument above applies to it with more force, not less: a
     history row cannot be dismissed, so a restored prison would keep up to
     eight notices about presses from an ended session until eight new refusals
-    pushed them out. `drafts/what-a-refusal-leaves-in-the-history.md`
+    pushed them out. ADR 0125
     decision 6 records it.
 
     **What the log gives back is bounded by the buffer rather than by the
@@ -2547,8 +2547,9 @@ decision about what to build next.
     > and makes the history keep each refusal.
     >
     > **What was built, designed in
-    > [`drafts/what-a-refusal-leaves-in-the-history.md`](./adr/drafts/what-a-refusal-leaves-in-the-history.md)
-    > (Proposed, unnumbered).** Three of the four measured bullets above are
+    > [ADR 0125](./adr/0125-what-a-refusal-leaves-in-the-history.md)
+    > (Accepted 2026-09-23; it was an unnumbered draft when this block was
+    > first written).** Three of the four measured bullets above are
     > now false, and they are kept as the state the ruling found:
     >
     > - `RefusalLog.record` still replaces the **standing** record, which is
@@ -2568,12 +2569,14 @@ decision about what to build next.
     > **What still takes a refusal out of the history is its own command
     > succeeding at the same target** (#492's rule, unchanged in width). A
     > newer refusal, or a success elsewhere, does not. Article 6 forbids the
-    > first kind of disappearance and article 5 requires the second. The
-    > draft's *"Choices the owner may want the other way"* names this as the
-    > closest call.
+    > first kind of disappearance and article 5 requires the second. ADR 0125
+    > put this to the owner as the closest call, and on 2026-09-23 they ruled
+    > it as built: *"Tak, znika po sukcesie (zalecane)"* ("Yes, it disappears
+    > after a success (recommended)"). That is the weaker provenance, an option
+    > label.
     >
     > **Neither the refusal nor its history is in the save.** Gap 33 says why,
-    > and the draft prices the alternative.
+    > and ADR 0125 prices the alternative.
 
     > **Every coordinate in this section was re-opened on 2026-09-17 against
     > `main` at `33c02a12`, and none of them moved.** Recorded with the commit
