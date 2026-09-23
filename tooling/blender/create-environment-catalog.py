@@ -213,23 +213,33 @@ def prep_board_material():
     return item
 
 
-def corridor_bench_wood_material():
-    """Pack the multiview-concept wood swatch into the reproducible scene."""
+def corridor_bench_wood_material(index=0):
+    """Give each plank its own grain region and subdued warm wood tint."""
     texture_path = ROOT / "assets/source/textures/corridor-bench-wood-v1.png"
     if not texture_path.is_file():
         raise FileNotFoundError(f"Corridor bench wood texture is missing: {texture_path}")
     image = bpy.data.images.load(str(texture_path), check_existing=True)
     image.pack()
-    item = material("Corridor bench worn wood", (0.48, 0.27, 0.11, 1), 0.76)
+    item = material(f"Corridor bench worn wood plank {index}", (0.48, 0.27, 0.11, 1), 0.76)
     nodes = item.node_tree.nodes
     links = item.node_tree.links
     shader = nodes.get("Principled BSDF")
     coords = nodes.new("ShaderNodeTexCoord")
+    shift = nodes.new("ShaderNodeVectorMath")
+    shift.operation = "ADD"
+    shift.inputs[1].default_value = (index * 0.13, index * 0.19, 0)
     texture = nodes.new("ShaderNodeTexImage")
     texture.image = image
-    texture.extension = "CLIP"
-    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
-    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    texture.extension = "REPEAT"
+    tint = nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    tint.inputs[0].default_value = 1
+    warmth = (0.80, 0.76, 0.72, 0.84)[index]
+    tint.inputs[2].default_value = (warmth, warmth * 0.83, warmth * 0.67, 1)
+    links.new(coords.outputs["Generated"], shift.inputs[0])
+    links.new(shift.outputs["Vector"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], tint.inputs[1])
+    links.new(tint.outputs["Color"], shader.inputs["Base Color"])
     return item
 
 
@@ -752,19 +762,24 @@ def furniture(collection, root, asset_id):
             cylinder(collection, root, f"Stool.{x}", (x, 0, 0.5), 0.22, 0.1, "wood")
             cylinder(collection, root, f"Stool base.{x}", (x, 0, 0.23), 0.06, 0.44, "steel")
     elif "bench" in asset_id:
-        # Four-view source: assets/source/concepts/corridor-bench-multiview-v2.png.
-        # Slat gaps and exposed corner fasteners remain visible in the game view.
+        # Four-view source: corridor-bench-multiview-v3.png. The darker steel
+        # end brackets and individual plank grain read at 128x64 world pixels.
         for x in (-0.70, 0.70):
             box(collection, root, f"Steel seat bearer.{x}", (x, 0, 0.48), (0.095, 0.74, 0.075), "canteen_steel", 0.012)
-            for y in (-0.26, 0.26):
-                box(collection, root, f"Anchor plate.{x}.{y}", (x, y, 0.032), (0.25, 0.19, 0.064), "steel", 0.012)
+            for y in (-0.41, 0.41):
+                box(collection, root, f"Anchor plate.{x}.{y}", (x, y, 0.032), (0.18, 0.13, 0.064), "steel", 0.012)
                 box(collection, root, f"Angled support.{x}.{y}", (x, y * 0.55, 0.27), (0.075, 0.08, 0.43), "canteen_steel", 0.012)
-                cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.026, 0.016, "galvanized_edge", 12)
+                cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.022, 0.016, "shade", 12)
         box(collection, root, "Lower steel tie", (0, 0, 0.24), (1.50, 0.055, 0.055), "canteen_steel", 0.008)
         for index, y in enumerate((-0.27, -0.09, 0.09, 0.27)):
-            box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.075), "bench_wood", 0.022)
+            box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
+            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, 0.622), (1.74, 0.012, 0.009), "bench_edge", 0.003)
             for x in (-0.79, 0.79):
-                cylinder(collection, root, f"Seat bolt.{index}.{x}", (x, y, 0.613), 0.023, 0.011, "galvanized_edge", 12)
+                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}", (x, y, 0.620), 0.014, 0.008, "shade", 12)
+        for x in (-0.935, 0.935):
+            box(collection, root, f"Exposed steel end bracket.{x}", (x, 0, 0.56), (0.066, 0.73, 0.085), "steel", 0.016)
+            for y in (-0.29, 0.29):
+                cylinder(collection, root, f"End bracket rivet.{x}.{y}", (x, y, 0.610), 0.019, 0.009, "metal_recess", 12)
     elif "desk" in asset_id:
         # Multiview reference: assets/source/concepts/employee-desk-multiview-v2.png.
         # Keep the drawer pedestal visibly separate beyond the worktop's south edge.
@@ -972,7 +987,8 @@ def main():
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["canteen_wood"] = canteen_wood_material()
-    MATERIALS["bench_wood"] = corridor_bench_wood_material()
+    for index in range(4): MATERIALS[f"bench_wood_{index}"] = corridor_bench_wood_material(index)
+    MATERIALS["bench_edge"] = material("Bench rounded wood edge", (0.53, 0.31, 0.12, 1), 0.66)
     MATERIALS["desk_laminate"] = employee_desk_laminate_material()
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
