@@ -42,7 +42,9 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
                     watchedSectorIds, trigger, response },
       economy?:   { treasury, procurement },                  // #96 / #249
       objects?:   { placedObjects },                          // V5, ADR 0028
-      inFlight?:  { navigation, prisoners, guards, search },   // V6, #1373
+      inFlight?:  { navigation: { pending, results, caches? },  // V6, #1373
+                    prisoners, guards, search },               // caches: ADR 0007, 2026-09-23
+      crossingNotices?: { roomsNeedsCleared, insolvencyRungs }, // V6, #1373
     },
     identity?: {                                              // V3, issue #75 / ADR 0015
       version: 1, poolId,
@@ -91,7 +93,7 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Nine payload fields have been added since their section was first written --
+These payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
 `currentTransactionId` (#108), `masterSeed` (#412),
 `simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
@@ -100,12 +102,18 @@ Nine payload fields have been added since their section was first written --
 `simulation.alerts`
 ([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
 decision of 2026-09-01), `simulation.prisoners.components.injured` (issue
-#589, the owner's ruling of 2026-09-17) and `simulation.inFlight` (issue
-#1373, the owner's ruling of 2026-09-23 on ADR 0059 open question 3)
+#589, the owner's ruling of 2026-09-17), `simulation.inFlight` (issue
+#1373, the owner's ruling of 2026-09-23 on ADR 0059 open question 3),
+`simulation.inFlight.navigation.caches` (issue #1373, the owner's second
+ruling that day, recorded in ADR 0007's amendment of 2026-09-23) and
+`simulation.crossingNotices` (issue #1373)
 -- and none of them bumped the schema version. **This sentence read "Six" until
 2026-08-31, "Seven" until 2026-09-01, "Eight" until 2026-09-17 and "Nine"
 until 2026-09-23, and the count is the part of it that rots**; the list is what
-to read.
+to read. **It no longer states a count at all**, and the paragraph below
+shows why: it called `inFlight` "the tenth" while this one called the list
+nine, because one counted `currentTransaction` / `currentTransactionId` as two
+fields and the other as one.
 
 **`simulation.inFlight` is the tenth, and the first that is V6-only.** It is
 declared on `sessionSystemsV6Schema` rather than in the shared
@@ -124,6 +132,19 @@ reset (`job-performing-restart-bound`, `snapshot-restore-fidelity`,
 `carry-restore-resumes-the-errand`, `security-returning-after-restore`) now run
 their original assertions against a bundle with the section removed, which is
 the older-save proof.
+
+**`simulation.inFlight.navigation.caches` and `simulation.crossingNotices`
+came next, the same day, on the same three conditions.** The first is
+optional *inside* the optional `inFlight` section, and absent means cold
+route and flow-field caches -- which is what every earlier save restored to,
+including those written by the build that added `inFlight`. The second is a
+V6-only section beside `inFlight`, and absent means the old silent re-seed of
+`RoomNeedsClearedNoticeSystem` and `InsolvencyRungSystem`. A live capture
+writes both unconditionally, so absence is unambiguous. Both carry ADR 0038
+§4's cost. Every test that fabricates a pre-V6 payload from a live capture
+removes V6-only sections by name, so each has to learn a new one; the four
+that do say so where they do it (`economy-payroll-save`,
+`save-v3-to-v4`, `save-v4-to-v5`, `save-v5-to-v6`).
 
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
@@ -515,6 +536,19 @@ work are not.**
   `waitedTicks`: they are functions of cache warmth, nothing reads them, and
   carrying them measurably put cache state into the save.
 
+  **CORRECTED 2026-09-23, LATER THE SAME DAY: THE ROUTE AND FLOW-FIELD CACHES
+  ARE CARRIED NOW** (`simulation.inFlight.navigation.caches`), under the
+  owner's ruling *"Zapisywać pamięć tras (zalecane)"* (an option label, the
+  weaker provenance), which ADR 0007's amendment of that date records with the
+  design and its measurements. The reason the exclusion above gave -- *"ADR
+  0007 defines these as a budgeted caching layer over the world and the door
+  registry ... a restored session rebuilds them from the same inputs"* -- is
+  true of the answers and false of the accounting: a hit costs nothing
+  against `workBudgetPerTick`, so a cold cache changed whom a binding budget
+  served. **Still excluded:** the region graph, which is rebuilt from the
+  world alone and costs no budget; the caches' hit and miss counters; and a
+  carried result's three diagnostics, for the reason given above.
+
   **Per subsystem:**
 
   - `JobBoard`: its reset is a legacy-save path only, since no build after ADR
@@ -536,6 +570,11 @@ work are not.**
   withdrawn, and the three options are under ADR 0059's amendment,
   "Determinism". `tests/determinism/restore-mid-walk-exactness.test.ts` pins
   the case as a known divergence.
+
+  **CLOSED 2026-09-23 BY CARRYING THE CACHES.** The known-divergence case is
+  inverted to require exactness, and beside it the exactness test now takes a
+  save one tick before every tick the budget binds on in a day, at 24 and 36
+  prisoners, found by scanning. See ADR 0007's amendment of that date.
 
   **`IncidentResponseSystem` was listed here as a fifth and does not belong,
   which was measured rather than reasoned (#352).** It cannot re-request: the
@@ -3064,6 +3103,16 @@ scope itself holds the keys and nothing else, and the panel resolves them.
 | doors, security sectors, guards and patrols | |
 | contraband, intelligence and searches | |
 | incidents, gangs and tunnels | |
+
+**The right-hand row about navigation is false, and the fix is a string this
+document does not own.** Its text is `save.scope.navigation-caches` in
+`src/content/default-locale-en.ts`, which a player reads. Since issue #1373 a
+save carries the in-flight path requests (`simulation.inFlight`), which are
+therefore not *"re-issued on the next tick"*, and since ADR 0007's amendment
+of 2026-09-23 it carries the route and flow-field caches too. What is still
+rebuilt from scratch on the navigation side is the region graph. The row is
+left as the table's source says until that key is reworded, under
+`AGENTS.md` reservation 4's release (choice of words ours, truth required).
 
 Until V3 the right-hand column held five whole subsystem families, because the
 envelope was defined in #18 before those systems existed — a real, bounded
