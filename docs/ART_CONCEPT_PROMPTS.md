@@ -208,6 +208,12 @@ reference is documented in `assets/source/concepts/kitchen-stove-v1.md`.
 > …the pedestal must read as a separate mass from the top; the desk must be
 > recognisable at 128×64 px without the grommet being legible.
 
+The 2026-09-24 refinement follows the original four-view concept in
+`assets/source/concepts/employee-desk-multiview-v3.png`, documented at
+`assets/source/concepts/employee-desk-v3.md`. A low lamp, two-page ledger and
+layered paper tray provide distinct overhead shapes while the separate drawer
+pedestal preserves the desk silhouette at the game's 128×64 world size.
+
 ### Kitchen preparation — `furniture.kitchen.prep_counter`
 
 > an institutional food preparation counter, 2×1 tiles, shown in true
