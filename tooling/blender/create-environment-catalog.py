@@ -98,6 +98,45 @@ def material(name, color, roughness):
 MATERIALS = {}
 
 
+def canteen_wood_material():
+    """Pack the approved concept-derived tabletop texture into the .blend."""
+    texture_path = ROOT / "assets/source/textures/dining-table-wood-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Canteen wood texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Canteen textured tabletop", (0.45, 0.27, 0.12, 1), 0.78)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def canteen_steel_material():
+    texture_path = ROOT / "assets/source/textures/dining-table-steel-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Canteen steel texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Canteen worn steel", (0.24, 0.26, 0.27, 1), 0.64)
+    nodes = item.node_tree.nodes
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    item.node_tree.links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    shader = nodes.get("Principled BSDF")
+    item.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    shader.inputs["Metallic"].default_value = 0.38
+    return item
+
+
 def move_to_collection(item, collection):
     for current in list(item.users_collection):
         current.objects.unlink(item)
@@ -176,19 +215,25 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Front leg.{x}", (x, 0.40, 0.25), (0.085, 0.09, 0.50), "wood", 0.012)
             box(collection, root, f"Foot tip.{x}", (x, 0.40, 0.015), (0.12, 0.14, 0.03), "shade", 0.01)
     elif asset_id == "furniture.dining.table.wooden":
-        # Three fixed seats match the simulation's three dining places. A
-        # broad top, separated place settings and visible stool circles must
-        # read as a canteen table when reduced to its 3x2 tile footprint.
-        box(collection, root, "Table underframe", (0, -0.27, 0.66), (2.66, 0.96, 0.12), "steel", 0.025)
+        # Modelled from assets/source/concepts/dining-table-multiview-v2.png:
+        # a continuous worn timber top, bolted steel rim and three fixed
+        # stools on one side. The stool count matches the simulation's three
+        # dining places. The orthographic game view must show the separation
+        # between the tabletop and the seats even at 192x128 pixels.
+        box(collection, root, "Table underframe", (0, -0.27, 0.65), (2.70, 1.04, 0.15), "canteen_steel", 0.025)
         for x in (-1.13, 1.13):
-            box(collection, root, f"Table leg.{x}", (x, -0.27, 0.34), (0.13, 0.74, 0.68), "steel", 0.02)
-        box(collection, root, "Wooden tabletop", (0, -0.27, 0.76), (2.78, 1.12, 0.12), "wood", 0.045)
-        box(collection, root, "Table edge band", (0, 0.23, 0.805), (2.64, 0.055, 0.025), "shade", 0.006)
+            box(collection, root, f"Trestle.{x}", (x, -0.27, 0.34), (0.16, 0.92, 0.68), "canteen_steel", 0.015)
+            box(collection, root, f"Floor plate.{x}", (x, -0.27, 0.04), (0.34, 0.98, 0.08), "steel", 0.012)
+        box(collection, root, "Stool support rail", (0, 0.50, 0.38), (2.58, 0.10, 0.14), "canteen_steel", 0.015)
+        box(collection, root, "Bolted metal tabletop rim", (0, -0.27, 0.76), (2.84, 1.18, 0.12), "canteen_steel", 0.045)
+        box(collection, root, "Worn wooden tabletop", (0, -0.27, 0.83), (2.72, 1.06, 0.055), "canteen_wood", 0.035)
+        for index_bolt, x in enumerate((-1.29, 1.29)):
+            cylinder(collection, root, f"Rim bolt.{index_bolt}", (x, 0.27, 0.834), 0.024, 0.014, "light", 12)
         for index, x in enumerate((-0.88, 0, 0.88)):
-            box(collection, root, f"Place mat.{index}", (x, -0.20, 0.833), (0.66, 0.56, 0.018), "blue", 0.025)
-            cylinder(collection, root, f"Plate.{index}", (x, -0.20, 0.849), 0.19, 0.018, "porcelain", 32)
-            cylinder(collection, root, f"Stool base.{index}", (x, 0.68, 0.27), 0.075, 0.54, "steel")
-            cylinder(collection, root, f"Stool seat.{index}", (x, 0.68, 0.57), 0.26, 0.10, "wood", 32)
+            cylinder(collection, root, f"Stool floor mount.{index}", (x, 0.69, 0.045), 0.14, 0.08, "steel", 16)
+            cylinder(collection, root, f"Stool post.{index}", (x, 0.69, 0.30), 0.070, 0.53, "canteen_steel", 16)
+            cylinder(collection, root, f"Stool dark rim.{index}", (x, 0.69, 0.59), 0.27, 0.12, "steel", 32)
+            cylinder(collection, root, f"Stool brushed seat.{index}", (x, 0.69, 0.655), 0.235, 0.022, "canteen_steel", 32)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which
@@ -381,6 +426,8 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["canteen_wood"] = canteen_wood_material()
+    MATERIALS["canteen_steel"] = canteen_steel_material()
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT))

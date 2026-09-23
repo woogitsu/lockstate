@@ -390,8 +390,8 @@
     {
       "assetId": "furniture.dining.table.wooden",
       "image": "furniture.dining.table.wooden.png",
-      "sha256": "a0a5c71dad16f2df4fa8e81fd86eec0cdfe402a0ffc59724166f907ac46574cf",
-      "pixelSha256": "45cb8961dea560db9c01b55c4ffad3c28a0b9bc6fd6d6eff58cf01c07d719d0c",
+      "sha256": "cc5f82b333f7276af3f413955de4ce050db519ec441a7b2fefbe41b8662d4bbd",
+      "pixelSha256": "0fd9e763b83d592d0be1d2eadc24e9c6b367448c5ffbfd974975013f0981f38d",
       "footprintTiles": {
         "width": 3.0,
         "height": 2.0
@@ -407,11 +407,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 65,
-        "y": 65,
-        "width": 638,
-        "height": 407,
-        "opaquePixels": 198884
+        "x": 58,
+        "y": 58,
+        "width": 652,
+        "height": 419,
+        "opaquePixels": 222409
       }
     },
     {

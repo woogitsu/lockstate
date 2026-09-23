@@ -405,6 +405,19 @@ against cream does not. So the render is not better *art*; it is better *sprite*
 at this scale, and it is the only option at all for an object whose sheet holds
 no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
 
+**2026-09-23 addition, without rewriting the earlier comparison:** the new
+`furniture.dining.table.wooden` model no longer uses only flat materials. The
+owner's Prison Architect references and a generated four-view concept informed
+its geometry; two fixed, project-local wood and steel material images are packed
+into the Blender source scene. The source images live under
+`assets/source/textures/`, and the concept sheet under `assets/source/concepts/`.
+Neither generated image is published directly as a game sprite. The sprite is
+still the orthographic Blender render with the same footprint, margin, sidecar
+hash, atlas and LFS checks. The material images themselves are fixed inputs,
+not reproducible from their prompts; with those inputs committed, two local
+Blender 5.2.1 renders produced identical PNG bytes. The old sentence about
+"no textures anywhere" describes the 2026-09-06 set, not this later model.
+
 **Blender needs an EGL library even in `--background`.** On a container without
 one, every render fails with `Couldn't open libEGL.so.1` before writing
 anything; `libegl1` and `libegl-mesa0` are enough, and EEVEE then runs on
