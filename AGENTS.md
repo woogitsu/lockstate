@@ -1797,6 +1797,21 @@ restores exactly as it does today. It does not decide whether
 `SAVE_SCHEMA_VERSION` moves; ADR 0038's rule does. It is not a reservation
 release: nothing under `supabase/migrations/` is involved.
 
+**30. The Stage-7 art must be visually rich and modelled from multi-angle
+concepts (2026-09-23).** After seeing the first furniture and fixture renders,
+the owner supplied three Prison Architect screenshots and wrote:
+
+> czekaj, trzeba ten wygląd poprawić, wygeneruj w gpt 2.5 wizualizacje pod różnymi kątami jak trzeba i na podstzwie tego w blenderze rób, bo to za brzydko wygląda to co robisz, to ma być ładne jak prison architekt
+
+The owner then replied *"super jest"* to the new dining-table concept. This is
+direct user wording, not a clickable-option label. It establishes a visual
+quality correction and the concept-to-Blender workflow for this batch. The
+available image-generation tool does not expose its backend model version, so
+the committed concept provenance does not claim it used GPT 2.5. The reference
+screenshots guide richness and readability; the assets remain original. This
+feedback does not release any additional `ci.yml` glob, PR or merge beyond the
+individually recorded releases above.
+
 
 ## Required workflow for every issue
 Before coding:
