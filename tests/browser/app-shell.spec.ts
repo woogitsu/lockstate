@@ -6695,6 +6695,26 @@ test.describe('the assembled application', () => {
     }
   });
 
+  test('the shipped yard shows its 8 × 8 footprint and a camera escape before selection (#957)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
+
+    const yard = page.locator('.hud-rooms__rows [data-room="room.yard"]');
+    await yard.scrollIntoViewIfNeeded();
+    await expect(yard).toHaveAttribute('aria-checked', 'false');
+    await expect(yard.locator('.hud-rooms__row-minimum')).toHaveText('8 × 8');
+    await expect(page.getByRole('button', { name: 'Zoom out' })).toBeVisible();
+    const labelClipped = await yard.locator('.ui-row__label').evaluate((label) => label.scrollWidth > label.clientWidth);
+    expect(labelClipped, 'the yard name was clipped by its footprint').toBe(false);
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await yard.scrollIntoViewIfNeeded();
+    const mobileLabelClipped = await yard.locator('.ui-row__label').evaluate((label) => label.scrollWidth > label.clientWidth);
+    expect(mobileLabelClipped, 'the yard name was clipped on a phone').toBe(false);
+  });
+
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
     /*
      * `test.slow()` triples the 60 s budget, and unlike its three siblings this

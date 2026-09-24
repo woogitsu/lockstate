@@ -4533,6 +4533,21 @@
   border-radius: var(--radius-sm);
 }
 
+.hud-rooms__row-minimum {
+  position: absolute;
+  inset-inline-start: calc(var(--space-2) * 3 + var(--icon-size-sm) * 2);
+  inset-block-end: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-size-body);
+  white-space: nowrap;
+}
+
+.hud-rooms__row--with-minimum {
+  position: relative;
+  min-height: calc(var(--tap-target) + var(--space-3));
+  padding-block-end: var(--space-4);
+}
+
 /*
  * The typed route to a rectangle, inside the one box that can pay for it
  * (#411).

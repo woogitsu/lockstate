@@ -3848,6 +3848,24 @@ test.describe('the Rooms panel', () => {
     await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
   });
 
+  test('shows each room footprint in its catalogue row before that room is selected (#957)', async ({ page }) => {
+    const footprints = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')].map((row) => ({
+        room: row.dataset['room'],
+        minimum: row.querySelector<HTMLElement>('.hud-rooms__row-minimum')?.textContent,
+        spokenMinimum: row.querySelector<HTMLElement>('.hud-rooms__row-minimum')?.getAttribute('aria-label'),
+      })),
+    );
+    expect(footprints).toEqual([
+      { room: 'room.cell', minimum: '2 × 3', spokenMinimum: 'Needs at least 2 × 3 tiles' },
+      { room: 'room.canteen', minimum: '6 × 6', spokenMinimum: 'Needs at least 6 × 6 tiles' },
+      { room: 'room.yard', minimum: '8 × 8', spokenMinimum: 'Needs at least 8 × 8 tiles' },
+    ]);
+    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).selected).toBe('room.cell');
+    await page.locator('.hud-rooms__rows [data-room="room.yard"]').scrollIntoViewIfNeeded();
+    await expectLaidOut(page, '.hud-rooms__rows [data-room="room.yard"] .hud-rooms__row-minimum', 'yard footprint');
+  });
+
   /**
    * The swatch (#1021). Two prior passes (ADR 0098/#1032, #1038's playtest)
    * had found `HudRoomViewModel.tint` computed and read by nothing at all --

@@ -788,6 +788,24 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     const labelElement = row.element.querySelector('.ui-row__label');
     row.element.insertBefore(swatch, labelElement);
 
+    // Put the authored footprint beside every choice, before the player uses
+    // scarce clear tiles for another room. The detailed rule below still
+    // explains the selected type; this number remains visible while browsing.
+    if (room.minimum !== undefined) {
+      row.element.classList.add('hud-rooms__row--with-minimum');
+      const minimum = element('span', {
+        className: 'hud-rooms__row-minimum',
+        text: `${room.minimum.width} × ${room.minimum.height}`,
+        attributes: {
+          'aria-label': t(HUD_MESSAGE_KEY.roomsMinimum, {
+            width: room.minimum.width,
+            height: room.minimum.height,
+          }),
+        },
+      });
+      row.element.append(minimum);
+    }
+
     rows.set(room.roomId, row);
     catalogueRows.append(row.element);
   }
