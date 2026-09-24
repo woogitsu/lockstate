@@ -1536,10 +1536,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * stands. Nothing is blocked while an arm is up: the player may press another
    * row, collapse the fold, or leave the tab, and each of those drops it.
    *
-   * **Below the list rather than inside the armed row.** A second line inside a
-   * row would change that row's height and slide every row under it -- which is
-   * #860's defect by geometry instead of by binding, arriving in the middle of
-   * the gesture this line exists to make safe.
+   * **In a reserved place above the list rather than inside the armed row.**
+   * Revealing a new line below the list scrolls the panel and moves the armed
+   * button away from the first press's coordinate. The reserved place keeps the
+   * confirmation visible and every row stationary through both presses.
    *
    * It is the armed control's `aria-describedby` while it stands, added and
    * removed per repaint on `hireShortfall`'s pattern above: a description
@@ -1583,11 +1583,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     /*
      * Scrolled into view on the press that reveals it, which is `queueSection`'s
      * rule one panel over: *"a disclosure that reveals a control the player
-     * cannot see has not revealed it."* This block is the last thing in a panel
-     * that is `overflow-y: auto`, so at the short viewports the line the whole
-     * confirmation rests on can be laid out below the panel's own fold -- and a
-     * confirmation the player cannot read is the worst outcome of the three,
-     * worse than no confirmation, because the second press still sacks somebody.
+     * cannot see has not revealed it."* Its reserved place is above the rows,
+     * so revealing it normally needs no scroll and cannot displace the button.
      *
      * `block: 'nearest'`, so a box already inside the fold is not moved.
      */
@@ -1682,8 +1679,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   });
   rosterSection.element.classList.add('hud-staff__roster');
   rosterSection.body.append(
+    element('div', { className: 'hud-staff__dismiss-slot', children: [dismissConfirmation] }),
     rosterList,
-    dismissConfirmation,
     rosterMore,
     eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'),
   );
