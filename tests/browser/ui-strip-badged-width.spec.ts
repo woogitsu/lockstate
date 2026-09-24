@@ -60,9 +60,10 @@ import './ui-harness-api';
  * ## What is asserted, and the one thing that deliberately is not
  *
  * Asserted: the ordinary prison's row **fits** at 1280, 1440 and 1920; the
- * whole-badged row fits at 1920; the row's content is the chips' own widths and
- * the row's own gaps and nothing else; and the strip's height does not depend on
- * the prison's state at any of the three.
+ * whole-badged row fits at 1920; the one-row content is the chips' own widths
+ * and gaps. The strip's height was independent of prison state at all three
+ * until the owner accepted ADR 0085 decision 2 on 2026-09-24: at 1280 and
+ * 1440 with enough height, a warning can buy a second row for all nine chips.
  *
  * **Not** asserted: how many chips are on screen at 1280 with every badge
  * drawn. Measured here it is 6 of 9 -- `funds` and `earned-today` off the edge
@@ -166,6 +167,7 @@ const EVERY_BADGE: HudCountsViewModel = {
 };
 
 interface RowReading {
+  readonly display: string;
   /** The row's own visible box, which is the scroll container's client width. */
   readonly clientWidth: number;
   readonly scrollWidth: number;
@@ -211,6 +213,7 @@ async function show(page: Page, counts: HudCountsViewModel): Promise<RowReading>
     }
 
     return {
+      display: getComputedStyle(row).display,
       clientWidth: row.clientWidth,
       scrollWidth: row.scrollWidth,
       contentWidth:
@@ -240,7 +243,7 @@ const WIDTHS = [
 ] as const;
 
 test.describe('the status strip carries nine chips and the prison’s own state (#703)', () => {
-  test('an ordinary prison’s row fits at every desktop width, and the badges cost the strip no height', async ({
+  test('an ordinary prison fits, and badges open only the accepted height-gated second row', async ({
     page,
   }) => {
     await page.goto(HARNESS_URL);
@@ -305,14 +308,23 @@ test.describe('the status strip carries nine chips and the prison’s own state 
        * 14.7px past its own fold -- #174's defect, fired by an incident
        * starting.
        *
-       * So a fix for the overflow below that works by letting the row wrap
-       * fails here, on purpose and with the reason attached. If the owner rules
-       * for a third strip row, this expectation is what their ruling changes.
+       * That was the contract until the owner's 2026-09-24 answer to #719.
+       * The owner chose height-gated wrapping, so a warning may add a second
+       * metrics row at 1280x800 and 1440x900. It still must not do so at
+       * 1280x720, 1024x768 or on a phone, where the height budget is absent.
+       * The conditions below guard both directions of that decision.
        */
-      expect(
-        badged.stripHeight,
-        `the strip is ${badged.stripHeight}px with every badge drawn and ${ordinary.stripHeight}px without them at ${at}: a prison's state is moving the world's top edge`,
-      ).toBe(ordinary.stripHeight);
+      const heightGated = width < 1500 && height >= 800;
+      if (heightGated) {
+        expect(badged.display, `${at}: the accepted height gate did not make a second metrics row`).toBe('grid');
+        expect(badged.stripHeight - ordinary.stripHeight, `${at}: the strip took too much playfield height`).toBeLessThan(40);
+        expect(badged.stripHeight, `${at}: the second metrics row did not take any height`).toBeGreaterThan(ordinary.stripHeight);
+        expect(badged.scrollWidth, `${at}: the second row still overflows`).toBe(badged.clientWidth);
+        expect(badged.fullyVisible, `${at}: the second row must expose all nine metrics`).toBe(9);
+      } else {
+        expect(badged.display, `${at}: the height gate opened outside its budget`).toBe('flex');
+        expect(badged.stripHeight, `${at}: the strip changed height without a height budget`).toBe(ordinary.stripHeight);
+      }
 
       /*
        * **The row's content is the chips and the row's own gaps, and nothing
@@ -323,7 +335,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
        * above cannot see it. One pixel of tolerance, because `scrollWidth` is
        * an integer and nine subpixel boxes are not.
        */
-      if (badged.contentWidth > badged.clientWidth) {
+      if (!heightGated && badged.contentWidth > badged.clientWidth) {
         expect(
           Math.abs(badged.scrollWidth - badged.contentWidth),
           `the badged row scrolls ${badged.scrollWidth}px while its chips and gaps are ${badged.contentWidth}px at ${at}, so something in the row is taking width that is not a chip`,
@@ -343,10 +355,12 @@ test.describe('the status strip carries nine chips and the prison’s own state 
        * docblock -- and the property below is asserted from the page rather
        * than from either of them, which is why it needs no update.
        */
-      expect(
-        badged.fullyVisible,
-        `${at}: ${badged.fullyVisible} of ${badged.chipCount} chips are on screen with every badge drawn, but the row is ${badged.clientWidth}px wide and has room for ${badged.fitsInRowWidth} -- so something other than the screen's width is cutting a chip off`,
-      ).toBe(badged.fitsInRowWidth);
+      if (!heightGated) {
+        expect(
+          badged.fullyVisible,
+          `${at}: ${badged.fullyVisible} of ${badged.chipCount} chips are on screen with every badge drawn, but the row is ${badged.clientWidth}px wide and has room for ${badged.fitsInRowWidth} -- so something other than the screen's width is cutting a chip off`,
+        ).toBe(badged.fitsInRowWidth);
+      }
       expect(badged.fullyVisible, `${at}: not one status chip is on screen`).toBeGreaterThan(0);
     }
   });
@@ -373,4 +387,76 @@ test.describe('the status strip carries nine chips and the prison’s own state 
     ).toBeLessThanOrEqual(badged.clientWidth);
     expect(badged.fullyVisible, 'chips on screen with every badge drawn at 1920x1080').toBe(9);
   });
+});
+
+test('the #719 height gate preserves narrow panels and keeps money and active alerts in view', async ({ page }) => {
+  await page.goto(HARNESS_URL);
+  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+  for (const [width, height] of [[1280, 800], [1280, 720], [1024, 768], [900, 600], [375, 812], [640, 400]] as const) {
+    await page.setViewportSize({ width, height });
+    const ordinary = await show(page, POPULATED);
+    const before = await page.evaluate(() => {
+      const rail = document.querySelector<HTMLElement>('.hud__rail');
+      return rail?.getBoundingClientRect().height;
+    });
+    const badged = await show(page, EVERY_BADGE);
+    const at = `${width}x${height}`;
+    const state = await page.evaluate(() => {
+      const row = document.querySelector<HTMLElement>('.hud-strip__metrics');
+      if (row === null) throw new Error('missing metrics row');
+      const rowBox = row.getBoundingClientRect();
+      const inside = (id: string): boolean => {
+        const box = row.querySelector<HTMLElement>(`[data-metric='${id}']`)?.getBoundingClientRect();
+        return box !== undefined && box.left >= rowBox.left - 0.5 && box.right <= rowBox.right + 0.5;
+      };
+      const chips = [...row.querySelectorAll<HTMLElement>('[data-metric]')];
+      const visualOrder = [...chips]
+        .sort((a, b) => {
+          const first = a.getBoundingClientRect();
+          const second = b.getBoundingClientRect();
+          return first.top - second.top || first.left - second.left;
+        })
+        .map((chip) => chip.dataset['metric']);
+      return {
+        funds: inside('funds'),
+        incidents: inside('incidents'),
+        railHeight: document.querySelector<HTMLElement>('.hud__rail')?.getBoundingClientRect().height,
+        domOrder: chips.map((chip) => chip.dataset['metric']),
+        visualOrder,
+        focusable: row.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length,
+      };
+    });
+    expect(state.funds, `${at}: money is still hidden by the narrow strip`).toBe(true);
+    if (width >= 1024) expect(state.incidents, `${at}: active incidents are still hidden`).toBe(true);
+    expect(state.domOrder, `${at}: the screen-reader order moved with state`).toEqual([
+      'funds', 'prisoners', 'coverage', 'incidents', 'contraband', 'rooms', 'high-risk', 'staff', 'earned-today',
+    ]);
+    expect(state.visualOrder, `${at}: visual order disagrees with DOM reading order`).toEqual(state.domOrder);
+    expect(state.focusable, `${at}: keyboard focus can land inside a partially visible metrics row`).toBe(0);
+
+    if (width === 1280 && height === 800) {
+      expect(badged.fullyVisible, `${at}: the height gate did not expose all nine metrics`).toBe(9);
+      expect(badged.stripHeight - ordinary.stripHeight).toBeLessThan(40);
+      expect(state.railHeight, `${at}: the playfield did not pay for the extra row`).toBeLessThan(before!);
+    } else {
+      expect(badged.stripHeight, `${at}: the extra row consumed height outside its gate`).toBe(ordinary.stripHeight);
+      expect(state.railHeight, `${at}: the narrow playfield changed height`).toBe(before);
+    }
+
+    for (const tab of ['build', 'zones'] as const) {
+      await show(page, POPULATED);
+      await page.evaluate((name) => window.lockstateUiHarness.clickTab(name), tab);
+      const normal = await page.evaluate((name) => {
+        const body = document.querySelector<HTMLElement>(name === 'build' ? '.hud-build > .ui-panel__body' : '.hud-rooms > .ui-panel__body');
+        return { client: body?.clientHeight, scroll: body?.scrollHeight };
+      }, tab);
+      await show(page, EVERY_BADGE);
+      const warning = await page.evaluate((name) => {
+        const body = document.querySelector<HTMLElement>(name === 'build' ? '.hud-build > .ui-panel__body' : '.hud-rooms > .ui-panel__body');
+        return { client: body?.clientHeight, scroll: body?.scrollHeight };
+      }, tab);
+      expect(warning, `${at} ${tab}: the alert badge newly clipped the panel body`).toEqual(normal);
+    }
+  }
 });

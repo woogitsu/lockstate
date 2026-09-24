@@ -166,8 +166,12 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
      * one more of them. Writing that assertion before measuring it would be
      * guessing at the answer to #719.
      */
-    expect(shallow.badgeOnScreen, 'still off the edge at 900x600 -- see #719').toBe(false);
-    expect(shallow.chipOnScreen, 'and so is the chip carrying it').toBe(false);
+    /*
+     * #719 changes the premise above: FUNDS now has first display priority.
+     * At 900x600 its badge and the chip carrying it must both be visible.
+     */
+    expect(shallow.badgeOnScreen, 'the overdraft badge is visible at 900x600 after #719').toBe(true);
+    expect(shallow.chipOnScreen, 'the FUNDS chip carrying it is visible too').toBe(true);
 
     /*
      * The worked example. **`counts(-2_480)` until the re-basing**, where the
@@ -227,10 +231,9 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
       /nothing can be spent/i,
     );
     expect(stuck.chipTitle, 'and promises no payment the state does not owe').not.toMatch(/owes|owed/i);
-    // Off the edge for the same reason as the shallow case above, and for a
-    // reason that has nothing to do with the tone: at 900x600 the FUNDS chip
-    // is the eighth of nine on a row that shows one. See #719.
-    expect(stuck.badgeOnScreen, 'still off the edge at 900x600 -- see #719').toBe(false);
+    // #719 gives FUNDS first display priority at this viewport regardless of
+    // the overdraft tone, so the floor warning stays visible too.
+    expect(stuck.badgeOnScreen, 'the treasury-floor badge remains visible at 900x600').toBe(true);
 
     // And solvent is exactly what it was: no badge, no tone, nothing added to
     // the row a player spends the game looking at.

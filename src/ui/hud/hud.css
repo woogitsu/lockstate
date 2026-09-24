@@ -251,6 +251,30 @@
 
 .hud-strip__metrics::-webkit-scrollbar { display: none; }
 
+/* ADR 0085 decision 2, accepted for #719 on 2026-09-24: on a laptop with
+   vertical room, warning badges make the nine metrics need a second line.
+   Five columns keep FUNDS and the four actionable badge families on the
+   first row; the four secondary readings use the second. The query is
+   deliberately closed at 1499px:
+   above that width the measured full row fits, and below 1280px this extra
+   strip row takes too much of the Build panel or the mobile playfield. */
+@media (min-width: 1280px) and (max-width: 1499px) and (min-height: 800px) {
+  .hud-strip__metrics:has(.ui-badge[data-tone='warning'], .ui-badge[data-tone='danger']) {
+    display: grid;
+    grid-template-columns: repeat(5, max-content);
+    grid-auto-flow: row;
+    justify-content: space-between;
+    row-gap: var(--space-1);
+    overflow-x: visible;
+  }
+  .hud-strip__metrics:has(.ui-badge[data-tone='warning'], .ui-badge[data-tone='danger']) > [data-metric] {
+    justify-self: start;
+  }
+}
+
+/* The remaining one-row viewports use the fixed descriptor priority from
+   projection.ts. The DOM and the visual order stay identical there. */
+
 .hud-metric__trailing {
   display: inline-flex;
   align-items: center;

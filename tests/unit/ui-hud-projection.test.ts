@@ -89,15 +89,18 @@ describe('status strip: which metrics exist, in what order', () => {
     // treasury: 1252.0px of content in 1256px). What survives is where a chip
     // goes to be invisible on a narrow viewport -- 768x1024 shows the first five
     // of the nine -- and the 4px that is all the desktop headroom left.
+    // **That position ended with the owner's #719 ruling, 2026-09-24.** The
+    // static priority now starts with funds and the chips that can carry a
+    // non-success badge. It is the DOM order too, not only a CSS visual swap.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
+      'funds',
       'prisoners',
-      'high-risk',
-      'staff',
       'coverage',
-      'rooms',
       'incidents',
       'contraband',
-      'funds',
+      'rooms',
+      'high-risk',
+      'staff',
       'earned-today',
     ]);
   });
@@ -122,14 +125,14 @@ describe('status strip: which metrics exist, in what order', () => {
     // resolved against the bundled catalog.
     const labels = projectStatusMetrics(counts()).map((metric) => metric.labelKey);
     expect(labels).toEqual([
+      HUD_MESSAGE_KEY.funds,
       HUD_MESSAGE_KEY.prisoners,
-      deriveSimulationMessageKey('classification-group', 'high-risk'),
-      HUD_MESSAGE_KEY.staff,
       HUD_MESSAGE_KEY.coverage,
-      HUD_MESSAGE_KEY.rooms,
       HUD_MESSAGE_KEY.incidents,
       HUD_MESSAGE_KEY.contraband,
-      HUD_MESSAGE_KEY.funds,
+      HUD_MESSAGE_KEY.rooms,
+      deriveSimulationMessageKey('classification-group', 'high-risk'),
+      HUD_MESSAGE_KEY.staff,
       HUD_MESSAGE_KEY.earnedToday,
     ]);
     for (const label of labels) {
@@ -192,7 +195,7 @@ describe('status strip: which metrics exist, in what order', () => {
         stateIncomeAccruedTodayMinorUnits: 10_667,
       }),
     );
-    expect(metrics.map((metric) => metric.value)).toEqual([142, 19, 27, 0, 61, 0, 8, 24_920, 10_667]);
+    expect(metrics.map((metric) => metric.value)).toEqual([24_920, 142, 0, 0, 8, 61, 19, 27, 10_667]);
   });
 });
 
@@ -842,8 +845,8 @@ describe('status strip: tone and badges', () => {
   });
 
   it('omits the occupancy bar when capacity is unknown rather than guessing one', () => {
-    expect(projectStatusMetrics(counts({ prisoners: 10, prisonerCapacity: 0 }))[0]?.capacity).toBeUndefined();
-    expect(projectStatusMetrics(counts({ prisoners: 10, prisonerCapacity: 40 }))[0]?.capacity).toBe(40);
+    expect(metric(counts({ prisoners: 10, prisonerCapacity: 0 }), 'prisoners').capacity).toBeUndefined();
+    expect(metric(counts({ prisoners: 10, prisonerCapacity: 40 }), 'prisoners').capacity).toBe(40);
   });
 });
 
