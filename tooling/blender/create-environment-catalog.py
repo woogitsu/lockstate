@@ -77,7 +77,7 @@ PALETTE = {
 MODELS = (
     ("door.interior.variants", (1, 0.25)), ("door.security.variants", (1, 0.25)),
     ("fixture.ceiling_light.panel.variants", (1, 0.4)), ("fixture.cell.toilet_sink", (1, 1)),
-    ("floor.concrete.variants", (2, 2)), ("floor.linoleum.institutional", (2, 2)),
+    ("floor.concrete.variants", (2, 2)), ("floor.linoleum.institutional", (1, 1)),
     ("furniture.cell.bed.single.variants", (1, 2)), ("furniture.cell.locker.variants", (1, 1)),
     ("furniture.cell.table_stool", (2, 1)), ("furniture.corridor.bench.variants", (2, 1)),
     ("furniture.office.desk.employee.variants", (2, 1)), ("furniture.reception.counter.variants", (3, 1)),
@@ -980,7 +980,31 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id.startswith("floor"):
+    if asset_id == "floor.linoleum.institutional":
+        # The module repeats every tile. Geometry reaches the frame on all
+        # sides, while the slim east/south seams complete the square joint.
+        box(collection, root, "Cool institutional linoleum", (0, 0, 0.04),
+            (1, 1, 0.08), "floor_lino", 0)
+        box(collection, root, "East fine grout", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "floor_joint", 0)
+        box(collection, root, "South fine grout", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "floor_joint", 0)
+        # Small deterministic mineral flecks add scale without a directional
+        # noise gradient or a distracting motif on a larger room floor.
+        for index in range(86):
+            x = (((index * 37 + 11) % 89) / 89 - 0.5) * 0.85
+            y = (((index * 53 + 29) % 97) / 97 - 0.5) * 0.85
+            size = 0.007 + (index % 4) * 0.003
+            box(collection, root, f"Mineral speckle.{index}", (x, y, 0.081),
+                (size, size * 0.65, 0.001),
+                "floor_fleck_light" if index % 4 else "floor_fleck_dark", 0)
+        for index in range(7):
+            x = (((index * 23 + 9) % 67) / 67 - 0.5) * 0.74
+            y = (((index * 41 + 13) % 71) / 71 - 0.5) * 0.72
+            box(collection, root, f"Fine traffic scuff.{index}", (x, y, 0.0815),
+                (0.05 + 0.008 * (index % 3), 0.002, 0.001),
+                "floor_scuff", 0)
+    elif asset_id.startswith("floor"):
         # A 2x2 module with the joint between its four tiles cut into the top,
         # so a floor reads as a floor rather than as one flat colour.
         box(collection, root, "Tile", (0, 0, 0.06), (2, 2, 0.12), "concrete" if "concrete" in asset_id else "green", 0)
@@ -1152,6 +1176,11 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["floor_lino"] = material("Institutional cool grey-green linoleum", (0.55, 0.61, 0.57, 1), 0.82)
+    MATERIALS["floor_joint"] = material("Institutional linoleum fine joint", (0.39, 0.45, 0.43, 1), 0.96)
+    MATERIALS["floor_fleck_light"] = material("Linoleum pale mineral flecks", (0.67, 0.70, 0.64, 1), 0.95)
+    MATERIALS["floor_fleck_dark"] = material("Linoleum dark mineral flecks", (0.42, 0.49, 0.48, 1), 0.93)
+    MATERIALS["floor_scuff"] = material("Subtle worn traffic scuffs", (0.47, 0.54, 0.51, 1), 0.94)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["shower_enamel"] = shower_enamel_material()
     MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)
