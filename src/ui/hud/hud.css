@@ -6847,10 +6847,23 @@
    * its fold, dismiss actions, minimap and zoom buttons remain available. */
   :root[data-ui-scale-enlarged='true'] .hud__corner {
     max-height: calc(6 * var(--tap-target));
+    padding: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-zoom {
+    margin-bottom: 0;
+  }
+
+  /* The 200% corner no longer needs a double-width alerts column. Let the
+   * minimap use that compact column's width and give its real canvas enough
+   * height to show walls, zones and the camera frame. */
+  :root[data-ui-scale-enlarged='true'] .hud-minimap {
+    width: calc(270px * var(--ui-scale));
   }
 
   :root[data-ui-scale-enlarged='true'] .hud-minimap__surface {
-    height: calc(var(--tap-target) / 2);
+    max-width: 100%;
+    height: calc(1.25 * var(--tap-target));
   }
 
   :root[data-ui-scale-enlarged='true'] .hud-minimap__placeholder {
