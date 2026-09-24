@@ -9399,6 +9399,9 @@ test.describe('the assembled application', () => {
 
     await page.locator('.ui-tab[data-tab="build"]').click();
     const remove = page.locator('.hud-build__remove');
+    // #899 enters Build map-first on a phone. Open the catalogue before
+    // choosing the removal tool; #517 folds it again for the world press.
+    await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
     await expect(remove, 'the removal toggle is not laid out at 375x812').toBeVisible();
 
     // Tappable, not merely visible: the control has to be what a finger at its
