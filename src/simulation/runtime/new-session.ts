@@ -40,6 +40,7 @@ import { InsolvencyRungSystem, JustInTimeMaterialsService, LabourCreditSystem, L
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
+import { IntakeCandidateBoard, INTAKE_CANDIDATE_RNG_STREAM } from '../prisoners/intake-candidate-board';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
@@ -166,6 +167,7 @@ export interface SimulationRuntime {
    * with `capacity: 0`.
    */
   readonly treasury: Treasury;
+  readonly intakeCandidates: IntakeCandidateBoard;
   readonly procurement: ProcurementSystem;
   /**
    * What the build queue could not buy for itself, and what it bought (#627).
@@ -489,6 +491,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * its own comment says it should.
      */
     { name: PRISONER_SENTENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_SENTENCE_RNG_STREAM) },
+    { name: INTAKE_CANDIDATE_RNG_STREAM, state: deriveXoshiroState(masterSeed, INTAKE_CANDIDATE_RNG_STREAM) },
     { name: CONTRABAND_DETECTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_DETECTION_RNG_STREAM) },
     { name: CONTRABAND_INTELLIGENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTELLIGENCE_RNG_STREAM) },
     { name: CONTRABAND_INTRODUCTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTRODUCTION_RNG_STREAM) },
@@ -600,6 +603,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * hundred lines below.
    */
   const events = new SimulationEventLog();
+  const intakeCandidates = new IntakeCandidateBoard(defaultContrabandRegistry.all());
+  intakeCandidates.advanceToTick(0, rng.get(INTAKE_CANDIDATE_RNG_STREAM));
 
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
@@ -616,6 +621,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * ever reads a name back, never mints or releases one.
      */
     housedNotice: createIntakeHousedNotice({ identity: actorIdentity, rooms: defaultRoomContentRegistry, events }),
+    candidateBountyCredit: (amountMinorUnits) => {
+      const diverted = loans?.divert(amountMinorUnits, kernel.tick) ?? 0;
+      if (amountMinorUnits > diverted) treasury.credit(amountMinorUnits - diverted);
+    },
     disciplinaryEvidence,
     /*
      * The riot's effect on its participants' day
@@ -647,6 +656,15 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     contrabandIntroducer: {
       introduce: (entityId, riskTier, tick, introductionRng) => {
         introduceContrabandOnIntake(contraband, defaultContrabandRegistry.all(), entityId, riskTier, tick, introductionRng);
+      },
+      introducePrepared: (entityId, categoryId, tick) => {
+        const holderId = String(entityId);
+        contraband.introduce(
+          `contraband.intake.${holderId}.${String(tick)}`,
+          categoryId,
+          { kind: 'prisoner', id: holderId },
+          { sourceType: 'prisoner', sourceId: holderId, introducedAtTick: tick },
+        );
       },
     },
     contrabandRngStreamName: CONTRABAND_INTRODUCTION_RNG_STREAM,
@@ -1683,6 +1701,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(roomNeedsClearedNotice);
   kernel.registerSystem(navigation);
+  kernel.registerSystem({
+    id: 'prisoners.candidate-offers', order: 48,
+    schedule: { intervalTicks: DAY_LENGTH_TICKS, phaseTicks: 0 },
+    update: (context) => intakeCandidates.advanceToTick(context.tick, context.rng.get(INTAKE_CANDIDATE_RNG_STREAM)),
+  });
   prisoners.registerOn(kernel);
   kernel.registerSystem(intelligenceSystem);
   kernel.registerSystem(guardLocomotionSystem);
@@ -1694,7 +1717,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events, intakeCandidates),
   );
 
   return {
@@ -1703,6 +1726,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     construction,
     treasury,
+    intakeCandidates,
     procurement,
     justInTimeMaterials,
     stateIncome,

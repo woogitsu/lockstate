@@ -76,7 +76,7 @@ restores **silently**, and dies later. Verified on `main` @ `54418b6`
   re-dating it rather than rewriting it is what keeps the Decision below legible
   as a change from something.
 - Nothing upstream compares them either. `rngStates: z.array(namedRngStreamStateSchema)`
-  (`src/persistence/save-schema.ts:88`) has no minimum and no name set: a save
+  (`src/persistence/save-schema.ts:89`) has no minimum and no name set: a save
   carrying three streams, or zero, decodes `ok:true` with a valid checksum.
 - `restoredScopeFor` (`src/simulation/runtime/restore-session.ts:240-258`) keys
   off three optional *sections* and knows nothing about streams, so the restore
@@ -174,9 +174,9 @@ stream states, and `restoreState` overwrites all four.
 > - *"`masterSeed` is absent from the save payload — 0 hits in
 >   `src/persistence/save-schema.ts`"*. It is a declared optional field there
 >   now, in V6 and in the envelope: `masterSeed: uint32Schema.optional()`
->   (`src/persistence/save-schema.ts:1454` and `:1491`), with
+>   (`src/persistence/save-schema.ts:1626` and `:1491`), with
 >   `readonly masterSeed?: number;` on the envelope input
->   (`src/persistence/save-schema.ts:1824`). That file's own V6 note records the
+>   (`src/persistence/save-schema.ts:1996`). That file's own V6 note records the
 >   change — *"V5 gained one more optional field after it shipped: `masterSeed`
 >   (#412)"*.
 > - *"Both production restore paths take the `= 0` default"*. Neither does.

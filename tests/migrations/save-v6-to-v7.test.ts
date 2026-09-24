@@ -9,7 +9,15 @@ import type { JsonValue } from '../../src/shared/json';
 function v6SessionSave(): SaveEnvelopeV6 {
   const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
   if (bundle.simulation === undefined) throw new Error('session missing');
-  const { roomFilth: _newField, labourCredit: _labourCredit, workOutput: _workOutput, ...simulation } = bundle.simulation;
+  const {
+    roomFilth: _newField,
+    labourCredit: _labourCredit, workOutput: _workOutput,
+    delayedIntake: _delayedIntake,
+    pendingCandidateProfiles: _pendingCandidateProfiles,
+    intakeCandidates: _intakeCandidates,
+    holdingStays: _holdingStays,
+    ...simulation
+  } = bundle.simulation;
   const payload = {
     masterSeed: bundle.masterSeed,
     kernel: bundle.kernel,
@@ -35,5 +43,19 @@ describe('V6 to V7 room filth migration', () => {
     expect(JSON.stringify(old)).toBe(before);
     expect(migrated.checksum).toBe(computeSaveChecksum(migrated.payload as JsonValue));
     expect(decodeSaveEnvelope(old)).toMatchObject({ ok: true, migrated: true });
+  });
+
+  it('still accepts a legacy V6 session written before in-flight work was saved', () => {
+    const old = v6SessionSave();
+    if (old.payload.simulation === undefined) throw new Error('session missing');
+    const { inFlight: _inFlight, ...simulation } = old.payload.simulation;
+    const payload = { ...old.payload, simulation };
+    const legacy = { ...old, payload, checksum: computeSaveChecksum(payload as JsonValue) };
+    const decoded = decodeSaveEnvelope(legacy);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    expect(decoded.migrated).toBe(true);
+    expect(decoded.value.payload.simulation?.inFlight).toBeUndefined();
+    expect(decoded.value.payload.simulation?.roomFilth).toEqual({ rooms: [], exposures: [] });
   });
 });

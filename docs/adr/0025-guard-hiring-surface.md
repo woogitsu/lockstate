@@ -184,13 +184,13 @@ That single gap starves four systems that are built, scheduled and
 tested:
 
 - `DeploymentSystem` walks `unassignedGuardIds()` to fill a sector's required
-  headcount (`src/simulation/security/deployment-system.ts:194`).
+  headcount (`src/simulation/security/deployment-system.ts:210`).
 - `PatrolSystem` walks `allGuardIds()` and starts a loop for each guard on post
-  (`src/simulation/security/patrol-system.ts:73`).
+  (`src/simulation/security/patrol-system.ts:89`).
 - `IncidentResponseSystem` claims responders from `unassignedGuardIds()`
-  (`src/simulation/incidents/response-system.ts:535`).
+  (`src/simulation/incidents/response-system.ts:569`).
 - `SearchSystem` claims a searcher the same way
-  (`src/simulation/contraband/search-system.ts:295`).
+  (`src/simulation/contraband/search-system.ts:322`).
 
 > **Three of those four no longer call `unassignedGuardIds()` at all**, and the
 > anchors above are the re-aimed ones rather than the originals (`:108`, `:72`,

@@ -1633,6 +1633,16 @@ export interface HudIntakeStageViewModel {
  * would.
  */
 export interface HudIntakePipelineViewModel {
+  /** Screened offers outside the prison, separate from admitted arrivals waiting for a physical place. */
+  readonly candidates?: readonly {
+    readonly id: string;
+    readonly riskTier: 0 | 1 | 2 | 3;
+    readonly sentenceLengthTicks: number;
+    readonly contrabandRolled: boolean;
+    readonly bountyMinorUnits: number;
+    readonly expiresAtTick: number;
+    readonly status: 'new' | 'delayed';
+  }[];
   /** Arrivals in a stage intake is still working through. Building or freeing a place moves these. */
   readonly waiting: number;
   /** Arrivals in the terminal `failed` stage, which nothing releases. */

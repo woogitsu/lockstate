@@ -167,6 +167,13 @@ writing the hierarchy down.
   loan before the remainder reaches treasury, as ADR 0075 requires of every
   positive inflow; it does not alter the per-place state grant above.
 
+  **Added under #594:** accepting a screened intake candidate offers a
+  one-off bounty, credited only when that prisoner gains a bed. This payment
+  is neither the daily state grant nor labour pay. The session composition
+  root sends it through `LoanBook.divert` before crediting the remainder, in
+  accordance with ADR 0075 decision 2. This records the implemented payment;
+  it does not alter decision 3's primary income basis.
+
   **It paid nothing in a session for as long as rooms had no capacity, and it
   pays now.** The paragraph here used to end with the first half of that
   sentence, and the reason it is worth keeping both halves is that nothing in

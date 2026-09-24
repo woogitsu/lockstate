@@ -144,7 +144,7 @@ finding.
 
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
-   (`src/simulation/security/deployment-system.ts:328`-`:348`,
+   (`src/simulation/security/deployment-system.ts:344`-`:348`,
    `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
@@ -158,13 +158,13 @@ finding.
    (`src/simulation/security/post-eligibility.ts:110`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
-   (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
+   (`src/simulation/security/deployment-system.ts:358`, `claimableGuardIds`),
    `IncidentResponseSystem`'s responder claim
-   (`src/simulation/incidents/response-system.ts:553`,
+   (`src/simulation/incidents/response-system.ts:587`,
    `claimableResponders`), the sector sweep duty
    (`src/simulation/contraband/sector-search-duty.ts:162`,
    `claimableSearchGuardIds`) and the search queue
-   (`src/simulation/contraband/search-system.ts:284`-`:295`,
+   (`src/simulation/contraband/search-system.ts:311`-`:295`,
    `assignQueuedOrders`).
 
 > **Fact 4 read *"`SectorSearchDutySystem` … and `SearchSystem.assignQueuedOrders`"*

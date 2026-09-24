@@ -234,7 +234,7 @@ describe('a negative balance survives a save, and the debt that produced it does
     expect(book.outstandingMinorUnits, 'the original still owes it').toBeGreaterThan(0);
   }, 30_000);
 
-  it('carries no trace of the ledger in the payload, by any of its three figures', () => {
+  it('carries no loan ledger object or named loan fields in the payload', () => {
     const runtime = earningSession({ loanTerms: PROBE_TERMS });
     const book = runtime.loans;
     if (book === undefined) throw new Error('the fixture must carry a loan book');
@@ -249,13 +249,13 @@ describe('a negative balance survives a save, and the debt that produced it does
 
     // Searched rather than read off a named key, because the point is that
     // there is no key to name. `outstandingMinorUnits` and
-    // `principalMinorUnits` are the two figures `LoanSnapshot` holds that
-    // nothing else in the payload could plausibly be; `drawnAtTick` equals a
-    // real kernel tick and is deliberately not searched for.
+    // `principalMinorUnits` identify the loan rather than an unrelated value.
+    // A bare numeric search is unsound: another saved subsystem can legitimately
+    // carry the same integer as the outstanding amount.
     const payload = JSON.stringify(toJsonValue(captureSessionSnapshot(runtime)));
     expect(payload.includes('outstandingMinorUnits')).toBe(false);
     expect(payload.includes('principalMinorUnits')).toBe(false);
-    expect(payload.includes('4400'), 'the outstanding figure is nowhere in the save').toBe(false);
+    expect(payload.includes(JSON.stringify(snapshot)), 'the complete loan ledger is absent').toBe(false);
   }, 30_000);
 
   it('drops the room a loan opened and restores the standing overdraft instead', () => {

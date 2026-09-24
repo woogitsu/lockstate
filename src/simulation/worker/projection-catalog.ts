@@ -298,7 +298,10 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'none',
     project: (runtime) => ({
-      view: projectPrisonerPopulationCounts(runtime.prisoners) as unknown as JsonValue,
+      view: {
+        ...projectPrisonerPopulationCounts(runtime.prisoners),
+        intakeCandidates: runtime.intakeCandidates.snapshot().candidates,
+      } as unknown as JsonValue,
     }),
   },
 

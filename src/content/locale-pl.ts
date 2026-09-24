@@ -1054,6 +1054,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.refusal.zone-room': 'Nie wyznaczono pomieszczenia — żądanie odrzucono.',
   'hud.refusal.unzone-room': 'Nic nie usunięto — żądanie odrzucono.',
   'hud.refusal.admit-prisoner': 'Nikogo nie przyjęto — żądanie odrzucono.',
+  'hud.refusal.accept-intake-candidate': 'Nie przyjęto kandydata — żądanie odrzucono.',
+  'hud.refusal.delay-intake-candidate': 'Nie odroczono kandydata — żądanie odrzucono.',
   'hud.refusal.admit-prisoner-no-room': 'Nikogo nie przyjęto — to więzienie nie ma gdzie nikogo umieścić.',
   'hud.refusal.cancel-build-order': 'Zlecenie nadal czeka w kolejce — żądanie odrzucono.',
   'hud.refusal.cancel-material-purchase': 'Nic nie zwrócono — żądanie odrzucono, a dostawa nadal jest w drodze.',
@@ -1169,6 +1171,15 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.overview.wages': 'Pensje dziennie',
 
   'hud.intake.title': 'Przyjęcia',
+  'hud.intake.candidates': 'Kandydaci',
+  'hud.intake.candidate-summary': 'Ryzyko: {risk} · Kara: {days} dni · Kontrabanda: {contraband} · Jednorazowa premia: {bounty}',
+  'hud.intake.candidate-expires': 'Wygasa dnia {day}',
+  'hud.intake.candidate-delayed': 'Odroczono',
+  'hud.intake.candidate-none': 'Dziś nie ma już kandydatów. Nowe oferty pojawią się jutro.',
+  'hud.intake.candidate-yes': 'Tak',
+  'hud.intake.candidate-no': 'Nie',
+  'hud.intake.candidate-accept': 'Przyjmij',
+  'hud.intake.candidate-delay': 'Odłóż',
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.
   'hud.intake.admit': 'Przyjmij osadzonego',

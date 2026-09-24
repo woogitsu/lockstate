@@ -364,20 +364,9 @@ describe('the historical chain still walks a save older than the field', () => {
     const captured = capturedSystems(insolventSession());
     const { bundle } = captured;
     // `regimeSchedules` removed beside them for the same reason, since ADR
-    // 0113: it is V6's required section and no V4 build wrote one.
-    // These sections arrived in V7; a historical V4 writer could not include
-    // them even when the current session used to construct this fixture does.
-    const {
-      objects: _objects,
-      alerts: _alerts,
-      regimeSchedules: _regimeSchedules,
-      roomFilth: _roomFilth,
-      labourCredit: _labourCredit,
-      workOutput: _workOutput,
-      delayedIntake: _delayedIntake,
-      holdingStays: _holdingStays,
-      ...simulation
-    } = captured.simulation;
+    // 0113: it is V6's required section and no V4 build wrote one. `inFlight`
+    // is also V6-only, while room filth was introduced in V7.
+    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, workOutput: _workOutput, delayedIntake: _delayedIntake, pendingCandidateProfiles: _pendingCandidateProfiles, intakeCandidates: _intakeCandidates, holdingStays: _holdingStays, inFlight: _inFlight, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,

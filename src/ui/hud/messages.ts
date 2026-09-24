@@ -1183,6 +1183,15 @@ export const HUD_MESSAGE_KEY = {
   intakeTitle: 'hud.intake.title',
   intakeAdmit: 'hud.intake.admit',
   intakeHint: 'hud.intake.hint',
+  intakeCandidates: 'hud.intake.candidates',
+  intakeCandidateSummary: 'hud.intake.candidate-summary',
+  intakeCandidateExpires: 'hud.intake.candidate-expires',
+  intakeCandidateDelayed: 'hud.intake.candidate-delayed',
+  intakeCandidateNone: 'hud.intake.candidate-none',
+  intakeCandidateYes: 'hud.intake.candidate-yes',
+  intakeCandidateNo: 'hud.intake.candidate-no',
+  intakeCandidateAccept: 'hud.intake.candidate-accept',
+  intakeCandidateDelay: 'hud.intake.candidate-delay',
   intakeNoPlace: 'hud.intake.no-place',
 
   /**
@@ -1681,6 +1690,8 @@ export const HUD_MESSAGE_KEY = {
    * prison in the same state and there is nothing different to do about them.
    */
   refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
+  refusalAcceptCandidate: 'hud.refusal.accept-intake-candidate',
+  refusalDelayCandidate: 'hud.refusal.delay-intake-candidate',
   refusalAdmitPrisonerNoRoom: 'hud.refusal.admit-prisoner-no-room',
   refusalCancelBuildOrder: 'hud.refusal.cancel-build-order',
   /**

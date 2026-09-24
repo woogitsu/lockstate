@@ -2119,7 +2119,7 @@ test.describe('HUD shell', () => {
    */
   test.describe('intake panel (issue #261 step 4)', () => {
     test('is laid out on the Manage tab, beside the staff it admits people into', async ({ page }) => {
-      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ candidates: true }));
 
       // Overview is the default tab (`hud-state.ts`) and is no longer this
       // panel's, so unlike every version of this test before 2026-09-14 the
@@ -2133,7 +2133,7 @@ test.describe('HUD shell', () => {
       // reachable by a keyboard and invisible to a player.
       expect(probe.laidOut).toBe(true);
       expect(probe.admitLaidOut).toBe(true);
-      expect(probe.admitLabel).toBe('Admit a prisoner');
+      expect(probe.admitLabel).toBe('Accept');
       expect(probe.admitDisabled).toBe(false);
       // The sentence that says what an admission needs, on screen before the
       // player presses anything rather than only after. ADR 0011: an unresolved
@@ -2273,7 +2273,7 @@ test.describe('HUD shell', () => {
     });
 
     test('one press is one gated intent carrying nothing', async ({ page }) => {
-      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ candidates: true }));
 
       // On the tab that now owns the panel, so the press is one a player could
       // actually make: `clickAdmitPrisoner` reaches the button through the DOM
@@ -2291,7 +2291,7 @@ test.describe('HUD shell', () => {
         // command (`dispatchShell`, not `dispatchCommand`), which is exactly
         // why it can sit in front of the assertion without weakening it: what
         // is still pinned is that the *admission* carries nothing.
-        .toEqual([JSON.stringify({ kind: 'select-tab', tab: 'manage' }), JSON.stringify({ kind: 'admit-prisoner' })]);
+        .toEqual([JSON.stringify({ kind: 'select-tab', tab: 'manage' }), JSON.stringify({ kind: 'accept-intake-candidate', candidateId: 'fixture-1' })]);
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
 
@@ -2304,7 +2304,7 @@ test.describe('HUD shell', () => {
       // rather than the prison -- see
       // `tests/integration/prisoner-admission-loop.test.ts` for which prison
       // states produce which answer.
-      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ candidates: true }));
       await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
 
       expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
@@ -2322,14 +2322,14 @@ test.describe('HUD shell', () => {
         })
         .toBe(true);
       const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
-      expect(probe.action).toBe('admit-prisoner');
+      expect(probe.action).toBe('accept-intake-candidate');
       // A sentence about the outcome, not the thrown `Error` -- which is
       // English raised on the main thread and may not reach the screen.
-      expect(probe.text).toContain('Nobody was admitted');
+      expect(probe.text).toContain('The candidate was not accepted');
       expect(probe.text).not.toContain('ui-harness: the host refused');
       // One message and one marked control, not two: the refusal line is
       // single-slot and the marked control is the one that was pressed.
-      expect(probe.failedControls).toEqual(['Admit a prisoner']);
+      expect(probe.failedControls).toEqual(['Accept']);
       expect(probe.describedByRefusal).toBe(true);
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
@@ -2400,6 +2400,7 @@ test.describe('HUD shell', () => {
     test.describe('the over-admission warning (issue #549)', () => {
       /** Twelve admissions into a one-bed cell, as the projection reports them. */
       const OVER_ADMITTED = {
+        candidates: [{ id: 'fixture-1', riskTier: 1, sentenceLengthTicks: 12_000, contrabandRolled: false, bountyMinorUnits: 150, expiresAtTick: 9_600, status: 'new' }],
         waiting: 11,
         failed: 0,
         total: 12,
@@ -2443,7 +2444,7 @@ test.describe('HUD shell', () => {
         await page.evaluate((p) => window.lockstateUiHarness.reportIntakePipeline(p), OVER_ADMITTED);
 
         const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
-        const admit = await page.locator('.hud-intake__admit').boundingBox();
+        const admit = await page.locator('.hud-intake [data-candidate-accept]').boundingBox();
 
         expect(probe.noPlaceBox, 'the warning must have a real box, not merely a text node').not.toBeNull();
         expect(probe.noPlaceText).toBe('11 waiting with no place to sleep');
@@ -6229,8 +6230,8 @@ test.describe('the Regime panel (issue #451)', () => {
     await expect(manage).toBeInViewport();
     await manage.click();
     await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'manage');
-    await expect(page.locator('.hud-intake__admit')).toBeFocused();
-    await expect(page.locator('.hud-intake__admit')).toBeVisible();
+    await expect(page.locator('button[data-tab="manage"]')).toBeFocused();
+    await expect(page.locator('.hud-intake')).toBeVisible();
 
     await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
     await page.evaluate(

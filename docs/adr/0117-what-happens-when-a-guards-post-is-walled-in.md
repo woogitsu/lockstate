@@ -255,7 +255,7 @@ recovery figure above is from walls built by real commands.
 
 `IncidentResponseSystem` sends a responder to
 `this.sectors.requireDefinition(incident.sectorId).postTile`
-(`src/simulation/incidents/response-system.ts:498`) — the same tile. So a
+(`src/simulation/incidents/response-system.ts:501`) — the same tile. So a
 sealed post takes the response with it.
 
 ADR 0036 decision 8's own fixture, re-run on seed `0x396` with and without the

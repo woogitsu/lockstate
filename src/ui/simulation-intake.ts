@@ -1,5 +1,6 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
 import type { PrisonerPopulationCountsViewModel } from '../simulation/presentation/prisoner-projection';
+import type { IntakeCandidate } from '../simulation/prisoners/intake-candidate-board';
 import type { HudIntakePipelineViewModel, HudIntakeStageViewModel } from './hud';
 import {
   SimulationProjectionRequester,
@@ -100,7 +101,7 @@ const TERMINAL_INTAKE_STAGES: readonly ProjectedIntakeStage[] = ['completed', 'f
  * this panel: four permanent lines reading zero in a panel that exists because
  * there was no room for a second button is how a readout becomes furniture.
  */
-export function intakePipelineFromProjection(view: PrisonerPopulationCountsViewModel): HudIntakePipelineViewModel {
+export function intakePipelineFromProjection(view: PrisonerPopulationCountsViewModel & { readonly intakeCandidates?: readonly IntakeCandidate[] }): HudIntakePipelineViewModel {
   const stages: HudIntakeStageViewModel[] = [];
   let waiting = 0;
   let failed = 0;
@@ -133,7 +134,20 @@ export function intakePipelineFromProjection(view: PrisonerPopulationCountsViewM
   // no room registry, and a figure derived here from a stage count and a
   // capacity read on a different tick would be a second, disagreeing definition
   // of the one number this panel warns on.
-  return { waiting, failed, total: view.total, stages, waitingWithoutPlace: view.waitingWithoutPlace };
+  return {
+    waiting, failed, total: view.total, stages, waitingWithoutPlace: view.waitingWithoutPlace,
+    ...(view.intakeCandidates === undefined ? {} : {
+      candidates: view.intakeCandidates.map((candidate) => ({
+        id: candidate.id,
+        riskTier: candidate.riskTier,
+        sentenceLengthTicks: candidate.sentenceLengthTicks,
+        contrabandRolled: candidate.contrabandCategoryId !== undefined,
+        bountyMinorUnits: candidate.bountyMinorUnits,
+        expiresAtTick: candidate.expiresAtTick,
+        status: candidate.status,
+      })),
+    }),
+  };
 }
 
 export class IntakePipelineReader {
@@ -165,7 +179,7 @@ export class IntakePipelineReader {
     if (this.reading) return undefined;
     this.reading = true;
     try {
-      const reply = await this.requester.request<PrisonerPopulationCountsViewModel>('hud/prisoner-population');
+      const reply = await this.requester.request<PrisonerPopulationCountsViewModel & { readonly intakeCandidates?: readonly IntakeCandidate[] }>('hud/prisoner-population');
       if (reply.view === undefined) return undefined;
       return intakePipelineFromProjection(reply.view);
     } finally {

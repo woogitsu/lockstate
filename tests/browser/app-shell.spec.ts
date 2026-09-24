@@ -4,7 +4,11 @@ import { expect, test, type Locator, type Page } from './network-changed-fixture
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
-import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import {
@@ -15,6 +19,32 @@ import {
 import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
+
+/** A valid current-version save of a legacy crowded cell, used only to test roster ordering. */
+function rosterPopulationSave() {
+  const runtime = createNewSimulationRuntime(703);
+  const cell = { x: 4, y: 4, width: 2, height: 3 } as const;
+  wallRoomPerimeter(runtime.world, cell, { doors: runtime.navigation.doors });
+  runtime.kernel.submitCommand('fixture-zone-cell', runtime.kernel.expectedSequence, runtime.kernel.tick,
+    packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...cell }));
+  runtime.kernel.step();
+  for (let index = 0; index < 12; index += 1) {
+    // A restored legacy population may exceed present capacity; #590 guards
+    // new requests, while this fixture tests how the roster reads an old save.
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 80_000 + index * 12_000, priorIncidents: 0 }, { x: 16, y: 16 });
+  }
+  while (runtime.kernel.tick < 110) runtime.kernel.step();
+  const bundle = captureSessionSnapshot(runtime);
+  return createSaveEnvelope({
+    ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+    gameVersion: 'lockstate-0.0.0', prisonId: 'roster-legacy-fixture', revision: 1,
+    createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+    kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+    ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+    ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+    ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+  });
+}
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -1758,7 +1788,8 @@ interface FocusTarget {
  * the busiest tab is inside this; a control that is not in the tab order at
  * all is not.
  */
-const MAX_TAB_PRESSES_PER_HOP = 48;
+// Up to three offers add six meaningful Accept/Delay stops to Manage (#594).
+const MAX_TAB_PRESSES_PER_HOP = 56;
 
 /**
  * Presses `Tab` until the focused control is the one asked for, and answers
@@ -2518,8 +2549,7 @@ async function orderWallRectangles(
 
   // ---- and the crew, at the speed a player would use -------------------
   await tabTo(page, 'the Play control', {
-    selector: '.hud-strip__transport button',
-    text: localeText('hud.transport.play'),
+    selector: '.hud-strip__transport button:nth-child(2)',
   });
   await page.keyboard.press('Enter');
   await expect(
@@ -7722,7 +7752,7 @@ test.describe('the assembled application', () => {
    *     two lines make one on purpose so a recorder that never attached cannot
    *     read as silence.
    */
-  test('zones a room and admits a prisoner with the keyboard alone (#411)', async ({ page }) => {
+  test('zones a room and accepts an intake offer with the keyboard alone (#411, #594)', async ({ page }) => {
     /*
      * **Slow, and the reason is the ADR rather than the test.**
      *
@@ -7922,11 +7952,11 @@ test.describe('the assembled application', () => {
     // record of the route as it was measured, not of this one.
     await hopBack('the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
-    await hopBack('the Admit control', { selector: '.hud-intake__admit' });
+    await hopBack('the Accept control', { selector: '.hud-intake [data-candidate-accept]' });
     await page.keyboard.press('Enter');
-    await expect(metric('prisoners'), 'the admission was refused, so the loop is still broken').toHaveText(
-      '1',
-    );
+    // #590 holds an accepted offer outside until this unfurnished cell has a bed.
+    await expect(metric('prisoners')).toHaveText('0');
+    await expect(page.locator('.hud-alerts__list')).toContainText('Waiting outside for a place: 1.');
 
     /*
      * #411's "reachable in a sensible tab order", as a number.
@@ -8505,10 +8535,11 @@ test.describe('the assembled application', () => {
     // get away with.
     await tabTo(page, 'the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
-    const admit: FocusTarget = { selector: '.hud-intake__admit' };
-    await tabTo(page, 'the Admit control', admit);
-    await pressAndRecord('Admit', page.locator('.hud-intake__admit'), admit, 'the Admit control', async () => {
-      await expect(metric('prisoners'), 'nobody was admitted, so this Admit was refused').toHaveText('1');
+    const admit: FocusTarget = { selector: '.hud-intake [data-candidate-accept]' };
+    await tabTo(page, 'the Accept control', admit);
+    await pressAndRecord('Accept', page.locator('.hud-intake [data-candidate-accept]').first(), admit, 'the Accept control', async () => {
+      await expect(metric('prisoners')).toHaveText('0');
+      await expect(page.locator('.hud-alerts__list')).toContainText('Waiting outside for a place: 1.');
     });
 
     // ---- what the six presses did to the keyboard ------------------------
@@ -8544,7 +8575,7 @@ test.describe('the assembled application', () => {
       'Place order',
       'Designate',
       'Hire',
-      'Admit',
+      'Accept',
     ]);
 
     // ---- the tripwire -----------------------------------------------------
@@ -12198,45 +12229,13 @@ test.describe('the assembled application', () => {
    *   tab is showing, painted into four pooled rows. Nothing below this page has
    *   all of that at once.
    *
-   * ### What the prison here can and cannot produce
-   *
-   * `ADMISSION_REQUEST` in `src/main.ts` is `{ priorIncidents: 0 }` and its own
-   * comment records the consequence: the tiers reachable from the Admit control
-   * are `[0, 1]` below an 84-day sentence and `[0, 1, 2]` at or above it, and
-   * **the panel cannot produce a tier-3 prisoner at all** -- one sentence point
-   * plus a maximum screening draw clamps at 2. So `prisonersHighRisk` is
-   * honestly 0 in any prison this test can build, and the chip's *value* is
-   * proven from a real worker publication in *the HUD counts come from the
-   * worker rather than from zeros baked into the page* above, which injects a 9
-   * through the real decoder. This test proves the chip is *seen*.
-   *
-   * The cell is zoned and left **empty**, with no bed in it, which is the
-   * cheapest prison that admits: `src/main.ts` refuses `AdmitPrisoner` only when
-   * the prison has no accommodation-target instance at all, and an arrival then
-   * waits at `accommodation-assignment` -- which is a *classified* stage
-   * (`CLASSIFIED_STAGES` in `prisoner-projection.ts`), so every prisoner here
-   * carries a real drawn tier and a real badge word.
+   * The population is loaded from a valid current-version save of a crowded
+   * legacy cell. This preserves the twelve-person roster window without
+   * bypassing #590's live admission gate or #594's limited daily offers.
+   * A separate real-browser test accepts one screened offer through Manage.
    */
   test('paints the high-risk chip and orders the Regime roster by tier (#703)', async ({ page }) => {
-    /*
-     * **Five minutes, and the number is measured rather than generous.**
-     *
-     * Slow for the reason the keyboard loop above is slow: ADR 0045 makes an
-     * enclosed perimeter a precondition of zoning, so the shortest route to a
-     * prison that admits anybody is buy, order, build ten wall segments, zone,
-     * admit -- and this test then runs the intake pipeline and exports a save.
-     * Measured green at **3.0m** on this container, twice; `test.slow()` alone
-     * is 180 s and would have been decided by whatever else the machine was
-     * doing.
-     *
-     * That is a budget for work this test really does, not a timeout raised over
-     * a race: nothing here waits on a coincidence. Every wait is on a state the
-     * game reports -- the build queue emptying, `[data-metric="rooms"]` moving,
-     * the roster's own `data-total`, four rows carrying a tier -- and each names
-     * what did not happen when it gives up.
-     */
-    test.setTimeout(300_000);
-
+    // Import and restore the fixture through the real browser save flow.
     await page.setViewportSize({ width: 1440, height: 900 });
     await openApp(page);
 
@@ -12307,110 +12306,28 @@ test.describe('the assembled application', () => {
       /\b(?:hud|classification-group|risk-tier|incident-type|incident-state|action|action-phase|intake-stage|need)\.[a-z0-9][a-z0-9.-]*/,
     );
 
-    // ---- a prison with a population in it ------------------------------
+    // Load a current-version save through the same Import control a player uses.
+    // The fixture represents a legacy crowded cell; #590 guards new admissions,
+    // while this test is about the four-row window over twelve saved prisoners.
+    const populationSave = rosterPopulationSave();
+    expect(populationSave.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
     await page.getByRole('button', { name: localeText('save.action.create') }).click();
     await waitForSession(page);
-    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('0');
-
-    // `room.cell`'s authored minimum exactly (2x3), because every tile of
-    // perimeter beyond it is another wall order this test has to place.
-    const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
-    await wallRectanglesFromTheKeyboard(page, [cell]);
-
-    await page.locator('.ui-tab[data-tab="zones"]').click();
-    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-    await page.locator('.hud-rooms__coordinates > .ui-section__header').click();
-    await expect(page.locator('.hud-rooms__coordinates')).toHaveAttribute('data-collapsed', 'false');
-    for (const [field, value] of [
-      ['x', cell.x],
-      ['y', cell.y],
-      ['width', cell.width],
-      ['height', cell.height],
-    ] as const) {
-      await page.locator(`.hud-rooms__coord-${field} input`).fill(String(value));
-    }
-    await page.locator('.hud-rooms__coordinates-submit').click();
-    await expect(page.locator('.hud-rooms__area')).toHaveAttribute(
-      'data-area',
-      `${cell.x},${cell.y},${cell.width},${cell.height}`,
-    );
-    await page.locator('.hud-rooms__confirm').click();
-    await expect(metric('rooms'), 'the typed rectangle never reached the worker').toHaveText('1');
-
-    /*
-     * Twelve arrivals, three times the roster's window.
-     *
-     * The claim is about *which* four of the population fill four boxes, so the
-     * population has to be several times the window for the choice to be a
-     * choice. Three times rather than twice for one measured reason: with eight
-     * prisoners a run came out with the four highest tiers sitting at entity
-     * indices 0, 1, 2 and 6 -- close enough to the arrival order that a
-     * *broken* sort would have been within one row of the right answer. Twelve
-     * puts eight prisoners outside the window instead of four.
-     */
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Import' }).click();
+    await (await chooser).setFiles({
+      name: 'roster-legacy-fixture.lockstate.json', mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(populationSave), 'utf8'),
+    });
+    await expect(page.locator('.save-panel__status')).toContainText('Imported the save file');
     const ADMISSIONS = 12;
-    // Manage since 2026-09-14: the Admit control moved to the section that
-    // holds the staff (ADR 0112 decision 3).
-    await page.locator('.ui-tab[data-tab="manage"]').click();
-    for (let admission = 0; admission < ADMISSIONS; admission += 1) {
-      await page.locator('.hud-intake__admit').click();
-    }
-    await expect(metric('prisoners'), 'the admissions were refused').toHaveText(String(ADMISSIONS));
-
-    /*
-     * **And the clock, which is the step whose absence cost the first run of
-     * this test.**
-     *
-     * `wallRectanglesFromTheKeyboard` ends by pressing *Pause*, deliberately --
-     * its own comment says it leaves the caller "the paused session a new prison
-     * arrives as". Since ADR 0051 a *due* command is dispatched during a pause,
-     * which is why the admissions above landed and the strip reads the whole
-     * population; but
-     * `IntakeSystem` is a scheduled system, so with the clock stopped no arrival
-     * ever leaves `queued` and no row can carry a tier. Measured: the poll below
-     * spent its whole budget at zero classified rows, on the prison of eight
-     * this fixture admitted before it was widened to twelve.
-     *
-     * Fast forward twice, because there are three intake stages to walk before
-     * `accommodation-assignment` and the pipeline runs every five ticks.
-     */
-    const transport = page.locator('.hud-strip__transport');
-    await transport.getByRole('button', { name: localeText('hud.transport.play') }).click();
-    await expect(
-      transport.getByRole('button', { name: localeText('hud.transport.play') }),
-      'the worker never accepted the set-clock, so intake cannot advance',
-    ).toHaveAttribute('aria-pressed', 'true');
-    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
-    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(2)}`);
-    await transport.getByRole('button', { name: localeText('hud.transport.fast-forward') }).click();
-    await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
-
+    await expect(metric('prisoners'), 'the restored legacy population is missing').toHaveText(String(ADMISSIONS));
     // ---- and the four rows the Regime panel draws ----------------------
     await page.locator('.ui-tab[data-tab="day-plan"]').click();
     const roster = page.locator('.hud-regime__roster');
     await expect(roster).toBeVisible();
 
-    /*
-     * **The roster has to be re-*read*, not merely re-read from the DOM, and
-     * this cost a run to find.**
-     *
-     * `hud/prisoner-roster` is a pull. `src/main.ts` fires
-     * `refreshPrisonerRoster()` on a `select-tab` intent and on each
-     * `simulation/status-counts` publication -- and that channel publishes only
-     * when a count *changes* (`STATUS_COUNTS_PUBLISH_INTERVAL_MS` is a ceiling,
-     * not a rate). The one count that moves every tick is
-     * `stateIncomeAccruedTodayMinorUnits`, and it moves only while some place is
-     * occupied. This prison's cell has no bed in it, so nothing is occupied, the
-     * accrual is a constant zero, the channel falls silent after the last
-     * admission -- and the roster on screen stays the one painted at that
-     * moment, when the newest arrivals were still `queued`.
-     *
-     * `prisonersInIntake` does move as the pipeline walks, so the channel is not
-     * silent for the whole of this wait -- but it goes quiet again the moment the
-     * last arrival settles, and "the roster is refreshed by something" is not a
-     * thing to leave to a count that may or may not be moving. So each poll
-     * re-selects the tab, which is the intent that asks the worker again.
-     */
+    // The roster is a pull; a tab round trip requests a fresh projection.
     const rereadRoster = async (): Promise<void> => {
       await page.locator('.ui-tab[data-tab="overview"]').click();
       await page.locator('.ui-tab[data-tab="day-plan"]').click();
@@ -12525,28 +12442,14 @@ test.describe('the assembled application', () => {
      *   classified. The panel showing four tiers is what proves that stage is a
      *   classified one; this file never restates the rule.
      */
+    const transport = page.locator('.hud-strip__transport');
     await transport.getByRole('button', { name: localeText('hud.transport.pause') }).click();
     await expect(
       transport.getByRole('button', { name: localeText('hud.transport.pause') }),
       'the clock did not stop, so a save cannot be compared with the rows above',
     ).toHaveAttribute('aria-pressed', 'true');
 
-    /*
-     * **Saved first, and this is the second thing the full-file run taught this
-     * test rather than a precaution.**
-     *
-     * `Export` writes the bytes of the **stored** save row, not the live
-     * worker's state, so a prison whose population has not reached storage
-     * exports as the prison it was at its last write. Run alone this test passed
-     * anyway -- it takes about three minutes, so #146's 30-second interval
-     * autosave had captured the population several times over. Run inside the
-     * whole file it failed with `records.activeLength` at **0**: an exported
-     * save carrying no prisoners at all, against twelve on the strip.
-     *
-     * `Save now` makes it a statement rather than a coincidence: the clock is
-     * already paused, so the generation this writes is exactly the prison the
-     * rows above were painted from.
-     */
+    // Export reads the stored generation, so save the restored, paused state first.
     await page.getByRole('button', { name: localeText('save.action.save') }).click();
     await expect(
       page.locator('.save-panel__status'),
@@ -12579,7 +12482,7 @@ test.describe('the assembled application', () => {
 
     expect(saved.payload.simulation, 'the exported save carries no simulation section').toBeDefined();
     const records = saved.payload.simulation!.prisoners.components;
-    expect(records.activeLength, 'the save does not hold the population that was admitted').toBe(ADMISSIONS);
+    expect(records.activeLength, 'the imported save does not hold the population shown in the roster').toBe(ADMISSIONS);
     const stages = records.intakeStage.slice(0, ADMISSIONS);
     expect(
       new Set(stages).size,

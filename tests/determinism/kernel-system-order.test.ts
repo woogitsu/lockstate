@@ -425,6 +425,9 @@ describe('kernel system ordering', () => {
    */
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
+      // #594 offers are refreshed before intake consumes an accepted offer.
+      { id: 'prisoners.candidate-offers', order: 48 },
+      { id: 'prisoners.delayed-intake', order: 49 },
       { id: 'prisoners.intake', order: 50 },
       { id: 'prisoners.classification-early-warning', order: 52 },
       { id: 'prisoners.classification-review', order: 55 },

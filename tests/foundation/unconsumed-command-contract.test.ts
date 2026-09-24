@@ -349,7 +349,7 @@ describe('every declared simulation command either has a producer or is accounte
     // `case 'purchase-materials':` -- rather than spending time on the list
     // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(20);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -496,7 +496,7 @@ describe('every declared simulation command either has a producer or is accounte
   // corrected here rather than left describing the state the body had just
   // stopped asserting -- and it is kept quoted, because this file's whole
   // subject is a count that means something.
-  it('measures eighteen produced and none unproduced, the list empty again after its one entry', () => {
+  it('measures twenty produced and none unproduced, the list empty again after its one entry', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -552,6 +552,6 @@ describe('every declared simulation command either has a producer or is accounte
     // what this pair of assertions is for -- a nineteenth command added with no
     // producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(20);
   });
 });

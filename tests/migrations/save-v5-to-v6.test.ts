@@ -100,7 +100,9 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
 
 /**
  * A genuine V5 envelope holding real subsystem state, built by capturing a
- * current session and removing the one key V6 added.
+ * current session and removing the keys V6 added: `regimeSchedules`, which is
+ * why V6 exists, and `inFlight` (issue #1373), an optional V6 section no V5
+ * build wrote. (This comment said *"the one key V6 added"* until the second.)
  */
 function v5EnvelopeWithASession(): SaveEnvelopeV5 {
   const runtime = createNewSimulationRuntime(0x5ca1e);
@@ -108,7 +110,8 @@ function v5EnvelopeWithASession(): SaveEnvelopeV5 {
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
-  const { regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, workOutput: _workOutput, ...simulation } = bundle.simulation;
+
+  const { regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, workOutput: _workOutput, delayedIntake: _delayedIntake, pendingCandidateProfiles: _pendingCandidateProfiles, intakeCandidates: _intakeCandidates, holdingStays: _holdingStays, inFlight: _inFlight, ...simulation } = bundle.simulation;
   const payload = {
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     kernel: bundle.kernel,

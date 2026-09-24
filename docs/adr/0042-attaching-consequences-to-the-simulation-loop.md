@@ -217,7 +217,7 @@ and its header comment calls `free-association` *"unstructured milling about"* �
 naming content that was never authored. `beginNextAction` filters
 `DEFAULT_ACTIONS` by the block's categories and, if no candidate resolves,
 increments `unmetDemandCycles` and returns
-(`src/simulation/prisoners/action-system.ts:1616`, `:1668`; the anchors read
+(`src/simulation/prisoners/action-system.ts:1636`, `:1668`; the anchors read
 `:391` and `:427`, both docblock lines. `:1668` is the same `unmetDemandCycles`
 statement ADR 0029's sweep on this branch had to correct by one line, so the
 two documents now agree). Both recreation
@@ -232,8 +232,8 @@ implementer to stop and raise it if that turns out to be false. **It is false.**
 `CurrentActionComponent.actionIndex` is a *positional* index into
 `DEFAULT_ACTIONS` (`src/simulation/prisoners/components.ts:245-251`; the anchor
 read `:205-211`, a different component's constructor) and it is
-persisted verbatim (`src/persistence/save-schema.ts:440`; the anchor read `:383`,
-`src/simulation/runtime/session-systems.ts:461` and `:522`; those two anchors read
+persisted verbatim (`src/persistence/save-schema.ts:441`; the anchor read `:383`,
+`src/simulation/runtime/session-systems.ts:509` and `:522`; those two anchors read
 `:344` and `:390`). Inserting an entry
 anywhere but the end of that array silently reinterprets every in-flight action
 in every existing save — a prisoner who was showering resumes doing something
@@ -252,7 +252,7 @@ grep -rn "sentenceEndTick" src/
 ```
 
 returns the save schema, the capture/restore pair
-(`src/simulation/runtime/session-systems.ts:131`, `:455`, `:509`; those three
+(`src/simulation/runtime/session-systems.ts:134`, `:455`, `:509`; those three
 anchors read `:111`, `:339` and `:381`), the HUD
 projection (`src/simulation/presentation/prisoner-projection.ts:752`; the anchor
 read `:397`), and
@@ -332,7 +332,7 @@ the guard count is the second lock on a door that was already locked.
 >   walks, and the write of the anchor tile is now explicitly *"exact rather
 >   than corrective"* because *"the walk has already stepped the prisoner onto
 >   this tile one tile at a time"*
->   (`src/simulation/prisoners/action-system.ts:1259-1264`).
+>   (`src/simulation/prisoners/action-system.ts:1279-1284`).
 > - So `needsPressure` is not 0 by construction, and the clause below this one
 >   — *"that term is multiplied by `needsPressure`, which is zero in any prison
 >   that houses anybody … it is **nothing at all**"* — is false for the same
@@ -349,7 +349,7 @@ isFreshUnfurnishedPrison = false): StaffHireOutcome {`; the anchor read
 stops fourteen lines short of the method the sentence names), and
 `DeploymentSystem.assignUnassignedGuards` fills the post from
 `unassignedGuardIds()` with no role filter
-(`src/simulation/security/deployment-system.ts:180`; the anchor read `:102-113`)
+(`src/simulation/security/deployment-system.ts:196`; the anchor read `:102-113`)
 — so a warden is riot
 police. The default sector has no patrol route, by decision and with the reason
 written down (`src/simulation/security/default-sector.ts:194-198`).
@@ -435,13 +435,13 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 
 - `IncidentResponseSystem` — the whole `active → notified → responding →
   resolved` pipeline, plus `lapse`, lockdown, responder claims and restore-time
-  re-dispatch (`src/simulation/incidents/response-system.ts:473-491`; the anchor
+  re-dispatch (`src/simulation/incidents/response-system.ts:476-494`; the anchor
   read `:227-249`), registered
   at `src/simulation/runtime/new-session.ts:1617` (the anchor read `:662`). Its `update` iterates
   `this.incidents.openIncidents()` and does nothing when that is empty.
 - `ClassificationReviewSystem` — registered via
   `PrisonerOperationsRuntime.registerOn`
-  (`src/simulation/prisoners/prisoner-operations-runtime.ts:540`; the anchor read
+  (`src/simulation/prisoners/prisoner-operations-runtime.ts:558`; the anchor read
   `:142-147`), folds
   `IncidentLog` terminal records and `ConfiscationLedger` events into a derived
   `DisciplinaryRecord` and rewrites `riskTier` and `classificationGroupIndex`
@@ -463,9 +463,9 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 - `ContrabandRegistry.introduce` — one definition, no caller
   (`src/simulation/contraband/item.ts:123`; the anchor read `:104`).
 - `SearchSystem.submitOrder` — one definition, no caller
-  (`src/simulation/contraband/search-system.ts:190`); the system is registered
+  (`src/simulation/contraband/search-system.ts:217`); the system is registered
   and runs an empty queue. Its confiscation write
-  (`src/simulation/contraband/search-system.ts:350`) is the *second* route into
+  (`src/simulation/contraband/search-system.ts:377`) is the *second* route into
   the built consequence chain, and
   `tests/integration/incident-consequence-loop.test.ts:277` already proves that
   route reaches tier 3 at three finds.
@@ -530,7 +530,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
 >   (`src/simulation/runtime/new-session.ts:1605`), and the save carries
->   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1219`,
+>   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1220`,
 >   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
 >   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by
 >   2026-09-16, when the branch merged `origin/main`).
@@ -646,16 +646,16 @@ it is not first.** `Treasury` validates non-negative in four places
 anchors read `:73`, `:83`, `:120` and `:134`, all docblock lines in what is now a
 900-line file) and the save
 schema pins it: `balanceMinorUnits: z.number().int().nonnegative().safe()`
-(`src/persistence/save-schema.ts:954`). A debt state is either a sign change on
+(`src/persistence/save-schema.ts:955`). A debt state is either a sign change on
 a persisted field or a new persisted arrears field, and both are `AGENTS.md`
 boundary 7 changes needing a version and a migration
 ([ADR 0038](./0038-what-makes-a-save-compatible.md)) — `SAVE_SCHEMA_VERSION` is
-5 (`src/persistence/save-schema.ts:34`).
+5 (`src/persistence/save-schema.ts:35`).
 
 (**Both of those two figures are now wrong, and the prediction they carry came
 true, which is why the sentence is kept — 2026-09-15.** The schema field is
 `balanceMinorUnits: z.number().int().safe()`
-(`src/persistence/save-schema.ts:1156`), and the docblock above it says why in
+(`src/persistence/save-schema.ts:1157`), and the docblock above it says why in
 terms: *"**`.safe()` and not `.nonnegative()` since ADR 0075 decision 2**, and
 the loosening is the point rather than a slip. A balance may now be negative"*
 (`:1102-1104`). **Both of those two anchors were written on 2026-09-15 and were
@@ -663,7 +663,7 @@ dead by 2026-09-16**, when this branch merged `origin/main`: they read `:1146`
 and `:1092-1094`, ten lines high in a 1,923-line schema file, and `:1146` had
 landed inside a comment about loans. `Treasury` no longer validates non-negative anywhere —
 `grep -n "nonnegative" src/simulation/economy/treasury.ts` returns nothing. And
-`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:38`). So the sign
+`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:39`). So the sign
 change this paragraph priced as a version bump is exactly what was paid.) *Determinism:* a day-boundary integer
 debit, the same shape `StateIncomeSystem` already has; no RNG.
 

@@ -3657,6 +3657,19 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           return;
         }
 
+        case 'accept-intake-candidate': {
+          requireSimulation(commands).submit({
+            type: 'AcceptIntakeCandidate', candidateId: intent.candidateId,
+            x: NEW_PRISON_ORIGIN_TILE.x, y: NEW_PRISON_ORIGIN_TILE.y,
+          });
+          return;
+        }
+
+        case 'delay-intake-candidate': {
+          requireSimulation(commands).submit({ type: 'DelayIntakeCandidate', candidateId: intent.candidateId });
+          return;
+        }
+
         case 'hire-staff': {
           const sender = requireSimulation(commands);
           /*

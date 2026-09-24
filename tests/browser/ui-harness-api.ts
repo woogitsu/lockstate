@@ -1392,7 +1392,7 @@ export interface LockstateUiHarness {
   refreshSavePanel(): Promise<void>;
   settleSavePanel(): Promise<void>;
 
-  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void;
+  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number; readonly candidates?: boolean }): void;
   hudProbe(): HudProbe;
   clickTab(tab: string): boolean;
   clickTransport(label: string): boolean;

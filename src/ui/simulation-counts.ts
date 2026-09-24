@@ -33,6 +33,12 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { counts } = message.payload;
+      // `holdingGraceCount` is published for the simulation's age-band
+      // census but deliberately has no alert: grace is the period before
+      // holding becomes strained. The UI reads strained and critical counts
+      // in simulation-alerts.ts. `prisonersInIntake` also stays out of the
+      // status strip because the Intake panel's pipeline projection shows
+      // its individual stages, which a single total would conceal.
       return {
         prisoners: counts.prisoners,
         /**

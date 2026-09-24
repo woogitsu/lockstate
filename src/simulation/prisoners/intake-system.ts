@@ -4,7 +4,7 @@ import { EntityQuery } from '../entity/query';
 import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
-import { classifyPrisoner, type AdmissionRequest } from './classification';
+import { classifyPrisoner, classificationGroupIdForTier, type AdmissionRequest } from './classification';
 import { drawSentenceLengthTicks, PRISONER_SENTENCE_RNG_STREAM, SENTENCE_UNSET_TICKS } from './sentence';
 import {
   CLASSIFICATION_GROUP_IDS,
@@ -34,6 +34,7 @@ import type { RoomInstanceRegistry } from './room-instance-registry';
 export interface IntakeContrabandIntroducer {
   /** Called once per arrival, at the tick their `riskTier` is written and from the stage that writes it. */
   introduce(entityId: EntityId, riskTier: number, tick: number, rng: Xoshiro128StarStar): void;
+  introducePrepared?(entityId: EntityId, categoryId: string, tick: number): void;
 }
 
 /**
@@ -336,6 +337,8 @@ export class IntakeSystem implements SystemRegistration {
      * existing call site's positional arguments move.
      */
     private readonly housedNotice?: IntakeHousedNotice,
+    private readonly preparedCandidateFor?: (entityId: EntityId) => AdmissionRequest['preparedCandidate'],
+    private readonly onPreparedCandidatePlaced?: (entityId: EntityId, tick: number) => void,
   ) {}
 
   /**
@@ -513,7 +516,7 @@ export class IntakeSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
-    for (const entityId of this.holdingSince.keys()) {
+    for (const entityId of [...this.holdingSince.keys()].sort((a, b) => a - b)) {
       if (!this.store.isAlive(entityId)) this.holdingSince.delete(entityId);
     }
     for (const entityId of this.query.execute()) {
@@ -605,11 +608,13 @@ export class IntakeSystem implements SystemRegistration {
         if (this.records.sentenceLengthTicks[index] === SENTENCE_UNSET_TICKS) {
           this.records.sentenceLengthTicks[index] = drawSentenceLengthTicks(context.rng.get(this.sentenceRngStreamName));
         }
-        const rng = context.rng.get(this.rngStreamName);
-        const result = classifyPrisoner(
-          { sentenceLengthTicks: this.records.sentenceLengthTicks[index]!, priorIncidents: this.records.priorIncidentsAtIntake[index]! },
-          rng,
-        );
+        const prepared = this.preparedCandidateFor?.(entityId);
+        const result = prepared === undefined
+          ? classifyPrisoner(
+            { sentenceLengthTicks: this.records.sentenceLengthTicks[index]!, priorIncidents: this.records.priorIncidentsAtIntake[index]! },
+            context.rng.get(this.rngStreamName),
+          )
+          : { riskTier: prepared.riskTier, classificationGroupId: classificationGroupIdForTier(prepared.riskTier) };
         this.records.riskTier[index] = result.riskTier;
         this.records.classificationGroupIndex[index] = classificationGroupIndex(result.classificationGroupId);
         this.records.sentenceEndTick[index] = context.tick + this.records.sentenceLengthTicks[index]!;
@@ -620,7 +625,9 @@ export class IntakeSystem implements SystemRegistration {
         // like the name minting above, so the order draws are made in is a
         // function of state; and after the record writes, so a reader of the
         // registry sees an arrival whose classification is already complete.
-        if (this.contrabandIntroducer !== undefined) {
+        if (prepared !== undefined && prepared.contrabandCategoryId !== undefined) {
+          this.contrabandIntroducer?.introducePrepared?.(entityId, prepared.contrabandCategoryId, context.tick);
+        } else if (prepared === undefined && this.contrabandIntroducer !== undefined) {
           this.contrabandIntroducer.introduce(entityId, result.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
         }
 
@@ -698,6 +705,7 @@ export class IntakeSystem implements SystemRegistration {
         if (holding !== undefined) this.holdingSince.set(entityId, context.tick);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
+        this.onPreparedCandidatePlaced?.(entityId, context.tick);
         // Issue #966 site 3: the tick a queued arrival stops waiting is the
         // tick a bed exists to say so about -- `target.roomCatalogId` is the
         // type `findBestAvailable` just matched `instance` against, so this

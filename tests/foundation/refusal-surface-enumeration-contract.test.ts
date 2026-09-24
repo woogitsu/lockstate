@@ -49,7 +49,7 @@ import { routesForIntent, type ScannedSource } from '../helpers/control-reachabi
  */
 
 const ROOT = resolve(__dirname, '../..');
-const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8');
+const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8').replace(/\r\n/gu, '\n');
 
 type Producer = 'host' | 'simulation';
 
@@ -305,6 +305,22 @@ const TRIPLES: readonly Triple[] = [
     reach: 'createIntakePanel({ onAdmit })',
   },
   {
+    press: 'Intake panel · Accept candidate',
+    intent: 'accept-intake-candidate',
+    command: 'AcceptIntakeCandidate',
+    artifact: 'the candidate leaves the board and joins the intake queue',
+    producer: 'host',
+    reach: 'createIntakePanel({ onAcceptCandidate })',
+  },
+  {
+    press: 'Intake panel · Delay candidate',
+    intent: 'delay-intake-candidate',
+    command: 'DelayIntakeCandidate',
+    artifact: 'the candidate remains on the board with delayed status',
+    producer: 'host',
+    reach: 'createIntakePanel({ onDelayCandidate })',
+  },
+  {
     press: 'Staff panel · Hire',
     intent: 'hire-staff',
     command: 'HireStaff',
@@ -505,8 +521,8 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     expect(reasonSuffixes.length).toBe(49);
     expect(alertKeys.length).toBe(49);
     expect(alertKeysPl.length).toBe(49);
-    expect(hostKeys.length).toBe(16);
-    expect(hostKeysPl.length).toBe(16);
+    expect(hostKeys.length).toBe(18);
+    expect(hostKeysPl.length).toBe(18);
 
     // Set-identical member for member, not merely equinumerous.
     expect(alertKeys).toEqual(reasonSuffixes.map((reason) => `hud.alert.refusal.${reason}`));
@@ -551,9 +567,11 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     }
     const intentsWithHostRows = new Set(hostTriples.map((triple) => triple.intent));
     expect([...intentsWithHostRows].sort()).toEqual([
+      'accept-intake-candidate',
       'admit-prisoner',
       'cancel-build-order',
       'cancel-material-purchase',
+      'delay-intake-candidate',
       'hire-staff',
       'place-build-order',
       'purchase-materials',
@@ -666,13 +684,13 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 
   it('counts the enumeration, and the two totals that differ over the keyboard pair', () => {
     // 32 / 30 / 14 / 21 until #1356 added the strip's Undo and Redo rows.
-    expect(TRIPLES.length).toBe(34);
-    expect(pointerTriples.length).toBe(32);
+    expect(TRIPLES.length).toBe(36);
+    expect(pointerTriples.length).toBe(34);
     expect(simulationTriples.length).toBe(18);
-    expect(hostTriples.length).toBe(16);
+    expect(hostTriples.length).toBe(18);
     expect(simulationTriples.length + hostTriples.length).toBe(TRIPLES.length);
     // Twenty-three distinct presses, of which twenty-one a pointer can make.
-    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(23);
+    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(25);
   });
 
   it('checks every coverage claim against the spec file that is supposed to carry it', () => {
@@ -695,8 +713,8 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     }
     // The number owed, derived rather than typed: a triple is owed a spec
     // until one drives its press and finds its artifact missing.
-    expect(TRIPLES.length - proven.length).toBe(31);
-    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(29);
+    expect(TRIPLES.length - proven.length).toBe(33);
+    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(31);
   });
 
   it('is the number the rollout plan states, so the document cannot drift from the table', () => {

@@ -501,6 +501,8 @@ export type HudIntent =
    * gate rather than fired and forgotten.
    */
   | { readonly kind: 'admit-prisoner' }
+  | { readonly kind: 'accept-intake-candidate'; readonly candidateId: string }
+  | { readonly kind: 'delay-intake-candidate'; readonly candidateId: string }
   /**
    * The player asked to hire a staff member
    * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)). One stable
@@ -2520,6 +2522,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onAdmit: () => {
       dispatchCommand({ kind: 'admit-prisoner' }, intakePanel.submitControl);
     },
+    onAcceptCandidate: (candidateId, control) => {
+      dispatchCommand({ kind: 'accept-intake-candidate', candidateId }, control);
+    },
+    onDelayCandidate: (candidateId, control) => {
+      dispatchCommand({ kind: 'delay-intake-candidate', candidateId }, control);
+    },
+    onControlCreated: (control) => busy.add(control),
   });
 
   // ---- bottom-right regime panel (Regime tab) -----------------------
@@ -2601,8 +2610,17 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onFollowEmptyInstruction: (everAdmitted) => {
       const tab = everAdmitted ? 'manage' : 'build';
       dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
-      const destination = everAdmitted ? '.hud-intake__admit' : '.hud-build__arm';
-      hud.querySelector<HTMLElement>(destination)?.focus();
+      if (!everAdmitted) {
+        hud.querySelector<HTMLElement>('.hud-build__arm')?.focus();
+      } else {
+        // The legacy Admit control is hidden while screened offers are shown.
+        // Focus the first actionable offer, or the tab if today's board is empty.
+        const offer = intakePanel.element.querySelector<HTMLButtonElement>('[data-candidate-accept]');
+        const destination = offer ?? (intakePanel.submitControl.hidden
+          ? hud.querySelector<HTMLButtonElement>('.ui-tab[data-tab="manage"]')
+          : intakePanel.submitControl);
+        destination?.focus();
+      }
     },
     onSelectPrisoner: (prisonerId) => {
       runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
@@ -3318,6 +3336,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // many are at each stage and which stage is terminal; the panel decides the
     // sentences; this line decides nothing.
     intakePanel.setPipeline(next.intakePipeline);
+    intakePanel.setCandidates(next.intakePipeline?.candidates, next.clock);
     // And what the prison is worth, on terms that are *not* identical to the
     // eight lines above it, which is the point of the field rather than an
     // inconsistency (issue #1183). Those are pulled per tab and absent when

@@ -407,6 +407,20 @@ export class PrisonerColdState {
     };
   }
 
+  /**
+   * Every prisoner's outstanding path-request id, ascending by entity id.
+   *
+   * **Not part of `getSnapshot` above, and that is deliberate rather than an
+   * omission** (issue #1373). An id is only meaningful beside the
+   * `NavigationSystem` queue entry it names, so it travels in the save's
+   * `inFlight` section with that queue, and a save that predates the section
+   * carries neither -- which `getSnapshot`'s own two lists cannot express,
+   * because every save that exists carries them.
+   */
+  public getPathRequestSnapshot(): readonly (readonly [EntityId, string])[] {
+    return [...this.currentActionPathRequestId.entries()].sort(([a], [b]) => a - b);
+  }
+
   public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>): void {
     this.accommodationInstanceId.clear();
     for (const [entityId, instanceId] of snapshot.accommodationInstanceId) this.accommodationInstanceId.set(entityId, instanceId);

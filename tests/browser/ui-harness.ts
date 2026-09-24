@@ -462,6 +462,19 @@ const BASE_VIEW_MODEL: HudViewModel = {
   },
 };
 
+/** A screened day-three offer; the harness supplies data, while the real browser spec checks generation. */
+const CANDIDATE_VIEW_MODEL: HudViewModel = {
+  ...BASE_VIEW_MODEL,
+  intakePipeline: {
+    waiting: 0, failed: 0, total: 0, waitingWithoutPlace: 0, stages: [],
+    candidates: [{
+      id: 'fixture-1', riskTier: 1, sentenceLengthTicks: 12_000,
+      contrabandRolled: false, bountyMinorUnits: 150,
+      expiresAtTick: 4 * 2_400, status: 'new',
+    }],
+  },
+};
+
 /**
  * A room catalogue in the shape `roomCatalogue()` in `src/main.ts` projects,
  * written out here rather than imported so the specs exercise the *panel* and
@@ -1303,7 +1316,7 @@ window.lockstateUiHarness = {
     await new Promise((resolve) => setTimeout(resolve, 0));
   },
 
-  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void {
+  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number; readonly candidates?: boolean }): void {
     hud?.destroy();
     intents.length = 0;
     // The previous mount's sink belongs to a destroyed HUD; a gesture sent to
@@ -1350,7 +1363,7 @@ window.lockstateUiHarness = {
       localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
       // the state the real app paints before any session exists.
-      viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,
+      viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : options?.candidates === true ? CANDIDATE_VIEW_MODEL : BASE_VIEW_MODEL,
       build: options?.buildables === undefined ? BUILD_MODEL : buildModelWithCatalogueOf(options.buildables),
       rooms: ROOMS_MODEL,
       // `empty` is about the *view model* -- a prison with nothing in it --
@@ -1923,8 +1936,8 @@ window.lockstateUiHarness = {
   },
 
   clickAdmitPrisoner(): boolean {
-    // The Intake panel's only control, and the only `.ui-action` in it.
-    const button = document.querySelector<HTMLButtonElement>('.hud-intake .hud-intake__admit');
+    // Candidate offers replaced the unlimited direct admission control (#594).
+    const button = document.querySelector<HTMLButtonElement>('.hud-intake [data-candidate-accept]');
     if (button === null) return false;
     button.click();
     return true;
@@ -1956,7 +1969,7 @@ window.lockstateUiHarness = {
   intakeProbe(): IntakeProbe {
     const panel = document.querySelector<HTMLElement>('.hud-intake');
     const body = panel?.querySelector<HTMLElement>('.ui-panel__body') ?? null;
-    const admit = document.querySelector<HTMLButtonElement>('.hud-intake .hud-intake__admit');
+    const admit = document.querySelector<HTMLButtonElement>('.hud-intake [data-candidate-accept]');
     const noPlace = panel?.querySelector<HTMLElement>('.hud-intake__no-place') ?? null;
     const pipeline = panel?.querySelector<HTMLElement>('.hud-intake__pipeline') ?? null;
     return {

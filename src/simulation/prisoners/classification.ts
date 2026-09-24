@@ -31,6 +31,12 @@ export interface AdmissionRequest {
   /** Omitted: drawn inside the simulation. Present: used exactly as given, and `admitPrisonerSchema` has already refused a non-positive or out-of-range one. */
   readonly sentenceLengthTicks?: number;
   readonly priorIncidents: number;
+  /** Screened outside the prison (#594); the ordinary AdmitPrisoner path omits it. */
+  readonly preparedCandidate?: {
+    readonly riskTier: RiskTier;
+    readonly contrabandCategoryId?: string;
+    readonly bountyMinorUnits: number;
+  };
 }
 
 export interface ClassificationResult {

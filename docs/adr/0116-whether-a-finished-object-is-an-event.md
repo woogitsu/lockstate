@@ -351,7 +351,7 @@ the tick already holds.
 
 ### 4b. Save format: zero version bump, one bounded forward-compatibility cost
 
-`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:38`) and does not
+`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:39`) and does not
 move. `alertsSectionSchema` (`:624-630`) stores `records:
 z.array(simulationEventSchema).max(MAX_BUFFERED_SIMULATION_EVENTS)` — **the
 protocol's own union, not a copy** (`:613-617` argues why), so a new member is
@@ -361,7 +361,7 @@ The cost that is real and should be named rather than discovered: a save
 written by a build that has this member, read by a build that does not, fails
 the discriminated union and is refused as `invalid-shape`. That is the same
 cost `masterSeed` and the alerts section itself already record
-(`src/persistence/save-schema.ts:608-611`), and the corpus has accepted it
+(`src/persistence/save-schema.ts:609-612`), and the corpus has accepted it
 twice; it is listed here so a third acceptance is deliberate.
 
 ### 4c. Projection vocabulary: no new projection, and one gap that decides the payload

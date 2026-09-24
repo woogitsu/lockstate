@@ -1,5 +1,5 @@
 import { type Page, expect, test } from './network-changed-fixture';
-import { buy, currentTick, installTee, openApp, sentCommands, showPanel, tab } from './playtest-harness';
+import { acceptFirstCandidate, buy, currentTick, installTee, openApp, sentCommands, showPanel, tab, waitForQueueEmpty } from './playtest-harness';
 
 /**
  * **`ReleaseGuardAssignment` can be pressed in a real session, at every width
@@ -253,6 +253,27 @@ async function zoneTheCell(page: Page): Promise<void> {
   await expect(metric(page, 'rooms'), 'the walled cell was never zoned').toHaveText('1');
 }
 
+/** #590 only places a candidate after a real bed exists in a completed cell. */
+async function furnishTheCell(page: Page): Promise<void> {
+  await tab(page, 'build').click();
+  await buy(page, 'bed-wooden', 1);
+  await buy(page, 'toilet-brick', 1);
+  const coordinates = page.locator('.hud-build__coordinates');
+  if ((await coordinates.getAttribute('data-collapsed')) === 'true') {
+    await coordinates.locator('> .ui-section__header').click();
+  }
+  for (const [buildable, x, y] of [['bed-wooden', CELL.x, CELL.y], ['toilet-brick', CELL.x + 1, CELL.y]] as const) {
+    await page.locator(`.hud-build__list [data-buildable="${buildable}"]`).click();
+    await page.getByRole('spinbutton', { name: 'Tile X' }).fill(String(x));
+    await page.getByRole('spinbutton', { name: 'Tile Y' }).fill(String(y));
+    await coordinates.locator('.ui-action').click();
+  }
+  await expect(page.locator('.hud__refusal'), 'the furniture order was refused').toBeHidden();
+  await transport(page, 'Play at normal speed').click();
+  await waitForQueueEmpty(page, 90_000);
+  await pause(page);
+}
+
 interface ReleaseReading {
   /** A row naming a guard exists, so a miss below is not read as an unreachable control. */
   readonly present: boolean;
@@ -351,9 +372,10 @@ test.describe('ReleaseGuardAssignment is pressable in a real session (#1357)', (
 
       await wallTheCell(page);
       await zoneTheCell(page);
+      await furnishTheCell(page);
 
       await showPanel(page, 'manage', '.hud-intake');
-      await page.locator('.hud-intake__admit').click();
+      await acceptFirstCandidate(page);
       await expect(metric(page, 'prisoners'), 'the admission was refused, so the sector asks for nobody').toHaveText('1');
       await page.locator('.hud-staff__hire').click();
       await expect(metric(page, 'staff'), 'the hire was refused').toHaveText('1');

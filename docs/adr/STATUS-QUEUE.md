@@ -2218,7 +2218,7 @@ The two that this window did **not** move, because they were already wrong when
 it opened — and neither file is in it:
 
 - §2's ADR 0071 entry gave the concurrent-use ceiling's three production
-  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  callers as `src/simulation/prisoners/action-system.ts:840`, `:1067` and
   `:1082`. **All three are doc-comment prose**, and that file is byte-identical
   at the oldest commit this container's history reaches and at `c57f5fa8`, so
   the numbers were false through every window any recent anchor examined. The
@@ -3976,7 +3976,7 @@ are corrected below with the old span kept beside the new one.
 **A third citation was wrong when it was WRITTEN, and it is a wrong file
 rather than a wrong line.** §2's ADR 0071 entry names the concurrent-use
 ceiling's *"three production callers"* as
-`src/simulation/prisoners/action-system.ts:820`, `:1067` and `:1082`. That file
+`src/simulation/prisoners/action-system.ts:840`, `:1067` and `:1082`. That file
 is a member of this window, so the three lines were opened: on `3f8c00b0` they
 are comment prose, and at `71617799` — the commit that wrote the citation —
 they were comment prose as well. The three callers that pass a capability were
@@ -6738,7 +6738,7 @@ already false when this window opened.** The one this window actually
 falsified is the smallest of them.
 
 **Falsified by this window:** §5's ADR 0009 entry cites
-`src/persistence/save-schema.ts:1198` for the comment naming `masterSeedSchema`
+`src/persistence/save-schema.ts:1199` for the comment naming `masterSeedSchema`
 *"from `services/challenges`"*. #571's V4 bounds-recovery work added sixteen
 lines above it, so it is **`:1214`** here. That is the fifth pair of numbers
 this one comment has been given and the sentence it supports has never
@@ -9376,7 +9376,7 @@ Measured at `05640b6` (v0.0.210):
   room (`src/simulation/objects/room-capacity.ts:176-201`, ADR 0028 decision 2)
   and reads no rectangle; the rule this amendment scopes is the
   *concurrent-use* ceiling, whose three production callers
-  (`src/simulation/prisoners/action-system.ts:1280`, `:1672`, `:1710` — **these
+  (`src/simulation/prisoners/action-system.ts:1300`, `:1672`, `:1710` — **these
   read `:1168`, `:1531` and `:1569` from the `ebdcb317` anchor until this one,
   and all three are kept beside the new values rather than deleted**) all pass a
   capability and all sit behind a `room-catalog-id` target, so only
@@ -13657,7 +13657,7 @@ all.
 **The two that do not, and why no anchor could have found them.**
 
 - **§2's ADR 0071 entry gave the concurrent-use ceiling's three production
-  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  callers as `src/simulation/prisoners/action-system.ts:840`, `:1067` and
   `:1082`.** All three are doc-comment prose. `git show` on the oldest commit
   this container's history reaches puts the same bytes at those lines as
   `c57f5fa8` does, so the file has not moved in any window a recent anchor
@@ -13820,7 +13820,7 @@ genuinely live citations outside the window. **All eight were opened and all
 eight hold** —
 `src/simulation/objects/room-capacity.ts:176-201` (the `residentCapacity`
 summation, still opening at `:176` and still closing at `:201`),
-`src/simulation/prisoners/action-system.ts:1168`, `:1531` and `:1569` (the
+`src/simulation/prisoners/action-system.ts:1188`, `:1531` and `:1569` (the
 three `RoomInstanceRegistry` methods, exactly where the previous pass moved
 them), `src/simulation/prisoners/release.ts:216`
 (`entityStore.destroy(entityId);`), `tests/unit/entity-generation-wrap.test.ts:124` (`const stale = store.spawn();`),
@@ -17511,7 +17511,7 @@ their authors. Full repository verification belongs to this PR's CI.
   this session's bookkeeping. Another tab's winning write is returned as a
   refusal at `:917`, without retry. The save-schema change adds a comment
   to the revision input; the master-seed boundary sentence remains at
-  `src/persistence/save-schema.ts:1380-1382` on both trees.
+  `src/persistence/save-schema.ts:1552-1554` on both trees.
 - **Two new persistence sentences overstate that implementation.**
   `docs/PERSISTENCE.md:2649-2650` says the manual refusal is reached only
   after retry, but the other-tab branch at `session-controller.ts:917`
@@ -17719,7 +17719,7 @@ experiment, SQL suite or historical measurement was re-run.
   `:2649-2650` and `:2654-2656` still read what the bullet quotes, `:917`
   still returns the other tab's refusal directly, `:965-974` still maps the
   dropped submission to a failed result, and
-  `src/persistence/save-schema.ts:1380-1382` still carries the master-seed
+  `src/persistence/save-schema.ts:1552-1554` still carries the master-seed
   boundary sentence. ADR 0031's discharged coordinate holds too:
   `src/ui/hud/build-panel.ts:740` is
   `export const BUILD_QUEUE_ROW_LIMIT = 64;`.
@@ -17946,7 +17946,7 @@ experiment, SQL suite or historical measurement was re-run.
   so it was wrong when written or stale from before — an off-by-one no delta
   method can reach, and the fourth instance this chain has recorded of the
   class.
-- **`src/persistence/save-schema.ts:1289` was 91 lines out before the window
+- **`src/persistence/save-schema.ts:1290` was 91 lines out before the window
   and is 155 out after it.** The `masterSeedSchema` *"from
   `services/challenges`"* comment §5's ADR 0009 bullet cites is at
   **`:1444`** here and was at **`:1380`** at `a29699ff` — which is the very
@@ -25895,9 +25895,11 @@ one direction.
     (`src/main.ts:199`, `__LOCKSTATE_TELEMETRY_ENVIRONMENT__`).
   - **The bottom pair is unmoved too, at the values the reading above moved
     them to**: the second `telemetry.enabled` gate **`:4494`**
-    (`src/main.ts:4494`, `if (telemetry.enabled && appRoot !== null) {`) and
-    the consent mount **`:4499`** (`src/main.ts:4499`,
-    `createTelemetryConsentPrompt({`). **So the two halves have stopped
+    (`src/main.ts:4445`, `if (telemetry.enabled && appRoot !== null) {`) and
+    the consent mount **`:4499`** (`src/main.ts:4450`,
+    `createTelemetryConsentPrompt({`). The bold line numbers record this
+    historical reading; the `src/main.ts` citations point to the same constructs
+    at their current lines. **So the two halves have stopped
     splitting after thirteen consecutive readings in which they did not** —
     and they stopped not because anything was repaired but because the file
     they both point into went a whole window untouched.
@@ -25949,9 +25951,9 @@ one direction.
     directory from outside it still **`:227`**, and the tracked span still
     **`:199-261`**.
   - **The bottom pair moves by +161**: the second `telemetry.enabled` gate
-    `:4333` → **`:4494`** (`src/main.ts:4494`,
+    `:4333` → **`:4494`** (`src/main.ts:4445`,
     `if (telemetry.enabled && appRoot !== null) {`), and the consent mount
-    `:4338` → **`:4499`** (`src/main.ts:4499`,
+    `:4338` → **`:4499`** (`src/main.ts:4450`,
     `createTelemetryConsentPrompt({`). **The two halves have therefore moved
     by different amounts for the thirteenth consecutive reading** — and for
     the first time in that run one half is at zero *and* the other is
@@ -26172,7 +26174,7 @@ one direction.
   it corrected; this is the fourth consecutive anchor at which that has been
   demonstrated inside this file's own text, which stops being an anecdote and
   starts being the measured base rate. And **there are two mentions
-  now, not one**: `src/persistence/save-schema.ts:1289` names
+  now, not one**: `src/persistence/save-schema.ts:1290` names
   `masterSeedSchema` *"from `services/challenges`"* in a comment explaining why it
   does **not** import it (this read `:1164`, then `:1182` at `07add3e` after
   #486's refused-restore work added eighteen lines above it, then `:1198` after

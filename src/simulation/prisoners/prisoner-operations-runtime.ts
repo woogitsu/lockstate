@@ -5,7 +5,7 @@ import type { SimulationEventLog } from '../events';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import type { SystemRegistration } from '../kernel/system';
-import { LocomotionStore, LocomotionSystem } from '../locomotion';
+import { LocomotionStore, LocomotionSystem, type LocomotionSnapshot } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { CarryJobExecutor } from '../operations/carry-executor';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
@@ -107,6 +107,24 @@ export interface DelayedAdmission {
  * dispatch, and the state this reports is already carried by residency and
  * cold-state accommodation.
  */
+/** What `PrisonerOperationsRuntime.getTravelSnapshot` carries: see that method. */
+export interface PrisonerTravelSnapshot {
+  /** Keyed by component index, the key `LocomotionStore` is addressed with for this population. */
+  readonly locomotion: LocomotionSnapshot;
+  readonly pathRequestIds: readonly (readonly [EntityId, string])[];
+  readonly requestSequence: number;
+}
+
+/**
+ * A travel snapshot to resume, and the one question the resume has to ask of
+ * the `NavigationSystem` that was restored beside it. Passed to
+ * `loadSnapshot`; absent means the save carries no travel at all.
+ */
+export interface PrisonerTravelRestore {
+  readonly snapshot: PrisonerTravelSnapshot;
+  readonly knowsRequest: (requestId: string) => boolean;
+}
+
 export interface ExcessRelocationOutcome {
   readonly relocated: readonly ExcessResidentRelocation[];
   readonly stranded: readonly EntityId[];
@@ -284,6 +302,8 @@ export interface PrisonerOperationsRuntimeOptions {
    * catalog and the event log for `createResidentRelocationNotice`.
    */
   readonly housedNotice?: IntakeHousedNotice;
+  /** Paid once after a screened candidate actually occupies a place. */
+  readonly candidateBountyCredit?: (amountMinorUnits: number) => void;
   /**
    * How long a solitary sanction runs (issue #80,
    * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
@@ -413,6 +433,8 @@ export class PrisonerOperationsRuntime {
    */
   public admittedCount = 0;
   private delayedAdmissions: DelayedAdmission[] = [];
+  private readonly pendingCandidateProfiles = new Map<EntityId, NonNullable<AdmissionRequest['preparedCandidate']>>();
+  private readonly candidateBountyCredit: ((amountMinorUnits: number) => void) | undefined;
   private readonly delayedIntakeSystem: SystemRegistration = {
     id: 'prisoners.delayed-intake', order: 49, schedule: { intervalTicks: 5, phaseTicks: 0 },
     update: (context) => this.drainDelayedAdmissions(context.tick),
@@ -422,6 +444,15 @@ export class PrisonerOperationsRuntime {
 
   public getDelayedIntakeSnapshot(): readonly DelayedAdmission[] {
     return this.delayedAdmissions.map((entry) => ({ input: { ...entry.input }, originTile: { ...entry.originTile }, queuedAtTick: entry.queuedAtTick }));
+  }
+
+  public getPendingCandidateProfilesSnapshot(): readonly (readonly [EntityId, NonNullable<AdmissionRequest['preparedCandidate']>])[] {
+    return [...this.pendingCandidateProfiles].map(([entityId, profile]) => [entityId, { ...profile }] as const);
+  }
+
+  public loadPendingCandidateProfilesSnapshot(entries: readonly (readonly [EntityId, NonNullable<AdmissionRequest['preparedCandidate']>])[] = []): void {
+    this.pendingCandidateProfiles.clear();
+    for (const [entityId, profile] of entries) this.pendingCandidateProfiles.set(entityId, { ...profile });
   }
 
   public holdingAgeBands(atTick: number): { readonly grace: number; readonly strained: number; readonly critical: number } {
@@ -456,6 +487,7 @@ export class PrisonerOperationsRuntime {
   private readonly query: EntityQuery;
 
   public constructor(options: PrisonerOperationsRuntimeOptions) {
+    this.candidateBountyCredit = options.candidateBountyCredit;
     this.entityStore = new EntityStore(options.capacity);
     this.bitset = new ComponentBitset(options.capacity);
     this.query = new EntityQuery(this.entityStore, this.bitset);
@@ -483,6 +515,13 @@ export class PrisonerOperationsRuntime {
       undefined,
       options.gangAssigner,
       options.housedNotice,
+      (entityId) => this.pendingCandidateProfiles.get(entityId),
+      (entityId) => {
+        const profile = this.pendingCandidateProfiles.get(entityId);
+        if (profile === undefined) return;
+        this.candidateBountyCredit?.(profile.bountyMinorUnits);
+        this.pendingCandidateProfiles.delete(entityId);
+      },
     );
     // The crowding term's denominator (issue #586), asked live on every update
     // of the policy this runtime's intake houses arrivals under -- the same
@@ -957,6 +996,7 @@ export class PrisonerOperationsRuntime {
    * of the teardown -- which is precisely how #111 happened one layer down.
    */
   public releasePrisoner(entityId: EntityId, atTick = 0): boolean {
+    this.pendingCandidateProfiles.delete(entityId);
     return releasePrisoner(this.releaseSurfaces, entityId, atTick);
   }
 
@@ -983,6 +1023,7 @@ export class PrisonerOperationsRuntime {
       roomFilth: this.roomFilth.getSnapshot(),
       workOutput: this.workOutput.getSnapshot(),
       delayedIntake: this.getDelayedIntakeSnapshot(),
+      pendingCandidateProfiles: this.getPendingCandidateProfilesSnapshot(),
       holdingStays: this.intakeSystem.getHoldingSnapshot(),
     };
   }
@@ -996,7 +1037,22 @@ export class PrisonerOperationsRuntime {
    * round-trips a snapshot without one gets a window that says it opened at 0,
    * which is what a fixture with no clock means.
    */
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0): void {
+  /**
+   * The prisoners' half of the work in flight (issue #1373, ADR 0059 option 5):
+   * every walk and heading, every outstanding path-request id, and the counter
+   * that names the next one. The navigation queue those ids name is
+   * `NavigationSystem.getInFlightSnapshot`, and the two travel together in the
+   * save's `inFlight` section, because an id is meaningless without its entry.
+   */
+  public getTravelSnapshot(): PrisonerTravelSnapshot {
+    return {
+      locomotion: this.locomotion.getSnapshot(),
+      pathRequestIds: this.coldState.getPathRequestSnapshot(),
+      requestSequence: this.actionSystem.getRequestSequence(),
+    };
+  }
+
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0, travel?: PrisonerTravelRestore): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -1007,6 +1063,7 @@ export class PrisonerOperationsRuntime {
     this.roomFilth.loadSnapshot(snapshot.roomFilth ?? { rooms: [], exposures: [] });
     this.workOutput.loadSnapshot(snapshot.workOutput ?? { kitchen: [], laundry: [], cleanKits: [], mealClaims: [] });
     this.loadDelayedIntakeSnapshot(snapshot.delayedIntake);
+    this.loadPendingCandidateProfilesSnapshot(snapshot.pendingCandidateProfiles);
     this.intakeSystem.loadHoldingSnapshot(snapshot.holdingStays);
 
     // Re-derive the query bitset from restored entity liveness -- the bitset
@@ -1017,6 +1074,43 @@ export class PrisonerOperationsRuntime {
       else this.bitset.remove(index, PRISONER_COMPONENT_ID);
     }
 
+    if (travel === undefined) this.resetTravelForASaveThatCarriesNone();
+    else this.resumeTravel(travel);
+
+    // Concurrent-use claims are derived, not persisted (ADR 0029), so they are
+    // rebuilt here from the phase and action target the snapshot did carry.
+    // **Order is load-bearing and this is the last step for a reason**: the
+    // registry's `loadSnapshot` above cleared every claim, and the travel step
+    // above has settled every `travelling` prisoner -- resumed, or dropped to
+    // `idle` with their target cleared -- so this scan sees exactly the
+    // prisoners who are genuinely still performing. A traveller holds no claim
+    // in a live session either (ADR 0029 decision 2), so a resumed walk needs
+    // none rebuilt.
+    this.actionSystem.reinstateUseClaims();
+
+    // **After the components, because it clears rather than reads them.** A
+    // save carries no substitution history (issue #435 puts a save-schema
+    // change out of scope, and `SubstitutionRecordComponent` says why that is
+    // the right answer rather than only the permitted one), so a restore opens
+    // a fresh counting window instead of resuming one. Left alone, the counts
+    // this runtime happened to be holding would survive into a population
+    // re-indexed from somebody else's save -- #111's shape, one component
+    // further out.
+    this.actionSystem.reopenSubstitutionWindow(atTick);
+  }
+
+  /**
+   * What every restore did before issue #1373, and what a restore of a save
+   * written before it still does: such a save carries no walk and no
+   * navigation queue, so a `'travelling'` prisoner's path request named an
+   * entry in a `NavigationSystem` that no longer exists.
+   *
+   * The two comments below are this method's body as it stood, unchanged:
+   * absence of the `inFlight` section is a fact about the save's age, and it
+   * is honoured with exactly what the build that wrote it would have done on
+   * load (ADR 0038 §1).
+   */
+  private resetTravelForASaveThatCarriesNone(): void {
     // A walk is the second half of the transient travel state the block below
     // drops, and it is dropped for the same reason: it names waypoints from a
     // route a rebuilt `NavigationSystem` no longer holds, and a restored
@@ -1031,35 +1125,54 @@ export class PrisonerOperationsRuntime {
     // resolve it, leaving that entity stuck forever. Drop back to 'idle' so
     // the next reconsideration cycle re-selects and re-requests instead.
     const travellingPhase = ACTION_PHASES.indexOf('travelling');
-    const idlePhase = ACTION_PHASES.indexOf('idle');
     for (let index = 0; index <= this.entityStore.maxActiveIndex; index += 1) {
       if (!this.entityStore.isIndexAlive(index)) continue;
       if (this.currentAction.phase[index] !== travellingPhase) continue;
-      this.currentAction.phase[index] = idlePhase;
-      const entityId = this.entityStore.getIdByIndex(index);
-      this.coldState.setActionTarget(entityId, undefined);
-      this.coldState.setPathRequestId(entityId, undefined);
+      this.dropTravellerToIdle(index);
     }
+  }
 
-    // Concurrent-use claims are derived, not persisted (ADR 0029), so they are
-    // rebuilt here from the phase and action target the snapshot did carry.
-    // **Order is load-bearing and this is the last step for a reason**: the
-    // registry's `loadSnapshot` above cleared every claim, and the loop above
-    // has just dropped every `travelling` prisoner to `idle` and cleared their
-    // target -- so this scan sees exactly the prisoners who are genuinely still
-    // performing, and cannot reinstate a claim for a journey that no longer
-    // exists.
-    this.actionSystem.reinstateUseClaims();
+  /**
+   * Resumes every walk and every outstanding path request a save carried
+   * (issue #1373): the save-then-continue session is the continue session.
+   *
+   * **Nothing is pruned to make the state look tidier**, because anything a
+   * restore tidies is a difference from the session that was saved. A walk
+   * whose prisoner is no longer `'travelling'` -- `onWalksArrived` already
+   * ignores such arrivals -- is restored as it was, and so is a `'travelling'`
+   * prisoner with neither a walk nor a request, whom `continueTravelling`
+   * sends to `idle` at the next reconsideration exactly as it would have.
+   *
+   * **One case is repaired, and it is unreachable from a save this build
+   * writes**: a request id the restored `NavigationSystem` does not hold. The
+   * writer captures the queue and the ids in one pass, so the two cannot
+   * disagree; a hand-edited or truncated save can. Such a prisoner would wait
+   * for ever on a result nothing will produce -- the failure the old reset
+   * existed to prevent -- so that one prisoner gets the old reset instead.
+   */
+  private resumeTravel(travel: PrisonerTravelRestore): void {
+    const { snapshot } = travel;
+    this.locomotion.loadSnapshot(snapshot.locomotion);
+    this.actionSystem.setRequestSequence(snapshot.requestSequence);
 
-    // **After the components, because it clears rather than reads them.** A
-    // save carries no substitution history (issue #435 puts a save-schema
-    // change out of scope, and `SubstitutionRecordComponent` says why that is
-    // the right answer rather than only the permitted one), so a restore opens
-    // a fresh counting window instead of resuming one. Left alone, the counts
-    // this runtime happened to be holding would survive into a population
-    // re-indexed from somebody else's save -- #111's shape, one component
-    // further out.
-    this.actionSystem.reopenSubstitutionWindow(atTick);
+    const travellingPhase = ACTION_PHASES.indexOf('travelling');
+    for (const [entityId, requestId] of snapshot.pathRequestIds) {
+      if (travel.knowsRequest(requestId)) {
+        this.coldState.setPathRequestId(entityId, requestId);
+        continue;
+      }
+      if (!this.entityStore.isAlive(entityId)) continue;
+      const index = this.entityStore.getIndex(entityId);
+      if (this.currentAction.phase[index] === travellingPhase && !this.locomotion.isWalking(index)) this.dropTravellerToIdle(index);
+    }
+  }
+
+  private dropTravellerToIdle(index: number): void {
+    this.locomotion.cancelWalk(index);
+    this.currentAction.phase[index] = ACTION_PHASES.indexOf('idle');
+    const entityId = this.entityStore.getIdByIndex(index);
+    this.coldState.setActionTarget(entityId, undefined);
+    this.coldState.setPathRequestId(entityId, undefined);
   }
 
   /**
@@ -1178,6 +1291,7 @@ export class PrisonerOperationsRuntime {
     this.position.tileX[index] = originTile.x;
     this.position.tileY[index] = originTile.y;
     this.intakeSystem.submitIntake(entityId, input);
+    if (input.preparedCandidate !== undefined) this.pendingCandidateProfiles.set(entityId, { ...input.preparedCandidate });
     return entityId;
   }
 }
