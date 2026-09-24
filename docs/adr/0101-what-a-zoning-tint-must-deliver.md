@@ -216,8 +216,8 @@ most tightly.
 
 **The blend, re-derived over all eighteen shipped room tints rather than
 taken from the branch's eight.** `ZONING_TINT_BY_ROOM_ID`
-(`src/rendering/world/appearance.ts:118-137`) and
-`ZONING_TINT_ALPHA_OVER_ART = 0.14;` (`src/rendering/world/appearance.ts:151`)
+(`src/rendering/world/appearance.ts:122-141`) and
+`ZONING_TINT_ALPHA_OVER_ART = 0.14;` (`src/rendering/world/appearance.ts:155`)
 were both opened directly. ARITHMETIC, blending each shipped hex over the
 116.4/128.9/142.9 base at α = 0.14 and reporting each result's own
 `max(r,g,b) − min(r,g,b)` — the same "how coloured does this read"
