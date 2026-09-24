@@ -3399,6 +3399,24 @@ const HUD_LAYOUT_VIEWPORTS = [
 ] as const;
 
 test.describe('the assembled application', () => {
+  test('Escape closes Layout without also putting down an armed Build tool', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await armBuildTool(page);
+    const arm = page.locator('.hud-build__arm');
+    await expect(arm).toHaveAttribute('aria-pressed', 'true');
+
+    await page.locator('.hud-layout__button').click();
+    await expect(page.locator('.hud-layout__body')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.hud-layout__body')).toBeHidden();
+    await expect(arm).toHaveAttribute('aria-pressed', 'true');
+
+    // With the menu already closed, Escape belongs to the world again.
+    await page.keyboard.press('Escape');
+    await expect(arm).toHaveAttribute('aria-pressed', 'false');
+  });
+
   test('the renderer canvas is the size of the window, and stays that way across resizes', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
