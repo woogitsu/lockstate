@@ -695,6 +695,12 @@ export class WorldScene extends Phaser.Scene {
     });
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
+      // Phaser emits `pointerup` for both touchEnd and touchCancel. An OS or
+      // browser interruption must abandon the preview, never place it.
+      if (pointer.wasCanceled) {
+        this.cancelAllGestures();
+        return;
+      }
       if (this.commitBuild(pointer)) return;
       if (this.commitObject(pointer)) return;
       if (this.commitArea(pointer)) return;

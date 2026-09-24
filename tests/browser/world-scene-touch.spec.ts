@@ -150,7 +150,7 @@ async function read(page: Page, probe: Point): Promise<CameraReading> {
 
 async function dispatch(
   client: CDPSession,
-  type: 'touchStart' | 'touchMove' | 'touchEnd',
+  type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel',
   fingers: readonly Finger[],
 ): Promise<void> {
   await client.send('Input.dispatchTouchEvent', {
@@ -537,6 +537,41 @@ test.describe('a second stationary finger abandons placement', () => {
       expect(await preview()).toBeDefined();
       await dispatch(client, 'touchEnd', []);
       expect(await placements()).toBe(1);
+      await client.detach();
+    });
+  }
+});
+
+test.describe('a cancelled touch never places a build', () => {
+  for (const tool of ['build', 'room', 'object'] as const) {
+    test(`cancels ${tool} when the browser cancels the touch`, async ({ page }) => {
+      await openHarness(page);
+      await page.evaluate((kind) => {
+        const h = window.lockstateWorldSceneHarness!;
+        if (kind === 'build') h.armBuildTool(true);
+        else if (kind === 'room') h.armRoomTool(true);
+        else h.armObjectTool(true);
+      }, tool);
+      const client = await page.context().newCDPSession(page);
+      const finger = { id: 0, x: 400, y: 300 };
+      const preview = () => page.evaluate((kind) => {
+        const h = window.lockstateWorldSceneHarness!;
+        return kind === 'build' ? h.targetedRun() : kind === 'room' ? h.targetedArea() : h.targetedObject();
+      }, tool);
+      const placements = () => page.evaluate(() => {
+        const h = window.lockstateWorldSceneHarness!;
+        return h.placedRuns().length + h.placedAreas().length + h.placedObjects().length;
+      });
+
+      await dispatch(client, 'touchStart', [finger]);
+      expect(await preview(), 'no touch placement was pending').toBeDefined();
+      await dispatch(client, 'touchCancel', []);
+      expect(await preview()).toBeUndefined();
+      expect(await placements(), 'a cancelled gesture placed an object').toBe(0);
+
+      await dispatch(client, 'touchStart', [finger]);
+      await dispatch(client, 'touchEnd', []);
+      expect(await placements(), 'a later normal gesture stopped working').toBe(1);
       await client.detach();
     });
   }
