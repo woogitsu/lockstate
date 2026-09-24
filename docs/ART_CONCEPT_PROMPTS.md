@@ -453,3 +453,12 @@ aggregate and east/south joints. The existing `concrete` simulation terrain
 id draws this render when encountered in a world snapshot; no paint tool or
 terrain rule changes are part of this batch. Provenance is in
 `assets/source/concepts/concrete-terrain-v1.md`.
+
+### Compacted gravel service path — `terrain.gravel.service_path`
+
+An original four-panel sheet studies the overhead stone distribution, low
+oblique angular chippings, a 3 × 3 repeat and a restrained grey–ochre palette.
+Blender models a one-tile compacted matrix with many shallow, distinct stones.
+The existing `gravel` terrain id draws this surface from a world snapshot;
+movement cost and paint controls remain unchanged. Provenance is in
+`assets/source/concepts/gravel-terrain-v1.md`.

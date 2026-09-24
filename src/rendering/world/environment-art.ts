@@ -168,13 +168,13 @@ export interface ArtCoverage {
 }
 
 /**
- * Three terrain types remain on the colour fallback:
+ * Two terrain types remain on the colour fallback:
  *
- * - `gravel`, `rock`, `water` -- no published Blender render covers
- *   them. Dirt, grass and concrete have separate Blender renders. The UI has
+ * - `rock`, `water` -- no published Blender render covers
+ *   them. Dirt, grass, concrete and gravel have separate Blender renders. The UI has
  *   no terrain painting control yet, but saved worlds can contain these tiles.
  */
-export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['gravel', 'rock', 'water'];
+export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['rock', 'water'];
 
 /**
  * Every catalogued object **except `object.bed`** is on the colour fallback.
@@ -278,6 +278,7 @@ const FLOOR_SPRITE_BY_TERRAIN_ID: Readonly<Record<string, EnvironmentSpriteId>> 
   dirt: 'env.terrain.dirt',
   grass: 'env.terrain.grass',
   concrete: 'env.terrain.concrete',
+  gravel: 'env.terrain.gravel',
 };
 
 const TERRAIN_ID_BY_NUMERIC_ID: ReadonlyMap<number, string> = new Map(
