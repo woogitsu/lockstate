@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { MinimapView } from '../../shared/minimap-view';
 import type { KeyValueStore } from '../../shared/key-value-store';
 import {
   KeyboardInputAdapter,
@@ -8,6 +9,8 @@ import {
   loadInputSettings,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
+import { projectMinimap } from '../world/minimap-projection';
+import type { WorldRenderView } from '../world/world-view';
 import { AtlasLibrary } from '../assets/atlas-library';
 import { planEnvironmentAtlas } from '../assets/environment-atlas-plan';
 import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
@@ -343,6 +346,15 @@ export class WorldScene extends Phaser.Scene {
    * scene to ask "how big is the world right now" outside the render loop.
    */
   private lastLoadedBounds: TileBounds | undefined;
+  private minimapRevision = -1;
+  private minimapWorld: WorldRenderView | undefined;
+  private minimapProjection: Omit<MinimapView, 'viewport'> | undefined;
+  private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
+
+  /** Connects the HUD after it mounts; neither side sends a simulation command. */
+  public setMinimapSink(sink: (view: MinimapView | undefined) => void): void {
+    this.minimapSink = sink;
+  }
 
   public constructor(options: WorldSceneOptions) {
     super('WorldScene');
@@ -773,6 +785,28 @@ export class WorldScene extends Phaser.Scene {
 
     this.lastLoadedBounds = frame.world.loadedBounds;
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
+    if (this.minimapRevision !== frame.revision || this.minimapWorld !== frame.world) {
+      this.minimapRevision = frame.revision;
+      this.minimapWorld = frame.world;
+      this.minimapProjection = projectMinimap(frame.world);
+    }
+    const minimapBounds = frame.world.loadedBounds;
+    if (this.minimapProjection !== undefined && minimapBounds !== undefined) {
+      const camera = this.cameraState();
+      const spanX = (minimapBounds.maxTileX - minimapBounds.minTileX + 1) * TILE_SIZE_PX;
+      const spanY = (minimapBounds.maxTileY - minimapBounds.minTileY + 1) * TILE_SIZE_PX;
+      this.minimapSink?.({
+        ...this.minimapProjection,
+        viewport: {
+          x: (camera.scroll.x - minimapBounds.minTileX * TILE_SIZE_PX) / spanX,
+          y: (camera.scroll.y - minimapBounds.minTileY * TILE_SIZE_PX) / spanY,
+          width: camera.viewport.width / camera.zoom / spanX,
+          height: camera.viewport.height / camera.zoom / spanY,
+        },
+      });
+    } else {
+      this.minimapSink?.(undefined);
+    }
     this.tiles?.update(frame, range);
     // After the tiles and with the same frame, because the two must not be able
     // to disagree: a name is only ever true of the floor it is written on, and

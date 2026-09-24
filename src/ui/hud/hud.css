@@ -508,6 +508,8 @@
 .hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-raised); }
 
 .hud-minimap__surface {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -621,6 +623,38 @@
   appearance: none;
   font: inherit;
   color: inherit;
+}
+
+.hud-minimap__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.hud-minimap__viewport {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 2px solid #f4e5ae;
+  background: rgb(244 229 174 / 10%);
+  box-shadow: 0 0 0 1px rgb(16 26 31 / 80%), inset 0 0 0 1px rgb(16 26 31 / 60%);
+  pointer-events: none;
+}
+
+.hud-minimap__canvas[hidden], .hud-minimap__viewport[hidden] { display: none; }
+.hud-minimap__placeholder--sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /*
