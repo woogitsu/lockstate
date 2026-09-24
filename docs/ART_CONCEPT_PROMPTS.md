@@ -435,3 +435,11 @@ an oblique material detail, a soil section and a 3 × 3 repeat preview. Blender
 uses tile-periodic noise with restrained mineral grit for the unzoned ground
 seen across the prison map. Provenance and border behavior are recorded in
 `assets/source/concepts/dirt-terrain-v1.md`.
+
+### Mown outdoor grass — `terrain.grass.mown`
+
+The original four-panel sheet studies overhead turf, oblique blade detail, a
+repeating field and an olive palette. Blender interprets it as a compact,
+seamless grass tile using periodic noise and sparse deterministic blade marks.
+It appears on painted `grass` terrain without changing simulation rules.
+Provenance is in `assets/source/concepts/grass-terrain-v1.md`.

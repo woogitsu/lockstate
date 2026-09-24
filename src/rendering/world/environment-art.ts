@@ -171,7 +171,7 @@ export interface ArtCoverage {
  * Most terrain is on the colour fallback, and each for a reason worth stating
  * once rather than guessing at later:
  *
- * - `grass`, `gravel`, `rock`, `water` -- no published Blender render covers
+ * - `gravel`, `rock`, `water` -- no published Blender render covers
  *   them. The original 23 owner sheets are two interior floors, two wall module sets, two door sets,
  *   furniture, fixtures, perimeter structures and security devices.
  * - `concrete` -- `floor.concrete.variants` would fit it exactly, and it is
@@ -179,7 +179,7 @@ export interface ArtCoverage {
  *   `zonedFloorSprite` above. Mapping it would add 2.3 MB to the first load to
  *   draw nothing. This is the row to add when terrain painting arrives.
  */
-export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'grass', 'gravel', 'rock', 'water'];
+export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'gravel', 'rock', 'water'];
 
 /**
  * Every catalogued object **except `object.bed`** is on the colour fallback.
@@ -282,6 +282,7 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
  */
 const FLOOR_SPRITE_BY_TERRAIN_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   dirt: 'env.terrain.dirt',
+  grass: 'env.terrain.grass',
 };
 
 const TERRAIN_ID_BY_NUMERIC_ID: ReadonlyMap<number, string> = new Map(

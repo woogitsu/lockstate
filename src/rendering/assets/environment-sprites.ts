@@ -76,6 +76,7 @@ export type EnvironmentArtCatalogKind = 'source-art' | 'rendered-art';
  */
 export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.dirt',
+  'env.terrain.grass',
   'env.floor.institutional',
   'env.wall.interior.face',
   'env.wall.interior.cap',
@@ -169,6 +170,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered compacted dirt with fine mineral grit, one seamless tile per repeat.',
+  },
+  /** Seamless mown turf beneath unzoned outdoor tiles. */
+  'env.terrain.grass': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.grass.mown',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered mown olive grass with subtle short blades, one seamless tile per repeat.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

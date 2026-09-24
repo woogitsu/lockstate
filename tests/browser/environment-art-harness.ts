@@ -49,6 +49,8 @@ const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
   chunkSizeTiles: CHUNK_SIZE_TILES,
   tileSizePx: TILE_SIZE_PX,
+  grassTileX: 0,
+  grassTileY: 1,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
@@ -121,6 +123,9 @@ function buildFrame(): RenderFrame {
   const world = new SparseWorld(CHUNK_SIZE_TILES);
   world.load(chunk);
   world.setOwned(chunk, true);
+  for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
+  }
 
   const room = defaultRoomContentRegistry.all()[0];
   if (room === undefined) throw new Error('The room catalog is empty, so nothing can be zoned.');
