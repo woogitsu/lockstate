@@ -71,10 +71,14 @@ describe('readNumberFieldEntry', () => {
   });
 
   it('truncates rather than rounding, in both phases', () => {
-    // `Number.parseInt` stops at the point. A field whose value is an integer
-    // count of bricks must not turn 2.9 into 3 of them.
+    // A field whose value is an integer count of bricks must not turn 2.9 into 3.
     expect(readNumberFieldEntry('2.9', 'typing', 1, 999).report).toBe(2);
     expect(readNumberFieldEntry('2.9', 'settled', 1, 999).report).toBe(2);
+  });
+
+  it('reads exponent notation as the number the browser displays', () => {
+    expect(readNumberFieldEntry('1e2', 'typing', 1, 999)).toEqual({ report: 100, restore: false });
+    expect(readNumberFieldEntry('1e2', 'settled', 1, 999)).toEqual({ report: 100, restore: false });
   });
 
   it('leaves a value inside the bounds exactly as typed', () => {

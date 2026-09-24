@@ -10768,6 +10768,20 @@ test.describe('the assembled application', () => {
    * fix they are 2 and 33. The literal strings below are here as well so that a
    * future change which makes both wrong in the same direction is still caught.
    */
+  test('the Buy quantity accepts a valid number-field exponent as its numeric value', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await openBuyRow(page);
+    const field = page.locator('.hud-build__buy .ui-number__input');
+    await field.fill('1e2');
+    await expect(field).toHaveValue('1e2');
+    await expect(page.locator('.hud-build__buy-submit')).toHaveText(
+      `Buy 100 × Brick · ${fundsText(100 * unitPriceOf('item.brick'))}`,
+    );
+  });
+
   test('the Buy control charges the quantity its label was showing when it was pressed (#548)', async ({ page }) => {
     await installCommandTee(page);
     await page.setViewportSize({ width: 1280, height: 800 });

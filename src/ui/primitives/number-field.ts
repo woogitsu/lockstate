@@ -106,8 +106,10 @@ export function readNumberFieldEntry(
   min: number | undefined,
   max: number | undefined,
 ): NumberFieldEntry {
-  const parsed = Number.parseInt(raw, 10);
-  if (Number.isNaN(parsed)) return { report: undefined, restore: phase === 'settled' };
+  // Native number inputs accept exponent notation. `parseInt('1e2')` reads 1,
+  // leaving a visible 100 in the field while the Buy button prices one item.
+  const parsed = raw.trim() === '' ? NaN : Number(raw);
+  if (!Number.isFinite(parsed)) return { report: undefined, restore: phase === 'settled' };
   return { report: clamp(parsed, min, max), restore: false };
 }
 
