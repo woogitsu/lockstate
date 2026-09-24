@@ -15,8 +15,9 @@ export function isActionCategoryAllowed(action: ActionDefinition, allowedCategor
  */
 export function scoreAction(needs: NeedsComponent, index: number, action: ActionDefinition): number {
   let score = 0;
-  for (const needId of Object.keys(action.needEffectsPerTick) as NeedId[]) {
-    const effect = action.needEffectsPerTick[needId] ?? 0;
+  const motivations = action.selectionNeedEffectsPerTick ?? action.needEffectsPerTick;
+  for (const needId of Object.keys(motivations) as NeedId[]) {
+    const effect = motivations[needId] ?? 0;
     const deficit = NEED_MAX - needs.get(index, needId);
     score += deficit * effect;
   }
