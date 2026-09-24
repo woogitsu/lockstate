@@ -3417,6 +3417,36 @@ test.describe('the assembled application', () => {
     await expect(arm).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('a separator arrow resizes its panel without panning the world camera', async ({ page }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).click();
+    await page.locator('.hud-build__remove').click();
+    await expect(page.locator('.hud-build__remove')).toHaveAttribute('aria-pressed', 'true');
+
+    const aim = { x: 640, y: 400 };
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, aim)).toBe('CANVAS');
+    const probe = async () => {
+      const count = (await objectCommandsSent(page, 'RemoveWall')).length;
+      await page.mouse.click(aim.x, aim.y);
+      return (await objectCommandsSent(page, 'RemoveWall')).slice(count)[0];
+    };
+    const before = await probe();
+    expect(before).toBeDefined();
+
+    const separator = page.locator('.hud-layout__separator--inspector');
+    const widthBefore = await separator.getAttribute('aria-valuenow');
+    await separator.focus();
+    await page.keyboard.down('ArrowLeft');
+    await page.waitForTimeout(500);
+    await page.keyboard.up('ArrowLeft');
+    expect(await separator.getAttribute('aria-valuenow')).not.toBe(widthBefore);
+    expect(await probe(), 'the separator arrow also moved the tile beneath a fixed world point').toEqual(before);
+  });
+
   test('the renderer canvas is the size of the window, and stays that way across resizes', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
