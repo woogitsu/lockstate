@@ -2826,6 +2826,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * distinction `dispatchShell` already draws for the tab bar, and a player
    * must be able to fold a panel away while a build order is in flight.
    */
+  // Keep one camera control and one pair of handlers. On phones the corner is
+  // hidden to avoid its measured collision with the full-width rail, while
+  // the strip's Layout drawer already floats without taking world space.
+  // createHudLayoutShell announces its first tier before it returns the menu
+  // host, so the initial placement is repeated once that host exists.
+  let mobileZoomHost: HTMLElement | undefined;
+  const placeMobileZoom = (phone: boolean): void => {
+    if (phone) {
+      mobileZoomHost?.append(zoomControl);
+    } else {
+      corner.insertBefore(zoomControl, minimapPanel.element);
+    }
+  };
   const layout: HudLayoutShell = createHudLayoutShell({
     localizer,
     root: hud,
@@ -2872,8 +2885,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * 307.38 to 2.00. Overview is the one tab with room, which is why the
      * ruling names it.
      */
-    onTierChange: placeAlertsFold,
+    onTierChange: (phone) => {
+      placeAlertsFold(phone);
+      placeMobileZoom(phone);
+    },
   });
+  mobileZoomHost = layout.preferencesSlot;
+  placeMobileZoom(hud.dataset['layoutTier'] === 'phone');
   strip.layoutSlot.append(layout.menu);
 
   // Only the controls that issue a *command* are disabled while one is in
