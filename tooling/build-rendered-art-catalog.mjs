@@ -115,6 +115,7 @@ export const PUBLISHED_ASSET_IDS = [
   'furniture.storage.rack.wooden',
   'furniture.utility.control_panel',
   'wall.interior.face',
+  'terrain.dirt.compacted',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));

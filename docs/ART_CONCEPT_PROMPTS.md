@@ -427,3 +427,11 @@ panel, cool enamel coping, dark skirting and one subtle joint per tile. Blender
 renders a shallow relief with no transparent margin, so the horizontal bands
 repeat without gaps. Provenance is in
 `assets/source/concepts/interior-wall-face-v1.md`.
+
+### Compacted outdoor dirt — `terrain.dirt.compacted`
+
+The original four-view reference shows a true overhead seamless ground tile,
+an oblique material detail, a soil section and a 3 × 3 repeat preview. Blender
+uses tile-periodic noise with restrained mineral grit for the unzoned ground
+seen across the prison map. Provenance and border behavior are recorded in
+`assets/source/concepts/dirt-terrain-v1.md`.

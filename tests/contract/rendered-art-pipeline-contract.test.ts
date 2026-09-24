@@ -102,14 +102,14 @@ describe('rendered-art pipeline contract', () => {
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 42 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 43 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
  * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
  * three more models, including the unpublished sink; the storage-rack batch
  * adds one more, the wooden-chair batch another, and the dining-table batch
  * adds the 29th; later medical, kitchen, laundry, security, utility and
- * library, wall cap, wall face and door face models bring the catalog to 42.
- * It runs with no Blender,
+ * library, wall cap, wall face, door face and dirt models bring the catalog to
+ * 43. It runs with no Blender,
  * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
@@ -122,12 +122,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 42 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 43 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(42);
+    expect(sidecar.entries.length).toBe(43);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

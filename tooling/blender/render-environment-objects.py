@@ -517,8 +517,8 @@ def main() -> None:
         origin = origin_object.matrix_world.translation
         low, high = _evaluated_bounds(collection)
 
-        # Repeating architectural tiles must meet at pixel edges.
-        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face"} else MARGIN_FRACTION
+        # Repeating architectural and terrain tiles must meet at pixel edges.
+        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted"} else MARGIN_FRACTION
         frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y
