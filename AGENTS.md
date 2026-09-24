@@ -1840,6 +1840,23 @@ elsewhere in this file. The standing permission does not name another CI job,
 another workflow edit, a pull request, a merge, or another owner reservation.
 
 
+**32. Allow the decoded-art assertion to have no legacy `assetId` entries
+(2026-09-24).** The all-rendered catalogue in the dining-table art branch has
+zero `assetId` entries and 29 `renderedArtId` entries. In the `browser` job,
+`set -euo pipefail` made the legacy `grep` exit before the rendered PNG check
+could run. The agent prepared commit `3586c1d2`, which lets either list be empty
+but fails if both are empty, and offered *"Tak — zastosuj tę poprawkę"* or
+*"Nie — pozostaw CI bez zmiany"*. The owner chose:
+
+> Tak — zastosuj tę poprawkę
+
+This is a separate release of reservation 3 for exactly that change to the
+`Assert the environment sheets decoded` step in `.github/workflows/ci.yml`.
+It does not authorise other workflow changes. This option was written by the
+agent and clicked by the owner, so it has the weaker provenance of a selected
+option rather than a free-form owner instruction.
+
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
