@@ -246,7 +246,7 @@ reason: nothing here still claims to be verbatim.
 
 `ZONING_TINT_BY_CATEGORY` was at `src/rendering/world/appearance.ts:85`, keyed
 by `RoomCategory` rather than by room id, and no longer exists at all:
-`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) is what
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:122`) is what
 option A put in its place. The floor underneath could not
 make up the difference at `430906af` (v0.0.757), because there was one floor:
 
