@@ -1355,6 +1355,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // a future 1 × 1 minimum cannot make it wrong silently.
   'hud.rooms.minimum': 'Minimalny rozmiar: {width} × {height}',
   'hud.rooms.minimum-none': 'Bez minimalnego rozmiaru',
+  'hud.rooms.yard-guidance': 'Plac spacerowy wymaga 8 × 8 pól. {zoom} pokazuje więcej mapy; {coordinates} pozwala wyznaczyć obszar bez przeciągania.',
+  'hud.rooms.yard-guidance-narrow': 'Plac spacerowy wymaga 8 × 8 pól. Przewiń w dół nad mapą albo użyj gestu szczypania, by oddalić widok; {coordinates} pozwala wyznaczyć obszar bez przeciągania.',
   // *Za małe* agrees with *pomieszczenie* (neuter), the noun this panel puts
   // on screen.
   'hud.rooms.too-small': 'Za małe — to pomieszczenie wymaga co najmniej {width} × {height} pól.',

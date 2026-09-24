@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { buildAndPopulate, installTee, openApp, press, tab, TILE } from './playtest-harness';
+import { buildAndPopulate, installTee, latestCounts, openApp, press, tab, TILE } from './playtest-harness';
 
 /**
  * Issue #957, measured on the assembled game at the playtest viewport.
@@ -75,4 +75,47 @@ test('a first 6×6 cell leaves no pointer-reachable 8×8 Yard on the default vie
   const after = await tileSpan();
   console.log(`[yard-957] 480px world span: ${before} tiles before Zoom out, ${after} after 3 presses`);
   expect(after).toBeGreaterThan(before);
+
+  // Follow the guidance as a keyboard user when the 8×8 drag is obscured.
+  await tab(page, 'zones').click();
+  const rooms = page.locator('.hud-rooms');
+  if ((await rooms.getAttribute('data-collapsed')) === 'true') await rooms.locator('> .ui-panel__header > .ui-panel__toggle').click();
+  await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
+  const guidance = page.locator('.hud-rooms__yard-guidance--desktop');
+  await expect(guidance).toBeVisible();
+  await expect(guidance).toContainText('Zoom out');
+  await expect(guidance).toContainText('Enter coordinates');
+  await expect(page.locator('.hud-rooms__rule-block')).toContainText('8 × 8');
+  await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+  await expect(guidance).toBeHidden();
+  await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
+
+  const coordinates = page.locator('.hud-rooms__coordinates');
+  if ((await coordinates.getAttribute('data-collapsed')) === 'true') await coordinates.locator('> .ui-section__header').press('Enter');
+  for (const [selector, value] of [
+    ['.hud-rooms__coord-x', '22'], ['.hud-rooms__coord-y', '20'],
+    ['.hud-rooms__coord-width', '8'], ['.hud-rooms__coord-height', '8'],
+  ] as const) await page.locator(`${selector} .ui-number__input`).fill(value);
+  const beforeRooms = (await latestCounts(page))?.rooms;
+  await page.locator('.hud-rooms__coordinates-submit').press('Enter');
+  await expect(page.locator('.hud-rooms__confirm')).toBeEnabled();
+  await page.locator('.hud-rooms__confirm').press('Enter');
+  await expect.poll(async () => (await latestCounts(page))?.rooms).toBe((beforeRooms ?? 0) + 1);
+  console.log('[yard-957] Yard 8×8 at (22,20) was designated via the visible coordinate route');
+});
+
+test('Yard advice uses the available zoom gesture when the zoom island is hidden', async ({ page }) => {
+  // A 1440×900 window at 200% page zoom has this effective CSS viewport.
+  await page.setViewportSize({ width: 720, height: 450 });
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tab(page, 'zones').click();
+  const rooms = page.locator('.hud-rooms');
+  if ((await rooms.getAttribute('data-collapsed')) === 'true') await rooms.locator('> .ui-panel__header > .ui-panel__toggle').click();
+  await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
+  await expect(page.locator('.hud__corner')).toBeHidden();
+  await expect(page.locator('.hud-rooms__yard-guidance--desktop')).toBeHidden();
+  await expect(page.locator('.hud-rooms__yard-guidance--narrow')).toBeVisible();
+  await expect(page.locator('.hud-rooms__yard-guidance--narrow')).toContainText('Enter coordinates');
 });
