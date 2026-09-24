@@ -411,3 +411,11 @@ enamel coping, continuous dark seams, and small metal anchors. Its Blender
 render has no transparent frame margin, so segments tile without gaps. The
 concept and modeling choices are recorded in
 `assets/source/concepts/interior-wall-cap-v1.md`.
+
+### Interior wall elevation — `wall.interior.face`
+
+The east-west wall face uses an original four-view reference for a pale plaster
+panel, cool enamel coping, dark skirting and one subtle joint per tile. Blender
+renders a shallow relief with no transparent margin, so the horizontal bands
+repeat without gaps. Provenance is in
+`assets/source/concepts/interior-wall-face-v1.md`.

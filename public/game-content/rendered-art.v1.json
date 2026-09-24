@@ -530,8 +530,8 @@
     {
       "assetId": "wall.interior.cap.overhead",
       "contentVersion": 1,
-      "image": "source-art/rendered.wall.interior.cap.overhead.b6cdaf524d91.png",
-      "sha256": "b6cdaf524d916245467b706fac7d3a954f5cf195c60bd37a7df1bccb63cfd13b",
+      "image": "source-art/rendered.wall.interior.cap.overhead.d24f0fdb26ec.png",
+      "sha256": "d24f0fdb26ec3f2db6b23b6f82bd12de0864f315f9edf5e72232dd11386009d0",
       "dimensionsPx": {
         "width": 256,
         "height": 64
@@ -543,6 +543,31 @@
       "frameTiles": {
         "width": 1,
         "height": 0.25
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "wall.interior.face",
+      "contentVersion": 1,
+      "image": "source-art/rendered.wall.interior.face.129ac9c633e2.png",
+      "sha256": "129ac9c633e2be1aea8cbcf413c9743b6583756ffd9f724ecfe03825bd985d36",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {
