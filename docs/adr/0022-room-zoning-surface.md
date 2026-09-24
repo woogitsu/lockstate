@@ -70,9 +70,10 @@ and every `file:line` below resolves there unless the text says otherwise.
 > below and a re-aimed anchor under a superseded decision reads as a current
 > one. **The 2026-09-05 re-aim in §4 is the argument for that policy rather
 > than against it**: it moved five anchors onto `appearance.ts:114` and `:99`,
-> and both had rotted again by 2026-09-15 — `zoningTint` is at
-> `src/rendering/world/appearance.ts:303` and `ZONING_TINT_ALPHA` at `:139`.
-> Ten days. What is corrected below is only the prose written in the present
+> and both had rotted again by 2026-09-15 — `zoningTint` was then at
+> `appearance.ts:303` and `ZONING_TINT_ALPHA` at `:139`. The Blender floor
+> replacement moved `export function zoningTint` to
+> `src/rendering/world/appearance.ts:277`. Ten days. What is corrected below is only the prose written in the present
 > tense **about today**: the Context's 2026-08-28 replacement anchors, and the
 > amendment's own.
 
