@@ -576,6 +576,16 @@ exactly `room.cell`, `room.holding-cell`, `room.solitary-cell`,
 `room.utility-room` — the other ten keep the flat 0.14 this decision's table
 was built on, unchanged.
 
+**2026-09-24 substrate update.** The paragraph above records the behaviour
+with the former blue source-art floor. The published Blender floor is now
+nearly neutral (measured channel spread ≈4.0), so all eighteen room tints
+clear that floor at the flat 0.14 alpha. `zoningTintAlphaOverArt` still
+computes the per-room value and retains the ADR 0101 cap for a future art
+change, but presently returns 0.14 for every shipped room. Accordingly the
+shared-alpha identity holds again for all 153 current pairs. The 45/108 split
+and its consequence below remain the historical record of the previous
+substrate, not a claim about the currently rendered Blender floor.
+
 **What this decision's own identity assumed, quoted rather than paraphrased
 so the amendment is checkable against it:**
 
