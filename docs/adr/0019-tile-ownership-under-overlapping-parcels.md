@@ -365,8 +365,8 @@ owned chunk and no parcels (`src/simulation/runtime/new-session.ts:279-281`). So
 > `src/simulation/world/sparse-world.ts:844`, that call is still inside
 > `fromSnapshot` (`src/simulation/world/sparse-world.ts:771`), and
 > `world = new SparseWorld(32);` is at
-> `src/simulation/runtime/new-session.ts:436`, still followed immediately by the
-> one `load` and the one `setOwned` on `:437-438`. **So the reachability
+> `src/simulation/runtime/new-session.ts:443`, still followed immediately by the
+> one `load` and the one `setOwned` on `:444-445`. **So the reachability
 > argument is intact in exactly the form this amendment left it**: a parcel is
 > still registered only on a snapshot restore, and a new session still has
 > none. What changes is the *stated
