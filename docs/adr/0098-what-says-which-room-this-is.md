@@ -35,6 +35,9 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-06 — all four decisions, against a summary
+rather than against this document's 855 lines.**
+
 **Amended by the owner on 2026-09-24 for `room.yard` only.** The owner was
 shown a comparison of the same Blender compacted-earth tile in an owned 8×8
 Yard at zoom 1 and 0.5. The choices were presented as **„Tak — ochrowe
@@ -53,9 +56,6 @@ RGB units at the flat art alpha, versus the former 6.02 minimum among the
 other 17. This is a real loss of palette separation. In the actual map those
 rooms still have different floor materials and names; the owner selected the
 outdoor material's readability with that tradeoff recorded.
-
-**Accepted by the owner on 2026-09-06 — all four decisions, against a summary
-rather than against this document's 855 lines.**
 
 The two rulings recorded below settled a *channel* and a *table*, and said so
 themselves: *"They do not accept this document's decisions 1 to 4."* This is
