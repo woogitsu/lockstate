@@ -175,19 +175,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     quarterTurns: 0,
     note: 'Speckled institutional linoleum, square swatch, tiles seamlessly at one tile per repeat.',
   },
-  /**
-   * A centre slice of the frontal wall module, not the whole module. The module
-   * is 488x273 -- 1.79 tiles wide for one tile of height -- so drawing it whole
-   * on a one-tile wall squashes it; a 290-wide slice is one tile at the same
-   * scale, and repeats with its own panel joint landing on each tile boundary.
-   */
+  /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {
-    kind: 'source-art',
-    assetId: 'wall.interior.modules',
-    sourceRectPx: { x: 150, y: 672, width: 290, height: 273 },
-    runtimeSizePx: { width: 128, height: 124 },
+    kind: 'rendered-art',
+    renderedArtId: 'wall.interior.face',
+    runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Frontal interior wall elevation: coping band, plaster, dark skirting. Drawn on east-west walls.',
+    note: 'Original wall elevation: enamel coping, pale plaster, panel joint and dark skirting. Drawn on east-west walls.',
   },
   /** A seamless Blender-rendered overhead coping strip, one tile per repeat. */
   'env.wall.interior.cap': {

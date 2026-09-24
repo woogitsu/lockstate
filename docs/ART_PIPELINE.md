@@ -321,11 +321,11 @@ gone before the file lands. `--verify-determinism` is therefore not needed:
 running the script twice and comparing digests is sufficient, and both the file
 digest and the raw-pixel digest are recorded per asset in the sidecar.
 
-**What it does not do.** It renders discrete objects. A *tiling* surface --
-floor, wall face, wall cap -- needs a zero-margin frame whose edges meet their
-own repeat exactly, and a 6% transparent margin is precisely wrong for that. The
-four surface frames in `environment-sprites.ts` remain cut from the owner
-sheets, and nothing here changes them.
+**Tiling surfaces.** A floor or wall run needs a zero-margin frame whose edges
+meet its own repeat exactly; a 6% transparent margin creates gaps. The rendered
+`wall.interior.cap.overhead` and `wall.interior.face` are zero-margin exceptions.
+The wall face is a shallow Blender relief representing an elevation in the
+game's 2D projection. The frontal door retains its owner sheet crop.
 
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the

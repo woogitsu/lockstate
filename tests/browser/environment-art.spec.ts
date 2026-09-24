@@ -135,7 +135,7 @@ test.describe('the environment artwork', () => {
 
   test('the Blender wall cap tiles without transparent seams', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.wall.interior.cap'].kind).toBe('rendered-art');
-    expect(ENVIRONMENT_SPRITES['env.wall.interior.face'].kind).toBe('source-art');
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.face'].kind).toBe('rendered-art');
     await openHarness(page);
     const readings = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
@@ -153,6 +153,29 @@ test.describe('the environment artwork', () => {
     for (const pixel of [readings!.start, readings!.middle, readings!.end]) {
       expect(pixel?.[3]).toBeGreaterThan(200);
     }
+  });
+
+  test('the Blender wall face has opaque tile edges and distinct coping and skirting', async ({ page }) => {
+    await openHarness(page);
+    const readings = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.wall.interior.face');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        top: harness.atlasPixel(frame.x + 32, frame.y + 2),
+        plaster: harness.atlasPixel(frame.x + 32, frame.y + 64),
+        base: harness.atlasPixel(frame.x + 32, frame.y + 120),
+        east: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        west: harness.atlasPixel(frame.x, frame.y + 64),
+      };
+    });
+    expect(readings?.size).toEqual([128, 128]);
+    for (const pixel of [readings!.top, readings!.plaster, readings!.base, readings!.east, readings!.west]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(readings!.top!, readings!.plaster!)).toBeGreaterThan(12);
+    expect(channelDistance(readings!.base!, readings!.plaster!)).toBeGreaterThan(20);
   });
 
   test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }) => {

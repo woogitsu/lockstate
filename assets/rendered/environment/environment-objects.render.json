@@ -1089,6 +1089,34 @@
         "height": 64,
         "opaquePixels": 16384
       }
+    },
+    {
+      "assetId": "wall.interior.face",
+      "image": "wall.interior.face.png",
+      "sha256": "129ac9c633e2be1aea8cbcf413c9743b6583756ffd9f724ecfe03825bd985d36",
+      "pixelSha256": "b589823ca64d9f274f885c61ea6f3e01584248e1ddf6b39619201b2925f42fa1",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

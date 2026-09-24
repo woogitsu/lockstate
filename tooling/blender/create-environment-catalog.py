@@ -103,6 +103,7 @@ MODELS = (
     ("furniture.delivery.dock_gate.closed", (3, 1)),
     ("furniture.kitchen.prep_counter", (2, 1)),
     ("furniture.library.bookshelf", (2, 1)),
+    ("wall.interior.face", (1, 1)),
     ("wall.interior.cap.overhead", (1, 0.25)),
 )
 
@@ -987,6 +988,29 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Tile", (0, 0, 0.06), (2, 2, 0.12), "concrete" if "concrete" in asset_id else "green", 0)
         box(collection, root, "Joint north-south", (0, 0, 0.121), (0.035, 2, 0.004), "shade", 0)
         box(collection, root, "Joint east-west", (0, 0, 0.121), (2, 0.035, 0.004), "shade", 0)
+    elif asset_id == "wall.interior.face":
+        # This is an elevation laid flat for the game's orthographic world
+        # projection. The full-width bands and east panel joint tile by pixel.
+        box(collection, root, "Pale plaster face", (0, 0, 0.04),
+            (1.0, 1.0, 0.08), "wall_cap_plaster", 0)
+        box(collection, root, "Blue grey coping band", (0, -0.425, 0.082),
+            (1.0, 0.15, 0.004), "wall_face_coping", 0)
+        box(collection, root, "Coping enamel highlight", (0, -0.442, 0.085),
+            (1.0, 0.028, 0.002), "wall_cap_inlay", 0)
+        box(collection, root, "Coping lower reveal", (0, -0.348, 0.084),
+            (1.0, 0.008, 0.002), "shade", 0)
+        box(collection, root, "Dark skirting", (0, 0.421, 0.083),
+            (1.0, 0.158, 0.004), "wall_face_skirting", 0)
+        box(collection, root, "Skirting upper edge", (0, 0.340, 0.086),
+            (1.0, 0.008, 0.002), "shade", 0)
+        box(collection, root, "Panel boundary", (0.494, 0.002, 0.084),
+            (0.012, 0.67, 0.002), "wall_face_joint", 0)
+        for index in range(24):
+            x = (((index * 37 + 9) % 83) / 83 - 0.5) * 0.82
+            y = (((index * 53 + 17) % 89) / 89 - 0.5) * 0.54
+            box(collection, root, f"Plaster mineral grain.{index}",
+                (x, y, 0.082), (0.008 + 0.002 * (index % 3), 0.003, 0.001),
+                "wall_face_grain", 0)
     elif asset_id == "wall.interior.cap.overhead":
         # A one-tile cap that repeats without a transparent frame at each
         # joint. Keep both long faces continuous across the tile boundaries.
@@ -1195,6 +1219,10 @@ def main():
     MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
     MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)
     MATERIALS["wall_cap_inlay"] = material("Interior wall pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)
+    MATERIALS["wall_face_skirting"] = material("Interior wall dark blue grey skirting", (0.22, 0.29, 0.34, 1), 0.78)
+    MATERIALS["wall_face_coping"] = material("Interior wall blue grey enamel coping", (0.27, 0.38, 0.45, 1), 0.61)
+    MATERIALS["wall_face_joint"] = material("Interior wall recessed panel joint", (0.40, 0.43, 0.43, 1), 0.94)
+    MATERIALS["wall_face_grain"] = material("Interior wall fine plaster grain", (0.63, 0.62, 0.57, 1), 0.95)
     MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
     MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
     MATERIALS["fridge_teal"] = material("Refrigerator status lens", (0.04, 0.43, 0.45, 1), 0.30)

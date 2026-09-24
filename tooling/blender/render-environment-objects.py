@@ -519,7 +519,7 @@ def main() -> None:
 
         # Tiling wall caps meet at pixel edges. The transparent object margin
         # would create a visible gap after the atlas frame repeats each tile.
-        margin_fraction = 0.0 if asset_id == "wall.interior.cap.overhead" else MARGIN_FRACTION
+        margin_fraction = 0.0 if asset_id in {"wall.interior.cap.overhead", "wall.interior.face"} else MARGIN_FRACTION
         frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y
