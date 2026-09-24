@@ -580,6 +580,11 @@ export class WorldScene extends Phaser.Scene {
     const blur = (): void => {
       this.keyboard.releaseAll();
       this.cancelAllGestures();
+      // Middle-button panning has no build preview to cancel, but its pointer
+      // can lose mouseup on blur just like a placement drag. Without clearing
+      // this anchor, plain hover on return keeps dragging the camera.
+      this.panPointerId = undefined;
+      this.lastPanScreenPoint = undefined;
     };
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
