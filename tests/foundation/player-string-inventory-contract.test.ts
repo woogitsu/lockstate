@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
@@ -145,6 +146,12 @@ describe('docs/PLAYER_STRINGS.md: the record reservation 4 owes the owner', () =
       manifest.scripts['content:player-strings'],
       'the record is only maintainable if a documented command rebuilds it; this test names that command in its own failure message and would be lying if the script were gone',
     ).toBe('node tooling/player-string-inventory.mjs');
+    const run = spawnSync(process.execPath, [join(REPOSITORY_ROOT, 'tooling/player-string-inventory.mjs')], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    });
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toContain(`Wrote ${INVENTORY_PATH}:`);
   });
 
   it('carries the four keys whose hand-written coordinates were all wrong, so the repair is visible in the thing that replaced it', () => {
