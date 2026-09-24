@@ -356,22 +356,16 @@ test.describe('HUD shell', () => {
     const probe = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
 
     expect(probe.metricIds).toEqual([
+      // ADR 0085 decision 2: money and actionable warning families lead the
+      // fixed DOM and visual reading order at every viewport (#719).
+      'funds',
       'prisoners',
-      // Issue #703's high-risk chip, second for the same kind of reason
-      // `coverage` is third: it is `prisoners` at a second grain -- the subset of
-      // the population on the restricted regime -- so the two read as one
-      // sentence. `src/ui/hud/projection.ts` argues it, with the measurement
-      // that decided the position against appending it.
-      'high-risk',
-      'staff',
-      // Issue #588's guard-coverage chip, placed beside `staff` rather than
-      // appended: it is a staffing readout whose only remedy is the control
-      // the chip to its left counts. `src/ui/hud/projection.ts` argues it.
       'coverage',
-      'rooms',
       'incidents',
       'contraband',
-      'funds',
+      'rooms',
+      'high-risk',
+      'staff',
       'earned-today',
     ]);
     // `24,920` and not `249.20`: the balance is shown in the units the
@@ -383,10 +377,10 @@ test.describe('HUD shell', () => {
     // `100` is `BASE_VIEW_MODEL.counts.prisonersCovered` -- the top rung of the
     // coverage chip, with the other two rungs in its badge rather than in a
     // value of their own (issue #588).
-    // `0` in second place is the high-risk count (#703): `BASE_VIEW_MODEL.counts`
+    // `0` in seventh place is the high-risk count (#703): `BASE_VIEW_MODEL.counts`
     // carries `prisonersHighRisk: 0`, and a chip reading anything else here
     // would mean it had been wired to another field of the same payload.
-    expect(probe.metricValues).toEqual(['142', '0', '27', '100', '61', '0', '4', '24,920', '10,667']);
+    expect(probe.metricValues).toEqual(['24,920', '142', '100', '0', '4', '61', '0', '27', '10,667']);
     expect(probe.activeTab).toBe('overview');
     // Paused on day 3, a quarter of the way through it: exactly one transport
     // control is pressed, and the clock reads the simulation's own units.
