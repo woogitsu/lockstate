@@ -1,5 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './network-changed-fixture';
+import { expect, test, type Locator, type Page } from './network-changed-fixture';
 
 test.use({ hasTouch: true });
 
