@@ -1,5 +1,5 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
-import { isNeedUnmetForStateIncome } from '../economy/income';
+import { isNeedUnmetForStateIncome, STATE_INCOME_UNMET_NEED_LEVEL } from '../economy/income';
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
 import type { LocomotionStore } from '../locomotion';
@@ -22,11 +22,11 @@ import {
   type PrisonerRecordComponent,
   type SubstitutionRecordComponent,
 } from './components';
-import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
-import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { NEED_DECAY_PER_TICK, NEED_IDS, type NeedId, type NeedsComponent } from './needs';
+import { DAY_LENGTH_TICKS, findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import type { RoomFilthLedger } from './room-filth-ledger';
-import type { WorkOutputLedger } from './work-output';
+import { mealHungerMultiplier, type WorkOutputLedger } from './work-output';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
@@ -760,9 +760,7 @@ export class ActionSystem implements SystemRegistration {
       return;
     }
 
-    const mealMultiplier = action.id === 'action.eat-meal'
-      ? this.workOutput?.mealEffectMultiplier(entityId, this.currentAction.phaseStartedAtTick[index]!) ?? 1
-      : 1;
+    const mealMultiplier = mealHungerMultiplier(action.id, this.workOutput, entityId, this.currentAction.phaseStartedAtTick[index]!);
     if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks, mealMultiplier)) {
       this.currentAction.needFulfilledLastTick[index] = tick;
     }
@@ -819,6 +817,17 @@ export class ActionSystem implements SystemRegistration {
    * content promises.
    */
   private requiredDurationOf(entityId: number, action: ActionDefinition): number {
+    if (action.id === 'action.eat-in-cell') {
+      // Keep the free fallback viable when a prison has more people than
+      // canteen seats: an ordinary meal lasts 40 ticks, but a prisoner
+      // nearing an unmet need may stay up to 80 ticks. The threshold is
+      // derived from saved need state, so restore requires no new field.
+      const oneDayBuffer = NEED_DECAY_PER_TICK.hunger * DAY_LENGTH_TICKS;
+      const hunger = this.needs.get(this.store.getIndex(entityId), 'hunger');
+      return hunger <= STATE_INCOME_UNMET_NEED_LEVEL + oneDayBuffer
+        ? action.minDurationTicks * 2
+        : action.minDurationTicks;
+    }
     if (action !== TREATMENT_ACTION) return action.minDurationTicks;
     const instanceId = this.coldState.getActionTarget(entityId);
     const instance = instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);

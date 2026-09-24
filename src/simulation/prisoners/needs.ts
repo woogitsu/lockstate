@@ -306,7 +306,7 @@ export class NeedsComponent {
  * uncrowded prison and every caller that is not `NeedsDecaySystem`.
  */
 export function decayNeed(currentScaledLevel: number, needId: NeedId, ticksElapsed: number, extraScaledPerTick = 0, rateMultiplier = 1): number {
-  return clampScaled(currentScaledLevel - Math.floor((NEED_DECAY_SCALED_PER_TICK[needId] + extraScaledPerTick) * ticksElapsed * rateMultiplier));
+  return clampScaled(currentScaledLevel - (NEED_DECAY_SCALED_PER_TICK[needId] + extraScaledPerTick) * ticksElapsed * rateMultiplier);
 }
 
 /**

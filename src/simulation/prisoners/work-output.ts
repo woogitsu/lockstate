@@ -5,6 +5,12 @@ import { DAY_LENGTH_TICKS } from './regime';
 export const KITCHEN_TICKS_PER_PORTION = 50;
 export const LAUNDRY_TICKS_PER_KIT = 80;
 
+/** Keeps the unstocked canteen ahead of the free cell fallback. */
+export function mealHungerMultiplier(actionId: string, output: WorkOutputLedger | undefined, entityId: number, startedAtTick: number): number {
+  if (actionId === 'action.eat-meal') return output?.mealEffectMultiplier(entityId, startedAtTick) ?? 1;
+  return actionId === 'action.eat-in-cell' ? 0.5 : 1;
+}
+
 export interface WorkOutputSnapshot {
   readonly kitchen: readonly (readonly [string, number, number])[];
   readonly laundry: readonly (readonly [string, number])[];

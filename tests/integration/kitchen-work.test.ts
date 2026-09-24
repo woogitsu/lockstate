@@ -81,9 +81,9 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * fail for the right reason: it separates "the kitchen is furnished" from "the
  * kitchen is furnished with the thing the work consumes".
  */
-function prisonWithKitchen(preparationObjects: 0 | 1 | 2): SimulationRuntime {
+function prisonWithKitchen(preparationObjects: 0 | 1 | 2, withCanteen = false): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: withCanteen ? 4 : 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 6 }));
 
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
@@ -99,6 +99,12 @@ function prisonWithKitchen(preparationObjects: 0 | 1 | 2): SimulationRuntime {
   }
   if (preparationObjects >= 2) {
     submit(runtime, 'place-prep', packCommand({ type: 'PlaceObject', orderId: 'prep-1', definitionId: 'prep-counter-brick', ...PREP_COUNTER_TILE }));
+  }
+  if (withCanteen) {
+    const canteen = { x: 20, y: 6, width: 6, height: 6 } as const;
+    wallRoomPerimeter(runtime.world, canteen, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...canteen }));
+    submit(runtime, 'place-dining-table', packCommand({ type: 'PlaceObject', orderId: 'dining-1', definitionId: 'dining-table-wooden', x: 20, y: 6 }));
   }
   return runtime;
 }
@@ -145,6 +151,25 @@ function watch(runtime: SimulationRuntime): WatchedRun {
 }
 
 describe('a prison with a furnished kitchen', () => {
+  it('consumes a cooked portion once when a real canteen meal begins', () => {
+    const runtime = prisonWithKitchen(2, true);
+    stepTo(runtime, ADMIT_AT);
+    submit(runtime, 'admit-cook-and-diner', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepTo(runtime, 1_999);
+    const ready = runtime.prisoners.workOutput.portions;
+    expect(ready).toBeGreaterThan(0);
+    let claimed: readonly [number, number, boolean] | undefined;
+    for (let tick = 2_000; tick < 2_100 && claimed === undefined; tick += 1) {
+      runtime.kernel.step();
+      claimed = runtime.prisoners.workOutput.getSnapshot().mealClaims[0];
+    }
+    expect(claimed?.[2]).toBe(true);
+    expect(runtime.prisoners.workOutput.portions).toBeLessThanOrEqual(ready);
+    const afterClaim = runtime.prisoners.workOutput.portions;
+    expect(runtime.prisoners.workOutput.mealEffectMultiplier(claimed![0], claimed![1])).toBe(1);
+    expect(runtime.prisoners.workOutput.getSnapshot().mealClaims[0]).toEqual(claimed);
+    expect(runtime.prisoners.workOutput.portions).toBe(afterClaim);
+  });
   it('turns actual stove work into portions before they spoil at midnight', () => {
     const runtime = prisonWithKitchen(2);
     stepTo(runtime, ADMIT_AT);

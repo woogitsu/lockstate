@@ -229,7 +229,7 @@ interface WatchedRun {
   readonly contendedSubstitutionCycles: readonly number[];
 }
 
-function watched(tables: number): WatchedRun {
+function watched(tables: number, untilTick = WATCH_UNTIL): WatchedRun {
   const runtime = prison(tables);
   stepTo(runtime, BUILT_BY);
   admitAll(runtime);
@@ -241,7 +241,7 @@ function watched(tables: number): WatchedRun {
   // Every tick rather than every twentieth, for the reason
   // `furnished-prison-loop.test.ts` records: a performed action is short and a
   // coarse sample can miss one entirely.
-  for (let tick = runtime.kernel.tick + 1; tick <= WATCH_UNTIL; tick += 1) {
+  for (let tick = runtime.kernel.tick + 1; tick <= untilTick; tick += 1) {
     stepTo(runtime, tick);
     for (let n = 0; n < PRISONERS; n += 1) {
       const index = indexOfNthAdmission(runtime, n);
@@ -271,6 +271,10 @@ function watched(tables: number): WatchedRun {
 const repeated = (value: number, times: number): readonly number[] => Array.from({ length: times }, () => value);
 
 describe('twenty-four prisoners and a canteen that seats six', () => {
+  it('keeps every prisoner fed over thirty days without a kitchen (#592)', () => {
+    const run = watched(2, 72_000);
+    expect(Math.min(...run.lowestHunger)).toBeGreaterThan(0);
+  });
   it('names the twelve prisoners who lose the room, which no counter in this repository could do before', () => {
     const run = watched(2);
 
@@ -341,7 +345,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     // #588, for the reason the array above gives. **Every prisoner is now
     // refused at least eight times** -- nobody sits in the canteen unopposed
     // any more, because nobody is first to the door on every single block.
-    expect(run.contendedSubstitutionCycles).toEqual([9, 18, 18, 9, 10, 8, 11, 11, 12, 10, 11, 12, 20, 15, 15, 20, 20, 11, 20, 16, 16, 10, 11, 11]);
+    expect(run.contendedSubstitutionCycles).toEqual([9, 18, 18, 9, 10, 8, 13, 13, 12, 10, 11, 12, 20, 15, 15, 20, 20, 11, 20, 16, 16, 10, 11, 11]);
 
     /*
      * The claim stated as a *separation* rather than as the literal above, so
@@ -372,7 +376,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * -- is the strict inequality on the next assertion, and that one is
      * unchanged and still passes.
      */
-    expect(leastFed.filter((n) => mostRefused.includes(n))).toHaveLength(10);
+    expect(leastFed.filter((n) => mostRefused.includes(n))).toHaveLength(12);
     expect(Math.min(...mostRefused.map((n) => run.contendedSubstitutionCycles[n]!))).toBeGreaterThan(
       Math.max(...[...run.contendedSubstitutionCycles.keys()].filter((n) => !mostRefused.includes(n)).map((n) => run.contendedSubstitutionCycles[n]!)),
     );
@@ -386,7 +390,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     expect(metrics.substitutionCycles).toBe(run.substitutionCycles.reduce((total, count) => total + count, 0));
     expect(metrics.contendedSubstitutionCycles).toBe(run.contendedSubstitutionCycles.reduce((total, count) => total + count, 0));
     // 4,818 / 138 until issue #961's twelve cells; 4,782 / 102 until issue #588.
-    expect(metrics).toMatchObject({ substitutionCycles: 5_080, contendedSubstitutionCycles: 324, routeFailures: 0 });
+    expect(metrics).toMatchObject({ substitutionCycles: 5_076, contendedSubstitutionCycles: 328, routeFailures: 0 });
     expect(metrics.substitutionsCountedSinceTick, 'never restored, so the window is the whole session').toBe(0);
 
     /*
@@ -402,7 +406,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      */
     // `[...repeated(194, 6), ...repeated(197, 6), ...repeated(206, 12)]` until
     // issue #961's twelve cells; 197 / 194 / 203 until issue #588.
-    expect(run.substitutionCycles).toEqual([193, 216, 216, 203, 194, 213, 214, 214, 207, 215, 207, 207, 219, 215, 215, 219, 219, 207, 219, 215, 215, 215, 216, 207]);
+    expect(run.substitutionCycles).toEqual([193, 216, 216, 203, 194, 213, 212, 212, 207, 215, 207, 207, 219, 215, 215, 219, 219, 207, 219, 215, 215, 215, 216, 207]);
     /*
      * **12,100 / 3,500 / 4,300 until the hire, and the claim under it has
      * inverted.** The line here used to read *"the contended canteen genuinely
@@ -411,8 +415,9 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * three `HireStaff` commands reproduce this on the unmodified tree.
      * The twelve who never win a seat now fall back to `action.eat-in-cell`
      * promptly (ADR 0041 decision 1) instead of queueing for a room they will
-     * be refused from, and eating in a cell restores 3 hunger a tick against
-     * the canteen's 4.
+     * be refused from. Eating in a cell restores 1.5 hunger a tick, with a
+     * longer meal near the unmet-need threshold, against 2 in an empty
+     * canteen or 4 when a prepared portion is available.
      *
      * So the starvation is **not** a property of the contended canteen; it was
      * a property of this fixture's unstaffed prison. The assertion is replaced
@@ -430,7 +435,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * the canteen shuts out**, and the gap to the best-fed one is real.
      */
     expect(run.lowestHunger).toEqual([
-      35_300, 35_300, 35_300, 35_700, 36_100, 35_100, 27_500, 27_500, 34_900, 35_100, 34_700, 34_900,
+      35_300, 35_300, 35_300, 35_700, 36_100, 35_100, 15_500, 15_500, 34_900, 35_100, 34_700, 34_900,
       35_300, 34_700, 34_700, 35_300, 35_300, 34_700, 35_300, 34_700, 34_700, 35_500, 35_500, 34_700,
     ]);
     const hungriest = [...run.lowestHunger.keys()].sort((a, b) => run.lowestHunger[a]! - run.lowestHunger[b]! || a - b).slice(0, 2);
@@ -439,7 +444,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     expect(
       Math.max(...run.lowestHunger) - Math.min(...run.lowestHunger),
       'the prisoners the canteen shuts out still finish measurably hungrier than the best-fed one',
-    ).toBe(8_600);
+    ).toBe(20_600);
   });
 
   it('reads exactly zero the moment the canteen seats everybody, so it is counting refusals and not meals', () => {
