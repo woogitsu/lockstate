@@ -3965,6 +3965,11 @@
     -webkit-line-clamp: 1;
     overflow: hidden;
   }
+  .hud-staff__coverage[data-reserve-short='true'] > .hud-staff__note:not(.hud-staff__coverage-consequence) {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
 
   /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
      2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`

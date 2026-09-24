@@ -1,6 +1,8 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { StaffDepartment, StaffRoleDefinition } from '../../content/staff-role-catalog';
-import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
+import { defaultStaffRoleRegistry, isPostEligibleStaffRole } from '../../content/staff-role-catalog';
+import { DEFAULT_INCIDENT_RESPONSE_POLICY } from '../incidents/response-system';
+import { INCIDENT_SEVERITY_CEILING } from '../incidents/severity-ceiling';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import type { DeploymentPhase } from '../security/guard-roster';
@@ -117,6 +119,8 @@ export interface StaffCoverageRowViewModel {
   /** Assigned to the sector, whether already on post or still travelling there. */
   readonly assigned: number;
   readonly shortage: number;
+  /** Free guards needed for the highest authored incident severity. */
+  readonly reserve: number;
 }
 
 export interface StaffViewModel {
@@ -139,6 +143,9 @@ export interface StaffViewModel {
     readonly required: number;
     readonly assigned: number;
     readonly shortage: number;
+    readonly reserve: number;
+    /** Unassigned guards eligible for response, excluding other staff roles. */
+    readonly available: number;
   };
   /** Absent unless the corresponding system was supplied. */
   readonly patrolMetrics?: {
@@ -229,6 +236,15 @@ export function projectStaff(
 ): StaffViewModel {
   const staffRoles = options.staffRoles ?? defaultStaffRoleRegistry;
   const entityIds = source.staff.allGuardIds();
+  const available = entityIds.filter((entityId) => {
+    if (source.staff.getDeploymentPhase(entityId) !== 'unassigned') return false;
+    const role = staffRoles.getById(source.staff.getStaffRoleId(entityId));
+    return role !== undefined && isPostEligibleStaffRole(role);
+  }).length;
+  const reservePerSector = Math.max(
+    1,
+    Math.ceil(INCIDENT_SEVERITY_CEILING * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint),
+  );
   const rows = entityIds.map((entityId) => projectRow(source.staff, entityId, staffRoles, options.identity, source.sectors));
 
   const countsByRoleId = new Map<string, number>();
@@ -247,15 +263,18 @@ export function projectStaff(
           required: entry.required,
           assigned: entry.assigned,
           shortage: entry.shortage,
+          reserve: entry.required > 0 ? reservePerSector : 0,
         }));
 
   let required = 0;
   let assigned = 0;
   let shortage = 0;
+  let reserve = 0;
   for (const entry of coverage) {
     required += entry.required;
     assigned += entry.assigned;
     shortage += entry.shortage;
+    reserve += entry.reserve;
   }
 
   const patrolMetrics = source.patrol?.getMetrics();
@@ -281,6 +300,8 @@ export function projectStaff(
       required,
       assigned,
       shortage,
+      reserve,
+      available,
     },
     ...(patrolMetrics !== undefined ? { patrolMetrics } : {}),
     ...(deploymentMetrics !== undefined ? { deploymentMetrics } : {}),

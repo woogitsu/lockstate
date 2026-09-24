@@ -2501,7 +2501,11 @@ export interface HudStaffCoverageViewModel {
   /** Guards assigned to a sector -- already on post, or still walking there. */
   readonly assigned: number;
   /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
-  readonly shortage: number;
+    readonly shortage: number;
+    /** Maximum response reserve; present on worker projections, optional for older synthetic HUD inputs. */
+    readonly reserve?: number;
+    /** Unassigned eligible guards; present on worker projections, optional for older synthetic HUD inputs. */
+    readonly available?: number;
 }
 
 /*

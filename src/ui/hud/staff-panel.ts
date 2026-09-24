@@ -311,7 +311,7 @@ export function formatHeldGuardText(
  * `pnpm test` rather than merely untested, which is the trap
  * `orderPrisonsForDisplay` was extracted to escape.
  *
- * ### The three states, and why three
+ * ### The post-coverage states
  *
  * `occupancyTone` is the precedent and it has two steps for one metric --
  * `>= 0.9` warning, `> 1` danger -- because the second names a *different*
@@ -325,7 +325,9 @@ export function formatHeldGuardText(
  *
  * - **Unguarded** (`danger`): the prison asks for guards and has assigned none.
  * - **Understaffed** (`warning`): it has some of what it asks for.
- * - **Covered** (`success`): it has all of it.
+ * - **Reserve short** (`warning`): posts are filled but free guards cannot
+ *   supply the maximum responder reserve.
+ * - **Covered** (`success`): posts and the maximum responder reserve are filled.
  *
  * A `success` tone for the third rather than no tone, which is where this
  * departs from `occupancyTone` deliberately. That function returns `undefined`
@@ -458,7 +460,13 @@ export interface StaffCoverageReadout {
   readonly hireCount: number;
 }
 
-export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {
+/* ADR 0095 adds a fourth rung: filled posts with too few eligible free guards
+ * for the maximum response reserve. The older three-rung account above is
+ * retained as the state that existed before the owner's 2026-09-23 ruling. */
+export function describeStaffCoverage(
+  coverage: Pick<HudStaffCoverageViewModel, 'required' | 'assigned' | 'shortage'> &
+    Partial<Pick<HudStaffCoverageViewModel, 'reserve' | 'available'>>,
+): StaffCoverageReadout {
   // Nobody on duty anywhere, in a prison that asks for somebody. Checked first
   // because it is a *subset* of "short" rather than an alternative to it, and
   // the more specific sentence is the one worth saying.
@@ -477,6 +485,14 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
       hireCount: coverage.shortage,
+    };
+  }
+  if ((coverage.reserve ?? 0) > 0 && (coverage.available ?? 0) < (coverage.reserve ?? 0)) {
+    return {
+      tone: 'warning',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
+      hireCount: (coverage.reserve ?? 0) - (coverage.available ?? 0),
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
@@ -829,16 +845,18 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     coverageBlock.hidden = coverage === undefined;
     if (coverage === undefined) {
       delete coverageBlock.dataset['tone'];
+      delete coverageBlock.dataset['reserveShort'];
       return;
     }
 
     const readout = describeStaffCoverage(coverage);
     // The block's own handle for a browser probe, in the shape `data-held` and
     // `data-guard` already use one section down: it lets a spec assert *which of
-    // the three states the panel decided* without matching translated text, so
+    // the panel's tone* without matching translated text, so
     // the assertion survives a reworded sentence. No stylesheet reads it -- the
     // colour is the badge's, and the badge carries the word beside it.
     coverageBlock.dataset['tone'] = readout.tone;
+    coverageBlock.dataset['reserveShort'] = String(readout.badgeKey === HUD_MESSAGE_KEY.securityCoverageReserveShort);
     coverageSummary.textContent = t(HUD_MESSAGE_KEY.securityCoverageSummary, {
       assigned: localizer.formatNumber(coverage.assigned),
       required: localizer.formatNumber(coverage.required),

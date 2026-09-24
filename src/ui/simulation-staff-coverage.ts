@@ -98,6 +98,8 @@ export function staffCoverageFromProjection(view: StaffViewModel): HudStaffCover
     required: view.totals.required,
     assigned: view.totals.assigned,
     shortage: view.totals.shortage,
+    reserve: view.totals.reserve,
+    available: view.totals.available,
   };
 }
 

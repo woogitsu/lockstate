@@ -29,6 +29,11 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * composed perfectly and never appended, or appended into a box that cuts it,
  * passes every test in that suite.
  *
+ * ADR 0095 subsequently narrowed `Covered` to prisons with the maximum
+ * response reserve staffed. The older 3-held/1-free measurement above is
+ * historical; this file now paints 3 held and 5 eligible free for the covered
+ * case, and separately tests the short-reserve rung at 900x600.
+ *
  * ## What #941 wrote here, and why #989 widened it
  *
  * **This file was authored on 2026-09-04 around *"Only free guards answer
@@ -102,7 +107,7 @@ const COVERAGE_VIEWPORTS = [
 const HINT = '.hud-staff__coverage > .hud-staff__note:not(.hud-staff__coverage-consequence)';
 
 /** The prison #941 measured: the requirement met exactly, with one guard left over. */
-const COVERED = { required: 3, assigned: 3, shortage: 0 } as const;
+const COVERED = { required: 3, assigned: 3, shortage: 0, reserve: 5, available: 5 } as const;
 
 /**
  * Both readouts on one view model, because the harness cannot publish them one
@@ -126,13 +131,14 @@ const COVERED = { required: 3, assigned: 3, shortage: 0 } as const;
  * requires them.
  */
 function coveredPrison(coverage: HudViewModel['staffCoverage']): HudViewModel {
+  const free = coverage?.available ?? 1;
   return {
     counts: {
       prisoners: 17,
       prisonerCapacity: 24,
       occupiedPlaces: 17,
-      staff: 4,
-      staffUnassigned: 0,
+      staff: 3 + free,
+      staffUnassigned: free,
       rooms: 12,
       prisonersCovered: 17,
       prisonersUnderstaffed: 0,
@@ -147,7 +153,7 @@ function coveredPrison(coverage: HudViewModel['staffCoverage']): HudViewModel {
     alerts: [],
     heldGuards: {
       held: 3,
-      unassigned: 1,
+      unassigned: free,
       guards: [1, 2, 3].map((entityId) => ({
         entityId,
         claimLabelKey: 'guard-claim.deployment.name' as const,
@@ -288,7 +294,7 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
     // Where "free" points: the block below, printing the reserve the sentence
     // is about. `1 free` is the prison #941 measured, and it lapsed 7 of 7.
     expect(reading.heldDrawn, 'the On duty block has no box, so its text proves nothing').toBe(true);
-    expect(reading.heldSummary, 'the On duty figures are not beside the sentence').toBe('3 held · 1 free');
+    expect(reading.heldSummary, 'the On duty figures are not beside the sentence').toBe('3 held · 5 free');
   });
 
   test('does not push the Staff panel into a scroll at any shipped viewport', async ({ page }) => {
@@ -314,4 +320,20 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
       expect(probe.hireLabel.length, `the hire control is gone at ${where}`).toBeGreaterThan(0);
     }
   });
+});
+
+test('filled posts with an insufficient free reserve are visibly distinct at a short viewport (ADR 0095)', async ({ page }) => {
+  await page.goto(HARNESS_URL);
+  await page.setViewportSize({ width: 900, height: 600 });
+  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+  await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
+  await page.evaluate(
+    (model) => window.lockstateUiHarness.setHudViewModel(model),
+    coveredPrison({ required: 3, assigned: 3, shortage: 0, reserve: 5, available: 1 }),
+  );
+  const reading = await readHint(page);
+  expect(reading.badge).toBe('Reserve short');
+  expect(reading.tone).toBe('warning');
+  expect(reading.text).toBe('Posts are filled. More free guards needed for the most severe incident: 4. Searches use the same pool.');
+  await expectNotClipped(page, HINT, 'the new reserve instruction at 900x600');
 });

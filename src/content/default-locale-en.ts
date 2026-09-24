@@ -3053,8 +3053,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`
   // is assigned against required, in the shape `hud.status.occupancy-value` set
-  // for a figure with a ceiling. The three badge words name three different
-  // prisons rather than three shades of one, and the two hints that follow a
+  // for a figure with a ceiling. The four badge words name four different
+  // prisons rather than four shades of one, and the hints that follow a
   // shortage name the action instead of restating the diagnosis -- the hire
   // control is the next block down. `{count}` is the shortage, so it is the
   // number of presses; both sentences are worded to read correctly at one as
@@ -3062,6 +3062,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
   'hud.security.coverage-met': 'Covered',
+  'hud.security.coverage-reserve-short': 'Reserve short',
+  'hud.security.coverage-reserve-short-hint': 'Posts are filled. More free guards needed for the most severe incident: {count}. Searches use the same pool.',
   /*
    * **The sentence the block says once its figures are level, and it no longer
    * says the prison is finished hiring** (issue #941, authored here under the

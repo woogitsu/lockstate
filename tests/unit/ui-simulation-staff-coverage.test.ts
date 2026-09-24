@@ -57,23 +57,25 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
  * fixture that derived it would be asserting that this test can add up, and the
  * production question is whether the *mapping* copies what the worker sent.
  */
-function staffView(totals: { required: number; assigned: number; shortage: number }): StaffViewModel {
+function staffView(totals: { required: number; assigned: number; shortage: number; reserve?: number; available?: number }): StaffViewModel {
   return {
     schemaVersion: 1,
     roster: { total: 0, offset: 0, limit: 0, rows: [] },
     countsByRoleId: [],
     countsByDeploymentPhase: [],
     coverage: [],
-    totals: { hired: 0, unassigned: 0, ...totals },
+    totals: { hired: 0, unassigned: 0, reserve: 0, available: 0, ...totals },
   } as unknown as StaffViewModel;
 }
 
-describe('the mapping carries three figures and computes none of them', () => {
-  it('copies required, assigned and shortage off the projection’s own totals', () => {
-    expect(staffCoverageFromProjection(staffView({ required: 2, assigned: 1, shortage: 1 }))).toEqual({
+describe('the mapping copies the projection totals and computes none of them', () => {
+  it('copies required, assigned, shortage and the reserve figures', () => {
+    expect(staffCoverageFromProjection(staffView({ required: 2, assigned: 1, shortage: 1, reserve: 5, available: 1 }))).toEqual({
       required: 2,
       assigned: 1,
       shortage: 1,
+      reserve: 5,
+      available: 1,
     });
   });
 
@@ -91,6 +93,11 @@ describe('the mapping carries three figures and computes none of them', () => {
 });
 
 describe('the block says one of three things, and which one is a decision', () => {
+  it('does not call filled posts Covered when no guard remains for response or search (ADR 0095)', () => {
+    const readout = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, reserve: 5, available: 0 });
+    expect(readout.badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageReserveShort);
+    expect(readout.hireCount).toBe(5);
+  });
   it('says the prison has what it asks for when nothing is short', () => {
     expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 })).toEqual({
       tone: 'success',

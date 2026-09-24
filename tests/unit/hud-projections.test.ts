@@ -1149,7 +1149,10 @@ describe('staff', () => {
     for (const entry of staff.coverage) {
       expect(entry.required).toBe(1);
       expect(entry.shortage).toBe(Math.max(0, entry.required - entry.assigned));
+      expect(entry.reserve).toBe(5);
     }
+    expect(staff.totals.reserve).toBe(15);
+    expect(staff.totals.available).toBe(staff.countsByDeploymentPhase[0]?.count);
     expect(staff.patrolMetrics).toEqual(runtime.patrolSystem.getMetrics());
     expect(staff.deploymentMetrics).toEqual(runtime.deploymentSystem.getMetrics());
   });
@@ -1158,6 +1161,7 @@ describe('staff', () => {
     const runtime = runScenario();
     const staff = projectStaff({ staff: runtime.securityGuards }, runtime.kernel.tick);
     expect(staff.coverage).toEqual([]);
+    expect(staff.totals.reserve).toBe(0);
     expect(staff.patrolMetrics).toBeUndefined();
     expect(staff.totals.hired).toBe(5);
   });

@@ -60,6 +60,18 @@ nothing wider.
   marked note. The reserve figure covers it either way, because a reserve that
   answers a riot also covers a search (open question 3).
 
+**Implementation, 2026-09-24.** `projectStaff` now publishes the number of
+unassigned staff eligible for security duty and a five-guard maximum response
+reserve for each sector with a nonzero post requirement. Five is
+`ceil(INCIDENT_SEVERITY_CEILING × DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint)`;
+the shared ceiling is ten and the policy factor is 0.5. The projection sums
+the reserve over sectors without changing their posting requirements or the
+response system. `describeStaffCoverage` reports a short reserve after posts
+are filled, then reports `Covered` once the reserve is met. The figure is the
+recommendation accepted with decision 1, while open question 1's balance
+choice remains open for future tuning. The earlier "Nothing here is
+implemented" sentence below is the preserved pre-implementation record.
+
 ---
 
 **Proposed, 2026-09-03. Not self-approved.** *(The state of this document

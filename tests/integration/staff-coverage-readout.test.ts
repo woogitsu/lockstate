@@ -177,9 +177,9 @@ describe('the requirement a player has to act on moves, and the panel is told', 
       required: 1,
       assigned: 1,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
+      hireCount: 5,
     });
 
     admit(runtime, NINTH);
@@ -261,9 +261,9 @@ describe('the rung the panel calls covered does not say whether anyone can answe
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
+      hireCount: 5,
     });
     /*
      * **The whole defect, in one figure.** `claimableGuardIds` is the function
@@ -278,10 +278,9 @@ describe('the rung the panel calls covered does not say whether anyone can answe
     hire(runtime, 3);
     stepTo(runtime, runtime.kernel.tick + 20);
 
-    // One guard free -- and the coverage readout is byte-identical to the
-    // prison above it, which is why the sentence cannot be about the reserve.
+    // One guard free narrows the reserve shortage by one without changing posts.
     expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
-    expect(readout(runtime)).toEqual(atRequirement);
+    expect(readout(runtime)).toMatchObject({ required: 2, assigned: 2, shortage: 0, available: 1, hireCount: 4 });
   });
 
   it('needs two of that pool for the mildest incident the simulation can open', () => {
@@ -387,17 +386,16 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     // the same pair of figures and the same shortage. `assigned` is 2 in both
     // -- the third guard is never posted, because the sector is not short --
     // so the panel is not merely similar, it is identical.
-    const covered = {
+    const reserveShort = {
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
     };
-    expect(readout(atRequirement)).toMatchObject(covered);
-    expect(readout(oneHirePast)).toEqual(readout(atRequirement));
-    expect(readout(twoHiresPast)).toEqual(readout(atRequirement));
+    expect(readout(atRequirement)).toMatchObject({ ...reserveShort, available: 0, hireCount: 5 });
+    expect(readout(oneHirePast)).toMatchObject({ ...reserveShort, available: 1, hireCount: 4 });
+    expect(readout(twoHiresPast)).toMatchObject({ ...reserveShort, available: 2, hireCount: 3 });
 
     // The pool the two duties compete for, through the function both of them
     // call rather than a re-derivation of it.
@@ -433,14 +431,14 @@ describe('the rung the panel calls covered does not say whether anyone can searc
   it('renders the sentence that says so, as real text from the bundled catalog', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const runtime = prisonWithGuards(2);
-    const described = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 });
+    const described = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, reserve: 5, available: 0 });
 
-    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
-    const sentence = localizer.format(described.hintKey);
+    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageReserveShort);
+    const sentence = localizer.format(described.hintKey, { count: '5' });
     // Both duties named, in the prison that can do neither. Pinned verbatim in
     // `tests/unit/ui-simulation-staff-coverage.test.ts`; what this asserts is
     // that the two words are the ones this prison's own systems are short of.
-    expect(sentence.toLowerCase()).toContain('incidents');
+    expect(sentence.toLowerCase()).toContain('incident');
     expect(sentence.toLowerCase()).toContain('searches');
     expect(sentence).not.toContain('{');
   });
@@ -546,8 +544,8 @@ describe('hiring visibly fixes it, through the same command a player presses', (
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hireCount: 5,
     });
   });
 
