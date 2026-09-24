@@ -2147,15 +2147,12 @@ test.describe('HUD shell', () => {
       // note states both halves of what the control really does, and that it no
       // longer denies the half that was measured.
       //
-      // **#935 rewrote it again** to stop it contradicting the Regime tab's
-      // first-cell instruction: it no longer denies that a bed is needed, it
-      // says what the cell and the bed are each needed *for* -- admitting, and
-      // housing -- and adds #937's income rule. What #549 required survives in
-      // that shape: the admission clause names the cell alone, and the bed is
-      // attached to housing, not to admitting.
-      expect(probe.hint).toContain('Admitting needs a cell');
-      expect(probe.hint).toContain('housing needs a bed');
-      expect(probe.hint).toContain('only for prisoners with a place');
+      // #590 queues arrivals if no place is free. The note keeps #935's bed
+      // requirement tied to housing and #937's income rule tied to occupied
+      // places and the completed day, not to admission or a guessed rate.
+      expect(probe.hint).toContain('Arrivals wait outside');
+      expect(probe.hint).toContain('A bed in a cell can house them');
+      expect(probe.hint).toContain('occupied places at day’s end');
       expect(probe.hint).not.toMatch(/admit\w* needs a (free )?bed|bed (before it can|to) admit/i);
       // And it does not flatly deny the bed the Regime tab's first-cell
       // instruction asks for, which is the on-screen disagreement #935 names.

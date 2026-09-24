@@ -2739,7 +2739,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * StateIncomeSystem runs at each completed day. The short wording keeps
    * the Intake panel inside the existing fold budget.
    */
-  'hud.intake.hint': 'No free place? Arrivals wait outside. The state pays daily only for prisoners with a place.',
+  'hud.intake.hint': 'No free place? Arrivals wait outside. A bed in a cell can house them; the state pays for occupied places at day’s end.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no place" and not "no cell": a zoned cell with nothing in it houses
   // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces

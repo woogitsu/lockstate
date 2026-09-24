@@ -56,6 +56,35 @@ test.describe('a browser that asks for Polish', () => {
       'the page never requested the Polish catalogue chunk, so the text above came from somewhere else',
     ).not.toEqual([]);
   });
+
+  test('shows the complete intake and income rule in the short Manage rail (#590, #937)', async ({ page }) => {
+    for (const [width, height] of [[900, 600], [375, 812]] as const) {
+      await page.setViewportSize({ width, height });
+      await page.goto(APP_URL);
+      await page.waitForSelector('.hud');
+      await page.locator('.ui-tab[data-tab="manage"]').click();
+
+      const note = page.locator('.hud-intake__note');
+      await expect(note).toHaveText(
+        'Brak miejsca? Przybyli czekają poza więzieniem. Łóżko w celi może ich zakwaterować; państwo płaci za zajęte miejsca na koniec dnia.',
+      );
+      await expect(note).toBeVisible();
+      const geometry = await note.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const panel = element.closest('.hud-intake')!;
+        const panelBox = panel.getBoundingClientRect();
+        return {
+          bottom: box.bottom,
+          panelBottom: panelBox.bottom,
+          viewportHeight: innerHeight,
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+        };
+      });
+      expect(geometry.bottom, `${width}x${height}: note below panel`).toBeLessThanOrEqual(geometry.panelBottom);
+      expect(geometry.bottom, `${width}x${height}: note below viewport`).toBeLessThanOrEqual(geometry.viewportHeight);
+      expect(geometry.panelOverflow, `${width}x${height}: Intake panel overflow`).toBe(0);
+    }
+  });
 });
 
 test.describe('a browser that asks for a language nothing is published for', () => {
