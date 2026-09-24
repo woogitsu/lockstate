@@ -529,3 +529,12 @@ intent in `assets/source/concepts/common-room-floor-v1.md`. Blender 5.2 models
 the seamless, fully opaque `floor.common-room.cork-rubber`; the reference
 image is not used at runtime. The warm honey-grey material has fine ochre and
 charcoal recycled granules, with no tile-sized seams or floor icons.
+
+## Classroom floor, pale oak-look resilient planks
+
+Original four-view reference at
+`assets/source/concepts/classroom-floor-multiview-v1.png`, with production
+intent in `assets/source/concepts/classroom-floor-v1.md`. Blender 5.2 models
+the 1x1, zero-margin `floor.classroom.oak-laminate`; the concept is not a
+runtime sprite. Three narrow plank strips, subdued grain and staggered end
+joins establish warmth without making the 5x5 Classroom a checkerboard.

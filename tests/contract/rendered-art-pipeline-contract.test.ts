@@ -116,7 +116,7 @@ describe('rendered-art pipeline contract', () => {
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 54 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 55 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
  * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
  * three more models, including the unpublished sink; the storage-rack batch
@@ -124,7 +124,7 @@ describe('rendered-art pipeline contract', () => {
  * adds the 29th; later medical, kitchen, laundry, security, utility and
  * library, wall cap, wall face, door face and dirt models bring the catalog to
  * 47 after the slate bedrock tile, then the kitchen, canteen, yard, shower,
- * laundry, Infirmary and Common Room floors make 54. It runs with no Blender,
+ * laundry, Infirmary, Common Room and Classroom floors make 55. It runs with no Blender,
  * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
@@ -137,12 +137,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 54 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 55 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(54);
+    expect(sidecar.entries.length).toBe(55);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

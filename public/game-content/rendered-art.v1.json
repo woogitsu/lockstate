@@ -153,6 +153,31 @@
       }
     },
     {
+      "assetId": "floor.classroom.oak-laminate",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.classroom.oak-laminate.3447b706bed8.png",
+      "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.common-room.cork-rubber",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.common-room.cork-rubber.f279d76d4d30.png",

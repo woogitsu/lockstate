@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -297,6 +297,40 @@ test.describe('the environment artwork', () => {
       expect(labels.map((label) => label.text)).toContain('Common Room');
       if (process.env['LOCKSTATE_CAPTURE_COMMON_ROOM_ART'] === '1') {
         await page.screenshot({ path: testInfo.outputPath(`common-room-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 5 by 5 Classroom draws staggered oak planks with its bookshelf and chairs at both zoom levels', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'classroomFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.classroom');
+      const infirmary = harness.atlasFrame('env.floor.infirmary');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        centre: harness.atlasPixel(bounds.x + 64, bounds.y + 64),
+        infirmaryCentre: infirmary === undefined ? undefined : harness.atlasPixel(infirmary.x + 64, infirmary.y + 64),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.centre!, frame!.infirmaryCentre!)).toBeGreaterThan(20);
+    const centreX = (fixture.classroomFloorMinTileX + fixture.classroomFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.classroomFloorMinTileY + fixture.classroomFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const classroom = sprites.filter((sprite) => sprite.frameName === 'env.floor.classroom');
+      expect(classroom.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(25 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Classroom');
+      if (process.env['LOCKSTATE_CAPTURE_CLASSROOM_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`classroom-floor-zoom-${zoom}.png`) });
       }
     }
   });

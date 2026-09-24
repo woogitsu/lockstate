@@ -119,6 +119,7 @@ MODELS = (
     ("floor.laundry.nonslip", (1, 1)),
     ("floor.infirmary.vinyl", (1, 1)),
     ("floor.common-room.cork-rubber", (1, 1)),
+    ("floor.classroom.oak-laminate", (1, 1)),
 )
 
 
@@ -1358,6 +1359,28 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Embedded common room granule.{index}",
                 (x, y, 0.081), (width, width * common_rng.uniform(0.6, 1.4), 0.001),
                 "common_room_granule_ochre" if index % 4 else "common_room_granule_charcoal", 0)
+    elif asset_id == "floor.classroom.oak-laminate":
+        # Three slim, stagger-joined resilient oak-look planks per game tile.
+        # Narrow joints indicate a continuous floor rather than square tiles;
+        # matching rim joints make the module repeat without transparent gaps.
+        box(collection, root, "Classroom plank joint substrate", (0, 0, 0.04),
+            (1, 1, 0.08), "classroom_oak_joint", 0)
+        for row, end_x in enumerate((0.23, -0.32, 0.39)):
+            y = (row - 1) / 3
+            box(collection, root, f"Resilient oak-look plank.{row}",
+                (0, y, 0.081), (1, 0.322, 0.002),
+                f"classroom_oak_{row}", 0)
+            box(collection, root, f"Staggered plank end joint.{row}",
+                (end_x, y, 0.0825), (0.006, 0.310, 0.001), "classroom_oak_joint", 0)
+        classroom_rng = random.Random(20260926)
+        for index in range(30):
+            row = index % 3
+            x = classroom_rng.uniform(-0.42, 0.42)
+            y = (row - 1) / 3 + classroom_rng.uniform(-0.125, 0.125)
+            length = classroom_rng.uniform(0.07, min(0.3, 0.92 - abs(x) * 2))
+            box(collection, root, f"Fine classroom wood grain.{index}",
+                (x, y, 0.0827), (length, 0.003, 0.0004),
+                "classroom_oak_grain", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1755,6 +1778,11 @@ def main():
         middle=(0.49, 0.28, 0.15, 1), low_position=0.30, high_position=0.70)
     MATERIALS["common_room_granule_ochre"] = material("Recycled warm ochre granule", (0.65, 0.47, 0.28, 1), 0.96)
     MATERIALS["common_room_granule_charcoal"] = material("Recycled charcoal granule", (0.16, 0.16, 0.15, 1), 0.98)
+    MATERIALS["classroom_oak_joint"] = material("Classroom oak laminate narrow joint", (0.30, 0.20, 0.10, 1), 0.95)
+    MATERIALS["classroom_oak_0"] = material("Classroom pale oak plank A", (0.72, 0.42, 0.13, 1), 0.88)
+    MATERIALS["classroom_oak_1"] = material("Classroom pale oak plank B", (0.65, 0.38, 0.11, 1), 0.88)
+    MATERIALS["classroom_oak_2"] = material("Classroom pale oak plank C", (0.78, 0.46, 0.15, 1), 0.88)
+    MATERIALS["classroom_oak_grain"] = material("Classroom understated wood grain", (0.52, 0.28, 0.10, 1), 0.94)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

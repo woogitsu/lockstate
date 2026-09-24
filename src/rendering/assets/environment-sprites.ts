@@ -88,6 +88,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.laundry',
   'env.floor.infirmary',
   'env.floor.common-room',
+  'env.floor.classroom',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -272,6 +273,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered warm resilient cork-rubber composite for the Common Room; one seamless tile per repeat.',
+  },
+  'env.floor.classroom': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.classroom.oak-laminate',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale oak-look resilient planks for the Classroom; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

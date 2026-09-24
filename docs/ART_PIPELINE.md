@@ -342,6 +342,11 @@ The `floor.common-room.cork-rubber` tile is also zero-margin and periodic.
 Its fine ochre and charcoal inset granules add warmth under recreation benches
 without drawing a grid across the 5x5 Common Room or obscuring its name.
 
+The `floor.classroom.oak-laminate` tile fills the 1x1 frame with narrow
+oak-look resilient planks. Their fine horizontal joints meet at the module
+edges, while staggered end joints avoid a tile-sized square grid. The source
+stays warm under the existing Classroom zoning tint.
+
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on

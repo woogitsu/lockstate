@@ -76,6 +76,10 @@ export interface HarnessWorldFixture {
   readonly commonRoomFloorMinTileY: number;
   readonly commonRoomFloorMaxTileX: number;
   readonly commonRoomFloorMaxTileY: number;
+  readonly classroomFloorMinTileX: number;
+  readonly classroomFloorMinTileY: number;
+  readonly classroomFloorMaxTileX: number;
+  readonly classroomFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;
