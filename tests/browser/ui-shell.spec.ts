@@ -647,7 +647,7 @@ test.describe('HUD shell', () => {
           prisonerCapacity: 180,
           // Everybody housed: this case is about the transport controls and
           // the clock, and an unhoused population would add #609's badge to
-          // the chip it reads `metricValues[0]` off.
+          // the Prisoners chip read below.
           occupiedPlaces: 179,
           staff: 27,
           staffUnassigned: 0,
@@ -667,7 +667,7 @@ test.describe('HUD shell', () => {
     );
     const updated = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
     expect(updated.pressedTransport).toEqual(['Fast forward']);
-    expect(updated.metricValues[0]).toBe('179');
+    expect(updated.metricValues[1]).toBe('179');
     // The clock moved with the view model, not with wall time.
     expect(updated.clockDayProgress).toBe('75%');
     await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
@@ -713,7 +713,7 @@ test.describe('HUD shell', () => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
     const reported = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
 
-    expect(reported.metricValues).toEqual(['142', '0', '27', '100', '61', '0', '4', '24,920', '10,667']);
+    expect(reported.metricValues).toEqual(['24,920', '142', '100', '0', '4', '61', '0', '27', '10,667']);
   });
 
   test('shows the clock as unknown until a session reports one', async ({ page }) => {
