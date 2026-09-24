@@ -6639,3 +6639,170 @@
   right: var(--space-3);
   bottom: 100%;
 }
+
+/* Full HD operations frame (owner's 2026-09-24 direction A).
+ * Keep the existing controls and player-resizable widths. The status row is
+ * built from projectStatusMetrics(), including unknowns and badges; CSS only
+ * gives all nine chips an uninterrupted, permanent reading lane. The map is
+ * still the middle grid track and receives pointer input through blank HUD
+ * chrome. Smaller windows retain the existing responsive layout. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-strip {
+    row-gap: 0;
+    background: var(--surface-sunken);
+    border-bottom-color: var(--border-strong);
+  }
+
+  .hud-strip__metrics:not([hidden]) {
+    flex: 1 0 100%;
+    order: 1;
+    justify-content: stretch;
+    gap: 0;
+    min-height: calc(var(--tap-target) + var(--space-1));
+    border-top: var(--hairline) solid var(--border-hairline);
+    border-bottom: var(--hairline) solid var(--border-hairline);
+    background: var(--surface-base);
+  }
+
+  .hud-strip__metrics > .ui-stat {
+    flex: 1 1 auto;
+    min-height: calc(var(--tap-target) - var(--space-2));
+    padding: 0 var(--space-2);
+    background: var(--surface-base);
+    border-right: var(--hairline) solid var(--border-hairline);
+  }
+
+  /* The 200% interface scale doubles each chip's physical width. Keep every
+   * readout in the upper frame by making additional lines, rather than
+   * silently scrolling four of the nine off its right edge. */
+  :root[data-ui-scale-enlarged='true'] .hud-strip__metrics:not([hidden]) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--space-1);
+    overflow-x: visible;
+    margin-right: 0;
+    padding-block: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-strip__metrics > .ui-stat {
+    flex: 0 0 auto;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs {
+    background: var(--surface-base);
+    border-right: var(--hairline) solid var(--border-strong);
+    padding-left: var(--space-1);
+    padding-top: calc(var(--tap-target) + var(--space-2));
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow {
+    position: absolute;
+    top: 0;
+    left: var(--space-1);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: calc(var(--tap-target) + var(--space-2));
+    padding-inline: var(--space-1);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab[data-active='true'] {
+    padding-left: calc(var(--space-1) - 2px);
+  }
+
+  .hud__rail {
+    background: var(--surface-base);
+    border-left: var(--hairline) solid var(--border-strong);
+  }
+
+  /* SavePanel stays in its owner-approved aside slot and in document order.
+   * Its content scrolls instead of claiming a quarter of a tall desktop rail. */
+  .hud__aside {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: calc(8.5 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud__aside {
+    min-height: calc(4 * var(--tap-target));
+  }
+
+  .hud__aside .save-panel__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud__aside .save-panel__button {
+    width: 100%;
+    padding-inline: var(--space-1);
+  }
+
+  /* Show one complete saved-prison row. Longer lists scroll inside their own
+   * labelled region rather than ending in a visibly clipped fragment. */
+  .hud__aside .save-panel__list {
+    max-height: calc(2 * var(--tap-target));
+    overflow-y: auto;
+  }
+
+  .hud__aside .save-panel__item {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hud__aside .save-panel__item-label {
+    grid-column: 1 / -1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hud__aside .save-panel__item > .save-panel__button {
+    min-height: var(--tap-target);
+    padding-inline: 0;
+  }
+
+  /* The selected tool is the one cost and name the player needs while
+   * placing. Give that one row a second line instead of hiding its price
+   * behind the selected badge in the narrow inspector. */
+  .hud-build__list > .ui-row[aria-checked='true'] .ui-row__label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  .hud-build__list {
+    max-height: calc(6 * var(--tap-target));
+  }
+
+  .hud__side {
+    flex: 1 1 auto;
+    margin-top: 0;
+    overflow-y: auto;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__corner {
+    margin-left: calc(var(--hud-navigation-width) + var(--space-3));
+    padding-bottom: var(--space-4);
+  }
+
+  /* This surface is currently a labelled navigation placeholder, not a
+   * rendered map. Keep its 396px panel width for the alert sentences below
+   * it, while returning vertical world area until a real map is drawn. */
+  .hud-minimap__surface {
+    aspect-ratio: auto;
+    height: calc(2 * var(--tap-target));
+    flex: 0 0 auto;
+  }
+
+}

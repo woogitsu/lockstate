@@ -110,6 +110,15 @@ export const MAP_WIDTH_RESERVE_PX = 320;
 /** The width the navigation opens at before a player has ever sized it. */
 export const DEFAULT_NAVIGATION_WIDTH_PX = 180;
 
+/** Direction A keeps labels, while lending the Full HD map another 52px. */
+export const FULL_HD_NAVIGATION_WIDTH_PX = 128;
+
+function defaultNavigationWidth(viewport: LayoutViewport): number {
+  return viewport.width >= 1920 && viewport.height >= 1080
+    ? FULL_HD_NAVIGATION_WIDTH_PX
+    : DEFAULT_NAVIGATION_WIDTH_PX;
+}
+
 /**
  * The width the inspector opens at, which is exactly what the rail has always
  * been: `--hud-rail-panel-width` is `264px * var(--ui-scale)` in
@@ -347,7 +356,7 @@ export function resolveLayoutSize(
   const stored = settings[field];
   // A stored size is a design pixel; everything below this line is painted.
   if (stored !== undefined) return clampSeparatorSize(stored * scale, range);
-  if (field === 'navigationWidth') return clampSeparatorSize(DEFAULT_NAVIGATION_WIDTH_PX * scale, range);
+  if (field === 'navigationWidth') return clampSeparatorSize(defaultNavigationWidth(viewport) * scale, range);
   if (field === 'inspectorWidth') return clampSeparatorSize(DEFAULT_INSPECTOR_WIDTH_PX * scale, range);
   // The phone sheet: as tall as the tier allows until the player says otherwise.
   return clampSeparatorSize(range.max, range);
