@@ -401,8 +401,16 @@ tiles. The source and tiling choices are recorded in
 
 The north-south interior door edge now uses a true overhead Blender render: a
 warm timber slab between galvanized jambs, with a hinge and recessed latch.
-The east-west frontal view keeps its existing source-art crop. The original
-four-view reference is recorded in `assets/source/concepts/interior-door-v3.md`.
+The east-west frontal view has a separate Blender elevation described in
+`assets/source/concepts/interior-door-face-v1.md`. The cap's original four-view
+reference is recorded in `assets/source/concepts/interior-door-v3.md`.
+
+### Interior door front elevation — `door.interior.face`
+
+A new four-view reference shows a closed walnut door between galvanized jambs,
+with recessed panels, hinges and a compact handle. Blender builds a shallow
+elevation relief that fills one tile with no transparent margin. The visual
+choices and provenance are in `assets/source/concepts/interior-door-face-v1.md`.
 
 ### Interior wall coping — `wall.interior.cap.overhead`
 

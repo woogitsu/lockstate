@@ -1090,6 +1090,34 @@
         "height": 64,
         "opaquePixels": 16384
       }
+    },
+    {
+      "assetId": "door.interior.face",
+      "image": "door.interior.face.png",
+      "sha256": "df1ea7076425baa1168349a207f92a41f26cdeef23398bfc6f90e39c73d04f30",
+      "pixelSha256": "10b8ad539885bbecf027449041ae32b724160827a103f3b9821fa04d2b2ecc90",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

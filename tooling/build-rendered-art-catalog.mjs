@@ -92,6 +92,7 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  */
 export const PUBLISHED_ASSET_IDS = [
   'door.interior.variants',
+  'door.interior.face',
   'wall.interior.cap.overhead',
   'floor.linoleum.institutional',
   'fixture.cell.toilet_sink',

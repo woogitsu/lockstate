@@ -3,6 +3,31 @@
   "kind": "lockstate.rendered-art-catalog",
   "entries": [
     {
+      "assetId": "door.interior.face",
+      "contentVersion": 1,
+      "image": "source-art/rendered.door.interior.face.df1ea7076425.png",
+      "sha256": "df1ea7076425baa1168349a207f92a41f26cdeef23398bfc6f90e39c73d04f30",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "door.interior.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.door.interior.variants.9b9161ac53e9.png",

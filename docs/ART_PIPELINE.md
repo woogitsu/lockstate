@@ -325,8 +325,9 @@ digest and the raw-pixel digest are recorded per asset in the sidecar.
 meet their own repeat exactly; a 6% transparent margin creates visible gaps.
 `floor.linoleum.institutional` is the first floor module rendered with a zero
 margin. Its 1 × 1 Blender geometry fills the frame with fine east and south
-joints. The wall face and other source-art surfaces retain their existing
-sheet crops.
+joints. The door front elevation is a zero-margin shallow relief that matches
+its Blender-rendered overhead cap. Other source-art surfaces retain their
+existing sheet crops.
 
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
