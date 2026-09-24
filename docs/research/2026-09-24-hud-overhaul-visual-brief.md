@@ -148,8 +148,9 @@ The phone drawings require correction before implementation. Their labelled
 720px (`docs/VISUAL_IDENTITY.md`, lines 617–654), and several controls are only
 27–33px tall, below the 44px `--tap-target` floor (`src/ui/tokens.css`). The
 phone implementation should keep six distinct accessible icon tabs in one
-56px row; two 44px header rows and a collapsible 164px Build sheet leave about
-504px of unobscured map at 375×812. These numbers are design targets at 100%
+56px row; two 44px header rows and a collapsible 180px Build sheet leave about
+488px of unobscured map at 375×812. The 180px floor is already exercised by
+`hud-layout-shell.spec.ts`. These numbers are design targets at 100%
 scale, not fixed heights at 200% scale. The real layout must reflow and pass
 the existing scale sweep. The Build catalogue arms a tool; any world dock
 switches the armed tool and mirrors its selected state. The nine-stat sheet
