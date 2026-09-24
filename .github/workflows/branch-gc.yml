@@ -124,41 +124,16 @@ concurrency:
 
 jobs:
   branch-gc:
-    # THE ONLY RUNNER LABEL THAT WORKS HERE, AND THE ONE THING ABOUT THIS FILE
-    # THAT IS NOT A FREE CHOICE.
-    #
-    # Every job in every workflow in this repository names this label, and every
-    # run that has ever succeeded ran on it. `ubuntu-latest` is not merely
-    # untested here: version.yml's first run and delete-branches.yml's first run
-    # each asked for it and each failed after four seconds with no step recorded
-    # and no log, which is the signature of a runner that was never provisioned.
-    # Moving version.yml to this label is what made it work, and moving
-    # delete-branches.yml to this label is what got its second run as far as
-    # executing a step at all. A new workflow written with `ubuntu-latest`
-    # inherits a four-second failure with nothing in the log to explain it.
-    #
-    # tests/foundation/ci-configuration-contract.test.ts carries the same
-    # argument against version.yml's `runs-on`, with the measurement.
-    runs-on: self-hosted
+    # The owner moved all jobs to GitHub-hosted Ubuntu before making the
+    # repository public. Earlier four-second hosted-runner failures were
+    # measured while the repository was private; current runs must be checked
+    # on their own terms.
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # NO CHECKOUT, AND NO ACTIONS AT ALL. That is a decision, not an omission,
-    # and it is the largest difference between this file and delete-branches.yml.
-    #
-    # Verification reads the pull request list and the branch list; deletion is
-    # `DELETE /repos/{owner}/{repo}/git/refs/heads/{branch}`. Both are HTTP, so
-    # nothing in this repository's tree is read and a checkout would buy nothing.
-    # What it would cost is specific: a clone carrying every one of ~478 refs
-    # onto a self-hosted runner whose workspace is REUSED between jobs and
-    # between runs, and -- for the deletion to work through git rather than the
-    # API -- a credential left in that workspace's git config by
-    # `persist-credentials: true`. delete-branches.yml needs both, because it
-    # deletes with `git push --delete`; this does not.
-    #
-    # So the token here lives in one step's environment and in no file. There is
-    # also no `git push --delete` to aim at the wrong ref: a mistake in the loop
-    # below can only issue a DELETE for a branch name the classifier returned,
-    # which is a name it read from the API and re-checked against an allowlist.
+    # The citation guard checks git history, so this job checks out the tree
+    # with full history. The deletion itself uses the REST API: its write token
+    # lives only in the deletion step's environment, not in git config.
     steps:
       # WHY THIS JOB NOW NEEDS A CHECKOUT, having deliberately not had one.
       #
@@ -217,36 +192,10 @@ jobs:
           BRANCH_GC_BRANCHES: ${{ inputs.branches }}
           BRANCH_GC_APPLY: ${{ inputs.apply }}
         run: |
-          # `python3` is assumed by this job and provisioned by nothing in this
-          # repository (#1089's audit, row `branch-gc.yml` / `python3`). It
-          # cannot be: installing it needs root, which nothing here has.
-          #
-          # **This comment read "and the `woogitsu-linux-*` pool has no
-          # passwordless sudo (proved on job 101846181533, 2026-09-07)", and
-          # the sentence is corrected rather than deleted because the mistake
-          # is the instructive part.** That measurement is real and it is
-          # about a pool this repository no longer runs on. Read off
-          # `runner_name` for every job of the four most recent completed
-          # runs, the pool is `lockstate-wsl-DOM-NEW-01/02/03` and the runner
-          # user is `mateusz`; #1089's opening premise -- "the WSL2 runner
-          # pool was retired on 2026-09-07 and everything moved to
-          # `woogitsu-linux-*`" -- no longer describes the machine. Whether
-          # THIS pool grants passwordless sudo is untested: every
-          # `scripts/provision-*.sh` short-circuits on it
-          # (`[provision-postgres] packages already present`), so nothing has
-          # reached an elevation path to find out.
-          #
-          # So the guard's message claims only what is known.
-          #
-          # So this is a diagnosis rather than a fix, which is exactly the
-          # shape `scripts/provision-git-lfs.sh:58` uses for the same class of
-          # dependency: give up on the privileged half and print the host step
-          # by name. Without it the line below fails with a bare
-          # `python3: command not found` and exit 127, in a job that has not
-          # run on this pool since 2026-09-03 and whose next act is deleting
-          # branches on a shared remote.
+          # Python is present on the standard hosted Ubuntu image, but check
+          # explicitly before processing a branch list with write permission.
           command -v python3 >/dev/null 2>&1 || {
-            echo "::error title=python3 is missing on this runner::branch-gc needs python3 and nothing in this repository can install it: the step needs root, which no job here has. Pre-provision the host (apt-get install -y python3) and re-dispatch. Runner: ${RUNNER_NAME:-unknown}."
+            echo "::error title=python3 is missing on this runner::branch-gc needs python3; install it on this job before re-dispatching. Runner: ${RUNNER_NAME:-unknown}."
             exit 1
           }
           python3 --version
