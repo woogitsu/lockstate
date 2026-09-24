@@ -1100,8 +1100,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: self-hosted':
-      'the self-hosted runner pool. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. This exact selector is pinned in tests/foundation/deploy-blocked-announcement-contract.test.ts so every working workflow follows the repository-wide runner policy.',
+    'runs-on: ubuntu-latest':
+      'the owner requested GitHub-hosted Ubuntu runners before making the repository public. A fresh VM per job also avoids running public pull-request code on the owner\'s self-hosted machines.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
@@ -2856,18 +2856,12 @@ describe('python3 availability diagnosis contract (#1089)', () => {
 });
 
 /**
- * Every job in every workflow asks for the bare `self-hosted` pool, and nothing
- * else.
+ * Every job in every workflow asks for `ubuntu-latest`.
  *
  * ## Why this is a repository-wide gate rather than two spot checks
  *
- * The selector was already pinned in exactly two places -- `version.yml`'s job
- * in this file's "version bump workflow contract", and `deploy.yml`'s
- * `staging-blocked` in `tests/foundation/deploy-blocked-announcement-contract.test.ts`
- * -- each with the same argument attached: `ubuntu-latest` has never worked in
- * this repository, and the two workflows that asked for it failed in four
- * seconds with no step recorded and no log. Both comments say they pin the
- * policy; neither could see the other seven jobs.
+ * The selector is also pinned in the version bump and blocked-deploy
+ * contracts. This repository-wide check catches jobs added to other workflows.
  *
  * The gap that leaves is not hypothetical in the other direction either. Until
  * `80b54a97` every `runs-on:` here was a **label list** -- `[self-hosted,
@@ -2878,22 +2872,14 @@ describe('python3 availability diagnosis contract (#1089)', () => {
  * each wrong now, and a job pinned to a label that no longer exists does not
  * fail loudly -- it queues forever.
  *
- * ## The instruction
+ * ## The current instruction
  *
- * Recorded 2026-09-13, in the owner's own words, when they were told what the
- * workflows currently ask for:
- *
- * > runnery to po prostu self hosted i tak ustaw wszędzie
- *
- * ("the runners are just self-hosted, so set it that way everywhere.") Every
- * `runs-on:` on disk already read `self-hosted` when that was said, so this
- * test changes no workflow and is not a release inside `AGENTS.md`'s third
- * reservation. It is the instruction written down where a future change has to
- * walk past it: a label list, a matrix, or a hosted runner added to any
- * workflow now fails here and names the sentence above.
+ * On 2026-09-24 the owner explicitly requested `ubuntu-latest` for all runners
+ * while changing the repository from private to public. That supersedes the
+ * 2026-09-13 self-hosted selector decision and releases this workflow change.
  */
 describe('runner selector contract', () => {
-  it('asks for the bare self-hosted pool in every job of every workflow', async () => {
+  it('asks for ubuntu-latest in every job of every workflow', async () => {
     const workflows = await readWorkflows();
     const selectors: string[] = [];
     const wrong: string[] = [];
@@ -2905,7 +2891,7 @@ describe('runner selector contract', () => {
         if (match === null) continue;
         const value = match.groups?.['value'] ?? '';
         selectors.push(`${workflow}:${index + 1}`);
-        if (value !== 'self-hosted') wrong.push(`${workflow}:${index + 1} -> ${value}`);
+        if (value !== 'ubuntu-latest') wrong.push(`${workflow}:${index + 1} -> ${value}`);
       }
     }
 
@@ -2917,7 +2903,7 @@ describe('runner selector contract', () => {
 
     expect(
       wrong,
-      'these jobs do not ask for the bare `self-hosted` pool. The owner\'s instruction of 2026-09-13 is that the runners are just self-hosted and that it be set that way everywhere; a label list additionally pins the job to machine names that have already changed three times in this repository, and a job pinned to a label nothing carries queues forever rather than failing',
+      'these jobs do not ask for `ubuntu-latest`, as the owner requested on 2026-09-24 before making the repository public',
     ).toEqual([]);
   });
 });
