@@ -272,6 +272,8 @@ export class WorldScene extends Phaser.Scene {
   private readonly touchGestures = new TouchGestureTracker();
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
+  private lastMousePointer: Phaser.Input.Pointer | undefined;
+  private lastHoverCamera: { readonly x: number; readonly y: number; readonly zoom: number } | undefined;
 
   private readonly buildTool: BuildToolPort | undefined;
   private readonly editHistory: EditHistoryPort | undefined;
@@ -686,6 +688,7 @@ export class WorldScene extends Phaser.Scene {
         }
         return;
       }
+      this.lastMousePointer = pointer;
       if (this.extendBuild(pointer)) return;
       if (this.extendObject(pointer)) return;
       if (this.extendArea(pointer)) return;
@@ -799,6 +802,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.lastLoadedBounds = frame.world.loadedBounds;
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
+    this.refreshHoverAfterCameraMove();
     this.tiles?.update(frame, range);
     // After the tiles and with the same frame, because the two must not be able
     // to disagree: a name is only ever true of the floor it is written on, and
@@ -1448,6 +1452,21 @@ export class WorldScene extends Phaser.Scene {
     this.hoveredEdge = edge;
     this.buildSegments = [edge];
     this.paintBuildPreview();
+  }
+
+  /** A keyboard pan, zoom button or minimap jump moves the tile under a still mouse. */
+  private refreshHoverAfterCameraMove(): void {
+    const camera = this.cameras.main;
+    const previous = this.lastHoverCamera;
+    this.lastHoverCamera = { x: camera.scrollX, y: camera.scrollY, zoom: camera.zoom };
+    if (previous?.x === camera.scrollX && previous.y === camera.scrollY && previous.zoom === camera.zoom) return;
+    if (this.gestureInProgress() || this.panPointerId !== undefined || this.activeTouchCount() > 0) return;
+    if (!this.game.canvas.matches(':hover')) return;
+    const pointer = this.lastMousePointer;
+    if (pointer === undefined) return;
+    if (this.isBuildArmed()) this.previewHover(pointer);
+    else if (this.isObjectArmed()) this.previewObjectHover(pointer);
+    else if (this.isRoomArmed()) this.previewAreaHover(pointer);
   }
 
   private paintBuildPreview(): void {

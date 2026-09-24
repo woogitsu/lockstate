@@ -501,6 +501,51 @@ test.describe('the world scene discrete keys', () => {
     expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.isAnyToolArmed())).toBe(true);
   });
 
+  test('keeps an armed wall hover aligned with a keyboard-panned camera', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    const box = (await page.locator('canvas').boundingBox())!;
+    const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.move(point.x + 8, point.y);
+    await settle(page);
+    const initial = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(initial).toHaveLength(1);
+
+    const startScroll = await scrollX(page);
+    await page.keyboard.down('KeyD');
+    await page.waitForFunction((start) => window.lockstateWorldSceneHarness!.scroll().x - start > 128, startScroll);
+    await page.keyboard.up('KeyD');
+    await settle(page);
+    const afterPan = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+
+    // A one-pixel mouse move forces the existing pointer path to reveal what
+    // the ghost should already have shown at the fixed cursor position.
+    await page.mouse.move(point.x + 9, point.y);
+    await settle(page);
+    const afterMouseMove = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(afterMouseMove).not.toEqual(initial);
+    expect(afterPan).toEqual(afterMouseMove);
+  });
+
+  test('keeps an armed wall hover aligned with keyboard zoom away from the viewport centre', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    await page.mouse.move(300, 300);
+    await settle(page);
+    const initial = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(initial).toHaveLength(1);
+
+    await page.keyboard.press('Equal');
+    await settle(page);
+    const afterZoom = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    await page.mouse.move(301, 300);
+    await settle(page);
+    const afterMouseMove = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(afterMouseMove).not.toEqual(initial);
+    expect(afterZoom).toEqual(afterMouseMove);
+  });
+
   test('puts the tool down on Escape when there is no run to abandon, so the next drag on the world is a look-around and not a wall (#959)', async ({
     page,
   }) => {
