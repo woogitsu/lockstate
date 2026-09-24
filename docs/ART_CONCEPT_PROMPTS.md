@@ -427,6 +427,17 @@ The sealed aggregate stays continuous and slightly warmer than the neighboring
 four-square shower ceramic. `assets/source/concepts/laundry-floor-v1.md`
 records the source and adaptation.
 
+### Infirmary hygienic vinyl — `floor.infirmary.vinyl`
+
+`assets/source/concepts/infirmary-floor-multiview-v1.png` studies a pale
+cool-grey medical sheet vinyl beside the existing teal-and-enamel medical bed.
+The four views cover overhead material, grazing light, restrained mineral
+flecks and a repeat. Blender keeps the 1 × 1 runtime tile continuous and omits
+the concept's square seams: a seam at every game-tile edge would put a grid
+under the room label. Keep the pale surface calm at zoom 0.5, with the flecks
+readable at zoom 1. `assets/source/concepts/infirmary-floor-v1.md` records the
+source and adaptation.
+
 ### Canteen terrazzo floor — `floor.canteen.terrazzo`
 
 An original Blender 1 × 1 overhead tile gives the dining room a warm,

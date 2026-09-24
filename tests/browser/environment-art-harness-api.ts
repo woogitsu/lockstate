@@ -68,6 +68,10 @@ export interface HarnessWorldFixture {
   readonly laundryFloorMinTileY: number;
   readonly laundryFloorMaxTileX: number;
   readonly laundryFloorMaxTileY: number;
+  readonly infirmaryFloorMinTileX: number;
+  readonly infirmaryFloorMinTileY: number;
+  readonly infirmaryFloorMaxTileX: number;
+  readonly infirmaryFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;

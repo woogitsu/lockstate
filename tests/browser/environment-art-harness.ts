@@ -87,6 +87,10 @@ const FIXTURE: HarnessWorldFixture = {
   laundryFloorMinTileY: 12,
   laundryFloorMaxTileX: 19,
   laundryFloorMaxTileY: 14,
+  infirmaryFloorMinTileX: 17,
+  infirmaryFloorMinTileY: 17,
+  infirmaryFloorMaxTileX: 20,
+  infirmaryFloorMaxTileY: 20,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -155,6 +159,7 @@ function buildFrame(): RenderFrame {
   world.setOwned(chunk, true);
   const includeYard = new URLSearchParams(window.location.search).has('roomLabels');
   const includeShowerFloor = new URLSearchParams(window.location.search).has('showerFloor');
+  const includeInfirmaryFloor = new URLSearchParams(window.location.search).has('infirmaryFloor');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -166,14 +171,19 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  if (includeShowerFloor) {
-    // These two 3x3 rooms occupy separate owned chunks, leaving the default
+  if (includeShowerFloor || includeInfirmaryFloor) {
+    // The two 3x3 wet rooms occupy separate owned chunks, leaving the default
     // fixture untouched for object/edge tests that inspect pooled sprites.
     for (const chunkX of [1, 2]) {
       const roomChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(1) };
       world.load(roomChunk);
       world.setOwned(roomChunk, true);
     }
+  }
+  if (includeInfirmaryFloor) {
+    const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(2) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
   }
   for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
@@ -221,7 +231,7 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  if (includeShowerFloor) {
+  if (includeShowerFloor || includeInfirmaryFloor) {
     for (const [roomId, minX, minY, maxX, maxY] of [
       ['room.shower-room', FIXTURE.showerFloorMinTileX, FIXTURE.showerFloorMinTileY,
         FIXTURE.showerFloorMaxTileX, FIXTURE.showerFloorMaxTileY],
@@ -234,6 +244,15 @@ function buildFrame(): RenderFrame {
         for (let tileX = minX; tileX <= maxX; tileX += 1) {
           world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
         }
+      }
+    }
+  }
+  if (includeInfirmaryFloor) {
+    const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
+    if (infirmary === undefined) throw new Error('The infirmary room is missing from the catalog.');
+    for (let tileY = FIXTURE.infirmaryFloorMinTileY; tileY <= FIXTURE.infirmaryFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.infirmaryFloorMinTileX; tileX <= FIXTURE.infirmaryFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, infirmary.numericId);
       }
     }
   }
@@ -418,6 +437,22 @@ function buildFrame(): RenderFrame {
       tileY: FIXTURE.bookshelfTileY,
       phase: 'built',
     },
+    ...(includeInfirmaryFloor ? [
+      {
+        id: 'infirmary-floor-medical-bed',
+        definitionId: 'medical-bed-wooden',
+        tileX: 17,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+      {
+        id: 'infirmary-floor-medicine-cabinet',
+        definitionId: 'medicine-cabinet-wooden',
+        tileX: 20,
+        tileY: 18,
+        phase: 'built' as const,
+      },
+    ] : []),
   ];
 
   return {
@@ -440,7 +475,8 @@ const scene = new WorldScene({
   feed,
   keyValueStore: memoryStore(),
   ...(new URLSearchParams(window.location.search).has('roomLabels')
-    || new URLSearchParams(window.location.search).has('showerFloor') ? {
+    || new URLSearchParams(window.location.search).has('showerFloor')
+    || new URLSearchParams(window.location.search).has('infirmaryFloor') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

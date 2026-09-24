@@ -117,6 +117,7 @@ MODELS = (
     ("floor.yard.compacted-earth", (1, 1)),
     ("floor.shower.ceramic", (1, 1)),
     ("floor.laundry.nonslip", (1, 1)),
+    ("floor.infirmary.vinyl", (1, 1)),
 )
 
 
@@ -1327,6 +1328,21 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Non-slip laundry grain.{index}",
                 (x, y, 0.081), (width, width * laundry_rng.uniform(0.5, 1.1), 0.001),
                 "laundry_grit_light" if index % 3 else "laundry_grit_dark", 0)
+    elif asset_id == "floor.infirmary.vinyl":
+        # Continuous hygienic sheet vinyl. The repeat has neither tile-sized
+        # seams nor medical symbols: both would form a grid beneath room names.
+        # The base shader is periodic at opposite edges; sparse inset flecks
+        # add a little material identity without an edge discontinuity.
+        box(collection, root, "Seamless infirmary sheet vinyl", (0, 0, 0.04),
+            (1, 1, 0.08), "infirmary_vinyl", 0)
+        infirmary_rng = random.Random(20260924)
+        for index in range(92):
+            x = infirmary_rng.uniform(-0.46, 0.46)
+            y = infirmary_rng.uniform(-0.46, 0.46)
+            width = infirmary_rng.uniform(0.005, 0.012)
+            box(collection, root, f"Embedded infirmary fleck.{index}",
+                (x, y, 0.081), (width, width * infirmary_rng.uniform(0.62, 1.28), 0.001),
+                "infirmary_fleck_light" if index % 4 else "infirmary_fleck_teal", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1712,6 +1728,12 @@ def main():
     MATERIALS["laundry_base"] = material("Warm grey sealed laundry concrete", (0.58, 0.45, 0.37, 1), 0.98)
     MATERIALS["laundry_grit_light"] = material("Pale embedded anti-slip mineral", (0.52, 0.50, 0.44, 1), 0.99)
     MATERIALS["laundry_grit_dark"] = material("Dark embedded anti-slip mineral", (0.15, 0.17, 0.16, 1), 0.99)
+    MATERIALS["infirmary_vinyl"] = dirt_surface_material(
+        "Pale hygienic infirmary sheet vinyl",
+        (0.57, 0.63, 0.64, 1), (0.68, 0.73, 0.73, 1),
+        middle=(0.63, 0.68, 0.69, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["infirmary_fleck_light"] = material("Infirmary pale embedded mineral", (0.78, 0.82, 0.80, 1), 0.91)
+    MATERIALS["infirmary_fleck_teal"] = material("Infirmary muted teal mineral", (0.38, 0.56, 0.57, 1), 0.94)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

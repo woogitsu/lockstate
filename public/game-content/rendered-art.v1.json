@@ -153,6 +153,31 @@
       }
     },
     {
+      "assetId": "floor.infirmary.vinyl",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.infirmary.vinyl.8d8ce9ca121f.png",
+      "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.kitchen.nonslip",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.kitchen.nonslip.9e83b26d596c.png",

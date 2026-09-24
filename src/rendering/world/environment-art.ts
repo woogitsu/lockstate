@@ -151,8 +151,10 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  * alpha, so "which room is this" survives the floor being art.
  *
  * The kitchen uses a washable, non-slip tile, the canteen uses warm terrazzo,
- * the shower uses matte ceramic, and the outdoor yard uses compacted earth. Other rooms keep institutional
- * linoleum. This returns per zoning id so their material agrees with use.
+ * the shower uses matte ceramic, the laundry uses sealed aggregate, the
+ * Infirmary uses hygienic sheet vinyl, and the outdoor yard uses compacted
+ * earth. Other rooms keep institutional linoleum. This returns per zoning id
+ * so their material agrees with use.
  */
 export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId | undefined {
   if (zoningNumericId === 0) return undefined;
@@ -163,6 +165,7 @@ export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId |
   if (room.id === 'room.yard') return 'env.floor.yard';
   if (room.id === 'room.shower-room') return 'env.floor.shower';
   if (room.id === 'room.laundry') return 'env.floor.laundry';
+  if (room.id === 'room.infirmary') return 'env.floor.infirmary';
   return 'env.floor.institutional';
 }
 

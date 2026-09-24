@@ -100,6 +100,7 @@ export const PUBLISHED_ASSET_IDS = [
   'floor.yard.compacted-earth',
   'floor.shower.ceramic',
   'floor.laundry.nonslip',
+  'floor.infirmary.vinyl',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',

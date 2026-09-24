@@ -333,6 +333,11 @@ plates; its repeated edge is kept subdued. The wall and frontal door faces are s
 reliefs representing elevations in the game's 2D projection. The frontal door
 matches its rendered overhead cap.
 
+The later `floor.infirmary.vinyl` tile follows the same zero-margin contract.
+Its base shader uses periodic coordinates so opposite edges meet, and the
+small embedded flecks stay inside the rim. The concept's square seams are
+omitted from the rendered sheet to avoid a visible grid under Infirmary labels.
+
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on

@@ -86,6 +86,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.yard',
   'env.floor.shower',
   'env.floor.laundry',
+  'env.floor.infirmary',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -256,6 +257,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered sealed aggregate for the laundry; one seamless tile per repeat.',
+  },
+  'env.floor.infirmary': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.infirmary.vinyl',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale hygienic sheet vinyl for the Infirmary; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {
