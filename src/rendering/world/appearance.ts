@@ -151,21 +151,17 @@ export const ZONING_TINT_ALPHA = 0.28;
 export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
 
 /**
- * `env.floor.institutional`'s own mean colour under the exact crop the tile
- * painter draws -- `sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }`
- * (verbatim in `src/rendering/assets/environment-sprites.ts`), box-averaged
- * over every pixel in that crop. MEASURED, by a decoder written for this
- * table (`git log`, the commit that added it, carries the run): `rgb(116.396,
- * 128.916, 142.908)`.
+ * Mean colour of the published Blender `env.floor.institutional` render,
+ * measured over its complete 256x256 PNG: `rgb(187.585, 191.587, 189.641)`.
+ * The previous source-art crop measured `rgb(116.396, 128.916, 142.908)`;
+ * it is historical data and no longer the substrate drawn by the tile painter.
  *
- * **Why this crop, and not the whole 1448x1086 sheet.** ADR 0101 Context §1
+ * **Historical measurement.** ADR 0101 Context §1
  * decoded both and named the two available samples: the whole sheet's opaque
  * average, `rgb(117.6, 128.6, 140.7)`, and this crop, `rgb(116.4, 128.9,
  * 142.9)`. They agree in direction and are close in magnitude, but this crop
- * is the one used here, for the same two reasons ADR 0101 gives: it is the
- * sample that actually sits under a rendered tile (`zonedFloorSprite` always
- * resolves `env.floor.institutional`, and that sprite's own `sourceRectPx` is
- * this crop, not the sheet), and it is the sample three independently written
+ * was the one used before the Blender tile replaced the source-art crop: it
+ * was the sample that sat under a rendered tile, and three independently written
  * decoders -- the issue's, ADR 0101's, and this session's -- agree on most
  * tightly.
  *
@@ -174,8 +170,7 @@ export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
  * (this file's own header: "content definitions belong in data modules, not
  * hard-coded condition chains") and must not gain a PNG decoder -- decoding
  * art is the loader's job, not a data table's. So if
- * `floor.linoleum.institutional.*.png` is ever replaced, or `env.floor
- * .institutional`'s `sourceRectPx` ever moves, **every per-room alpha derived
+ * `rendered.floor.linoleum.institutional.*.png` is ever replaced, **every per-room alpha derived
  * below goes stale silently**: nothing here would notice, the numbers below
  * would still compile and still look like considered choices, and they would
  * quietly be aimed at a floor that no longer exists. Production code does not
@@ -186,7 +181,7 @@ export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
  * is not materialised) and fails loudly the moment this constant stops
  * matching the art on disk.
  */
-const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [116.396, 128.916, 142.908];
+const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585, 191.587, 189.641];
 
 /** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
 function channelSpread(rgb: readonly [number, number, number]): number {
@@ -205,13 +200,10 @@ function blendOverInstitutionalFloor(tint: number, alpha: number): readonly [num
 }
 
 /**
- * The untinted floor's own spread, ~26.5. ADR 0101 Context §1: eight of
- * eighteen shipped room tints blend to *less* than this at the flat
- * `ZONING_TINT_ALPHA_OVER_ART` -- the tint makes those eight rooms' floors
- * read as less distinctly coloured than painting no tint at all, which is the
- * defect issue #1061 found by playing. ADR 0101 (accepted 2026-09-07, option
- * 1) obliges raising exactly those eight, and this is the target their raised
- * alpha is computed against.
+ * The Blender floor's untinted channel spread is ~4.0. The older source-art
+ * crop spread was ~26.5 and required stronger washes for eight rooms under
+ * ADR 0101. The table below recalculates from the currently published render;
+ * all shipped tints clear the neutral floor at the flat art alpha.
  */
 const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BASE);
 
@@ -232,20 +224,9 @@ const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BAS
  * §4 prices what a flat raise above 0.28 costs the floor-legibility argument
  * for every room; nothing here should spend more of that budget on one room
  * than a room with no floor art at all is ever painted with. ARITHMETIC,
- * against this same base and cap: four of the eight raised rooms
- * (`room.holding-cell` and `room.solitary-cell` -- the two ADR 0101 confirms
- * by screenshot, needing ~0.339 uncapped -- plus `room.reception` and
- * `room.kitchen`, needing ~0.281) sit close enough to the floor's own
- * complement that even the `ZONING_TINT_ALPHA` cap does not fully clear
- * `INSTITUTIONAL_FLOOR_ART_SPREAD`; each lands exactly at the cap instead.
- * That is still a real, substantial gain over the flat 0.14 for all four --
- * `tests/unit/appearance-zoning-tint-legibility.test.ts` pins the exact
- * before/after spread for each -- and, for Holding Cell specifically, a
- * clear, verified-in-browser warm cast rather than the grey #1061 found.
- * Closing the remaining gap for the two nearest the complement would need
- * ~0.34, a stronger wash than the no-art alpha itself, which is exactly the
- * option (a flat, all-room raise well past 0.28) ADR 0101 prices and does
- * not recommend.
+ * under the previous blue source-art floor, four rooms hit the cap. The
+ * current neutral Blender floor clears its own spread at the flat alpha for
+ * every shipped room. The cap remains to constrain future art and tints.
  *
  * Monotonic in the region this searches: increasing alpha here only pulls the
  * blend further from the base and closer to the tint, so `channelSpread`
@@ -283,17 +264,10 @@ function minimumLegibleAlphaOverArt(tint: number): number {
  * `ZONING_TINT_BY_ROOM_ID` costs nothing extra here, correct or not, the same
  * way `zoningTint` itself needs no per-room maintenance.
  *
- * **ADR 0101 (accepted 2026-09-07), option 1.** Ten of the eighteen rooms
- * below resolve back to the flat `ZONING_TINT_ALPHA_OVER_ART` unchanged,
- * because their hue already clears the untinted floor's own spread at 0.14.
- * Eight do not, and each gets the smallest alpha, capped at `ZONING_TINT_
- * ALPHA`, that clears it (or gets as close as that cap allows). **This is the
- * cost ADR 0101's acceptance obliges recording in ADR 0098**: ADR 0098
- * Context §2's whole pairwise-distance table rests on one identity -- every
- * tint painted at the same alpha, so the base cancels and the difference
- * between any two tints is exactly `alpha * |t1 - t2|` -- and that identity
- * no longer holds for any pair naming one of these eight rooms. See
- * `docs/adr/0098-what-says-which-room-this-is.md`'s amendment.
+ * **ADR 0101 (accepted 2026-09-07), option 1.** This remains a computed
+ * per-room table so future floor art changes cannot silently restore the
+ * washed-out room names. All current rooms resolve to the flat 0.14 alpha
+ * over the neutral Blender floor; the eight former overrides are historical.
  */
 const ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID: ReadonlyMap<string, number> = new Map(
   Object.entries(ZONING_TINT_BY_ROOM_ID).map(([id, tint]) => [id, minimumLegibleAlphaOverArt(tint)]),
@@ -310,8 +284,8 @@ export function zoningTint(zoningNumericId: number): number | undefined {
 /**
  * The alpha `TileLayer` should paint this zoning's tint at, over floor art
  * specifically -- `ZONING_TINT_ALPHA_OVER_ART` for every room whose blend
- * already clears the untinted floor's own spread, and the room's own raised
- * alpha above that for the eight which do not (ADR 0101, issue #1061). Falls
+ * already clears the untinted floor's own spread, and a raised alpha for any
+ * room that a future substrate would otherwise wash out (ADR 0101). Falls
  * back to the flat constant for an unzoned or unknown tile, matching
  * `zoningTint`'s own fallback, though a caller only reaches here after
  * `zoningTint` has already returned a defined colour.

@@ -313,11 +313,11 @@ gap is 36°.
 produce through a 0.14 wash is `255 × 0.14 = 35.7` units. That is the whole
 budget of this channel, before any question of how many marks have to share it.
 
-**What that budget is spent against.** MEASURED, by decoding
+**What that budget was spent against before the Blender floor replacement.** HISTORICAL MEASUREMENT, by decoding
 `public/game-content/source-art/floor.linoleum.institutional.788e81d4e081.png`
 and taking `env.floor.institutional`'s own crop —
 `sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }`
-(verbatim in `src/rendering/assets/environment-sprites.ts`) — then box-averaging
+(the former source-art crop, no longer present in `src/rendering/assets/environment-sprites.ts`) — then box-averaging
 it down to the 64×64 pixels one tile occupies at zoom 1, which is
 `export const TILE_SIZE_PX = 64;`
 (verbatim in `src/rendering/tile-metrics.ts`):
@@ -327,6 +327,12 @@ it down to the 64×64 pixels one tile occupies at zoom 1, which is
 | 304×304, as shipped | 12.73 / 11.68 / 9.47 | 11.68 | 36.1 |
 | 128×128, the packed frame | 11.36 / 9.98 / 8.13 | 10.08 | 30.3 |
 | **64×64, one tile at zoom 1** | **9.92 / 8.40 / 6.65** | **8.55** | **25.4** |
+
+The published `env.floor.institutional` now uses a 256×256 Blender render. Its
+measured mean is `rgb(187.585, 191.587, 189.641)` and its channel spread is
+about 4.0. The older crop statistics above remain the evidence for the
+original decision, but the current alpha table and its drift test use the
+Blender render.
 
 **So the mark that distinguishes a Reception from a Kitchen is 4.06 units,
 painted onto a texture whose own pixel-to-pixel spread across one tile is 25.4
