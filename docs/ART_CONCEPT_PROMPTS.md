@@ -374,3 +374,10 @@ planks and three wood-topped fixed stools read clearly from overhead, with
 recessed bolts and the existing dark steel support. The original four-view
 concept and Blender choices are recorded in
 `assets/source/concepts/dining-table-v3.md`.
+
+### Kitchen refrigerator refinement — `furniture.kitchen.fridge`
+
+The one-tile refrigerator now has a raised condenser assembly on its roof:
+four dark vent slots in a recessed frame, a round service cap, corner screws
+and a small teal temperature lamp. The original four-view concept and Blender
+choices are recorded in `assets/source/concepts/fridge-v3.md`.
