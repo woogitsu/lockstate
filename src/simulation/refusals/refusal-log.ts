@@ -148,6 +148,15 @@ export function supersessionKeyRoute(key: string): string {
   return separator === -1 ? key : key.slice(0, separator);
 }
 
+/** ADR 0091's band-only route equivalence; exact-key log withdrawal remains separate. */
+function sameRefusalBandRoute(standingKey: string, decidedKey: string): boolean {
+  const standingRoute = supersessionKeyRoute(standingKey);
+  const decidedRoute = supersessionKeyRoute(decidedKey);
+  if (standingRoute === decidedRoute) return true;
+  return (standingRoute === 'remove-wall' && decidedRoute === 'remove-object')
+    || (standingRoute === 'remove-object' && decidedRoute === 'remove-wall');
+}
+
 export class RefusalLog {
   /**
    * The total number of refusals ever recorded. Monotonic -- `supersede`
@@ -279,7 +288,7 @@ export class RefusalLog {
     if (current === undefined || current.routeDecidedSince === true) return;
     const standingRoute = this._currentKey;
     if (standingRoute === undefined) return;
-    if (supersessionKeyRoute(standingRoute) !== supersessionKeyRoute(key)) return;
+    if (!sameRefusalBandRoute(standingRoute, key)) return;
     this._current = { ...current, routeDecidedSince: true };
   }
 
