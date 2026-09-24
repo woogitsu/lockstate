@@ -501,6 +501,26 @@ export class IntakeSystem implements SystemRegistration {
       const index = this.store.getIndex(entityId);
       const stage = intakeStageFromIndex(this.records.intakeStage[index]!);
 
+      if (stage === 'completed') {
+        const currentId = this.coldState.getAccommodation(entityId);
+        if (currentId === undefined || this.roomInstances.getById(currentId)?.roomCatalogId !== 'room.holding-cell') continue;
+        const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
+        const target = this.resolveExistingTarget(groupId);
+        if (target === undefined) continue;
+        const arrival = this.sharingViewOf(entityId, index);
+        const bed = this.roomInstances.findBestAvailable(
+          target.roomCatalogId,
+          (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
+          target.requiredObjectCapability,
+        );
+        if (bed === undefined) continue;
+        this.roomInstances.release(currentId, entityId);
+        this.roomInstances.assign(bed.instanceId, entityId);
+        this.coldState.setAccommodation(entityId, bed.instanceId);
+        this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
+        continue;
+      }
+
       if (stage === 'queued') {
         this.records.intakeStage[index] = intakeStageIndex('reception');
         continue;
@@ -622,7 +642,7 @@ export class IntakeSystem implements SystemRegistration {
         // `resolveExistingTarget`'s single definition is what keeps it true.
         const target = this.resolveExistingTarget(groupId);
 
-        if (target === undefined) {
+        if (target === undefined && this.roomInstances.allByRoomCatalogId('room.holding-cell').length === 0) {
           this.records.intakeStage[index] = intakeStageIndex('failed');
           this.failedCount += 1;
           continue;
@@ -636,18 +656,22 @@ export class IntakeSystem implements SystemRegistration {
         // every free instance holds nobody, the choice is identical to
         // `findAvailable`'s.
         const arrival = this.sharingViewOf(entityId, index);
-        const instance = this.roomInstances.findBestAvailable(
+        const instance = target === undefined ? undefined : this.roomInstances.findBestAvailable(
           target.roomCatalogId,
           (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
           target.requiredObjectCapability,
         );
-        if (instance === undefined) {
+        const holding = instance === undefined
+          ? this.roomInstances.findAvailableResidence('room.holding-cell', 'seating')
+          : undefined;
+        if (instance === undefined && holding === undefined) {
           this.accommodationBacklogTicks += 1;
           continue; // stay in accommodation-assignment; retried next scheduled tick
         }
 
-        this.roomInstances.assign(instance.instanceId, entityId);
-        this.coldState.setAccommodation(entityId, instance.instanceId);
+        const assigned = instance ?? holding!;
+        this.roomInstances.assign(assigned.instanceId, entityId);
+        this.coldState.setAccommodation(entityId, assigned.instanceId);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
         // Issue #966 site 3: the tick a queued arrival stops waiting is the
@@ -655,7 +679,7 @@ export class IntakeSystem implements SystemRegistration {
         // type `findBestAvailable` just matched `instance` against, so this
         // names the room the assignment above actually claimed rather than
         // re-deriving it from the instance afterwards.
-        this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
+        if (instance !== undefined) this.housedNotice?.announce(entityId, target!.roomCatalogId, context.tick);
       }
     }
   }
