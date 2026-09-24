@@ -190,6 +190,28 @@ test.describe('the world scene keyboard', () => {
     await expect(page.locator('#probe-text')).toHaveValue('d');
   });
 
+  test('a modal stats dialog keeps world camera keys inactive', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => {
+      const dialog = document.createElement('dialog');
+      dialog.id = 'probe-stats-dialog';
+      dialog.innerHTML = '<button type="button">Close stats</button>';
+      document.body.append(dialog);
+      dialog.showModal();
+    });
+    await expect(page.locator('#probe-stats-dialog button')).toBeFocused();
+    const before = await scrollX(page);
+    await page.keyboard.down('ArrowRight');
+    await settle(page);
+    await settle(page);
+    expect(await scrollX(page)).toBe(before);
+    await page.keyboard.up('ArrowRight');
+    await page.locator('#probe-stats-dialog').evaluate((dialog) => (dialog as HTMLDialogElement).close());
+    await page.keyboard.down('ArrowRight');
+    await waitForPan(page, before);
+    await page.keyboard.up('ArrowRight');
+  });
+
   test('pans again once the field is blurred, so the guard is not a permanent mute (#201)', async ({ page }) => {
     // The other direction. A guard that stopped the camera and never restored it
     // would satisfy the test above and break the game.
