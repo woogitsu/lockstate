@@ -194,9 +194,11 @@ after `git lfs pull --include=` fetched the real bytes (1,856,853 bytes,
 | `env.floor.institutional`'s own crop, `{x:732,y:711,w:304,h:304}` (n = 92,416) | rgb(116.4, 128.9, 142.9) | 26.5 |
 | the crop box-averaged to 64×64 — one tile at zoom 1, `TILE_SIZE_PX` | rgb(116.4, 128.9, 142.9) | 26.5 |
 
-`sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }` is verbatim in
-`src/rendering/assets/environment-sprites.ts:159`, the exact crop
-`env.floor.institutional` names.
+`sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }` was the exact
+`env.floor.institutional` crop in `src/rendering/assets/environment-sprites.ts`
+when these measurements were taken. The Blender floor replacement removed that
+crop; its current frame is a complete 256×256 render, so the numbers in this
+paragraph are historical measurements rather than today's tint substrate.
 
 **Three independent decodes now agree on direction and are close on
 magnitude, and it is worth carrying all three rather than picking one.** The
