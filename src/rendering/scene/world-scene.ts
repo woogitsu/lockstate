@@ -692,6 +692,11 @@ export class WorldScene extends Phaser.Scene {
       // than the wall ghost does -- there is no rule to teach -- but an armed
       // tool that shows nothing reads as a tab that did nothing.
       else if (this.panPointerId === undefined && this.isRoomArmed()) this.previewAreaHover(pointer);
+      if (this.panPointerId === pointer.id && this.releaseMissed(pointer)) {
+        this.panPointerId = undefined;
+        this.lastPanScreenPoint = undefined;
+        return;
+      }
       if (this.panPointerId !== pointer.id || this.lastPanScreenPoint === undefined) return;
       const camera = this.cameras.main;
       camera.scrollX -= (pointer.x - this.lastPanScreenPoint.x) / camera.zoom;

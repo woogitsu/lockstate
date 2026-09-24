@@ -858,6 +858,33 @@ test.describe('the world scene pointer gesture recovery (#516)', () => {
     await client.detach();
   });
 
+  test('stops a middle-button pan when a no-button move reveals a missed mouseup', async ({ page }) => {
+    await openHarness(page);
+    const centre = await canvasCentre(page);
+    const client = await page.context().newCDPSession(page);
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(centre.x + 80, centre.y);
+    await settle(page);
+    const panned = await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x);
+    expect(panned, 'the middle-button drag did not pan').not.toBe(0);
+
+    // No blur and no mouseup reaches the page. The next move reports the
+    // browser's actual state: no button held.
+    await missedRelease(client, { x: centre.x + 120, y: centre.y });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x)).toBe(panned);
+    await page.mouse.up({ button: 'middle' });
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(centre.x + 40, centre.y);
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x)).not.toBe(panned);
+    await page.mouse.up({ button: 'middle' });
+    await client.detach();
+  });
+
   test('cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', async ({
     page,
   }) => {
