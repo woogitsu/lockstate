@@ -551,6 +551,10 @@ export class WorldScene extends Phaser.Scene {
     canvas.addEventListener('pointerdown', capturePointer);
 
     const keyDown = (event: KeyboardEvent): void => {
+      // Keep the browser's page-zoom chords separate from the game's bare
+      // +/- camera controls. Other chords, including Ctrl+Z, still follow
+      // their existing bindings until modifier-aware settings are decided.
+      if ((event.ctrlKey || event.metaKey) && (event.code === 'Equal' || event.code === 'Minus')) return;
       this.handleActionEvents(this.keyboard.keyDown(event));
     };
     const keyUp = (event: KeyboardEvent): void => {
