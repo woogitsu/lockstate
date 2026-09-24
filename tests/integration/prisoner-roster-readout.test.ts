@@ -360,7 +360,8 @@ describe('two prisoners on two timetables read differently at the same tick', ()
 
 describe('the roster reports the prison rather than the window', () => {
   it('keeps the true total when there are more prisoners than rows', () => {
-    const runtime = cellBlock(4);
+    const runtime = cellBlock(PRISONER_ROSTER_ROW_LIMIT + 1);
+    stepTo(runtime, 600);
     // One more arrival than the panel can draw, so `total` and `rows.length`
     // are different numbers and a mapping that returned the window's length
     // would be visible.

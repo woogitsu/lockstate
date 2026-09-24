@@ -457,58 +457,13 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * at 2,399 and on both at every boundary after: nine. `26,235 - 4 x 40 =
      * 26,075`. **Nine and nine**, which is what moves the relation below.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(26_075);
-    /*
-     * The relation between the two arms, asserted against **production content**
-     * rather than against literals -- so a change to what an unmet need costs
-     * or to what a plank costs fails here naming itself, and a re-baseline that
-     * moved one of the two balances and not the other fails here too.
-     *
-     * **The relation has changed sign, and that is the ruling of 2026-09-01
-     * arriving.** It read `26_275 - balance === STATE_INCOME_WITHHELD_...`: the
-     * recycled arm was 40 *above* this control, an accident of when its
-     * surviving resident arrived. Now the recycled arm is 90 *below* it,
-     * because its two undos cost two planks and only 40 of that is given back
-     * by the withholding this arm pays and that one does not. **Recycling is
-     * now strictly worse than playing it straight**, which is the plainest
-     * statement this file has ever been able to make about the loop.
-     *
-     * **The ruling of 2026-09-03 did not touch this assertion, and that is
-     * the whole argument for having written it against production content.**
-     * With the withheld share at `0` the right-hand side is two planks and
-     * nothing else, both balances moved (by four 40s and five), and this line
-     * needed no edit: 130 either way. The relation keeps its sign and its
-     * meaning -- recycling is still strictly worse than playing it straight,
-     * now by the full price of the two planks rather than by 90 of it.
-     *
-     * **Nor did its restoration on 2026-09-04**, for the same reason and with
-     * the same evidence: both balances moved back, the right-hand side became
-     * `130 - 40` again, and the only edit this line needed was the other arm's
-     * literal moving with it. The gap is 90 once more. Two rulings in two days,
-     * in opposite directions, and this assertion was correct throughout --
-     * which is what a relation written against production content buys, stated
-     * where it was paid for.
-     *
-     * It is not a fixture supplying both sides of its own comparison
-     * (`docs/TESTING.md`): the left-hand side is this arm's live balance, the
-     * 26,145 is the other arm's independently pinned literal, and the
-     * right-hand side is two pieces of production content neither test
-     * computes.
-     */
-    /*
-     * **And since issue #586 the 40 is gone from the right-hand side, because
-     * the accident it was paying for is gone.** The one-day difference in when
-     * the two arms' paying residents crossed the `safety` line was a property
-     * of `safety` falling slowly enough for arrival ticks 805 apart to land on
-     * opposite sides of a day boundary. At three residents to one bed both
-     * arms fall five times as fast and both cross inside day one, so both are
-     * withheld exactly the same nine 40s and the whole gap between them is the
-     * two planks the recycled arm's undos cost -- the plainest form this
-     * relation has had. `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is
-     * asserted to still be charged in both, in the equal counts, by the
-     * sibling literal above rather than here.
-     */
-    expect(runtime.treasury.balanceMinorUnits - 25_945).toBe(2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits);
+    expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
+    // #590 queues the control's two surplus requests outside. They add no
+    // crowding pressure. The recycled arm still has its three admitted residents
+    // after beds are undone, so its paying resident loses four more 40 shares.
+    expect(runtime.treasury.balanceMinorUnits - 25_945).toBe(
+      2 * procurableMaterial('item.wood-plank')!.unitPriceMinorUnits + 4 * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
+    );
   });
 
   it('undo and removal agree now: neither gives the plank back', () => {

@@ -254,6 +254,10 @@ describe('publishing the status counts', () => {
     expect(rest).toEqual([]);
     expect(first?.payload.counts).toEqual({
       prisoners: 4,
+      delayedIntakeCount: 0,
+      holdingGraceCount: 0,
+      holdingStrainedCount: 0,
+      holdingCriticalCount: 0,
       prisonersInIntake: 4,
       prisonersHighRisk: 0,
       staff: 5,
@@ -1129,7 +1133,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        26 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        30 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -1500,7 +1504,9 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       ).toEqual(Object.keys(editHistoryAvailabilitySchema.shape).sort());
       // Two bounded scalar work counts add 61 bytes in the largest fixture;
       // the payload remains independent of the prisoner population.
-      expect(JSON.stringify(payload).length).toBeLessThan(1_050);
+      // #590 adds four bounded scalar counts for the outside queue and
+      // holding age bands; the 5,000-actor payload remains under 1,150 bytes.
+      expect(JSON.stringify(payload).length).toBeLessThan(1_150);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

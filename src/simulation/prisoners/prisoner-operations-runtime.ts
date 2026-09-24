@@ -1116,9 +1116,9 @@ export class PrisonerOperationsRuntime {
       const room = this.roomInstances.getById(instanceId);
       if (room?.roomCatalogId === 'room.holding-cell') {
         holdingCapacity += room.residentCapacity;
-        holdingOccupants += occupants.length;
+        holdingOccupants += Math.min(room.residentCapacity, occupants.length);
       } else if (room?.roomCatalogId === 'room.cell' || room?.roomCatalogId === 'room.solitary-cell') {
-        normalOccupants += occupants.length;
+        normalOccupants += Math.min(room.residentCapacity, occupants.length);
       }
     }
     let unassigned = 0;

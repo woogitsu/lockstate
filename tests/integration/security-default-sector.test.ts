@@ -125,8 +125,11 @@ function hire(runtime: SimulationRuntime, id: string, tile: { readonly x: number
  * of one, and it stays one until the ninth.
  */
 function admitOne(runtime: SimulationRuntime, id = 'admit-occupant'): void {
+  submit(runtime, `${id}-buy`, packCommand({ type: 'PurchaseMaterials', orderId: `${id}-buy`, itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, `${id}-zone`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+  submit(runtime, `${id}-bed`, packCommand({ type: 'PlaceObject', orderId: `${id}-bed`, definitionId: 'bed-wooden', ...BED_TILE }));
+  stepTo(runtime, runtime.kernel.tick + 200);
   submit(runtime, id, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
   // Not `expect` on a projection: the refusal log is the session's own record,
   // and a silently refused admission here would leave the sector empty and make
@@ -187,7 +190,10 @@ function overcrowdedPrison(seed = SEED): SimulationRuntime {
   // furnished-cell and consequence loops both admit after.
   stepTo(runtime, 200);
   for (let index = 0; index < 3; index += 1) {
-    submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+    // Retained pre-#590 crowded intake: the current player command queues
+    // surplus arrivals outside, while incident response still supports saves.
+    runtime.prisoners.admitPrisoner(ADMISSION, ORIGIN);
+    runtime.kernel.step();
   }
   return runtime;
 }

@@ -98,9 +98,10 @@ function twelveCellPrison(): SimulationRuntime {
     submit(runtime, `zone-${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect }));
     submit(runtime, `bed-${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `bed-${String(index)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y }));
   }
-  // 100 ticks of delivery delay plus build progress; 400 is the margin the
-  // security and consequence loops both admit after.
-  stepTo(runtime, 400);
+  // Wait until every ordered bed is standing. Admission now reserves actual
+  // places, so an unfinished ninth bed would put that request outside.
+  stepTo(runtime, 1_500);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell').reduce((sum, room) => sum + room.residentCapacity, 0)).toBe(12);
   return runtime;
 }
 

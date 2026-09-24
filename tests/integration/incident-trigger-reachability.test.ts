@@ -20,8 +20,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * player could plausibly build, and the assertion is as much about the ones
  * that stay quiet as about the ones that do not.
  *
- * Every prison here is built with nothing but the commands a player can send:
- * `PurchaseMaterials`, `ZoneRoom`, `PlaceObject`, `HireStaff`, `AdmitPrisoner`.
+ * Every prison here is furnished with commands a player can send:
+ * `PurchaseMaterials`, `ZoneRoom`, `PlaceObject`, `HireStaff`. Population above
+ * available places models a pre-#590 saved state; new guarded admission queues
+ * that surplus outside, while incident production must still handle saves.
  * The one shortcut is `wallRoomPerimeter`, which writes the wall edges a
  * completed `wall-brick` order would write, for the reason that helper states
  * about itself.
@@ -192,7 +194,8 @@ function buildPrison(plan: PrisonPlan, seed: number = SEED): SimulationRuntime {
     submit(runtime, `hire${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }
   for (let index = 0; index < plan.prisoners; index += 1) {
-    submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, priorIncidents: plan.priorIncidents ?? ADMISSION.priorIncidents, ...ARRIVAL }));
+    runtime.prisoners.admitPrisoner({ ...ADMISSION, priorIncidents: plan.priorIncidents ?? ADMISSION.priorIncidents }, ARRIVAL);
+    runtime.kernel.step();
   }
 
   // A refused purchase, zoning or placement would make every figure below a

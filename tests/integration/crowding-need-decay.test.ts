@@ -23,7 +23,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * heads, a canteen and a yard; guards staffed to requirement
  * (`DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so two guards up to sixteen
  * prisoners and three up to twenty-four). The only thing varied is how many
- * prisoners are admitted into it. Measured on the tree before #586 over ten
+ * prisoners are present in it. Since #590, excess arrivals in this fixture
+ * model a retained pre-#590 save or beds later removed; a fresh guarded
+ * AdmitPrisoner command queues them outside. Measured before #586 over ten
  * in-game days, state income earned in total:
  *
  * | admitted | occupancy | before #586 | after |
@@ -123,9 +125,15 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
     submit(runtime, `hire${String(guard)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }
   for (let index = 0; index < prisoners; index += 1) {
-    submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    // A pre-#590 save may retain more in-prison arrivals than it has beds.
+    // Keep that legacy state as this crowding test's premise; the current
+    // guarded player command now queues requests before a bed is free.
+    runtime.prisoners.admitPrisoner(ADMISSION, ARRIVAL);
+    runtime.kernel.step();
   }
   if (runtime.refusals.count !== 0) throw new Error(`the fixture refused ${String(runtime.refusals.count)} commands`);
+  expect(runtime.prisoners.delayedIntakeCount).toBe(0);
+  expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(prisoners);
   return runtime;
 }
 

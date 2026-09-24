@@ -37,9 +37,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * `submitOrder` was reachable from nowhere in `src/`, and `searchPolicies` was
  * an empty array nothing pushed to, so `findPolicy` would have thrown on the
  * first search a session ordered. A unit test cannot see either absence,
- * because a unit test supplies both. So the cases below start at
- * `createNewSimulationRuntime` and use nothing but real commands through the
- * real command handler.
+ * because a unit test supplies both. These cases start at
+ * `createNewSimulationRuntime` and use real commands for construction and
+ * staffing; their crowded population models a retained pre-#590 save.
  *
  * ## What this measured on `origin/main` (6c309fc)
  *
@@ -83,9 +83,10 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 }
 
 /**
- * A prison a player could plausibly have after an hour: one walled, zoned and
- * furnished cell, four guards, and twelve admissions spread out rather than
- * arriving at once.
+ * A retained pre-#590 crowded prison: one walled, zoned and furnished cell,
+ * four guards and twelve arrivals spread out over time. Current guarded
+ * intake queues surplus outside; this fixture keeps the old saved population
+ * so search duty's seed and timing remain under test.
  *
  * **Four guards, and the number is the point.** The derived sector's
  * requirement scales with population (ADR 0048), so two of the four are posted;
@@ -111,12 +112,13 @@ function prisonWithGuards(guards: number, seed = SEED): SimulationRuntime {
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
-  stepTo(runtime, 200); // delivery delay plus build progress, the margin the furnished-cell loop uses
+  stepTo(runtime, 200);
   for (let index = 0; index < guards; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));
   }
   for (let index = 0; index < 12; index += 1) {
-    submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+    runtime.prisoners.admitPrisoner(ADMISSION, ORIGIN);
+    runtime.kernel.step();
     stepTo(runtime, runtime.kernel.tick + 40);
   }
   // Not `expect` on a projection: a silently refused command here would leave a
@@ -162,7 +164,7 @@ function publish(event: SimulationEvent): WorkerToMainMessage {
   }) as WorkerToMainMessage;
 }
 
-describe('a prison a player can start finds the contraband it admits', () => {
+describe('a retained crowded prison finds the contraband it holds', () => {
   it('moves the Contraband figure off zero, having spent guards to do it', () => {
     const runtime = playedPrison();
 
@@ -224,7 +226,8 @@ describe('a prison a player can start finds the contraband it admits', () => {
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
     stepTo(runtime, 200);
     for (let index = 0; index < 12; index += 1) {
-      submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+      runtime.prisoners.admitPrisoner(ADMISSION, ORIGIN);
+      runtime.kernel.step();
       stepTo(runtime, runtime.kernel.tick + 40);
     }
     submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));

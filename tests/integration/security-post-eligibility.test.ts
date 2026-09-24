@@ -124,7 +124,10 @@ function overcrowdedPrison(seed = SEED): SimulationRuntime {
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   stepTo(runtime, 200);
   for (let index = 0; index < 3; index += 1) {
-    submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+    // Retained pre-#590 crowded population: this file measures which staff
+    // may answer its riot, not whether new intake may overfill one bed.
+    runtime.prisoners.admitPrisoner(ADMISSION, ORIGIN);
+    runtime.kernel.step();
   }
   return runtime;
 }

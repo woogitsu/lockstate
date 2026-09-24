@@ -16,92 +16,11 @@ import { intakePipelineFromProjection } from '../../src/ui/simulation-intake';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
- * **A prison with one bed takes twelve prisoners, and the Intake panel now says
- * so** (issue #549).
- *
- * ## The measurement this file reproduces
- *
- * The issue was found by playing, with a mouse: a walled box zoned `room.cell`
- * with one bed in it, and then twelve presses of *Admit a prisoner*. All twelve
- * were accepted, no refusal was ever shown, and the admit control never
- * disabled. Eleven of the twelve then sat at Cell Assignment indefinitely while
- * the only sentence on screen that mentioned accommodation said *"A prisoner
- * can only be admitted into a prison that has a room to hold them."*
- *
- * The issue reported one more thing -- that the state grant was being paid for
- * all twelve -- and that half **does not reproduce**. It is checked in the
- * first case below rather than repeated here as background, because a sentence
- * in a header is exactly where a claim nobody re-measured goes to survive.
- *
- * Every step below goes through the real kernel, the real command decoder and
- * the real projection, and ends at the sentence the panel puts on screen,
- * resolved through the bundled `en` catalog -- the shape
- * `prisoner-roster-readout.test.ts` established. Nothing here calls
- * `admitPrisoner` or `RoomInstanceRegistry.register` by hand, because a fixture
- * that did would prove the counter works and say nothing about whether a player
- * can reach the state it counts.
- *
- * ## What is deliberately *not* being fixed
- *
- * The admission is still accepted. That is the owner's decision on #549 and it
- * is a playability one rather than an oversight: an arrival with no
- * accommodation is the term that pushes a sector's needs pressure past
- * `DEFAULT_SECTOR_RISK_POLICY`'s `hotThreshold`, so over-admission is the
- * ordinary route into the incident content, and refusing it would close the
- * route. `records no refusal` below pins the acceptance rather than leaving it
- * to be quietly changed by a later reading of the same issue.
- *
- * **The paragraph above is left as it stands, and the sentence in the middle
- * of it is now conditional rather than general.**
- * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
- * -- accepted by the owner on 2026-09-07 -- lets a prisoner waiting for a bed
- * eat, wash and take recreation, and its own Consequences section asks
- * whoever revisits this file to re-read exactly this reasoning. Re-read, and
- * measured on `incident-trigger-reachability.test.ts`'s own ladder over 30,000
- * ticks: an over-admitted prison that has built **nothing** for a bedless
- * prisoner is unaffected -- byte-identical incidents before and after -- and
- * one that has built a canteen, a shower room and a yard and is staffed to
- * requirement **stops rioting**, where it produced three riots and ten
- * assaults.
- *
- * **The paragraph above said "now produces no incidents at all" and closed
- * "so over-admission is ... now a route only through a prison that has not
- * built the rooms", and both are withdrawn.** They are quoted here rather
- * than deleted because three files beside this one carried the same sentence.
- * Re-measured on the same ladder on 2026-09-07, against this tree with
- * `src/simulation/prisoners/action-system.ts` alone reverted to `558ece5f`:
- * the assaults do not stop (over 40 consecutive seeds that prison opens
- * assaults on 19 of them; the empty log belonged to seed `0x0cc0`), and the
- * riots stop only up to a population. Sixteen prisoners on one guard: 4 riots
- * before, 0 after. Seventeen: 5 before, 1 after -- occupant 17 takes the
- * sector's `required` from 2 to 3, `DEFAULT_SECTOR_PRISONERS_PER_GUARD` being
- * 8. Thirty-two: 5 before and 5 after, no incident removed at all. So
- * over-admission is still a route into the incident content through a prison
- * that built the rooms too, once it has admitted more people than the rooms
- * were built for.
- *
- * **Those counts moved again with issue #586, which made crowding a cost of
- * its own** -- a prison over its beds decays `safety` and `hygiene` faster for
- * everybody in it. Sixteen prisoners on one guard now riot 5 times rather than
- * 0, seventeen 6 rather than 1, on every seed measured; staffed to requirement
- * the sixteen still do not riot. So over-admission is a route into the
- * incident content wherever the prison is short a guard, and
- * `incident-trigger-reachability.test.ts` carries the re-measured table.
- *
- * **What this file asserts is untouched by that**, which is why nothing below
- * moved: every expectation here is about the admission being accepted and the
- * panel saying so, and none of them is about an incident. The decision the
- * paragraph records is the owner's and the change to its premise is a balance
- * question for them, not a sentence for this file to settle.
- *
- * ## The assertion that would have caught the defect, and the one that would not
- *
- * "Eleven are at Cell Assignment" was already true before this change, and the
- * panel already displayed it. An assertion written to that would have certified
- * the defect. What a player could not find out is whether the prison had
- * anywhere to *put* those eleven, and that is what every expectation below is
- * written to -- including `a prison with a bed to spare warns about nobody`,
- * which fails for any implementation that reports the stage count.
+ * Issue #549 exposed that the old admission path put eleven arrivals into
+ * Cell Assignment beside one occupied bed. Issue #590 supersedes that path:
+ * the first arrival occupies the bed and later requests wait outside in FIFO
+ * order until capacity exists. These tests use the player's real commands,
+ * projection and localized copy to pin the new boundary and its grant cost.
  */
 
 const SEED = 0x549;
@@ -173,8 +92,8 @@ function accommodationCapacity(runtime: SimulationRuntime): number {
     .accommodationCapacity;
 }
 
-describe('twelve admissions into a one-bed cell (issue #549)', () => {
-  it('accepts every one of them, houses one, and counts the other eleven as having no bed', () => {
+describe('surplus intake after a one-bed cell fills (#590)', () => {
+  it('houses one and queues the other eleven outside without paying for them', () => {
     const runtime = prisonWithBeds(1);
     // One bed is one place. Stated before the admissions, because every figure
     // below is a statement about the difference between this number and twelve.
@@ -182,11 +101,9 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
 
     for (let ordinal = 1; ordinal <= 12; ordinal += 1) admit(runtime, ordinal);
 
-    // Accepted, all twelve, and this is deliberate -- see the file header. A
-    // refusal here would be the *other* fix to #549, which was considered and
-    // declined because it closes the route into the incident content.
     expect(runtime.refusals.count, 'no admission is refused above capacity').toBe(0);
-    expect(runtime.prisoners.entityStore.maxActiveIndex, 'twelve prisoners exist').toBe(11);
+    expect(runtime.prisoners.entityStore.maxActiveIndex, 'only the housed prisoner exists').toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(11);
 
     // Long enough for every arrival to pass queued, reception and
     // classification and be offered the cell: `IntakeSystem` advances one stage
@@ -194,21 +111,16 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     stepTo(runtime, 500);
 
     const counts = projectPrisonerPopulationCounts(runtime.prisoners);
-    expect(counts.total).toBe(12);
-    // The state the issue photographed: one housed, eleven at Cell Assignment,
-    // nobody in the terminal stage. `failed` is zero because the prison *does*
-    // hold a cell -- the arrivals are waiting, not stranded.
+    expect(counts.total).toBe(1);
     expect(counts.byIntakeStage).toEqual([
       { intakeStage: 'queued', count: 0 },
       { intakeStage: 'reception', count: 0 },
       { intakeStage: 'classification', count: 0 },
-      { intakeStage: 'accommodation-assignment', count: 11 },
+      { intakeStage: 'accommodation-assignment', count: 0 },
       { intakeStage: 'completed', count: 1 },
       { intakeStage: 'failed', count: 0 },
     ]);
-
-    // And the figure that is new: eleven people the prison has no bed for.
-    expect(counts.waitingWithoutPlace).toBe(11);
+    expect(counts.waitingWithoutPlace).toBe(0);
 
     // **Issue #549 also says the state grant is paid for those eleven, and on
     // this tree it is not.** The issue read "Earned today" rising after every
@@ -221,7 +133,7 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     // here, beside the count, because the two claims travel together and only
     // one of them was true.
     const residents = runtime.prisoners.roomInstances.residentIds();
-    expect(residents, 'one of the twelve occupies the one bed').toHaveLength(1);
+    expect(residents, 'one arrival occupies the one bed').toHaveLength(1);
     const residentIndex = runtime.prisoners.entityStore.getIndex(residents[0]!);
     // The whole prison's day is worth exactly the one occupied place's day.
     expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(
@@ -229,36 +141,27 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     );
   });
 
-  it('puts a true sentence on the panel, in the words a player reads', () => {
+  it('keeps the Intake hint truthful while surplus arrivals stand outside', () => {
     const runtime = prisonWithBeds(1);
     for (let ordinal = 1; ordinal <= 12; ordinal += 1) admit(runtime, ordinal);
     stepTo(runtime, 500);
 
     const pipeline = intakePipelineFromProjection(projectPrisonerPopulationCounts(runtime.prisoners));
-    expect(isIntakeWithoutPlaceWorthShowing(pipeline)).toBe(true);
+    expect(isIntakeWithoutPlaceWorthShowing(pipeline)).toBe(false);
 
     // The bundled catalog, not a sentinel: this is the sentence on screen. It
     // is written out rather than formatted through the same helper, because an
     // expectation built by the code under test holds for any implementation.
     const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
       parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
-    expect(formatIntakeWithoutPlaceText(t, pipeline)).toBe(
-      '11 waiting with no place to sleep',
-    );
+    expect(formatIntakeWithoutPlaceText(t, pipeline)).toBe('0 waiting with no place to sleep');
 
     // And the standing note no longer denies that this can happen. The sentence
     // it replaced -- "A prisoner can only be admitted into a prison that has a
     // room to hold them" -- was false about exactly this prison.
     const hint = localizer.format(HUD_MESSAGE_KEY.intakeHint);
-    expect(hint).not.toContain('can only be admitted');
-    // Since #935 the note attaches the bed to housing rather than denying it is
-    // needed; what this prison refutes is a bed being required to *admit*.
-    expect(hint).toContain('Admitting needs a cell');
-    expect(hint).toContain('housing needs a bed');
-    expect(hint).not.toMatch(/admit\w* needs a (free )?bed|bed (before it can|to) admit/i);
-    // And it does not flatly deny the bed the Regime tab's first-cell
-    // instruction asks for, which is the on-screen disagreement #935 names.
-    expect(hint).not.toMatch(/(does not|doesn't) need a (free )?bed/i);
+    expect(hint).toContain('Arrivals wait outside');
+    expect(hint).toContain('only for prisoners with a place');
   });
 
   it('warns about nobody in a prison with a bed to spare, while they are still at Cell Assignment', () => {
@@ -328,13 +231,14 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
 
     for (let ordinal = 1; ordinal <= 4; ordinal += 1) admit(runtime, ordinal);
     stepTo(runtime, 500);
-    expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(3);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(3);
 
     submit(runtime, 'place-bed-1', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILES[1] }));
     stepTo(runtime, 900);
     expect(accommodationCapacity(runtime), 'the second bed must actually have been built').toBe(2);
 
-    expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(2);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(2);
+    expect(projectPrisonerPopulationCounts(runtime.prisoners).waitingWithoutPlace).toBe(0);
     expect(stageCount(runtime, 'completed')).toBe(2);
   });
 });

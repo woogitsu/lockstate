@@ -86,8 +86,12 @@ function stepBy(runtime: SimulationRuntime, ticks: number): void {
  * scheduled for, so the hire below is acted on the moment it lands.
  */
 function admitOne(runtime: SimulationRuntime): void {
+  submit(runtime, 'buy-bed', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-bed', itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+  submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y }));
+  stepBy(runtime, 200);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')[0]?.residentCapacity).toBe(1);
   submit(runtime, 'admit-occupant', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
   if (runtime.refusals.count > 0) throw new Error('The admission this fixture depends on was refused.');
   while (runtime.kernel.tick % 10 !== 0) runtime.kernel.step();
