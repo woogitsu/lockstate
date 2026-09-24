@@ -132,6 +132,15 @@ function defaultNavigationWidth(viewport: LayoutViewport): number {
  */
 export const DEFAULT_INSPECTOR_WIDTH_PX = 264;
 
+/** A readable Build and Schedule column at Full HD; stored sizes still win. */
+export const FULL_HD_INSPECTOR_WIDTH_PX = 340;
+
+function defaultInspectorWidth(viewport: LayoutViewport): number {
+  return viewport.width >= 1920 && viewport.height >= 1080
+    ? FULL_HD_INSPECTOR_WIDTH_PX
+    : DEFAULT_INSPECTOR_WIDTH_PX;
+}
+
 /**
  * The height one tab occupies in the vertical rail at 100 %: icon over label,
  * `--tap-target`'s 44 px floor plus the label's own line.
@@ -338,7 +347,7 @@ export function sizeFieldFor(region: LayoutRegion, viewport: LayoutViewport): La
  * The **absent** case is where the three regions differ, and it is why
  * `LayoutSettings`' sizes are optional rather than defaulted (see that file's
  * header): a navigation nobody has sized opens with its labels legible, a rail
- * nobody has sized is exactly the rail this repository has always drawn, and a
+ * nobody has sized follows the desktop tier's default, and a
  * phone sheet nobody has sized is as tall as the tier lets it be -- which is
  * the only one of the three that cannot be written down as a number, because it
  * is a property of the phone in the player's hand.
@@ -357,7 +366,7 @@ export function resolveLayoutSize(
   // A stored size is a design pixel; everything below this line is painted.
   if (stored !== undefined) return clampSeparatorSize(stored * scale, range);
   if (field === 'navigationWidth') return clampSeparatorSize(defaultNavigationWidth(viewport) * scale, range);
-  if (field === 'inspectorWidth') return clampSeparatorSize(DEFAULT_INSPECTOR_WIDTH_PX * scale, range);
+  if (field === 'inspectorWidth') return clampSeparatorSize(defaultInspectorWidth(viewport) * scale, range);
   // The phone sheet: as tall as the tier allows until the player says otherwise.
   return clampSeparatorSize(range.max, range);
 }
