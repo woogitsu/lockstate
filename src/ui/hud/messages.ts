@@ -1603,7 +1603,6 @@ export const HUD_MESSAGE_KEY = {
   regimeRosterMore: 'hud.regime.roster-more',
   regimeRosterEmpty: 'hud.regime.roster-empty',
   regimeRosterEmptied: 'hud.regime.roster-emptied',
-  regimeRosterOpenTab: 'hud.regime.roster-open-tab',
   regimeRiskTierExplanation: 'hud.regime.risk-tier-explanation',
   regimeIntakeStandingExplanation: 'hud.regime.intake-standing-explanation',
 

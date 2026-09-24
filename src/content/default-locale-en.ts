@@ -3438,7 +3438,6 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // position move together. This adds no claim about whether a cell exists or
   // admission will succeed; those remain the destination panels' answers.
   'hud.regime.roster-emptied': 'This prison is empty. Take somebody in to start again.',
-  'hud.regime.roster-open-tab': 'Open {tab}',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the

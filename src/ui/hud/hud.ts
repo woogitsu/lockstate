@@ -2598,9 +2598,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   const rosterPanel: RosterPanel = createRosterPanel({
     localizer,
-    onOpenEmptyAction: (tab) => {
+    onFollowEmptyInstruction: (everAdmitted) => {
+      const tab = everAdmitted ? 'manage' : 'build';
       dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
-      tabs.find((button) => button.id === tab)?.element.focus();
+      const destination = everAdmitted ? '.hud-intake__admit' : '.hud-build__arm';
+      hud.querySelector<HTMLElement>(destination)?.focus();
     },
     onSelectPrisoner: (prisonerId) => {
       runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);

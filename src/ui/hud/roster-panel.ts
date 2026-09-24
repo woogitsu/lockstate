@@ -183,8 +183,8 @@ import type {
 
 export interface RosterPanelOptions {
   readonly localizer: HudLocalizer;
-  /** Navigate to the section that contains the empty roster's suggested action. */
-  readonly onOpenEmptyAction?: (tab: 'build' | 'manage') => void;
+  /** Follow the empty roster's instruction to the control that fulfils it. */
+  readonly onFollowEmptyInstruction?: (everAdmitted: boolean) => void;
   /**
    * The player chose a prisoner to look at, or cleared their choice.
    *
@@ -1071,13 +1071,15 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
   }
 
   const rosterCount = valueText('', 'hud-regime__roster-count');
-  const rosterEmpty = eyebrowText(t(HUD_MESSAGE_KEY.regimeRosterEmpty), 'hud-regime__note');
-  const emptyAction = createActionButton({
-    label: t(HUD_MESSAGE_KEY.regimeRosterOpenTab, { tab: t(HUD_MESSAGE_KEY.tabBuild) }),
-    onActivate: () => options.onOpenEmptyAction?.(roster?.everAdmitted ? 'manage' : 'build'),
+  const rosterEmpty = element('button', {
+    className: 'hud-regime__note hud-regime__empty-action',
+    attributes: { type: 'button' },
   });
-  emptyAction.element.classList.add('hud-regime__empty-action');
-  emptyAction.element.hidden = true;
+  rosterEmpty.textContent = t(HUD_MESSAGE_KEY.regimeRosterEmpty);
+  rosterEmpty.addEventListener('click', () => {
+    if (roster === undefined || roster.total !== 0) return;
+    options.onFollowEmptyInstruction?.(roster.everAdmitted);
+  });
   const rosterMore = eyebrowText('', 'hud-regime__note hud-regime__roster-more');
 
   const rosterBlock = element('div', {
@@ -1104,7 +1106,6 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       }),
       rosterList,
       rosterEmpty,
-      emptyAction.element,
       rosterMore,
     ],
   });
@@ -1208,7 +1209,6 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       rosterList.removeAttribute('aria-label');
       rosterList.hidden = true;
       rosterEmpty.hidden = true;
-      emptyAction.element.hidden = true;
       rosterMore.hidden = true;
       return;
     }
@@ -1411,7 +1411,6 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
     // been widened to cover the other, which is what the previous reading
     // asked for and could not have.
     rosterEmpty.hidden = shown.length > 0;
-    emptyAction.element.hidden = rosterEmpty.hidden || options.onOpenEmptyAction === undefined;
     if (!rosterEmpty.hidden) {
       // Re-set on every paint rather than only on the transition: `paintState`
       // is keyed on the active tab and this element is pooled, so a roster that
@@ -1421,9 +1420,6 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       rosterEmpty.textContent = t(
         roster.everAdmitted ? HUD_MESSAGE_KEY.regimeRosterEmptied : HUD_MESSAGE_KEY.regimeRosterEmpty,
       );
-      emptyAction.setLabel(t(HUD_MESSAGE_KEY.regimeRosterOpenTab, {
-        tab: t(roster.everAdmitted ? HUD_MESSAGE_KEY.tabManage : HUD_MESSAGE_KEY.tabBuild),
-      }));
     }
     // Counted against `roster.total` and not against the rows that arrived: the
     // reader asks for one row budget's worth, so the window is what came back

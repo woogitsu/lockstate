@@ -1298,7 +1298,6 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.regime.risk-tier-explanation': 'Poziom ryzyka: {standing}. Klasyfikacja uwzględnia długość kary, wcześniejsze incydenty i zachowanie; jest okresowo weryfikowana.',
   'hud.regime.intake-standing-explanation': '{standing} — etap przyjęcia. Poziom ryzyka nie został jeszcze przyznany.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
-  'hud.regime.roster-open-tab': 'Przejdź do: {tab}',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
   // Added by #1309 -- both post-date the 2026-09-14 catalogue and are
   // translated straight against `src/content/default-locale-en.ts`'s own

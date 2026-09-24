@@ -132,6 +132,10 @@ test.describe('the empty prisoner roster on the page a player loads', () => {
     const empty = roster.locator('.hud-regime__note:not(.hud-regime__roster-more)');
     await expect(empty, 'the empty prison drew a blank box instead of the sentence').toBeVisible();
     await expect(empty).toHaveText(RULED_SENTENCE);
+    await expect(roster.getByRole('button', { name: RULED_SENTENCE })).toBeVisible();
+    await empty.press('Enter');
+    await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'build');
+    await expect(page.locator('.hud-build__arm')).toBeFocused();
 
     // No row is drawn under it, and nothing claims to be withholding rows.
     expect(await roster.locator('.hud-regime__roster-row:not([hidden])').count()).toBe(0);

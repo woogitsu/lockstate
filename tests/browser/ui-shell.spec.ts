@@ -6209,7 +6209,7 @@ test.describe('the Regime panel (issue #451)', () => {
       ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
       [TIMETABLE, EMPTY_ROSTER] as const,
     );
-    const build = page.getByRole('button', { name: 'Open Build' });
+    const build = page.getByRole('button', { name: /No prisoners yet\. Build a cell/ });
     await expect(build).toBeVisible();
     for (const viewport of [{ width: 900, height: 600 }, { width: 375, height: 812 }]) {
       await page.setViewportSize(viewport);
@@ -6217,19 +6217,19 @@ test.describe('the Regime panel (issue #451)', () => {
     }
     await build.click();
     await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'build');
-    await expect(page.locator('button[data-tab="build"]')).toBeFocused();
+    await expect(page.locator('.hud-build__arm')).toBeFocused();
 
     await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
     await page.evaluate(
       ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
       [TIMETABLE, DISCHARGED_ROSTER] as const,
     );
-    const manage = page.getByRole('button', { name: 'Open Manage' });
+    const manage = page.getByRole('button', { name: 'This prison is empty. Take somebody in to start again.' });
     await expect(manage).toBeVisible();
     await expect(manage).toBeInViewport();
     await manage.click();
     await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'manage');
-    await expect(page.locator('button[data-tab="manage"]')).toBeFocused();
+    await expect(page.locator('.hud-intake__admit')).toBeFocused();
     await expect(page.locator('.hud-intake__admit')).toBeVisible();
 
     await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
@@ -6376,6 +6376,10 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.text, 'drew the false "No prisoners yet" sentence').not.toContain('No prisoners yet.');
     expect(probe.emptyLaidOut, 'drew no sentence at all, which is the state the 2026-09-03 ruling ended').toBe(true);
     expect(probe.text).toContain('This prison is empty. Take somebody in to start again.');
+    const emptyAction = page.getByRole('button', { name: 'This prison is empty. Take somebody in to start again.' });
+    await emptyAction.click();
+    await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'manage');
+    await expect(page.locator('.hud-intake__admit')).toBeFocused();
     // Not being withheld either: a `total: 0` roster has nothing to page past.
     expect(probe.moreLaidOut).toBe(false);
     // The header still reads "0 of 0" -- a true statement about the present,
