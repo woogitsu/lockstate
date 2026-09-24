@@ -1299,6 +1299,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę — dość dużą, zamkniętą ścianami ze wszystkich stron, z łóżkiem i toaletą w środku — aby kogoś przyjąć.',
   'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
   'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
+  'hud.regime.risk-badge-name': 'Ryzyko: {tier}',
+  'hud.regime.risk-explanation': 'Poziom ryzyka wynika z oceny przy przyjęciu lub późniejszej oceny. Przeglądy uwzględniają ustalenia dyscyplinarne i czas bez nowych ustaleń; poziom może się zmienić.',
+  'hud.regime.risk-medium-schedule': 'Przy średnim ryzyku obowiązuje plan dnia populacji ogólnej.',
   // Added by #1309 -- both post-date the 2026-09-14 catalogue and are
   // translated straight against `src/content/default-locale-en.ts`'s own
   // comments (#1167), not against a summary of them.

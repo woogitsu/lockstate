@@ -3401,6 +3401,11 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // #958: remaining ticks at the detail reply divided by the published day
   // length; a duration, not a real-world date or a promise of discharge now.
   'hud.regime.sentence-remaining': 'Sentence remaining (in-game days): {days}',
+  // #788: intake screening can assign Medium without a disciplinary finding;
+  // later early warning or scheduled review can also change the tier.
+  'hud.regime.risk-badge-name': 'Risk: {tier}',
+  'hud.regime.risk-explanation': 'Risk tier comes from intake screening or later assessment. Reviews consider disciplinary findings and time without new findings; the tier may change.',
+  'hud.regime.risk-medium-schedule': 'Medium follows the general-population schedule.',
   // The roster. `{shown} of {total}` in the shape `hud.status.occupancy-value`
   // set, because the panel draws a window and the prison is the ceiling.
   //

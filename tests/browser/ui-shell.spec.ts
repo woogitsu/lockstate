@@ -6558,6 +6558,79 @@ test.describe('the Regime panel (issue #451)', () => {
    *    visibly, and a screenshot would not show it.
    */
   test.describe('the inspector under the roster (issue #895)', () => {
+    test('names classified risk and explains Medium without labelling an intake stage as risk (#788)', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 600 });
+      const mediumRoster: HudPrisonerRosterViewModel = {
+        ...ROSTER,
+        rows: ROSTER.rows.map((row) => row.entityId === 3
+          ? { ...row, standingLabelKey: 'risk-tier.2.name', riskTier: 2 }
+          : row),
+      };
+      const mediumDetail: HudPrisonerDetailViewModel = {
+        ...DETAIL_FIRST,
+        standingLabelKey: 'risk-tier.2.name',
+        riskTier: 2,
+      };
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, mediumRoster] as const,
+      );
+      const mediumBadge = page.locator('.hud-regime__roster-row[data-prisoner="3"] .hud-regime__roster-standing');
+      await expect(mediumBadge).toHaveAttribute('role', 'img');
+      await expect(mediumBadge).toHaveAttribute('aria-label', 'Risk: Medium');
+      await expect(page.locator('.hud-regime__roster-row[data-prisoner="3"]').getByRole('img', { name: 'Risk: Medium' })).toHaveCount(1);
+      expect(await page.locator('.hud-regime__roster-row[data-prisoner="3"]').ariaSnapshot()).toContain('Risk: Medium');
+      const intakeBadge = page.locator('.hud-regime__roster-row[data-prisoner="8"] .hud-regime__roster-standing');
+      await expect(intakeBadge).not.toHaveAttribute('role');
+      await expect(intakeBadge).not.toHaveAttribute('aria-label');
+
+      await page.locator('.hud-regime__roster-row[data-prisoner="3"]').click();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, mediumRoster, mediumDetail] as const,
+      );
+      const inspector = page.locator('.hud-regime__detail');
+      await expect(inspector.locator('.hud-regime__detail-risk')).toHaveText([
+        'Risk tier comes from intake screening or later assessment. Reviews consider disciplinary findings and time without new findings; the tier may change.',
+        'Medium follows the general-population schedule.',
+      ]);
+      const layout = await inspector.locator('.hud-regime__detail-risk').evaluateAll((paragraphs) => {
+        const panel = document.querySelector('.ui-panel.hud-regime')?.getBoundingClientRect();
+        return paragraphs.map((paragraph) => {
+          const box = paragraph.getBoundingClientRect();
+          return { left: box.left, right: box.right, top: box.top, bottom: box.bottom,
+            panelLeft: panel?.left, panelRight: panel?.right };
+        });
+      });
+      for (const line of layout) {
+        expect(line.left).toBeGreaterThanOrEqual(line.panelLeft ?? 0);
+        expect(line.right).toBeLessThanOrEqual(line.panelRight ?? 0);
+        expect(line.bottom).toBeGreaterThan(line.top);
+      }
+
+      // The first pooled slot now represents somebody still in intake.
+      const swapped: HudPrisonerRosterViewModel = {
+        ...mediumRoster,
+        rows: mediumRoster.rows.map((row) => {
+          if (row.entityId !== 3) return row;
+          const { classificationGroupId: _group, riskTier: _tier, ...intake } = row;
+          return { ...intake, standingLabelKey: 'intake-stage.classification.name' };
+        }),
+      };
+      await page.evaluate(
+        ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
+        [TIMETABLE, swapped] as const,
+      );
+      await expect(mediumBadge).not.toHaveAttribute('role');
+      await expect(mediumBadge).not.toHaveAttribute('aria-label');
+      const { classificationGroupId: _detailGroup, riskTier: _detailTier, ...intakeDetail } = mediumDetail;
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, swapped, { ...intakeDetail, standingLabelKey: 'intake-stage.classification.name' }] as const,
+      );
+      await expect(inspector.locator('.hud-regime__detail-risk:visible')).toHaveCount(0);
+    });
+
     /** Every row the browser drew, keyed by prisoner, so an assertion names a person rather than a position. */
     const rowsByPrisoner = async (page: Page) => {
       const probe = await page.evaluate(() => window.lockstateUiHarness.regimeProbe());
@@ -7050,7 +7123,10 @@ test.describe('the Regime panel (issue #451)', () => {
           expect(line.left).toBeGreaterThanOrEqual(readout.left);
           expect(line.right).toBeLessThanOrEqual(readout.right);
           expect(line.top).toBeGreaterThanOrEqual(readout.top);
-          expect(line.bottom).toBeLessThanOrEqual(readout.bottom);
+          // Keep one CSS pixel of breathing room: Linux Chromium measured the
+          // final glyph at 708.1875 in a panel ending at 708 on #1398.
+          // A flush fit on Windows is therefore not a portable fit.
+          expect(line.bottom).toBeLessThanOrEqual(readout.bottom - 1);
         }
       }
       // Printed for the next change to this panel: the figures, not the verdict.

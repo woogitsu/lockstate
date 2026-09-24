@@ -3406,6 +3406,16 @@
 
 .hud-regime__detail[hidden] { display: none; }
 
+.hud-regime__detail-risk {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: var(--text-size-label);
+  line-height: var(--label-line-height);
+  overflow-wrap: anywhere;
+}
+
+.hud-regime__detail-risk[hidden] { display: none; }
+
 /* A duration sentence must wrap in the narrow rail, including at larger UI
    scales. The shared eyebrow's single-line heading treatment would clip it. */
 .hud-regime__detail-sentence {
@@ -3414,6 +3424,10 @@
   text-transform: none;
   letter-spacing: normal;
   color: var(--text-subtle);
+  /* The browser scrolls the element's box into view. Leave space below its
+     last glyph so fractional line-box rounding cannot clip that glyph at the
+     roster panel's fold (measured 0.1875px on Linux Chromium, #1398). */
+  padding-block-end: 2px;
 }
 
 /* The name left and the badge right: the shape every readout line in this HUD
