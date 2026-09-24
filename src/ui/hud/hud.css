@@ -3424,6 +3424,10 @@
   text-transform: none;
   letter-spacing: normal;
   color: var(--text-subtle);
+  /* The browser scrolls the element's box into view. Leave space below its
+     last glyph so fractional line-box rounding cannot clip that glyph at the
+     roster panel's fold (measured 0.1875px on Linux Chromium, #1398). */
+  padding-block-end: 2px;
 }
 
 /* The name left and the badge right: the shape every readout line in this HUD

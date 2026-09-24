@@ -7123,7 +7123,10 @@ test.describe('the Regime panel (issue #451)', () => {
           expect(line.left).toBeGreaterThanOrEqual(readout.left);
           expect(line.right).toBeLessThanOrEqual(readout.right);
           expect(line.top).toBeGreaterThanOrEqual(readout.top);
-          expect(line.bottom).toBeLessThanOrEqual(readout.bottom);
+          // Keep one CSS pixel of breathing room: Linux Chromium measured the
+          // final glyph at 708.1875 in a panel ending at 708 on #1398.
+          // A flush fit on Windows is therefore not a portable fit.
+          expect(line.bottom).toBeLessThanOrEqual(readout.bottom - 1);
         }
       }
       // Printed for the next change to this panel: the figures, not the verdict.
