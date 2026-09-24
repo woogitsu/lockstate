@@ -4,7 +4,7 @@ test.use({ hasTouch: true });
 
 for (const [width, height] of [[720, 450], [1024, 768]] as const) {
   for (const tool of ['place', 'remove'] as const) {
-    test(`${tool} yields only an occluded world centre at ${width}x${height} (#517)`, async ({ page }) => {
+    test(`${tool} folds Build only when Build covers the world centre at ${width}x${height} (#517)`, async ({ page }) => {
       await page.setViewportSize({ width, height });
       await page.goto('/index.html');
       await page.locator('#game-root canvas').waitFor();
