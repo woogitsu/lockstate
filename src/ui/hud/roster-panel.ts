@@ -182,6 +182,8 @@ import type {
 
 export interface RosterPanelOptions {
   readonly localizer: HudLocalizer;
+  /** Follow the empty roster's instruction to the control that fulfils it. */
+  readonly onFollowEmptyInstruction?: (everAdmitted: boolean) => void;
   /**
    * The player chose a prisoner to look at, or cleared their choice.
    *
@@ -1061,7 +1063,15 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
   }
 
   const rosterCount = valueText('', 'hud-regime__roster-count');
-  const rosterEmpty = eyebrowText(t(HUD_MESSAGE_KEY.regimeRosterEmpty), 'hud-regime__note');
+  const rosterEmpty = element('button', {
+    className: 'hud-regime__note hud-regime__empty-action',
+    attributes: { type: 'button' },
+  });
+  rosterEmpty.textContent = t(HUD_MESSAGE_KEY.regimeRosterEmpty);
+  rosterEmpty.addEventListener('click', () => {
+    if (roster === undefined || roster.total !== 0) return;
+    options.onFollowEmptyInstruction?.(roster.everAdmitted);
+  });
   const rosterMore = eyebrowText('', 'hud-regime__note hud-regime__roster-more');
 
   const rosterBlock = element('div', {

@@ -6295,6 +6295,10 @@ test.describe('the Regime panel (issue #451)', () => {
     expect(probe.text, 'drew the false "No prisoners yet" sentence').not.toContain('No prisoners yet.');
     expect(probe.emptyLaidOut, 'drew no sentence at all, which is the state the 2026-09-03 ruling ended').toBe(true);
     expect(probe.text).toContain('This prison is empty. Take somebody in to start again.');
+    const emptyAction = page.getByRole('button', { name: 'This prison is empty. Take somebody in to start again.' });
+    await emptyAction.click();
+    await expect(page.locator('.hud')).toHaveAttribute('data-active-tab', 'manage');
+    await expect(page.locator('.hud-intake__admit')).toBeFocused();
     // Not being withheld either: a `total: 0` roster has nothing to page past.
     expect(probe.moreLaidOut).toBe(false);
     // The header still reads "0 of 0" -- a true statement about the present,

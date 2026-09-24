@@ -2993,6 +2993,20 @@
 /* Sentences, not labels: an eyebrow's uppercase single-line treatment is undone
    here exactly as `.hud-intake__note` above undoes it. */
 .hud-regime__note { white-space: normal; text-transform: none; letter-spacing: 0; }
+.hud-regime__empty-action {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hud-regime__empty-action:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* And `display: none` when the attribute says so, which the rule above cannot
    be relied on to leave alone. The `@media (max-height: 700px)` block at the
