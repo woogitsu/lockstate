@@ -121,6 +121,7 @@ MODELS = (
     ("floor.common-room.cork-rubber", (1, 1)),
     ("floor.classroom.oak-laminate", (1, 1)),
     ("floor.security-office.antistatic", (1, 1)),
+    ("floor.cell.sealed-concrete", (1, 1)),
 )
 
 
@@ -1396,6 +1397,20 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Embedded security conductive grain.{index}",
                 (x, y, 0.081), (width, width * security_rng.uniform(0.55, 1.2), 0.001),
                 "security_floor_graphite" if index % 3 else "security_floor_blue_steel", 0)
+    elif asset_id == "floor.cell.sealed-concrete":
+        # Pale sealed concrete is distinct from institutional linoleum but
+        # quiet beneath cell zoning, furniture, names and occupant markers.
+        # A periodic base and inset aggregate avoid square seams on repeat.
+        box(collection, root, "Seamless sealed cell concrete", (0, 0, 0.04),
+            (1, 1, 0.08), "cell_floor_concrete", 0)
+        cell_rng = random.Random(20260925)
+        for index in range(118):
+            x = cell_rng.uniform(-0.455, 0.455)
+            y = cell_rng.uniform(-0.455, 0.455)
+            width = cell_rng.uniform(0.005, 0.014)
+            box(collection, root, f"Embedded cell floor aggregate.{index}",
+                (x, y, 0.081), (width, width * cell_rng.uniform(0.58, 1.32), 0.001),
+                "cell_floor_aggregate_light" if index % 4 else "cell_floor_aggregate_dark", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1804,6 +1819,12 @@ def main():
         middle=(0.59, 0.46, 0.33, 1), low_position=0.32, high_position=0.68)
     MATERIALS["security_floor_graphite"] = material("Inset conductive graphite grain", (0.24, 0.25, 0.26, 1), 0.96)
     MATERIALS["security_floor_blue_steel"] = material("Inset muted blue steel grain", (0.30, 0.38, 0.42, 1), 0.94)
+    MATERIALS["cell_floor_concrete"] = dirt_surface_material(
+        "Pale sealed cool grey cell concrete",
+        (0.47, 0.52, 0.55, 1), (0.59, 0.63, 0.65, 1),
+        middle=(0.53, 0.57, 0.60, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["cell_floor_aggregate_light"] = material("Cell concrete pale aggregate", (0.68, 0.70, 0.69, 1), 0.95)
+    MATERIALS["cell_floor_aggregate_dark"] = material("Cell concrete fine dark aggregate", (0.32, 0.37, 0.39, 1), 0.96)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

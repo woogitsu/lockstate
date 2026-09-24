@@ -90,6 +90,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.common-room',
   'env.floor.classroom',
   'env.floor.security-office',
+  'env.floor.cell',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -288,6 +289,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered light anti-static resin for the Security Office; one seamless tile per repeat.',
+  },
+  'env.floor.cell': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.cell.sealed-concrete',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale sealed concrete for standard and solitary cells; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

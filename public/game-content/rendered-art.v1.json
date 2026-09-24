@@ -153,6 +153,31 @@
       }
     },
     {
+      "assetId": "floor.cell.sealed-concrete",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.cell.sealed-concrete.ce7e0bef8213.png",
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.classroom.oak-laminate",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.classroom.oak-laminate.3447b706bed8.png",

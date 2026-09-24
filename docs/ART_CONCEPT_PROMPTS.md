@@ -547,3 +547,12 @@ intent in `assets/source/concepts/security-office-floor-v1.md`. Blender 5.2
 models the seamless, fully opaque `floor.security-office.antistatic`. The
 approved lighter warm greige resin has sparse graphite and muted blue-steel
 inset grains, with no tile-sized seams, floor icons, or visible wiring.
+
+## Cell floor, pale sealed concrete
+
+An original four-view material reference at
+`assets/source/concepts/cell-floor-multiview-v1.png` guides the 1×1,
+zero-margin `floor.cell.sealed-concrete` Blender model; its decisions and
+provenance are in `assets/source/concepts/cell-floor-v1.md`. The production
+tile omits the concept's square repeat seams and keeps only fine aggregate
+under the existing Standard Cell and Solitary Cell zoning tints.

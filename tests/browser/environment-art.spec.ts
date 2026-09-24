@@ -127,14 +127,37 @@ test.describe('the environment artwork', () => {
     for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
-  test('the kitchen uses its own opaque tiling frame while the neighboring room keeps linoleum', async ({ page }) => {
+  test('the cell uses an opaque Blender concrete frame', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.cell');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    if (process.env['LOCKSTATE_CAPTURE_CELL_ART'] === '1') {
+      const centreX = (fixture.zonedMinTileX + fixture.zonedMaxTileX + 1) * fixture.tileSizePx / 2;
+      const centreY = (fixture.zonedMinTileY + fixture.zonedMaxTileY + 1) * fixture.tileSizePx / 2;
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y),
+        { x: centreX, y: centreY });
+      await page.screenshot({ path: testInfo.outputPath('cell-floor-1920x1080.png') });
+    }
+  });
+
+  test('the kitchen uses its own opaque tiling frame while the neighboring cell has sealed concrete', async ({ page }) => {
     const fixture = await openHarness(page);
     const result = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
       const frame = harness.atlasFrame('env.floor.kitchen');
       return {
         kitchen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.kitchen'),
-        linoleum: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.institutional'),
+        cell: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.cell'),
         size: frame === undefined ? undefined : [frame.width, frame.height],
         corners: frame === undefined ? [] : [
           [0, 0], [frame.width - 1, 0], [0, frame.height - 1], [frame.width - 1, frame.height - 1],
@@ -145,7 +168,7 @@ test.describe('the environment artwork', () => {
     // This room straddles an 8-tile chunk boundary, so the renderer keeps
     // one merged rectangle per chunk rather than one sprite for the room.
     expect(result.kitchen).toHaveLength(2);
-    expect(result.linoleum).toHaveLength(1);
+    expect(result.cell).toHaveLength(1);
     expect([result.kitchen[0]!.x, result.kitchen[0]!.y]).toEqual([
       fixture.kitchenMinTileX * fixture.tileSizePx, fixture.kitchenMinTileY * fixture.tileSizePx,
     ]);
@@ -695,7 +718,7 @@ test.describe('the environment artwork', () => {
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
 
     const tile = fixture.tileSizePx;
-    const floors = sprites.filter((sprite) => sprite.frameName === 'env.floor.institutional');
+    const floors = sprites.filter((sprite) => sprite.frameName === 'env.floor.cell');
     const faces = sprites.filter((sprite) => sprite.frameName === 'env.wall.interior.face');
     const caps = sprites.filter((sprite) => sprite.frameName === 'env.wall.interior.cap');
     const doors = sprites.filter((sprite) => sprite.frameName === 'env.door.interior.face');

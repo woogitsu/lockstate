@@ -1538,6 +1538,34 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "image": "floor.cell.sealed-concrete.png",
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448",
+      "pixelSha256": "965d7c2ed6a1d4d553e246af9f9504cf896fbe5f2f2aaae0993063a2fadf2e06",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

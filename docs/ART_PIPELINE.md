@@ -352,6 +352,11 @@ resin and sparse inset graphite and blue-steel grains. Its zero-margin edges
 meet without a grid across the 3x3 Security Office, while the surveillance
 console and room name stay legible under the existing tint.
 
+The `floor.cell.sealed-concrete` tile is a pale cool grey poured surface with
+fine inset mineral aggregate. The periodic base meets at all four zero-margin
+edges without a tile-sized grid; Standard and Solitary Cells use it beneath
+their unchanged zoning tints. The holding cell keeps institutional linoleum.
+
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on

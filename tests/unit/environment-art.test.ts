@@ -281,7 +281,7 @@ describe('simulation identity to artwork', () => {
   it('gives a zoned tile a floor and an unzoned one nothing', () => {
     const room = defaultRoomContentRegistry.getById('room.cell');
     expect(room).toBeDefined();
-    expect(zonedFloorSprite(room!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(room!.numericId)).toBe('env.floor.cell');
     expect(zonedFloorSprite(0)).toBeUndefined();
     expect(zonedFloorSprite(60_000)).toBeUndefined();
     const kitchen = defaultRoomContentRegistry.getById('room.kitchen');
@@ -293,6 +293,9 @@ describe('simulation identity to artwork', () => {
     const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
     const classroom = defaultRoomContentRegistry.getById('room.classroom');
     const securityOffice = defaultRoomContentRegistry.getById('room.security-office');
+    const cell = defaultRoomContentRegistry.getById('room.cell');
+    const solitaryCell = defaultRoomContentRegistry.getById('room.solitary-cell');
+    const holdingCell = defaultRoomContentRegistry.getById('room.holding-cell');
     expect(kitchen).toBeDefined();
     expect(canteen).toBeDefined();
     expect(yard).toBeDefined();
@@ -302,6 +305,9 @@ describe('simulation identity to artwork', () => {
     expect(commonRoom).toBeDefined();
     expect(classroom).toBeDefined();
     expect(securityOffice).toBeDefined();
+    expect(cell).toBeDefined();
+    expect(solitaryCell).toBeDefined();
+    expect(holdingCell).toBeDefined();
     expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
     expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
     expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
@@ -311,6 +317,9 @@ describe('simulation identity to artwork', () => {
     expect(zonedFloorSprite(commonRoom!.numericId)).toBe('env.floor.common-room');
     expect(zonedFloorSprite(classroom!.numericId)).toBe('env.floor.classroom');
     expect(zonedFloorSprite(securityOffice!.numericId)).toBe('env.floor.security-office');
+    expect(zonedFloorSprite(cell!.numericId)).toBe('env.floor.cell');
+    expect(zonedFloorSprite(solitaryCell!.numericId)).toBe('env.floor.cell');
+    expect(zonedFloorSprite(holdingCell!.numericId)).toBe('env.floor.institutional');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {
