@@ -5108,10 +5108,14 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
-      // The assembled sweep cannot create a prison with all four wide strip
-      // badges. ui-strip-badged-width.spec.ts drives that exact state and
-      // presses this conditional control with the keyboard at 1280 and 375.
-      'hud > hud-strip > button.hud-strip__all-stats-button "All stats"',
+      // The directory is conditional on overflow. The sweep may reveal it at
+      // 900x600 after a state change and hide it again by the final inventory.
+      // When visible, the hit-test above covers it. The dedicated badged-width
+      // spec drives its complete contents and keyboard route.
+      ...(inventory.ids.includes('hud > hud-strip > button.hud-strip__all-stats-button "All stats"')
+        && !everMeasured.has('hud > hud-strip > button.hud-strip__all-stats-button "All stats"')
+        ? ['hud > hud-strip > button.hud-strip__all-stats-button "All stats"']
+        : []),
       'hud > hud-strip > hud-strip__all-stats-dialog > button.hud-strip__all-stats-close "Close"',
     ];
     const neverLaidOut = inventory.controls.filter(
