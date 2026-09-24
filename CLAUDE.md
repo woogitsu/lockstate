@@ -169,23 +169,13 @@ finished runs on the retired pool, that is **roughly half** — so the
 any argument resting on "the suite needs ~40 minutes" is resting on the old
 pool.
 
-**One sentence in this block is no longer history and is checkable rather than
-measured by hand: every `runs-on:` in every workflow reads the bare
-`self-hosted` selector, not a label list naming a pool.** Checked directly,
-2026-09-13: `grep -rn "runs-on" .github/workflows/` returns ten job selectors
-(plus four comment lines that only discuss the setting) across six workflow
-files, and every one of the ten is `self-hosted` — none names
-`woogitsu-*`, `lockstate-wsl-DOM-NEW-*`, or any other label. That is now pinned
-by `tests/foundation/ci-configuration-contract.test.ts`'s "runner selector
-contract" (`describe('runner selector contract'` at
-`tests/foundation/ci-configuration-contract.test.ts:2895`), added on the
-owner's instruction of 2026-09-13 — *"runnery to po prostu self hosted i tak
-ustaw wszędzie"* ("the runners are just self-hosted, set it that way
-everywhere"). So the runner **names** above (`woogitsu-linux-03`,
-`lockstate-wsl-DOM-NEW-01/-02/-03`, `mateusz`) stay history exactly as this
-block already says; the **selector** stops being something a reader has to
-take on faith, because a label list or a hosted runner added to any workflow
-now fails that test.
+**Superseded on 2026-09-24:** the owner directly instructed *"zmieniam
+prywatność repo z prywatnego na publiczny, zmień runery na ubuntu latest"*.
+All ten workflow jobs now select `ubuntu-latest`; the earlier self-hosted
+runner measurements above remain history. `tests/foundation/ci-configuration-contract.test.ts:2881`
+contains `describe('runner selector contract'` and checks every workflow job
+against the new selector. `AGENTS.md` reservation 3 records the scope of the
+release and supersedes the 2026-09-13 self-hosted instruction.
 
 **A SIXTH RELEASE LANDED ON 2026-09-09, AND IT IS THE FOURTH INSIDE
 RESERVATION 3 — the first that adds a gate rather than widening or resizing
