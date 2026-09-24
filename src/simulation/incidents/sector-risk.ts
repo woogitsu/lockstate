@@ -21,12 +21,15 @@ export interface SectorRiskSample {
   readonly staffingShortfall: number;
   /** Known contraband/intelligence pressure on the sector (1 = maximum suspicion). */
   readonly contrabandPressure: number;
+  /** Delayed arrivals at this sector's gate, scaled to 0-1. Absent in older scenario samplers. */
+  readonly intakeQueuePressure?: number;
 }
 
 export interface SectorRiskPolicy {
   readonly needsPressureWeight: number;
   readonly staffingShortfallWeight: number;
   readonly contrabandPressureWeight: number;
+  readonly intakeQueuePressureWeight?: number;
   /** Instantaneous score at/above which a sample counts as "hot" for the sustained window. */
   readonly hotThreshold: number;
   /**
@@ -168,6 +171,7 @@ export const DEFAULT_SECTOR_RISK_POLICY: SectorRiskPolicy = {
   needsPressureWeight: 1,
   staffingShortfallWeight: 0.3,
   contrabandPressureWeight: 0.2,
+  intakeQueuePressureWeight: 0.15,
   hotThreshold: 0.65,
   sustainedSamplesRequired: 12,
 };
@@ -177,7 +181,8 @@ export function scoreSectorRisk(sample: SectorRiskSample, policy: SectorRiskPoli
   const raw =
     sample.needsPressure * policy.needsPressureWeight +
     sample.staffingShortfall * policy.staffingShortfallWeight +
-    sample.contrabandPressure * policy.contrabandPressureWeight;
+    sample.contrabandPressure * policy.contrabandPressureWeight +
+    (sample.intakeQueuePressure ?? 0) * (policy.intakeQueuePressureWeight ?? 0);
   return Math.max(0, Math.min(1, raw));
 }
 

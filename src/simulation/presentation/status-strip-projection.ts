@@ -58,6 +58,9 @@ export interface StatusStripSource {
    */
   readonly clockControl?: ClockControl;
   readonly prisoners: PrisonerProjectionSource;
+  /** Candidates waiting outside; they are not prisoners or occupied places yet. */
+  readonly delayedIntakeCount?: number;
+  readonly holdingAgeBands?: { readonly grace: number; readonly strained: number; readonly critical: number };
   readonly roomFilth?: RoomFilthIncomeSource;
   readonly labourCredit?: { readonly lastBlock: { readonly employed: number; readonly idle: number } };
   readonly workOutput?: { readonly portions: number };
@@ -946,7 +949,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     treasuryMinorUnits,
     treasuryOverdraftFloorMinorUnits,
     buildQueueUnfunded: (source.materialsFunding?.lastReport.unfunded.length ?? 0) > 0,
-    waitingWithoutPlace: population.waitingWithoutPlace,
+    waitingWithoutPlace: population.waitingWithoutPlace + (source.delayedIntakeCount ?? 0),
     isFreshUnfurnishedPrison,
     // Live, exactly as `coverage` and `materialsFunding` are read live above,
     // and asked about `source.tick` rather than about the kernel's own: a
@@ -985,6 +988,12 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       }),
     counts: {
       prisoners: population.total,
+      ...(source.delayedIntakeCount === undefined ? {} : { delayedIntakeCount: source.delayedIntakeCount }),
+      ...(source.holdingAgeBands === undefined ? {} : {
+        holdingGraceCount: source.holdingAgeBands.grace,
+        holdingStrainedCount: source.holdingAgeBands.strained,
+        holdingCriticalCount: source.holdingAgeBands.critical,
+      }),
       prisonersInIntake,
       prisonersHighRisk,
       staff,

@@ -124,6 +124,29 @@ function bandNotice(message: WorkerToMainMessage, speed: HudSpeed = 1) {
 }
 
 describe('a refusal the worker published becomes an alert row', () => {
+  it('keeps a standing queue warning with its exact length and retires it when intake clears', () => {
+    const message = publication();
+    if (message.kind !== 'simulation/status-counts') throw new Error('fixture must be status counts');
+    const withQueue = { ...message, payload: { ...message.payload, counts: { ...message.payload.counts, delayedIntakeCount: 2 } } };
+    const waiting = rows(withQueue);
+    expect(waiting).toContainEqual({
+      id: 'intake-delayed', labelKey: 'hud.alert.intake-delayed', severity: 'warning', labelParameters: { count: 2 },
+    });
+    expect(rows(message, waiting)).toEqual([]);
+  });
+
+  it('shows the two holding pressure bands with counts', () => {
+    const message = publication();
+    if (message.kind !== 'simulation/status-counts') throw new Error('fixture must be status counts');
+    const pressured = { ...message, payload: { ...message.payload, counts: {
+      ...message.payload.counts, holdingStrainedCount: 2, holdingCriticalCount: 1,
+    } } };
+    expect(rows(pressured)).toEqual([
+      { id: 'holding-strained', labelKey: 'hud.alert.holding-strained', severity: 'warning', labelParameters: { count: 2 } },
+      { id: 'holding-critical', labelKey: 'hud.alert.holding-critical', severity: 'danger', labelParameters: { count: 1 } },
+    ]);
+  });
+
   it('turns the refusal into one row carrying a message key and a severity', () => {
     expect(rows(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }))).toEqual([
       {

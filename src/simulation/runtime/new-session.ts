@@ -1482,7 +1482,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     let contrabandPressure = 0;
     for (const record of intelligence.forTarget('sector', sectorId)) contrabandPressure = Math.max(contrabandPressure, record.confidence);
 
-    return { needsPressure, staffingShortfall, contrabandPressure };
+    // The current game has one authored gate post in its default sector. A
+    // delayed queue amplifies that sector's sustained incident risk; it does
+    // not turn a candidate outside into a prisoner or an occupied place.
+    const intakeQueuePressure = sectorId === defaultSector.id ? Math.min(1, prisoners.delayedIntakeCount / 4) : 0;
+    return { needsPressure, staffingShortfall, contrabandPressure, intakeQueuePressure };
   };
 
   /*

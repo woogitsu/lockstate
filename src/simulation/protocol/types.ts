@@ -743,6 +743,10 @@ const prisonConditionSchema = z.enum(PRISON_CONDITIONS);
 export const statusCountsSchema = z
   .object({
     prisoners: countSchema,
+    delayedIntakeCount: countSchema.optional(),
+    holdingGraceCount: countSchema.optional(),
+    holdingStrainedCount: countSchema.optional(),
+    holdingCriticalCount: countSchema.optional(),
     prisonersInIntake: countSchema,
     prisonersHighRisk: countSchema,
     staff: countSchema,

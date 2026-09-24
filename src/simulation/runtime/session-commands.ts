@@ -455,6 +455,7 @@ export function createSessionCommandHandler(
           priorIncidents: simCommand.priorIncidents,
         },
         { x: simCommand.x, y: simCommand.y },
+        context.tick,
       );
       if (outcome.kind === 'refused') {
         refusals.record(ADMIT_REFUSAL_REASONS[outcome.reason], context.tick, admitSupersessionKey());

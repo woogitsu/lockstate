@@ -331,6 +331,9 @@ export interface EncodedIncidents {
  */
 export interface EncodedSessionSystems {
   readonly roomFilth: import('../prisoners/room-filth-ledger').RoomFilthSnapshot;
+  /** Absent in saves before intake could wait outside the prison. */
+  readonly delayedIntake?: readonly import('../prisoners/prisoner-operations-runtime').DelayedAdmission[];
+  readonly holdingStays?: readonly (readonly [number, number])[];
   /** Absent in saves written before work credits existed: no work accrued today. */
   readonly labourCredit?: import('../economy/labour-credit').LabourCreditSnapshot;
   /** Optional in older V7 saves; output begins empty when the mechanic first appears. */
@@ -670,6 +673,8 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // `objects` and `alerts` below.
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     roomFilth: runtime.prisoners.roomFilth.getSnapshot(),
+    delayedIntake: runtime.prisoners.getDelayedIntakeSnapshot(),
+    holdingStays: runtime.prisoners.intakeSystem.getHoldingSnapshot(),
     labourCredit: runtime.labourCredit.getSnapshot(),
     workOutput: runtime.prisoners.workOutput.getSnapshot(),
     prisoners: {
@@ -953,6 +958,8 @@ export function restoreSessionSystems(
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
     roomFilth: systems.roomFilth,
     workOutput: systems.workOutput ?? { kitchen: [], laundry: [], cleanKits: [], mealClaims: [] },
+    delayedIntake: systems.delayedIntake ?? [],
+    holdingStays: systems.holdingStays ?? [],
   },
   // The tick the restored session resumes at, which `Kernel.restoreState` has
   // already installed by the time this runs -- `restoreSimulationRuntime` calls

@@ -3,6 +3,17 @@ import type { EntityStore } from '../entity/entity-store';
 import type { EntityQuery } from '../entity/query';
 import { crowdingExcessPermille, crowdingExtraDecayTable } from './crowding';
 import { decayNeed, NEED_IDS, type NeedsComponent } from './needs';
+import { DAY_LENGTH_TICKS } from './regime';
+
+export const HOLDING_GRACE_TICKS = DAY_LENGTH_TICKS / 4;
+export const HOLDING_FULL_DAY_TICKS = DAY_LENGTH_TICKS;
+
+/** Extra stored units per tick; changing a band changes the slope, never a need by a one-tick jump. */
+export function holdingNeedPressure(heldTicks: number): { readonly safety: number; readonly sleep: number } {
+  if (heldTicks >= HOLDING_FULL_DAY_TICKS) return { safety: 10, sleep: 4 };
+  if (heldTicks >= HOLDING_GRACE_TICKS) return { safety: 4, sleep: 0 };
+  return { safety: 0, sleep: 0 };
+}
 
 /**
  * Scheduled need decay (issue #24): runs every `intervalTicks`, decaying
@@ -56,13 +67,14 @@ export class NeedsDecaySystem implements SystemRegistration {
     private readonly needs: NeedsComponent,
     private readonly accommodationCapacity?: () => number,
     private readonly hasCleanKit?: (entityId: number) => boolean,
+    private readonly holdingSince?: (entityId: number) => number | undefined,
   ) {}
 
-  public update(_context: SimulationContext): void {
+  public update(context: SimulationContext): void {
     const entityIds = this.query.execute();
     const excessPermille =
       this.accommodationCapacity === undefined ? 0 : crowdingExcessPermille(entityIds.length, this.accommodationCapacity());
-    if (excessPermille === 0) {
+    if (excessPermille === 0 && this.holdingSince === undefined) {
       // The ordinary prison, and the loop exactly as it stood before #586:
       // the crowding term costs an uncrowded update nothing per prisoner.
       for (const entityId of entityIds) {
@@ -76,8 +88,11 @@ export class NeedsDecaySystem implements SystemRegistration {
     const extra = crowdingExtraDecayTable(excessPermille);
     for (const entityId of entityIds) {
       const index = this.store.getIndex(entityId);
+      const since = this.holdingSince?.(entityId);
+      const holding = since === undefined ? { safety: 0, sleep: 0 } : holdingNeedPressure(context.tick - since);
       for (const needId of NEED_IDS) {
-        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId], needId === 'hygiene' && this.hasCleanKit?.(entityId) ? 0.5 : 1));
+        const heldExtra = needId === 'safety' ? holding.safety : needId === 'sleep' ? holding.sleep : 0;
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId] + heldExtra, needId === 'hygiene' && this.hasCleanKit?.(entityId) ? 0.5 : 1));
       }
     }
   }

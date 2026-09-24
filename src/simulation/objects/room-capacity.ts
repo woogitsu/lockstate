@@ -212,6 +212,7 @@ export function deriveRoomCapacity(
   catalogue: ContentRegistry<ObjectDefinition> = defaultObjectRegistry,
   maxResidents?: number,
   residenceCapability = SLEEP_SURFACE_CAPABILITY,
+  excludedUseCapability?: string,
 ): RoomDerivedCapacity {
   let residentCapacity = 0;
   let concurrentUseCapacity = 0;
@@ -225,6 +226,7 @@ export function deriveRoomCapacity(
       residentCapacity += definition.footprint.width;
     }
     for (const capability of definition.capabilities) {
+      if (capability === excludedUseCapability) continue;
       byCapability.set(capability, (byCapability.get(capability) ?? 0) + definition.footprint.width);
     }
   }
@@ -361,6 +363,7 @@ export class RoomCapacityResolver {
       this.objects,
       this.rooms.getById(instance.roomCatalogId)?.maxResidents,
       this.rooms.getById(instance.roomCatalogId)?.residenceCapability,
+      instance.roomCatalogId === 'room.holding-cell' ? SLEEP_SURFACE_CAPABILITY : undefined,
     );
   }
 }
