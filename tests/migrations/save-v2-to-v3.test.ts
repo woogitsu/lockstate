@@ -231,6 +231,7 @@ describe('the V3 simulation section is validated, not trusted', () => {
           blocks: [{ startTickOfDay: 0, endTickOfDay: 2_400, allowedCategories: ['sleep'] }],
         },
       ],
+      roomFilth: { rooms: [], exposures: [] },
       security: {
         sectorDefinitions: [],
         sectorControlStates: [],

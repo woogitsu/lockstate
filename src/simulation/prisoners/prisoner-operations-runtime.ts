@@ -44,6 +44,7 @@ import { accommodationCapacityOf } from './crowding';
 import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import { RegimeScheduleRegistry } from './regime-registry';
 import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
+import { RoomFilthLedger } from './room-filth-ledger';
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
 const PRISONER_COMPONENT_ID = 0;
@@ -354,6 +355,7 @@ export class PrisonerOperationsRuntime {
   public readonly intakeSystem: IntakeSystem;
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
+  public readonly roomFilth = new RoomFilthLedger();
   public readonly classificationReviewSystem: ClassificationReviewSystem;
   /** ADR 0090, issue #788: the faster, capped-lower companion that keeps `Medium` from being skipped. See its own docblock for why it is a second system rather than a change to `classificationReviewSystem`. */
   public readonly classificationEarlyWarningSystem: ClassificationEarlyWarningSystem;
@@ -490,6 +492,7 @@ export class PrisonerOperationsRuntime {
       // (`PrisonerRegimeOverrideResolver`'s own contract).
       combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
       options.carryJobs,
+      this.roomFilth,
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(
@@ -933,6 +936,7 @@ export class PrisonerOperationsRuntime {
       position: this.position.getSnapshot(),
       coldState: this.coldState.getSnapshot(),
       roomInstanceOccupancy: this.roomInstances.getSnapshot(),
+      roomFilth: this.roomFilth.getSnapshot(),
     };
   }
 
@@ -953,6 +957,7 @@ export class PrisonerOperationsRuntime {
     this.position.loadSnapshot(snapshot.position);
     this.coldState.loadSnapshot(snapshot.coldState);
     this.roomInstances.loadSnapshot(snapshot.roomInstanceOccupancy);
+    this.roomFilth.loadSnapshot(snapshot.roomFilth ?? { rooms: [], exposures: [] });
 
     // Re-derive the query bitset from restored entity liveness -- the bitset
     // itself isn't part of the snapshot (it's a pure function of "is this

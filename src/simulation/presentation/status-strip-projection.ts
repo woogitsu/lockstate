@@ -19,6 +19,8 @@ import {
   STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
   stateIncomeAccruedByTick,
   stateIncomeForOccupiedPlaces,
+  stateIncomeFilthPenalties,
+  type RoomFilthIncomeSource,
 } from '../economy/income';
 import { rungFloorMinorUnits } from '../economy/treasury';
 import { EMPTY_SAFETY_COVERAGE_CENSUS, type SafetyCoverageCensus } from '../prisoners/safety-coverage-system';
@@ -56,6 +58,7 @@ export interface StatusStripSource {
    */
   readonly clockControl?: ClockControl;
   readonly prisoners: PrisonerProjectionSource;
+  readonly roomFilth?: RoomFilthIncomeSource;
   readonly rooms?: RoomProjectionSource;
   readonly staff?: StaffRosterSource;
   readonly incidents?: StatusStripIncidentSource;
@@ -615,13 +618,14 @@ export interface StatusStripViewModel {
     readonly stateIncomeAccruedTodayMinorUnits: number;
     /**
      * How much of today's grant the prison has *not* earned so far, in the
-     * same minor units, because residents have needs going unmet
+     * same minor units, because residents have unmet needs or used dirty rooms
      * ([#890](https://github.com/woogitsu/lockstate/issues/890)).
      *
      * `stateIncomeAccruedByTick(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
      * occupied places, tick) - stateIncomeAccruedTodayMinorUnits`: what the
      * day would have paid by now had every resident's needs been met, less
-     * what it has paid. `0` exactly when no occupied place has an unmet need
+     * what it has paid. `0` when no occupied place has an unmet need or a
+     * dirty-room penalty
      * -- and `0` for the whole day whenever
      * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is suspended at `0`,
      * which is a state this prison has actually been in (ADR 0064's
@@ -642,6 +646,8 @@ export interface StatusStripViewModel {
      * its numerator.
      */
     readonly stateIncomeWithheldTodayMinorUnits: number;
+    /** Portion of that withheld amount caused by dirty rooms, at this tick. */
+    readonly stateIncomeFilthWithheldTodayMinorUnits: number;
     /**
      * What one in-game day of the current roster costs, in the same minor
      * units (ADR 0042 step 3).
@@ -920,8 +926,13 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   // One accrual, read twice: `stateIncomeAccruedTodayMinorUnits` below is this
   // value and `stateIncomeWithheldTodayMinorUnits` beside it is measured
   // against it, so the two cannot disagree about what the day has paid.
+  const cleanGrant = stateIncomeForOccupiedPlaces(source.prisoners, occupiedPlaceIds);
+  const filthGrant = stateIncomeForOccupiedPlaces(
+    source.prisoners, occupiedPlaceIds,
+    source.roomFilth === undefined ? undefined : stateIncomeFilthPenalties(source.roomFilth),
+  );
   const accruedTodayMinorUnits = stateIncomeAccruedByTick(
-    stateIncomeForOccupiedPlaces(source.prisoners, occupiedPlaceIds),
+    filthGrant,
     source.tick,
   );
   const conditions = computeStandingPrisonConditions({
@@ -1026,6 +1037,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
           STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * occupiedPlaceIds.length,
           source.tick,
         ) - accruedTodayMinorUnits,
+      stateIncomeFilthWithheldTodayMinorUnits:
+        stateIncomeAccruedByTick(cleanGrant, source.tick) - accruedTodayMinorUnits,
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
       conditions,

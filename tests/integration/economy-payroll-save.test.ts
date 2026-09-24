@@ -363,7 +363,7 @@ describe('the historical chain still walks a save older than the field', () => {
     const { bundle } = captured;
     // `regimeSchedules` removed beside them for the same reason, since ADR
     // 0113: it is V6's required section and no V4 build wrote one.
-    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = captured.simulation;
+    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
@@ -420,6 +420,6 @@ describe('the version this all rests on', () => {
     // for 6 is ADR 0113's `simulation.regimeSchedules`, which is required
     // precisely because its absence is *not* unambiguous once a schedule can be
     // edited -- the distinction this assertion exists to keep visible.
-    expect(SAVE_SCHEMA_VERSION).toBe(6);
+    expect(SAVE_SCHEMA_VERSION).toBe(7);
   });
 });

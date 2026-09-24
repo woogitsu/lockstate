@@ -24,8 +24,9 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ## Why this needs no save-version bump, asserted rather than claimed
  *
- * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 6 now, and
- * **no number in that sequence is this system's**: 5 belongs to ADR 0028 phase
+ * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 7 now. V7
+ * records room filth and same-day exposure; the income system still saves no
+ * accumulator or last-paid marker. Version 5 belongs to ADR 0028 phase
  * 1, which took `capacity` off a room instance and put a rectangle on it, and 6
  * to ADR 0113, which put each classification group's timetable in the save so a
  * command could edit it. What
@@ -101,7 +102,7 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   // edited cannot be recovered from an absent field -- and it is nothing to do
   // with the income line, which still adds no field to the payload. The two
   // paragraphs below the version check are what actually enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(6);
+  expect(SAVE_SCHEMA_VERSION, 'V7 records room filth and the prisoners exposed this day').toBe(7);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);
@@ -228,8 +229,10 @@ const SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED = 320;
 const BALANCE_AT_TICK_40 = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
 /** What the scenario holds once every wall has paid for itself. */
 const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
-/** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
-const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
+/** Four residents use dirty rooms before settlement: 160 of the 1,200 headline grant is withheld. */
+const ONE_DAY_FILTH_WITHHELD = 160;
+/** What one settled in-game day moves the balance by: 1,040 in, 400 out. */
+const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_FILTH_WITHHELD - ONE_DAY_WAGES;
 
 describe('a mid-day save neither loses the partial day nor pays for it twice', () => {
   it('settles at the occupied places intake actually produced, which is fewer than the prisoners admitted', () => {
@@ -262,12 +265,9 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
   it('restores the same accrual it had mid-day, because the accrual is recomputed from the tick', () => {
     const original = sessionAtTick(1_200);
     const accruedBefore = original.stateIncome.accruedThisDay(original.kernel.tick);
-    // Half a day at four places: `floor(300 x 4 x 1,201 / 2,400)`. Not half of
-    // `ONE_DAY_PAYMENT` exactly, because the day is prorated by ticks *served*
-    // including the one in progress, and the floor takes the trailing half
-    // minor unit -- which is the arithmetic the unit test pins and the reason
-    // this figure is spelled out rather than computed here.
-    expect(accruedBefore).toBe(600);
+    // One of the four residents has already used a dirty room by this tick,
+    // reducing the current 1,200 headline by 40 before proration.
+    expect(accruedBefore).toBe(580);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(1_200);

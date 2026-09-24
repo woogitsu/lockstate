@@ -157,4 +157,15 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     expect(unpublished.title).toBeNull();
     expect(unpublished.screenReaderText).toBe('');
   });
+
+  test('names the dirty-room cost in the visible and accessible explanation', async ({ page }) => {
+    const reading = await show(page, counts({
+      stateIncomeWithheldTodayMinorUnits: 80,
+      stateIncomeFilthWithheldTodayMinorUnits: 40,
+    }));
+    expect(reading.title).toBe(
+      "Unmet needs and dirty rooms have withheld 80 of today's grant so far; 40 comes from dirty rooms. A Garbage Room with a Waste Bin clears their waste at the end of each day.",
+    );
+    expect(reading.screenReaderText).toBe(reading.title);
+  });
 });

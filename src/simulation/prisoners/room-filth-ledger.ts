@@ -1,5 +1,6 @@
 /** Rooms whose ordinary use produces waste. No other room changes this ledger. */
 const FILTH_SOURCE_ROOMS = new Set(['room.canteen', 'room.kitchen', 'room.laundry']);
+const compareIds = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
 
 export interface RoomFilthSnapshot {
   readonly rooms: readonly (readonly [string, number])[];
@@ -28,8 +29,8 @@ export class RoomFilthLedger {
 
   /** Count one extra unmet need per dirty room used, then open the next day. */
   public settleDay(hasWasteDisposal: boolean, liveRoomIds: readonly string[]): readonly (readonly [number, number])[] {
+    const result = this.previewPenalties(hasWasteDisposal, liveRoomIds);
     const live = new Set(liveRoomIds);
-    const penalties = new Map<number, number>();
     for (const instanceId of [...this.rooms.keys()].sort()) {
       if (!live.has(instanceId)) {
         this.rooms.delete(instanceId);
@@ -38,20 +39,29 @@ export class RoomFilthLedger {
       }
       const next = hasWasteDisposal ? 0 : Math.min(Number.MAX_SAFE_INTEGER, this.rooms.get(instanceId)! + 1);
       this.rooms.set(instanceId, next);
-      if (next > 0) {
-        for (const prisonerId of this.exposures.get(instanceId) ?? []) {
-          penalties.set(prisonerId, (penalties.get(prisonerId) ?? 0) + 1);
-        }
-      }
     }
     this.exposures.clear();
+    return result;
+  }
+
+  /** What the next settlement would withhold if conditions stayed as they are. */
+  public previewPenalties(hasWasteDisposal: boolean, liveRoomIds: readonly string[]): readonly (readonly [number, number])[] {
+    if (hasWasteDisposal) return [];
+    const live = new Set(liveRoomIds);
+    const penalties = new Map<number, number>();
+    for (const instanceId of [...this.rooms.keys()].sort()) {
+      if (!live.has(instanceId)) continue;
+      for (const prisonerId of this.exposures.get(instanceId) ?? []) {
+        penalties.set(prisonerId, (penalties.get(prisonerId) ?? 0) + 1);
+      }
+    }
     return [...penalties].sort(([a], [b]) => a - b);
   }
 
   public getSnapshot(): RoomFilthSnapshot {
-    const rooms = [...this.rooms].sort(([a], [b]) => a.localeCompare(b));
+    const rooms = [...this.rooms].sort(([a], [b]) => compareIds(a, b));
     const exposures = [...this.exposures]
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => compareIds(a, b))
       .map(([id, people]) => [id, [...people].sort((a, b) => a - b)] as const);
     return { rooms, exposures };
   }

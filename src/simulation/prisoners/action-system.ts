@@ -25,6 +25,7 @@ import {
 import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
+import type { RoomFilthLedger } from './room-filth-ledger';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
@@ -456,6 +457,7 @@ export class ActionSystem implements SystemRegistration {
      * silently half-wired board.
      */
     private readonly carry?: CarryJobExecutor,
+    private readonly filth?: RoomFilthLedger,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -773,6 +775,10 @@ export class ActionSystem implements SystemRegistration {
       // clears `injured`; every other action reaches this line having changed
       // nothing but need levels, exactly as before.
       if (action === TREATMENT_ACTION) this.records.injured[index] = 0;
+      const usedInstanceId = this.coldState.getActionTarget(entityId);
+      if (usedInstanceId !== undefined && action.target.kind === 'room-catalog-id') {
+        this.filth?.recordUse(usedInstanceId, action.target.roomCatalogId, entityId);
+      }
       this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);

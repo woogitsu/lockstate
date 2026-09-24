@@ -358,6 +358,7 @@ describe('publishing the status counts', () => {
       // nothing is not a prison having something withheld -- the two are the
       // same number here and come apart the moment anybody is housed.
       stateIncomeWithheldTodayMinorUnits: 0,
+      stateIncomeFilthWithheldTodayMinorUnits: 0,
       // Five guards at the catalogue's 80-a-day guard band (ADR 0042 step 3).
       // Not zero, and that is the point of asserting it here: the wage bill is
       // a fact about who is *employed*, not about who is housed or deployed --
@@ -1126,7 +1127,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        23 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        24 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -1486,11 +1487,16 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // threshold once. `"prisoners.overcrowded"` is 23 characters with its
       // quotes, into a `conditions` array that was empty: 901 + 23 = 924.
       // 924 + 18 = **942**, the same head room.
+      // #595 adds the always-published scalar
+      // `stateIncomeFilthWithheldTodayMinorUnits`. This fixture measures
+      // 943/968 bytes at the same four actor tiers, still bounded: the new
+      // field is one integer, never a per-room or per-prisoner list. Preserve
+      // the prior 18-byte headroom above the 968-byte maximum.
       expect(
         Object.keys(payload.editHistory).sort(),
         'the worst-case fixture no longer carries every member `editHistoryAvailabilitySchema` declares -- re-measure the byte bound',
       ).toEqual(Object.keys(editHistoryAvailabilitySchema.shape).sort());
-      expect(JSON.stringify(payload).length).toBeLessThan(942);
+      expect(JSON.stringify(payload).length).toBeLessThan(987);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

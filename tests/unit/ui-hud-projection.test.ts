@@ -1288,6 +1288,17 @@ describe('refusalMessageKey: what a refused control says', () => {
  * (a prison meeting every need) and a positive figure.
  */
 describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
+  it('attributes the dirty-room portion without claiming all withholding comes from needs', () => {
+    const chip = metric(counts({
+      stateIncomeAccruedTodayMinorUnits: 220,
+      stateIncomeWithheldTodayMinorUnits: 80,
+      stateIncomeFilthWithheldTodayMinorUnits: 40,
+    }), 'earned-today');
+    expect(chip.description).toEqual({
+      textKey: 'hud.status.earned-withheld-filth',
+      numberParameters: { withheld: 80, filth: 40 },
+    });
+  });
   it('carries the withheld figure as a description, and never as a badge or a tone', () => {
     const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
 

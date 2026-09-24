@@ -3,6 +3,8 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { LoanBook } from './loans';
 import { NEED_IDS, NEED_MAX, type NeedsComponent } from '../prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
+import type { RoomFilthLedger } from '../prisoners/room-filth-ledger';
+import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import type { Treasury } from './treasury';
 
 /**
@@ -714,12 +716,35 @@ export function stateIncomeForCompletedDay(source: PrisonerDayGrantSource): numb
 export function stateIncomeForOccupiedPlaces(
   source: PrisonerDayGrantSource,
   occupiedPlaceIds: readonly EntityId[],
+  filthPenalties?: ReadonlyMap<EntityId, number>,
 ): number {
   let total = 0;
   for (const entityId of occupiedPlaceIds) {
-    total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
+    const base = stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
+    total += Math.max(0, base - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS * (filthPenalties?.get(entityId) ?? 0));
   }
   return total;
+}
+
+export interface RoomFilthIncomeSource {
+  readonly ledger: RoomFilthLedger;
+  readonly rooms: Pick<RoomInstanceRegistry, 'allByRoomCatalogId'>;
+}
+
+function filthRoomIds(source: RoomFilthIncomeSource): readonly string[] {
+  return ['room.canteen', 'room.kitchen', 'room.laundry']
+    .flatMap((roomCatalogId) => source.rooms.allByRoomCatalogId(roomCatalogId).map((room) => room.instanceId))
+    .sort();
+}
+
+function hasWasteDisposal(source: RoomFilthIncomeSource): boolean {
+  return source.rooms.allByRoomCatalogId('room.garbage-room')
+    .some((room) => room.objectCapabilities.includes('waste-disposal'));
+}
+
+/** Preview is also used by the HUD so a displayed grant matches the payable grant. */
+export function stateIncomeFilthPenalties(source: RoomFilthIncomeSource): ReadonlyMap<EntityId, number> {
+  return new Map(source.ledger.previewPenalties(hasWasteDisposal(source), filthRoomIds(source)));
 }
 
 /**
@@ -925,6 +950,7 @@ export class StateIncomeSystem implements SystemRegistration {
     private readonly treasury: Treasury,
     private readonly prison: PrisonerDayGrantSource,
     private readonly loans?: LoanBook,
+    private readonly filth?: RoomFilthIncomeSource,
   ) {}
 
   /**
@@ -932,11 +958,15 @@ export class StateIncomeSystem implements SystemRegistration {
    * balance. A read: it touches nothing.
    */
   public accruedThisDay(tick: number): number {
-    return stateIncomeAccruedByTick(stateIncomeForCompletedDay(this.prison), tick);
+    const occupied = this.prison.roomInstances.residentIdsWithExistingPlace();
+    return stateIncomeAccruedByTick(stateIncomeForOccupiedPlaces(this.prison, occupied, this.filth === undefined ? undefined : stateIncomeFilthPenalties(this.filth)), tick);
   }
 
   public update(context: SimulationContext): void {
-    const amount = stateIncomeForCompletedDay(this.prison);
+    const penalties = this.filth === undefined ? undefined : new Map(
+      this.filth.ledger.settleDay(hasWasteDisposal(this.filth), filthRoomIds(this.filth)),
+    );
+    const amount = stateIncomeForOccupiedPlaces(this.prison, this.prison.roomInstances.residentIdsWithExistingPlace(), penalties);
     // An empty prison earns nothing, and says so by doing nothing rather than
     // by crediting zero: `Treasury.credit(0)` is legal and pointless, and a
     // future ledger (#29) should not have to filter out entries for no money.

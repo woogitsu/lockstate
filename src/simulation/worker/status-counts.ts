@@ -45,6 +45,7 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     // `PrisonerOperationsRuntime` owns the room-instance registry, so it
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
+    roomFilth: { ledger: runtime.prisoners.roomFilth, rooms: runtime.prisoners.roomInstances },
     rooms: runtime.prisoners,
     // The policy object `IntakeSystem` itself holds, not a second default:
     // `accommodationCapacity` is the denominator the strip divides by, and a

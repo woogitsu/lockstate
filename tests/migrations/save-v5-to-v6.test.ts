@@ -108,7 +108,7 @@ function v5EnvelopeWithASession(): SaveEnvelopeV5 {
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
-  const { regimeSchedules: _regimeSchedules, ...simulation } = bundle.simulation;
+  const { regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, ...simulation } = bundle.simulation;
   const payload = {
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     kernel: bundle.kernel,

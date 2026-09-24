@@ -189,6 +189,7 @@ describe('a prison with a furnished kitchen', () => {
       'action.kitchen-work': 3_880,
       'action.free-association': 360,
     });
+    expect(furnished.runtime.prisoners.roomFilth.getSnapshot().rooms.find(([id]) => id === KITCHEN_ID)?.[1]).toBeGreaterThan(0);
 
     /*
      * **The control, and the comparison that a rising hunger level could not
@@ -200,6 +201,7 @@ describe('a prison with a furnished kitchen', () => {
     const control = watch(prisonWithKitchen(0));
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.kitchen', 'food-preparation')).toBeUndefined();
     expect(control.performingTicks['action.kitchen-work']).toBeUndefined();
+    expect(control.runtime.prisoners.roomFilth.getSnapshot().rooms).toEqual([]);
     // The control's kitchen is furnished and its instance is real -- what it
     // lacks is the one capability, which is what makes it a control rather
     // than an absence.

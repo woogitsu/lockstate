@@ -146,7 +146,7 @@ function saveAndLoad(
   // bump, and it is the surrounding assertions rather than this literal that
   // establish it.
   expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-  expect(SAVE_SCHEMA_VERSION).toBe(6);
+  expect(SAVE_SCHEMA_VERSION).toBe(7);
 
   // Exactly what a stored save is by the time it is read back: a plain value
   // of unknown provenance, fully re-validated and checksum-verified.

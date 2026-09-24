@@ -265,6 +265,7 @@ export const HUD_MESSAGE_KEY = {
    * it formats the chip's own value.
    */
   earnedWithheld: 'hud.status.earned-withheld',
+  earnedWithheldFilth: 'hud.status.earned-withheld-filth',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',
