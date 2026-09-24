@@ -36,7 +36,10 @@
 root=$(cd "${1:-$(git rev-parse --show-toplevel)}" && pwd -P) || exit 1
 cd "$root" || exit 1
 while true; do
-  for w in $(git worktree list --porcelain | grep '^worktree ' | cut -d' ' -f2); do
+  # Porcelain -z keeps each worktree path intact, including spaces and newlines.
+  while IFS= read -r -d '' record; do
+    [[ $record == 'worktree '* ]] || continue
+    w=${record#worktree }
     [ "$(cd "$w" && pwd -P)" = "$root" ] && continue
     b=$(git -C "$w" branch --show-current 2>/dev/null)
     [ -z "$b" ] && continue
@@ -61,6 +64,6 @@ while true; do
       git -C "$w" push -qf origin "$sha:refs/heads/wip/${b#agent/}" 2>/dev/null \
         && echo "$(date -u +%H:%M:%S) snapshotted $b"
     fi
-  done
+  done < <(git worktree list --porcelain -z)
   sleep 180
 done
