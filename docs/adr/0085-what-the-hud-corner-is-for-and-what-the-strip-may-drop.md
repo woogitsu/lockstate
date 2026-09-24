@@ -52,6 +52,22 @@ addendum accepts the document. Decision 2 is exactly as open as it was, and a
 reader who wants this ADR's whole Status flipped to Accepted still needs the
 owner for that, same as ADR 0084 did.
 
+**Addendum, 2026-09-24, decision 2's height-gated direction accepted.** The
+owner selected **„Tak — wariant z ograniczeniem wysokości”** against **„Nie —
+zostaw obecny pasek”** for [#719](https://github.com/woogitsu/lockstate/issues/719#issuecomment-5812346412).
+This is the weaker provenance: the owner chose a clickable option authored by
+this session, not a sentence they typed. The option permits a second metrics
+row only where the measured height budget leaves the world and panels usable;
+on narrower views it prioritises money and alerts. It **does not** accept
+wrapping all nine on a phone or at 200% zoom, and it does not reverse #634's
+earlier refusal of a scroll affordance. The categorical heading of decision 2
+below, *"the strip must never drop a chip with nothing to say so"*, therefore
+remains a proposal where the height gate stays closed. The 2026-09-01 Status
+paragraphs above are kept as the state before this ruling; the document as a
+whole is not stamped Accepted for a wider promise the owner did not choose.
+The before measurement and alternatives are in
+`docs/research/2026-09-24-status-strip-719-layout-spike.md`.
+
 It answers issues [#739](https://github.com/matmaxalez/lockstate/issues/739)
 (the alerts corner) and [#719](https://github.com/matmaxalez/lockstate/issues/719)
 (the status strip), both of which are filed as decisions rather than defects —

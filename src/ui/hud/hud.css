@@ -251,6 +251,36 @@
 
 .hud-strip__metrics::-webkit-scrollbar { display: none; }
 
+/* ADR 0085 decision 2, accepted for #719 on 2026-09-24: on a laptop with
+   vertical room, warning badges make the nine metrics need a second line.
+   Five columns give the two money readings a shared second row instead of
+   stranding EARNED TODAY alone. The query is deliberately closed at 1499px:
+   above that width the measured full row fits, and below 1280px this extra
+   strip row takes too much of the Build panel or the mobile playfield. */
+@media (min-width: 1280px) and (max-width: 1499px) and (min-height: 800px) {
+  .hud-strip__metrics:has(.ui-badge[data-tone='warning'], .ui-badge[data-tone='danger']) {
+    display: grid;
+    grid-template-columns: repeat(5, max-content);
+    grid-auto-flow: row;
+    justify-content: space-between;
+    row-gap: var(--space-1);
+    overflow-x: visible;
+  }
+}
+
+/* Where the height gate above is closed, put the resource and the states that
+   can require action before the informational readings. These fixed orders
+   do not reshuffle when a badge appears or clears. The DOM stays in descriptor
+   order for assistive reading; none of the nine metrics is focusable. */
+@media (max-width: 1279px), (max-width: 1499px) and (max-height: 799px) {
+  .hud-strip__metrics [data-metric='funds'] { order: -6; }
+  .hud-strip__metrics [data-metric='prisoners'] { order: -5; }
+  .hud-strip__metrics [data-metric='coverage'] { order: -4; }
+  .hud-strip__metrics [data-metric='incidents'] { order: -3; }
+  .hud-strip__metrics [data-metric='contraband'] { order: -2; }
+  .hud-strip__metrics [data-metric='rooms'] { order: -1; }
+}
+
 .hud-metric__trailing {
   display: inline-flex;
   align-items: center;
