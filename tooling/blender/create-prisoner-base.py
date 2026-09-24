@@ -302,6 +302,12 @@ def build_detailed_actor(root, asset_id):
              (0.017, 0.16, 0.045), staff_canvas, root, 0.004)
         cube("Staff folded work cloth", (0.405, -0.08, 1.50),
              (0.038, 0.075, 0.20), undershirt, root, 0.008)
+    if asset_id == "actor.prisoner.base":
+        # The existing pocket/button detail disappears at the 64 px game scale.
+        # A pale ID patch carries the identity at game scale without changing
+        # the shared actor rig or relying on tiny button details.
+        cube("Prisoner ID patch", (0.205, -0.345, 2.43),
+             (0.115, 0.012, 0.065), undershirt, root, 0.008)
 
     sphere("Head", (0, 0, 3.08), (0.285, 0.266, 0.315), skin, root)
     sphere("Short textured hair", (0, 0.055, 3.295), (0.292, 0.278, 0.155), hair, root)
