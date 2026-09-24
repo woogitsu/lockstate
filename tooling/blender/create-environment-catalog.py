@@ -422,8 +422,8 @@ def empty(collection, name, location):
 
 def furniture(collection, root, asset_id):
     if asset_id == "furniture.kitchen.fridge":
-        # Four-view original reference: assets/source/concepts/fridge-multiview-v1.png.
-        # The top seam and front lip survive the overhead view at 64 px.
+        # V3 four-view reference: a raised, recessed condenser grille gives
+        # the one-tile refrigerator a readable service silhouette from above.
         for x in (-0.36, 0.36):
             for y in (-0.34, 0.34):
                 cylinder(collection, root, f"Adjustable foot.{x}.{y}", (x, y, 0.055), 0.045, 0.11, "steel", 16)
@@ -431,8 +431,22 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Blue-grey steel cabinet", (0, -0.01, 0.86), (0.86, 0.83, 1.37), "fridge_steel", 0.048)
         box(collection, root, "Roof rim", (0, -0.01, 1.56), (0.88, 0.85, 0.055), "steel", 0.03)
         box(collection, root, "Roof panel", (0, -0.01, 1.594), (0.80, 0.77, 0.022), "fridge_steel", 0.025)
-        for y in (-0.29, -0.20, -0.11):
-            box(collection, root, f"Rear ventilation slot.{y}", (0, y, 1.609), (0.51, 0.022, 0.009), "steel", 0.005)
+        box(collection, root, "Condenser gasket", (0, -0.18, 1.618), (0.73, 0.40, 0.035), "shade", 0.028)
+        box(collection, root, "Raised service deck", (0, -0.18, 1.647), (0.69, 0.36, 0.045), "fridge_steel", 0.028)
+        box(collection, root, "Dark vent recess", (-0.075, -0.18, 1.673), (0.47, 0.275, 0.012), "steel", 0.012)
+        for y in (-0.29, -0.22, -0.15, -0.08):
+            box(collection, root, f"Deep condenser slot.{y}", (-0.075, y, 1.685),
+                (0.42, 0.032, 0.015), "shade", 0.009)
+        cylinder(collection, root, "Round service cap", (0.245, -0.18, 1.686),
+            0.054, 0.027, "galvanized_edge", 24)
+        cylinder(collection, root, "Service cap inset", (0.245, -0.18, 1.703),
+            0.035, 0.009, "steel", 24)
+        box(collection, root, "Tiny teal temperature lamp", (0.245, -0.015, 1.683),
+            (0.055, 0.018, 0.013), "fridge_teal", 0.003)
+        for x in (-0.30, 0.30):
+            for y in (-0.32, -0.04):
+                cylinder(collection, root, f"Service deck screw.{x}.{y}",
+                    (x, y, 1.674), 0.013, 0.009, "steel", 12)
         box(collection, root, "Cream front roof cap", (0, 0.26, 1.617), (0.80, 0.27, 0.035), "fridge_enamel", 0.028)
         box(collection, root, "Roof compartment joint", (0, 0.176, 1.639), (0.79, 0.016, 0.008), "steel", 0.006)
         box(collection, root, "Visible top handle", (0.30, 0.30, 1.665), (0.06, 0.16, 0.045), "galvanized_edge", 0.016)
@@ -1144,6 +1158,7 @@ def main():
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
     MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
     MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
+    MATERIALS["fridge_teal"] = material("Refrigerator status lens", (0.04, 0.43, 0.45, 1), 0.30)
     MATERIALS["medical_enamel"] = material("Worn blue-grey first aid enamel", (0.48, 0.58, 0.61, 1), 0.58)
     MATERIALS["medical_red"] = material("Muted red first aid cross", (0.57, 0.18, 0.16, 1), 0.72)
     MATERIALS["medical_ochre"] = material("Amber antiseptic vial", (0.58, 0.34, 0.09, 1), 0.45)

@@ -444,8 +444,8 @@
     {
       "assetId": "furniture.kitchen.fridge",
       "image": "furniture.kitchen.fridge.png",
-      "sha256": "68663ee7bc8f014328c9b61d42317b0210f1bb73bd24e96d582ee492f85ec613",
-      "pixelSha256": "2c8382e254ffc11dffb5c2118c4e6d41cf60906944ce2784e2798b1d8561eed9",
+      "sha256": "9b96b214b6feccd2771155b6c9a55ac9d99496d6238d7ceaff57d3c227c4bc09",
+      "pixelSha256": "857315a979d5b77e78f04357465071b50471b3585042200551918ddc23ebe1cb",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0

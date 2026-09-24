@@ -381,3 +381,10 @@ The 2×1 kitchen stove now shows cast-iron grates above four recessed burners,
 with a row of knobs and a small amber lamp visible from overhead. The original
 four-view reference and Blender decisions are recorded in
 `assets/source/concepts/kitchen-stove-v3.md`.
+
+### Kitchen refrigerator refinement — `furniture.kitchen.fridge`
+
+The one-tile refrigerator now has a raised condenser assembly on its roof:
+four dark vent slots in a recessed frame, a round service cap, corner screws
+and a small teal temperature lamp. The original four-view concept and Blender
+choices are recorded in `assets/source/concepts/fridge-v3.md`.
