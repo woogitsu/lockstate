@@ -12,15 +12,15 @@
     {
       "assetId": "door.interior.variants",
       "image": "door.interior.variants.png",
-      "sha256": "baa834a5d1cb68ee3e1536f0cbcdd07d018cf1aeec74793d422bf35c388e5fa9",
-      "pixelSha256": "36434ebcbf81f52c28fb22a7a57cbf9d9b3fa653fc3fd7998436c0c5b7d8808c",
+      "sha256": "9b9161ac53e9125ca0910c73128671e2482b14fad0b401c1a9880de1eeea127a",
+      "pixelSha256": "42566169e34167a612643105b1bcd44e6f0214a161f2e09eff71f934169e9948",
       "footprintTiles": {
         "width": 1.0,
         "height": 0.25
       },
       "frameTiles": {
-        "width": 2.29376,
-        "height": 0.57344
+        "width": 1.4784,
+        "height": 0.3696
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -29,11 +29,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 59,
+        "x": 29,
         "y": 2,
-        "width": 138,
-        "height": 49,
-        "opaquePixels": 6180
+        "width": 198,
+        "height": 60,
+        "opaquePixels": 10080
       }
     },
     {

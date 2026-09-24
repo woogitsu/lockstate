@@ -388,3 +388,10 @@ The one-tile refrigerator now has a raised condenser assembly on its roof:
 four dark vent slots in a recessed frame, a round service cap, corner screws
 and a small teal temperature lamp. The original four-view concept and Blender
 choices are recorded in `assets/source/concepts/fridge-v3.md`.
+
+### Interior door overhead cap — `door.interior.variants`
+
+The north-south interior door edge now uses a true overhead Blender render: a
+warm timber slab between galvanized jambs, with a hinge and recessed latch.
+The east-west frontal view keeps its existing source-art crop. The original
+four-view reference is recorded in `assets/source/concepts/interior-door-v3.md`.

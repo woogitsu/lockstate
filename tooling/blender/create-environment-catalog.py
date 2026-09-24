@@ -991,6 +991,26 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Coping", (0, 0, 2.53), (2, 0.26, 0.07), "steel", 0.02)
         box(collection, root, "Panel joint", (0, 0, 1.31), (0.04, 0.24, 2.62), "shade", 0)
         box(collection, root, "Base stripe", (0, -0.12, 0.42), (2, 0.03, 0.45), "green", 0)
+    elif asset_id == "door.interior.variants":
+        # The v3 four-view reference puts a timber slab inside two galvanized
+        # jambs, leaving the latch and hinge legible in true overhead view.
+        box(collection, root, "Doorway dark reveal", (0, 0, 1.20), (1.00, 0.26, 2.40), "shade", 0.010)
+        box(collection, root, "Warm timber door leaf", (0, 0, 1.23), (0.86, 0.17, 2.46), "canteen_wood", 0.018)
+        box(collection, root, "Timber top edge", (0, 0, 2.475), (0.87, 0.16, 0.045), "bench_wood_1", 0.013)
+        for x in (-0.50, 0.50):
+            box(collection, root, f"Galvanized jamb.{x}", (x, 0, 1.33),
+                (0.115, 0.30, 2.66), "galvanized", 0.014)
+            box(collection, root, f"Jamb top cap.{x}", (x, 0, 2.681),
+                (0.13, 0.33, 0.032), "galvanized_edge", 0.010)
+        box(collection, root, "Dark threshold line", (0, 0.105, 2.50),
+            (0.86, 0.022, 0.018), "shade", 0.004)
+        for y in (-0.07, 0.07):
+            box(collection, root, f"Hinge plate.{y}", (-0.438, y, 2.53),
+                (0.07, 0.055, 0.030), "steel", 0.005)
+        box(collection, root, "Inset latch bezel", (0.305, 0, 2.505),
+            (0.11, 0.11, 0.020), "galvanized_edge", 0.007)
+        box(collection, root, "Dark latch recess", (0.305, 0, 2.521),
+            (0.065, 0.055, 0.010), "shade", 0.004)
     elif asset_id.startswith("door"):
         box(collection, root, "Frame", (0, 0, 1.3), (1.15, 0.28, 2.6), "concrete")
         box(collection, root, "Frame head", (0, 0, 2.62), (1.21, 0.32, 0.06), "steel", 0.02)
