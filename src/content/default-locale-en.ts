@@ -3598,6 +3598,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.rooms.cancel': 'Discard',
   'hud.rooms.minimum': 'Needs at least {width} × {height} tiles',
   'hud.rooms.minimum-none': 'No minimum size',
+  'hud.rooms.yard-guidance': 'Yard needs 8 × 8 tiles. {zoom} shows more of the map; {coordinates} lets you set an area without dragging.',
+  'hud.rooms.yard-guidance-narrow': 'Yard needs 8 × 8 tiles. Scroll down on the map or pinch on touch to zoom out; {coordinates} sets an area without dragging.',
   'hud.rooms.too-small': 'Too small — this room needs at least {width} × {height} tiles.',
   'hud.rooms.enclosure': 'Enclosure',
   'hud.rooms.enclosure-none': 'Not evaluated yet',

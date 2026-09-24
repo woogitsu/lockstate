@@ -2265,7 +2265,7 @@ window.lockstateUiHarness = {
       areaLaidOut: laidOut('.hud-rooms__area'),
       noteText: note?.textContent?.trim() ?? '',
       noteTone: note?.dataset['tone'] ?? '',
-      ruleText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__rule')].map(
+      ruleText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__rule:not(.hud-rooms__yard-guidance)')].map(
         (line) => line.textContent?.trim() ?? '',
       ),
       enclosureText:

@@ -1032,6 +1032,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   const ruleMinimum = eyebrowText(t(HUD_MESSAGE_KEY.roomsMinimumNone), 'hud-rooms__rule');
   const ruleEnclosure = eyebrowText(t(HUD_MESSAGE_KEY.roomsRequirementNone), 'hud-rooms__rule');
+  // #957: the Yard's minimum is already stated above, but the first cell
+  // leaves no 8×8 drag clear of the HUD at 1440×900. Point to the two routes
+  // that already work, only for this room. At <=720px the zoom island is
+  // hidden, so the narrow sentence names wheel/pinch instead of its button.
+  const yardGuidanceDesktop = eyebrowText(
+    t(HUD_MESSAGE_KEY.roomsYardGuidance, {
+      zoom: t(HUD_MESSAGE_KEY.zoomOut),
+      coordinates: t(HUD_MESSAGE_KEY.roomsCoordinates),
+    }),
+    'hud-rooms__rule hud-rooms__yard-guidance hud-rooms__yard-guidance--desktop',
+  );
+  const yardGuidanceNarrow = eyebrowText(
+    t(HUD_MESSAGE_KEY.roomsYardGuidanceNarrow, { coordinates: t(HUD_MESSAGE_KEY.roomsCoordinates) }),
+    'hud-rooms__rule hud-rooms__yard-guidance hud-rooms__yard-guidance--narrow',
+  );
+  yardGuidanceDesktop.hidden = true;
+  yardGuidanceNarrow.hidden = true;
   /*
    * The third rule: what the room type will need standing in it (#529).
    *
@@ -1057,7 +1074,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   const ruleObjects = element('div', { className: 'hud-rooms__rule-objects' });
   const ruleBlock = element('div', {
     className: 'hud-rooms__rule-block',
-    children: [ruleMinimum, ruleEnclosure, ruleObjects],
+    children: [ruleMinimum, ruleEnclosure, ruleObjects, yardGuidanceDesktop, yardGuidanceNarrow],
   });
 
   function paintRule(): void {
@@ -1068,6 +1085,8 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
         ? t(HUD_MESSAGE_KEY.roomsMinimumNone)
         : t(HUD_MESSAGE_KEY.roomsMinimum, { width: minimum.width, height: minimum.height });
     ruleEnclosure.textContent = t(requirementLabelKey(room?.enclosure ?? 'none'));
+    yardGuidanceDesktop.hidden = room?.roomId !== 'room.yard';
+    yardGuidanceNarrow.hidden = room?.roomId !== 'room.yard';
 
     /*
      * Rebuilt rather than reconciled, for `paintNeeds`' reason: the list is a

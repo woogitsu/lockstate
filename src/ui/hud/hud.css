@@ -4941,6 +4941,24 @@
   flex-direction: column;
 }
 
+/* The corner's Zoom out button disappears with the corner at 720px. Keep
+   the Yard-only advice truthful there and at browser page zoom that crosses
+   the same breakpoint; neither line adds height for another room type. */
+.hud-rooms__yard-guidance[hidden],
+.hud-rooms__yard-guidance--narrow { display: none; }
+
+/* The shared eyebrow style keeps labels on one line. This is a sentence:
+   allow it to wrap inside the Rooms panel at desktop and narrow widths. */
+.hud-rooms__yard-guidance:not([hidden]) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .hud-rooms__yard-guidance--desktop { display: none; }
+  .hud-rooms__yard-guidance--narrow:not([hidden]) { display: block; }
+}
+
 /* Folded until the simulation has evaluated a room, for the reason and with
    the `:not([hidden])` guard `.hud-rooms__area` above gives in full.
 

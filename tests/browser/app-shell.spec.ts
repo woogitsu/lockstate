@@ -6667,7 +6667,7 @@ test.describe('the assembled application', () => {
         return {
           firstRow: rows[0]?.dataset['room'],
           selected,
-          rule: [...document.querySelectorAll('.hud-rooms__rule-block .hud-rooms__rule')].map((line) =>
+          rule: [...document.querySelectorAll('.hud-rooms__rule-block .hud-rooms__rule:not(.hud-rooms__yard-guidance):not([hidden])')].map((line) =>
             (line.textContent ?? '').trim(),
           ),
           rowInView:
@@ -6791,7 +6791,7 @@ test.describe('the assembled application', () => {
             panelHeight: Math.round(box.height),
             statusBottom: status.getBoundingClientRect().bottom,
             fold: box.top + panel.clientTop + panel.clientHeight,
-            ruleLines: document.querySelectorAll('.hud-rooms__rule').length,
+            ruleLines: document.querySelectorAll('.hud-rooms__rule:not(.hud-rooms__yard-guidance)').length,
             listSlack: list === null ? 0 : list.getBoundingClientRect().height - listFloor,
           };
         });
