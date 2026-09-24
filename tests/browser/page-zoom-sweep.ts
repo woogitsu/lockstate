@@ -152,14 +152,18 @@ async function measure(page: Page): Promise<Pick<CombinationReport, 'outside' | 
  *
  * `onCombination` is called as each one lands, so the playtest can print its
  * research log while the spec prints nothing. The whole sweep is one page
- * driven through 36 reloads rather than 36 pages, which is what keeps it
- * around two minutes.
+ * driven through 36 reloads rather than 36 pages. Entering the URL on every
+ * combination before reloading would fetch the full Vite module graph twice.
  */
 export async function sweep(
   page: Page,
   onCombination?: (report: CombinationReport, css: { readonly width: number; readonly height: number }) => void,
 ): Promise<readonly CombinationReport[]> {
   const reports: CombinationReport[] = [];
+
+  // Establish the origin once so localStorage is available. Every combination
+  // below still boots afresh after its scale has been stored.
+  await page.goto(APP_URL);
 
   for (const [windowWidth, windowHeight] of WINDOWS) {
     // A 200 % page zoom halves the CSS viewport in each axis.
@@ -169,12 +173,11 @@ export async function sweep(
     for (const scale of UI_SCALES) {
       await page.setViewportSize({ width, height });
 
-      // The page has to exist before its origin has a `localStorage` to write
-      // to, so the scale is written on the page already loaded and picked up
-      // by the reload below. `addInitScript` is deliberately not used: it
+      // The page already has an origin with `localStorage`, so the scale is
+      // written on it and picked up by the reload below. `addInitScript` is
+      // deliberately not used: it
       // accumulates across a loop of 36, and a harness that quietly runs 36
       // copies of itself is not one whose numbers should be believed.
-      await page.goto(APP_URL);
       await page.evaluate(
         ({ key, uiScale }) => {
           try {
