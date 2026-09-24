@@ -6882,16 +6882,41 @@
     white-space: nowrap;
   }
 
-  /* These legends already have accessible group names. The percentage and
-   * theme value remain visible instead of being clipped into fragments. */
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale__legend,
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control__legend {
+  /* Put each setting's existing label above its value inside the same tap
+   * target. Two horizontal halves cannot hold both full labels and values;
+   * this uses the target's unused upper space without adding rail height. */
+  .hud-chrome-prefs > .display-scale,
+  .hud-chrome-prefs > .theme-control {
+    position: relative;
+    padding: 0;
+  }
+
+  .hud-chrome-prefs > .display-scale > .ui-icon,
+  .hud-chrome-prefs > .theme-control > .ui-icon {
     display: none;
   }
 
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale,
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control {
-    justify-content: center;
+  .hud-chrome-prefs > .display-scale > .display-scale__legend,
+  .hud-chrome-prefs > .theme-control > .theme-control__legend {
+    position: absolute;
+    top: var(--space-1);
+    left: var(--space-2);
+    right: var(--space-2);
+    pointer-events: none;
+  }
+
+  /* The inspector's fold arrow shares the first control's top-left corner.
+   * Start that label after its tap target, while retaining enough room for
+   * the full name at both supported Full HD scales. */
+  .hud-chrome-prefs > .display-scale > .display-scale__legend {
+    left: calc(var(--tap-target) - var(--space-2));
+  }
+
+  .hud-chrome-prefs > .display-scale > .display-scale__cycle,
+  .hud-chrome-prefs > .theme-control > .theme-control__cycle {
+    width: 100%;
+    align-items: flex-end;
+    padding: 0 var(--space-2) var(--space-1);
   }
 
   /* A long group name and progress label must not fight for the same line in
