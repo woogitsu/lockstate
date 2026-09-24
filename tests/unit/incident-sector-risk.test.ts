@@ -7,6 +7,13 @@ const HOT: SectorRiskSample = { needsPressure: 1, staffingShortfall: 1, contraba
 const POLICY: SectorRiskPolicy = { ...DEFAULT_SECTOR_RISK_POLICY, hotThreshold: 0.6, sustainedSamplesRequired: 3 };
 
 describe('scoreSectorRisk: explicit weighted factors, clamped', () => {
+  it('raises gate-sector incident pressure while an intake queue exists', () => {
+    const baseline = scoreSectorRisk({ needsPressure: 0.5, staffingShortfall: 0, contrabandPressure: 0 }, POLICY);
+    const queued = scoreSectorRisk({ needsPressure: 0.5, staffingShortfall: 0, contrabandPressure: 0, intakeQueuePressure: 1 }, POLICY);
+    expect(queued).toBeCloseTo(baseline + 0.15, 10);
+    expect(scoreSectorRisk({ needsPressure: 0.5, staffingShortfall: 0, contrabandPressure: 0, intakeQueuePressure: 0 }, POLICY)).toBe(baseline);
+  });
+
   it('is a weighted sum of the three inputs', () => {
     expect(scoreSectorRisk({ needsPressure: 1, staffingShortfall: 0, contrabandPressure: 0 }, POLICY)).toBeCloseTo(POLICY.needsPressureWeight, 10);
     expect(scoreSectorRisk({ needsPressure: 0, staffingShortfall: 1, contrabandPressure: 0 }, POLICY)).toBeCloseTo(POLICY.staffingShortfallWeight, 10);

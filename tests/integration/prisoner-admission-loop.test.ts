@@ -27,47 +27,16 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * `createSessionCommandHandler`, and no `HudIntent`, control or `onIntent`
  * case.
  *
- * Everything below goes through the real kernel, the real decoder, the real
- * session command router and the real save envelope, in the shape
- * `room-zoning-loop.test.ts` established for step 3. Nothing calls
- * `admitPrisoner` or `RoomInstanceRegistry.register` by hand except the one
- * test whose subject *is* the unguarded path: a test that did would prove the
- * pipeline works and say nothing about whether a command can reach it.
+ * Admission tests use the real command router and save envelope. A few tests
+ * of the intake internals use the unguarded runtime path to isolate need decay
+ * or a terminal state that the guarded command cannot create.
  *
  * ## The one thing these tests are most for
  *
- * An admission into a prison with **no** accommodation room is refused rather
- * than carried out, and that is the load-bearing decision of the change
- * rather than a detail of it. `IntakeSystem` marks such an arrival `'failed'`,
- * and `'failed'` is *terminal*: no branch of `IntakeSystem.update` matches
- * that stage, `ActionSystem` gates on `'completed'`, and nothing in `src/`
- * releases a prisoner (#31). "is refusing something unrecoverable" below
- * measures that terminality directly -- registering a matching room afterwards
- * does not rescue the record -- which is why the boundary refuses instead of
- * manufacturing one.
- *
- * The refusal is not the same thing as a *wait*. A zoned cell with no bed in
- * it derives `residentCapacity: 0`, so `findAvailableResidence` returns nothing
- * and the arrival stays at `accommodation-assignment` and is retried for as
- * long as it takes. "waits rather than failing" pins that difference, because
- * collapsing the two would either refuse every admission for ever or
- * manufacture the broken record this change exists to avoid.
- *
- * That wait used to be permanent scaffolding and is now an in-between state: ADR
- * 0028 phase 1 lets the player place a bed, which makes the same find succeed on
- * the next scheduled intake tick with no change to the stage machine.
- * `tests/integration/object-placement-loop.test.ts` drives the far side of it;
- * what this file still pins is the near side, which is unchanged.
- *
- * **Both sides of that line are reachable from the shipped application**, which
- * they were not when this was written: the Rooms tab (#312) gave `ZoneRoom` a
- * producer, so a player who has zoned a cell is admitted into the wait and a
- * player who has zoned nothing -- or only a canteen -- is refused. Every test
- * below reaches a room the same way a player does, through the `ZoneRoom`
- * command, so this file measures the shipped route rather than a hand-built
- * registry -- the one exception being "is refusing something unrecoverable",
- * whose whole subject is what the unguarded entry point and a hand-registered
- * room do, and which therefore has to bypass both.
+ * Issue #590 changes the boundary: when no bed or holding bench is free, the
+ * command queues the arrival outside. No entity is created, no occupied-place
+ * income is earned, and a later vacancy admits the queued request. The older
+ * terminal failure remains covered through the unguarded runtime path.
  */
 
 const SEED = 11;
@@ -120,41 +89,19 @@ function zoneCell(runtime: SimulationRuntime, id: string, roomId: string = CELL)
   submit(runtime, id, packCommand({ type: 'ZoneRoom', roomId, x: 4, y: 6, ...size }));
 }
 
+/** Supply a finished bed to admission tests whose subject is the command or save path. */
+function furnishCell(runtime: SimulationRuntime, roomId: string = CELL): void {
+  const instance = runtime.prisoners.roomInstances.allByRoomCatalogId(roomId)[0]!;
+  runtime.prisoners.roomInstances.updateDerived(instance.instanceId, {
+    residentCapacity: 1, concurrentUseCapacity: 1,
+    concurrentUseCapacityByCapability: [['sleep-surface', 1]], objectCapabilities: ['sleep-surface'],
+  });
+}
+
 function stepTo(runtime: SimulationRuntime, tick: number): void {
   while (runtime.kernel.tick < tick) runtime.kernel.step();
 }
 
-/**
- * Queues the zone and the admission to *both* execute at tick 0, then runs
- * that one tick.
- *
- * `Kernel.step` applies every command due at the tick before it runs any
- * system, so this makes the prisoner exist for the whole of tick 0 and
- * therefore for `NeedsDecaySystem`'s run at it (`phaseTicks: 0`). That is
- * what makes the need figures below a function of the decay rates and the
- * tick count alone, rather than of how many ticks the test happened to spend
- * setting the prison up -- and it is the same thing a player does, since a
- * new session starts paused and both presses land before the clock runs.
- */
-function zoneAndAdmitAtTickZero(runtime: SimulationRuntime): void {
-  // Before the commands are queued rather than between them: writing an edge
-  // is not a command, so doing it here keeps both commands due at tick 0,
-  // which is the whole point of this helper.
-  wallRoomPerimeter(runtime.world, { x: 4, y: 6, width: 2, height: 3 }, { doors: runtime.navigation.doors });
-  runtime.kernel.submitCommand(
-    'cmd-zone',
-    runtime.kernel.expectedSequence,
-    0,
-    packCommand({ type: 'ZoneRoom', roomId: CELL, x: 4, y: 6, width: 2, height: 3 }),
-  );
-  runtime.kernel.submitCommand(
-    'cmd-admit',
-    runtime.kernel.expectedSequence,
-    0,
-    packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }),
-  );
-  runtime.kernel.step();
-}
 
 /** The one live prisoner's component index, asserted to exist so a silent zero cannot pass for a reading. */
 function onlyPrisonerIndex(runtime: SimulationRuntime): number {
@@ -204,6 +151,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
   it('moves the Prisoners count off zero, which nothing in the application could do before', () => {
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone');
+    furnishCell(runtime);
 
     // Both halves stated: a fresh prison holds nobody, and the count that
     // reports it is the one the worker actually publishes to the strip.
@@ -231,7 +179,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     ]);
   });
 
-  it('refuses an admission into a prison with nowhere to put anybody, exactly once, and creates nobody', () => {
+  it('delays intake outside a prison with nowhere to put anybody, without inventing a resident', () => {
     const runtime = createNewSimulationRuntime(SEED);
     admit(runtime, 'cmd-admit');
 
@@ -239,22 +187,35 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     expect(runtime.prisoners.entityStore.maxActiveIndex).toBe(-1);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
 
-    // Exactly one player-visible message. `RefusalLog.count` is the ordinal of
-    // the last refusal, so this asserts "not zero and not two" in one reading:
-    // a silent refusal leaves it at 0, and a double-reporting handler takes it
-    // to 2.
-    expect(runtime.refusals.count).toBe(1);
-    expect(runtime.refusals.last).toMatchObject({ sequence: 1, reason: 'admit.no-accommodation' });
+    expect(runtime.refusals.count).toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
 
-    // A second press is a second message and still nobody, rather than the
-    // first message being replayed or the counter sticking.
+    // A second request joins the ordered queue and still creates no resident.
     admit(runtime, 'cmd-admit-again');
-    expect(runtime.refusals.count).toBe(2);
-    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+    expect(runtime.refusals.count).toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(2);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
   });
 
-  it('refuses rather than admitting into a prison whose only room is not an accommodation target', () => {
+  it('keeps a delayed arrival outside across the real save boundary, then admits after a place opens', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    admit(runtime, 'cmd-queue');
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
+
+    const restored = saveAndLoad(runtime);
+    expect(restored.prisoners.delayedIntakeCount).toBe(1);
+    expect(projectStatusCounts(restored, restored.kernel.tick).prisoners).toBe(0);
+    restored.prisoners.roomInstances.register({
+      instanceId: 'new-cell', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(4), y: tileCoordinate(6) },
+      residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'],
+    });
+    stepTo(restored, restored.kernel.tick + 10);
+    expect(restored.prisoners.delayedIntakeCount).toBe(0);
+    expect(projectStatusCounts(restored, restored.kernel.tick).prisoners).toBe(1);
+  });
+
+  it('delays intake when the prison has a room that cannot hold anybody', () => {
     // The condition the simulation applies is narrower than the room count
     // `src/main.ts` checks against, and this is the gap between them: a zoned
     // canteen is a room instance, so `counts.rooms` is 1 and the main thread
@@ -274,11 +235,11 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     admit(runtime, 'cmd-admit');
 
     expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
-    expect(runtime.refusals.count).toBe(1);
-    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+    expect(runtime.refusals.count).toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
   });
 
-  it('admits into a solitary-cell-only prison and leaves the arrival waiting, where it used to be stranded for ever', () => {
+  it('delays intake into a solitary-cell-only prison until a bed is ready', () => {
     /*
      * The reproduction of the hole ADR 0028 decision 8 left open, taken from
      * the direction nobody had looked in -- and the direction that was
@@ -326,25 +287,11 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     // would be the wrong answer and is not the fix.
     expect(runtime.refusals.count, 'a prison with a solitary cell has somewhere to put somebody').toBe(0);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
-    expect(counts.prisoners).toBe(1);
-
-    const index = onlyPrisonerIndex(runtime);
+    expect(counts.prisoners).toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
     stepTo(runtime, 400);
-
-    // The whole point. Not `'failed'`, and stated as the positive fact rather
-    // than only as the absence of the negative one.
-    expect(stageOf(runtime, index), 'the arrival must be waiting on a place, not stranded without a target').toBe(
-      'accommodation-assignment',
-    );
     expect(runtime.prisoners.intakeSystem.getMetrics().failedCount).toBe(0);
-    expect(
-      runtime.prisoners.intakeSystem.getMetrics().accommodationBacklogTicks,
-      'the wait must be counted as unmet demand rather than being silent',
-    ).toBeGreaterThan(0);
-
-    // And it is the *retryable* wait, not a differently-spelled dead end: the
-    // arrivals-backlog readout counts it, which `'failed'` is excluded from.
-    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisonersInIntake).toBe(1);
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisonersInIntake).toBe(0);
 
     // The wait ends the way ADR 0028 decision 8 says it must -- by the room
     // gaining capacity, with no change to the stage machine. Written onto the
@@ -358,8 +305,9 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
       concurrentUseCapacityByCapability: [['sleep-surface', 1]],
       objectCapabilities: ['sleep-surface'],
     });
-    stepTo(runtime, 410);
-    expect(stageOf(runtime, index), 'a place freeing up must complete the arrival that was waiting for it').toBe('completed');
+    stepTo(runtime, 430);
+    const index = onlyPrisonerIndex(runtime);
+    expect(stageOf(runtime, index), 'a finished bed admits the delayed arrival').toBe('completed');
     expect(runtime.prisoners.coldState.getAccommodation(runtime.prisoners.entityStore.getIdByIndex(index)!)).toBe(instance.instanceId);
   });
 
@@ -401,7 +349,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     expect(counts.prisonersInIntake).toBe(0);
   });
 
-  it('waits rather than failing when the room exists but holds nobody, which is what a zoned cell is today', () => {
+  it('keeps an arrival outside when a zoned cell has no bed', () => {
     // The other side of the line the guard draws. A zoned cell contains
     // nothing, so it derives `residentCapacity: 0` and
     // `findAvailableResidence` refuses it: the arrival stays where it is and is
@@ -411,20 +359,22 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone');
     admit(runtime, 'cmd-admit');
-    const index = onlyPrisonerIndex(runtime);
-
     stepTo(runtime, 60);
-
-    expect(stageOf(runtime, index)).toBe('accommodation-assignment');
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
     const metrics = runtime.prisoners.intakeSystem.getMetrics();
-    expect(metrics.failedCount, 'a zoned room turns a terminal failure into a wait').toBe(0);
+    expect(metrics.failedCount).toBe(0);
     expect(metrics.completedCount).toBe(0);
-    expect(metrics.accommodationBacklogTicks).toBeGreaterThan(0);
+    furnishCell(runtime);
+    stepTo(runtime, 90);
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(1);
+    expect(runtime.prisoners.delayedIntakeCount).toBe(0);
   });
 
   it('decays every one of the six needs after admission, with no room, no route and no completed intake', () => {
     const runtime = createNewSimulationRuntime(SEED);
-    zoneAndAdmitAtTickZero(runtime);
+    runtime.prisoners.admitPrisoner(ADMISSION, ARRIVAL);
+    runtime.kernel.step();
     const index = onlyPrisonerIndex(runtime);
 
     // Stored units *and* whole levels, and the first reading is the trap.
@@ -500,13 +450,14 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     // Stated so the reading above is not mistaken for a working prisoner: the
     // needs move while the prisoner does nothing at all, because intake never
     // completes and `ActionSystem` gates on `'completed'`.
-    expect(stageOf(runtime, index)).toBe('accommodation-assignment');
+    expect(stageOf(runtime, index)).toBe('failed');
   });
 
   it('produces an identical prisoner from an identical seed, and a different one from a different seed', () => {
     const run = (seed: number) => {
       const runtime = createNewSimulationRuntime(seed);
       zoneCell(runtime, 'cmd-zone');
+      furnishCell(runtime);
       admit(runtime, 'cmd-admit');
       stepTo(runtime, 40);
       const index = onlyPrisonerIndex(runtime);
@@ -537,6 +488,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
   it('round-trips an admitted prisoner through save and load, needs and name included', () => {
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone');
+    furnishCell(runtime);
     admit(runtime, 'cmd-admit');
     stepTo(runtime, 200);
 
@@ -582,6 +534,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     // missing -- silently, since nothing would have been refused either.
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone');
+    furnishCell(runtime);
     runtime.kernel.submitCommand(
       'cmd-admit-queued',
       runtime.kernel.expectedSequence,
@@ -592,6 +545,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
 
     const restored = saveAndLoad(runtime);
     expect(projectStatusCounts(restored, restored.kernel.tick).prisoners, 'the command must not have run yet').toBe(0);
+    furnishCell(restored);
 
     stepTo(restored, 60);
     expect(projectStatusCounts(restored, restored.kernel.tick).prisoners).toBe(1);

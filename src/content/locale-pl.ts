@@ -1170,29 +1170,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.
   'hud.intake.admit': 'Przyjmij osadzonego',
-  // **The tail was rewritten for issue #961**, with the English original's: it
-  // read *"czeka, aż któreś się zwolni"* ("waits until one of them frees up",
-  // of the beds), and a resident ceiling makes a free bed insufficient -- a
-  // cell holding `maxResidents: 2` with four beds leaves an arrival waiting
-  // beside two empty ones. *Miejsce* is the place rather than the bed, which is
-  // what `residentCapacity` counts.
-  //
-  // **Shortened with the English original's, for a reason measured on the
-  // English one.** The first #961 tail here was *"czeka, aż znajdzie się dla
-  // niego miejsce"*, matching an English clause that wrapped the panel to an
-  // extra line and pushed the Staff panel's payroll figure below its fold
-  // (`tests/browser/ui-staff-wage.spec.ts:377`). *"Czeka na miejsce"* is the
-  // same claim in fewer characters, and the pair stays parallel.
-  //
-  // **Rewritten whole with the English original for #935 and #937**; the
-  // English key carries the proof of each clause and the length budget. The
-  // second sentence is `hud.status.funds-treasury-floor-exhausted`'s rule in
-  // shorter words -- *"Państwo płaci na koniec każdego dnia i tylko za
-  // osadzonych, którzy mają miejsce do spania"* there. *Zakwaterowanie* with
-  // the verb elided after the dash, the way Polish carries a repeated
-  // *wymaga*.
+  // Issue #590: brak miejsca kieruje przybyłych do kolejki poza więzieniem.
+  // Dochód dzienny obejmuje wyłącznie osadzonych z faktycznym miejscem.
   'hud.intake.hint':
-    'Przyjęcie wymaga celi, a zakwaterowanie — łóżka. Państwo płaci na koniec każdego dnia, tylko za osadzonych z miejscem do spania.',
+    'Brak wolnego miejsca? Przybyli czekają poza więzieniem. Państwo płaci tylko za osadzonych z miejscem.',
   // Reshaped: the numeral moves out of the verb's way entirely.
   //
   // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the
@@ -1200,6 +1181,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // *places*, which a room type's authored `maxResidents` now caps below the
   // bed count.
   'hud.intake.no-place': 'Bez miejsca do spania: {count}',
+  'hud.alert.intake-delayed': 'Oczekujący poza więzieniem: {count}. Zwolnij miejsce lub wyposaż kolejną celę albo celę przejściową.',
+  'hud.alert.holding-strained': 'W celi przejściowej {count} osób: bezpieczeństwo spada szybciej. Przygotuj łóżka.',
+  'hud.alert.holding-critical': 'W celi przejściowej od pełnego dnia: {count} osób. Bezpieczeństwo i sen pogarszają się szybciej.',
   'hud.intake.pipeline': 'W przyjęciach',
   'hud.intake.pipeline-count': '{waiting} z {total}',
   // Reshaped: "at {stage}" is *na etapie* plus the locative (*na etapie

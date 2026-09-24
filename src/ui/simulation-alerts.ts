@@ -323,11 +323,27 @@ export function hudAlertsFromWorkerMessage(
 ): readonly HudAlertViewModel[] | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
-      const { refusal } = message.payload;
-      const standing = previous.filter((row) => !row.id.startsWith(REFUSAL_ROW_PREFIX));
-      if (refusal === undefined) return standing;
+      const { refusal, counts } = message.payload;
+      const standing = previous.filter((row) => !row.id.startsWith(REFUSAL_ROW_PREFIX) && row.id !== 'intake-delayed' && !row.id.startsWith('holding-'));
+      const delayed = counts.delayedIntakeCount ?? 0;
+      const queueRows: HudAlertViewModel[] = delayed > 0 ? [{
+        id: 'intake-delayed', labelKey: 'hud.alert.intake-delayed', severity: 'warning', labelParameters: { count: delayed },
+      }] : [];
+      const holdingRows: HudAlertViewModel[] = [
+        ...((counts.holdingStrainedCount ?? 0) > 0 ? [{
+          id: 'holding-strained', labelKey: 'hud.alert.holding-strained', severity: 'warning' as const,
+          labelParameters: { count: counts.holdingStrainedCount! },
+        }] : []),
+        ...((counts.holdingCriticalCount ?? 0) > 0 ? [{
+          id: 'holding-critical', labelKey: 'hud.alert.holding-critical', severity: 'danger' as const,
+          labelParameters: { count: counts.holdingCriticalCount! },
+        }] : []),
+      ];
+      if (refusal === undefined) return [...standing, ...queueRows, ...holdingRows];
       return [
         ...standing,
+        ...queueRows,
+        ...holdingRows,
         {
           // The refusal's own ordinal, so a readout that repeats an
           // unchanged refusal beside a changed count updates the row the

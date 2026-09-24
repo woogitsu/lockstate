@@ -2734,89 +2734,12 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
   /*
-   * **The tail of this sentence was rewritten for issue #961** -- it read
-   * *"an arrival with none waits until a bed is free"* and that stopped being
-   * true the moment a room type could author a resident ceiling (the owner's
-   * ruling of 2026-09-17). In a cell holding `maxResidents: 2` with four beds
-   * standing in it, a bed **is** free and the arrival still waits, so the old
-   * clause promised a remedy the code does not keep -- `AGENTS.md`'s fourth
-   * reservation, whose wording has been ours since 2026-09-04 and whose truth
-   * has not.
-   *
-   * What replaces it is the condition `IntakeSystem` actually retries on:
-   * `findBestAvailable` answers an instance only where
-   * `occupancyOf(instance) < instance.residentCapacity`
-   * (`src/simulation/prisoners/room-instance-registry.ts:1104`), and
-   * `residentCapacity` is now `min(sleep surfaces, the room type's ceiling)`
-   * (`src/simulation/objects/room-capacity.ts`). "A place" is true of both
-   * halves of that `min`, where "a free bed" is true of only one.
-   *
-   * **It said *"waits until there is room for them"* first, and that cost a
-   * measured line of a panel.** The clause was nine characters longer than the
-   * one it replaced, the sentence wrapped to an extra line, and the Staff
-   * panel's payroll figure was pushed below its own fold --
-   * `tests/browser/ui-staff-wage.spec.ts:377` ("states the standing daily bill
-   * on the payroll header, with the fold still shut") went red on it and green
-   * again on this wording, with nothing else changed. *"Waits for a place"* is
-   * the same claim in fewer characters than even the pre-#961 tail, so the
-   * block it sits in is shorter than it was on `main`.
-   *
-   * The first clause is untouched and is still true: a prison with no free bed
-   * can still admit, and the arrival waits rather than being refused.
-   *
-   * **Rewritten whole for #935 and #937, and the sentence above is the one this
-   * replaced**: *"A prison needs a cell before it can admit anyone. It does not
-   * need a free bed: an arrival with none waits for a place."* It was true, and
-   * it disagreed on screen with the one instruction a new prison draws --
-   * `hud.regime.roster-empty`, *"Build a cell … with a bed and a toilet in it —
-   * to take somebody in"* -- because the two answered different questions and
-   * the Intake tab answered the less useful one: that a bed is not needed to
-   * admit, and not what the bed is for. So this now says what each of the two
-   * things does, which is compatible with that instruction rather than a
-   * denial of it, and it adds the rule #937 found no readout states. Authored
-   * under reservation 4's 2026-09-04 release; each clause proved:
-   *
-   * - *"Admitting needs a cell"* -- the first clause above, unchanged in
-   *   substance: `IntakeSystem.hasAccommodationTarget` asks for **any**
-   *   instance of a housing type (`src/simulation/prisoners/intake-system.ts`),
-   *   not a free place, so it is a necessary condition and is not stated as a
-   *   sufficient one (`population-full` is a second refusal).
-   * - *"housing needs a bed"* -- a place is a `'sleep-surface'`
-   *   (`SLEEP_SURFACE_CAPABILITY`, `src/simulation/objects/room-capacity.ts`),
-   *   which `object.bed` and `object.medical-bed` declare, capped by the room
-   *   type's `maxResidents`. Necessary, and again not claimed as sufficient: a
-   *   third bed in a two-resident cell houses nobody. It does not say a bed is
-   *   needed to *admit*, which is the #549 claim this key was corrected from.
-   * - *"The state pays at the end of each day"* --
-   *   `StateIncomeSystem.schedule` is
-   *   `{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }`
-   *   (`src/simulation/economy/income.ts`).
-   * - *"only for prisoners with a place"* --
-   *   `stateIncomeForCompletedDay` folds `stateIncomeForOccupiedPlaces` over
-   *   `residentIdsWithExistingPlace()` and over nothing else, so an arrival
-   *   waiting for a place contributes nothing at all. It says *only for* and
-   *   quotes no amount, so it is true at any value of
-   *   `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` -- the constraint
-   *   #937 sets, since that rate has moved twice on owner rulings.
-   *
-   * The second sentence is `hud.status.funds-treasury-floor-exhausted`'s rule
-   * in shorter words -- *"The state pays at the end of each day and only for
-   * prisoners who have a place to sleep"* there -- so the owner's harmonising
-   * pass finds one rule in two lengths rather than two rules. That string
-   * states it only at the treasury floor, which a growing prison has left
-   * behind (#937's comment); this one states it where the Admit control is.
-   * *"a place"* and not *"a place to sleep"* because `hud.intake.no-place`,
-   * the line this panel draws beneath it, already says *"with no place to
-   * sleep"*.
-   *
-   * **Its length is a measured budget, not a style.** A first draft of 151
-   * characters wrapped the note to another line and put the Staff panel's
-   * payroll figure below its fold -- `tests/browser/ui-staff-wage.spec.ts`,
-   * *"states the standing daily bill on the payroll header, with the fold
-   * still shut"*, red on it with nothing else changed, exactly as the #961
-   * paragraph above records. This is 116, against the 118 it replaces.
+   * Issue #590: requestAdmission queues arrivals when no resident place is free.
+   * stateIncomeForCompletedDay pays only residentIdsWithExistingPlace, and
+   * StateIncomeSystem runs at each completed day. The short wording keeps
+   * the Intake panel inside the existing fold budget.
    */
-  'hud.intake.hint': 'Admitting needs a cell; housing needs a bed. The state pays at the end of each day, only for prisoners with a place.',
+  'hud.intake.hint': 'No free place? Arrivals wait outside. The state pays daily only for prisoners with a place.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no place" and not "no cell": a zoned cell with nothing in it houses
   // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces
@@ -2834,6 +2757,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // standing in a cell with an empty bed in it. The two sentences move
   // together because #609 made this one the long form of that one.
   'hud.intake.no-place': '{count} waiting with no place to sleep',
+  'hud.alert.intake-delayed': 'Waiting outside for a place: {count}. Free a place or furnish another cell or holding room.',
+  'hud.alert.holding-strained': '{count} in holding long enough for safety to fall faster. Free beds soon.',
+  'hud.alert.holding-critical': '{count} in holding for a day: safety and sleep are falling faster. Move them to beds.',
   // Where the arrivals already admitted are. "In intake" rather than "Queue":
   // the pipeline is what the simulation calls this and the stage named
   // `queued` is only its first step, so a header saying "queue" would name one

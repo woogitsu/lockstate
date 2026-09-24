@@ -4,6 +4,7 @@ import { EntityQuery } from '../entity/query';
 import type { SimulationEventLog } from '../events';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
+import type { SystemRegistration } from '../kernel/system';
 import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { CarryJobExecutor } from '../operations/carry-executor';
@@ -17,6 +18,7 @@ import {
   ACTION_PHASES,
   classificationGroupIdFromIndex,
   CurrentActionComponent,
+  intakeStageIndex,
   PositionComponent,
   PrisonerColdState,
   PrisonerRecordComponent,
@@ -40,6 +42,7 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
+import { HOLDING_FULL_DAY_TICKS, HOLDING_GRACE_TICKS } from './needs-system';
 import { accommodationCapacityOf } from './crowding';
 import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import { RegimeScheduleRegistry } from './regime-registry';
@@ -68,7 +71,14 @@ export type AdmitPrisonerRefusalReason = (typeof ADMIT_PRISONER_REFUSAL_REASONS)
 /** `requestAdmission`'s answer: the entity that now exists, or why none does. Shaped like `ZoneRoomOutcome`, for the same reason -- a command handler returns `void`, so the outcome has to be a value the caller can put on the refusal route. */
 export type AdmitPrisonerOutcome =
   | { readonly kind: 'admitted'; readonly entityId: EntityId }
+  | { readonly kind: 'delayed'; readonly queueLength: number }
   | { readonly kind: 'refused'; readonly reason: AdmitPrisonerRefusalReason };
+
+export interface DelayedAdmission {
+  readonly input: AdmissionRequest;
+  readonly originTile: { readonly x: number; readonly y: number };
+  readonly queuedAtTick: number;
+}
 
 /**
  * What `relocateExcessResidentsOf` did, resident by resident: who now lives
@@ -400,6 +410,34 @@ export class PrisonerOperationsRuntime {
    * one.
    */
   public admittedCount = 0;
+  private delayedAdmissions: DelayedAdmission[] = [];
+  private readonly delayedIntakeSystem: SystemRegistration = {
+    id: 'prisoners.delayed-intake', order: 49, schedule: { intervalTicks: 5, phaseTicks: 0 },
+    update: (context) => this.drainDelayedAdmissions(context.tick),
+  };
+
+  public get delayedIntakeCount(): number { return this.delayedAdmissions.length; }
+
+  public getDelayedIntakeSnapshot(): readonly DelayedAdmission[] {
+    return this.delayedAdmissions.map((entry) => ({ input: { ...entry.input }, originTile: { ...entry.originTile }, queuedAtTick: entry.queuedAtTick }));
+  }
+
+  public holdingAgeBands(atTick: number): { readonly grace: number; readonly strained: number; readonly critical: number } {
+    let grace = 0;
+    let strained = 0;
+    let critical = 0;
+    for (const [, since] of this.intakeSystem.getHoldingSnapshot()) {
+      const age = atTick - since;
+      if (age >= HOLDING_FULL_DAY_TICKS) critical += 1;
+      else if (age >= HOLDING_GRACE_TICKS) strained += 1;
+      else grace += 1;
+    }
+    return { grace, strained, critical };
+  }
+
+  public loadDelayedIntakeSnapshot(entries: readonly DelayedAdmission[] = []): void {
+    this.delayedAdmissions = entries.map((entry) => ({ input: { ...entry.input }, originTile: { ...entry.originTile }, queuedAtTick: entry.queuedAtTick }));
+  }
 
   /** Issue #80's solitary-sanction term. Not a constructor parameter default read twice: `imposeSolitarySanction` and `sanctionSystem` both need the one policy, so it is resolved once here. */
   private readonly sanctionPolicy: SanctionPolicy;
@@ -450,6 +488,7 @@ export class PrisonerOperationsRuntime {
     // from, so the rate and the readout share one definition of "full".
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs, () =>
       accommodationCapacityOf(this.roomInstances, this.accommodationPolicy),
+      (entityId) => this.intakeSystem.holdingSinceOf(entityId),
     );
     this.classificationReviewSystem = new ClassificationReviewSystem(
       this.entityStore,
@@ -550,6 +589,7 @@ export class PrisonerOperationsRuntime {
   }
 
   public registerOn(kernel: Kernel): void {
+    kernel.registerSystem(this.delayedIntakeSystem);
     kernel.registerSystem(this.intakeSystem);
     kernel.registerSystem(this.classificationEarlyWarningSystem);
     kernel.registerSystem(this.classificationReviewSystem);
@@ -937,6 +977,8 @@ export class PrisonerOperationsRuntime {
       coldState: this.coldState.getSnapshot(),
       roomInstanceOccupancy: this.roomInstances.getSnapshot(),
       roomFilth: this.roomFilth.getSnapshot(),
+      delayedIntake: this.getDelayedIntakeSnapshot(),
+      holdingStays: this.intakeSystem.getHoldingSnapshot(),
     };
   }
 
@@ -958,6 +1000,8 @@ export class PrisonerOperationsRuntime {
     this.coldState.loadSnapshot(snapshot.coldState);
     this.roomInstances.loadSnapshot(snapshot.roomInstanceOccupancy);
     this.roomFilth.loadSnapshot(snapshot.roomFilth ?? { rooms: [], exposures: [] });
+    this.loadDelayedIntakeSnapshot(snapshot.delayedIntake);
+    this.intakeSystem.loadHoldingSnapshot(snapshot.holdingStays);
 
     // Re-derive the query bitset from restored entity liveness -- the bitset
     // itself isn't part of the snapshot (it's a pure function of "is this
@@ -1055,10 +1099,41 @@ export class PrisonerOperationsRuntime {
    * classification still come from `identity.actor-name` and
    * `prisoners.classification` at the intake stages that own them.
    */
-  public requestAdmission(input: AdmissionRequest, originTile: { readonly x: number; readonly y: number }): AdmitPrisonerOutcome {
-    if (!this.intakeSystem.hasAccommodationTarget()) return { kind: 'refused', reason: 'no-accommodation' };
-    if (!this.entityStore.canSpawn) return { kind: 'refused', reason: 'population-full' };
+  public requestAdmission(input: AdmissionRequest, originTile: { readonly x: number; readonly y: number }, atTick = 0): AdmitPrisonerOutcome {
+    if (!this.entityStore.canSpawn || this.availableIntakePlaces() <= 0 || this.delayedAdmissions.length > 0) {
+      this.delayedAdmissions.push({ input: { ...input }, originTile: { ...originTile }, queuedAtTick: atTick });
+      return { kind: 'delayed', queueLength: this.delayedAdmissions.length };
+    }
     return { kind: 'admitted', entityId: this.admitPrisoner(input, originTile) };
+  }
+
+  private availableIntakePlaces(): number {
+    const normalCapacity = accommodationCapacityOf(this.roomInstances, this.accommodationPolicy);
+    let normalOccupants = 0;
+    let holdingCapacity = 0;
+    let holdingOccupants = 0;
+    for (const [instanceId, occupants] of this.roomInstances.getSnapshot()) {
+      const room = this.roomInstances.getById(instanceId);
+      if (room?.roomCatalogId === 'room.holding-cell') {
+        holdingCapacity += room.residentCapacity;
+        holdingOccupants += occupants.length;
+      } else if (room?.roomCatalogId === 'room.cell' || room?.roomCatalogId === 'room.solitary-cell') {
+        normalOccupants += occupants.length;
+      }
+    }
+    let unassigned = 0;
+    for (const entityId of this.query.execute()) {
+      const stage = this.records.intakeStage[this.entityStore.getIndex(entityId)];
+      if (stage !== intakeStageIndex('completed') && stage !== intakeStageIndex('failed')) unassigned += 1;
+    }
+    return Math.max(0, normalCapacity - normalOccupants) + Math.max(0, holdingCapacity - holdingOccupants) - unassigned;
+  }
+
+  private drainDelayedAdmissions(_atTick: number): void {
+    while (this.delayedAdmissions.length > 0 && this.entityStore.canSpawn && this.availableIntakePlaces() > 0) {
+      const entry = this.delayedAdmissions.shift()!;
+      this.admitPrisoner(entry.input, entry.originTile);
+    }
   }
 
   /** Allocates a new prisoner entity and submits it to intake. Accommodation, classification and action selection happen over subsequent scheduled ticks -- there is no synchronous "spawn fully processed" shortcut. Unguarded: `requestAdmission` is what a player's command reaches. */

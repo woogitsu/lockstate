@@ -260,6 +260,22 @@ export class IntakeSystem implements SystemRegistration {
   private completedCount = 0;
   private failedCount = 0;
   private accommodationBacklogTicks = 0;
+  private readonly holdingSince = new Map<EntityId, number>();
+
+  public holdingSinceOf(entityId: EntityId): number | undefined { return this.holdingSince.get(entityId); }
+
+  public getHoldingSnapshot(): readonly (readonly [EntityId, number])[] {
+    return [...this.holdingSince.entries()]
+      .filter(([entityId]) => this.store.isAlive(entityId))
+      .sort(([a], [b]) => a - b);
+  }
+
+  public loadHoldingSnapshot(entries: readonly (readonly [EntityId, number])[] = []): void {
+    this.holdingSince.clear();
+    for (const [entityId, tick] of entries) this.holdingSince.set(entityId, tick);
+  }
+
+  public releaseHoldingStay(entityId: EntityId): void { this.holdingSince.delete(entityId); }
 
   public constructor(
     private readonly store: EntityStore,
@@ -497,13 +513,19 @@ export class IntakeSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
+    for (const entityId of this.holdingSince.keys()) {
+      if (!this.store.isAlive(entityId)) this.holdingSince.delete(entityId);
+    }
     for (const entityId of this.query.execute()) {
       const index = this.store.getIndex(entityId);
       const stage = intakeStageFromIndex(this.records.intakeStage[index]!);
 
       if (stage === 'completed') {
         const currentId = this.coldState.getAccommodation(entityId);
-        if (currentId === undefined || this.roomInstances.getById(currentId)?.roomCatalogId !== 'room.holding-cell') continue;
+        if (currentId === undefined || this.roomInstances.getById(currentId)?.roomCatalogId !== 'room.holding-cell') {
+          this.holdingSince.delete(entityId);
+          continue;
+        }
         const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
         const target = this.resolveExistingTarget(groupId);
         if (target === undefined) continue;
@@ -517,6 +539,7 @@ export class IntakeSystem implements SystemRegistration {
         this.roomInstances.release(currentId, entityId);
         this.roomInstances.assign(bed.instanceId, entityId);
         this.coldState.setAccommodation(entityId, bed.instanceId);
+        this.holdingSince.delete(entityId);
         this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
         continue;
       }
@@ -672,6 +695,7 @@ export class IntakeSystem implements SystemRegistration {
         const assigned = instance ?? holding!;
         this.roomInstances.assign(assigned.instanceId, entityId);
         this.coldState.setAccommodation(entityId, assigned.instanceId);
+        if (holding !== undefined) this.holdingSince.set(entityId, context.tick);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
         // Issue #966 site 3: the tick a queued arrival stops waiting is the

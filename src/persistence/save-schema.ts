@@ -1375,7 +1375,17 @@ const labourCreditSchema = z.object({
 }).strict();
 
 /** V7 records waste already produced and the prisoners exposed this day. Labour is optional for older V7 saves. */
-const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema, labourCredit: labourCreditSchema.optional() });
+const delayedIntakeSchema = z.array(z.object({
+  input: z.object({ sentenceLengthTicks: z.number().int().positive().optional(), priorIncidents: z.number().int().min(0).max(255) }).strict(),
+  originTile: tilePositionSchema,
+  queuedAtTick: tickSchema,
+}).strict());
+const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
+  roomFilth: roomFilthSchema,
+  labourCredit: labourCreditSchema.optional(),
+  delayedIntake: delayedIntakeSchema.optional(),
+  holdingStays: z.array(z.tuple([entityIdSchema, tickSchema])).optional(),
+});
 
 // --- Envelope ---
 
