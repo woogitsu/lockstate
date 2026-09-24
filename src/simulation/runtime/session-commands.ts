@@ -37,6 +37,7 @@ import {
 import type { ConstructionSystem } from '../construction/system';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
+import type { IntakeCandidateBoard } from '../prisoners/intake-candidate-board';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { GuardReleaseService } from '../security/guard-release';
 import type { StaffDismissalService } from '../staff/dismissal';
@@ -225,6 +226,7 @@ export function createSessionCommandHandler(
   staffDismissal: StaffDismissalService,
   refusals: RefusalLog,
   events: SimulationEventLog,
+  intakeCandidates?: IntakeCandidateBoard,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals, events);
 
@@ -387,6 +389,26 @@ export function createSessionCommandHandler(
           events.recordRoomUnzoned(roomNameKey, context.tick);
         }
       }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'DelayIntakeCandidate') {
+      intakeCandidates?.delay(simCommand.candidateId, context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'AcceptIntakeCandidate') {
+      const candidate = intakeCandidates?.accept(simCommand.candidateId, context.tick);
+      if (candidate === undefined) return;
+      runtimePrisoners.requestAdmission({
+        sentenceLengthTicks: candidate.sentenceLengthTicks,
+        priorIncidents: candidate.priorIncidents,
+        preparedCandidate: {
+          riskTier: candidate.riskTier,
+          ...(candidate.contrabandCategoryId === undefined ? {} : { contrabandCategoryId: candidate.contrabandCategoryId }),
+          bountyMinorUnits: candidate.bountyMinorUnits,
+        },
+      }, { x: simCommand.x, y: simCommand.y }, context.tick);
       return;
     }
 

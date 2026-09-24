@@ -333,6 +333,8 @@ export interface EncodedSessionSystems {
   readonly roomFilth: import('../prisoners/room-filth-ledger').RoomFilthSnapshot;
   /** Absent in saves before intake could wait outside the prison. */
   readonly delayedIntake?: readonly import('../prisoners/prisoner-operations-runtime').DelayedAdmission[];
+  readonly pendingCandidateProfiles?: readonly (readonly [number, NonNullable<import('../prisoners/classification').AdmissionRequest['preparedCandidate']>])[];
+  readonly intakeCandidates?: import('../prisoners/intake-candidate-board').IntakeCandidateBoardSnapshot;
   readonly holdingStays?: readonly (readonly [number, number])[];
   /** Absent in saves written before work credits existed: no work accrued today. */
   readonly labourCredit?: import('../economy/labour-credit').LabourCreditSnapshot;
@@ -672,6 +674,8 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     roomFilth: runtime.prisoners.roomFilth.getSnapshot(),
     delayedIntake: runtime.prisoners.getDelayedIntakeSnapshot(),
+    pendingCandidateProfiles: runtime.prisoners.getPendingCandidateProfilesSnapshot(),
+    intakeCandidates: runtime.intakeCandidates.snapshot(),
     holdingStays: runtime.prisoners.intakeSystem.getHoldingSnapshot(),
     labourCredit: runtime.labourCredit.getSnapshot(),
     prisoners: {
@@ -955,6 +959,7 @@ export function restoreSessionSystems(
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
     roomFilth: systems.roomFilth,
     delayedIntake: systems.delayedIntake ?? [],
+    pendingCandidateProfiles: systems.pendingCandidateProfiles ?? [],
     holdingStays: systems.holdingStays ?? [],
   },
   // The tick the restored session resumes at, which `Kernel.restoreState` has
@@ -964,6 +969,12 @@ export function restoreSessionSystems(
   // are per prisoner and no save carries them (issue #435), so a restore opens
   // a new counting window and this is the number that says so out loud.
   runtime.kernel.tick);
+  if (systems.intakeCandidates === undefined) {
+    runtime.intakeCandidates.loadSnapshot({ lastOfferDay: -1, nextId: 1, candidates: [] });
+    runtime.intakeCandidates.advanceToTick(runtime.kernel.tick, runtime.kernel.rng.get('prisoners.candidates'));
+  } else {
+    runtime.intakeCandidates.loadSnapshot(systems.intakeCandidates);
+  }
   runtime.labourCredit.loadSnapshot(systems.labourCredit ?? { workTicks: [], employedLastBlock: 0, idleLastBlock: 0 });
 
   // 4. Operations.

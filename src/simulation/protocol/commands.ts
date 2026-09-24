@@ -340,6 +340,18 @@ export const admitPrisonerSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+export const acceptIntakeCandidateSchema = z.object({
+  type: z.literal('AcceptIntakeCandidate'),
+  candidateId: z.string().min(1),
+  x: z.number().int(),
+  y: z.number().int(),
+}).strict();
+
+export const delayIntakeCandidateSchema = z.object({
+  type: z.literal('DelayIntakeCandidate'),
+  candidateId: z.string().min(1),
+}).strict();
+
 /**
  * Hire a staff member ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)).
  *
@@ -784,6 +796,8 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   cancelMaterialPurchaseSchema,
   sellMaterialsSchema,
   admitPrisonerSchema,
+  acceptIntakeCandidateSchema,
+  delayIntakeCandidateSchema,
   hireStaffSchema,
   placeObjectSchema,
   removeObjectSchema,
@@ -865,6 +879,10 @@ function commandJson(command: SimulationCommand): JsonValue {
         x: command.x,
         y: command.y,
       };
+    case 'AcceptIntakeCandidate':
+      return { type: command.type, candidateId: command.candidateId, x: command.x, y: command.y };
+    case 'DelayIntakeCandidate':
+      return { type: command.type, candidateId: command.candidateId };
     case 'HireStaff':
       return { type: command.type, staffRoleId: command.staffRoleId, x: command.x, y: command.y };
 

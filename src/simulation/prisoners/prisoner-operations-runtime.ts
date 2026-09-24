@@ -283,6 +283,8 @@ export interface PrisonerOperationsRuntimeOptions {
    * catalog and the event log for `createResidentRelocationNotice`.
    */
   readonly housedNotice?: IntakeHousedNotice;
+  /** Paid once after a screened candidate actually occupies a place. */
+  readonly candidateBountyCredit?: (amountMinorUnits: number) => void;
   /**
    * How long a solitary sanction runs (issue #80,
    * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
@@ -411,6 +413,8 @@ export class PrisonerOperationsRuntime {
    */
   public admittedCount = 0;
   private delayedAdmissions: DelayedAdmission[] = [];
+  private readonly pendingCandidateProfiles = new Map<EntityId, NonNullable<AdmissionRequest['preparedCandidate']>>();
+  private readonly candidateBountyCredit: ((amountMinorUnits: number) => void) | undefined;
   private readonly delayedIntakeSystem: SystemRegistration = {
     id: 'prisoners.delayed-intake', order: 49, schedule: { intervalTicks: 5, phaseTicks: 0 },
     update: (context) => this.drainDelayedAdmissions(context.tick),
@@ -420,6 +424,15 @@ export class PrisonerOperationsRuntime {
 
   public getDelayedIntakeSnapshot(): readonly DelayedAdmission[] {
     return this.delayedAdmissions.map((entry) => ({ input: { ...entry.input }, originTile: { ...entry.originTile }, queuedAtTick: entry.queuedAtTick }));
+  }
+
+  public getPendingCandidateProfilesSnapshot(): readonly (readonly [EntityId, NonNullable<AdmissionRequest['preparedCandidate']>])[] {
+    return [...this.pendingCandidateProfiles].map(([entityId, profile]) => [entityId, { ...profile }] as const);
+  }
+
+  public loadPendingCandidateProfilesSnapshot(entries: readonly (readonly [EntityId, NonNullable<AdmissionRequest['preparedCandidate']>])[] = []): void {
+    this.pendingCandidateProfiles.clear();
+    for (const [entityId, profile] of entries) this.pendingCandidateProfiles.set(entityId, { ...profile });
   }
 
   public holdingAgeBands(atTick: number): { readonly grace: number; readonly strained: number; readonly critical: number } {
@@ -454,6 +467,7 @@ export class PrisonerOperationsRuntime {
   private readonly query: EntityQuery;
 
   public constructor(options: PrisonerOperationsRuntimeOptions) {
+    this.candidateBountyCredit = options.candidateBountyCredit;
     this.entityStore = new EntityStore(options.capacity);
     this.bitset = new ComponentBitset(options.capacity);
     this.query = new EntityQuery(this.entityStore, this.bitset);
@@ -481,6 +495,13 @@ export class PrisonerOperationsRuntime {
       undefined,
       options.gangAssigner,
       options.housedNotice,
+      (entityId) => this.pendingCandidateProfiles.get(entityId),
+      (entityId) => {
+        const profile = this.pendingCandidateProfiles.get(entityId);
+        if (profile === undefined) return;
+        this.candidateBountyCredit?.(profile.bountyMinorUnits);
+        this.pendingCandidateProfiles.delete(entityId);
+      },
     );
     // The crowding term's denominator (issue #586), asked live on every update
     // of the policy this runtime's intake houses arrivals under -- the same
@@ -953,6 +974,7 @@ export class PrisonerOperationsRuntime {
    * of the teardown -- which is precisely how #111 happened one layer down.
    */
   public releasePrisoner(entityId: EntityId, atTick = 0): boolean {
+    this.pendingCandidateProfiles.delete(entityId);
     return releasePrisoner(this.releaseSurfaces, entityId, atTick);
   }
 
@@ -978,6 +1000,7 @@ export class PrisonerOperationsRuntime {
       roomInstanceOccupancy: this.roomInstances.getSnapshot(),
       roomFilth: this.roomFilth.getSnapshot(),
       delayedIntake: this.getDelayedIntakeSnapshot(),
+      pendingCandidateProfiles: this.getPendingCandidateProfilesSnapshot(),
       holdingStays: this.intakeSystem.getHoldingSnapshot(),
     };
   }
@@ -1001,6 +1024,7 @@ export class PrisonerOperationsRuntime {
     this.roomInstances.loadSnapshot(snapshot.roomInstanceOccupancy);
     this.roomFilth.loadSnapshot(snapshot.roomFilth ?? { rooms: [], exposures: [] });
     this.loadDelayedIntakeSnapshot(snapshot.delayedIntake);
+    this.loadPendingCandidateProfilesSnapshot(snapshot.pendingCandidateProfiles);
     this.intakeSystem.loadHoldingSnapshot(snapshot.holdingStays);
 
     // Re-derive the query bitset from restored entity liveness -- the bitset
@@ -1172,6 +1196,7 @@ export class PrisonerOperationsRuntime {
     this.position.tileX[index] = originTile.x;
     this.position.tileY[index] = originTile.y;
     this.intakeSystem.submitIntake(entityId, input);
+    if (input.preparedCandidate !== undefined) this.pendingCandidateProfiles.set(entityId, { ...input.preparedCandidate });
     return entityId;
   }
 }

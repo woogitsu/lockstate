@@ -1375,15 +1375,36 @@ const labourCreditSchema = z.object({
 }).strict();
 
 /** V7 records waste already produced and the prisoners exposed this day. Labour is optional for older V7 saves. */
+const preparedCandidateSchema = z.object({
+  riskTier: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  contrabandCategoryId: z.string().min(1).optional(),
+  bountyMinorUnits: z.number().int().nonnegative().safe(),
+}).strict();
 const delayedIntakeSchema = z.array(z.object({
-  input: z.object({ sentenceLengthTicks: z.number().int().positive().optional(), priorIncidents: z.number().int().min(0).max(255) }).strict(),
+  input: z.object({ sentenceLengthTicks: z.number().int().positive().optional(), priorIncidents: z.number().int().min(0).max(255), preparedCandidate: preparedCandidateSchema.optional() }).strict(),
   originTile: tilePositionSchema,
   queuedAtTick: tickSchema,
 }).strict());
+const intakeCandidateSchema = z.object({
+  id: z.string().min(1), offeredAtTick: tickSchema, expiresAtTick: tickSchema,
+  status: z.enum(['new', 'delayed']),
+  sentenceLengthTicks: z.number().int().positive().safe(),
+  priorIncidents: z.number().int().nonnegative().max(255),
+  riskTier: preparedCandidateSchema.shape.riskTier,
+  contrabandCategoryId: z.string().min(1).optional(),
+  bountyMinorUnits: z.number().int().nonnegative().safe(),
+}).strict();
+const intakeCandidateBoardSchema = z.object({
+  lastOfferDay: z.number().int().min(-1).safe(),
+  nextId: z.number().int().positive().safe(),
+  candidates: z.array(intakeCandidateSchema).max(6),
+}).strict();
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   roomFilth: roomFilthSchema,
   labourCredit: labourCreditSchema.optional(),
   delayedIntake: delayedIntakeSchema.optional(),
+  pendingCandidateProfiles: z.array(z.tuple([entityIdSchema, preparedCandidateSchema])).optional(),
+  intakeCandidates: intakeCandidateBoardSchema.optional(),
   holdingStays: z.array(z.tuple([entityIdSchema, tickSchema])).optional(),
 });
 
