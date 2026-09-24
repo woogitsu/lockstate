@@ -6756,7 +6756,7 @@
 
   .hud__aside .save-panel__item {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .hud__aside .save-panel__item-label {
