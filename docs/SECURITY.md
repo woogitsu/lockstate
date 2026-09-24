@@ -368,6 +368,18 @@ the coverage block is to gain a rung for *every post filled, nothing spare*.
 Neither is built at the time of writing. How the reserve is defined is still
 that document's open question 1.
 
+**Implemented under ADR 0095 decision 1:** the Staff projection now publishes
+one prison-wide response reserve beside the summed post shortage. Its chosen
+fixed ceiling is five free, post-eligible guards: the incident severity ceiling
+is 10 and the default response policy asks for `ceil(severity * 0.5)` guards.
+The intermediate badge reads `Posts filled, reserve short` when all posts are
+filled but fewer than five such guards are currently free. An empty prison with
+no required post remains `Covered`. Searches draw from the same free pool, so
+five free guards is a current capacity figure, not a promise that a concurrent
+search and the largest response can both be staffed. ADR 0095 open question 1
+and issue #29 still own the balance definition; this implementation takes the
+ADR's recommendation without changing a simulation threshold.
+
 > **Those figures are from before issue #586 and the shape is unchanged since.**
 > The fixture holds twelve prisoners on one bed, so crowding now drives its
 > riots to severity 9 and 10: the prison at its requirement still resolves 0 and

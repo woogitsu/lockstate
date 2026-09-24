@@ -409,6 +409,9 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security-section.search-progress',
   'hud.security-section.sector-open-incidents',
   'hud.security-section.sector-short',
+  // Formula with labels and figures, not a counted noun: both locales can
+  // render 1 and 5 without changing a grammatical form.
+  'hud.security.coverage-reserve-short-hint',
   'hud.security.coverage-short-hint',
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',

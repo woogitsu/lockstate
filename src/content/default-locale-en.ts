@@ -3235,6 +3235,11 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * without re-measuring.
    */
   'hud.security.coverage-met-hint': 'Incidents and searches need free guards.',
+  // ADR 0095 decision 1. The projection counts only unassigned, post-eligible
+  // guards; searches and responses claim from that same pool. This names a
+  // present reserve, not a guaranteed outcome while another duty holds guards.
+  'hud.security.coverage-reserve-short': 'Posts filled, reserve short',
+  'hud.security.coverage-reserve-short-hint': 'Response reserve short: {count}; target: {reserve} free guards. Searches share this pool.',
   'hud.security.coverage-short': 'Understaffed',
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',

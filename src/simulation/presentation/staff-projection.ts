@@ -1,6 +1,8 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { StaffDepartment, StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
+import { DEFAULT_INCIDENT_RESPONSE_POLICY } from '../incidents/response-system';
+import { isPostEligibleStaffRoleId } from '../security/post-eligibility';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
 import type { DeploymentPhase } from '../security/guard-roster';
@@ -139,6 +141,10 @@ export interface StaffViewModel {
     readonly required: number;
     readonly assigned: number;
     readonly shortage: number;
+    /** Prison-wide, post-eligible free guards; not summed per sector. */
+    readonly responseReserveAvailable: number;
+    readonly responseReserveRequired: number;
+    readonly responseReserveShortage: number;
   };
   /** Absent unless the corresponding system was supplied. */
   readonly patrolMetrics?: {
@@ -260,6 +266,14 @@ export function projectStaff(
 
   const patrolMetrics = source.patrol?.getMetrics();
   const deploymentMetrics = source.deployment?.getMetrics();
+  // ADR 0095 decision 1's recommended fixed ceiling. Incident producers cap
+  // severity at 10; the default response policy asks for ceil(10 * 0.5) = 5.
+  // This is a read-model recommendation, not a change to response/search policy
+  // or the unresolved balance choice in ADR 0095 open question 1 / issue #29.
+  const responseReserveRequired = Math.max(1, Math.ceil(10 * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
+  const responseReserveAvailable = rows.filter((row) =>
+    row.assignment.deploymentPhase === 'unassigned' && isPostEligibleStaffRoleId(row.staffRoleId, staffRoles),
+  ).length;
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -281,6 +295,9 @@ export function projectStaff(
       required,
       assigned,
       shortage,
+      responseReserveAvailable,
+      responseReserveRequired,
+      responseReserveShortage: Math.max(0, responseReserveRequired - responseReserveAvailable),
     },
     ...(patrolMetrics !== undefined ? { patrolMetrics } : {}),
     ...(deploymentMetrics !== undefined ? { deploymentMetrics } : {}),

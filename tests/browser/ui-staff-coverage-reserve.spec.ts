@@ -219,6 +219,22 @@ test.describe('the covered rung says what a free guard is for (#941, #989)', () 
     await page.goto(HARNESS_URL);
   });
 
+  test('shows the reserve deficit and shared-search caveat without clipping at 900x600 (#893)', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
+    await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), coveredPrison({
+      required: 2, assigned: 2, shortage: 0,
+      responseReserveRequired: 5, responseReserveAvailable: 1, responseReserveShortage: 4,
+    }));
+    const reading = await readHint(page);
+    expect(reading.drawn).toBe(true);
+    expect(reading.tone).toBe('warning');
+    expect(reading.badge).toBe('Posts filled, reserve short');
+    expect(reading.text).toBe('Response reserve short: 4; target: 5 free guards. Searches share this pool.');
+    await expectNotClipped(page, HINT, 'reserve hint at 900x600');
+  });
+
   test('renders the sentence whole at every shipped viewport, clamp included', async ({ page }) => {
     for (const [width, height] of COVERAGE_VIEWPORTS) {
       await page.setViewportSize({ width, height });

@@ -41,6 +41,11 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * guard riots at tick 13,400 and stops entirely at two guards. The readout is a
  * statement about staffing, not a prediction, and a test asserting the
  * prediction would be pinning something the copy is careful not to claim.
+ *
+ * **Amended by ADR 0095 decision 1:** the historical comments below that
+ * call exact-post coverage `Covered` describe the prior read model. Current
+ * assertions expect the intermediate reserve-short rung until five eligible
+ * guards are free, while the post shortage and simulation outcomes stay put.
  */
 
 /** Distinct from every other seed in the suite, so a shared fixture cannot make these figures true by accident. */
@@ -131,6 +136,34 @@ function hire(runtime: SimulationRuntime, ordinal: number): void {
 }
 
 describe('the requirement a player has to act on moves, and the panel is told', () => {
+  it('counts five post-eligible free guards prison-wide after posts are filled', () => {
+    const runtime = twelveCellPrison();
+    // No posts are required in an empty prison; the reserve cannot turn that
+    // exemption into a staffing warning.
+    expect(readout(runtime)).toMatchObject({ required: 0, badgeKey: HUD_MESSAGE_KEY.securityCoverageMet });
+    for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
+    for (let ordinal = 1; ordinal <= 7; ordinal += 1) hire(runtime, ordinal);
+    stepTo(runtime, runtime.kernel.tick + 20);
+    expect(readout(runtime)).toMatchObject({
+      required: 2, assigned: 2, shortage: 0,
+      responseReserveRequired: 5, responseReserveAvailable: 5, responseReserveShortage: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
+    });
+  });
+
+  it('does not count an unassigned nurse as a response reserve guard', () => {
+    const runtime = twelveCellPrison();
+    for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
+    hire(runtime, 1);
+    hire(runtime, 2);
+    submit(runtime, 'hire-nurse', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.nurse', ...ORIGIN }));
+    stepTo(runtime, runtime.kernel.tick + 20);
+    expect(readout(runtime)).toMatchObject({
+      required: 2, assigned: 2, shortage: 0,
+      responseReserveAvailable: 0, responseReserveShortage: 5,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+    });
+  });
   it('asks for one guard from the first prisoner through the eighth', () => {
     const runtime = twelveCellPrison();
     for (let ordinal = 1; ordinal < NINTH; ordinal += 1) {
@@ -177,9 +210,9 @@ describe('the requirement a player has to act on moves, and the panel is told', 
       required: 1,
       assigned: 1,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
+      hireCount: 5,
     });
 
     admit(runtime, NINTH);
@@ -261,9 +294,9 @@ describe('the rung the panel calls covered does not say whether anyone can answe
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
+      hireCount: 5,
     });
     /*
      * **The whole defect, in one figure.** `claimableGuardIds` is the function
@@ -281,7 +314,7 @@ describe('the rung the panel calls covered does not say whether anyone can answe
     // One guard free -- and the coverage readout is byte-identical to the
     // prison above it, which is why the sentence cannot be about the reserve.
     expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
-    expect(readout(runtime)).toEqual(atRequirement);
+    expect(readout(runtime)).toMatchObject({ responseReserveAvailable: 1, responseReserveShortage: 4, hireCount: 4 });
   });
 
   it('needs two of that pool for the mildest incident the simulation can open', () => {
@@ -391,13 +424,13 @@ describe('the rung the panel calls covered does not say whether anyone can searc
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      tone: 'success',
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      tone: 'warning',
+      hireCount: 5,
     };
     expect(readout(atRequirement)).toMatchObject(covered);
-    expect(readout(oneHirePast)).toEqual(readout(atRequirement));
-    expect(readout(twoHiresPast)).toEqual(readout(atRequirement));
+    expect(readout(oneHirePast)).toMatchObject({ responseReserveAvailable: 1, responseReserveShortage: 4, hireCount: 4 });
+    expect(readout(twoHiresPast)).toMatchObject({ responseReserveAvailable: 2, responseReserveShortage: 3, hireCount: 3 });
 
     // The pool the two duties compete for, through the function both of them
     // call rather than a re-derivation of it.
@@ -435,7 +468,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     const runtime = prisonWithGuards(2);
     const described = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 });
 
-    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
+    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageReserveShort);
     const sentence = localizer.format(described.hintKey);
     // Both duties named, in the prison that can do neither. Pinned verbatim in
     // `tests/unit/ui-simulation-staff-coverage.test.ts`; what this asserts is
@@ -546,8 +579,8 @@ describe('hiring visibly fixes it, through the same command a player presses', (
       required: 2,
       assigned: 2,
       shortage: 0,
-      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
-      hireCount: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hireCount: 5,
     });
   });
 
