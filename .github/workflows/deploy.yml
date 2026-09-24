@@ -23,7 +23,7 @@ name: Deploy
 # the gates that judge it have returned.
 #
 # Both workflows used to trigger on `push` with independent concurrency groups
-# and no ordering between them, and there is one self-hosted runner: whichever
+# and no ordering between them. On the old single self-hosted runner, whichever
 # job claimed it first ran first, and the deploy is much the shorter of the two.
 # Measured on the commit that merged #90 -- deploy run 32661466050 finished at
 # 19:31:15 while CI run 32661466069's `browser` job was still going at 19:32:04.
@@ -212,7 +212,7 @@ jobs:
       && github.event.workflow_run.head_repository.full_name == github.repository)
       || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging'
       && github.ref == 'refs/heads/main')
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
       name: staging
@@ -277,8 +277,7 @@ jobs:
 
       # Same guard as the `verify` job; see the comment there for why a
       # committed `node_modules` symlink broke three pull requests. Every job
-      # that installs needs it, because a self-hosted runner reuses its
-      # checkout between jobs.
+      # that installs needs it for an older ref with a committed symlink.
       - name: Reject or clear a node_modules that is not a real install
         run: |
           set -uo pipefail
@@ -429,16 +428,15 @@ jobs:
   # outright CI `failure` -- leaves a cancelled run silently blocking
   # publication, which is this defect wearing a different conclusion.
   #
-  # NOT `ubuntu-latest`, however little this job does. It does not work in this
-  # repository: version.yml's header measures a four-second failure with no
-  # step recorded and no log, on run 32727713492.
+  # The owner moved this reporting job to a fresh hosted Ubuntu runner along
+  # with the rest of CI. It reads no repository secrets or checked-out code.
   staging-blocked:
     if: >-
       github.event_name == 'workflow_run'
       && github.event.workflow_run.event == 'push'
       && github.event.workflow_run.head_repository.full_name == github.repository
       && github.event.workflow_run.conclusion != 'success'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       # Every value arrives through `env:` rather than being interpolated into
@@ -506,7 +504,7 @@ jobs:
     # been deployed, and wrangler does so without warning. See docs/DEPLOYMENT.md,
     # "What currently serves lockstate.io".
     if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
       name: production
@@ -568,8 +566,7 @@ jobs:
 
       # Same guard as the `verify` job; see the comment there for why a
       # committed `node_modules` symlink broke three pull requests. Every job
-      # that installs needs it, because a self-hosted runner reuses its
-      # checkout between jobs.
+      # that installs needs it for an older ref with a committed symlink.
       - name: Reject or clear a node_modules that is not a real install
         run: |
           set -uo pipefail

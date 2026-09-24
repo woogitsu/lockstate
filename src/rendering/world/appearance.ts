@@ -106,24 +106,25 @@ export function terrainAppearance(numericId: number): TerrainAppearance {
  * `operations` and `food` sat 14 degrees apart on a wheel whose mean gap is
  * 36 degrees, which is why Reception and Kitchen were the tightest pair on
  * screen (4.06 effective units) even before any collision. These eighteen
- * original hues were spaced evenly at 20 degrees, holding the palette's own saturation
- * and value (`s = 0.62, v = 0.82`), which is the spacing ADR 0098 Context §2
- * and decision 3 recommend. That raises the worst pair from 4.06 to **6.02**
+ * hues were initially spaced evenly at 20 degrees, holding the palette's own
+ * saturation and value (`s = 0.62, v = 0.82`), as ADR 0098 Context §2 and
+ * decision 3 recommend. That raised the worst pair from 4.06 to **6.02**
  * effective units (`room.classroom` vs `room.infirmary`, and `room.common-room`
  * vs `room.classroom`, tied) -- better, but still far under the 25.4-unit
  * pixel-to-pixel spread of the floor art it is painted on. This closes a
  * keying defect; it does not make room type legible on its own. The name
  * drawn on the map is what does that (see the room-labels renderer module).
- * The owner approved a Yard-only ochre exception on 2026-09-24 after an owned
- * 8x8 Blender-floor comparison: cyan made compacted earth look mint. The other
- * 17 entries remain as they were; see ADR 0098's 2026-09-24 amendment.
+ * The owner later approved an ochre Yard exception after an 8x8 Blender-floor
+ * comparison and a blue-grey Kitchen exception for its own Blender floor.
+ * The other 16 tints retain their original evenly spaced values; the
+ * equal-spacing arithmetic above describes the original palette.
  */
 const ZONING_TINT_BY_ROOM_ID: Readonly<Record<string, number>> = {
   'room.cell': 0xd14f4f,
   'room.holding-cell': 0xd17b4f,
   'room.solitary-cell': 0xd1a64f,
   'room.reception': 0xd1d14f,
-  'room.kitchen': 0xa6d14f,
+  'room.kitchen': 0x719db7,
   'room.canteen': 0x7bd14f,
   'room.shower-room': 0x4fd14f,
   'room.laundry': 0x4fd17b,
