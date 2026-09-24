@@ -159,15 +159,17 @@ Everything the tile layer draws from those six is in one method,
 paints from three inputs and no more:
 
 1. **The floor sprite**, chosen per tile at
-   `src/rendering/phaser/tile-layer.ts:333`, from a function whose body is five
-   lines and whose last line is a literal:
+   `src/rendering/phaser/tile-layer.ts:333`. At `430906af` (v0.0.757) the
+   selector had five lines and ended with a literal:
 
    `return 'env.floor.institutional';`
-   (verbatim in `src/rendering/world/environment-art.ts`)
+   This is a quotation from that historical version of
+   `src/rendering/world/environment-art.ts`; Blender room floors have since
+   replaced the single-floor return.
 
-   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:156-161`) branches
-   on nothing except whether the zoning id names a known room. Its own docblock
-   says so at `:152-154` — *"One floor for every category today."*
+   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:156-161`) then
+   branched on nothing except whether the zoning id named a known room. Its
+   docblock said so at `:152-154` — *"One floor for every category today."*
 
 2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at the
    time this was written one of two alphas depending only on whether art is

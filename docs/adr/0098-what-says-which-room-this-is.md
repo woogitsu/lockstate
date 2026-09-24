@@ -238,10 +238,11 @@ reason: nothing here still claims to be verbatim.
 by `RoomCategory` rather than by room id, and no longer exists at all:
 `ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) is what
 option A put in its place. The floor underneath could not
-make up the difference, because there is one floor:
+make up the difference at `430906af` (v0.0.757), because there was one floor:
 
 `return 'env.floor.institutional';`
-(verbatim in `src/rendering/world/environment-art.ts`)
+This is the historical return in `src/rendering/world/environment-art.ts`;
+Blender room floors have since replaced it.
 
 `zonedFloorSprite` branches on nothing but whether the zoning id names a known
 room, and its docblock says so in the sentence that also anticipates option D
