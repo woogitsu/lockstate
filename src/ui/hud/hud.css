@@ -2833,10 +2833,13 @@
 .hud-intake__actions > .hud-intake__admit { flex: 1 1 auto; }
 
 .hud-intake__candidates:not([hidden]) { display: grid; gap: var(--space-2); }
-.hud-intake__candidate-list { display: grid; gap: var(--space-2); max-height: 8rem; overflow-y: auto; }
-.hud-intake__candidate { display: grid; gap: var(--space-1); padding: var(--space-2); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); }
+/* A candidate's long summary must not set the grid track's minimum width:
+   at 1024px it pushed the first Delay button past the right edge of the rail. */
+.hud-intake__candidate-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); max-height: 12rem; overflow-y: auto; }
+.hud-intake__candidate { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: var(--space-1); padding: var(--space-2); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); }
+.hud-intake__candidate .ui-eyebrow { white-space: normal; overflow-wrap: anywhere; }
 .hud-intake__candidate-actions { display: flex; gap: var(--space-2); }
-.hud-intake__candidate-actions > button { flex: 1 1 0; }
+.hud-intake__candidate-actions > button { flex: 1 1 0; min-width: 0; }
 
 .hud-intake__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
