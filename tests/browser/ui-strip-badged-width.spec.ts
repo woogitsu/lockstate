@@ -393,7 +393,7 @@ test('the #719 height gate preserves narrow panels and keeps money and active al
   await page.goto(HARNESS_URL);
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
-  for (const [width, height] of [[1280, 800], [1280, 720], [1024, 768], [375, 812], [640, 400]] as const) {
+  for (const [width, height] of [[1280, 800], [1280, 720], [1024, 768], [900, 600], [375, 812], [640, 400]] as const) {
     await page.setViewportSize({ width, height });
     const ordinary = await show(page, POPULATED);
     const before = await page.evaluate(() => {
