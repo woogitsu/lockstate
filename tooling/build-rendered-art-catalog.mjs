@@ -71,6 +71,8 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  *
  * **2026-09-23:** The storage rack returns with its own open-shelf model,
  * `furniture.storage.rack.wooden`; the closed locker remains unpublished.
+ * `object.chair` now uses a separate slatted-back wooden model, not the
+ * cushion-only visitor-chair render rejected by the same legibility pass.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -90,6 +92,7 @@ export const PUBLISHED_ASSET_IDS = [
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',
+  'furniture.chair.wooden',
   'furniture.corridor.bench.variants',
   'furniture.office.desk.employee.variants',
   'furniture.storage.rack.wooden',

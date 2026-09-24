@@ -334,6 +334,33 @@
       }
     },
     {
+      "assetId": "furniture.chair.wooden",
+      "image": "furniture.chair.wooden.png",
+      "sha256": "3529bb7a98194cb6ce3dfe73a1c132c48a260e59caef4261ead61c9243e10b5f",
+      "pixelSha256": "79e91eff7a518d0710477649728eb3cd1e019ed016476d744b74c8d4508f6550",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 35,
+        "y": 34,
+        "width": 186,
+        "height": 203,
+        "opaquePixels": 30222
+      }
+    },
+    {
       "assetId": "furniture.corridor.bench.variants",
       "image": "furniture.corridor.bench.variants.png",
       "sha256": "4afd4a1258e75bade1daa19094c74043843b348cc5d6992c7b1c29a708434737",

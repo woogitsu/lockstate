@@ -89,6 +89,8 @@ export interface HarnessWorldFixture {
   readonly wasteBinTileY: number;
   readonly storageRackTileX: number;
   readonly storageRackTileY: number;
+  readonly chairTileX: number;
+  readonly chairTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

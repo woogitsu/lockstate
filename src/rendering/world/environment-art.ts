@@ -258,10 +258,12 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * **2026-09-23:** A separate open wooden rack model now serves this object.
  * The rejected closed locker and the playtest finding above remain historical
  * evidence for why the new render needs distinct shelves and visible contents.
+ * A new wooden chair likewise replaces the rejected cushion-only visitor
+ * render: the back slats, seat frame and front feet are distinct in its frame.
+ * The older chair finding above remains the reason this new model was needed.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
-  'object.chair',
   'object.dining-table',
   'object.fridge',
   'object.loading-dock-door',
@@ -335,6 +337,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.shower-head': 'env.object.shower-head',
   'object.waste-bin': 'env.object.waste-bin',
   'object.storage-rack': 'env.object.storage-rack',
+  'object.chair': 'env.object.chair',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

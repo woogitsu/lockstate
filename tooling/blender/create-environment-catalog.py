@@ -79,6 +79,7 @@ MODELS = (
     ("fixture.cell.sink", (1, 1)), ("fixture.shower.head", (1, 1)),
     ("fixture.cell.waste_bin", (1, 1)),
     ("furniture.storage.rack.wooden", (1, 1)),
+    ("furniture.chair.wooden", (1, 1)),
 )
 
 
@@ -160,6 +161,19 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Middle crate", (0.08, 0, 1.31), (0.36, 0.13, 0.16), "blue", 0.012)
         box(collection, root, "South bundle", (-0.17, 0.28, 1.28), (0.29, 0.13, 0.10), "linen", 0.012)
         box(collection, root, "South crate", (0.20, 0.28, 1.30), (0.20, 0.13, 0.14), "green", 0.012)
+    elif asset_id == "furniture.chair.wooden":
+        # A chair must keep its back, seat and legs separate at 64 px. The
+        # older visitor-chair render was only a cushion-shaped blob when drawn
+        # in the game, so this one has a broad slatted back and splayed feet.
+        for x in (-0.30, 0.30):
+            box(collection, root, f"Back post.{x}", (x, -0.34, 0.63), (0.075, 0.08, 1.22), "wood", 0.01)
+        for index_slat, y in enumerate((-0.38, -0.29, -0.20)):
+            box(collection, root, f"Back slat.{index_slat}", (0, y, 1.12), (0.63, 0.055, 0.09), "wood", 0.01)
+        box(collection, root, "Seat frame", (0, 0.13, 0.50), (0.68, 0.62, 0.12), "wood", 0.025)
+        box(collection, root, "Seat cushion", (0, 0.13, 0.57), (0.55, 0.47, 0.035), "linen", 0.035)
+        for x in (-0.34, 0.34):
+            box(collection, root, f"Front leg.{x}", (x, 0.40, 0.25), (0.085, 0.09, 0.50), "wood", 0.012)
+            box(collection, root, f"Foot tip.{x}", (x, 0.40, 0.015), (0.12, 0.14, 0.03), "shade", 0.01)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which
