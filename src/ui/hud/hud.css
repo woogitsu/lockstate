@@ -1863,7 +1863,9 @@
    it is hidden. Revealing it must not move a dismiss button under a pointer
    between the two presses. A little spare height also absorbs fractional font
    rounding at the short viewport. */
-.hud-staff__dismiss-slot { min-height: calc(3.5 * var(--font-size-eyebrow)); }
+.hud-staff__dismiss-slot {
+  min-height: calc(3.5 * var(--text-size-label) * var(--label-line-height));
+}
 .hud-staff__dismiss-confirm { padding-bottom: 1px; }
 
 /* The standing daily wage bill, in the `On the payroll` header (issue #639
