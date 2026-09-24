@@ -2432,7 +2432,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-hint': 'Press any tile of an object, or a finished wall, to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded.',
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
-  'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers or the middle button still move the camera.',
+  'hud.build.camera-keys': 'Pan: {keys}.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -2459,17 +2460,15 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * already use for what the Rooms panel does, rather than a second verb for
    * the same act.
    *
-   * The camera clause is repeated verbatim from the sentence above rather than
-   * factored out: it is the same fact about the same armed pointer, and one
-   * sentence per armed state is what `paintArmed` renders -- see
-   * `src/ui/hud/build-panel.ts`, where the hint is one line either way so that
-   * the controls under it do not move.
+   * The pointer camera clause is repeated from the wall sentence because it
+   * remains true for both gestures. The keyboard clause is assembled from the
+   * player's current world-context bindings in `build-panel.ts` (#141).
    *
    * Authored by an agent under the owner's release of 2026-09-04
    * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*).
    */
   'hud.build.arm-hint-object':
-    'Click a tile inside a designated room to place it. One press, one object. Two fingers, the middle button or the arrow keys still move the camera.',
+    'Click a tile inside a designated room to place it. One press, one object. Two fingers or the middle button still move the camera.',
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',

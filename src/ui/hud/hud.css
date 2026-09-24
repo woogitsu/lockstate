@@ -2419,7 +2419,8 @@
  *
  * ### Where the height comes from
  *
- * The arm hint's third and fourth lines. That hint is three sentences: two
+ * Historical #920 measurement, before #141 made the camera-key clause dynamic:
+ * the arm hint's third and fourth lines. That hint was three sentences: two
  * about the gesture, then *"Two fingers, the middle button or the arrow keys
  * still move the camera."* At the rail's 238px it is four lines -- measured,
  * `scrollHeight` 53 against a 13.2px `line-height` -- and at 375px's 333px it
@@ -3991,7 +3992,7 @@
  * where nothing was doubled up -- so it makes the panel look cramped to close a
  * gap that only exists on one edge.
  *
- * **What the clamp costs, stated rather than discovered.** The hint reads
+ * **What the clamp cost before #141, stated rather than discovered.** The hint read
  * "Click a tile edge to place a wall. Drag along it to lay a run. Two
  * fingers, the middle button or the arrow keys still move the camera", and
  * below 700px of viewport height only its first line is on screen. The
@@ -3999,7 +4000,9 @@
  * reason those keys are bound at all, so that promise is made at every taller
  * viewport and not at this one. It is the smallest thing in the panel that
  * can give: every other block here is a control, and the alternative is a
- * panel whose last section a player never finds. Taken as an assumption while
+ * panel whose last section a player never finds. #141 now puts the current
+ * camera keys first and provides the full sentence as the hint's title, so
+ * the clipped first line no longer names a key that the player unbound. Taken as an assumption while
  * the owner was unavailable, not as a decision they signed off.
  *
  * `max-height`, not `max-width`: this is a rail-height problem. 375x812 is

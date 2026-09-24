@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
+  loadInputSettings,
   loadLanguageSettings,
   loadLayoutSettings,
   loadThemeSettings,
   resolveBrowserKeyValueStore,
+  cameraMovementKeyHint,
+  type KeyboardLabelSource,
   saveLanguageSettings,
   saveLayoutSettings,
   saveThemeSettings,
@@ -599,10 +602,16 @@ document.documentElement.lang = startupLocale.locale;
 // `resolveBrowserKeyValueStore()` never throws and never returns undefined: a
 // browser that refuses storage gets an in-memory stand-in, so settings work for
 // the rest of the page load and simply are not remembered.
+const inputSettingsStore = resolveBrowserKeyValueStore();
+const keyboardLayoutSource = (navigator as Navigator & { keyboard?: KeyboardLabelSource }).keyboard;
+const cameraKeyHint = cameraMovementKeyHint(
+  loadInputSettings(inputSettingsStore).keyboardBindings,
+  keyboardLayoutSource,
+);
 const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
-  keyValueStore: resolveBrowserKeyValueStore(),
+  keyValueStore: inputSettingsStore,
   // The same object under both ports: the tool is where a gesture leaves the
   // renderer, and since #261 it is where the undo of that gesture leaves too.
   // Spread rather than passed as `undefined`, because `exactOptionalPropertyTypes`
@@ -2606,6 +2615,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
   hud = mountHud(app, {
     localizer,
+    cameraKeyHint,
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot

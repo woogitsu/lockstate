@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isModalDialogOpen, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, cameraMovementKeyHint, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isModalDialogOpen, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 import { expectOk } from '../helpers/expect-ok';
 
 class MemoryStore implements KeyValueStore {
@@ -68,6 +68,19 @@ describe('semantic input', () => {
     await expect(resolveKeyboardLabel('KeyW', { getLayoutMap: async () => new Map([['KeyW', 'z']]) })).resolves.toBe('z');
     await expect(resolveKeyboardLabel('KeyW')).resolves.toBe('W');
     await expect(resolveKeyboardLabel('Escape')).resolves.toBe('Esc');
+  });
+
+  it('describes only active camera bindings and uses the browser layout for displayed letters', async () => {
+    await expect(cameraMovementKeyHint(DEFAULT_KEYBOARD_BINDINGS)).resolves.toBe('↑ ↓ ← →');
+    const mapped = [
+      { device: 'keyboard' as const, code: 'KeyI', action: 'camera.up' as const, contexts: ['world'] as const },
+      { device: 'keyboard' as const, code: 'KeyJ', action: 'camera.left' as const, contexts: ['world'] as const },
+      { device: 'keyboard' as const, code: 'KeyK', action: 'camera.down' as const, contexts: ['construction'] as const },
+    ];
+    await expect(cameraMovementKeyHint(mapped, {
+      getLayoutMap: async () => new Map([['KeyI', 'z'], ['KeyJ', 'q']]),
+    })).resolves.toBe('↑ z · ← q');
+    await expect(cameraMovementKeyHint([])).resolves.toBeUndefined();
   });
 
   it('reports a remapping conflict without changing valid settings', () => {

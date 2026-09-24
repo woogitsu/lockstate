@@ -1092,9 +1092,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.note': 'Zlecenia wymagają ruchu zegara.',
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
-    'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+    'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce lub środkowy przycisk nadal poruszają kamerą.',
+  'hud.build.camera-keys': 'Kamera: {keys}.',
   'hud.build.arm-hint-object':
-    'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+    'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce lub środkowy przycisk nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
   'hud.build.remove': 'Usuń',
   'hud.build.remove-active': 'Przestań usuwać',

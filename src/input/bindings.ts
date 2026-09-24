@@ -108,6 +108,40 @@ export async function resolveKeyboardLabel(
   return fallbackKeyboardLabel(code);
 }
 
+/** The actual world-context direction bindings, in the same order the HUD draws their directions. */
+export async function cameraMovementKeyHint(
+  bindings: readonly KeyboardBinding[],
+  layoutSource?: KeyboardLabelSource,
+): Promise<string | undefined> {
+  const directions = [
+    { action: 'camera.up', code: 'ArrowUp', glyph: '↑' },
+    { action: 'camera.down', code: 'ArrowDown', glyph: '↓' },
+    { action: 'camera.left', code: 'ArrowLeft', glyph: '←' },
+    { action: 'camera.right', code: 'ArrowRight', glyph: '→' },
+  ] as const;
+  const selected = directions.map((direction) => ({
+    ...direction,
+    binding: bindings.find(
+      (entry) => entry.action === direction.action && entry.code === direction.code && entry.contexts.includes('world'),
+    ) ?? bindings.find((entry) => entry.action === direction.action && entry.contexts.includes('world')),
+  }));
+  const available = selected.filter(
+    (entry): entry is typeof entry & { binding: KeyboardBinding } => entry.binding !== undefined,
+  );
+  if (available.length === 0) return undefined;
+  if (available.length === 4 && available.every((entry) => entry.binding?.code === entry.code)) {
+    return '↑ ↓ ← →';
+  }
+  const labels = await Promise.all(available.map(async (entry) => {
+    const code = entry.binding.code;
+    const label = code.startsWith('Arrow')
+      ? directions.find((direction) => direction.code === code)?.glyph ?? await resolveKeyboardLabel(code, layoutSource)
+      : await resolveKeyboardLabel(code, layoutSource);
+    return `${entry.glyph} ${label}`;
+  }));
+  return labels.join(' · ');
+}
+
 export function findBindingConflicts(
   bindings: readonly KeyboardBinding[],
 ): readonly BindingConflict[] {
