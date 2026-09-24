@@ -78,9 +78,15 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
   },
   {
     what: 'the browser key/value store is the one the scene is given',
-    source: 'keyValueStore: resolveBrowserKeyValueStore()',
+    source: 'keyValueStore: inputSettingsStore',
     reason:
-      'Issue #199. `WorldSceneOptions.keyValueStore` is required, so `tsc` guarantees *a* store is passed -- but not which one, and not that the resolver is used at all. A `main.ts` that passed `globalThis.localStorage` directly would compile and would reintroduce the blank page on a browser that blocks site data, because reaching for the property is itself a throwing operation. `resolveBrowserKeyValueStore()` is the only reach that guards both the access and a first read.',
+      'Issue #199. `WorldSceneOptions.keyValueStore` is required, so `tsc` guarantees *a* store is passed -- but not which one. The scene must receive `inputSettingsStore`, which is initialized by `resolveBrowserKeyValueStore()` before keyboard settings are read. A direct `globalThis.localStorage` access would reintroduce the blank page on a browser that blocks site data.',
+  },
+  {
+    what: 'the scene store is resolved without throwing on blocked site data',
+    source: 'const inputSettingsStore = resolveBrowserKeyValueStore();',
+    reason:
+      'Issue #199. The scene and keyboard settings share this store. The browser property access itself can throw when site data is blocked, so replacing the resolver with `globalThis.localStorage` can fail before the scene is created.',
   },
   {
     what: 'the page localizer carries the complete default locale',

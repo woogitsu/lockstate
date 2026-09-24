@@ -161,7 +161,7 @@ describe('surplus intake after a one-bed cell fills (#590)', () => {
     // room to hold them" -- was false about exactly this prison.
     const hint = localizer.format(HUD_MESSAGE_KEY.intakeHint);
     expect(hint).toContain('Arrivals wait outside');
-    expect(hint).toContain('only for prisoners with a place');
+    expect(hint).toContain('the state pays for occupied places');
   });
 
   it('warns about nobody in a prison with a bed to spare, while they are still at Cell Assignment', () => {

@@ -1133,8 +1133,10 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // see its own doc comment in `src/simulation/protocol/types.ts` for why
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
+      // Candidate intake adds one always-present scalar for arrivals delayed
+      // outside the prison; it remains bounded regardless of population.
       expect(Object.keys(counts)).toHaveLength(
-        30 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        31 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
