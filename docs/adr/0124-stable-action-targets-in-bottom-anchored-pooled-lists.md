@@ -1,15 +1,19 @@
-# ADR DRAFT: Stable action targets in bottom-anchored pooled lists (#1294)
-
-> **Unnumbered draft.** The integrator must assign the next available ADR number
-> and add its index row in `docs/adr/README.md` in the same commit that promotes
-> this file. A number read from `main` today is not reserved for this draft.
+# ADR 0124: Stable action targets in bottom-anchored pooled lists (#1294)
 
 ## Status
 
-**Proposed; awaiting the repository owner's decision.** This document does not
-authorize an implementation or change the accepted layout. Its recommended
-option is a proposal, not an accepted ruling. No production code changes with
-this draft.
+**Accepted, 2026-09-24, by the repository owner: Option 1, stable slots from
+the bottom in all four pooled lists.** The owner selected the label
+*„Akceptuję opcję 1: stabilne sloty od dołu we wszystkich czterech listach
+(zalecane)”*. This is the weaker provenance: the label was written by this
+agent and clicked by the owner, not a sentence they typed. The alternatives
+offered were *„Opcja 3: zmień dolne kotwiczenie całego panelu”* and *„Odłóż
+zmianę i pozostaw obecne zachowanie”*. The selected label authorizes the
+four-list invariant below. It does not approve a broader rail redesign.
+
+The previous status was **Proposed; awaiting the repository owner's decision**.
+Numbering and acceptance do not claim that the product implementation has
+shipped.
 
 ## Context and reproduced failure
 
@@ -45,7 +49,7 @@ them rather than silently rely on that incidental height.
 
 ## Decision proposed to the owner
 
-**Option 1: anchor pooled slots from the bottom, not merely the enclosing
+**Accepted Option 1: anchor pooled slots from the bottom, not merely the enclosing
 rail.** A slot's stable identity is its distance from the bottom edge of its
 own pooled block. Its screen box must remain in the same position throughout
 the settle interval when its item disappears, independent of the number of
@@ -143,6 +147,5 @@ that is a scope change to review separately.
 
 ## Decision requested
 
-Does the owner accept **Option 1**, with the four-block scope and invariant
-above? Until that answer is recorded here and in the numbered ADR index, the
-status remains **Proposed** and the product implementation stays unapproved.
+The owner accepted **Option 1** with the four-block scope and invariant above
+on 2026-09-24. Implementation and its test evidence remain to be added.
