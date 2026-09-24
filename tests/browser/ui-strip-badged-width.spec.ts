@@ -267,18 +267,20 @@ test.describe('the status strip carries nine chips and the prison’s own state 
     await expect(dialog.locator('.hud-strip__all-stats-entry').filter({ hasText: 'Coverage' })).toContainText('Unguarded');
     await dialog.getByRole('button', { name: 'Close' }).click();
 
-    await page.setViewportSize({ width: 900, height: 600 });
-    await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
-    const shortDesktopHits = await page.evaluate(() =>
-      ['.hud-strip__all-stats-button', '.hud-strip__history button:last-child', '.hud-layout__button']
-        .map((selector) => {
-          const target = document.querySelector<HTMLElement>(selector)!;
-          const box = target.getBoundingClientRect();
-          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-          return hit === target || target.contains(hit);
-        }),
-    );
-    expect(shortDesktopHits).toEqual([true, true, true]);
+    for (const [width, height] of [[1024, 768], [900, 600]] as const) {
+      await page.setViewportSize({ width, height });
+      await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
+      const shortDesktopHits = await page.evaluate(() =>
+        ['.hud-strip__all-stats-button', '.hud-strip__history button:last-child', '.hud-layout__button']
+          .map((selector) => {
+            const target = document.querySelector<HTMLElement>(selector)!;
+            const box = target.getBoundingClientRect();
+            const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+            return hit === target || target.contains(hit);
+          }),
+      );
+      expect(shortDesktopHits, `${width}x${height}`).toEqual([true, true, true]);
+    }
 
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
