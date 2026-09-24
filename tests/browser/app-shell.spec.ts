@@ -3399,6 +3399,46 @@ const HUD_LAYOUT_VIEWPORTS = [
 ] as const;
 
 test.describe('the assembled application', () => {
+  test('Build names the stored camera keys instead of promising unbound arrows (#141)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.addInitScript(() => {
+      localStorage.setItem('lockstate.settings.input', JSON.stringify({
+        version: 1,
+        keyboardBindings: [
+          { device: 'keyboard', code: 'KeyI', action: 'camera.up', contexts: ['world'] },
+          { device: 'keyboard', code: 'KeyK', action: 'camera.down', contexts: ['world'] },
+          { device: 'keyboard', code: 'KeyJ', action: 'camera.left', contexts: ['world'] },
+          { device: 'keyboard', code: 'KeyL', action: 'camera.right', contexts: ['world'] },
+        ],
+      }));
+    });
+    await openApp(page);
+    await page.getByRole('button', { name: 'Build' }).click();
+    const hint = page.locator('.hud-build__arm-hint');
+    await expect(hint).toContainText('Pan: ↑ I · ↓ K · ← J · → L.');
+    await expect(hint).not.toContainText('arrow keys');
+    expect(await hint.evaluate((node) => {
+      const text = node.firstChild;
+      if (text === null) return false;
+      const lastKey = (node.textContent ?? '').indexOf('L');
+      const range = document.createRange();
+      range.setStart(text, 0);
+      range.setEnd(text, lastKey + 1);
+      return range.getBoundingClientRect().bottom <= node.getBoundingClientRect().bottom + 1;
+    }), 'the mapped keys are actually visible').toBe(true);
+  });
+
+  test('Build does not promise keyboard camera movement when none is bound (#141)', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: [] }));
+    });
+    await openApp(page);
+    await page.getByRole('button', { name: 'Build' }).click();
+    const hint = page.locator('.hud-build__arm-hint');
+    await expect(hint).not.toContainText('arrow keys');
+    await expect(hint).not.toContainText('Pan:');
+    await expect(hint).toContainText('Two fingers or the middle button still move the camera.');
+  });
   test('Escape closes Layout without also putting down an armed Build tool', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);

@@ -864,6 +864,8 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  /** Display-only camera bindings resolved from the input settings used by the world scene. */
+  readonly cameraKeyHint?: Promise<string | undefined>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -2216,6 +2218,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // -- the wall appears when a snapshot says it was built.
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(options.cameraKeyHint === undefined ? {} : { cameraKeyHint: options.cameraKeyHint }),
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       /*

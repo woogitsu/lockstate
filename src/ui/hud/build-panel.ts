@@ -156,6 +156,8 @@ export interface BuildPanelTarget {
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  /** Resolved from the same stored bindings the world scene reads. No keys means no keyboard claim. */
+  readonly cameraKeyHint?: Promise<string | undefined>;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1450,6 +1452,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * leaves this block.
    */
   const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note hud-build__arm-hint');
+  let cameraKeys: string | undefined;
 
   /*
    * `hud.build.note` -- originally "An order is queued now and built while the
@@ -1643,7 +1646,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // `place-object` or `place-build-order`. Reading one field for both means
     // the sentence cannot describe a gesture other than the one the panel
     // would perform. Removal still wins over both: it names no row.
-    armHint.textContent = t(armedHintKey(selectedBuildable(), removing));
+    const hint = t(armedHintKey(selectedBuildable(), removing));
+    armHint.textContent = removing || cameraKeys === undefined
+      ? hint
+      : `${t(HUD_MESSAGE_KEY.buildCameraKeys, { keys: cameraKeys })} ${hint}`;
+    armHint.title = armHint.textContent;
 
     // The numeric route follows the mode too, or the one submit button would
     // say "Place order" and clear a tile.
@@ -3198,6 +3205,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   );
   paintCatalogue();
   paintArmed();
+  void options.cameraKeyHint?.then((keys) => {
+    cameraKeys = keys;
+    paintArmed();
+  }).catch(() => {
+    // A refused keyboard-layout map must leave the pointer guidance usable.
+  });
   paintBuy();
   paintQueue();
   paintDeliveries();
