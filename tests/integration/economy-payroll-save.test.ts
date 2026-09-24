@@ -374,6 +374,8 @@ describe('the historical chain still walks a save older than the field', () => {
       roomFilth: _roomFilth,
       labourCredit: _labourCredit,
       workOutput: _workOutput,
+      delayedIntake: _delayedIntake,
+      holdingStays: _holdingStays,
       ...simulation
     } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
