@@ -6314,6 +6314,7 @@
     margin-left: calc(var(--hud-navigation-width) + var(--space-3));
   }
 
+
   /*
    * **AND THE SENTENCE ABOVE STOPPED BEING TRUE WHEN THE NAVIGATION GAINED A
    * SIXTH SECTION (2026-09-19), SO THE ARITHMETIC IS KEPT AND A SECOND RULE IS
@@ -6384,6 +6385,17 @@
    */
   @media (min-height: 781px) {
     .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
+    /* A populated alerts list extends the bottom-left corner into the
+       six-tab rail at 1280x800. Give its added row back from the empty
+       minimap surface: the zoom button moves from y=382 to y=414, clear of
+       the last tab ending at y=410. The list keeps its own height, while the
+       corner keeps its x position so room drags still aim at the same tiles.
+       The selector leaves an empty list alone, preserving the measured
+       398px corner budget (#1292); below 781px the corner already moves
+       beyond the rail. */
+    .hud[data-layout-navigation-placement='rail']:has(.hud-alerts__list:not([hidden]) > .ui-row:not([hidden])) .hud-minimap__surface {
+      max-height: calc(224px * var(--ui-scale) - var(--hud-zoom-block) - var(--space-6) - var(--space-2));
+    }
   }
 
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }
