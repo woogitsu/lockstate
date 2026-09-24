@@ -1118,6 +1118,34 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "terrain.dirt.compacted",
+      "image": "terrain.dirt.compacted.png",
+      "sha256": "479953e1a101078c053c574fd7467425b498b478fac34557f5e028ef1f949078",
+      "pixelSha256": "d5aa92d2fe7527f6335972b55d9ae6cedd0ccca540a3b8a778fd5a3646d4ca37",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

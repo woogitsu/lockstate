@@ -75,6 +75,7 @@ export type EnvironmentArtCatalogKind = 'source-art' | 'rendered-art';
  * to a blank tile.
  */
 export const ENVIRONMENT_SPRITE_IDS = [
+  'env.terrain.dirt',
   'env.floor.institutional',
   'env.wall.interior.face',
   'env.wall.interior.cap',
@@ -161,6 +162,14 @@ export interface RenderedArtSpriteDefinition extends EnvironmentSpriteDefinition
 export type EnvironmentSpriteDefinition = SourceArtSpriteDefinition | RenderedArtSpriteDefinition;
 
 export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>> = {
+  /** Seamless compacted earth beneath unzoned outdoor tiles. */
+  'env.terrain.dirt': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.dirt.compacted',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered compacted dirt with fine mineral grit, one seamless tile per repeat.',
+  },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south
    * fine joints meet adjacent copies, while the image reaches all four edges.

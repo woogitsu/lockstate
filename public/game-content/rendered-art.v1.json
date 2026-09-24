@@ -528,6 +528,31 @@
       }
     },
     {
+      "assetId": "terrain.dirt.compacted",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.dirt.compacted.479953e1a101.png",
+      "sha256": "479953e1a101078c053c574fd7467425b498b478fac34557f5e028ef1f949078",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "wall.interior.cap.overhead",
       "contentVersion": 1,
       "image": "source-art/rendered.wall.interior.cap.overhead.d24f0fdb26ec.png",

@@ -127,6 +127,50 @@ test.describe('the environment artwork', () => {
     for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
+  test('the Blender dirt covers bare outdoor ground and restores colour fallback when removed', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.dirt'].kind).toBe('rendered-art');
+    const borders = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.dirt');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(borders?.size).toEqual([128, 128]);
+    for (const pixel of [borders!.left, borders!.right, borders!.top, borders!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
+    expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const dirt = sprites.filter((sprite) => sprite.frameName === 'env.terrain.dirt');
+    expect(dirt.length).toBeGreaterThan(0);
+    const x = 1.5 * fixture.tileSizePx;
+    const y = 1.5 * fixture.tileSizePx;
+    expect(dirt.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(dirt.some((sprite) => sprite.width > fixture.tileSizePx), 'outdoor dirt should merge into runs').toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(withArt[3]).toBeGreaterThan(200);
+    expect(withoutArt[3]).toBeGreaterThan(200);
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
+  });
+
   test('packs the Blender overhead door cap while retaining the frontal source door', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
     expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('source-art');

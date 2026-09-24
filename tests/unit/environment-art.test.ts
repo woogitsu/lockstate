@@ -41,6 +41,7 @@ import {
   objectArtCoverage,
   objectSprite,
   terrainArtCoverage,
+  terrainFloorSpriteByNumericId,
   zonedFloorSprite,
 } from '../../src/rendering/world/environment-art';
 
@@ -228,7 +229,11 @@ describe('environment atlas plan', () => {
     const first = [...ENVIRONMENT_SPRITE_IDS].sort()[0]!;
     const broken = {
       ...ENVIRONMENT_SPRITES,
-      [first]: { ...ENVIRONMENT_SPRITES[first], sourceRectPx: { x: 1_400, y: 1_000, width: 400, height: 400 } },
+      [first]: {
+        kind: 'source-art', assetId: 'floor.linoleum.institutional',
+        sourceRectPx: { x: 1_400, y: 1_000, width: 400, height: 400 },
+        runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0, note: 'invalid test crop',
+      },
     } as Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>>;
     expect(() => planEnvironmentAtlas(catalog, broken)).toThrow(new RegExp(first.replace(/\./gu, '\\.')));
   });
@@ -237,7 +242,11 @@ describe('environment atlas plan', () => {
     const first = [...ENVIRONMENT_SPRITE_IDS].sort()[0]!;
     const broken = {
       ...ENVIRONMENT_SPRITES,
-      [first]: { ...ENVIRONMENT_SPRITES[first], assetId: 'no.such.sheet' },
+      [first]: {
+        kind: 'source-art', assetId: 'no.such.sheet',
+        sourceRectPx: { x: 0, y: 0, width: 128, height: 128 },
+        runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0, note: 'missing test sheet',
+      },
     } as Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>>;
     expect(() => planEnvironmentAtlas(catalog, broken)).toThrow(/no\.such\.sheet/);
   });
@@ -310,10 +319,17 @@ describe('declared fallback', () => {
 
   it('accounts for every terrain exactly once', () => {
     const coverage = terrainArtCoverage();
+    expect(coverage.drawn).toEqual(['dirt']);
     expect([...coverage.onFallback]).toEqual([...TERRAIN_ON_COLOUR_FALLBACK]);
     expect([...coverage.drawn, ...coverage.onFallback].sort()).toEqual(
       DEFAULT_TERRAIN_DEFINITIONS.map((definition) => definition.id).sort(),
     );
+  });
+
+  it('maps the simulation dirt id to art and leaves other terrain on colour', () => {
+    expect(terrainFloorSpriteByNumericId(0)).toBe('env.terrain.dirt');
+    expect(terrainFloorSpriteByNumericId(1)).toBeUndefined();
+    expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 
   it('draws both edge values rather than leaving one on colour', () => {

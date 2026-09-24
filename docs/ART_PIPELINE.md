@@ -323,10 +323,11 @@ digest and the raw-pixel digest are recorded per asset in the sidecar.
 
 **Tiling surfaces.** Floors and wall runs need zero-margin frames whose edges
 meet their own repeat exactly; a 6% transparent margin creates visible gaps.
-The rendered `floor.linoleum.institutional`, `wall.interior.cap.overhead`, and
-`wall.interior.face` modules use zero margins. The wall face is a shallow
-Blender relief representing an elevation in the game's 2D projection. The
-frontal door retains its owner sheet crop.
+The rendered `floor.linoleum.institutional`, `terrain.dirt.compacted`,
+`wall.interior.cap.overhead`, and `wall.interior.face` modules use zero margins.
+The outdoor dirt material uses periodic noise so opposite tile edges agree.
+The wall face is a shallow Blender relief representing an elevation in the
+game's 2D projection. The frontal door retains its owner sheet crop.
 
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the

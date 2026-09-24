@@ -105,6 +105,7 @@ MODELS = (
     ("furniture.library.bookshelf", (2, 1)),
     ("wall.interior.face", (1, 1)),
     ("wall.interior.cap.overhead", (1, 0.25)),
+    ("terrain.dirt.compacted", (1, 1)),
 )
 
 
@@ -120,6 +121,44 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def dirt_surface_material():
+    """Periodic 4D noise makes both tile borders identical without a grid."""
+    item = material("Dark compacted warm earth", (0.16, 0.11, 0.075, 1), 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    periodic_vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), periodic_vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), periodic_vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), periodic_vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 3.5
+    noise.inputs["Detail"].default_value = 3.0
+    links.new(periodic_vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.24
+    ramp.color_ramp.elements[0].color = (0.115, 0.075, 0.048, 1)
+    ramp.color_ramp.elements[1].position = 0.76
+    ramp.color_ramp.elements[1].color = (0.215, 0.150, 0.098, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def galvanized_material():
@@ -982,7 +1021,25 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "floor.linoleum.institutional":
+    if asset_id == "terrain.dirt.compacted":
+        # Unzoned ground covers most of the world. Keep the entire border
+        # uniform so chunk-sized repeated rectangles have no hard seam.
+        box(collection, root, "Compacted earth", (0, 0, 0.04),
+            (1, 1, 0.08), "dirt_base", 0)
+        for index in range(42):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.84
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.84
+            width = 0.004 + (index % 3) * 0.002
+            box(collection, root, f"Small mineral grit.{index}",
+                (x, y, 0.081), (width, width * 0.67, 0.001),
+                "dirt_grit_light" if index % 3 else "dirt_grit_dark", 0)
+        for index in range(4):
+            x = (((index * 29 + 9) % 61) / 61 - 0.5) * 0.70
+            y = (((index * 37 + 23) % 67) / 67 - 0.5) * 0.70
+            box(collection, root, f"Fine dry scuff.{index}",
+                (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
+                "dirt_scuff", 0)
+    elif asset_id == "floor.linoleum.institutional":
         # The module repeats every tile. Geometry reaches the frame on all
         # sides, while the slim east/south seams complete the square joint.
         box(collection, root, "Cool institutional linoleum", (0, 0, 0.04),
@@ -1216,6 +1273,10 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["dirt_base"] = dirt_surface_material()
+    MATERIALS["dirt_grit_light"] = material("Dry tan mineral grit", (0.24, 0.16, 0.10, 1), 0.98)
+    MATERIALS["dirt_grit_dark"] = material("Dark earth grit", (0.11, 0.08, 0.06, 1), 0.98)
+    MATERIALS["dirt_scuff"] = material("Faint dust scuff", (0.20, 0.14, 0.09, 1), 0.98)
     MATERIALS["floor_lino"] = material("Institutional cool grey-green linoleum", (0.55, 0.61, 0.57, 1), 0.82)
     MATERIALS["floor_joint"] = material("Institutional linoleum fine joint", (0.39, 0.45, 0.43, 1), 0.96)
     MATERIALS["floor_fleck_light"] = material("Linoleum pale mineral flecks", (0.67, 0.70, 0.64, 1), 0.95)
