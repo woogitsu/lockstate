@@ -1,6 +1,6 @@
 # Draft decision: the Build catalogue and playfield at 375×812 (#899)
 
-**Status:** Option 1 accepted by the owner on 2026-09-24; implementation and browser evidence pending. No ADR number is reserved.
+**Status:** Option 1 accepted by the owner on 2026-09-24; implemented and checked locally in Chromium. Full CI is pending. No ADR number is reserved.
 **Scope:** Initial Build-panel layout on a phone. This draft changes no UI, input, copy, supported-viewport policy, or accepted ADR.
 
 ## The decision still open
@@ -47,6 +47,10 @@ The owner was offered these exact Polish option labels and selected the first:
 3. **„Określ minimalny wspierany rozmiar ekranu”** — declined.
 
 This was a selection from options written by the agent, not a free-form design specification typed by the owner. That weaker provenance matters: the ruling chooses map-first arrival at 375×812 and a mobile catalogue that can be opened to select/arm a tool; it does not authorize an invented new player-visible sentence, a general minimum-viewport rule, or a changed desktop layout. The implementation must verify those details in the real browser and return with evidence. The earlier research table and losing options remain above so the decision can be audited.
+
+## Local implementation check
+
+`tests/browser/build-map-first-899.spec.ts` checks that entering Build at 375×812 collapses the catalogue, leaves at least 400 of 1173 sampled points on the canvas, reopens the catalogue, arms and stops an object, then starts map-first again after leaving the tab. At 1280×800 the catalogue stays open. Both #899 checks and both #517 phone/desktop placement checks passed in Chromium on this branch (4/4, 2026-09-24). The existing disclosure label and focus route are reused; there is no new player-visible sentence.
 
 ## Browser acceptance criteria for the chosen option
 
