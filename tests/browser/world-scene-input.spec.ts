@@ -1041,6 +1041,28 @@ test.describe('the world scene pointer gesture recovery (#516)', () => {
     await client.detach();
   });
 
+  test('keeps middle-button panning when another mouse button is released first', async ({ page }) => {
+    await openHarness(page);
+    const centre = await canvasCentre(page);
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(centre.x + 80, centre.y);
+    const first = await scrollX(page);
+    expect(first).not.toBe(0);
+
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.up({ button: 'left' });
+    await page.mouse.move(centre.x + 120, centre.y);
+    await settle(page);
+    const afterLeftRelease = await scrollX(page);
+    expect(afterLeftRelease, 'releasing left ended the still-held middle pan').not.toBe(first);
+
+    await page.mouse.up({ button: 'middle' });
+    await page.mouse.move(centre.x + 160, centre.y);
+    await settle(page);
+    expect(await scrollX(page)).toBe(afterLeftRelease);
+  });
+
   test('cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', async ({
     page,
   }) => {

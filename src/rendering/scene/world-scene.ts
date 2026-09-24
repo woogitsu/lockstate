@@ -730,6 +730,9 @@ export class WorldScene extends Phaser.Scene {
       if (this.commitArea(pointer)) return;
       if (pointer.wasTouch) return;
       if (this.panPointerId !== pointer.id) return;
+      // Phaser uses one mouse pointer for every button. Releasing left or
+      // right must not end a pan while the middle button is still held.
+      if ((pointer.buttons & 4) !== 0) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
     };
