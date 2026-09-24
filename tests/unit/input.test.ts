@@ -485,9 +485,10 @@ describe('text entry is recognised from the document, not assumed', () => {
   const withActive = (activeElement: unknown): Pick<Document, 'activeElement'> =>
     ({ activeElement }) as Pick<Document, 'activeElement'>;
 
-  it('recognises the three shapes that capture typing', () => {
+  it('recognises controls that capture typing or arrow-key selection', () => {
     expect(isTextEntryFocused(withActive({ tagName: 'INPUT' }))).toBe(true);
     expect(isTextEntryFocused(withActive({ tagName: 'TEXTAREA' }))).toBe(true);
+    expect(isTextEntryFocused(withActive({ tagName: 'SELECT' }))).toBe(true);
     expect(isTextEntryFocused(withActive({ tagName: 'DIV', isContentEditable: true }))).toBe(true);
   });
 
@@ -495,7 +496,6 @@ describe('text entry is recognised from the document, not assumed', () => {
     // Stopping the camera for these would make the game feel broken whenever a
     // button had focus, which is most of the time after any click.
     expect(isTextEntryFocused(withActive({ tagName: 'BUTTON' }))).toBe(false);
-    expect(isTextEntryFocused(withActive({ tagName: 'SELECT' }))).toBe(false);
     expect(isTextEntryFocused(withActive({ tagName: 'CANVAS' }))).toBe(false);
     expect(isTextEntryFocused(withActive({ tagName: 'DIV', isContentEditable: false }))).toBe(false);
   });

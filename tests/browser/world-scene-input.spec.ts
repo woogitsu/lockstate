@@ -203,6 +203,23 @@ test.describe('the world scene keyboard', () => {
     await page.keyboard.up('KeyD');
   });
 
+  test('lets a focused native category select use arrows without panning the camera', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => {
+      const select = document.createElement('select');
+      select.id = 'probe-category';
+      select.innerHTML = '<option value="all">Everything</option><option value="furniture">Furniture</option>';
+      document.body.append(select);
+      select.focus();
+    });
+    const before = await scrollX(page);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#probe-category')).toHaveValue('furniture');
+    await settle(page);
+    await settle(page);
+    expect(await scrollX(page)).toBe(before);
+  });
+
   test('pans again once the field is blurred, so the guard is not a permanent mute (#201)', async ({ page }) => {
     // The other direction. A guard that stopped the camera and never restored it
     // would satisfy the test above and break the game.
