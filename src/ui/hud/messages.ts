@@ -265,6 +265,7 @@ export const HUD_MESSAGE_KEY = {
    */
   earnedWithheld: 'hud.status.earned-withheld',
   earnedWithheldBadge: 'hud.status.earned-withheld-badge',
+  earnedWithheldFilth: 'hud.status.earned-withheld-filth',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',

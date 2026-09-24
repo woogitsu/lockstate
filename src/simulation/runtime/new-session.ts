@@ -991,7 +991,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * that does not opt in is byte-identical to one on `main`.
    */
   const loans = options.loanTerms === undefined ? undefined : new LoanBook(treasury, options.loanTerms);
-  const stateIncome = new StateIncomeSystem(treasury, prisoners, loans);
+  const stateIncome = new StateIncomeSystem(treasury, prisoners, loans, { ledger: prisoners.roomFilth, rooms: prisoners.roomInstances });
 
   // Empty until a session/scenario places real generators/consumers --
   // same "no fabricated default content" convention as `containers`/`jobs`.

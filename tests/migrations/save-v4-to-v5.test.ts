@@ -104,7 +104,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   // (the owner's decisions of 2026-09-01 on ADR 0084 added it beside `objects`
   // under the same optional-field rule), and a room instance carried a
   // capacity and a capability list instead of a rectangle.
-  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = bundle.simulation;
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -271,7 +271,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(6);
+      expect(SAVE_SCHEMA_VERSION).toBe(7);
     }
   });
 

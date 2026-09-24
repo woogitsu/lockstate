@@ -11,6 +11,7 @@ import type {
   SaveEnvelopeV4,
   SaveEnvelopeV5,
   SaveEnvelopeV6,
+  SaveEnvelopeV7,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -471,4 +472,25 @@ export function migrateSaveEnvelopeV5ToV6(input: SaveEnvelopeV5): SaveEnvelopeV6
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV6;
+}
+
+/**
+ * V6 had no room filth producer. An empty ledger is therefore the only truthful
+ * migration value; retaining every other field also preserves optional
+ * extensions from older saves. A payload with no simulation stays absent.
+ */
+export function migrateSaveEnvelopeV6ToV7(input: SaveEnvelopeV6): SaveEnvelopeV7 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+  const migratedPayload = {
+    ...payload,
+    ...(payload.simulation === undefined ? {} : {
+      simulation: { ...payload.simulation, roomFilth: { rooms: [], exposures: [] } },
+    }),
+  };
+  return {
+    saveSchemaVersion: 7,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV7;
 }

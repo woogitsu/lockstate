@@ -581,6 +581,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.status.earned-withheld':
     'Niezaspokojone potrzeby wstrzymały jak dotąd {withheld} z dzisiejszej dotacji — państwo płaci mniej za osadzonego, którego potrzeby nie są zaspokajane, a zaspokojenie jednej z nich przywraca tę część.',
   'hud.status.earned-withheld-badge': 'Wstrzymano {withheld}',
+  'hud.status.earned-withheld-filth':
+    'Niezaspokojone potrzeby i brudne pomieszczenia wstrzymały jak dotąd {withheld} z dzisiejszej dotacji; {filth} wynika z brudu. Śmietnik z koszem na odpady usuwa je z końcem dnia.',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
   'hud.status.incidents-clear': 'Spokój',
@@ -1515,7 +1517,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.scope.construction': 'zlecenia budowy oraz cofanie i ponawianie',
   'save.scope.entity-liveness': 'żywotność identyfikatorów bytów',
   // A save-manifest label, so *osadzeni* under the owner's ruling.
-  'save.scope.prisoners': 'osadzeni, potrzeby, czynności i przydziały cel',
+  'save.scope.prisoners': 'osadzeni, potrzeby, czynności, odpady w pomieszczeniach i przydziały cel',
   'save.scope.operations': 'zadania, pojemniki i sieci instalacji',
   'save.scope.security': 'drzwi, sektory ochrony, strażnicy i patrole',
   'save.scope.contraband': 'kontrabanda, informacje i przeszukania',

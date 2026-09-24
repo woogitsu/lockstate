@@ -21,6 +21,7 @@ import {
   residentsWithoutExistingPlace,
 } from '../../src/simulation/prisoners/room-instance-registry';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
+import { RoomFilthLedger } from '../../src/simulation/prisoners/room-filth-ledger';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
 /**
@@ -244,6 +245,33 @@ describe('zero prisoners means zero income, and no crash', () => {
     step(kernel, DAY_LENGTH_TICKS * 2);
     expect(treasury.balanceMinorUnits).toBe(25_000);
     expect(stateIncomeAccruedByTick(0, 1_234)).toBe(0);
+  });
+});
+
+describe('garbage-room disposal changes the next prisoner-day grant', () => {
+  it('withholds one need share for each dirty room used, and a furnished garbage room clears it', () => {
+    const roomInstances = registryWithOccupiedCells(1);
+    roomInstances.register({
+      instanceId: 'canteen.1', roomCatalogId: 'room.canteen', anchorTile: TILE(4, 4),
+      residentCapacity: 0, concurrentUseCapacity: 1, objectCapabilities: ['dining'],
+    });
+    const prison = prisonOf(roomInstances);
+    const filth = new RoomFilthLedger();
+    filth.recordUse('canteen.1', 'room.canteen', 0);
+    const treasury = new Treasury(0);
+    const kernel = new Kernel();
+    kernel.registerSystem(new StateIncomeSystem(treasury, prison, undefined, { ledger: filth, rooms: roomInstances }));
+    step(kernel, DAY_LENGTH_TICKS);
+    expect(treasury.balanceMinorUnits).toBe(260);
+
+    roomInstances.register({
+      instanceId: 'garbage.1', roomCatalogId: 'room.garbage-room', anchorTile: TILE(5, 4),
+      residentCapacity: 0, concurrentUseCapacity: 2, objectCapabilities: ['waste-disposal'],
+    });
+    filth.recordUse('canteen.1', 'room.canteen', 0);
+    step(kernel, DAY_LENGTH_TICKS);
+    expect(treasury.balanceMinorUnits).toBe(560);
+    expect(filth.getSnapshot().rooms).toEqual([['canteen.1', 0]]);
   });
 });
 

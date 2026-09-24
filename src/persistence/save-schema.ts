@@ -26,6 +26,7 @@ import {
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
   migrateSaveEnvelopeV5ToV6,
+  migrateSaveEnvelopeV6ToV7,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -35,7 +36,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 6 as const;
+export const SAVE_SCHEMA_VERSION = 7 as const;
 
 // --- Kernel / RNG ---
 
@@ -1360,6 +1361,14 @@ const sessionSystemsV6Schema = z
   })
   .strict();
 
+const roomFilthSchema = z.object({
+  rooms: z.array(z.tuple([z.string().min(1), z.number().int().nonnegative().safe()])),
+  exposures: z.array(z.tuple([z.string().min(1), z.array(entityIdSchema)])),
+}).strict();
+
+/** V7 records waste already produced and the prisoners exposed this day. */
+const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema });
+
 // --- Envelope ---
 
 const savePayloadV1Schema = z
@@ -1537,6 +1546,8 @@ const savePayloadV6Schema = z
   })
   .strict();
 
+const savePayloadV7Schema = savePayloadV6Schema.extend({ simulation: sessionSystemsV7Schema.optional() });
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
@@ -1548,8 +1559,9 @@ export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
 /** Historical V5 payload shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
 export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
+export type SavePayloadV7 = DeepReadonly<z.infer<typeof savePayloadV7Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV6;
+export type SavePayload = SavePayloadV7;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1615,15 +1627,20 @@ const saveEnvelopeV5ObjectSchema = z
 const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
 
 const saveEnvelopeV6ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV6Schema })
+  .object({ ...saveEnvelopeMetadataShape(6), payload: savePayloadV6Schema })
   .strict();
 
 const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
 
 /** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV6Schema`. */
-const saveEnvelopeMetadataV6Schema = withOrderedTimestamps(
+const saveEnvelopeMetadataV7Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
+
+const saveEnvelopeV7ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV7Schema })
+  .strict();
+const saveEnvelopeV7Schema = withOrderedTimestamps(saveEnvelopeV7ObjectSchema);
 
 /** Historical V1 envelope shape. Only the migration chain and `migrateSaveEnvelopeV1ToV2` should name this. */
 export type SaveEnvelopeV1 = DeepReadonly<z.infer<typeof saveEnvelopeV1ObjectSchema>>;
@@ -1636,12 +1653,13 @@ export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSch
 /** Historical V5 envelope shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
 export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
+export type SaveEnvelopeV7 = DeepReadonly<z.infer<typeof saveEnvelopeV7ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV6;
+export type SaveEnvelope = SaveEnvelopeV7;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1655,7 +1673,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV6Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(6, saveEnvelopeV6Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV7Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -1680,6 +1699,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 5,
   toVersion: 6,
   migrate: (input) => migrateSaveEnvelopeV5ToV6(input as SaveEnvelopeV5),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 6,
+  toVersion: 7,
+  migrate: (input) => migrateSaveEnvelopeV6ToV7(input as SaveEnvelopeV6),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1928,7 +1952,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV6Schema.parse({
+  const payload = savePayloadV7Schema.parse({
     ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
@@ -1938,7 +1962,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV6Schema.parse({
+  const metadata = saveEnvelopeMetadataV7Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

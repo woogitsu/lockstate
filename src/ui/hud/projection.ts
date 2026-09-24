@@ -835,6 +835,8 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
 function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | undefined {
   const withheld = counts.stateIncomeWithheldTodayMinorUnits;
   if (withheld === undefined || withheld <= 0) return undefined;
+  const filth = counts.stateIncomeFilthWithheldTodayMinorUnits ?? 0;
+  if (filth > 0) return { textKey: HUD_MESSAGE_KEY.earnedWithheldFilth, numberParameters: { withheld, filth } };
   return { textKey: HUD_MESSAGE_KEY.earnedWithheld, numberParameters: { withheld } };
 }
 

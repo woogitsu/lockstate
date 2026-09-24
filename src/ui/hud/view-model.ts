@@ -500,7 +500,7 @@ export interface HudCountsViewModel {
   readonly stateIncomeAccruedTodayMinorUnits: number;
   /**
    * How much of today's grant has been withheld so far because residents have
-   * needs going unmet, in the same minor units -- or **absent because nothing
+   * needs going unmet or used dirty rooms, in the same minor units -- or **absent because nothing
    * has published it** (issue #890).
    *
    * Published, never computed here, and the reason is sharper than for the
@@ -517,6 +517,8 @@ export interface HudCountsViewModel {
    * different facts.
    */
   readonly stateIncomeWithheldTodayMinorUnits?: number;
+  /** Published part of the withheld grant caused by used rooms with uncleared waste. */
+  readonly stateIncomeFilthWithheldTodayMinorUnits?: number;
   /**
    * What one in-game day of the current roster will cost, in the same minor
    * units -- or **absent because nothing has published counts yet** (issue

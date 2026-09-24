@@ -7,11 +7,11 @@ Supabase sync (#20) is a separate issue with its own document: its schema, RPC
 and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
 [CLOUD_SAVE.md](./CLOUD_SAVE.md), not here.
 
-## Envelope shape (`SaveEnvelope`, currently V5)
+## Envelope shape (`SaveEnvelope`, currently V7)
 
 ```
 {
-  saveSchemaVersion: 5,
+  saveSchemaVersion: 7,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // allocated by the local store at write time, inside the
@@ -30,6 +30,9 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
                  freeIndices: [ ... ],                        // the live free-list prefix only
                  alive: [[0|1, length], ...] },               // run-length encoded
     simulation?: {                                            // V3, issue #70
+      roomFilth: { rooms: [[instanceId, wasteCount], ...],
+                   exposures: [[instanceId, [prisonerId, ...]], ...] }, // V7, #595
+      regimeSchedules: [ ... ],                                // V6, ADR 0113
       prisoners:  { components, coldState,
                     roomInstanceDefinitions, roomInstanceOccupancy },
       operations: { containers, jobs, jobWorkers, electricity, water },
@@ -50,6 +53,22 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   },
 }
 ```
+
+### V7: room waste carried through local saves (#595)
+
+`simulation.roomFilth` records a sorted count per used Kitchen, Canteen or
+Laundry and the prisoners exposed there during the current in-game day.
+The count and exposure cannot be reconstructed from need levels, so V7 makes
+the section required for a session snapshot. The V6→V7 migration installs an
+empty ledger: no V6 build produced waste, and inventing exposure would charge
+someone for a room they may never have used. Saves without a `simulation`
+section remain without one through migration, as in the earlier steps.
+
+This is client-side save migration only; it adds nothing under
+`supabase/migrations/`. The separate #1373 walking-save work adds an optional
+travel field to the same historical session shape. When integrating those
+branches, keep that field in the V7 session schema and forward it unchanged in
+V6→V7; this migration spreads the prior `simulation` for that reason.
 
 **The `revision` comment above used to say something else, and ADR 0109 made
 it false.** It read:

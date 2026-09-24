@@ -1230,6 +1230,7 @@ export const statusCountsSchema = z
      * measured tick counts.
      */
     stateIncomeWithheldTodayMinorUnits: countSchema.optional(),
+    stateIncomeFilthWithheldTodayMinorUnits: countSchema.optional(),
     /**
      * What one in-game day of the current roster costs, in the same minor
      * units ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)

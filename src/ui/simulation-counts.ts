@@ -246,6 +246,9 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         ...(counts.stateIncomeWithheldTodayMinorUnits === undefined
           ? {}
           : { stateIncomeWithheldTodayMinorUnits: counts.stateIncomeWithheldTodayMinorUnits }),
+        ...(counts.stateIncomeFilthWithheldTodayMinorUnits === undefined
+          ? {}
+          : { stateIncomeFilthWithheldTodayMinorUnits: counts.stateIncomeFilthWithheldTodayMinorUnits }),
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and it
          * is the figure the collapsed `On the payroll` header states (issue

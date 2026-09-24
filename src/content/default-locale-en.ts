@@ -432,7 +432,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.status.earned-today': 'Earned today',
   /*
    * The `Earned today` chip's tooltip and screen-reader text while some of
-   * today's grant is being withheld for unmet needs (issue #890). Drawn only
+   * today's grant is being withheld for unmet needs (issue #890) and the
+   * separate dirty-room component is zero (#595). Drawn only
    * when the published figure is above zero, so a prison meeting every need
    * carries no sentence here at all -- `prisonersWithoutBedBadge`'s rule, and
    * `overdraftBadge`'s: a sentence present in every screenshot is one nobody
@@ -484,6 +485,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.status.earned-withheld':
     "Unmet needs have withheld {withheld} of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
   'hud.status.earned-withheld-badge': 'Withheld {withheld}',
+  'hud.status.earned-withheld-filth':
+    "Unmet needs and dirty rooms have withheld {withheld} of today's grant so far; {filth} comes from dirty rooms. A Garbage Room with a Waste Bin clears their waste at the end of each day.",
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',
@@ -4355,7 +4358,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.scope.world': 'world terrain and ownership',
   'save.scope.construction': 'construction orders and undo/redo',
   'save.scope.entity-liveness': 'entity id liveness',
-  'save.scope.prisoners': 'prisoners, needs, actions and cell assignments',
+  'save.scope.prisoners': 'prisoners, needs, actions, room waste and cell assignments',
   'save.scope.operations': 'jobs, containers and utility networks',
   'save.scope.security': 'doors, security sectors, guards and patrols',
   'save.scope.contraband': 'contraband, intelligence and searches',

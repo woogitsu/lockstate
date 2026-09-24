@@ -330,6 +330,7 @@ export interface EncodedIncidents {
  * without reshaping the rest.
  */
 export interface EncodedSessionSystems {
+  readonly roomFilth: import('../prisoners/room-filth-ledger').RoomFilthSnapshot;
   readonly prisoners: EncodedPrisoners;
   /**
    * Every classification group's timetable, as the session is actually running
@@ -664,6 +665,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // not know" state for a required section, which is what separates it from
     // `objects` and `alerts` below.
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
+    roomFilth: runtime.prisoners.roomFilth.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -943,6 +945,7 @@ export function restoreSessionSystems(
       currentActionTargetInstanceId: systems.prisoners.coldState.currentActionTargetInstanceId.map(([id, value]) => [id, value] as [number, string]),
     },
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
+    roomFilth: systems.roomFilth,
   },
   // The tick the restored session resumes at, which `Kernel.restoreState` has
   // already installed by the time this runs -- `restoreSimulationRuntime` calls

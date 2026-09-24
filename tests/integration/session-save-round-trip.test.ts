@@ -77,6 +77,23 @@ function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, SCENARIO_SEED).runtime;
 }
 
+describe('room filth in a local save', () => {
+  it('keeps the partly served day and its exposed prisoner across the real envelope', () => {
+    const runtime = buildPopulatedPrison();
+    const prisonerId = runtime.prisoners.entityStore.getIdByIndex(0);
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'canteen.save', roomCatalogId: 'room.canteen',
+      anchorTile: { x: tileCoordinate(22), y: tileCoordinate(22) },
+      residentCapacity: 0, concurrentUseCapacity: 1, objectCapabilities: ['dining'],
+    });
+    runtime.prisoners.roomFilth.recordUse('canteen.save', 'room.canteen', prisonerId);
+
+    const restored = saveAndLoad(runtime);
+    expect(restored.prisoners.roomFilth.getSnapshot()).toEqual(runtime.prisoners.roomFilth.getSnapshot());
+    expect(restored.prisoners.roomFilth.previewPenalties(false, ['canteen.save'])).toEqual([[prisonerId, 1]]);
+  });
+});
+
 function step(runtime: SimulationRuntime, count: number): void {
   for (let index = 0; index < count; index += 1) runtime.kernel.step();
 }
