@@ -1454,6 +1454,34 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "floor.common-room.cork-rubber",
+      "image": "floor.common-room.cork-rubber.png",
+      "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635",
+      "pixelSha256": "f50a1b2f94754fb7870c232db7bbc97950f3df34a448ae9044992edeee28fb06",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

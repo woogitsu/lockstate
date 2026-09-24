@@ -101,6 +101,7 @@ export const PUBLISHED_ASSET_IDS = [
   'floor.shower.ceramic',
   'floor.laundry.nonslip',
   'floor.infirmary.vinyl',
+  'floor.common-room.cork-rubber',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',

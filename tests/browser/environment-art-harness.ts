@@ -91,6 +91,10 @@ const FIXTURE: HarnessWorldFixture = {
   infirmaryFloorMinTileY: 17,
   infirmaryFloorMaxTileX: 20,
   infirmaryFloorMaxTileY: 20,
+  commonRoomFloorMinTileX: 24,
+  commonRoomFloorMinTileY: 17,
+  commonRoomFloorMaxTileX: 28,
+  commonRoomFloorMaxTileY: 21,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -160,6 +164,7 @@ function buildFrame(): RenderFrame {
   const includeYard = new URLSearchParams(window.location.search).has('roomLabels');
   const includeShowerFloor = new URLSearchParams(window.location.search).has('showerFloor');
   const includeInfirmaryFloor = new URLSearchParams(window.location.search).has('infirmaryFloor');
+  const includeCommonRoomFloor = new URLSearchParams(window.location.search).has('commonRoomFloor');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -180,8 +185,13 @@ function buildFrame(): RenderFrame {
       world.setOwned(roomChunk, true);
     }
   }
-  if (includeInfirmaryFloor) {
+  if (includeInfirmaryFloor || includeCommonRoomFloor) {
     const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(2) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeCommonRoomFloor) {
+    const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(2) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
   }
@@ -247,12 +257,21 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  if (includeInfirmaryFloor) {
+  if (includeInfirmaryFloor || includeCommonRoomFloor) {
     const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
     if (infirmary === undefined) throw new Error('The infirmary room is missing from the catalog.');
     for (let tileY = FIXTURE.infirmaryFloorMinTileY; tileY <= FIXTURE.infirmaryFloorMaxTileY; tileY += 1) {
       for (let tileX = FIXTURE.infirmaryFloorMinTileX; tileX <= FIXTURE.infirmaryFloorMaxTileX; tileX += 1) {
         world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, infirmary.numericId);
+      }
+    }
+  }
+  if (includeCommonRoomFloor) {
+    const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
+    if (commonRoom === undefined) throw new Error('The common room is missing from the catalog.');
+    for (let tileY = FIXTURE.commonRoomFloorMinTileY; tileY <= FIXTURE.commonRoomFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.commonRoomFloorMinTileX; tileX <= FIXTURE.commonRoomFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, commonRoom.numericId);
       }
     }
   }
@@ -453,6 +472,22 @@ function buildFrame(): RenderFrame {
         phase: 'built' as const,
       },
     ] : []),
+    ...(includeCommonRoomFloor ? [
+      {
+        id: 'common-room-floor-bench-west',
+        definitionId: 'bench-wooden',
+        tileX: 24,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+      {
+        id: 'common-room-floor-bench-east',
+        definitionId: 'bench-wooden',
+        tileX: 27,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+    ] : []),
   ];
 
   return {
@@ -476,7 +511,8 @@ const scene = new WorldScene({
   keyValueStore: memoryStore(),
   ...(new URLSearchParams(window.location.search).has('roomLabels')
     || new URLSearchParams(window.location.search).has('showerFloor')
-    || new URLSearchParams(window.location.search).has('infirmaryFloor') ? {
+    || new URLSearchParams(window.location.search).has('infirmaryFloor')
+    || new URLSearchParams(window.location.search).has('commonRoomFloor') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

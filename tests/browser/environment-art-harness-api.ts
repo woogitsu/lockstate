@@ -72,6 +72,10 @@ export interface HarnessWorldFixture {
   readonly infirmaryFloorMinTileY: number;
   readonly infirmaryFloorMaxTileX: number;
   readonly infirmaryFloorMaxTileY: number;
+  readonly commonRoomFloorMinTileX: number;
+  readonly commonRoomFloorMinTileY: number;
+  readonly commonRoomFloorMaxTileX: number;
+  readonly commonRoomFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;

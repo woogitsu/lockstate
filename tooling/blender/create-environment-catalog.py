@@ -118,6 +118,7 @@ MODELS = (
     ("floor.shower.ceramic", (1, 1)),
     ("floor.laundry.nonslip", (1, 1)),
     ("floor.infirmary.vinyl", (1, 1)),
+    ("floor.common-room.cork-rubber", (1, 1)),
 )
 
 
@@ -1343,6 +1344,20 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Embedded infirmary fleck.{index}",
                 (x, y, 0.081), (width, width * infirmary_rng.uniform(0.62, 1.28), 0.001),
                 "infirmary_fleck_light" if index % 4 else "infirmary_fleck_teal", 0)
+    elif asset_id == "floor.common-room.cork-rubber":
+        # Warm resilient recreation flooring without tile-sized seams. Its
+        # periodic base meets on every edge and inset chips give material
+        # character without competing with benches or room labels.
+        box(collection, root, "Seamless common room composite", (0, 0, 0.04),
+            (1, 1, 0.08), "common_room_composite", 0)
+        common_rng = random.Random(20260925)
+        for index in range(112):
+            x = common_rng.uniform(-0.46, 0.46)
+            y = common_rng.uniform(-0.46, 0.46)
+            width = common_rng.uniform(0.006, 0.014)
+            box(collection, root, f"Embedded common room granule.{index}",
+                (x, y, 0.081), (width, width * common_rng.uniform(0.6, 1.4), 0.001),
+                "common_room_granule_ochre" if index % 4 else "common_room_granule_charcoal", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1734,6 +1749,12 @@ def main():
         middle=(0.63, 0.68, 0.69, 1), low_position=0.34, high_position=0.66)
     MATERIALS["infirmary_fleck_light"] = material("Infirmary pale embedded mineral", (0.78, 0.82, 0.80, 1), 0.91)
     MATERIALS["infirmary_fleck_teal"] = material("Infirmary muted teal mineral", (0.38, 0.56, 0.57, 1), 0.94)
+    MATERIALS["common_room_composite"] = dirt_surface_material(
+        "Warm resilient common room cork rubber",
+        (0.40, 0.22, 0.11, 1), (0.57, 0.34, 0.18, 1),
+        middle=(0.49, 0.28, 0.15, 1), low_position=0.30, high_position=0.70)
+    MATERIALS["common_room_granule_ochre"] = material("Recycled warm ochre granule", (0.65, 0.47, 0.28, 1), 0.96)
+    MATERIALS["common_room_granule_charcoal"] = material("Recycled charcoal granule", (0.16, 0.16, 0.15, 1), 0.98)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

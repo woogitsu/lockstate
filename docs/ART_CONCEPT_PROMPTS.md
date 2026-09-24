@@ -521,3 +521,11 @@ continuous dark matrix under individually modelled slate plates. The existing
 `rock` terrain id draws it when a saved world contains rock; buildability and
 movement rules remain unchanged. Provenance is in
 `assets/source/concepts/rock-terrain-v1.md`.
+# Common Room floor, warm resilient composite
+
+Original four-view material reference at
+`assets/source/concepts/common-room-floor-multiview-v1.png`, with production
+intent in `assets/source/concepts/common-room-floor-v1.md`. Blender 5.2 models
+the seamless, fully opaque `floor.common-room.cork-rubber`; the reference
+image is not used at runtime. The warm honey-grey material has fine ochre and
+charcoal recycled granules, with no tile-sized seams or floor icons.
