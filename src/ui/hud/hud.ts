@@ -2872,7 +2872,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * 307.38 to 2.00. Overview is the one tab with room, which is why the
      * ruling names it.
      */
-    onTierChange: placeAlertsFold,
+    onTierChange: (phone) => {
+      placeAlertsFold(phone);
+      buildPanel.refreshViewport();
+    },
   });
   strip.layoutSlot.append(layout.menu);
 

@@ -8,10 +8,12 @@ import { createCollapsibleSection, type CollapsibleSection } from '../primitives
 import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
+import { handOffFocus } from '../primitives/focus-handoff';
 import { createPanel } from '../primitives/panel';
 import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
+import { PHONE_MAX_WIDTH_PX } from './hud-layout';
 import { assignPooledRows } from './pooled-row-binding';
 import { toggleRemovalMode } from './tool-arming';
 import {
@@ -287,6 +289,8 @@ export interface BuildPanel {
    * panel holding nothing does nothing at all.
    */
   standDown(): void;
+  /** Re-evaluates the phone-only drawing fold after crossing the layout tier. */
+  refreshViewport(): void;
   setVisible(visible: boolean): void;
 }
 
@@ -994,6 +998,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let armed = false;
   /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
   let removing = false;
+  let playerFolded = false;
+  let drawingFolded = true;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
   let buying = false;
   /** How many units the next purchase asks for, and which material it was last set for. */
@@ -1192,6 +1198,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // asked to place a bed.
         removing = false;
         paintArmed();
+        if (armed) {
+          drawingFolded = true;
+          paintFold();
+        }
         options.onArm(armed, selectedId, removing);
       },
     });
@@ -1336,9 +1346,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // button does: pressing "Place on map" while removal was on is a request
       // to place, not a request to keep removing with a different label.
       const wasRemoving = removing;
+      const wasArmed = armed;
       removing = false;
       armed = (wasRemoving || !armed) && selectedId !== undefined;
+      if (armed && (wasRemoving || !wasArmed)) drawingFolded = true;
       paintArmed();
+      paintFold();
       options.onArm(armed, selectedId, removing);
     },
   });
@@ -1423,10 +1436,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // -- the two panels held one defect in two copies of one expression, so
       // the transition has one home.
       const nextArming = toggleRemovalMode({ armed, removing });
+      const wasArmed = armed;
       armed = nextArming.armed;
       removing = nextArming.removing;
+      if (armed && (!wasArmed || removing)) drawingFolded = true;
       paintArmed();
       paintBuy();
+      paintFold();
       options.onArm(armed, selectedId, removing);
     },
   });
@@ -3078,7 +3094,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const coordinates: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildCoordinates),
     collapsed: true,
-    onToggle: (collapsed) => coordinates.setCollapsed(collapsed),
+    onToggle: (collapsed) => {
+      coordinates.setCollapsed(collapsed);
+      paintFold();
+    },
   });
   // Named, for the reason `.hud-build__arm` and `.hud-build__catalogue` are:
   // a selector has to be able to say *which* section it means. It used to be
@@ -3118,7 +3137,6 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // (`.ui-panel > .ui-panel__body[hidden]`) and now asserted against the body's
   // *box* in `tests/browser/ui-shell.spec.ts`, because an assertion on the
   // attribute agreed with the defect.
-  let panelCollapsed = false;
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.buildTitle),
     icon: 'build',
@@ -3128,11 +3146,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
       collapsed: false,
       onToggle: () => {
-        panelCollapsed = !panelCollapsed;
-        panel.setCollapsed(panelCollapsed);
+        if (drawing()) drawingFolded = !drawingFolded;
+        else playerFolded = !playerFolded;
+        paintFold();
       },
     },
   });
+  const drawing = (): boolean => armed && window.innerWidth <= PHONE_MAX_WIDTH_PX && coordinates.isCollapsed();
+  function paintFold(): void {
+    const folded = drawing() ? drawingFolded : playerFolded;
+    if (folded && !panel.body.hidden && panel.body.contains(document.activeElement)) handOffFocus(panel.toggle);
+    panel.setCollapsed(folded);
+  }
   panel.body.append(
     catalogue.element,
     element('div', {
@@ -3309,7 +3334,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       removing = false;
       paintArmed();
       paintBuy();
+      paintFold();
       options.onArm(false, selectedId, false);
+    },
+    refreshViewport(): void {
+      paintFold();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
@@ -3339,6 +3368,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         removing = false;
         paintArmed();
         paintBuy();
+        paintFold();
         options.onArm(false, selectedId, false);
       }
     },
