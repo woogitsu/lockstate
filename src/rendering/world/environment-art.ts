@@ -168,6 +168,7 @@ export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId |
   if (room.id === 'room.infirmary') return 'env.floor.infirmary';
   if (room.id === 'room.common-room') return 'env.floor.common-room';
   if (room.id === 'room.classroom') return 'env.floor.classroom';
+  if (room.id === 'room.security-office') return 'env.floor.security-office';
   return 'env.floor.institutional';
 }
 

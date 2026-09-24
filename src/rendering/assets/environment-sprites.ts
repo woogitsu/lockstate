@@ -89,6 +89,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.infirmary',
   'env.floor.common-room',
   'env.floor.classroom',
+  'env.floor.security-office',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -280,6 +281,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered pale oak-look resilient planks for the Classroom; one seamless tile per repeat.',
+  },
+  'env.floor.security-office': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.security-office.antistatic',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered light anti-static resin for the Security Office; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

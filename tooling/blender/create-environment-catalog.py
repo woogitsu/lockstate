@@ -120,6 +120,7 @@ MODELS = (
     ("floor.infirmary.vinyl", (1, 1)),
     ("floor.common-room.cork-rubber", (1, 1)),
     ("floor.classroom.oak-laminate", (1, 1)),
+    ("floor.security-office.antistatic", (1, 1)),
 )
 
 
@@ -1381,6 +1382,20 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Fine classroom wood grain.{index}",
                 (x, y, 0.0827), (length, 0.003, 0.0004),
                 "classroom_oak_grain", 0)
+    elif asset_id == "floor.security-office.antistatic":
+        # Poured anti-static resin stays light enough beneath the blue-violet
+        # room wash for the dark surveillance console to read. Periodic base
+        # colour and inset grains keep the 3x3 repeat free of square seams.
+        box(collection, root, "Seamless security office resin", (0, 0, 0.04),
+            (1, 1, 0.08), "security_floor_resin", 0)
+        security_rng = random.Random(20260927)
+        for index in range(64):
+            x = security_rng.uniform(-0.445, 0.445)
+            y = security_rng.uniform(-0.445, 0.445)
+            width = security_rng.uniform(0.027, 0.044)
+            box(collection, root, f"Embedded security conductive grain.{index}",
+                (x, y, 0.081), (width, width * security_rng.uniform(0.55, 1.2), 0.001),
+                "security_floor_graphite" if index % 3 else "security_floor_blue_steel", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1783,6 +1798,12 @@ def main():
     MATERIALS["classroom_oak_1"] = material("Classroom pale oak plank B", (0.65, 0.38, 0.11, 1), 0.88)
     MATERIALS["classroom_oak_2"] = material("Classroom pale oak plank C", (0.78, 0.46, 0.15, 1), 0.88)
     MATERIALS["classroom_oak_grain"] = material("Classroom understated wood grain", (0.52, 0.28, 0.10, 1), 0.94)
+    MATERIALS["security_floor_resin"] = dirt_surface_material(
+        "Light warm greige anti-static security resin",
+        (0.52, 0.39, 0.27, 1), (0.65, 0.52, 0.38, 1),
+        middle=(0.59, 0.46, 0.33, 1), low_position=0.32, high_position=0.68)
+    MATERIALS["security_floor_graphite"] = material("Inset conductive graphite grain", (0.24, 0.25, 0.26, 1), 0.96)
+    MATERIALS["security_floor_blue_steel"] = material("Inset muted blue steel grain", (0.30, 0.38, 0.42, 1), 0.94)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

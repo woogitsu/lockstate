@@ -347,6 +347,11 @@ oak-look resilient planks. Their fine horizontal joints meet at the module
 edges, while staggered end joints avoid a tile-sized square grid. The source
 stays warm under the existing Classroom zoning tint.
 
+The `floor.security-office.antistatic` tile uses a light warm greige periodic
+resin and sparse inset graphite and blue-steel grains. Its zero-margin edges
+meet without a grid across the 3x3 Security Office, while the surveillance
+console and room name stay legible under the existing tint.
+
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on

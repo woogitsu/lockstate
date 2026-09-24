@@ -99,6 +99,10 @@ const FIXTURE: HarnessWorldFixture = {
   classroomFloorMinTileY: 24,
   classroomFloorMaxTileX: 21,
   classroomFloorMaxTileY: 28,
+  securityFloorMinTileX: 24,
+  securityFloorMinTileY: 24,
+  securityFloorMaxTileX: 26,
+  securityFloorMaxTileY: 26,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -170,6 +174,7 @@ function buildFrame(): RenderFrame {
   const includeInfirmaryFloor = new URLSearchParams(window.location.search).has('infirmaryFloor');
   const includeCommonRoomFloor = new URLSearchParams(window.location.search).has('commonRoomFloor');
   const includeClassroomFloor = new URLSearchParams(window.location.search).has('classroomFloor');
+  const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -190,18 +195,23 @@ function buildFrame(): RenderFrame {
       world.setOwned(roomChunk, true);
     }
   }
-  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor) {
+  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
     const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(2) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
   }
-  if (includeCommonRoomFloor || includeClassroomFloor) {
+  if (includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
     const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(2) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
   }
   if (includeClassroomFloor) {
     const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(3) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeSecurityFloor) {
+    const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(3) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
   }
@@ -267,7 +277,7 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor) {
+  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
     const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
     if (infirmary === undefined) throw new Error('The infirmary room is missing from the catalog.');
     for (let tileY = FIXTURE.infirmaryFloorMinTileY; tileY <= FIXTURE.infirmaryFloorMaxTileY; tileY += 1) {
@@ -276,7 +286,7 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  if (includeCommonRoomFloor || includeClassroomFloor) {
+  if (includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
     const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
     if (commonRoom === undefined) throw new Error('The common room is missing from the catalog.');
     for (let tileY = FIXTURE.commonRoomFloorMinTileY; tileY <= FIXTURE.commonRoomFloorMaxTileY; tileY += 1) {
@@ -291,6 +301,15 @@ function buildFrame(): RenderFrame {
     for (let tileY = FIXTURE.classroomFloorMinTileY; tileY <= FIXTURE.classroomFloorMaxTileY; tileY += 1) {
       for (let tileX = FIXTURE.classroomFloorMinTileX; tileX <= FIXTURE.classroomFloorMaxTileX; tileX += 1) {
         world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, classroom.numericId);
+      }
+    }
+  }
+  if (includeSecurityFloor) {
+    const securityOffice = defaultRoomContentRegistry.getById('room.security-office');
+    if (securityOffice === undefined) throw new Error('The security office is missing from the catalog.');
+    for (let tileY = FIXTURE.securityFloorMinTileY; tileY <= FIXTURE.securityFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.securityFloorMinTileX; tileX <= FIXTURE.securityFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, securityOffice.numericId);
       }
     }
   }
@@ -523,6 +542,13 @@ function buildFrame(): RenderFrame {
         phase: 'built' as const,
       })),
     ] : []),
+    ...(includeSecurityFloor ? [{
+      id: 'security-floor-console',
+      definitionId: 'security-console-brick',
+      tileX: 24,
+      tileY: 24,
+      phase: 'built' as const,
+    }] : []),
   ];
 
   return {
@@ -548,7 +574,8 @@ const scene = new WorldScene({
     || new URLSearchParams(window.location.search).has('showerFloor')
     || new URLSearchParams(window.location.search).has('infirmaryFloor')
     || new URLSearchParams(window.location.search).has('commonRoomFloor')
-    || new URLSearchParams(window.location.search).has('classroomFloor') ? {
+    || new URLSearchParams(window.location.search).has('classroomFloor')
+    || new URLSearchParams(window.location.search).has('securityFloor') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

@@ -292,6 +292,7 @@ describe('simulation identity to artwork', () => {
     const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
     const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
     const classroom = defaultRoomContentRegistry.getById('room.classroom');
+    const securityOffice = defaultRoomContentRegistry.getById('room.security-office');
     expect(kitchen).toBeDefined();
     expect(canteen).toBeDefined();
     expect(yard).toBeDefined();
@@ -300,6 +301,7 @@ describe('simulation identity to artwork', () => {
     expect(infirmary).toBeDefined();
     expect(commonRoom).toBeDefined();
     expect(classroom).toBeDefined();
+    expect(securityOffice).toBeDefined();
     expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
     expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
     expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
@@ -308,6 +310,7 @@ describe('simulation identity to artwork', () => {
     expect(zonedFloorSprite(infirmary!.numericId)).toBe('env.floor.infirmary');
     expect(zonedFloorSprite(commonRoom!.numericId)).toBe('env.floor.common-room');
     expect(zonedFloorSprite(classroom!.numericId)).toBe('env.floor.classroom');
+    expect(zonedFloorSprite(securityOffice!.numericId)).toBe('env.floor.security-office');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {

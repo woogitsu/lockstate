@@ -538,3 +538,12 @@ intent in `assets/source/concepts/classroom-floor-v1.md`. Blender 5.2 models
 the 1x1, zero-margin `floor.classroom.oak-laminate`; the concept is not a
 runtime sprite. Three narrow plank strips, subdued grain and staggered end
 joins establish warmth without making the 5x5 Classroom a checkerboard.
+
+## Security Office floor, antistatic resin
+
+Original four-view material reference at
+`assets/source/concepts/security-office-floor-multiview-v1.png`, with production
+intent in `assets/source/concepts/security-office-floor-v1.md`. Blender 5.2
+models the seamless, fully opaque `floor.security-office.antistatic`. The
+approved lighter warm greige resin has sparse graphite and muted blue-steel
+inset grains, with no tile-sized seams, floor icons, or visible wiring.
