@@ -273,6 +273,18 @@ test.describe('the world scene discrete keys', () => {
     expect(await zoom(page), 'Minus zoomed the wrong way').toBeLessThan(resting);
   });
 
+  test('a horizontal touchpad wheel does not zoom the world', async ({ page }) => {
+    await openHarness(page);
+    const before = await zoom(page);
+    await page.mouse.move(300, 300);
+    await page.mouse.wheel(120, 0);
+    await settle(page);
+    expect(await zoom(page)).toBe(before);
+    await page.mouse.wheel(0, -120);
+    await settle(page);
+    expect(await zoom(page)).toBeGreaterThan(before);
+  });
+
   test('clamps the keyboard zoom to the same bounds the wheel respects (#200)', async ({ page }) => {
     // The reason `stepZoom` goes through `zoomAtScreenPoint` rather than
     // calling `setZoom` directly. Twenty presses is well past the eight the
