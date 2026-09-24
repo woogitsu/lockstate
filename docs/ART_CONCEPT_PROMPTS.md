@@ -397,6 +397,14 @@ linoleum with fine mineral flecks, traffic scuffs and joints that meet between
 tiles. The source and tiling choices are recorded in
 `assets/source/concepts/institutional-floor-v1.md`.
 
+### Canteen terrazzo floor — `floor.canteen.terrazzo`
+
+An original Blender 1 × 1 overhead tile gives the dining room a warm,
+washable stone-composite surface with a fine continuous joint and quiet
+mineral chips. It is purpose-made for `room.canteen` beside the kitchen's
+cool non-slip tile. Source geometry and the visual choice are documented in
+`assets/source/concepts/canteen-floor-v1.md`.
+
 ### Interior door overhead cap — `door.interior.variants`
 
 The north-south interior door edge now uses a true overhead Blender render: a

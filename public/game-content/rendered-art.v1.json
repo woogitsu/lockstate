@@ -128,6 +128,31 @@
       }
     },
     {
+      "assetId": "floor.canteen.terrazzo",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.canteen.terrazzo.ed4339ecbef4.png",
+      "sha256": "ed4339ecbef4d51769bc5e1ff655fa510d3fb873d0106e50819c42d4b88c1d6c",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.kitchen.nonslip",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.kitchen.nonslip.9e83b26d596c.png",

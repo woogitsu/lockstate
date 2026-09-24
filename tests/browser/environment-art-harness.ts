@@ -67,6 +67,10 @@ const FIXTURE: HarnessWorldFixture = {
   kitchenMinTileY: 6,
   kitchenMaxTileX: 5,
   kitchenMaxTileY: 8,
+  canteenMinTileX: 7,
+  canteenMinTileY: 6,
+  canteenMaxTileX: 10,
+  canteenMaxTileY: 8,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -148,8 +152,8 @@ function buildFrame(): RenderFrame {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.rockTileY) }, 'rock');
   }
 
-  const room = defaultRoomContentRegistry.all()[0];
-  if (room === undefined) throw new Error('The room catalog is empty, so nothing can be zoned.');
+  const room = defaultRoomContentRegistry.getById('room.cell');
+  if (room === undefined) throw new Error('The cell room is missing from the catalog.');
 
   for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY; tileY += 1) {
     for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
@@ -161,6 +165,13 @@ function buildFrame(): RenderFrame {
   for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
     for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, kitchen.numericId);
+    }
+  }
+  const canteen = defaultRoomContentRegistry.getById('room.canteen');
+  if (canteen === undefined) throw new Error('The canteen room is missing from the catalog.');
+  for (let tileY = FIXTURE.canteenMinTileY; tileY <= FIXTURE.canteenMaxTileY; tileY += 1) {
+    for (let tileX = FIXTURE.canteenMinTileX; tileX <= FIXTURE.canteenMaxTileX; tileX += 1) {
+      world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, canteen.numericId);
     }
   }
   for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {

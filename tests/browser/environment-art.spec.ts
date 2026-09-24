@@ -159,6 +159,27 @@ test.describe('the environment artwork', () => {
     for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
+  test('the canteen uses its own Blender floor beside the kitchen, with opaque corners', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.canteen');
+      return {
+        canteen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.canteen'),
+        kitchen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.kitchen'),
+        size: frame === undefined ? undefined : [frame.width, frame.height],
+        corners: frame === undefined ? [] : [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1], [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(result.size).toEqual([128, 128]);
+    expect(result.kitchen).toHaveLength(2);
+    expect(result.canteen.length).toBeGreaterThanOrEqual(2);
+    expect(result.canteen.some((sprite) => sprite.x === fixture.canteenMinTileX * fixture.tileSizePx)).toBe(true);
+    for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
   test('the Blender dirt covers bare outdoor ground and restores colour fallback when removed', async ({ page }) => {
     const fixture = await openHarness(page);
     expect(ENVIRONMENT_SPRITES['env.terrain.dirt'].kind).toBe('rendered-art');

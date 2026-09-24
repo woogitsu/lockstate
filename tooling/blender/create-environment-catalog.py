@@ -112,6 +112,7 @@ MODELS = (
     ("terrain.gravel.service_path", (1, 1)),
     ("terrain.rock.bedrock", (1, 1)),
     ("floor.kitchen.nonslip", (1, 1)),
+    ("floor.canteen.terrazzo", (1, 1)),
 )
 
 
@@ -1280,6 +1281,22 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Fine dry scuff.{index}",
                 (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
                 "dirt_scuff", 0)
+    elif asset_id == "floor.canteen.terrazzo":
+        # Warm, washable stone-composite floor. A fine integral border gives
+        # dining furniture a quiet visual base without a noisy checkerboard.
+        box(collection, root, "Warm canteen terrazzo", (0, 0, 0.04),
+            (1, 1, 0.08), "canteen_floor", 0)
+        box(collection, root, "East fine grout", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "canteen_joint", 0)
+        box(collection, root, "South fine grout", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "canteen_joint", 0)
+        for index in range(64):
+            x = (((index * 43 + 13) % 107) / 107 - 0.5) * 0.86
+            y = (((index * 61 + 19) % 111) / 111 - 0.5) * 0.86
+            size = 0.006 + (index % 4) * 0.002
+            box(collection, root, f"Embedded warm stone.{index}", (x, y, 0.081),
+                (size, size * 0.72, 0.001),
+                "canteen_chip_light" if index % 3 else "canteen_chip_dark", 0)
     elif asset_id == "floor.kitchen.nonslip":
         # Large matte quarry tiles have a visible, recessed square joint and
         # fine aggregate. They read as a washable work surface at 64 px while
@@ -1612,6 +1629,10 @@ def main():
     MATERIALS["kitchen_joint"] = material("Kitchen tile recessed charcoal grout", (0.23, 0.29, 0.32, 1), 0.99)
     MATERIALS["kitchen_grit_light"] = material("Kitchen tile pale mineral grain", (0.53, 0.60, 0.60, 1), 0.97)
     MATERIALS["kitchen_grit_dark"] = material("Kitchen tile dark mineral grain", (0.28, 0.35, 0.37, 1), 0.99)
+    MATERIALS["canteen_floor"] = material("Warm washable canteen terrazzo", (0.97, 0.34, 0.29, 1), 0.88)
+    MATERIALS["canteen_joint"] = material("Fine muted terracotta grout", (0.42, 0.29, 0.23, 1), 0.98)
+    MATERIALS["canteen_chip_light"] = material("Pale limestone chips", (0.77, 0.66, 0.53, 1), 0.95)
+    MATERIALS["canteen_chip_dark"] = material("Ochre mineral chips", (0.48, 0.34, 0.27, 1), 0.98)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["shower_enamel"] = shower_enamel_material()
     MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)

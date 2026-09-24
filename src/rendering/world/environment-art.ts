@@ -150,15 +150,17 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  * since ADR 0098 option A, not by category), drawn over this at a reduced
  * alpha, so "which room is this" survives the floor being art.
  *
- * The kitchen now uses its own washable, non-slip tile while other rooms keep
- * institutional linoleum. This returns per zoning id, so the kitchen and
- * canteen can share a content category without sharing a floor frame.
+ * The kitchen uses a washable, non-slip tile and the canteen uses warm
+ * terrazzo. Other rooms keep institutional linoleum. This returns per zoning
+ * id so the two food rooms have distinct material as well as tint and label.
  */
 export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId | undefined {
   if (zoningNumericId === 0) return undefined;
   const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
   if (room === undefined) return undefined;
-  return room.id === 'room.kitchen' ? 'env.floor.kitchen' : 'env.floor.institutional';
+  if (room.id === 'room.kitchen') return 'env.floor.kitchen';
+  if (room.id === 'room.canteen') return 'env.floor.canteen';
+  return 'env.floor.institutional';
 }
 
 /** What a coverage question answers with: the ids drawn as art, and the ids left on colour. */

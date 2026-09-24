@@ -279,7 +279,7 @@ describe('simulation identity to artwork', () => {
   });
 
   it('gives a zoned tile a floor and an unzoned one nothing', () => {
-    const [room] = defaultRoomContentRegistry.all();
+    const room = defaultRoomContentRegistry.getById('room.cell');
     expect(room).toBeDefined();
     expect(zonedFloorSprite(room!.numericId)).toBe('env.floor.institutional');
     expect(zonedFloorSprite(0)).toBeUndefined();
@@ -289,7 +289,7 @@ describe('simulation identity to artwork', () => {
     expect(kitchen).toBeDefined();
     expect(canteen).toBeDefined();
     expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
-    expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {

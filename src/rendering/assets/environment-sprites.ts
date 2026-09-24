@@ -82,6 +82,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.rock',
   'env.floor.institutional',
   'env.floor.kitchen',
+  'env.floor.canteen',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -224,6 +225,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered washable blue-grey non-slip kitchen tile; seamless one-tile repeat with fine mineral grit.',
+  },
+  'env.floor.canteen': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.canteen.terrazzo',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered warm washable terrazzo for the canteen; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

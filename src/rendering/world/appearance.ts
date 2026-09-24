@@ -184,6 +184,8 @@ export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
 const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585, 191.587, 189.641];
 /** Mean decoded RGB of the Blender kitchen tile, pinned by the real-PNG drift gate. */
 const KITCHEN_FLOOR_ART_BASE: readonly [number, number, number] = [173.310, 181.373, 185.388];
+/** Mean decoded RGB of the warm Blender canteen tile, pinned by the real-PNG drift gate. */
+const CANTEEN_FLOOR_ART_BASE: readonly [number, number, number] = [209.852, 171.709, 166.421];
 
 /** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
 function channelSpread(rgb: readonly [number, number, number]): number {
@@ -208,7 +210,9 @@ function blendOverFloor(tint: number, alpha: number, floor: readonly [number, nu
  * every current tint clears its room's substrate at the flat art alpha.
  */
 function floorArtBase(roomId: string): readonly [number, number, number] {
-  return roomId === 'room.kitchen' ? KITCHEN_FLOOR_ART_BASE : INSTITUTIONAL_FLOOR_ART_BASE;
+  if (roomId === 'room.kitchen') return KITCHEN_FLOOR_ART_BASE;
+  if (roomId === 'room.canteen') return CANTEEN_FLOOR_ART_BASE;
+  return INSTITUTIONAL_FLOOR_ART_BASE;
 }
 
 /**
@@ -230,9 +234,9 @@ function floorArtBase(roomId: string): readonly [number, number, number] {
  * than a room with no floor art at all is ever painted with. ARITHMETIC,
  * under the previous blue source-art floor, four rooms hit the cap. The
  * current neutral Blender linoleum clears its own spread at the flat alpha
- * for every room that uses it. The kitchen tile is measured independently;
- * its assigned tint also clears its own substrate at 0.14. The cap remains
- * to constrain future art and tints.
+ * for every room that uses it. The kitchen and canteen tiles are measured
+ * independently; their assigned tints also clear their substrates at 0.14.
+ * The cap remains to constrain future art and tints.
  *
  * Monotonic in the region this searches: increasing alpha here only pulls the
  * blend further from the base and closer to the tint, so `channelSpread`
@@ -313,6 +317,7 @@ export function zoningTintAlphaOverArt(zoningNumericId: number): number {
 export const INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] =
   INSTITUTIONAL_FLOOR_ART_BASE;
 export const KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = KITCHEN_FLOOR_ART_BASE;
+export const CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = CANTEEN_FLOOR_ART_BASE;
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */
 export interface StructureAppearance {

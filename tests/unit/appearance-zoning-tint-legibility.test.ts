@@ -7,6 +7,7 @@ import { ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-spri
 import {
   INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   ZONING_TINT_ALPHA,
   ZONING_TINT_ALPHA_OVER_ART,
   zoningTint,
@@ -170,6 +171,20 @@ describe('zoning tint legibility over floor art', () => {
     ) as [number, number, number];
     expect(spread(colour)).toBeGreaterThan(spread(floor));
   });
+
+  it('room.canteen: its warm tile keeps the tint visible and stays distinct from the kitchen at the flat wash', () => {
+    const kitchen = rooms.find((candidate) => candidate.id === 'room.kitchen')!;
+    const canteen = rooms.find((candidate) => candidate.id === 'room.canteen')!;
+    const alpha = zoningTintAlphaOverArt(canteen.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const composite = (floor: readonly [number, number, number], tint: number): readonly [number, number, number] =>
+      floor.map((channel, index) => channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha) as [number, number, number];
+    const canteenColour = composite(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(canteen.numericId)!);
+    const kitchenColour = composite(KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(kitchen.numericId)!);
+    expect(spread(canteenColour)).toBeGreaterThan(spread(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE));
+    const separation = Math.hypot(...canteenColour.map((channel, index) => channel - kitchenColour[index]!));
+    expect(separation).toBeGreaterThan(30);
+  });
 });
 
 /**
@@ -192,6 +207,7 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
   const REPOSITORY_ROOT = resolve(__dirname, '../..');
   const floorSprite = ENVIRONMENT_SPRITES['env.floor.institutional'];
   const kitchenSprite = ENVIRONMENT_SPRITES['env.floor.kitchen'];
+  const canteenSprite = ENVIRONMENT_SPRITES['env.floor.canteen'];
 
   function resolveFloorArtPath(sprite: typeof floorSprite): string {
     if (sprite.kind !== 'rendered-art') throw new Error('the floor is no longer rendered-art');
@@ -208,9 +224,11 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
 
   const floorArtPath = resolveFloorArtPath(floorSprite);
   const kitchenArtPath = resolveFloorArtPath(kitchenSprite);
+  const canteenArtPath = resolveFloorArtPath(canteenSprite);
   const head = readFileSync(floorArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8');
   const isLfsPointer = head === LFS_POINTER_PREFIX;
   const kitchenIsLfsPointer = readFileSync(kitchenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const canteenIsLfsPointer = readFileSync(canteenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
 
   it.skipIf(isLfsPointer)(
     'decodes to the mean colour INSTITUTIONAL_FLOOR_ART_BASE assumes for the published Blender tile',
@@ -232,6 +250,13 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
     const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
     for (let channel = 0; channel < 3; channel += 1) {
       expect(mean[channel], `channel ${channel}`).toBeCloseTo(KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(canteenIsLfsPointer)('decodes to the mean colour used to calibrate the canteen tint', () => {
+    const decoded = decodePng(readFileSync(canteenArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
     }
   });
 });
