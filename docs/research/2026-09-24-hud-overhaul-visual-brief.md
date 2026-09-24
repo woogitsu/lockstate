@@ -102,3 +102,30 @@ must not use that transient state as evidence for a layout bug.
 The visual mockups are design probes. Implementation will be split into
 coherent, testable slices so a cosmetic pass cannot quietly change simulation
 commands, saves or asset rendering.
+
+## Two directions under comparison
+
+The first two mockups compare an **operations frame** (left navigation, full
+status row, one right work panel) with a **map desk** (one left work panel,
+bottom navigation, a compact top command row). The map desk exposes more map
+at 900×600, while the operations frame keeps more metrics visible at once.
+Neither preliminary image is a product decision: they initially omitted the
+owner-approved Security route and the explicit home for compressed metrics.
+Revisions must show both before one is selected for implementation.
+
+For the map desk, compactness cannot mean losing status. #1382 already
+implements the owner's #719 priority and height budget for the nine metrics;
+its work must be integrated rather than overwritten. Funds (including any
+overdraft warning), clock state and transport stay in the command row. A
+labelled **All stats** control opens all nine existing metrics from the same
+`projectStatusMetrics` descriptors, preserving badges and unknown values. A
+separate persistent Saves control opens the full existing save workflow. The
+desktop disclosures temporarily overlay the map only while open; on a phone
+they are bounded sheets with an explicit close control and an accessible
+return of focus. This is an implementation proposal, not a new metric rule.
+
+The new shell should recompose the existing `hud.ts` elements and binders,
+including unavailable/refusal/event bands and all six work panels. It must
+not clone simulation logic or substitute the vendored identity mock's sample
+economy. The phone Build drawer in #1392 and the status priorities in #1382
+are integration prerequisites for those slices.
