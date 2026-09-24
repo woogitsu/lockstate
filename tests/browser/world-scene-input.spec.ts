@@ -337,6 +337,19 @@ test.describe('the world scene discrete keys', () => {
     expect(await zoom(page)).toBeGreaterThan(before);
   });
 
+  test('browser modified wheel shortcuts do not also zoom the game camera', async ({ page }) => {
+    await openHarness(page);
+    const before = await zoom(page);
+    await page.mouse.move(300, 300);
+    for (const modifier of ['Control', 'Meta']) {
+      await page.keyboard.down(modifier);
+      await page.mouse.wheel(0, -120);
+      await page.keyboard.up(modifier);
+      await settle(page);
+      expect(await zoom(page), `${modifier}+wheel also changed the game camera`).toBe(before);
+    }
+  });
+
   test('browser Control+Plus and Control+Minus shortcuts do not also zoom the game camera', async ({ page }) => {
     await openHarness(page);
     const before = await zoom(page);
