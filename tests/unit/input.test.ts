@@ -27,6 +27,16 @@ describe('semantic input', () => {
     expect(adapter.keyDown({ code: 'KeyW' })).toEqual([]);
   });
 
+  it('does not turn a key pressed in text entry into a held world action on blur', () => {
+    let typing = true;
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => (typing ? ['text-entry'] : ['world']));
+    expect(adapter.keyDown({ code: 'KeyD' })).toEqual([]);
+    typing = false;
+    expect(adapter.isActive('camera.right')).toBe(false);
+    expect(adapter.keyUp({ code: 'KeyD' })).toEqual([]);
+    expect(adapter.keyDown({ code: 'KeyD' })).toEqual([{ action: 'camera.right', phase: 'started', source: 'keyboard' }]);
+  });
+
   it('detects only overlapping-context keyboard conflicts', () => {
     expect(findBindingConflicts([
       { device: 'keyboard', code: 'KeyQ', action: 'camera.up', contexts: ['world'] },
