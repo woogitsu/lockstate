@@ -3495,6 +3495,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+  'hud.refusal.accept-intake-candidate': 'The candidate was not accepted — the request was refused.',
+  'hud.refusal.delay-intake-candidate': 'The candidate was not delayed — the request was refused.',
   /*
    * **The owner's ruling of 2026-09-03.** Until it, a refused Admit said only
    * the generic line above while the real reason went to `console.warn` --

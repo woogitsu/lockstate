@@ -1758,7 +1758,8 @@ interface FocusTarget {
  * the busiest tab is inside this; a control that is not in the tab order at
  * all is not.
  */
-const MAX_TAB_PRESSES_PER_HOP = 48;
+// Up to three offers add six meaningful Accept/Delay stops to Manage (#594).
+const MAX_TAB_PRESSES_PER_HOP = 56;
 
 /**
  * Presses `Tab` until the focused control is the one asked for, and answers
@@ -2518,8 +2519,7 @@ async function orderWallRectangles(
 
   // ---- and the crew, at the speed a player would use -------------------
   await tabTo(page, 'the Play control', {
-    selector: '.hud-strip__transport button',
-    text: localeText('hud.transport.play'),
+    selector: '.hud-strip__transport button:nth-child(2)',
   });
   await page.keyboard.press('Enter');
   await expect(
@@ -7660,7 +7660,7 @@ test.describe('the assembled application', () => {
    *     two lines make one on purpose so a recorder that never attached cannot
    *     read as silence.
    */
-  test('zones a room and admits a prisoner with the keyboard alone (#411)', async ({ page }) => {
+  test('zones a room and accepts an intake offer with the keyboard alone (#411, #594)', async ({ page }) => {
     /*
      * **Slow, and the reason is the ADR rather than the test.**
      *
@@ -7860,11 +7860,11 @@ test.describe('the assembled application', () => {
     // record of the route as it was measured, not of this one.
     await hopBack('the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
-    await hopBack('the Admit control', { selector: '.hud-intake__admit' });
+    await hopBack('the Accept control', { selector: '.hud-intake [data-candidate-accept]' });
     await page.keyboard.press('Enter');
-    await expect(metric('prisoners'), 'the admission was refused, so the loop is still broken').toHaveText(
-      '1',
-    );
+    // #590 holds an accepted offer outside until this unfurnished cell has a bed.
+    await expect(metric('prisoners')).toHaveText('0');
+    await expect(page.locator('.hud-alerts__list')).toContainText('Waiting outside for a place: 1.');
 
     /*
      * #411's "reachable in a sensible tab order", as a number.
@@ -8443,10 +8443,11 @@ test.describe('the assembled application', () => {
     // get away with.
     await tabTo(page, 'the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
-    const admit: FocusTarget = { selector: '.hud-intake__admit' };
-    await tabTo(page, 'the Admit control', admit);
-    await pressAndRecord('Admit', page.locator('.hud-intake__admit'), admit, 'the Admit control', async () => {
-      await expect(metric('prisoners'), 'nobody was admitted, so this Admit was refused').toHaveText('1');
+    const admit: FocusTarget = { selector: '.hud-intake [data-candidate-accept]' };
+    await tabTo(page, 'the Accept control', admit);
+    await pressAndRecord('Accept', page.locator('.hud-intake [data-candidate-accept]').first(), admit, 'the Accept control', async () => {
+      await expect(metric('prisoners')).toHaveText('0');
+      await expect(page.locator('.hud-alerts__list')).toContainText('Waiting outside for a place: 1.');
     });
 
     // ---- what the six presses did to the keyboard ------------------------
@@ -8482,7 +8483,7 @@ test.describe('the assembled application', () => {
       'Place order',
       'Designate',
       'Hire',
-      'Admit',
+      'Accept',
     ]);
 
     // ---- the tripwire -----------------------------------------------------

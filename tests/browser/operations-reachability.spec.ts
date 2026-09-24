@@ -192,6 +192,7 @@ function busyPrison(): HudViewModel {
       ],
     },
     intakePipeline: {
+      candidates: [{ id: 'fixture-1', riskTier: 1, sentenceLengthTicks: 12_000, contrabandRolled: false, bountyMinorUnits: 150, expiresAtTick: 9_600, status: 'new' }],
       waiting: 4,
       failed: 1,
       total: 12,
@@ -380,7 +381,8 @@ test.describe('the operational surfaces after the navigation move (#1161)', () =
       const commandControls = controls.filter((control) => control.label !== 'Collapse');
       expect(commandControls.map((control) => control.label).join(' | '), `controls at ${where}`).toBe(
         [
-          'Admit a prisoner',
+          'Accept',
+          'Delay',
           'Who to hire',
           'GuardSelected',
           'Hire Guard · 80',
@@ -428,8 +430,18 @@ test.describe('the operational surfaces after the navigation move (#1161)', () =
       const intake = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
 
       expect(intake.laidOut, `the Intake panel has no box at ${where}`).toBe(true);
-      expect(intake.panelOverflow, `the Intake panel is shorter than its content at ${where}`).toBe(0);
-      expect(intake.bodyOverflow, `the Intake panel's body is shorter than its content at ${where}`).toBe(0);
+      // #594 adds screened offers above the admitted-arrivals readout. The
+      // panel now owns a player-scrollable overflow instead of overlapping Staff.
+      if (intake.panelOverflow > 0) {
+        const scroll = await page.evaluate(() => {
+          const panel = document.querySelector<HTMLElement>('.hud-intake')!;
+          const mode = getComputedStyle(panel).overflowY;
+          panel.scrollTop = panel.scrollHeight;
+          return { mode, moved: panel.scrollTop };
+        });
+        expect(scroll.mode, `the Intake panel cannot scroll at ${where}`).toBe('auto');
+        expect(scroll.moved, `the Intake panel did not reveal its lower content at ${where}`).toBeGreaterThan(0);
+      }
       // The tallest thing it draws, on screen rather than merely in the DOM.
       expect(intake.noPlaceBox, `the over-admission warning has no box at ${where}`).not.toBeNull();
       expect(intake.pipelineBox, `the arrivals readout has no box at ${where}`).not.toBeNull();
@@ -487,7 +499,7 @@ test.describe('the operational surfaces after the navigation move (#1161)', () =
     const raised = (await intents(page)).map((intent) => JSON.parse(intent) as { readonly kind: string });
     expect(raised.map((intent) => intent.kind)).toEqual([
       'select-tab',
-      'admit-prisoner',
+      'accept-intake-candidate',
       'hire-staff',
       'release-guard',
     ]);

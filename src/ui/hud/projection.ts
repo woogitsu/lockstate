@@ -1384,6 +1384,10 @@ export function refusalMessageKey(actionId: string, reason?: HostRefusalReason):
       return HUD_MESSAGE_KEY.refusalUnzoneRoom;
     case 'admit-prisoner':
       return HUD_MESSAGE_KEY.refusalAdmitPrisoner;
+    case 'accept-intake-candidate':
+      return HUD_MESSAGE_KEY.refusalAcceptCandidate;
+    case 'delay-intake-candidate':
+      return HUD_MESSAGE_KEY.refusalDelayCandidate;
     case 'cancel-build-order':
       return HUD_MESSAGE_KEY.refusalCancelBuildOrder;
     case 'cancel-material-purchase':

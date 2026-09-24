@@ -912,6 +912,17 @@ export async function runUntilTick(page: Page, target: number, timeoutMs = 180_0
   }
 }
 
+/** Accepts one visible screened offer; an unfurnished prison may queue it outside (#590). */
+export async function acceptFirstCandidate(page: Page): Promise<string> {
+  const offer = page.locator('.hud-intake__candidate').first();
+  await expect(offer).toBeVisible();
+  const id = await offer.getAttribute('data-candidate-id');
+  if (id === null) throw new Error('candidate row has no id');
+  await offer.locator('[data-candidate-accept]').click();
+  await expect(page.locator(`.hud-intake__candidate[data-candidate-id="${id}"]`)).toHaveCount(0);
+  return id;
+}
+
 export async function fastForwardToMax(page: Page): Promise<void> {
   // 1 -> 2 -> 4. Two presses from a paused/1x clock.
   await page.locator('.hud-strip__transport button').nth(2).click();

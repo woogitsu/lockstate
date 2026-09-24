@@ -1,5 +1,5 @@
 import { expect, test } from './network-changed-fixture';
-import { openApp, showPanel, tab } from './playtest-harness';
+import { acceptFirstCandidate, openApp, showPanel, tab } from './playtest-harness';
 
 test.describe('screened intake offers (#594)', () => {
   for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 375, 812]] as const) {
@@ -21,8 +21,7 @@ test.describe('screened intake offers (#594)', () => {
       expect(id).not.toBeNull();
       await first.locator('[data-candidate-delay]').click();
       await expect(page.locator(`.hud-intake__candidate[data-candidate-id="${id}"]`)).toContainText('Delayed');
-      await page.locator(`.hud-intake__candidate[data-candidate-id="${id}"] [data-candidate-accept]`).click();
-      await expect(page.locator(`.hud-intake__candidate[data-candidate-id="${id}"]`)).toHaveCount(0);
+      expect(await acceptFirstCandidate(page)).toBe(id);
       await expect(tab(page, 'manage')).toBeVisible();
     });
   }

@@ -1689,6 +1689,8 @@ export const HUD_MESSAGE_KEY = {
    * prison in the same state and there is nothing different to do about them.
    */
   refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
+  refusalAcceptCandidate: 'hud.refusal.accept-intake-candidate',
+  refusalDelayCandidate: 'hud.refusal.delay-intake-candidate',
   refusalAdmitPrisonerNoRoom: 'hud.refusal.admit-prisoner-no-room',
   refusalCancelBuildOrder: 'hud.refusal.cancel-build-order',
   /**

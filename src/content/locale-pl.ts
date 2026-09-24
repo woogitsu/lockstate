@@ -1053,6 +1053,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.refusal.zone-room': 'Nie wyznaczono pomieszczenia — żądanie odrzucono.',
   'hud.refusal.unzone-room': 'Nic nie usunięto — żądanie odrzucono.',
   'hud.refusal.admit-prisoner': 'Nikogo nie przyjęto — żądanie odrzucono.',
+  'hud.refusal.accept-intake-candidate': 'Nie przyjęto kandydata — żądanie odrzucono.',
+  'hud.refusal.delay-intake-candidate': 'Nie odroczono kandydata — żądanie odrzucono.',
   'hud.refusal.admit-prisoner-no-room': 'Nikogo nie przyjęto — to więzienie nie ma gdzie nikogo umieścić.',
   'hud.refusal.cancel-build-order': 'Zlecenie nadal czeka w kolejce — żądanie odrzucono.',
   'hud.refusal.cancel-material-purchase': 'Nic nie zwrócono — żądanie odrzucono, a dostawa nadal jest w drodze.',

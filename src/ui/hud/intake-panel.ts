@@ -291,10 +291,23 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
   let candidateSignature = '';
 
   function paintCandidates(candidates: HudIntakePipelineViewModel['candidates'], clock: HudClockViewModel): void {
+    const focused = candidateList.contains(document.activeElement) && document.activeElement instanceof HTMLButtonElement
+      ? document.activeElement : undefined;
+    const focusedId = focused?.dataset['candidateAccept'] ?? focused?.dataset['candidateDelay'];
+    const focusedAction = focused?.dataset['candidateDelay'] === undefined ? 'candidateAccept' : 'candidateDelay';
+    const restoreFocus = (): void => {
+      if (focused === undefined) return;
+      const same = [...candidateList.querySelectorAll<HTMLButtonElement>('button')]
+        .find((button) => button.dataset[focusedAction] === focusedId);
+      const next = same ?? candidateList.querySelector<HTMLButtonElement>('[data-candidate-accept]');
+      (next ?? document.querySelector<HTMLButtonElement>('.ui-tab[data-tab="manage"]'))?.focus();
+    };
+    panel.element.classList.toggle('hud-intake--offers', candidates !== undefined);
     if (candidates === undefined) {
       candidateBlock.hidden = true;
       candidateList.replaceChildren();
       candidateSignature = '';
+      restoreFocus();
       return;
     }
     const signature = `${String(clock.day)}|${candidates.map((candidate) => `${candidate.id}:${candidate.status}`).join(',')}`;
@@ -303,6 +316,7 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     candidateBlock.hidden = false;
     if (candidates.length === 0) {
       candidateList.replaceChildren(eyebrowText(t(HUD_MESSAGE_KEY.intakeCandidateNone)));
+      restoreFocus();
       return;
     }
     candidateList.replaceChildren(...candidates.map((candidate) => {
@@ -340,6 +354,7 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
       row.dataset['candidateId'] = candidate.id;
       return row;
     }));
+    restoreFocus();
   }
 
   /*
