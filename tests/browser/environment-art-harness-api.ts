@@ -56,6 +56,10 @@ export interface HarnessWorldFixture {
   readonly canteenMinTileY: number;
   readonly canteenMaxTileX: number;
   readonly canteenMaxTileY: number;
+  readonly yardMinTileX: number;
+  readonly yardMinTileY: number;
+  readonly yardMaxTileX: number;
+  readonly yardMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;
@@ -144,8 +148,9 @@ export interface LockstateEnvironmentArtHarness {
   atlasPixel(x: number, y: number): HarnessPixel | undefined;
   /** Every tiling sprite currently on the display list, sorted by position. */
   tileSprites(): readonly HarnessTileSprite[];
-  /** Points the camera at a world position at zoom 1 and waits for the frame drawn with it. */
-  centreCameraOn(worldX: number, worldY: number): Promise<void>;
+  roomLabels(): readonly { readonly text: string; readonly worldX: number; readonly worldY: number }[];
+  /** Points the camera at a world position and waits for the frame drawn with it. */
+  centreCameraOn(worldX: number, worldY: number, zoom?: number): Promise<void>;
   /**
    * The colour at the exact centre of the drawing buffer, through the
    * renderer's own snapshot path.

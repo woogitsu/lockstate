@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page): Promise<HarnessWorldFixture> {
-  await page.goto(HARNESS_URL);
+async function openHarness(page: Page, roomLabels = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -178,6 +178,37 @@ test.describe('the environment artwork', () => {
     expect(result.canteen.length).toBeGreaterThanOrEqual(2);
     expect(result.canteen.some((sprite) => sprite.x === fixture.canteenMinTileX * fixture.tileSizePx)).toBe(true);
     for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
+  test('the outdoor yard draws an outdoor floor across its 8 by 8 footprint', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, true);
+    const centreX = ((fixture.yardMinTileX + fixture.yardMaxTileX + 1) / 2) * fixture.tileSizePx + 7;
+    const centreY = ((fixture.yardMinTileY + fixture.yardMaxTileY + 1) / 2) * fixture.tileSizePx + 7;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.yard');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level), { x: centreX, y: centreY, zoom });
+      const floor = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const yardFloor = floor.filter((sprite) => sprite.frameName === 'env.floor.yard');
+      expect(yardFloor.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(64 * fixture.tileSizePx * fixture.tileSizePx);
+      const covering = floor.filter((sprite) => sprite.x <= centreX && sprite.x + sprite.width >= centreX
+        && sprite.y <= centreY && sprite.y + sprite.height >= centreY);
+      expect(covering.map((sprite) => sprite.frameName)).toEqual(['env.floor.yard']);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Yard');
+      if (process.env['LOCKSTATE_CAPTURE_YARD_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`yard-zoom-${zoom}.png`) });
+      }
+    }
   });
 
   test('the Blender dirt covers bare outdoor ground and restores colour fallback when removed', async ({ page }) => {

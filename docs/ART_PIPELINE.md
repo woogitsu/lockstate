@@ -324,7 +324,7 @@ digest and the raw-pixel digest are recorded per asset in the sidecar.
 **Tiling surfaces.** Floors and wall runs need zero-margin frames whose edges
 meet their own repeat exactly; a 6% transparent margin creates visible gaps.
 The rendered `floor.linoleum.institutional`, `floor.kitchen.nonslip`,
-`floor.canteen.terrazzo`, `terrain.dirt.compacted`, `terrain.grass.mown`,
+`floor.canteen.terrazzo`, `floor.yard.compacted-earth`, `terrain.dirt.compacted`, `terrain.grass.mown`,
 `terrain.concrete.paving`, `terrain.gravel.service_path`, `terrain.rock.bedrock`,
 `wall.interior.cap.overhead`, `wall.interior.face`, and `door.interior.face`
 modules use zero margins. The outdoor dirt, grass, concrete and gravel materials use periodic noise so

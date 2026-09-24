@@ -40,6 +40,7 @@ materials under two suns. That ceiling is real and is stated in the pull
 request rather than implied away.
 """
 import math
+import random
 import sys
 from pathlib import Path
 
@@ -113,6 +114,7 @@ MODELS = (
     ("terrain.rock.bedrock", (1, 1)),
     ("floor.kitchen.nonslip", (1, 1)),
     ("floor.canteen.terrazzo", (1, 1)),
+    ("floor.yard.compacted-earth", (1, 1)),
 )
 
 
@@ -288,9 +290,12 @@ def grass_surface_material():
     return item
 
 
-def dirt_surface_material():
+def dirt_surface_material(name="Dark compacted warm earth",
+                          low=(0.115, 0.075, 0.048, 1),
+                          high=(0.215, 0.150, 0.098, 1),
+                          middle=None, low_position=0.24, high_position=0.76):
     """Periodic 4D noise makes both tile borders identical without a grid."""
-    item = material("Dark compacted warm earth", (0.16, 0.11, 0.075, 1), 0.98)
+    item = material(name, high, 0.98)
     nodes, links = item.node_tree.nodes, item.node_tree.links
     coords = nodes.new("ShaderNodeTexCoord")
     split = nodes.new("ShaderNodeSeparateXYZ")
@@ -317,10 +322,12 @@ def dirt_surface_material():
     links.new(periodic_vector.outputs["Vector"], noise.inputs["Vector"])
     links.new(periodic("Y", "COSINE"), noise.inputs["W"])
     ramp = nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.24
-    ramp.color_ramp.elements[0].color = (0.115, 0.075, 0.048, 1)
-    ramp.color_ramp.elements[1].position = 0.76
-    ramp.color_ramp.elements[1].color = (0.215, 0.150, 0.098, 1)
+    ramp.color_ramp.elements[0].position = low_position
+    ramp.color_ramp.elements[0].color = low
+    ramp.color_ramp.elements[1].position = high_position
+    ramp.color_ramp.elements[1].color = high
+    if middle is not None:
+        ramp.color_ramp.elements.new(0.5).color = middle
     links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
     return item
@@ -1281,6 +1288,29 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Fine dry scuff.{index}",
                 (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
                 "dirt_scuff", 0)
+    elif asset_id == "floor.yard.compacted-earth":
+        # An outdoor 8x8 yard must not read as an indoor linoleum block.
+        # The border stays bare earth and all modeled grit/tufts are inset,
+        # so the repeat meets its own edges without clipped blades or seams.
+        box(collection, root, "Compacted yard soil", (0, 0, 0.04),
+            (1, 1, 0.08), "yard_ground", 0)
+        for index in range(54):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.82
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.82
+            width = 0.008 + (index % 3) * 0.003
+            box(collection, root, f"Yard mineral grit.{index}",
+                (x, y, 0.081), (width, width * 0.67, 0.001),
+                "yard_grit_light" if index % 4 else "yard_grit_dark", 0)
+        yard_rng = random.Random(20260924)
+        for index in range(3):
+            x = yard_rng.uniform(-0.33, 0.33)
+            y = yard_rng.uniform(-0.33, 0.33)
+            for blade in range(3):
+                grass = box(collection, root, f"Worn yard grass.{index}.{blade}",
+                    (x + (blade - 1) * 0.007, y + ((index + blade) % 3 - 1) * 0.007, 0.081),
+                    (0.008, 0.035 + 0.005 * blade, 0.001),
+                    "yard_grass_light" if blade == 1 else "yard_grass_dark", 0)
+                grass.rotation_euler.z = (blade - 1) * 0.48
     elif asset_id == "floor.canteen.terrazzo":
         # Warm, washable stone-composite floor. A fine integral border gives
         # dining furniture a quiet visual base without a noisy checkerboard.
@@ -1633,6 +1663,18 @@ def main():
     MATERIALS["canteen_joint"] = material("Fine muted terracotta grout", (0.42, 0.29, 0.23, 1), 0.98)
     MATERIALS["canteen_chip_light"] = material("Pale limestone chips", (0.77, 0.66, 0.53, 1), 0.95)
     MATERIALS["canteen_chip_dark"] = material("Ochre mineral chips", (0.48, 0.34, 0.27, 1), 0.98)
+    MATERIALS["yard_ground"] = dirt_surface_material(
+        "Warm compacted yard earth with scattered dry growth",
+        (0.140, 0.085, 0.040, 1),
+        (0.220, 0.160, 0.105, 1),
+        middle=(0.180, 0.120, 0.070, 1),
+        low_position=0.38,
+        high_position=0.62,
+    )
+    MATERIALS["yard_grit_light"] = material("Yard pale limestone grains", (0.36, 0.31, 0.23, 1), 0.98)
+    MATERIALS["yard_grit_dark"] = material("Yard dark mineral grains", (0.13, 0.11, 0.08, 1), 0.98)
+    MATERIALS["yard_grass_light"] = material("Yard worn olive grass", (0.22, 0.29, 0.10, 1), 0.99)
+    MATERIALS["yard_grass_dark"] = material("Yard short dark grass", (0.09, 0.16, 0.05, 1), 0.99)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["shower_enamel"] = shower_enamel_material()
     MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)

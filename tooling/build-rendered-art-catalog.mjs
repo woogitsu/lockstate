@@ -97,6 +97,7 @@ export const PUBLISHED_ASSET_IDS = [
   'floor.linoleum.institutional',
   'floor.kitchen.nonslip',
   'floor.canteen.terrazzo',
+  'floor.yard.compacted-earth',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',

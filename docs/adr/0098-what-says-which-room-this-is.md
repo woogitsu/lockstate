@@ -35,6 +35,25 @@
 
 ## Status
 
+**Amended by the owner on 2026-09-24 for `room.yard` only.** The owner was
+shown a comparison of the same Blender compacted-earth tile in an owned 8×8
+Yard at zoom 1 and 0.5. The choices were presented as **„Tak — ochrowe
+podwórze”** and **„Nie — zachowaj obecną paletę”**; the owner selected the
+former. This is a ruling on the integrator's shorter A/B summary and images,
+not a claim that the owner read this full ADR. The weaker option, retaining
+`0x4fd1a6`, preserved the original even 20° spacing but made the new outdoor
+floor read as a pale mint mat and forced ADR 0101's alpha search to its 0.28
+cap without meeting its own channel-spread criterion. The selected option
+sets only `room.yard` to ochre `0xddb35a`; the other 17 room tints and ADR
+0101's alpha model remain unchanged. On the measured Yard substrate,
+`0xddb35a` reaches the flat 0.14 alpha and clears the substrate spread.
+This explicit exception ends the original palette's equal 20° spacing.
+The nearest tint-only pair becomes Yard and Solitary Cell: 2.92 effective
+RGB units at the flat art alpha, versus the former 6.02 minimum among the
+other 17. This is a real loss of palette separation. In the actual map those
+rooms still have different floor materials and names; the owner selected the
+outdoor material's readability with that tradeoff recorded.
+
 **Accepted by the owner on 2026-09-06 — all four decisions, against a summary
 rather than against this document's 855 lines.**
 

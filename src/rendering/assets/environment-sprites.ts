@@ -83,6 +83,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.institutional',
   'env.floor.kitchen',
   'env.floor.canteen',
+  'env.floor.yard',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -232,6 +233,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered warm washable terrazzo for the canteen; one seamless tile per repeat.',
+  },
+  'env.floor.yard': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.yard.compacted-earth',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered compacted earth with sparse short grass for the outdoor Yard; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

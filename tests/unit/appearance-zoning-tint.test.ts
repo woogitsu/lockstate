@@ -68,14 +68,14 @@ describe('zoningTint: one tint per room type', () => {
    * `zoningTintAlphaOverArt` (`src/rendering/world/appearance.ts`), over
    * floor art specifically. This test still deliberately reads
    * `ZONING_TINT_ALPHA_OVER_ART` -- the flat constant -- because its subject
-   * is the *palette's own design identity* (does the even 20-degree spacing
-   * the table's docblock claims still hold), not what actually reaches the
+   * is the *palette's own design identity* (whether the other 17 evenly
+   * spaced hues remain intact after the owner's Yard-only exception), not what actually reaches the
    * screen. `tests/unit/appearance-zoning-tint-legibility.test.ts` and
    * `docs/adr/0098-what-says-which-room-this-is.md`'s amendment are what
    * cover the real, per-room-alpha paint step and its cost to this test's
    * own 108-of-153-pairs coverage.
    */
-  it('spaces the worst pair at 6.02 effective units, matching the ADR-recommended even spacing', () => {
+  it('keeps the original 17 hues spaced while pinning the owner-approved Yard exception', () => {
     const channel = (rgb: number, shift: number): number => (rgb >> shift) & 0xff;
     const effectiveDistance = (a: number, b: number): number => {
       const perChannel = [16, 8, 0].map(
@@ -84,7 +84,11 @@ describe('zoningTint: one tint per room type', () => {
       return Math.sqrt(perChannel.reduce((sumOfSquares, value) => sumOfSquares + value ** 2, 0));
     };
 
-    const tints = rooms.map((room) => zoningTint(room.numericId)).filter((tint): tint is number => tint !== undefined);
+    const yard = rooms.find((room) => room.id === 'room.yard')!;
+    const yardTint = zoningTint(yard.numericId)!;
+    expect(yardTint).toBe(0xddb35a);
+    const tints = rooms.filter((room) => room.id !== 'room.yard')
+      .map((room) => zoningTint(room.numericId)).filter((tint): tint is number => tint !== undefined);
 
     let worst = Infinity;
     for (const [i, tintA] of tints.entries()) {
@@ -94,5 +98,8 @@ describe('zoningTint: one tint per room type', () => {
     }
 
     expect(worst).toBeCloseTo(6.02, 2);
+    const nearestToYard = Math.min(...tints.map((tint) => effectiveDistance(yardTint, tint)));
+    // Explicitly record the palette-separation cost accepted for outdoor readability.
+    expect(nearestToYard).toBeCloseTo(2.9166, 3);
   });
 });

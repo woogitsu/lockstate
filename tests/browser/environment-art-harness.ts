@@ -1,11 +1,15 @@
 import Phaser from 'phaser';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { defaultMessageCatalogEn } from '../../src/services/localization';
+import { Localizer } from '../../src/services/localization/localizer';
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import type { RenderFeed, RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { RenderStructure } from '../../src/rendering/world/structures';
 import type { TileLayer } from '../../src/rendering/phaser/tile-layer';
+import type { RoomLabelLayer } from '../../src/rendering/phaser/room-label-layer';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
@@ -71,6 +75,10 @@ const FIXTURE: HarnessWorldFixture = {
   canteenMinTileY: 6,
   canteenMaxTileX: 10,
   canteenMaxTileY: 8,
+  yardMinTileX: 12,
+  yardMinTileY: 12,
+  yardMaxTileX: 19,
+  yardMaxTileY: 19,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -137,6 +145,18 @@ function buildFrame(): RenderFrame {
   const world = new SparseWorld(CHUNK_SIZE_TILES);
   world.load(chunk);
   world.setOwned(chunk, true);
+  const includeYard = new URLSearchParams(window.location.search).has('roomLabels');
+  if (includeYard) {
+    // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
+    // player-built land; otherwise the unowned shade hides its material.
+    for (const chunkX of [1, 2]) {
+      for (const chunkY of [1, 2]) {
+        const yardChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(chunkY) };
+        world.load(yardChunk);
+        world.setOwned(yardChunk, true);
+      }
+    }
+  }
   for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
   }
@@ -172,6 +192,15 @@ function buildFrame(): RenderFrame {
   for (let tileY = FIXTURE.canteenMinTileY; tileY <= FIXTURE.canteenMaxTileY; tileY += 1) {
     for (let tileX = FIXTURE.canteenMinTileX; tileX <= FIXTURE.canteenMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, canteen.numericId);
+    }
+  }
+  if (includeYard) {
+    const yard = defaultRoomContentRegistry.getById('room.yard');
+    if (yard === undefined) throw new Error('The yard room is missing from the catalog.');
+    for (let tileY = FIXTURE.yardMinTileY; tileY <= FIXTURE.yardMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.yardMinTileX; tileX <= FIXTURE.yardMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, yard.numericId);
+      }
     }
   }
   for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
@@ -371,10 +400,17 @@ const frame = buildFrame();
 const feed: RenderFeed = { readFrame: () => frame };
 
 const errors: string[] = [];
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
 const scene = new WorldScene({
   feed,
   keyValueStore: memoryStore(),
+  ...(new URLSearchParams(window.location.search).has('roomLabels') ? {
+    roomName: (zoningNumericId: number): string | undefined => {
+      const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+      return room === undefined ? undefined : localizer.format(room.nameKey);
+    },
+  } : {}),
   loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   onError: (error) => {
     errors.push(error.message);
@@ -394,6 +430,7 @@ const game = new Phaser.Game({
 /** The scene keeps its layers private, which is correct; the cast is confined here. */
 interface SceneInternals {
   readonly tiles: TileLayer | undefined;
+  readonly roomLabels: RoomLabelLayer | undefined;
 }
 const internals = scene as unknown as SceneInternals;
 
@@ -505,8 +542,9 @@ const harness: LockstateEnvironmentArtHarness = {
   },
   atlasPixel,
   tileSprites,
-  centreCameraOn: async (worldX, worldY) => {
-    scene.cameras.main.setZoom(1);
+  roomLabels: () => internals.roomLabels?.drawn ?? [],
+  centreCameraOn: async (worldX, worldY, zoom = 1) => {
+    scene.cameras.main.setZoom(zoom);
     scene.cameras.main.centerOn(worldX, worldY);
     // Two frames: one for the camera matrix `preRender` rebuilds, one for the
     // frame drawn with it.

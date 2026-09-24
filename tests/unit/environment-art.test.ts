@@ -286,10 +286,13 @@ describe('simulation identity to artwork', () => {
     expect(zonedFloorSprite(60_000)).toBeUndefined();
     const kitchen = defaultRoomContentRegistry.getById('room.kitchen');
     const canteen = defaultRoomContentRegistry.getById('room.canteen');
+    const yard = defaultRoomContentRegistry.getById('room.yard');
     expect(kitchen).toBeDefined();
     expect(canteen).toBeDefined();
+    expect(yard).toBeDefined();
     expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
     expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
+    expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {

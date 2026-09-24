@@ -150,9 +150,9 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  * since ADR 0098 option A, not by category), drawn over this at a reduced
  * alpha, so "which room is this" survives the floor being art.
  *
- * The kitchen uses a washable, non-slip tile and the canteen uses warm
- * terrazzo. Other rooms keep institutional linoleum. This returns per zoning
- * id so the two food rooms have distinct material as well as tint and label.
+ * The kitchen uses a washable, non-slip tile, the canteen uses warm terrazzo,
+ * and the outdoor yard uses compacted earth. Other rooms keep institutional
+ * linoleum. This returns per zoning id so their material agrees with use.
  */
 export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId | undefined {
   if (zoningNumericId === 0) return undefined;
@@ -160,6 +160,7 @@ export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId |
   if (room === undefined) return undefined;
   if (room.id === 'room.kitchen') return 'env.floor.kitchen';
   if (room.id === 'room.canteen') return 'env.floor.canteen';
+  if (room.id === 'room.yard') return 'env.floor.yard';
   return 'env.floor.institutional';
 }
 

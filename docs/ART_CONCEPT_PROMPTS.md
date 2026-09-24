@@ -397,6 +397,16 @@ linoleum with fine mineral flecks, traffic scuffs and joints that meet between
 tiles. The source and tiling choices are recorded in
 `assets/source/concepts/institutional-floor-v1.md`.
 
+### Outdoor Yard ground — `floor.yard.compacted-earth`
+
+The original four-view reference at
+`assets/source/concepts/yard-floor-multiview-v1.png` studies compacted mineral
+earth with sparse worn olive grass from above, obliquely, in section, and as a
+3 × 3 repeated tile. `assets/source/concepts/yard-floor-v1.md` records how its
+material became an edge-complete Blender render for the outdoor Yard. Its
+pattern repeats visibly at game scale. Keep the
+surface subdued at 64 px so the room label and prisoners remain readable.
+
 ### Canteen terrazzo floor — `floor.canteen.terrazzo`
 
 An original Blender 1 × 1 overhead tile gives the dining room a warm,

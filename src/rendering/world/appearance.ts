@@ -101,12 +101,12 @@ export function terrainAppearance(numericId: number): TerrainAppearance {
  * value-per-member) is the option that would have kept both, at the same
  * price, if a later pass wants it.
  *
- * **The hues are respaced, not just re-keyed.** The eleven categories they
+ * **The hues were respaced, not just re-keyed.** The eleven categories they
  * replace shared one discriminating dimension (hue) and spent it unevenly --
  * `operations` and `food` sat 14 degrees apart on a wheel whose mean gap is
  * 36 degrees, which is why Reception and Kitchen were the tightest pair on
  * screen (4.06 effective units) even before any collision. These eighteen
- * hues are spaced evenly at 20 degrees, holding the palette's own saturation
+ * original hues were spaced evenly at 20 degrees, holding the palette's own saturation
  * and value (`s = 0.62, v = 0.82`), which is the spacing ADR 0098 Context §2
  * and decision 3 recommend. That raises the worst pair from 4.06 to **6.02**
  * effective units (`room.classroom` vs `room.infirmary`, and `room.common-room`
@@ -114,6 +114,9 @@ export function terrainAppearance(numericId: number): TerrainAppearance {
  * pixel-to-pixel spread of the floor art it is painted on. This closes a
  * keying defect; it does not make room type legible on its own. The name
  * drawn on the map is what does that (see the room-labels renderer module).
+ * The owner approved a Yard-only ochre exception on 2026-09-24 after an owned
+ * 8x8 Blender-floor comparison: cyan made compacted earth look mint. The other
+ * 17 entries remain as they were; see ADR 0098's 2026-09-24 amendment.
  */
 const ZONING_TINT_BY_ROOM_ID: Readonly<Record<string, number>> = {
   'room.cell': 0xd14f4f,
@@ -124,7 +127,7 @@ const ZONING_TINT_BY_ROOM_ID: Readonly<Record<string, number>> = {
   'room.canteen': 0x7bd14f,
   'room.shower-room': 0x4fd14f,
   'room.laundry': 0x4fd17b,
-  'room.yard': 0x4fd1a6,
+  'room.yard': 0xddb35a,
   'room.common-room': 0x4fd1d1,
   'room.classroom': 0x4fa6d1,
   'room.infirmary': 0x4f7bd1,
@@ -186,6 +189,8 @@ const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585
 const KITCHEN_FLOOR_ART_BASE: readonly [number, number, number] = [173.310, 181.373, 185.388];
 /** Mean decoded RGB of the warm Blender canteen tile, pinned by the real-PNG drift gate. */
 const CANTEEN_FLOOR_ART_BASE: readonly [number, number, number] = [209.852, 171.709, 166.421];
+/** Mean decoded RGB of the warm outdoor Yard ground, pinned by the real-PNG drift gate. */
+const YARD_FLOOR_ART_BASE: readonly [number, number, number] = [138.413, 117.393, 95.413];
 
 /** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
 function channelSpread(rgb: readonly [number, number, number]): number {
@@ -212,6 +217,7 @@ function blendOverFloor(tint: number, alpha: number, floor: readonly [number, nu
 function floorArtBase(roomId: string): readonly [number, number, number] {
   if (roomId === 'room.kitchen') return KITCHEN_FLOOR_ART_BASE;
   if (roomId === 'room.canteen') return CANTEEN_FLOOR_ART_BASE;
+  if (roomId === 'room.yard') return YARD_FLOOR_ART_BASE;
   return INSTITUTIONAL_FLOOR_ART_BASE;
 }
 
@@ -318,6 +324,7 @@ export const INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, numb
   INSTITUTIONAL_FLOOR_ART_BASE;
 export const KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = KITCHEN_FLOOR_ART_BASE;
 export const CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = CANTEEN_FLOOR_ART_BASE;
+export const YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = YARD_FLOOR_ART_BASE;
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */
 export interface StructureAppearance {
