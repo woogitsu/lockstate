@@ -12,6 +12,15 @@ for (const [width, height] of [[720, 450], [1024, 768]] as const) {
       await page.locator('.ui-tab[data-tab="build"]').click();
       const panel = page.locator('.hud-build');
       const toggle = panel.locator('> .ui-panel__header .ui-panel__toggle');
+      // #899 starts map-first where the catalogue would cover the canvas.
+      // Reopen it as the player must before selecting Place or Remove, then
+      // measure whether #517 gives the map back after arming that tool.
+      if ((await panel.getAttribute('data-collapsed')) === 'true') {
+        await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        await toggle.click();
+        await expect(panel).toHaveAttribute('data-collapsed', 'false');
+        await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      }
       const canvas = page.locator('#game-root canvas');
       const centreBefore = await canvas.evaluate((element) => {
         const box = element.getBoundingClientRect();
