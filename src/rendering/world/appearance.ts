@@ -120,7 +120,7 @@ const ZONING_TINT_BY_ROOM_ID: Readonly<Record<string, number>> = {
   'room.holding-cell': 0xd17b4f,
   'room.solitary-cell': 0xd1a64f,
   'room.reception': 0xd1d14f,
-  'room.kitchen': 0xa6d14f,
+  'room.kitchen': 0x719db7,
   'room.canteen': 0x7bd14f,
   'room.shower-room': 0x4fd14f,
   'room.laundry': 0x4fd17b,
