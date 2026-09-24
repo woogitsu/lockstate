@@ -605,25 +605,33 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "canteen_steel", 0.012)
         box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "canteen_steel", 0.012)
     elif asset_id == "furniture.kitchen.stove":
-        # Four-view reference: assets/source/concepts/kitchen-stove-multiview-v1.png.
-        # Four burner discs and the raised rear guard are visible from above.
+        # V3 four-view reference adds cast-iron grates and an overhead-readable
+        # control lip; the four burners remain inside the same 2x1 footprint.
         for x in (-0.82, 0.82):
             for y in (-0.34, 0.34):
                 box(collection, root, f"Heavy foot.{x}.{y}", (x, y, 0.07), (0.20, 0.17, 0.14), "steel", 0.012)
         box(collection, root, "Oven carcass", (0, 0, 0.49), (1.88, 0.87, 0.88), "canteen_steel", 0.028)
         box(collection, root, "Dark top lip", (0, 0, 0.965), (1.95, 0.92, 0.09), "steel", 0.018)
-        box(collection, root, "Worn cooking deck", (0, 0, 1.02), (1.89, 0.85, 0.034), "canteen_steel", 0.016)
+        box(collection, root, "Worn cooking deck", (0, -0.025, 1.02), (1.89, 0.80, 0.034), "canteen_steel", 0.016)
         box(collection, root, "Rear splash guard", (0, -0.425, 1.15), (1.95, 0.055, 0.31), "galvanized", 0.012)
         box(collection, root, "Guard dark rim", (0, -0.424, 1.31), (1.95, 0.06, 0.018), "steel", 0.006)
         for x in (-0.53, 0.53):
-            for y in (-0.20, 0.20):
-                cylinder(collection, root, f"Burner rim.{x}.{y}", (x, y, 1.055), 0.205, 0.04, "galvanized_edge", 48)
-                cylinder(collection, root, f"Dark burner plate.{x}.{y}", (x, y, 1.081), 0.176, 0.018, "shade", 48)
-                cylinder(collection, root, f"Burner centre.{x}.{y}", (x, y, 1.094), 0.058, 0.01, "steel", 32)
-        box(collection, root, "Control fascia", (0, 0.40, 0.82), (1.88, 0.07, 0.22), "galvanized_edge", 0.012)
+            for y in (-0.22, 0.15):
+                box(collection, root, f"Recessed burner pan.{x}.{y}",
+                    (x, y, 1.050), (0.46, 0.34, 0.028), "stove_heat", 0.028)
+                cylinder(collection, root, f"Burner rim.{x}.{y}", (x, y, 1.067), 0.166, 0.033, "steel", 48)
+                cylinder(collection, root, f"Dark burner well.{x}.{y}", (x, y, 1.087), 0.143, 0.010, "shade", 48)
+                cylinder(collection, root, f"Burner cap.{x}.{y}", (x, y, 1.102), 0.061, 0.027, "canteen_steel", 32)
+                box(collection, root, f"Cast-iron crossbar east-west.{x}.{y}",
+                    (x, y, 1.125), (0.39, 0.045, 0.045), "shade", 0.009)
+                box(collection, root, f"Cast-iron crossbar north-south.{x}.{y}",
+                    (x, y, 1.127), (0.045, 0.30, 0.045), "shade", 0.009)
+        box(collection, root, "Overhead control lip", (0, 0.415, 1.058), (1.88, 0.13, 0.058), "galvanized_edge", 0.015)
+        box(collection, root, "Control fascia", (0, 0.48, 0.82), (1.88, 0.07, 0.22), "galvanized_edge", 0.012)
         for x in (-0.69, -0.23, 0.23, 0.69):
-            cylinder(collection, root, f"Control knob.{x}", (x, 0.425, 0.84), 0.055, 0.04, "steel", 24)
-            box(collection, root, f"Knob mark.{x}", (x, 0.455, 0.86), (0.012, 0.008, 0.04), "light", 0.002)
+            cylinder(collection, root, f"Top control knob.{x}", (x, 0.415, 1.105), 0.047, 0.042, "shade", 24)
+            box(collection, root, f"Pale knob index.{x}", (x, 0.401, 1.129), (0.012, 0.025, 0.007), "light", 0.002)
+        cylinder(collection, root, "Amber status lamp", (0.84, 0.415, 1.092), 0.019, 0.028, "stove_amber", 16)
         for x in (-0.47, 0.47):
             box(collection, root, f"Oven door frame.{x}", (x, 0.442, 0.42), (0.85, 0.025, 0.58), "galvanized_edge", 0.012)
             box(collection, root, f"Oven window.{x}", (x, 0.456, 0.42), (0.62, 0.008, 0.30), "metal_recess", 0.018)
@@ -1126,6 +1134,8 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
+    MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
     MATERIALS["medical_enamel"] = material("Worn blue-grey first aid enamel", (0.48, 0.58, 0.61, 1), 0.58)
     MATERIALS["medical_red"] = material("Muted red first aid cross", (0.57, 0.18, 0.16, 1), 0.72)
     MATERIALS["medical_ochre"] = material("Amber antiseptic vial", (0.58, 0.34, 0.09, 1), 0.45)

@@ -366,3 +366,10 @@ The 1×1 infirmary cabinet now shows its purpose from above: a raised lid with
 a muted first-aid cross, a dark supply tray, a bandage roll, two medicine
 cartons and an amber vial. The original four-view reference and Blender choices
 are recorded in `assets/source/concepts/medicine-cabinet-v3.md`.
+
+### Kitchen stove refinement — `furniture.kitchen.stove`
+
+The 2×1 kitchen stove now shows cast-iron grates above four recessed burners,
+with a row of knobs and a small amber lamp visible from overhead. The original
+four-view reference and Blender decisions are recorded in
+`assets/source/concepts/kitchen-stove-v3.md`.
