@@ -6734,7 +6734,10 @@
   }
 
   :root[data-ui-scale-enlarged='true'] .hud__aside {
-    min-height: calc(4 * var(--tap-target));
+    /* Two rows of save actions need their full height before the panel's
+     * internal scroll begins. Four targets left the second row half hidden. */
+    flex: 0 0 calc(6 * var(--tap-target));
+    min-height: 0;
   }
 
   .hud__aside .save-panel__actions {
@@ -6843,6 +6846,19 @@
 
   :root[data-ui-scale-enlarged='true'] .hud-regime__block-name,
   :root[data-ui-scale-enlarged='true'] .hud-regime__block-progress {
+    overflow-wrap: anywhere;
+  }
+
+  /* The editor is an action, not a truncated label. Let its long accessible
+   * name take two lines within the narrow inspector at 200%. */
+  :root[data-ui-scale-enlarged='true'] .hud-regime__editor > .ui-section__header {
+    height: auto;
+    padding-block: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-regime__editor > .ui-section__header > .ui-section__eyebrow {
+    min-width: 0;
+    white-space: normal;
     overflow-wrap: anywhere;
   }
 

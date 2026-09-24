@@ -26,6 +26,16 @@ const MODEL: HudViewModel = {
     severity: 'warning' as const,
     occurrences: { count: 1, firstSequence: index + 1, lastSequence: index + 1, statement: `alert-${index}` },
   })),
+  regime: {
+    groups: [{
+      classificationGroupId: 'general-population',
+      labelKey: 'classification-group.general-population.name',
+      allowedCategoryLabelKeys: ['action-category.recreation.name'],
+      blockProgressPercent: 67,
+      startTickOfDay: 1_200,
+      allowedCategoryIds: ['recreation'],
+    }],
+  },
 };
 
 test('Full HD HUD at 200% keeps the world visible and alert actions reachable', async ({ page }) => {
@@ -87,4 +97,38 @@ test('Full HD HUD at 200% keeps the world visible and alert actions reachable', 
   expect(geometry.mapHit, JSON.stringify(geometry)).toBe(true);
   expect(geometry.placeholderContained, JSON.stringify(geometry)).toBe(true);
   expect(geometry.dismissHit, JSON.stringify(geometry)).toBe(true);
+});
+
+test('Full HD HUD at 200% reads the regime action and initial save actions without clipping', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/ui-harness.html');
+  await page.waitForFunction(() => 'lockstateUiHarness' in window);
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--ui-scale', '2');
+    document.documentElement.setAttribute('data-ui-scale-enlarged', 'true');
+    window.lockstateUiHarness.mountHudShell();
+    window.lockstateUiHarness.mountSavePanel();
+    document.querySelector('.hud__aside')!.append(document.querySelector('.save-panel')!);
+  });
+  await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), MODEL);
+  await page.locator('.ui-tab[data-tab="day-plan"]').click();
+
+  const reading = await page.evaluate(() => {
+    const editor = document.querySelector<HTMLElement>('.hud-regime__editor > .ui-section__header')!;
+    const label = editor.querySelector<HTMLElement>('.ui-section__eyebrow')!;
+    const panel = document.querySelector<HTMLElement>('.save-panel')!;
+    const panelBox = panel.getBoundingClientRect();
+    const buttons = [...panel.querySelectorAll<HTMLElement>('.save-panel__actions .save-panel__button')];
+    return {
+      label: label.textContent,
+      labelFits: label.scrollWidth <= label.clientWidth + 1 && label.getBoundingClientRect().right <= editor.getBoundingClientRect().right,
+      actionFits: buttons.every((button) => button.getBoundingClientRect().bottom <= panelBox.bottom + 1),
+      buttons: buttons.length,
+    };
+  });
+
+  expect(reading.label).toBe('Change the block running now');
+  expect(reading.labelFits, JSON.stringify(reading)).toBe(true);
+  expect(reading.buttons).toBe(4);
+  expect(reading.actionFits, JSON.stringify(reading)).toBe(true);
 });
