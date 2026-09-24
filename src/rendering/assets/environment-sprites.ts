@@ -78,6 +78,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.dirt',
   'env.terrain.grass',
   'env.terrain.concrete',
+  'env.terrain.gravel',
   'env.floor.institutional',
   'env.wall.interior.face',
   'env.wall.interior.cap',
@@ -187,6 +188,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered grey outdoor paving with fine aggregate and restrained expansion joints.',
+  },
+  /** Small embedded gravel for unzoned service paths. */
+  'env.terrain.gravel': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.gravel.service_path',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered compacted gravel with angular grey, ochre and limestone chippings.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

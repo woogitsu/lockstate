@@ -53,6 +53,8 @@ const FIXTURE: HarnessWorldFixture = {
   grassTileY: 1,
   concreteTileX: 0,
   concreteTileY: 0,
+  gravelTileX: 0,
+  gravelTileY: 2,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
@@ -132,6 +134,9 @@ function buildFrame(): RenderFrame {
   // concrete strip into WorldRenderView; no paint UI is part of this fixture.
   for (let x = FIXTURE.concreteTileX; x < FIXTURE.concreteTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.concreteTileY) }, 'concrete');
+  }
+  for (let x = FIXTURE.gravelTileX; x < FIXTURE.gravelTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.gravelTileY) }, 'gravel');
   }
 
   const room = defaultRoomContentRegistry.all()[0];

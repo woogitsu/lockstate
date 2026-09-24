@@ -251,6 +251,46 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(8);
   });
 
+  test('the Blender gravel draws a saved service path with visible chippings', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.gravel'].kind).toBe('rendered-art');
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.gravel');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of [pixels!.centre, pixels!.left, pixels!.right, pixels!.top, pixels!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const gravel = sprites.filter((sprite) => sprite.frameName === 'env.terrain.gravel');
+    const x = (fixture.gravelTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.gravelTileY + 0.5) * fixture.tileSizePx;
+    expect(gravel.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(gravel.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(12);
+  });
+
   test('packs the Blender overhead door cap and frontal door face', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
     expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('rendered-art');

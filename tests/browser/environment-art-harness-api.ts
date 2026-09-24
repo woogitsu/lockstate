@@ -40,6 +40,8 @@ export interface HarnessWorldFixture {
   readonly grassTileY: number;
   readonly concreteTileX: number;
   readonly concreteTileY: number;
+  readonly gravelTileX: number;
+  readonly gravelTileY: number;
   readonly zonedMinTileX: number;
   readonly zonedMinTileY: number;
   readonly zonedMaxTileX: number;

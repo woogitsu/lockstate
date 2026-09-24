@@ -109,6 +109,7 @@ MODELS = (
     ("terrain.dirt.compacted", (1, 1)),
     ("terrain.grass.mown", (1, 1)),
     ("terrain.concrete.paving", (1, 1)),
+    ("terrain.gravel.service_path", (1, 1)),
 )
 
 
@@ -124,6 +125,44 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def gravel_matrix_material():
+    """Tile-periodic fine matrix keeps the densely placed stones joined edge to edge."""
+    item = material("Compacted gravel warm dust matrix", (0.17, 0.15, 0.12, 1), 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 7.3
+    noise.inputs["Detail"].default_value = 3.4
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.105, 0.095, 0.080, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.24, 0.21, 0.17, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def concrete_paving_material():
@@ -1100,7 +1139,25 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "terrain.concrete.paving":
+    if asset_id == "terrain.gravel.service_path":
+        box(collection, root, "Compacted gravel matrix", (0, 0, 0.04),
+            (1, 1, 0.08), "gravel_matrix", 0)
+        # Stones are shallow enough to read as a surface, not obstacles. Keep
+        # them within the one-tile frame; periodic matrix noise joins borders.
+        palette = ("gravel_stone_dark", "gravel_stone_grey", "gravel_stone_tan", "gravel_stone_pale")
+        state = 0x723A19C5
+        def next_random():
+            nonlocal state
+            state = (1664525 * state + 1013904223) & 0xffffffff
+            return state / 4294967296.0
+        for index in range(460):
+            x = (next_random() - 0.5) * 0.965
+            y = (next_random() - 0.5) * 0.965
+            size = 0.006 + next_random() * 0.015
+            box(collection, root, f"Embedded angular pebble.{index}",
+                (x, y, 0.081), (size, size * (0.65 + next_random() * 0.25), 0.0025),
+                palette[index % len(palette)], 0.001)
+    elif asset_id == "terrain.concrete.paving":
         box(collection, root, "Poured concrete paving", (0, 0, 0.04),
             (1, 1, 0.08), "concrete_paving", 0)
         # A seam on only east and south edges forms one restrained joint per
@@ -1415,6 +1472,11 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["gravel_matrix"] = gravel_matrix_material()
+    MATERIALS["gravel_stone_dark"] = material("Gravel charcoal chippings", (0.10, 0.11, 0.12, 1), 0.99)
+    MATERIALS["gravel_stone_grey"] = material("Gravel blue-grey chippings", (0.22, 0.23, 0.23, 1), 0.99)
+    MATERIALS["gravel_stone_tan"] = material("Gravel warm ochre chippings", (0.33, 0.26, 0.19, 1), 0.99)
+    MATERIALS["gravel_stone_pale"] = material("Gravel pale limestone chippings", (0.34, 0.31, 0.27, 1), 0.99)
     MATERIALS["concrete_paving"] = concrete_paving_material()
     MATERIALS["concrete_joint"] = material("Concrete recessed expansion joint", (0.18, 0.20, 0.20, 1), 0.99)
     MATERIALS["concrete_aggregate_light"] = material("Concrete fine warm aggregate", (0.34, 0.32, 0.27, 1), 0.98)
