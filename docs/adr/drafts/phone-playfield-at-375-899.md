@@ -1,6 +1,6 @@
 # Draft decision: the Build catalogue and playfield at 375×812 (#899)
 
-**Status:** Research for owner decision; no option accepted here. No ADR number is reserved.
+**Status:** Option 1 accepted by the owner on 2026-09-24; implementation and browser evidence pending. No ADR number is reserved.
 **Scope:** Initial Build-panel layout on a phone. This draft changes no UI, input, copy, supported-viewport policy, or accepted ADR.
 
 ## The decision still open
@@ -36,7 +36,17 @@ Reproduction command in each checkout, with a unique `LOCKSTATE_BROWSER_TEST_POR
 2. **Support 375×812 with a player-controlled overlay.** Keep the catalogue visible on arrival, but provide an obvious, always-reachable collapse/reopen affordance before arming; persist its state only if separately decided. This preserves first-glance catalogue information and permits map access, but does not make the initial screen itself playable until the player understands the control. It may not satisfy #899's strongest reading without an in-product cue.
 3. **Set a minimum playable viewport larger than 375×812.** Show a clear, owner-approved explanation and supported-size route rather than a tiny apparent playfield. This avoids a new mobile layout but excludes this phone size; a minimum must be established by measurement across orientations, browser chrome, and zoom, not guessed from width alone. It is a product support decision, not a silent CSS cutoff.
 
-This draft does not recommend or approve an option. Tap-to-place or a zoomed-out interaction would be a separate input design; neither creates space for browsing the catalogue on its own.
+Tap-to-place or a zoomed-out interaction would be a separate input design; neither creates space for browsing the catalogue on its own.
+
+## Owner ruling, 2026-09-24
+
+The owner was offered these exact Polish option labels and selected the first:
+
+1. **„Mapa najpierw: mobilny wysuwany katalog Build (zalecane)”** — selected.
+2. **„Katalog najpierw: ręczne zwijanie i otwieranie”** — declined.
+3. **„Określ minimalny wspierany rozmiar ekranu”** — declined.
+
+This was a selection from options written by the agent, not a free-form design specification typed by the owner. That weaker provenance matters: the ruling chooses map-first arrival at 375×812 and a mobile catalogue that can be opened to select/arm a tool; it does not authorize an invented new player-visible sentence, a general minimum-viewport rule, or a changed desktop layout. The implementation must verify those details in the real browser and return with evidence. The earlier research table and losing options remain above so the decision can be audited.
 
 ## Browser acceptance criteria for the chosen option
 
@@ -46,4 +56,4 @@ This draft does not recommend or approve an option. Tap-to-place or a zoomed-out
 4. Repeat at 375×812, effective narrow viewports under browser zoom, 720×450, 900×600, and 1024×600; ensure desktop Build does not unexpectedly fold and other HUD panels or save controls remain reachable. Run existing #517 and Rooms/Zones phone tests.
 5. If a minimum viewport is chosen, verify that the explanation is readable, translated in EN/PL, and shown before an unusable interaction; test the first supported size on both sides of the boundary.
 
-**Open owner choice:** Which of options 1–3 defines the initial Build experience at 375×812? The measured post-arm improvement from PR #1383 stands independently of this ruling. Keep #899 open until that initial-state contract and its browser evidence are settled.
+Keep #899 open until the initial-state contract and its browser evidence are settled. The measured post-arm improvement from PR #1383 stands independently of this ruling.
