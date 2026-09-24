@@ -1175,7 +1175,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // Issue #590: brak miejsca kieruje przybyłych do kolejki poza więzieniem.
   // Dochód dzienny obejmuje wyłącznie osadzonych z faktycznym miejscem.
   'hud.intake.hint':
-    'Brak wolnego miejsca? Przybyli czekają poza więzieniem. Państwo płaci tylko za osadzonych z miejscem.',
+    'Brak miejsca? Przybyli czekają poza więzieniem. Łóżko w celi może ich zakwaterować; państwo płaci za zajęte miejsca na koniec dnia.',
   // Reshaped: the numeral moves out of the verb's way entirely.
   //
   // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the

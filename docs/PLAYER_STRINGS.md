@@ -320,7 +320,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.overview.wages` | Wages a day | `src/content/default-locale-en.ts:2732` |
 | `hud.intake.title` | Intake | `src/content/default-locale-en.ts:2734` |
 | `hud.intake.admit` | Admit a prisoner | `src/content/default-locale-en.ts:2735` |
-| `hud.intake.hint` | No free place? Arrivals wait outside. The state pays daily only for prisoners with a place. | `src/content/default-locale-en.ts:2742` |
+| `hud.intake.hint` | No free place? Arrivals wait outside. A bed in a cell can house them; the state pays for occupied places at day’s end. | `src/content/default-locale-en.ts:2742` |
 | `hud.intake.no-place` | {count} waiting with no place to sleep | `src/content/default-locale-en.ts:2759` |
 | `hud.alert.intake-delayed` | Waiting outside for a place: {count}. Free a place or furnish another cell or holding room. | `src/content/default-locale-en.ts:2760` |
 | `hud.alert.holding-strained` | {count} in holding long enough for safety to fall faster. Free beds soon. | `src/content/default-locale-en.ts:2761` |
