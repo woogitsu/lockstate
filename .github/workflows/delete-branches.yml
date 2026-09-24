@@ -35,24 +35,10 @@ permissions:
 
 jobs:
   delete-branches:
-    # `[self-hosted, Linux, X64, wsl2]`, not `ubuntu-latest`. The header above
-    # records that this workflow HAS NEVER SUCCEEDED -- one run, failed after
-    # four seconds with no step recorded and no log, the signature of a runner
-    # that was never provisioned -- and that version.yml failed identically in
-    # the same four seconds until `adb6b01` moved it to this label. That is the
-    # precedent, and this is the change the header said it was waiting for.
-    #
-    # MEASURED ON 2026-08-30, AND THE LABEL CHANGE WORKED. Run 2 (the first
-    # dispatch after that change) reached this runner, checked out, fetched and
-    # entered `deletebranches.sh`, and its log names the steps it ran. It still
-    # failed -- so "HAS NEVER SUCCEEDED" above stays literally true and is kept
-    # rather than softened -- but it failed at the open-pull-request lookup,
-    # after 13 seconds and inside the script, for the token-scope reason the
-    # `permissions:` block above now records. What that run retires is the
-    # DIAGNOSIS, not the tally: the four-second no-step-no-log signature is
-    # gone, and with it the last reason to suspect the runner. Everything from
-    # `runs-on:` to the script is now known to work on this label.
-    runs-on: self-hosted
+    # The owner selected GitHub-hosted Ubuntu before making the repository
+    # public. The older runner failures described in this file occurred while
+    # it was private. Run a dry dispatch before any branch-deleting apply.
+    runs-on: ubuntu-latest
     steps:
       # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
       # THAT MATTERS MOST.
@@ -98,17 +84,10 @@ jobs:
       # that is measured: every other call site here runs it, and every run in
       # this repository that has ever succeeded ran on that label.
       #
-      # AND WHAT THIS DOES NOT FIX -- READ THIS BEFORE TRUSTING THE JOB ABOVE.
-      # `runs-on:` here is `ubuntu-latest`, and nothing about `ubuntu-latest` is
-      # measurable in this repository, because THIS WORKFLOW HAS NEVER
-      # SUCCEEDED. It has run once, and failed after four seconds with no step
-      # recorded and no log, which is the signature of a runner that was never
-      # provisioned. version.yml's first run failed identically in the same four
-      # seconds and was moved to the self-hosted label at `adb6b01`, whose
-      # message records the measurement and whose header section "Which runner,
-      # and why the obvious answer was wrong" carries the argument; version.yml
-      # names this workflow in that section as the precedent it had wrongly
-      # relied on.
+      # HISTORICAL RUNNER FAILURE: while the repository was private, this
+      # workflow and version.yml both had four-second runs without steps on
+      # `ubuntu-latest`. The new public-repository configuration needs a fresh
+      # dry-run result; that earlier observation is not a current verdict.
       #
       # **That paragraph's conclusion is now out of date and is corrected here
       # rather than overwritten, because it is what asked for this change.** It
