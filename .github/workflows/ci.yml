@@ -41,16 +41,10 @@ env:
 
 jobs:
   verify:
-    # A fork's pull request must not run on this runner, and must not become a
-    # deployment. Two separate reasons; this guard is the whole answer to the
-    # first and only half an answer to the second.
-    #
-    # The runner. `runs-on` is self-hosted, so these steps execute on a machine
-    # the owner keeps, whose workspace is reused between jobs and between runs
-    # (several comments below turn on that reuse). `pnpm verify` executes the
-    # checked-out ref's own code -- `vite.config.ts`, every file under `tests/`
-    # -- so without this term, opening a pull request from a fork is enough to
-    # run arbitrary code there.
+    # Fork pull requests remain skipped until the deployment trust path is
+    # redesigned. The runner is now a fresh GitHub-hosted VM, but a CI run
+    # started by a fork still belongs to this repository and can trigger the
+    # workflow_run deploy workflow.
     #
     # The deployment, and read this before treating the guard as sufficient.
     # This workflow triggers on a bare `pull_request`, so a fork's pull request
@@ -71,7 +65,7 @@ jobs:
     # property of the workflow, and a job added with no `needs:` chain to
     # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -140,17 +134,10 @@ jobs:
           # re-derive with `git rev-list --count <token>..<tip>` over them
           # rather than trusting `b904a1b` to still be the deepest.
           #
-          # AND IT IS PAID ONCE, WHICH IS THE PART THE REUSED WORKSPACE
-          # DECIDES. This runner keeps its workspace between jobs and between
-          # runs (the `if:` comment above turns on that, and so do the LFS
-          # comments below), so `actions/checkout` fetches into an existing
-          # repository instead of cloning. At the pinned v6 its `fetch()` adds
-          # `--unshallow` exactly when `.git/shallow` exists and `fetch-depth`
-          # is not positive, so the deepening happens on the first run after
-          # this line lands and every later run is an ordinary incremental
-          # `git fetch --prune`. version.yml already checks this repository out
-          # at `fetch-depth: 0` on the same runner label on every push to
-          # `main`, so a full fetch here is not a new cost on this machine.
+          # HISTORICAL MEASUREMENT ON THE SELF-HOSTED POOL: the workspace used
+          # to be reused between jobs. GitHub-hosted jobs start on fresh VMs,
+          # so the full history fetch now happens for each verify job. The
+          # documentation-citation gate above still requires that history.
           #
           # The `assets` and `browser` jobs keep the default depth, because
           # neither reads history -- and so does deploy.yml's `staging` job.
@@ -221,7 +208,7 @@ jobs:
       # symlink named `node_modules` is a file, so it was never ignored and
       # `git add node_modules` succeeded. The slash is gone now, which is the
       # real fix; this step is the safety net for a ref that predates it, and
-      # for a reused self-hosted workspace left holding one.
+      # for a checkout of an older ref that still carries one.
       #
       # A *tracked* node_modules is reported rather than removed: deleting it
       # would let the install succeed and then fail the clean-tree gate at the
@@ -307,12 +294,8 @@ jobs:
       # requests #98 and #101, where the same verification chain leaves the
       # tree clean locally. The gate is unchanged; it now prints the evidence.
       #
-      # The extra probes are for the most likely cause on this runner: a
-      # self-hosted workspace is reused between jobs, and the `assets` job
-      # materialises Git LFS content into it. Whether `git status` then sees
-      # those PNGs as modified depends on git-lfs being configured in *this*
-      # job, which provisions no LFS. If that is what is happening, the
-      # output below names it instead of leaving the next reader to guess.
+      # The extra probes preserve diagnostic evidence if a generated file or
+      # LFS pointer unexpectedly changes the checkout.
       - name: Verify generated output did not modify tracked files
         run: |
           set -uo pipefail
@@ -352,24 +335,13 @@ jobs:
     # Only so a failing build does not spend metered LFS bandwidth. Nothing in
     # this job depends on `verify` having provisioned anything.
     needs: verify
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      # Deliberately NOT `lfs: true`, for two measured reasons.
-      #
-      # 1. It does not work on a reused workspace. `actions/checkout` runs
-      #    `git lfs fetch` and then relies on the following `git checkout` to
-      #    smudge pointers into real files. This is a self-hosted runner, so the
-      #    workspace is already at the target commit from the `verify` job; the
-      #    checkout is a no-op, the smudge filter never runs, and the objects sit
-      #    downloaded-but-unused while the working tree keeps 130-byte pointers.
-      #    Observed in run 32637895668: LFS fetch succeeded, every atlas was
-      #    still a pointer.
-      # 2. It fetches every LFS object for the ref -- all 55 MB, including the
-      #    source sheets this gate never reads.
-      #
-      # An explicit `git lfs pull` below fixes both: it materialises regardless
-      # of whether the checkout moved anything, and it takes a path filter.
+      # Deliberately not `lfs: true`: checkout would fetch every LFS object on
+      # this fresh runner, including source sheets this job never opens. The
+      # explicit filtered pull below materialises only runtime atlases and is
+      # followed by a PNG signature check.
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -381,12 +353,9 @@ jobs:
       # Only the runtime atlases (~17 MB), not the ~36 MB of source sheets under
       # public/game-content/ that this gate never opens.
       #
-      # The credential is supplied for this command alone and removed on exit,
-      # rather than by relaxing `persist-credentials` above: this is a private
-      # repository so the transfer needs auth, but a self-hosted runner keeps its
-      # workspace between jobs and a token left in .git/config would outlive this
-      # one. This is the same config key `actions/checkout` sets for its own
-      # `git lfs fetch`, which is why git-lfs honours it.
+      # The credential is scoped to this command and removed on exit, rather
+      # than relaxing `persist-credentials` above. The same workflow works
+      # while a visibility change is in progress and with private forks.
       - name: Fetch runtime art from Git LFS
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -478,18 +447,11 @@ jobs:
     # Same fork guard as `verify`, for the same two reasons; see the comment
     # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    # Ordered after `assets` for two reasons, neither of them a data dependency.
-    #
-    # 1. A browser run is a couple of minutes on a single self-hosted runner.
-    #    There is no point spending it on a tree that does not typecheck, test
-    #    or build.
-    # 2. `assets` has already materialised the runtime atlases into this
-    #    workspace, so the `git lfs pull` below finds every object in the local
-    #    LFS store and transfers nothing. The pull stays regardless: this job
-    #    has to be correct on a cold workspace, not merely on the one `assets`
-    #    happened to leave behind.
+    # Ordered after `assets` so a tree that fails the earlier gate does not
+    # spend a full browser suite. Hosted jobs have separate fresh workspaces;
+    # this job must fetch its own runtime art from LFS below.
     needs: assets
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # RAISED FROM 30 TO 90 ON 2026-09-08, BY THE OWNER, AND ONLY THIS LINE.
     #
     # This job stopped finishing. Measured from the Actions API rather than
@@ -585,9 +547,8 @@ jobs:
       # failure that spec exists to catch -- so the art has to be real here for
       # the same reason it does in `assets`.
       #
-      # Not asserted byte-by-byte again: `assets` already did that on this
-      # workspace at this commit, and the spec's own failure names the file that
-      # would not decode.
+      # `assets` checks actor atlases in its own VM; this job pulls the art
+      # independently and checks the environment sheets below.
       - name: Provision Git LFS
         run: bash scripts/provision-git-lfs.sh
 
@@ -718,8 +679,7 @@ jobs:
 
       # Same guard as the `verify` job; see the comment there for why a
       # committed `node_modules` symlink broke three pull requests. Every job
-      # that installs needs it, because a self-hosted runner reuses its
-      # checkout between jobs.
+      # that installs needs it, including if a contributor committed a symlink.
       - name: Reject or clear a node_modules that is not a real install
         run: |
           set -uo pipefail
@@ -738,29 +698,21 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Playwright's browsers are not in the package and are not checked in, so
-      # this runner has no Chromium unless something puts one there. The script
-      # is idempotent and does no download when the browser is already on disk
-      # and launches, which on this runner is every run after the first.
+      # this job needs to provision the version matching the lockfile on its
+      # fresh VM. The script verifies that Chromium actually launches.
       #
-      # It also carries the two things this host needs and a stock
-      # `playwright install` does not: the fallback build for a distribution
-      # release Playwright has no listing for, and an `ldd`-based check instead
-      # of `--with-deps` (which needs root and, here, fails for the same
-      # platform reason). See the script's header.
+      # It also probes browser launch and reports missing shared libraries.
+      # Its unsupported-OS fallback is historical for Ubuntu 26.04; a hosted
+      # image must pass its own launch probe before the suite starts.
       - name: Provision Playwright's Chromium
         run: bash scripts/provision-playwright-browsers.sh
 
       # Headless: `tests/browser/playwright.config.ts` never sets
       # `headless: false`, so no display, xvfb or DISPLAY is involved.
       #
-      # A FREE PORT, ASKED FOR RATHER THAN ASSUMED. This runner shares its host
-      # with active development, so the suite's default 5183 is regularly taken
-      # by a developer's harness server or by another checkout running the same
-      # suite -- observed on the first run of this job, which died with
-      # "127.0.0.1:5183 is already used". The suite deliberately refuses to
-      # reuse a server it did not start, because attaching to one from a
-      # different working tree means testing that tree's sources; so the fix is
-      # a port nothing else holds, not a reuse flag.
+      # Ask the OS for a free port so this suite never attaches to a server it
+      # did not start. The first self-hosted run encountered a collision on
+      # the old fixed port 5183; the dynamic choice remains valid here.
       #
       # The suite must not be able to pass vacuously. `playwright test` already
       # fails when no test matches, and `forbidOnly` is on under CI; the second
@@ -823,10 +775,8 @@ jobs:
       - name: Build the production client
         run: node scripts/cloudflare-task.mjs build production
 
-      # A FREE PORT, for the same reason the step above asks for one: this
-      # runner shares its host with active development, and the artefact
-      # config refuses to reuse a server it did not start -- attaching to one
-      # means reporting on a `dist/` this run did not build.
+      # A free port keeps the artefact preview bound to this job's own build.
+      # The config refuses to reuse a server it did not start.
       #
       # NO `tee` HERE, and that is load-bearing rather than an oversight.
       # `tests/foundation/ci-configuration-contract.test.ts` requires this job
