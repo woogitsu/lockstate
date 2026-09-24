@@ -1148,7 +1148,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  /* Keep the 900×600 one-line band inside its 32px rail budget (#985).
+     The body line box grew by 2px with the current type tokens; one hairline
+     less padding on each side gives that room back without clipping text. */
+  padding: calc(var(--space-2) - var(--hairline)) var(--space-3);
   background: var(--badge-info-bg);
   border-bottom: var(--hairline) solid var(--status-info);
   color: var(--status-info);
@@ -1895,6 +1898,12 @@
   color: var(--text-subtle);
 }
 
+/* Keep the roster rows under the same screen coordinates during the two-press
+   dismissal. Revealing the confirmation used to grow this bottom-anchored
+   panel by 40px and put the next press on a different person's row. */
+.hud-staff__dismiss-slot { min-height: 40px; }
+.hud-staff__dismiss-confirm { padding-bottom: var(--hairline); }
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2419,6 +2428,9 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
+    /* Pair the note's whole-pixel line box below: one lost hint line still
+       pays for one added note line at every interface scale. */
+    line-height: calc(14px * var(--ui-scale));
   }
 }
 
@@ -2429,7 +2441,13 @@
    token, not a literal: the map block's gap and this margin have to move
    together or that block's own comment about summing one token four times stops
    being true. */
-.hud-build__order-note { margin-top: calc(-1 * var(--hud-build-map-gutter)); }
+/* The 13.2px inherited line box rounds its scroll height up and its client
+   height down in Chromium, visibly shaving the queued sentence. Keep the
+   two-line note at a full scaled pixel, paired with the arm hint above. */
+.hud-build__order-note {
+  margin-top: calc(-1 * var(--hud-build-map-gutter));
+  line-height: calc(14px * var(--ui-scale));
+}
 
 /* `[hidden]` on the "and N more" line has to win, and it does not win on its
    own: that line also carries `.hud-build__note`, which the `max-height: 700px`
@@ -4028,6 +4046,9 @@
     display: block;
     -webkit-line-clamp: none;
     overflow: visible;
+    /* 13.2px rounds to scrollHeight 14 and clientHeight 13 in Chromium.
+       A whole-pixel line box keeps this complete sentence legible. */
+    line-height: calc(14px * var(--ui-scale));
   }
 
   /*
@@ -4101,6 +4122,8 @@
     display: block;
     -webkit-line-clamp: none;
     overflow: visible;
+    /* The same fractional-height clipping affects this two-line price. */
+    line-height: calc(14px * var(--ui-scale));
   }
 
   /* The dismiss confirmation (the owner's sentence of 2026-09-03,
@@ -6338,6 +6361,7 @@
     margin-left: calc(var(--hud-navigation-width) + var(--space-3));
   }
 
+
   /*
    * **AND THE SENTENCE ABOVE STOPPED BEING TRUE WHEN THE NAVIGATION GAINED A
    * SIXTH SECTION (2026-09-19), SO THE ARITHMETIC IS KEPT AND A SECOND RULE IS
@@ -6408,6 +6432,17 @@
    */
   @media (min-height: 781px) {
     .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
+    /* A populated alerts list extends the bottom-left corner into the
+       six-tab rail at 1280x800. Give its added row back from the empty
+       minimap surface: the zoom button moves from y=382 to y=414, clear of
+       the last tab ending at y=410. The list keeps its own height, while the
+       corner keeps its x position so room drags still aim at the same tiles.
+       The selector leaves an empty list alone, preserving the measured
+       398px corner budget (#1292); below 781px the corner already moves
+       beyond the rail. */
+    .hud[data-layout-navigation-placement='rail']:has(.hud-alerts__list:not([hidden]) > .ui-row:not([hidden])) .hud-minimap__surface {
+      max-height: calc(224px * var(--ui-scale) - var(--hud-zoom-block) - var(--space-6) - var(--space-2));
+    }
   }
 
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }

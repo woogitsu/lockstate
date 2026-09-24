@@ -1585,7 +1585,7 @@ test.describe('HUD shell', () => {
           .map((row) => Math.round(Number.parseFloat(row) * 10) / 10);
       });
 
-    test('takes 32px of the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
+    test('takes its height from the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
       await page.setViewportSize({ width: 900, height: 600 });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       const band = page.locator('.hud__event');
@@ -1600,12 +1600,17 @@ test.describe('HUD shell', () => {
 
       await expect(band, 'the event never reached the band at all').toBeVisible();
       const raised = await rows(page);
+      // The text metrics can differ by a pixel across hosts. The contract is
+      // that the grid pays exactly the band height and returns it afterwards.
+      const eventHeight = await band.evaluate(
+        (element) => Math.round(element.getBoundingClientRect().height * 10) / 10,
+      );
       expect(raised[EVENT_ROW], 'the band is on screen and costing the grid nothing, which cannot both be true').toBe(
-        32,
+        eventHeight,
       );
       expect(
-        (raised[MIDDLE_ROW] ?? 0) + 32,
-        'the 32px did not come out of the middle row, so it came from somewhere this test cannot see',
+        (raised[MIDDLE_ROW] ?? 0) + eventHeight,
+        'the band height did not come out of the middle row, so it came from somewhere this test cannot see',
       ).toBe(before[MIDDLE_ROW]);
 
       // The floor first: the band owes this sentence its dwell, so a ceiling
@@ -1650,7 +1655,10 @@ test.describe('HUD shell', () => {
       // release rather than a band that has stopped working.
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(2));
       await expect(band, 'the band was retired rather than released: a newer event could not raise it').toBeVisible();
-      expect((await rows(page))[EVENT_ROW]).toBe(32);
+      const eventHeight = await band.evaluate(
+        (element) => Math.round(element.getBoundingClientRect().height * 10) / 10,
+      );
+      expect((await rows(page))[EVENT_ROW]).toBe(eventHeight);
     });
   });
 
