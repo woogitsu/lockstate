@@ -640,11 +640,11 @@ keep, and what each option spends to make it cheaper.
 
 ---
 
-## 5. The floor is one sheet today
+## 5. The floor was one sheet when this was measured
 
-**REASONED, and it bounds every number in Context §4.** `zonedFloorSprite`
-returns one literal for every zoned tile, at
-`src/rendering/world/environment-art.ts:157-161`:
+**REASONED, and it bounded every number in Context §4 at `430906af`
+(v0.0.757).** `zonedFloorSprite` then returned one literal for every zoned tile,
+at `src/rendering/world/environment-art.ts:157-161`:
 
 `export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId | undefined {
   if (zoningNumericId === 0) return undefined;
@@ -652,11 +652,13 @@ returns one literal for every zoned tile, at
   if (room === undefined) return undefined;
   return 'env.floor.institutional';
 }`
-(verbatim in `src/rendering/world/environment-art.ts`), and its own docblock,
-at lines 153-155, already anticipates a split:
+This is the function from that historical tree; the Blender room-floor
+replacement has since changed it. Its docblock at lines 153-155 anticipated a
+split:
 
 `One floor for every category today. This returns per zoning id rather than per category so a later split -- concrete for utility and logistics, linoleum for the rest -- is a change in this function and nowhere else.`
-(verbatim in `src/rendering/world/environment-art.ts`)
+That sentence also belongs to the `430906af` version of
+`src/rendering/world/environment-art.ts`, rather than to the current source.
 
 ADR 0098's own open question 3 names the same seam from a different angle,
 without needing this document to touch that file: the Yard requires no
