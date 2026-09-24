@@ -3406,6 +3406,16 @@
 
 .hud-regime__detail[hidden] { display: none; }
 
+.hud-regime__detail-risk {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: var(--text-size-label);
+  line-height: var(--label-line-height);
+  overflow-wrap: anywhere;
+}
+
+.hud-regime__detail-risk[hidden] { display: none; }
+
 /* A duration sentence must wrap in the narrow rail, including at larger UI
    scales. The shared eyebrow's single-line heading treatment would clip it. */
 .hud-regime__detail-sentence {

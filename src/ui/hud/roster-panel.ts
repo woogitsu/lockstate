@@ -1223,6 +1223,20 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       row.name.textContent = formatPrisonerName(t, prisoner);
       row.activity.textContent = formatPrisonerActivity(t, prisoner);
       row.badge.update({ tone: readout.tone, text: t(readout.badgeKey) });
+      // Pooled rows can switch between classified and intake-stage people.
+      // Only a classified tier is named as risk; an intake-stage pill still
+      // describes the stage, not a risk value that has not been assigned.
+      if (prisoner.classificationGroupId === undefined) {
+        row.badge.element.removeAttribute('role');
+        row.badge.element.removeAttribute('aria-label');
+      } else {
+        // A generic span cannot carry an accessible name. The badge is one
+        // visual symbol for the tier, so expose its complete meaning as one.
+        row.badge.element.setAttribute('role', 'img');
+        row.badge.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.regimeRiskBadgeName, {
+          tier: t(readout.badgeKey),
+        }));
+      }
       row.needName.textContent = needWord;
       const needValueText = formatNeedValueText(localizer, need.permille);
       // `label` on every update, not just the first: the row is pooled and the
@@ -1455,6 +1469,8 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
   let detailDayLengthTicks = 0;
   const detailName = valueText('', 'hud-regime__detail-name');
   const detailBadge = createStatusBadge({ tone: 'neutral', text: '' });
+  const detailRiskExplanation = element('p', { className: 'hud-regime__detail-risk' });
+  const detailMediumSchedule = element('p', { className: 'hud-regime__detail-risk' });
   const detailBlock = element('div', {
     className: 'hud-regime__detail',
     children: [
@@ -1462,6 +1478,8 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
         className: 'hud-regime__detail-header',
         children: [detailName, detailBadge.element],
       }),
+      detailRiskExplanation,
+      detailMediumSchedule,
       detailNeedList,
       detailSentence,
     ],
@@ -1534,6 +1552,8 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
       delete detailBlock.dataset['prisoner'];
       detailName.textContent = '';
       detailBadge.update({ tone: 'neutral', text: '' });
+      detailRiskExplanation.hidden = true;
+      detailMediumSchedule.hidden = true;
       for (const row of detailNeedRows) {
         row.element.hidden = true;
         delete row.element.dataset['need'];
@@ -1555,6 +1575,11 @@ export function createRosterPanel(options: RosterPanelOptions): RosterPanel {
     detailName.textContent = formatPrisonerName(t, shown);
     const standing = describePrisonerRow(shown);
     detailBadge.update({ tone: standing.tone, text: t(standing.badgeKey) });
+    const classified = shown.classificationGroupId !== undefined;
+    detailRiskExplanation.hidden = !classified;
+    detailRiskExplanation.textContent = classified ? t(HUD_MESSAGE_KEY.regimeRiskExplanation) : '';
+    detailMediumSchedule.hidden = !classified || shown.riskTier !== MEDIUM_RISK_TIER;
+    detailMediumSchedule.textContent = detailMediumSchedule.hidden ? '' : t(HUD_MESSAGE_KEY.regimeRiskMediumSchedule);
 
     detailNeedRows.forEach((row, index) => {
       const need = shown.needs[index];
