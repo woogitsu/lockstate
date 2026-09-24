@@ -119,6 +119,7 @@ export const PUBLISHED_ASSET_IDS = [
   'terrain.grass.mown',
   'terrain.concrete.paving',
   'terrain.gravel.service_path',
+  'terrain.rock.bedrock',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));

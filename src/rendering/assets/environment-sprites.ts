@@ -79,6 +79,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.grass',
   'env.terrain.concrete',
   'env.terrain.gravel',
+  'env.terrain.rock',
   'env.floor.institutional',
   'env.wall.interior.face',
   'env.wall.interior.cap',
@@ -196,6 +197,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered compacted gravel with angular grey, ochre and limestone chippings.',
+  },
+  /** Shallow layered slate bedrock on unbuildable natural rock tiles. */
+  'env.terrain.rock': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.rock.bedrock',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered slate plates with recessed natural fractures.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

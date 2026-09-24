@@ -1118,7 +1118,7 @@
         "height": 256,
         "opaquePixels": 65536
       }
-    },
+    },
     {
       "assetId": "door.interior.face",
       "image": "door.interior.face.png",
@@ -1251,6 +1251,34 @@
         "height": 256
       },
       "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.rock.bedrock",
+      "image": "terrain.rock.bedrock.png",
+      "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0",
+      "pixelSha256": "ca1d9793e2346d130369835e4992e6c327c1b4bb5bf2da63ce56b40b13acb5e1",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
         "x": 0,
         "y": 0,
