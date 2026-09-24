@@ -82,6 +82,8 @@ export const roomDefinitionSchema = z
      * direction the ruling exists to close.
      */
     openArea: z.boolean().optional(),
+    /** Holding uses bench places for temporary occupancy; a bed there never creates a permanent place. Other rooms default to sleep surfaces. */
+    residenceCapability: identifierSchema.optional(),
     /**
      * **The most prisoners who may *live* in one instance of this room type,
      * whatever it is furnished with.**
@@ -155,7 +157,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'object', objectId: 'object.bed', minQuantity: 1 },
     { type: 'object', objectId: 'object.toilet', minQuantity: 1 },
   ] },
-  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', openArea: true, requirements: [
+  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', openArea: true, residenceCapability: 'seating', requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 },
     { type: 'object', objectId: 'object.bench', minQuantity: 1 },
