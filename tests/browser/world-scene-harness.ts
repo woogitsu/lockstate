@@ -178,19 +178,18 @@ const roomTool: RoomToolPort = {
 };
 
 /**
- * An object tool that records instead of placing, with a fixed 1x1 footprint
- * while armed -- the simplest shape that exercises the gesture (#516). The
- * bed's 1x2 footprint is the HUD's concern, not this recovery's; `isObjectArmed`
- * only needs `footprint()` to answer something.
+ * An object tool that records instead of placing. Its footprint can change
+ * while armed, as the real Build catalogue does when the selected row changes.
  */
 let objectArmed = false;
+let objectFootprint = { width: 1, height: 1 };
 const placedObjects: { tileX: number; tileY: number }[] = [];
 let targetedObject: TileRect | undefined;
 
 const objectTool: ObjectToolPort = {
   isArmed: () => objectArmed,
   isRemoving: () => false,
-  footprint: () => (objectArmed ? { width: 1, height: 1 } : undefined),
+  footprint: () => (objectArmed ? objectFootprint : undefined),
   place: (tile) => {
     placedObjects.push({ tileX: tile.tileX, tileY: tile.tileY });
   },
@@ -337,6 +336,9 @@ const harness: LockstateWorldSceneHarness = {
   targetedArea: () => (targetedArea === undefined ? undefined : toHarnessRect(targetedArea)),
   armObjectTool: (armed) => {
     objectArmed = armed;
+  },
+  setObjectFootprint: (footprint) => {
+    objectFootprint = footprint;
   },
   placedObjects: () => [...placedObjects],
   targetedObject: () => (targetedObject === undefined ? undefined : toHarnessRect(targetedObject)),
