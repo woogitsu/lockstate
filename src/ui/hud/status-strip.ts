@@ -366,9 +366,13 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       return;
     }
     // The button was hidden until this pass, so measure it only after the
-    // display change. Centre within the strip itself: the metrics row can sit
-    // below the strip's top when neighbouring controls wrap.
-    allStatsButton.style.top = `${Math.max(0, (root.clientHeight - allStatsButton.offsetHeight) / 2)}px`;
+    // display change. Keep the directory on the metrics row it describes.
+    // At 900x600, centring in the whole two-row strip placed it over Redo
+    // and Layout on the first row, making both controls unpressable (#88).
+    allStatsButton.style.top = `${Math.max(0, Math.min(
+      root.clientHeight - allStatsButton.offsetHeight,
+      metricsRow.offsetTop + (metricsRow.offsetHeight - allStatsButton.offsetHeight) / 2,
+    ))}px`;
   };
   const metricsObserver = new ResizeObserver(paintAllStatsButton);
   metricsObserver.observe(metricsRow);
