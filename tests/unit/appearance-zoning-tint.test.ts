@@ -68,14 +68,18 @@ describe('zoningTint: one tint per room type', () => {
    * `zoningTintAlphaOverArt` (`src/rendering/world/appearance.ts`), over
    * floor art specifically. This test still deliberately reads
    * `ZONING_TINT_ALPHA_OVER_ART` -- the flat constant -- because its subject
-   * is the *palette's own design identity* (whether the other 17 evenly
-   * spaced hues remain intact after the owner's Yard-only exception), not what actually reaches the
+   * is the *palette's own minimum pair separation*, not what reaches the
    * screen. `tests/unit/appearance-zoning-tint-legibility.test.ts` and
    * `docs/adr/0098-what-says-which-room-this-is.md`'s amendment are what
    * cover the real, per-room-alpha paint step and its cost to this test's
    * own 108-of-153-pairs coverage.
+   *
+   * 2026-09-24: Kitchen now has a distinct Blender floor and an owner-approved
+   * blue-grey tint. Neither equal substrate nor equal 20-degree hue spacing
+   * holds for every pair. The threshold below remains a minimum-distance
+   * guard over the tint values; it cannot assert either property of the map.
    */
-  it('keeps the original 17 hues spaced while pinning the owner-approved Yard exception', () => {
+  it('pins the owner-approved Yard tint and remaining palette separation', () => {
     const channel = (rgb: number, shift: number): number => (rgb >> shift) & 0xff;
     const effectiveDistance = (a: number, b: number): number => {
       const perChannel = [16, 8, 0].map(
