@@ -111,6 +111,7 @@ MODELS = (
     ("terrain.concrete.paving", (1, 1)),
     ("terrain.gravel.service_path", (1, 1)),
     ("terrain.rock.bedrock", (1, 1)),
+    ("floor.kitchen.nonslip", (1, 1)),
 )
 
 
@@ -1279,6 +1280,23 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Fine dry scuff.{index}",
                 (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
                 "dirt_scuff", 0)
+    elif asset_id == "floor.kitchen.nonslip":
+        # Large matte quarry tiles have a visible, recessed square joint and
+        # fine aggregate. They read as a washable work surface at 64 px while
+        # the tiny grains avoid turning a whole kitchen into a noisy grid.
+        box(collection, root, "Blue grey non-slip kitchen tile", (0, 0, 0.04),
+            (1, 1, 0.08), "kitchen_tile", 0)
+        box(collection, root, "East recessed joint", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "kitchen_joint", 0)
+        box(collection, root, "South recessed joint", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "kitchen_joint", 0)
+        for index in range(72):
+            x = (((index * 47 + 17) % 109) / 109 - 0.5) * 0.84
+            y = (((index * 67 + 31) % 113) / 113 - 0.5) * 0.84
+            size = 0.006 + (index % 3) * 0.003
+            box(collection, root, f"Embedded grit.{index}", (x, y, 0.081),
+                (size, size * 0.7, 0.001),
+                "kitchen_grit_light" if index % 4 else "kitchen_grit_dark", 0)
     elif asset_id == "floor.linoleum.institutional":
         # The module repeats every tile. Geometry reaches the frame on all
         # sides, while the slim east/south seams complete the square joint.
@@ -1590,6 +1608,10 @@ def main():
     MATERIALS["floor_fleck_light"] = material("Linoleum pale mineral flecks", (0.67, 0.70, 0.64, 1), 0.95)
     MATERIALS["floor_fleck_dark"] = material("Linoleum dark mineral flecks", (0.42, 0.49, 0.48, 1), 0.93)
     MATERIALS["floor_scuff"] = material("Subtle worn traffic scuffs", (0.47, 0.54, 0.51, 1), 0.94)
+    MATERIALS["kitchen_tile"] = material("Washable blue grey non-slip quarry tile", (0.38, 0.47, 0.51, 1), 0.94)
+    MATERIALS["kitchen_joint"] = material("Kitchen tile recessed charcoal grout", (0.23, 0.29, 0.32, 1), 0.99)
+    MATERIALS["kitchen_grit_light"] = material("Kitchen tile pale mineral grain", (0.53, 0.60, 0.60, 1), 0.97)
+    MATERIALS["kitchen_grit_dark"] = material("Kitchen tile dark mineral grain", (0.28, 0.35, 0.37, 1), 0.99)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["shower_enamel"] = shower_enamel_material()
     MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)

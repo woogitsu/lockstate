@@ -63,6 +63,10 @@ const FIXTURE: HarnessWorldFixture = {
   zonedMinTileY: 2,
   zonedMaxTileX: 5,
   zonedMaxTileY: 4,
+  kitchenMinTileX: 2,
+  kitchenMinTileY: 6,
+  kitchenMaxTileX: 5,
+  kitchenMaxTileY: 8,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -150,6 +154,13 @@ function buildFrame(): RenderFrame {
   for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY; tileY += 1) {
     for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
+    }
+  }
+  const kitchen = defaultRoomContentRegistry.getById('room.kitchen');
+  if (kitchen === undefined) throw new Error('The kitchen room is missing from the catalog.');
+  for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
+    for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
+      world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, kitchen.numericId);
     }
   }
   for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {

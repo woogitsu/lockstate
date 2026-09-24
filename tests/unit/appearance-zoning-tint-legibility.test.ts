@@ -6,6 +6,7 @@ import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import {
   INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   ZONING_TINT_ALPHA,
   ZONING_TINT_ALPHA_OVER_ART,
   zoningTint,
@@ -25,7 +26,7 @@ import { LFS_POINTER_PREFIX } from '../../tooling/source-art-lfs-guard.mjs';
  * correct, which is exactly why that test could not have caught this. Every
  * blend below is computed independently of `appearance.ts`'s own internal
  * helpers -- this file writes its own `blend`/`spread`, deliberately not
- * importing `blendOverInstitutionalFloor` or `channelSpread` -- so that a bug
+ * importing `blendOverFloor` or `channelSpread` -- so that a bug
  * in the production arithmetic and a bug in a shared helper cannot cancel
  * each other out.
  */
@@ -157,6 +158,18 @@ describe('zoning tint legibility over floor art', () => {
     expect(r, 'tinted red channel').toBeGreaterThan(b);
     expect(FLOOR_SPREAD, 'untinted floor is nearly neutral').toBeLessThan(5);
   });
+
+  it('room.kitchen: its own tile keeps the assigned tint visible without increasing the wash', () => {
+    const room = rooms.find((candidate) => candidate.id === 'room.kitchen')!;
+    const tint = zoningTint(room.numericId)!;
+    const floor = KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE;
+    const alpha = zoningTintAlphaOverArt(room.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const colour = floor.map((channel, index) =>
+      channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha,
+    ) as [number, number, number];
+    expect(spread(colour)).toBeGreaterThan(spread(floor));
+  });
 });
 
 /**
@@ -178,23 +191,26 @@ describe('zoning tint legibility over floor art', () => {
 describe('the substrate the per-room alpha table assumes, checked against the art on disk', () => {
   const REPOSITORY_ROOT = resolve(__dirname, '../..');
   const floorSprite = ENVIRONMENT_SPRITES['env.floor.institutional'];
+  const kitchenSprite = ENVIRONMENT_SPRITES['env.floor.kitchen'];
 
-  function resolveFloorArtPath(): string {
-    if (floorSprite.kind !== 'rendered-art') throw new Error('env.floor.institutional is no longer rendered-art');
+  function resolveFloorArtPath(sprite: typeof floorSprite): string {
+    if (sprite.kind !== 'rendered-art') throw new Error('the floor is no longer rendered-art');
     const catalogPath = join(REPOSITORY_ROOT, 'public/game-content/rendered-art.v1.json');
     const catalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as {
       entries: readonly { assetId: string; image: string }[];
     };
-    const entry = catalog.entries.find((candidate) => candidate.assetId === floorSprite.renderedArtId);
+    const entry = catalog.entries.find((candidate) => candidate.assetId === sprite.renderedArtId);
     if (entry === undefined) {
-      throw new Error(`${floorSprite.renderedArtId} has no entry in ${catalogPath}`);
+      throw new Error(`${sprite.renderedArtId} has no entry in ${catalogPath}`);
     }
     return join(REPOSITORY_ROOT, 'public/game-content', entry.image);
   }
 
-  const floorArtPath = resolveFloorArtPath();
+  const floorArtPath = resolveFloorArtPath(floorSprite);
+  const kitchenArtPath = resolveFloorArtPath(kitchenSprite);
   const head = readFileSync(floorArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8');
   const isLfsPointer = head === LFS_POINTER_PREFIX;
+  const kitchenIsLfsPointer = readFileSync(kitchenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
 
   it.skipIf(isLfsPointer)(
     'decodes to the mean colour INSTITUTIONAL_FLOOR_ART_BASE assumes for the published Blender tile',
@@ -211,6 +227,13 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
       expect(mean[2], 'blue').toBeCloseTo(INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE[2], 1);
     },
   );
+  it.skipIf(kitchenIsLfsPointer)('decodes to the mean colour used to calibrate the kitchen tint', () => {
+    const decoded = decodePng(readFileSync(kitchenArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
 });
 
 /** A decoded 8-bit RGB(A) raster: raw scanline bytes, filters already undone. */

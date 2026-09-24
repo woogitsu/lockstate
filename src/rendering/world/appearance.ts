@@ -182,35 +182,39 @@ export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
  * matching the art on disk.
  */
 const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585, 191.587, 189.641];
+/** Mean decoded RGB of the Blender kitchen tile, pinned by the real-PNG drift gate. */
+const KITCHEN_FLOOR_ART_BASE: readonly [number, number, number] = [173.310, 181.373, 185.388];
 
 /** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
 function channelSpread(rgb: readonly [number, number, number]): number {
   return Math.max(rgb[0], rgb[1], rgb[2]) - Math.min(rgb[0], rgb[1], rgb[2]);
 }
 
-function blendOverInstitutionalFloor(tint: number, alpha: number): readonly [number, number, number] {
+function blendOverFloor(tint: number, alpha: number, floor: readonly [number, number, number]): readonly [number, number, number] {
   const r = (tint >> 16) & 0xff;
   const g = (tint >> 8) & 0xff;
   const b = tint & 0xff;
   return [
-    INSTITUTIONAL_FLOOR_ART_BASE[0] * (1 - alpha) + r * alpha,
-    INSTITUTIONAL_FLOOR_ART_BASE[1] * (1 - alpha) + g * alpha,
-    INSTITUTIONAL_FLOOR_ART_BASE[2] * (1 - alpha) + b * alpha,
+    floor[0] * (1 - alpha) + r * alpha,
+    floor[1] * (1 - alpha) + g * alpha,
+    floor[2] * (1 - alpha) + b * alpha,
   ];
 }
 
 /**
  * The Blender floor's untinted channel spread is ~4.0. The older source-art
  * crop spread was ~26.5 and required stronger washes for eight rooms under
- * ADR 0101. The table below recalculates from the currently published render;
- * all shipped tints clear the neutral floor at the flat art alpha.
+ * ADR 0101. The table below recalculates from each room's published render;
+ * every current tint clears its room's substrate at the flat art alpha.
  */
-const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BASE);
+function floorArtBase(roomId: string): readonly [number, number, number] {
+  return roomId === 'room.kitchen' ? KITCHEN_FLOOR_ART_BASE : INSTITUTIONAL_FLOOR_ART_BASE;
+}
 
 /**
  * The smallest alpha at or above `ZONING_TINT_ALPHA_OVER_ART`, and never above
- * `ZONING_TINT_ALPHA`, at which this tint's blend over the institutional floor
- * reads at least as coloured as the untinted floor itself.
+ * `ZONING_TINT_ALPHA`, at which this tint's blend over its room's floor reads
+ * at least as coloured as that floor before the tint.
  *
  * **The cap is `ZONING_TINT_ALPHA` itself, not a separate number, and that is
  * a deliberate, statable choice rather than the unmarked round 0.4 an earlier,
@@ -225,8 +229,10 @@ const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BAS
  * for every room; nothing here should spend more of that budget on one room
  * than a room with no floor art at all is ever painted with. ARITHMETIC,
  * under the previous blue source-art floor, four rooms hit the cap. The
- * current neutral Blender floor clears its own spread at the flat alpha for
- * every shipped room. The cap remains to constrain future art and tints.
+ * current neutral Blender linoleum clears its own spread at the flat alpha
+ * for every room that uses it. The kitchen tile is measured independently;
+ * its assigned tint also clears its own substrate at 0.14. The cap remains
+ * to constrain future art and tints.
  *
  * Monotonic in the region this searches: increasing alpha here only pulls the
  * blend further from the base and closer to the tint, so `channelSpread`
@@ -241,15 +247,16 @@ const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BAS
  * id and fails on the one whose blend does not clear what the table claims
  * it clears.
  */
-function minimumLegibleAlphaOverArt(tint: number): number {
-  if (channelSpread(blendOverInstitutionalFloor(tint, ZONING_TINT_ALPHA_OVER_ART)) >= INSTITUTIONAL_FLOOR_ART_SPREAD) {
+function minimumLegibleAlphaOverArt(tint: number, floor: readonly [number, number, number]): number {
+  const floorSpread = channelSpread(floor);
+  if (channelSpread(blendOverFloor(tint, ZONING_TINT_ALPHA_OVER_ART, floor)) >= floorSpread) {
     return ZONING_TINT_ALPHA_OVER_ART;
   }
   let low = ZONING_TINT_ALPHA_OVER_ART;
   let high = ZONING_TINT_ALPHA;
   for (let step = 0; step < 40; step += 1) {
     const mid = (low + high) / 2;
-    if (channelSpread(blendOverInstitutionalFloor(tint, mid)) < INSTITUTIONAL_FLOOR_ART_SPREAD) {
+    if (channelSpread(blendOverFloor(tint, mid, floor)) < floorSpread) {
       low = mid;
     } else {
       high = mid;
@@ -270,7 +277,7 @@ function minimumLegibleAlphaOverArt(tint: number): number {
  * over the neutral Blender floor; the eight former overrides are historical.
  */
 const ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID: ReadonlyMap<string, number> = new Map(
-  Object.entries(ZONING_TINT_BY_ROOM_ID).map(([id, tint]) => [id, minimumLegibleAlphaOverArt(tint)]),
+  Object.entries(ZONING_TINT_BY_ROOM_ID).map(([id, tint]) => [id, minimumLegibleAlphaOverArt(tint, floorArtBase(id))]),
 );
 
 /** Undefined when the tile is unzoned or the zoning id is not a known room. */
@@ -305,6 +312,7 @@ export function zoningTintAlphaOverArt(zoningNumericId: number): number {
  */
 export const INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] =
   INSTITUTIONAL_FLOOR_ART_BASE;
+export const KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = KITCHEN_FLOOR_ART_BASE;
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */
 export interface StructureAppearance {

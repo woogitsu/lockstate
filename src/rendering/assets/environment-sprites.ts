@@ -81,6 +81,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.gravel',
   'env.terrain.rock',
   'env.floor.institutional',
+  'env.floor.kitchen',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -216,6 +217,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered cool institutional linoleum with fine joints and wear, one seamless tile per repeat.',
+  },
+  'env.floor.kitchen': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.kitchen.nonslip',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered washable blue-grey non-slip kitchen tile; seamless one-tile repeat with fine mineral grit.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

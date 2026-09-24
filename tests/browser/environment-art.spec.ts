@@ -127,6 +127,38 @@ test.describe('the environment artwork', () => {
     for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
+  test('the kitchen uses its own opaque tiling frame while the neighboring room keeps linoleum', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.kitchen');
+      return {
+        kitchen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.kitchen'),
+        linoleum: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.institutional'),
+        size: frame === undefined ? undefined : [frame.width, frame.height],
+        corners: frame === undefined ? [] : [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1], [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(result.size).toEqual([128, 128]);
+    // This room straddles an 8-tile chunk boundary, so the renderer keeps
+    // one merged rectangle per chunk rather than one sprite for the room.
+    expect(result.kitchen).toHaveLength(2);
+    expect(result.linoleum).toHaveLength(1);
+    expect([result.kitchen[0]!.x, result.kitchen[0]!.y]).toEqual([
+      fixture.kitchenMinTileX * fixture.tileSizePx, fixture.kitchenMinTileY * fixture.tileSizePx,
+    ]);
+    expect(result.kitchen.map((sprite) => sprite.width)).toEqual([
+      (fixture.kitchenMaxTileX - fixture.kitchenMinTileX + 1) * fixture.tileSizePx,
+      (fixture.kitchenMaxTileX - fixture.kitchenMinTileX + 1) * fixture.tileSizePx,
+    ]);
+    expect(result.kitchen.reduce((height, sprite) => height + sprite.height, 0)).toBe(
+      (fixture.kitchenMaxTileY - fixture.kitchenMinTileY + 1) * fixture.tileSizePx,
+    );
+    for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
   test('the Blender dirt covers bare outdoor ground and restores colour fallback when removed', async ({ page }) => {
     const fixture = await openHarness(page);
     expect(ENVIRONMENT_SPRITES['env.terrain.dirt'].kind).toBe('rendered-art');

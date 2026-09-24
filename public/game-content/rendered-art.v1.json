@@ -128,6 +128,31 @@
       }
     },
     {
+      "assetId": "floor.kitchen.nonslip",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.kitchen.nonslip.9e83b26d596c.png",
+      "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.linoleum.institutional",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.linoleum.institutional.cb4bae62ae53.png",

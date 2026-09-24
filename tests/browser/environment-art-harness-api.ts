@@ -48,6 +48,10 @@ export interface HarnessWorldFixture {
   readonly zonedMinTileY: number;
   readonly zonedMaxTileX: number;
   readonly zonedMaxTileY: number;
+  readonly kitchenMinTileX: number;
+  readonly kitchenMinTileY: number;
+  readonly kitchenMaxTileX: number;
+  readonly kitchenMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;
