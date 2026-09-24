@@ -108,6 +108,25 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the Blender linoleum fills every edge of its repeating tile', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.floor.institutional'].kind).toBe('rendered-art');
+    await openHarness(page);
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.institutional');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        samples: [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1],
+          [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
   test('packs the Blender overhead door cap while retaining the frontal source door', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
     expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('source-art');

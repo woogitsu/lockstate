@@ -228,28 +228,29 @@
     {
       "assetId": "floor.linoleum.institutional",
       "image": "floor.linoleum.institutional.png",
-      "sha256": "ecee689ea785273303e7e8ad3ddf56d49c1a0d4ac3c2fddfa9aae137d0d3e7af",
-      "pixelSha256": "150beac21ee984a0a6501f325309bb96928eb018ae7e55548bcd0818eac7bd06",
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f",
+      "pixelSha256": "d25b9d891718b375d038ca89eecf8e43c38070b6b0e9d82b7366ff747e4f280f",
       "footprintTiles": {
-        "width": 2.0,
-        "height": 2.0
+        "width": 1,
+        "height": 1
       },
       "frameTiles": {
-        "width": 2.24,
-        "height": 2.24
+        "width": 1,
+        "height": 1
       },
+      "marginFraction": 0,
       "overhangsFootprint": false,
       "sizePx": {
-        "width": 512,
-        "height": 512
+        "width": 256,
+        "height": 256
       },
-      "frameAspectDriftFromFootprint": 0.0,
+      "frameAspectDriftFromFootprint": 0,
       "opaqueBoundsPx": {
-        "x": 26,
-        "y": 26,
-        "width": 460,
-        "height": 460,
-        "opaquePixels": 211596
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
       }
     },
     {

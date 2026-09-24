@@ -162,18 +162,15 @@ export type EnvironmentSpriteDefinition = SourceArtSpriteDefinition | RenderedAr
 
 export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>> = {
   /**
-   * The small clean swatch from the bottom-right of the linoleum sheet rather
-   * than its large hero square top-left: the hero square carries a slightly
-   * darker rim that reads as a grid line under every tile when it is repeated,
-   * and this one tiles without a visible seam.
+   * The Blender floor module is a complete one-tile frame. Its east and south
+   * fine joints meet adjacent copies, while the image reaches all four edges.
    */
   'env.floor.institutional': {
-    kind: 'source-art',
-    assetId: 'floor.linoleum.institutional',
-    sourceRectPx: { x: 732, y: 711, width: 304, height: 304 },
+    kind: 'rendered-art',
+    renderedArtId: 'floor.linoleum.institutional',
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Speckled institutional linoleum, square swatch, tiles seamlessly at one tile per repeat.',
+    note: 'Original Blender-rendered cool institutional linoleum with fine joints and wear, one seamless tile per repeat.',
   },
   /**
    * A centre slice of the frontal wall module, not the whole module. The module

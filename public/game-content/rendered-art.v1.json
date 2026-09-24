@@ -103,6 +103,31 @@
       }
     },
     {
+      "assetId": "floor.linoleum.institutional",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.linoleum.institutional.cb4bae62ae53.png",
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.cell.bed.single.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.cell.bed.single.variants.7d0ecb856553.png",

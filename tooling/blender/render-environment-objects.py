@@ -517,9 +517,8 @@ def main() -> None:
         origin = origin_object.matrix_world.translation
         low, high = _evaluated_bounds(collection)
 
-        # Tiling wall caps meet at pixel edges. The transparent object margin
-        # would create a visible gap after the atlas frame repeats each tile.
-        margin_fraction = 0.0 if asset_id == "wall.interior.cap.overhead" else MARGIN_FRACTION
+        # Repeating floor tiles and wall caps must meet at pixel edges.
+        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "wall.interior.cap.overhead"} else MARGIN_FRACTION
         frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y

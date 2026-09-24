@@ -389,6 +389,14 @@ four dark vent slots in a recessed frame, a round service cap, corner screws
 and a small teal temperature lamp. The original four-view concept and Blender
 choices are recorded in `assets/source/concepts/fridge-v3.md`.
 
+### Institutional linoleum floor — `floor.linoleum.institutional`
+
+The original four-view material concept shows a true overhead tile, oblique
+surface, section, and 3 × 3 repeated preview. Blender models the cool grey-green
+linoleum with fine mineral flecks, traffic scuffs and joints that meet between
+tiles. The source and tiling choices are recorded in
+`assets/source/concepts/institutional-floor-v1.md`.
+
 ### Interior door overhead cap — `door.interior.variants`
 
 The north-south interior door edge now uses a true overhead Blender render: a
