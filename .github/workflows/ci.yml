@@ -658,9 +658,10 @@ jobs:
             echo "$file: $(stat -c%s "$file") bytes"
           }
 
-          ids="$(grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+          # The legacy lane is empty once every mapped sprite uses a Blender
+          # render. Keep the rendered lane below mandatory in that case.
+          ids="$( { grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
                  | sed "s/assetId: '//; s/'//" | sort -u)"
-          [ -n "$ids" ] || { echo "::error::no assetId found in environment-sprites.ts; the grep needs updating"; exit 1; }
           for id in $ids; do
             file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
             if [ -z "$file" ]; then
@@ -693,8 +694,9 @@ jobs:
           # make impossible. An empty list is not an error: until a second
           # object is drawn from a render there is one id, and a tree with none
           # is a legitimate state.
-          rendered_ids="$(grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+          rendered_ids="$( { grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
                  | sed "s/renderedArtId: '//; s/'//" | sort -u)"
+          [ -n "$ids$rendered_ids" ] || { echo "::error::no assetId or renderedArtId found in environment-sprites.ts; the grep needs updating"; exit 1; }
           for id in $rendered_ids; do
             file="$(ls public/game-content/source-art/rendered."$id".*.png 2>/dev/null | head -1 || true)"
             if [ -z "$file" ]; then
