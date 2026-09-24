@@ -11523,7 +11523,7 @@ test.describe('the assembled application', () => {
   test('the interface scale is applied, cycles through its six steps and survives a reload (#545)', async ({ page }) => {
     // 1440x900 rather than 900x600, and the reason is a measurement: the
     // status strip *wraps to two rows* at 125 % on a 900px-wide window, so its
-    // height there is not a multiple of anything and it is the wrong ruler.
+    // actual height there is not a multiple of anything and is the wrong ruler.
     // What every step does to the panels at the viewports that bind is the
     // next test's subject; this one is about the mechanism.
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -11534,48 +11534,55 @@ test.describe('the assembled application', () => {
     await expect(control).toBeVisible();
 
     /*
-     * Three boxes, not one, and they are chosen to be driven by *different*
+     * Two boxes and a measured strip floor, driven by *different*
      * tokens -- which the first draft of this test was not, and a mutation
      * proved it: reverting `--tap-target` to a literal 44px left it green,
      * because a tab's height at 100 % comes from its padding, icon and label
      * rather than from its `min-height` floor.
      *
-     *   - a tab, whose height is `--space-2`, `--icon-size-md` and
+     *   - a rail tab, whose height is `--space-1`, `--icon-size-md` and
      *     `--text-size-label` summed;
      *   - the scale button itself, whose height *is* `--tap-target` (one line
      *     of body type inside a 44px floor);
-     *   - the status strip, whose height is `--hud-strip-height`.
+     *   - the status strip's computed height floor, driven by
+     *     `--hud-strip-height`. Its actual box can be taller than that floor
+     *     when the status controls wrap into more rows.
      *
      * All three must move together, because "the interface scales" is a claim
      * about the whole token layer and not about whichever length a test
-     * happened to reach.
+     * happened to reach. The strip's actual box is measured separately: new
+     * controls can make it content-sized above its floor at both scales, so
+     * its ratio alone is not a measurement of the strip-height token.
      */
     const boxes = async (): Promise<Record<string, number>> =>
       page.evaluate(() => ({
         tab: document.querySelector('.ui-tab')?.getBoundingClientRect().height ?? 0,
         button: document.querySelector('.display-scale__cycle')?.getBoundingClientRect().height ?? 0,
-        strip: document.querySelector('.hud-strip')?.getBoundingClientRect().height ?? 0,
+        stripFloor: Number.parseFloat(getComputedStyle(document.querySelector('.hud-strip')!).minHeight),
+        stripActual: document.querySelector('.hud-strip')?.getBoundingClientRect().height ?? 0,
       }));
 
     const atDefault = await boxes();
-    // Not asserted as literals: what matters is that they *move*, and by about
-    // the ratio the step asks for. Literals here would be a second copy of the
-    // token file inside a test.
+    // Not asserted as literals: what matters is that the boxes and the
+    // strip's computed floor *move* by about the ratio the step asks for.
+    // Literals here would be a second copy of the token file inside a test.
     for (const [name, value] of Object.entries(atDefault)) expect(value, name).toBeGreaterThan(0);
+    expect(atDefault['stripActual'], 'the rendered strip must honor its floor at 100%').toBeGreaterThanOrEqual(atDefault['stripFloor'] ?? 0);
     await expect(readout).toHaveText('100%');
 
     // One press: 100 -> 125. The boxes grow, and they grow by the step.
     //
-    // A band rather than an exact 1.25, because two of these three boxes are
-    // sums that include lengths which deliberately do **not** scale -- the 1px
+    // A band rather than an exact 1.25, because the tab's box is a sum that
+    // includes lengths which deliberately do **not** scale -- the 1px
     // hairline and a tab's 2px active rule are device affordances, and
-    // `tokens.css` says so. Measured, a tab is 57.2px at 100 % and 70.5px at
-    // 125 %, a ratio of 1.2325. The band is wide enough for that and nowhere
+    // `tokens.css` says so. The band is wide enough for that and nowhere
     // near wide enough for a token that stopped scaling, which lands at 1.0.
     await control.click();
     await expect(readout).toHaveText('125%');
     const at125 = await boxes();
+    expect(at125['stripActual'], 'the rendered strip must honor its floor at 125%').toBeGreaterThanOrEqual(at125['stripFloor'] ?? 0);
     for (const [name, value] of Object.entries(at125)) {
+      if (name === 'stripActual') continue;
       const ratio = value / (atDefault[name] ?? 1);
       expect(ratio, `${name} grew by ${ratio.toFixed(3)} for a step of 1.25`).toBeGreaterThan(1.2);
       expect(ratio, `${name} grew by ${ratio.toFixed(3)} for a step of 1.25`).toBeLessThan(1.3);
