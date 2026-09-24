@@ -16,8 +16,13 @@ export class KeyboardInputAdapter {
 
   public keyDown(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (event.repeat || this.pressedCodes.has(event.code)) return [];
+    const started = this.eventsFor(event.code, 'started');
+    // A key typed into a text field must not become a held world action when
+    // focus leaves that field before keyup. Only latch keys that began an
+    // action in the context that owned their original press.
+    if (started.length === 0) return [];
     this.pressedCodes.add(event.code);
-    return this.eventsFor(event.code, 'started');
+    return started;
   }
 
   public keyUp(event: KeyboardEventLike): readonly SemanticActionEvent[] {
