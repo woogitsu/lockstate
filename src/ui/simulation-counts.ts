@@ -237,6 +237,8 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
           ? {}
           : { treasuryOverdraftFloorMinorUnits: counts.treasuryOverdraftFloorMinorUnits }),
         stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        ...(counts.labourEmployedLastBlock === undefined ? {} : { labourEmployedLastBlock: counts.labourEmployedLastBlock }),
+        ...(counts.labourIdleLastBlock === undefined ? {} : { labourIdleLastBlock: counts.labourIdleLastBlock }),
         /*
          * Conditionally spread for `treasuryOverdraftFloorMinorUnits`'s exact
          * reason above: optional on both sides, so an unguarded assignment

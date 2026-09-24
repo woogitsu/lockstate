@@ -243,6 +243,7 @@ export const HUD_MESSAGE_KEY = {
    * admit a prisoner.
    */
   earnedToday: 'hud.status.earned-today',
+  labourBlock: 'hud.status.labour-block',
   /**
    * The `Earned today` chip's tooltip and screen-reader text while some of
    * today's grant is being withheld for unmet needs (issue #890).

@@ -559,6 +559,11 @@ export class SimulationEventLog {
     });
   }
 
+  public recordLabourBlockIdle(idle: number, tick: number): void {
+    if (!Number.isSafeInteger(idle) || idle < 1) return;
+    this.append({ sequence: this._sequence + 1, tick, type: 'economy.work-block-idle', idle });
+  }
+
   /**
    * Records that the treasury just fell to or below one insolvency rung's
    * floor -- the owner's ruling of 2026-09-01 on issue #767 (ADR 0087

@@ -498,6 +498,8 @@ export interface HudCountsViewModel {
    * what the prison has earned.
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
+  readonly labourEmployedLastBlock?: number;
+  readonly labourIdleLastBlock?: number;
   /**
    * How much of today's grant has been withheld so far because residents have
    * needs going unmet or used dirty rooms, in the same minor units -- or **absent because nothing

@@ -1366,8 +1366,16 @@ const roomFilthSchema = z.object({
   exposures: z.array(z.tuple([z.string().min(1), z.array(entityIdSchema)])),
 }).strict();
 
-/** V7 records waste already produced and the prisoners exposed this day. */
-const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema });
+const labourCreditSchema = z.object({
+  workTicks: z.array(z.tuple([entityIdSchema, z.number().int().nonnegative().safe().max(2_400)])),
+  employedLastBlock: z.number().int().nonnegative().safe(),
+  idleLastBlock: z.number().int().nonnegative().safe(),
+  workedThisBlock: z.array(entityIdSchema).optional(),
+  eligibleThisBlock: z.array(entityIdSchema).optional(),
+}).strict();
+
+/** V7 records waste already produced and the prisoners exposed this day. Labour is optional for older V7 saves. */
+const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema, labourCredit: labourCreditSchema.optional() });
 
 // --- Envelope ---
 

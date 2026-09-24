@@ -428,6 +428,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // budget and no forecast behind it, and the same minor units as `funds`
   // above so the two chips can be read against each other.
   'hud.status.earned-today': 'Earned today',
+  'hud.status.labour-block': '{employed} working / {idle} idle',
+  'hud.alert.event.economy.work-block-idle': '{idle} prisoners had no work in the last block — this prison has no furnished kitchen, laundry or classroom.',
   /*
    * The `Earned today` chip's tooltip and screen-reader text while some of
    * today's grant is being withheld for unmet needs (issue #890) and the

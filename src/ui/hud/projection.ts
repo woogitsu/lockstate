@@ -1265,13 +1265,19 @@ export function projectStatusMetrics(
       // adds a column without moving one.
       value: counts.stateIncomeAccruedTodayMinorUnits,
       capacity: undefined,
-      // No tone and no badge, for the same reason `funds` has neither: "a good
-      // day" is a threshold, and nobody has set one.
+      // No threshold tone: a good day has no authored threshold. The badge
+      // reports performed prisoner labour at the last completed work block.
 
       tone: undefined,
-      badge: undefined,
+      badge: (counts.labourEmployedLastBlock ?? 0) + (counts.labourIdleLastBlock ?? 0) > 0
+        ? {
+            tone: (counts.labourIdleLastBlock ?? 0) > 0 ? 'warning' : 'success',
+            textKey: HUD_MESSAGE_KEY.labourBlock,
+            numberParameters: { employed: counts.labourEmployedLastBlock ?? 0, idle: counts.labourIdleLastBlock ?? 0 },
+          }
+        : undefined,
       // **And a description, which is not a tone and not a badge** (issue
-      // #890). The two lines above refuse a threshold nobody has set; this
+      // #890). The tone above refuses a threshold nobody has set; this
       // states a figure the simulation already computes and the player has no
       // other way to read -- what today's grant is not paying because
       // residents have needs going unmet. `funds` above is the precedent for

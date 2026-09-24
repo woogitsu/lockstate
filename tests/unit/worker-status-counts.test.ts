@@ -352,6 +352,8 @@ describe('publishing the status counts', () => {
       // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
+      labourEmployedLastBlock: 0,
+      labourIdleLastBlock: 0,
       // Zero for a second reason, which is why it is asserted beside the line
       // above rather than assumed to follow it (issue #890): withholding is
       // per **occupied place**, and this scenario has none. A prison earning
@@ -1127,7 +1129,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        24 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        26 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -1496,7 +1498,9 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
         Object.keys(payload.editHistory).sort(),
         'the worst-case fixture no longer carries every member `editHistoryAvailabilitySchema` declares -- re-measure the byte bound',
       ).toEqual(Object.keys(editHistoryAvailabilitySchema.shape).sort());
-      expect(JSON.stringify(payload).length).toBeLessThan(987);
+      // Two bounded scalar work counts add 61 bytes in the largest fixture;
+      // the payload remains independent of the prisoner population.
+      expect(JSON.stringify(payload).length).toBeLessThan(1_050);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

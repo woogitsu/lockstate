@@ -326,6 +326,7 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
       'something other than ProcurementSystem.cancel, StateIncomeSystem and LoanBook.draw now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change -- and route it through LoanBook.divert, because ADR 0075 decision 2 repays a loan out of every positive inflow',
     ).toEqual([
       path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'labour-credit.ts'),
       path.join('src', 'simulation', 'economy', 'loans.ts'),
       path.join('src', 'simulation', 'economy', 'procurement.ts'),
     ]);
@@ -468,7 +469,7 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     const WORDS: Readonly<Record<number, string>> = {
       9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
       15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen', 19: 'nineteen', 20: 'twenty',
-      21: 'twenty-one',
+      21: 'twenty-one', 22: 'twenty-two', 23: 'twenty-three', 24: 'twenty-four',
     };
     const word = WORDS[fieldCount];
     expect(word, `add ${fieldCount} to this gate's number-word table`).toBeDefined();

@@ -36,7 +36,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
+import { InsolvencyRungSystem, JustInTimeMaterialsService, LabourCreditSystem, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
@@ -50,9 +50,15 @@ import { CarryJobExecutor, Container, ContainerMaterialsProvider, ContainerRegis
 import {
   NEED_IDS,
   NEED_MAX,
+  DAY_LENGTH_TICKS,
+  ACTION_PHASES,
+  DEFAULT_ACTIONS,
   PRISONER_SENTENCE_RNG_STREAM,
   PrisonerOperationsRuntime,
   SafetyCoverageSystem,
+  classificationGroupIdFromIndex,
+  findRegimeSchedule,
+  resolveActiveRegimeBlock,
   type DisciplinaryEvidenceSource,
 } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
@@ -172,6 +178,7 @@ export interface SimulationRuntime {
    */
   readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
+  readonly labourCredit: LabourCreditSystem;
   /**
    * ADR 0075 decision 2's loan book, or `undefined` when no terms were
    * supplied — which is every session `src/` builds today. See
@@ -1065,6 +1072,33 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `'wages'` that a press already gets on `'deliveries'`/`'hiring'`.
    */
   const payroll = new PayrollSystem(treasury, securityGuards, events, prisoners.roomInstances);
+  const eligibleForWork = (tick: number) => prisoners.roomInstances.residentIdsWithExistingPlace().filter((entityId) => {
+    const index = prisoners.entityStore.getIndex(entityId);
+    const groupId = classificationGroupIdFromIndex(prisoners.records.classificationGroupIndex[index]!);
+    const block = resolveActiveRegimeBlock(findRegimeSchedule(prisoners.regimes.all(), groupId), tick);
+    return block.allowedCategories.includes('work') || block.allowedCategories.includes('education');
+  });
+  const workingPrisoners = (tick: number) => eligibleForWork(tick).filter((entityId) => {
+    const index = prisoners.entityStore.getIndex(entityId);
+    if (prisoners.currentAction.phase[index] !== ACTION_PHASES.indexOf('performing')) return false;
+    const action = DEFAULT_ACTIONS[prisoners.currentAction.actionIndex[index]!];
+    return action?.target.kind === 'room-catalog-id' && (action.category === 'work' || action.category === 'education');
+  });
+  const hasFurnishedWorkRoom = () => DEFAULT_ACTIONS.some((action) =>
+    (action.category === 'work' || action.category === 'education') &&
+    action.target.kind === 'room-catalog-id' &&
+    prisoners.roomInstances.allByRoomCatalogId(action.target.roomCatalogId).some((instance) =>
+      action.requiredObjectCapability === undefined || instance.objectCapabilities.includes(action.requiredObjectCapability),
+    ),
+  );
+  const labourCredit = new LabourCreditSystem(
+    treasury, workingPrisoners, loans, eligibleForWork, hasFurnishedWorkRoom,
+    (idle, tick) => events.recordLabourBlockIdle(idle, tick),
+    (tick) => prisoners.regimes.all().some((schedule) => schedule.blocks.some((block) =>
+      (block.allowedCategories.includes('work') || block.allowedCategories.includes('education')) &&
+      block.endTickOfDay === (tick % DAY_LENGTH_TICKS) + 1,
+    )),
+  );
   /*
    * The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
    * amendment): the one-off notice at the moment the treasury crosses the
@@ -1619,6 +1653,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
+  kernel.registerSystem(labourCredit);
   kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(roomNeedsClearedNotice);
   kernel.registerSystem(navigation);
@@ -1645,6 +1680,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     procurement,
     justInTimeMaterials,
     stateIncome,
+    labourCredit,
     loans,
     payroll,
     insolvencyRungs,

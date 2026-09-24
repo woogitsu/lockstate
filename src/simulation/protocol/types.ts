@@ -1202,6 +1202,8 @@ export const statusCountsSchema = z
      * too.
      */
     stateIncomeAccruedTodayMinorUnits: countSchema,
+    labourEmployedLastBlock: countSchema.optional(),
+    labourIdleLastBlock: countSchema.optional(),
     /**
      * How much of today's grant has been withheld so far because residents
      * have needs going unmet, in the same minor units
@@ -2156,6 +2158,7 @@ export const SIMULATION_EVENT_TYPES = [
   'economy.deliveries-restored',
   'economy.delivery-cancelled',
   'economy.wages-unpaid',
+  'economy.work-block-idle',
   'incidents.all-clear',
   'incidents.all-clear-after-lapse',
   'incidents.assault-opened',
@@ -2546,6 +2549,13 @@ const wagesUnpaidEventSchema = z
     unpaidWagesMinorUnits: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
   })
   .strict();
+
+/** A scheduled work block ended with eligible prisoners idle and no furnished work room. */
+const workBlockIdleEventSchema = z.object({
+  ...simulationEventEnvelopeFields,
+  type: z.literal('economy.work-block-idle'),
+  idle: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+}).strict();
 
 /**
  * The treasury just fell to or below the deliveries rung
@@ -3307,6 +3317,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
+  workBlockIdleEventSchema,
   deliveriesRefusedEventSchema,
   constructionRefusedEventSchema,
   deliveriesRestoredEventSchema,

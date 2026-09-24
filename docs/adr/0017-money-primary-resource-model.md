@@ -160,6 +160,13 @@ writing the hierarchy down.
   unchanged. The rate is #29's and not this ADR's, per decision 5, and it is
   recorded on that issue rather than here.
 
+  **Added under #591:** `LabourCreditSystem` is a secondary income line.
+  It pays 25 minor units for each 400 ticks a prisoner actually performs
+  room work or education in a work block, at the end of that in-game day.
+  Idle and travelling ticks pay nothing. The credit is diverted to an open
+  loan before the remainder reaches treasury, as ADR 0075 requires of every
+  positive inflow; it does not alter the per-place state grant above.
+
   **It paid nothing in a session for as long as rooms had no capacity, and it
   pays now.** The paragraph here used to end with the first half of that
   sentence, and the reason it is worth keeping both halves is that nothing in

@@ -147,7 +147,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twenty-one
+publishable on a timer: `simulation/status-counts` (section 8) carries twenty-four
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. *(The refusal record is four fields since
 2026-09-16 and five since 2026-09-22, the fifth being a nested `tile` of two
@@ -869,7 +869,10 @@ was unreachable behind it: not a control, but a **credit**.
 that has not landed, exactly, and it is one of only three things in the simulation
 that credit the treasury at all (gap 21) — **this sentence read "only two" until
 ADR 0075 decision 2's `LoanBook.draw` became the third**, and gap 21 carries the
-enumeration. Every caller in the repository was a
+enumeration. **Since #591 this is four: `LabourCreditSystem` pays completed
+work credits at the day boundary, routing through `LoanBook.divert` first.**
+The earlier three-item count is retained above as the state before labour.
+Every caller in the repository was a
 test -- `grep -rn "procurement\.cancel" src/` found nothing -- because no command
 named a purchase, and a command could not usefully have named one: a purchase
 `orderId` is minted on the main thread by the press that spends the money and then
@@ -1559,9 +1562,9 @@ decision about what to build next.
     panel does not.** A *forecast* — anything projecting the balance forward —
     is still a figure no system produces and must not be rendered.
 
-    **The three things that credit the treasury, and which of them is an
+    **The four things that credit the treasury, and which of them is an
     income line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is
-    the income line: ADR 0017 decision 3, on decision 6's basis — the state
+    the primary income line: ADR 0017 decision 3, on decision 6's basis — the state
     pays per prisoner-day, accrued per occupied place — at 300 minor units a
     prisoner-day less what unmet needs withhold, credited once per in-game day
     on its last tick. **Unmet needs withhold nothing as of 2026-09-03**, the
@@ -1581,12 +1584,21 @@ decision about what to build next.
     the difference"* — so a readout that adds a drawdown to income would be
     the defect the sentence names, and **no such readout exists yet**: nothing
     in `src/ui/` reads a loan, no locale key names one, and none may be added
-    before the figure it names is rendered. **Two of the three are still
+    before the figure it names is rendered. **Two of those three are still
     unreachable from a session a player can drive**, and the loan is the one
     that is unreachable at the *command* boundary: `simulationCommandSchema`
     has no member that draws one, so a loan can only be opened by a fixture.
     Whoever gives it a surface is choosing player-facing wording, which
     `AGENTS.md` reserves to the owner.
+
+    **The fourth is prison labour (#591).** `LabourCreditSystem` samples
+    prisoners actually performing room work or education during a work block,
+    pays 25 minor units per 400 performed ticks per prisoner at the day end,
+    and sends that positive inflow through `LoanBook.divert` before crediting
+    cash. The `Earned today` status chip keeps its state-grant figure; its
+    work-block badge names how many worked and how many remained idle at the
+    last completed block. This is a secondary line and must remain distinct
+    from both the state grant and a loan drawdown in any future ledger.
 
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names all three.
