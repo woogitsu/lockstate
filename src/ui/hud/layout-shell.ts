@@ -614,6 +614,8 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   const onMenuKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || menuBody.hidden !== false) return;
     event.preventDefault();
+    // This Escape closes Layout; it must not also reach the world's armed tool.
+    event.stopPropagation();
     setMenuOpen(false);
   };
   menu.addEventListener('keydown', onMenuKeyDown);
