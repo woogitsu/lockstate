@@ -42,3 +42,11 @@ export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefi
   const name = tag.toLowerCase();
   return name === 'input' || name === 'textarea' || name === 'select';
 }
+
+/** A native modal owns keyboard input until it closes, even when its focused child is a button. */
+export function isModalDialogOpen(
+  doc: { querySelector(selector: string): Element | null } | undefined = globalThis.document,
+): boolean {
+  if (doc === undefined) return false;
+  return doc.querySelector('dialog:modal') !== null;
+}

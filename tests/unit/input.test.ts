@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isModalDialogOpen, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 import { expectOk } from '../helpers/expect-ok';
 
 class MemoryStore implements KeyValueStore {
@@ -15,6 +15,13 @@ class MemoryStore implements KeyValueStore {
 }
 
 describe('semantic input', () => {
+  it('recognises only a native modal dialog as owning the world keyboard', () => {
+    const open = { querySelector: (selector: string) => selector === 'dialog:modal' ? ({} as Element) : null };
+    const closed = { querySelector: (_selector: string) => null };
+    expect(isModalDialogOpen(open)).toBe(true);
+    expect(isModalDialogOpen(closed)).toBe(false);
+    expect(isModalDialogOpen(undefined)).toBe(false);
+  });
   it('uses physical movement keys, independently of the keyboard layout', () => {
     const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
     expect(adapter.keyDown({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'started', source: 'keyboard' }]);
