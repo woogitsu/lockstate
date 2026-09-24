@@ -89,6 +89,11 @@ function prisonWithOneFullyLoadedGuard(): { runtime: SimulationRuntime; entityId
   const runtime = createNewSimulationRuntime(SEED);
   wallRoomPerimeter(runtime.world, CELL, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL }));
+  const cell = runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')[0]!;
+  runtime.prisoners.roomInstances.updateDerived(cell.instanceId, {
+    residentCapacity: 1, concurrentUseCapacity: 1,
+    concurrentUseCapacityByCapability: [['sleep-surface', 1]], objectCapabilities: ['sleep-surface'],
+  });
   submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, ...ORIGIN }));
   expect(runtime.refusals.count, 'the occupant this fixture needs must actually be admitted').toBe(0);
 

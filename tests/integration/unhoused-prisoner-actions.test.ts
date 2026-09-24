@@ -177,9 +177,10 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 }
 
 /**
- * One cell with one bed, one finished canteen, no guards -- built with nothing
- * but the commands a player can send. The one shortcut is `wallRoomPerimeter`,
- * which writes the wall edges a completed `wall-brick` order would write.
+ * One cell with one bed, one finished canteen, no guards -- built with player
+ * commands. `wallRoomPerimeter` writes completed wall edges. The second
+ * in-prison arrival below models a saved pre-#590 intake stage; new requests
+ * without a place wait outside and cannot recreate that state.
  */
 function prison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
@@ -231,9 +232,11 @@ interface WatchedRun {
 
 function watched(): WatchedRun {
   const runtime = prison();
-  for (let index = 0; index < 2; index += 1) {
-    submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
-  }
+  submit(runtime, 'admit-0', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+  // A pre-#590 save can already contain a second in-prison intake awaiting a
+  // bed. Keep that legacy stage under test without using the new guarded
+  // player command, which now queues this request outside instead.
+  runtime.prisoners.admitPrisoner(ADMISSION, ARRIVAL);
   // A refused purchase, zoning, placement or admission would make every figure
   // below a measurement of a different prison.
   expect(runtime.refusals.count, 'the fixture must build the prison it says it builds').toBe(0);

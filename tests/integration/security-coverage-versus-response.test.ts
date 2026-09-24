@@ -188,7 +188,9 @@ function hireGuards(runtime: SimulationRuntime, count: number, idPrefix: string)
 }
 
 /**
- * One prison, `guardCount` guards, twelve prisoners and one bed.
+ * One prison, `guardCount` guards, twelve prisoners and one bed. The crowded
+ * starting population is retained legacy state; #590's guarded intake would
+ * queue the excess outside, which separate tests cover.
  *
  * The *only* difference between any two columns of the table above is this
  * argument, which is what makes the comparison a comparison rather than two
@@ -217,7 +219,10 @@ function prisonHiring(guardCount: number, scheduledGuardCount?: number): Simulat
   stepTo(runtime, 200); // delivery delay plus build progress, the margin every furnished-cell loop here uses
   hireGuards(runtime, guardCount, 'hire');
   for (let index = 0; index < POPULATION; index += 1) {
-    submit(runtime, `admit-${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN }));
+    // Preserve the crowded population of a pre-#590 save. New requests above
+    // capacity wait at the gate, but response duties still serve old saves.
+    runtime.prisoners.admitPrisoner(ADMISSION, ORIGIN);
+    runtime.kernel.step();
     stepTo(runtime, runtime.kernel.tick + 40);
   }
   // Not an `expect`: a silently refused command here would leave a prison with

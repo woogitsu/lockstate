@@ -930,18 +930,14 @@ describe('issue #492: a refusal is withdrawn once the simulation accepts the ver
     expect(runtime.refusals.last?.reason, 'a different tile built must not clear this one').toBe('build.unowned-land');
   });
 
-  it('generalises to admission, keyed domain-wide rather than per-request (see `admitSupersessionKey`)', () => {
-    // `admit.no-accommodation` and `admit.population-full` are both the same
-    // global check, re-run identically for every admission -- so a
-    // *different* admission's success is not a proxy for the standing
-    // refusal being false, it is the same fact turning out false. Answers
-    // #492's second question for this domain: unlike `zone`, keying `admit`
-    // per-request would leave the analogous bug unfixed, because a retried
-    // admission has no reason to repeat its predecessor's sentence length or
-    // prior-incidents count.
+  it('keeps multiple no-place admissions in the delayed queue without creating refusals', () => {
+    // #590 supersedes the former no-accommodation refusal: every request is
+    // preserved in order outside the prison, regardless of its sentence or
+    // prior incidents. Zoning without a bed still supplies no place.
     const runtime = createNewSimulationRuntime(0x492);
     submit(runtime, 0, packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }));
-    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+    expect(runtime.refusals.last).toBeUndefined();
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
 
     wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 2, height: 3 });
     submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
@@ -953,8 +949,9 @@ describe('issue #492: a refusal is withdrawn once the simulation accepts the ver
 
     expect(
       runtime.refusals.last,
-      'a successful admission, even with different parameters, disproves the standing admit refusal',
+      'delayed admission is an accepted request, not a refusal',
     ).toBeUndefined();
+    expect(runtime.prisoners.delayedIntakeCount).toBe(2);
   });
 });
 
@@ -1558,7 +1555,7 @@ describe('ADR 0122 option D step 1: a refusal carries the place it is about, or 
     expect(runtime.refusals.last?.tile).toEqual({ x: 5, y: 6 });
   });
 
-  it('carries no tile for an admission, though the command named one', () => {
+  it('queues an admission without manufacturing a refusal or a misplaced tile', () => {
     const runtime = createNewSimulationRuntime(0x122);
     submit(
       runtime,
@@ -1566,10 +1563,11 @@ describe('ADR 0122 option D step 1: a refusal carries the place it is about, or 
       packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }),
     );
 
-    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+    expect(runtime.refusals.last).toBeUndefined();
+    expect(runtime.prisoners.delayedIntakeCount).toBe(1);
     expect(
       runtime.refusals.last?.tile,
-      'the reception tile is in hand and is about the wrong thing: this refusal is the prison having no cell, not the van being parked at 16,16',
+      'an accepted delayed request carries no refusal tile',
     ).toBeUndefined();
   });
 

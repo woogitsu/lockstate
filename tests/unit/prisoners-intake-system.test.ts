@@ -227,7 +227,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
 
     const LOW_RISK = { sentenceLengthTicks: 100, priorIncidents: 0 };
 
-    it('houses nobody through the shipped session path while the cell is unfurnished, because capacity comes from the objects standing in it', () => {
+    it('queues intake outside while the zoned cell is unfurnished', () => {
       /*
        * The precondition every case below is built around, end to end
        * through the real session rather than asserted in prose.
@@ -318,12 +318,8 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
         runtime.prisoners.roomInstances.findBestAvailable('room.cell', () => 0, 'sleep-surface'),
       ).toBeUndefined();
 
-      // Through the `AdmitPrisoner` command rather than `admitPrisoner`
-      // directly, so "the shipped session path" in this test's name is the
-      // whole route a player takes: #261 step 4 gave the command a producer,
-      // and the boundary guard it added answers this prison's state rather
-      // than refusing it -- an instance of an accommodation target exists, so
-      // the admission is accepted and lands in the wait this case is about.
+      // Through the shipped AdmitPrisoner command: with no resident capacity,
+      // #590 keeps this request outside rather than creating an inert actor.
       runtime.kernel.submitCommand(
         'cmd-admit',
         runtime.kernel.expectedSequence,
@@ -332,19 +328,16 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       );
       runtime.kernel.step();
       expect(runtime.refusals.count, 'a prison with a zoned cell must not refuse the admission').toBe(0);
-      const arrival = runtime.prisoners.entityStore.getIdByIndex(0);
+      expect(runtime.prisoners.delayedIntakeCount).toBe(1);
       for (let i = 0; i < 60; i += 1) runtime.kernel.step();
 
       const metrics = runtime.prisoners.intakeSystem.getMetrics();
-      expect(runtime.prisoners.coldState.getAccommodation(arrival)).toBeUndefined();
+      expect(runtime.prisoners.entityStore.maxActiveIndex).toBe(-1);
       expect(metrics.completedCount).toBe(0);
       expect(metrics.failedCount).toBe(0);
-      // Waiting, not failing: the room type exists, so retrying is correct
-      // and the unmet demand is visible rather than swallowed.
-      expect(metrics.accommodationBacklogTicks).toBeGreaterThan(0);
+      // The unmet demand now waits outside, before an entity or intake stage.
+      expect(metrics.accommodationBacklogTicks).toBe(0);
       expect(runtime.prisoners.roomInstances.occupancyOf(cell.instance.instanceId)).toBe(0);
-      // And the registry refuses to be talked into it directly.
-      expect(runtime.prisoners.roomInstances.assign(cell.instance.instanceId, arrival)).toBe(false);
     });
 
     it('routes a low-risk arrival away from the cell holding a maximum-security prisoner, even though that cell sorts first and has a free bed', () => {

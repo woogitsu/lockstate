@@ -53,11 +53,16 @@ function dismiss(runtime: SimulationRuntime, id: string, staffId: number): void 
   submit(runtime, id, { type: 'DismissStaff', staffId });
 }
 
-/** A zoned cell and one arrival, so the derived sector has an occupant and therefore a requirement (#533's other half). */
+/** A cell with a furnished place and one arrival, so the derived sector needs a guard. */
 function prisonWithOneOccupant(seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+  const cell = runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')[0]!;
+  runtime.prisoners.roomInstances.updateDerived(cell.instanceId, {
+    residentCapacity: 1, concurrentUseCapacity: 1,
+    concurrentUseCapacityByCapability: [['sleep-surface', 1]], objectCapabilities: ['sleep-surface'],
+  });
   submit(runtime, 'admit-1', { type: 'AdmitPrisoner', ...ADMISSION, ...ORIGIN });
   if (runtime.refusals.count > 0) throw new Error('The admission this fixture depends on was refused.');
   while (runtime.kernel.tick % 10 !== 0) runtime.kernel.step();

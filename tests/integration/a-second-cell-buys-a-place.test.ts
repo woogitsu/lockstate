@@ -35,10 +35,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   *housed prisoners* read off the published status counts, so a ceiling that
  *   stopped binding fails here even though this file names no number from the
  *   content.
- * - **The unhoused pair are shown to be waiting rather than failed**, because
- *   "a second cell buys you something" is only true if the prisoners it houses
- *   were still admissible. `'failed'` is terminal (ADR 0028 decision 8) and
- *   would make the second arm a different prison rather than a better one.
+ * - **The surplus pair wait outside in #590's queue.** A second furnished cell
+ *   admits them; it does not merely change an internal classification stage.
  */
 
 const SEED = 0x0b1ec7;
@@ -118,10 +116,12 @@ describe('what a second cell buys, now that a room type may author a resident ce
     const crowded = counts(oneCell);
     const subdivided = counts(twoCells);
 
-    // The same four prisoners are admitted into both prisons, and the same four
-    // beds are built in both.
-    expect(crowded.prisoners).toBe(PRISONERS);
+    // The same four arrivals are requested in both prisons. A capped cell
+    // admits only two and queues the other two outside until capacity opens.
+    expect(crowded.prisoners).toBe(2);
     expect(subdivided.prisoners).toBe(PRISONERS);
+    expect(oneCell.prisoners.delayedIntakeCount).toBe(2);
+    expect(twoCells.prisoners.delayedIntakeCount).toBe(0);
 
     // **The finding, and the ruling's answer to it, in one pair of numbers.**
     expect(crowded.roomCapacity, 'four beds in one cell, and the cell holds two').toBe(2);
@@ -131,10 +131,8 @@ describe('what a second cell buys, now that a room type may author a resident ce
     expect(crowded.rooms).toBe(1);
     expect(subdivided.rooms).toBe(2);
 
-    // The two the crowded prison could not house are **waiting**, not failed:
-    // building the second cell is a remedy that is still available to that
-    // player. `prisonersInIntake` counts an arrival that has not been housed.
-    expect(crowded.prisonersInIntake, 'the two with nowhere to sleep are still in the pipeline').toBe(2);
+    // They wait outside, not in the prisoner intake pipeline.
+    expect(crowded.prisonersInIntake).toBe(0);
     expect(subdivided.prisonersInIntake).toBe(0);
     expect(oneCell.prisoners.intakeSystem.getMetrics()).toMatchObject({ completedCount: 2, failedCount: 0 });
     expect(twoCells.prisoners.intakeSystem.getMetrics()).toMatchObject({ completedCount: PRISONERS, failedCount: 0 });
@@ -153,37 +151,10 @@ describe('what a second cell buys, now that a room type may author a resident ce
     const crowdedFunds = counts(oneCell).treasuryMinorUnits;
     const subdividedFunds = counts(twoCells).treasuryMinorUnits;
 
-    // The same four bed orders and the same spending in both arms, so the
-    // difference between the two treasuries is what the two extra occupied
-    // places earned: **26,340 against 27,940 after three in-game days, a gap of
-    // 1,600 minor units** -- two places at `stateIncomeForPrisonerDay` over two
-    // paid days, the third day's payment landing on the last tick of day three.
-    // Asserted as the gap as well as the direction, so a change that paid the
-    // crowded prison for places it does not have fails here.
-    //
-    // **1,840 since issue #586, and the extra 240 is that issue's whole point
-    // measured in one fixture.** The crowded arm holds four prisoners against
-    // two places -- twice its capacity, the cap of the crowding term -- so
-    // its two paying residents' `safety` and `hygiene` decay faster than the
-    // subdivided arm's four. This fixture hires nobody, so `safety` is
-    // unopposed in both arms and crosses the unmet line inside day one for the
-    // crowded pair (816 ticks from full at -50 stored units a tick) and inside
-    // day two for everybody (4,080 at -10); `hygiene` crosses for the crowded
-    // pair on day two (3,400 ticks at -12) and not at all for the subdivided
-    // four inside three days (10,200 at -4). So the crowded arm is withheld
-    // two extra 40s on each of the three paid days -- safety on day one,
-    // hygiene on days two and three -- and 6 x 40 = 240. Measured rather than
-    // summed, at the last tick of each day: the crowded arm's day reads 520 /
-    // 440 / 440 where the tree before #586 read 600 / 520 / 520, and the
-    // subdivided arm's 1,200 / 1,040 / 1,040 is unchanged. (Its `safety` is
-    // not: 109 rather than 136 at the end of day one, because its four beds
-    // complete one build order at a time and the prison is briefly over its
-    // capacity while they do. It crosses no line a day earlier for that.)
-    // The gap between
-    // places is still the 1,600 above; what the second cell now also buys is
-    // relief from crowding, and that is the ruling's *"a packed prison loses
-    // income through the line the player is already watching"*.
+    // Both arms buy four beds. The capped one-cell arm admits only two; the
+    // second cell admits and pays two more. No crowding surcharge is triggered
+    // by the two queued arrivals outside.
     expect(subdividedFunds).toBeGreaterThan(crowdedFunds);
-    expect(subdividedFunds - crowdedFunds).toBe(1_840);
+    expect(subdividedFunds - crowdedFunds).toBe(1_600);
   });
 });
