@@ -6805,4 +6805,45 @@
     flex: 0 0 auto;
   }
 
+  /* At 200% the alert history used almost the entire world height and hid
+   * the prison itself. Dock the existing scrollable history at the bottom;
+   * its fold, dismiss actions, minimap and zoom buttons remain available. */
+  :root[data-ui-scale-enlarged='true'] .hud__corner {
+    max-height: calc(6 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-minimap__surface {
+    height: calc(var(--tap-target) / 2);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-minimap__placeholder {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* These legends already have accessible group names. The percentage and
+   * theme value remain visible instead of being clipped into fragments. */
+  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale__legend,
+  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control__legend {
+    display: none;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale,
+  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control {
+    justify-content: center;
+  }
+
+  /* A long group name and progress label must not fight for the same line in
+   * the inspector. The copy beneath remains visible at its natural height. */
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-header {
+    flex-wrap: wrap;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-name,
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-progress {
+    overflow-wrap: anywhere;
+  }
+
 }
