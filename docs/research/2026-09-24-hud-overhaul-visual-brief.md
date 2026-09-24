@@ -123,6 +123,11 @@ separate persistent Saves control opens the full existing save workflow. The
 desktop disclosures temporarily overlay the map only while open; on a phone
 they are bounded sheets with an explicit close control and an accessible
 return of focus. This is an implementation proposal, not a new metric rule.
+The owner specifically chose on 2026-09-14 to keep `SavePanel` in the rail
+aside slot. Moving its visible placement into a disclosure requires a fresh,
+explicit owner decision before implementation or publication. The existing
+minimap and other unplaced surfaces also need a placement decision rather
+than silent removal.
 
 The new shell should recompose the existing `hud.ts` elements and binders,
 including unavailable/refusal/event bands and all six work panels. It must
