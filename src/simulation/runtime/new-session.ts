@@ -36,7 +36,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
+import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, overdraftFloorForOpeningBalance, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
@@ -414,6 +414,13 @@ export interface SimulationRuntimeOptions {
    * real session.
    */
   readonly loanTerms?: LoanTerms;
+}
+
+/** Apply the approved facility to the grant used to open this treasury. */
+export function createOpeningTreasury(openingBalanceMinorUnits = TREASURY_STARTING_BALANCE_MINOR_UNITS): Treasury {
+  const treasury = new Treasury(openingBalanceMinorUnits);
+  treasury.setOverdraftFloor(overdraftFloorForOpeningBalance(treasury.balanceMinorUnits));
+  return treasury;
 }
 
 /**
@@ -794,19 +801,19 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // move under #627.
   const refusals = new RefusalLog();
 
-  const treasury = new Treasury();
+  const treasury = createOpeningTreasury();
   /*
    * #703 ruling A: the negative balance is a **standing** facility every prison
    * has, not something a drawdown opens
    * ([ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md)
-   * §2). See `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` for the magnitude and the
-   * sweep behind it.
+   * §2). The default magnitude is `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`;
+   * `createOpeningTreasury` derives it from the grant actually supplied.
    *
    * **Here rather than in the `Treasury` constructor**, and the placement is
    * what makes the restore path free. `restoreSimulationRuntime` builds its
    * runtime through this function (`restore-session.ts`), and
    * `Treasury.restore` writes the balance and never touches the floor — so a
-   * restored session gets this facility on exactly the same line a new one
+   * restored session gets this facility through the same helper as a new one
    * does, and nothing has to be persisted or migrated for it.
    * `TreasurySnapshot` is still `{ balanceMinorUnits }`, which is why
    * `SAVE_SCHEMA_VERSION` does not move
@@ -819,7 +826,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `Intl.NumberFormat` gives it, with no tone and no badge, and no sentence
    * has been authored here.
    */
-  treasury.setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
   /*
    * ADR 0017 decision 4's physical route, and the first thing in a session a
    * player can start that puts a job on the board

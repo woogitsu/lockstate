@@ -39,6 +39,7 @@ export {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   Treasury,
   WAGES_STARTER_RESERVE_MINOR_UNITS,
+  overdraftFloorForOpeningBalance,
   rungFloorMinorUnits,
   type SpendClass,
   type TreasurySnapshot,
