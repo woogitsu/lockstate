@@ -108,6 +108,7 @@ MODELS = (
     ("wall.interior.cap.overhead", (1, 0.25)),
     ("terrain.dirt.compacted", (1, 1)),
     ("terrain.grass.mown", (1, 1)),
+    ("terrain.concrete.paving", (1, 1)),
 )
 
 
@@ -123,6 +124,44 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def concrete_paving_material():
+    """Tile-periodic warm grey aggregate with small scale tonal drift."""
+    item = material("Outdoor poured concrete fine aggregate", (0.20, 0.20, 0.18, 1), 0.96)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 6.3
+    noise.inputs["Detail"].default_value = 3.2
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.13, 0.14, 0.14, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.27, 0.26, 0.23, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def grass_surface_material():
@@ -1061,7 +1100,23 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "terrain.grass.mown":
+    if asset_id == "terrain.concrete.paving":
+        box(collection, root, "Poured concrete paving", (0, 0, 0.04),
+            (1, 1, 0.08), "concrete_paving", 0)
+        # A seam on only east and south edges forms one restrained joint per
+        # repeated tile, without double-width lines at shared boundaries.
+        box(collection, root, "East expansion joint", (0.496, 0, 0.081),
+            (0.008, 1, 0.002), "concrete_joint", 0)
+        box(collection, root, "South expansion joint", (0, 0.496, 0.082),
+            (1, 0.008, 0.002), "concrete_joint", 0)
+        for index in range(140):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.88
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.88
+            radius = 0.005 + (index % 4) * 0.002
+            box(collection, root, f"Fine exposed aggregate.{index}",
+                (x, y, 0.081), (radius, radius * 0.72, 0.001),
+                "concrete_aggregate_light" if index % 3 else "concrete_aggregate_dark", 0)
+    elif asset_id == "terrain.grass.mown":
         box(collection, root, "Mown grass mat", (0, 0, 0.04),
             (1, 1, 0.08), "grass_base", 0)
         for index in range(110):
@@ -1360,6 +1415,10 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["concrete_paving"] = concrete_paving_material()
+    MATERIALS["concrete_joint"] = material("Concrete recessed expansion joint", (0.18, 0.20, 0.20, 1), 0.99)
+    MATERIALS["concrete_aggregate_light"] = material("Concrete fine warm aggregate", (0.34, 0.32, 0.27, 1), 0.98)
+    MATERIALS["concrete_aggregate_dark"] = material("Concrete fine blue-grey aggregate", (0.12, 0.15, 0.17, 1), 0.98)
     MATERIALS["grass_base"] = grass_surface_material()
     MATERIALS["grass_blade_light"] = material("Short olive grass blade highlight", (0.12, 0.23, 0.045, 1), 0.99)
     MATERIALS["grass_blade_dark"] = material("Short deep grass blade", (0.025, 0.09, 0.02, 1), 0.99)

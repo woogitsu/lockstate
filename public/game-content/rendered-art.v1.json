@@ -553,6 +553,31 @@
       }
     },
     {
+      "assetId": "terrain.concrete.paving",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.concrete.paving.71ccffb2cc51.png",
+      "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "terrain.dirt.compacted",
       "contentVersion": 1,
       "image": "source-art/rendered.terrain.dirt.compacted.4e656013fc9c.png",

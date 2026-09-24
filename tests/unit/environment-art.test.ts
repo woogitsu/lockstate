@@ -319,17 +319,18 @@ describe('declared fallback', () => {
 
   it('accounts for every terrain exactly once', () => {
     const coverage = terrainArtCoverage();
-    expect(coverage.drawn).toEqual(['dirt', 'grass']);
+    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass']);
     expect([...coverage.onFallback]).toEqual([...TERRAIN_ON_COLOUR_FALLBACK]);
     expect([...coverage.drawn, ...coverage.onFallback].sort()).toEqual(
       DEFAULT_TERRAIN_DEFINITIONS.map((definition) => definition.id).sort(),
     );
   });
 
-  it('maps simulation dirt and grass ids to art and leaves other terrain on colour', () => {
+  it('maps simulation dirt, grass and concrete ids to art and leaves other terrain on colour', () => {
     expect(terrainFloorSpriteByNumericId(0)).toBe('env.terrain.dirt');
     expect(terrainFloorSpriteByNumericId(1)).toBe('env.terrain.grass');
     expect(terrainFloorSpriteByNumericId(2)).toBeUndefined();
+    expect(terrainFloorSpriteByNumericId(3)).toBe('env.terrain.concrete');
     expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 

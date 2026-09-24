@@ -443,3 +443,13 @@ repeating field and an olive palette. Blender interprets it as a compact,
 seamless grass tile using periodic noise and sparse deterministic blade marks.
 It appears on painted `grass` terrain without changing simulation rules.
 Provenance is in `assets/source/concepts/grass-terrain-v1.md`.
+
+### Outdoor concrete paving — `terrain.concrete.paving`
+
+The original four-panel sheet studies a poured one-tile slab from overhead,
+an oblique aggregate and expansion-joint detail, a 3 × 3 repeat, and the
+warm grey palette. Blender models a shallow continuous tile with fine
+aggregate and east/south joints. The existing `concrete` simulation terrain
+id draws this render when encountered in a world snapshot; no paint tool or
+terrain rule changes are part of this batch. Provenance is in
+`assets/source/concepts/concrete-terrain-v1.md`.
