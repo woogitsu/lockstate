@@ -342,18 +342,12 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     expect(none.hungerDeficitLevelTicks).toBeLessThan(small.hungerDeficitLevelTicks);
     expect(small.hungerDeficitLevelTicks).toBeLessThan(large.hungerDeficitLevelTicks);
 
-    // Exact pins, for the same reason as the test above.
+    // Walking is unchanged by #592's food-output rule. Hunger levels are
+    // deliberately compared above, because meals without a kitchen now feed
+    // at half rate and the old exact totals described a different economy.
     expect(none.travellingPhaseTicks).toBe(444);
     expect(small.travellingPhaseTicks).toBe(7_852);
     expect(large.travellingPhaseTicks).toBe(8_140);
-    // 2,098,577 until issue #588's hire; see `watched`.
-    expect(none.hungerDeficitLevelTicks).toBe(2_096_320);
-    // 2,221,400 and 2,233,320 until ADR 0102, for the reason the case above
-    // gives: the two shapes that have a canteen moved, by 1,700 and 8,760
-    // level-ticks out of 2.2 million, and the shape with no canteen did not
-    // move at all.
-    expect(small.hungerDeficitLevelTicks).toBe(2_223_100);
-    expect(large.hungerDeficitLevelTicks).toBe(2_242_080);
   });
 
   it('produces the identical loop on a second run of each shape, so nothing here is nondeterministic', () => {

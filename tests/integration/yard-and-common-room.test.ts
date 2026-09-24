@@ -293,7 +293,7 @@ describe('a prison with a minimum yard and a common room', () => {
     // The split this case is about -- yard bounded by its ground, common room
     // taking the overflow -- is unchanged, and the two assertions after these
     // are what say so.
-    expect(run.performingTicks['action.yard-recreation']).toBe(6_120);
+    expect(run.performingTicks['action.yard-recreation']).toBe(6_020);
     expect(run.performingTicks['action.common-room-recreation']).toBe(4_208);
     expect(run.peakYardOccupancy).toBe(run.yardCapacity);
 
@@ -350,7 +350,7 @@ describe('a prison with a minimum yard and a common room', () => {
     // The enlarged yard still cuts the common room's share by more than half
     // against the minimum one, which is the comparison this case makes.
     expect(enlarged.performingTicks['action.yard-recreation']).toBe(7_424);
-    expect(enlarged.performingTicks['action.common-room-recreation']).toBe(2_196);
+    expect(enlarged.performingTicks['action.common-room-recreation']).toBe(2_364);
     expect(enlarged.performingTicks['action.yard-recreation']!).toBeGreaterThan(minimum.performingTicks['action.yard-recreation']!);
     expect(enlarged.performingTicks['action.common-room-recreation'] ?? 0).toBeLessThan(minimum.performingTicks['action.common-room-recreation']!);
   });

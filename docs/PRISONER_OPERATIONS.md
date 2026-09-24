@@ -31,7 +31,13 @@ Per the issue's explicit scope, this is deliberately bounded:
   `action.kitchen-work` is `action.laundry-work`'s shape applied to
   `room.kitchen` as a 120-tick shift on `'food-preparation'`. Since #592,
   actual work prepares portions for canteen meals; work itself does not fill
-  hunger. Laundry work likewise produces clean kits that slow hygiene decay.
+  hunger. A canteen meal provides 4 hunger per tick with a portion or 2
+  without one; the free cell fallback provides 1.5 per tick for 40 ticks,
+  extended to 80 when hunger is near the unmet-need threshold, so
+  building a canteen never makes an unstocked meal weaker per tick than
+  staying in the cell, while a prison without a kitchen remains viable.
+  Laundry work
+  likewise produces clean kits that slow hygiene decay.
   `action.carry` is the odd one and the *Actions*
   section says how: category `work`, **no room at all** -- its target is the
   third `ActionTarget` kind, `{ kind: 'job-board' }`, so the tiles come off the

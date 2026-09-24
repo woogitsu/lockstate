@@ -198,13 +198,15 @@ decays all six needs, with no stage check anywhere in the loop:
     for (const entityId of entityIds) {
       const index = this.store.getIndex(entityId);
       for (const needId of NEED_IDS) {
-        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId]));
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId], needId === 'hygiene' && this.hasCleanKit?.(entityId) ? 0.5 : 1));
       }
     }`
 (verbatim in `src/simulation/prisoners/needs-system.ts`)
 
-**Re-quoted on 2026-09-23 for issue #586, and the finding above it is
-unchanged.** The loop this section quoted gained a crowding term -- one
+**Re-quoted on 2026-09-24 for issue #592 (clean kits); the finding above it is
+unchanged.** The loop applies half hygiene decay to a prisoner assigned a
+clean kit, without changing which prisoners the query returns. The loop this
+section quoted gained a crowding term -- one
 extra rate per need, read once per update from the population and the
 accommodation capacity and added to every prisoner's decay alike, with the
 uncrowded prison keeping the original loop as its own branch -- so the

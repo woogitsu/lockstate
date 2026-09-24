@@ -169,11 +169,13 @@ function coverageChip(runtime: SimulationRuntime) {
 }
 
 describe('a prison over its beds pays for it through the withhold it already has (#586)', () => {
-  it('control: a full prison, staffed to requirement, pays the whole grant on every day and reads Covered', () => {
+  it('control: a full prison, staffed to requirement, reads Covered even when meals are understocked', () => {
     const runtime = prison(12, 2);
     const income = dailyIncome(runtime, 10);
     expect(housedUnmet(runtime, 'safety')).toBe(0);
-    expect(income.every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
+    // #592's canteen without a kitchen loses hunger income, independently of
+    // safety coverage. This control still isolates the safety need.
+    expect(income.every((day) => day >= 3_480), `income ${income.join(', ')}`).toBe(true);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).conditions).not.toContain('prisoners.overcrowded');
     expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
   });
@@ -205,7 +207,7 @@ describe('a prison over its beds pays for it through the withhold it already has
     expect(income.slice(0, 4).every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
     expect(income.slice(4).every((day) => day <= 3_120), `income ${income.join(', ')}`).toBe(true);
     expect(housedUnmet(runtime, 'safety')).toBe(12);
-    expect(income.reduce((sum, day) => sum + day, 0)).toBe(32_960);
+    expect(income.reduce((sum, day) => sum + day, 0)).toBe(32_840);
   });
 
   it('at 150% pays it from the second day, and the strip names crowding where it would have said Covered', () => {

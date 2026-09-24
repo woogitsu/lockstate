@@ -12,7 +12,7 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ## The defect, measured on the pre-fix tree through this exact prison
  *
  * `action.eat-meal` targets `room.canteen` and gains `hunger: 4` a tick;
- * `action.eat-in-cell` targets `own-accommodation` and gains `3`
+ * `action.eat-in-cell` targets `own-accommodation` and is authored at `3`
  * (`src/simulation/prisoners/actions.ts`). Both are category `meal`, so on the
  * same need with the same deficit `eat-meal` outscores `eat-in-cell` at every
  * hunger level -- whether or not a canteen exists. `beginNextAction` then took
