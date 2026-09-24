@@ -1,7 +1,8 @@
 import { expect, test } from './network-changed-fixture';
+import type { Page } from './network-changed-fixture';
 import './ui-harness-api';
 
-async function oldPoint(page: import('@playwright/test').Page, selector: string) {
+async function oldPoint(page: Page, selector: string) {
   const button = page.locator(`${selector} .ui-action`);
   await button.scrollIntoViewIfNeeded({ timeout: 3000 });
   const box = await button.boundingBox();
@@ -9,7 +10,7 @@ async function oldPoint(page: import('@playwright/test').Page, selector: string)
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
 }
 
-async function underPoint(page: import('@playwright/test').Page, point: {x: number; y: number}, row: string, data: string) {
+async function underPoint(page: Page, point: {x: number; y: number}, row: string, data: string) {
   return page.evaluate(({ point, row, data }) => document.elementFromPoint(point.x, point.y)?.closest<HTMLElement>(row)?.dataset[data] ?? '(none)', { point, row, data });
 }
 
