@@ -112,6 +112,15 @@ commands, saves or asset rendering.
 
 ## Two directions under comparison
 
+**Owner decision, 2026-09-24:** after reviewing 1920×1080 versions of both
+directions, the owner clicked *"A — wszystkie odczyty stale na górze"* rather
+than *"B — duża mapa, odczyty pod przyciskiem (zalecane)"*. Implement the A
+composition at Full HD and above: persistent nine-metric strip, left six-route
+navigation and right contextual work panel. Preserve live metric descriptors,
+badges and unknown values. This is the weaker provenance of an agent-written
+clickable choice; `AGENTS.md` records the exact labels. The mockup uses sample
+world imagery and values and is not proof of working gameplay.
+
 The first two mockups compare an **operations frame** (left navigation, full
 status row, one right work panel) with a **map desk** (one left work panel,
 bottom navigation, a compact top command row). The map desk exposes more map

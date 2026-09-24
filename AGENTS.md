@@ -790,6 +790,21 @@ the shipped small-screen UI; it supersedes a plan to spend the redesign on
 sub-Full-HD optimization. This is the owner's own typed wording, not a
 clickable option label.
 
+**The Full HD HUD direction, 2026-09-24.** After seeing two 1920×1080
+mockups, the owner selected the clickable option:
+
+> A — wszystkie odczyty stale na górze
+
+The alternative offered was *"B — duża mapa, odczyty pod przyciskiem
+(zalecane)"*. This selects a Full HD shell with all nine existing status
+metrics persistently visible, a left section rail and a right contextual
+work panel. It does not license invented status values or moving the existing
+SavePanel out of its owner-approved aside slot. **Provenance is the weaker
+kind:** the option label was written by the agent and clicked by the owner,
+not typed by the owner as a free-form instruction. The three supplied Prison
+Architect screenshots and dated 1920×1080 A/B mockups are visual research,
+not source assets for the game.
+
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:
 
