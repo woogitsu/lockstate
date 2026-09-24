@@ -374,3 +374,10 @@ planks and three wood-topped fixed stools read clearly from overhead, with
 recessed bolts and the existing dark steel support. The original four-view
 concept and Blender choices are recorded in
 `assets/source/concepts/dining-table-v3.md`.
+
+### Kitchen stove refinement — `furniture.kitchen.stove`
+
+The 2×1 kitchen stove now shows cast-iron grates above four recessed burners,
+with a row of knobs and a small amber lamp visible from overhead. The original
+four-view reference and Blender decisions are recorded in
+`assets/source/concepts/kitchen-stove-v3.md`.
