@@ -337,6 +337,18 @@ test.describe('the world scene discrete keys', () => {
     expect(await zoom(page)).toBeGreaterThan(before);
   });
 
+  test('browser Control+Plus and Control+Minus shortcuts do not also zoom the game camera', async ({ page }) => {
+    await openHarness(page);
+    const before = await zoom(page);
+    for (const key of ['Equal', 'Minus']) {
+      await page.keyboard.down('Control');
+      await page.keyboard.press(key);
+      await page.keyboard.up('Control');
+      await settle(page);
+      expect(await zoom(page), `${key} also changed the game camera`).toBe(before);
+    }
+  });
+
   test('clamps the keyboard zoom to the same bounds the wheel respects (#200)', async ({ page }) => {
     // The reason `stepZoom` goes through `zoomAtScreenPoint` rather than
     // calling `setZoom` directly. Twenty presses is well past the eight the
