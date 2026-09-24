@@ -837,6 +837,12 @@ export async function pressAdvisedControl(
  * promises to make.
  */
 export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
+  // #899 opens Build on the map at phone width. Buying is a catalogue action:
+  // use the player's disclosure before pressing a row hidden inside it.
+  const panel = page.locator('.hud-build');
+  if ((await panel.getAttribute('data-collapsed')) === 'true') {
+    await panel.locator('> .ui-panel__header .ui-panel__toggle').click();
+  }
   const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
   await row.click();
   // The same wait `armBuildable` makes, on the same locator, attribute and

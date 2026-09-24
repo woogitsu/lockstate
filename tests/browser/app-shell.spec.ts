@@ -9638,6 +9638,9 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // #899 starts on the map at phone width; reveal Build before selecting
+    // Remove, then #517 folds the panel again for the world press.
+    await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
     await page.locator('.hud-build__remove').click();
     expect(await pressOnWorld(page), 'the HUD left no bare world to press at 375x812').toBe(true);
 
