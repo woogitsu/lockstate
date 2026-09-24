@@ -10,6 +10,7 @@ import { createStatusBadge, type BadgeTone } from '../primitives/status-badge';
 import { pressDismiss, retainDismissArming, type DismissArming } from './dismiss-arming';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { capturePooledRowAnchor, pinPooledRowHeight, releasePooledRowHeight } from './pooled-row-layout';
 import type {
   HudCountsViewModel,
   HudHeldGuardViewModel,
@@ -1317,10 +1318,13 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       HELD_GUARD_ROW_SETTLE_MS,
     );
 
+    const restoreAnchor = capturePooledRowAnchor(heldRows.map((row) => row.element));
     let drawn = 0;
     for (const [index, row] of heldRows.entries()) {
+      pinPooledRowHeight(row.element);
       const assignment = assignments[index];
       if (assignment === undefined || assignment.kind === 'empty') {
+        releasePooledRowHeight(row.element);
         if (row.guardId !== undefined) row.freedAtMs = nowMs;
         row.guardId = undefined;
         row.element.hidden = true;
@@ -1367,7 +1371,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // roster's list is: a pass in which every place is holding itself open draws
     // no rows and must still keep its boxes, or the list would collapse under
     // the pointer the boxes are being held for.
-    heldList.hidden = guards.length === 0;
+    heldList.hidden = assignments.every((assignment) => assignment.kind === 'empty');
+    restoreAnchor();
     heldEmpty.hidden = guards.length > 0;
     /*
      * Counted against `held.held` and against the rows this pass actually
@@ -1504,6 +1509,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * that taught the Build panel the same lesson.
    */
   function emptyRosterRow(row: RosterRow, forgetSettle = false): void {
+    releasePooledRowHeight(row.element);
     if (row.staffId !== undefined && !forgetSettle) row.freedAtMs = performance.now();
     if (forgetSettle) row.freedAtMs = undefined;
     row.staffId = undefined;
@@ -1778,7 +1784,9 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     );
 
     let drawn = 0;
+    const restoreAnchor = capturePooledRowAnchor(rosterRows.map((row) => row.element));
     for (const [index, row] of rosterRows.entries()) {
+      pinPooledRowHeight(row.element);
       const assignment = assignments[index];
       if (assignment === undefined || assignment.kind === 'empty') {
         emptyRosterRow(row);
@@ -1831,7 +1839,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // every place is holding itself open draws no rows and must still keep its
     // boxes, or the list would collapse under the pointer the boxes are being
     // held for.
-    rosterList.hidden = rosterWindow.length === 0;
+    rosterList.hidden = assignments.every((assignment) => assignment.kind === 'empty');
+    restoreAnchor();
     /*
      * Counted against `shown.hired` and against the rows this pass actually
      * **drew**, which are no longer the same subtraction the window gives: a

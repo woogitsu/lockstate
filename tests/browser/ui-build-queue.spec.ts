@@ -378,7 +378,7 @@ test.describe('the Build panel queue', () => {
       { total: 11, started: 1, orders: [order(0, 'in-progress')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const closed = await probeQueue(page);
-    expect(closed.rows.map((row) => row.orderId)).toEqual(['order-00']);
+    expect(closed.rows.map((row) => row.orderId).filter(Boolean)).toEqual(['order-00']);
   });
 
   test('never re-aims a pooled row, so a press cannot reach an order the row never named (#860)', async ({ page }) => {

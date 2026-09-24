@@ -69,11 +69,11 @@ describe('assignPooledRows', () => {
     ]);
   });
 
-  it('gives no box to a trailing row with nothing to show', () => {
+  it('gives no box to a leading row with nothing to show', () => {
     expect(assignPooledRows(fresh(3), ['a'], 0, SETTLE)).toEqual([
+      { kind: 'empty' },
+      { kind: 'empty' },
       { kind: 'fills', itemId: 'a' },
-      { kind: 'empty' },
-      { kind: 'empty' },
     ]);
   });
 
@@ -129,19 +129,22 @@ describe('assignPooledRows', () => {
     /*
      * The same defect by geometry rather than by binding: dropping the box
      * would slide `c` up a row's height into whatever pointer was resting on
-     * it. Only the trailing run gives its boxes up.
+     * it. Only the unused leading run gives its boxes up.
      */
     const freed = publish(holding('a', 'b', 'c'), ['a', 'c'], 5_000).rows;
     expect(kinds(assignPooledRows(freed, ['a', 'c'], 9_000, SETTLE))).toEqual(['keeps', 'holds-open', 'keeps']);
   });
 
-  it('gives up the trailing boxes once nothing after them is occupied', () => {
+  it('keeps lower boxes while an item remains above them', () => {
     const freed = publish(holding('a', 'b', 'c'), ['a'], 5_000).rows;
-    expect(kinds(assignPooledRows(freed, ['a'], 9_000, SETTLE))).toEqual(['keeps', 'empty', 'empty']);
+    expect(kinds(assignPooledRows(freed, ['a'], 9_000, SETTLE))).toEqual(['keeps', 'holds-open', 'holds-open']);
   });
 
-  it('empties every row when the window does', () => {
-    expect(kinds(assignPooledRows(holding('a', 'b', 'c'), [], 5_000, SETTLE))).toEqual(['empty', 'empty', 'empty']);
+  it('keeps departed boxes inert until the settle window ends even when the list empties', () => {
+    const freed = publish(holding('a', 'b', 'c'), [], 5_000).rows;
+    expect(kinds(assignPooledRows(holding('a', 'b', 'c'), [], 5_000, SETTLE))).toEqual(['holds-open', 'holds-open', 'holds-open']);
+    expect(kinds(assignPooledRows(freed, [], 5_999, SETTLE))).toEqual(['holds-open', 'holds-open', 'holds-open']);
+    expect(kinds(assignPooledRows(freed, [], 6_000, SETTLE))).toEqual(['empty', 'empty', 'empty']);
     expect(kinds(assignPooledRows(fresh(3), [], 5_000, SETTLE))).toEqual(['empty', 'empty', 'empty']);
   });
 

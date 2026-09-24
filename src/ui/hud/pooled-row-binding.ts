@@ -82,11 +82,11 @@
  *    is refused that was ever offered, because a blank row promises nothing --
  *    which is what keeps this a paint rule rather than a player-facing refusal
  *    needing a sentence of its own (`AGENTS.md` exclusion 4).
- * 2. **A row naming nothing keeps its box while any row after it names
- *    something.** Hiding it would slide every row below it up a row's height
- *    into whatever pointer was resting there, which is the same defect by
- *    geometry rather than by binding. Only the trailing run of empty rows gives
- *    its boxes up, and giving those up moves nothing.
+ * 2. **A row naming nothing keeps its box while another visible slot needs its
+ *    place.** Hiding an interior box slides a neighbor into the old pointer.
+ *    ADR 0124 resolves the bottom anchor: unused leading slots can collapse,
+ *    while every lower visible slot retains its place and height. The panels
+ *    also restore the scroll offset of a short inspector after publication.
  *
  * **Neither half is about a pixel, and one measurement says that is a gap
  * rather than a simplification (#1294, 2026-09-17).** `.hud__side` carries
@@ -161,7 +161,7 @@ export type PooledRowAssignment =
    * up would move that row. See the header.
    */
   | { readonly kind: 'holds-open' }
-  /** Names nothing and has no box. Only ever in the trailing run. */
+  /** Names nothing and has no box. Only in the unused leading run. */
   | { readonly kind: 'empty' };
 
 /**
@@ -220,30 +220,34 @@ export function assignPooledRows(
    * this pass it still names an item and the guard below excludes it.
    */
   const arriving = [...new Set(itemIds)].filter((itemId) => !held.has(itemId));
-  let next = 0;
-  for (const [index, row] of rows.entries()) {
+  let next = arriving.length - 1;
+  for (let index = rows.length - 1; index >= 0; index -= 1) {
+    const row = rows[index]!;
     if (assignments[index]?.kind !== 'holds-open') continue;
     if (row.itemId !== undefined) continue;
     if (row.freedAtMs !== undefined && nowMs - row.freedAtMs < settleMs) continue;
     const itemId = arriving[next];
     if (itemId === undefined) break;
-    next += 1;
+    next -= 1;
     assignments[index] = { kind: 'fills', itemId };
   }
 
   /*
-   * Pass three: which rows still naming nothing may give their boxes up. Only
-   * the trailing run, because dropping a box with an occupied row after it
-   * moves that row -- the header's point 2.
+   * The inspector rail is bottom-anchored (ADR 0124). The unused leading run
+   * gives up its boxes; every occupied and held-open place remains counted
+   * from the bottom. Removing a box below another row would move that row
+   * into a pointer aimed at the departed item.
    */
-  let occupiedBelow = false;
-  for (let index = assignments.length - 1; index >= 0; index -= 1) {
+  let occupiedAbove = false;
+  for (let index = 0; index < assignments.length; index += 1) {
     const kind = assignments[index]?.kind;
     if (kind === 'keeps' || kind === 'fills') {
-      occupiedBelow = true;
+      occupiedAbove = true;
       continue;
     }
-    if (!occupiedBelow) assignments[index] = { kind: 'empty' };
+    const row = rows[index]!;
+    const settling = row.freedAtMs !== undefined && nowMs - row.freedAtMs < settleMs;
+    if (!occupiedAbove && row.itemId === undefined && !settling) assignments[index] = { kind: 'empty' };
   }
 
   return assignments;
