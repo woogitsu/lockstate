@@ -578,6 +578,8 @@ export function createResizeSeparator(options: ResizeSeparatorOptions): ResizeSe
     // Only once the press meant something here: an unhandled arrow must still
     // reach whatever else wanted it.
     event.preventDefault();
+    // A handled arrow belongs to this separator, not the world camera behind it.
+    event.stopPropagation();
     report(outcome);
     settleGesture('abandoned');
   };
