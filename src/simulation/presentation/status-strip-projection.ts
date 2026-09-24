@@ -60,6 +60,7 @@ export interface StatusStripSource {
   readonly prisoners: PrisonerProjectionSource;
   readonly roomFilth?: RoomFilthIncomeSource;
   readonly labourCredit?: { readonly lastBlock: { readonly employed: number; readonly idle: number } };
+  readonly workOutput?: { readonly portions: number };
   readonly rooms?: RoomProjectionSource;
   readonly staff?: StaffRosterSource;
   readonly incidents?: StatusStripIncidentSource;
@@ -652,6 +653,8 @@ export interface StatusStripViewModel {
     /** Prisoners performing room work or education, and eligible prisoners idle, at the last work-block end. */
     readonly labourEmployedLastBlock: number;
     readonly labourIdleLastBlock: number;
+    /** Prepared portions in kitchen fridges, which spoil at the day boundary. */
+    readonly mealPortions: number;
     /**
      * What one in-game day of the current roster costs, in the same minor
      * units (ADR 0042 step 3).
@@ -1045,6 +1048,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
         stateIncomeAccruedByTick(cleanGrant, source.tick) - accruedTodayMinorUnits,
       labourEmployedLastBlock: source.labourCredit?.lastBlock.employed ?? 0,
       labourIdleLastBlock: source.labourCredit?.lastBlock.idle ?? 0,
+      mealPortions: source.workOutput?.portions ?? 0,
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
       conditions,

@@ -26,6 +26,7 @@ import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import type { RoomFilthLedger } from './room-filth-ledger';
+import type { WorkOutputLedger } from './work-output';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
@@ -302,7 +303,7 @@ function relievesAnUnmetNeed(needs: NeedsComponent, index: number, action: Actio
   // discipline is the one `unmetNeedCount` keeps for the identical scan, and a
   // canonical walk cannot become the thing that drifts.
   for (const needId of NEED_IDS as readonly NeedId[]) {
-    const effect = action.needEffectsPerTick[needId] ?? 0;
+    const effect = (action.selectionNeedEffectsPerTick ?? action.needEffectsPerTick)[needId] ?? 0;
     if (effect <= 0) continue;
     if (isNeedUnmetForStateIncome(needs.get(index, needId))) return true;
   }
@@ -333,10 +334,10 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
  * performing prisoner per reconsideration cycle, and so the answer is what the
  * loop *did* rather than what a second reading of the definition predicts.
  */
-function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number): boolean {
+function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number, effectMultiplier = 1): boolean {
   let appliedAny = false;
   for (const [needId, perTick] of Object.entries(action.needEffectsPerTick) as [keyof typeof action.needEffectsPerTick, number][]) {
-    needs.adjust(index, needId, perTick * ticksElapsed);
+    needs.adjust(index, needId, perTick * ticksElapsed * effectMultiplier);
     appliedAny = true;
   }
   return appliedAny;
@@ -458,6 +459,7 @@ export class ActionSystem implements SystemRegistration {
      */
     private readonly carry?: CarryJobExecutor,
     private readonly filth?: RoomFilthLedger,
+    private readonly workOutput?: WorkOutputLedger,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -758,7 +760,10 @@ export class ActionSystem implements SystemRegistration {
       return;
     }
 
-    if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks)) {
+    const mealMultiplier = action.id === 'action.eat-meal'
+      ? this.workOutput?.mealEffectMultiplier(entityId, this.currentAction.phaseStartedAtTick[index]!) ?? 1
+      : 1;
+    if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks, mealMultiplier)) {
       this.currentAction.needFulfilledLastTick[index] = tick;
     }
 

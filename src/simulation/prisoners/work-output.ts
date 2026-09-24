@@ -1,3 +1,6 @@
+import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import { DAY_LENGTH_TICKS } from './regime';
+
 /** One portion per 50 performing prisoner-ticks; one clean kit per 80. */
 export const KITCHEN_TICKS_PER_PORTION = 50;
 export const LAUNDRY_TICKS_PER_KIT = 80;
@@ -64,7 +67,8 @@ export class WorkOutputLedger {
     this.kitchen.clear();
     this.laundry.clear();
     this.cleanKits.clear();
-    this.mealClaims.clear();
+    // A meal already in progress keeps its reservation across midnight.
+    // Its portion has been eaten; only unclaimed stock spoils.
   }
 
   public getSnapshot(): WorkOutputSnapshot {
@@ -94,5 +98,32 @@ export class WorkOutputLedger {
       if (!Number.isSafeInteger(id) || id < 0 || !Number.isSafeInteger(startedAtTick) || startedAtTick < 0 || typeof hadPortion !== 'boolean' || this.mealClaims.has(id)) throw new RangeError('Invalid meal claim.');
       this.mealClaims.set(id, { startedAtTick, hadPortion });
     }
+  }
+}
+
+export interface PerformingWork {
+  readonly entityId: number;
+  readonly instanceId: string;
+  readonly kind: 'kitchen' | 'laundry';
+}
+
+/** Samples actual performed work after the action system, then expires output at midnight. */
+export class WorkOutputSystem implements SystemRegistration {
+  public readonly id = 'prisoners.work-output';
+  public readonly order = 256;
+  public readonly schedule = { intervalTicks: 1, phaseTicks: 0 };
+
+  public constructor(
+    private readonly ledger: WorkOutputLedger,
+    private readonly performing: (tick: number) => readonly PerformingWork[],
+    private readonly residentIds: () => readonly number[],
+  ) {}
+
+  public update(context: SimulationContext): void {
+    for (const worker of this.performing(context.tick).slice().sort((a, b) => a.entityId - b.entityId)) {
+      if (worker.kind === 'kitchen') this.ledger.recordKitchenTick(worker.instanceId);
+      else this.ledger.recordLaundryTick(worker.instanceId, this.residentIds());
+    }
+    if (context.tick % DAY_LENGTH_TICKS === DAY_LENGTH_TICKS - 1) this.ledger.settleDay();
   }
 }

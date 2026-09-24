@@ -45,6 +45,7 @@ import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideRe
 import { RegimeScheduleRegistry } from './regime-registry';
 import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
 import { RoomFilthLedger } from './room-filth-ledger';
+import { WorkOutputLedger } from './work-output';
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
 const PRISONER_COMPONENT_ID = 0;
@@ -356,6 +357,7 @@ export class PrisonerOperationsRuntime {
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
   public readonly roomFilth = new RoomFilthLedger();
+  public readonly workOutput = new WorkOutputLedger();
   public readonly classificationReviewSystem: ClassificationReviewSystem;
   /** ADR 0090, issue #788: the faster, capped-lower companion that keeps `Medium` from being skipped. See its own docblock for why it is a second system rather than a change to `classificationReviewSystem`. */
   public readonly classificationEarlyWarningSystem: ClassificationEarlyWarningSystem;
@@ -450,6 +452,7 @@ export class PrisonerOperationsRuntime {
     // from, so the rate and the readout share one definition of "full".
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs, () =>
       accommodationCapacityOf(this.roomInstances, this.accommodationPolicy),
+      (entityId) => this.workOutput.hasCleanKit(entityId),
     );
     this.classificationReviewSystem = new ClassificationReviewSystem(
       this.entityStore,
@@ -493,6 +496,7 @@ export class PrisonerOperationsRuntime {
       combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
       options.carryJobs,
       this.roomFilth,
+      this.workOutput,
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(
@@ -937,6 +941,7 @@ export class PrisonerOperationsRuntime {
       coldState: this.coldState.getSnapshot(),
       roomInstanceOccupancy: this.roomInstances.getSnapshot(),
       roomFilth: this.roomFilth.getSnapshot(),
+      workOutput: this.workOutput.getSnapshot(),
     };
   }
 
@@ -958,6 +963,7 @@ export class PrisonerOperationsRuntime {
     this.coldState.loadSnapshot(snapshot.coldState);
     this.roomInstances.loadSnapshot(snapshot.roomInstanceOccupancy);
     this.roomFilth.loadSnapshot(snapshot.roomFilth ?? { rooms: [], exposures: [] });
+    this.workOutput.loadSnapshot(snapshot.workOutput ?? { kitchen: [], laundry: [], cleanKits: [], mealClaims: [] });
 
     // Re-derive the query bitset from restored entity liveness -- the bitset
     // itself isn't part of the snapshot (it's a pure function of "is this

@@ -1298,6 +1298,7 @@ export const HUD_MESSAGE_KEY = {
   roomsConfirmRemove: 'hud.rooms.confirm-remove',
   roomsCancel: 'hud.rooms.cancel',
   roomsMinimum: 'hud.rooms.minimum',
+  roomsMealPortions: 'hud.rooms.meal-portions',
   roomsMinimumNone: 'hud.rooms.minimum-none',
   roomsTooSmall: 'hud.rooms.too-small',
   roomsEnclosure: 'hud.rooms.enclosure',

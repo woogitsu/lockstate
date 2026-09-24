@@ -22,10 +22,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * ## Why the assertions here are shaped the way they are
  *
- * `laundry-work-and-empty-blocks.test.ts` -- the file this one copies -- can
- * prove a shift happened by watching hygiene *rise*, because `action.shower`
- * is the only other entry that touches hygiene and its prison has no shower
- * room. **That proof is not available here and using it would be the defect
+ * Before #592, `laundry-work-and-empty-blocks.test.ts` used rising hygiene
+ * to prove a shift. Work now produces clean kits rather than immediate
+ * hygiene, so actual performed ticks and output are the proof here.
+ * **A rising hunger bar is not a valid proof of kitchen output and using it would be the defect
  * it looks like a copy of.** `action.eat-in-cell` targets
  * `own-accommodation`, needs no room and gains `hunger` at 3, so hunger rises
  * in every prison including one with no kitchen at all. A rising-hunger
@@ -145,6 +145,15 @@ function watch(runtime: SimulationRuntime): WatchedRun {
 }
 
 describe('a prison with a furnished kitchen', () => {
+  it('turns actual stove work into portions before they spoil at midnight', () => {
+    const runtime = prisonWithKitchen(2);
+    stepTo(runtime, ADMIT_AT);
+    submit(runtime, 'admit-output', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
+    stepTo(runtime, 1_790);
+    expect(runtime.prisoners.workOutput.portionsIn(KITCHEN_ID)).toBeGreaterThan(0);
+    stepTo(runtime, DAY_LENGTH_TICKS);
+    expect(runtime.prisoners.workOutput.portions).toBe(0);
+  });
   it('derives the capability and the ceiling the work action gates on', () => {
     const runtime = prisonWithKitchen(2);
     stepTo(runtime, ADMIT_AT);
@@ -244,9 +253,12 @@ describe('a prison with a furnished kitchen', () => {
      * like. 4,220 -> 360.
      */
     expect(furnished.performingTicks['action.eat-in-cell']).toBe(control.performingTicks['action.eat-in-cell']);
-    expect(furnished.finalHunger).toBe(254.5);
+    // #592 supersedes the old 254.5: a kitchen prepares portions for canteen
+    // meals, and this fixture has no canteen. Kitchen work itself no longer
+    // fills the worker's hunger bar.
+    expect(furnished.finalHunger).toBe(190.5);
     expect(control.finalHunger).toBe(190.5);
-    expect(furnished.finalHunger).toBeGreaterThan(control.finalHunger);
+    expect(furnished.finalHunger).toBe(control.finalHunger);
 
     // Fewer reconsiderations with nothing worth doing, measured rather than
     // claimed to be zero: a prisoner is idle between one action ending and the

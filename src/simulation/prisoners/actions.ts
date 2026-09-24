@@ -258,18 +258,10 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    *   its requirements satisfied and changes no prisoner's behaviour ... a
    *   laundry job system is what would consume it". This is that consumer. The
    *   comment is corrected in the same commit rather than left to rot.
-   * - **`hygiene`, at 1 against `action.shower`'s 4**, which is the content
-   *   convention the catalogue already uses for a second route to a need
-   *   (`action.eat-in-cell` gains 3 against `action.eat-meal`'s 4;
-   *   `action.common-room-recreation` 2 against `action.yard-recreation`'s 3).
-   *   Hygiene rather than an invented need because `room.laundry`'s own
-   *   authored `category` in the room catalogue is `'hygiene'` -- content that
-   *   has said what this room is for since it shipped, with no code reading
-   *   it. It also gives the two work/education blocks a second thing to be
-   *   for: `action.classroom-education` gains `recreation: 1` there, so a
-   *   prisoner in a prison with both takes whichever of boredom and grime is
-   *   the worse today, and a player choosing which room to build is making a
-   *   real choice rather than a cosmetic one.
+   * - **#592 replaces direct hygiene gain with clean kits.** Eighty actual
+   *   performing ticks yield a kit for one prisoner; the recipient's hygiene
+   *   decays at half rate that day. Hygiene remains the selection motivation
+   *   so a prison with a laundry still staffs it when cleanliness is poor.
    * - **It does not give `hygiene` a cell-side route, and that is the
    *   decision rather than an omission.** `hygiene` and `recreation` stay
    *   room-gated (issue #436, [ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)):
@@ -314,24 +306,12 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    *   `object.fridge`'s `'food-storage'` is deliberately *not* named: one
    *   action consumes one capability (issue #326), and gating on the fridge
    *   would make a cold store a work station.
-   * - **`hunger`, at 1 against `action.eat-meal`'s 4**, which is the
-   *   convention the catalogue already uses for a second route to a need
-   *   (`action.laundry-work` gains `hygiene` at 1 against `action.shower`'s 4;
-   *   `action.eat-in-cell` 3 against `action.eat-meal`'s 4). Hunger rather
-   *   than an invented need because `room.kitchen`'s own authored `category`
-   *   in the room catalogue is `'food'` -- exactly the reading that gave the
-   *   laundry `hygiene` from its authored `'hygiene'`. A prisoner on kitchen
-   *   duty eats a little of what passes through their hands; nothing is
-   *   produced, stored or delivered.
-   * - **It is a place to work, and explicitly *not* a supplier of the
-   *   canteen.** `action.eat-meal` gates on `'dining'` in `room.canteen` and
-   *   gains `hunger` directly; no meal exists as an item, no `item.food-ration`
-   *   moves, and `room.canteen` does not ask whether anybody cooked. Making
-   *   the kitchen feed the canteen means a production chain --
-   *   `docs/research/audit-2026-08-26/10-product-roadmap.md` scopes that as its
-   *   own "Food chain (kitchen -> cook -> ration -> canteen)" row at size L --
-   *   and it would be architecture decided inside a content module. This entry
-   *   deliberately leaves that row exactly where it is.
+   * - **#592 makes the kitchen a supplier of the canteen.** Fifty actual
+   *   performing ticks at a stove prepare one portion, kept by the kitchen's
+   *   fridge until consumed or spoiled at the day boundary. A canteen meal
+   *   reserves one portion once and feeds at half rate without one. Kitchen
+   *   work itself no longer feeds its worker. Hunger remains its selection
+   *   motivation, including the urgent-need exception to carry duty.
    * - **120 ticks**, the same shift as `action.classroom-education` and
    *   `action.laundry-work`, and for the reason the laundry entry states: the
    *   three now share both work blocks, and an unequal duration would decide

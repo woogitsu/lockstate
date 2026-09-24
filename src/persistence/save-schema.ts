@@ -1374,8 +1374,15 @@ const labourCreditSchema = z.object({
   eligibleThisBlock: z.array(entityIdSchema).optional(),
 }).strict();
 
+const workOutputSchema = z.object({
+  kitchen: z.array(z.tuple([z.string().min(1), z.number().int().nonnegative().safe().max(49), z.number().int().nonnegative().safe()])),
+  laundry: z.array(z.tuple([z.string().min(1), z.number().int().nonnegative().safe().max(79)])),
+  cleanKits: z.array(entityIdSchema),
+  mealClaims: z.array(z.tuple([entityIdSchema, z.number().int().nonnegative().safe(), z.boolean()])),
+}).strict();
+
 /** V7 records waste already produced and the prisoners exposed this day. Labour is optional for older V7 saves. */
-const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema, labourCredit: labourCreditSchema.optional() });
+const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({ roomFilth: roomFilthSchema, labourCredit: labourCreditSchema.optional(), workOutput: workOutputSchema.optional() });
 
 // --- Envelope ---
 

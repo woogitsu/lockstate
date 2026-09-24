@@ -147,7 +147,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twenty-four
+publishable on a timer: `simulation/status-counts` (section 8) carries twenty-five
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. *(The refusal record is four fields since
 2026-09-16 and five since 2026-09-22, the fifth being a nested `tile` of two
