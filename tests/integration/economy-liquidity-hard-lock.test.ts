@@ -430,12 +430,19 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * is: the list is every command the protocol declares, and the claim this
      * test defends is about which of them can turn stock back into money.
      * Editing a timetable cannot, in either direction.
+     *
+     * #594 added `AcceptIntakeCandidate` and `DelayIntakeCandidate`.
+     * Acceptance credits the candidate's bounty when they are placed, so it
+     * can add money through a legitimate admission. Neither command turns
+     * already purchased stock back into money, the subject of this case.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
+      'AcceptIntakeCandidate',
       'AdmitPrisoner',
       'CancelBuildOrder',
       'CancelMaterialPurchase',
+      'DelayIntakeCandidate',
       'DismissAlert',
       'DismissStaff',
       'EditRegimeBlock',

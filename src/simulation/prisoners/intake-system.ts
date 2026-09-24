@@ -516,7 +516,7 @@ export class IntakeSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
-    for (const entityId of this.holdingSince.keys()) {
+    for (const entityId of [...this.holdingSince.keys()].sort((a, b) => a - b)) {
       if (!this.store.isAlive(entityId)) this.holdingSince.delete(entityId);
     }
     for (const entityId of this.query.execute()) {

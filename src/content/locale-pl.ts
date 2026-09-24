@@ -1193,8 +1193,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // bed count.
   'hud.intake.no-place': 'Bez miejsca do spania: {count}',
   'hud.alert.intake-delayed': 'Oczekujący poza więzieniem: {count}. Zwolnij miejsce lub wyposaż kolejną celę albo celę przejściową.',
-  'hud.alert.holding-strained': 'W celi przejściowej {count} osób: bezpieczeństwo spada szybciej. Przygotuj łóżka.',
-  'hud.alert.holding-critical': 'W celi przejściowej od pełnego dnia: {count} osób. Bezpieczeństwo i sen pogarszają się szybciej.',
+  'hud.alert.holding-strained': 'Cela przejściowa — osadzeni: {count}. Bezpieczeństwo spada szybciej. Przygotuj łóżka.',
+  'hud.alert.holding-critical': 'Cela przejściowa — pobyt od pełnego dnia: {count}. Bezpieczeństwo i sen pogarszają się szybciej.',
   'hud.intake.pipeline': 'W przyjęciach',
   'hud.intake.pipeline-count': '{waiting} z {total}',
   // Reshaped: "at {stage}" is *na etapie* plus the locative (*na etapie

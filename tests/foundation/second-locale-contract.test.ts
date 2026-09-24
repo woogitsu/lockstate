@@ -352,6 +352,11 @@ describe('every non-default catalogue is well-formed, without being required to 
  * entry here fails on the commit that adds it.
  */
 const FLAT_MESSAGES_WITH_COUNT = [
+  // #590's alerts use count labels. The Polish holding labels put the number
+  // after a colon, so one resident never renders as "1 osób".
+  'hud.alert.holding-critical',
+  'hud.alert.holding-strained',
+  'hud.alert.intake-delayed',
   'hud.alert.occurrences',
   'hud.build.buy-submit',
   'hud.build.deliveries-count',

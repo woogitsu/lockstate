@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { deterministicStateHash } from '../../src/simulation/determinism/canonical';
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
-import { captureSessionSnapshot, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { captureSessionSnapshot, SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { SimulationWorkerStateMachine, type MessagePortLike } from '../../src/simulation/worker/state-machine';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 import { toJsonValue } from '../helpers/determinism-state';
@@ -72,8 +72,8 @@ class WorkerHarness {
           kind: 'snapshot',
           snapshot: {
             transport: 'structured-clone',
-            schemaId: 'simulation-save-payload',
-            schemaVersion: 3,
+            schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
+            schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
             data: snapshot as unknown as null,
           },
         },
