@@ -21,6 +21,7 @@ export {
   type PayrollStaffSource,
 } from './payroll';
 export { InsolvencyRungSystem } from './insolvency-rung-system';
+export { LabourCreditSystem, LABOUR_TICKS_PER_CREDIT, LABOUR_CREDIT_MINOR_UNITS, type LabourCreditSnapshot } from './labour-credit';
 export { placementCostMinorUnits } from './placement-cost';
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,

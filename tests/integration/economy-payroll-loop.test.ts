@@ -350,7 +350,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(
       runtime.events
         .since(0)
-        .filter((event) => event.type.startsWith('economy.'))
+        .filter((event) => event.type === 'economy.deliveries-refused' || event.type === 'economy.construction-refused')
         .map((event) => ({ tick: event.tick, type: event.type })),
       'the two rungs above the wages floor, crossed together before any payday is missed',
     ).toEqual([
@@ -462,7 +462,9 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     // through the real command, so the whole log is no longer this case's
     // subject. The ladder's shape is, and the filter is what keeps this case
     // about the ladder while the log grows around it.
-    expect(runtime.events.since(0).map((event) => event.type).filter((type) => type.startsWith('economy.'))).toEqual([
+    expect(runtime.events.since(0).map((event) => event.type).filter((type) =>
+      type === 'economy.deliveries-refused' || type === 'economy.construction-refused' || type === 'economy.wages-unpaid',
+    )).toEqual([
       'economy.deliveries-refused',
       'economy.construction-refused',
       'economy.wages-unpaid',

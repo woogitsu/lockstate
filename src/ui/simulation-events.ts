@@ -584,6 +584,11 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'warning',
     surfaces: 'band-and-log',
   },
+  'economy.work-block-idle': {
+    labelKey: 'hud.alert.event.economy.work-block-idle',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
   'incidents.all-clear': {
     labelKey: 'hud.alert.event.incidents.all-clear',
     severity: 'info',
@@ -1246,6 +1251,8 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
   switch (event.type) {
     case 'economy.wages-unpaid':
       return { total: event.unpaidWagesMinorUnits };
+    case 'economy.work-block-idle':
+      return { idle: event.idle };
     // The one success sentence that names a figure (#749). `{total}` is the
     // same placeholder the unpaid-payday row above uses and the same units --
     // minor units, unconverted -- so the two render alike, and it is the same
@@ -1472,6 +1479,7 @@ function eventParameterMessages(
     // visible for each, and so the `default` below is reached only by a type
     // nobody has considered.
     case 'economy.wages-unpaid':
+    case 'economy.work-block-idle':
     case 'economy.deliveries-refused':
     case 'economy.construction-refused':
     // Issue #966 site 1's recovery mirror: no message-valued parameter either,

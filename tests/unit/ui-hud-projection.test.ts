@@ -1286,6 +1286,16 @@ describe('refusalMessageKey: what a refused control says', () => {
  * (a prison meeting every need) and a positive figure.
  */
 describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
+  it('states completed work-block employment without adding a tenth strip chip', () => {
+    const metrics = projectStatusMetrics(counts({ labourEmployedLastBlock: 3, labourIdleLastBlock: 2 }));
+    expect(metrics).toHaveLength(9);
+    expect(metrics.find((entry) => entry.id === 'earned-today')?.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.labourBlock,
+      numberParameters: { employed: 3, idle: 2 },
+    });
+    expect(metric(counts(), 'earned-today').badge).toBeUndefined();
+  });
   it('attributes the dirty-room portion without claiming all withholding comes from needs', () => {
     const chip = metric(counts({
       stateIncomeAccruedTodayMinorUnits: 220,

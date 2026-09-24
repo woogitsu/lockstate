@@ -189,6 +189,9 @@ describe('a prison with a furnished kitchen', () => {
       'action.kitchen-work': 3_880,
       'action.free-association': 360,
     });
+    expect(furnished.runtime.labourCredit.getSnapshot().workTicks[0]?.[1]).toBeGreaterThan(0);
+    expect(furnished.runtime.labourCredit.lastBlock.employed).toBe(1);
+    expect(furnished.runtime.events.getSnapshot().records.some((event) => event.type === 'economy.work-block-idle')).toBe(false);
     expect(furnished.runtime.prisoners.roomFilth.getSnapshot().rooms.find(([id]) => id === KITCHEN_ID)?.[1]).toBeGreaterThan(0);
 
     /*
@@ -199,6 +202,10 @@ describe('a prison with a furnished kitchen', () => {
      * therefore attributable to the shift and to nothing else.
      */
     const control = watch(prisonWithKitchen(0));
+    expect(control.runtime.labourCredit.getSnapshot().workTicks).toEqual([]);
+    expect(control.runtime.labourCredit.lastBlock.employed).toBe(0);
+    expect(control.runtime.labourCredit.lastBlock.idle).toBe(1);
+    expect(control.runtime.events.getSnapshot().records.some((event) => event.type === 'economy.work-block-idle')).toBe(true);
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.kitchen', 'food-preparation')).toBeUndefined();
     expect(control.performingTicks['action.kitchen-work']).toBeUndefined();
     expect(control.runtime.prisoners.roomFilth.getSnapshot().rooms).toEqual([]);

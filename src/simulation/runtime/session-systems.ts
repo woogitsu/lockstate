@@ -331,6 +331,8 @@ export interface EncodedIncidents {
  */
 export interface EncodedSessionSystems {
   readonly roomFilth: import('../prisoners/room-filth-ledger').RoomFilthSnapshot;
+  /** Absent in saves written before work credits existed: no work accrued today. */
+  readonly labourCredit?: import('../economy/labour-credit').LabourCreditSnapshot;
   readonly prisoners: EncodedPrisoners;
   /**
    * Every classification group's timetable, as the session is actually running
@@ -666,6 +668,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     // `objects` and `alerts` below.
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     roomFilth: runtime.prisoners.roomFilth.getSnapshot(),
+    labourCredit: runtime.labourCredit.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -954,6 +957,7 @@ export function restoreSessionSystems(
   // are per prisoner and no save carries them (issue #435), so a restore opens
   // a new counting window and this is the number that says so out loud.
   runtime.kernel.tick);
+  runtime.labourCredit.loadSnapshot(systems.labourCredit ?? { workTicks: [], employedLastBlock: 0, idleLastBlock: 0 });
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);

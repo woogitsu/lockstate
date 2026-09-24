@@ -94,6 +94,20 @@ describe('room filth in a local save', () => {
   });
 });
 
+describe('prison labour in a local save', () => {
+  it('keeps earned work ticks and pays them once after restore', () => {
+    const runtime = buildPopulatedPrison();
+    const prisonerId = runtime.prisoners.entityStore.getIdByIndex(0);
+    runtime.labourCredit.loadSnapshot({ workTicks: [[prisonerId, 400]], employedLastBlock: 1, idleLastBlock: 0 });
+    const restored = saveAndLoad(runtime);
+    expect(restored.labourCredit.getSnapshot()).toEqual(runtime.labourCredit.getSnapshot());
+    const before = restored.treasury.balanceMinorUnits;
+    restored.labourCredit.update({ tick: 2_399 } as never);
+    expect(restored.treasury.balanceMinorUnits - before).toBe(25);
+    expect(restored.labourCredit.getSnapshot().workTicks).toEqual([]);
+  });
+});
+
 function step(runtime: SimulationRuntime, count: number): void {
   for (let index = 0; index < count; index += 1) runtime.kernel.step();
 }

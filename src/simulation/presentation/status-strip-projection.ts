@@ -59,6 +59,7 @@ export interface StatusStripSource {
   readonly clockControl?: ClockControl;
   readonly prisoners: PrisonerProjectionSource;
   readonly roomFilth?: RoomFilthIncomeSource;
+  readonly labourCredit?: { readonly lastBlock: { readonly employed: number; readonly idle: number } };
   readonly rooms?: RoomProjectionSource;
   readonly staff?: StaffRosterSource;
   readonly incidents?: StatusStripIncidentSource;
@@ -648,6 +649,9 @@ export interface StatusStripViewModel {
     readonly stateIncomeWithheldTodayMinorUnits: number;
     /** Portion of that withheld amount caused by dirty rooms, at this tick. */
     readonly stateIncomeFilthWithheldTodayMinorUnits: number;
+    /** Prisoners performing room work or education, and eligible prisoners idle, at the last work-block end. */
+    readonly labourEmployedLastBlock: number;
+    readonly labourIdleLastBlock: number;
     /**
      * What one in-game day of the current roster costs, in the same minor
      * units (ADR 0042 step 3).
@@ -1039,6 +1043,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
         ) - accruedTodayMinorUnits,
       stateIncomeFilthWithheldTodayMinorUnits:
         stateIncomeAccruedByTick(cleanGrant, source.tick) - accruedTodayMinorUnits,
+      labourEmployedLastBlock: source.labourCredit?.lastBlock.employed ?? 0,
+      labourIdleLastBlock: source.labourCredit?.lastBlock.idle ?? 0,
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
       conditions,

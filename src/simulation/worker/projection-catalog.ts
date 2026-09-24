@@ -183,6 +183,7 @@ function statusStripSource(runtime: SimulationRuntime, tick: number) {
     // `PrisonerOperationsRuntime` owns the room-instance registry, so it
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
+    labourCredit: runtime.labourCredit,
     rooms: runtime.prisoners,
     // The session's timetables rather than the module constant this source
     // previously left `projectStatusStrip` to default to

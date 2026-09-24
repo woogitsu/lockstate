@@ -75,6 +75,7 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   }),
   'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
+  'economy.work-block-idle': (sequence) => ({ sequence, tick: 100, type: 'economy.work-block-idle', idle: 2 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
   'economy.construction-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-refused' }),
   // #966 site 1's recovery mirror of the two crossings above.

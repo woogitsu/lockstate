@@ -1272,11 +1272,17 @@ export function projectStatusMetrics(
       // adds a column without moving one.
       value: counts.stateIncomeAccruedTodayMinorUnits,
       capacity: undefined,
-      // No tone on the total: nobody has defined a "good day" threshold.
-      // A positive withheld amount is a separate measured shortfall and gets
-      // the owner's visible badge, with the long explanation still in title.
+      // No threshold tone: a good day has no authored threshold. Withheld
+      // grant keeps the owner's visible badge; the last work block uses the
+      // same space only when there is no shortfall to show.
       tone: undefined,
-      badge: earnedWithheldBadge(counts),
+      badge: earnedWithheldBadge(counts) ?? ((counts.labourEmployedLastBlock ?? 0) + (counts.labourIdleLastBlock ?? 0) > 0
+        ? {
+            tone: (counts.labourIdleLastBlock ?? 0) > 0 ? 'warning' : 'success',
+            textKey: HUD_MESSAGE_KEY.labourBlock,
+            numberParameters: { employed: counts.labourEmployedLastBlock ?? 0, idle: counts.labourIdleLastBlock ?? 0 },
+          }
+        : undefined),
       description: earnedWithheldDescription(counts),
     },
   ];
