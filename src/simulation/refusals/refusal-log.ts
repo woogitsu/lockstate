@@ -142,6 +142,12 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * `tests/unit/simulation-refusals.test.ts` pins the prefix of every key
  * builder in this module, so a new route whose key does not follow the shape
  * fails there rather than silently never retiring a band.
+ *
+ * **2026-09-24 qualification for #1270.** This function still returns each
+ * key's literal prefix. `sameRefusalBandRoute` treats `remove-wall` and
+ * `remove-object` as one route only when deciding whether to retire the
+ * refusal band. `RefusalLog.supersede` still withdraws a refusal only when
+ * its complete key matches, preserving #492's target-specific log rule.
  */
 export function supersessionKeyRoute(key: string): string {
   const separator = key.indexOf(':');
