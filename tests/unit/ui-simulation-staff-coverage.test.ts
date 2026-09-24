@@ -115,7 +115,7 @@ function staffView(totals: { required: number; assigned: number; shortage: numbe
   } as unknown as StaffViewModel;
 }
 
-describe('the mapping carries three figures and computes none of them', () => {
+describe('the mapping carries post and reserve figures and computes none of them', () => {
   it('carries the prison-wide response reserve without netting sector shortages', () => {
     const view = staffView({ required: 4, assigned: 4, shortage: 1 });
     const withReserve = { ...view, totals: { ...view.totals, responseReserveRequired: 5, responseReserveAvailable: 2, responseReserveShortage: 3 } };
@@ -148,7 +148,7 @@ describe('the mapping carries three figures and computes none of them', () => {
   });
 });
 
-describe('the block says one of three things, and which one is a decision', () => {
+describe('the block distinguishes unguarded, understaffed, reserve-short and covered states', () => {
   it('separates filled posts with a short free reserve from full coverage', () => {
     expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, responseReserveRequired: 5, responseReserveAvailable: 1, responseReserveShortage: 4 })).toEqual({
       tone: 'warning',
@@ -281,7 +281,8 @@ describe('every sentence the block can render is real text with its placeholders
    * is what made the requirement read as the whole bill. See
    * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
    * exactly the requirement the responder pool is empty, and the panel's
-   * figures are identical to a prison one hire past it.
+   * post figures are identical to a prison one hire past it; the current
+   * reserve figures distinguish the two states.
    *
    * ## Widened on 2026-09-05 (issue #989), and the sentence it pinned is kept
    *
