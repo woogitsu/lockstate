@@ -6774,6 +6774,26 @@
     min-height: 0;
   }
 
+  /* At enlarged scale Build otherwise starts beneath the fold: even its
+   * placement action is hidden. Keep the save actions visible while giving
+   * the selected catalogue row a complete tap target. */
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud__aside {
+    flex-basis: calc(5.25 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build {
+    position: relative;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build__arm {
+    position: absolute;
+    top: 0;
+    left: calc(2.2 * var(--tap-target));
+    right: calc(var(--tap-target) + var(--space-3));
+    width: auto;
+    z-index: 2;
+  }
+
   .hud__aside .save-panel__actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
