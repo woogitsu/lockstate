@@ -133,6 +133,28 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(reading!.timber!, reading!.jamb!)).toBeGreaterThan(20);
   });
 
+  test('the Blender wall cap tiles without transparent seams', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.cap'].kind).toBe('rendered-art');
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.face'].kind).toBe('source-art');
+    await openHarness(page);
+    const readings = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.wall.interior.cap');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        start: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y),
+        middle: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + Math.floor(frame.height / 2)),
+        end: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + frame.height - 1),
+      };
+    });
+    expect(readings).toBeDefined();
+    expect(readings!.size).toEqual([32, 128]);
+    for (const pixel of [readings!.start, readings!.middle, readings!.end]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+  });
+
   test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }) => {
     const fixture = await openHarness(page);
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());

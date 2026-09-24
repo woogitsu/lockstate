@@ -189,18 +189,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     quarterTurns: 0,
     note: 'Frontal interior wall elevation: coping band, plaster, dark skirting. Drawn on east-west walls.',
   },
-  /**
-   * The coping band alone, turned a quarter. This is the only top-down wall
-   * surface any sheet contains, and it is an approximation: the sheets hold
-   * elevations and three-quarter views, never a cap seen from directly above.
-   */
+  /** A seamless Blender-rendered overhead coping strip, one tile per repeat. */
   'env.wall.interior.cap': {
-    kind: 'source-art',
-    assetId: 'wall.interior.modules',
-    sourceRectPx: { x: 150, y: 672, width: 290, height: 30 },
-    runtimeSizePx: { width: 128, height: 28 },
+    kind: 'rendered-art',
+    renderedArtId: 'wall.interior.cap.overhead',
+    runtimeSizePx: { width: 128, height: 32 },
     quarterTurns: 1,
-    note: 'Top coping of the same wall module, turned to run north-south. Drawn on north-south walls.',
+    note: 'True overhead interior wall coping with pale enamel, dark edge seams and steel anchors. Drawn on north-south walls.',
   },
   'env.door.interior.face': {
     kind: 'source-art',

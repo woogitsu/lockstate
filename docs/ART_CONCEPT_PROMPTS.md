@@ -395,3 +395,11 @@ The north-south interior door edge now uses a true overhead Blender render: a
 warm timber slab between galvanized jambs, with a hinge and recessed latch.
 The east-west frontal view keeps its existing source-art crop. The original
 four-view reference is recorded in `assets/source/concepts/interior-door-v3.md`.
+
+### Interior wall coping — `wall.interior.cap.overhead`
+
+The north-south wall cap uses an original four-view reference to define pale
+enamel coping, continuous dark seams, and small metal anchors. Its Blender
+render has no transparent frame margin, so segments tile without gaps. The
+concept and modeling choices are recorded in
+`assets/source/concepts/interior-wall-cap-v1.md`.

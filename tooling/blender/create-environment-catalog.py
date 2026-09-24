@@ -103,6 +103,7 @@ MODELS = (
     ("furniture.delivery.dock_gate.closed", (3, 1)),
     ("furniture.kitchen.prep_counter", (2, 1)),
     ("furniture.library.bookshelf", (2, 1)),
+    ("wall.interior.cap.overhead", (1, 0.25)),
 )
 
 
@@ -986,6 +987,21 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Tile", (0, 0, 0.06), (2, 2, 0.12), "concrete" if "concrete" in asset_id else "green", 0)
         box(collection, root, "Joint north-south", (0, 0, 0.121), (0.035, 2, 0.004), "shade", 0)
         box(collection, root, "Joint east-west", (0, 0, 0.121), (2, 0.035, 0.004), "shade", 0)
+    elif asset_id == "wall.interior.cap.overhead":
+        # A one-tile cap that repeats without a transparent frame at each
+        # joint. Keep both long faces continuous across the tile boundaries.
+        box(collection, root, "Warm painted wall core", (0, 0, 1.25),
+            (1.0, 0.25, 2.50), "wall_cap_plaster", 0)
+        box(collection, root, "Full-width coping plate", (0, 0, 2.55),
+            (1.0, 0.25, 0.10), "wall_cap_metal", 0)
+        box(collection, root, "Pale central enamel inlay", (0, 0, 2.607),
+            (1.0, 0.18, 0.014), "wall_cap_inlay", 0)
+        for y in (-0.115, 0.115):
+            box(collection, root, f"Dark continuous edge seam.{y}",
+                (0, y, 2.610), (1.0, 0.015, 0.013), "shade", 0)
+        for x in (-0.43, 0.43):
+            cylinder(collection, root, f"Coping anchor.{x}",
+                (x, 0, 2.625), 0.014, 0.011, "steel", 12)
     elif asset_id.startswith("wall"):
         box(collection, root, "Wall module", (0, 0, 1.25), (2, 0.22, 2.5), "concrete")
         box(collection, root, "Coping", (0, 0, 2.53), (2, 0.26, 0.07), "steel", 0.02)
@@ -1176,6 +1192,9 @@ def main():
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
+    MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)
+    MATERIALS["wall_cap_inlay"] = material("Interior wall pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)
     MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
     MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
     MATERIALS["fridge_teal"] = material("Refrigerator status lens", (0.04, 0.43, 0.45, 1), 0.30)

@@ -274,6 +274,11 @@ its rim is not fully opaque, which is right for a *tiling* frame and wrong for a
 discrete object, whose outermost pixels are its own silhouette -- a bed's head
 and foot rails.
 
+The Blender `wall.interior.cap.overhead` frame is a tiling surface exception:
+its margin is zero, and its alpha reaches every edge. This lets adjacent wall
+cap repeats meet without transparent seams. The frontal wall face continues
+to use the source-art sheet.
+
 **Where a model overhangs its declared footprint the frame grows uniformly**, so
 the aspect never moves and nothing is clipped, and `frameTiles` plus
 `overhangsFootprint` in the sidecar say so per asset. Nine of the 23 do, and

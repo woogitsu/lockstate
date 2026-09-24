@@ -1061,6 +1061,34 @@
         "height": 47,
         "opaquePixels": 15964
       }
+    },
+    {
+      "assetId": "wall.interior.cap.overhead",
+      "image": "wall.interior.cap.overhead.png",
+      "sha256": "b6cdaf524d916245467b706fac7d3a954f5cf195c60bd37a7df1bccb63cfd13b",
+      "pixelSha256": "82c1713079955b57995a05f4f0db7f81a661998431aab201fa856291c55ad594",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 0.25
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 0.25
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 64
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 64,
+        "opaquePixels": 16384
+      }
     }
   ]
 }
