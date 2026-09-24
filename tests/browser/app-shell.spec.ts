@@ -8620,6 +8620,25 @@ test.describe('the assembled application', () => {
     await expect(details.locator('.manage-saves__item')).toHaveCount(2);
   });
 
+  test('Manage refreshes an armed deletion age after returning to the tab (#1168)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await details.locator('summary').click();
+    await details.getByRole('button', { name: 'Delete', exact: true }).click();
+    const confirmation = details.locator('.manage-saves__confirm');
+    await expect(confirmation).toContainText('less than a minute ago');
+    await page.evaluate(() => {
+      const later = Date.now() + 2 * 60 * 60 * 1000;
+      Date.now = () => later;
+    });
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(confirmation).toContainText('2 h ago');
+  });
+
   /**
    * Issue #287, and the whole point of the Import control: a session the game
    * exported comes back.
