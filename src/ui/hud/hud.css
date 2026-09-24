@@ -638,9 +638,9 @@
   position: absolute;
   z-index: 1;
   box-sizing: border-box;
-  border: 2px solid #f4e5ae;
-  background: rgb(244 229 174 / 10%);
-  box-shadow: 0 0 0 1px rgb(16 26 31 / 80%), inset 0 0 0 1px rgb(16 26 31 / 60%);
+  border: 2px solid var(--status-caution);
+  outline: var(--hairline) solid var(--text-heading);
+  background: transparent;
   pointer-events: none;
 }
 
