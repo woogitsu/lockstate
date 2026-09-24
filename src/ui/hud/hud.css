@@ -6822,6 +6822,15 @@
     max-height: calc(6 * var(--tap-target));
   }
 
+  /* The category name is the catalogue's landmark. On the default Full HD
+   * rail the adjacent filter leaves it one word short; allow two short lines
+   * inside the existing tap-height header instead of displaying an ellipsis. */
+  .hud-build__catalogue > .ui-section__header-row .ui-section__eyebrow {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
   .hud__side {
     flex: 1 1 auto;
     margin-top: 0;
