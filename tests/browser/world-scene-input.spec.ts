@@ -909,6 +909,31 @@ test.describe('the world scene pointer gesture recovery (#516)', () => {
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   }
 
+  test('stops a middle-button pan on blur even when no mouseup reaches the page', async ({ page }) => {
+    await openHarness(page);
+    const centre = await canvasCentre(page);
+    const client = await page.context().newCDPSession(page);
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(centre.x + 80, centre.y);
+    await settle(page);
+    const panned = await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x);
+    expect(panned, 'the middle-button drag did not pan before focus loss').not.toBe(0);
+
+    await page.evaluate(() => window.dispatchEvent(new FocusEvent('blur')));
+    await missedRelease(client, { x: centre.x + 120, y: centre.y });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x)).toBe(panned);
+    await page.mouse.up({ button: 'middle' });
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(centre.x + 40, centre.y);
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.scroll().x)).not.toBe(panned);
+    await page.mouse.up({ button: 'middle' });
+    await client.detach();
+  });
+
   test('cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', async ({
     page,
   }) => {
