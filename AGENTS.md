@@ -1844,7 +1844,7 @@ another workflow edit, a pull request, a merge, or another owner reservation.
 (2026-09-24).** The all-rendered catalogue in the dining-table art branch has
 zero `assetId` entries and 29 `renderedArtId` entries. In the `browser` job,
 `set -euo pipefail` made the legacy `grep` exit before the rendered PNG check
-could run. The agent prepared commit `3586c1d2`, which lets either list be empty
+could run. The agent prepared commit `e8990586`, which lets either list be empty
 but fails if both are empty, and offered *"Tak — zastosuj tę poprawkę"* or
 *"Nie — pozostaw CI bez zmiany"*. The owner chose:
 
