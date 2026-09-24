@@ -2836,7 +2836,7 @@ const NEVER_LAID_OUT_BELOW_720 = [
    * and it is written out here rather than deleted because the reason it is
    * gone is *not* the reason the block below predicted would retire all of
    * them. `.hud__corner` is still `display: none` at 720px and below -- the
-   * three entries around this one are still exempt for exactly that mechanical
+   * two entries around this one are still exempt for exactly that mechanical
    * reason, and the accounting assertion at the foot of the sweep still fails
    * the moment the corner comes back.
    *
@@ -2862,16 +2862,15 @@ const NEVER_LAID_OUT_BELOW_720 = [
    * press the one surface whose own sentence denied that pressing it did
    * anything. It is a real `<button>` now, so it enters the inventory, and at
    * 720px and below it enters it inside a region `hud.css` sets to
-   * `display: none` -- the same mechanical reason as the two entries above.
+   * `display: none` -- the same mechanical reason as the collapse toggle above.
    *
    * **So #903's fix does not reach a phone, and that is what this line
-   * records.** It is the honest limit, stated the way the zoom pair below
-   * states its own: a keyboard player at a desktop width can now reach the
+   * records.** A keyboard player at a desktop width can now reach the
    * minimap; a keyboard player at 375px still cannot reach it, because nobody
    * can. Retiring this entry is the mobile layout pass's job, not an
    * implementing agent's -- the accounting assertion at the foot of the sweep
-   * fails the moment the corner comes back, which is what will retire all
-   * three of these together.
+   * fails the moment the corner comes back, which would retire the two
+   * remaining exemptions together.
    *
    * **Its label is the authored sentence, truncated to 32 characters by the
    * inventory's own `textContent.slice(0, 32)` -- and it is stable across the
@@ -2887,40 +2886,15 @@ const NEVER_LAID_OUT_BELOW_720 = [
    */
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ' +
     'button.hud-minimap__surface "No map is drawn here yet — press"',
-  /*
-   * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
-   * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
-   *
-   * They are here for the same mechanical reason -- `.hud__corner` is
-   * `display: none` at 720px and below, and these two buttons are in it -- and
-   * that is where the similarity stops. The minimap draws nothing yet and the
-   * alerts log has a second route on a phone (`.hud__event`, and the refusal
-   * and unavailable bands, all of which `hud.ts` documents as existing because
-   * this corner does not). **The zoom has no second route on a phone at all**:
-   * there is no wheel, there are no `+`/`-` keys, and the one gesture that
-   * zooms -- a pinch -- has no affordance anywhere, which is the exact defect
-   * #1023 was filed about, surviving at one viewport.
-   *
-   * It is exempted rather than fixed because the fix is not a breakpoint edit.
-   * `hud.css`'s own comment on that rule records two attempts at removing it,
-   * the diagnosis they produced (the corner collides with the **stretched
-   * rail**, and this very test is what caught it), and the owner's steer that
-   * the desktop browser comes first and mobile is refined later. This test also
-   * pins the rule directly, at "still mounts the interface when the simulation
-   * worker cannot start (#82)", so bringing the corner back is a decision with
-   * an owner and not a line for an implementing agent to change on its way past.
-   *
-   * So this pair belongs on the mobile layout pass's list, and these two
-   * entries are how it stays on it: the accounting assertion below fails the
-   * moment they become reachable, which is what will retire them.
-   */
-  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
-  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
+  /* The zoom pair's former exemption was retired by moving its one DOM node
+   * into the Layout drawer on phones. The corner remains hidden there, avoiding
+   * its measured collision with the rail; the sweep opens the drawer and now
+   * hit-tests both camera controls like every other laid-out control. */
   /*
    * AND THE NAVIGATION'S WIDTH CONTROLS, ADDED 2026-09-14 (#1159), WHICH ARE A
-   * BETTER ENTRY THAN ANY OF THE FIVE ABOVE AND SHOULD BE READ AS ONE.
+   * A DIFFERENT ENTRY FROM THE TWO ABOVE AND SHOULD BE READ AS ONE.
    *
-   * The five above record a surface a phone cannot reach at all. These two
+   * The two above record a surface a phone cannot reach at all. These two
    * record a surface a phone **does not have**: below 720px the five sections
    * are a bottom bar, which is the delivery's own layout for the tier --
    * *"Telefon ma dolną nawigację i panel"* -- and a bar has no width to drag.
