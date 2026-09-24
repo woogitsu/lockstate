@@ -104,6 +104,7 @@ MODELS = (
     ("furniture.kitchen.prep_counter", (2, 1)),
     ("furniture.library.bookshelf", (2, 1)),
     ("wall.interior.face", (1, 1)),
+    ("door.interior.face", (1, 1)),
     ("wall.interior.cap.overhead", (1, 0.25)),
 )
 
@@ -1055,6 +1056,43 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Coping", (0, 0, 2.53), (2, 0.26, 0.07), "steel", 0.02)
         box(collection, root, "Panel joint", (0, 0, 1.31), (0.04, 0.24, 2.62), "shade", 0)
         box(collection, root, "Base stripe", (0, -0.12, 0.42), (2, 0.03, 0.45), "green", 0)
+    elif asset_id == "door.interior.face":
+        # A front elevation laid flat for the orthographic 2D world. The
+        # walnut and galvanized materials match the existing overhead cap.
+        box(collection, root, "Wall around closed door", (0, 0, 0.04),
+            (1, 1, 0.08), "wall_cap_plaster", 0)
+        box(collection, root, "Wall coping across head", (0, -0.468, 0.084),
+            (1, 0.064, 0.005), "wall_cap_metal", 0)
+        box(collection, root, "Doorway recessed reveal", (0, 0.055, 0.085),
+            (0.91, 0.87, 0.008), "shade", 0)
+        box(collection, root, "Warm timber door leaf", (0, 0.064, 0.092),
+            (0.76, 0.80, 0.009), "bench_wood_1", 0)
+        for x in (-0.436, 0.436):
+            box(collection, root, f"Galvanized side jamb.{x}", (x, 0.055, 0.10),
+                (0.073, 0.89, 0.016), "galvanized", 0.004)
+            box(collection, root, f"Dark jamb rebate.{x}", (x * 0.91, 0.050, 0.111),
+                (0.012, 0.80, 0.004), "shade", 0)
+        box(collection, root, "Galvanized frame header", (0, -0.390, 0.104),
+            (0.94, 0.068, 0.019), "galvanized", 0.005)
+        box(collection, root, "Dark timber threshold", (0, 0.475, 0.102),
+            (0.86, 0.034, 0.010), "shade", 0)
+        for y in (-0.18, 0.20):
+            box(collection, root, f"Inset timber panel.{y}", (0, y, 0.104),
+                (0.57, 0.26, 0.015), "door_face_panel", 0.01)
+            box(collection, root, f"Inset panel lower bevel.{y}", (0, y + 0.119, 0.113),
+                (0.55, 0.012, 0.004), "door_face_edge", 0)
+        for index in range(11):
+            x = -0.26 + (index % 6) * 0.10
+            y = -0.31 + (index // 6) * 0.60
+            box(collection, root, f"Fine timber grain.{index}", (x, y, 0.112),
+                (0.004, 0.14 + 0.02 * (index % 3), 0.001), "door_face_grain", 0)
+        cylinder(collection, root, "Round steel handle escutcheon", (0.295, 0.004, 0.126),
+            0.038, 0.016, "galvanized_edge", 24)
+        cylinder(collection, root, "Handle dark centre", (0.295, 0.004, 0.138),
+            0.016, 0.010, "shade", 20)
+        for y in (-0.265, 0.29):
+            box(collection, root, f"Left steel hinge.{y}", (-0.38, y, 0.117),
+                (0.038, 0.065, 0.011), "steel", 0.004)
     elif asset_id == "door.interior.variants":
         # The v3 four-view reference puts a timber slab inside two galvanized
         # jambs, leaving the latch and hinge legible in true overhead view.
@@ -1252,6 +1290,9 @@ def main():
     MATERIALS["wall_face_coping"] = material("Interior wall blue grey enamel coping", (0.27, 0.38, 0.45, 1), 0.61)
     MATERIALS["wall_face_joint"] = material("Interior wall recessed panel joint", (0.40, 0.43, 0.43, 1), 0.94)
     MATERIALS["wall_face_grain"] = material("Interior wall fine plaster grain", (0.63, 0.62, 0.57, 1), 0.95)
+    MATERIALS["door_face_panel"] = material("Interior door recessed walnut panel", (0.38, 0.20, 0.09, 1), 0.80)
+    MATERIALS["door_face_edge"] = material("Interior door panel worn edge", (0.54, 0.33, 0.16, 1), 0.72)
+    MATERIALS["door_face_grain"] = material("Interior door fine walnut grain", (0.49, 0.29, 0.13, 1), 0.85)
     MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
     MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
     MATERIALS["fridge_teal"] = material("Refrigerator status lens", (0.04, 0.43, 0.45, 1), 0.30)

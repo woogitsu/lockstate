@@ -1066,8 +1066,8 @@
     {
       "assetId": "wall.interior.cap.overhead",
       "image": "wall.interior.cap.overhead.png",
-      "sha256": "d24f0fdb26ec3f2db6b23b6f82bd12de0864f315f9edf5e72232dd11386009d0",
-      "pixelSha256": "71432a457298af6d30c86fe89a6caadedc34343d89e479f98e6028f9a2b5cb40",
+      "sha256": "ed4387eb9462595489a86efbc44a4bcbe3b512ec5c04752c4a26beb78bc3d6bc",
+      "pixelSha256": "107009b8bab8cceafd4e9a05a89982ca7e4201974d518195e4167a75164f385d",
       "footprintTiles": {
         "width": 1.0,
         "height": 0.25
@@ -1096,6 +1096,34 @@
       "image": "wall.interior.face.png",
       "sha256": "129ac9c633e2be1aea8cbcf413c9743b6583756ffd9f724ecfe03825bd985d36",
       "pixelSha256": "b589823ca64d9f274f885c61ea6f3e01584248e1ddf6b39619201b2925f42fa1",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "door.interior.face",
+      "image": "door.interior.face.png",
+      "sha256": "a9369837739344a3318fbe4d3d8889c289f27e921d01be312f02c5ecf5eeb125",
+      "pixelSha256": "48209dde869e9ec4326cbab3bbd569aabbb0e37a9bc47bfd6e258852de07551a",
       "footprintTiles": {
         "width": 1,
         "height": 1

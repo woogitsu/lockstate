@@ -189,12 +189,11 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     note: 'True overhead interior wall coping with pale enamel, dark edge seams and steel anchors. Drawn on north-south walls.',
   },
   'env.door.interior.face': {
-    kind: 'source-art',
-    assetId: 'door.interior.variants',
-    sourceRectPx: { x: 48, y: 25, width: 255, height: 467 },
-    runtimeSizePx: { width: 128, height: 124 },
+    kind: 'rendered-art',
+    renderedArtId: 'door.interior.face',
+    runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Closed interior door, frontal, with its frame. Drawn on east-west door edges.',
+    note: 'Original Blender closed walnut door elevation with galvanized jambs, inset panels and handle. Drawn on east-west door edges.',
   },
   'env.door.interior.cap': {
     kind: 'rendered-art',

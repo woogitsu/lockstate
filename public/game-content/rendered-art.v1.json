@@ -3,6 +3,31 @@
   "kind": "lockstate.rendered-art-catalog",
   "entries": [
     {
+      "assetId": "door.interior.face",
+      "contentVersion": 1,
+      "image": "source-art/rendered.door.interior.face.a93698377393.png",
+      "sha256": "a9369837739344a3318fbe4d3d8889c289f27e921d01be312f02c5ecf5eeb125",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "door.interior.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.door.interior.variants.9b9161ac53e9.png",
@@ -530,8 +555,8 @@
     {
       "assetId": "wall.interior.cap.overhead",
       "contentVersion": 1,
-      "image": "source-art/rendered.wall.interior.cap.overhead.d24f0fdb26ec.png",
-      "sha256": "d24f0fdb26ec3f2db6b23b6f82bd12de0864f315f9edf5e72232dd11386009d0",
+      "image": "source-art/rendered.wall.interior.cap.overhead.ed4387eb9462.png",
+      "sha256": "ed4387eb9462595489a86efbc44a4bcbe3b512ec5c04752c4a26beb78bc3d6bc",
       "dimensionsPx": {
         "width": 256,
         "height": 64

@@ -127,9 +127,9 @@ test.describe('the environment artwork', () => {
     for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
-  test('packs the Blender overhead door cap while retaining the frontal source door', async ({ page }) => {
+  test('packs the Blender overhead door cap and frontal door face', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
-    expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('source-art');
+    expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('rendered-art');
     await openHarness(page);
     const reading = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
@@ -145,11 +145,32 @@ test.describe('the environment artwork', () => {
     });
     expect(reading).toBeDefined();
     expect(reading!.capSize).toEqual([32, 128]);
-    expect(reading!.faceSize).toEqual([128, 124]);
+    expect(reading!.faceSize).toEqual([128, 128]);
     expect(reading!.timber).toBeDefined();
     expect(reading!.jamb).toBeDefined();
     expect(reading!.timber![3]).toBeGreaterThan(200);
     expect(channelDistance(reading!.timber!, reading!.jamb!)).toBeGreaterThan(20);
+  });
+
+  test('the frontal door has a complete frame and a distinct walnut leaf', async ({ page }) => {
+    await openHarness(page);
+    const reading = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.door.interior.face');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        wood: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        steel: harness.atlasPixel(frame.x + 5, frame.y + 64),
+        corners: [[0, 0], [127, 0], [0, 127], [127, 127]].map(([x, y]) =>
+          harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(reading?.size).toEqual([128, 128]);
+    expect(reading!.wood?.[3]).toBeGreaterThan(200);
+    expect(reading!.steel?.[3]).toBeGreaterThan(200);
+    for (const pixel of reading!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(reading!.wood!, reading!.steel!)).toBeGreaterThan(25);
   });
 
   test('the Blender wall cap tiles without transparent seams', async ({ page }) => {
