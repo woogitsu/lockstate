@@ -778,6 +778,20 @@ still has to survive the session it was given in. It is recorded here, in their
 words and dated, in the same shape as a release — the difference being stated
 rather than left for a reader to infer.
 
+**Publishing this continuing task, 2026-09-24.** The owner wrote directly:
+
+> automatycznie wypychaj wszystkich, scalaj itp itd bez pytania
+
+("Push everyone's work and merge, etc., automatically without asking.") For
+branches prepared by the agents working on this continuing Lockstate task, this
+is standing permission to push, open pull requests, and merge without another
+question for each branch. It does not take ownership of another session's
+branch or pull request. The exact-head checks, mergeability review, and
+one-at-a-time `main` CI gate in `docs/AGENT_WORKFLOW.md` still apply. This is
+an instruction about publication cadence, **not a release of any of the four
+reservations above**; notably it grants no production deployment or server,
+migration, or untrue player-facing text decision.
+
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:
 
