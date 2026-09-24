@@ -1167,6 +1167,15 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.overview.wages': 'Pensje dziennie',
 
   'hud.intake.title': 'Przyjęcia',
+  'hud.intake.candidates': 'Kandydaci',
+  'hud.intake.candidate-summary': 'Ryzyko: {risk} · Kara: {days} dni · Kontrabanda: {contraband} · Jednorazowa premia: {bounty}',
+  'hud.intake.candidate-expires': 'Wygasa dnia {day}',
+  'hud.intake.candidate-delayed': 'Odroczono',
+  'hud.intake.candidate-none': 'Dziś nie ma już kandydatów. Nowe oferty pojawią się jutro.',
+  'hud.intake.candidate-yes': 'Tak',
+  'hud.intake.candidate-no': 'Nie',
+  'hud.intake.candidate-accept': 'Przyjmij',
+  'hud.intake.candidate-delay': 'Odłóż',
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.
   'hud.intake.admit': 'Przyjmij osadzonego',

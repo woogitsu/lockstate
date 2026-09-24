@@ -501,6 +501,8 @@ export type HudIntent =
    * gate rather than fired and forgotten.
    */
   | { readonly kind: 'admit-prisoner' }
+  | { readonly kind: 'accept-intake-candidate'; readonly candidateId: string }
+  | { readonly kind: 'delay-intake-candidate'; readonly candidateId: string }
   /**
    * The player asked to hire a staff member
    * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)). One stable
@@ -2517,6 +2519,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onAdmit: () => {
       dispatchCommand({ kind: 'admit-prisoner' }, intakePanel.submitControl);
     },
+    onAcceptCandidate: (candidateId, control) => {
+      dispatchCommand({ kind: 'accept-intake-candidate', candidateId }, control);
+    },
+    onDelayCandidate: (candidateId, control) => {
+      dispatchCommand({ kind: 'delay-intake-candidate', candidateId }, control);
+    },
+    onControlCreated: (control) => busy.add(control),
   });
 
   // ---- bottom-right regime panel (Regime tab) -----------------------
@@ -3294,6 +3303,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // many are at each stage and which stage is terminal; the panel decides the
     // sentences; this line decides nothing.
     intakePanel.setPipeline(next.intakePipeline);
+    intakePanel.setCandidates(next.intakePipeline?.candidates, next.clock);
     // And what the prison is worth, on terms that are *not* identical to the
     // eight lines above it, which is the point of the field rather than an
     // inconsistency (issue #1183). Those are pulled per tab and absent when

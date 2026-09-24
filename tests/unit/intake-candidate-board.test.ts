@@ -19,6 +19,7 @@ describe('intake candidate board (#594)', () => {
     const first = board.snapshot();
     expect(first.candidates.length).toBeGreaterThanOrEqual(1);
     expect(first.candidates.length).toBeLessThanOrEqual(3);
+    expect(first.candidates.every((candidate) => candidate.priorIncidents === 0)).toBe(true);
     expect(first.candidates.every((candidate) => candidate.expiresAtTick === 2 * DAY_LENGTH_TICKS)).toBe(true);
     board.advanceToTick(DAY_LENGTH_TICKS, rng);
     expect(board.snapshot().candidates.length).toBeGreaterThan(first.candidates.length);

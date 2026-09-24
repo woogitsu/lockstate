@@ -2732,6 +2732,15 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.overview.wages': 'Wages a day',
 
   'hud.intake.title': 'Intake',
+  'hud.intake.candidates': 'Candidates',
+  'hud.intake.candidate-summary': 'Risk: {risk} · Sentence: {days} days · Contraband: {contraband} · One-off bounty: {bounty}',
+  'hud.intake.candidate-expires': 'Expires on day {day}',
+  'hud.intake.candidate-delayed': 'Delayed',
+  'hud.intake.candidate-none': 'No candidates remain today. New offers arrive tomorrow.',
+  'hud.intake.candidate-yes': 'Yes',
+  'hud.intake.candidate-no': 'No',
+  'hud.intake.candidate-accept': 'Accept',
+  'hud.intake.candidate-delay': 'Delay',
   'hud.intake.admit': 'Admit a prisoner',
   /*
    * Issue #590: requestAdmission queues arrivals when no resident place is free.

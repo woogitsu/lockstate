@@ -1182,6 +1182,15 @@ export const HUD_MESSAGE_KEY = {
   intakeTitle: 'hud.intake.title',
   intakeAdmit: 'hud.intake.admit',
   intakeHint: 'hud.intake.hint',
+  intakeCandidates: 'hud.intake.candidates',
+  intakeCandidateSummary: 'hud.intake.candidate-summary',
+  intakeCandidateExpires: 'hud.intake.candidate-expires',
+  intakeCandidateDelayed: 'hud.intake.candidate-delayed',
+  intakeCandidateNone: 'hud.intake.candidate-none',
+  intakeCandidateYes: 'hud.intake.candidate-yes',
+  intakeCandidateNo: 'hud.intake.candidate-no',
+  intakeCandidateAccept: 'hud.intake.candidate-accept',
+  intakeCandidateDelay: 'hud.intake.candidate-delay',
   intakeNoPlace: 'hud.intake.no-place',
 
   /**

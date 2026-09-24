@@ -2817,6 +2817,12 @@
 
 .hud-intake__actions > .hud-intake__admit { flex: 1 1 auto; }
 
+.hud-intake__candidates:not([hidden]) { display: grid; gap: var(--space-2); }
+.hud-intake__candidate-list { display: grid; gap: var(--space-2); max-height: 18rem; overflow-y: auto; }
+.hud-intake__candidate { display: grid; gap: var(--space-1); padding: var(--space-2); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); }
+.hud-intake__candidate-actions { display: flex; gap: var(--space-2); }
+.hud-intake__candidate-actions > button { flex: 1 1 0; }
+
 .hud-intake__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
 /*

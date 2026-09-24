@@ -4,7 +4,7 @@ import { createActionButton, type ActionButton } from '../primitives/action-butt
 import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer } from './view-model';
+import type { HudClockViewModel, HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer } from './view-model';
 
 /**
  * The Intake panel: one control, which admits one prisoner (#261 step 4).
@@ -177,6 +177,9 @@ export interface IntakePanelOptions {
   readonly localizer: HudLocalizer;
   /** Admit one prisoner. Carries nothing: the host decides the arrival's figures. */
   readonly onAdmit: () => void;
+  readonly onAcceptCandidate?: (id: string, control: HTMLButtonElement) => void;
+  readonly onDelayCandidate?: (id: string, control: HTMLButtonElement) => void;
+  readonly onControlCreated?: (control: HTMLButtonElement) => void;
 }
 
 /** The localizer call this panel makes, narrowed so the pure helpers below need no `HudLocalizer`. */
@@ -258,6 +261,7 @@ export interface IntakePanel {
    * avoid.
    */
   setPipeline(pipeline: HudIntakePipelineViewModel | undefined): void;
+  setCandidates(candidates: HudIntakePipelineViewModel['candidates'], clock: HudClockViewModel): void;
   /** The controls to disable while a command is in flight -- the one button that issues one. */
   readonly controls: readonly HTMLButtonElement[];
   /** The admit button, so a refused admission is reported *on the control that was pressed* (issue #207). */
@@ -276,6 +280,67 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     onActivate: () => options.onAdmit(),
   });
   admit.element.classList.add('hud-intake__admit');
+  admit.element.hidden = true;
+
+  const candidateList = element('div', { className: 'hud-intake__candidate-list' });
+  const candidateBlock = element('div', {
+    className: 'hud-intake__candidates',
+    children: [eyebrowText(t(HUD_MESSAGE_KEY.intakeCandidates)), candidateList],
+  });
+  candidateBlock.hidden = true;
+  let candidateSignature = '';
+
+  function paintCandidates(candidates: HudIntakePipelineViewModel['candidates'], clock: HudClockViewModel): void {
+    if (candidates === undefined) {
+      candidateBlock.hidden = true;
+      candidateList.replaceChildren();
+      candidateSignature = '';
+      return;
+    }
+    const signature = `${String(clock.day)}|${candidates.map((candidate) => `${candidate.id}:${candidate.status}`).join(',')}`;
+    if (signature === candidateSignature) return; // preserves button focus between status publications
+    candidateSignature = signature;
+    candidateBlock.hidden = false;
+    if (candidates.length === 0) {
+      candidateList.replaceChildren(eyebrowText(t(HUD_MESSAGE_KEY.intakeCandidateNone)));
+      return;
+    }
+    candidateList.replaceChildren(...candidates.map((candidate) => {
+      const accept = createActionButton({
+        label: t(HUD_MESSAGE_KEY.intakeCandidateAccept), tone: 'primary',
+        onActivate: () => options.onAcceptCandidate?.(candidate.id, accept.element),
+      });
+      const delay = createActionButton({
+        label: t(HUD_MESSAGE_KEY.intakeCandidateDelay),
+        onActivate: () => options.onDelayCandidate?.(candidate.id, delay.element),
+      });
+      accept.element.dataset['candidateAccept'] = candidate.id;
+      delay.element.dataset['candidateDelay'] = candidate.id;
+      options.onControlCreated?.(accept.element);
+      options.onControlCreated?.(delay.element);
+      const riskLabels = ['risk-tier.0.name', 'risk-tier.1.name', 'risk-tier.2.name', 'risk-tier.3.name'] as const;
+      const risk = t(riskLabels[candidate.riskTier]!);
+      const summary = t(HUD_MESSAGE_KEY.intakeCandidateSummary, {
+        risk,
+        days: clock.dayLengthTicks > 0 ? candidate.sentenceLengthTicks / clock.dayLengthTicks : candidate.sentenceLengthTicks,
+        contraband: t(candidate.contrabandRolled ? HUD_MESSAGE_KEY.intakeCandidateYes : HUD_MESSAGE_KEY.intakeCandidateNo),
+        bounty: candidate.bountyMinorUnits,
+      });
+      const expires = clock.dayLengthTicks > 0
+        ? t(HUD_MESSAGE_KEY.intakeCandidateExpires, { day: Math.floor(candidate.expiresAtTick / clock.dayLengthTicks) + 1 })
+        : '';
+      const row = element('div', {
+        className: 'hud-intake__candidate',
+        children: [
+          eyebrowText(summary),
+          eyebrowText(`${expires}${candidate.status === 'delayed' ? ` · ${t(HUD_MESSAGE_KEY.intakeCandidateDelayed)}` : ''}`),
+          element('div', { className: 'hud-intake__candidate-actions', children: [accept.element, delay.element] }),
+        ],
+      });
+      row.dataset['candidateId'] = candidate.id;
+      return row;
+    }));
+  }
 
   /*
    * Nothing at construction, exactly as the Rooms panel holds no needs at
@@ -404,6 +469,7 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     },
   });
   panel.body.append(
+    candidateBlock,
     element('div', {
       className: 'hud-intake__actions',
       children: [admit.element],
@@ -424,6 +490,7 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     element: panel.element,
     controls: [admit.element],
     submitControl: admit.element,
+    setCandidates: paintCandidates,
     setPipeline(next: HudIntakePipelineViewModel | undefined): void {
       pipeline = next;
       paintPipeline();

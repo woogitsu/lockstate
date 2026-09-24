@@ -49,7 +49,8 @@ export class IntakeCandidateBoard {
     const count = 1 + rng.nextInt(3);
     for (let i = 0; i < count; i += 1) {
       const sentenceLengthTicks = drawSentenceLengthTicks(rng);
-      const priorIncidents = rng.nextInt(4);
+      // AGENTS.md ruling 25 reserves a history draw for a later ADR.
+      const priorIncidents = 0;
       const riskTier = classifyPrisoner({ sentenceLengthTicks, priorIncidents }, rng).riskTier;
       let contrabandCategoryId: string | undefined;
       if (rng.nextFloat() < contrabandIntroductionProbability(riskTier)) {
