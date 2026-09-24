@@ -1416,18 +1416,32 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Reveal", (0, -0.152, 1.25), (0.88, 0.012, 2.31), "shade", 0)
         box(collection, root, "Window", (0, -0.246, 1.6), (0.25, 0.02, 0.42), "steel", 0)
     elif asset_id == "fixture.cell.sink":
-        # A separate hand-washing fixture. Its broad oval basin, dark well and
-        # paired taps remain distinct at the 64 px world scale; unlike the
-        # combined toilet sheet, the model fits its own 1x1 footprint.
-        box(collection, root, "Wall rail", (0, -0.35, 0.57), (0.72, 0.13, 0.16), "steel", 0.025)
-        box(collection, root, "Basin body", (0, 0.02, 0.48), (0.76, 0.64, 0.22), "porcelain", 0.12)
-        box(collection, root, "Basin well", (0, 0.04, 0.603), (0.55, 0.40, 0.018), "shade", 0.12)
-        box(collection, root, "Inner porcelain", (0, 0.04, 0.616), (0.43, 0.28, 0.012), "porcelain", 0.12)
-        cylinder(collection, root, "Drain", (0, 0.06, 0.63), 0.055, 0.014, "steel", 24)
-        for x in (-0.21, 0.21):
-            cylinder(collection, root, f"Tap base.{x}", (x, -0.28, 0.64), 0.06, 0.065, "steel", 16)
-            box(collection, root, f"Tap lever.{x}", (x, -0.285, 0.69), (0.15, 0.035, 0.035), "steel", 0.012)
-        box(collection, root, "Spout", (0, -0.20, 0.69), (0.07, 0.22, 0.07), "steel", 0.025)
+        # sink-multiview-v1.png: a broad enamel lip, an indented cool-grey
+        # bowl and three metallic shapes at the back survive the 64 px view.
+        # Build the depression in stacked depth, not as one dark square.
+        box(collection, root, "Wall mounting rail", (0, -0.39, 0.68), (0.79, 0.13, 0.21), "galvanized", 0.025)
+        for x in (-0.34, 0.34):
+            cylinder(collection, root, f"Mounting bolt.{x}", (x, -0.39, 0.80), 0.023, 0.015, "steel", 16)
+        box(collection, root, "Under-basin support", (0, 0.07, 0.35), (0.48, 0.45, 0.32), "porcelain", 0.15)
+        cylinder(collection, root, "Drain pipe", (0, 0.11, 0.13), 0.06, 0.22, "galvanized_edge", 24)
+        basin = cylinder(collection, root, "Oval enamel basin", (0, 0.04, 0.58), 0.43, 0.19, "porcelain", 64)
+        basin.scale.y = 0.84
+        well = cylinder(collection, root, "Dark recessed basin", (0, 0.045, 0.684), 0.345, 0.025, "metal_recess", 64)
+        well.scale.y = 0.77
+        inner = cylinder(collection, root, "Cool glazed inner bowl", (0, 0.06, 0.703), 0.285, 0.012, "sink_inner", 64)
+        inner.scale.y = 0.74
+        lip = torus(collection, root, "Thick rolled enamel lip", (0, 0.04, 0.69), 0.388, 0.052, "porcelain")
+        lip.scale.y = 0.84
+        cylinder(collection, root, "Drain steel ring", (0, 0.09, 0.716), 0.066, 0.014, "galvanized_edge", 32)
+        cylinder(collection, root, "Drain dark centre", (0, 0.09, 0.728), 0.043, 0.012, "shade", 32)
+        for x, mark in ((-0.23, "shower_hot"), (0.23, "shower_cold")):
+            cylinder(collection, root, f"Valve foot.{x}", (x, -0.29, 0.72), 0.09, 0.052, "galvanized", 32)
+            cylinder(collection, root, f"Valve grip.{x}", (x, -0.29, 0.756), 0.068, 0.025, "galvanized_edge", 24)
+            cylinder(collection, root, f"Valve colour.{x}", (x, -0.29, 0.773), 0.035, 0.012, mark, 24)
+        cylinder(collection, root, "Faucet mounting collar", (0, -0.31, 0.74), 0.078, 0.055, "galvanized_edge", 32)
+        box(collection, root, "Brushed steel tap neck", (0, -0.21, 0.81), (0.105, 0.24, 0.105), "galvanized", 0.048)
+        box(collection, root, "Brushed steel spout", (0, -0.07, 0.83), (0.11, 0.15, 0.08), "galvanized_edge", 0.033)
+        cylinder(collection, root, "Dark spout outlet", (0, -0.005, 0.785), 0.037, 0.012, "shade", 24)
     elif asset_id == "fixture.shower.head":
         # Reference: shower-head-multiview-v3.png. Broad dark face and two
         # nozzle rings survive the one-tile downsample; colored service valves
@@ -1589,6 +1603,7 @@ def main():
     MATERIALS["bin_card"] = material("Discarded ochre carton", (0.52, 0.31, 0.14, 1), 0.91)
     MATERIALS["toilet_porcelain"] = toilet_porcelain_material()
     MATERIALS["toilet_water"] = material("Cell toilet dark still water", (0.075, 0.18, 0.23, 1), 0.21)
+    MATERIALS["sink_inner"] = material("Sink cool glazed inner bowl", (0.43, 0.55, 0.59, 1), 0.26)
     MATERIALS["canteen_wood"] = canteen_wood_material()
     for index in range(4): MATERIALS[f"bench_wood_{index}"] = corridor_bench_wood_material(index)
     MATERIALS["bench_edge"] = material("Bench rounded wood edge", (0.53, 0.31, 0.12, 1), 0.66)
