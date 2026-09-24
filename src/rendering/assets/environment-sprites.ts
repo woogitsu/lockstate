@@ -211,12 +211,11 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     note: 'Closed interior door, frontal, with its frame. Drawn on east-west door edges.',
   },
   'env.door.interior.cap': {
-    kind: 'source-art',
-    assetId: 'door.interior.variants',
-    sourceRectPx: { x: 48, y: 25, width: 255, height: 22 },
-    runtimeSizePx: { width: 128, height: 28 },
+    kind: 'rendered-art',
+    renderedArtId: 'door.interior.variants',
+    runtimeSizePx: { width: 128, height: 32 },
     quarterTurns: 1,
-    note: 'Head of the same door frame, turned to run north-south. Drawn on north-south door edges.',
+    note: 'Original Blender overhead interior door: timber cap, galvanized jambs, hinge and recessed latch. Turned to run north-south.',
   },
   /**
    * Original Blender modelled bed. The native 256x512 overhead render already

@@ -381,3 +381,10 @@ The 2×1 kitchen stove now shows cast-iron grates above four recessed burners,
 with a row of knobs and a small amber lamp visible from overhead. The original
 four-view reference and Blender decisions are recorded in
 `assets/source/concepts/kitchen-stove-v3.md`.
+
+### Interior door overhead cap — `door.interior.variants`
+
+The north-south interior door edge now uses a true overhead Blender render: a
+warm timber slab between galvanized jambs, with a hinge and recessed latch.
+The east-west frontal view keeps its existing source-art crop. The original
+four-view reference is recorded in `assets/source/concepts/interior-door-v3.md`.

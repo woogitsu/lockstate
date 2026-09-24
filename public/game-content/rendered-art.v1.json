@@ -3,6 +3,31 @@
   "kind": "lockstate.rendered-art-catalog",
   "entries": [
     {
+      "assetId": "door.interior.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.door.interior.variants.9b9161ac53e9.png",
+      "sha256": "9b9161ac53e9125ca0910c73128671e2482b14fad0b401c1a9880de1eeea127a",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 64
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 0.25
+      },
+      "frameTiles": {
+        "width": 1.4784,
+        "height": 0.3696
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "fixture.cell.toilet_sink",
       "contentVersion": 1,
       "image": "source-art/rendered.fixture.cell.toilet_sink.fe9e971698b8.png",

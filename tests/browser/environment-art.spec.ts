@@ -1,6 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
-import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
+import { ENVIRONMENT_SPRITE_IDS, ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, PLANNED_OBJECT_TINT, edgeAppearance } from '../../src/rendering/world/appearance';
 import { objectSprite } from '../../src/rendering/world/environment-art';
@@ -106,6 +106,31 @@ test.describe('the environment artwork', () => {
         expect(reading.centre![channel], `${name} channel ${channel} is at an extreme`).toBeLessThan(240);
       }
     }
+  });
+
+  test('packs the Blender overhead door cap while retaining the frontal source door', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
+    expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('source-art');
+    await openHarness(page);
+    const reading = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const cap = harness.atlasFrame('env.door.interior.cap');
+      const face = harness.atlasFrame('env.door.interior.face');
+      if (cap === undefined || face === undefined) return undefined;
+      return {
+        capSize: [cap.width, cap.height],
+        faceSize: [face.width, face.height],
+        timber: harness.atlasPixel(cap.x + Math.floor(cap.width / 2), cap.y + Math.floor(cap.height / 2)),
+        jamb: harness.atlasPixel(cap.x + Math.floor(cap.width / 2), cap.y + 8),
+      };
+    });
+    expect(reading).toBeDefined();
+    expect(reading!.capSize).toEqual([32, 128]);
+    expect(reading!.faceSize).toEqual([128, 124]);
+    expect(reading!.timber).toBeDefined();
+    expect(reading!.jamb).toBeDefined();
+    expect(reading!.timber![3]).toBeGreaterThan(200);
+    expect(channelDistance(reading!.timber!, reading!.jamb!)).toBeGreaterThan(20);
   });
 
   test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }) => {
