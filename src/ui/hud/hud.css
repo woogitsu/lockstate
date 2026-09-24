@@ -4070,6 +4070,14 @@
     overflow: hidden;
   }
 
+  /* A reserve warning adds a fourth line before Hire at 900x600. Keep one
+     full 44px role row visible and let this list scroll for the others; the
+     saved second row puts Hire inside the panel without clipping the warning. */
+  .hud-staff__list {
+    min-height: var(--tap-target);
+    max-height: var(--tap-target);
+  }
+
   /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
      2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
      from this same block for the same kind of sentence.
