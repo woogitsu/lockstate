@@ -104,16 +104,21 @@ name: Version
 # racing one bare remote: both computed `v0.0.1`, the loser was rejected on
 # both refs together and recomputed `v0.0.2`.
 #
-# ## Which runner, and why the obvious answer was wrong
+# ## Runner history, superseded 2026-09-24
 #
-# The self-hosted one, because **`ubuntu-latest` does not work in this
-# repository.** That is measured, not assumed: this workflow's first real run
+# The owner explicitly moved every job to `ubuntu-latest` while making the
+# repository public. A hosted job gets a fresh VM, so the shared-workspace
+# reasoning below is retained only as history; judge current hosted runs by
+# their actual steps and result.
+#
+# The self-hosted one was selected because `ubuntu-latest` did not work while
+# this repository was private. This workflow's first real run
 # (32727713492, on the merge that introduced it) failed after **four seconds**
 # with no step recorded and no log to download -- the signature of a runner
 # that was never provisioned. delete-branches.yml is the only other workflow
 # here that asks for `ubuntu-latest`; it has run exactly once, and failed the
-# same way in the same four seconds. Every workflow in this repository that
-# has ever succeeded runs on `[self-hosted, Linux, X64, wsl2]`.
+# same way in the same four seconds. Those observations do not determine the
+# behavior of the new hosted configuration.
 #
 # The first version of this file chose a hosted runner deliberately, to keep
 # this job's commits and tags out of the shared workspace that ci.yml's
@@ -121,8 +126,8 @@ name: Version
 # delete-branches.yml as the precedent. The reasoning was sound and the
 # precedent was not: that workflow had never succeeded either.
 #
-# **The shared workspace is safe anyway, and this is the argument rather than a
-# hope.** Every job in ci.yml -- the `verify`, `assets` and `browser` jobs --
+# **The old shared workspace was safe, and this was the argument.** Every job
+# in ci.yml -- the `verify`, `assets` and `browser` jobs --
 # runs its own `actions/checkout`, which cleans the workspace and
 # resets it to that job's commit before anything else happens. So nothing this
 # job leaves behind can reach the tree a later CI job measures. The gate also
@@ -140,9 +145,8 @@ name: Version
 # the least durable citation here. `grep -n '^  verify:$'` is the check, and a
 # job name is what survives.
 #
-# One residual effect, stated because it is real: `git config user.name` below
-# is repo-local and persists in the reused workspace. No other job in this
-# repository commits, so nothing consumes it.
+# On a hosted runner, `git config user.name` remains local to this job's fresh
+# checkout and does not persist into another job.
 #
 # The bump cannot fail `pnpm install --frozen-lockfile` either: pnpm-lock.yaml
 # records the root importer's dependencies and not its own version, checked by
@@ -180,7 +184,7 @@ jobs:
     if: >-
       github.event.head_commit.author.name != 'github-actions[bot]'
       && !startsWith(github.event.head_commit.message, 'chore(release): v')
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
