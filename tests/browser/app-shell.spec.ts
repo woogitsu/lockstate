@@ -11647,6 +11647,9 @@ test.describe('the assembled application', () => {
   });
 
   test('every interface scale step keeps the HUD inside the viewport it is drawn in (#545)', async ({ page }) => {
+    // Twelve full app boots (two viewports x six scales) exceed the shared
+    // 60-second per-test budget on CI even when each layout assertion passes.
+    test.slow();
     /*
      * The measurement #545's own defect class demands. A scale control makes
      * the "panel that cannot afford its content" failure worse in both
