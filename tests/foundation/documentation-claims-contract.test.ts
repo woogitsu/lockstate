@@ -323,12 +323,13 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel, StateIncomeSystem and LoanBook.draw now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change -- and route it through LoanBook.divert, because ADR 0075 decision 2 repays a loan out of every positive inflow',
+      'a new treasury credit site must be recorded in docs/HUD_PROJECTIONS.md gap 21 and ADR 0017, with positive inflows routed through LoanBook.divert under ADR 0075 decision 2',
     ).toEqual([
       path.join('src', 'simulation', 'economy', 'income.ts'),
       path.join('src', 'simulation', 'economy', 'labour-credit.ts'),
       path.join('src', 'simulation', 'economy', 'loans.ts'),
       path.join('src', 'simulation', 'economy', 'procurement.ts'),
+      path.join('src', 'simulation', 'runtime', 'new-session.ts'),
     ]);
   });
 

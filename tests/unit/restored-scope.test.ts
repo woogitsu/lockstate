@@ -168,7 +168,7 @@ describe('the restored scope describes the bundle, not the save version', () => 
     const claimed = sentence.slice(0, sentence.indexOf('Not carried by this save version:'));
     expect(claimed).not.toContain('prisoners, needs, actions and cell assignments');
     expect(claimed).not.toContain('prisoner and staff names');
-    expect(sentence).toContain('prisoners, needs, actions and cell assignments');
+    expect(sentence).toContain('prisoners, needs, actions, room waste and cell assignments');
   });
 });
 
@@ -287,7 +287,7 @@ describe('every restored-scope key resolves in the bundled default locale', () =
       'save.scope.world': 'world terrain and ownership',
       'save.scope.construction': 'construction orders and undo/redo',
       'save.scope.entity-liveness': 'entity id liveness',
-      'save.scope.prisoners': 'prisoners, needs, actions and cell assignments',
+      'save.scope.prisoners': 'prisoners, needs, actions, room waste and cell assignments',
       'save.scope.operations': 'jobs, containers and utility networks',
       'save.scope.security': 'doors, security sectors, guards and patrols',
       'save.scope.contraband': 'contraband, intelligence and searches',

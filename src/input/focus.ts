@@ -27,7 +27,11 @@
  * moves the map while the player is choosing a category. Ordinary buttons do
  * not consume those keys and must leave the camera available.
  */
-export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefined = globalThis.document): boolean {
+function browserDocument(): Document | undefined {
+  return globalThis.document;
+}
+
+export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefined = browserDocument()): boolean {
   const active = doc?.activeElement;
   if (active === null || active === undefined) return false;
 
@@ -45,7 +49,7 @@ export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefi
 
 /** A native modal owns keyboard input until it closes, even when its focused child is a button. */
 export function isModalDialogOpen(
-  doc: { querySelector(selector: string): Element | null } | undefined = globalThis.document,
+  doc: { querySelector(selector: string): Element | null } | undefined = browserDocument(),
 ): boolean {
   if (doc === undefined) return false;
   return doc.querySelector('dialog:modal') !== null;

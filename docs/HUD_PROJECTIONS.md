@@ -1562,7 +1562,7 @@ decision about what to build next.
     panel does not.** A *forecast* — anything projecting the balance forward —
     is still a figure no system produces and must not be rendered.
 
-    **The four things that credit the treasury, and which of them is an
+    **The five modules that credit the treasury, and which payments are
     income line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is
     the primary income line: ADR 0017 decision 3, on decision 6's basis — the state
     pays per prisoner-day, accrued per occupied place — at 300 minor units a
@@ -1600,8 +1600,14 @@ decision about what to build next.
     last completed block. This is a secondary line and must remain distinct
     from both the state grant and a loan drawdown in any future ledger.
 
-    `tests/foundation/documentation-claims-contract.test.ts` pins that this
-    paragraph names all three.
+    **The fifth module is the session composition root (#594).** Once an
+    accepted intake candidate gains a bed, it credits that candidate's one-off
+    bounty. The callback diverts the loan's share through `LoanBook.divert`
+    before crediting the remainder. This is distinct from the recurring state
+    grant and labour pay, and no current income readout includes it.
+
+    `tests/foundation/documentation-claims-contract.test.ts` pins the set of
+    five crediting modules.
 
     **Unmet needs withhold 40 again, and have since 2026-09-04.** The sentence
     three paragraphs up -- *"**Unmet needs withhold nothing as of

@@ -71,7 +71,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * Written out, never read from `new-session.ts`. If this list is wrong the
  * cases below fail; if it goes stale the cases below fail. That is the point.
  */
-const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence'] as const;
+const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.candidates', 'prisoners.classification', 'prisoners.sentence'] as const;
 
 /**
  * `deriveXoshiroState(seed, name).words` for the two seeds these cases use,
@@ -88,6 +88,7 @@ const DERIVED_WORDS_AT_SCENARIO_SEED: Readonly<Record<string, readonly number[]>
   'contraband.intelligence': [2519336100, 114212703, 3399945750, 2853866658],
   'contraband.introduction': [3484590104, 358788944, 3779368715, 3836528074],
   'identity.actor-name': [1389004806, 3929526187, 801062818, 758337395],
+  'prisoners.candidates': [758988949, 570273744, 131017317, 1549346503],
   'prisoners.classification': [3766015752, 2847574757, 3141289015, 3676423178],
   'prisoners.sentence': [1659324535, 280634646, 2187164178, 2228777105],
 };
@@ -97,6 +98,7 @@ const DERIVED_WORDS_AT_SEED_ZERO: Readonly<Record<string, readonly number[]>> = 
   'contraband.intelligence': [2712648297, 2312656903, 3076870406, 3014949915],
   'contraband.introduction': [4191607977, 1599308922, 1831874870, 2722278899],
   'identity.actor-name': [53358203, 2080006951, 2778740427, 1505507477],
+  'prisoners.candidates': [328078326, 1185596561, 2939272602, 1424503315],
   'prisoners.classification': [1731836178, 401524879, 2842153704, 1358188498],
   'prisoners.sentence': [2971190074, 2860075831, 2101535010, 3330131813],
 };

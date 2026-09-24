@@ -620,7 +620,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * ever reads a name back, never mints or releases one.
      */
     housedNotice: createIntakeHousedNotice({ identity: actorIdentity, rooms: defaultRoomContentRegistry, events }),
-    candidateBountyCredit: (amountMinorUnits) => treasury.credit(amountMinorUnits),
+    candidateBountyCredit: (amountMinorUnits) => {
+      const diverted = loans?.divert(amountMinorUnits, kernel.tick) ?? 0;
+      if (amountMinorUnits > diverted) treasury.credit(amountMinorUnits - diverted);
+    },
     disciplinaryEvidence,
     /*
      * The riot's effect on its participants' day

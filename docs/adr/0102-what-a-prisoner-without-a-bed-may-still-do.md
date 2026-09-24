@@ -197,8 +197,11 @@ decays all six needs, with no stage check anywhere in the loop:
 `const extra = crowdingExtraDecayTable(excessPermille);
     for (const entityId of entityIds) {
       const index = this.store.getIndex(entityId);
+      const since = this.holdingSince?.(entityId);
+      const holding = since === undefined ? { safety: 0, sleep: 0 } : holdingNeedPressure(context.tick - since);
       for (const needId of NEED_IDS) {
-        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId]));
+        const heldExtra = needId === 'safety' ? holding.safety : needId === 'sleep' ? holding.sleep : 0;
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId] + heldExtra));
       }
     }`
 (verbatim in `src/simulation/prisoners/needs-system.ts`)
@@ -212,8 +215,9 @@ quotation was replaced with the crowded branch of the code as it now stands
 (the uncrowded branch is the same loop without `extra[needId]`, and carries a
 comment this gate cannot quote across). What the section
 argues from it still holds, and is if anything sharper: there is still no
-stage check anywhere in the loop, and the new term reads *how many* prisoners
-there are, never *which stage* any of them is at.
+stage check anywhere in the loop. The crowding term reads *how many* prisoners
+there are, while the holding term reads how long a prisoner has waited for a
+place; neither prevents the decay loop from running during intake.
 
 Decay runs on a prisoner from the tick they are admitted, before
 classification, before an accommodation target is even known.

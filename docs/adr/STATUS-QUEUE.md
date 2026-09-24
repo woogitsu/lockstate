@@ -25895,9 +25895,11 @@ one direction.
     (`src/main.ts:199`, `__LOCKSTATE_TELEMETRY_ENVIRONMENT__`).
   - **The bottom pair is unmoved too, at the values the reading above moved
     them to**: the second `telemetry.enabled` gate **`:4494`**
-    (`src/main.ts:4494`, `if (telemetry.enabled && appRoot !== null) {`) and
-    the consent mount **`:4499`** (`src/main.ts:4499`,
-    `createTelemetryConsentPrompt({`). **So the two halves have stopped
+    (`src/main.ts:4445`, `if (telemetry.enabled && appRoot !== null) {`) and
+    the consent mount **`:4499`** (`src/main.ts:4450`,
+    `createTelemetryConsentPrompt({`). The bold line numbers record this
+    historical reading; the `src/main.ts` citations point to the same constructs
+    at their current lines. **So the two halves have stopped
     splitting after thirteen consecutive readings in which they did not** —
     and they stopped not because anything was repaired but because the file
     they both point into went a whole window untouched.
@@ -25949,9 +25951,9 @@ one direction.
     directory from outside it still **`:227`**, and the tracked span still
     **`:199-261`**.
   - **The bottom pair moves by +161**: the second `telemetry.enabled` gate
-    `:4333` → **`:4494`** (`src/main.ts:4494`,
+    `:4333` → **`:4494`** (`src/main.ts:4445`,
     `if (telemetry.enabled && appRoot !== null) {`), and the consent mount
-    `:4338` → **`:4499`** (`src/main.ts:4499`,
+    `:4338` → **`:4499`** (`src/main.ts:4450`,
     `createTelemetryConsentPrompt({`). **The two halves have therefore moved
     by different amounts for the thirteenth consecutive reading** — and for
     the first time in that run one half is at zero *and* the other is

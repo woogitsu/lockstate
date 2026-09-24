@@ -196,7 +196,7 @@ describe('named RNG stream isolation in the real session runtime', () => {
     // exactly what it should do for a command that decided its own sentence,
     // and is why every canonical state hash in `session-replay.test.ts` is
     // unchanged by this stream existing.
-    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification', 'prisoners.sentence']);
+    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.candidates', 'prisoners.classification', 'prisoners.sentence']);
 
     // Seeding is checked against a session that has not been *used* yet.
     // `buildDeterminismScenario` hires five guards, and since #70 wired ADR
@@ -208,6 +208,12 @@ describe('named RNG stream isolation in the real session runtime', () => {
     const fresh = createNewSimulationRuntime(SCENARIO_SEED);
     expect(fresh.kernel.snapshot().rngStates.map((entry) => entry.name)).toEqual(names);
     for (const name of names) {
+      // The board creates day-zero offers in the factory and has already
+      // drawn from its dedicated stream before a caller can capture it.
+      if (name === 'prisoners.candidates') {
+        expect(fresh.kernel.rng.get(name).snapshot().words).not.toEqual(deriveXoshiroState(SCENARIO_SEED, name).words);
+        continue;
+      }
       expect(fresh.kernel.rng.get(name).snapshot().words).toEqual(deriveXoshiroState(SCENARIO_SEED, name).words);
     }
 

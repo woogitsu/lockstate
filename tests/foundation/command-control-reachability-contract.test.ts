@@ -281,7 +281,7 @@ describe('every declared command has a control the layout sweep can press, or is
     expect(sources.length).toBeGreaterThan(50);
     expect(uiSources.length).toBeGreaterThan(20);
     expect(mainSource, 'the composition root moved; this gate reads the intent-to-command mapping out of it').toBeDefined();
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(20);
 
     // Every command is reached from at least one `case` clause in the
     // composition root. A command whose clause disappeared would otherwise
@@ -419,7 +419,7 @@ describe('every declared command has a control the layout sweep can press, or is
     ).toEqual([]);
   });
 
-  it('measures eighteen commands with a control, none without, and one the sweep never presses', () => {
+  it('measures twenty commands with a control, none without, and one the sweep never presses', () => {
     // The denominators, stated so the gate reports facts rather than only
     // guarding them, and exact in both directions for the reason the command
     // gate gives: adding an entry to a list is a smaller act than changing a
@@ -427,7 +427,7 @@ describe('every declared command has a control the layout sweep can press, or is
     const withControl = verdicts.filter((verdict) => verdict.control !== undefined);
     // Sixteen and two until #1356 gave `Undo` and `Redo` the status strip's
     // buttons.
-    expect(withControl.length).toBe(18);
+    expect(withControl.length).toBe(20);
     expect(COMMAND_TYPES.length - withControl.length).toBe(0);
     expect(verdicts.filter((verdict) => verdict.exemptClasses.length > 0).map((verdict) => verdict.command)).toEqual([
       'ReleaseGuardAssignment',

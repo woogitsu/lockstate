@@ -8,6 +8,7 @@ import type { InformantHolderKind } from '../../src/simulation/contraband/inform
 import type { IntelligenceSourceType, IntelligenceTargetKind } from '../../src/simulation/contraband/intelligence';
 import type { SearchScope } from '../../src/simulation/contraband/search-policy';
 import type { SearchJobState } from '../../src/simulation/contraband/search-system';
+import type { IntakeCandidate } from '../../src/simulation/prisoners/intake-candidate-board';
 import type { IncidentState, IncidentType } from '../../src/simulation/incidents/incident';
 import type { DoorSide, DoorState } from '../../src/simulation/navigation/door';
 import type { RouteFailureReason } from '../../src/simulation/navigation/route';
@@ -132,6 +133,12 @@ interface EnumUnionPair {
 }
 
 const PAIRS: readonly EnumUnionPair[] = [
+  {
+    site: 'intakeCandidateSchema.status',
+    union: 'IntakeCandidate.status (src/simulation/prisoners/intake-candidate-board.ts)',
+    members: unionMembers<IntakeCandidate['status']>()(['new', 'delayed']),
+    readerOnly: [],
+  },
   {
     site: 'serializedChunkStateSchema.lifecycle',
     union: 'ChunkLifecycle (src/simulation/world/sparse-world.ts:33)',

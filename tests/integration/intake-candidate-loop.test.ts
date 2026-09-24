@@ -4,6 +4,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import type { LoanTerms } from '../../src/simulation/economy/loans';
 
 const ROOM = { x: 4, y: 6, width: 2, height: 3 } as const;
 const ARRIVAL = { x: 16, y: 16 } as const;
@@ -34,6 +35,32 @@ function restore(runtime: SimulationRuntime): SimulationRuntime {
 }
 
 describe('daily intake offers (#594)', () => {
+  it('diverts the loan share of a candidate bounty when the candidate gains a bed', () => {
+    const terms: LoanTerms = {
+      diversionRateBasisPoints: 2_500,
+      feeRateBasisPoints: 1_000,
+      maximumDurationDays: 90,
+      escalatedDiversionRateBasisPoints: 5_000,
+    };
+    const runtime = createNewSimulationRuntime(594, { loanTerms: terms });
+    const board = runtime.intakeCandidates.snapshot();
+    const candidate = { ...board.candidates[0]!, bountyMinorUnits: 750 };
+    runtime.intakeCandidates.loadSnapshot({ ...board, candidates: [candidate] });
+    submit(runtime, 'buy-bed', packCommand({ type: 'PurchaseMaterials', orderId: 'loan-bed', itemId: 'item.wood-plank', quantity: 3 }));
+    wallRoomPerimeter(runtime.world, ROOM, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...ROOM }));
+    submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'loan-bed', definitionId: 'bed-wooden', x: ROOM.x, y: ROOM.y }));
+    stepTo(runtime, 1_000);
+    const loans = runtime.loans!;
+    expect(loans.draw(4_000, runtime.kernel.tick)).toBe(true);
+    const cashBefore = runtime.treasury.balanceMinorUnits;
+    const debtBefore = loans.outstandingMinorUnits;
+    submit(runtime, 'accept', packCommand({ type: 'AcceptIntakeCandidate', candidateId: candidate.id, ...ARRIVAL }));
+    stepTo(runtime, 1_050);
+    expect(runtime.prisoners.roomInstances.occupancyOf(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')[0]!.instanceId)).toBe(1);
+    expect(loans.outstandingMinorUnits).toBe(debtBefore - 187);
+    expect(runtime.treasury.balanceMinorUnits).toBe(cashBefore + 563);
+  });
   it('preserves screening across save and pays a one-off only when the accepted candidate occupies a place', () => {
     const runtime = createNewSimulationRuntime(594);
     const candidate = runtime.intakeCandidates.snapshot().candidates[0]!;

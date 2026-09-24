@@ -36,8 +36,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *    every run.
  *
  * The prison is `tests/integration/contended-shower-fairness.test.ts`'s, cut
- * down: what matters here is that the ordering has something to decide, and a
- * two-head shower room against twenty-four prisoners is that.
+ * down: what matters here is that the ordering has something to decide. A
+ * cell may now house at most two prisoners, so one shower head serves two
+ * housed prisoners while the other arrivals remain in intake.
  *
  * ## Reported rather than claimed: no mutation of the new code turned this red
  *
@@ -118,7 +119,6 @@ function contendedPrison(): SimulationRuntime {
     }
   }
   submit(runtime, 'head-0', packCommand({ type: 'PlaceObject', orderId: 'o-head-0', definitionId: 'shower-head-brick', x: SHOWER.x, y: SHOWER.y }));
-  submit(runtime, 'head-1', packCommand({ type: 'PlaceObject', orderId: 'o-head-1', definitionId: 'shower-head-brick', x: SHOWER.x + 1, y: SHOWER.y }));
 
   stepTo(runtime, BUILT_BY);
   for (let n = 0; n < PRISONERS; n += 1) {
@@ -194,7 +194,7 @@ describe('the urgency-ordered contended scan is a function of saved state alone'
 
     // Long enough to cross several contended hygiene blocks, so the two runs
     // have to agree about who got a head many times over rather than once.
-    const until = snapshotTick + 6_000;
+    const until = snapshotTick + 10_000;
     stepTo(continuous, until);
     stepTo(restored, until);
 
@@ -208,7 +208,7 @@ describe('the urgency-ordered contended scan is a function of saved state alone'
      * That is pre-existing and is recorded in `docs/DETERMINISM.md`; comparing
      * the totals would only re-measure it. What this asserts is that the same
      * number of actions began, completed and went unmet on both sides of the
-     * boundary over the same 6,000 ticks -- which is what a divergence in the
+     * boundary over the same 10,000 ticks -- which is what a divergence in the
      * scan order would move.
      */
     const continuedMetrics = continuous.prisoners.actionSystem.getMetrics();
@@ -224,7 +224,7 @@ describe('the urgency-ordered contended scan is a function of saved state alone'
 
   it('is stable when the whole population ties on urgency, which is where sort stability would decide it instead', () => {
     /*
-     * Twenty-four prisoners admitted in the same tick run identical need
+     * Twenty-four prisoners requested in the same tick begin with identical need
      * trajectories, so at any contended moment they are exactly equal on the
      * urgency key -- measured in the canteen scenario as all 24 sitting at the
      * same stored hunger unit. That is the input that makes the *tie-break*
