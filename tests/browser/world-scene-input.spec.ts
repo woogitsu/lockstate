@@ -546,6 +546,28 @@ test.describe('the world scene discrete keys', () => {
     expect(afterZoom).toEqual(afterMouseMove);
   });
 
+  test('updates the object hover footprint when Build selects another armed object', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armObjectTool(true));
+    const box = (await page.locator('canvas').boundingBox())!;
+    const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.move(point.x + 8, point.y);
+    await settle(page);
+    const initial = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(initial).toMatchObject({ width: 1, height: 1 });
+
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.setObjectFootprint({ width: 1, height: 2 }));
+    await settle(page);
+    const afterSelection = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+
+    await page.mouse.move(point.x + 9, point.y);
+    await settle(page);
+    const afterMouseMove = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedObject());
+    expect(afterMouseMove).toMatchObject({ width: 1, height: 2 });
+    expect(afterSelection).toEqual(afterMouseMove);
+  });
+
   test('puts the tool down on Escape when there is no run to abandon, so the next drag on the world is a look-around and not a wall (#959)', async ({
     page,
   }) => {

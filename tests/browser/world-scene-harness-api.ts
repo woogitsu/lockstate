@@ -252,6 +252,8 @@ export interface LockstateWorldSceneHarness {
    * one tile instead of panning (#516, the third of the three gestures).
    */
   armObjectTool(armed: boolean): void;
+  /** Changes the selected object's footprint while leaving its tool armed. */
+  setObjectFootprint(footprint: { readonly width: number; readonly height: number }): void;
   /** Tiles the object tool has been asked to place. */
   placedObjects(): readonly HarnessTile[];
   /** What the panel readout would currently show for the object gesture, or `undefined`. */
