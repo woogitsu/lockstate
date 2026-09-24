@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 import { installTee, latestCounts, openApp, tab } from './playtest-harness';
 
 for (const viewport of [{ width: 720, height: 450 }, { width: 1024, height: 768 }]) {
