@@ -670,6 +670,26 @@ export class ActionSystem implements SystemRegistration {
   }
 
   /**
+   * The counter that names this system's path requests
+   * (`prisoner.<entityId>.<n>`), for the save (issue #1373).
+   *
+   * `docs/PERSISTENCE.md` used to exclude it on the ground that *"no restored
+   * state can reference an old name, [so] a restored counter and a reset one
+   * are indistinguishable"*. That stopped being true when the names
+   * themselves were saved -- they are in the navigation queue and in the cold
+   * state now -- and a reset counter would mint names a continuous session
+   * never minted, so the next capture would disagree with it.
+   */
+  public getRequestSequence(): number {
+    return this.requestSequence;
+  }
+
+  public setRequestSequence(sequence: number): void {
+    if (!Number.isInteger(sequence) || sequence < 0) throw new RangeError(`A path-request sequence is a non-negative integer, got ${String(sequence)}.`);
+    this.requestSequence = sequence;
+  }
+
+  /**
    * Re-takes the concurrent-use claim of every prisoner a restored snapshot
    * left mid-performance in a `room-catalog-id` room.
    *

@@ -1,6 +1,6 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
 import type { ActorIdentityMinter } from '../identity/actor-identity';
-import { LocomotionStore } from '../locomotion';
+import { LocomotionStore, type LocomotionSnapshot } from '../locomotion';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
@@ -251,6 +251,11 @@ export class GuardRoster {
   }
 
   /**
+   * **Since issue #1373 the next three paragraphs describe the restore of a
+   * save that carries no `inFlight` section -- one written before the walk was
+   * saved.** A current save resumes the guard's journey instead; see the
+   * method body. The paragraphs are unchanged because that older path is.
+   *
    * A guard mid-`'travelling'` (deployment *or* patrol leg) referenced a
    * path request against the *previous* `NavigationSystem` instance's
    * queue -- a fresh one never received it and would never resolve it. On
@@ -275,28 +280,73 @@ export class GuardRoster {
    *   no patrol route -- which since ADR 0036 is every session a player can
    *   start -- nothing in `src/` ever moved it again.
    */
-  public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>): void {
+  public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>, travel?: GuardTravelRestore): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
-    // No save carries a walk (ADR 0059's rule, unchanged for a second
-    // population): a restored `'travelling'` guard's path request named the
-    // previous `NavigationSystem` instance's queue and is dropped below in the
-    // same way, so any in-flight walk is equally unresumable and is cleared
-    // rather than left pointing at waypoints nothing will ever finish.
-    this.locomotion.clear();
     this.records.clear();
+    if (travel === undefined) {
+      // **A save written before issue #1373, which carries no walk and no
+      // navigation queue**, and the comment below is this branch as it stood,
+      // unchanged: absence is honoured with what the writing build's own
+      // restore did (ADR 0038 §1).
+      //
+      // No save carries a walk (ADR 0059's rule, unchanged for a second
+      // population): a restored `'travelling'` guard's path request named the
+      // previous `NavigationSystem` instance's queue and is dropped below in the
+      // same way, so any in-flight walk is equally unresumable and is cleared
+      // rather than left pointing at waypoints nothing will ever finish.
+      this.locomotion.clear();
+      for (const [entityId, record] of snapshot.records) {
+        const restored: GuardRecord = { ...record };
+        if (restored.deploymentPhase === 'travelling') settleRestoredTraveller(restored);
+        this.records.set(entityId, restored);
+      }
+      return;
+    }
+
+    // **A save that carries the walk** (issue #1373): the record comes back as
+    // it was -- phase, path request, patrol waypoint -- and the walk with it,
+    // because the navigation queue the request names came back too. The one
+    // repair is for a request id that queue does not hold, which no save this
+    // build writes can contain: such a guard would wait for ever, so it gets
+    // the old settling instead. `PrisonerOperationsRuntime.resumeTravel` makes
+    // the same one exception for the same reason.
+    this.locomotion.loadSnapshot(travel.locomotion);
     for (const [entityId, record] of snapshot.records) {
       const restored: GuardRecord = { ...record };
-      if (restored.deploymentPhase === 'travelling') {
+      if (restored.pathRequestId !== undefined && !travel.knowsRequest(restored.pathRequestId)) {
         restored.pathRequestId = undefined;
-        restored.deploymentPhase = restored.sectorId === undefined ? 'unassigned' : 'on-post';
-        // `undefined`, not `0`: PatrolSystem only treats an `'on-post'` guard
-        // as "idle, start/resume a loop" when this is `undefined` --
-        // `beginLoop` always starts a fresh loop at waypoint 0 regardless,
-        // so this is exactly the state a guard that never started patrolling
-        // would be in, and resumes correctly on the next scheduled tick.
-        restored.patrolWaypointIndex = undefined;
+        if (restored.deploymentPhase === 'travelling' && !this.locomotion.isWalking(entityId)) settleRestoredTraveller(restored);
       }
       this.records.set(entityId, restored);
     }
   }
+
+  /** The guards' walks and headings, keyed by `EntityId`, for the save's `inFlight` section (issue #1373). */
+  public getTravelSnapshot(): LocomotionSnapshot {
+    return this.locomotion.getSnapshot();
+  }
+}
+
+/**
+ * A guard travel snapshot to resume, and the question the resume asks of the
+ * `NavigationSystem` restored beside it. Absent means the save carries none.
+ */
+export interface GuardTravelRestore {
+  readonly locomotion: LocomotionSnapshot;
+  readonly knowsRequest: (requestId: string) => boolean;
+}
+
+/**
+ * The settling every restore applied to a `'travelling'` guard before issue
+ * #1373, and still applies to one whose journey a save cannot resume.
+ */
+function settleRestoredTraveller(restored: GuardRecord): void {
+  restored.pathRequestId = undefined;
+  restored.deploymentPhase = restored.sectorId === undefined ? 'unassigned' : 'on-post';
+  // `undefined`, not `0`: PatrolSystem only treats an `'on-post'` guard
+  // as "idle, start/resume a loop" when this is `undefined` --
+  // `beginLoop` always starts a fresh loop at waypoint 0 regardless,
+  // so this is exactly the state a guard that never started patrolling
+  // would be in, and resumes correctly on the next scheduled tick.
+  restored.patrolWaypointIndex = undefined;
 }

@@ -7,8 +7,11 @@ import type { ContrabandHolderKind, ContrabandSourceType, ContrabandState } from
 import type { InformantHolderKind } from '../../src/simulation/contraband/informants';
 import type { IntelligenceSourceType, IntelligenceTargetKind } from '../../src/simulation/contraband/intelligence';
 import type { SearchScope } from '../../src/simulation/contraband/search-policy';
+import type { SearchJobState } from '../../src/simulation/contraband/search-system';
 import type { IncidentState, IncidentType } from '../../src/simulation/incidents/incident';
 import type { DoorSide, DoorState } from '../../src/simulation/navigation/door';
+import type { RouteFailureReason } from '../../src/simulation/navigation/route';
+import type { DoorAccessDenialReason } from '../../src/simulation/navigation/route-context';
 import type { JobLifecycleState, CarryLeg } from '../../src/simulation/operations/job';
 import type { UtilityNodeKind, UtilityType } from '../../src/simulation/operations/utility-network';
 import type { DeploymentPhase } from '../../src/simulation/security/guard-roster';
@@ -271,6 +274,27 @@ const PAIRS: readonly EnumUnionPair[] = [
     site: 'incidentsSectionSchema.type',
     union: 'IncidentType (src/simulation/incidents/incident.ts:6)',
     members: unionMembers<IncidentType>()(['assault', 'escape-attempt', 'riot', 'gang-retaliation']),
+    readerOnly: [],
+  },
+  // The three below arrived with `simulation.inFlight` (issue #1373), which
+  // carries resolved-and-uncollected routes, failures included, and each
+  // active search job's leg state.
+  {
+    site: 'routeFailureReasonSchema',
+    union: 'RouteFailureReason (src/simulation/navigation/route.ts:18)',
+    members: unionMembers<RouteFailureReason>()(['invalid-origin', 'invalid-destination', 'unreachable', 'permission-denied']),
+    readerOnly: [],
+  },
+  {
+    site: 'doorAccessDenialReasonSchema',
+    union: 'DoorAccessDenialReason (src/simulation/navigation/route-context.ts:18)',
+    members: unionMembers<DoorAccessDenialReason>()(['locked', 'insufficient-clearance', 'missing-permission']),
+    readerOnly: [],
+  },
+  {
+    site: 'searchJobStateSchema',
+    union: 'SearchJobState (src/simulation/contraband/search-system.ts:22)',
+    members: unionMembers<SearchJobState>()(['travelling', 'searching']),
     readerOnly: [],
   },
 ];

@@ -16,6 +16,7 @@ import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/reg
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
+import { LOCOMOTION_SUBTILE_UNITS } from '../simulation/locomotion/locomotion';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
@@ -1339,6 +1340,176 @@ const regimeScheduleSchema = z
 const regimeSchedulesSectionSchema = z.array(regimeScheduleSchema).min(1);
 
 /**
+ * The work in flight (issue #1373; the owner's ruling of 2026-09-23 on ADR 0059
+ * open question 3, option 5). `EncodedSessionSystems.inFlight` carries the
+ * argument for the section and for its being one section.
+ *
+ * **Optional, and `SAVE_SCHEMA_VERSION` does not move**, on
+ * `docs/PERSISTENCE.md`'s "Adding an optional field without a version bump"
+ * and ADR 0038 decision 1. The three conditions, each checked rather than
+ * assumed:
+ *
+ * - *Optional, and absent means what the older build already did.* No build
+ *   before this one wrote the section, and every one of them restored a save
+ *   by clearing every walk, dropping every traveller to `idle` and starting
+ *   the navigation queue empty -- which is exactly what an absent section
+ *   still means (`PrisonerOperationsRuntime.resetTravelForASaveThatCarriesNone`,
+ *   `GuardRoster.loadSnapshot`, `SearchSystem.loadSnapshot`). Absence is
+ *   unambiguous as a fact about the corpus, the `masterSeed` shape: a live
+ *   capture writes the section unconditionally, empty lists and all, so a
+ *   save of this build without it cannot exist.
+ * - *The key is declared*, here, because the payload is `.strict()` and an
+ *   undeclared key fails the whole save.
+ * - *No existing field changes shape or meaning.* Every key below is new; the
+ *   sections the owners already had are untouched.
+ *
+ * **Declared on V6 alone**, beside `regimeSchedules`, rather than in
+ * `sessionSystemsShapeFor`: that factory is shared with the frozen V3-V5
+ * shapes, and no build that wrote one of those could carry this.
+ *
+ * **The cost ADR 0038 §4 names, stated rather than glossed:** an older V6
+ * build reading a save that carries this key refuses it as `invalid-shape`
+ * (the payload is `.strict()`), where a V7 bump would have refused it as
+ * `unsupported-version`. Both refuse; only the label differs.
+ *
+ * Structural only, like the rest of this file. The semantic rules -- a walk's
+ * legs are one tile along one axis, a request id appears once, a walk is
+ * between its first and last waypoint -- are enforced by the `loadSnapshot`
+ * of the class that owns each list.
+ */
+const headingComponentSchema = z.union([z.literal(-1), z.literal(0), z.literal(1)]);
+
+const routeContextSchema = z
+  .object({
+    role: z.string().min(1),
+    securityClearance: z.number().int().min(0),
+    permissions: z.array(z.string().min(1)).optional(),
+    emergencyOverride: z.boolean().optional(),
+  })
+  .strict();
+
+const pendingPathRequestSchema = z
+  .object({
+    id: z.string().min(1),
+    origin: tilePositionSchema,
+    destination: tilePositionSchema,
+    context: routeContextSchema,
+    priority: z.number().int(),
+    enqueuedAtTick: tickSchema,
+  })
+  .strict();
+
+/** Mirrors `RouteFailureReason` (`src/simulation/navigation/route.ts`); `tests/foundation/save-schema-enum-union-contract.test.ts` pins the pair. */
+const routeFailureReasonSchema = z.enum(['invalid-origin', 'invalid-destination', 'unreachable', 'permission-denied']);
+/** Mirrors `DoorAccessDenialReason` (`src/simulation/navigation/route-context.ts`), pinned beside the one above. */
+const doorAccessDenialReasonSchema = z.enum(['locked', 'insufficient-clearance', 'missing-permission']);
+
+const routeResultSchema = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      route: z
+        .object({
+          segments: z.array(
+            z
+              .object({
+                regionId: z.number().int(),
+                waypoints: z.array(tilePositionSchema).min(1),
+                enteredViaDoorId: z.string().min(1).optional(),
+              })
+              .strict(),
+          ),
+          totalCost: z.number().min(0),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ok: z.literal(false),
+      failure: z
+        .object({
+          reason: routeFailureReasonSchema,
+          blockedBy: z
+            .object({ doorId: z.string().min(1), reason: doorAccessDenialReasonSchema })
+            .strict()
+            .optional(),
+        })
+        .strict(),
+    })
+    .strict(),
+]);
+
+const resolvedPathRequestSchema = z
+  .object({
+    id: z.string().min(1),
+    result: routeResultSchema,
+  })
+  .strict();
+
+const walkSchema = z
+  .object({
+    key: z.number().int().min(0),
+    waypoints: z.array(tilePositionSchema).min(2),
+    next: z.number().int().min(1),
+    progress: z.number().int().min(0).max(LOCOMOTION_SUBTILE_UNITS - 1),
+    headingX: headingComponentSchema,
+    headingY: headingComponentSchema,
+  })
+  .strict();
+
+const locomotionSnapshotSchema = z
+  .object({
+    walks: z.array(walkSchema),
+    headings: z.array(z.tuple([z.number().int().min(0), headingComponentSchema, headingComponentSchema])),
+  })
+  .strict();
+
+/** Mirrors `SearchJobState` (`src/simulation/contraband/search-system.ts`), pinned in `tests/foundation/save-schema-enum-union-contract.test.ts`. */
+const searchJobStateSchema = z.enum(['travelling', 'searching']);
+
+const inFlightSectionSchema = z
+  .object({
+    navigation: z
+      .object({
+        pending: z.array(pendingPathRequestSchema),
+        results: z.array(resolvedPathRequestSchema),
+      })
+      .strict(),
+    prisoners: z
+      .object({
+        locomotion: locomotionSnapshotSchema,
+        pathRequestIds: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
+        requestSequence: z.number().int().min(0),
+      })
+      .strict(),
+    guards: z
+      .object({
+        locomotion: locomotionSnapshotSchema,
+        deploymentRequestSequence: z.number().int().min(0),
+        patrolRequestSequence: z.number().int().min(0),
+      })
+      .strict(),
+    search: z
+      .object({
+        requestSequence: z.number().int().min(0),
+        jobs: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              state: searchJobStateSchema,
+              travelInFlight: z.boolean(),
+              pathRequestIdsByGuard: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
+              dwellStartedAtTick: tickSchema.optional(),
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
+
+/**
  * Current shape: V5's, plus the required `regimeSchedules` section
  * (ADR 0113 §2).
  *
@@ -1358,6 +1529,7 @@ const sessionSystemsV6Schema = z
     objects: objectsSectionSchema.optional(),
     alerts: alertsSectionSchema.optional(),
     regimeSchedules: regimeSchedulesSectionSchema,
+    inFlight: inFlightSectionSchema.optional(),
   })
   .strict();
 

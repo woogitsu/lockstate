@@ -106,7 +106,9 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    *     V4 build could produce, which is the same fact
    *     `migrateSaveEnvelopeV4ToV5` relies on in the other direction.
    */
-  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, ...simulationWithoutObjects } = bundle.simulation;
+  // `inFlight` beside them, since issue #1373: a V6-only optional section no
+  // build before it wrote.
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, delayedIntake: _delayedIntake, pendingCandidateProfiles: _pendingCandidateProfiles, intakeCandidates: _intakeCandidates, holdingStays: _holdingStays, inFlight: _inFlight, ...simulationWithoutObjects } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,

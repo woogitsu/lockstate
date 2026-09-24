@@ -20,6 +20,22 @@ lowest gap. If 0059 turns out to have been taken by something that has not
 merged, this document, its row in `docs/adr/README.md` and every citation of it
 are renumbered without argument.
 
+**Open question 3 was ruled by the owner on 2026-09-23, and nothing else in
+this document moved with it** (issue
+[#1373](https://github.com/woogitsu/lockstate/issues/1373)). The owner chose,
+from options a session wrote, the one labelled *"Zapisuj marsz (zalecane)"* --
+"save the walk (recommended)". **That is the weaker provenance**: the label of
+an option, not a sentence the owner typed. What it authorised, in the issue's
+own record of it: a save carries a travelling prisoner's route, their progress
+along it and any pending path requests; restoring and continuing is the same
+game as never having saved; the field is optional, so older saves restore as
+they did. It answers open question 3 with **Option 5** below, which this
+document had recommended against; the recommendation of Option 4 is left
+standing as the argument it was, and the amendment under "Determinism" records
+what was built. The ADR's own status is unchanged by the ruling -- it is still
+the draft described in the paragraph above -- because the owner ruled on one
+question, not on the document.
+
 ---
 
 ## The decision, in one sentence
@@ -72,10 +88,10 @@ decision about simulation-side locomotion, and this ADR does not take it."* Its
 open question 1 asks who takes it. This is that decision.
 
 The same convention is stated in five other places, and they are the sweep:
-`src/simulation/security/patrol-system.ts:131-134`,
-`src/simulation/security/deployment-system.ts:191`,
-`src/simulation/incidents/response-system.ts:595`,
-`src/simulation/contraband/search-system.ts:298` and — until
+`src/simulation/security/patrol-system.ts:147-150`,
+`src/simulation/security/deployment-system.ts:207`,
+`src/simulation/incidents/response-system.ts:629`,
+`src/simulation/contraband/search-system.ts:325` and — until
 [ADR 0093](./0093-a-carry-is-an-action.md) **deleted the file** —
 `prisoners/job-worker-adapter.ts:30-31`. The fifth site is
 therefore no longer a site: a carry is a prisoner action now and walks like
@@ -152,6 +168,10 @@ restored session resumes mid-stride.
   taken mid-journey currently restores the prisoner **idle on the tile they had
   reached**, which is the rule `PrisonerOperationsRuntime.loadSnapshot` has
   always had for travellers and is now reached far more often.
+- **Taken on 2026-09-23, by the owner's ruling on open question 3** (see
+  "Status" and the amendment under "Determinism"). The bullet above is kept as
+  it was written: it is what this document decided before the ruling, and
+  "currently" in it means the code before #1373.
 
 ---
 
@@ -400,6 +420,105 @@ because they are the ones that could have gone wrong:
   divergence is recorded rather than hidden, and asserts the property it exists
   for (the riot regime is in force, so the toilet is absent from both) directly.
 
+### Amendment, 2026-09-23: the walk is saved, and the round trip is exact (#1373)
+
+**The bullet above is superseded for every save this build writes, and kept
+because it is still exactly true of a save written before.** It also turned
+out to understate the cost it described: measured on `main` at `ceb6865e` on
+#1373's fixture (12 cells, 12 prisoners, seed `0x586`, saves every 37 ticks
+through day 2), **41 of the 41 saves taken with somebody walking restored to a
+prison that had not reconverged by day 6**, while 0 of the 24 without a walker
+diverged. The first difference was on the restore tick itself. *"One
+reconsideration cycle"* was true of one journey and false of the prison, which
+drifted from there.
+
+What a save carries now, in one optional section `simulation.inFlight`
+(`src/persistence/save-schema.ts`, `inFlightSectionSchema`):
+
+- **the walks** -- `LocomotionStore.getSnapshot`: waypoints, the leg being
+  walked, progress in `1/256` of a tile, and every heading -- for prisoners
+  (keyed by component index) and for guards (keyed by `EntityId`);
+- **the navigation queue** -- `NavigationSystem.getInFlightSnapshot`: waiting
+  requests with the tick they were enqueued, and resolved routes not yet
+  collected. **Persisted rather than re-queued by the owners**, because
+  `PathRequestQueue.processTick` serves in `(effective priority, enqueuedAtTick,
+  id)` order and ages by `enqueuedAtTick`: an owner re-enqueuing on load does so
+  at the restore tick, which is a different service order under a binding
+  `workBudget`, and a resolved-but-uncollected route has no owner-side
+  equivalent at all;
+- **the ids and the counters that mint them** -- prisoners' path-request ids,
+  and `requestSequence` for `ActionSystem`, `DeploymentSystem`, `PatrolSystem`
+  and `SearchSystem`;
+- **each active search job's leg state**, which `SearchSystem.loadSnapshot`
+  had always reset and which the exactness test showed diverging within fifty
+  ticks once the walks were fixed.
+
+A carried result leaves out `expansions`, `usedFlowField` and `waitedTicks`:
+they describe how warm the route cache was, the restored cache starts cold, and
+carrying them made a save diverge on a diagnostic nothing reads
+(`NavigationSystem.getInFlightSnapshot` carries the measurement). Caches are
+still not carried -- ADR 0007's line is unchanged.
+
+**No `SAVE_SCHEMA_VERSION` bump**: the section is optional, absent means what
+every earlier build did on load (walks cleared, travellers idle, queue empty --
+kept verbatim as the restore path for such a save), and a live capture always
+writes it, so absence is unambiguous. `docs/PERSISTENCE.md` carries the
+compatibility argument under ADR 0038.
+
+**Measured after:** `tests/determinism/restore-mid-walk-exactness.test.ts`
+takes 65 saves across a day of #1373's fixture and 134 across a day with six
+guards walking and sweeping, and requires of each, over the whole
+`captureSessionSnapshot` through the real envelope, that the restore is a fixed
+point and that the future agrees fifty ticks on and at a far checkpoint. On the
+unfixed code it fails 41 and 107 saves; on this one it fails none.
+`tests/integration/riot-regime-loop.test.ts` now asserts its two censuses
+equal outright.
+
+**The weakest part of the claim, stated:** the restored route cache is cold,
+so a restored session's searches cost more expansions against
+`workBudgetPerTick` than the continuous session's cache hits did. Where the
+budget does not bind that changes nothing -- it did not bind on any save the
+test takes -- but where it binds, a restored session can serve a request a
+tick later than the one it was saved from. No fixture here makes it bind.
+
+**That paragraph was the weakest claim, and it was wrong on both counts. It is
+kept so the correction can be read against it, and the question is open.**
+Measured on 2026-09-23:
+
+- *"It did not bind on any save the test takes"* was true only of the
+  12-prisoner fixture.
+- *"A tick later"* understated the effect. In six rows of cells with 24
+  prisoners, every save taken 1 to 40 ticks before a block change served a
+  different set of requests. With 36 prisoners, every save taken 1 to 600
+  ticks before one did.
+- Replaying each binding tick's pending queue warm against cold, the served
+  set differed on 13 of 331 binding ticks.
+
+`tests/determinism/restore-mid-walk-exactness.test.ts` pins the 24-prisoner
+case as a **known divergence**. It goes red when the divergence is removed.
+
+**Integration observation, 2026-09-24:** in the combined #594/#1373 tree this
+specific 24-prisoner fixture still deferred five requests at tick 3462, but
+the saved and continuous sessions matched at both ticks 3462 and 3463. The
+test was inverted as its own instruction required. The earlier measurements
+above describe the #1373 branch before integration; they do not establish
+that the cache-budget class is resolved in every workload.
+
+**A fix was built and withdrawn** in the same series of commits, the revert carrying its measurements. It
+charged the budget what a request costs cold, however warm the caches are. It
+made both cases exact, but a warm session could then be no faster than a cold
+one. `navigation.production.meal-rush` at 5,000 actors went from 26 ticks to
+drain to 211, and from 51,901 counted expansions to 57,903, over its ceiling
+of 54,500.
+
+**The decision is ADR 0007's, and it has three options:**
+1. **Persist the caches' warmth**: the keys of valid entries plus a
+   deterministic rebuild at load, or the entries themselves. Save size and
+   load time grow with distinct legs.
+2. **Charge cold, as built**: exact, at the latency above.
+3. **Accept the divergence**, which is bounded to ticks on which the budget
+   binds.
+
 ---
 
 ## What this costs
@@ -598,6 +717,11 @@ designed for it, and is not claimed here.
    save-schema field and ADR 0038's compatibility question. Nothing in this
    branch needs the answer; a player who saves mid-day will notice it before a
    test does.
+   **Answered 2026-09-23: yes** -- the owner's ruling, recorded under "Status",
+   built under #1373 and described in the amendment under "Determinism". The
+   question is kept as it was asked. Its first sentence priced the cost per
+   journey, which was right; the prison-wide cost was 41 permanent divergences
+   in 41 mid-walk saves.
 4. **Do guards walk, and when?** They are the other population the render
    channel will carry (ADR 0040 slice 2), and drawing them while they teleport
    between patrol waypoints would look worse than not drawing them. The two

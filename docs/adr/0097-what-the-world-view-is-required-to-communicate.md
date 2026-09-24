@@ -692,7 +692,7 @@ guard given a three-waypoint patrol route walking **2,392 of 3,000 ticks** and
 publishing non-zero velocity on **2,392 of 3,000 render samples**
 (`docs/adr/0092-who-decides-where-a-guard-stands.md:205-208`). Prisoners walk by
 the same route: `ActionSystem` calls `beginWalk` at
-`src/simulation/prisoners/action-system.ts:950`.
+`src/simulation/prisoners/action-system.ts:970`.
 
 So if nothing moved in #1018's working cell, the renderer is not why. The cost
 of option C is a **simulation** cost — whatever it takes for a prisoner in a

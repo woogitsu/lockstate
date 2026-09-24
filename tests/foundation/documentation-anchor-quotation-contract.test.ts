@@ -884,7 +884,11 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      *   demonstrating itself: an anchor two lines stale still resolves, because
      *   the fragment moved with the code and the number did not. (The
      *   surrounding sentence is separately wrong -- the constant is `6` --
-     *   which is a claim gate's business, not this one's.)
+     *   which is a claim gate's business, not this one's.) **Re-opened for
+     *   issue #1373, which added one import above it:** `:36` is now the
+     *   `actor-identity` import and the declaration is `:39`, three lines on,
+     *   so the row still verifies at the edge of the tolerance and the anchor
+     *   was deliberately left at `:36` to keep this control what it was.
      *
      * **Not verifying, and every one of the five is a real defect.**
      * - `src/main.ts:621` in ADR 0092 is `: {`, the opening of a conditional
