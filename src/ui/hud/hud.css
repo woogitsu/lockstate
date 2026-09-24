@@ -267,10 +267,10 @@
 
 .hud-strip__all-stats-button[hidden] { display: none; }
 
-/* On a short desktop the metrics form a second row, but its 44px directory
+/* On a narrow desktop the metrics form a second row, but its 44px directory
    reaches into the first. The left end lies under the non-interactive brand;
    the right end holds Redo and Layout and must stay pressable (#88). */
-@media (min-width: 721px) and (max-height: 700px) {
+@media (min-width: 721px) and (max-width: 1100px) {
   .hud-strip__all-stats-button { left: var(--space-3); right: auto; }
 }
 

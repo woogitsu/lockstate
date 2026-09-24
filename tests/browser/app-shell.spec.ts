@@ -5135,21 +5135,18 @@ test.describe('the assembled application', () => {
     // above), and what those rows need is not a gesture but a *tick*, which is
     // the stronger claim again. Sorted together because the assertion compares
     // the sweep's document order.
+    const conditionalAllStatsControl = 'hud > hud-strip > button.hud-strip__all-stats-button "All stats"';
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
-      // The directory is conditional on overflow. The sweep may reveal it at
-      // 900x600 after a state change and hide it again by the final inventory.
-      // When visible, the hit-test above covers it. The dedicated badged-width
-      // spec drives its complete contents and keyboard route.
-      ...(inventory.ids.includes('hud > hud-strip > button.hud-strip__all-stats-button "All stats"')
-        && !everMeasured.has('hud > hud-strip > button.hud-strip__all-stats-button "All stats"')
-        ? ['hud > hud-strip > button.hud-strip__all-stats-button "All stats"']
-        : []),
+      // The directory is conditional on badge overflow. The hit-test above
+      // checks it whenever visible, while the dedicated badged-width spec
+      // drives the state that must show it and its keyboard route.
       'hud > hud-strip > hud-strip__all-stats-dialog > button.hud-strip__all-stats-close "Close"',
     ];
     const neverLaidOut = inventory.controls.filter(
-      (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
+      (name, index) => name !== conditionalAllStatsControl
+        && !everMeasured.has(inventory.ids[index] ?? ''),
     );
     expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
       [...exempt].sort(),
@@ -5162,11 +5159,14 @@ test.describe('the assembled application', () => {
      * above now implies it, because the number is what a reader checks a
      * changed shell against.
      */
-    const measuredInInventory = inventory.ids.filter((id) => everMeasured.has(id)).length;
+    const measuredInInventory = inventory.ids.filter((id, index) =>
+      inventory.controls[index] !== conditionalAllStatsControl
+      && everMeasured.has(id)).length;
+    const countedControls = inventory.controls.filter((name) => name !== conditionalAllStatsControl).length;
     expect(
       measuredInInventory,
-      `hit-tested only ${measuredInInventory} of ${inventory.controls.length} controls at ${width}x${height}`,
-    ).toBe(inventory.controls.length - exempt.length);
+      `hit-tested only ${measuredInInventory} of ${countedControls} non-conditional controls at ${width}x${height}`,
+    ).toBe(countedControls - exempt.length);
     /*
      * Non-vacuity for the spill assertions above: they sit behind a condition,
      * so a build where the body never spills would satisfy them by never
