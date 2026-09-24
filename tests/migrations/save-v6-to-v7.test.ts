@@ -9,7 +9,7 @@ import type { JsonValue } from '../../src/shared/json';
 function v6SessionSave(): SaveEnvelopeV6 {
   const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
   if (bundle.simulation === undefined) throw new Error('session missing');
-  const { roomFilth: _newField, ...simulation } = bundle.simulation;
+  const { roomFilth: _newField, labourCredit: _labourCredit, ...simulation } = bundle.simulation;
   const payload = {
     masterSeed: bundle.masterSeed,
     kernel: bundle.kernel,
