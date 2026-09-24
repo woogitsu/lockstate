@@ -6488,6 +6488,20 @@
     }
   }
 
+  /* A visible refusal or event borrows a row above the middle, raising the six-tab
+     column and the corner toward one another. At 1280x800 the ordinary state
+     has 31px of clearance, but the event's 32px row and the corner's 34px
+     growth put the zoom pair under the last tab. Shift only the zoom island:
+     moving the whole corner also moves the minimap/alerts over the map drag
+     used by the Rooms tool (#331), while shortening it clips an alert (#739).
+     The message is transient, so the regular bottom-left location returns as
+     soon as its own grid row closes. */
+  @media (min-height: 781px) and (max-height: 837px) {
+    .hud[data-layout-navigation-placement='rail']:has(> :is(.hud__refusal, .hud__event):not([hidden])) .hud-zoom {
+      margin-left: calc(var(--hud-navigation-width) + var(--space-3));
+    }
+  }
+
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }
 
   /*
