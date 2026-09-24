@@ -180,7 +180,7 @@ test.describe('the environment artwork', () => {
     for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
   });
 
-  test('the 3 by 3 shower has ceramic while the neighboring laundry keeps linoleum', async ({ page }, testInfo) => {
+  test('the 3 by 3 shower has ceramic beside a distinct laundry service floor', async ({ page }, testInfo) => {
     const fixture = await openHarness(page, 'showerFloor');
     const tile = fixture.tileSizePx;
     const middleX = (fixture.showerFloorMinTileX + fixture.laundryFloorMaxTileX + 1) * tile / 2;
@@ -200,19 +200,30 @@ test.describe('the environment artwork', () => {
     for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
     expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeGreaterThanOrEqual(15);
     expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeLessThan(40);
+    const laundryFrame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.laundry');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(laundryFrame?.size).toEqual([128, 128]);
+    for (const pixel of laundryFrame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
     for (const zoom of [1, 0.5]) {
       await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
         { x: middleX, y: middleY, zoom });
       const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
       const shower = sprites.filter((sprite) => sprite.frameName === 'env.floor.shower');
       expect(shower.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
-      const laundry = sprites.filter((sprite) => sprite.frameName === 'env.floor.institutional'
+      const laundry = sprites.filter((sprite) => sprite.frameName === 'env.floor.laundry'
         && sprite.x >= fixture.laundryFloorMinTileX * tile);
       expect(laundry.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
       const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
       expect(labels.map((label) => label.text)).toContain('Shower Room');
       expect(labels.map((label) => label.text)).toContain('Laundry');
-      if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1') {
+      if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1' || process.env['LOCKSTATE_CAPTURE_LAUNDRY_ART'] === '1') {
         await page.screenshot({ path: testInfo.outputPath(`shower-floor-zoom-${zoom}.png`) });
       }
     }

@@ -415,7 +415,17 @@ ceramic from overhead, oblique and section views plus a 3 × 3 repeat. Blender
 models four small ceramic squares per game tile, thin recessed grout and light
 mineral speckles. `assets/source/concepts/shower-floor-v1.md` records the
 source and design. At 64 px the floor must still read as ceramic beside the
-Laundry's linoleum without turning the shower into a heavy checkerboard.
+Laundry's aggregate without turning the shower into a heavy checkerboard.
+
+### Laundry sealed aggregate — `floor.laundry.nonslip`
+
+`assets/source/concepts/laundry-floor-multiview-v1.png` studies a warm-grey
+anti-slip mineral surface from overhead, oblique and section views and in a
+3 × 3 repeat. The concept includes a drain, but the Blender 1 × 1 runtime tile
+omits it so a built laundry does not repeat a conspicuous grate every tile.
+The sealed aggregate stays continuous and slightly warmer than the neighboring
+four-square shower ceramic. `assets/source/concepts/laundry-floor-v1.md`
+records the source and adaptation.
 
 ### Canteen terrazzo floor — `floor.canteen.terrazzo`
 

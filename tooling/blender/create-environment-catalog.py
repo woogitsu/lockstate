@@ -116,6 +116,7 @@ MODELS = (
     ("floor.canteen.terrazzo", (1, 1)),
     ("floor.yard.compacted-earth", (1, 1)),
     ("floor.shower.ceramic", (1, 1)),
+    ("floor.laundry.nonslip", (1, 1)),
 )
 
 
@@ -1312,6 +1313,20 @@ def architectural(collection, root, asset_id):
                     (0.008, 0.035 + 0.005 * blade, 0.001),
                     "yard_grass_light" if blade == 1 else "yard_grass_dark", 0)
                 grass.rotation_euler.z = (blade - 1) * 0.48
+    elif asset_id == "floor.laundry.nonslip":
+        # Continuous sealed aggregate, distinct from the shower's four-square
+        # ceramic. Sparse mineral grit survives 64 px without a repeated drain
+        # or cross-shaped seam appearing once in every game tile.
+        box(collection, root, "Sealed laundry aggregate", (0, 0, 0.04),
+            (1, 1, 0.08), "laundry_base", 0)
+        laundry_rng = random.Random(20260924)
+        for index in range(200):
+            x = laundry_rng.uniform(-0.48, 0.48)
+            y = laundry_rng.uniform(-0.48, 0.48)
+            width = laundry_rng.uniform(0.008, 0.022)
+            box(collection, root, f"Non-slip laundry grain.{index}",
+                (x, y, 0.081), (width, width * laundry_rng.uniform(0.5, 1.1), 0.001),
+                "laundry_grit_light" if index % 3 else "laundry_grit_dark", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1694,6 +1709,9 @@ def main():
     MATERIALS["yard_grit_dark"] = material("Yard dark mineral grains", (0.13, 0.11, 0.08, 1), 0.98)
     MATERIALS["yard_grass_light"] = material("Yard worn olive grass", (0.22, 0.29, 0.10, 1), 0.99)
     MATERIALS["yard_grass_dark"] = material("Yard short dark grass", (0.09, 0.16, 0.05, 1), 0.99)
+    MATERIALS["laundry_base"] = material("Warm grey sealed laundry concrete", (0.58, 0.45, 0.37, 1), 0.98)
+    MATERIALS["laundry_grit_light"] = material("Pale embedded anti-slip mineral", (0.52, 0.50, 0.44, 1), 0.99)
+    MATERIALS["laundry_grit_dark"] = material("Dark embedded anti-slip mineral", (0.15, 0.17, 0.16, 1), 0.99)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

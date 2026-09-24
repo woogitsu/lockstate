@@ -310,6 +310,34 @@
       }
     },
     {
+      "assetId": "floor.laundry.nonslip",
+      "image": "floor.laundry.nonslip.png",
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655",
+      "pixelSha256": "8e189359195e01398f83f4ca0dba690d8eaa7b6ff14c7964b29c6fac6c55d19a",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
       "assetId": "furniture.cell.bed.single.variants",
       "image": "furniture.cell.bed.single.variants.png",
       "sha256": "7d0ecb856553e46b9fe9a847000e9b761d920ac0ebaa5e95cb43d11b571e6967",

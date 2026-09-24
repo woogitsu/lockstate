@@ -162,6 +162,7 @@ export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId |
   if (room.id === 'room.canteen') return 'env.floor.canteen';
   if (room.id === 'room.yard') return 'env.floor.yard';
   if (room.id === 'room.shower-room') return 'env.floor.shower';
+  if (room.id === 'room.laundry') return 'env.floor.laundry';
   return 'env.floor.institutional';
 }
 

@@ -85,6 +85,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.floor.canteen',
   'env.floor.yard',
   'env.floor.shower',
+  'env.floor.laundry',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
@@ -248,6 +249,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered matte blue-grey ceramic with recessed grout for the shower room.',
+  },
+  'env.floor.laundry': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.laundry.nonslip',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered sealed aggregate for the laundry; one seamless tile per repeat.',
   },
   /** A complete Blender-modeled wall elevation, one module per repeat. */
   'env.wall.interior.face': {

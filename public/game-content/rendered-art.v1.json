@@ -178,6 +178,31 @@
       }
     },
     {
+      "assetId": "floor.laundry.nonslip",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.laundry.nonslip.1355322ca365.png",
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.linoleum.institutional",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.linoleum.institutional.cb4bae62ae53.png",

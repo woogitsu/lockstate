@@ -193,6 +193,8 @@ const CANTEEN_FLOOR_ART_BASE: readonly [number, number, number] = [209.852, 171.
 const YARD_FLOOR_ART_BASE: readonly [number, number, number] = [138.413, 117.393, 95.413];
 /** Mean decoded RGB of the Blender shower ceramic, pinned by the real-PNG drift gate. */
 const SHOWER_FLOOR_ART_BASE: readonly [number, number, number] = [159.832, 170.578, 177.351];
+/** Mean decoded RGB of the Blender laundry aggregate, pinned by the real-PNG drift gate. */
+const LAUNDRY_FLOOR_ART_BASE: readonly [number, number, number] = [189.182, 179.597, 173.685];
 
 /** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
 function channelSpread(rgb: readonly [number, number, number]): number {
@@ -221,6 +223,7 @@ function floorArtBase(roomId: string): readonly [number, number, number] {
   if (roomId === 'room.canteen') return CANTEEN_FLOOR_ART_BASE;
   if (roomId === 'room.yard') return YARD_FLOOR_ART_BASE;
   if (roomId === 'room.shower-room') return SHOWER_FLOOR_ART_BASE;
+  if (roomId === 'room.laundry') return LAUNDRY_FLOOR_ART_BASE;
   return INSTITUTIONAL_FLOOR_ART_BASE;
 }
 
@@ -329,6 +332,7 @@ export const KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, nu
 export const CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = CANTEEN_FLOOR_ART_BASE;
 export const YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = YARD_FLOOR_ART_BASE;
 export const SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = SHOWER_FLOOR_ART_BASE;
+export const LAUNDRY_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] = LAUNDRY_FLOOR_ART_BASE;
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */
 export interface StructureAppearance {

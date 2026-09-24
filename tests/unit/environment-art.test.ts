@@ -298,7 +298,7 @@ describe('simulation identity to artwork', () => {
     expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
     expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
     expect(zonedFloorSprite(shower!.numericId)).toBe('env.floor.shower');
-    expect(zonedFloorSprite(laundry!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(laundry!.numericId)).toBe('env.floor.laundry');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {

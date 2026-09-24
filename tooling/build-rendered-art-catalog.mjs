@@ -99,6 +99,7 @@ export const PUBLISHED_ASSET_IDS = [
   'floor.canteen.terrazzo',
   'floor.yard.compacted-earth',
   'floor.shower.ceramic',
+  'floor.laundry.nonslip',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',
