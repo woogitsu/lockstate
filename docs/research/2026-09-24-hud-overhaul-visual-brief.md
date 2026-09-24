@@ -2,6 +2,13 @@
 
 Research snapshot: 2026-09-24, `origin/main` at `430906af` (v0.0.757).
 
+**Owner scope update, 2026-09-24:** the game and HUD overhaul must be playable
+at **1920×1080 and above**. The owner said not to optimize this redesign for
+smaller viewports and asked us to record the instruction in the repository.
+The 900px and phone observations and prototypes below are retained as research,
+but Full HD is the acceptance viewport. Future design comparisons and real
+game captures should begin at 1920×1080.
+
 ## Request and evidence
 
 The owner asked for a complete HUD and interaction redesign with the clarity and

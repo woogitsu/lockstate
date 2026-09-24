@@ -778,6 +778,18 @@ still has to survive the session it was given in. It is recorded here, in their
 words and dated, in the same shape as a release — the difference being stated
 rather than left for a reader to infer.
 
+**The game's minimum design viewport, 2026-09-24.** The owner directly wrote:
+
+> rób grę pod minimum full hd, nie patrz mniejsze, bo to nie ma sensu, czyli aby było grywalne przy 1920x1080 i więej
+
+Then: *"i zapisz to w repo"*. The current HUD overhaul therefore targets
+**1920×1080 and larger** for visual design, interaction layout and gameplay
+acceptance. The earlier 900px and phone mockups are research evidence, not
+acceptance targets for this redesign. This instruction does not itself change
+the shipped small-screen UI; it supersedes a plan to spend the redesign on
+sub-Full-HD optimization. This is the owner's own typed wording, not a
+clickable option label.
+
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:
 
