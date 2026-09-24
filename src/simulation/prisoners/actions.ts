@@ -23,6 +23,8 @@ export interface ActionDefinition {
   readonly category: ActionCategory;
   /** Level gained per tick while performing (see action-system.ts) -- data, not a per-action if-chain. */
   readonly needEffectsPerTick: Partial<Record<NeedId, number>>;
+  /** Need pressure that attracts a worker, without fulfilling that need during production. */
+  readonly selectionNeedEffectsPerTick?: Partial<Record<NeedId, number>>;
   readonly target: ActionTarget;
   /**
    * Room instance must have an object with this capability tag
@@ -281,7 +283,7 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    */
   {
     id: 'action.laundry-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.laundry' },
-    requiredObjectCapability: 'laundry', needEffectsPerTick: { hygiene: 1 }, minDurationTicks: 120,
+    requiredObjectCapability: 'laundry', needEffectsPerTick: {}, selectionNeedEffectsPerTick: { hygiene: 1 }, minDurationTicks: 120,
   },
   /*
    * The kitchen's first executable line, and the second member of `work`.
@@ -345,7 +347,7 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
    */
   {
     id: 'action.kitchen-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.kitchen' },
-    requiredObjectCapability: 'food-preparation', needEffectsPerTick: { hunger: 1 }, minDurationTicks: 120,
+    requiredObjectCapability: 'food-preparation', needEffectsPerTick: {}, selectionNeedEffectsPerTick: { hunger: 1 }, minDurationTicks: 120,
   },
 
   /*
