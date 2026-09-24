@@ -365,7 +365,10 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       if (allStatsDialog.open) allStatsDialog.close();
       return;
     }
-    allStatsButton.style.top = `${metricsRow.offsetTop + Math.max(0, (metricsRow.offsetHeight - allStatsButton.offsetHeight) / 2)}px`;
+    // The button was hidden until this pass, so measure it only after the
+    // display change. Centre within the strip itself: the metrics row can sit
+    // below the strip's top when neighbouring controls wrap.
+    allStatsButton.style.top = `${Math.max(0, (root.clientHeight - allStatsButton.offsetHeight) / 2)}px`;
   };
   const metricsObserver = new ResizeObserver(paintAllStatsButton);
   metricsObserver.observe(metricsRow);

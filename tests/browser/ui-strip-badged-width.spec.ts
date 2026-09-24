@@ -251,6 +251,12 @@ test.describe('the status strip carries nine chips and the prison’s own state 
     expect(badged.scrollWidth).toBeGreaterThan(badged.clientWidth);
 
     await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
+    const containment = await page.evaluate(() => {
+      const strip = document.querySelector('.hud-strip')!.getBoundingClientRect();
+      const button = document.querySelector('.hud-strip__all-stats-button')!.getBoundingClientRect();
+      return { stripBottom: strip.bottom, buttonBottom: button.bottom };
+    });
+    expect(containment.buttonBottom, JSON.stringify(containment)).toBeLessThanOrEqual(containment.stripBottom);
     await page.getByRole('button', { name: 'All stats' }).focus();
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'All stats' });
@@ -263,6 +269,13 @@ test.describe('the status strip carries nine chips and the prison’s own state 
 
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(page.getByRole('button', { name: 'All stats' })).toBeVisible();
+    const phoneContainment = await page.evaluate(() => {
+      const strip = document.querySelector('.hud-strip')!.getBoundingClientRect();
+      const button = document.querySelector('.hud-strip__all-stats-button')!.getBoundingClientRect();
+      return { stripTop: strip.top, stripBottom: strip.bottom, buttonTop: button.top, buttonBottom: button.bottom };
+    });
+    expect(phoneContainment.buttonTop, JSON.stringify(phoneContainment)).toBeGreaterThanOrEqual(phoneContainment.stripTop);
+    expect(phoneContainment.buttonBottom, JSON.stringify(phoneContainment)).toBeLessThanOrEqual(phoneContainment.stripBottom);
     await page.getByRole('button', { name: 'All stats' }).click();
     await expect(dialog.locator('.hud-strip__all-stats-entry')).toHaveCount(9);
     await dialog.getByRole('button', { name: 'Close' }).click();
