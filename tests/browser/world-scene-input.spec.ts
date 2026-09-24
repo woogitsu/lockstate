@@ -1063,6 +1063,28 @@ test.describe('the world scene pointer gesture recovery (#516)', () => {
     expect(await scrollX(page)).toBe(afterLeftRelease);
   });
 
+  test('does not place a wall when another button is released during a held left drag', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    const centre = await canvasCentre(page);
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 100, centre.y);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toBeDefined();
+
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.up({ button: 'middle' });
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns())).toEqual([]);
+
+    await page.mouse.move(centre.x + 160, centre.y);
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    const placed = await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns());
+    expect(placed).toHaveLength(1);
+    expect(placed[0]!.length).toBeGreaterThan(1);
+  });
+
   test('cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', async ({
     page,
   }) => {

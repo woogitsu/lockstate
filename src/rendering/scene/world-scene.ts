@@ -725,6 +725,16 @@ export class WorldScene extends Phaser.Scene {
         this.cancelAllGestures();
         return;
       }
+      // Phaser reports every mouse button through one pointer id. A middle
+      // or right release cannot finish a left-button placement while left is
+      // still held; it may, however, end a middle-button pan of its own.
+      if (!pointer.wasTouch && (pointer.buttons & 1) !== 0) {
+        if (this.panPointerId === pointer.id && (pointer.buttons & 4) === 0) {
+          this.panPointerId = undefined;
+          this.lastPanScreenPoint = undefined;
+        }
+        return;
+      }
       if (this.commitBuild(pointer)) return;
       if (this.commitObject(pointer)) return;
       if (this.commitArea(pointer)) return;
