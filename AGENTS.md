@@ -231,6 +231,18 @@ outward-facing or unrevertable, which is the whole reason:
    the Cloudflare or Supabase dashboards. Nothing in this repository can read
    back what those dashboards hold, so a change there cannot be verified here.
 
+   **RUNNER SELECTORS RELEASED ON 2026-09-24.** The owner directly wrote:
+
+   > zmieniam prywatność repo z prywatnego na publiczny, zmień runery na ubuntu latest
+
+   ("I am changing the repository from private to public; change the runners
+   to ubuntu latest.") This supersedes the 2026-09-13 self-hosted selector
+   instruction recorded below. It authorises changing every workflow job's
+   `runs-on` to `ubuntu-latest` and the selector contracts and operational
+   comments that depend on it. It does not authorise a deployment, database
+   migration, or change to any other reserved destination setting. The older
+   runner measurements remain historical evidence, not a current selector.
+
    **NARROWLY RELEASED ON 2026-09-06, FOR ONE CHANGE IN ONE FILE.** Asked how
    to unblock object art, the owner answered:
 
@@ -809,6 +821,10 @@ not source assets for the game.
 the owner answered:
 
 > runnery to po prostu self hosted i tak ustaw wszędzie
+
+**Superseded on 2026-09-24** by the owner's direct `ubuntu-latest` instruction
+in reservation 3 above. The rest of this block records why the earlier
+contract was written; it no longer describes the required runner selector.
 
 ("the runners are just self-hosted, so set it that way everywhere.") **Every
 `runs-on:` on disk already read `self-hosted` when that was said** — the label
