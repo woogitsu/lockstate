@@ -365,7 +365,17 @@ describe('the historical chain still walks a save older than the field', () => {
     const { bundle } = captured;
     // `regimeSchedules` removed beside them for the same reason, since ADR
     // 0113: it is V6's required section and no V4 build wrote one.
-    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, ...simulation } = captured.simulation;
+    // These sections arrived in V7; a historical V4 writer could not include
+    // them even when the current session used to construct this fixture does.
+    const {
+      objects: _objects,
+      alerts: _alerts,
+      regimeSchedules: _regimeSchedules,
+      roomFilth: _roomFilth,
+      labourCredit: _labourCredit,
+      workOutput: _workOutput,
+      ...simulation
+    } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
