@@ -1549,6 +1549,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   dismissConfirmation.hidden = true;
   const dismissConfirmationId = nextUiId('hud-staff-dismiss-confirm');
   dismissConfirmation.id = dismissConfirmationId;
+  const dismissConfirmationSlot = element('div', { className: 'hud-staff__dismiss-slot' });
+  dismissConfirmationSlot.append(dismissConfirmation);
 
   /**
    * Whether the confirmation had a box on the last paint, so *appearing* can be
@@ -1679,7 +1681,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   });
   rosterSection.element.classList.add('hud-staff__roster');
   rosterSection.body.append(
-    element('div', { className: 'hud-staff__dismiss-slot', children: [dismissConfirmation] }),
+    dismissConfirmationSlot,
     rosterList,
     rosterMore,
     eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'),
