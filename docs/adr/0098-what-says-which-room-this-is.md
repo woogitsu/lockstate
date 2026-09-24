@@ -100,6 +100,16 @@ distinct look at every zoom, no room *instance* identity, nothing about how a
 room is *doing* — is now binding rather than proposed. **It does not touch
 ADR 0097, which stays Accepted**, and it takes no second bite at 0097's pixels.
 
+**2026-09-24 palette amendment.** After seeing the Blender kitchen floor with
+both the original `0xa6d14f` tint and a blue-grey `0x719db7` tint at zoom 1
+and 0.512, the owner chose the latter for `room.kitchen` alone. The other
+seventeen tints and alpha rules remain unchanged. The eighteen hues were
+evenly spaced when #1047 shipped; that is historical, not a description of
+the palette after this exception. The room name still carries identification,
+and the map tint still follows the room id. See `AGENTS.md` decision 33 for
+the exact option and provenance. This is an aesthetic art decision, not a
+claim that #1061 remained open.
+
 > **Superseded 2026-09-06 by the paragraphs above; kept rather than overwritten,
 > per `docs/AGENT_WORKFLOW.md` §4, because a reader should see that this
 > document was drafted as a question and refused to answer itself.** It read:
@@ -588,6 +598,14 @@ change, but presently returns 0.14 for every shipped room. Accordingly the
 shared-alpha identity holds again for all 153 current pairs. The 45/108 split
 and its consequence below remain the historical record of the previous
 substrate, not a claim about the currently rendered Blender floor.
+
+**2026-09-24 Kitchen floor correction.** The preceding claim of one substrate
+for all 153 pairs was true when every room used the same Blender floor. Kitchen
+now has its own Blender floor, so a comparison involving Kitchen no longer
+cancels a common base, even though the current alpha remains 0.14. The
+palette-only distance check still measures the tint table; it does not measure
+the full difference between two rooms drawn on different floors. This
+correction leaves the historical 45/108 analysis above intact.
 
 **What this decision's own identity assumed, quoted rather than paraphrased
 so the amendment is checkable against it:**

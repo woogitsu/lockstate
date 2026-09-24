@@ -1856,6 +1856,22 @@ It does not authorise other workflow changes. This option was written by the
 agent and clicked by the owner, so it has the weaker provenance of a selected
 option rather than a free-form owner instruction.
 
+**33. Kitchen zoning tint may use a blue-grey exception (2026-09-24).** The
+Blender kitchen floor was shown in the game with the existing greenish tint
+`0xa6d14f` and with a proposed blue-grey tint `0x719db7`, at zoom 1 and
+0.512. Against the adjacent pale green floor, the second version makes the
+kitchen read as a distinct, restrained ceramic or steel surface. The agent
+offered *"Tak — niebieskoszara kuchnia (zalecane)"* or *"Nie — zachowaj
+obecną paletę"*. The owner chose:
+
+> Tak — niebieskoszara kuchnia (zalecane)
+
+This changes only `room.kitchen` in `ZONING_TINT_BY_ROOM_ID`. The other room
+tints and the opacity rules remain as they were. It is an explicit exception
+to ADR 0098's original evenly spaced eighteen-hue palette, not a claim that
+colour alone identifies a room or a reopening of #1061. The owner selected an
+agent-written option, so this has the weaker provenance of a clickable choice.
+
 
 ## Required workflow for every issue
 Before coding:
