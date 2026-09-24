@@ -49,6 +49,16 @@ in #1392 addresses a separate phone case; it does not remove the desktop
 stack. Reproduction and a blind exploratory run are recorded on
 [#936](https://github.com/woogitsu/lockstate/issues/936#issuecomment-5820967039).
 
+A fresh-main three-viewport audit found more exact symptoms. At 900×600 the
+minimap/alerts block is 400×318 px although its map placeholder has no useful
+content; the Saves panel above Build is itself clipped; the Build category,
+selected item's price and next placement instruction end in ellipses. The
+metrics row silently clips a chip at the right edge. At 375×812 the persistent
+settings and Saves panels plus Build catalogue cover almost the entire world;
+the bottom navigation shows icons without visible names. The audit covered
+1280×800, 900×600 and 375×812 on `430906af`; these observations are about that
+tree, not a promise about the pending phone PR.
+
 At 1280×800, closing the numeric-coordinate disclosure exposes the full
 Build note. The initial impression of a permanent Save-panel overlap was
 caused by leaving the disclosure open and the Build panel scrolled. The brief
@@ -59,8 +69,10 @@ must not use that transient state as evidence for a layout bug.
 - `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` and
   `docs/VISUAL_IDENTITY.md`: the map is the game; panels serve it; opening
   a panel issues no simulation command.
-- The five section titles are Overview, Build, Zones, Manage and Schedule.
-  Their placement can be explored, but the set is an owner ruling.
+- The five identity section titles are Overview, Build, Zones, Manage and
+  Schedule. The owner later approved a sixth Security route; all six existing
+  destinations remain reachable. Their placement can be explored, but the
+  identity set and added route are owner rulings.
 - Light is the default theme and dark remains available. The ruled type scale
   is 15/13/11. Legibility, visible focus, 200% text and status meaning beyond
   colour are product requirements.
@@ -77,7 +89,7 @@ must not use that transient state as evidence for a layout bug.
 2. Paused/running state, Play and speed are discoverable beside each other.
    Queued construction visibly explains its dependency on time where the user
    can act; the queue remains reachable.
-3. The five categories remain recognizable. A selected tool, its cost,
+3. All six current navigation routes remain recognizable. A selected tool, its cost,
    placement action, undo and cancel can be read without covering the area
    where the player will build.
 4. Critical alerts are visible and actionable without turning the map into a
