@@ -36,6 +36,8 @@ export type HarnessPixel = readonly [number, number, number, number];
 export interface HarnessWorldFixture {
   readonly chunkSizeTiles: number;
   readonly tileSizePx: number;
+  readonly grassTileX: number;
+  readonly grassTileY: number;
   readonly zonedMinTileX: number;
   readonly zonedMinTileY: number;
   readonly zonedMaxTileX: number;

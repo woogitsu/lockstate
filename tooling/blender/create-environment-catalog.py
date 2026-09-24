@@ -107,6 +107,7 @@ MODELS = (
     ("door.interior.face", (1, 1)),
     ("wall.interior.cap.overhead", (1, 0.25)),
     ("terrain.dirt.compacted", (1, 1)),
+    ("terrain.grass.mown", (1, 1)),
 )
 
 
@@ -122,6 +123,44 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def grass_surface_material():
+    """Periodic 4D noise joins tile edges while varying short olive turf."""
+    item = material("Mown olive grass with sparse dry thatch", (0.055, 0.12, 0.025, 1), 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 5.8
+    noise.inputs["Detail"].default_value = 3.5
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.025, 0.065, 0.014, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.105, 0.20, 0.045, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def dirt_surface_material():
@@ -1022,7 +1061,17 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "terrain.dirt.compacted":
+    if asset_id == "terrain.grass.mown":
+        box(collection, root, "Mown grass mat", (0, 0, 0.04),
+            (1, 1, 0.08), "grass_base", 0)
+        for index in range(110):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.86
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.86
+            length = 0.012 + (index % 4) * 0.004
+            box(collection, root, f"Short grass blade.{index}",
+                (x, y, 0.081), (0.0035, length, 0.001),
+                "grass_blade_light" if index % 3 else "grass_blade_dark", 0)
+    elif asset_id == "terrain.dirt.compacted":
         # Unzoned ground covers most of the world. Keep the entire border
         # uniform so chunk-sized repeated rectangles have no hard seam.
         box(collection, root, "Compacted earth", (0, 0, 0.04),
@@ -1311,6 +1360,9 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
+    MATERIALS["grass_base"] = grass_surface_material()
+    MATERIALS["grass_blade_light"] = material("Short olive grass blade highlight", (0.12, 0.23, 0.045, 1), 0.99)
+    MATERIALS["grass_blade_dark"] = material("Short deep grass blade", (0.025, 0.09, 0.02, 1), 0.99)
     MATERIALS["dirt_base"] = dirt_surface_material()
     MATERIALS["dirt_grit_light"] = material("Dry tan mineral grit", (0.24, 0.16, 0.10, 1), 0.98)
     MATERIALS["dirt_grit_dark"] = material("Dark earth grit", (0.11, 0.08, 0.06, 1), 0.98)

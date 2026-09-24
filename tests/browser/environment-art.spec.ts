@@ -151,7 +151,7 @@ test.describe('the environment artwork', () => {
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
     const dirt = sprites.filter((sprite) => sprite.frameName === 'env.terrain.dirt');
     expect(dirt.length).toBeGreaterThan(0);
-    const x = 1.5 * fixture.tileSizePx;
+    const x = 3.5 * fixture.tileSizePx;
     const y = 1.5 * fixture.tileSizePx;
     expect(dirt.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
     expect(dirt.some((sprite) => sprite.width > fixture.tileSizePx), 'outdoor dirt should merge into runs').toBe(true);
@@ -168,6 +168,47 @@ test.describe('the environment artwork', () => {
     }, { x, y });
     expect(withArt[3]).toBeGreaterThan(200);
     expect(withoutArt[3]).toBeGreaterThan(200);
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
+  });
+
+  test('the Blender grass tiles a painted outdoor strip and restores colour fallback', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.grass'].kind).toBe('rendered-art');
+    const borders = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.grass');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(borders?.size).toEqual([128, 128]);
+    for (const pixel of [borders!.left, borders!.right, borders!.top, borders!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
+    expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const grass = sprites.filter((sprite) => sprite.frameName === 'env.terrain.grass');
+    const x = (fixture.grassTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.grassTileY + 0.5) * fixture.tileSizePx;
+    expect(grass.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(grass.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
     expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
   });
 
