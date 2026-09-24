@@ -1296,6 +1296,18 @@ describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', ()
     });
     expect(metric(counts(), 'earned-today').badge).toBeUndefined();
   });
+  it('keeps the visible withheld amount when a work block and grant shortfall coincide', () => {
+    const chip = metric(counts({
+      stateIncomeWithheldTodayMinorUnits: 80,
+      labourEmployedLastBlock: 3,
+      labourIdleLastBlock: 2,
+    }), 'earned-today');
+    expect(chip.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.earnedWithheldBadge,
+      numberParameters: { withheld: 80 },
+    });
+  });
   it('attributes the dirty-room portion without claiming all withholding comes from needs', () => {
     const chip = metric(counts({
       stateIncomeAccruedTodayMinorUnits: 220,
