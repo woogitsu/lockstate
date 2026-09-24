@@ -1,7 +1,10 @@
 /** Preserve the box a pointer, focus or touch may still be aimed at (ADR 0124). */
 export function pinPooledRowHeight(row: HTMLElement): void {
   if (row.hidden) return;
-  const height = row.getBoundingClientRect().height;
+  // min-height consumes layout CSS pixels. getBoundingClientRect() includes
+  // browser/CSS zoom, so assigning that measurement back to min-height would
+  // multiply a held-open row on every publication (88 -> 176 -> 352 at 200%).
+  const height = row.offsetHeight;
   if (height <= 0) return;
   const previous = Number.parseFloat(row.style.minHeight) || 0;
   if (height > previous) row.style.minHeight = `${height}px`;
