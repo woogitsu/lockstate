@@ -388,3 +388,11 @@ The one-tile refrigerator now has a raised condenser assembly on its roof:
 four dark vent slots in a recessed frame, a round service cap, corner screws
 and a small teal temperature lamp. The original four-view concept and Blender
 choices are recorded in `assets/source/concepts/fridge-v3.md`.
+
+### Interior wall coping — `wall.interior.cap.overhead`
+
+The north-south wall cap uses an original four-view reference to define pale
+enamel coping, continuous dark seams, and small metal anchors. Its Blender
+render has no transparent frame margin, so segments tile without gaps. The
+concept and modeling choices are recorded in
+`assets/source/concepts/interior-wall-cap-v1.md`.

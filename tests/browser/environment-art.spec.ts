@@ -1,6 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
-import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
+import { ENVIRONMENT_SPRITE_IDS, ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, PLANNED_OBJECT_TINT, edgeAppearance } from '../../src/rendering/world/appearance';
 import { objectSprite } from '../../src/rendering/world/environment-art';
@@ -105,6 +105,28 @@ test.describe('the environment artwork', () => {
         expect(reading.centre![channel], `${name} channel ${channel} is at an extreme`).toBeGreaterThan(24);
         expect(reading.centre![channel], `${name} channel ${channel} is at an extreme`).toBeLessThan(240);
       }
+    }
+  });
+
+  test('the Blender wall cap tiles without transparent seams', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.cap'].kind).toBe('rendered-art');
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.face'].kind).toBe('source-art');
+    await openHarness(page);
+    const readings = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.wall.interior.cap');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        start: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y),
+        middle: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + Math.floor(frame.height / 2)),
+        end: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + frame.height - 1),
+      };
+    });
+    expect(readings).toBeDefined();
+    expect(readings!.size).toEqual([32, 128]);
+    for (const pixel of [readings!.start, readings!.middle, readings!.end]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
     }
   });
 

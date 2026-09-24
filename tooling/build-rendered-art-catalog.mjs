@@ -91,6 +91,7 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  * keeps `OBJECTS_ON_COLOUR_FALLBACK` honest against the sprite registries.
  */
 export const PUBLISHED_ASSET_IDS = [
+  'wall.interior.cap.overhead',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',
