@@ -93,8 +93,8 @@
     {
       "assetId": "fixture.cell.sink",
       "image": "fixture.cell.sink.png",
-      "sha256": "5fddde4e21888054227d99648fa3d3a3771faaad7fff09f456c894a2d55288a7",
-      "pixelSha256": "719721ff8504c0ed6a3be9d52007e7a92d9744c067ef83ae48ec8dbd5a4b812a",
+      "sha256": "e198db48f44fac6da194390e5e1a3bc944854e7b44076dc596cef0b0e329e9f3",
+      "pixelSha256": "3b4a51bd4a1ae534c5bc79528e4ce764365903209e95f6856d4225f8a97bbecb",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -110,11 +110,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 40,
-        "y": 32,
-        "width": 176,
-        "height": 175,
-        "opaquePixels": 29867
+        "x": 26,
+        "y": 23,
+        "width": 204,
+        "height": 200,
+        "opaquePixels": 33772
       }
     },
     {
