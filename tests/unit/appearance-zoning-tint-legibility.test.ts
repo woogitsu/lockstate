@@ -9,6 +9,7 @@ import {
   KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   ZONING_TINT_ALPHA,
   ZONING_TINT_ALPHA_OVER_ART,
   zoningTint,
@@ -198,6 +199,19 @@ describe('zoning tint legibility over floor art', () => {
     ) as [number, number, number];
     expect(spread(colour)).toBeGreaterThan(spread(floor));
   });
+
+  it('room.shower-room: ceramic stays legible at the flat wash beside Laundry linoleum', () => {
+    const shower = rooms.find((candidate) => candidate.id === 'room.shower-room')!;
+    const laundry = rooms.find((candidate) => candidate.id === 'room.laundry')!;
+    const alpha = zoningTintAlphaOverArt(shower.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const composite = (floor: readonly [number, number, number], tint: number): readonly [number, number, number] =>
+      floor.map((channel, index) => channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha) as [number, number, number];
+    const showerColour = composite(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(shower.numericId)!);
+    const laundryColour = composite(INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(laundry.numericId)!);
+    expect(spread(showerColour)).toBeGreaterThan(spread(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE));
+    expect(Math.hypot(...showerColour.map((value, index) => value - laundryColour[index]!))).toBeGreaterThan(20);
+  });
 });
 
 /**
@@ -222,6 +236,7 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
   const kitchenSprite = ENVIRONMENT_SPRITES['env.floor.kitchen'];
   const canteenSprite = ENVIRONMENT_SPRITES['env.floor.canteen'];
   const yardSprite = ENVIRONMENT_SPRITES['env.floor.yard'];
+  const showerSprite = ENVIRONMENT_SPRITES['env.floor.shower'];
 
   function resolveFloorArtPath(sprite: typeof floorSprite): string {
     if (sprite.kind !== 'rendered-art') throw new Error('the floor is no longer rendered-art');
@@ -240,11 +255,13 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
   const kitchenArtPath = resolveFloorArtPath(kitchenSprite);
   const canteenArtPath = resolveFloorArtPath(canteenSprite);
   const yardArtPath = resolveFloorArtPath(yardSprite);
+  const showerArtPath = resolveFloorArtPath(showerSprite);
   const head = readFileSync(floorArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8');
   const isLfsPointer = head === LFS_POINTER_PREFIX;
   const kitchenIsLfsPointer = readFileSync(kitchenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
   const canteenIsLfsPointer = readFileSync(canteenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
   const yardIsLfsPointer = readFileSync(yardArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const showerIsLfsPointer = readFileSync(showerArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
 
   it.skipIf(isLfsPointer)(
     'decodes to the mean colour INSTITUTIONAL_FLOOR_ART_BASE assumes for the published Blender tile',
@@ -280,6 +297,13 @@ describe('the substrate the per-room alpha table assumes, checked against the ar
     const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
     for (let channel = 0; channel < 3; channel += 1) {
       expect(mean[channel], `channel ${channel}`).toBeCloseTo(YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(showerIsLfsPointer)('decodes to the mean colour used to calibrate the shower tint', () => {
+    const decoded = decodePng(readFileSync(showerArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
     }
   });
 });

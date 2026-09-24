@@ -203,6 +203,31 @@
       }
     },
     {
+      "assetId": "floor.shower.ceramic",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.shower.ceramic.6917ab6272c4.png",
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.yard.compacted-earth",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.yard.compacted-earth.05788bcaeb33.png",

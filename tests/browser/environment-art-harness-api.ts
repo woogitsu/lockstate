@@ -60,6 +60,14 @@ export interface HarnessWorldFixture {
   readonly yardMinTileY: number;
   readonly yardMaxTileX: number;
   readonly yardMaxTileY: number;
+  readonly showerFloorMinTileX: number;
+  readonly showerFloorMinTileY: number;
+  readonly showerFloorMaxTileX: number;
+  readonly showerFloorMaxTileY: number;
+  readonly laundryFloorMinTileX: number;
+  readonly laundryFloorMinTileY: number;
+  readonly laundryFloorMaxTileX: number;
+  readonly laundryFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;

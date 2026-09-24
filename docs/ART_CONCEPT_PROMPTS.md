@@ -407,6 +407,16 @@ material became an edge-complete Blender render for the outdoor Yard. Its
 pattern repeats visibly at game scale. Keep the
 surface subdued at 64 px so the room label and prisoners remain readable.
 
+### Shower-room ceramic — `floor.shower.ceramic`
+
+The original four-view reference at
+`assets/source/concepts/shower-floor-multiview-v1.png` studies matte blue-grey
+ceramic from overhead, oblique and section views plus a 3 × 3 repeat. Blender
+models four small ceramic squares per game tile, thin recessed grout and light
+mineral speckles. `assets/source/concepts/shower-floor-v1.md` records the
+source and design. At 64 px the floor must still read as ceramic beside the
+Laundry's linoleum without turning the shower into a heavy checkerboard.
+
 ### Canteen terrazzo floor — `floor.canteen.terrazzo`
 
 An original Blender 1 × 1 overhead tile gives the dining room a warm,

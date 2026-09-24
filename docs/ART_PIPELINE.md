@@ -324,7 +324,7 @@ digest and the raw-pixel digest are recorded per asset in the sidecar.
 **Tiling surfaces.** Floors and wall runs need zero-margin frames whose edges
 meet their own repeat exactly; a 6% transparent margin creates visible gaps.
 The rendered `floor.linoleum.institutional`, `floor.kitchen.nonslip`,
-`floor.canteen.terrazzo`, `floor.yard.compacted-earth`, `terrain.dirt.compacted`, `terrain.grass.mown`,
+`floor.canteen.terrazzo`, `floor.yard.compacted-earth`, `floor.shower.ceramic`, `terrain.dirt.compacted`, `terrain.grass.mown`,
 `terrain.concrete.paving`, `terrain.gravel.service_path`, `terrain.rock.bedrock`,
 `wall.interior.cap.overhead`, `wall.interior.face`, and `door.interior.face`
 modules use zero margins. The outdoor dirt, grass, concrete and gravel materials use periodic noise so
@@ -334,7 +334,7 @@ reliefs representing elevations in the game's 2D projection. The frontal door
 matches its rendered overhead cap.
 
 **Where the output is, and what it measures.** `assets/rendered/environment/`
-holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
+holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on
 2026-09-06 with two independent runs of the renderer executing *concurrently*
 against the same `.blend`:

@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -178,6 +178,44 @@ test.describe('the environment artwork', () => {
     expect(result.canteen.length).toBeGreaterThanOrEqual(2);
     expect(result.canteen.some((sprite) => sprite.x === fixture.canteenMinTileX * fixture.tileSizePx)).toBe(true);
     for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
+  test('the 3 by 3 shower has ceramic while the neighboring laundry keeps linoleum', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'showerFloor');
+    const tile = fixture.tileSizePx;
+    const middleX = (fixture.showerFloorMinTileX + fixture.laundryFloorMaxTileX + 1) * tile / 2;
+    const middleY = (fixture.showerFloorMinTileY + fixture.showerFloorMaxTileY + 1) * tile / 2;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.shower');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        ceramic: harness.atlasPixel(bounds.x + 32, bounds.y + 32),
+        grout: harness.atlasPixel(bounds.x + 64, bounds.y + 32),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeGreaterThanOrEqual(15);
+    expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeLessThan(40);
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: middleX, y: middleY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const shower = sprites.filter((sprite) => sprite.frameName === 'env.floor.shower');
+      expect(shower.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const laundry = sprites.filter((sprite) => sprite.frameName === 'env.floor.institutional'
+        && sprite.x >= fixture.laundryFloorMinTileX * tile);
+      expect(laundry.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Shower Room');
+      expect(labels.map((label) => label.text)).toContain('Laundry');
+      if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`shower-floor-zoom-${zoom}.png`) });
+      }
+    }
   });
 
   test('the outdoor yard draws an outdoor floor across its 8 by 8 footprint', async ({ page }, testInfo) => {

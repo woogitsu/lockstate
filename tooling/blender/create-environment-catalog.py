@@ -115,6 +115,7 @@ MODELS = (
     ("floor.kitchen.nonslip", (1, 1)),
     ("floor.canteen.terrazzo", (1, 1)),
     ("floor.yard.compacted-earth", (1, 1)),
+    ("floor.shower.ceramic", (1, 1)),
 )
 
 
@@ -1311,6 +1312,24 @@ def architectural(collection, root, asset_id):
                     (0.008, 0.035 + 0.005 * blade, 0.001),
                     "yard_grass_light" if blade == 1 else "yard_grass_dark", 0)
                 grass.rotation_euler.z = (blade - 1) * 0.48
+    elif asset_id == "floor.shower.ceramic":
+        # Four matte ceramic squares per game tile make a real 3x3 shower read
+        # as a wet room at both zoom levels. Exposed dark backing forms thin,
+        # continuous recessed grout at half-tile and whole-tile intervals.
+        box(collection, root, "Recessed shower grout bed", (0, 0, 0.04),
+            (1, 1, 0.08), "shower_grout", 0)
+        for row in range(2):
+            for column in range(2):
+                box(collection, root, f"Matte shower ceramic.{row}.{column}",
+                    ((column - 0.5) * 0.5, (row - 0.5) * 0.5, 0.082),
+                    (0.470, 0.470, 0.004), f"shower_tile_{row * 2 + column}", 0)
+        for index in range(48):
+            x = (((index * 41 + 19) % 113) / 113 - 0.5) * 0.88
+            y = (((index * 67 + 23) % 127) / 127 - 0.5) * 0.88
+            width = 0.006 + (index % 3) * 0.002
+            box(collection, root, f"Shower mineral speckle.{index}",
+                (x, y, 0.085), (width, width * 0.74, 0.001),
+                "shower_speckle_light" if index % 4 else "shower_speckle_dark", 0)
     elif asset_id == "floor.canteen.terrazzo":
         # Warm, washable stone-composite floor. A fine integral border gives
         # dining furniture a quiet visual base without a noisy checkerboard.
@@ -1675,6 +1694,16 @@ def main():
     MATERIALS["yard_grit_dark"] = material("Yard dark mineral grains", (0.13, 0.11, 0.08, 1), 0.98)
     MATERIALS["yard_grass_light"] = material("Yard worn olive grass", (0.22, 0.29, 0.10, 1), 0.99)
     MATERIALS["yard_grass_dark"] = material("Yard short dark grass", (0.09, 0.16, 0.05, 1), 0.99)
+    MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
+    for index, shade in enumerate((
+        (0.27, 0.35, 0.41, 1),
+        (0.29, 0.37, 0.43, 1),
+        (0.28, 0.36, 0.42, 1),
+        (0.30, 0.38, 0.44, 1),
+    )):
+        MATERIALS[f"shower_tile_{index}"] = material(f"Matte wet-room ceramic {index + 1}", shade, 0.94)
+    MATERIALS["shower_speckle_light"] = material("Subtle shower ceramic mineral", (0.41, 0.48, 0.50, 1), 0.98)
+    MATERIALS["shower_speckle_dark"] = material("Dark shower ceramic mineral", (0.23, 0.28, 0.31, 1), 0.99)
     MATERIALS["galvanized"] = galvanized_material()
     MATERIALS["shower_enamel"] = shower_enamel_material()
     MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)

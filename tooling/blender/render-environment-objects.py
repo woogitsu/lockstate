@@ -518,7 +518,7 @@ def main() -> None:
         low, high = _evaluated_bounds(collection)
 
         # Repeating architectural and terrain tiles must meet at pixel edges.
-        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "floor.kitchen.nonslip", "floor.canteen.terrazzo", "floor.yard.compacted-earth", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted", "terrain.grass.mown", "terrain.concrete.paving", "terrain.gravel.service_path", "terrain.rock.bedrock"} else MARGIN_FRACTION
+        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "floor.kitchen.nonslip", "floor.canteen.terrazzo", "floor.yard.compacted-earth", "floor.shower.ceramic", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted", "terrain.grass.mown", "terrain.concrete.paving", "terrain.gravel.service_path", "terrain.rock.bedrock"} else MARGIN_FRACTION
         frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y

@@ -282,6 +282,34 @@
       }
     },
     {
+      "assetId": "floor.shower.ceramic",
+      "image": "floor.shower.ceramic.png",
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818",
+      "pixelSha256": "5bdcc208240e1525e1503da3d24b3bee71aae497b83309433594da0b9fc86393",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
       "assetId": "furniture.cell.bed.single.variants",
       "image": "furniture.cell.bed.single.variants.png",
       "sha256": "7d0ecb856553e46b9fe9a847000e9b761d920ac0ebaa5e95cb43d11b571e6967",

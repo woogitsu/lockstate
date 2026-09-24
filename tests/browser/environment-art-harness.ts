@@ -79,6 +79,14 @@ const FIXTURE: HarnessWorldFixture = {
   yardMinTileY: 12,
   yardMaxTileX: 19,
   yardMaxTileY: 19,
+  showerFloorMinTileX: 12,
+  showerFloorMinTileY: 12,
+  showerFloorMaxTileX: 14,
+  showerFloorMaxTileY: 14,
+  laundryFloorMinTileX: 17,
+  laundryFloorMinTileY: 12,
+  laundryFloorMaxTileX: 19,
+  laundryFloorMaxTileY: 14,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -146,6 +154,7 @@ function buildFrame(): RenderFrame {
   world.load(chunk);
   world.setOwned(chunk, true);
   const includeYard = new URLSearchParams(window.location.search).has('roomLabels');
+  const includeShowerFloor = new URLSearchParams(window.location.search).has('showerFloor');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -155,6 +164,15 @@ function buildFrame(): RenderFrame {
         world.load(yardChunk);
         world.setOwned(yardChunk, true);
       }
+    }
+  }
+  if (includeShowerFloor) {
+    // These two 3x3 rooms occupy separate owned chunks, leaving the default
+    // fixture untouched for object/edge tests that inspect pooled sprites.
+    for (const chunkX of [1, 2]) {
+      const roomChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(1) };
+      world.load(roomChunk);
+      world.setOwned(roomChunk, true);
     }
   }
   for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
@@ -200,6 +218,22 @@ function buildFrame(): RenderFrame {
     for (let tileY = FIXTURE.yardMinTileY; tileY <= FIXTURE.yardMaxTileY; tileY += 1) {
       for (let tileX = FIXTURE.yardMinTileX; tileX <= FIXTURE.yardMaxTileX; tileX += 1) {
         world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, yard.numericId);
+      }
+    }
+  }
+  if (includeShowerFloor) {
+    for (const [roomId, minX, minY, maxX, maxY] of [
+      ['room.shower-room', FIXTURE.showerFloorMinTileX, FIXTURE.showerFloorMinTileY,
+        FIXTURE.showerFloorMaxTileX, FIXTURE.showerFloorMaxTileY],
+      ['room.laundry', FIXTURE.laundryFloorMinTileX, FIXTURE.laundryFloorMinTileY,
+        FIXTURE.laundryFloorMaxTileX, FIXTURE.laundryFloorMaxTileY],
+    ] as const) {
+      const room = defaultRoomContentRegistry.getById(roomId);
+      if (room === undefined) throw new Error(`The ${roomId} room is missing from the catalog.`);
+      for (let tileY = minY; tileY <= maxY; tileY += 1) {
+        for (let tileX = minX; tileX <= maxX; tileX += 1) {
+          world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
+        }
       }
     }
   }
@@ -405,7 +439,8 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
 const scene = new WorldScene({
   feed,
   keyValueStore: memoryStore(),
-  ...(new URLSearchParams(window.location.search).has('roomLabels') ? {
+  ...(new URLSearchParams(window.location.search).has('roomLabels')
+    || new URLSearchParams(window.location.search).has('showerFloor') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);
