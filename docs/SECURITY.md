@@ -370,8 +370,9 @@ that document's open question 1.
 
 **Implemented under ADR 0095 decision 1:** the Staff projection now publishes
 one prison-wide response reserve beside the summed post shortage. Its chosen
-fixed ceiling is five free, post-eligible guards: the incident severity ceiling
-is 10 and the default response policy asks for `ceil(severity * 0.5)` guards.
+fixed ceiling is five free, post-eligible guards: the shared
+`INCIDENT_SEVERITY_CEILING` is 10 in all three incident producers and the Staff
+projection, and the default response policy asks for `ceil(severity * 0.5)` guards.
 The intermediate badge reads `Posts filled, reserve short` when all posts are
 filled but fewer than five such guards are currently free. An empty prison with
 no required post remains `Covered`. Searches draw from the same free pool, so
@@ -379,6 +380,19 @@ five free guards is a current capacity figure, not a promise that a concurrent
 search and the largest response can both be staffed. ADR 0095 open question 1
 and issue #29 still own the balance definition; this implementation takes the
 ADR's recommendation without changing a simulation threshold.
+
+The reserve is prison-wide even if a save restores more than one sector.
+`createNewSimulationRuntime` registers only the derived default sector, but
+`restoreSessionSystems` registers every previously unknown definition in
+`security.sectorDefinitions`; scenarios can also register sectors through the
+runtime's exposed registry. `DeploymentSystem.assignUnassignedGuards` fills
+each sector from the same `claimableGuardIds` pool, and
+`IncidentResponseSystem.claimableResponders` asks that whole pool for any
+incident, without a sector filter. Accordingly, `projectStaff` sums the
+per-sector post *shortages* but counts free eligible guards only once across
+the prison. That describes today's capacity, including a restored two-sector
+session; it does not decide ADR 0095 open question 2 about future sector-owned
+reserves or promise that routes and concurrent searches will succeed.
 
 > **Those figures are from before issue #586 and the shape is unchanged since.**
 > The fixture holds twelve prisoners on one bed, so crowding now drives its

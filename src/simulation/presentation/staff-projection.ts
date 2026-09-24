@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { StaffDepartment, StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
 import { DEFAULT_INCIDENT_RESPONSE_POLICY } from '../incidents/response-system';
+import { INCIDENT_SEVERITY_CEILING } from '../incidents/incident-severity';
 import { isPostEligibleStaffRoleId } from '../security/post-eligibility';
 import type { EntityId } from '../entity/entity-store';
 import type { ActorIdentitySource } from '../identity/actor-identity';
@@ -270,7 +271,10 @@ export function projectStaff(
   // severity at 10; the default response policy asks for ceil(10 * 0.5) = 5.
   // This is a read-model recommendation, not a change to response/search policy
   // or the unresolved balance choice in ADR 0095 open question 1 / issue #29.
-  const responseReserveRequired = Math.max(1, Math.ceil(10 * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
+  const responseReserveRequired = Math.max(1, Math.ceil(INCIDENT_SEVERITY_CEILING * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
+  // One prison-wide count even for restored multi-sector sessions: responders
+  // claim from the roster's global free pool, while post shortages are still
+  // summed sector by sector above. Sector-owned reserves remain ADR 0095 Q2.
   const responseReserveAvailable = rows.filter((row) =>
     row.assignment.deploymentPhase === 'unassigned' && isPostEligibleStaffRoleId(row.staffRoleId, staffRoles),
   ).length;

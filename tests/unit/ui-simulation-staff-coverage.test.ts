@@ -72,6 +72,31 @@ it('counts only post-eligible unassigned guards, excluding a search claim and a 
   });
 });
 
+it('keeps two-sector post shortages summed while reserve stays one prison-wide pool', () => {
+  const guards = new GuardRoster(8);
+  const origin = { x: tileCoordinate(1), y: tileCoordinate(1) };
+  for (let index = 0; index < 3; index += 1) {
+    guards.setDeploymentPhase(guards.hire('staff-role.guard', origin), 'on-post');
+  }
+  guards.hire('staff-role.guard', origin);
+  const view = projectStaff({
+    staff: guards,
+    deployment: {
+      getCoverageReport: () => [
+        { sectorId: 'a', required: 1, assigned: 2, shortage: 0 },
+        { sectorId: 'b', required: 2, assigned: 1, shortage: 1 },
+      ],
+      getMetrics: () => ({ deploymentFailures: 0 }),
+    },
+  }, 0);
+  const coverage = staffCoverageFromProjection(view);
+  expect(coverage).toMatchObject({
+    required: 3, assigned: 3, shortage: 1,
+    responseReserveRequired: 5, responseReserveAvailable: 1, responseReserveShortage: 4,
+  });
+  expect(describeStaffCoverage(coverage).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageShort);
+});
+
 /**
  * A `hud/staff` reply with the totals written out.
  *
