@@ -77,6 +77,7 @@ export type EnvironmentArtCatalogKind = 'source-art' | 'rendered-art';
 export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.dirt',
   'env.terrain.grass',
+  'env.terrain.concrete',
   'env.floor.institutional',
   'env.wall.interior.face',
   'env.wall.interior.cap',
@@ -178,6 +179,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered mown olive grass with subtle short blades, one seamless tile per repeat.',
+  },
+  /** Outdoor poured concrete for unzoned concrete terrain tiles. */
+  'env.terrain.concrete': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.concrete.paving',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered grey outdoor paving with fine aggregate and restrained expansion joints.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

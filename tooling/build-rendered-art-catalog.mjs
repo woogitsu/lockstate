@@ -117,6 +117,7 @@ export const PUBLISHED_ASSET_IDS = [
   'wall.interior.face',
   'terrain.dirt.compacted',
   'terrain.grass.mown',
+  'terrain.concrete.paving',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));

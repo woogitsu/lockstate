@@ -51,6 +51,8 @@ const FIXTURE: HarnessWorldFixture = {
   tileSizePx: TILE_SIZE_PX,
   grassTileX: 0,
   grassTileY: 1,
+  concreteTileX: 0,
+  concreteTileY: 0,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
@@ -125,6 +127,11 @@ function buildFrame(): RenderFrame {
   world.setOwned(chunk, true);
   for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
+  }
+  // The same SparseWorld snapshot path used by persisted maps carries this
+  // concrete strip into WorldRenderView; no paint UI is part of this fixture.
+  for (let x = FIXTURE.concreteTileX; x < FIXTURE.concreteTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.concreteTileY) }, 'concrete');
   }
 
   const room = defaultRoomContentRegistry.all()[0];
