@@ -415,10 +415,12 @@ does not choose between them because the choice is balance rather than
 architecture:
 
 - `requiredResponderCount` of the highest severity the game can produce — the
-  reserve that answers anything. There is no exported ceiling constant to reach
-  for: a riot's severity is clamped inline to 10
-  (`src/simulation/incidents/trigger-system.ts:437`,
-  `candidate.score * 10`) and an assault's to
+  reserve that answers anything. At proposal time there was no exported ceiling
+  constant to reach for. The implemented riot clamp now uses
+  `candidate.score * INCIDENT_SEVERITY_CEILING`
+  (`src/simulation/incidents/trigger-system.ts:438`), with the shared ceiling
+  declared as `INCIDENT_SEVERITY_CEILING = 10`
+  (`src/simulation/incidents/incident-severity.ts:6`); an assault is capped at
   `ASSAULT_SEVERITY_CEILING`, 5 (`src/simulation/incidents/flashpoint.ts:373`),
   so taking this option means authoring that ceiling somewhere it can be read
   by both the response system and a projection. At 10 the figure is

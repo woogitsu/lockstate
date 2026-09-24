@@ -966,6 +966,8 @@ export const HUD_MESSAGE_KEY = {
   securityCoverageSummary: 'hud.security.coverage-summary',
   securityCoverageMet: 'hud.security.coverage-met',
   securityCoverageMetHint: 'hud.security.coverage-met-hint',
+  securityCoverageReserveShort: 'hud.security.coverage-reserve-short',
+  securityCoverageReserveShortHint: 'hud.security.coverage-reserve-short-hint',
   securityCoverageShort: 'hud.security.coverage-short',
   securityCoverageShortHint: 'hud.security.coverage-short-hint',
   securityCoverageUnguarded: 'hud.security.coverage-unguarded',

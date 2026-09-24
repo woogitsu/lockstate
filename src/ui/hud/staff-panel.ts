@@ -457,6 +457,8 @@ export interface StaffCoverageReadout {
    * fills no placeholder because `securityCoverageMetHint` declares none.
    */
   readonly hireCount: number;
+  /** Filled only on the reserve rung, for the hint's {reserve} placeholder. */
+  readonly reserveCount?: number;
 }
 
 export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {
@@ -478,6 +480,19 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
       hireCount: coverage.shortage,
+    };
+  }
+  // A no-post prison is exempt. A staffed prison with every post filled still
+  // needs a free, post-eligible pool for response and search duty (ADR 0095).
+  const reserveShortage = coverage.responseReserveShortage;
+  const reserveRequired = coverage.responseReserveRequired;
+  if (coverage.required > 0 && reserveShortage !== undefined && reserveShortage > 0 && reserveRequired !== undefined) {
+    return {
+      tone: 'warning',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
+      hireCount: reserveShortage,
+      reserveCount: reserveRequired,
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
@@ -840,13 +855,18 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // the assertion survives a reworded sentence. No stylesheet reads it -- the
     // colour is the badge's, and the badge carries the word beside it.
     coverageBlock.dataset['tone'] = readout.tone;
+    coverageBlock.dataset['reserveShort'] = readout.reserveCount === undefined ? 'false' : 'true';
     coverageSummary.textContent = t(HUD_MESSAGE_KEY.securityCoverageSummary, {
       assigned: localizer.formatNumber(coverage.assigned),
       required: localizer.formatNumber(coverage.required),
     });
     coverageBadge.update({ tone: readout.tone, text: t(readout.badgeKey) });
-    coverageHint.textContent =
-      readout.hireCount > 0
+    coverageHint.textContent = readout.reserveCount !== undefined
+      ? t(readout.hintKey, {
+          count: localizer.formatNumber(readout.hireCount),
+          reserve: localizer.formatNumber(readout.reserveCount),
+        })
+      : readout.hireCount > 0
         ? t(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })
         : t(readout.hintKey);
     /*

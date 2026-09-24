@@ -1241,6 +1241,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.coverage-summary': '{assigned} z {required}',
   'hud.security.coverage-met': 'Obsadzone',
   'hud.security.coverage-met-hint': 'Incydenty i przeszukania potrzebują wolnych strażników.',
+  'hud.security.coverage-reserve-short': 'Stanowiska obsadzone, rezerwa za mała',
+  'hud.security.coverage-reserve-short-hint': 'Rezerwa reakcji: brak {count}; cel: {reserve} wolnych strażników. Przeszukania korzystają z tej puli.',
   'hud.security.coverage-short': 'Niedobór obsady',
   // No reshape: an imperative plus a bare numeral agrees with nothing.
   'hud.security.coverage-short-hint': 'Zatrudnij jeszcze {count}, aby obsadzić tę populację.',

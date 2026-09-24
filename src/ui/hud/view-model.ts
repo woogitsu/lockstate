@@ -2502,6 +2502,11 @@ export interface HudStaffCoverageViewModel {
   readonly assigned: number;
   /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
   readonly shortage: number;
+  /** Post-eligible guards not currently posted or claimed by another duty. The live projection always supplies this; optional for older synthetic HUD fixtures. */
+  readonly responseReserveAvailable?: number;
+  /** ADR 0095's fixed-ceiling response reserve; currently five. */
+  readonly responseReserveRequired?: number;
+  readonly responseReserveShortage?: number;
 }
 
 /*

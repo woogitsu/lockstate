@@ -8,6 +8,9 @@ import {
 } from '../../src/simulation/protocol/types';
 import { STATE_INCOME_UNMET_NEED_LEVEL } from '../../src/simulation/economy/income';
 import type { StaffViewModel } from '../../src/simulation/presentation/staff-projection';
+import { projectStaff } from '../../src/simulation/presentation/staff-projection';
+import { GuardRoster } from '../../src/simulation/security/guard-roster';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import {
   NEED_DECAY_PER_TICK,
@@ -50,6 +53,50 @@ import { StaffCoverageReader, staffCoverageFromProjection } from '../../src/ui/s
 
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
+it('counts only post-eligible unassigned guards, excluding a search claim and a nurse', () => {
+  const guards = new GuardRoster(8);
+  const origin = { x: tileCoordinate(1), y: tileCoordinate(1) };
+  const free = guards.hire('staff-role.guard', origin);
+  const searching = guards.hire('staff-role.guard', origin);
+  guards.setDeploymentPhase(searching, 'on-search');
+  const posted = guards.hire('staff-role.guard', origin);
+  guards.setDeploymentPhase(posted, 'on-post');
+  guards.hire('staff-role.nurse', origin);
+  const totals = projectStaff({ staff: guards }, 0).totals;
+  expect(guards.unassignedGuardIds()).toContain(free);
+  expect(totals).toMatchObject({
+    unassigned: 2,
+    responseReserveRequired: 5,
+    responseReserveAvailable: 1,
+    responseReserveShortage: 4,
+  });
+});
+
+it('keeps two-sector post shortages summed while reserve stays one prison-wide pool', () => {
+  const guards = new GuardRoster(8);
+  const origin = { x: tileCoordinate(1), y: tileCoordinate(1) };
+  for (let index = 0; index < 3; index += 1) {
+    guards.setDeploymentPhase(guards.hire('staff-role.guard', origin), 'on-post');
+  }
+  guards.hire('staff-role.guard', origin);
+  const view = projectStaff({
+    staff: guards,
+    deployment: {
+      getCoverageReport: () => [
+        { sectorId: 'a', required: 1, assigned: 2, shortage: 0 },
+        { sectorId: 'b', required: 2, assigned: 1, shortage: 1 },
+      ],
+      getMetrics: () => ({ deploymentFailures: 0 }),
+    },
+  }, 0);
+  const coverage = staffCoverageFromProjection(view);
+  expect(coverage).toMatchObject({
+    required: 3, assigned: 3, shortage: 1,
+    responseReserveRequired: 5, responseReserveAvailable: 1, responseReserveShortage: 4,
+  });
+  expect(describeStaffCoverage(coverage).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageShort);
+});
+
 /**
  * A `hud/staff` reply with the totals written out.
  *
@@ -68,7 +115,18 @@ function staffView(totals: { required: number; assigned: number; shortage: numbe
   } as unknown as StaffViewModel;
 }
 
-describe('the mapping carries three figures and computes none of them', () => {
+describe('the mapping carries post and reserve figures and computes none of them', () => {
+  it('carries the prison-wide response reserve without netting sector shortages', () => {
+    const view = staffView({ required: 4, assigned: 4, shortage: 1 });
+    const withReserve = { ...view, totals: { ...view.totals, responseReserveRequired: 5, responseReserveAvailable: 2, responseReserveShortage: 3 } };
+    expect(staffCoverageFromProjection(withReserve)).toMatchObject({
+      shortage: 1,
+      responseReserveRequired: 5,
+      responseReserveAvailable: 2,
+      responseReserveShortage: 3,
+    });
+    expect(describeStaffCoverage(staffCoverageFromProjection(withReserve)).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageShort);
+  });
   it('copies required, assigned and shortage off the projection’s own totals', () => {
     expect(staffCoverageFromProjection(staffView({ required: 2, assigned: 1, shortage: 1 }))).toEqual({
       required: 2,
@@ -90,7 +148,18 @@ describe('the mapping carries three figures and computes none of them', () => {
   });
 });
 
-describe('the block says one of three things, and which one is a decision', () => {
+describe('the block distinguishes unguarded, understaffed, reserve-short and covered states', () => {
+  it('separates filled posts with a short free reserve from full coverage', () => {
+    expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, responseReserveRequired: 5, responseReserveAvailable: 1, responseReserveShortage: 4 })).toEqual({
+      tone: 'warning',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
+      hireCount: 4,
+      reserveCount: 5,
+    });
+    expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0, responseReserveRequired: 5, responseReserveAvailable: 5, responseReserveShortage: 0 }).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
+    expect(describeStaffCoverage({ required: 0, assigned: 0, shortage: 0, responseReserveRequired: 5, responseReserveAvailable: 0, responseReserveShortage: 5 }).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
+  });
   it('says the prison has what it asks for when nothing is short', () => {
     expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 })).toEqual({
       tone: 'success',
@@ -159,6 +228,10 @@ describe('the block says one of three things, and which one is a decision', () =
 });
 
 describe('every sentence the block can render is real text with its placeholders filled', () => {
+  it('renders the reserve deficit and ceiling as separate figures', () => {
+    const sentence = localizer.format(HUD_MESSAGE_KEY.securityCoverageReserveShortHint, { count: '4', reserve: '5' });
+    expect(sentence).toBe('Response reserve short: 4; target: 5 free guards. Searches share this pool.');
+  });
   const render = (coverage: { required: number; assigned: number; shortage: number }): string => {
     const readout = describeStaffCoverage(coverage);
     return readout.hireCount > 0
@@ -208,7 +281,8 @@ describe('every sentence the block can render is real text with its placeholders
    * is what made the requirement read as the whole bill. See
    * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
    * exactly the requirement the responder pool is empty, and the panel's
-   * figures are identical to a prison one hire past it.
+   * post figures are identical to a prison one hire past it; the current
+   * reserve figures distinguish the two states.
    *
    * ## Widened on 2026-09-05 (issue #989), and the sentence it pinned is kept
    *

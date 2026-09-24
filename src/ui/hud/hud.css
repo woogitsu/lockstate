@@ -3987,6 +3987,15 @@
     overflow: hidden;
   }
 
+  /* The reserve rung needs both its number and its shared-search caveat.
+     Let this one factual hint wrap in the short viewport instead of cutting
+     off the second clause after the one-line coverage hint budget. */
+  .hud-staff__coverage[data-reserve-short="true"] > .hud-staff__note:not(.hud-staff__coverage-consequence) {
+    display: block;
+    -webkit-line-clamp: none;
+    overflow: visible;
+  }
+
   /* The one `.hud-staff__note` that is not clamped (#639, the owner's ruling of
      2026-08-30). The shape is PR #647's, which exempts `.hud-build__order-note`
      from this same block for the same kind of sentence.

@@ -637,6 +637,16 @@ it is a consequence of a single sector and it changes when a second one exists.
 > settled is that this paragraph may not go on saying the two conditions are
 > the same condition.
 
+ADR 0095 decision 1 now makes that difference visible in the Staff panel.
+The read model counts free, post-eligible guards after posting and other claims,
+and compares them with a fixed ceiling of five (`ceil(10 * 0.5)` under the
+current default response policy). Filled posts with fewer than five free guards
+show a reserve-short rung; the posted requirement and response dispatch rules
+remain as before. Searches use the same claimable pool, so the figure describes
+current availability rather than guaranteeing the largest response while a
+search is active. The choice between a fixed ceiling and a risk-derived target
+remains ADR 0095 open question 1 / issue #29.
+
 ## Scale
 
 `tests/unit/incident-scale.test.ts` drives 30 simultaneous sector riots
