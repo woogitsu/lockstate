@@ -296,6 +296,7 @@ describe('simulation identity to artwork', () => {
     const cell = defaultRoomContentRegistry.getById('room.cell');
     const solitaryCell = defaultRoomContentRegistry.getById('room.solitary-cell');
     const holdingCell = defaultRoomContentRegistry.getById('room.holding-cell');
+    const staffRoom = defaultRoomContentRegistry.getById('room.staff-room');
     expect(kitchen).toBeDefined();
     expect(canteen).toBeDefined();
     expect(yard).toBeDefined();
@@ -308,6 +309,7 @@ describe('simulation identity to artwork', () => {
     expect(cell).toBeDefined();
     expect(solitaryCell).toBeDefined();
     expect(holdingCell).toBeDefined();
+    expect(staffRoom).toBeDefined();
     expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
     expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
     expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
@@ -320,6 +322,7 @@ describe('simulation identity to artwork', () => {
     expect(zonedFloorSprite(cell!.numericId)).toBe('env.floor.cell');
     expect(zonedFloorSprite(solitaryCell!.numericId)).toBe('env.floor.cell');
     expect(zonedFloorSprite(holdingCell!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(staffRoom!.numericId)).toBe('env.floor.staff-room');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {

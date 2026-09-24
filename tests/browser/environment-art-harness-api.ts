@@ -80,6 +80,10 @@ export interface HarnessWorldFixture {
   readonly classroomFloorMinTileY: number;
   readonly classroomFloorMaxTileX: number;
   readonly classroomFloorMaxTileY: number;
+  readonly staffFloorMinTileX: number;
+  readonly staffFloorMinTileY: number;
+  readonly staffFloorMaxTileX: number;
+  readonly staffFloorMaxTileY: number;
   readonly securityFloorMinTileX: number;
   readonly securityFloorMinTileY: number;
   readonly securityFloorMaxTileX: number;

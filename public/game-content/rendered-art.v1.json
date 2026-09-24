@@ -378,6 +378,31 @@
       }
     },
     {
+      "assetId": "floor.staff-room.woven-vinyl",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.staff-room.woven-vinyl.8a17ffe2678c.png",
+      "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.yard.compacted-earth",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.yard.compacted-earth.05788bcaeb33.png",

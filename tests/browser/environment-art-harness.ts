@@ -99,6 +99,10 @@ const FIXTURE: HarnessWorldFixture = {
   classroomFloorMinTileY: 24,
   classroomFloorMaxTileX: 21,
   classroomFloorMaxTileY: 28,
+  staffFloorMinTileX: 28,
+  staffFloorMinTileY: 24,
+  staffFloorMaxTileX: 30,
+  staffFloorMaxTileY: 26,
   securityFloorMinTileX: 24,
   securityFloorMinTileY: 24,
   securityFloorMaxTileX: 26,
@@ -175,6 +179,7 @@ function buildFrame(): RenderFrame {
   const includeCommonRoomFloor = new URLSearchParams(window.location.search).has('commonRoomFloor');
   const includeClassroomFloor = new URLSearchParams(window.location.search).has('classroomFloor');
   const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
+  const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -210,10 +215,19 @@ function buildFrame(): RenderFrame {
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
   }
-  if (includeSecurityFloor) {
+  if (includeSecurityFloor || includeStaffFloor) {
     const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(3) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
+  }
+  if (includeStaffFloor) {
+    const staffRoom = defaultRoomContentRegistry.getById('room.staff-room');
+    if (staffRoom === undefined) throw new Error('The staff room is missing from the catalog.');
+    for (let tileY = FIXTURE.staffFloorMinTileY; tileY <= FIXTURE.staffFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.staffFloorMinTileX; tileX <= FIXTURE.staffFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, staffRoom.numericId);
+      }
+    }
   }
   for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
@@ -575,7 +589,8 @@ const scene = new WorldScene({
     || new URLSearchParams(window.location.search).has('infirmaryFloor')
     || new URLSearchParams(window.location.search).has('commonRoomFloor')
     || new URLSearchParams(window.location.search).has('classroomFloor')
-    || new URLSearchParams(window.location.search).has('securityFloor') ? {
+    || new URLSearchParams(window.location.search).has('securityFloor')
+    || new URLSearchParams(window.location.search).has('staffFloor') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

@@ -152,7 +152,8 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  *
  * The kitchen uses a washable, non-slip tile, the canteen uses warm terrazzo,
  * the shower uses matte ceramic, the laundry uses sealed aggregate, the
- * Infirmary uses hygienic sheet vinyl, Standard and Solitary Cells use sealed
+ * Infirmary uses hygienic sheet vinyl, the Staff Room uses warm woven vinyl,
+ * Standard and Solitary Cells use sealed
  * concrete, and the outdoor yard uses compacted earth. Other rooms keep
  * institutional linoleum. This returns per zoning id
  * so their material agrees with use.
@@ -171,6 +172,7 @@ export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId |
   if (room.id === 'room.classroom') return 'env.floor.classroom';
   if (room.id === 'room.security-office') return 'env.floor.security-office';
   if (room.id === 'room.cell' || room.id === 'room.solitary-cell') return 'env.floor.cell';
+  if (room.id === 'room.staff-room') return 'env.floor.staff-room';
   return 'env.floor.institutional';
 }
 

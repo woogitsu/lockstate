@@ -105,6 +105,7 @@ export const PUBLISHED_ASSET_IDS = [
   'floor.classroom.oak-laminate',
   'floor.security-office.antistatic',
   'floor.cell.sealed-concrete',
+  'floor.staff-room.woven-vinyl',
   'fixture.cell.toilet_sink',
   'fixture.cell.waste_bin',
   'fixture.shower.head',

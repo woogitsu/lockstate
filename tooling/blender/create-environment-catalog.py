@@ -122,6 +122,7 @@ MODELS = (
     ("floor.classroom.oak-laminate", (1, 1)),
     ("floor.security-office.antistatic", (1, 1)),
     ("floor.cell.sealed-concrete", (1, 1)),
+    ("floor.staff-room.woven-vinyl", (1, 1)),
 )
 
 
@@ -1411,6 +1412,19 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Embedded cell floor aggregate.{index}",
                 (x, y, 0.081), (width, width * cell_rng.uniform(0.58, 1.32), 0.001),
                 "cell_floor_aggregate_light" if index % 4 else "cell_floor_aggregate_dark", 0)
+    elif asset_id == "floor.staff-room.woven-vinyl":
+        # A quiet warm resilient sheet for the staff room, with sparse woven
+        # flecks inset away from the boundaries so repeated tiles stay seamless.
+        box(collection, root, "Seamless staff room woven vinyl", (0, 0, 0.04),
+            (1, 1, 0.08), "staff_floor_vinyl", 0)
+        staff_rng = random.Random(20260925)
+        for index in range(112):
+            x = staff_rng.uniform(-0.455, 0.455)
+            y = staff_rng.uniform(-0.455, 0.455)
+            length = staff_rng.uniform(0.030, 0.064)
+            box(collection, root, f"Embedded staff floor fibre.{index}",
+                (x, y, 0.081), (length, 0.008, 0.001),
+                "staff_floor_fibre_light" if index % 3 else "staff_floor_fibre_dark", 0)
     elif asset_id == "floor.shower.ceramic":
         # Four matte ceramic squares per game tile make a real 3x3 shower read
         # as a wet room at both zoom levels. Exposed dark backing forms thin,
@@ -1825,6 +1839,11 @@ def main():
         middle=(0.53, 0.57, 0.60, 1), low_position=0.34, high_position=0.66)
     MATERIALS["cell_floor_aggregate_light"] = material("Cell concrete pale aggregate", (0.68, 0.70, 0.69, 1), 0.95)
     MATERIALS["cell_floor_aggregate_dark"] = material("Cell concrete fine dark aggregate", (0.32, 0.37, 0.39, 1), 0.96)
+    MATERIALS["staff_floor_vinyl"] = dirt_surface_material(
+        "Staff room warm woven vinyl", (0.40, 0.31, 0.23, 1), (0.54, 0.44, 0.34, 1),
+        middle=(0.47, 0.38, 0.29, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["staff_floor_fibre_light"] = material("Staff vinyl pale woven fibre", (0.69, 0.60, 0.47, 1), 0.94)
+    MATERIALS["staff_floor_fibre_dark"] = material("Staff vinyl muted woven fibre", (0.24, 0.21, 0.18, 1), 0.96)
     MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
     for index, shade in enumerate((
         (0.27, 0.35, 0.41, 1),

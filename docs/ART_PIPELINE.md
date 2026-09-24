@@ -357,6 +357,11 @@ fine inset mineral aggregate. The periodic base meets at all four zero-margin
 edges without a tile-sized grid; Standard and Solitary Cells use it beneath
 their unchanged zoning tints. The holding cell keeps institutional linoleum.
 
+The `floor.staff-room.woven-vinyl` tile is a warm, resilient sheet with fine
+inset fibres. Its one-tile Blender frame has zero margin and a periodic base,
+so the 3×3 Staff Room reads as a continuous floor beneath its existing zoning
+tint. Its object requirements, label and room colour are unchanged.
+
 **Where the output is, and what it measures.** `assets/rendered/environment/`
 holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on

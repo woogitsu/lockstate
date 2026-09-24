@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -385,6 +385,37 @@ test.describe('the environment artwork', () => {
       expect(labels.map((label) => label.text)).toContain('Security Office');
       if (process.env['LOCKSTATE_CAPTURE_SECURITY_ART'] === '1') {
         await page.screenshot({ path: testInfo.outputPath(`security-office-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 3 by 3 Staff Room draws warm woven vinyl at both zoom levels', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'staffFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.staff-room');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    const centreX = (fixture.staffFloorMinTileX + fixture.staffFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.staffFloorMinTileY + fixture.staffFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const floor = sprites.filter((sprite) => sprite.frameName === 'env.floor.staff-room');
+      expect(floor.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Staff Room');
+      if (process.env['LOCKSTATE_CAPTURE_STAFF_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`staff-room-floor-zoom-${zoom}.png`) });
       }
     }
   });
