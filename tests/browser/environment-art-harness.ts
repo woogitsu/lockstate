@@ -55,6 +55,8 @@ const FIXTURE: HarnessWorldFixture = {
   concreteTileY: 0,
   gravelTileX: 0,
   gravelTileY: 2,
+  rockTileX: 0,
+  rockTileY: 3,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
@@ -137,6 +139,9 @@ function buildFrame(): RenderFrame {
   }
   for (let x = FIXTURE.gravelTileX; x < FIXTURE.gravelTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.gravelTileY) }, 'gravel');
+  }
+  for (let x = FIXTURE.rockTileX; x < FIXTURE.rockTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.rockTileY) }, 'rock');
   }
 
   const room = defaultRoomContentRegistry.all()[0];

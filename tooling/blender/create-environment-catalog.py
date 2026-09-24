@@ -110,6 +110,7 @@ MODELS = (
     ("terrain.grass.mown", (1, 1)),
     ("terrain.concrete.paving", (1, 1)),
     ("terrain.gravel.service_path", (1, 1)),
+    ("terrain.rock.bedrock", (1, 1)),
 )
 
 
@@ -125,6 +126,50 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def rock_slate_material(name, dark, light):
+    item = material(name, dark, 0.97)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    strata = nodes.new("ShaderNodeTexNoise")
+    strata.inputs["Scale"].default_value = 5.2
+    strata.inputs["Detail"].default_value = 3.0
+    links.new(coords.outputs["Generated"], strata.inputs["Vector"])
+    grain = nodes.new("ShaderNodeTexNoise")
+    grain.inputs["Scale"].default_value = 38.0
+    grain.inputs["Detail"].default_value = 4.0
+    grain.inputs["Roughness"].default_value = 0.72
+    links.new(coords.outputs["Generated"], grain.inputs["Vector"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.28
+    ramp.color_ramp.elements[0].color = dark
+    ramp.color_ramp.elements[1].position = 0.72
+    ramp.color_ramp.elements[1].color = light
+    links.new(strata.outputs["Fac"], ramp.inputs["Fac"])
+    shader = nodes.get("Principled BSDF")
+    fracture = nodes.new("ShaderNodeTexVoronoi")
+    fracture.feature = "DISTANCE_TO_EDGE"
+    fracture.inputs["Scale"].default_value = 6.0
+    links.new(coords.outputs["Generated"], fracture.inputs["Vector"])
+    crack = nodes.new("ShaderNodeMapRange")
+    crack.inputs["From Min"].default_value = 0.01
+    crack.inputs["From Max"].default_value = 0.045
+    crack.inputs["To Min"].default_value = 0.36
+    crack.inputs["To Max"].default_value = 0.0
+    links.new(fracture.outputs["Distance"], crack.inputs["Value"])
+    shade = nodes.new("ShaderNodeMixRGB")
+    shade.blend_type = "MIX"
+    shade.inputs[2].default_value = (0.07, 0.09, 0.11, 1)
+    links.new(crack.outputs["Result"], shade.inputs[0])
+    links.new(ramp.outputs["Color"], shade.inputs[1])
+    links.new(shade.outputs[0], shader.inputs["Base Color"])
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.20
+    bump.inputs["Distance"].default_value = 0.012
+    links.new(grain.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
 
 
 def gravel_matrix_material():
@@ -1139,7 +1184,40 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "terrain.gravel.service_path":
+    if asset_id == "terrain.rock.bedrock":
+        box(collection, root, "Continuous dark slate bedrock", (0, 0, 0.04),
+            (1, 1, 0.08), "rock_matrix", 0)
+        # Each face is its own shallow, bevelled slate plate. The quiet
+        # periodic matrix connects neighbouring tiles without a bright seam.
+        plates = (
+            ((-.46, -.43), (-.13, -.45), (-.04, -.25), (-.25, -.13), (-.47, -.20)),
+            ((-.09, -.46), (.34, -.45), (.46, -.27), (.24, -.16), (.02, -.24)),
+            ((-.47, -.16), (-.26, -.11), (-.15, .15), (-.42, .27), (-.47, .13)),
+            ((-.20, -.08), (.19, -.17), (.42, -.05), (.33, .13), (.02, .23), (-.14, .13)),
+            ((.40, -.20), (.47, -.11), (.47, .25), (.34, .18)),
+            ((-.46, .31), (-.14, .20), (.04, .36), (-.06, .46), (-.45, .46)),
+            ((.06, .26), (.31, .18), (.47, .30), (.46, .46), (.10, .46)),
+        )
+        palette = ("rock_slate_1", "rock_slate_2", "rock_slate_3")
+        for index, outline in enumerate(plates):
+            bottom = [(x, y, .081) for x, y in outline]
+            top = [(x * .987, y * .987, .091 + (index % 3) * .002) for x, y in outline]
+            count = len(outline)
+            faces = [tuple(range(count, 2 * count)), tuple(reversed(range(count)))]
+            faces += [(i, (i + 1) % count, (i + 1) % count + count, i + count) for i in range(count)]
+            mesh = bpy.data.meshes.new(f"Bedrock plate mesh.{index}")
+            mesh.from_pydata(bottom + top, [], faces)
+            mesh.materials.append(MATERIALS[palette[index % len(palette)]])
+            stone = bpy.data.objects.new(f"Layered slate plate.{index}", mesh)
+            collection.objects.link(stone)
+            stone.parent = root
+        # Hairline mineral veins give the larger plates scale at 64 px/tile.
+        for index, (x, y, length) in enumerate(((-.27, -.31, .16), (.15, -.34, .14),
+            (-.28, .035, .11), (.03, .02, .19), (.23, .32, .12))):
+            vein = box(collection, root, f"Thin slate vein.{index}",
+                (x, y, .098), (length, .004, .001), "rock_vein", 0)
+            vein.rotation_euler.z = .17 if index % 2 else -.24
+    elif asset_id == "terrain.gravel.service_path":
         box(collection, root, "Compacted gravel matrix", (0, 0, 0.04),
             (1, 1, 0.08), "gravel_matrix", 0)
         # Stones are shallow enough to read as a surface, not obstacles. Keep
@@ -1473,6 +1551,11 @@ def main():
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["gravel_matrix"] = gravel_matrix_material()
+    MATERIALS["rock_matrix"] = material("Weathered blue grey bedrock matrix", (0.045, 0.055, 0.070, 1), 0.99)
+    MATERIALS["rock_slate_1"] = rock_slate_material("Bedrock blue slate", (0.045, 0.062, 0.082, 1), (0.15, 0.18, 0.21, 1))
+    MATERIALS["rock_slate_2"] = rock_slate_material("Bedrock warm slate", (0.060, 0.072, 0.083, 1), (0.17, 0.18, 0.19, 1))
+    MATERIALS["rock_slate_3"] = rock_slate_material("Bedrock dark slate", (0.035, 0.050, 0.068, 1), (0.13, 0.15, 0.17, 1))
+    MATERIALS["rock_vein"] = material("Bedrock faint quartz vein", (0.19, 0.21, 0.21, 1), 0.99)
     MATERIALS["gravel_stone_dark"] = material("Gravel charcoal chippings", (0.10, 0.11, 0.12, 1), 0.99)
     MATERIALS["gravel_stone_grey"] = material("Gravel blue-grey chippings", (0.22, 0.23, 0.23, 1), 0.99)
     MATERIALS["gravel_stone_tan"] = material("Gravel warm ochre chippings", (0.33, 0.26, 0.19, 1), 0.99)

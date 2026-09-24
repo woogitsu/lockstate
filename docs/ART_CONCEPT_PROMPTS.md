@@ -462,3 +462,13 @@ Blender models a one-tile compacted matrix with many shallow, distinct stones.
 The existing `gravel` terrain id draws this surface from a world snapshot;
 movement cost and paint controls remain unchanged. Provenance is in
 `assets/source/concepts/gravel-terrain-v1.md`.
+
+### Layered slate bedrock — `terrain.rock.bedrock`
+
+An original four-panel concept studies broad slate plates from directly above,
+their shallow bevels at an oblique angle, fine mineral veins in close-up and
+readability beside dirt and concrete at game scale. The Blender tile has a
+continuous dark matrix under individually modelled slate plates. The existing
+`rock` terrain id draws it when a saved world contains rock; buildability and
+movement rules remain unchanged. Provenance is in
+`assets/source/concepts/rock-terrain-v1.md`.
