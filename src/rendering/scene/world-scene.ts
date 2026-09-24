@@ -588,6 +588,9 @@ export class WorldScene extends Phaser.Scene {
     this.input.on(
       'wheel',
       (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+        // A horizontal touchpad swipe has deltaY=0. It is not a request to
+        // zoom in, even though it still arrives as a Phaser wheel event.
+        if (deltaY === 0) return;
         const camera = this.cameras.main;
         const next = zoomAtScreenPoint(
           this.cameraState(),
