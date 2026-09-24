@@ -270,7 +270,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.step-up` | Increase {field} | `src/content/default-locale-en.ts:2356` |
 | `hud.build.edge` | Edge | `src/content/default-locale-en.ts:2357` |
 | `hud.build.submit` | Place order | `src/content/default-locale-en.ts:2358` |
-| `hud.build.note` | Press Play; clock builds orders. | `src/content/default-locale-en.ts:2359` |
+| `hud.build.note` | Orders need the clock running. | `src/content/default-locale-en.ts:2359` |
 | `hud.build.arm` | Place on map | `src/content/default-locale-en.ts:2360` |
 | `hud.build.remove` | Remove | `src/content/default-locale-en.ts:2401` |
 | `hud.build.remove-active` | Stop removing | `src/content/default-locale-en.ts:2402` |

@@ -1084,7 +1084,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.step-up': 'Zwiększ: {field}',
   'hud.build.edge': 'Krawędź',
   'hud.build.submit': 'Złóż zlecenie',
-  'hud.build.note': 'Uruchom zegar: ruszy budowa.',
+  'hud.build.note': 'Zlecenia wymagają ruchu zegara.',
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
