@@ -841,8 +841,10 @@ function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | 
 /**
  * The top strip, left to right.
  *
- * Order is part of the contract: a HUD whose metrics move between builds is
- * one a player has to re-read every time.
+ * Order is part of the contract: a HUD whose metrics move whenever a warning
+ * arrives is one a player has to re-read every time. The fixed priority below
+ * implements the owner's #719 choice (2026-09-24) in the descriptor and DOM
+ * order together, so visual, keyboard and screen-reader reading order agree.
  *
  * **`roomNeeds` is the one input that is not a count, and it is optional**
  * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
@@ -861,6 +863,18 @@ function earnedWithheldDescription(counts: HudCountsViewModel): HudMetricText | 
  * absence: that is the same list either way, and the paragraph on
  * `UNREPORTED_CHIP_ENUMERATION` below says how it stays one list.
  */
+const METRIC_DISPLAY_PRIORITY: Readonly<Record<HudMetricId, number>> = {
+  funds: 0,
+  prisoners: 1,
+  coverage: 2,
+  incidents: 3,
+  contraband: 4,
+  rooms: 5,
+  'high-risk': 6,
+  staff: 7,
+  'earned-today': 8,
+};
+
 export function projectStatusMetrics(
   counts?: HudCountsViewModel,
   roomNeeds?: HudRoomNeedsViewModel,
@@ -869,7 +883,7 @@ export function projectStatusMetrics(
   const hasIncidents = counts.activeIncidents > 0;
   const capacity = counts.prisonerCapacity > 0 ? counts.prisonerCapacity : undefined;
 
-  return [
+  const descriptors: HudMetricDescriptor[] = [
     {
       id: 'prisoners',
       icon: 'prisoners',
@@ -1257,10 +1271,10 @@ export function projectStatusMetrics(
       // balance above -- so the two chips sit beside each other and can be
       // read against each other without a conversion nobody has chosen.
       //
-      // **Appended after `funds` deliberately.** The strip's descriptor list is
-      // the single definition of which metrics exist and in what order
-      // (`status-strip.ts` walks it to build the DOM), so a new chip at the end
-      // adds a column without moving one.
+      // **Originally appended after `funds` deliberately.** That was the
+      // rule until #719's owner-approved priority moved income last to keep
+      // money and actionable warnings visible in a short row. The original
+      // placement is recorded here because it was a conscious choice.
       value: counts.stateIncomeAccruedTodayMinorUnits,
       capacity: undefined,
       // No tone and no badge, for the same reason `funds` has neither: "a good
@@ -1280,6 +1294,7 @@ export function projectStatusMetrics(
       description: earnedWithheldDescription(counts),
     },
   ];
+  return descriptors.sort((left, right) => METRIC_DISPLAY_PRIORITY[left.id] - METRIC_DISPLAY_PRIORITY[right.id]);
 }
 
 const SEVERITY_TONES: Readonly<Record<HudSeverity, BadgeTone>> = {

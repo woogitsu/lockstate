@@ -204,6 +204,7 @@ interface BadgeReading {
   readonly stripHeight: number;
   readonly metricsScrollWidth: number;
   readonly metricsClientWidth: number;
+  readonly metricsChipWidthSum: number;
 }
 
 async function showCounts(page: Page, counts: HudCountsViewModel): Promise<BadgeReading> {
@@ -231,6 +232,8 @@ async function showCounts(page: Page, counts: HudCountsViewModel): Promise<Badge
       stripHeight: Math.round(strip.getBoundingClientRect().height * 100) / 100,
       metricsScrollWidth: metrics.scrollWidth,
       metricsClientWidth: metrics.clientWidth,
+      metricsChipWidthSum: [...metrics.querySelectorAll<HTMLElement>('[data-metric]')]
+        .reduce((sum, metric) => sum + metric.getBoundingClientRect().width, 0),
     };
   });
 }
@@ -353,15 +356,18 @@ test.describe('the contraband chip names what was found (#703 ruling 3)', () => 
      * asserted below is what was measured rather than what would be nice:
      */
 
-    // 1. **The badge costs its own width and nothing else.** This is the
-    //    property that would break if the word made a chip re-lay-out, pushed
-    //    a margin, or wrapped: the row would grow by more than the pill.
+    // 1. **The badge costs its own width and nothing else.** Before #719 this
+    //    was measured as a delta in scrollWidth. The accepted height-gated
+    //    second row makes scrollWidth equal clientWidth at 1280x800 even while
+    //    a chip grows, so measure the sum of the chips' boxes directly. The
+    //    original width claim remains guarded without pinning an overflow.
     expect(
-      withName.metricsScrollWidth - withMixed.metricsScrollWidth,
-      'the contraband badge cost the metrics row more than the badge itself measures, so it is not the pill that grew -- something re-laid out around it',
+      withName.metricsChipWidthSum - withMixed.metricsChipWidthSum,
+      'the contraband badge changed chip widths by more than the pill measures',
     ).toBeCloseTo(withName.width, 0);
-    expect(withMixed.metricsScrollWidth, 'the silent case must cost exactly what no badge costs').toBe(
-      empty.metricsScrollWidth,
+    expect(withMixed.metricsChipWidthSum, 'the silent case must cost exactly what no badge costs').toBeCloseTo(
+      empty.metricsChipWidthSum,
+      0,
     );
 
     // 2. **The strip does not get taller in any state.** A chip that grew

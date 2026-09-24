@@ -410,10 +410,30 @@ test('the #719 height gate preserves narrow panels and keeps money and active al
         const box = row.querySelector<HTMLElement>(`[data-metric='${id}']`)?.getBoundingClientRect();
         return box !== undefined && box.left >= rowBox.left - 0.5 && box.right <= rowBox.right + 0.5;
       };
-      return { funds: inside('funds'), incidents: inside('incidents'), railHeight: document.querySelector<HTMLElement>('.hud__rail')?.getBoundingClientRect().height };
+      const chips = [...row.querySelectorAll<HTMLElement>('[data-metric]')];
+      const visualOrder = [...chips]
+        .sort((a, b) => {
+          const first = a.getBoundingClientRect();
+          const second = b.getBoundingClientRect();
+          return first.top - second.top || first.left - second.left;
+        })
+        .map((chip) => chip.dataset['metric']);
+      return {
+        funds: inside('funds'),
+        incidents: inside('incidents'),
+        railHeight: document.querySelector<HTMLElement>('.hud__rail')?.getBoundingClientRect().height,
+        domOrder: chips.map((chip) => chip.dataset['metric']),
+        visualOrder,
+        focusable: row.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length,
+      };
     });
     expect(state.funds, `${at}: money is still hidden by the narrow strip`).toBe(true);
     if (width >= 1024) expect(state.incidents, `${at}: active incidents are still hidden`).toBe(true);
+    expect(state.domOrder, `${at}: the screen-reader order moved with state`).toEqual([
+      'funds', 'prisoners', 'coverage', 'incidents', 'contraband', 'rooms', 'high-risk', 'staff', 'earned-today',
+    ]);
+    expect(state.visualOrder, `${at}: visual order disagrees with DOM reading order`).toEqual(state.domOrder);
+    expect(state.focusable, `${at}: keyboard focus can land inside a partially visible metrics row`).toBe(0);
 
     if (width === 1280 && height === 800) {
       expect(badged.fullyVisible, `${at}: the height gate did not expose all nine metrics`).toBe(9);
