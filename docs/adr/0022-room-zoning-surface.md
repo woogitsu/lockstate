@@ -72,8 +72,9 @@ and every `file:line` below resolves there unless the text says otherwise.
 > than against it**: it moved five anchors onto `appearance.ts:114` and `:99`,
 > and both had rotted again by 2026-09-15 — `zoningTint` was then at
 > `appearance.ts:303` and `ZONING_TINT_ALPHA` at `:139`. The Blender floor
-> replacement moved `export function zoningTint` to
-> `src/rendering/world/appearance.ts:277`. Ten days. What is corrected below is only the prose written in the present
+> replacement moved `export function zoningTint` to line 277 then; after the
+> later floor-art additions it stands at `src/rendering/world/appearance.ts:297`.
+> Ten days. What is corrected below is only the prose written in the present
 > tense **about today**: the Context's 2026-08-28 replacement anchors, and the
 > amendment's own.
 
