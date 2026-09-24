@@ -22,11 +22,10 @@
  * point of the `activeContexts` seam. It defaults to the ambient one because the
  * only production caller has no reason to name it.
  *
- * Deliberately not exhaustive about *which* controls capture text: a
- * `<select>`, a slider or a button do not, and treating them as text entry would
- * make the camera stop for controls that never wanted the keys. If a future
- * control captures typing without being one of these three shapes, this is the
- * one place to widen.
+ * This also includes a native `<select>`: the Build category filter changes
+ * option with the arrow keys. Letting the same arrow reach the world camera
+ * moves the map while the player is choosing a category. Ordinary buttons do
+ * not consume those keys and must leave the camera available.
  */
 export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefined = globalThis.document): boolean {
   const active = doc?.activeElement;
@@ -41,5 +40,5 @@ export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefi
   const tag = active.tagName;
   if (tag === undefined) return false;
   const name = tag.toLowerCase();
-  return name === 'input' || name === 'textarea';
+  return name === 'input' || name === 'textarea' || name === 'select';
 }
