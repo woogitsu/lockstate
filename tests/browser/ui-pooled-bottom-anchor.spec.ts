@@ -3,13 +3,12 @@ import type { HudHeldGuardsViewModel } from '../../src/ui/hud';
 import './ui-harness-api';
 
 /**
- * Reproduce #1294 on the mounted Staff panel, without gating the known defect.
+ * Guard #1294 on the mounted Staff panel after ADR 0124's slot fix.
  *
  * `ui-held-guards.spec.ts` proves identity binding while a pooled place keeps
- * its box. This playtest measures the other half: a bottom-anchored panel moves
- * its boxes when the number of drawn rows changes. It deliberately reports the
- * result instead of asserting that a wrong-subject click must keep happening.
- * The only assertions establish that both guards and the old click target exist.
+ * its box. This browser gate measures the other half: a bottom-anchored panel
+ * would move its boxes when the number of drawn rows changes. The assertions forbid an
+ * arriving guard from inheriting the departing guard's pointer target.
  */
 test('a held-guard row never sends Release to an arriving guard under the old click point (#1294)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
