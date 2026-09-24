@@ -246,7 +246,9 @@ make up the difference, because there is one floor:
 `zonedFloorSprite` branches on nothing but whether the zoning id names a known
 room, and its docblock says so in the sentence that also anticipates option D
 below: `One floor for every category today. This returns per zoning id rather than per category so a later split -- concrete for utility and logistics, linoleum for the rest -- is a change in this function and nowhere else.`
-(verbatim in `src/rendering/world/environment-art.ts`)
+This quotes the docblock as it stood at `430906af` (v0.0.757); the Blender
+room-floor replacement has since removed that sentence from
+`src/rendering/world/environment-art.ts`.
 
 **The one correction, and it is in the issue's favour.** MEASURED, by parsing
 `src/content/room-catalog.ts` and grouping its rows: **18 rooms, 11 categories,
