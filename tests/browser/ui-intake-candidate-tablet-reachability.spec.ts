@@ -39,6 +39,3 @@ test('screened intake actions fit the tablet rail and respond to touch', async (
   await touch(`.hud-intake__candidate[data-candidate-id="${id}"] [data-candidate-accept]`);
   await expect(page.locator(`.hud-intake__candidate[data-candidate-id="${id}"]`)).toHaveCount(0);
 });
-
-
-
