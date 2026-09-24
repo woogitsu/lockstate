@@ -253,30 +253,25 @@ describe('the requirement a player has to act on moves, and the panel is told', 
  * the Security tab of a prison that lapsed **7 of 7** fights over in-game days
  * 10-15: `3 of 3 / Covered` beside `3 held * 1 free`.
  *
- * The two cases below are what that sentence could not tell apart, driven
- * through the production command path rather than argued: a prison at exactly
- * the requirement, whose responder pool is **empty**, and the same prison one
- * hire later, whose pool holds one. `describeStaffCoverage` answers identically
- * for both -- same badge, same figures, same shortage -- because the coverage
- * view model carries `required`/`assigned`/`shortage` and nothing about the
- * pool. So no wording on this rung may assert a state of the reserve; the only
- * honest thing it can say is where a responder comes from, which is what
- * *"Only free guards answer incidents."* said.
+ * The two cases below are what that former sentence could not tell apart,
+ * driven through the production command path: a prison at exactly the posted
+ * requirement, whose responder pool is **empty**, and the same prison one hire
+ * later, whose pool holds one. The post figures remain equal, but the new
+ * reserve figures distinguish them. Both are short of the five-guard target.
  *
  * **Past tense from 2026-09-05, and the reason is the block after the next one
  * (#989).** That sentence is retired for being one duty short rather than for
  * being wrong: a contraband sweep is claimed from the same pool, so the rung
- * now reads *"Incidents and searches need free guards."* Everything this
- * docblock argues is untouched -- the figures still cannot distinguish the two
- * prisons, and the sentence still asserts no state of the reserve.
+ * then read *"Incidents and searches need free guards."* That remains the
+ * covered rung's hint when the reserve is full. The reserve-short rung now
+ * reports the target and deficit separately.
  *
  * **This asserts nothing about balance and must not.** How large the reserve
- * should be is issue #941 option 1 and `AGENTS.md` reserves it to the owner;
- * `src/simulation/staff/dismissal.ts` is the precedent. What is asserted here
- * is only that the panel's figures do not distinguish the two prisons.
+ * should be remains issue #29's balance question. These tests assert the
+ * accepted ADR 0095 read-model target, not a change to response policy.
  */
-describe('the rung the panel calls covered does not say whether anyone can answer (#941)', () => {
-  it('has an empty responder pool at exactly the requirement, and reads the same one hire later', () => {
+describe('the reserve readout distinguishes free responders after posts are filled (#941, #893)', () => {
+  it('has an empty responder pool at exactly the requirement, then shows one free guard after another hire', () => {
     const runtime = twelveCellPrison();
     for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
     stepTo(runtime, runtime.kernel.tick + 60);
@@ -301,8 +296,8 @@ describe('the rung the panel calls covered does not say whether anyone can answe
     /*
      * **The whole defect, in one figure.** `claimableGuardIds` is the function
      * `IncidentResponseSystem.claimableResponders` calls -- not a re-derivation
-     * of it -- and it answers `0` in a prison the panel has just called
-     * `Covered`. `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` predicts
+     * of it -- and it answers `0` in a prison the panel now marks reserve-short.
+     * `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` predicts
      * exactly this in words: a player who hires exactly the requirement "will
      * watch every incident lapse."
      */
@@ -311,8 +306,8 @@ describe('the rung the panel calls covered does not say whether anyone can answe
     hire(runtime, 3);
     stepTo(runtime, runtime.kernel.tick + 20);
 
-    // One guard free -- and the coverage readout is byte-identical to the
-    // prison above it, which is why the sentence cannot be about the reserve.
+    // One guard free: the post figures stay equal, while the reserve deficit
+    // falls from five to four.
     expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
     expect(readout(runtime)).toMatchObject({ responseReserveAvailable: 1, responseReserveShortage: 4, hireCount: 4 });
   });
@@ -347,7 +342,7 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * [#989](https://github.com/matmaxalez/lockstate/issues/989)).
  *
  * The block above establishes that at exactly the posted requirement the
- * *responder* pool is empty and the panel's figures cannot tell that prison
+ * *responder* pool is empty. The new reserve figures distinguish that prison
  * from one hire later. #989 is that finding on `SearchSystem`: a contraband
  * sweep is staffed from the same `claimableGuardIds`, and
  * `SectorSearchDutySystem` will not even submit an order while that pool is
@@ -360,9 +355,9 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * (issue [#996](https://github.com/matmaxalez/lockstate/issues/996)): a sweep
  * is now staffed from `claimableSearchGuardIds`, the same pool less
  * `INCIDENT_RESPONSE_GUARD_RESERVE`, so it is **4 guards** that finds and 3
- * that does not. What #989 named is untouched by that -- the panel still reads
- * `2 of 2 · Covered` for every one of those prisons -- which is why the cases
- * below now carry three of them rather than two.
+ * that does not. What #989 named about search availability remains measurable
+ * below. The post pair stays `2 of 2`, while the reserve deficit falls with
+ * each hire.
  *
  * ## What is asserted, and what is deliberately not
  *
@@ -377,7 +372,7 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * Nothing here rules on how big the requirement should be. That is balance and
  * `AGENTS.md` reserves it to the owner; this file establishes the arithmetic.
  */
-describe('the rung the panel calls covered does not say whether anyone can search (#989)', () => {
+describe('the reserve readout beside filled posts and the search claim threshold (#989, #893)', () => {
   /**
    * `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS`, and long enough for several of it.
    *
@@ -407,19 +402,17 @@ describe('the rung the panel calls covered does not say whether anyone can searc
    * pool that cannot be emptied of responders. The hire that turns searching on
    * is now the **second** one past the requirement: the first is the reserve
    * `claimableSearchGuardIds` holds back. Both prisons past the requirement are
-   * kept here rather than one, because the case's subject is that the panel
-   * reads the same for all three -- which is the defect #989 named and #996
-   * did not close.
+   * kept here rather than one to show that the post pair stays equal while
+   * the reserve deficit changes. The search gate itself remains unchanged.
    */
-  it('orders no sweep at the requirement or one hire past it, orders them two hires past, and reads the same either way (#989, #996)', () => {
+  it('orders no sweep at the requirement or one hire past it, orders them two hires past, and shows each reserve deficit (#989, #996)', () => {
     const atRequirement = prisonWithGuards(2);
     const oneHirePast = prisonWithGuards(3);
     const twoHiresPast = prisonWithGuards(4);
 
-    // The premise: both prisons are on the covered rung, with the same badge,
-    // the same pair of figures and the same shortage. `assigned` is 2 in both
-    // -- the third guard is never posted, because the sector is not short --
-    // so the panel is not merely similar, it is identical.
+    // All three prisons fill two posts and remain reserve-short. Each added
+    // guard stays free because the sector has no post shortage, so the reserve
+    // figures distinguish states with the same post pair.
     const covered = {
       required: 2,
       assigned: 2,
@@ -437,7 +430,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     expect(claimableGuardIds(atRequirement.securityGuards)).toHaveLength(0);
 
     /*
-     * **The defect, in the figure the panel cannot show.** No order was ever
+     * At zero free guards, no order was ever
      * submitted -- not queued and cancelled, not queued and stuck: `orderIds`
      * is the queue plus the active jobs, so an empty one is the whole history
      * of this prison's searching.
@@ -450,7 +443,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     });
 
     /*
-     * One hire later, the same panel, and **still** no order: that guard is
+     * One hire later, the reserve deficit is four and **still** no order: that guard is
      * the incident reserve (#996), and the duty will not spend it. This is the
      * balance cost of that change, asserted in the file that measures what a
      * hire buys rather than only described in the ADR amendment.
@@ -459,7 +452,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     expect(oneHirePast.searchSystem.orderIds()).toEqual([]);
     expect(oneHirePast.searchSystem.getMetrics()).toMatchObject({ searchesCompleted: 0, searchesQueued: 0, searchesCancelled: 0 });
 
-    // Two hires past, the same panel again, and the duty runs.
+    // Two hires past, the deficit is three and the duty runs.
     expect(twoHiresPast.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
   });
 
