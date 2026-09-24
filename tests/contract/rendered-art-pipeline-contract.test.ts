@@ -25,6 +25,20 @@ const root = resolve(import.meta.dirname, '..', '..');
  * the source-art generator's own guard.
  */
 describe('rendered-art pipeline contract', () => {
+  it('keeps the unpublished sink source render consistent with its sidecar', async () => {
+    const sidecar = JSON.parse(await readFile(resolve(root, 'assets/rendered/environment/environment-objects.render.json'), 'utf8')) as {
+      entries: Array<{ assetId: string; image: string; sha256: string }>;
+    };
+    const sink = sidecar.entries.find((entry) => entry.assetId === 'fixture.cell.sink');
+    expect(sink).toBeDefined();
+    const bytes = await readFile(resolve(root, 'assets/rendered/environment', sink!.image));
+    const pointer = bytes.subarray(0, 200).toString('utf8');
+    const hash = pointer.startsWith('version https://git-lfs.github.com/spec/v1')
+      ? /oid sha256:([a-f0-9]{64})/u.exec(pointer)?.[1]
+      : createHash('sha256').update(bytes).digest('hex');
+    expect(hash, 'the prepared sink source render must match its reproducible sidecar').toBe(sink!.sha256);
+  });
+
   it('declares a content hash that matches the committed render and the published copy, in a full or pointer-only checkout', async () => {
     const catalogPath = resolve(root, 'public/game-content/rendered-art.v1.json');
     const catalog = JSON.parse(await readFile(catalogPath, 'utf8')) as {
