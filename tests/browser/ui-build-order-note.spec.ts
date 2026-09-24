@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 
 /**
@@ -65,6 +66,7 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
 
 /** The shipped sentence, from the catalogue the page itself renders. */
 const NOTE_TEXT = localizer.format(HUD_MESSAGE_KEY.buildNote);
+const PL_NOTE_TEXT = new Localizer({ locale: 'pl', catalogs: [messageCatalogPl] }).format(HUD_MESSAGE_KEY.buildNote);
 /** The word the status strip prints while the clock is stopped (#639 ruling 1). */
 const PAUSED_TEXT = localizer.format(HUD_MESSAGE_KEY.clockPaused);
 
@@ -441,5 +443,17 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
     await play.click();
     await expect(play).toHaveAttribute('data-queued-work', 'false');
     await expect(play.locator('.hud-clock__queued-count')).toBeHidden();
+    const runningNote = page.locator('.hud-build__order-note');
+    await expect(runningNote).toBeVisible();
+    await expect(runningNote).not.toContainText(/press play/i);
+    const polishFits = await runningNote.evaluate((note, polishText) => {
+      const probe = note.cloneNode(true) as HTMLElement;
+      probe.textContent = polishText;
+      note.parentElement!.append(probe);
+      const fits = probe.scrollHeight <= probe.clientHeight + 1;
+      probe.remove();
+      return fits;
+    }, PL_NOTE_TEXT);
+    expect(polishFits, `Polish clock guidance is clipped at 900x600: ${PL_NOTE_TEXT}`).toBe(true);
   });
 });

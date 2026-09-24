@@ -2356,7 +2356,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.step-up': 'Increase {field}',
   'hud.build.edge': 'Edge',
   'hud.build.submit': 'Place order',
-  'hud.build.note': 'Press Play; clock builds orders.',
+  'hud.build.note': 'Orders need the clock running.',
   'hud.build.arm': 'Place on map',
   /*
    * The removal mode (ADR 0028 phase 3). One word on the button, because
