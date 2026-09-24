@@ -1340,6 +1340,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       armed = (wasRemoving || !armed) && selectedId !== undefined;
       paintArmed();
       options.onArm(armed, selectedId, removing);
+      if (armed) foldForWorldIfOccluded();
     },
   });
   armButton.element.dataset['armed'] = 'false';
@@ -1428,6 +1429,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       paintArmed();
       paintBuy();
       options.onArm(armed, selectedId, removing);
+      if (armed) foldForWorldIfOccluded();
     },
   });
   removeButton.element.classList.add('hud-build__remove');
@@ -3106,8 +3108,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // Collapsible, because the panel and the thing it operates on compete for
   // the same screen. At 375px it covers most of the world, and the whole
   // interaction is now "point at the world" -- so folding it to its header
-  // while placing is not a nicety. Arming survives the fold: the tool is
-  // still yours, you just want to see what you are doing.
+  // while placing is not a nicety. Arming now folds it when the panel actually
+  // covers the centre of the canvas; the open desktop panel stays open. Arming
+  // survives the fold: the tool is still yours, you just want to see what you
+  // are doing.
   //
   // That paragraph was a claim about a control that did nothing for several
   // releases. `createPanel` folds a panel by setting `hidden` on its body, and
@@ -3133,6 +3137,30 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+
+  /**
+   * At phone width the expanded catalogue can cover the centre of the playable
+   * canvas. The player has just asked to act on that canvas, so yield it as
+   * Rooms does when zoning. Hit-testing the centre rather than assuming a
+   * viewport breakpoint also leaves the desktop panel open beside the map.
+   * The header remains a 44px disclosure: it announces its collapsed state and
+   * lets the player reopen the panel to change or stop the armed tool.
+   */
+  function foldForWorldIfOccluded(): void {
+    if (panelCollapsed) return;
+    const canvas = document.querySelector<HTMLCanvasElement>('#game-root canvas');
+    if (canvas === null) return;
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    const canvasBox = canvas.getBoundingClientRect();
+    if (x < canvasBox.left || x >= canvasBox.right || y < canvasBox.top || y >= canvasBox.bottom) return;
+    if (!panel.element.contains(document.elementFromPoint(x, y))) return;
+    panelCollapsed = true;
+    panel.setCollapsed(true);
+    // The arm/remove press was inside the body we just hid. Keep keyboard and
+    // screen-reader focus on the visible disclosure that reopens those actions.
+    panel.toggle?.focus();
+  }
   panel.body.append(
     catalogue.element,
     element('div', {
