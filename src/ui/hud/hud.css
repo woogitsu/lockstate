@@ -1859,6 +1859,13 @@
 
 .hud-staff__held-more[hidden] { display: none; }
 
+/* The confirmation below the payroll adds two lines. Reserve their height
+   while the roster is open so the first Dismiss press does not move the armed
+   button away from the coordinate the player just pressed. */
+.hud-staff__roster > .ui-section__body:has(.hud-staff__dismiss-confirm[hidden]) {
+  padding-bottom: calc(var(--space-2) + 40px * var(--ui-scale));
+}
+
 /* The standing daily wage bill, in the `On the payroll` header (issue #639
    ruling 2). Exactly `.hud-build__queue-count`'s treatment one panel over, and
    for its reasons: the header is the only part of a collapsed section a player
@@ -2406,6 +2413,14 @@
    together or that block's own comment about summing one token four times stops
    being true. */
 .hud-build__order-note { margin-top: calc(-1 * var(--hud-build-map-gutter)); }
+
+/* Fractional line boxes can round scrollHeight up while clientHeight rounds
+   down. Reserve the last physical pixel for the full sentence on both the
+   queued Build note and the short-window Staff warnings. */
+.hud-build__order-note,
+.hud-staff__hire-unassigned,
+.hud-staff__hire-note,
+.hud-staff__dismiss-confirm { padding-bottom: 1px; }
 
 /* `[hidden]` on the "and N more" line has to win, and it does not win on its
    own: that line also carries `.hud-build__note`, which the `max-height: 700px`
