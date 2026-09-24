@@ -134,3 +134,24 @@ including unavailable/refusal/event bands and all six work panels. It must
 not clone simulation logic or substitute the vendored identity mock's sample
 economy. The phone Build drawer in #1392 and the status priorities in #1382
 are integration prerequisites for those slices.
+
+## Independent review of the revised probes
+
+The revised A and B mockups now depict six routes, a Save trigger, and access
+to all nine status values. Direction B is the stronger small-window candidate:
+its 900×600 map is larger, and its compact command row keeps the time controls
+and urgent counts near the world. Both are still drawings, not proof of a
+usable responsive game.
+
+The phone drawings require correction before implementation. Their labelled
+3×2 navigation conflicts with the owner's #1192 icon-only decision below
+720px (`docs/VISUAL_IDENTITY.md`, lines 617–654), and several controls are only
+27–33px tall, below the 44px `--tap-target` floor (`src/ui/tokens.css`). The
+phone implementation should keep six distinct accessible icon tabs in one
+56px row; two 44px header rows and a collapsible 164px Build sheet leave about
+504px of unobscured map at 375×812. These numbers are design targets at 100%
+scale, not fixed heights at 200% scale. The real layout must reflow and pass
+the existing scale sweep. The Build catalogue arms a tool; any world dock
+switches the armed tool and mirrors its selected state. The nine-stat sheet
+must support keyboard close and focus return. Save, minimap, zoom, alerts,
+and all existing panel actions need explicit reachable homes.
