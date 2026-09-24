@@ -288,14 +288,11 @@ describe('the owner\'s amendment of 2026-09-02: the need wins when it is urgent'
     expect(runtime.containers.require('pantry').reservedOf('item.brick'), 'stock was reserved for an errand nobody took').toBe(0);
   });
 
-  it('measures what the kitchen actually does for the hunger it is chosen for, which is the pre-existing defect', () => {
+  it('makes food for a later meal without feeding the cook during the shift', () => {
     /*
-     * Reported, not fixed. The ruling routes a starving prisoner to
-     * `action.kitchen-work`, whose `hunger` effect is **1** a tick against
-     * `action.eat-meal`'s 4 -- and a work block allows no `meal` category, so
-     * the canteen is not reachable from here at all. What is asserted is the
-     * direction: the shift moves hunger *up*, so the ruling is an improvement
-     * on the errand (which would move it not at all) and not a cure.
+     * #592 changed the output of kitchen work: the urgent prisoner still
+     * avoids an errand and prepares food, but only a later canteen meal can
+     * satisfy hunger. The work block offers no meal action.
      */
     const runtime = prisonWithAKitchenAndAnErrand();
     const store = runtime.prisoners.entityStore;
@@ -315,6 +312,7 @@ describe('the owner\'s amendment of 2026-09-02: the need wins when it is urgent'
     const atStart = runtime.prisoners.needs.get(index, 'hunger');
     for (let tick = 0; tick < 100; tick += 1) runtime.kernel.step();
     const afterShift = runtime.prisoners.needs.get(index, 'hunger');
-    expect(afterShift, `the shift did not feed them at all: ${atStart} -> ${afterShift}`).toBeGreaterThan(atStart);
+    expect(runtime.prisoners.workOutput.portions).toBeGreaterThan(0);
+    expect(afterShift, `kitchen work should not directly feed the cook: ${atStart} -> ${afterShift}`).toBeLessThan(atStart);
   });
 });

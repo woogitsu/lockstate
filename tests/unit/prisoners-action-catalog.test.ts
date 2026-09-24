@@ -392,8 +392,7 @@ describe('every action category a schedule can allow, measured against the catal
 
     expect(rateOf('action.eat-in-cell', 'hunger')).toBeLessThan(rateOf('action.eat-meal', 'hunger'));
     expect(rateOf('action.common-room-recreation', 'recreation')).toBeLessThan(rateOf('action.yard-recreation', 'recreation'));
-    expect(rateOf('action.laundry-work', 'hygiene')).toBeLessThan(rateOf('action.shower', 'hygiene'));
-    expect(rateOf('action.kitchen-work', 'hunger')).toBeLessThan(rateOf('action.eat-meal', 'hunger'));
-    expect(rateOf('action.kitchen-work', 'hunger')).toBeLessThan(rateOf('action.eat-in-cell', 'hunger'));
+    expect(rateOf('action.laundry-work', 'hygiene')).toBeUndefined();
+    expect(rateOf('action.kitchen-work', 'hunger')).toBeUndefined();
   });
 });

@@ -29,10 +29,10 @@ Per the issue's explicit scope, this is deliberately bounded:
   `action.infirmary-treatment`, appended for issue #589 (the owner's ruling of
   2026-09-17).
   `action.kitchen-work` is `action.laundry-work`'s shape applied to
-  `room.kitchen` with no new figure in it: `'food-preparation'`, `hunger` at 1
-  against `action.eat-meal`'s 4, 120 ticks. It is a place to work and not a
-  supplier of the canteen -- no meal exists as an item and the canteen never
-  asks whether anybody cooked. `action.carry` is the odd one and the *Actions*
+  `room.kitchen` as a 120-tick shift on `'food-preparation'`. Since #592,
+  actual work prepares portions for canteen meals; work itself does not fill
+  hunger. Laundry work likewise produces clean kits that slow hygiene decay.
+  `action.carry` is the odd one and the *Actions*
   section says how: category `work`, **no room at all** -- its target is the
   third `ActionTarget` kind, `{ kind: 'job-board' }`, so the tiles come off the
   job rather than off a room instance -- no need effect, and a 5-tick
@@ -443,6 +443,13 @@ target would need the very room whose absence opens it.
 either runs: that field reaches the HUD verbatim through
 `projectPrisonerDetail`, and a "need fulfilled at tick N" that no need was
 fulfilled at is a sentence the simulation would not be keeping.
+
+**Since #592 the catalogue has five entries with no need effect.** The two
+additional entries are `action.kitchen-work` and `action.laundry-work`: they
+produce portions and clean kits instead of filling the worker's hunger or
+hygiene during the shift. Their separate `selectionNeedEffectsPerTick` keeps
+the existing need-based choice of a shift; it is not a direct need provision.
+The three-entry reading above is retained as the rule before production began.
 
 **This paragraph opened *"`action.free-association` is the catalogue's one
 entry with no need effect"* and that sentence was false from 2026-09-03**, when

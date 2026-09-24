@@ -3227,6 +3227,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // reaches the panel as `undefined` rather than as an empty model, because
     // "nobody asked" and "every room is finished" must not draw the same.
     roomsPanel.setRoomNeeds(next.roomNeeds);
+    roomsPanel.setMealPortions(next.counts?.mealPortions ?? 0);
     // And what is still being built, on the same terms: pulled rather than
     // published, absent when nothing asked, and passed straight through. The
     // panel decides what a queue looks like; this line decides nothing.

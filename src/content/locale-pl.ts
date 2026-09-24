@@ -538,6 +538,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
     'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają miejsce do spania, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
   'hud.status.earned-today': 'Zarobione dziś',
   'hud.status.labour-block': 'Pracuje {employed} / bez pracy {idle}',
+  'hud.rooms.meal-portions': 'Gotowe porcje: {portions}. Bez porcji posiłek w stołówce syci o połowę wolniej.',
   'hud.alert.event.economy.work-block-idle': 'Bez pracy w ostatnim bloku: {idle}. W więzieniu nie ma wyposażonej kuchni, pralni ani sali lekcyjnej.',
   /*
    * The `Zarobione dziś` chip's description while unmet needs are holding back

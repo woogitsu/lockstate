@@ -108,6 +108,26 @@ describe('prison labour in a local save', () => {
   });
 });
 
+describe('kitchen and laundry output in a local save', () => {
+  it('keeps partial production, portions, kits and the meal claim across a real envelope', () => {
+    const runtime = buildPopulatedPrison();
+    const prisonerId = runtime.prisoners.entityStore.getIdByIndex(0);
+    const output = runtime.prisoners.workOutput;
+    for (let tick = 0; tick < 49; tick++) output.recordKitchenTick('kitchen.save');
+    for (let tick = 0; tick < 80; tick++) output.recordLaundryTick('laundry.save', [prisonerId]);
+    output.recordKitchenTick('kitchen.save');
+    expect(output.mealEffectMultiplier(prisonerId, 500)).toBe(1);
+    for (let tick = 0; tick < 49; tick++) output.recordKitchenTick('kitchen.save');
+
+    const restored = saveAndLoad(runtime).prisoners.workOutput;
+    expect(restored.getSnapshot()).toEqual(output.getSnapshot());
+    expect(restored.hasCleanKit(prisonerId)).toBe(true);
+    expect(restored.mealEffectMultiplier(prisonerId, 500)).toBe(1);
+    restored.recordKitchenTick('kitchen.save');
+    expect(restored.portionsIn('kitchen.save')).toBe(1);
+  });
+});
+
 function step(runtime: SimulationRuntime, count: number): void {
   for (let index = 0; index < count; index += 1) runtime.kernel.step();
 }

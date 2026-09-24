@@ -55,6 +55,7 @@ export class NeedsDecaySystem implements SystemRegistration {
     private readonly query: EntityQuery,
     private readonly needs: NeedsComponent,
     private readonly accommodationCapacity?: () => number,
+    private readonly hasCleanKit?: (entityId: number) => boolean,
   ) {}
 
   public update(_context: SimulationContext): void {
@@ -67,7 +68,7 @@ export class NeedsDecaySystem implements SystemRegistration {
       for (const entityId of entityIds) {
         const index = this.store.getIndex(entityId);
         for (const needId of NEED_IDS) {
-          this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks));
+          this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, 0, needId === 'hygiene' && this.hasCleanKit?.(entityId) ? 0.5 : 1));
         }
       }
       return;
@@ -76,7 +77,7 @@ export class NeedsDecaySystem implements SystemRegistration {
     for (const entityId of entityIds) {
       const index = this.store.getIndex(entityId);
       for (const needId of NEED_IDS) {
-        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId]));
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks, extra[needId], needId === 'hygiene' && this.hasCleanKit?.(entityId) ? 0.5 : 1));
       }
     }
   }

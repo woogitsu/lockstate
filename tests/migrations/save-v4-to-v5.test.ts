@@ -104,7 +104,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   // (the owner's decisions of 2026-09-01 on ADR 0084 added it beside `objects`
   // under the same optional-field rule), and a room instance carried a
   // capacity and a capability list instead of a rectangle.
-  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, ...simulation } = bundle.simulation;
+  const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, roomFilth: _roomFilth, labourCredit: _labourCredit, workOutput: _workOutput, ...simulation } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,

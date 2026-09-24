@@ -11,6 +11,8 @@ describe('kitchen and laundry production (#592)', () => {
     expect(output.mealEffectMultiplier(7, 500)).toBe(1);
     expect(output.mealEffectMultiplier(7, 500)).toBe(1);
     expect(output.portions).toBe(0);
+    output.settleDay();
+    expect(output.mealEffectMultiplier(7, 500)).toBe(1);
     expect(output.mealEffectMultiplier(8, 500)).toBe(0.5);
   });
 

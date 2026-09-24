@@ -184,6 +184,7 @@ function statusStripSource(runtime: SimulationRuntime, tick: number) {
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
     labourCredit: runtime.labourCredit,
+    workOutput: runtime.prisoners.workOutput,
     rooms: runtime.prisoners,
     // The session's timetables rather than the module constant this source
     // previously left `projectStatusStrip` to default to

@@ -1204,6 +1204,7 @@ export const statusCountsSchema = z
     stateIncomeAccruedTodayMinorUnits: countSchema,
     labourEmployedLastBlock: countSchema.optional(),
     labourIdleLastBlock: countSchema.optional(),
+    mealPortions: countSchema.optional(),
     /**
      * How much of today's grant has been withheld so far because residents
      * have needs going unmet, in the same minor units

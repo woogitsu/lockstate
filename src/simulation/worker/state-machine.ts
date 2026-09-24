@@ -628,7 +628,7 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- twenty-four integers of counts beside at most one refusal record, which is
+   * -- twenty-five integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
    * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`

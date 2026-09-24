@@ -249,6 +249,7 @@ export interface RoomsPanel {
    * they draw no block for different reasons -- see `HudRoomNeedsViewModel`.
    */
   setRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
+  setMealPortions(portions: number): void;
   /**
    * Puts the panel's tool down, as `Escape` on the world asks (issue #959).
    *
@@ -591,6 +592,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   let notice: HudZoningNoticeViewModel | undefined;
   /** What the simulation last said the designated rooms are missing, or nothing asked yet. */
   let needs: HudRoomNeedsViewModel | undefined;
+  let mealPortions = 0;
 
   const selectedRoom = (): HudRoomViewModel | undefined =>
     model.rooms.find((entry) => entry.roomId === selectedId);
@@ -1071,13 +1073,17 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * looking at.
    */
   const ruleObjects = element('div', { className: 'hud-rooms__rule-objects' });
+  const rulePortions = element('div', { className: 'hud-rooms__rule-portions' });
   const ruleBlock = element('div', {
     className: 'hud-rooms__rule-block',
-    children: [ruleMinimum, ruleEnclosure, ruleObjects],
+    children: [ruleMinimum, ruleEnclosure, ruleObjects, rulePortions],
   });
 
   function paintRule(): void {
     const room = selectedRoom();
+    rulePortions.textContent = room?.roomId === 'room.kitchen'
+      ? t(HUD_MESSAGE_KEY.roomsMealPortions, { portions: mealPortions })
+      : '';
     const minimum = room?.minimum;
     ruleMinimum.textContent =
       minimum === undefined
@@ -2161,6 +2167,10 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     setRoomNeeds(next: HudRoomNeedsViewModel | undefined): void {
       needs = next;
       paintNeeds();
+    },
+    setMealPortions(next: number): void {
+      mealPortions = next;
+      paintRule();
     },
     standDown(): void {
       // The arming half of `setVisible(false)` below, and only that half: see

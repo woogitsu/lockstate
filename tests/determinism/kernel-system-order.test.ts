@@ -452,6 +452,8 @@ describe('kernel system ordering', () => {
       { id: 'prisoners.actions', order: 250 },
       // Count performed room work after the action transition at 250.
       { id: 'economy.prison-labour', order: 255 },
+      // #592 samples completed performing ticks after actions and before jobs.
+      { id: 'prisoners.work-output', order: 256 },
       /*
        * **`operations.jobs` (260) is gone from this list, and removing a row
        * is not lowering a floor** -- the floor is that every declared order in

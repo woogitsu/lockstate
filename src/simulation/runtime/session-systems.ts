@@ -333,6 +333,8 @@ export interface EncodedSessionSystems {
   readonly roomFilth: import('../prisoners/room-filth-ledger').RoomFilthSnapshot;
   /** Absent in saves written before work credits existed: no work accrued today. */
   readonly labourCredit?: import('../economy/labour-credit').LabourCreditSnapshot;
+  /** Optional in older V7 saves; output begins empty when the mechanic first appears. */
+  readonly workOutput?: import('../prisoners/work-output').WorkOutputSnapshot;
   readonly prisoners: EncodedPrisoners;
   /**
    * Every classification group's timetable, as the session is actually running
@@ -669,6 +671,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     roomFilth: runtime.prisoners.roomFilth.getSnapshot(),
     labourCredit: runtime.labourCredit.getSnapshot(),
+    workOutput: runtime.prisoners.workOutput.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -949,6 +952,7 @@ export function restoreSessionSystems(
     },
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
     roomFilth: systems.roomFilth,
+    workOutput: systems.workOutput ?? { kitchen: [], laundry: [], cleanKits: [], mealClaims: [] },
   },
   // The tick the restored session resumes at, which `Kernel.restoreState` has
   // already installed by the time this runs -- `restoreSimulationRuntime` calls

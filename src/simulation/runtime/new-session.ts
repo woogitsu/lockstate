@@ -62,6 +62,7 @@ import {
   type DisciplinaryEvidenceSource,
 } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
+import { WorkOutputSystem } from '../prisoners/work-output';
 import { RoomNeedsClearedNoticeSystem } from '../rooms/room-needs-cleared-notice';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
@@ -1102,6 +1103,23 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       block.endTickOfDay === (tick % DAY_LENGTH_TICKS) + 1,
     )),
   );
+  const workOutput = new WorkOutputSystem(
+    prisoners.workOutput,
+    (tick) => eligibleForWork(tick).flatMap((entityId) => {
+      const index = prisoners.entityStore.getIndex(entityId);
+      if (prisoners.currentAction.phase[index] !== ACTION_PHASES.indexOf('performing')) return [];
+      const action = DEFAULT_ACTIONS[prisoners.currentAction.actionIndex[index]!];
+      const kind = action?.id === 'action.kitchen-work' ? 'kitchen' : action?.id === 'action.laundry-work' ? 'laundry' : undefined;
+      const instanceId = prisoners.coldState.getActionTarget(entityId);
+      const instance = instanceId === undefined ? undefined : prisoners.roomInstances.getById(instanceId);
+      if (kind === undefined || instance === undefined || instance.width === undefined || instance.height === undefined) return [];
+      const objects = placedObjects.inRect({ x: instance.anchorTile.x, y: instance.anchorTile.y, width: instance.width, height: instance.height });
+      if (kind === 'kitchen' && (!objects.some((object) => object.objectId === 'object.stove') || !objects.some((object) => object.objectId === 'object.fridge'))) return [];
+      if (kind === 'laundry' && !objects.some((object) => object.objectId === 'object.washing-machine')) return [];
+      return [{ entityId, instanceId: instance.instanceId, kind }];
+    }),
+    () => prisoners.roomInstances.residentIdsWithExistingPlace(),
+  );
   /*
    * The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
    * amendment): the one-off notice at the moment the treasury crosses the
@@ -1657,6 +1675,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
   kernel.registerSystem(labourCredit);
+  kernel.registerSystem(workOutput);
   kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(roomNeedsClearedNotice);
   kernel.registerSystem(navigation);

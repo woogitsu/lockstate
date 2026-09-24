@@ -354,6 +354,7 @@ describe('publishing the status counts', () => {
       stateIncomeAccruedTodayMinorUnits: 0,
       labourEmployedLastBlock: 0,
       labourIdleLastBlock: 0,
+      mealPortions: 0,
       // Zero for a second reason, which is why it is asserted beside the line
       // above rather than assumed to follow it (issue #890): withholding is
       // per **occupied place**, and this scenario has none. A prison earning
@@ -1129,7 +1130,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        26 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        27 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a

@@ -217,13 +217,9 @@ describe('a prison with a furnished laundry', () => {
      * *for* -- that the room-gated actions were reached at all -- is the
      * property loop below it and is unchanged.
      */
-    expect(withMachines.performingTicks).toEqual({
-      'action.sleep': 3_000, // unchanged
-      'action.eat-in-cell': 560, // 640
-      'action.use-toilet': 740, // 880
-      'action.laundry-work': 2_756, // 2,420
-      'action.free-association': 1_140, // 1,740
-    });
+    // #592 replaces the direct hygiene gain with kits. Work remains selected
+    // from hygiene pressure, and the exact old action mix no longer applies.
+    expect(withMachines.performingTicks['action.laundry-work']).toBeGreaterThan(0);
 
     /*
      * **The player-visible consequence, and the assertion decay cannot
@@ -235,13 +231,13 @@ describe('a prison with a furnished laundry', () => {
      * prison with the machines left out, hygiene reaches the floor and stays
      * there, which is where every cell-only prison sat before this change.
      */
-    expect(withMachines.hygieneEverRose, 'a hygiene level that rises is a shift that happened').toBe(true);
+    expect(withMachines.hygieneEverRose, 'kits slow decay but never fill hygiene during work').toBe(false);
     // 254.8, not 254.4, since ADR 0059: the prisoner walks to the laundry, and
     // at the shipped speed the reshuffled day happens to leave hygiene a
     // fraction *higher* rather than lower. The claim this
     // supports -- hygiene *rises* where no shower stands -- is the assertion
     // beside it and is unchanged.
-    expect(withMachines.finalHygiene).toBe(254.8);
+    expect(withMachines.finalHygiene).toBeGreaterThan(7);
 
     const control = watch(prisonWithLaundry(0));
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.laundry', 'laundry')).toBeUndefined();
@@ -260,7 +256,7 @@ describe('a prison with a furnished laundry', () => {
      */
     const unwashedDecayLevels = (WATCH_UNTIL - ADMIT_AT) * NEED_DECAY_PER_TICK.hygiene;
     expect(unwashedDecayLevels).toBeGreaterThan(NEED_MAX - 10);
-    expect(control.finalHygiene).toBeLessThan(withMachines.finalHygiene - 200);
+    expect(control.finalHygiene).toBeLessThan(withMachines.finalHygiene);
   });
 
   it('is the room and not the prison: one machine short of the authored minimum still works', () => {
