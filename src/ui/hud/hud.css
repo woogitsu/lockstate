@@ -6736,10 +6736,26 @@
 .hud[data-layout-navigation-placement='drawer'] .hud__tabs {
   grid-area: middle;
   justify-self: start;
-  align-self: start;
+  align-self: stretch;
   position: relative;
   z-index: 4;
   padding: var(--space-2);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1 0 100%;
+  order: 1;
+  flex-wrap: wrap;
+  overflow-x: visible;
+  margin-right: 0;
+  padding-block: var(--space-1);
+  row-gap: var(--space-1);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat {
+  min-width: 0;
 }
 
 .hud[data-layout-navigation-placement='drawer'] .hud__tabs > .hud-layout__arrow { display: none; }
@@ -6759,12 +6775,12 @@
 .hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner:not([hidden]) {
   position: absolute;
   top: var(--space-2);
-  left: 100%;
+  bottom: var(--space-2);
+  left: calc(10 * var(--space-3));
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(480px, calc(100vw - 12 * var(--space-3)));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(720px, calc(100vw - 12 * var(--space-3)));
   max-width: none;
-  max-height: calc(100vh - var(--space-3));
   overflow-y: auto;
   border: var(--hairline) solid var(--border-strong);
   background: var(--surface-raised);
@@ -6784,6 +6800,7 @@
 .hud[data-layout-navigation-placement='drawer'] .hud__aside {
   overflow-y: auto;
   overscroll-behavior: contain;
+  min-height: var(--tap-target);
 }
 
 /* Full HD operations frame (owner's 2026-09-24 direction A).
