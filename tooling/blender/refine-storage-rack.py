@@ -4,7 +4,15 @@ Run with Blender 5.2 in background against environment.mvp.catalog.blend.
 Only furniture.storage.rack.wooden is changed. Re-running is idempotent.
 """
 
+import sys
+from pathlib import Path
+
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402
+
+pipeline_common.require_blender_version()
 
 ASSET_ID = "furniture.storage.rack.wooden"
 COLLECTION = bpy.data.collections[ASSET_ID]
