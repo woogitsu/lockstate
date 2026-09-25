@@ -792,7 +792,7 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `dbd24ea3` (**v0.0.771**) by the delta method,
+Re-anchored at `main` @ `1b7dedaac` (**v0.0.785**) by the delta method,
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -21805,7 +21805,7 @@ can check, with the unchecked part unmeasured in both directions.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 
-Read at `dbd24ea3` (**v0.0.771**). The window `9e6361c9..dbd24ea3`
+Read at `1b7dedaac` (**v0.0.785**). The window `9e6361c9..1b7dedaac`
 contains nine non-release first-parent landings and thirty-six commits.
 The landings are #1407, #1410, #1411, #1412, #1435, #1437, #1439,
 #1377 and #1445, in that order. The changed paths cover Full HD HUD
