@@ -2136,6 +2136,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const alertsNone = eyebrowText(t(HUD_MESSAGE_KEY.alertsUnknown), 'hud-alerts__none');
   alertsSection.body.append(alertList, alertsNone);
 
+  // The Full HD Build view gives the map back its lower-left corner by
+  // starting with the minimap folded. A player opening it keeps that choice
+  // for subsequent Build visits in this HUD session.
+  const fullHdBuild = window.matchMedia('(min-width: 1920px) and (min-height: 1080px)');
+  let buildMinimapExpanded = false;
+  let alertsInPhoneTier = false;
+  let corner!: HTMLElement;
+  const compactBuildMinimap = (): boolean =>
+    fullHdBuild.matches && state.activeTab === 'build' && !buildMinimapExpanded;
+
   const minimapPanel: Panel = createPanel({
     title: t(HUD_MESSAGE_KEY.minimapTitle),
     icon: 'minimap',
@@ -2145,6 +2155,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
       collapsed: isPanelCollapsed(state, 'minimap'),
       onToggle: () => {
+        if (fullHdBuild.matches && state.activeTab === 'build') {
+          buildMinimapExpanded = !buildMinimapExpanded;
+          paintState();
+          return;
+        }
         const collapsed = !isPanelCollapsed(state, 'minimap');
         dispatchShell(
           { kind: 'toggle-panel', panel: 'minimap' },
@@ -2170,7 +2185,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * close over `layout`, which does not exist yet when it first runs.
    */
   function placeAlertsFold(phone: boolean): void {
-    (phone ? overviewPanel.foldSlot : minimapPanel.body).append(alertsSection.element);
+    alertsInPhoneTier = phone;
+    const home = phone
+      ? overviewPanel.foldSlot
+      : fullHdBuild.matches && state.activeTab === 'build' && corner !== undefined
+        ? corner
+        : minimapPanel.body;
+    alertsSection.element.classList.toggle('hud-alerts--detached', home === corner);
+    if (alertsSection.element.parentElement !== home) home.append(alertsSection.element);
   }
 
   /*
@@ -2245,7 +2267,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
+  corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -2949,6 +2971,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   function paintState(): void {
     hud.dataset['activeTab'] = state.activeTab;
+    placeAlertsFold(alertsInPhoneTier);
     for (const tab of tabs) tab.setActive(tab.id === state.activeTab);
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
@@ -2974,10 +2997,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     securityPanel.setVisible(state.activeTab === 'security');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
-      if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
+      if (panel === 'minimap') {
+        minimapPanel.setCollapsed(
+          fullHdBuild.matches && state.activeTab === 'build'
+            ? compactBuildMinimap()
+            : collapsed,
+        );
+      }
       else alertsSection.setCollapsed(collapsed);
     }
   }
+
+  fullHdBuild.addEventListener('change', paintState);
 
   // ---- alerts ------------------------------------------------------
   const alertRows = new Map<string, ListRow>();
@@ -3403,6 +3434,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       applyState(hudShellReducer(state, action));
     },
     destroy: () => {
+      fullHdBuild.removeEventListener('change', paintState);
       gate.dispose();
       // Tearing the layout down is also what ends a drag that was still live:
       // `ResizeSeparator.destroy` reports `'abandoned'` and removes the
