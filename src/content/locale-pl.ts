@@ -1158,6 +1158,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // the English does.
   'hud.overview.title': 'Finanse',
   'hud.overview.none': 'Żadne więzienie nie przesyła danych.',
+  'hud.overview.income-note': 'Państwo płaci za zajęte miejsca na koniec każdego dnia.',
   'hud.overview.wages': 'Pensje dziennie',
 
   'hud.intake.title': 'Przyjęcia',
