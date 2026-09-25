@@ -99,7 +99,7 @@ own work.
 > same shape `AGENTS.md` flags in its entries of 2026-09-08 and 2026-09-09.
 >
 > **What the catch-up changed and what it deliberately did not.** Coordinates
-> into `src/` (`src/simulation/security/deployment-system.ts:328`) were re-aimed at the files as they stand on that commit, and one
+> into `src/` (`src/simulation/security/deployment-system.ts:335`, `assignUnassignedGuards`) were re-aimed at the files as they stand on that commit, and one
 > row of the measured ladder is corrected in a marked note where issue #996
 > moved it. **No measurement was re-run and re-stated as though it had been
 > taken today**: every figure below is dated to `ac58c457` in the text, and the
