@@ -1,4 +1,4 @@
-# What the owner still has to decide, and where an accepted decision contradicts the code
+﻿# What the owner still has to decide, and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
