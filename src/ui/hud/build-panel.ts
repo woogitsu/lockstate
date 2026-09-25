@@ -2403,6 +2403,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       shown.deliveries.map((delivery) => delivery.orderId),
       nowMs,
       PENDING_DELIVERY_ROW_SETTLE_MS,
+      'bottom',
     );
 
     let drawn = 0;
@@ -2911,6 +2912,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       shown.orders.map((order) => order.orderId),
       nowMs,
       BUILD_QUEUE_ROW_SETTLE_MS,
+      'bottom',
     );
 
     let drawn = 0;

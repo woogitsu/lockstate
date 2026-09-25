@@ -1315,6 +1315,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       guards.map((guard) => String(guard.entityId)),
       nowMs,
       HELD_GUARD_ROW_SETTLE_MS,
+      'bottom',
     );
 
     let drawn = 0;
@@ -1777,6 +1778,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       rosterWindow.map((member) => String(member.entityId)),
       nowMs,
       STAFF_ROSTER_ROW_SETTLE_MS,
+      'bottom',
     );
 
     let drawn = 0;
