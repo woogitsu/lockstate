@@ -1740,6 +1740,10 @@ def architectural(collection, root, asset_id):
             for y in (-0.45, -0.35):
                 cylinder(collection, root, f"Dark plate bolt.{x}.{y}", (x, y, 1.032), 0.023, 0.014, "steel", 12)
         cylinder(collection, root, "Wall pipe socket", (0, -0.30, 1.05), 0.105, 0.13, "galvanized_edge", 32)
+        cylinder(collection, root, "Recessed steel socket cover", (0, -0.30, 1.124),
+            0.073, 0.014, "steel", 48)
+        cylinder(collection, root, "Small retaining screw", (0, -0.30, 1.136),
+            0.018, 0.008, "galvanized_edge", 48)
         box(collection, root, "Bent brushed-steel arm", (0, -0.175, 1.055), (0.105, 0.30, 0.10), "galvanized", 0.045)
         cylinder(collection, root, "Coupling dark joint", (0, -0.085, 0.88), 0.095, 0.058, "steel", 32)
         cylinder(collection, root, "Head coupling bright sleeve", (0, -0.075, 0.89), 0.108, 0.062, "galvanized_edge", 32)

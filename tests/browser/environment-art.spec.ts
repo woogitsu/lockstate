@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'showerVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -143,6 +143,40 @@ test.describe('the environment artwork', () => {
     if (process.env['LOCKSTATE_CAPTURE_STOVE_ART'] === '1') {
       await page.screenshot({ path: testInfo.outputPath('furnished-kitchen-stove-1920x1080.png') });
     }
+  });
+
+  test('two shower fixtures are drawn over ceramic in a furnished Full HD room', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'showerVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 13.5 * fixture.tileSizePx, y: 13.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.shower-head')).toEqual([
+      expect.objectContaining({ x: 12 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+      expect.objectContaining({ x: 14 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Shower Room');
+    if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-shower-1920x1080.png') });
+    }
+  });
+
+  test('the shower wall socket has a recessed steel cover at game scale', async ({ page }) => {
+    await openHarness(page);
+    const socket = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.shower-head');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        cover: harness.atlasPixel(frame.x + 58, frame.y + 30),
+        screw: harness.atlasPixel(frame.x + 64, frame.y + 30),
+      };
+    });
+    expect(socket?.size).toEqual([128, 128]);
+    expect(socket?.cover?.[3]).toBe(255);
+    expect(socket?.screw?.[3]).toBe(255);
+    expect(channelDistance(socket!.cover!, socket!.screw!)).toBeGreaterThan(40);
   });
 
   test('the packed frames hold decoded photographic pixels, not a Git LFS pointer', async ({ page }) => {

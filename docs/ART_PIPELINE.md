@@ -463,6 +463,12 @@ radial grate remain visible in the game atlas rather than forming one flat
 cross. The furnished 1920×1080 kitchen captures the same buildables before and
 after the Blender change; neither kitchen rules nor player text change.
 
+**2026-09-25 shower fixture revision:** the existing 1×1 shower head keeps its
+blue-grey enamel, teal rim, valve colours, and perforated face. A recessed
+steel socket cover and small retaining screw replace the large flat bright
+circle visible above the head in the top-down game view. The source scene and
+furnished Full HD shower capture carry this detail; room rules are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed

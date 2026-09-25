@@ -174,8 +174,8 @@
     {
       "assetId": "fixture.shower.head",
       "image": "fixture.shower.head.png",
-      "sha256": "7ad0833f934185afa428e32045361c395f366d5c61456e3648219cbeca7ee3d8",
-      "pixelSha256": "25375edee009097f0ed95c683471c377fbf1c1035036dc75601d55fcdd9fc8d7",
+      "sha256": "9c5d57a07942b8c1b43bf088a8ec69cbd8cfbd47b0200eaf4f2f7950d9841cb1",
+      "pixelSha256": "dac310db3954e8df80ef45e4487a066e4c18eb9fad01e129ff2f42fead476c40",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
