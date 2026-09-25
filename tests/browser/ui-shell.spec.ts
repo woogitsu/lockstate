@@ -46,7 +46,7 @@ test('FullHD save panel starts compact, keeps status visible and opens by keyboa
   await expect(disclosure).not.toHaveAttribute('open', '');
   await expect(summary).toBeVisible();
   await expect(panel.locator('.save-panel__status')).toBeVisible();
-  await expect(panel.getByRole('button', { name: 'New prison' })).toBeHidden();
+  await expect(panel.getByRole('button', { name: 'New prison' })).toBeVisible();
 
   await summary.focus();
   await page.keyboard.press('Enter');
@@ -61,6 +61,7 @@ test('FullHD save panel starts compact, keeps status visible and opens by keyboa
   await expect(disclosure).not.toHaveAttribute('open', '');
   await expect(panel.locator('.save-panel__status')).toContainText('did not reply within 15000ms');
   await expect(panel.locator('.save-panel__status')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'New prison' })).toBeVisible();
 
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(summary).toBeVisible();
