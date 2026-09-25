@@ -2824,6 +2824,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const rail = element('div', { className: 'hud__rail', children: [aside, side] });
 
   // ---- bottom-centre tab bar ---------------------------------------
+  let closeNavigationDrawer = (): void => {};
   const tabs: TabButton[] = HUD_TABS.map((definition) =>
     createTabButton({
       id: definition.id,
@@ -2833,11 +2834,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       onSelect: (id: string) => {
         const tab = id as HudTabId;
         dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
+        closeNavigationDrawer();
       },
     }),
   );
 
-  const tabsInner = element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) });
+  const tabsInner = element('div', {
+    className: 'hud-tabs__inner',
+    attributes: { id: 'hud-navigation-sections' },
+    children: tabs.map((tab) => tab.element),
+  });
   const tabBar = element('nav', {
     className: 'hud__tabs',
     attributes: { 'aria-label': t(HUD_MESSAGE_KEY.tabsRegion) },
@@ -2936,6 +2942,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      */
     onTierChange: placeAlertsFold,
   });
+  closeNavigationDrawer = (): void => layout.closeNavigationDrawer();
   strip.layoutSlot.append(layout.menu);
 
   // Only the controls that issue a *command* are disabled while one is in

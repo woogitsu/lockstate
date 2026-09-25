@@ -6728,6 +6728,109 @@
   bottom: 100%;
 }
 
+/* A short, enlarged desktop keeps the six sections in an on-demand drawer.
+ * The closed trigger uses one tap target; the open panel is temporary and
+ * covers the map only while the player is choosing a section. */
+.hud-navigation-drawer__trigger { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud__tabs {
+  grid-area: middle;
+  justify-self: start;
+  align-self: stretch;
+  position: relative;
+  z-index: 4;
+  padding: var(--space-2);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1 0 100%;
+  order: 1;
+  flex-wrap: wrap;
+  overflow-x: visible;
+  margin-right: 0;
+  padding-block: var(--space-1);
+  row-gap: var(--space-1);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat {
+  display: grid;
+  grid-template-columns: var(--icon-size-sm) minmax(0, 1fr) max-content;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: var(--space-1);
+  row-gap: 2px;
+  min-width: 0;
+}
+
+/* A badge shares the number's line, while the label keeps the full text lane.
+ * In the three-column zoom layout, flex shrank the label's box but still
+ * painted its nowrap glyphs underneath the badge. */
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat > .ui-icon {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__body { display: contents; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__value { grid-column: 2; grid-row: 1; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__label {
+  grid-column: 1 / 4;
+  grid-row: 2;
+  white-space: normal;
+}
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .hud-metric__trailing {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud__tabs > .hud-layout__arrow { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud-navigation-drawer__trigger {
+  display: inline-flex;
+  pointer-events: auto;
+  touch-action: auto;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border-strong);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner:not([hidden]) {
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: calc(10 * var(--space-3));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(720px, calc(100vw - 12 * var(--space-3)));
+  max-width: none;
+  overflow-y: auto;
+  border: var(--hairline) solid var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner[hidden] { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner > .ui-tab {
+  min-width: 0;
+  min-height: var(--tap-target);
+  height: var(--tap-target);
+  flex-direction: row;
+  align-items: center;
+  padding-block: 0;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud__aside {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: var(--tap-target);
+}
+
 /* Full HD operations frame (owner's 2026-09-24 direction A).
  * Keep the existing controls and player-resizable widths. The status row is
  * built from projectStatusMetrics(), including unknowns and badges; CSS only
