@@ -63,6 +63,8 @@ test('Full HD HUD at 200% keeps the world visible and alert actions reachable', 
     const placeholderBox = minimap.querySelector<HTMLElement>('.hud-minimap__placeholder')!.getBoundingClientRect();
     const dismiss = list.querySelector<HTMLElement>('button')!;
     const dismissBox = dismiss.getBoundingClientRect();
+    const metrics = [...document.querySelectorAll<HTMLElement>('.hud-strip__metrics > .ui-stat')];
+    const metricsBox = document.querySelector<HTMLElement>('.hud-strip__metrics')!.getBoundingClientRect();
     const hit = (box: DOMRect, element: Element) => {
       const target = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
       return target === element || element.contains(target);
@@ -73,6 +75,13 @@ test('Full HD HUD at 200% keeps the world visible and alert actions reachable', 
       cornerMaxHeight: getComputedStyle(corner).maxHeight,
       cornerTop: cornerBox.top,
       cornerHeight: cornerBox.height,
+      cornerWidth: cornerBox.width,
+      metricCount: metrics.length,
+      metricsVisible: metrics.every((metric) => {
+        const box = metric.getBoundingClientRect();
+        return box.left >= metricsBox.left - 1 && box.right <= metricsBox.right + 1
+          && box.top >= metricsBox.top - 1 && box.bottom <= metricsBox.bottom + 1;
+      }),
       minimapVisible: minimap.getBoundingClientRect().height > 0,
       alertsScroll: list.scrollHeight > list.clientHeight,
       zoomHit: hit(zoomBox, zoom),
@@ -91,10 +100,14 @@ test('Full HD HUD at 200% keeps the world visible and alert actions reachable', 
 
   expect(geometry.cornerTop, JSON.stringify(geometry)).toBeGreaterThanOrEqual(540);
   expect(geometry.cornerHeight).toBeLessThanOrEqual(540);
+  expect(geometry.cornerWidth, JSON.stringify(geometry)).toBeLessThanOrEqual(600);
+  expect(geometry.metricCount).toBe(9);
+  expect(geometry.metricsVisible, JSON.stringify(geometry)).toBe(true);
   expect(geometry.minimapVisible).toBe(true);
   expect(geometry.alertsScroll).toBe(true);
   expect(geometry.zoomHit).toBe(true);
   expect(geometry.mapHit, JSON.stringify(geometry)).toBe(true);
+  expect(geometry.mapHeight, JSON.stringify(geometry)).toBeGreaterThanOrEqual(110);
   expect(geometry.placeholderContained, JSON.stringify(geometry)).toBe(true);
   expect(geometry.dismissHit, JSON.stringify(geometry)).toBe(true);
 });
