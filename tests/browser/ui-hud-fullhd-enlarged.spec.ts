@@ -131,11 +131,25 @@ test('Full HD HUD at 200% reads the regime action and initial save actions witho
     const label = editor.querySelector<HTMLElement>('.ui-section__eyebrow')!;
     const panel = document.querySelector<HTMLElement>('.save-panel')!;
     const panelBox = panel.getBoundingClientRect();
-    const buttons = [...panel.querySelectorAll<HTMLElement>('.save-panel__actions .save-panel__button')];
+    const buttons = [...panel.querySelectorAll<HTMLElement>('.save-panel__button')];
+    const create = panel.querySelector<HTMLElement>('.save-panel__create')!;
+    const heading = panel.querySelector<HTMLElement>('.save-panel__heading')!;
+    const createBox = create.getBoundingClientRect();
+    const headingBox = heading.getBoundingClientRect();
+    const hit = document.elementFromPoint(createBox.left + createBox.width / 2, createBox.top + createBox.height / 2);
+    const colour = getComputedStyle(create);
+    const channels = (value: string) => [...value.matchAll(/[\d.]+/g)].slice(0, 3).map((match) => Number(match[0]) / 255);
+    const luminance = (value: string) => channels(value).map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+      .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index]!, 0);
+    const light = Math.max(luminance(colour.color), luminance(colour.backgroundColor));
+    const dark = Math.min(luminance(colour.color), luminance(colour.backgroundColor));
     return {
       label: label.textContent,
       labelFits: label.scrollWidth <= label.clientWidth + 1 && label.getBoundingClientRect().right <= editor.getBoundingClientRect().right,
-      actionFits: buttons.every((button) => button.getBoundingClientRect().bottom <= panelBox.bottom + 1),
+      actionFits: createBox.left >= panelBox.left && createBox.right <= panelBox.right && createBox.bottom <= panelBox.bottom + 1,
+      actionHit: hit === create || create.contains(hit),
+      headingSeparated: headingBox.right <= createBox.left,
+      actionContrast: (light + 0.05) / (dark + 0.05),
       buttons: buttons.length,
     };
   });
@@ -144,4 +158,7 @@ test('Full HD HUD at 200% reads the regime action and initial save actions witho
   expect(reading.labelFits, JSON.stringify(reading)).toBe(true);
   expect(reading.buttons).toBe(4);
   expect(reading.actionFits, JSON.stringify(reading)).toBe(true);
+  expect(reading.actionHit, JSON.stringify(reading)).toBe(true);
+  expect(reading.headingSeparated, JSON.stringify(reading)).toBe(true);
+  expect(reading.actionContrast, JSON.stringify(reading)).toBeGreaterThanOrEqual(4.5);
 });
