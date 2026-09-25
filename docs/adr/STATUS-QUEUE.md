@@ -792,7 +792,8 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `dbd24ea3` (**v0.0.771**) by the delta method,
+
+Re-anchored at `main` @ `5a8e7562` (**v0.0.782**) by the delta method,
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -802,6 +803,7 @@ of §§3-6; neither budget moves.
 
 **The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
 `9e6361c9` (**v0.0.762**) by the delta method,"*
+
 from `5ed25544`. This is the Full HD inspector integration commit in the
 first-parent history of the main tree this branch read. The previous anchor
 was twenty-three first-parent landings ago, thirteen over the unchanged
@@ -29449,6 +29451,10 @@ the amendment it was accepted *as* instead of rewriting the passage that records
 it.
 
 ---
+
+## 3. The 2026-09-25 re-anchor at 5a8e7562 (v0.0.782)
+
+Re-read §§3-6 against main @ 5a8e7562 (**v0.0.782**). The ADR census remains **Next free number: 0124**.
 
 ## How to act on a future entry, mechanically
 

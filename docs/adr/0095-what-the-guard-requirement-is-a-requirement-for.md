@@ -193,7 +193,7 @@ nothing about the unassigned axis. One level down settles it.
 `describeStaffCoverage`) has three
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`
-(`src/ui/simulation-staff-coverage.ts`, whose own docblock says
+(`src/ui/simulation-staff-coverage.ts`, `staffCoverageFromProjection`, whose own docblock says
 *"What it computes, which is nothing"*). `shortage <= 0` with `assigned > 0` is
 the top rung:
 
