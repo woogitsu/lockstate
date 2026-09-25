@@ -18,6 +18,7 @@ const LOCAL_ONLY: AccountSessionState = { kind: 'local-only', reason: 'never-sig
 
 interface SlotOverrides {
   readonly displayName?: string;
+  readonly usesDefaultName?: true;
   readonly updatedAt?: number;
   readonly generationIds?: readonly string[];
   readonly currentGenerationId?: string | undefined;
@@ -38,6 +39,7 @@ function slot(prisonId: string, overrides: SlotOverrides = {}): PrisonSlotMetada
     prisonId,
     gameVersion: 'lockstate-0.0.0',
     ...(overrides.displayName === undefined ? {} : { displayName: overrides.displayName }),
+    ...(overrides.usesDefaultName === undefined ? {} : { usesDefaultName: overrides.usesDefaultName }),
     currentGenerationId: 'currentGenerationId' in overrides ? overrides.currentGenerationId : generationIds.at(-1),
     ...(overrides.currentRevision === undefined ? {} : { currentRevision: overrides.currentRevision }),
     generationIds,
@@ -58,6 +60,10 @@ function project(overrides: Partial<SaveListProjectionInput>): ReturnType<typeof
 }
 
 describe('the save list distinguishes where each prison actually lives (#34)', () => {
+  it('preserves the stable default-name marker for account list rendering', () => {
+    const [row] = project({ local: [slot('p1', { usesDefaultName: true })] });
+    expect(row).toMatchObject({ prisonId: 'p1', displayName: undefined, usesDefaultName: true });
+  });
   it('marks a prison that exists only on this device', () => {
     const [row] = project({ local: [slot('p1')] });
     expect(row).toMatchObject({ prisonId: 'p1', availability: 'local-only', sync: 'local-only', cloudRevision: undefined });

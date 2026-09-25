@@ -69,9 +69,10 @@ test.describe('a browser that asks for Polish', () => {
         request.onerror = () => reject(request.error);
       });
       const transaction = database.transaction('prisons', 'readwrite');
-      for (const [prisonId, displayName] of [['legacy-default', 'New Prison'], ['custom', 'Cell Block A']]) {
+      for (const [prisonId, displayName] of [['legacy-default', 'New Prison'], ['custom', 'Cell Block A'], ['both', 'Legacy Override']]) {
         transaction.objectStore('prisons').put({
           prisonId, gameVersion: 'lockstate-0.0.0', displayName,
+          ...(prisonId === 'both' ? { usesDefaultName: true } : {}),
           currentGenerationId: undefined, generationIds: [], createdAt: 1_000, updatedAt: 1_000,
         });
       }
@@ -84,6 +85,7 @@ test.describe('a browser that asks for Polish', () => {
     await page.reload();
     await expect(page.locator('.save-panel__item-label', { hasText: 'New Prison (0 gen.)' })).toHaveCount(1);
     await expect(page.locator('.save-panel__item-label', { hasText: 'Cell Block A (0 gen.)' })).toHaveCount(1);
+    await expect(page.locator('.save-panel__item-label', { hasText: 'Legacy Override (0 gen.)' })).toHaveCount(1);
   });
 
   test('gives a newly created prison a Polish default name', async ({ page }) => {

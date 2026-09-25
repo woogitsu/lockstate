@@ -1971,6 +1971,7 @@ the live row, deletion confirmation, tombstone row or restore status. The
 tombstone retains the marker with the slot. Older slots without the marker
 keep their stored `displayName` verbatim, even when it happens to be the old
 English or Polish default; their provenance cannot be inferred from the text.
+If both fields are present, the literal `displayName` takes precedence.
 An absent marker also retains the historical `prisonId` fallback. This is an
 optional metadata field, so the IndexedDB store version and save-envelope
 version stay unchanged; the strict slot decoder accepts old records as before.
