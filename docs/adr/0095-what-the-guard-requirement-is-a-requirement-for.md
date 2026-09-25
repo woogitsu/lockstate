@@ -156,7 +156,7 @@ finding.
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
-   (`src/simulation/security/post-eligibility.ts:110`, `claimableGuardIds`).
+   (`src/simulation/security/post-eligibility.ts:103`, `claimableGuardIds`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
    (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
