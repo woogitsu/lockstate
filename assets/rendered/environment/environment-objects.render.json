@@ -529,8 +529,8 @@
     {
       "assetId": "furniture.kitchen.fridge",
       "image": "furniture.kitchen.fridge.png",
-      "sha256": "9b96b214b6feccd2771155b6c9a55ac9d99496d6238d7ceaff57d3c227c4bc09",
-      "pixelSha256": "857315a979d5b77e78f04357465071b50471b3585042200551918ddc23ebe1cb",
+      "sha256": "a0a128f087d4ad2d248380572d539dffaad4e93dc74bea9ab08f0ca5d67c4c39",
+      "pixelSha256": "a0c65bd5f40f65848a89aa200db27c80365cf2ed328c12e8b7a57e6cf1a9f571",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -718,8 +718,8 @@
     {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
-      "sha256": "3914da57eb2a36129dc48249ac3b0508a2ba952bbd9c31919fdb3c03c2b8bad7",
-      "pixelSha256": "75ec61dedc4082a1bf55e154d8aae62aca84609a61b77e58fc0eacc35f763747",
+      "sha256": "a7f51480a957ba348af55a8a2905973f06df47b6a954c8d7cef6f95e4fa5f8d8",
+      "pixelSha256": "27f796cedf182c745db526384a738cf9d8507e17e82c6f0bde660cc505d3fa80",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
