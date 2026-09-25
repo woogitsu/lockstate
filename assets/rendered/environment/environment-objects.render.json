@@ -147,15 +147,15 @@
     {
       "assetId": "fixture.cell.waste_bin",
       "image": "fixture.cell.waste_bin.png",
-      "sha256": "a83436788692d341ca16f27e05cd6cc4b3debb4a2e2c6a83d4c2c6fe93cd72fb",
-      "pixelSha256": "7e15aafb08e31b65f1d2cd2ad9ef040a742dd6c44778f376403e7cba527393bf",
+      "sha256": "45fa134cca8ca7f867107c6c3b638ceb89f2dc71d9da04a013ddfff07192149e",
+      "pixelSha256": "7e0a1464a78930b39144963ccdd1c9c688f997300636cfb90bf5a6f83239f637",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.45652,
-        "height": 1.45652
+        "width": 1.209602,
+        "height": 1.209602
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -164,11 +164,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 65,
-        "y": 13,
-        "width": 126,
-        "height": 208,
-        "opaquePixels": 18742
+        "x": 52,
+        "y": 29,
+        "width": 152,
+        "height": 214,
+        "opaquePixels": 26410
       }
     },
     {

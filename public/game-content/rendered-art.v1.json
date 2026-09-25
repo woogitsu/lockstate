@@ -80,8 +80,8 @@
     {
       "assetId": "fixture.cell.waste_bin",
       "contentVersion": 1,
-      "image": "source-art/rendered.fixture.cell.waste_bin.a83436788692.png",
-      "sha256": "a83436788692d341ca16f27e05cd6cc4b3debb4a2e2c6a83d4c2c6fe93cd72fb",
+      "image": "source-art/rendered.fixture.cell.waste_bin.45fa134cca8c.png",
+      "sha256": "45fa134cca8ca7f867107c6c3b638ceb89f2dc71d9da04a013ddfff07192149e",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -91,8 +91,8 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1.45652,
-        "height": 1.45652
+        "width": 1.209602,
+        "height": 1.209602
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {

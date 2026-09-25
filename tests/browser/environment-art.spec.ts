@@ -461,6 +461,17 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(socket!.cover!, socket!.screw!)).toBeGreaterThan(40);
   });
 
+  test('the waste bin lid joins its body at game scale instead of reading as two rings', async ({ page }) => {
+    await openHarness(page);
+    const bridge = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.waste-bin');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 38, frame.y + 23);
+    });
+    expect(bridge?.[3], 'the upper left of the hinged lid should be filled').toBe(255);
+    expect(bridge?.[1], 'the hinged lid should remain visible as enamel').toBeGreaterThan(130);
+  });
+
   test('the packed frames hold decoded photographic pixels, not a Git LFS pointer', async ({ page }) => {
     await openHarness(page);
 
