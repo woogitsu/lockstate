@@ -679,6 +679,40 @@ def cloth_crease(collection, root, name, centre_y, phase, surface):
     return item
 
 
+def washer_fabric_fold(collection, root, name, centre, length, width, angle, phase, surface):
+    """Rounded, low cloth fold under the washer glazing, with fixed mesh order."""
+    columns, rows = 20, 8
+    vertices = []
+    cosine, sine = math.cos(angle), math.sin(angle)
+    for row in range(rows + 1):
+        across = row / rows
+        for column in range(columns + 1):
+            along = column / columns
+            taper = math.sin(math.pi * along) ** 0.55
+            local_x = (along - 0.5) * length
+            local_y = (across - 0.5) * width * taper
+            x = centre[0] + local_x * cosine - local_y * sine
+            y = centre[1] + local_x * sine + local_y * cosine
+            crest = math.sin(math.pi * along) * math.sin(math.pi * across)
+            z = centre[2] + 0.023 * crest + 0.006 * crest * math.sin(3 * math.pi * along + phase)
+            vertices.append((x, y, z))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
 def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
     item = bpy.context.object
@@ -1004,9 +1038,12 @@ def furniture(collection, root, asset_id):
             cylinder(collection, root, f"Drum recess.{x}", (x, 0.092, 1.110), 0.335, 0.019, "shade", 64)
             cylinder(collection, root, f"Teal laundry under glass.{x}", (x, 0.092, 1.122), 0.267, 0.012, "medical_teal", 64)
             cylinder(collection, root, f"Smoked glazing.{x}", (x, 0.092, 1.145), 0.274, 0.019, "washer_glass", 64)
-            for stripe, y, angle in ((-0.085, 0.025, 0.35), (0.035, 0.10, -0.4), (0.12, 0.17, 0.52)):
-                cloth = box(collection, root, f"Cloth visible through drum.{x}.{stripe}", (x + stripe, y, 1.164), (0.10, 0.20, 0.014), "washer_fabric", 0.045)
-                cloth.rotation_euler.z = angle
+            washer_fabric_fold(collection, root, f"Curved cloth fold A.{x}",
+                               (x - 0.055, 0.072, 1.163), 0.31, 0.14, 0.50, 0.0, "medical_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold B.{x}",
+                               (x + 0.070, 0.137, 1.168), 0.28, 0.15, -0.62, 1.2, "washer_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold C.{x}",
+                               (x + 0.035, 0.026, 1.158), 0.19, 0.10, 0.28, 2.1, "medical_fabric")
             torus(collection, root, f"Machined steel door bezel.{x}", (x, 0.092, 1.165), 0.293, 0.038, "galvanized_edge")
             torus(collection, root, f"Inner rubber seal.{x}", (x, 0.092, 1.171), 0.252, 0.012, "shade")
             box(collection, root, f"Door handle.{x}", (x - 0.32, 0.09, 1.186), (0.085, 0.17, 0.045), "galvanized_edge", 0.014)

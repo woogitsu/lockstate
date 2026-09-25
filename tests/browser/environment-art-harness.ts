@@ -182,6 +182,7 @@ function buildFrame(): RenderFrame {
   const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
   const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
   const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
+  const includeWasherVisual = new URLSearchParams(window.location.search).has('washerVisual');
   const includeShowerVisual = new URLSearchParams(window.location.search).has('showerVisual');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
@@ -503,8 +504,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-washing-machine',
       definitionId: 'washing-machine-brick',
-      tileX: FIXTURE.washingMachineTileX,
-      tileY: FIXTURE.washingMachineTileY,
+      tileX: includeWasherVisual ? 17 : FIXTURE.washingMachineTileX,
+      tileY: includeWasherVisual ? 13 : FIXTURE.washingMachineTileY,
       phase: 'built',
     },
     {

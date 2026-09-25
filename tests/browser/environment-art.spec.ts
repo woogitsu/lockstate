@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'showerVisual' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'washerVisual' | 'showerVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'washerVisual' ? '?showerFloor=1&washerVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -236,6 +236,38 @@ test.describe('the environment artwork', () => {
     if (process.env['LOCKSTATE_CAPTURE_FRIDGE_ART'] === '1') {
       await page.screenshot({ path: testInfo.outputPath('fridge-1920x1080.png') });
     }
+  });
+
+  test('the twin washer drums remain visible at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'washerVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 18 * fixture.tileSizePx, y: 13.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.washing-machine')).toEqual([
+      expect.objectContaining({ x: 17 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_WASHER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('washer-1920x1080.png') });
+    }
+  });
+
+  test('rounded cloth folds leave clear glass where the old angular shard crossed it', async ({ page }) => {
+    await openHarness(page);
+    const drum = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.washing-machine');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        clearGlass: harness.atlasPixel(frame.x + 92, frame.y + 80),
+        fabric: harness.atlasPixel(frame.x + 77, frame.y + 73),
+      };
+    });
+    expect(drum?.size).toEqual([256, 128]);
+    expect(drum?.clearGlass?.[3]).toBe(255);
+    expect(drum?.fabric?.[3]).toBe(255);
+    expect(drum!.clearGlass![0]).toBeLessThan(130);
+    expect(drum!.fabric![0]).toBeGreaterThan(150);
   });
 
   test('two shower fixtures are drawn over ceramic in a furnished Full HD room', async ({ page }, testInfo) => {

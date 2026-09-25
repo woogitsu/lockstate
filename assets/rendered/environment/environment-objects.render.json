@@ -610,8 +610,8 @@
     {
       "assetId": "furniture.laundry.washing_machine.twin",
       "image": "furniture.laundry.washing_machine.twin.png",
-      "sha256": "e04bfc5dea754cb94f5408e64243048e2228748a096e375f46a302d92e9575be",
-      "pixelSha256": "3746eaa452756372e8ed716bf4146c87c80e2638ba737b8a85877b1eafd6ec4f",
+      "sha256": "6c7893d6cb0be8bf46352cd0308af86fb281d6824f9cd47d65e200ba32f942d2",
+      "pixelSha256": "a0f97643c409670385f41bb57b312800d289371c917be7a18bf3dd455162ca24",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0

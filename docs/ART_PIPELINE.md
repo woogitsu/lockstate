@@ -488,6 +488,13 @@ camera. This follows the accepted four-view reference and distinguishes the
 refrigerator from the nearby stove in the furnished Full HD kitchen. Building
 rules, object identity, and player text remain unchanged.
 
+**2026-09-25 twin washer revision:** the two existing drum windows retain their
+position, size, metal bezels, and materials. Three flat overlapping rectangles
+inside each window formed bright, angular shards at game scale. The Blender
+scene now shapes these as low, rounded cloth folds under the same glazing, as
+in the accepted overhead reference. The furnished Full HD Laundry capture
+compares the same machine before and after; its footprint and rules do not change.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
