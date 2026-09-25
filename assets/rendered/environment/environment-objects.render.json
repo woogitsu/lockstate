@@ -415,6 +415,33 @@
       }
     },
     {
+      "assetId": "furniture.storage.rack.wooden",
+      "image": "furniture.storage.rack.wooden.png",
+      "sha256": "21d21c4dedec75b43f2a5b07fb48565d056a1e50e183462a3386009161ee75e7",
+      "pixelSha256": "4a26de5b01d25c50cfdd05ff9275c100baa1e85d27998b6ff11035a098e7c04c",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 21,
+        "y": 26,
+        "width": 214,
+        "height": 208,
+        "opaquePixels": 35810
+      }
+    },
+    {
       "assetId": "furniture.visitor.chair.variants",
       "image": "furniture.visitor.chair.variants.png",
       "sha256": "d35e0c08df9aaa6d20052b340f2c023adb022eceede80ec9806726389c076406",

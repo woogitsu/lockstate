@@ -254,6 +254,10 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * at half size. Recorded here as the sixteenth reason rather than silently
  * removed, per this list's own convention: a return to the fallback is exactly
  * as worth recording as a departure from it.
+ *
+ * **2026-09-23:** A separate open wooden rack model now serves this object.
+ * The rejected closed locker and the playtest finding above remain historical
+ * evidence for why the new render needs distinct shelves and visible contents.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
@@ -266,7 +270,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.prep-counter',
   'object.security-console',
   'object.sink',
-  'object.storage-rack',
   'object.stove',
   'object.utility-panel',
   'object.washing-machine',
@@ -321,8 +324,8 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  * **`object.storage-rack` was briefly a sixth row, added alongside bench and
  * desk in the same #1020 pass and removed the next day (#1059) once a
  * playtest actually looked at it in a built prison.** `OBJECTS_ON_COLOUR_FALLBACK`'s
- * comment carries the reading in full; this row is not restored because the
- * failure was in the render itself, not in this mechanism.
+ * comment carries the reading in full. The new row below uses a purpose-built
+ * open wooden rack, not the old closed locker render.
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
@@ -331,6 +334,7 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.desk': 'env.object.desk',
   'object.shower-head': 'env.object.shower-head',
   'object.waste-bin': 'env.object.waste-bin',
+  'object.storage-rack': 'env.object.storage-rack',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

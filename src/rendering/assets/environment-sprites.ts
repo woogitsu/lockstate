@@ -86,6 +86,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.desk',
   'env.object.shower-head',
   'env.object.waste-bin',
+  'env.object.storage-rack',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -336,6 +337,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     quarterTurns: 0,
     note: 'Open institutional waste bin with a pale rim and foot pedal, modelled for the 1×1 object.waste-bin footprint.',
   },
+  'env.object.storage-rack': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.storage.rack.wooden',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Open wooden storage rack with three distinct shelves and visible stored goods, drawn on object.storage-rack.',
+  },
   /*
    * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,
    * mapping `object.storage-rack` to `furniture.cell.locker.variants` (a
@@ -345,9 +353,9 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
    * own docblock did not: at both zoom 1 and `ZOOM_BOUNDS.max`, the frame is a
    * flat grey-blue rectangle with one vertical seam and nothing else,
    * failing the exact bar `object.chair` was refused on in the same pass this
-   * row was added by. Left as a removal rather than silently absent, per this
-   * file's own convention of recording *why* a sprite was not wired -- here,
-   * why one that briefly was no longer is.
+   * row was added by. The new row above uses a distinct open-rack model rather
+   * than reusing that closed locker. This history explains why its asset id
+   * deliberately differs from `furniture.cell.locker.variants`.
    */
 };
 

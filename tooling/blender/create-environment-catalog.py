@@ -78,6 +78,7 @@ MODELS = (
     # Append new collections: existing origins are part of the reproducible scene.
     ("fixture.cell.sink", (1, 1)), ("fixture.shower.head", (1, 1)),
     ("fixture.cell.waste_bin", (1, 1)),
+    ("furniture.storage.rack.wooden", (1, 1)),
 )
 
 
@@ -145,6 +146,20 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Mattress", (0, 0, 0.57), (0.82, 1.74, 0.2), "linen", 0.05)
         box(collection, root, "Blanket", (0, 0.56, 0.695), (0.82, 0.56, 0.05), "blanket", 0.03)
         box(collection, root, "Pillow", (0, -0.62, 0.735), (0.64, 0.34, 0.13), "light", 0.06)
+    elif asset_id == "furniture.storage.rack.wooden":
+        # Open cubbies, not the solid locker once mistaken for this object.
+        # Three separate shelves and their contents carry the silhouette at
+        # the 64 px in-game scale; the dark gaps are intentional negative space.
+        for x in (-0.43, 0.43):
+            box(collection, root, f"Side post.{x}", (x, 0, 0.68), (0.07, 0.88, 1.36), "wood", 0.012)
+        box(collection, root, "Back rail", (0, 0.43, 1.24), (0.79, 0.06, 0.13), "steel", 0.008)
+        for index_shelf, y in enumerate((-0.28, 0, 0.28)):
+            box(collection, root, f"Shelf.{index_shelf}", (0, y, 1.19), (0.79, 0.20, 0.09), "wood", 0.01)
+        box(collection, root, "North crate", (-0.19, -0.28, 1.30), (0.26, 0.13, 0.14), "green", 0.012)
+        box(collection, root, "North bundle", (0.19, -0.28, 1.28), (0.25, 0.13, 0.10), "linen", 0.012)
+        box(collection, root, "Middle crate", (0.08, 0, 1.31), (0.36, 0.13, 0.16), "blue", 0.012)
+        box(collection, root, "South bundle", (-0.17, 0.28, 1.28), (0.29, 0.13, 0.10), "linen", 0.012)
+        box(collection, root, "South crate", (0.20, 0.28, 1.30), (0.20, 0.13, 0.14), "green", 0.012)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which

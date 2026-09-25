@@ -78,9 +78,8 @@ const FIXTURE: HarnessWorldFixture = {
   showerTileY: 4,
   wasteBinTileX: 18,
   wasteBinTileY: 4,
-  // storageRackTileX/Y stood here for object.storage-rack from 2026-09-06
-  // to 2026-09-07; removed with the fixture structure below it once #1059
-  // reverted that object to the colour fallback.
+  storageRackTileX: 20,
+  storageRackTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -197,16 +196,13 @@ function buildFrame(): RenderFrame {
       tileY: FIXTURE.wasteBinTileY,
       phase: 'built',
     },
-    /*
-     * A `finished-storage-rack` structure (`storage-rack-wooden`, 1x1) stood
-     * here from 2026-09-06 to 2026-09-07, the one judgement call in #1020's
-     * batch (a locker render standing in for a rack). Removed with
-     * `object.storage-rack`'s `SPRITE_BY_OBJECT_ID` row once #1059's playtest
-     * found the render illegible at every zoom the game draws it at -- see
-     * `environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` docblock. Placing it
-     * here again would draw the ordinary colour-fallback slab, which no test
-     * in this harness needs a dedicated fixture tile to prove.
-     */
+    {
+      id: 'finished-storage-rack',
+      definitionId: 'storage-rack-wooden',
+      tileX: FIXTURE.storageRackTileX,
+      tileY: FIXTURE.storageRackTileY,
+      phase: 'built',
+    },
   ];
 
   return {

@@ -650,6 +650,21 @@ outward-facing or unrevertable, which is the whole reason:
    No other line, job, workflow, dashboard or asset id is released. The
    `fixture.cell.sink` Blender render is source art only and has no published
    sprite or glob; `object.sink` still has no buildable path.
+
+   **A SECOND NARROW RELEASE ON 2026-09-23, FOR THE WOODEN STORAGE RACK.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko ten glob
+   (zalecane)"* or *"Nie — pozostaw gałąź bez tej zmiany"*. They chose:
+
+   > Tak — dopisz tylko ten glob (zalecane)
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner. It authorises exactly one comma-separated
+   segment on the `browser` job's existing `git lfs pull --include=` line in
+   `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.furniture.storage.rack.wooden.*.png`
+
+   No other CI line, job, workflow or asset id is released by this decision.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
