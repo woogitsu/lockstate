@@ -522,7 +522,7 @@ describe('describeRestoredScope: honest about what a save carries', () => {
     // The right-hand list must never go empty and quietly stop being shown:
     // a save still leaves derived and in-flight state behind, and the panel
     // is where the player is told so.
-    expect(text).toContain('navigation caches');
+    expect(text).toContain('navigation route and flow caches');
   });
 });
 

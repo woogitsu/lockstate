@@ -538,8 +538,11 @@ work are not.**
   the case as a known divergence.
 
   **RESOLVED 2026-09-25 under the owner's cache-warmth ruling.** The save now
-  carries valid route and flow-field cache keys; restore deterministically
-  rebuilds their answers from world and doors before a simulation tick.
+  carries valid route and flow-field cache answers with their door verdicts;
+  restore validates them against world and doors before a simulation tick.
+  The save panel lists navigation route and flow caches as restored when this
+  section is present; legacy saves lacking it list navigation cache results
+  as not carried and recompute them as needed.
   The former inequality assertion went red and now requires equality at the
   budget-bound 24-prisoner and 36-prisoner checkpoints. Older saves without
   those keys still load with cold caches.

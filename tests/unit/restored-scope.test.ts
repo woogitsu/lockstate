@@ -61,6 +61,7 @@ function bundleWith(sections: {
   readonly entities?: boolean;
   readonly simulation?: boolean;
   readonly identity?: boolean;
+  readonly cacheWarmth?: boolean;
 }): SessionSnapshotBundle {
   // The restore path is not exercised here, so the required sections can be
   // structurally minimal: `restoredScopeFor` reads presence, never contents.
@@ -69,13 +70,14 @@ function bundleWith(sections: {
     world: {},
     construction: {},
     ...(sections.entities === true ? { entities: {} } : {}),
-    ...(sections.simulation === true ? { simulation: {} } : {}),
+    ...(sections.simulation === true ? { simulation: sections.cacheWarmth === true
+      ? { inFlight: { navigation: { cacheWarmth: { geometrySignature: '', routes: [], fields: [] } } } } : {} } : {}),
     ...(sections.identity === true ? { identity: {} } : {}),
   };
   return bundle as unknown as SessionSnapshotBundle;
 }
 
-const COMPLETE = bundleWith({ entities: true, simulation: true, identity: true });
+const COMPLETE = bundleWith({ entities: true, simulation: true, identity: true, cacheWarmth: true });
 
 describe('the restored scope describes the bundle, not the save version', () => {
   it('reports the full scope for a bundle carrying every section', () => {
@@ -85,6 +87,18 @@ describe('the restored scope describes the bundle, not the save version', () => 
     expect(restoredScopeFor(COMPLETE)).toEqual(CURRENT_SAVE_RESTORED_SCOPE);
     // The same object, so a caller comparing by identity keeps working.
     expect(restoredScopeFor(COMPLETE)).toBe(CURRENT_SAVE_RESTORED_SCOPE);
+  });
+
+  it('reports navigation warmth as restored only when the save actually carries it', () => {
+    const current = restoredScopeFor(COMPLETE);
+    expect(labelKeys(current.restored)).toContain('save.scope.navigation-caches-restored');
+    expect(labelKeys(current.notCarriedByThisSaveVersion)).not.toContain('save.scope.navigation-caches');
+    expect(restoredSentence(describeRestoredScope(current, localizer))).toContain('navigation route and flow caches');
+
+    const legacy = restoredScopeFor(bundleWith({ entities: true, simulation: true, identity: true }));
+    expect(labelKeys(legacy.restored)).not.toContain('save.scope.navigation-caches-restored');
+    expect(labelKeys(legacy.notCarriedByThisSaveVersion)).toContain('save.scope.navigation-caches');
+    expect(restoredSentence(describeRestoredScope(legacy, localizer))).toContain('navigation cache results (recomputed as needed)');
   });
 
   it('moves the prisoner subsystems out of restored when a save carries no simulation section', () => {
@@ -123,14 +137,12 @@ describe('the restored scope describes the bundle, not the save version', () => 
     expect(labelKeys(scope.notCarriedByThisSaveVersion)).toContain('save.scope.entity-liveness');
   });
 
-  it('keeps the derived-state exclusions whatever the bundle carries', () => {
-    // These two are absent because they are caches, not because of the save
-    // version -- so they must survive in every reduced scope, or the reason
-    // the right-hand list exists at all is lost.
+  it('keeps room caches excluded and classifies navigation caches by actual warmth presence', () => {
     for (const bundle of [COMPLETE, bundleWith({}), bundleWith({ entities: true })]) {
       const scope = restoredScopeFor(bundle);
       expect(labelKeys(scope.notCarriedByThisSaveVersion)).toContain('save.scope.room-caches');
-      expect(labelKeys(scope.notCarriedByThisSaveVersion)).toContain('save.scope.navigation-caches');
+      if (bundle === COMPLETE) expect(labelKeys(scope.restored)).toContain('save.scope.navigation-caches-restored');
+      else expect(labelKeys(scope.notCarriedByThisSaveVersion)).toContain('save.scope.navigation-caches');
     }
   });
 
@@ -141,7 +153,7 @@ describe('the restored scope describes the bundle, not the save version', () => 
     const complete = labelKeys([
       ...CURRENT_SAVE_RESTORED_SCOPE.restored,
       ...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion,
-    ]);
+    ]).map((key) => key.startsWith('save.scope.navigation-caches') ? 'save.scope.navigation-caches' : key);
     for (const bundle of [
       COMPLETE,
       bundleWith({}),
@@ -151,7 +163,8 @@ describe('the restored scope describes the bundle, not the save version', () => 
       bundleWith({ entities: true, simulation: true }),
     ]) {
       const scope = restoredScopeFor(bundle);
-      const all = labelKeys([...scope.restored, ...scope.notCarriedByThisSaveVersion]);
+      const all = labelKeys([...scope.restored, ...scope.notCarriedByThisSaveVersion])
+        .map((key) => key.startsWith('save.scope.navigation-caches') ? 'save.scope.navigation-caches' : key);
       expect([...all].sort()).toEqual([...complete].sort());
       expect(new Set(all).size, 'no entry may appear in both lists').toBe(all.length);
     }
@@ -266,8 +279,8 @@ describe('every restored-scope key resolves in the bundled default locale', () =
   it('carries thirteen entries, eleven restored and two not', () => {
     // The count #226 measured. A fourteenth line arriving without an entry in
     // the table below would otherwise be checked by nothing.
-    expect(CURRENT_SAVE_RESTORED_SCOPE.restored).toHaveLength(11);
-    expect(CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion).toHaveLength(2);
+    expect(CURRENT_SAVE_RESTORED_SCOPE.restored).toHaveLength(12);
+    expect(CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion).toHaveLength(1);
     expect(new Set(labelKeys(ALL_ENTRIES)).size, 'two entries share a key').toBe(13);
   });
 
@@ -294,7 +307,7 @@ describe('every restored-scope key resolves in the bundled default locale', () =
       'save.scope.incidents': 'incidents, gangs and tunnels',
       'save.scope.names': 'prisoner and staff names',
       'save.scope.room-caches': 'room and topology caches (recomputed from the world)',
-      'save.scope.navigation-caches': 'navigation cache results (recomputed as needed)',
+      'save.scope.navigation-caches-restored': 'navigation route and flow caches',
     });
   });
 

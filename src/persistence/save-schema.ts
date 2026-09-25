@@ -16,7 +16,7 @@ import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/reg
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
-import { MAX_FLOW_FIELD_WARMTH_KEYS, MAX_ROUTE_CACHE_WARMTH_KEYS } from '../simulation/navigation/cache-limits';
+import { MAX_FLOW_FIELD_WARMTH_BYTES, MAX_FLOW_FIELD_WARMTH_KEYS, MAX_ROUTE_CACHE_WARMTH_BYTES, MAX_ROUTE_CACHE_WARMTH_KEYS, MAX_SAVED_ROUTE_PATH_RUN_CHARS, cacheWarmthJsonBytes } from '../simulation/navigation/cache-limits';
 import { LOCOMOTION_SUBTILE_UNITS } from '../simulation/locomotion/locomotion';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
@@ -1447,6 +1447,20 @@ const resolvedPathRequestSchema = z
   })
   .strict();
 
+const savedDoorDependenciesSchema = z.object({
+  perDoor: z.array(z.tuple([z.string().min(1), z.object({
+    allowed: z.boolean(), traversalCost: z.number().min(0),
+  }).strict()])),
+}).strict();
+
+const savedRouteResultSchema = z.union([
+  z.object({ ok: z.literal(true), pathRuns: z.string().max(MAX_SAVED_ROUTE_PATH_RUN_CHARS), totalCost: z.number().min(0) }).strict(),
+  z.object({ ok: z.literal(false), failure: z.object({
+    reason: routeFailureReasonSchema,
+    blockedBy: z.object({ doorId: z.string().min(1), reason: doorAccessDenialReasonSchema }).strict().optional(),
+  }).strict() }).strict(),
+]);
+
 const walkSchema = z
   .object({
     key: z.number().int().min(0),
@@ -1475,9 +1489,21 @@ const inFlightSectionSchema = z
         pending: z.array(pendingPathRequestSchema),
         results: z.array(resolvedPathRequestSchema),
         cacheWarmth: z.object({
-          routes: z.array(z.object({ origin: tilePositionSchema, destination: tilePositionSchema, context: routeContextSchema }).strict()).max(MAX_ROUTE_CACHE_WARMTH_KEYS),
-          fields: z.array(z.object({ destinationRegion: z.number().int(), context: routeContextSchema }).strict()).max(MAX_FLOW_FIELD_WARMTH_KEYS),
-        }).strict().optional(),
+          geometrySignature: z.string(),
+          routes: z.array(z.object({
+            origin: tilePositionSchema, destination: tilePositionSchema, context: routeContextSchema,
+            result: savedRouteResultSchema, dependencies: savedDoorDependenciesSchema,
+          }).strict()).max(MAX_ROUTE_CACHE_WARMTH_KEYS),
+          fields: z.array(z.object({
+            destinationRegion: z.number().int(), context: routeContextSchema,
+            steps: z.array(z.tuple([z.number().int(), z.string().min(1), z.number().positive()])),
+            doorDependencies: savedDoorDependenciesSchema,
+          }).strict()).max(MAX_FLOW_FIELD_WARMTH_KEYS),
+        }).strict().superRefine((warmth, context) => {
+          if (cacheWarmthJsonBytes(warmth.routes) > MAX_ROUTE_CACHE_WARMTH_BYTES || cacheWarmthJsonBytes(warmth.fields) > MAX_FLOW_FIELD_WARMTH_BYTES) {
+            context.addIssue({ code: 'custom', message: 'Navigation cache warmth exceeds the save byte limit.' });
+          }
+        }).optional(),
       })
       .strict(),
     prisoners: z

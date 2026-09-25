@@ -521,9 +521,9 @@ caveat, which is a different claim and still stands.
 The owner chose *"Zapisywać pamięć tras (zalecane)"* on 2026-09-23 in
 [#1373](https://github.com/woogitsu/lockstate/issues/1373#issuecomment-5794814425).
 That is the label of an offered option, not a free-form sentence by the owner.
-It authorises saving valid route-cache and flow-field-cache keys and rebuilding
-their values deterministically on restore. The in-flight work from ADR 0059
-lands first, separately. A legacy save with no cache keys still starts cold.
+It authorises preserving valid route-cache and flow-field-cache answers. The
+in-flight work from ADR 0059 lands first, separately. A legacy save with no
+cache warmth still starts cold.
 
 **Size measured before implementation.** On the existing 24-cell navigation
 fixture, 24 distinct routes to one canteen activated one shared field and
@@ -539,42 +539,95 @@ complete prison save. The measurement ran before any persistence code changed,
 using `buildCellBlockFixture(24)` and `PathRequestQueue` with its real
 threshold and 400-expansion budget. It establishes the local size trade-off:
 rebuildable structured keys are about **7.1 times smaller** than full cached
-values in this case. Larger prison saves need separate measurement rather
-than extrapolation from one fixture.
+values in this case. That initially favoured keys, but the larger-world
+measurement below overturned it.
 
-The save records keys in deterministic insertion order, which matters when a
-bounded cache evicts its oldest entry: sorting by identity on save would make
-the restored run evict a different route later. A restore first reconstructs
-the world, doors and graph, then recomputes the selected cache entries against
-that state without charging simulation ticks or changing queue order. The
-same dependency tracking and invalidation checks continue to govern later
-door or geometry changes. An entry that no longer matches the restored world
-is discarded, never treated as authoritative routing state. Diagnostics
+The save records entries in deterministic insertion order, including route
+answers, field steps and the complete door verdict maps. Sorting by identity
+would change the oldest-entry eviction after restore. A restore first
+reconstructs world, doors and graph, then checks every saved door verdict
+independently of the registry-wide revision shortcut. It checks a successful
+route's endpoints, adjacent traversable steps, region segmentation, crossed
+door dependencies and total edge cost. A failed route is recomputed under a
+bounded verification budget. Flow fields are compared with a canonical
+region-Dijkstra pass. No route or field value is used if these checks fail.
+Diagnostics
 (`hits`, `misses`, expansions) remain session-local; only the presence of a
 valid entry influences the next tick's work budget.
 
 This amends the previous claim that caches are always rebuilt *cold* on
-restore. They remain derived state, but their **membership** becomes part of
+restore. They remain derived state, but their **answers and membership** become part of
 the save because cache hits spend zero expansions and therefore decide which
 requests can fit under `workBudgetPerTick`. The known 24/36-prisoner
 divergence pinned in `restore-mid-walk-exactness.test.ts` is the gate: a
 save/restore run must agree with the continuous run at the next budget-bound
-service tick and later checkpoints. A cache whose keys cannot be validated
-or rebuilt without changing its answer is a refused payload, not silent
-fallback to a different game's timeline.
+service tick and later checkpoints. A cache that fails validation is a refused
+payload, not silent fallback to a different game's timeline.
 
-**Import and restore work limits.** Route-cache membership is capped at
-10,000 entries (two retained legs per supported 5,000 prisoners), shared
-flow-field membership at 256 destination/context pairs, with oldest-entry
-eviction applied to the live cache as well as `.max()` validation at the save
-boundary. This means a live writer does not emit a list a reader refuses
-solely for length. Rebuilding all keys shares one hard ceiling of 250,000
-expanded tile/region nodes, enforced inside both search loops rather than
-checked after an expensive route completes. An imported save beyond either
-array cap is `invalid-shape`; one whose keys consume more work is refused as
-`damaged-payload`. The limit bounds import cost at the expense of refusing a
-save whose cache warmth is pathological for its world size; it never silently
-loads with cold cache and then claims an exact continuation. The 24/36-person
-budget-binding fixtures remain well below both limits. The 5,000-actor meal
-rush still needs a measured full-size save/restore benchmark; the 24-route
-size sample above cannot establish its load latency.
+**Why keys alone were withdrawn.** The reproducible `buildCellBlockFixture(250)`
+with all 250 cell origins × all nine canteen destinations held 2,250 valid
+routes. A key-only restore consumed 578,500 expansions and 365 ms, exceeding
+the original 250,000-work cap, so the writer emitted a save its reader refused.
+At 5,000 cells × one destination, the key-only restore consumed 25,030,000
+expansions and 27.49 seconds on the same machine. The 250-cell writer search
+was 410 ms; the 5,000-cell writer search was 35.30 seconds. These are
+`tests/helpers/navigation-fixture.ts` worlds, `RouteCache`, `findRoute`, guard
+context `{role:'guard',securityClearance:5,permissions:['medical-wing']}`,
+Vitest 4.1.11 on Windows, Node from the Codex workspace runtime. The long
+writer search is benchmark setup across 5,000 distinct requests, not save
+latency. Synchronous key rebuilding is unacceptable at the supported scale.
+
+**Live and reader limits.** The live route cache evicts oldest entries above
+10,000 keys or 16 MiB of serialized route values. The live field cache has
+256 keys or 4 MiB. Every destination-region/context group of saved routes
+is verified by one permission-aware and one physical region pass, with a
+conservative `2 × regionCount` work charge for the whole group. Only
+`unreachable` answers that may have failed inside a permitted region require
+up to `tileCount` additional work per entry. The live cache evicts oldest
+entries above a combined 2,000,000-work bound. The live field cache charges
+`regionCount` per field and evicts above 250,000 work. The reader's shared
+2,250,000-work ceiling is at least the sum of the retained worst cases. The
+schema checks count and serialized size; restore checks geometry, door
+verdicts, route shape, full searched-door dependency sets and canonical
+fields. Legacy saves without warmth are cold. Invalid imported warmth is
+refused as damaged payload.
+
+**Measured value restore.** The 250-cell tests retain all 2,250 guard routes
+(756,427 JSON characters, 113 ms cache load, 504 verification expansions)
+and all 2,250 prisoner routes (827,028 characters, 65 ms, 304 expansions),
+both writer-to-reader without refusal. These measurements come from
+`RUN_NAVIGATION_WARMTH_BENCH=1 vitest run tests/unit/navigation-cache-warmth-large-fixture.test.ts --silent=false`.
+At 5,000 cells × one canteen destination, the opt-in benchmark
+retained **5,000/5,000** guard routes occupying 1,708,433 JSON characters.
+The next identical wave yielded **5,000 hits and zero new expansions**;
+JSON roundtrip plus route-cache verification took **5,701 ms** and 10,004
+region expansions. The prisoner context likewise retained **5,000/5,000**
+routes occupying 1,862,022 characters, returned 5,000 repeat hits/zero
+new expansions, and restored its cache in **3,552 ms** / 6,004 region
+expansions. These times describe the cache-warmth component after the graph
+is built, not end-to-end file import or world restore. First-wave searches
+took 23,412 ms for guards and 13,116 ms for prisoners; repeated cached waves
+took 5 ms and 3 ms. An independent repeat measured 6,484 ms / 2,419 ms
+for the same guard/prisoner cache-load component. The exact fixture is
+`buildCellBlockFixture(5000)`, all
+`cellTiles` as origins, `canteenTiles[0]` as destination, the two contexts
+above, with `findRoute` and `RouteCache.set` in origin order; snapshot is JSON
+roundtripped into `loadWarmthSnapshot` with the 2,250,000-work ceiling.
+The reproducible command is
+`RUN_NAVIGATION_WARMTH_BENCH=1 vitest run tests/benchmarks/navigation-cache-warmth-benchmark.test.ts --silent=false`
+(set the environment variable before the command in PowerShell). The
+opt-in benchmark is omitted from routine CI because creating those 10,000
+distinct routes takes tens of seconds on this machine. The full geometry
+signature is saved once for the cache section, and route waypoints are encoded
+as run-length direction strings; both choices are necessary to keep the
+5,000-route hot set within the 16 MiB live limit.
+
+**Trust limit.** Saved bytes are not authenticated. Linear validation proves
+that a positive route is traversable, has the stated endpoints and cost, and
+that its complete searched-door dependency set and verdicts match the current
+graph. It does not prove that the serialized route is the canonical cheapest
+tile path. A deliberately forged but legal detour could change later actor
+movement; the save checksum is not an authenticity guarantee. Full tile-A*
+comparison of every positive entry would recreate the 27.49-second key-only
+load, so imported saves retain this documented limitation. Flow fields and
+negative answers are compared with canonical search results.

@@ -3,7 +3,7 @@ import { tileKey, type TilePosition } from '../world/coordinates';
 import { DoorRegistry } from './door';
 import { boundedLocalSearch, type SearchStats } from './local-search';
 import { type NavigationGraph, type Portal, type RegionId, resolveEdge } from './region-graph';
-import { runRegionDijkstra } from './region-dijkstra';
+import { portalCannotBeCrossedBetween, runRegionDijkstra, type RegionDijkstraResult } from './region-dijkstra';
 import { checkDoorAccess, type DoorAccessDenialReason, type RouteContext } from './route-context';
 import type { Route, RouteResult, RouteSegment } from './route';
 
@@ -89,6 +89,79 @@ function findBlockingDoor(
     if (!access.allowed) return { doorId: door.id, reason: access.reason };
   }
   return undefined;
+}
+
+export function canonicalRouteDoorDependenciesFromDistances(
+  graph: NavigationGraph,
+  originRegion: RegionId,
+  destinationRegion: RegionId,
+  distances: ReadonlyMap<RegionId, number>,
+): ReadonlySet<string> {
+  if (originRegion === destinationRegion) return new Set();
+  const reach = distances.get(originRegion);
+  if (reach === undefined) throw new RangeError('Cached successful route has no permitted region path.');
+  const ids = new Set<string>();
+  for (const [region, distance] of distances) {
+    if (distance > reach) continue;
+    for (const portal of graph.regionPortals.get(region) ?? []) {
+      if (!portalCannotBeCrossedBetween(graph, portal, originRegion, destinationRegion)) ids.add(portal.doorId);
+    }
+  }
+  return ids;
+}
+
+export interface RouteRegionProof {
+  readonly allowed: RegionDijkstraResult;
+  readonly physical: RegionDijkstraResult;
+}
+
+/** One pair of full region searches proves graph-level failures for all origins in the group. */
+export function buildRouteRegionProof(
+  graph: NavigationGraph, doors: DoorRegistry, destinationRegion: RegionId,
+  context: RouteContext, stats?: SearchStats,
+): RouteRegionProof {
+  return {
+    allowed: runRegionDijkstra(graph, doors, destinationRegion, (portal) => {
+      const door = doors.getById(portal.doorId);
+      return door !== undefined && checkDoorAccess(door, context).allowed;
+    }, stats),
+    physical: runRegionDijkstra(graph, doors, destinationRegion, () => true, stats),
+  };
+}
+
+function doorIdsWithinReach(
+  graph: NavigationGraph, distances: ReadonlyMap<RegionId, number>,
+  originRegion: RegionId, destinationRegion: RegionId,
+): Set<string> {
+  const reach = distances.get(originRegion) ?? Number.POSITIVE_INFINITY;
+  const ids = new Set<string>();
+  for (const [region, distance] of distances) {
+    if (distance > reach) continue;
+    for (const portal of graph.regionPortals.get(region) ?? []) {
+      if (!portalCannotBeCrossedBetween(graph, portal, originRegion, destinationRegion)) ids.add(portal.doorId);
+    }
+  }
+  return ids;
+}
+
+export function graphFailureFromProof(
+  graph: NavigationGraph, doors: DoorRegistry, originRegion: RegionId,
+  destinationRegion: RegionId, context: RouteContext, proof: RouteRegionProof,
+): { readonly result: RouteResult; readonly dependencies: ReadonlySet<string> } | undefined {
+  if (originRegion === destinationRegion || proof.allowed.dist.has(originRegion)) return undefined;
+  const dependencies = doorIdsWithinReach(graph, proof.allowed.dist, originRegion, destinationRegion);
+  for (const id of doorIdsWithinReach(graph, proof.physical.dist, originRegion, destinationRegion)) dependencies.add(id);
+  if (!proof.physical.dist.has(originRegion)) return { result: { ok: false, failure: { reason: 'unreachable' } }, dependencies };
+  const path: Portal[] = [];
+  let cursor = originRegion;
+  while (cursor !== destinationRegion) {
+    const portal = proof.physical.prevPortal.get(cursor);
+    if (portal === undefined) throw new RangeError('Physical region proof lacks a path to destination.');
+    path.push(portal);
+    cursor = portal.regionA === cursor ? portal.regionB : portal.regionA;
+  }
+  const blockedBy = findBlockingDoor(path, doors, context);
+  return { result: { ok: false, failure: { reason: 'permission-denied', ...(blockedBy === undefined ? {} : { blockedBy }) } }, dependencies };
 }
 
 /** Exported for `flow-field.ts`, which slices its own bounded-search waypoints into the same segment shape. */

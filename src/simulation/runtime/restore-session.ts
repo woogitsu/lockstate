@@ -217,8 +217,9 @@ export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
     { labelKey: 'save.scope.contraband' },
     { labelKey: 'save.scope.incidents' },
     { labelKey: 'save.scope.names' },
+    { labelKey: 'save.scope.navigation-caches-restored' },
   ],
-  notCarriedByThisSaveVersion: [{ labelKey: 'save.scope.room-caches' }, { labelKey: 'save.scope.navigation-caches' }],
+  notCarriedByThisSaveVersion: [{ labelKey: 'save.scope.room-caches' }],
 };
 
 /**
@@ -281,13 +282,16 @@ export function restoredScopeFor(bundle: SessionSnapshotBundle): RestoredScope {
     if (section.carries(bundle)) continue;
     for (const entry of section.entries) absent.add(entry.labelKey);
   }
+  const carriesCacheWarmth = bundle.simulation?.inFlight?.navigation.cacheWarmth !== undefined;
+  if (!carriesCacheWarmth) absent.add('save.scope.navigation-caches-restored');
   if (absent.size === 0) return CURRENT_SAVE_RESTORED_SCOPE;
 
   return {
     restored: CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => !absent.has(entry.labelKey)),
     notCarriedByThisSaveVersion: [
       ...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion,
-      ...CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => absent.has(entry.labelKey)),
+      ...(!carriesCacheWarmth ? [{ labelKey: 'save.scope.navigation-caches' }] : []),
+      ...CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => absent.has(entry.labelKey) && entry.labelKey !== 'save.scope.navigation-caches-restored'),
     ],
   };
 }

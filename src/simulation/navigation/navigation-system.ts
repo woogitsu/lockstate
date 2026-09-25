@@ -32,6 +32,7 @@ export interface NavigationInFlightSnapshot {
   readonly pending: readonly PendingPathRequestSnapshot[];
   readonly results: readonly ResolvedPathRequestSnapshot[];
   readonly cacheWarmth?: {
+    readonly geometrySignature: string;
     readonly routes: readonly RouteCacheWarmthKey[];
     readonly fields: readonly FlowFieldWarmthKey[];
   };
@@ -223,7 +224,7 @@ export class NavigationSystem implements SystemRegistration {
    *
    * So the queue's own contents are the save's, ids and all, and every owner
    * keeps the id it already held. The later ADR 0007 amendment carries cache
-   * membership as structured keys and rebuilds answers from world and doors.
+   * answers and dependencies, validated against world and doors on load.
    * The region graph remains derived.
    *
    * ## Why a result is carried without `expansions`, `usedFlowField` and `waitedTicks`
@@ -259,7 +260,7 @@ export class NavigationSystem implements SystemRegistration {
    * amendment under "Determinism" carries the numbers and the open choice.
    *
    * **Superseded 2026-09-25:** ADR 0007's cache-warmth amendment now saves
-   * structured cache keys. The budget-bound restore test requires equality.
+   * validated cache answers. The budget-bound restore test requires equality.
    *
    * Deterministic: both lists ascending by id.
    */
@@ -271,6 +272,7 @@ export class NavigationSystem implements SystemRegistration {
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
       cacheWarmth: {
+        geometrySignature: graph.geometrySignature,
         routes: this.routeCache.getWarmthSnapshot(graph, this.doors),
         fields: this.flowFieldCache.getWarmthSnapshot(graph, this.doors),
       },
@@ -289,6 +291,7 @@ export class NavigationSystem implements SystemRegistration {
     }
     if (snapshot.cacheWarmth !== undefined) {
       const graph = this.ensureGraph();
+      if (snapshot.cacheWarmth.geometrySignature !== graph.geometrySignature) throw new RangeError('Navigation cache geometry differs from saved world.');
       const restoreWork = { expansions: 0, maxExpansions: MAX_CACHE_WARMTH_REBUILD_EXPANSIONS };
       this.flowFieldCache.loadWarmthSnapshot(snapshot.cacheWarmth.fields, graph, this.doors, restoreWork);
       this.routeCache.loadWarmthSnapshot(snapshot.cacheWarmth.routes, this.world, graph, this.doors, restoreWork);

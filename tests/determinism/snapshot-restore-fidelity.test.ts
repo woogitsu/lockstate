@@ -282,6 +282,7 @@ describe('session snapshot / restore fidelity', () => {
       'save.scope.incidents',
       'save.scope.kernel',
       'save.scope.names',
+      'save.scope.navigation-caches-restored',
       'save.scope.operations',
       'save.scope.prisoners',
       'save.scope.rng-streams',
@@ -289,7 +290,6 @@ describe('session snapshot / restore fidelity', () => {
       'save.scope.world',
     ]);
     expect(CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion.map((entry) => entry.labelKey).sort()).toEqual([
-      'save.scope.navigation-caches',
       'save.scope.room-caches',
     ]);
 

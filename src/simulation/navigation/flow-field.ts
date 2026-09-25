@@ -1,12 +1,13 @@
 import type { SparseWorld } from '../world/sparse-world';
-import { MAX_FLOW_FIELD_WARMTH_KEYS } from './cache-limits';
+import { MAX_FLOW_FIELD_VERIFY_EXPANSIONS, MAX_FLOW_FIELD_WARMTH_BYTES, MAX_FLOW_FIELD_WARMTH_KEYS, cacheWarmthArrayOverhead, cacheWarmthJsonBytes } from './cache-limits';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import { boundedLocalSearch, type SearchStats } from './local-search';
 import type { DoorRegistry } from './door';
 import type { NavigationGraph, Portal, RegionId } from './region-graph';
 import { portalCannotBeCrossedBetween, runRegionDijkstra } from './region-dijkstra';
-import { checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
+import { checkDoorAccess, doorTraversalCost, routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
+import { loadDoorDependencies, saveDoorDependencies, type SavedDoorDependencies } from './cache-warmth';
 import { sliceIntoSegments } from './router';
 import type { Route, RouteResult } from './route';
 
@@ -194,6 +195,8 @@ export interface FlowFieldCacheMetrics {
 export interface FlowFieldWarmthKey {
   readonly destinationRegion: RegionId;
   readonly context: RouteContext;
+  readonly steps: readonly (readonly [RegionId, string, number])[];
+  readonly doorDependencies: SavedDoorDependencies;
 }
 
 function flowFieldCacheKey(destinationRegion: RegionId, contextFingerprint: string): string {
@@ -204,12 +207,34 @@ function flowFieldCacheKey(destinationRegion: RegionId, contextFingerprint: stri
 export class FlowFieldCache {
   private readonly entries = new Map<string, RegionFlowField>();
   private readonly contexts = new Map<string, RouteContext>();
+  private readonly entryBytes = new Map<string, number>();
+  private totalBytes = 0;
+  private readonly verifyWork = new Map<string, number>();
+  private totalVerifyWork = 0;
   private hits = 0;
   private misses = 0;
   private evictions = 0;
   private geometryInvalidations = 0;
   private lastPrunedGeometrySignature: string | undefined;
   private lastPrunedDoorRevision: number | undefined;
+
+  private deleteEntry(key: string): void {
+    this.totalBytes -= this.entryBytes.get(key) ?? 0;
+    this.totalVerifyWork -= this.verifyWork.get(key) ?? 0;
+    this.entryBytes.delete(key);
+    this.verifyWork.delete(key);
+    this.entries.delete(key);
+    this.contexts.delete(key);
+  }
+
+  private savedEntry(field: RegionFlowField, context: RouteContext, doors?: DoorRegistry): FlowFieldWarmthKey {
+    const dependencies = doors === undefined ? field.doorDependencies : captureDoorDependencies(field.doorDependencies.perDoor.keys(), doors, context);
+    return {
+      destinationRegion: field.destinationRegion, context: structuredClone(context),
+      steps: [...field.steps].map(([region, step]) => [region, step.nextPortal.doorId, step.costToDestination]),
+      doorDependencies: saveDoorDependencies(dependencies),
+    };
+  }
 
   public get(destinationRegion: RegionId, context: RouteContext, graph: NavigationGraph, doors: DoorRegistry): RegionFlowField | undefined {
     const key = flowFieldCacheKey(destinationRegion, routeContextFingerprint(context));
@@ -219,15 +244,13 @@ export class FlowFieldCache {
       return undefined;
     }
     if (entry.geometrySignature !== graph.geometrySignature) {
-      this.entries.delete(key);
-      this.contexts.delete(key);
+      this.deleteEntry(key);
       this.geometryInvalidations += 1;
       this.misses += 1;
       return undefined;
     }
     if (!doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
-      this.entries.delete(key);
-      this.contexts.delete(key);
+      this.deleteEntry(key);
       this.evictions += 1;
       this.misses += 1;
       return undefined;
@@ -237,26 +260,41 @@ export class FlowFieldCache {
   }
 
   public set(field: RegionFlowField): void {
-    this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), field);
+    const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
+    this.totalBytes -= this.entryBytes.get(key) ?? 0;
+    this.totalVerifyWork -= this.verifyWork.get(key) ?? 0;
+    this.entryBytes.delete(key);
+    this.verifyWork.delete(key);
+    this.entries.set(key, field);
     if (this.entries.size > MAX_FLOW_FIELD_WARMTH_KEYS) {
       const oldest = this.entries.keys().next().value;
       if (oldest !== undefined) {
-        this.entries.delete(oldest);
-        this.contexts.delete(oldest);
+        this.deleteEntry(oldest);
       }
     }
   }
 
-  public setForContext(field: RegionFlowField, context: RouteContext): void {
+  public setForContext(field: RegionFlowField, context: RouteContext, graph: NavigationGraph): void {
     const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
     this.set(field);
     this.contexts.set(key, structuredClone(context));
+    const bytes = cacheWarmthJsonBytes(this.savedEntry(field, context));
+    if (bytes > MAX_FLOW_FIELD_WARMTH_BYTES) { this.deleteEntry(key); return; }
+    this.entryBytes.set(key, bytes);
+    this.totalBytes += bytes;
+    this.verifyWork.set(key, graph.regionTiles.size);
+    this.totalVerifyWork += graph.regionTiles.size;
+    while (this.totalBytes + cacheWarmthArrayOverhead(this.entries.size) > MAX_FLOW_FIELD_WARMTH_BYTES || this.totalVerifyWork > MAX_FLOW_FIELD_VERIFY_EXPANSIONS) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest === undefined) break;
+      this.deleteEntry(oldest);
+    }
   }
 
   public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly FlowFieldWarmthKey[] {
     this.pruneStale(graph, doors);
     return [...this.entries.entries()]
-      .map(([key, entry]) => ({ destinationRegion: entry.destinationRegion, context: structuredClone(this.contexts.get(key)!) }));
+      .map(([key, entry]) => this.savedEntry(entry, this.contexts.get(key)!, doors));
   }
 
   public pruneStale(graph: NavigationGraph, doors: DoorRegistry): void {
@@ -264,18 +302,32 @@ export class FlowFieldCache {
     for (const [key, entry] of this.entries) {
       const context = this.contexts.get(key);
       if (context === undefined || entry.geometrySignature !== graph.geometrySignature || !doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
-        this.entries.delete(key);
-        this.contexts.delete(key);
+        this.deleteEntry(key);
+      } else if (entry.doorDependencies.accessRevision !== doors.accessRevision) {
+        const refreshed = { ...entry, doorDependencies: captureDoorDependencies(entry.doorDependencies.perDoor.keys(), doors, context) };
+        const bytes = cacheWarmthJsonBytes(this.savedEntry(refreshed, context));
+        this.entries.set(key, refreshed);
+        this.totalBytes += bytes - (this.entryBytes.get(key) ?? 0);
+        this.entryBytes.set(key, bytes);
       }
+    }
+    while (this.totalBytes + cacheWarmthArrayOverhead(this.entries.size) > MAX_FLOW_FIELD_WARMTH_BYTES) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest === undefined) break;
+      this.deleteEntry(oldest);
     }
     this.lastPrunedGeometrySignature = graph.geometrySignature;
     this.lastPrunedDoorRevision = doors.accessRevision;
   }
 
-  public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry, stats?: SearchStats): void {
+  public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry, _stats?: SearchStats): void {
     if (keys.length > MAX_FLOW_FIELD_WARMTH_KEYS) throw new RangeError('Too many flow-field warmth keys.');
     this.entries.clear();
     this.contexts.clear();
+    this.entryBytes.clear();
+    this.verifyWork.clear();
+    this.totalBytes = 0;
+    this.totalVerifyWork = 0;
     this.lastPrunedGeometrySignature = graph.geometrySignature;
     this.lastPrunedDoorRevision = doors.accessRevision;
     const seen = new Set<string>();
@@ -284,7 +336,40 @@ export class FlowFieldCache {
       if (seen.has(identity)) throw new RangeError(`Duplicate flow-field warmth key: ${identity}`);
       seen.add(identity);
       if (!graph.regionTiles.has(key.destinationRegion)) throw new RangeError(`Missing flow-field destination region: ${String(key.destinationRegion)}`);
-      this.setForContext(computeRegionFlowField(graph, doors, key.destinationRegion, key.context, stats), key.context);
+      const dependencies = loadDoorDependencies(key.doorDependencies, doors, key.context);
+      const steps = new Map<RegionId, RegionFlowFieldStep>();
+      for (const [regionId, doorId, costToDestination] of key.steps) {
+        if (steps.has(regionId) || regionId === key.destinationRegion || !Number.isFinite(costToDestination) || costToDestination <= 0) throw new RangeError('Invalid cached field step.');
+        const portal = graph.regionPortals.get(regionId)?.find((candidate) => candidate.doorId === doorId);
+        if (portal === undefined || !dependencies.perDoor.get(doorId)?.allowed) throw new RangeError('Cached field step crosses an unknown or blocked portal.');
+        steps.set(regionId, { nextPortal: portal, costToDestination });
+      }
+      for (const [regionId] of steps) {
+        let cursor = regionId;
+        const visited = new Set<RegionId>();
+        while (cursor !== key.destinationRegion) {
+          if (visited.has(cursor)) throw new RangeError('Cached field step chain contains a cycle.');
+          visited.add(cursor);
+          const step = steps.get(cursor);
+          if (step === undefined) throw new RangeError('Cached field step chain does not reach its destination.');
+          const next = step.nextPortal.regionA === cursor ? step.nextPortal.regionB : step.nextPortal.regionA;
+          const door = doors.getById(step.nextPortal.doorId);
+          const nextCost = next === key.destinationRegion ? 0 : steps.get(next)?.costToDestination;
+          if (door === undefined || nextCost === undefined || Math.abs(step.costToDestination - (nextCost + doorTraversalCost(door))) > 1e-9) {
+            throw new RangeError('Cached field costs do not match its portal chain.');
+          }
+          cursor = next;
+        }
+      }
+      const field = { destinationRegion: key.destinationRegion, contextFingerprint: routeContextFingerprint(key.context), geometrySignature: graph.geometrySignature, steps, doorDependencies: dependencies };
+      const canonical = computeRegionFlowField(graph, doors, key.destinationRegion, key.context, _stats);
+      const canonicalSaved = this.savedEntry(canonical, key.context, doors);
+      if (JSON.stringify(canonicalSaved.steps) !== JSON.stringify(key.steps) ||
+        JSON.stringify(canonicalSaved.doorDependencies.perDoor) !== JSON.stringify(key.doorDependencies.perDoor)) {
+        throw new RangeError('Cached field differs from deterministic navigation geometry.');
+      }
+      this.setForContext(field, key.context, graph);
+      if (this.entries.size !== seen.size) throw new RangeError('Cached fields exceed the live cache byte or verification-work limit.');
     }
   }
 
@@ -316,6 +401,6 @@ export function getOrComputeRegionFlowField(
   if (cached !== undefined) return cached;
   cache.pruneStale(graph, doors);
   const field = computeRegionFlowField(graph, doors, destinationRegion, context, stats);
-  cache.setForContext(field, context);
+  cache.setForContext(field, context, graph);
   return field;
 }

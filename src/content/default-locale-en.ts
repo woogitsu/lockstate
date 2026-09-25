@@ -4344,6 +4344,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // here: the sentence moves whole.
   'save.scope.room-caches': 'room and topology caches (recomputed from the world)',
   'save.scope.navigation-caches': 'navigation cache results (recomputed as needed)',
+  'save.scope.navigation-caches-restored': 'navigation route and flow caches',
 
   // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
   // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the

@@ -451,6 +451,7 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
       simulation: { ...bundle.simulation!, inFlight: {
         ...inFlight,
         navigation: { ...inFlight.navigation, cacheWarmth: {
+          geometrySignature: inFlight.navigation.cacheWarmth!.geometrySignature,
           routes: [route, route], fields: inFlight.navigation.cacheWarmth?.fields ?? [],
         } },
       } },

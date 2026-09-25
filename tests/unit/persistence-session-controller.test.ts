@@ -105,7 +105,8 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     // now derived/in-flight state rather than whole subsystems, but the UI
     // must keep saying so rather than implying a perfect restore.
     expect(notCarried.length).toBeGreaterThan(0);
-    expect(notCarried).toContain('save.scope.navigation-caches');
+    expect(restored).toContain('save.scope.navigation-caches-restored');
+    expect(notCarried).toContain('save.scope.room-caches');
   });
 
   it('increments revision on each successful save', async () => {

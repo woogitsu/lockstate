@@ -1509,7 +1509,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.scope.names': 'imiona i nazwiska osadzonych oraz personelu',
   'save.scope.room-caches': 'pamięci podręczne pomieszczeń i topologii (przeliczane ze świata)',
   'save.scope.navigation-caches':
-    'wyniki pamięci podręcznej tras (przeliczane w razie potrzeby)',
+    'wyniki pamięci podręcznych tras i pól nawigacji (przeliczane w razie potrzeby)',
+  'save.scope.navigation-caches-restored': 'pamięci podręczne tras i pól nawigacji',
 
   // =====================================================================
   // Semantic input actions -- `input.action.*`. No keybinding or help surface
