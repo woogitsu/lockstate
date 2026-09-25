@@ -22,7 +22,8 @@ describe('workflow runner contract', () => {
     for (const name of names) {
       const source = await readFile(path.join(workflowsRoot, name), 'utf8');
       for (const match of source.matchAll(/^\s+runs-on:\s*([^\s#]+)\s*(?:#.*)?$/gmu)) {
-        runners.push({ file: name, value: match[1] });
+        const value = match[1];
+        if (value !== undefined) runners.push({ file: name, value });
       }
     }
 
