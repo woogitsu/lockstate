@@ -751,6 +751,15 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  *   naming, and the honest fix is in one of those two places rather than in
  *   the strings: renaming a shipped locale key to please a regex would be the
  *   tail wagging the dog.
+ *
+ * **2026-09-25, #868: 182 -> 184 for the generated string inventory only.**
+ * The neutral zero-post coverage state adds two authored keys,
+ * `hud.security.coverage-no-posts` and
+ * `hud.security.coverage-no-posts-hint`. Regenerating
+ * `docs/PLAYER_STRINGS.md` from the merged locale source raises this gate's
+ * unverified count from 182 to 184. The generated table cannot add a quoted
+ * source fragment beside those anchors without changing its format for every
+ * string; no other document's budget changes.
  */
 const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0003-simulation-worker-protocol.md': 9,
@@ -839,7 +848,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/INPUT.md': 1,
   'docs/LOCALIZATION.md': 2,
   'docs/OPERATIONS.md': 4,
-  'docs/PLAYER_STRINGS.md': 182,
+  'docs/PLAYER_STRINGS.md': 184,
   'docs/TESTING.md': 3,
   'docs/VISUAL_IDENTITY.md': 5,
   'docs/WORLD.md': 2,

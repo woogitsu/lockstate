@@ -325,7 +325,9 @@ export function formatHeldGuardText(
  *
  * - **Unguarded** (`danger`): the prison asks for guards and has assigned none.
  * - **Understaffed** (`warning`): it has some of what it asks for.
- * - **Covered** (`success`): it has all of it.
+ * - **Covered** (`success`): it has all required posts filled.
+ * - **No posts** (`neutral`): no posts are required, so there is no staffed
+ *   coverage to claim even though the simulation's shortage is zero (#868).
  *
  * A `success` tone for the third rather than no tone, which is where this
  * departs from `occupancyTone` deliberately. That function returns `undefined`
@@ -459,6 +461,18 @@ export interface StaffCoverageReadout {
 }
 
 export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {
+  // Zero required posts is an exemption, not a staffed post. It is the normal
+  // opening state of a prison with no residents, and can also come from an
+  // authored schedule restored from a save. Neither case has coverage to
+  // celebrate; the free guards may still answer incidents or searches.
+  if (coverage.required === 0) {
+    return {
+      tone: 'neutral',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageNoPosts,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageNoPostsHint,
+      hireCount: 0,
+    };
+  }
   // Nobody on duty anywhere, in a prison that asks for somebody. Checked first
   // because it is a *subset* of "short" rather than an alternative to it, and
   // the more specific sentence is the one worth saying.
@@ -479,9 +493,8 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       hireCount: coverage.shortage,
     };
   }
-  // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
-  // *exemption* a save can carry (ADR 0048 decision 3), and a prison that asks
-  // for none has what it asks for.
+  // A positive requirement is fully posted here. Zero required posts have
+  // already taken the neutral branch above.
   //
   // **The sentence that clause used to quote is gone, and the reason is issue
   // #941.** It read *"this prison has the guards it asks for"* -- which is what
@@ -510,7 +523,8 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
   // #941 overturned**: it said "it needed no new sentence is the check that
   // #533 changed a demand rather than a promise", and #533 really did change
   // only a demand. The promise was already wrong when it was written, which is
-  // why a delta pass over #533 could not have found it.
+  // why a delta pass over #533 could not have found it. Since #868, the empty
+  // case above no longer takes this green branch at all.
   return {
     tone: 'success',
     badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,

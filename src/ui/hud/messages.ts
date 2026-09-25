@@ -970,6 +970,8 @@ export const HUD_MESSAGE_KEY = {
    */
   securityCoverageTitle: 'hud.security.coverage',
   securityCoverageSummary: 'hud.security.coverage-summary',
+  securityCoverageNoPosts: 'hud.security.coverage-no-posts',
+  securityCoverageNoPostsHint: 'hud.security.coverage-no-posts-hint',
   securityCoverageMet: 'hud.security.coverage-met',
   securityCoverageMetHint: 'hud.security.coverage-met-hint',
   securityCoverageShort: 'hud.security.coverage-short',
