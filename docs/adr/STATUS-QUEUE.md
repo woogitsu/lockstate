@@ -792,7 +792,7 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `d990b151` (**v0.0.778**) by the delta method,
+Re-anchored at `main` @ `d990b151` (**v0.0.775**) by the delta method,
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -29449,6 +29449,10 @@ the amendment it was accepted *as* instead of rewriting the passage that records
 it.
 
 ---
+
+## 3. The 2026-09-25 re-anchor at d990b151
+
+Re-read at main @ d990b151 (**v0.0.775**). The live census keeps **Next free number: 0124** and records the current §3-§6 reading for this anchor.
 
 ## How to act on a future entry, mechanically
 
