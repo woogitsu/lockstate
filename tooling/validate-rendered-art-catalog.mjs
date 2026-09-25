@@ -73,6 +73,16 @@ const LFS_POINTER_PREFIX = 'version https://git-lfs.github.com/spec/v1';
  * `exactPixelAspectMatchesFootprint` below, which never trusts the self-report. */
 const DRIFT_EPSILON = 1e-9;
 
+/** Prevent catalog-controlled paths from escaping the published art roots. */
+export function isSafeRenderedArtPath(value, { published } = { published: true }) {
+  if (typeof value !== 'string' || value.length === 0 || value.includes('\\') || value.includes('\0')) return false;
+  const normalized = path.posix.normalize(value);
+  if (normalized !== value || normalized.startsWith('/') || normalized.split('/').includes('..')) return false;
+  return published
+    ? /^source-art\/rendered\.[^/]+\.png$/u.test(value)
+    : /^rendered\.[^/]+\.png$/u.test(value);
+}
+
 /**
  * `render-environment-objects.py` declares every footprint an exact multiple of
  * 1/20 of a tile ("Every declared footprint is an exact multiple of 1/20 of a
@@ -216,6 +226,15 @@ export async function validateRenderedArtCatalog(options = {}) {
     const sidecarEntry = sidecarById.get(entry.assetId);
     if (sidecarEntry === undefined) {
       report(`"${entry.assetId}" is published but environment-objects.render.json no longer describes it`);
+      continue;
+    }
+
+    if (!isSafeRenderedArtPath(entry.image, { published: true })) {
+      report(`"${entry.assetId}": published image path "${entry.image}" is not a safe rendered-art path`);
+      continue;
+    }
+    if (!isSafeRenderedArtPath(sidecarEntry.image, { published: false })) {
+      report(`"${entry.assetId}": committed render path "${sidecarEntry.image}" is not a safe rendered-art path`);
       continue;
     }
 
