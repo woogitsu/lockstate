@@ -120,8 +120,8 @@
     {
       "assetId": "fixture.cell.toilet_sink",
       "image": "fixture.cell.toilet_sink.png",
-      "sha256": "fe9e971698b855f47594a42d82d3ec417150d40ded2c6144507816c22d30a75c",
-      "pixelSha256": "e86c47d84e7f618c5560c7dc5d25e6c22837cb3d04b4d8eb74267decdae69ec9",
+      "sha256": "be3079343f3cd01ecf52190684cab4756106ae6b9fad8043704773f881876588",
+      "pixelSha256": "fc9292618c25a85b3fe91363264f350115a5a94d29df575ba08152310850ab16",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0

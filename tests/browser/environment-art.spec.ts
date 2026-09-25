@@ -111,6 +111,37 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the cell toilet has a recessed drain visible inside its water ring', async ({ page }) => {
+    await openHarness(page);
+    const bowl = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.toilet');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        drain: harness.atlasPixel(frame.x + 64, frame.y + 80),
+        water: harness.atlasPixel(frame.x + 72, frame.y + 80),
+      };
+    });
+    expect(bowl?.size).toEqual([128, 128]);
+    expect(bowl?.drain?.[3]).toBe(255);
+    expect(bowl?.water?.[3]).toBe(255);
+    expect(channelDistance(bowl!.drain!, bowl!.water!)).toBeGreaterThan(20);
+  });
+
+  test('the recessed toilet drain remains legible in a furnished Full HD cell', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'bedVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3.5),
+      { x: 4.5 * fixture.tileSizePx, y: 3.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.toilet')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_TOILET_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-cell-toilet-1920x1080.png') });
+    }
+  });
+
   test('the stove grate has a diagonal iron support visible at game scale', async ({ page }) => {
     await openHarness(page);
     const support = await page.evaluate(() => {

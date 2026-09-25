@@ -1801,8 +1801,9 @@ def architectural(collection, root, asset_id):
         bowl.scale.y = 1.20
         cavity = cylinder(collection, root, "Bowl depth shadow", (0, 0.16, 0.683), 0.25, 0.026, "shade", 64)
         cavity.scale.y = 1.19
-        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.16, 0.016, "toilet_water", 64)
+        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.1152, 0.016, "toilet_water", 64)
         water.scale.y = 1.13
+        cylinder(collection, root, "Recessed dark drain", (0, 0.18, 0.718), 0.063, 0.012, "shade", 48)
         inner = torus(collection, root, "Inner glazed bowl contour", (0, 0.16, 0.711), 0.21, 0.037, "porcelain")
         inner.scale.y = 1.20
         seat = torus(collection, root, "Broad oval raised seat", (0, 0.16, 0.738), 0.293, 0.061, "toilet_porcelain")
