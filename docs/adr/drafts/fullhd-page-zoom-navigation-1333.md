@@ -84,3 +84,10 @@ cases; TypeScript and the 40 HUD layout unit tests passed. The existing
 36-combination zoom ratchet remained at 12/36 known failures (ceiling 12)
 after making every metric visible. CI and a visual run with materialised art
 are still required before the branch can be merged.
+
+Resizing the same 200% interface from 960×540 to 960×750 and back is covered
+too. It first stayed in the drawer at the taller size because the drawer's
+own wrapped metrics made the next fit measurement taller. The shell now
+measures the strip without the drawer rule before choosing the next placement;
+the browser test observed the failure before the change and the bar/drawer
+transition passing afterward. Seventeen regular Full HD browser cases passed.

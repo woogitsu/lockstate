@@ -66,5 +66,11 @@ for (const uiScale of [1.75, 2]) {
     expect(layout.cycleReachable).toBe(true);
     await page.locator('.save-panel').scrollIntoViewIfNeeded();
     await expect(page.locator('.save-panel')).toBeInViewport();
+    if (uiScale === 2) {
+      await page.setViewportSize({ width: 960, height: 750 });
+      await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'bar');
+      await page.setViewportSize({ width: 960, height: 540 });
+      await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
+    }
   });
 }

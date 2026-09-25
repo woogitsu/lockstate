@@ -688,7 +688,16 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   function refresh(): void {
     const viewport = measureViewport();
     const previousPhone = geometry.phone;
-    geometry = resolveHudLayout(settings, viewport, measureReserved());
+    // The drawer shows all nine metrics, which makes the strip taller. Measure
+    // the strip before that presentation rule when choosing a placement;
+    // otherwise a resize from a short window keeps the drawer because its own
+    // previous height makes the bar appear not to fit (a 200px hysteresis at
+    // 960 CSS pixels wide and 200% interface scale).
+    const previousPlacement = root.dataset['layoutNavigationPlacement'];
+    if (previousPlacement === 'drawer') delete root.dataset['layoutNavigationPlacement'];
+    const reservedHeight = measureReserved();
+    if (previousPlacement === 'drawer') root.dataset['layoutNavigationPlacement'] = previousPlacement;
+    geometry = resolveHudLayout(settings, viewport, reservedHeight);
     if (geometry.navigationPlacement !== 'drawer' || geometry.navigation.collapsed) drawerOpen = false;
 
     if (geometry.phone !== previousPhone) {
