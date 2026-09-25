@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { MinimapView } from '../../shared/minimap-view';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -1133,6 +1134,8 @@ export interface HudHandle {
    */
   readonly preferencesSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
+  /** Paints a read-only projection supplied by the world renderer. */
+  updateMinimap(view: MinimapView | undefined): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2015,23 +2018,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   // ---- bottom-left minimap frame -----------------------------------
-  // Rendering is still a placeholder, honestly labelled in visible text --
-  // minimap *rendering* belongs to the renderer, not to the HUD, and does
-  // not exist yet. Navigation is not (issue #793): the surface itself is a
-  // real click target, and every point on it maps to a world position
-  // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
-  // mapping -- see its own comment for what the surface represents and why).
+  // The world renderer supplies a bounded, read-only map projection; this
+  // surface paints it without knowing simulation state. Before the first
+  // world frame, the original placeholder remains truthful. Navigation from
+  // any point still uses `WorldScene.navigateToMinimapPoint` (issue #793).
   //
   // **A real `<button>`, not a `div`, since issue #903.** It used to be a
   // `div` with no `role` and no way into the keyboard's focus order at all --
   // `tabIndex` reads `-1` by default on an element nobody opted in -- so a
-  // keyboard player could never fire the swap below and only ever read
+  // keyboard player could never navigate and only ever read
   // `minimapPlaceholder`'s denial, against `AGENTS.md` boundary 10 (input
   // must support touch/pointer *and* remapping/keyboard). A real `<button>`
   // gives the correct role and a correct accessible name for free rather than
   // reinventing either with ARIA: it is in the tab order by default, its
   // accessible name is computed from its own text content -- exactly the
-  // sentence a sighted player reads, kept as the one source of truth instead
+  // sentence a player hears, kept as the one source of truth instead
   // of a second, divergent `aria-label` -- and, load-bearing for the handler
   // below, it dispatches a `click` event for an Enter/Space activation just
   // as it does for a pointer click, so the one listener already here needed
@@ -2039,11 +2040,50 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // `<button>` would otherwise add; see its comment on `.hud-minimap__surface`
   // for what that costs and why each reset is there.
   const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
+  const minimapCanvas = element('canvas', { className: 'hud-minimap__canvas', attributes: { 'aria-hidden': 'true' } }) as HTMLCanvasElement;
+  const minimapViewport = element('span', { className: 'hud-minimap__viewport', attributes: { 'aria-hidden': 'true' } });
   const minimapSurface = element('button', {
     className: 'hud-minimap__surface',
     attributes: { type: 'button' },
-    children: [minimapPlaceholder],
+    children: [minimapCanvas, minimapViewport, minimapPlaceholder],
   });
+  let lastMinimapPixels: Uint8Array | undefined;
+  const minimapPalette = ['#16232b', '#607569', '#89a76b', '#b89468', '#3c7990', '#34424d'] as const;
+  function updateMinimap(view: MinimapView | undefined): void {
+    const visible = view !== undefined;
+    minimapCanvas.hidden = !visible;
+    minimapViewport.hidden = !visible;
+    minimapPlaceholder.textContent = t(visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
+    minimapPlaceholder.classList.toggle('hud-minimap__placeholder--sr-only', visible);
+    if (view === undefined) {
+      lastMinimapPixels = undefined;
+      return;
+    }
+    if (lastMinimapPixels !== view.pixels) {
+      lastMinimapPixels = view.pixels;
+      minimapCanvas.width = view.width;
+      minimapCanvas.height = view.height;
+      const context = minimapCanvas.getContext('2d');
+      if (context !== null) {
+        for (let y = 0; y < view.height; y += 1) {
+          for (let x = 0; x < view.width; x += 1) {
+            context.fillStyle = minimapPalette[view.pixels[y * view.width + x] ?? 0] ?? minimapPalette[0];
+            context.fillRect(x, y, 1, 1);
+          }
+        }
+      }
+    }
+    const { x, y, width, height } = view.viewport;
+    const left = Math.max(0, x);
+    const top = Math.max(0, y);
+    const right = Math.min(1, x + width);
+    const bottom = Math.min(1, y + height);
+    minimapViewport.hidden = right <= left || bottom <= top;
+    minimapViewport.style.left = `${String(left * 100)}%`;
+    minimapViewport.style.top = `${String(top * 100)}%`;
+    minimapViewport.style.width = `${String(Math.max(0, right - left) * 100)}%`;
+    minimapViewport.style.height = `${String(Math.max(0, bottom - top) * 100)}%`;
+  }
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
     const rect = minimapSurface.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
@@ -2072,7 +2112,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // leaves the accurate `minimapPlaceholder` sentence standing, and a
     // session's loaded world never disappears once one exists (see the
     // message key's own comment), so this never has to move back.
-    if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
+    if (navigated && lastMinimapPixels === undefined) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
@@ -3346,6 +3386,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     brandSlot: strip.brandSlot,
     preferencesSlot: layout.preferencesSlot,
     update,
+    updateMinimap,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
