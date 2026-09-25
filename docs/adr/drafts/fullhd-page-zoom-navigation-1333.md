@@ -1,0 +1,58 @@
+# Draft: Navigation when Full HD is enlarged (#1333)
+
+**Status:** owner decision required. No ADR number is reserved.
+
+## Scope and measured failure
+
+The owner chose a Full HD minimum and HUD direction A: all status readouts stay
+at the top. This draft addresses a physical 1920×1080 window at 200% browser
+page zoom. The layout viewport is then 960×540 CSS pixels. It does not change
+the rule for smaller physical windows.
+
+The existing 200% sweep did not include 1920×1080. I added that window to a
+temporary copy of its shared instrument and ran all six interface scales on
+`c8ecf154`, then reran those six against PR #1439's exact tree. The result was
+the same in both trees:
+
+| Interface scale | Result at physical 1920×1080 and 200% page zoom |
+| --- | --- |
+| 75%, 100%, 125%, 150% | pass |
+| 175% | `.hud__aside` overflows its own box by 51px |
+| 200% | `.hud__aside` overflows by 149px; the scale button's centre belongs to a panel header |
+
+At 200%, the 540px HUD has a 206.4px status strip and a 210.8px two-row tab
+bar, leaving 122.8px for the rail. The aside is allocated 30.7px while its
+content is 180px high. The control is visibly covered in the
+[captured layout](../../research/evidence/2026-09-25-fullhd-page-zoom-200.png).
+The capture used a checkout without all LFS art bytes. The reported failures
+are DOM geometry and `elementFromPoint` readings, not claims about world art.
+
+These measurements extend #1333 to the newly required physical Full HD case.
+They also show why the PR #1439 alert-width fix cannot finish the large-scale
+layout: the status, navigation and inspector each need space in the same 540px.
+
+## Owner choice
+
+All options preserve direction A's permanent top status readouts and the
+44px logical tap target floor. None silently hides an existing tab.
+
+1. **A tab drawer at this height budget (recommended for prototyping).** Keep
+   one visible navigation control; open a labelled panel containing all six
+   tabs by pointer, keyboard or touch. This returns the two-row tab bar's
+   height to the map and inspector while making tab selection a two-action
+   path. The open drawer must have an explicit close/focus route and must not
+   cover a placement action without a way back.
+2. **One horizontally scrollable tab row.** The labels remain on the bar, but
+   some are outside its visible width until scrolled. This gives roughly one
+   row back; the inspector still needs a separate solution for its 180px of
+   content in the remaining height. An overflow cue and keyboard scroll are
+   required. This is a proposal, not yet a measured passing layout.
+3. **Scroll the whole HUD column.** All controls remain in the document, but
+   the map and top status may move off screen during navigation. This has the
+   highest risk to the owner's permanent status direction and is not
+   recommended.
+
+After a choice, implementation must pass a focused red-then-green browser
+test at 1920×1080, page zoom 200%, interface scales 175% and 200%, and the
+existing 36-combination ratchet. The art bytes should be materialised for the
+final visual review.
