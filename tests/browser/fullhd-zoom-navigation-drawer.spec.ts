@@ -67,10 +67,14 @@ for (const uiScale of [1.75, 2]) {
     await page.locator('.save-panel').scrollIntoViewIfNeeded();
     await expect(page.locator('.save-panel')).toBeInViewport();
     if (uiScale === 2) {
+      await trigger.click();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
       await page.setViewportSize({ width: 960, height: 750 });
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'bar');
       await page.setViewportSize({ width: 960, height: 540 });
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(trigger).toContainText('Show the sections');
     }
   });
 }

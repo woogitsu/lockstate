@@ -698,7 +698,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     const reservedHeight = measureReserved();
     if (previousPlacement === 'drawer') root.dataset['layoutNavigationPlacement'] = previousPlacement;
     geometry = resolveHudLayout(settings, viewport, reservedHeight);
-    if (geometry.navigationPlacement !== 'drawer' || geometry.navigation.collapsed) drawerOpen = false;
+    if (geometry.navigationPlacement !== 'drawer' || geometry.navigation.collapsed) setDrawerOpen(false);
 
     if (geometry.phone !== previousPhone) {
       inspectorSeparator.destroy();
