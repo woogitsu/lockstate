@@ -748,6 +748,9 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       toggle.element.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       toggle.element.dataset['collapsed'] = collapsed ? 'true' : 'false';
     }
+    if (geometry.navigationPlacement === 'drawer' && document.activeElement === toggles.navigation.element) {
+      handOffFocus(drawerButton.element);
+    }
     restoreDrawerFocusIfHidden();
     if (geometry.navigationPlacement !== 'drawer' && document.activeElement === drawerButton.element) {
       const phoneTab = regions.navigation.content[0]?.querySelector<HTMLButtonElement>(
