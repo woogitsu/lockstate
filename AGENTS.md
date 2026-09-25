@@ -1528,6 +1528,14 @@ that an implementation agent changes the constant and its docblock in one
 commit. The overdraft floor at `:295` derives from the constant and moves with
 it (#976).
 
+**Implementation, 2026-09-25 (#641):** The opening balance is now `100_000`.
+The facility still derives as one tenth of the opening balance (#976), so a
+new prison receives a `-10_000` floor. ADR 0096's arrears cap derives from
+that same facility and is therefore `10_000`. Existing saves retain their
+saved balance; restoring one does not grant the difference. The preceding
+paragraph records the pre-implementation state and why its false docblock
+needed correction in the implementation commit.
+
 **15. The product name is spelled `LockState.io` everywhere a player sees it
 ([#703](https://github.com/matmaxalez/lockstate/issues/703)).** #703's ruling 8
 of 2026-08-31 said the product stops spelling its own name two ways, and it

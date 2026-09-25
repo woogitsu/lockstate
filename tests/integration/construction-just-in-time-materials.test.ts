@@ -1,20 +1,21 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { projectBuildQueue } from '../../src/simulation/presentation';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { buildQueueFromProjection } from '../../src/ui/simulation-build-queue';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
+
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **A build order buys what it needs** — [ADR 0017](../../docs/adr/0017-money-primary-resource-model.md)
@@ -129,7 +130,7 @@ function placeWalls(runtime: SimulationRuntime, count: number): string[] {
 
 describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () => {
   it('pins the three figures every case below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(SCENARIO_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
     expect(BRICKS_PER_WALL).toBe(2);
     expect(BRICK_PRICE).toBe(40);
     expect(BRICKS_PER_WALL * BRICK_PRICE).toBe(WALL_COST);
@@ -146,7 +147,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
      * the whole run and the balance never moved, which is exactly the state
      * the owner was looking at.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     expect(stockOf(runtime, BRICK), 'the prison must start with no bricks').toBe(0);
 
     placeWalls(runtime, 40);
@@ -180,7 +181,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
      * landed as **stock**. Dropping either term from
      * `JustInTimeMaterialsService` double-buys one half or the other.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 40 });
     const afterOwnPurchase = runtime.treasury.balanceMinorUnits;
     expect(afterOwnPurchase).toBe(25_000 - 40 * BRICK_PRICE);
@@ -220,7 +221,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
      * Two purchases at one tick, for two bricks each, is what says the fourth
      * part is doing its job.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     runtime.kernel.submitCommand('cmd-0', 0, 0, packCommand({ type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 }));
     runtime.kernel.submitCommand('cmd-1', 1, 0, packCommand({ type: 'PlaceBuildOrder', orderId: 'order-b', definitionId: WALL, x: 4, y: 5 }));
     runtime.kernel.step();
@@ -301,14 +302,14 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * rung is not moved by freshness) and still lands on the same `-1,930`.
    */
   function prisonWith(balance: number): SimulationRuntime {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     // As far as the *starter* delivery rung allows (this runtime never
     // furnishes a room, so it is judged there for its whole life -- see the
     // docblock above), in whole planks, and the rest at the wage rung. Planks
     // because no wall order asks for one, so the stock this leaves behind
     // cannot fund anything the cases below place.
     const pressable = Math.floor(
-      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
+      (SCENARIO_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
     );
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: pressable });
     const rest = runtime.treasury.balanceMinorUnits - balance;
@@ -590,7 +591,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
 
   /** A walled, zoned cell, which is what `PlaceObject` refuses without (`outside-room`). */
   function prisonWithACell(): SimulationRuntime {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
     return runtime;
@@ -665,7 +666,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
 describe('the order the queue is funded in (#703 ruling 12)', () => {
   /** A walled, zoned cell, so a bed order is accepted rather than refused `outside-room`. */
   function prisonWithACell(): SimulationRuntime {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
     return runtime;
@@ -885,7 +886,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
    * of it.
    */
   it('spends income that arrives after placement, with nothing pressed in between (#703)', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     /*
      * **Room measured against the `'construction'` rung rather than the floor**
      * (the owner's ruling 19 of 2026-08-31, ADR 0017's "Amendment,
@@ -1022,7 +1023,7 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      * whose bare perimeter is 128 segments, so it is two or three rooms'
      * worth of interior walls rather than an absurd figure.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
 
     let funded = 0;
     let firstRefusedAt = -1;
@@ -1118,7 +1119,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
      * three times and spent twice", and after the ruling that is the
      * distinction the file is here for.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     const creditSpy = vi.spyOn(runtime.treasury, 'credit');
 
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4, transactionId: 'gesture-1' });
@@ -1163,7 +1164,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
      * were not netted off, every undo/redo pair would cost another 80 —
      * a money pump driven by one key (`KeyZ`).
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4, transactionId: 'gesture-1' });
     const afterPlacing = runtime.treasury.balanceMinorUnits;
 
@@ -1195,7 +1196,7 @@ describe('a save taken mid-purchase', () => {
      * a function of the order book, the container and the pending deliveries,
      * and all three were already in the payload.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     step(runtime, 20);
     expect(runtime.procurement.pendingDeliveries, 'the save must be taken mid-flight for this to mean anything').toHaveLength(1);

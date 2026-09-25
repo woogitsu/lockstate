@@ -1,9 +1,10 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -116,7 +117,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 
 /** The three rooms zoned and the materials bought, but nothing ordered: the "before" reading. */
 function zonedPrison(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: PLANKS }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: BRICKS }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });

@@ -182,25 +182,19 @@ import { procurableMaterial } from '../../content/procurement-catalog';
 /**
  * What a new prison starts with.
  *
- * **No longer a placeholder: 25,000 is the owner's decision, and the decision
- * was to leave it where it was.** It used to say here that this figure should
- * be replaced the moment a real income line existed. That line landed with
- * #29, the question was put, and the answer was to keep 25,000 — so this
- * constant is now a chosen opening balance rather than a number waiting to be
- * chosen. It is still not an income policy; a starting balance says what you
- * begin with, never what the state pays you for, and ADR 0017 decision 5
- * keeps both out of the architecture record and in #29.
+ * The owner chose 100,000 for #641 on 2026-09-23 after measuring how far a
+ * player can drag a wall before the initial grant is exhausted. This is an
+ * opening balance, not an income policy: it says what a new prison begins
+ * with, never what the state pays it for. The standing overdraft facility
+ * derives from this value at the composition root (#976).
  *
  * What it buys, in the game's own units, so the figure can be argued with
  * rather than merely trusted: at the shipped catalog prices it is a few
- * hundred bricks, or roughly 22 standalone 2×3 cells' worth of wall and door
- * at 1,105 each — and it is 83 prisoner-days of income at 300
- * (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`). That second reading is the
- * one #29 added: the opening balance is now expressible as a number of days
- * of running the place, which is what makes "keep it" a judgement rather than
- * an omission.
+ * 2,500 bricks, or roughly 90 standalone 2×3 cells' worth of wall and door
+ * at 1,105 each — and about 333 prisoner-days of income at 300
+ * (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`).
  */
-export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
+export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 100_000;
 
 /**
  * How far under water every prison may go, as a standing facility rather than
@@ -291,6 +285,11 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * is the "hidden cost" reading of the same 2,500, and it is still a reason not
  * to raise it. What the player is told about it is ADR 0081 open question 2 and
  * is the owner's.
+ *
+ * **Implementation update, 2026-09-25 (#641):** The owner approved an opening
+ * grant of 100,000. The one-tenth rule now gives a -10,000 facility. The 2,500
+ * and fixture outcomes above are historical measurements made with a 25,000
+ * grant; this change does not alter their recorded evidence or the ratio.
  */
 /** The approved one-tenth facility, calculated from this prison's opening grant. */
 export function overdraftFloorForOpeningBalance(openingBalanceMinorUnits: number): number {

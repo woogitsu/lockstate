@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
@@ -5,7 +6,7 @@ import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { NEED_IDS, NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -99,7 +100,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * in both, so a difference in a need level could only come from the placement.
  */
 function prisonWithBedOrdered(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
@@ -445,7 +446,7 @@ describe('what the toilet does and does not change in the running prison', () =>
      * toilet have to do with sitting around in a common room.
      */
     for (const definitionId of ['toilet-brick', 'bed-wooden'] as const) {
-      const runtime = createNewSimulationRuntime(SEED);
+      const runtime = createHistoricalOpeningRuntime(SEED);
       submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
       submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
       wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 5, height: 5 }, { doors: runtime.navigation.doors });
@@ -513,7 +514,7 @@ describe('what the toilet does and does not change in the running prison', () =>
      * history into the save would make the checksum a function of the order the
      * player happened to build in.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
     submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
     wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });

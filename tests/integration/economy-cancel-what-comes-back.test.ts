@@ -1,17 +1,19 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
-  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
+const SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS = -2_500;
 
 /**
  * **What cancelling a build order actually gives back, in the window ADR 0076
@@ -134,7 +136,7 @@ function edges(count: number): readonly Edge[] {
  * *during* the gesture, which is a different measurement.
  */
 function createSession(seed = 0x717) {
-  const runtime = createNewSimulationRuntime(seed);
+  const runtime = createHistoricalOpeningRuntime(seed);
   let sequence = 0;
 
   const atOneTick = (commands: readonly SimulationCommand[]): void => {
@@ -205,13 +207,13 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
 
     session.atOneTick(placements(orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, '328 walls at 80, out of 25,000').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - DRAG * WALL_COST,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - DRAG * WALL_COST,
     );
     expect(session.runtime.procurement.pendingDeliveries, 'one delivery per funded order').toHaveLength(DRAG);
 
     session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
@@ -246,7 +248,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
 
     session.atOneTick(placements(orderIds));
     const strandedBalance = session.runtime.treasury.balanceMinorUnits;
-    expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(strandedBalance, 'and past the rung a Buy press is refused at, by less than a plank').toBeLessThan(
       INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + PLANK_PRICE,
     );
@@ -274,7 +276,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
       new Map([['cancelled', DRAG]]),
     );
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240 back — it read −1,240 before the ruling').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and the shelf is empty — it held 656 bricks before the ruling').toBe(
       0,
@@ -283,7 +285,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     // No longer locked, which is the whole of what the ruling bought.
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
     expect(session.runtime.treasury.balanceMinorUnits, 'and the door its first cell needs is affordable again').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
     );
   }, 60_000);
 
@@ -309,9 +311,9 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
      */
     const onTheRoad = createSession();
     onTheRoad.atOneTick(placements(['wall-0']));
-    expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
+    expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
     onTheRoad.atOneTick([cancelOrder(onTheRoad.runtime, 'wall-0')]);
-    expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(onTheRoad.stock(WALL_REQUIREMENT.itemId)).toBe(0);
 
     const landed = createSession();
@@ -327,7 +329,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     );
     landed.atOneTick([cancelOrder(landed.runtime, 'wall-0')]);
     expect(landed.runtime.treasury.balanceMinorUnits, 'money — this read 24,920, bricks and no money, before the ruling').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(landed.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it, as they do one state later').toBe(0);
 
@@ -348,10 +350,10 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(measured.stateCounts(['wall-0']).get('assigned'), 'it did allocate in the end').toBe(1);
     expect(ticksHolding, 'ten ticks of holding bricks nothing has claimed').toBe(10);
 
-    expect(measured.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
+    expect(measured.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
     measured.atOneTick([cancelOrder(measured.runtime, 'wall-0')]);
     expect(measured.runtime.treasury.balanceMinorUnits, 'money again, one state later').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(measured.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it').toBe(0);
   }, 60_000);

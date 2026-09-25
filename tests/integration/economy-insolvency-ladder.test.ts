@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
@@ -10,12 +11,14 @@ import { alertRows } from '../helpers/alert-rows';
 import {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
-  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS = -2_500;
 
 /**
  * **ADR 0017 decision 8's insolvency ladder, walked in one run.**
@@ -145,7 +148,7 @@ function sinkTo(runtime: SimulationRuntime, balance: number): void {
  * targets.
  */
 function prisonWithOneGuard(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   send(runtime, 'zone', { type: 'ZoneRoom', roomId: CELL, ...CELL_RECT });
   send(runtime, 'bed', { type: 'PlaceObject', orderId: 'bed-0', definitionId: 'bed-wooden', ...BED_TILE });
@@ -220,7 +223,7 @@ describe('the thresholds ruling 19 gives ADR 0017 decision 8`s rungs, equalised 
     expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS, 'construction halted below -1,250, the same rung').toBe(
       -1_250,
     );
-    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages unpaid below -2,500, which is the floor').toBe(-2_500);
+    expect(SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS, 'wages unpaid below -2,500, which is the floor').toBe(-2_500);
 
     /*
      * The equality, asserted on the numbers themselves and not just on their
@@ -231,11 +234,11 @@ describe('the thresholds ruling 19 gives ADR 0017 decision 8`s rungs, equalised 
      * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`'s own definition.
      */
     expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS).toBe(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS);
-    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBeGreaterThan(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS).toBeGreaterThan(SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS);
   });
 
   it('is what a shipped session actually applies, on every class', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
 
     expect(runtime.treasury.floorFor('deliveries')).toBe(-1_250);
     expect(runtime.treasury.floorFor('hiring'), 'not a rung of its own: shares the deliveries/construction rung').toBe(
@@ -265,7 +268,7 @@ describe('#771: the same two bricks, bought or drawn, agree at every balance', (
    */
   it('canAfford agrees for deliveries and construction, for the identical charge, at every balance from -1,170 to -2,001', () => {
     for (let balance = -1_170; balance >= -2_001; balance -= 1) {
-      const runtime = createNewSimulationRuntime(SEED);
+      const runtime = createHistoricalOpeningRuntime(SEED);
       runtime.treasury.restore({ balanceMinorUnits: balance });
       const deliveries = runtime.treasury.canAfford(WALL_COST, 'deliveries');
       const construction = runtime.treasury.canAfford(WALL_COST, 'construction');
@@ -391,7 +394,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * came apart from its twin, would fail here as well.
      */
     for (const balance of [-1_210, -1_251, -2_441, -2_500]) {
-      const probe = createNewSimulationRuntime(SEED);
+      const probe = createHistoricalOpeningRuntime(SEED);
       probe.treasury.restore({ balanceMinorUnits: balance });
       const deliveriesFired = !probe.treasury.canAfford(BRICK_PRICE, 'deliveries');
       const constructionFired = !probe.treasury.canAfford(BRICK_PRICE, 'construction');
@@ -483,7 +486,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * the same comparison and a prison that has no facility behaves exactly as
      * it did before ruling 19, to the minor unit.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     runtime.treasury.setOverdraftFloor(0);
 
     for (const spendClass of ['deliveries', 'construction', 'wages', 'hiring'] as const) {

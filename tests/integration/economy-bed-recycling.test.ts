@@ -1,14 +1,16 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS } from '../../src/simulation/economy/income';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **One plank pays for as many revenue-bearing residents as the prison has
@@ -186,7 +188,7 @@ const planksInStock = (runtime: SimulationRuntime): number =>
 
 /** A new prison, one plank bought and delivered, three cells walled and zoned, nothing built. */
 function prisonWithOnePlankAndThreeCells(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 });
   expect(runtime.treasury.balanceMinorUnits, 'one plank at 65, and this is the only money either prison spends').toBe(24_935);
   for (const rect of RECTS) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
@@ -198,7 +200,7 @@ function prisonWithOnePlankAndThreeCells(): SimulationRuntime {
 
 describe('a bed recycled by undo, with the resident left behind (ECON-003)', () => {
   it('pins the price the whole comparison rests on', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(SCENARIO_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
   });
 

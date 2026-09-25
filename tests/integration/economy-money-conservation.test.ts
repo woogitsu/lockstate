@@ -1,19 +1,21 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
+
 import { describe, expect, it, vi } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
-  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+
+/** Historical 25,000-grant scenario, kept to measure its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **Money is conserved across every build order a player can place and take
@@ -67,7 +69,7 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * balance + money paid for deliveries still in flight
  *         + (stock held) × unit price
  *         + (stock allocated to live build orders) × unit price
- *   ===  TREASURY_STARTING_BALANCE_MINOR_UNITS
+ *   ===  SCENARIO_STARTING_BALANCE_MINOR_UNITS
  * ```
  *
  * exactly, in integer minor units, after every command and every tick.
@@ -227,7 +229,7 @@ function standsInTheWorld(runtime: SimulationRuntime, order: { definitionId: str
 
 /** Drives the real command boundary: pack, submit, step. */
 function createSession(seed = 7) {
-  const runtime = createNewSimulationRuntime(seed);
+  const runtime = createHistoricalOpeningRuntime(seed);
   const creditSpy = vi.spyOn(runtime.treasury, 'credit');
   let sequence = 0;
   const trace: string[] = [];
@@ -266,7 +268,7 @@ function createSession(seed = 7) {
     // read backwards from where it appeared, and a run of two hundred
     // identical ticks in front of it buries the two lines that matter.
     expect(total, `${label}: value was created or destroyed\n${trace.slice(-12).join('\n')}`)
-      .toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - consumedMinorUnits);
+      .toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - consumedMinorUnits);
   };
 
   /** Says what the next press is expected to consume for good, before it is pressed. */
@@ -451,7 +453,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
      */
     const session = createSession();
     session.conserved('session start');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
 
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'after PlaceBuildOrder');
 
@@ -460,7 +462,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(
       session.runtime.treasury.balanceMinorUnits,
       'a build order costs the price of its materials, and nothing else',
-    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+    ).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost);
     expect(session.stateOf('order-wall-1')).toBe('materials-pending');
     expect(
       session.runtime.procurement.pendingDeliveries.map((delivery) => [delivery.itemId, delivery.quantity, delivery.paidMinorUnits]),
@@ -472,7 +474,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(
       session.runtime.treasury.balanceMinorUnits,
       'the wall had not started, so the money comes back (ruling 20)',
-    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    ).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(
       session.creditSpy.mock.calls.map(([amount]) => amount),
       'exactly one credit, of exactly the delivery that was cancelled',
@@ -484,7 +486,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     // purchase pass -- #687's failure mode in the opposite direction.
     session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'the refund survives the clock');
     expect(session.stock(WALL_REQUIREMENT.itemId), 'no bricks, because none were paid for').toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
   });
 
   it('buys nothing for an order whose materials the player already holds', () => {
@@ -556,7 +558,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     const afterPurchase = session.runtime.treasury.balanceMinorUnits;
     const wallCost = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity;
     expect(afterPurchase, 'the fixture must actually have spent something').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost,
     );
 
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'after PlaceBuildOrder');
@@ -708,7 +710,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
       session.runtime.treasury.balanceMinorUnits,
       'two materials at two prices must both have been charged',
     ).toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS -
         UNIT_PRICE.get(WALL_REQUIREMENT.itemId)! * WALL_REQUIREMENT.quantity -
         UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)! * DOOR_REQUIREMENT.quantity,
     );
@@ -746,10 +748,10 @@ describe('money is conserved across build orders and undo (#285)', () => {
      */
     const price = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)!;
     expect(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS % price,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS % price,
       'the opening balance no longer divides by the unit price, so this case can no longer spend it exactly',
     ).toBe(0);
-    const wholeBalance = TREASURY_STARTING_BALANCE_MINOR_UNITS / price;
+    const wholeBalance = SCENARIO_STARTING_BALANCE_MINOR_UNITS / price;
 
     const session = createSession();
     session.buy('order-buy-everything', WALL_REQUIREMENT.itemId, wholeBalance, 'a purchase for the exact balance');
@@ -761,7 +763,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.runtime.treasury.balanceMinorUnits, 'the last coin was spent').toBe(0);
     expect(session.runtime.procurement.pendingDeliveries, 'the goods were ordered').toHaveLength(1);
     expect(session.runtime.procurement.pendingDeliveries[0]?.paidMinorUnits).toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
 
     /*
@@ -784,7 +786,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * > planks at 65 to the minor unit.
      *
      * > ```
-     * > const roomToTheFloor = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+     * > const roomToTheFloor = SCENARIO_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
      * > session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 681 - wholeBalance, …);
      * > session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 4, …);
      * > ```
@@ -816,7 +818,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
      * unit (ADR 0049), and a refused purchase debits nothing; `session.buy`
      * re-checks `total === 25,000` after every command below.
      */
-    const roomToTheRung = TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS;
+    const roomToTheRung = SCENARIO_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS;
     const plankPrice = UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)!;
     expect(
       653 * price + 1 * plankPrice,
@@ -843,7 +845,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
     expect(session.runtime.treasury.balanceMinorUnits).toBe(INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS);
     expect(
-      session.runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+      session.runtime.treasury.balanceMinorUnits - session.runtime.treasury.overdraftFloorMinorUnits,
       'and the deeper floor is untouched, with a rung between the press and it',
     ).toBe(1_315);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(3);
@@ -889,7 +891,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     session.place('order-d', WALL, 7, 4, 'run-1', 'segment 4');
 
     const spent = 4 * WALL_REQUIREMENT.quantity * UNIT_PRICE.get(WALL_REQUIREMENT.itemId)!;
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - spent);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - spent);
 
     for (const delivery of [...session.runtime.procurement.pendingDeliveries]) {
       session.send(
@@ -902,7 +904,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     // produced it is `ProcurementSystem.cancel`'s -- one per delivery, and no
     // more. A second producer wired anywhere on this route reads here as a
     // higher count long before the conservation sum notices.
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(session.creditSpy).toHaveBeenCalledTimes(4);
     for (const id of ['order-a', 'order-b', 'order-c', 'order-d']) {
       expect(session.stateOf(id), `${id} was still queued to be bought for`).toBe('cancelled');
@@ -912,7 +914,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     // scheduled procurement pass has had every chance to buy the run back, and
     // #687 is the measurement that it used to.
     session.run(PROCUREMENT_DELIVERY_DELAY_TICKS * 2, 'the clock runs on an empty queue');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(session.creditSpy).toHaveBeenCalledTimes(4);
   });
 
@@ -929,7 +931,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
 
     session.buy('order-buy-broke', WALL_REQUIREMENT.itemId, 100_000, 'a purchase nothing could cover');
     expect(session.runtime.treasury.balanceMinorUnits, 'a refused purchase must not spend').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
     expect(session.runtime.refusals.count, 'the refusal must have reached the player').toBeGreaterThan(0);
@@ -995,7 +997,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     session.cancel('order-planned', 'cancel a planned order');
     expect(session.stateOf('order-planned')).toBe('cancelled');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(session.creditSpy, 'nothing was spent on it, so nothing may be refunded').not.toHaveBeenCalled();
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured either').toBe(0);
   });
@@ -1031,14 +1033,14 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 80 came back').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
 
     session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'nothing arrives and nothing is re-bought');
     expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
   });
 
   it('refunds the money for a materials-pending order while its delivery is still on the road', () => {
@@ -1049,7 +1051,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     session.cancel('order-wall-1', 'cancel while materials-pending');
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
   });
@@ -1091,7 +1093,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     session.cancel('order-wall-1', 'cancel in the landed-but-unallocated window');
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
     expect(session.runtime.treasury.balanceMinorUnits, 'money, and the whole 80 of it').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
     expect(
@@ -1101,7 +1103,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'and nothing buys them back');
     expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(0);
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
   });
 
   it('takes only the cancelled order\'s own bricks out of a stockpile the player bought', () => {
@@ -1176,7 +1178,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     expect(session.stateOf('order-wall-1')).toBe('cancelled');
     expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
     expect(session.runtime.treasury.balanceMinorUnits, 'the catalogue value of what it held').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
     expect(
@@ -1196,7 +1198,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     const session = createSession();
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
     session.runUntilState('order-wall-1', 'in-progress', 'wait for the crew to start');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost);
 
     session.expectConsumption(wallCost);
     session.cancel('order-wall-1', 'cancel while in-progress');
@@ -1206,12 +1208,12 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     expect(session.creditSpy, 'the crew had started, so no money comes back').not.toHaveBeenCalled();
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks either').toBe(0);
     expect(session.runtime.treasury.balanceMinorUnits, 'the 80 stays spent').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost,
     );
     expect(session.runtime.world.getTopEdge(tile(4, 6)), 'and no wall was left standing').toBe(0);
 
     session.run(60, 'and nothing brings it back later');
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost);
   });
 
   it('gives nothing back for a completed order either, which is the state ruling 20 did not reach', () => {
@@ -1286,7 +1288,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
         cancelThenUndo.creditSpy.mock.calls.map(([amount]) => amount),
         `${name}: Cancel then Undo paid more than once`,
       ).toEqual([wallCost]);
-      expect(cancelThenUndo.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      expect(cancelThenUndo.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
       expect(cancelThenUndo.stock(WALL_REQUIREMENT.itemId), `${name}: and no bricks came back too`).toBe(0);
 
       const undoThenCancel = open();
@@ -1296,7 +1298,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
         undoThenCancel.creditSpy.mock.calls.map(([amount]) => amount),
         `${name}: Undo then Cancel paid more than once`,
       ).toEqual([wallCost]);
-      expect(undoThenCancel.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+      expect(undoThenCancel.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
       expect(undoThenCancel.stock(WALL_REQUIREMENT.itemId), `${name}: and no bricks came back too`).toBe(0);
     }
   });
@@ -1342,19 +1344,19 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     const session = createSession();
     session.place('order-wall-1', WALL, 4, 6, 'build-1', 'first wall');
     session.place('order-wall-2', WALL, 5, 6, 'build-2', 'second wall');
-    const spent = TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
+    const spent = SCENARIO_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
     expect(spent, 'two walls, two lots of bricks').toBe(2 * wallCost);
 
     session.cancel('order-wall-1', 'cancel the first');
     expect(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
       'exactly one wall\'s worth is still spent',
     ).toBe(wallCost);
 
     session.buildUntilComplete(['order-wall-2'], 'the survivor still builds');
     expect(session.runtime.world.getTopEdge(tile(5, 6)), 'and it really went up').toBeGreaterThan(0);
     expect(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
       'and it was not bought a second time',
     ).toBe(wallCost);
   });
@@ -1406,7 +1408,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
 
     session.cancel('order-wall-1', 'cancel one of the two');
     expect(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits,
       'the lorry the other wall is waiting on must not be turned around',
     ).toBe(2 * wallCost);
     expect(session.runtime.procurement.pendingDeliveries, 'so it is still on its way').toHaveLength(1);
@@ -1520,7 +1522,7 @@ describe('taking a finished thing away returns nothing (ADR 0076 amendment of 20
     const session = cellSession();
     bedStanding(session);
     expect(session.runtime.treasury.balanceMinorUnits, 'the bed cost one plank').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - bedCost,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - bedCost,
     );
 
     session.expectConsumption(bedCost);
@@ -1529,7 +1531,7 @@ describe('taking a finished thing away returns nothing (ADR 0076 amendment of 20
     expect(session.runtime.placedObjects.size, 'the bed is gone').toBe(0);
     expect(session.stock(BED_REQUIREMENT.itemId), 'and its plank did not come back').toBe(0);
     expect(session.creditSpy, 'and neither did its money').not.toHaveBeenCalled();
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - bedCost);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - bedCost);
     expect(
       session.stateOf('bed-1'),
       'the order is untouched by a removal, which is why the second press refuses',
@@ -1573,7 +1575,7 @@ describe('taking a finished thing away returns nothing (ADR 0076 amendment of 20
     expect(session.creditSpy, 'and no money').not.toHaveBeenCalled();
     expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
     expect(session.runtime.treasury.balanceMinorUnits, 'the 80 stays spent').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost,
     );
   });
 
@@ -1671,7 +1673,7 @@ describe('taking a finished thing away returns nothing (ADR 0076 amendment of 20
     expect(
       session.runtime.treasury.balanceMinorUnits,
       'one wall standing, two walls paid for',
-    ).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - wallCost * 2);
+    ).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - wallCost * 2);
     expect(session.creditSpy, 'and nothing was refunded on the way').not.toHaveBeenCalled();
   });
 });

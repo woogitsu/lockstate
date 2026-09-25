@@ -1,11 +1,12 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
-import {
-  createNewSimulationRuntime,
-  type SimulationRuntime,
-} from '../../src/simulation/runtime/new-session';
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../../src/simulation/economy';
+import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import type { LoanTerms } from '../../src/simulation/economy';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS = -2_500;
 
 /**
  * **Playing out of [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
@@ -148,7 +149,7 @@ interface LockedPosition {
  * reach. The tenth ring edge is left for the door the prison cannot afford.
  */
 function lockedPosition(): LockedPosition {
-  const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
+  const runtime = createHistoricalOpeningRuntime(SEED, { loanTerms: PROBE_TERMS });
   const ring = cellRingEdges();
   const doorway = ring[ring.length - 1] as Edge;
   const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
@@ -341,7 +342,7 @@ describe('what a loan does to the locked position, and what it does not', () => 
    * at.
    */
   it('leaves the facility untouched when the thirteen orders are never placed', () => {
-    const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
+    const runtime = createHistoricalOpeningRuntime(SEED, { loanTerms: PROBE_TERMS });
     const ring = cellRingEdges();
     const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
     for (let index = 0; index < 312; index += 1) {
@@ -350,7 +351,7 @@ describe('what a loan does to the locked position, and what it does not', () => 
     stepDays(runtime, 20);
     expect(runtime.treasury.balanceMinorUnits, '312 x 80 of 25,000, and the facility untouched').toBe(40);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the whole of it still standing').toBe(
-      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+      SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS,
     );
 
     // And the cancelling player, measured rather than assumed.

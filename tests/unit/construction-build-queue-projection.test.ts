@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import {
   PENDING_BUILD_ORDER_STATES,
@@ -9,7 +10,6 @@ import { BUILD_ORDER_FAIL_REASONS, type BuildOrder } from '../../src/simulation/
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
@@ -75,7 +75,7 @@ const SEED = 11;
 
 /** A real session with more brick than any fixture here can consume. */
 function session(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).deposit('item.brick', 500);
   return runtime;
 }
@@ -556,7 +556,7 @@ describe('cancelling one order by id, which is the command this read model exist
      * same target the mature derivation reached, from one fewer plank and 65
      * more at the wage rung.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     runtime.kernel.submitCommand(
       'cmd-buy',
       runtime.kernel.expectedSequence,

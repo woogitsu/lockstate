@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { placedObjectAt } from '../../src/simulation/objects';
@@ -5,7 +6,7 @@ import { tileCoordinate } from '../../src/simulation/world';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { freshUnfurnishedPrison, pressAffordabilityVerdict } from '../../src/ui/affordability';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
@@ -89,7 +90,7 @@ function send(runtime: SimulationRuntime, command: SimulationCommand): void {
  * registry (`totalResidentCapacity` 1), which is the disagreement.
  */
 function prisonRestoredWithAnOffCatalogueRoom(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   runtime.prisoners.roomInstances.register({
     instanceId: 'restored-1',
     roomCatalogId: OFF_CATALOGUE_ROOM_ID,
