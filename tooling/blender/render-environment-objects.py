@@ -291,7 +291,7 @@ def _unfilter(raw: bytes, width: int, height: int) -> bytearray:
     return out
 
 
-def _flip_and_rewrite_png(path: Path) -> bytes:
+def _flip_and_rewrite_png(path: Path, *, stabilize_water: bool = False) -> bytes:
     """Reverse the row order of a rendered PNG and re-emit it without metadata.
 
     Returns the flat RGBA8 pixel buffer, top row first, so the caller can
@@ -317,6 +317,15 @@ def _flip_and_rewrite_png(path: Path) -> bytes:
         raise ValueError(f"{path}: unexpected compression {compression} / filter method {filter_method}")
 
     pixels = _unfilter(zlib.decompress(bytes(idat)), width, height)
+    if stabilize_water:
+        # Blender 5.2 EEVEE alternates green 146/147 at pixel (129, 75) in
+        # this periodic water shader across otherwise identical runs. Drop
+        # one least-significant RGB bit in water only, before both PNG and
+        # pixelSha256 are written. The largest change is 1/255 per channel.
+        for index in range(0, len(pixels), 4):
+            pixels[index] &= 0xFE
+            pixels[index + 1] &= 0xFE
+            pixels[index + 2] &= 0xFE
     stride = width * 4
     flipped = bytearray()
     for row in range(height - 1, -1, -1):
@@ -518,7 +527,7 @@ def main() -> None:
         low, high = _evaluated_bounds(collection)
 
         # Repeating architectural and terrain tiles must meet at pixel edges.
-        margin_fraction = 0.0 if asset_id.startswith(("terrain.dirt.compacted.variant-", "terrain.grass.mown.variant-")) or asset_id in {"floor.linoleum.institutional", "floor.kitchen.nonslip", "floor.canteen.terrazzo", "floor.yard.compacted-earth", "floor.shower.ceramic", "floor.laundry.nonslip", "floor.infirmary.vinyl", "floor.common-room.cork-rubber", "floor.classroom.oak-laminate", "floor.security-office.antistatic", "floor.cell.sealed-concrete", "floor.staff-room.woven-vinyl", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted", "terrain.grass.mown", "terrain.concrete.paving", "terrain.gravel.service_path", "terrain.rock.bedrock"} else MARGIN_FRACTION
+        margin_fraction = 0.0 if asset_id.startswith(("terrain.dirt.compacted.variant-", "terrain.grass.mown.variant-", "terrain.water.still")) or asset_id in {"floor.linoleum.institutional", "floor.kitchen.nonslip", "floor.canteen.terrazzo", "floor.yard.compacted-earth", "floor.shower.ceramic", "floor.laundry.nonslip", "floor.infirmary.vinyl", "floor.common-room.cork-rubber", "floor.classroom.oak-laminate", "floor.security-office.antistatic", "floor.cell.sealed-concrete", "floor.staff-room.woven-vinyl", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted", "terrain.grass.mown", "terrain.concrete.paving", "terrain.gravel.service_path", "terrain.rock.bedrock"} else MARGIN_FRACTION
         frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y
@@ -530,7 +539,7 @@ def main() -> None:
         destination = output / f"{asset_id}.png"
         scene.render.filepath = str(destination)
         bpy.ops.render.render(write_still=True)
-        pixels = _flip_and_rewrite_png(destination)
+        pixels = _flip_and_rewrite_png(destination, stabilize_water=asset_id.startswith("terrain.water.still"))
         silhouette = _opaque_bounds(pixels, resolution_x, resolution_y)
 
         aspect_drift = abs((resolution_x / resolution_y) - (footprint[0] / footprint[1])) / (footprint[0] / footprint[1])

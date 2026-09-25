@@ -129,6 +129,10 @@ MODELS = (
     ("terrain.grass.mown.variant-b", (1, 1)),
     ("terrain.grass.mown.variant-c", (1, 1)),
     ("terrain.grass.mown.variant-d", (1, 1)),
+    ("terrain.water.still", (1, 1)),
+    ("terrain.water.still.variant-b", (1, 1)),
+    ("terrain.water.still.variant-c", (1, 1)),
+    ("terrain.water.still.variant-d", (1, 1)),
 )
 
 
@@ -225,6 +229,52 @@ def gravel_matrix_material():
     ramp.color_ramp.elements[1].color = (0.24, 0.21, 0.17, 1)
     links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def still_water_material():
+    """Periodic blue-green shallows, with no tile-border discontinuity."""
+    item = material("Still water over dark silty bed", (0.025, 0.15, 0.20, 1), 0.34)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    for axis, output in (("X", "X"), ("Y", "Y")):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2 * math.pi
+        links.new(split.outputs[axis], angle.inputs[0])
+        wave = nodes.new("ShaderNodeMath")
+        wave.operation = "SINE"
+        links.new(angle.outputs[0], wave.inputs[0])
+        links.new(wave.outputs[0], vector.inputs[output])
+    wave = nodes.new("ShaderNodeTexNoise")
+    wave.noise_dimensions = "4D"
+    wave.inputs["Scale"].default_value = 4.5
+    wave.inputs["Detail"].default_value = 2.5
+    links.new(vector.outputs["Vector"], wave.inputs["Vector"])
+    angle = nodes.new("ShaderNodeMath")
+    angle.operation = "MULTIPLY"
+    angle.inputs[1].default_value = 2 * math.pi
+    links.new(split.outputs["Y"], angle.inputs[0])
+    cosine = nodes.new("ShaderNodeMath")
+    cosine.operation = "COSINE"
+    links.new(angle.outputs[0], cosine.inputs[0])
+    links.new(cosine.outputs[0], wave.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.26
+    ramp.color_ramp.elements[0].color = (0.012, 0.090, 0.135, 1)
+    ramp.color_ramp.elements[1].position = 0.72
+    ramp.color_ramp.elements[1].color = (0.060, 0.245, 0.275, 1)
+    links.new(wave.outputs["Fac"], ramp.inputs["Fac"])
+    shader = nodes.get("Principled BSDF")
+    links.new(ramp.outputs["Color"], shader.inputs["Base Color"])
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.13
+    bump.inputs["Distance"].default_value = 0.018
+    links.new(wave.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     return item
 
 
@@ -1498,7 +1548,22 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id == "terrain.rock.bedrock":
+    if asset_id == "terrain.water.still" or asset_id.startswith("terrain.water.still.variant-"):
+        box(collection, root, "Unbroken shallow water", (0, 0, 0.04),
+            (1, 1, 0.08), "water_surface", 0)
+        variant = {"terrain.water.still": 0, "terrain.water.still.variant-b": 1,
+                   "terrain.water.still.variant-c": 2, "terrain.water.still.variant-d": 3}[asset_id]
+        # Readable glints stay inset, leaving the same periodic edge on all
+        # four tiles. No opaque bank is baked into a tile that can join water.
+        for index in range(7):
+            x = (((index * 31 + variant * 13) % 47) / 47 - .5) * .68
+            y = (((index * 23 + variant * 17) % 43) / 43 - .5) * .68
+            width = .08 + .025 * (index % 3)
+            glint = box(collection, root, f"Broken surface glint.{index}",
+                (x, y, .082), (width, .009, .001),
+                "water_glint" if index % 3 else "water_glint_dim", 0)
+            glint.rotation_euler.z = ((index + variant) % 5 - 2) * .15
+    elif asset_id == "terrain.rock.bedrock":
         box(collection, root, "Continuous dark slate bedrock", (0, 0, 0.04),
             (1, 1, 0.08), "rock_matrix", 0)
         # Each face is its own shallow, bevelled slate plate. The quiet
@@ -2095,6 +2160,9 @@ def main():
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     MATERIALS["gravel_matrix"] = gravel_matrix_material()
+    MATERIALS["water_surface"] = still_water_material()
+    MATERIALS["water_glint"] = material("Water broken sky reflection", (0.16, 0.43, 0.47, 1), 0.28)
+    MATERIALS["water_glint_dim"] = material("Water subdued reflection", (0.07, 0.30, 0.34, 1), 0.35)
     MATERIALS["rock_matrix"] = material("Weathered blue grey bedrock matrix", (0.045, 0.055, 0.070, 1), 0.99)
     MATERIALS["rock_slate_1"] = rock_slate_material("Bedrock blue slate", (0.045, 0.062, 0.082, 1), (0.15, 0.18, 0.21, 1))
     MATERIALS["rock_slate_2"] = rock_slate_material("Bedrock warm slate", (0.060, 0.072, 0.083, 1), (0.17, 0.18, 0.19, 1))

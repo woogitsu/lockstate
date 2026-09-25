@@ -359,26 +359,27 @@ describe('declared fallback', () => {
 
   it('accounts for every terrain exactly once', () => {
     const coverage = terrainArtCoverage();
-    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass', 'gravel', 'rock']);
+    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass', 'gravel', 'rock', 'water']);
     expect([...coverage.onFallback]).toEqual([...TERRAIN_ON_COLOUR_FALLBACK]);
     expect([...coverage.drawn, ...coverage.onFallback].sort()).toEqual(
       DEFAULT_TERRAIN_DEFINITIONS.map((definition) => definition.id).sort(),
     );
   });
 
-  it('maps simulation dirt, grass, gravel, concrete and rock ids to art and leaves water on colour', () => {
+  it('maps every simulation terrain id to art and preserves the unknown-id fallback', () => {
     expect(terrainFloorSpriteByNumericId(0)).toBe('env.terrain.dirt');
     expect(terrainFloorSpriteByNumericId(1)).toBe('env.terrain.grass');
     expect(terrainFloorSpriteByNumericId(2)).toBe('env.terrain.gravel');
     expect(terrainFloorSpriteByNumericId(3)).toBe('env.terrain.concrete');
     expect(terrainFloorSpriteByNumericId(4)).toBe('env.terrain.rock');
-    expect(terrainFloorSpriteByNumericId(5)).toBeUndefined();
+    expect(terrainFloorSpriteByNumericId(5)).toBe('env.terrain.water');
     expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 
-  it('selects stable dirt and grass variants by world tile, without varying other terrain', () => {
+  it('selects stable dirt, grass and water variants by world tile, without varying other terrain', () => {
     const dirtIds = new Set<string>();
     const grassIds = new Set<string>();
+    const waterIds = new Set<string>();
     for (let y = -8; y < 8; y += 1) {
       for (let x = -8; x < 8; x += 1) {
         const sprite = terrainFloorSpriteAt(0, x, y);
@@ -387,11 +388,14 @@ describe('declared fallback', () => {
         const grass = terrainFloorSpriteAt(1, x, y);
         expect(grass).toBe(terrainFloorSpriteAt(1, x, y));
         grassIds.add(grass!);
-        expect(terrainFloorSpriteAt(5, x, y)).toBeUndefined();
+        const water = terrainFloorSpriteAt(5, x, y);
+        expect(water).toBe(terrainFloorSpriteAt(5, x, y));
+        waterIds.add(water!);
       }
     }
     expect(dirtIds).toEqual(new Set(['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d']));
     expect(grassIds).toEqual(new Set(['env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d']));
+    expect(waterIds).toEqual(new Set(['env.terrain.water', 'env.terrain.water.b', 'env.terrain.water.c', 'env.terrain.water.d']));
     expect(Array.from({ length: 16 }, (_, x) => terrainFloorSpriteAt(0, x, 2)))
       .not.toEqual(Array.from({ length: 16 }, (_, x) => terrainFloorSpriteAt(0, x + 4, 2)));
   });

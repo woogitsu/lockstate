@@ -531,6 +531,17 @@ llvmpipe at roughly 50 seconds for a 256x512 frame.
 
 ### Publishing a render (ADR 0100)
 
+**2026-09-25 water terrain.** Four `terrain.water.still` frames complete
+coverage of the six simulation terrain types. Their Blender shader is periodic
+at the tile edge, while seven restrained reflections per frame stay inset;
+the renderer selects a frame from tile coordinates without changing terrain or
+save data. Blender 5.2 EEVEE alternated one green-channel byte (146/147) at
+the same water pixel across otherwise identical runs. The water-only PNG
+rewrite drops one least-significant RGB bit, and two independent runs of all
+four water frames now match byte for byte. A browser test checks atlas edges,
+all four live frames, and their placement at 1920×1080. Its captured view is
+[`research/evidence/2026-09-25-water-variants-1920x1080.png`](research/evidence/2026-09-25-water-variants-1920x1080.png).
+
 A render committed under `assets/rendered/environment/` is not runtime art
 until it is published, and it is published by a second, narrow generator
 rather than by widening the one above: `tooling/build-rendered-art-catalog.mjs`

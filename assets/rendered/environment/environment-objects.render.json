@@ -1762,6 +1762,118 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "terrain.water.still",
+      "image": "terrain.water.still.png",
+      "sha256": "49ace4e04b244dd1b1c17063d14ffc43acb5662ff718e60fadd11a3bec32b499",
+      "pixelSha256": "113f55ba0912c61a433a1a29c73af49f13c91985d816fd4ca89e829c21fd8652",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-b",
+      "image": "terrain.water.still.variant-b.png",
+      "sha256": "4d861fc0bb0232fb3a4d1aefbb1954da7067e24c3ed832b2fc9c000ec2fe46bb",
+      "pixelSha256": "f7e817620b90ba44cebb382169f610b5f94cbd0113a8a26389d1ad1c2a906c96",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-c",
+      "image": "terrain.water.still.variant-c.png",
+      "sha256": "b08778797f711baf86dde351662064e1568ea879491884bedde1cdb5f59f229b",
+      "pixelSha256": "4a134159d0930db181ed95bf242a9934367f7497c39ef56cd5483896fa044262",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-d",
+      "image": "terrain.water.still.variant-d.png",
+      "sha256": "7580c60f4f3765b42d3ec9a750127af7894e0285cda4dc39e8e0171032d71c71",
+      "pixelSha256": "7716eb7f9febc4b5e9ad24c81518d4707e7426d0c196d7715d72490032800002",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

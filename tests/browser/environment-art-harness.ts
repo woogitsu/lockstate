@@ -61,6 +61,8 @@ const FIXTURE: HarnessWorldFixture = {
   gravelTileY: 2,
   rockTileX: 0,
   rockTileY: 3,
+  waterTileX: 8,
+  waterTileY: 0,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
@@ -184,6 +186,12 @@ function buildFrame(): RenderFrame {
   const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
   const includeWasherVisual = new URLSearchParams(window.location.search).has('washerVisual');
   const includeShowerVisual = new URLSearchParams(window.location.search).has('showerVisual');
+  const includeWaterVisual = new URLSearchParams(window.location.search).has('waterVisual');
+  if (includeWaterVisual) {
+    const waterChunk = { x: chunkCoordinate(1), y: chunkCoordinate(0) };
+    world.load(waterChunk);
+    world.setOwned(waterChunk, true);
+  }
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -256,6 +264,11 @@ function buildFrame(): RenderFrame {
   }
   for (let x = FIXTURE.rockTileX; x < FIXTURE.rockTileX + 2; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.rockTileY) }, 'rock');
+  }
+  if (includeWaterVisual) {
+    for (let x = FIXTURE.waterTileX; x < FIXTURE.waterTileX + 8; x += 1) {
+      world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.waterTileY) }, 'water');
+    }
   }
 
   const room = defaultRoomContentRegistry.getById('room.cell');

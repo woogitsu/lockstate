@@ -1103,6 +1103,106 @@
       }
     },
     {
+      "assetId": "terrain.water.still",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.water.still.49ace4e04b24.png",
+      "sha256": "49ace4e04b244dd1b1c17063d14ffc43acb5662ff718e60fadd11a3bec32b499",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-b",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.water.still.variant-b.4d861fc0bb02.png",
+      "sha256": "4d861fc0bb0232fb3a4d1aefbb1954da7067e24c3ed832b2fc9c000ec2fe46bb",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-c",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.water.still.variant-c.b08778797f71.png",
+      "sha256": "b08778797f711baf86dde351662064e1568ea879491884bedde1cdb5f59f229b",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.water.still.variant-d",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.water.still.variant-d.7580c60f4f37.png",
+      "sha256": "7580c60f4f3765b42d3ec9a750127af7894e0285cda4dc39e8e0171032d71c71",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "wall.interior.cap.overhead",
       "contentVersion": 1,
       "image": "source-art/rendered.wall.interior.cap.overhead.ed4387eb9462.png",

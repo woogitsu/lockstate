@@ -183,13 +183,9 @@ export interface ArtCoverage {
 }
 
 /**
- * One terrain type remains on the colour fallback:
- *
- * - `water` -- no published Blender render covers
- *   it. Dirt, grass, concrete, gravel and rock have separate Blender renders. The UI has
- *   no terrain painting control yet, but saved worlds can contain these tiles.
+ * Every terrain type has Blender art, including water restored from a saved world.
  */
-export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['water'];
+export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = [];
 
 /**
  * Every catalogued object **except `object.bed`** is on the colour fallback.
@@ -295,6 +291,7 @@ const FLOOR_SPRITE_BY_TERRAIN_ID: Readonly<Record<string, EnvironmentSpriteId>> 
   concrete: 'env.terrain.concrete',
   gravel: 'env.terrain.gravel',
   rock: 'env.terrain.rock',
+  water: 'env.terrain.water',
 };
 
 const TERRAIN_ID_BY_NUMERIC_ID: ReadonlyMap<number, string> = new Map(
@@ -315,14 +312,16 @@ export function terrainFloorSpriteByNumericId(numericId: number): EnvironmentSpr
 /** Stable presentation-only variation: terrain identity and save bytes stay unchanged. */
 export function terrainFloorSpriteAt(numericId: number, tileX: number, tileY: number): EnvironmentSpriteId | undefined {
   const sprite = terrainFloorSpriteByNumericId(numericId);
-  if (sprite !== 'env.terrain.dirt' && sprite !== 'env.terrain.grass') return sprite;
+  if (sprite !== 'env.terrain.dirt' && sprite !== 'env.terrain.grass' && sprite !== 'env.terrain.water') return sprite;
   let hash = Math.imul(tileX, 73856093) ^ Math.imul(tileY, 19349663);
   hash ^= hash >>> 16;
   hash = Math.imul(hash, 0x7feb352d);
   const variant = (hash ^ (hash >>> 15)) & 3;
   return sprite === 'env.terrain.dirt'
     ? (['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d'] as const)[variant]
-    : (['env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d'] as const)[variant];
+    : sprite === 'env.terrain.grass'
+      ? (['env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d'] as const)[variant]
+      : (['env.terrain.water', 'env.terrain.water.b', 'env.terrain.water.c', 'env.terrain.water.d'] as const)[variant];
 }
 
 /**

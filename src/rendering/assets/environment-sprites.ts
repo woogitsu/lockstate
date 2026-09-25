@@ -86,6 +86,10 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.concrete',
   'env.terrain.gravel',
   'env.terrain.rock',
+  'env.terrain.water',
+  'env.terrain.water.b',
+  'env.terrain.water.c',
+  'env.terrain.water.d',
   'env.floor.institutional',
   'env.floor.kitchen',
   'env.floor.canteen',
@@ -252,6 +256,26 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered slate plates with recessed natural fractures.',
+  },
+  'env.terrain.water': {
+    kind: 'rendered-art', renderedArtId: 'terrain.water.still',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Dark blue-green periodic water with inset broken reflections.',
+  },
+  'env.terrain.water.b': {
+    kind: 'rendered-art', renderedArtId: 'terrain.water.still.variant-b',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Second still-water reflection arrangement on the same seamless surface.',
+  },
+  'env.terrain.water.c': {
+    kind: 'rendered-art', renderedArtId: 'terrain.water.still.variant-c',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Third still-water reflection arrangement on the same seamless surface.',
+  },
+  'env.terrain.water.d': {
+    kind: 'rendered-art', renderedArtId: 'terrain.water.still.variant-d',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Fourth still-water reflection arrangement on the same seamless surface.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

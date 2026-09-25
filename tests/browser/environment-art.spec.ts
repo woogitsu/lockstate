@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'washerVisual' | 'showerVisual' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'washerVisual' ? '?showerFloor=1&washerVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'washerVisual' | 'showerVisual' | 'waterVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'washerVisual' ? '?showerFloor=1&washerVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels === 'waterVisual' ? '?waterVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -1004,6 +1004,51 @@ test.describe('the environment artwork', () => {
       return harness.centrePixel();
     }, { x, y });
     expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
+  });
+
+  test('Blender water uses four seamless frames on restored terrain at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'waterVisual');
+    const waterIds = ['env.terrain.water', 'env.terrain.water.b', 'env.terrain.water.c', 'env.terrain.water.d'];
+    const borders = await page.evaluate((ids) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      return ids.map((id) => {
+        const frame = harness.atlasFrame(id)!;
+        const positions = [0, 16, 32, 48, 64, 80, 96, 112, 127];
+        return {
+          size: [frame.width, frame.height],
+          left: positions.map(y => harness.atlasPixel(frame.x, frame.y + y)),
+          right: positions.map(y => harness.atlasPixel(frame.x + 127, frame.y + y)),
+          top: positions.map(x => harness.atlasPixel(frame.x + x, frame.y)),
+          bottom: positions.map(x => harness.atlasPixel(frame.x + x, frame.y + 127)),
+        };
+      });
+    }, waterIds);
+    for (const first of borders) {
+      expect(first.size).toEqual([128, 128]);
+      for (const second of borders) {
+        for (let index = 0; index < first.left.length; index += 1) {
+          expect(first.right[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(second.left[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(channelDistance(first.right[index]!, second.left[index]!)).toBeLessThanOrEqual(12);
+          expect(channelDistance(first.bottom[index]!, second.top[index]!)).toBeLessThanOrEqual(12);
+        }
+      }
+    }
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 2),
+      { x: (fixture.waterTileX + 3) * fixture.tileSizePx, y: (fixture.waterTileY + 0.5) * fixture.tileSizePx });
+    const water = (await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites()))
+      .filter((sprite) => waterIds.includes(sprite.frameName));
+    expect(new Set(water.map((sprite) => sprite.frameName)), JSON.stringify(water)).toEqual(new Set(waterIds));
+    const x = (fixture.waterTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.waterTileY + 0.5) * fixture.tileSizePx;
+    expect(water.some((sprite) => sprite.frameName === terrainFloorSpriteAt(5, fixture.waterTileX, fixture.waterTileY)
+      && x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    if (process.env['LOCKSTATE_CAPTURE_WATER_ART'] === '1') {
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 2),
+        { x: (fixture.waterTileX + 3) * fixture.tileSizePx, y });
+      await page.screenshot({ path: testInfo.outputPath('water-variants-1920x1080.png') });
+    }
   });
 
   test('the Blender paving draws concrete terrain restored through a world snapshot', async ({ page }) => {
