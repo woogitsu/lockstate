@@ -453,6 +453,25 @@
 .hud-minimap { min-height: 0; }
 .hud-minimap__surface { min-height: 0; }
 
+/* In Full HD Build the same live alerts fold sits beside the collapsed
+   minimap body. It keeps its existing corner width and remains actionable. */
+.hud__corner > .hud-alerts--detached {
+  width: calc(396px * var(--ui-scale));
+  max-width: 100%;
+  min-height: 0;
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+}
+
+/* When there is nothing to act on, let the empty message use the compact
+   minimap column. Active alerts retain the wider line length for their text
+   and dismiss controls. */
+:root[data-ui-scale-enlarged='true'] .hud__corner > .hud-alerts--detached:has([data-alert='empty']) {
+  width: calc(270px * var(--ui-scale));
+}
+
 /*
  * The camera zoom pair, above the minimap frame (issue #1023).
  *
@@ -6723,6 +6742,109 @@
   bottom: 100%;
 }
 
+/* A short, enlarged desktop keeps the six sections in an on-demand drawer.
+ * The closed trigger uses one tap target; the open panel is temporary and
+ * covers the map only while the player is choosing a section. */
+.hud-navigation-drawer__trigger { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud__tabs {
+  grid-area: middle;
+  justify-self: start;
+  align-self: stretch;
+  position: relative;
+  z-index: 4;
+  padding: var(--space-2);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1 0 100%;
+  order: 1;
+  flex-wrap: wrap;
+  overflow-x: visible;
+  margin-right: 0;
+  padding-block: var(--space-1);
+  row-gap: var(--space-1);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat {
+  display: grid;
+  grid-template-columns: var(--icon-size-sm) minmax(0, 1fr) max-content;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: var(--space-1);
+  row-gap: 2px;
+  min-width: 0;
+}
+
+/* A badge shares the number's line, while the label keeps the full text lane.
+ * In the three-column zoom layout, flex shrank the label's box but still
+ * painted its nowrap glyphs underneath the badge. */
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat > .ui-icon {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__body { display: contents; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__value { grid-column: 2; grid-row: 1; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__label {
+  grid-column: 1 / 4;
+  grid-row: 2;
+  white-space: normal;
+}
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .hud-metric__trailing {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud__tabs > .hud-layout__arrow { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud-navigation-drawer__trigger {
+  display: inline-flex;
+  pointer-events: auto;
+  touch-action: auto;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border-strong);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner:not([hidden]) {
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: calc(10 * var(--space-3));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(720px, calc(100vw - 12 * var(--space-3)));
+  max-width: none;
+  overflow-y: auto;
+  border: var(--hairline) solid var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner[hidden] { display: none; }
+
+.hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner > .ui-tab {
+  min-width: 0;
+  min-height: var(--tap-target);
+  height: var(--tap-target);
+  flex-direction: row;
+  align-items: center;
+  padding-block: 0;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud__aside {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: var(--tap-target);
+}
+
 /* Full HD operations frame (owner's 2026-09-24 direction A).
  * Keep the existing controls and player-resizable widths. The status row is
  * built from projectStatusMetrics(), including unknowns and badges; CSS only
@@ -6823,6 +6945,26 @@
     min-height: 0;
   }
 
+  /* At enlarged scale Build otherwise starts beneath the fold: even its
+   * placement action is hidden. Keep the save actions visible while giving
+   * the selected catalogue row a complete tap target. */
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud__aside {
+    flex-basis: calc(5.25 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build {
+    position: relative;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build__arm {
+    position: absolute;
+    top: 0;
+    left: calc(2.2 * var(--tap-target));
+    right: calc(var(--tap-target) + var(--space-3));
+    width: auto;
+    z-index: 2;
+  }
+
   .hud__aside .save-panel__actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6869,6 +7011,65 @@
 
   .hud-build__list {
     max-height: calc(6 * var(--tap-target));
+  }
+
+  /* At 200% the catalogue continues below the visible fold. Its scrollbar and
+   * down arrow show the continuation. The selected
+   * tool stays named in the fixed header while the player browses the list. */
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build {
+    --hud-build-catalogue-floor: calc(1.25 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud__side {
+    padding-top: 0;
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__list {
+    height: calc(1.25 * var(--tap-target));
+    max-height: calc(1.25 * var(--tap-target));
+    flex: 0 0 auto;
+    overflow-y: scroll;
+    scrollbar-width: auto;
+    scrollbar-color: var(--border-strong) var(--surface-sunken);
+  }
+
+  .hud-build__selected-summary { display: none; }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__catalogue .ui-section__header {
+    position: relative;
+    flex-wrap: wrap;
+    column-gap: var(--space-2);
+    row-gap: 0;
+    height: var(--tap-target);
+    padding-block: 0;
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__selected-summary {
+    display: block;
+    flex: 0 0 100%;
+    color: var(--accent);
+    font-size: var(--text-size-body);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__catalogue .ui-section__header::after {
+    content: '↓';
+    position: absolute;
+    right: var(--space-2);
+    bottom: 0;
+    color: var(--accent);
+    font-size: var(--text-size-body);
+  }
+
+  /* The category name is the catalogue's landmark. On the default Full HD
+   * rail the adjacent filter leaves it one word short; allow two short lines
+   * inside the existing tap-height header instead of displaying an ellipsis. */
+  .hud-build__catalogue > .ui-section__header-row .ui-section__eyebrow {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .hud__side {
@@ -6922,16 +7123,41 @@
     white-space: nowrap;
   }
 
-  /* These legends already have accessible group names. The percentage and
-   * theme value remain visible instead of being clipped into fragments. */
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale__legend,
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control__legend {
+  /* Put each setting's existing label above its value inside the same tap
+   * target. Two horizontal halves cannot hold both full labels and values;
+   * this uses the target's unused upper space without adding rail height. */
+  .hud-chrome-prefs > .display-scale,
+  .hud-chrome-prefs > .theme-control {
+    position: relative;
+    padding: 0;
+  }
+
+  .hud-chrome-prefs > .display-scale > .ui-icon,
+  .hud-chrome-prefs > .theme-control > .ui-icon {
     display: none;
   }
 
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .display-scale,
-  :root[data-ui-scale-enlarged='true'] .hud-chrome-prefs > .theme-control {
-    justify-content: center;
+  .hud-chrome-prefs > .display-scale > .display-scale__legend,
+  .hud-chrome-prefs > .theme-control > .theme-control__legend {
+    position: absolute;
+    top: var(--space-1);
+    left: var(--space-2);
+    right: var(--space-2);
+    pointer-events: none;
+  }
+
+  /* The inspector's fold arrow shares the first control's top-left corner.
+   * Start that label after its tap target, while retaining enough room for
+   * the full name at both supported Full HD scales. */
+  .hud-chrome-prefs > .display-scale > .display-scale__legend {
+    left: calc(var(--tap-target) - var(--space-2));
+  }
+
+  .hud-chrome-prefs > .display-scale > .display-scale__cycle,
+  .hud-chrome-prefs > .theme-control > .theme-control__cycle {
+    width: 100%;
+    align-items: flex-end;
+    padding: 0 var(--space-2) var(--space-1);
   }
 
   /* A long group name and progress label must not fight for the same line in

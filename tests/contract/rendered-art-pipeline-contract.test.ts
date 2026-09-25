@@ -96,16 +96,17 @@ describe('rendered-art pipeline contract', () => {
 /**
  * `frameAspectDriftFromFootprint == 0.0 "by construction"` is the second claim
  * PR #1041's renderer made, and `docs/ART_PIPELINE.md` ("Reproducibility")
- * records it holding for all 23 models -- but until this test, nothing
+ * records it holding for the original 23 models -- but until this test, nothing
  * checked that *claim itself*, only that the field the renderer writes stays
  * near zero (`tooling/validate-rendered-art-catalog.mjs`'s old Check 3, and
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 23 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 26 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
- * `frameAspectDriftFromFootprint` at all. It runs with no Blender, no image
- * bytes and no LFS content: `environment-objects.render.json` is plain
+ * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
+ * three more models, including the unpublished sink. It runs with no Blender,
+ * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
  * (`tests/determinism/environment-render-determinism.test.ts`), which needs
@@ -117,12 +118,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 23 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 26 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(23);
+    expect(sidecar.entries.length).toBe(26);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

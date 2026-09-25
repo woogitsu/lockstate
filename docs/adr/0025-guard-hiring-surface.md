@@ -320,8 +320,8 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
-> > `src/ui/hud/hud.ts:2963` (the anchor read 2917, then 2611, then 2759, then 2837,
-> > then 2887; re-aimed onto the quoted line by `grep -n` rather than by
+> > `src/ui/hud/hud.ts:2993` (the anchor read 2957, then 2917, then 2611, then 2759, then 2837,
+> > then 2887, then 2980, then 2963, then 2987; re-aimed onto the quoted line by `grep -n` rather than by
 > > arithmetic, on `ba1c0a87` merged with `49cd2fbd`, again on 2026-09-22 after
 > > ADR 0122's `show-alert-place` intent member was added to the union above
 > > it, and again the same day after #1356 wired the status strip's Undo and

@@ -1032,6 +1032,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   // ---- what to build ------------------------------------------------
   const catalogueList = element('div', { className: 'hud-build__list' });
+  const selectedSummary = element('span', { className: 'hud-build__selected-summary' });
   const rows = new Map<string, ListRow>();
 
   /**
@@ -1124,6 +1125,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const paintCatalogue = (): void => {
     focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
+    const selected = selectedBuildable();
+    selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
@@ -1325,6 +1328,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // in the panel keeps its content height; the catalogue is the one that grows
   // with the content catalogue, so it is the one that scrolls.
   catalogue.element.classList.add('hud-build__catalogue');
+  catalogue.header.append(selectedSummary);
   catalogue.body.append(catalogueList);
 
   // ---- the map route (primary) --------------------------------------
