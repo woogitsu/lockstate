@@ -1,4 +1,4 @@
-﻿# What the owner still has to decide, and where an accepted decision contradicts the code
+# What the owner still has to decide, and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -21802,6 +21802,11 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+
+## 3. The 2026-09-25 bed-art pass: nine landings and no status flip
+
+Read at `ca2c390a1` (**v0.0.782**), the branch merge base. Re-read §§3-6 against the anchor; the existing Next free number remains unchanged and no owner decision is introduced by this art-only branch.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 

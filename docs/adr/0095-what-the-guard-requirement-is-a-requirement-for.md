@@ -1,4 +1,4 @@
-﻿# ADR 0095: What the guard requirement is a requirement for
+# ADR 0095: What the guard requirement is a requirement for
 
 ## Status
 
