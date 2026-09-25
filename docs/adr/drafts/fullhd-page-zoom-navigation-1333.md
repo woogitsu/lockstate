@@ -70,8 +70,8 @@ explicit close control, Escape support, and focus returned to the trigger.
 The closed control is labelled with the existing localized “show sections”
 message. The open three-column drawer is shown in the
 [200% capture](../../research/evidence/2026-09-25-fullhd-page-zoom-drawer-200.png).
-The screenshot comes from the test checkout; its world art failed to load, so it
-only supports a judgment about HUD geometry and navigation. All nine status
+The capture starts a new prison before opening the drawer; terrain renders
+behind it. All nine status
 metrics remain above the drawer. At the largest effective zoom, the drawer
 scrolls within the remaining height, and each of its six entries is reachable
 by Tab or pointer. The selected tab, Escape and the trigger all close the drawer
@@ -82,8 +82,8 @@ The new `fullhd-zoom-navigation-drawer.spec.ts` passed at both 175% and 200%
 interface scale. Ten focused browser cases passed, including seven chrome
 cases; TypeScript and the 40 HUD layout unit tests passed. The existing
 36-combination zoom ratchet remained at 12/36 known failures (ceiling 12)
-after making every metric visible. CI and a visual run with materialised art
-are still required before the branch can be merged.
+after making every metric visible. CI is still required before the branch can
+be merged. The refreshed capture confirms the HUD over rendered terrain.
 
 Resizing the same 200% interface from 960×540 to 960×750 and back is covered
 too. It first stayed in the drawer at the taller size because the drawer's
@@ -93,7 +93,7 @@ the browser test observed the failure before the change and the bar/drawer
 transition passing afterward. Seventeen regular Full HD browser cases passed.
 
 A separate regression test starts with the navigation collapsed in persisted
-layout settings and reloads the page. Before the fix the drawer trigger stayed
+layout settings. Before the fix the drawer trigger stayed
 visible but did nothing because the normal restore arrow was hidden in drawer
 placement. The trigger now restores navigation and opens the six tabs in one
 action. The test went red before this change and all three drawer cases passed

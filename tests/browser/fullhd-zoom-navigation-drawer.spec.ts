@@ -3,11 +3,12 @@ import { expect, test } from './network-changed-fixture';
 for (const uiScale of [1.75, 2]) {
   test(`Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at ${uiScale * 100}% UI scale`, async ({ page }) => {
     await page.setViewportSize({ width: 960, height: 540 });
-    await page.goto('/index.html');
-    await page.evaluate((scale) => {
+    await page.addInitScript((scale) => {
       localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: scale }));
     }, uiScale);
-    await page.reload();
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
 
     const hud = page.locator('.hud');
     await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
@@ -83,14 +84,13 @@ for (const uiScale of [1.75, 2]) {
   });
 }
 
-test('a collapsed navigation can be restored from the Full HD zoom drawer after reload', async ({ page }) => {
+test('a collapsed navigation can be restored from the Full HD zoom drawer when loaded from settings', async ({ page }) => {
   await page.setViewportSize({ width: 960, height: 540 });
-  await page.goto('/index.html');
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: 2 }));
     localStorage.setItem('lockstate.settings.layout', JSON.stringify({ version: 1, collapsed: ['navigation'] }));
   });
-  await page.reload();
+  await page.goto('/index.html');
   await expect(page.locator('.hud')).toHaveAttribute('data-layout-navigation', 'collapsed');
   await page.reload();
 
