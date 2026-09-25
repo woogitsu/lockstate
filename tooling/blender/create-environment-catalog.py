@@ -1215,6 +1215,11 @@ def furniture(collection, root, asset_id):
         arm.rotation_euler[1] = -0.12
         cylinder(collection, root, "Lamp enamel hood", (-0.40, -0.27, 1.190), 0.115, 0.080, "desk_teal", 48)
         cylinder(collection, root, "Lamp warm diffuser", (-0.40, -0.27, 1.145), 0.082, 0.008, "paper_cream", 48)
+        # The underside diffuser is hidden from the overhead camera. A slim
+        # top seam and the articulated swivel identify this disc as a lamp.
+        torus(collection, root, "Lamp hood top seam", (-0.40, -0.27, 1.231), 0.096, 0.009, "desk_ink")
+        cylinder(collection, root, "Lamp swivel collar", (-0.40, -0.27, 1.245), 0.055, 0.022, "galvanized_edge", 32)
+        cylinder(collection, root, "Lamp dark swivel", (-0.40, -0.27, 1.262), 0.037, 0.015, "desk_ink", 32)
         box(collection, root, "Olive paperwork tray", (-0.53, 0.10, 1.004), (0.34, 0.38, 0.052), "green", 0.014)
         box(collection, root, "Terracotta folder in tray", (-0.53, 0.10, 1.038), (0.27, 0.30, 0.012), "paper_orange", 0.004)
         box(collection, root, "Cream sheet in tray", (-0.54, 0.075, 1.054), (0.25, 0.24, 0.012), "paper_cream", 0.004)

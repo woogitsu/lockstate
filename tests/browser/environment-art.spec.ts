@@ -142,6 +142,37 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the employee desk lamp has a visible dark swivel above its enamel hood', async ({ page }) => {
+    await openHarness(page);
+    const lamp = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.desk');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        swivel: harness.atlasPixel(frame.x + 82, frame.y + 33),
+        hood: harness.atlasPixel(frame.x + 90, frame.y + 33),
+      };
+    });
+    expect(lamp?.size).toEqual([256, 128]);
+    expect(lamp?.swivel?.[3]).toBe(255);
+    expect(lamp?.hood?.[3]).toBe(255);
+    expect(channelDistance(lamp!.swivel!, lamp!.hood!)).toBeGreaterThan(20);
+  });
+
+  test('the employee desk lamp sits beside the paperwork at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 12.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.desk')).toEqual([
+      expect.objectContaining({ x: fixture.deskTileX * fixture.tileSizePx, y: fixture.deskTileY * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_DESK_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('employee-desk-1920x1080.png') });
+    }
+  });
+
   test('the stove grate has a diagonal iron support visible at game scale', async ({ page }) => {
     await openHarness(page);
     const support = await page.evaluate(() => {

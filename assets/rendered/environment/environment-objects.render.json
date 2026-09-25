@@ -718,8 +718,8 @@
     {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
-      "sha256": "3914da57eb2a36129dc48249ac3b0508a2ba952bbd9c31919fdb3c03c2b8bad7",
-      "pixelSha256": "75ec61dedc4082a1bf55e154d8aae62aca84609a61b77e58fc0eacc35f763747",
+      "sha256": "a7f51480a957ba348af55a8a2905973f06df47b6a954c8d7cef6f95e4fa5f8d8",
+      "pixelSha256": "27f796cedf182c745db526384a738cf9d8507e17e82c6f0bde660cc505d3fa80",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0

@@ -475,6 +475,12 @@ dark inner bowl, with a recessed drain at its centre. This follows the approved
 multi-view concept's bowl depth and remains legible in the furnished Full HD
 cell capture. The object identity, building rules, and player text are unchanged.
 
+**2026-09-25 employee desk revision:** the existing 2×1 desk keeps its grey-oak
+top, paper layout, footprint, and materials. The lamp gains an enamel hood seam
+and a dark swivel above the hood, making its silhouette legible from the game's
+overhead view. The furnished Full HD desk capture compares the same scene
+before and after; no building rule or player text changes.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
