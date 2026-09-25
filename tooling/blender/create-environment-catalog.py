@@ -1367,11 +1367,22 @@ def furniture(collection, root, asset_id):
                 box(collection, root, f"Angled support.{x}.{y}", (x, y * 0.55, 0.27), (0.075, 0.08, 0.43), "canteen_steel", 0.012)
                 cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.022, 0.016, "shade", 12)
         box(collection, root, "Lower steel tie", (0, 0, 0.24), (1.50, 0.055, 0.055), "canteen_steel", 0.008)
-        for index, y in enumerate((-0.27, -0.09, 0.09, 0.27)):
-            box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
-            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, 0.622), (1.74, 0.012, 0.009), "bench_edge", 0.003)
+        # The far plank is a raised back. A broad dark reveal below it remains
+        # visible at 128x64, so the three lower seat planks do not read as a
+        # single tabletop when the Common Room has two benches side by side.
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Raised back upright.{x}", (x, -0.33, 0.67),
+                (0.08, 0.075, 0.39), "canteen_steel", 0.012)
+        box(collection, root, "Back-to-seat shadow reveal", (0, -0.205, 0.515),
+            (1.74, 0.066, 0.014), "shade", 0.004)
+        for index, (y, height) in enumerate(((-0.34, 0.83), (-0.10, 0.57), (0.10, 0.57), (0.30, 0.57))):
+            box(collection, root, f"Worn timber slat.{index}", (0, y, height),
+                (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
+            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, height + 0.052),
+                (1.74, 0.012, 0.009), "bench_edge", 0.003)
             for x in (-0.79, 0.79):
-                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}", (x, y, 0.620), 0.014, 0.008, "shade", 12)
+                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}",
+                    (x, y, height + 0.050), 0.014, 0.008, "shade", 12)
         for x in (-0.935, 0.935):
             box(collection, root, f"Exposed steel end bracket.{x}", (x, 0, 0.56), (0.066, 0.73, 0.085), "steel", 0.016)
             for y in (-0.29, 0.29):

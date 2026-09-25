@@ -624,6 +624,7 @@ test.describe('the environment artwork', () => {
   });
 
   test('the 5 by 5 Common Room draws warm seamless composite with benches at both zoom levels', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page, 'commonRoomFloor');
     const tile = fixture.tileSizePx;
     const frame = await page.evaluate(() => {
