@@ -88,4 +88,28 @@ describe('saved navigation cache membership (#1373)', () => {
     expect(restored.getWarmthSnapshot(graph, fixture.doors)).toEqual(original.getWarmthSnapshot(graph, fixture.doors));
     expect(restored.getWarmthSnapshot(graph, fixture.doors)[0]?.origin.x).toBe(2);
   });
+
+  it('removes stale live entries before snapshot so a full cache evicts the same route after restore', () => {
+    const fixture = buildCellBlockFixture(1);
+    const graph = buildFixtureGraph(fixture.world, fixture.doors, fixture.chunkPositions);
+    const context = { role: 'guard', securityClearance: 5 };
+    const destination = fixture.canteenTiles[0]!;
+    const original = new RouteCache();
+    const add = (cache: RouteCache, index: number) => cache.set(
+      { x: tileCoordinate(index), y: tileCoordinate(0) }, destination, context,
+      graph, fixture.doors, { ok: false, failure: { reason: 'invalid-origin' } },
+      index === 1 ? [fixture.canteenEntranceDoorId] : [],
+    );
+    for (let index = 0; index <= MAX_ROUTE_CACHE_WARMTH_KEYS; index += 1) add(original, index);
+    fixture.doors.setState(fixture.canteenEntranceDoorId, 'locked');
+    const saved = original.getWarmthSnapshot(graph, fixture.doors);
+    expect(saved).toHaveLength(MAX_ROUTE_CACHE_WARMTH_KEYS - 1);
+    expect(original.size()).toBe(saved.length); // stale entry is gone from live eviction order too
+    const restored = new RouteCache();
+    restored.loadWarmthSnapshot(saved, fixture.world, graph, fixture.doors);
+    add(original, MAX_ROUTE_CACHE_WARMTH_KEYS + 1);
+    add(restored, MAX_ROUTE_CACHE_WARMTH_KEYS + 1);
+    expect(restored.getWarmthSnapshot(graph, fixture.doors)).toEqual(original.getWarmthSnapshot(graph, fixture.doors));
+    expect(original.size()).toBe(MAX_ROUTE_CACHE_WARMTH_KEYS);
+  });
 });

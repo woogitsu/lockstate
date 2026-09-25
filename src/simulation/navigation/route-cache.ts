@@ -87,6 +87,8 @@ export class RouteCache {
   private misses = 0;
   private evictions = 0;
   private geometryInvalidations = 0;
+  private lastPrunedGeometrySignature: string | undefined;
+  private lastPrunedDoorRevision: number | undefined;
 
   public get(
     origin: TilePosition,
@@ -128,6 +130,7 @@ export class RouteCache {
     /** Every door the computation consumed -- `findRoute`/`findRouteUsingFlowField` fill this via their `doorDependencies` parameter. */
     dependencyDoorIds: Iterable<string>,
   ): void {
+    this.pruneStale(graph, doors);
     this.entries.set(cacheKey(origin, destination, context), {
       origin: { ...origin },
       destination: { ...destination },
@@ -142,10 +145,21 @@ export class RouteCache {
     }
   }
 
+  private pruneStale(graph: NavigationGraph, doors: DoorRegistry): void {
+    if (this.lastPrunedGeometrySignature === graph.geometrySignature && this.lastPrunedDoorRevision === doors.accessRevision) return;
+    for (const [key, entry] of this.entries) {
+      if (entry.geometrySignature !== graph.geometrySignature || !doorDependenciesStillHold(entry.dependencies, doors, entry.context)) {
+        this.entries.delete(key);
+      }
+    }
+    this.lastPrunedGeometrySignature = graph.geometrySignature;
+    this.lastPrunedDoorRevision = doors.accessRevision;
+  }
+
   /** Only valid membership is saved; values are reproducibly rebuilt from world and doors. */
   public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly RouteCacheWarmthKey[] {
+    this.pruneStale(graph, doors);
     return [...this.entries.entries()]
-      .filter(([_key, entry]) => entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.dependencies, doors, entry.context))
       .map(([_key, entry]) => ({ origin: { ...entry.origin }, destination: { ...entry.destination }, context: structuredClone(entry.context) }));
   }
 
@@ -153,6 +167,8 @@ export class RouteCache {
   public loadWarmthSnapshot(keys: readonly RouteCacheWarmthKey[], world: SparseWorld, graph: NavigationGraph, doors: DoorRegistry, stats?: SearchStats): void {
     if (keys.length > MAX_ROUTE_CACHE_WARMTH_KEYS) throw new RangeError('Too many route-cache warmth keys.');
     this.entries.clear();
+    this.lastPrunedGeometrySignature = graph.geometrySignature;
+    this.lastPrunedDoorRevision = doors.accessRevision;
     const seen = new Set<string>();
     for (const key of keys) {
       const identity = cacheKey(key.origin, key.destination, key.context);

@@ -208,6 +208,8 @@ export class FlowFieldCache {
   private misses = 0;
   private evictions = 0;
   private geometryInvalidations = 0;
+  private lastPrunedGeometrySignature: string | undefined;
+  private lastPrunedDoorRevision: number | undefined;
 
   public get(destinationRegion: RegionId, context: RouteContext, graph: NavigationGraph, doors: DoorRegistry): RegionFlowField | undefined {
     const key = flowFieldCacheKey(destinationRegion, routeContextFingerprint(context));
@@ -252,18 +254,30 @@ export class FlowFieldCache {
   }
 
   public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly FlowFieldWarmthKey[] {
+    this.pruneStale(graph, doors);
     return [...this.entries.entries()]
-      .filter(([key, entry]) => {
-        const context = this.contexts.get(key);
-        return context !== undefined && entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.doorDependencies, doors, context);
-      })
       .map(([key, entry]) => ({ destinationRegion: entry.destinationRegion, context: structuredClone(this.contexts.get(key)!) }));
+  }
+
+  public pruneStale(graph: NavigationGraph, doors: DoorRegistry): void {
+    if (this.lastPrunedGeometrySignature === graph.geometrySignature && this.lastPrunedDoorRevision === doors.accessRevision) return;
+    for (const [key, entry] of this.entries) {
+      const context = this.contexts.get(key);
+      if (context === undefined || entry.geometrySignature !== graph.geometrySignature || !doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
+        this.entries.delete(key);
+        this.contexts.delete(key);
+      }
+    }
+    this.lastPrunedGeometrySignature = graph.geometrySignature;
+    this.lastPrunedDoorRevision = doors.accessRevision;
   }
 
   public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry, stats?: SearchStats): void {
     if (keys.length > MAX_FLOW_FIELD_WARMTH_KEYS) throw new RangeError('Too many flow-field warmth keys.');
     this.entries.clear();
     this.contexts.clear();
+    this.lastPrunedGeometrySignature = graph.geometrySignature;
+    this.lastPrunedDoorRevision = doors.accessRevision;
     const seen = new Set<string>();
     for (const key of keys) {
       const identity = flowFieldCacheKey(key.destinationRegion, routeContextFingerprint(key.context));
@@ -300,6 +314,7 @@ export function getOrComputeRegionFlowField(
 ): RegionFlowField {
   const cached = cache.get(destinationRegion, context, graph, doors);
   if (cached !== undefined) return cached;
+  cache.pruneStale(graph, doors);
   const field = computeRegionFlowField(graph, doors, destinationRegion, context, stats);
   cache.setForContext(field, context);
   return field;
