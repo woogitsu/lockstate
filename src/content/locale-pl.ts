@@ -723,6 +723,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.minimap.title': 'Minimapa',
   'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',
   'hud.minimap.navigable': 'Nie ma tu jeszcze mapy — naciśnij, aby przenieść tam kamerę',
+  'hud.minimap.map-ready': 'Mapa więzienia — naciśnij, aby przesunąć kamerę',
 
   'hud.alerts.title': 'Powiadomienia',
   'hud.alerts.empty': 'Brak aktywnych powiadomień',

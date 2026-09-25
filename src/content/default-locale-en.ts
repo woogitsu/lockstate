@@ -775,6 +775,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.minimap.title': 'Minimap',
   /*
+   * Historical wording before map rendering landed. It now appears only
+   * while no world frame exists; the live view uses `hud.minimap.map-ready`.
+   *
    * **THIS WORDING WAS OWNER-PENDING FROM #782 UNTIL 2026-09-04, AND THAT
    * MARKING IS KEPT RATHER THAN DELETED (`docs/AGENT_WORKFLOW.md` §4: mark
    * both directions, do not overwrite).** The comment on `hud.minimap.navigable`
@@ -844,6 +847,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * the surface represents.
    */
   'hud.minimap.navigable': 'No map is drawn here yet — press to jump the camera there',
+  /** Named from the actual renderer projection, and used from its first frame. */
+  'hud.minimap.map-ready': 'Prison map — press to move the camera',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
   /*
