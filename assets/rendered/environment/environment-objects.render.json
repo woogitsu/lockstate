@@ -799,8 +799,8 @@
     {
       "assetId": "furniture.storage.rack.wooden",
       "image": "furniture.storage.rack.wooden.png",
-      "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",
-      "pixelSha256": "ffa9148f12cb361a0d0a73c2187cc41ea8fb87475f4055bcbe42800e58c5d994",
+      "sha256": "43bb88659bec3f6e79393bdac3aaf3fc4df78d803301a1f3ccb5514e419f3bc4",
+      "pixelSha256": "839d0693b483553434bed8b42a9c2a4ed8417d51d4feabf97a2455738b760b0a",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0

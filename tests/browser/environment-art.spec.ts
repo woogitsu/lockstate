@@ -246,6 +246,34 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the stocked rack has distinct goods in a Full HD world view', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 5.5 * fixture.tileSizePx, y: 6.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.storage-rack')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 6 * fixture.tileSizePx }),
+    ]);
+    const goods = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.storage-rack');
+      if (frame === undefined) return undefined;
+      return {
+        kraft: harness.atlasPixel(frame.x + 84, frame.y + 65),
+        canvas: harness.atlasPixel(frame.x + 93, frame.y + 92),
+      };
+    });
+    expect(goods?.kraft?.[3]).toBe(255);
+    expect(goods?.canvas?.[3]).toBe(255);
+    expect(channelDistance(goods!.kraft!, goods!.canvas!)).toBeGreaterThan(30);
+    expect(goods!.kraft![0]).toBeGreaterThan(goods!.canvas![0] + 25);
+    expect(goods!.canvas![2]).toBeGreaterThan(goods!.kraft![2] + 10);
+    if (process.env['LOCKSTATE_CAPTURE_RACK_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('storage-rack-1920x1080.png') });
+    }
+  });
+
   test('the bookshelf upright is blue-grey rather than a bright divider', async ({ page }) => {
     await openHarness(page);
     const upright = await page.evaluate(() => {
