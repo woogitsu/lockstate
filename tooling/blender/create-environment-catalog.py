@@ -723,17 +723,18 @@ def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16
     return item
 
 
-def prepared_ingredient(collection, root, name, offset, scale, surface, angle=0):
+def prepared_ingredient(collection, root, name, offset, scale, surface, angle=0, smooth=True):
     """A rounded piece of produce; irregular spacing reads as food at 64px/tile."""
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, location=(
+    mesh = pipeline_common.uv_sphere_mesh(f"{name} mesh", segments=12, ring_count=6)
+    item = pipeline_common.add_mesh_object(name, mesh, (
         root.location.x + offset[0], root.location.y + offset[1], offset[2],
     ))
-    item = bpy.context.object
     item.name, item.scale = name, scale
     item.rotation_euler.z = angle
     item.data.materials.append(MATERIALS[surface])
-    for polygon in item.data.polygons:
-        polygon.use_smooth = True
+    if smooth:
+        for polygon in item.data.polygons:
+            polygon.use_smooth = True
     item.parent = root
     item.matrix_parent_inverse = root.matrix_world.inverted()
     move_to_collection(item, collection)
@@ -945,10 +946,10 @@ def furniture(collection, root, asset_id):
                     # centre vein, so the green pan remains organic at 128x64.
                     prepared_ingredient(collection, root, f"Leaf.{piece}",
                                         (x + dx, y, 1.132), (sx * 0.72, sy * 1.55, 0.014),
-                                        "prep_green", turn)
+                                        "prep_green", turn, smooth=False)
                     prepared_ingredient(collection, root, f"Leaf highlight.{piece}",
                                         (x + dx - 0.008, y - 0.010, 1.141),
-                                        (sx * 0.18, sy * 1.03, 0.006), "prep_green_light", turn)
+                                        (sx * 0.18, sy * 1.03, 0.006), "prep_green_light", turn, smooth=False)
                 else:
                     prepared_ingredient(collection, root, f"Prepared produce.{well_index}.{piece}",
                                         (x + dx, y, 1.131),
