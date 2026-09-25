@@ -792,10 +792,10 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `dbd24ea3` (**v0.0.771**) by the delta method,
-from `9e6361c9`. This is the release commit after #1445, the last
-first-parent landing in the `main` tree this branch read. Nine non-release
-first-parent landings and thirty-six commits were unread at the start of this
+Re-anchored at `main` @ `1b7dedaac` (**v0.0.785**) by the delta method,
+from `dbd24ea3`. This is the release commit after the latest main landing, the last
+first-parent landing in the `main` tree this branch read. Twenty-four non-release
+first-parent landings and the intervening commits were unread at the start of this
 pass: one landing below the ten-landing budget and sixty-four commits below
 the hundred-commit budget. The dated §3 entry below records the re-reading
 of §§3-6; neither budget moves.
@@ -21802,6 +21802,19 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-09-26 current-main pass: twenty-four landings, no status flip
+
+Read at `1b7dedaac` (**v0.0.785**). The window `dbd24ea3..1b7dedaac` contains
+24 non-release first-parent landings and the release commits through v0.0.785.
+This pass re-read the live ?2-?6 citations against the current `main` tree,
+including the ADR 0095 guard-pool citations updated in this commit. The next
+free ADR number remains **0124** and ?2 still has nine live entries. No owner
+decision was inferred from implementation or from a merged pull request.
+
+The anchor budgets remain unchanged at ten merges and one hundred commits.
+This re-anchor records the current tree so subsequent passes can measure a
+fresh window; it does not increase either budget.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 
