@@ -11,3 +11,5 @@ The runtime image is rendered from the 2 × 1 tile
 individual book spines and three bays keep the function visible at 128 × 64
 world pixels. The generated concept itself is never shipped as a sprite.
 `object.bookshelf` retains its construction and education rules.
+
+2026-09-25 overhead refinement: a 1920×1080 classroom showed four almost-white posts and two highly regular rows of coloured bars, unlike the blue-grey steel cheeks and staggered books in the accepted concept. The Blender source darkens and narrows only this shelf's posts and rails, varies book widths and depths, and leaves short gaps in different bays. The 2×1 footprint and published ID are unchanged.

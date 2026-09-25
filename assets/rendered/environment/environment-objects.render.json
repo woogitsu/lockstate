@@ -475,8 +475,8 @@
     {
       "assetId": "furniture.delivery.dock_gate.closed",
       "image": "furniture.delivery.dock_gate.closed.png",
-      "sha256": "670e4def64736a6480a37d3384fc2a5df151855120bbcc6eadce1893df932afb",
-      "pixelSha256": "404e41cd90ccdddc0f53e7c21e92b46f73c5b03cc9f86e59eebbbc20f1f94339",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
+      "pixelSha256": "e5f3c407c85db85aca1c40f61c0a6545361d75ba7ed8aa740215973c89919d35",
       "footprintTiles": {
         "width": 3.0,
         "height": 1.0
@@ -637,8 +637,8 @@
     {
       "assetId": "furniture.library.bookshelf",
       "image": "furniture.library.bookshelf.png",
-      "sha256": "71ed21db2df62db0ac30ed37f50e3ab2200caf77bd59566786f5f2511a3c5814",
-      "pixelSha256": "4125dd619252af9b88506e027ed4385b4e4394e0db5643b14ac6f9018d9d5b17",
+      "sha256": "6859e73c42d86f661aed9150017198466961b849e845e686f523f495722e3f05",
+      "pixelSha256": "8c2afa5caf49cf3326efaa6cdd2a04425f0c1df3919ca33eeea252d2a2c2abf9",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -654,11 +654,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 33,
+        "x": 35,
         "y": 19,
-        "width": 446,
+        "width": 442,
         "height": 218,
-        "opaquePixels": 97064
+        "opaquePixels": 96226
       }
     },
     {
@@ -826,8 +826,8 @@
     {
       "assetId": "furniture.utility.control_panel",
       "image": "furniture.utility.control_panel.png",
-      "sha256": "ac3a8e152b66662520579956c01a49602f14cccd20ffe07423b9868fa57a9305",
-      "pixelSha256": "9f695c41aec39b44c48adec37b54eb236331d94dcef3ac7afb855264d44b76c5",
+      "sha256": "e9554be244978f3588de4e4cecfa33ab37e4ef918debd6b39d5d0de1c587ed2d",
+      "pixelSha256": "1ce84cd9a49e95a4a581997e2775d7afe0afc7ef18eaf798b4f4909ed6ad84fe",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0

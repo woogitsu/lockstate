@@ -860,8 +860,12 @@ def furniture(collection, root, asset_id):
         for x in (-0.14, 0.075):
             box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
             for row, y in enumerate((-0.18, 0, 0.18)):
-                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
-                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+                # A recessed cradle and a raised, offset handle read as a
+                # breaker lever at 64 px; the former square caps read as keys.
+                box(collection, root, f"Breaker cradle.{x}.{row}", (x, y, 1.243), (0.138, 0.135, 0.020), "galvanized_edge", 0.009)
+                box(collection, root, f"Breaker pivot.{x}.{row}", (x, y + 0.027, 1.257), (0.098, 0.060, 0.018), "shade", 0.006)
+                box(collection, root, f"Cream lever.{x}.{row}", (x, y - 0.021, 1.296), (0.090, 0.083, 0.084), "paper_cream", 0.012)
+                box(collection, root, f"Lever top glint.{x}.{row}", (x, y - 0.040, 1.343), (0.075, 0.016, 0.007), "light", 0.002)
         for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
             cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
             cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
@@ -888,6 +892,19 @@ def furniture(collection, root, asset_id):
                 (2.72, 0.10, 0.055), "canteen_wood", 0.008)
             box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
                 (2.74, 0.012, 0.009), "shade", 0.002)
+        # The four-view reference has steel corner braces and amber reflectors.
+        # Carry them onto the overhead face, where the player actually sees
+        # this long, otherwise featureless closed gate at three tiles wide.
+        for side in (-1, 1):
+            box(collection, root, f"Brace upright.{side}",
+                (side * 1.34, 0, 0.72), (0.055, 0.74, 0.055),
+                "galvanized_edge", 0.007)
+            box(collection, root, f"Amber reflector shadow.{side}",
+                (side * 0.86, 0.355, 0.711), (0.18, 0.08, 0.015),
+                "shade", 0.004)
+            box(collection, root, f"Amber reflector.{side}",
+                (side * 0.86, 0.355, 0.723), (0.145, 0.047, 0.012),
+                "dock_amber", 0.004)
         for x in (-1.43, 1.43):
             box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
                 (0.12, 0.94, 0.91), "canteen_steel", 0.016)
@@ -901,11 +918,11 @@ def furniture(collection, root, asset_id):
         for x in (-0.70, 0.70):
             box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
                 (0.17, 0.045, 0.018), "dock_amber", 0.004)
-        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
-            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
-                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+        for x, angle in ((-1.03, 0.73), (1.03, -0.73)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, 0, 0.749),
+                        (0.89, 0.07, 0.055), "galvanized_edge", 0.009)
             brace.rotation_euler.z = angle
-            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+            cylinder(collection, root, f"Brace pivot.{x}", (x, 0, 0.79),
                      0.026, 0.016, "steel", 16)
     elif asset_id == "furniture.kitchen.prep_counter":
         # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
@@ -971,8 +988,10 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Steel base plinth", (0, 0, 0.13), (1.88, 0.86, 0.25), "steel", 0.018)
         box(collection, root, "Warm timber backing", (0, -0.015, 0.70), (1.76, 0.79, 0.11), "canteen_wood", 0.013)
         for x in (-0.92, -0.32, 0.32, 0.92):
-            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.075, 0.89, 1.33), "canteen_steel", 0.016)
-            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.10, 0.90, 0.045), "galvanized_edge", 0.009)
+            # The old pale 0.075-wide posts dominated both rows from above;
+            # the accepted concept uses slim blue-grey cheeks around the books.
+            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.060, 0.89, 1.33), "fridge_steel", 0.013)
+            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.079, 0.90, 0.045), "fridge_steel", 0.009)
         for row, y in enumerate((-0.23, 0.22)):
             box(collection, root, f"Dark open shelf.{row}", (0, y, 0.755), (1.77, 0.345, 0.095), "shade", 0.008)
             box(collection, root, f"Timber shelf lip.{row}", (0, y + 0.19, 0.87), (1.79, 0.055, 0.14), "canteen_wood", 0.009)
@@ -980,16 +999,20 @@ def furniture(collection, root, asset_id):
                 # Five individual spines per bay. Omitted volumes leave short
                 # dark gaps instead of an unbroken decorative stripe.
                 for slot, dx in enumerate((-0.22, -0.11, 0.0, 0.11, 0.22)):
-                    if (row, bay, slot) in ((0, 1, 3), (1, 0, 1), (1, 2, 4)):
+                    if (row, bay, slot) in ((0, 0, 3), (0, 1, 3), (1, 0, 1), (1, 2, 1), (1, 2, 4)):
                         continue
                     height = 0.27 + ((row * 7 + bay * 3 + slot * 2) % 4) * 0.035
                     colour = ("book_cream", "book_rust", "book_olive", "book_navy")[(row + bay * 2 + slot) % 4]
-                    box(collection, root, f"Book.{row}.{bay}.{slot}", (centre + dx, y, 0.90 + height / 2),
-                        (0.085, 0.245, height), colour, 0.005)
-                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (centre + dx, y + 0.115, 0.90 + height),
-                        (0.065, 0.015, 0.012), "light", 0.002)
-        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "canteen_steel", 0.012)
-        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "canteen_steel", 0.012)
+                    offset_x = centre + dx + (((row * 5 + bay * 3 + slot * 7) % 5) - 2) * 0.006
+                    width = 0.073 + ((row * 2 + bay + slot * 3) % 4) * 0.008
+                    depth = 0.21 + ((row + bay * 2 + slot) % 3) * 0.018
+                    offset_y = y + ((bay + slot) % 3 - 1) * 0.009
+                    box(collection, root, f"Book.{row}.{bay}.{slot}", (offset_x, offset_y, 0.90 + height / 2),
+                        (width, depth, height), colour, 0.005)
+                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (offset_x, offset_y + depth / 2 - 0.008, 0.90 + height),
+                        (width * 0.72, 0.013, 0.012), "light", 0.002)
+        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "fridge_steel", 0.012)
+        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "fridge_steel", 0.012)
     elif asset_id == "furniture.kitchen.stove":
         # V3 four-view reference adds cast-iron grates and an overhead-readable
         # control lip; the four burners remain inside the same 2x1 footprint.
