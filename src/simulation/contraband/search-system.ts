@@ -471,12 +471,32 @@ export class SearchSystem implements SystemRegistration {
 
   public getSnapshot(): {
     readonly queue: readonly SearchOrderInput[];
-    readonly active: readonly (readonly [string, { readonly scope: SearchScope; readonly targets: readonly SearchTarget[]; readonly guardIds: readonly EntityId[]; readonly currentTargetIndex: number }])[];
+    readonly active: readonly (readonly [string, {
+      readonly scope: SearchScope;
+      readonly targets: readonly SearchTarget[];
+      readonly guardIds: readonly EntityId[];
+      readonly currentTargetIndex: number;
+      readonly state?: SearchJobState;
+      readonly travelInFlight?: boolean;
+      readonly pathRequestIdsByGuard?: readonly (readonly [EntityId, string])[];
+      readonly dwellStartedAtTick?: number;
+    }])[];
+    readonly requestSequence?: number;
     readonly metrics: { readonly itemsDiscovered: number; readonly itemsMissed: number; readonly searchesCompleted: number; readonly searchesCancelled: number };
   } {
     return {
       queue: this.queue.map((order) => ({ ...order })),
-      active: this.activeJobsInCanonicalOrder().map((job) => [job.id, { scope: job.scope, targets: job.targets, guardIds: job.guardIds, currentTargetIndex: job.currentTargetIndex }] as const),
+      active: this.activeJobsInCanonicalOrder().map((job) => [job.id, {
+        scope: job.scope,
+        targets: job.targets,
+        guardIds: job.guardIds,
+        currentTargetIndex: job.currentTargetIndex,
+        state: job.state,
+        travelInFlight: job.travelInFlight,
+        pathRequestIdsByGuard: [...job.pathRequestIdsByGuard].sort(([a], [b]) => a - b),
+        ...(job.dwellStartedAtTick === undefined ? {} : { dwellStartedAtTick: job.dwellStartedAtTick }),
+      }] as const),
+      requestSequence: this.requestSequence,
       metrics: { itemsDiscovered: this.itemsDiscovered, itemsMissed: this.itemsMissed, searchesCompleted: this.searchesCompleted, searchesCancelled: this.searchesCancelled },
     };
   }
@@ -491,7 +511,7 @@ export class SearchSystem implements SystemRegistration {
    * `sameTile` true and issues no requests), extending that leg's wait by
    * at most `dwellTicksPerTarget` -- never losing search progress.
    */
-  public loadSnapshot(snapshot: ReturnType<SearchSystem['getSnapshot']>): void {
+  public loadSnapshot(snapshot: ReturnType<SearchSystem['getSnapshot']>, resumeRoutes = false): void {
     this.queue.length = 0;
     this.queue.push(...snapshot.queue.map((order) => ({ ...order })));
     this.active.clear();
@@ -502,15 +522,16 @@ export class SearchSystem implements SystemRegistration {
         targets: job.targets,
         guardIds: [...job.guardIds],
         currentTargetIndex: job.currentTargetIndex,
-        state: 'travelling',
-        travelInFlight: false,
-        pathRequestIdsByGuard: new Map(),
-        dwellStartedAtTick: undefined,
+        state: resumeRoutes ? (job.state ?? 'travelling') : 'travelling',
+        travelInFlight: resumeRoutes ? (job.travelInFlight ?? false) : false,
+        pathRequestIdsByGuard: new Map(resumeRoutes ? (job.pathRequestIdsByGuard ?? []) : []),
+        dwellStartedAtTick: resumeRoutes ? job.dwellStartedAtTick : undefined,
       });
     }
     this.itemsDiscovered = snapshot.metrics.itemsDiscovered;
     this.itemsMissed = snapshot.metrics.itemsMissed;
     this.searchesCompleted = snapshot.metrics.searchesCompleted;
     this.searchesCancelled = snapshot.metrics.searchesCancelled;
+    this.requestSequence = resumeRoutes ? (snapshot.requestSequence ?? 0) : 0;
   }
 }

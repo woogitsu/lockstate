@@ -443,8 +443,8 @@ def canteen_wood_material():
     return item
 
 
-def console_screen_material():
-    """Pack the original CCTV concept swatch inside the source scene."""
+def console_screen_material(camera_index):
+    """Give each CCTV hood its own camera crop of the packed corridor swatch."""
     texture_path = ROOT / "assets/source/textures/security-console-cctv-v1.png"
     if not texture_path.is_file():
         raise FileNotFoundError(f"Console monitor texture is missing: {texture_path}")
@@ -455,6 +455,15 @@ def console_screen_material():
     texture = nodes.new("ShaderNodeTexImage")
     texture.image = image
     texture.extension = "CLIP"
+    coordinates = nodes.new("ShaderNodeTexCoord")
+    crop = nodes.new("ShaderNodeVectorMath")
+    crop.operation = "MULTIPLY_ADD"
+    # Three overlapping views keep one authored texture while avoiding the
+    # unmistakable threefold clone at the game's 128-by-64-pixel footprint.
+    crop.inputs[1].default_value = (0.56, 0.82, 1.0)
+    crop.inputs[2].default_value = ((0.0, 0.22, 0.44)[camera_index], 0.09, 0.0)
+    links.new(coordinates.outputs["Generated"], crop.inputs[0])
+    links.new(crop.outputs["Vector"], texture.inputs["Vector"])
     shader = nodes.get("Principled BSDF")
     links.new(texture.outputs["Color"], shader.inputs["Base Color"])
     if shader.inputs.get("Emission Color") is not None:
@@ -558,6 +567,33 @@ def cell_bed_fabric_material(filename, label, base_color):
         bump.inputs["Distance"].default_value = 0.035
         nodes_links.new(texture.outputs["Color"], bump.inputs["Height"])
         nodes_links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
+
+
+def medical_sheet_material():
+    """Subtle woven tone and normal variation for the washable patient sheet."""
+    item = material("Medical pale sage woven patient sheet", (0.66, 0.75, 0.73, 1), 0.9)
+    nodes = item.node_tree.nodes
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    weave = nodes.new("ShaderNodeTexNoise")
+    weave.inputs["Scale"].default_value = 24.0
+    weave.inputs["Detail"].default_value = 2.0
+    weave.inputs["Roughness"].default_value = 0.58
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.22
+    ramp.color_ramp.elements[0].color = (0.51, 0.63, 0.63, 1)
+    ramp.color_ramp.elements[1].position = 0.78
+    ramp.color_ramp.elements[1].color = (0.76, 0.83, 0.80, 1)
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.28
+    bump.inputs["Distance"].default_value = 0.022
+    links = item.node_tree.links
+    links.new(coords.outputs["Generated"], weave.inputs["Vector"])
+    links.new(weave.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], shader.inputs["Base Color"])
+    links.new(weave.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     return item
 
 
@@ -679,12 +715,64 @@ def cloth_crease(collection, root, name, centre_y, phase, surface):
     return item
 
 
+def washer_fabric_fold(collection, root, name, centre, length, width, angle, phase, surface):
+    """Rounded, low cloth fold under the washer glazing, with fixed mesh order."""
+    columns, rows = 20, 8
+    vertices = []
+    cosine, sine = math.cos(angle), math.sin(angle)
+    for row in range(rows + 1):
+        across = row / rows
+        for column in range(columns + 1):
+            along = column / columns
+            taper = math.sin(math.pi * along) ** 0.55
+            local_x = (along - 0.5) * length
+            local_y = (across - 0.5) * width * taper
+            x = centre[0] + local_x * cosine - local_y * sine
+            y = centre[1] + local_x * sine + local_y * cosine
+            crest = math.sin(math.pi * along) * math.sin(math.pi * across)
+            z = centre[2] + 0.023 * crest + 0.006 * crest * math.sin(3 * math.pi * along + phase)
+            vertices.append((x, y, z))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
 def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
     item = bpy.context.object
     item.name, item.parent = name, root
     item.matrix_parent_inverse = root.matrix_world.inverted()
     item.data.materials.append(MATERIALS[surface])
+    move_to_collection(item, collection)
+    return item
+
+
+def prepared_ingredient(collection, root, name, offset, scale, surface, angle=0, smooth=True):
+    """A rounded piece of produce; irregular spacing reads as food at 64px/tile."""
+    mesh = pipeline_common.uv_sphere_mesh(f"{name} mesh", segments=12, ring_count=6)
+    item = pipeline_common.add_mesh_object(name, mesh, (
+        root.location.x + offset[0], root.location.y + offset[1], offset[2],
+    ))
+    item.name, item.scale = name, scale
+    item.rotation_euler.z = angle
+    item.data.materials.append(MATERIALS[surface])
+    if smooth:
+        for polygon in item.data.polygons:
+            polygon.use_smooth = True
+    item.parent = root
+    item.matrix_parent_inverse = root.matrix_world.inverted()
     move_to_collection(item, collection)
     return item
 
@@ -740,15 +828,21 @@ def furniture(collection, root, asset_id):
                     (x, y, 1.674), 0.013, 0.009, "steel", 12)
         box(collection, root, "Cream front roof cap", (0, 0.26, 1.617), (0.80, 0.27, 0.035), "fridge_enamel", 0.028)
         box(collection, root, "Roof compartment joint", (0, 0.176, 1.639), (0.79, 0.016, 0.008), "steel", 0.006)
-        box(collection, root, "Visible top handle", (0.30, 0.30, 1.665), (0.06, 0.16, 0.045), "galvanized_edge", 0.016)
+        # The overhead camera cannot see the vertical doors. Continue their
+        # centre reveal over the roof cap and expose both pull handles here.
+        box(collection, root, "Twin-door top reveal", (0, 0.26, 1.643), (0.018, 0.24, 0.009), "steel", 0.003)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Visible top handle.{x}", (x, 0.30, 1.665), (0.055, 0.16, 0.045), "galvanized_edge", 0.016)
         box(collection, root, "Front gasket", (0, 0.415, 0.90), (0.79, 0.024, 1.20), "shade", 0.018)
-        box(collection, root, "Cream enamel refrigerator door", (0, 0.447, 0.77), (0.78, 0.068, 0.95), "fridge_enamel", 0.042)
-        box(collection, root, "Cream freezer hatch", (0, 0.447, 1.38), (0.78, 0.068, 0.24), "fridge_enamel", 0.04)
+        for x in (-0.20, 0.20):
+            box(collection, root, f"Cream enamel refrigerator door.{x}", (x, 0.447, 0.77), (0.38, 0.068, 0.95), "fridge_enamel", 0.042)
+            box(collection, root, f"Cream upper hatch.{x}", (x, 0.447, 1.38), (0.38, 0.068, 0.24), "fridge_enamel", 0.04)
         box(collection, root, "Compartment seam", (0, 0.487, 1.245), (0.75, 0.014, 0.023), "steel", 0.008)
         box(collection, root, "Raised door lip", (0, 0.43, 1.57), (0.81, 0.11, 0.06), "porcelain", 0.025)
-        box(collection, root, "Door handle upper foot", (0.28, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
-        box(collection, root, "Door handle lower foot", (0.28, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
-        box(collection, root, "Brushed steel pull", (0.28, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Door handle upper foot.{x}", (x, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Door handle lower foot.{x}", (x, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Brushed steel pull.{x}", (x, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
         box(collection, root, "Visible top door reveal", (0, 0.44, 1.613), (0.80, 0.07, 0.028), "shade", 0.006)
     elif asset_id == "furniture.security.surveillance_console":
         # assets/source/concepts/security-console-multiview-v1.png.
@@ -767,7 +861,7 @@ def furniture(collection, root, asset_id):
         for index, (x, width) in enumerate(((-0.64, 0.47), (0, 0.65), (0.64, 0.47))):
             box(collection, root, f"Monitor raised housing.{index}", (x, -0.23, 1.215), (width, 0.38, 0.23), "console_enamel", 0.022)
             box(collection, root, f"Monitor black rebate.{index}", (x, -0.23, 1.344), (width - 0.055, 0.31, 0.023), "shade", 0.007)
-            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), "console_screen", 0.007)
+            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), f"console_screen_{index}", 0.007)
             box(collection, root, f"Monitor hood.{index}", (x, -0.413, 1.372), (width, 0.075, 0.055), "console_enamel", 0.012)
             box(collection, root, f"Monitor footer.{index}", (x, -0.047, 1.373), (width, 0.034, 0.047), "steel", 0.007)
         box(collection, root, "Keyboard inset shadow", (0, 0.255, 1.084), (0.66, 0.28, 0.014), "shade", 0.011)
@@ -802,8 +896,12 @@ def furniture(collection, root, asset_id):
         for x in (-0.14, 0.075):
             box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
             for row, y in enumerate((-0.18, 0, 0.18)):
-                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
-                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+                # A recessed cradle and a raised, offset handle read as a
+                # breaker lever at 64 px; the former square caps read as keys.
+                box(collection, root, f"Breaker cradle.{x}.{row}", (x, y, 1.243), (0.138, 0.135, 0.020), "galvanized_edge", 0.009)
+                box(collection, root, f"Breaker pivot.{x}.{row}", (x, y + 0.027, 1.257), (0.098, 0.060, 0.018), "shade", 0.006)
+                box(collection, root, f"Cream lever.{x}.{row}", (x, y - 0.021, 1.296), (0.090, 0.083, 0.084), "paper_cream", 0.012)
+                box(collection, root, f"Lever top glint.{x}.{row}", (x, y - 0.040, 1.343), (0.075, 0.016, 0.007), "light", 0.002)
         for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
             cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
             cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
@@ -830,6 +928,19 @@ def furniture(collection, root, asset_id):
                 (2.72, 0.10, 0.055), "canteen_wood", 0.008)
             box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
                 (2.74, 0.012, 0.009), "shade", 0.002)
+        # The four-view reference has steel corner braces and amber reflectors.
+        # Carry them onto the overhead face, where the player actually sees
+        # this long, otherwise featureless closed gate at three tiles wide.
+        for side in (-1, 1):
+            box(collection, root, f"Brace upright.{side}",
+                (side * 1.34, 0, 0.72), (0.055, 0.74, 0.055),
+                "galvanized_edge", 0.007)
+            box(collection, root, f"Amber reflector shadow.{side}",
+                (side * 0.86, 0.355, 0.711), (0.18, 0.08, 0.015),
+                "shade", 0.004)
+            box(collection, root, f"Amber reflector.{side}",
+                (side * 0.86, 0.355, 0.723), (0.145, 0.047, 0.012),
+                "dock_amber", 0.004)
         for x in (-1.43, 1.43):
             box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
                 (0.12, 0.94, 0.91), "canteen_steel", 0.016)
@@ -843,11 +954,11 @@ def furniture(collection, root, asset_id):
         for x in (-0.70, 0.70):
             box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
                 (0.17, 0.045, 0.018), "dock_amber", 0.004)
-        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
-            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
-                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+        for x, angle in ((-1.03, 0.73), (1.03, -0.73)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, 0, 0.749),
+                        (0.89, 0.07, 0.055), "galvanized_edge", 0.009)
             brace.rotation_euler.z = angle
-            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+            cylinder(collection, root, f"Brace pivot.{x}", (x, 0, 0.79),
                      0.026, 0.016, "steel", 16)
     elif asset_id == "furniture.kitchen.prep_counter":
         # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
@@ -872,9 +983,32 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Tray shadow.{well_index}", (x, 0.058, 1.079), (0.235, 0.68, 0.022), "steel", 0.016)
             box(collection, root, f"Tray rolled rim.{well_index}", (x, 0.058, 1.095), (0.225, 0.66, 0.016), "galvanized_edge", 0.013)
             box(collection, root, f"Recessed tray well.{well_index}", (x, 0.058, 1.105), (0.185, 0.57, 0.012), "metal_recess", 0.012)
-            for row, y in enumerate((-0.14, -0.01, 0.12, 0.25)):
-                for col, dx in enumerate((-0.045, 0.045)):
-                    box(collection, root, f"Prepared ingredient.{well_index}.{row}.{col}", (x + dx, y, 1.125), (0.075, 0.095, 0.033), food, 0.022)
+            # The old identical 2x4 rectangular grid read as eight coloured
+            # buttons at gameplay scale. Use different silhouettes per tray:
+            # round tomatoes, broad overlapping leaves and pale chopped roots.
+            for piece, (dx, y, sx, sy, turn) in enumerate((
+                (-0.040, -0.145, 0.043, 0.052, -0.26),
+                (0.045, -0.087, 0.047, 0.059, 0.18),
+                (-0.036, -0.005, 0.046, 0.058, 0.32),
+                (0.040, 0.071, 0.044, 0.053, -0.22),
+                (-0.034, 0.153, 0.045, 0.057, 0.13),
+                (0.038, 0.231, 0.041, 0.050, -0.34),
+            )):
+                if well_index == 1:
+                    # Leaf blades lie at varied angles and overlap along the
+                    # centre vein, so the green pan remains organic at 128x64.
+                    prepared_ingredient(collection, root, f"Leaf.{piece}",
+                                        (x + dx, y, 1.132), (sx * 0.72, sy * 1.55, 0.014),
+                                        "prep_green", turn, smooth=False)
+                    prepared_ingredient(collection, root, f"Leaf highlight.{piece}",
+                                        (x + dx - 0.008, y - 0.010, 1.141),
+                                        (sx * 0.18, sy * 1.03, 0.006), "prep_green_light", turn, smooth=False)
+                else:
+                    prepared_ingredient(collection, root, f"Prepared produce.{well_index}.{piece}",
+                                        (x + dx, y, 1.131),
+                                        (sx if well_index == 0 else sx * 0.88,
+                                         sy if well_index == 0 else sy * 0.81, 0.025),
+                                        food, turn)
         # Cabinet drawers and recessed pulls survive oblique inspection without
         # adding decorative clutter to the true-overhead sprite.
         for z in (0.58, 0.82):
@@ -890,8 +1024,10 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Steel base plinth", (0, 0, 0.13), (1.88, 0.86, 0.25), "steel", 0.018)
         box(collection, root, "Warm timber backing", (0, -0.015, 0.70), (1.76, 0.79, 0.11), "canteen_wood", 0.013)
         for x in (-0.92, -0.32, 0.32, 0.92):
-            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.075, 0.89, 1.33), "canteen_steel", 0.016)
-            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.10, 0.90, 0.045), "galvanized_edge", 0.009)
+            # The old pale 0.075-wide posts dominated both rows from above;
+            # the accepted concept uses slim blue-grey cheeks around the books.
+            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.060, 0.89, 1.33), "fridge_steel", 0.013)
+            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.079, 0.90, 0.045), "fridge_steel", 0.009)
         for row, y in enumerate((-0.23, 0.22)):
             box(collection, root, f"Dark open shelf.{row}", (0, y, 0.755), (1.77, 0.345, 0.095), "shade", 0.008)
             box(collection, root, f"Timber shelf lip.{row}", (0, y + 0.19, 0.87), (1.79, 0.055, 0.14), "canteen_wood", 0.009)
@@ -899,16 +1035,20 @@ def furniture(collection, root, asset_id):
                 # Five individual spines per bay. Omitted volumes leave short
                 # dark gaps instead of an unbroken decorative stripe.
                 for slot, dx in enumerate((-0.22, -0.11, 0.0, 0.11, 0.22)):
-                    if (row, bay, slot) in ((0, 1, 3), (1, 0, 1), (1, 2, 4)):
+                    if (row, bay, slot) in ((0, 0, 3), (0, 1, 3), (1, 0, 1), (1, 2, 1), (1, 2, 4)):
                         continue
                     height = 0.27 + ((row * 7 + bay * 3 + slot * 2) % 4) * 0.035
                     colour = ("book_cream", "book_rust", "book_olive", "book_navy")[(row + bay * 2 + slot) % 4]
-                    box(collection, root, f"Book.{row}.{bay}.{slot}", (centre + dx, y, 0.90 + height / 2),
-                        (0.085, 0.245, height), colour, 0.005)
-                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (centre + dx, y + 0.115, 0.90 + height),
-                        (0.065, 0.015, 0.012), "light", 0.002)
-        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "canteen_steel", 0.012)
-        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "canteen_steel", 0.012)
+                    offset_x = centre + dx + (((row * 5 + bay * 3 + slot * 7) % 5) - 2) * 0.006
+                    width = 0.073 + ((row * 2 + bay + slot * 3) % 4) * 0.008
+                    depth = 0.21 + ((row + bay * 2 + slot) % 3) * 0.018
+                    offset_y = y + ((bay + slot) % 3 - 1) * 0.009
+                    box(collection, root, f"Book.{row}.{bay}.{slot}", (offset_x, offset_y, 0.90 + height / 2),
+                        (width, depth, height), colour, 0.005)
+                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (offset_x, offset_y + depth / 2 - 0.008, 0.90 + height),
+                        (width * 0.72, 0.013, 0.012), "light", 0.002)
+        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "fridge_steel", 0.012)
+        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "fridge_steel", 0.012)
     elif asset_id == "furniture.kitchen.stove":
         # V3 four-view reference adds cast-iron grates and an overhead-readable
         # control lip; the four burners remain inside the same 2x1 footprint.
@@ -998,9 +1138,12 @@ def furniture(collection, root, asset_id):
             cylinder(collection, root, f"Drum recess.{x}", (x, 0.092, 1.110), 0.335, 0.019, "shade", 64)
             cylinder(collection, root, f"Teal laundry under glass.{x}", (x, 0.092, 1.122), 0.267, 0.012, "medical_teal", 64)
             cylinder(collection, root, f"Smoked glazing.{x}", (x, 0.092, 1.145), 0.274, 0.019, "washer_glass", 64)
-            for stripe, y, angle in ((-0.085, 0.025, 0.35), (0.035, 0.10, -0.4), (0.12, 0.17, 0.52)):
-                cloth = box(collection, root, f"Cloth visible through drum.{x}.{stripe}", (x + stripe, y, 1.164), (0.10, 0.20, 0.014), "washer_fabric", 0.045)
-                cloth.rotation_euler.z = angle
+            washer_fabric_fold(collection, root, f"Curved cloth fold A.{x}",
+                               (x - 0.055, 0.072, 1.163), 0.31, 0.14, 0.50, 0.0, "medical_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold B.{x}",
+                               (x + 0.070, 0.137, 1.168), 0.28, 0.15, -0.62, 1.2, "washer_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold C.{x}",
+                               (x + 0.035, 0.026, 1.158), 0.19, 0.10, 0.28, 2.1, "medical_fabric")
             torus(collection, root, f"Machined steel door bezel.{x}", (x, 0.092, 1.165), 0.293, 0.038, "galvanized_edge")
             torus(collection, root, f"Inner rubber seal.{x}", (x, 0.092, 1.171), 0.252, 0.012, "shade")
             box(collection, root, f"Door handle.{x}", (x - 0.32, 0.09, 1.186), (0.085, 0.17, 0.045), "galvanized_edge", 0.014)
@@ -1025,9 +1168,35 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Adjustable head base", (0, -0.51, 0.54), (0.76, 0.64, 0.10), "galvanized_edge", 0.025)
         box(collection, root, "Washable mattress edge", (0, 0, 0.58), (0.76, 1.67, 0.20), "porcelain", 0.055)
         box(collection, root, "Teal medical mattress", (0, 0, 0.695), (0.71, 1.62, 0.035), "medical_fabric", 0.022)
-        box(collection, root, "Raised head cover", (0, -0.51, 0.725), (0.71, 0.56, 0.06), "medical_fabric", 0.035)
-        box(collection, root, "Cream medical pillow", (0, -0.57, 0.79), (0.58, 0.30, 0.075), "light", 0.05)
-        box(collection, root, "Teal blanket fold", (0, 0.17, 0.731), (0.70, 0.09, 0.035), "medical_fabric", 0.018)
+        # Keep the adjustable head separate from the body. A dark pivot line,
+        # raised teal cushion and lit lower edge make the articulation visible
+        # from directly overhead, where the former flat cover hid it.
+        box(collection, root, "Head articulation gap", (0, -0.285, 0.725), (0.71, 0.025, 0.020), "shade", 0.007)
+        box(collection, root, "Raised head cover", (0, -0.51, 0.762), (0.71, 0.54, 0.105), "medical_fabric", 0.055)
+        box(collection, root, "Head cushion lower edge", (0, -0.275, 0.823), (0.68, 0.030, 0.014), "medical_teal", 0.007)
+        box(collection, root, "Cream medical pillow", (0, -0.57, 0.855), (0.58, 0.30, 0.085), "light", 0.075)
+        # A tucked pale sage patient sheet and folded teal cover distinguish the
+        # infirmary bed from the prison-cell mattress at one-tile width.
+        box(collection, root, "Patient sheet shadow", (0, 0.16, 0.735), (0.68, 0.64, 0.027), "medical_sheet_shadow", 0.022)
+        box(collection, root, "Washable pale patient sheet", (0, 0.15, 0.758), (0.63, 0.60, 0.040), "medical_sheet", 0.072)
+        cloth_surface(collection, root, "Patient sheet soft folds", 0.55, 0.50,
+                      0.15, 0.779, 0.031, "medical_sheet")
+        for x in (-0.305, 0.305):
+            box(collection, root, f"Sheet tucked side fold.{x}", (x, 0.15, 0.774),
+                (0.022, 0.52, 0.019), "medical_sheet_hem", 0.008)
+        box(collection, root, "Sheet rolled upper fold shadow", (0, -0.135, 0.782),
+            (0.60, 0.035, 0.018), "medical_sheet_shadow", 0.009)
+        box(collection, root, "Sheet rolled upper fold", (0, -0.16, 0.803),
+            (0.59, 0.052, 0.030), "medical_sheet_hem", 0.015)
+        box(collection, root, "Sheet lower stitched hem", (0, 0.437, 0.783),
+            (0.59, 0.013, 0.008), "medical_sheet_hem", 0.004)
+        box(collection, root, "Folded teal foot blanket", (0, 0.58, 0.770), (0.69, 0.45, 0.085), "medical_fabric", 0.039)
+        cloth_surface(collection, root, "Foot cover soft folds", 0.63, 0.34,
+                      0.58, 0.817, 0.013, "medical_fabric")
+        box(collection, root, "Foot blanket contrast band", (0, 0.405, 0.820), (0.68, 0.055, 0.012), "medical_teal", 0.007)
+        box(collection, root, "Foot blanket turned hem", (0, 0.77, 0.816), (0.67, 0.045, 0.010), "light", 0.005)
+        box(collection, root, "Foot medical cross horizontal", (0, 0.60, 0.839), (0.16, 0.048, 0.012), "medical_red", 0.004)
+        box(collection, root, "Foot medical cross vertical", (0, 0.60, 0.847), (0.050, 0.16, 0.012), "medical_red", 0.004)
         # Pair of short safety rails on each side, with a visible break.
         for x in (-0.44, 0.44):
             for y in (-0.27, 0.35):
@@ -1144,6 +1313,22 @@ def furniture(collection, root, asset_id):
             for x in (-1.27, 1.27):
                 cylinder(collection, root, f"Recessed tabletop bolt.{index}.{x}",
                     (x, y, 0.886), 0.017, 0.010, "canteen_steel", 12)
+        # Three sparse meal stations face the fixed stools. The pale plates
+        # carry the silhouette at game scale; the trays and utensils provide
+        # context without covering the walnut planks.
+        for index, x in enumerate((-0.88, 0, 0.88)):
+            box(collection, root, f"Meal tray shadow.{index}",
+                (x, -0.25, 0.895), (0.72, 0.60, 0.014), "shade", 0.045)
+            box(collection, root, f"Brushed meal tray.{index}",
+                (x, -0.25, 0.907), (0.69, 0.57, 0.021), "galvanized", 0.045)
+            cylinder(collection, root, f"Enamel plate rim.{index}",
+                (x, -0.26, 0.926), 0.205, 0.022, "porcelain", 32)
+            cylinder(collection, root, f"Recessed plate well.{index}",
+                (x, -0.26, 0.940), 0.150, 0.010, "light", 32)
+            box(collection, root, f"Fork.{index}",
+                (x - 0.265, -0.26, 0.928), (0.030, 0.29, 0.012), "canteen_steel", 0.008)
+            box(collection, root, f"Spoon.{index}",
+                (x + 0.265, -0.26, 0.928), (0.035, 0.29, 0.012), "canteen_steel", 0.008)
         for index, x in enumerate((-0.88, 0, 0.88)):
             cylinder(collection, root, f"Stool floor mount.{index}", (x, 0.69, 0.045), 0.14, 0.08, "steel", 16)
             for bolt_x in (-0.08, 0.08):
@@ -1182,11 +1367,22 @@ def furniture(collection, root, asset_id):
                 box(collection, root, f"Angled support.{x}.{y}", (x, y * 0.55, 0.27), (0.075, 0.08, 0.43), "canteen_steel", 0.012)
                 cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.022, 0.016, "shade", 12)
         box(collection, root, "Lower steel tie", (0, 0, 0.24), (1.50, 0.055, 0.055), "canteen_steel", 0.008)
-        for index, y in enumerate((-0.27, -0.09, 0.09, 0.27)):
-            box(collection, root, f"Worn timber slat.{index}", (0, y, 0.57), (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
-            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, 0.622), (1.74, 0.012, 0.009), "bench_edge", 0.003)
+        # The far plank is a raised back. A broad dark reveal below it remains
+        # visible at 128x64, so the three lower seat planks do not read as a
+        # single tabletop when the Common Room has two benches side by side.
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Raised back upright.{x}", (x, -0.33, 0.67),
+                (0.08, 0.075, 0.39), "canteen_steel", 0.012)
+        box(collection, root, "Back-to-seat shadow reveal", (0, -0.205, 0.515),
+            (1.74, 0.066, 0.014), "shade", 0.004)
+        for index, (y, height) in enumerate(((-0.34, 0.83), (-0.10, 0.57), (0.10, 0.57), (0.30, 0.57))):
+            box(collection, root, f"Worn timber slat.{index}", (0, y, height),
+                (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
+            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, height + 0.052),
+                (1.74, 0.012, 0.009), "bench_edge", 0.003)
             for x in (-0.79, 0.79):
-                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}", (x, y, 0.620), 0.014, 0.008, "shade", 12)
+                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}",
+                    (x, y, height + 0.050), 0.014, 0.008, "shade", 12)
         for x in (-0.935, 0.935):
             box(collection, root, f"Exposed steel end bracket.{x}", (x, 0, 0.56), (0.066, 0.73, 0.085), "steel", 0.016)
             for y in (-0.29, 0.29):
@@ -1215,6 +1411,11 @@ def furniture(collection, root, asset_id):
         arm.rotation_euler[1] = -0.12
         cylinder(collection, root, "Lamp enamel hood", (-0.40, -0.27, 1.190), 0.115, 0.080, "desk_teal", 48)
         cylinder(collection, root, "Lamp warm diffuser", (-0.40, -0.27, 1.145), 0.082, 0.008, "paper_cream", 48)
+        # The underside diffuser is hidden from the overhead camera. A slim
+        # top seam and the articulated swivel identify this disc as a lamp.
+        torus(collection, root, "Lamp hood top seam", (-0.40, -0.27, 1.231), 0.096, 0.009, "desk_ink")
+        cylinder(collection, root, "Lamp swivel collar", (-0.40, -0.27, 1.245), 0.055, 0.022, "galvanized_edge", 32)
+        cylinder(collection, root, "Lamp dark swivel", (-0.40, -0.27, 1.262), 0.037, 0.015, "desk_ink", 32)
         box(collection, root, "Olive paperwork tray", (-0.53, 0.10, 1.004), (0.34, 0.38, 0.052), "green", 0.014)
         box(collection, root, "Terracotta folder in tray", (-0.53, 0.10, 1.038), (0.27, 0.30, 0.012), "paper_orange", 0.004)
         box(collection, root, "Cream sheet in tray", (-0.54, 0.075, 1.054), (0.25, 0.24, 0.012), "paper_cream", 0.004)
@@ -1740,6 +1941,10 @@ def architectural(collection, root, asset_id):
             for y in (-0.45, -0.35):
                 cylinder(collection, root, f"Dark plate bolt.{x}.{y}", (x, y, 1.032), 0.023, 0.014, "steel", 12)
         cylinder(collection, root, "Wall pipe socket", (0, -0.30, 1.05), 0.105, 0.13, "galvanized_edge", 32)
+        cylinder(collection, root, "Recessed steel socket cover", (0, -0.30, 1.124),
+            0.073, 0.014, "steel", 48)
+        cylinder(collection, root, "Small retaining screw", (0, -0.30, 1.136),
+            0.018, 0.008, "galvanized_edge", 48)
         box(collection, root, "Bent brushed-steel arm", (0, -0.175, 1.055), (0.105, 0.30, 0.10), "galvanized", 0.045)
         cylinder(collection, root, "Coupling dark joint", (0, -0.085, 0.88), 0.095, 0.058, "steel", 32)
         cylinder(collection, root, "Head coupling bright sleeve", (0, -0.075, 0.89), 0.108, 0.062, "galvanized_edge", 32)
@@ -1797,8 +2002,9 @@ def architectural(collection, root, asset_id):
         bowl.scale.y = 1.20
         cavity = cylinder(collection, root, "Bowl depth shadow", (0, 0.16, 0.683), 0.25, 0.026, "shade", 64)
         cavity.scale.y = 1.19
-        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.16, 0.016, "toilet_water", 64)
+        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.1152, 0.016, "toilet_water", 64)
         water.scale.y = 1.13
+        cylinder(collection, root, "Recessed dark drain", (0, 0.18, 0.718), 0.063, 0.012, "shade", 48)
         inner = torus(collection, root, "Inner glazed bowl contour", (0, 0.16, 0.711), 0.21, 0.037, "porcelain")
         inner.scale.y = 1.20
         seat = torus(collection, root, "Broad oval raised seat", (0, 0.16, 0.738), 0.293, 0.061, "toilet_porcelain")
@@ -1971,6 +2177,9 @@ def main():
     MATERIALS["bed_pillow_top"] = material("Pillow raised cotton centre", (0.84, 0.82, 0.76, 1), 0.89)
     MATERIALS["bed_pillow_seam"] = material("Pillow cover stitched seam", (0.58, 0.57, 0.53, 1), 0.92)
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["medical_sheet"] = medical_sheet_material()
+    MATERIALS["medical_sheet_hem"] = material("Medical linen folded hem", (0.74, 0.81, 0.79, 1), 0.88)
+    MATERIALS["medical_sheet_shadow"] = material("Medical linen edge shade", (0.32, 0.47, 0.49, 1), 0.91)
     MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
     MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)
     MATERIALS["wall_cap_inlay"] = material("Interior wall pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)
@@ -1992,7 +2201,8 @@ def main():
     MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
     MATERIALS["console_enamel"] = material("Worn blue-grey surveillance enamel", (0.17, 0.23, 0.30, 1), 0.58)
-    MATERIALS["console_screen"] = console_screen_material()
+    for index in range(3):
+        MATERIALS[f"console_screen_{index}"] = console_screen_material(index)
     MATERIALS["console_amber"] = material("Amber console indicator", (0.94, 0.45, 0.045, 1), 0.27)
     MATERIALS["console_teal"] = material("Teal console indicator", (0.035, 0.65, 0.64, 1), 0.27)
     MATERIALS["console_red"] = material("Guarded emergency control", (0.65, 0.06, 0.04, 1), 0.36)
@@ -2013,6 +2223,7 @@ def main():
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
     MATERIALS["prep_red"] = material("Prepared red vegetables", (0.65, 0.15, 0.08, 1), 0.66)
     MATERIALS["prep_green"] = material("Prepared green vegetables", (0.13, 0.33, 0.11, 1), 0.77)
+    MATERIALS["prep_green_light"] = material("Leaf central veins", (0.25, 0.43, 0.16, 1), 0.82)
     MATERIALS["prep_cream"] = material("Prepared pale vegetables", (0.78, 0.70, 0.46, 1), 0.78)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()

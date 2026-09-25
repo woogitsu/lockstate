@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { HUD_TAB_IDS } from '../../src/ui/hud';
+import { pseudoLocaleSweepViolations } from '../helpers/pseudo-locale-sweep-isolation';
 
 /**
  * ADR 0011's pseudo-locale, pointed at the *assembled application* for the
@@ -257,6 +258,23 @@ async function walkTabs(page: Page, label: string): Promise<void> {
 test.describe('the assembled application under the pseudo-locale (#664)', () => {
   test.slow();
 
+  let inventoryStart = 0;
+  let statesStart = 0;
+  test.beforeEach(() => {
+    inventoryStart = inventory.length;
+    statesStart = statesVisited.length;
+  });
+  test.afterEach(({}, testInfo) => {
+    // A failed sweep already leaves the suite red. Playwright restarts its
+    // worker after that failure, so assertions in later tests would see empty
+    // process globals and become unrelated blockers for the network retry.
+    expect(pseudoLocaleSweepViolations(
+      inventory.slice(inventoryStart),
+      statesVisited.length - statesStart,
+      testInfo.status === 'passed',
+    )).toEqual([]);
+  });
+
   test('with no session: boot, the consent prompt, a refusal and every tab', async ({ page }) => {
     await openApp(page);
     await sweep(page, 'no session: first paint');
@@ -485,67 +503,4 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     console.log(`PSEUDO-LOCALE SWEEP :: ${keyShaped.length} of those are key-shaped (a key that resolved to nothing)`);
   });
 
-  test('no key rendered as its own name anywhere the sweep went', () => {
-    const keyShaped = inventory.filter((entry) => !entry.bracketed && KEY_SHAPED.test(entry.text));
-    expect(inventory.length + statesVisited.length, 'the sweep above actually ran').toBeGreaterThan(0);
-    expect([...new Set(keyShaped.map((entry) => `${entry.text} @ ${entry.where}`))]).toEqual([]);
-  });
-
-  /**
-   * The gap this file's own docblock names and had left open: the sweep
-   * *collects* "anything still readable is text that never passed through the
-   * catalogue" (the paragraph beginning "Before this file the locale was
-   * reachable from exactly two places"), but until this test only one shape of
-   * that -- a key that resolved to nothing -- was ever asserted on. A
-   * hard-coded English sentence with no `.` in it, like
-   * `aria-label="Lockstate game application"` was on `index.html:11`, is not
-   * key-shaped: `KEY_SHAPED` requires a dotted identifier, and "Lockstate game
-   * application" has none. It printed in every run's `PSEUDO-LOCALE SWEEP ::`
-   * report, in the `[attribute]` line for `main#app`, "not from the catalogue
-   * at all" in as many words -- and nothing above ever failed on it. That
-   * string now resolves through `app.shell.label`
-   * (`src/content/default-locale-en.ts`, `src/ui/app-shell-messages.ts`,
-   * applied at `src/main.ts`), so it comes back bracketed like everything
-   * else the catalogue owns; this test is what stops the next one from
-   * printing quietly instead.
-   *
-   * Two exemptions, both document-level and both deliberate rather than
-   * loosened to make room for a failure:
-   *
-   * - `document.title` (`kind: 'document'`, `where: '<title>'`). The owner's
-   *   ruling that opened this change is explicit that the title stays exactly
-   *   as it is -- `Lockstate.io` is the brand name, not player-facing prose,
-   *   and routing it through the catalogue was never asked for.
-   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). It is a BCP
-   *   47 tag rather than prose: it names no catalogue entry, so there is no
-   *   entry for it to be missing from, and no translator ever sees it.
-   *
-   *   **The reason given here used to be "there is no runtime locale switch",
-   *   and that half is out of date since #663 while the exemption is not.**
-   *   `src/main.ts` now writes this attribute from the locale that actually
-   *   resolved, so under this sweep it reads `en-XA` rather than `en` --
-   *   which is a fact about the page and still not a string a translator would
-   *   see. (There is still no *in-place* switch: a language change reloads,
-   *   see `docs/adr/0119-how-a-language-change-reaches-a-running-page.md`,
-   *   and `installPseudoLocale`'s comment above is still why the sweep has to
-   *   rewrite the served module to reach `en-XA` at all.)
-   *
-   * Every other finding the sweep collects is either bracketed -- reached
-   * through the catalogue, `Localizer.format` having produced it -- or it is
-   * exactly the leak this test exists to catch. A generated prisoner or staff
-   * name is not a third exemption: `roster-panel.ts` interpolates it into
-   * `HUD_MESSAGE_KEY.regimeRosterName` via `t(...)`, so it arrives bracketed
-   * (the template's `⟦ … ⟧` wraps the whole rendered string, name included --
-   * the "second class" of finding this file's own docblock describes under
-   * "Why the obvious rule is wrong"), not as a bare string this test would see
-   * at all.
-   */
-  test('no hard-coded English reaches the page outside document.title and <html lang>', () => {
-    const leaked = inventory.filter((entry) => entry.kind !== 'document' && !entry.bracketed);
-    expect(inventory.length + statesVisited.length, 'the sweep above actually ran').toBeGreaterThan(0);
-    expect(
-      [...new Set(leaked.map((entry) => `${JSON.stringify(entry.residue)} @ ${entry.where}`))],
-      'readable English reached the page without passing through the catalogue',
-    ).toEqual([]);
-  });
 });

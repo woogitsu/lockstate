@@ -305,6 +305,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.status.funds-treasury-floor-exhausted',
       'hud.security.roster-wage-bill',
       'hud.overview.wages',
+      'hud.overview.income-note',
       'hud.build.catalogue-row-price',
       'hud.build.catalogue-row-price-segment',
     ]);

@@ -792,8 +792,32 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `4ac515b4` (**v0.0.747**) by the delta method,
-from `03e47695`. This is #1365's merge commit, the last merge on `main` and
+Re-anchored at `main` @ `dbd24ea3` (**v0.0.771**) by the delta method,
+from `9e6361c9`. This is the release commit after #1445, the last
+first-parent landing in the `main` tree this branch read. Nine non-release
+first-parent landings and thirty-six commits were unread at the start of this
+pass: one landing below the ten-landing budget and sixty-four commits below
+the hundred-commit budget. The dated §3 entry below records the re-reading
+of §§3-6; neither budget moves.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`9e6361c9` (**v0.0.762**) by the delta method,"*
+from `5ed25544`. This is the Full HD inspector integration commit in the
+first-parent history of the main tree this branch read. The previous anchor
+was twenty-three first-parent landings ago, thirteen over the unchanged
+ten-landing budget. This pass re-read §§3-6 against the changed paths and
+records its live findings in the new §3 entry below.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`5ed25544` (**v0.0.759**) by the delta method,"* from `4ac515b4`. This was #1400's merge commit, the most recent non-release
+first-parent commit in the `main` tree this pass read; release commit
+`2b3ec44e` sits above it. The previous anchor was eleven landings ago,
+one over the unchanged ten-landing budget. This pass re-read §§3-6, including
+the owner decisions and live citations named in the new §3 entry below.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`4ac515b4` (**v0.0.747**) by the delta method,"* from `03e47695`.
+In that dated reading this was #1365's merge commit, the last merge on `main` and
 the tip of `main` itself; `package.json` ships **0.0.747** at it and **no
 release commit sits above it**, so the release assertion reads 747 − 747 =
 **zero**. It is the merge rather than a release commit for the reason every
@@ -21779,6 +21803,139 @@ class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
 
+## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
+
+Read at `dbd24ea3` (**v0.0.771**). The window `9e6361c9..dbd24ea3`
+contains nine non-release first-parent landings and thirty-six commits.
+The landings are #1407, #1410, #1411, #1412, #1435, #1437, #1439,
+#1377 and #1445, in that order. The changed paths cover Full HD HUD
+composition, the first Blender fixture batch and its rendered-art pipeline,
+the CI LFS include list, and the incident-threshold research. None changes
+`docs/adr/README.md`, an ADR Status or a migration. The next free ADR number
+remains **0124**; §2 still has nine live entries. This reading adds no
+acceptance by inference from code or from a merged pull request.
+
+**§4 remains open as a deployment risk.** `docs/DEPLOYMENT.md`, ADR 0016,
+`.github/workflows/migrate-database.yml` and `supabase/migrations/` are
+unchanged in this window. The staging-integration row in the deployment
+table still says a merge applies pending migrations with no gate, while the
+production path still requires manual dispatch, environment approval and a
+typed project ref. The migration workflow still has `workflow_dispatch`
+without a `push` trigger. The changed `.github/workflows/ci.yml` is the
+rendered-art LFS path, not evidence that the Supabase dashboard constraint
+has gained mechanical enforcement; the hosted dashboard remains outside this
+repository's evidence.
+
+**§5 was read against the changed paths, not carried forward by its title.**
+`docs/PERSISTENCE.md` still places the stale-writer refusal at `:2746-2747`
+and the departed-writer bullet at `:2751-2753`; the source return remains
+`src/persistence/session/session-controller.ts:1031`. Neither file changed.
+HUD code and CSS did change, but ADR 0025 itself re-aimed the quoted
+`staffPanel.setVisible(state.activeTab === 'manage')` line to
+`src/ui/hud/hud.ts:2980`, and ADR 0031 re-aimed the queue-list CSS rule to
+`src/ui/hud/hud.css:2210`; both coordinates were opened on this tree.
+The two persistence discrepancies named at §5's head therefore still qualify
+the prose and have not become a different accepted decision.
+
+**§6's gate remains the same.** `tests/foundation/adr-status-reference-contract.test.ts`
+is not in the window, and no ADR Status or index row changed. Its corpus,
+claim and numbered-ADR floors are still the live assertions at `:434`,
+`:438` and `:405` respectively. This is evidence that the implemented gate
+still guards its measured class, not that it covers claims with no ADR number,
+negations, or the dated research and immutable migration exceptions §6 names.
+The live documentation-quotation gate was changed for an ADR 0031 coordinate;
+that correction is accounted for above, rather than misreported as a status
+flip.
+
+## 3. The 2026-09-25 Full HD pass: twenty-three first-parent landings and no new ADR
+
+Read at `9e6361c9` (**v0.0.762**). The window from `5ed25544` contains
+twenty-three first-parent landings, thirty-eight commits in all and twenty-eight
+changed paths. Most changes are the Full HD HUD composition and its browser
+tests. Two numbered ADRs changed only source coordinates: ADR 0025 re-aimed
+`HudIntent` and the quoted `staffPanel.setVisible` line; ADR 0106 re-aimed
+the `hud.build.remove-hint` declaration after locale lines moved. Their Status
+blocks and decisions are unchanged. No ADR index, migration, deployment
+document or session-controller source changed. The next free ADR number remains 0124, and
+§2 still holds nine live entries. This pass does not turn layout work into an
+ADR acceptance or infer that a cited simulation decision changed from it.
+
+**§4 remains a live deployment risk.** Neither ADR 0016 nor the deployment
+workflow changed in this window. The separate-production-project constraint
+still has no mechanical enforcement in the cited path.
+
+**§5 was compared with the changed-path list.** The stale-writer sources,
+handshake protocol, and `zoningNoticeSchema` source cited by the preceding pass
+are unchanged. The HUD files did change: the current `HudIntent` declaration is
+at `src/ui/hud/hud.ts:376`, and the current
+`staffPanel.setVisible(state.activeTab === 'manage')` line is at
+`src/ui/hud/hud.ts:2980`; the second coordinate is corrected in ADR 0025 in
+this pass, beside its quoted code. These are source locations, not evidence
+that the Status or decision of that ADR moved.
+
+**§6 still has the same status-reference gate and the same blind spots.** The
+gate and its documented exceptions are unchanged. No ADR Status or index row
+changed in the window. The 23-landing overrun is a failure of the anchor
+cadence, not evidence of a new owner decision; neither staleness budget is
+raised. The quotation gate separately caught the stale ADR 0025 source
+coordinate and a spent ADR 0031 budget row, both corrected with this anchor.
+
+## 3. The 2026-09-25 pass: eleven landings, five owner acceptances, and a red gate on main
+
+Read at `5ed25544` (**v0.0.759**). The window `4ac515b4..5ed25544` has
+**eleven non-release first-parent landings**, **24 commits in all**, and
+**114 changed paths**. The release sequence
+goes from v0.0.747 at the old anchor to v0.0.759 at #1400's merge, followed by
+release commit `2b3ec44e`. Counting releases would report thirteen steps at
+the current tip; the gate correctly reports eleven landings against its budget
+of ten. `main` CI run 36076059855 is red in `verify` on this staleness gate.
+Neither budget is raised. The merge subjects, read from the first-parent log,
+are #1366, #1367, #1368, #1369, #1371, #1372, #1374, #1375, #1399, #1380
+and #1400. The window includes 31 `src/` paths, 41 `tests/` paths and 31
+`docs/` paths; the remaining paths include workflow and package changes.
+
+**The ADR census changed by decisions, not by arrivals.** The numbered ADR
+files still total **117**, with no new numbered document above 0123 and the
+index still naming **Next free number: 0124**. Each document's Status and its
+index row now yield **42 Proposed and 75 Accepted**, against 47 and 70 at the old
+anchor. The five owner acceptances recorded in the changed rows are ADR 0052,
+0054, 0090, 0092 and decision 1 of 0095; ADR 0002's row was amended but was
+already Accepted. The distinction matters for §5: an acceptance changes an
+authority statement; it does not itself prove that its implementation has
+landed. §2's nine live entries remain nine; none of these five approvals
+creates or retires a §2 row.
+
+**§4's deployment risk still stands.** The migration workflow changed only
+its `migrate` job runner from `self-hosted` to `ubuntu-latest` in this window.
+Its `workflow_dispatch` trigger, typed project-ref confirmation and
+environment-gated apply path remain. `docs/DEPLOYMENT.md`, ADR 0016 and the
+migration files did not change. The separate-production-project constraint is
+still a human constraint; the runner change does not enforce it.
+
+**§5's live readings were checked against their subjects.** The two
+`docs/PERSISTENCE.md` spans and both session-controller branches describing a
+stale writer are unchanged by this window. The protocol's handshake sources
+still give four hits in `types.ts`, two in `transferables.ts` and three in
+`state-machine.ts`; ADR 0003's independently cited measurement did not move.
+The `zoningNoticeSchema` declaration *did* move from line 1740 to line 1765
+as `types.ts` grew, with no change to that 4/2/3 split. The former number is
+kept only as a dated reading, not as a live citation. The new owner acceptance
+of ADR 0095 is scoped to its decision 1 and does not silently approve the
+other options recorded in that ADR. The HUD and simulation paths changed in
+the window, so this pass does not infer from their old line numbers that any
+new implementation satisfies an ADR; the Status sections and index remain
+the authority for which decisions were accepted.
+
+**§6's status-reference contract remains the executable check on stale
+present-tense status claims.** Its test file and the two documented exceptions
+(`docs/research/` as dated evidence, applied migrations as immutable history)
+are unchanged. The five approvals above were reconciled against the index;
+the contract remains a required CI gate. This does not make its known blind spots
+disappear: counts without a named ADR, negation and this historical file still
+need human reading. The weakest claim of this pass is its non-exhaustive review
+of individual `file:line` coordinates across the 114-path window; the
+documentation quotation gate checks the measurable subset separately.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -22053,7 +22210,7 @@ can see the dashboard setting that would break it. That last clause is the half
 no window of any kind reaches, and ending the absence run changes nothing about
 it.
 
-**RE-VERIFIED AT `4ac515b4`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+**THE `4ac515b4` PASS RECHECKED THIS RISK, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
 IS AT THREE — while both halves of this section's own evidence stay outside the
 window for a ninth anchor running.** `git diff --name-only
 03e47695..4ac515b4 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,

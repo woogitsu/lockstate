@@ -393,9 +393,13 @@ export const HUD_MESSAGE_KEY = {
   zoomOut: 'hud.zoom.out',
 
   minimapTitle: 'hud.minimap.title',
-  minimapPlaceholder: 'hud.minimap.placeholder',
-  /**
-   * Replaces `minimapPlaceholder` the first time a click OR a keyboard
+    minimapPlaceholder: 'hud.minimap.placeholder',
+    /**
+     * Historical fallback for a navigation press that succeeds before the
+     * first map frame paints. Once the renderer supplies its projection,
+     * `minimapMapReady` describes the actual map instead.
+     *
+     * Replaces `minimapPlaceholder` the first time a click OR a keyboard
    * activation on the surface actually moves the camera (issue #793, keyboard
    * reachability added by #903): the surface still draws no map (`hud.ts`'s
    * own comment on it is unchanged and still true -- rendering belongs to the
@@ -414,7 +418,9 @@ export const HUD_MESSAGE_KEY = {
    * the wording's own justification; this comment is about when the swap
    * happens, not about the words.
    */
-  minimapNavigable: 'hud.minimap.navigable',
+    minimapNavigable: 'hud.minimap.navigable',
+    /** Accessible name for the drawn, navigable map. */
+    minimapMapReady: 'hud.minimap.map-ready',
   alertsTitle: 'hud.alerts.title',
   /**
    * The two things an alerts list with no rows can mean, which until issue
@@ -1170,6 +1176,7 @@ export const HUD_MESSAGE_KEY = {
    */
   overviewTitle: 'hud.overview.title',
   overviewNone: 'hud.overview.none',
+  overviewIncomeNote: 'hud.overview.income-note',
   overviewWages: 'hud.overview.wages',
 
   intakeTitle: 'hud.intake.title',

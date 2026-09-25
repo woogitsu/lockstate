@@ -182,6 +182,8 @@ function buildFrame(): RenderFrame {
   const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
   const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
   const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
+  const includeWasherVisual = new URLSearchParams(window.location.search).has('washerVisual');
+  const includeShowerVisual = new URLSearchParams(window.location.search).has('showerVisual');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -200,6 +202,16 @@ function buildFrame(): RenderFrame {
       const roomChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(1) };
       world.load(roomChunk);
       world.setOwned(roomChunk, true);
+    }
+  }
+  if (includeShowerVisual) {
+    for (let tileX = FIXTURE.showerFloorMinTileX; tileX <= FIXTURE.showerFloorMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.showerFloorMinTileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.showerFloorMaxTileY + 1) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.showerFloorMinTileY; tileY <= FIXTURE.showerFloorMaxTileY; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.showerFloorMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.showerFloorMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
     }
   }
   if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
@@ -429,10 +441,17 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-shower-head',
       definitionId: 'shower-head-brick',
-      tileX: FIXTURE.showerTileX,
-      tileY: FIXTURE.showerTileY,
+      tileX: includeShowerVisual ? 12 : FIXTURE.showerTileX,
+      tileY: includeShowerVisual ? 13 : FIXTURE.showerTileY,
       phase: 'built',
     },
+    ...(includeShowerVisual ? [{
+      id: 'shower-visual-second-head',
+      definitionId: 'shower-head-brick',
+      tileX: 14,
+      tileY: 13,
+      phase: 'built' as const,
+    }] : []),
     {
       id: 'finished-waste-bin',
       definitionId: 'waste-bin-brick',
@@ -485,8 +504,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-washing-machine',
       definitionId: 'washing-machine-brick',
-      tileX: FIXTURE.washingMachineTileX,
-      tileY: FIXTURE.washingMachineTileY,
+      tileX: includeWasherVisual ? 17 : FIXTURE.washingMachineTileX,
+      tileY: includeWasherVisual ? 13 : FIXTURE.washingMachineTileY,
       phase: 'built',
     },
     {

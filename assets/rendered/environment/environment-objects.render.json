@@ -120,8 +120,8 @@
     {
       "assetId": "fixture.cell.toilet_sink",
       "image": "fixture.cell.toilet_sink.png",
-      "sha256": "fe9e971698b855f47594a42d82d3ec417150d40ded2c6144507816c22d30a75c",
-      "pixelSha256": "e86c47d84e7f618c5560c7dc5d25e6c22837cb3d04b4d8eb74267decdae69ec9",
+      "sha256": "be3079343f3cd01ecf52190684cab4756106ae6b9fad8043704773f881876588",
+      "pixelSha256": "fc9292618c25a85b3fe91363264f350115a5a94d29df575ba08152310850ab16",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -147,15 +147,15 @@
     {
       "assetId": "fixture.cell.waste_bin",
       "image": "fixture.cell.waste_bin.png",
-      "sha256": "a83436788692d341ca16f27e05cd6cc4b3debb4a2e2c6a83d4c2c6fe93cd72fb",
-      "pixelSha256": "7e15aafb08e31b65f1d2cd2ad9ef040a742dd6c44778f376403e7cba527393bf",
+      "sha256": "45fa134cca8ca7f867107c6c3b638ceb89f2dc71d9da04a013ddfff07192149e",
+      "pixelSha256": "7e0a1464a78930b39144963ccdd1c9c688f997300636cfb90bf5a6f83239f637",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.45652,
-        "height": 1.45652
+        "width": 1.209602,
+        "height": 1.209602
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -164,18 +164,18 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 65,
-        "y": 13,
-        "width": 126,
-        "height": 208,
-        "opaquePixels": 18742
+        "x": 52,
+        "y": 29,
+        "width": 152,
+        "height": 214,
+        "opaquePixels": 26410
       }
     },
     {
       "assetId": "fixture.shower.head",
       "image": "fixture.shower.head.png",
-      "sha256": "7ad0833f934185afa428e32045361c395f366d5c61456e3648219cbeca7ee3d8",
-      "pixelSha256": "25375edee009097f0ed95c683471c377fbf1c1035036dc75601d55fcdd9fc8d7",
+      "sha256": "9c5d57a07942b8c1b43bf088a8ec69cbd8cfbd47b0200eaf4f2f7950d9841cb1",
+      "pixelSha256": "dac310db3954e8df80ef45e4487a066e4c18eb9fad01e129ff2f42fead476c40",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -421,35 +421,35 @@
     {
       "assetId": "furniture.chair.wooden",
       "image": "furniture.chair.wooden.png",
-      "sha256": "628022aca4d9840a29ce9b48d7c6bf3d01538215b0a6083a703a08605dfaf5f7",
-      "pixelSha256": "138f168e0334284a893536d16a8cba7e712d0e2701c1ee4a48376167b65ed6b4",
+      "sha256": "6ae35ea8d80cea28ef437e3581885613aa7e4493405a804e4d61402bc5288524",
+      "pixelSha256": "00c1b587026a6312bc122f70582c1dccb0af4be190aaef5d2f100368c6edc018",
       "footprintTiles": {
-        "width": 1.0,
-        "height": 1.0
+        "width": 1,
+        "height": 1
       },
       "frameTiles": {
-        "width": 1.1816,
-        "height": 1.1816
+        "width": 1.125597,
+        "height": 1.125597
       },
       "overhangsFootprint": true,
       "sizePx": {
         "width": 256,
         "height": 256
       },
-      "frameAspectDriftFromFootprint": 0.0,
+      "frameAspectDriftFromFootprint": 0,
       "opaqueBoundsPx": {
-        "x": 43,
+        "x": 39,
         "y": 13,
-        "width": 170,
-        "height": 224,
-        "opaquePixels": 29334
+        "width": 178,
+        "height": 223,
+        "opaquePixels": 27434
       }
     },
     {
       "assetId": "furniture.corridor.bench.variants",
       "image": "furniture.corridor.bench.variants.png",
-      "sha256": "9cd6c769ce3c2d17b652c5c5d0ca78d15c1947c7a80a18141fdf2cf837db536d",
-      "pixelSha256": "98f584709d0caf2bb51d43a6e4384f1f1a32ebf7f7fb4bd0f88dcb0c3af6923d",
+      "sha256": "a087e82cdb951d241b9a8b27720ec4c6dc9c4ac8fba3d779b5fa85e13a784673",
+      "pixelSha256": "2426f9ef3fbe42ee0c91ac20c189d908e6c711f7ce721ca605d67867b5e26ccb",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -469,14 +469,14 @@
         "y": 18,
         "width": 444,
         "height": 220,
-        "opaquePixels": 73989
+        "opaquePixels": 79664
       }
     },
     {
       "assetId": "furniture.delivery.dock_gate.closed",
       "image": "furniture.delivery.dock_gate.closed.png",
-      "sha256": "670e4def64736a6480a37d3384fc2a5df151855120bbcc6eadce1893df932afb",
-      "pixelSha256": "404e41cd90ccdddc0f53e7c21e92b46f73c5b03cc9f86e59eebbbc20f1f94339",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
+      "pixelSha256": "e5f3c407c85db85aca1c40f61c0a6545361d75ba7ed8aa740215973c89919d35",
       "footprintTiles": {
         "width": 3.0,
         "height": 1.0
@@ -502,8 +502,8 @@
     {
       "assetId": "furniture.dining.table.wooden",
       "image": "furniture.dining.table.wooden.png",
-      "sha256": "d6ae4d7dffb3e28d7d438aa73ec4cee7b128010aa084f44e83563d67c884b399",
-      "pixelSha256": "5e36e93b33188d69cce2217d76d7ba748d795261baecf777567dd06415b07f30",
+      "sha256": "66e5668df4c847f2ba32687b704257bdfc74ace28286ea873232cb79fc98ed08",
+      "pixelSha256": "3d9cb42c9d514962bcf3104d9b89a15c10b2c719fb6500f464bca360c6a8594a",
       "footprintTiles": {
         "width": 3.0,
         "height": 2.0
@@ -529,8 +529,8 @@
     {
       "assetId": "furniture.kitchen.fridge",
       "image": "furniture.kitchen.fridge.png",
-      "sha256": "9b96b214b6feccd2771155b6c9a55ac9d99496d6238d7ceaff57d3c227c4bc09",
-      "pixelSha256": "857315a979d5b77e78f04357465071b50471b3585042200551918ddc23ebe1cb",
+      "sha256": "a0a128f087d4ad2d248380572d539dffaad4e93dc74bea9ab08f0ca5d67c4c39",
+      "pixelSha256": "a0c65bd5f40f65848a89aa200db27c80365cf2ed328c12e8b7a57e6cf1a9f571",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -556,8 +556,8 @@
     {
       "assetId": "furniture.kitchen.prep_counter",
       "image": "furniture.kitchen.prep_counter.png",
-      "sha256": "60155f9441033f4f0fb90af2d53ab9bc9fa37ef9861b0a82dbc65f90f32ca013",
-      "pixelSha256": "63f2d298fe644b9bbad5bca54723ee957118dfc7195866f53168867149a09a27",
+      "sha256": "6e8c2104ed63df08a2b522bffedfcf9826cec5a339cc4785e110e30fcf993b63",
+      "pixelSha256": "947d68bb65cc13f94e46dc3fba92acbc27d942f464e3db6315abca0258f3731d",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -610,8 +610,8 @@
     {
       "assetId": "furniture.laundry.washing_machine.twin",
       "image": "furniture.laundry.washing_machine.twin.png",
-      "sha256": "e04bfc5dea754cb94f5408e64243048e2228748a096e375f46a302d92e9575be",
-      "pixelSha256": "3746eaa452756372e8ed716bf4146c87c80e2638ba737b8a85877b1eafd6ec4f",
+      "sha256": "6c7893d6cb0be8bf46352cd0308af86fb281d6824f9cd47d65e200ba32f942d2",
+      "pixelSha256": "a0f97643c409670385f41bb57b312800d289371c917be7a18bf3dd455162ca24",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -637,8 +637,8 @@
     {
       "assetId": "furniture.library.bookshelf",
       "image": "furniture.library.bookshelf.png",
-      "sha256": "71ed21db2df62db0ac30ed37f50e3ab2200caf77bd59566786f5f2511a3c5814",
-      "pixelSha256": "4125dd619252af9b88506e027ed4385b4e4394e0db5643b14ac6f9018d9d5b17",
+      "sha256": "6859e73c42d86f661aed9150017198466961b849e845e686f523f495722e3f05",
+      "pixelSha256": "8c2afa5caf49cf3326efaa6cdd2a04425f0c1df3919ca33eeea252d2a2c2abf9",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -654,18 +654,18 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 33,
+        "x": 35,
         "y": 19,
-        "width": 446,
+        "width": 442,
         "height": 218,
-        "opaquePixels": 97064
+        "opaquePixels": 96226
       }
     },
     {
       "assetId": "furniture.medical.bed.single",
       "image": "furniture.medical.bed.single.png",
-      "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",
-      "pixelSha256": "8b18e7610a7820bdd432769cefb791a82a1e7b0a5648cd3e9f8ca54ac15ecb50",
+      "sha256": "f6b90e527aaf82cfa9232befd24687dd508d050e7cae7a82bfca0ddcc01a1aa5",
+      "pixelSha256": "33f1f0c169e2d3db97449c1c0595527d944c45d8b22bac0ed42d95e41f18b6db",
       "footprintTiles": {
         "width": 1.0,
         "height": 2.0
@@ -718,8 +718,8 @@
     {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
-      "sha256": "3914da57eb2a36129dc48249ac3b0508a2ba952bbd9c31919fdb3c03c2b8bad7",
-      "pixelSha256": "75ec61dedc4082a1bf55e154d8aae62aca84609a61b77e58fc0eacc35f763747",
+      "sha256": "a7f51480a957ba348af55a8a2905973f06df47b6a954c8d7cef6f95e4fa5f8d8",
+      "pixelSha256": "27f796cedf182c745db526384a738cf9d8507e17e82c6f0bde660cc505d3fa80",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -772,8 +772,8 @@
     {
       "assetId": "furniture.security.surveillance_console",
       "image": "furniture.security.surveillance_console.png",
-      "sha256": "ac5f77ba35eb5ecb2bf1cf1b321a8bc5848625c81db6886db54cf4016f5ddeb9",
-      "pixelSha256": "1e28291f2bcf992cc58fc879033f62bb0f4a656541b1c7c21926abb5c5983e1a",
+      "sha256": "47a348f72b3bfc89e8d8ed0d8f3660ff9a5e12aea07cf233b2526088f96a8b16",
+      "pixelSha256": "e26464f9c4470a75c550d515da71a812e291375677942d1097ecb9a6d9ece824",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -799,8 +799,8 @@
     {
       "assetId": "furniture.storage.rack.wooden",
       "image": "furniture.storage.rack.wooden.png",
-      "sha256": "01f0d0b4745c7543f055a7a009174f55b9b1a333aef66cdab04cd93a4cf200ec",
-      "pixelSha256": "ffa9148f12cb361a0d0a73c2187cc41ea8fb87475f4055bcbe42800e58c5d994",
+      "sha256": "43bb88659bec3f6e79393bdac3aaf3fc4df78d803301a1f3ccb5514e419f3bc4",
+      "pixelSha256": "839d0693b483553434bed8b42a9c2a4ed8417d51d4feabf97a2455738b760b0a",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -826,8 +826,8 @@
     {
       "assetId": "furniture.utility.control_panel",
       "image": "furniture.utility.control_panel.png",
-      "sha256": "ac3a8e152b66662520579956c01a49602f14cccd20ffe07423b9868fa57a9305",
-      "pixelSha256": "9f695c41aec39b44c48adec37b54eb236331d94dcef3ac7afb855264d44b76c5",
+      "sha256": "e9554be244978f3588de4e4cecfa33ab37e4ef918debd6b39d5d0de1c587ed2d",
+      "pixelSha256": "1ce84cd9a49e95a4a581997e2775d7afe0afc7ef18eaf798b4f4909ed6ad84fe",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
@@ -1206,23 +1206,23 @@
     {
       "assetId": "door.interior.face",
       "image": "door.interior.face.png",
-      "sha256": "a9369837739344a3318fbe4d3d8889c289f27e921d01be312f02c5ecf5eeb125",
-      "pixelSha256": "48209dde869e9ec4326cbab3bbd569aabbb0e37a9bc47bfd6e258852de07551a",
+      "sha256": "42f3b6c34aa408b28bc1ea63830300d52e2b69afbf0e23ec712de9f1d06110d3",
+      "pixelSha256": "0b364fecc2f440af8155a9a0f70b090e3f50768e646bb0360bcd4df74e67317f",
       "footprintTiles": {
-        "width": 1,
-        "height": 1
+        "width": 1.0,
+        "height": 1.0
       },
       "frameTiles": {
-        "width": 1,
-        "height": 1
+        "width": 1.0,
+        "height": 1.0
       },
-      "marginFraction": 0,
+      "marginFraction": 0.0,
       "overhangsFootprint": false,
       "sizePx": {
         "width": 256,
         "height": 256
       },
-      "frameAspectDriftFromFootprint": 0,
+      "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
         "x": 0,
         "y": 0,

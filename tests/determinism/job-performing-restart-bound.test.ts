@@ -311,24 +311,19 @@ describe('an errand saved mid-leg: the measured cost of a restore', () => {
     }
   });
 
-  it('costs at most one reconsideration cycle when the save is taken mid-walk', () => {
+  it('costs no reconsideration cycle when a new save is taken mid-walk', () => {
     const continuous = completionTick(buildScenario());
     const walking = ticksCarryingIn('travelling');
     expect(walking.length).toBeGreaterThan(0);
 
-    let anyDelay = false;
     for (const captureTick of sample(walking)) {
       const restored = restoreAt(captureTick);
       const completed = completionTick(restored);
       expect(completed, `captured mid-walk at tick ${captureTick}`).toBeGreaterThan(0);
       const delay = completed - continuous;
       expect(delay, `captured mid-walk at tick ${captureTick}`).toBeGreaterThanOrEqual(0);
-      expect(delay, `captured mid-walk at tick ${captureTick}`).toBeLessThanOrEqual(RESTORED_TRAVEL_BOUND_TICKS);
-      if (delay > 0) anyDelay = true;
+      expect(delay, `captured mid-walk at tick ${captureTick}`).toBe(0);
     }
-    // The bound is only interesting if some capture actually pays it: a run
-    // where every mid-walk save cost zero would pass the bound vacuously.
-    expect(anyDelay, 'no sampled mid-walk capture cost anything, so the bound above is untested').toBe(true);
   });
 
   it('gives the goods back to nobody and loses none of them, whichever phase the save caught', () => {
