@@ -145,7 +145,7 @@ finding.
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
    (`src/simulation/security/deployment-system.ts:328`-`:348`,
-   `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
+   `assignUnassignedGuards`, `const sector = this.sectors.getDefinition(sectorId);`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
 2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
@@ -155,7 +155,7 @@ finding.
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
-   (`src/simulation/security/post-eligibility.ts:110`).
+   (`src/simulation/security/post-eligibility.ts:110`, `claimableGuardIds`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
    (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
@@ -190,10 +190,8 @@ nothing about the unassigned axis. One level down settles it.
 ### What the player is told
 
 `describeStaffCoverage` (`src/ui/hud/staff-panel.ts:461`-`:520`,
-`describeStaffCoverage`) has three
-
+`describeStaffCoverage`, `export function describeStaffCoverage`) has three
 > `export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {`
-
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`
 (`src/ui/simulation-staff-coverage.ts`, `staffCoverageFromProjection`, whose own docblock says
