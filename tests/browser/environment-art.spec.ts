@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -72,6 +72,43 @@ test.describe('the environment artwork', () => {
     // The key carries the content-hashed filename of every sheet it was cut
     // from, so it cannot drift from the art (ADR-0014's runtime-access rule).
     expect(atlas!.textureKey).toContain('/game-content/source-art/');
+  });
+
+  test('the cell bed pillow keeps a raised cotton centre visible at game scale', async ({ page }) => {
+    await openHarness(page);
+    const pillow = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.bed');
+      if (frame === undefined) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 60),
+        edge: harness.atlasPixel(frame.x + 36, frame.y + 60),
+      };
+    });
+    expect(pillow?.size).toEqual([128, 256]);
+    expect(pillow?.centre?.[3]).toBe(255);
+    expect(pillow?.edge?.[3]).toBe(255);
+    expect(channelDistance(pillow!.centre!, pillow!.edge!)).toBeGreaterThan(5);
+  });
+
+  test('the refined bed sits beside the toilet inside a furnished Full HD cell', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'bedVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 3.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.bed')).toEqual([
+      expect.objectContaining({ x: 3 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.toilet')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Cell');
+    if (process.env['LOCKSTATE_CAPTURE_BED_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-cell-bed-1920x1080.png') });
+    }
   });
 
   test('the packed frames hold decoded photographic pixels, not a Git LFS pointer', async ({ page }) => {

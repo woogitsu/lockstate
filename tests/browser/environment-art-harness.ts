@@ -180,6 +180,7 @@ function buildFrame(): RenderFrame {
   const includeClassroomFloor = new URLSearchParams(window.location.search).has('classroomFloor');
   const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
   const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
+  const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -247,7 +248,7 @@ function buildFrame(): RenderFrame {
   const room = defaultRoomContentRegistry.getById('room.cell');
   if (room === undefined) throw new Error('The cell room is missing from the catalog.');
 
-  for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY; tileY += 1) {
+  for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY + (includeBedVisual ? 1 : 0); tileY += 1) {
     for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
     }
@@ -337,6 +338,17 @@ function buildFrame(): RenderFrame {
     { x: tileCoordinate(FIXTURE.westWallTileX), y: tileCoordinate(FIXTURE.westWallTileY) },
     WALL_EDGE_NUMERIC_ID,
   );
+  if (includeBedVisual) {
+    // A small furnished cell, retaining the ordinary zoning and object IDs.
+    // This route is a visual fixture only; the default test map is untouched.
+    for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.zonedMaxTileY + 2) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.zonedMinTileY + 1; tileY <= FIXTURE.zonedMaxTileY + 1; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.zonedMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.zonedMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+    }
+  }
 
   /*
    * One finished wall order, on a tile whose north edge the world already
@@ -366,8 +378,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-bed',
       definitionId: 'bed-wooden',
-      tileX: FIXTURE.bedTileX,
-      tileY: FIXTURE.bedTileY,
+      tileX: includeBedVisual ? 3 : FIXTURE.bedTileX,
+      tileY: includeBedVisual ? 3 : FIXTURE.bedTileY,
       phase: 'built',
     },
     /*
@@ -380,8 +392,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-toilet',
       definitionId: 'toilet-brick',
-      tileX: FIXTURE.toiletTileX,
-      tileY: FIXTURE.toiletTileY,
+      tileX: includeBedVisual ? 5 : FIXTURE.toiletTileX,
+      tileY: includeBedVisual ? 3 : FIXTURE.toiletTileY,
       phase: 'built',
     },
     /*
@@ -590,7 +602,8 @@ const scene = new WorldScene({
     || new URLSearchParams(window.location.search).has('commonRoomFloor')
     || new URLSearchParams(window.location.search).has('classroomFloor')
     || new URLSearchParams(window.location.search).has('securityFloor')
-    || new URLSearchParams(window.location.search).has('staffFloor') ? {
+    || new URLSearchParams(window.location.search).has('staffFloor')
+    || new URLSearchParams(window.location.search).has('bedVisual') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

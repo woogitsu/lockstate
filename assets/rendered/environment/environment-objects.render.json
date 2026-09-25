@@ -340,8 +340,8 @@
     {
       "assetId": "furniture.cell.bed.single.variants",
       "image": "furniture.cell.bed.single.variants.png",
-      "sha256": "7d0ecb856553e46b9fe9a847000e9b761d920ac0ebaa5e95cb43d11b571e6967",
-      "pixelSha256": "cff74a4de47a789fff14fa5f411847302019937066adf9e6ab3e24766cd1390b",
+      "sha256": "2ea305e52adfca7fc17155d9f3c9098571b55fbc57650ad8ff7a88c865e1c97f",
+      "pixelSha256": "26bb3153becbffc82bd0caee304c96b2146164e525b924342590a2529c4231f5",
       "footprintTiles": {
         "width": 1.0,
         "height": 2.0

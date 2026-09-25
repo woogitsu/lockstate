@@ -549,6 +549,15 @@ def cell_bed_fabric_material(filename, label, base_color):
     nodes_links = item.node_tree.links
     nodes_links.new(coords.outputs["Generated"], texture.inputs["Vector"])
     nodes_links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if filename.startswith("cell-bed-"):
+        # The image's broad weave is visible in the concept but otherwise
+        # flattens under the orthographic game camera. Use the same packed
+        # texture for modest surface normals, with no extra asset or UV drift.
+        bump = nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value = 0.46
+        bump.inputs["Distance"].default_value = 0.035
+        nodes_links.new(texture.outputs["Color"], bump.inputs["Height"])
+        nodes_links.new(bump.outputs["Normal"], shader.inputs["Normal"])
     return item
 
 
@@ -606,6 +615,67 @@ def box(collection, root, name, offset, size, surface, bevel=0.03):
     item.parent = root
     item.matrix_parent_inverse = root.matrix_world.inverted()
     move_to_collection(item, collection)
+    return item
+
+
+def cloth_surface(collection, root, name, width, length, centre_y, base_z, amplitude, surface):
+    """A low curved cloth sheet whose broad folds shade softly from overhead."""
+    columns, rows = 12, 28
+    vertices = []
+    for row in range(rows + 1):
+        v = row / rows
+        y = centre_y + (v - 0.5) * length
+        for column in range(columns + 1):
+            u = column / columns
+            x = (u - 0.5) * width
+            envelope = math.sin(math.pi * u) * math.sin(math.pi * v)
+            wave = (0.70 * math.sin(5.2 * math.pi * v + 0.65 * u)
+                    + 0.30 * math.sin(9.4 * math.pi * v - 0.85 * u))
+            vertices.append((x, y, base_z + amplitude * envelope * wave))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
+def cloth_crease(collection, root, name, centre_y, phase, surface):
+    """Low, tapered fabric folds which remain legible in the game's top view."""
+    columns, rows = 30, 10
+    vertices = []
+    for row in range(rows + 1):
+        across = row / rows
+        for column in range(columns + 1):
+            u = column / columns
+            x = (u - 0.5) * 0.68
+            y = centre_y + 0.045 * (across - 0.5) + 0.017 * math.sin(math.pi * u * 1.3 + phase)
+            taper = math.sin(math.pi * u) ** 0.8
+            crest = (math.sin(math.pi * across) ** 2.2) * taper
+            vertices.append((x, y, 0.683 + 0.040 * crest))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
     return item
 
 
@@ -979,11 +1049,26 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Lower end rail.{y}", (0, y, 0.44), (0.82, 0.05, 0.055), "steel", 0.020)
         box(collection, root, "Mattress edge band", (0, 0, 0.54), (0.76, 1.68, 0.21), "linen", 0.045)
         box(collection, root, "Woven grey mattress cover", (0, 0, 0.658), (0.73, 1.65, 0.04), "bed_mattress", 0.024)
+        cloth_surface(collection, root, "Softly rumpled mattress top", 0.70, 1.53,
+            0, 0.681, 0.018, "bed_mattress")
+        for fold_index, fold_y in enumerate((-0.30, -0.08, 0.15)):
+            cloth_crease(collection, root, f"Mattress fabric fold.{fold_index}",
+                fold_y, fold_index, "bed_mattress")
         box(collection, root, "Pillow shadow", (0, -0.57, 0.688), (0.62, 0.34, 0.035), "shade", 0.025)
         box(collection, root, "Cream pillow", (0, -0.57, 0.737), (0.60, 0.32, 0.09), "light", 0.06)
+        box(collection, root, "Raised pillow cotton centre", (0, -0.57, 0.787),
+            (0.52, 0.25, 0.018), "bed_pillow_top", 0.055)
+        for x in (-0.245, 0.245):
+            box(collection, root, f"Pillow cover side seam.{x}",
+                (x, -0.57, 0.795), (0.008, 0.19, 0.003), "bed_pillow_seam", 0.002)
+        for y in (-0.665, -0.475):
+            box(collection, root, f"Pillow cover end seam.{y}",
+                (0, y, 0.795), (0.44, 0.006, 0.003), "bed_pillow_seam", 0.002)
         box(collection, root, "Folded orange blanket base", (0, 0.52, 0.694), (0.74, 0.52, 0.055), "bed_blanket", 0.025)
         box(collection, root, "Orange blanket fold", (0, 0.71, 0.733), (0.74, 0.09, 0.035), "bed_blanket", 0.018)
         box(collection, root, "Blanket fold shadow", (0, 0.76, 0.716), (0.70, 0.018, 0.012), "shade", 0.003)
+        cloth_surface(collection, root, "Softly rumpled orange blanket top", 0.70, 0.44,
+            0.49, 0.724, 0.014, "bed_blanket")
     elif asset_id == "furniture.storage.rack.wooden":
         # The multiview concept in assets/source/concepts/ shows open shelf
         # gaps, worn timber and bolted steel corners. From above the shelf
@@ -1878,6 +1963,8 @@ def main():
     MATERIALS["paper_orange"] = material("Desk folder terracotta", (0.65, 0.31, 0.16, 1), 0.88)
     MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
     MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
+    MATERIALS["bed_pillow_top"] = material("Pillow raised cotton centre", (0.84, 0.82, 0.76, 1), 0.89)
+    MATERIALS["bed_pillow_seam"] = material("Pillow cover stitched seam", (0.58, 0.57, 0.53, 1), 0.92)
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
     MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
     MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)

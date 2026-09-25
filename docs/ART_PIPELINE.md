@@ -446,6 +446,16 @@ against cream does not. So the render is not better *art*; it is better *sprite*
 at this scale, and it is the only option at all for an object whose sheet holds
 no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
 
+**2026-09-25 bed revision, without rewriting the earlier comparison:** the
+cell bed keeps its 1×2 frame and existing grey/orange colour relationship, but
+its Blender geometry now gives the mattress and blanket gently undulating
+cloth surfaces, three low mattress folds, and the pillow a raised cotton centre
+with cover seams. These
+features are deliberately broad enough to survive the 128×256 game
+sprite while leaving the bed's rail silhouette and cell furniture footprint
+unchanged. The older side-by-side image above remains evidence for the 2026-09-06
+model, not an assessment of this revision.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
