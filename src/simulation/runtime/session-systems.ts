@@ -987,12 +987,10 @@ export function restoreSessionSystems(
    * to run after `prisoners.loadSnapshot` above because the predicate reads the
    * restored population.
    *
-   * A carrier restored mid-errand needs nothing here: `loadSnapshot` dropped
-   * every `travelling` prisoner to `idle`, the carry is still in their
-   * `actionIndex`, and their own active job makes it providable again -- so the
-   * next reconsideration cycle re-selects the carry and
-   * `ActionSystem.resolveTargetInstance` resumes the leg the job records, from
-   * the tile the save carried. What needs closing is the *other* direction: a
+   * A carrier restored mid-errand needs nothing here. A current save restores
+   * their walk and pending route; an older save without navigation work resets
+   * the traveller to `idle`, and the active job remains providable on the next
+   * reconsideration cycle. What needs closing is the *other* direction: a
    * job assigned to an id that no longer names a living prisoner would sit
    * `'assigned'` for the rest of the session holding a reservation nothing
    * would release. `'carrier-departed'` is the reason it is failed with, and
