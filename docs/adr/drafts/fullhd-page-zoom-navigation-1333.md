@@ -1,6 +1,7 @@
 # Draft: Navigation when Full HD is enlarged (#1333)
 
-**Status:** owner decision required. No ADR number is reserved.
+**Status:** owner selected option 1 on 2026-09-25; implementation on this
+branch. No ADR number is reserved.
 
 ## Scope and measured failure
 
@@ -56,3 +57,26 @@ After a choice, implementation must pass a focused red-then-green browser
 test at 1920×1080, page zoom 200%, interface scales 175% and 200%, and the
 existing 36-combination ratchet. The art bytes should be materialised for the
 final visual review.
+
+The owner selected the clickable option **"Przycisk otwierający szufladę sześciu
+zakładek (zalecane)"** on 2026-09-25. This is the weaker provenance of a
+choice written by the agent, rather than words independently typed by the owner.
+The other options offered were a horizontally scrollable row and scrolling the
+whole HUD column. Implement the selected drawer with six reachable tabs, an
+explicit close control, Escape support, and focus returned to the trigger.
+
+## Implementation check
+
+The closed control is labelled with the existing localized “show sections”
+message. The open two-column drawer is shown in the
+[200% capture](../../research/evidence/2026-09-25-fullhd-page-zoom-drawer-200.png).
+The screenshot comes from the test checkout; its world art failed to load, so it
+only supports a judgment about HUD geometry and navigation. The selected tab,
+Escape and the trigger all close the drawer and return keyboard focus to the
+trigger. The save area scrolls inside its own rail at these enlarged sizes.
+
+The new `fullhd-zoom-navigation-drawer.spec.ts` passed at both 175% and 200%
+interface scale. The existing 36-combination zoom ratchet remained at 12/36
+known failures (ceiling 12), and seven chrome tests passed. TypeScript and the
+40 HUD layout unit tests passed. CI and a visual run with materialised art are
+still required before the branch can be merged.

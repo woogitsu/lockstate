@@ -213,7 +213,7 @@ export function isPhoneLayout(viewport: LayoutViewport): boolean {
 }
 
 /** Where the five sections are laid out. */
-export type NavigationPlacement = 'rail' | 'bar';
+export type NavigationPlacement = 'rail' | 'bar' | 'drawer';
 
 /**
  * Whether the navigation is the left rail the direction asks for, or the bottom
@@ -242,7 +242,11 @@ export type NavigationPlacement = 'rail' | 'bar';
 export function navigationPlacement(viewport: LayoutViewport, reservedHeight: number): NavigationPlacement {
   if (isPhoneLayout(viewport)) return 'bar';
   const available = viewport.height - reservedHeight - NAVIGATION_RAIL_SLACK_PX;
-  return available >= navigationRailBlock(viewport) ? 'rail' : 'bar';
+  if (available >= navigationRailBlock(viewport)) return 'rail';
+  // When the rail cannot fit and the remaining height is less than five tap
+  // targets, a wrapped bar takes too much of the map and crushes the inspector.
+  // At 1920x1080 with 200% page zoom this is the 960x540 layout viewport.
+  return available < 5 * 44 * viewport.uiScale ? 'drawer' : 'bar';
 }
 
 /**
@@ -408,7 +412,7 @@ export function resolveHudLayout(
   const navSize = resolveLayoutSize('navigation', settings, viewport, 0);
   // A folded navigation has taken its width back, so the inspector may have it
   // -- and so has one that is laid out as a bottom bar rather than a column.
-  const navExtent = navCollapsed || placement === 'bar' ? 0 : navSize;
+  const navExtent = navCollapsed || placement !== 'rail' ? 0 : navSize;
   const inspectorCollapsed = isRegionCollapsed(settings, 'inspector');
   const inspectorSize = resolveLayoutSize('inspector', settings, viewport, navExtent);
   return {

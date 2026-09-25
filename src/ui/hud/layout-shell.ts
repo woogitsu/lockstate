@@ -197,6 +197,8 @@ export interface HudLayoutShell {
   refresh(): void;
   setSettings(settings: LayoutSettings): void;
   getSettings(): LayoutSettings;
+  /** Close the temporary navigation drawer after choosing a section. */
+  closeNavigationDrawer(): void;
   /** The clock readout inside the menu, which is what keeps it reachable with the strip folded. */
   setClock(clock: HudClockViewModel): void;
   destroy(): void;
@@ -282,6 +284,42 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     inspector: options.inspector,
     metrics: options.metrics,
   };
+
+  let drawerOpen = false;
+  const drawerButton = createIconButton({
+    icon: 'overview',
+    label: t(HUD_MESSAGE_KEY.layoutShowNavigation),
+    variant: 'bordered',
+    size: 'sm',
+    onActivate: () => setDrawerOpen(!drawerOpen),
+  });
+  drawerButton.element.classList.add('hud-navigation-drawer__trigger');
+  const drawerButtonText = element('span', { text: t(HUD_MESSAGE_KEY.layoutShowNavigation) });
+  drawerButton.element.append(drawerButtonText);
+  drawerButton.element.setAttribute('aria-expanded', 'false');
+  drawerButton.element.setAttribute('aria-controls', 'hud-navigation-sections');
+  options.navigation.container.prepend(drawerButton.element);
+
+  function setDrawerOpen(open: boolean): void {
+    drawerOpen = open && geometry.navigationPlacement === 'drawer' && !geometry.navigation.collapsed;
+    root.dataset['navigationDrawerOpen'] = drawerOpen ? 'true' : 'false';
+    drawerButton.element.setAttribute('aria-expanded', drawerOpen ? 'true' : 'false');
+    drawerButton.setLabel(t(drawerOpen ? HUD_MESSAGE_KEY.layoutHideNavigation : HUD_MESSAGE_KEY.layoutShowNavigation));
+    drawerButtonText.textContent = t(drawerOpen ? HUD_MESSAGE_KEY.layoutHideNavigation : HUD_MESSAGE_KEY.layoutShowNavigation);
+    if (geometry.navigationPlacement === 'drawer') {
+      for (const node of regions.navigation.content) node.hidden = geometry.navigation.collapsed || !drawerOpen;
+    }
+    if (!drawerOpen && regions.navigation.content.some((node) => node.contains(document.activeElement))) {
+      handOffFocus(drawerButton.element);
+    }
+  }
+
+  const onDrawerKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || !drawerOpen) return;
+    event.preventDefault();
+    setDrawerOpen(false);
+  };
+  options.navigation.container.addEventListener('keydown', onDrawerKeyDown);
 
   /**
    * The Layout menu's own drawer, built before the arrows because one of them
@@ -651,6 +689,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     const viewport = measureViewport();
     const previousPhone = geometry.phone;
     geometry = resolveHudLayout(settings, viewport, measureReserved());
+    if (geometry.navigationPlacement !== 'drawer' || geometry.navigation.collapsed) drawerOpen = false;
 
     if (geometry.phone !== previousPhone) {
       inspectorSeparator.destroy();
@@ -672,12 +711,16 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     root.style.setProperty('--hud-inspector-height', `${lengths.inspectorHeight}px`);
     root.dataset['layoutTier'] = geometry.phone ? 'phone' : 'desktop';
     root.dataset['layoutNavigationPlacement'] = geometry.navigationPlacement;
+    root.dataset['navigationDrawerOpen'] = drawerOpen ? 'true' : 'false';
+    drawerButton.element.setAttribute('aria-expanded', drawerOpen ? 'true' : 'false');
     root.dataset['layoutMapOnly'] = isMapOnly(settings) ? 'true' : 'false';
 
     for (const region of ['navigation', 'inspector', 'metrics'] as const) {
       const collapsed = isRegionCollapsed(settings, region);
       root.dataset[`layout${region[0]!.toUpperCase()}${region.slice(1)}`] = collapsed ? 'collapsed' : 'open';
-      for (const node of regions[region].content) node.hidden = collapsed;
+      for (const node of regions[region].content) {
+        node.hidden = collapsed || (region === 'navigation' && geometry.navigationPlacement === 'drawer' && !drawerOpen);
+      }
       const toggle = toggles[region];
       toggle.setLabel(t(collapsed ? REGION_MESSAGES[region].show : REGION_MESSAGES[region].hide));
       toggle.element.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
@@ -686,7 +729,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
 
     navigationSeparator.setRange(geometry.navigation.range);
     navigationSeparator.setSize(geometry.navigation.size);
-    navigationSeparator.element.hidden = geometry.navigationPlacement === 'bar' || geometry.navigation.collapsed;
+    navigationSeparator.element.hidden = geometry.navigationPlacement !== 'rail' || geometry.navigation.collapsed;
     inspectorSeparator.setRange(geometry.inspector.range);
     inspectorSeparator.setSize(geometry.inspector.size);
     inspectorSeparator.element.hidden = geometry.inspector.collapsed;
@@ -739,6 +782,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   return {
     controls: [
       toggles.navigation.element,
+      drawerButton.element,
       toggles.inspector.element,
       toggles.metrics.element,
       menuButton.element,
@@ -749,6 +793,9 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     preferencesSlot,
     refresh,
     getSettings: () => settings,
+    closeNavigationDrawer(): void {
+      if (geometry.navigationPlacement === 'drawer') setDrawerOpen(false);
+    },
     setSettings(next: LayoutSettings): void {
       settings = next;
       refresh();
@@ -773,6 +820,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     destroy(): void {
       window.removeEventListener('resize', onWindowResize);
       menu.removeEventListener('keydown', onMenuKeyDown);
+      options.navigation.container.removeEventListener('keydown', onDrawerKeyDown);
       navigationSeparator.destroy();
       inspectorSeparator.destroy();
     },

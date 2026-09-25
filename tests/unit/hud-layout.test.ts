@@ -172,16 +172,21 @@ describe('where the five sections are laid out', () => {
     expect(navigationPlacement({ width: 1280, height: height - 1, uiScale: 1 }, strip)).toBe('bar');
   });
 
-  it('hands the sections back to the bar when the interface scale takes the room', () => {
-    // 900x600 at 200 %: the strip alone is 176px, and five tabs are 588.
-    expect(navigationPlacement({ width: 900, height: 600, uiScale: 2 }, 176)).toBe('bar');
+  it('hands the sections to the drawer when enlarged tabs would crush the rail', () => {
+    // 900x600 at 200 %: the strip alone is 176px, and six tabs exceed the rail.
+    expect(navigationPlacement({ width: 900, height: 600, uiScale: 2 }, 176)).toBe('drawer');
     // The same window at 100 %, where they fit comfortably.
     expect(navigationPlacement({ width: 900, height: 600, uiScale: 1 }, 84)).toBe('rail');
   });
 
-  it('is what `resolveHudLayout` reports, and a bar takes no width from the map', () => {
+  it('uses a drawer when Full HD page zoom leaves no height for a wrapped bar', () => {
+    expect(navigationPlacement({ width: 960, height: 540, uiScale: 1.75 }, 185)).toBe('drawer');
+    expect(navigationPlacement({ width: 960, height: 540, uiScale: 2 }, 206)).toBe('drawer');
+  });
+
+  it('is what `resolveHudLayout` reports, and a drawer takes no width from the map', () => {
     const geometry = resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, { width: 900, height: 600, uiScale: 2 }, 176);
-    expect(geometry.navigationPlacement).toBe('bar');
+    expect(geometry.navigationPlacement).toBe('drawer');
     expect(geometry.navigationExtent).toBe(0);
     // ...which the inspector is then free to spend.
     expect(geometry.inspector.range.max).toBe(900 - MAP_WIDTH_RESERVE_PX);
