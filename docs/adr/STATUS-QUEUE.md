@@ -793,8 +793,8 @@ intersection for this anchor would have handed a reader eleven files and not
 this one.
 
 
-Re-anchored at `main` @ `5a8e7562` (**v0.0.782**) by the delta method,
-from `9e6361c9`. This is the release commit after #1445, the last
+Re-anchored at `main` @ `42fc9649` (**v0.0.784**) by the delta method,
+from `9e6361c9`. This is the current release commit after #1394, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
 pass: one landing below the ten-landing budget and sixty-four commits below
