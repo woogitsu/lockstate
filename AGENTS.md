@@ -1519,14 +1519,13 @@ open. Offered figures, they chose:
 
 ("100 000 (recommended).") That is the waste-multiplier measurement's
 recommendation: the smallest balance of those measured that keeps the
-drag-wall trap outside ordinary drawing, at about four screenfuls. **It sets a
-number and moves none here.** `TREASURY_STARTING_BALANCE_MINOR_UNITS` is still
-`25_000` at `src/simulation/economy/treasury.ts:203`. **Its docblock at
-`:185-188` says the owner decided *"to keep 25,000"*, and that sentence is
-false.** It was already false after 2026-08-30. It is left alone on purpose, so
-that an implementation agent changes the constant and its docblock in one
-commit. The overdraft floor at `:295` derives from the constant and moves with
-it (#976).
+drag-wall trap outside ordinary drawing, at about four screenfuls. **At the
+time of the ruling it set a number and moved none.**
+`TREASURY_STARTING_BALANCE_MINOR_UNITS` was `25_000` in
+`src/simulation/economy/treasury.ts`. Its docblock claimed the owner had
+decided *"to keep 25,000"*; that sentence was false after 2026-08-30. The
+constant and docblock were left for one implementation commit. The overdraft
+floor derives from the constant and moves with it (#976).
 
 **Implementation, 2026-09-25 (#641):** The opening balance is now `100_000`.
 The facility still derives as one tenth of the opening balance (#976), so a
