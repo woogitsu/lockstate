@@ -60,6 +60,11 @@ describe('prisonSlotMetadataSchema: accepts every record this repository has eve
     expect(prisonSlotMetadataSchema.safeParse(freshSlotRecord()).success).toBe(true);
   });
 
+  it('accepts the optional stable default-name marker and rejects non-marker text', () => {
+    expect(prisonSlotMetadataSchema.safeParse({ ...freshSlotRecord(), usesDefaultName: true }).success).toBe(true);
+    expect(prisonSlotMetadataSchema.safeParse({ ...freshSlotRecord(), usesDefaultName: 'Nowe więzienie' }).success).toBe(false);
+  });
+
   it('accepts the same record with the pointer key absent rather than undefined', () => {
     const { currentGenerationId: _absent, ...withoutKey } = freshSlotRecord();
     expect(prisonSlotMetadataSchema.safeParse(withoutKey).success).toBe(true);

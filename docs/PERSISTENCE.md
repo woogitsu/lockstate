@@ -1964,6 +1964,17 @@ Database `lockstate-saves`, version 2, three object stores.
   verbatim, every generation `generationIds` named, `deletedAt`, and the
   `expiresAt` the undo closes at.
 
+New slots created through the save panel carry `usesDefaultName: true` in
+their slot metadata and no `displayName`. The panel resolves that stable
+marker through `save.default-prison-name` in the active locale when it draws
+the live row, deletion confirmation, tombstone row or restore status. The
+tombstone retains the marker with the slot. Older slots without the marker
+keep their stored `displayName` verbatim, even when it happens to be the old
+English or Polish default; their provenance cannot be inferred from the text.
+An absent marker also retains the historical `prisonId` fallback. This is an
+optional metadata field, so the IndexedDB store version and save-envelope
+version stay unchanged; the strict slot decoder accepts old records as before.
+
 #### The `tombstones` store, and why deletion is a move (ADR 0114)
 
 `PrisonSaveRepository.delete` no longer destroys a prison. It reads the slot and

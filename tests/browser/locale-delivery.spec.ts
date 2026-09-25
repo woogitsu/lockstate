@@ -40,14 +40,80 @@ const POLISH_SHELL_LABEL = 'Aplikacja gry Lockstate';
 /** The dev server's URL for the chunk `src/main.ts` registers for `pl`. */
 const PL_CHUNK_URL = '**/services/localization/pl-catalog.ts*';
 
+test.describe('a browser that asks for English', () => {
+  test.use({ locale: 'en-US' });
+
+  test('resolves the stable default through live, deleted and restored save rows', async ({ page }) => {
+    await page.goto(APP_URL);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toHaveText('New Prison (1 gen)');
+    await page.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(page.locator('[data-delete-confirm] .save-panel__item-label')).toContainText('Delete New Prison?');
+    await page.getByRole('button', { name: 'Delete permanently' }).click();
+    await expect(page.locator('[data-deleted-prison] .save-panel__item-label')).toContainText('New Prison — deleted.');
+    await page.getByRole('button', { name: 'Bring it back' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toHaveText('New Prison (1 gen)');
+  });
+});
+
 test.describe('a browser that asks for Polish', () => {
   test.use({ locale: 'pl-PL' });
+
+  test('keeps literal legacy and custom names unchanged', async ({ page }) => {
+    await page.goto(APP_URL);
+    await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
+    await page.evaluate(async () => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('lockstate-saves');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const transaction = database.transaction('prisons', 'readwrite');
+      for (const [prisonId, displayName] of [['legacy-default', 'New Prison'], ['custom', 'Cell Block A']]) {
+        transaction.objectStore('prisons').put({
+          prisonId, gameVersion: 'lockstate-0.0.0', displayName,
+          currentGenerationId: undefined, generationIds: [], createdAt: 1_000, updatedAt: 1_000,
+        });
+      }
+      await new Promise<void>((resolve, reject) => {
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+      database.close();
+    });
+    await page.reload();
+    await expect(page.locator('.save-panel__item-label', { hasText: 'New Prison (0 gen.)' })).toHaveCount(1);
+    await expect(page.locator('.save-panel__item-label', { hasText: 'Cell Block A (0 gen.)' })).toHaveCount(1);
+  });
 
   test('gives a newly created prison a Polish default name', async ({ page }) => {
     await page.goto(APP_URL);
     await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
 
     await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toHaveText('Nowe więzienie (1 gen.)');
+    const namesOnDisk = await page.evaluate(async () => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('lockstate-saves');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const transaction = database.transaction('prisons', 'readonly');
+      const records = await new Promise<Record<string, unknown>[]>((resolve, reject) => {
+        const request = transaction.objectStore('prisons').getAll();
+        request.onsuccess = () => resolve(request.result as Record<string, unknown>[]);
+        request.onerror = () => reject(request.error);
+      });
+      database.close();
+      return records.map((record) => ({ displayName: record['displayName'], usesDefaultName: record['usesDefaultName'] }));
+    });
+    expect(namesOnDisk).toEqual([{ displayName: undefined, usesDefaultName: true }]);
+
+    await page.getByRole('button', { name: 'Usuń', exact: true }).click();
+    await expect(page.locator('[data-delete-confirm] .save-panel__item-label')).toContainText('Usunąć Nowe więzienie?');
+    await page.getByRole('button', { name: 'Usuń trwale' }).click();
+    await expect(page.locator('[data-deleted-prison] .save-panel__item-label')).toContainText('Nowe więzienie — usunięto.');
+    await page.getByRole('button', { name: 'Przywróć' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toHaveText('Nowe więzienie (1 gen.)');
   });
 
