@@ -93,7 +93,9 @@ the browser test observed the failure before the change and the bar/drawer
 transition passing afterward. Seventeen regular Full HD browser cases passed.
 When the closed drawer trigger has keyboard focus and the window grows back to
 the bar layout, focus moves to the visible navigation control. The browser test
-failed with focus on the now-hidden trigger before that handoff was added.
+failed with focus on the now-hidden trigger before that handoff was added. When
+the window crosses into the phone layout, focus moves to the active tab instead:
+the navigation arrow is deliberately hidden at that width.
 
 A separate regression test starts with the navigation collapsed in persisted
 layout settings. Before the fix the drawer trigger stayed

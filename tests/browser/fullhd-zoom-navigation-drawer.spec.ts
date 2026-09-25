@@ -83,6 +83,12 @@ for (const uiScale of [1.75, 2]) {
       await page.setViewportSize({ width: 960, height: 750 });
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'bar');
       await expect(page.locator('.hud-layout__arrow[data-layout-region="navigation"]')).toBeFocused();
+      await page.setViewportSize({ width: 960, height: 540 });
+      await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
+      await trigger.focus();
+      await page.setViewportSize({ width: 600, height: 540 });
+      await expect(hud).toHaveAttribute('data-layout-tier', 'phone');
+      await expect(tabs.locator('[aria-current="true"]')).toBeFocused();
     }
   });
 }

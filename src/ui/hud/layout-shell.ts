@@ -750,7 +750,13 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     }
     restoreDrawerFocusIfHidden();
     if (geometry.navigationPlacement !== 'drawer' && document.activeElement === drawerButton.element) {
-      handOffFocus(toggles.navigation.element);
+      const phoneTab = regions.navigation.content[0]?.querySelector<HTMLButtonElement>(
+        '.ui-tab[aria-current="true"]',
+      );
+      const destination = geometry.phone
+        ? (geometry.navigation.collapsed ? menuButton.element : phoneTab ?? menuButton.element)
+        : toggles.navigation.element;
+      handOffFocus(destination);
     }
 
     navigationSeparator.setRange(geometry.navigation.range);
