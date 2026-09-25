@@ -1,5 +1,26 @@
 import { expect, test } from './network-changed-fixture';
 
+async function paintedMetricCollisions(page: import('@playwright/test').Page): Promise<string[]> {
+  return page.locator('.hud-strip__metrics > .ui-stat').evaluateAll((chips) => chips.flatMap((chip) => {
+    const label = chip.querySelector('.ui-stat__label');
+    const badge = chip.querySelector('.hud-metric__trailing');
+    if (label === null) return [];
+    // A flex item may shrink while its nowrap text paints outside the box.
+    // Range rectangles follow the actual glyph lines, including a wrapped PL label.
+    const labelInk = document.createRange();
+    labelInk.selectNodeContents(label);
+    const badgeBox = badge?.getBoundingClientRect();
+    const chipBox = chip.getBoundingClientRect();
+    return [...labelInk.getClientRects()].flatMap((ink) => {
+      const outside = ink.left < chipBox.left - 0.5 || ink.right > chipBox.right + 0.5;
+      const covered = badgeBox !== undefined && badgeBox.width > 0 &&
+        ink.left < badgeBox.right && badgeBox.left < ink.right &&
+        ink.top < badgeBox.bottom && badgeBox.top < ink.bottom;
+      return outside || covered ? [chip.textContent?.trim() ?? 'unknown chip'] : [];
+    });
+  }));
+}
+
 for (const uiScale of [1.75, 2]) {
   test(`Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at ${uiScale * 100}% UI scale`, async ({ page }) => {
     await page.setViewportSize({ width: 960, height: 540 });
@@ -15,6 +36,7 @@ for (const uiScale of [1.75, 2]) {
     const readouts = page.locator('.hud-strip__metrics > .ui-stat');
     await expect(readouts).toHaveCount(9);
     for (const readout of await readouts.all()) await expect(readout).toBeInViewport();
+    expect(await paintedMetricCollisions(page), 'metric labels must stay inside their chips and clear of badges').toEqual([]);
     const trigger = page.locator('.hud-navigation-drawer__trigger');
     const tabs = page.locator('.hud-tabs__inner');
     await expect(trigger).toBeVisible();
@@ -96,6 +118,21 @@ for (const uiScale of [1.75, 2]) {
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
       await expect(trigger).toBeFocused();
     }
+  });
+}
+
+for (const uiScale of [1.75, 2]) {
+  test(`Polish status labels remain readable at Full HD 200% page zoom and ${uiScale * 100}% UI scale`, async ({ page }) => {
+    await page.setViewportSize({ width: 960, height: 540 });
+    await page.addInitScript((scale) => {
+      localStorage.setItem('lockstate.settings.language', JSON.stringify({ version: 1, preference: 'pl' }));
+      localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: scale }));
+    }, uiScale);
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+    await expect(page.locator('.hud')).toHaveAttribute('data-layout-navigation-placement', 'drawer');
+    await expect(page.locator('.hud-strip__metrics > .ui-stat')).toHaveCount(9);
+    expect(await paintedMetricCollisions(page), 'Polish metric labels must clear neighbours and badges').toEqual([]);
   });
 }
 

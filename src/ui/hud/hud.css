@@ -6755,7 +6755,35 @@
 }
 
 .hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat {
+  display: grid;
+  grid-template-columns: var(--icon-size-sm) minmax(0, 1fr) max-content;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: var(--space-1);
+  row-gap: 2px;
   min-width: 0;
+}
+
+/* A badge shares the number's line, while the label keeps the full text lane.
+ * In the three-column zoom layout, flex shrank the label's box but still
+ * painted its nowrap glyphs underneath the badge. */
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics > .ui-stat > .ui-icon {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__body { display: contents; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__value { grid-column: 2; grid-row: 1; }
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .ui-stat__label {
+  grid-column: 1 / 4;
+  grid-row: 2;
+  white-space: normal;
+}
+.hud[data-layout-navigation-placement='drawer'] .hud-strip__metrics .hud-metric__trailing {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
 }
 
 .hud[data-layout-navigation-placement='drawer'] .hud__tabs > .hud-layout__arrow { display: none; }
