@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' = false): Promise<HarnessWorldFixture> {
-  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -108,6 +108,40 @@ test.describe('the environment artwork', () => {
     expect(labels.map((label) => label.text)).toContain('Cell');
     if (process.env['LOCKSTATE_CAPTURE_BED_ART'] === '1') {
       await page.screenshot({ path: testInfo.outputPath('furnished-cell-bed-1920x1080.png') });
+    }
+  });
+
+  test('the stove grate has a diagonal iron support visible at game scale', async ({ page }) => {
+    await openHarness(page);
+    const support = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.stove');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        pixel: harness.atlasPixel(frame.x + 84, frame.y + 54),
+      };
+    });
+    expect(support?.size).toEqual([256, 128]);
+    expect(support?.pixel?.[3]).toBe(255);
+    expect(support!.pixel![0]).toBeLessThan(95);
+  });
+
+  test('the stove and fridge are drawn inside a furnished Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.stove')).toEqual([
+      expect.objectContaining({ x: 2 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.fridge')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Kitchen');
+    if (process.env['LOCKSTATE_CAPTURE_STOVE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-kitchen-stove-1920x1080.png') });
     }
   });
 

@@ -583,8 +583,8 @@
     {
       "assetId": "furniture.kitchen.stove",
       "image": "furniture.kitchen.stove.png",
-      "sha256": "ca82b11999e0fcdff785ceeabcf2325b1b13fa45ee87952850058179649cd7bc",
-      "pixelSha256": "c4718d8c306c45fbcb3007e304315d2c29c560a1078f2680306097a80998f140",
+      "sha256": "bb1a573dde9672f19c9b53c1933910eb562413cfbdfa7813406328c1a53f89be",
+      "pixelSha256": "3dc5749754ac14e015ca80461d9e90d56414c10a2c04e7f10e40d4320268b7e1",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0

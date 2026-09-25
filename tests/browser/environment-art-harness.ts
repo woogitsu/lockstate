@@ -181,6 +181,7 @@ function buildFrame(): RenderFrame {
   const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
   const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
   const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
+  const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
   if (includeYard) {
     // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
     // player-built land; otherwise the unowned shade hides its material.
@@ -258,6 +259,16 @@ function buildFrame(): RenderFrame {
   for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
     for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, kitchen.numericId);
+    }
+  }
+  if (includeStoveVisual) {
+    for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.kitchenMinTileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.kitchenMaxTileY + 1) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.kitchenMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.kitchenMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
     }
   }
   const canteen = defaultRoomContentRegistry.getById('room.canteen');
@@ -432,8 +443,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-storage-rack',
       definitionId: 'storage-rack-wooden',
-      tileX: FIXTURE.storageRackTileX,
-      tileY: FIXTURE.storageRackTileY,
+      tileX: includeStoveVisual ? 5 : FIXTURE.storageRackTileX,
+      tileY: includeStoveVisual ? 6 : FIXTURE.storageRackTileY,
       phase: 'built',
     },
     {
@@ -467,8 +478,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-stove',
       definitionId: 'stove-brick',
-      tileX: FIXTURE.stoveTileX,
-      tileY: FIXTURE.stoveTileY,
+      tileX: includeStoveVisual ? 2 : FIXTURE.stoveTileX,
+      tileY: includeStoveVisual ? 7 : FIXTURE.stoveTileY,
       phase: 'built',
     },
     {
@@ -481,8 +492,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-fridge',
       definitionId: 'fridge-brick',
-      tileX: FIXTURE.fridgeTileX,
-      tileY: FIXTURE.fridgeTileY,
+      tileX: includeStoveVisual ? 5 : FIXTURE.fridgeTileX,
+      tileY: includeStoveVisual ? 7 : FIXTURE.fridgeTileY,
       phase: 'built',
     },
     {
@@ -509,8 +520,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-prep-counter',
       definitionId: 'prep-counter-brick',
-      tileX: FIXTURE.prepCounterTileX,
-      tileY: FIXTURE.prepCounterTileY,
+      tileX: includeStoveVisual ? 2 : FIXTURE.prepCounterTileX,
+      tileY: includeStoveVisual ? 6 : FIXTURE.prepCounterTileY,
       phase: 'built',
     },
     {
@@ -603,7 +614,8 @@ const scene = new WorldScene({
     || new URLSearchParams(window.location.search).has('classroomFloor')
     || new URLSearchParams(window.location.search).has('securityFloor')
     || new URLSearchParams(window.location.search).has('staffFloor')
-    || new URLSearchParams(window.location.search).has('bedVisual') ? {
+    || new URLSearchParams(window.location.search).has('bedVisual')
+    || new URLSearchParams(window.location.search).has('stoveVisual') ? {
     roomName: (zoningNumericId: number): string | undefined => {
       const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
       return room === undefined ? undefined : localizer.format(room.nameKey);

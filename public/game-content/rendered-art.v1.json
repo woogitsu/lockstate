@@ -605,8 +605,8 @@
     {
       "assetId": "furniture.kitchen.stove",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.kitchen.stove.ca82b11999e0.png",
-      "sha256": "ca82b11999e0fcdff785ceeabcf2325b1b13fa45ee87952850058179649cd7bc",
+      "image": "source-art/rendered.furniture.kitchen.stove.bb1a573dde96.png",
+      "sha256": "bb1a573dde9672f19c9b53c1933910eb562413cfbdfa7813406328c1a53f89be",
       "dimensionsPx": {
         "width": 512,
         "height": 256
