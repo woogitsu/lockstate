@@ -199,6 +199,9 @@ canvas {
 /* A compact disclosure keeps Staff and Intake reachable in the same Manage
    rail. The expanded local inventory scrolls inside its allotted height. */
 .hud__manage-saves:not([hidden]) { flex: 0 1 auto; min-height: var(--tap-target); max-height: 55%; overflow-y: auto; }
+/* The UI harness mounts the HUD without persistence. An empty slot must not
+   take height from Staff or push its payroll header below the panel fold. */
+.hud__manage-saves:empty { display: none; }
 .manage-saves { padding: var(--space-2); background: var(--surface-raised); border: var(--hairline) solid var(--border); border-radius: var(--radius-md); font-size: var(--text-size-body); touch-action: auto; }
 .manage-saves > summary { min-height: var(--tap-target); display: flex; align-items: center; cursor: pointer; font-weight: 600; }
 .manage-saves:not([open]) > :not(summary) { display: none; }
