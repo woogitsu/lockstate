@@ -2655,6 +2655,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   const rosterPanel: RosterPanel = createRosterPanel({
     localizer,
+    onEmptyAction: (action) => {
+      const tab = action === 'build' ? 'build' : 'manage';
+      dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
+      if (action === 'build') buildPanel.focusCatalogue();
+      else intakePanel.focusAdmit();
+    },
     onSelectPrisoner: (prisonerId) => {
       runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
     },

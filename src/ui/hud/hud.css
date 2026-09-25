@@ -3065,6 +3065,20 @@
    here exactly as `.hud-intake__note` above undoes it. */
 .hud-regime__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+.hud-regime__guidance {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hud-regime__guidance:hover { border-color: var(--accent); }
+.hud-regime__guidance:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 /* And `display: none` when the attribute says so, which the rule above cannot
    be relied on to leave alone. The `@media (max-height: 700px)` block at the
    foot of this file gives `.hud-regime__note` an author `display: -webkit-box`
