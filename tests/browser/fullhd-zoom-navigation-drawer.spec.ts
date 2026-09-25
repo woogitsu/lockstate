@@ -1,6 +1,6 @@
-import { expect, test } from './network-changed-fixture';
+import { expect, test, type Page } from './network-changed-fixture';
 
-async function paintedMetricCollisions(page: import('@playwright/test').Page): Promise<string[]> {
+async function paintedMetricCollisions(page: Page): Promise<string[]> {
   return page.locator('.hud-strip__metrics > .ui-stat').evaluateAll((chips) => chips.flatMap((chip) => {
     const label = chip.querySelector('.ui-stat__label');
     const badge = chip.querySelector('.hud-metric__trailing');
