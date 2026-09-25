@@ -792,7 +792,7 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `42fc9649` (**v0.0.784**) by the delta method,
+Re-anchored at `main` @ `ca2c390a1` (**v0.0.782**) by the delta method,
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
