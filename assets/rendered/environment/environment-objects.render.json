@@ -556,8 +556,8 @@
     {
       "assetId": "furniture.kitchen.prep_counter",
       "image": "furniture.kitchen.prep_counter.png",
-      "sha256": "60155f9441033f4f0fb90af2d53ab9bc9fa37ef9861b0a82dbc65f90f32ca013",
-      "pixelSha256": "63f2d298fe644b9bbad5bca54723ee957118dfc7195866f53168867149a09a27",
+      "sha256": "fe72cd07ef3ea4d75df9a5cc955d0f40bb30ad18f9be521bf88cd1e246a57363",
+      "pixelSha256": "e7a972bfa10f554ae7a313d84e9ba496737a05440c247ccb1472be28ae42c2da",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0

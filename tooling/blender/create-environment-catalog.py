@@ -723,6 +723,23 @@ def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16
     return item
 
 
+def prepared_ingredient(collection, root, name, offset, scale, surface, angle=0):
+    """A rounded piece of produce; irregular spacing reads as food at 64px/tile."""
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, location=(
+        root.location.x + offset[0], root.location.y + offset[1], offset[2],
+    ))
+    item = bpy.context.object
+    item.name, item.scale = name, scale
+    item.rotation_euler.z = angle
+    item.data.materials.append(MATERIALS[surface])
+    for polygon in item.data.polygons:
+        polygon.use_smooth = True
+    item.parent = root
+    item.matrix_parent_inverse = root.matrix_world.inverted()
+    move_to_collection(item, collection)
+    return item
+
+
 def torus(collection, root, name, offset, major_radius, minor_radius, surface):
     bpy.ops.mesh.primitive_torus_add(
         major_segments=48, minor_segments=8,
@@ -912,9 +929,32 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Tray shadow.{well_index}", (x, 0.058, 1.079), (0.235, 0.68, 0.022), "steel", 0.016)
             box(collection, root, f"Tray rolled rim.{well_index}", (x, 0.058, 1.095), (0.225, 0.66, 0.016), "galvanized_edge", 0.013)
             box(collection, root, f"Recessed tray well.{well_index}", (x, 0.058, 1.105), (0.185, 0.57, 0.012), "metal_recess", 0.012)
-            for row, y in enumerate((-0.14, -0.01, 0.12, 0.25)):
-                for col, dx in enumerate((-0.045, 0.045)):
-                    box(collection, root, f"Prepared ingredient.{well_index}.{row}.{col}", (x + dx, y, 1.125), (0.075, 0.095, 0.033), food, 0.022)
+            # The old identical 2x4 rectangular grid read as eight coloured
+            # buttons at gameplay scale. Use different silhouettes per tray:
+            # round tomatoes, broad overlapping leaves and pale chopped roots.
+            for piece, (dx, y, sx, sy, turn) in enumerate((
+                (-0.040, -0.145, 0.043, 0.052, -0.26),
+                (0.045, -0.087, 0.047, 0.059, 0.18),
+                (-0.036, -0.005, 0.046, 0.058, 0.32),
+                (0.040, 0.071, 0.044, 0.053, -0.22),
+                (-0.034, 0.153, 0.045, 0.057, 0.13),
+                (0.038, 0.231, 0.041, 0.050, -0.34),
+            )):
+                if well_index == 1:
+                    # Leaf blades lie at varied angles and overlap along the
+                    # centre vein, so the green pan remains organic at 128x64.
+                    prepared_ingredient(collection, root, f"Leaf.{piece}",
+                                        (x + dx, y, 1.132), (sx * 0.72, sy * 1.55, 0.014),
+                                        "prep_green", turn)
+                    prepared_ingredient(collection, root, f"Leaf highlight.{piece}",
+                                        (x + dx - 0.008, y - 0.010, 1.141),
+                                        (sx * 0.18, sy * 1.03, 0.006), "prep_green_light", turn)
+                else:
+                    prepared_ingredient(collection, root, f"Prepared produce.{well_index}.{piece}",
+                                        (x + dx, y, 1.131),
+                                        (sx if well_index == 0 else sx * 0.88,
+                                         sy if well_index == 0 else sy * 0.81, 0.025),
+                                        food, turn)
         # Cabinet drawers and recessed pulls survive oblique inspection without
         # adding decorative clutter to the true-overhead sprite.
         for z in (0.58, 0.82):
@@ -2066,6 +2106,7 @@ def main():
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
     MATERIALS["prep_red"] = material("Prepared red vegetables", (0.65, 0.15, 0.08, 1), 0.66)
     MATERIALS["prep_green"] = material("Prepared green vegetables", (0.13, 0.33, 0.11, 1), 0.77)
+    MATERIALS["prep_green_light"] = material("Leaf central veins", (0.25, 0.43, 0.16, 1), 0.82)
     MATERIALS["prep_cream"] = material("Prepared pale vegetables", (0.78, 0.70, 0.46, 1), 0.78)
     MATERIALS["canteen_steel"] = canteen_steel_material()
     MATERIALS["chair_wood"] = chair_seat_material()
