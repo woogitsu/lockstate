@@ -43,6 +43,14 @@ const PL_CHUNK_URL = '**/services/localization/pl-catalog.ts*';
 test.describe('a browser that asks for Polish', () => {
   test.use({ locale: 'pl-PL' });
 
+  test('gives a newly created prison a Polish default name', async ({ page }) => {
+    await page.goto(APP_URL);
+    await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
+
+    await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toHaveText('Nowe więzienie (1 gen.)');
+  });
+
   test('boots in Polish, having fetched the catalogue chunk', async ({ page }) => {
     const requested: string[] = [];
     page.on('request', (request) => requested.push(request.url()));

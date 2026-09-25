@@ -1411,6 +1411,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.panel.region': 'Zapisy więzień',
   'save.panel.title': 'Więzienia',
   'save.action.create': 'Nowe więzienie',
+  'save.default-prison-name': 'Nowe więzienie',
   'save.action.save': 'Zapisz teraz',
   'save.action.export': 'Eksportuj',
   'save.action.import': 'Importuj',

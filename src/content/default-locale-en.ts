@@ -4115,6 +4115,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.panel.title': 'Prisons',
 
   'save.action.create': 'New prison',
+  'save.default-prison-name': 'New Prison',
   'save.action.save': 'Save now',
   'save.action.export': 'Export',
   'save.action.import': 'Import',

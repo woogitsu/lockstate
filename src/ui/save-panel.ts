@@ -1008,7 +1008,7 @@ export class SavePanel {
       const prisonId = newPrisonId();
       this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreating });
       try {
-        this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, 'New Prison')));
+        this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, this.text(SAVE_PANEL_MESSAGE_KEY.defaultPrisonName))));
       } catch (error) {
         this.setStatus({
           kind: 'error',

@@ -27,6 +27,7 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   panelTitle: 'save.panel.title',
 
   actionCreate: 'save.action.create',
+  defaultPrisonName: 'save.default-prison-name',
   actionSave: 'save.action.save',
   actionExport: 'save.action.export',
   actionImport: 'save.action.import',
