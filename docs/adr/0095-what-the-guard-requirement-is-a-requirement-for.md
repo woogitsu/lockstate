@@ -144,7 +144,7 @@ finding.
 
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
-   (`src/simulation/security/deployment-system.ts:328`-`:348`,
+   (`src/simulation/security/deployment-system.ts:335`-`:348`,
    `assignUnassignedGuards`, `const sector = this.sectors.getDefinition(sectorId);`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
