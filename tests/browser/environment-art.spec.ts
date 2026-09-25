@@ -462,6 +462,7 @@ test.describe('the environment artwork', () => {
   });
 
   test('the waste bin lid joins its body at game scale instead of reading as two rings', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await openHarness(page);
     const bridge = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
