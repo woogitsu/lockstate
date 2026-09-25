@@ -5026,10 +5026,27 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
 
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // The inventory is an element snapshot, not a catalogue of labels. A
+    // background save can replace Manage's row after its first measurement,
+    // minting new element ids while its disclosure is shut. Revisit both
+    // panels at the end so the final accounting tests the controls that are
+    // actually in the document now.
+    const finalBuild = await controlReachability(page);
+    record(finalBuild);
+    const finalSaves = page.locator('.manage-saves');
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(finalSaves.locator('.manage-saves__item')).toHaveCount(1);
+    if ((await finalSaves.getAttribute('open')) === null) await finalSaves.locator('summary').click();
+    await expect(finalSaves).toHaveAttribute('open', '');
+    await expect(finalSaves.getByRole('button', { name: 'Load' })).toBeVisible();
+    await expect(finalSaves.getByRole('button', { name: 'Delete' })).toBeVisible();
+    inventory = await controlReachability(page);
+    record(inventory);
+    expect(inventory.unreachable, `final Manage controls unreachable at ${width}x${height}`).toEqual([]);
 
     // Nothing got a free pass by never being laid out. At desktop widths the
-    // Build tab with its coordinates expanded shows every control there is,
-    // so the list is empty; at 720px and below the responsive rules drop
+    // Build and Manage controls have each been revisited in their visible
+    // state, so the list is empty; at 720px and below the responsive rules drop
     // `.hud__corner` outright — the minimap and the alerts section — and
     // those two controls genuinely cannot be reached at any tab. That is a
     // deliberate responsive decision (see `hud.css`), named here so it stays
