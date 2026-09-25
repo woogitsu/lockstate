@@ -39,6 +39,9 @@ export class DeploymentSystem implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private requestSequence = 0;
+
+  public getPathRequestSequence(): number { return this.requestSequence; }
+  public restorePathRequestSequence(sequence: number): void { this.requestSequence = sequence; }
   private deploymentFailures = 0;
 
   /**

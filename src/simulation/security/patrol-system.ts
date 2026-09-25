@@ -33,6 +33,9 @@ export class PatrolSystem implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private requestSequence = 0;
+
+  public getPathRequestSequence(): number { return this.requestSequence; }
+  public restorePathRequestSequence(sequence: number): void { this.requestSequence = sequence; }
   private loopsCompletedOnTime = 0;
   private loopsCompletedLate = 0;
   private loopsMissed = 0;

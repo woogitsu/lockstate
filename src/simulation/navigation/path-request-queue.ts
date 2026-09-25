@@ -54,6 +54,10 @@ export interface PathRequestQueueMetrics {
   readonly flowFieldActivations: number;
 }
 
+export interface PathRequestQueueSnapshot {
+  readonly pending: readonly { readonly request: PathRequestInput; readonly enqueuedAtTick: number }[];
+}
+
 export interface PathRequestQueueOptions {
   /** Every this many ticks a request has waited, its effective priority rises by 1 -- guarantees eventual processing under sustained overload (see docs/adr). */
   readonly agingIntervalTicks: number;
@@ -143,6 +147,42 @@ export class PathRequestQueue {
       ticksProcessed: this.ticksProcessed,
       flowFieldActivations: this.flowFieldActivations,
     };
+  }
+
+  /** Persistence view; deliberately separate from ADR 0007's live status API. */
+  public getSnapshot(): PathRequestQueueSnapshot {
+    return {
+      pending: [...this.pending.values()].sort((a, b) => a.request.id < b.request.id ? -1 : a.request.id > b.request.id ? 1 : 0).map(({ request, enqueuedAtTick }) => ({
+        request: {
+          ...request,
+          origin: { ...request.origin },
+          destination: { ...request.destination },
+          context: { ...request.context, ...(request.context.permissions === undefined ? {} : { permissions: [...request.context.permissions] }) },
+        },
+        enqueuedAtTick,
+      })),
+    };
+  }
+
+  public loadSnapshot(snapshot: PathRequestQueueSnapshot): void {
+    this.pending.clear();
+    for (const entry of snapshot.pending) {
+      if (this.pending.has(entry.request.id)) throw new Error(`Duplicate saved path request: ${entry.request.id}`);
+      this.pending.set(entry.request.id, {
+        enqueuedAtTick: entry.enqueuedAtTick,
+        request: {
+          ...entry.request,
+          origin: { ...entry.request.origin },
+          destination: { ...entry.request.destination },
+          context: { ...entry.request.context, ...(entry.request.context.permissions === undefined ? {} : { permissions: [...entry.request.context.permissions] }) },
+        },
+      });
+    }
+    this.resolvedCount = 0;
+    this.cancelledCount = 0;
+    this.totalExpansions = 0;
+    this.ticksProcessed = 0;
+    this.flowFieldActivations = 0;
   }
 
   public processTick(params: ProcessTickParams): readonly ResolvedPathRequest[] {

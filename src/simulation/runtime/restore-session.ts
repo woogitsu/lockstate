@@ -147,11 +147,9 @@ export interface RestoredScopeEntry {
  * genuinely *derived* or genuinely *in flight*, not state that was forgotten:
  *
  * - Room/topology geometry is a pure cache recomputed from `SparseWorld`.
- * - Navigation's route/flow-field caches and its pending path-request queue
- *   belong to a `NavigationSystem` instance a restored session rebuilds; the
- *   subsystems that referenced one (prisoners mid-travel, guards mid-leg,
- *   carry jobs, search legs) each reset that reference on restore,
- *   idempotently, and re-request on their next scheduled tick.
+ * - Navigation's route/flow-field caches are rebuilt. Current saves carry
+ *   pending requests and resolved results with the actors' walks; older saves
+ *   without those optional fields retain the original travel reset.
  *
  *   **`IncidentResponseSystem` used to be named in that list and does not
  *   belong** (#352, ADR 0033): it cannot re-request, because the incident

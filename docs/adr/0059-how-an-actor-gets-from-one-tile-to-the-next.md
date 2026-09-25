@@ -9,6 +9,13 @@ and the larger prison that moved this decision's one free parameter. Nobody has
 approved it; the argument below is the whole of the warrant, and a reader who
 disagrees with it should treat the decision as open.
 
+**Amendment for #1373, 2026-09-25.** The owner selected option 5 in
+`AGENTS.md` section 29. New session saves carry the walk, its in-flight route
+work and the request identity needed to resume it. These fields are optional:
+older saves keep the original idle-on-reached-tile reset. Under ADR 0038 this
+additive payload does not require a save schema version bump. The original
+option 4 decision and measurements below remain historical context.
+
 **The number was assigned centrally before this draft existed**, per
 `AGENTS.md` and `docs/AGENT_WORKFLOW.md`. **0058 and 0060 were handed out in
 the same pass and returned unused** -- the keyboard work and the needs work each
@@ -23,6 +30,12 @@ are renumbered without argument.
 ---
 
 ## The decision, in one sentence
+
+**Current save rule:** A new save preserves integer sub-tile progress,
+waypoints, heading, pending path requests and their original enqueue ticks,
+resolved routes, and the request identities held by travelling actors. A save
+without these fields retains the previous reset behavior. Navigation caches
+and diagnostic counters are rebuilt.
 
 **An actor that has a resolved route walks it, one tile at a time, at a fixed
 speed of one tile per two kernel ticks, with the sub-tile progress held in a
@@ -593,11 +606,11 @@ designed for it, and is not claimed here.
    reconsideration in `arrive` is a mitigation rather than the answer. The
    costs ADR 0029 records are unchanged: the occupant set stops being a fact
    about the world, and four travel-failure paths gain a release.
-3. **Should a walk be saved?** Not saving it costs a restored prisoner one
-   reconsideration cycle and the journey they were on. Saving it costs a
-   save-schema field and ADR 0038's compatibility question. Nothing in this
-   branch needs the answer; a player who saves mid-day will notice it before a
-   test does.
+3. **Should a walk be saved? Answered by #1373: yes.** The original option 4
+   reset cost a reconsideration cycle and the journey in progress. Option 5
+   now preserves the walk and route work in optional save fields, while older
+   saves retain that reset. ADR 0038 allows the additive fields without a
+   schema version bump.
 4. **Do guards walk, and when?** They are the other population the render
    channel will carry (ADR 0040 slice 2), and drawing them while they teleport
    between patrol waypoints would look worse than not drawing them. The two

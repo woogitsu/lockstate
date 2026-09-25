@@ -18,6 +18,8 @@ import type { SectorRiskTracker } from '../incidents/sector-risk';
 import type { IncidentTriggerSystem } from '../incidents/trigger-system';
 import type { SimulationEventLogSnapshot } from '../events/event-log';
 import type { DoorDefinition } from '../navigation/door';
+import type { NavigationWorkSnapshot } from '../navigation/navigation-system';
+import type { LocomotionSnapshot } from '../locomotion';
 import { Container } from '../operations/inventory';
 import type { CarryItemJob } from '../operations/job';
 import type { UtilityNetwork } from '../operations/utility-network';
@@ -181,11 +183,14 @@ export interface EncodedPrisonerComponents {
 export interface EncodedPrisonerColdState {
   readonly accommodationInstanceId: readonly (readonly [number, string])[];
   readonly currentActionTargetInstanceId: readonly (readonly [number, string])[];
+  readonly currentActionPathRequestId?: readonly (readonly [number, string])[];
 }
 
 export interface EncodedPrisoners {
   readonly components: EncodedPrisonerComponents;
   readonly coldState: EncodedPrisonerColdState;
+  readonly locomotion?: LocomotionSnapshot;
+  readonly pathRequestSequence?: number;
   /**
    * Room-instance *definitions*, not only occupancy.
    * `RoomInstanceRegistry.getSnapshot` deliberately carries occupancy alone,
@@ -271,6 +276,7 @@ export interface EncodedNavigation {
    * by re-applying the sector control states after registration.
    */
   readonly doors: readonly DoorDefinition[];
+  readonly work?: NavigationWorkSnapshot;
 }
 
 // --- Security -----------------------------------------------------------
@@ -282,10 +288,11 @@ export interface EncodedSecurity {
   readonly guards: {
     readonly entityStore: EncodedEntityStoreSnapshot;
     readonly records: readonly (readonly [number, GuardRecord])[];
+    readonly locomotion?: LocomotionSnapshot;
   };
   readonly schedules: readonly DeploymentSchedule[];
-  readonly deployment: { readonly metrics: { readonly deploymentFailures: number } };
-  readonly patrol: { readonly metrics: { readonly loopsCompletedOnTime: number; readonly loopsCompletedLate: number; readonly loopsMissed: number } };
+  readonly deployment: { readonly metrics: { readonly deploymentFailures: number }; readonly pathRequestSequence?: number };
+  readonly patrol: { readonly metrics: { readonly loopsCompletedOnTime: number; readonly loopsCompletedLate: number; readonly loopsMissed: number }; readonly pathRequestSequence?: number };
 }
 
 // --- Contraband ---------------------------------------------------------
@@ -570,6 +577,7 @@ function guardsSnapshot(roster: GuardRoster): EncodedSecurity['guards'] {
   return {
     entityStore: encodeEntityStoreSnapshot(snapshot.entityStore),
     records: snapshot.records.map(([id, record]) => [id, { ...record }] as const),
+    locomotion: roster.locomotion.getSnapshot(),
   };
 }
 
@@ -656,6 +664,13 @@ function pruneUndefined<T>(value: T): T {
 /** Reads every persisted subsystem's own snapshot contract. Never touches renderer state, and never mutates the runtime. */
 export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessionSystems {
   const coldState = runtime.prisoners.coldState.getSnapshot();
+  const navigationWork = runtime.navigation.getWorkSnapshot();
+  // Incident responders still release their claim on restore (ADR 0033), so
+  // their route requests must not outlive the response record that owns them.
+  const resumableWork: NavigationWorkSnapshot = {
+    queue: { pending: navigationWork.queue.pending.filter((entry) => !entry.request.id.startsWith('incidents.respond.')) },
+    results: navigationWork.results.filter(([id]) => !id.startsWith('incidents.respond.')),
+  };
 
   return pruneUndefined({
     // Emitted unconditionally by a live capture: every session has exactly the
@@ -666,9 +681,12 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
+      locomotion: runtime.prisoners.locomotion.getSnapshot(),
+      pathRequestSequence: runtime.prisoners.actionSystem.getPathRequestSequence(),
       coldState: {
         accommodationInstanceId: coldState.accommodationInstanceId.map(([id, value]) => [id, value] as const),
         currentActionTargetInstanceId: coldState.currentActionTargetInstanceId.map(([id, value]) => [id, value] as const),
+        currentActionPathRequestId: runtime.prisoners.coldState.getPathRequestSnapshot(),
       },
       roomInstanceDefinitions: roomInstanceDefinitions(runtime),
       roomInstanceOccupancy: runtime.prisoners.roomInstances.getSnapshot().map(([id, occupants]) => [id, [...occupants]] as const),
@@ -680,7 +698,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       electricity: utilitySnapshot(runtime.electricity),
       water: utilitySnapshot(runtime.water),
     },
-    navigation: { doors: doorsSnapshot(runtime) },
+    navigation: { doors: doorsSnapshot(runtime), work: resumableWork },
     security: {
       sectorDefinitions: runtime.securitySectors.all().map((sector) => ({ ...sector })),
       sectorControlStates: runtime.securitySectors.getSnapshot().map(([id, state]) => [id, state] as const),
@@ -689,8 +707,8 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       // `findSchedule`'s first match, so it is sorted by sector id rather
       // than left in push order.
       schedules: [...runtime.securitySchedules].sort((a, b) => (a.sectorId < b.sectorId ? -1 : a.sectorId > b.sectorId ? 1 : 0)),
-      deployment: { metrics: runtime.deploymentSystem.getMetrics() },
-      patrol: { metrics: runtime.patrolSystem.getMetrics() },
+      deployment: { metrics: runtime.deploymentSystem.getMetrics(), pathRequestSequence: runtime.deploymentSystem.getPathRequestSequence() },
+      patrol: { metrics: runtime.patrolSystem.getMetrics(), pathRequestSequence: runtime.patrolSystem.getPathRequestSequence() },
     },
     contraband: {
       items: runtime.contraband.getSnapshot(),
@@ -943,6 +961,8 @@ export function restoreSessionSystems(
       currentActionTargetInstanceId: systems.prisoners.coldState.currentActionTargetInstanceId.map(([id, value]) => [id, value] as [number, string]),
     },
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
+    ...(systems.navigation.work !== undefined && systems.prisoners.locomotion !== undefined
+      ? { locomotion: systems.prisoners.locomotion } : {}),
   },
   // The tick the restored session resumes at, which `Kernel.restoreState` has
   // already installed by the time this runs -- `restoreSimulationRuntime` calls
@@ -951,6 +971,13 @@ export function restoreSessionSystems(
   // are per prisoner and no save carries them (issue #435), so a restore opens
   // a new counting window and this is the number that says so out loud.
   runtime.kernel.tick);
+  if (systems.navigation.work !== undefined && systems.prisoners.pathRequestSequence !== undefined) {
+    runtime.prisoners.actionSystem.restorePathRequestSequence(systems.prisoners.pathRequestSequence);
+  }
+  if (systems.navigation.work !== undefined && systems.prisoners.coldState.currentActionPathRequestId !== undefined) {
+    runtime.prisoners.coldState.loadPathRequestSnapshot(systems.prisoners.coldState.currentActionPathRequestId);
+  }
+  if (systems.navigation.work !== undefined) runtime.navigation.loadWorkSnapshot(systems.navigation.work);
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
@@ -983,11 +1010,17 @@ export function restoreSessionSystems(
   runtime.securityGuards.loadSnapshot({
     entityStore: decodeEntityStoreSnapshot(systems.security.guards.entityStore),
     records: systems.security.guards.records.map(([id, record]) => [id, { ...record }] as const),
+    ...(systems.navigation.work !== undefined && systems.security.guards.locomotion !== undefined
+      ? { locomotion: systems.security.guards.locomotion } : {}),
   });
   runtime.securitySchedules.length = 0;
   runtime.securitySchedules.push(...systems.security.schedules.map((schedule) => ({ ...schedule })));
   runtime.deploymentSystem.loadSnapshot(systems.security.deployment);
   runtime.patrolSystem.loadSnapshot(systems.security.patrol);
+  if (systems.navigation.work !== undefined) {
+    if (systems.security.deployment.pathRequestSequence !== undefined) runtime.deploymentSystem.restorePathRequestSequence(systems.security.deployment.pathRequestSequence);
+    if (systems.security.patrol.pathRequestSequence !== undefined) runtime.patrolSystem.restorePathRequestSequence(systems.security.patrol.pathRequestSequence);
+  }
 
   // 5b. Money and deliveries in flight (#96).
   //
@@ -1016,7 +1049,7 @@ export function restoreSessionSystems(
   for (const [containerId, position] of systems.contraband.searchContainerLocations) {
     runtime.searchContainerLocations.set(containerId, { x: tileCoordinate(position.x), y: tileCoordinate(position.y) });
   }
-  runtime.searchSystem.loadSnapshot(systems.contraband.search);
+  runtime.searchSystem.loadSnapshot(systems.contraband.search, systems.navigation.work !== undefined);
 
   // 7. Incidents.
   runtime.incidents.loadSnapshot(systems.incidents.log);
