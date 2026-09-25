@@ -465,6 +465,13 @@
   box-sizing: border-box;
 }
 
+/* When there is nothing to act on, let the empty message use the compact
+   minimap column. Active alerts retain the wider line length for their text
+   and dismiss controls. */
+:root[data-ui-scale-enlarged='true'] .hud__corner > .hud-alerts--detached:has([data-alert='empty']) {
+  width: calc(270px * var(--ui-scale));
+}
+
 /*
  * The camera zoom pair, above the minimap frame (issue #1023).
  *

@@ -1,6 +1,23 @@
 import { expect, test } from './network-changed-fixture';
 import './ui-harness-api';
 
+test('Full HD Build at 200% keeps an empty alert panel within the minimap column', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.locator('#game-root canvas').waitFor();
+  await page.getByRole('button', { name: /New prison|Nowe więzienie/ }).click();
+  for (let step = 0; step < 4; step += 1) await page.locator('.display-scale__cycle').click();
+  await page.locator('.ui-tab[data-tab="build"]').click();
+  const alerts = page.locator('.hud__corner > .hud-alerts--detached');
+  await expect(alerts.locator('[data-alert="empty"]')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('empty-alerts-200.png') });
+  const widths = await page.evaluate(() => ({
+    alerts: document.querySelector('.hud__corner > .hud-alerts--detached')!.getBoundingClientRect().width,
+    minimap: document.querySelector('.hud__corner > .hud-minimap')!.getBoundingClientRect().width,
+  }));
+  expect(widths.alerts, JSON.stringify(widths)).toBeLessThanOrEqual(widths.minimap + 2);
+});
+
 for (const uiScale of [100, 200] as const) {
   test(`Full HD Build at ${uiScale}% keeps alerts visible beside a player-controlled minimap`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
@@ -34,9 +51,13 @@ for (const uiScale of [100, 200] as const) {
   });
 }
 
-test('a dismissible alert remains keyboard reachable while the Full HD Build minimap is folded', async ({ page }) => {
+test('a dismissible alert remains keyboard reachable while the Full HD Build minimap is folded', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/ui-harness.html');
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--ui-scale', '2');
+    document.documentElement.setAttribute('data-ui-scale-enlarged', 'true');
+  });
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
   await page.evaluate(() => window.lockstateUiHarness.setHudViewModel({
     counts: {
@@ -58,6 +79,9 @@ test('a dismissible alert remains keyboard reachable while the Full HD Build min
   await expect(page.locator('.hud-minimap .ui-panel__toggle')).toHaveAttribute('aria-expanded', 'false');
   const dismiss = page.locator('.hud__corner > .hud-alerts--detached [data-alert="incident"] button');
   await expect(dismiss).toBeVisible();
+  const alertWidth = await page.locator('.hud__corner > .hud-alerts--detached').evaluate((element) => element.getBoundingClientRect().width);
+  expect(alertWidth).toBeGreaterThan(700);
+  await page.screenshot({ path: testInfo.outputPath('active-alert-200.png') });
   await dismiss.focus();
   await expect(dismiss).toBeFocused();
   const before = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
