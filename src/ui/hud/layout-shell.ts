@@ -300,6 +300,16 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   drawerButton.element.setAttribute('aria-controls', 'hud-navigation-sections');
   options.navigation.container.prepend(drawerButton.element);
 
+  function restoreDrawerFocusIfHidden(): void {
+    if (
+      geometry.navigationPlacement === 'drawer' &&
+      !drawerOpen &&
+      regions.navigation.content.some((node) => node.contains(document.activeElement))
+    ) {
+      handOffFocus(drawerButton.element);
+    }
+  }
+
   function setDrawerOpen(open: boolean): void {
     drawerOpen = open && geometry.navigationPlacement === 'drawer' && !geometry.navigation.collapsed;
     root.dataset['navigationDrawerOpen'] = drawerOpen ? 'true' : 'false';
@@ -309,9 +319,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     if (geometry.navigationPlacement === 'drawer') {
       for (const node of regions.navigation.content) node.hidden = geometry.navigation.collapsed || !drawerOpen;
     }
-    if (!drawerOpen && regions.navigation.content.some((node) => node.contains(document.activeElement))) {
-      handOffFocus(drawerButton.element);
-    }
+    restoreDrawerFocusIfHidden();
   }
 
   const onDrawerKeyDown = (event: KeyboardEvent): void => {
@@ -735,6 +743,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       toggle.element.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       toggle.element.dataset['collapsed'] = collapsed ? 'true' : 'false';
     }
+    restoreDrawerFocusIfHidden();
 
     navigationSeparator.setRange(geometry.navigation.range);
     navigationSeparator.setSize(geometry.navigation.size);

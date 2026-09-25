@@ -69,11 +69,15 @@ for (const uiScale of [1.75, 2]) {
     if (uiScale === 2) {
       await trigger.click();
       await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      const buildTab = tabs.locator('[data-tab="build"]');
+      await buildTab.focus();
       await page.setViewportSize({ width: 960, height: 750 });
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'bar');
+      await expect(buildTab).toBeFocused();
       await page.setViewportSize({ width: 960, height: 540 });
       await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(trigger).toBeFocused();
       await expect(trigger).toContainText('Show the sections');
     }
   });
