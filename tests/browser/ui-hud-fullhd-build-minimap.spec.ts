@@ -47,7 +47,7 @@ test('a dismissible alert remains keyboard reachable while the Full HD Build min
     },
     clock: { day: 1, tickOfDay: 0, dayLengthTicks: 2400, mode: 'paused', speed: 1 },
     alerts: [{
-      id: 'incident', labelKey: 'hud.alert.refusal.zone.not-enclosed', severity: 'warning',
+      id: 'incident', labelKey: 'hud.alert.refusal.zone.not-enclosed', severity: 'danger',
       occurrences: {
         count: 1, lastAt: { day: 1, progressPercent: 0 }, firstSequence: 1,
         lastSequence: 1, statement: 'incident-statement',
@@ -60,5 +60,8 @@ test('a dismissible alert remains keyboard reachable while the Full HD Build min
   await expect(dismiss).toBeVisible();
   await dismiss.focus();
   await expect(dismiss).toBeFocused();
+  const before = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
   await page.keyboard.press('Enter');
+  const after = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+  expect(after.slice(before.length)).toEqual(['{"kind":"dismiss-alert","rowId":"incident"}']);
 });
