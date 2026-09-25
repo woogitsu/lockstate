@@ -3413,6 +3413,17 @@ test.describe('the assembled application', () => {
       };
     });
     const compact = await measure();
+    const compactAction = await page.evaluate(() => {
+      const panel = document.querySelector('.save-panel')!.getBoundingClientRect();
+      const heading = document.querySelector('.save-panel__heading')!.getBoundingClientRect();
+      const create = document.querySelector('.save-panel__create')!.getBoundingClientRect();
+      return {
+        insidePanel: create.left >= panel.left && create.right <= panel.right && create.bottom <= panel.bottom,
+        separateFromHeading: create.left >= heading.right,
+        visible: create.width > 0 && create.height > 0,
+      };
+    });
+    expect(compactAction).toEqual({ insidePanel: true, separateFromHeading: true, visible: true });
     await page.screenshot({ path: 'test-results/fullhd-save-compact.png' });
     await expect(page.locator('.save-panel summary')).toBeVisible();
     await page.locator('.save-panel summary').click();
@@ -3421,6 +3432,9 @@ test.describe('the assembled application', () => {
     expect(compact.saves).toBeLessThan(expanded.saves);
     expect(compact.build).toBeGreaterThan(expanded.build);
     expect(compact.fullRows).toBeGreaterThan(expanded.fullRows);
+    await page.locator('.save-panel summary').click();
+    await page.getByRole('button', { name: localeText('save.action.create') }).click();
+    await waitForSession(page);
   });
   test('the renderer canvas is the size of the window, and stays that way across resizes', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });

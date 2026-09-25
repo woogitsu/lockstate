@@ -584,7 +584,6 @@ export class SavePanel {
   private readonly root: HTMLElement;
   private readonly statusElement: HTMLElement;
   private readonly disclosure: HTMLDetailsElement;
-  private readonly disclosureHeading: HTMLElement;
   private readonly listElement: HTMLElement;
   private readonly detailElement: HTMLElement;
   /** The three header actions, registered once. */
@@ -674,19 +673,21 @@ export class SavePanel {
     const heading = document.createElement('summary');
     heading.className = 'save-panel__heading';
     heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.panelTitle);
-    this.disclosureHeading = heading;
     this.disclosure.append(heading);
     this.root.append(this.disclosure);
 
     const actions = document.createElement('div');
     actions.className = 'save-panel__actions';
+    // Creating a prison is the first-run route. Keep it available even while
+    // the other save controls are folded into the compact desktop rail.
     this.createButton = this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate());
+    this.createButton.classList.add('save-panel__create');
+    this.root.append(this.createButton);
     actions.append(
-      this.createButton,
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionSave, () => this.requestSaveNow()),
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionExport, () => this.requestExport()),
       // Beside Export in the expanded controls. The compact FullHD state
-      // leaves all four actions one keyboard or touch disclosure away.
+      // folds these three save actions while creation stays visible.
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionImport, () => this.requestImport()),
     );
     this.disclosure.append(actions);
@@ -999,7 +1000,7 @@ export class SavePanel {
     if (!this.focusAfterDeletion) return;
     this.focusAfterDeletion = false;
     if (!keyboardIsUnclaimed(ambientFocusOwner())) return;
-    handOffFocus(this.disclosure.open ? this.createButton : this.disclosureHeading);
+    handOffFocus(this.createButton);
   }
 
   /*

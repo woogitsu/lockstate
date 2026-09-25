@@ -54,6 +54,7 @@ canvas {
  * the HUD own the geometry without owning the panel.
  */
 .save-panel {
+  position: relative;
   width: var(--hud-rail-panel-width);
   max-width: 100%;
   box-sizing: border-box;
@@ -87,6 +88,7 @@ canvas {
 
 .save-panel__heading {
   min-height: var(--tap-target);
+  width: calc(100% - 7.5rem);
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -95,6 +97,15 @@ canvas {
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   color: var(--text-subtle);
+}
+
+/* The first-run action shares the compact heading's row. It stays outside
+   <details> so a folded save list cannot hide the way into a new prison. */
+.save-panel__create {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  max-width: 7.5rem;
 }
 
 .save-panel__heading:focus-visible {
