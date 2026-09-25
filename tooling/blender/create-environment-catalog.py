@@ -892,6 +892,19 @@ def furniture(collection, root, asset_id):
                 (2.72, 0.10, 0.055), "canteen_wood", 0.008)
             box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
                 (2.74, 0.012, 0.009), "shade", 0.002)
+        # The four-view reference has steel corner braces and amber reflectors.
+        # Carry them onto the overhead face, where the player actually sees
+        # this long, otherwise featureless closed gate at three tiles wide.
+        for side in (-1, 1):
+            box(collection, root, f"Brace upright.{side}",
+                (side * 1.34, 0, 0.72), (0.055, 0.74, 0.055),
+                "galvanized_edge", 0.007)
+            box(collection, root, f"Amber reflector shadow.{side}",
+                (side * 0.86, 0.355, 0.711), (0.18, 0.08, 0.015),
+                "shade", 0.004)
+            box(collection, root, f"Amber reflector.{side}",
+                (side * 0.86, 0.355, 0.723), (0.145, 0.047, 0.012),
+                "dock_amber", 0.004)
         for x in (-1.43, 1.43):
             box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
                 (0.12, 0.94, 0.91), "canteen_steel", 0.016)
@@ -905,11 +918,11 @@ def furniture(collection, root, asset_id):
         for x in (-0.70, 0.70):
             box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
                 (0.17, 0.045, 0.018), "dock_amber", 0.004)
-        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
-            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
-                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+        for x, angle in ((-1.03, 0.73), (1.03, -0.73)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, 0, 0.749),
+                        (0.89, 0.07, 0.055), "galvanized_edge", 0.009)
             brace.rotation_euler.z = angle
-            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+            cylinder(collection, root, f"Brace pivot.{x}", (x, 0, 0.79),
                      0.026, 0.016, "steel", 16)
     elif asset_id == "furniture.kitchen.prep_counter":
         # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
