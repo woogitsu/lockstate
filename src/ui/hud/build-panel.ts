@@ -204,6 +204,8 @@ export interface BuildPanelOptions {
 
 export interface BuildPanel {
   readonly element: HTMLElement;
+  /** Reveal and focus the current catalogue choice after guidance opens Build. */
+  focusCatalogue(): void;
   /**
    * The controls to disable while a command is in flight — the two buttons
    * that issue one, and nothing else.
@@ -3241,6 +3243,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
+    focusCatalogue(): void {
+      if (panelCollapsed) {
+        panelCollapsed = false;
+        panel.setCollapsed(false);
+      }
+      const id = focusRing.tabStopId;
+      if (id !== undefined) rows.get(id)?.element.focus();
+    },
     // Every control that issues a command, which is now four kinds of them:
     // the numeric route's submit, the buy button, the sell button, and one
     // cancel per pooled queue row. The rows are pooled precisely so that this
