@@ -1206,23 +1206,23 @@
     {
       "assetId": "door.interior.face",
       "image": "door.interior.face.png",
-      "sha256": "a9369837739344a3318fbe4d3d8889c289f27e921d01be312f02c5ecf5eeb125",
-      "pixelSha256": "48209dde869e9ec4326cbab3bbd569aabbb0e37a9bc47bfd6e258852de07551a",
+      "sha256": "42f3b6c34aa408b28bc1ea63830300d52e2b69afbf0e23ec712de9f1d06110d3",
+      "pixelSha256": "0b364fecc2f440af8155a9a0f70b090e3f50768e646bb0360bcd4df74e67317f",
       "footprintTiles": {
-        "width": 1,
-        "height": 1
+        "width": 1.0,
+        "height": 1.0
       },
       "frameTiles": {
-        "width": 1,
-        "height": 1
+        "width": 1.0,
+        "height": 1.0
       },
-      "marginFraction": 0,
+      "marginFraction": 0.0,
       "overhangsFootprint": false,
       "sizePx": {
         "width": 256,
         "height": 256
       },
-      "frameAspectDriftFromFootprint": 0,
+      "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
         "x": 0,
         "y": 0,

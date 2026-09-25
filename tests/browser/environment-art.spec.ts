@@ -1144,8 +1144,13 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(readings!.base!, readings!.plaster!)).toBeGreaterThan(20);
   });
 
-  test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }) => {
+  test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page);
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 2.5 * 64, 1));
+    if (process.env['LOCKSTATE_CAPTURE_INTERIOR_DOOR_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('interior-door-1920x1080.png') });
+    }
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
 
     const tile = fixture.tileSizePx;
@@ -1202,6 +1207,28 @@ test.describe('the environment artwork', () => {
     const capFrame = frames['env.wall.interior.cap']!;
     expect(capFrame.height * caps[0]!.tileScaleY, 'a wall cap should repeat once per tile').toBeCloseTo(tile, 3);
     expect(capFrame.width * caps[0]!.tileScaleX, 'a wall cap should fill its bar once').toBeCloseTo(caps[0]!.width, 3);
+  });
+
+  test('the interior door keeps recessed walnut panels and a readable dark latch at Full HD zoom 1', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openHarness(page);
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 2.5 * 64, 1));
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.door.interior.face');
+      if (frame === undefined) return undefined;
+      return {
+        panelBorder: harness.atlasPixel(frame.x + 27, frame.y + 35),
+        panelField: harness.atlasPixel(frame.x + 64, frame.y + 35),
+        latch: harness.atlasPixel(frame.x + 101, frame.y + 63),
+        latchPlate: harness.atlasPixel(frame.x + 105, frame.y + 63),
+      };
+    });
+    expect(pixels?.panelBorder?.[0]).toBeLessThan(pixels!.panelField![0] - 35);
+    expect(pixels?.latch?.[0]).toBeLessThan(pixels!.latchPlate![0] - 55);
+    if (process.env['LOCKSTATE_CAPTURE_INTERIOR_DOOR_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('interior-door-1920x1080.png') });
+    }
   });
 
   test('puts the floor art on the screen, and the blocks back when it is taken away', async ({ page }) => {
