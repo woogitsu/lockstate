@@ -508,6 +508,8 @@
 .hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-raised); }
 
 .hud-minimap__surface {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -621,6 +623,38 @@
   appearance: none;
   font: inherit;
   color: inherit;
+}
+
+.hud-minimap__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.hud-minimap__viewport {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 2px solid var(--status-caution);
+  outline: var(--hairline) solid var(--text-heading);
+  background: transparent;
+  pointer-events: none;
+}
+
+.hud-minimap__canvas[hidden], .hud-minimap__viewport[hidden] { display: none; }
+.hud-minimap__placeholder--sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /*
@@ -6673,4 +6707,295 @@
   position: absolute;
   right: var(--space-3);
   bottom: 100%;
+}
+
+/* Full HD operations frame (owner's 2026-09-24 direction A).
+ * Keep the existing controls and player-resizable widths. The status row is
+ * built from projectStatusMetrics(), including unknowns and badges; CSS only
+ * gives all nine chips an uninterrupted, permanent reading lane. The map is
+ * still the middle grid track and receives pointer input through blank HUD
+ * chrome. Smaller windows retain the existing responsive layout. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-strip {
+    row-gap: 0;
+    background: var(--surface-sunken);
+    border-bottom-color: var(--border-strong);
+  }
+
+  .hud-strip__metrics:not([hidden]) {
+    flex: 1 0 100%;
+    order: 1;
+    justify-content: stretch;
+    gap: 0;
+    min-height: calc(var(--tap-target) + var(--space-1));
+    border-top: var(--hairline) solid var(--border-hairline);
+    border-bottom: var(--hairline) solid var(--border-hairline);
+    background: var(--surface-base);
+  }
+
+  .hud-strip__metrics > .ui-stat {
+    flex: 1 1 auto;
+    min-height: calc(var(--tap-target) - var(--space-2));
+    padding: 0 var(--space-2);
+    background: var(--surface-base);
+    border-right: var(--hairline) solid var(--border-hairline);
+  }
+
+  /* The 200% interface scale doubles each chip's physical width. Keep every
+   * readout in the upper frame by making additional lines, rather than
+   * silently scrolling four of the nine off its right edge. */
+  :root[data-ui-scale-enlarged='true'] .hud-strip__metrics:not([hidden]) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--space-1);
+    overflow-x: visible;
+    margin-right: 0;
+    padding-block: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-strip__metrics > .ui-stat {
+    flex: 0 0 auto;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs {
+    background: var(--surface-base);
+    border-right: var(--hairline) solid var(--border-strong);
+    padding-left: var(--space-1);
+    padding-top: calc(var(--tap-target) + var(--space-2));
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__tabs > .hud-layout__arrow {
+    position: absolute;
+    top: 0;
+    left: var(--space-1);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: calc(var(--tap-target) + var(--space-2));
+    padding-inline: var(--space-1);
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab[data-active='true'] {
+    padding-left: calc(var(--space-1) - 2px);
+  }
+
+  .hud__rail {
+    background: var(--surface-base);
+    border-left: var(--hairline) solid var(--border-strong);
+  }
+
+  /* SavePanel stays in its owner-approved aside slot and in document order.
+   * Its content scrolls instead of claiming a quarter of a tall desktop rail. */
+  .hud__aside {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: calc(8.5 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud__aside {
+    /* Two rows of save actions need their full height before the panel's
+     * internal scroll begins. Four targets left the second row half hidden. */
+    flex: 0 0 calc(6 * var(--tap-target));
+    min-height: 0;
+  }
+
+  /* At enlarged scale Build otherwise starts beneath the fold: even its
+   * placement action is hidden. Keep the save actions visible while giving
+   * the selected catalogue row a complete tap target. */
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud__aside {
+    flex-basis: calc(5.25 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build {
+    position: relative;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud[data-active-tab='build'] .hud-build__arm {
+    position: absolute;
+    top: 0;
+    left: calc(2.2 * var(--tap-target));
+    right: calc(var(--tap-target) + var(--space-3));
+    width: auto;
+    z-index: 2;
+  }
+
+  .hud__aside .save-panel__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud__aside .save-panel__button {
+    width: 100%;
+    padding-inline: var(--space-1);
+  }
+
+  /* Show one complete saved-prison row. Longer lists scroll inside their own
+   * labelled region rather than ending in a visibly clipped fragment. */
+  .hud__aside .save-panel__list {
+    max-height: calc(2 * var(--tap-target));
+    overflow-y: auto;
+  }
+
+  .hud__aside .save-panel__item {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud__aside .save-panel__item-label {
+    grid-column: 1 / -1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hud__aside .save-panel__item > .save-panel__button {
+    min-height: var(--tap-target);
+    padding-inline: 0;
+  }
+
+  /* The selected tool is the one cost and name the player needs while
+   * placing. Give that one row a second line instead of hiding its price
+   * behind the selected badge in the narrow inspector. */
+  .hud-build__list > .ui-row[aria-checked='true'] .ui-row__label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  .hud-build__list {
+    max-height: calc(6 * var(--tap-target));
+  }
+
+  /* The category name is the catalogue's landmark. On the default Full HD
+   * rail the adjacent filter leaves it one word short; allow two short lines
+   * inside the existing tap-height header instead of displaying an ellipsis. */
+  .hud-build__catalogue > .ui-section__header-row .ui-section__eyebrow {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .hud__side {
+    flex: 1 1 auto;
+    margin-top: 0;
+    overflow-y: auto;
+  }
+
+  .hud[data-layout-navigation-placement='rail'] .hud__corner {
+    margin-left: calc(var(--hud-navigation-width) + var(--space-3));
+    padding-bottom: var(--space-4);
+  }
+
+  /* This surface is currently a labelled navigation placeholder, not a
+   * rendered map. Keep its 396px panel width for the alert sentences below
+   * it, while returning vertical world area until a real map is drawn. */
+  .hud-minimap__surface {
+    aspect-ratio: auto;
+    height: calc(2 * var(--tap-target));
+    flex: 0 0 auto;
+  }
+
+  /* At 200% the alert history used almost the entire world height and hid
+   * the prison itself. Dock the existing scrollable history at the bottom;
+   * its fold, dismiss actions, minimap and zoom buttons remain available. */
+  :root[data-ui-scale-enlarged='true'] .hud__corner {
+    max-height: calc(6 * var(--tap-target));
+    padding: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-zoom {
+    margin-bottom: 0;
+  }
+
+  /* The 200% corner no longer needs a double-width alerts column. Let the
+   * minimap use that compact column's width and give its real canvas enough
+   * height to show walls, zones and the camera frame. */
+  :root[data-ui-scale-enlarged='true'] .hud-minimap {
+    width: calc(270px * var(--ui-scale));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-minimap__surface {
+    max-width: 100%;
+    height: calc(1.25 * var(--tap-target));
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-minimap__placeholder {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Put each setting's existing label above its value inside the same tap
+   * target. Two horizontal halves cannot hold both full labels and values;
+   * this uses the target's unused upper space without adding rail height. */
+  .hud-chrome-prefs > .display-scale,
+  .hud-chrome-prefs > .theme-control {
+    position: relative;
+    padding: 0;
+  }
+
+  .hud-chrome-prefs > .display-scale > .ui-icon,
+  .hud-chrome-prefs > .theme-control > .ui-icon {
+    display: none;
+  }
+
+  .hud-chrome-prefs > .display-scale > .display-scale__legend,
+  .hud-chrome-prefs > .theme-control > .theme-control__legend {
+    position: absolute;
+    top: var(--space-1);
+    left: var(--space-2);
+    right: var(--space-2);
+    pointer-events: none;
+  }
+
+  /* The inspector's fold arrow shares the first control's top-left corner.
+   * Start that label after its tap target, while retaining enough room for
+   * the full name at both supported Full HD scales. */
+  .hud-chrome-prefs > .display-scale > .display-scale__legend {
+    left: calc(var(--tap-target) - var(--space-2));
+  }
+
+  .hud-chrome-prefs > .display-scale > .display-scale__cycle,
+  .hud-chrome-prefs > .theme-control > .theme-control__cycle {
+    width: 100%;
+    align-items: flex-end;
+    padding: 0 var(--space-2) var(--space-1);
+  }
+
+  /* A long group name and progress label must not fight for the same line in
+   * the inspector. The copy beneath remains visible at its natural height. */
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-header {
+    flex-wrap: wrap;
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-name,
+  :root[data-ui-scale-enlarged='true'] .hud-regime__block-progress {
+    overflow-wrap: anywhere;
+  }
+
+  /* The editor is an action, not a truncated label. Let its long accessible
+   * name take two lines within the narrow inspector at 200%. */
+  :root[data-ui-scale-enlarged='true'] .hud-regime__editor > .ui-section__header {
+    height: auto;
+    padding-block: var(--space-1);
+  }
+
+  :root[data-ui-scale-enlarged='true'] .hud-regime__editor > .ui-section__header > .ui-section__eyebrow {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
 }

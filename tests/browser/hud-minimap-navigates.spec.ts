@@ -56,6 +56,7 @@ function localeText(key: string): string {
 
 const MINIMAP_PLACEHOLDER_TEXT = localeText('hud.minimap.placeholder');
 const MINIMAP_NAVIGABLE_TEXT = localeText('hud.minimap.navigable');
+const MINIMAP_MAP_READY_TEXT = localeText('hud.minimap.map-ready');
 
 /**
  * Where the camera readout is taken, in canvas pixels.
@@ -238,11 +239,11 @@ test.describe('the minimap navigates the camera (#793)', () => {
     expect(textAfter, 'a click that found no world must not silently claim it worked').not.toBe(MINIMAP_NAVIGABLE_TEXT);
   });
 
-  test('the first click that actually moves the camera updates the panel to say so, and still sends nothing to the simulation', async ({ page }) => {
+  test('a map click moves the camera and sends nothing to the simulation', async ({ page }) => {
     await startFreshPrison(page);
 
     const textBefore = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textBefore).toBe(MINIMAP_PLACEHOLDER_TEXT);
+    expect(textBefore).toBe(MINIMAP_MAP_READY_TEXT);
     /*
      * THE "NO COMMAND" HALF IS ASSERTED HERE, ON A LIVE PRISON, AND NOT ONLY
      * ON THE PRE-SESSION PAGE ABOVE.
@@ -262,7 +263,7 @@ test.describe('the minimap navigates the camera (#793)', () => {
     await clickMinimap(page, pointAt(rect, 0.2, 0.8));
 
     const textAfter = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textAfter, 'a click that moved the camera left the panel claiming rendering is unavailable, with nothing said about the click that just worked').toBe(MINIMAP_NAVIGABLE_TEXT);
+    expect(textAfter, 'a click on the drawn map must leave its accessible name truthful').toBe(MINIMAP_MAP_READY_TEXT);
     expect(
       (await sentCommands(page)).slice(submittedBefore),
       'a minimap click reached the simulation -- moving the camera is presentational only (AGENTS.md boundary 1), so this gesture must build no command at all',
@@ -307,18 +308,16 @@ test.describe('the minimap surface is keyboard-reachable (#903)', () => {
     // A real `<button>`, not an ARIA role bolted onto a `div` -- native
     // semantics rather than a reimplementation of them.
     expect(focused.tag, 'the focused minimap surface is not a real <button>').toBe('BUTTON');
-    // Name-from-content, exactly as a native button computes its own
-    // accessible name: the sentence a screen reader announces is the same one
-    // a sighted player reads, not a second, divergent `aria-label` that could
-    // drift from it.
-    expect(focused.text, "the focused surface's accessible name is not the visible placeholder sentence").toBe(MINIMAP_PLACEHOLDER_TEXT);
+    // The real button retains its name-from-content semantics after the map
+    // paints; the name now describes a navigable prison map.
+    expect(focused.text).toBe(MINIMAP_MAP_READY_TEXT);
   });
 
   test('Enter on the focused surface reaches onMinimapNavigate: the panel updates and the camera actually moves', async ({ page }) => {
     await startFreshPrison(page);
 
     const textBefore = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textBefore).toBe(MINIMAP_PLACEHOLDER_TEXT);
+    expect(textBefore).toBe(MINIMAP_MAP_READY_TEXT);
 
     /*
      * Displace the camera off-centre with a real click first (issue #793's
@@ -353,12 +352,10 @@ test.describe('the minimap surface is keyboard-reachable (#903)', () => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(50);
 
-    // The text swap is gated in `hud.ts` on `onMinimapNavigate` returning
-    // `true` and nothing else, so seeing it here is direct proof the keyboard
-    // event reached that real callback rather than merely focusing an inert
-    // element.
+    // The map remains labelled while Enter navigates; its movement is checked
+    // immediately below from the real camera, not inferred from copy.
     const textAfter = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textAfter, 'Enter on the focused surface did not flip the panel to the navigable sentence -- the key press never reached onMinimapNavigate').toBe(MINIMAP_NAVIGABLE_TEXT);
+    expect(textAfter).toBe(MINIMAP_MAP_READY_TEXT);
 
     // And the substantive claim, not only the sentence: the camera actually
     // moved, read the same way the mouse-driven tests above read it.
