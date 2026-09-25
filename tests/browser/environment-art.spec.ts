@@ -60,6 +60,32 @@ function channelDistance(left: HarnessPixel, right: HarnessPixel): number {
 }
 
 test.describe('the environment artwork', () => {
+  test('the wooden chair has a clear air gap and one continuous seat at game scale', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    const chair = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.chair');
+      if (frame === undefined) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        back: harness.atlasPixel(frame.x + 64, frame.y + 15),
+        gap: harness.atlasPixel(frame.x + 64, frame.y + 30),
+        seat: harness.atlasPixel(frame.x + 64, frame.y + 67),
+      };
+    });
+    expect(chair?.size).toEqual([128, 128]);
+    expect(chair?.back?.[3]).toBeGreaterThan(240);
+    expect(chair?.gap?.[3]).toBeLessThan(20);
+    expect(chair?.seat?.[3]).toBeGreaterThan(240);
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: (fixture.chairTileX + 0.5) * fixture.tileSizePx, y: (fixture.chairTileY + 0.5) * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter(sprite => sprite.frameName === 'env.object.chair')).toEqual([
+      expect.objectContaining({ x: fixture.chairTileX * fixture.tileSizePx, y: fixture.chairTileY * fixture.tileSizePx }),
+    ]);
+  });
+
   test('cuts every declared sprite out of the published sheets and packs one texture', async ({ page }) => {
     await openHarness(page);
     const atlas = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.atlas());
