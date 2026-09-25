@@ -481,6 +481,13 @@ and a dark swivel above the hood, making its silhouette legible from the game's
 overhead view. The furnished Full HD desk capture compares the same scene
 before and after; no building rule or player text changes.
 
+**2026-09-25 refrigerator revision:** the existing 1×1 kitchen refrigerator
+keeps its condenser deck and colour scheme. The centre join of its two doors
+now reaches the top cap, with paired steel pulls visible from the overhead game
+camera. This follows the accepted four-view reference and distinguishes the
+refrigerator from the nearby stove in the furnished Full HD kitchen. Building
+rules, object identity, and player text remain unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed

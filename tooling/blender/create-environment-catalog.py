@@ -740,15 +740,21 @@ def furniture(collection, root, asset_id):
                     (x, y, 1.674), 0.013, 0.009, "steel", 12)
         box(collection, root, "Cream front roof cap", (0, 0.26, 1.617), (0.80, 0.27, 0.035), "fridge_enamel", 0.028)
         box(collection, root, "Roof compartment joint", (0, 0.176, 1.639), (0.79, 0.016, 0.008), "steel", 0.006)
-        box(collection, root, "Visible top handle", (0.30, 0.30, 1.665), (0.06, 0.16, 0.045), "galvanized_edge", 0.016)
+        # The overhead camera cannot see the vertical doors. Continue their
+        # centre reveal over the roof cap and expose both pull handles here.
+        box(collection, root, "Twin-door top reveal", (0, 0.26, 1.643), (0.018, 0.24, 0.009), "steel", 0.003)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Visible top handle.{x}", (x, 0.30, 1.665), (0.055, 0.16, 0.045), "galvanized_edge", 0.016)
         box(collection, root, "Front gasket", (0, 0.415, 0.90), (0.79, 0.024, 1.20), "shade", 0.018)
-        box(collection, root, "Cream enamel refrigerator door", (0, 0.447, 0.77), (0.78, 0.068, 0.95), "fridge_enamel", 0.042)
-        box(collection, root, "Cream freezer hatch", (0, 0.447, 1.38), (0.78, 0.068, 0.24), "fridge_enamel", 0.04)
+        for x in (-0.20, 0.20):
+            box(collection, root, f"Cream enamel refrigerator door.{x}", (x, 0.447, 0.77), (0.38, 0.068, 0.95), "fridge_enamel", 0.042)
+            box(collection, root, f"Cream upper hatch.{x}", (x, 0.447, 1.38), (0.38, 0.068, 0.24), "fridge_enamel", 0.04)
         box(collection, root, "Compartment seam", (0, 0.487, 1.245), (0.75, 0.014, 0.023), "steel", 0.008)
         box(collection, root, "Raised door lip", (0, 0.43, 1.57), (0.81, 0.11, 0.06), "porcelain", 0.025)
-        box(collection, root, "Door handle upper foot", (0.28, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
-        box(collection, root, "Door handle lower foot", (0.28, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
-        box(collection, root, "Brushed steel pull", (0.28, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Door handle upper foot.{x}", (x, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Door handle lower foot.{x}", (x, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Brushed steel pull.{x}", (x, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
         box(collection, root, "Visible top door reveal", (0, 0.44, 1.613), (0.80, 0.07, 0.028), "shade", 0.006)
     elif asset_id == "furniture.security.surveillance_console":
         # assets/source/concepts/security-console-multiview-v1.png.
