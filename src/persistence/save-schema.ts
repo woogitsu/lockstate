@@ -1473,6 +1473,10 @@ const inFlightSectionSchema = z
       .object({
         pending: z.array(pendingPathRequestSchema),
         results: z.array(resolvedPathRequestSchema),
+        cacheWarmth: z.object({
+          routes: z.array(z.object({ origin: tilePositionSchema, destination: tilePositionSchema, context: routeContextSchema }).strict()),
+          fields: z.array(z.object({ destinationRegion: z.number().int(), context: routeContextSchema }).strict()),
+        }).strict().optional(),
       })
       .strict(),
     prisoners: z

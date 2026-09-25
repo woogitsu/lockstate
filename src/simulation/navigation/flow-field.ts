@@ -190,6 +190,11 @@ export interface FlowFieldCacheMetrics {
   readonly size: number;
 }
 
+export interface FlowFieldWarmthKey {
+  readonly destinationRegion: RegionId;
+  readonly context: RouteContext;
+}
+
 function flowFieldCacheKey(destinationRegion: RegionId, contextFingerprint: string): string {
   return `${destinationRegion}#${contextFingerprint}`;
 }
@@ -197,6 +202,7 @@ function flowFieldCacheKey(destinationRegion: RegionId, contextFingerprint: stri
 /** Caches `RegionFlowField`s keyed by destination region + route-context fingerprint, mirroring `RouteCache`'s invalidation and metrics shape. */
 export class FlowFieldCache {
   private readonly entries = new Map<string, RegionFlowField>();
+  private readonly contexts = new Map<string, RouteContext>();
   private hits = 0;
   private misses = 0;
   private evictions = 0;
@@ -211,12 +217,14 @@ export class FlowFieldCache {
     }
     if (entry.geometrySignature !== graph.geometrySignature) {
       this.entries.delete(key);
+      this.contexts.delete(key);
       this.geometryInvalidations += 1;
       this.misses += 1;
       return undefined;
     }
     if (!doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
       this.entries.delete(key);
+      this.contexts.delete(key);
       this.evictions += 1;
       this.misses += 1;
       return undefined;
@@ -227,6 +235,35 @@ export class FlowFieldCache {
 
   public set(field: RegionFlowField): void {
     this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), field);
+  }
+
+  public setForContext(field: RegionFlowField, context: RouteContext): void {
+    const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
+    this.entries.set(key, field);
+    this.contexts.set(key, structuredClone(context));
+  }
+
+  public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly FlowFieldWarmthKey[] {
+    return [...this.entries.entries()]
+      .filter(([key, entry]) => {
+        const context = this.contexts.get(key);
+        return context !== undefined && entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.doorDependencies, doors, context);
+      })
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([key, entry]) => ({ destinationRegion: entry.destinationRegion, context: structuredClone(this.contexts.get(key)!) }));
+  }
+
+  public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry): void {
+    this.entries.clear();
+    this.contexts.clear();
+    const seen = new Set<string>();
+    for (const key of keys) {
+      const identity = flowFieldCacheKey(key.destinationRegion, routeContextFingerprint(key.context));
+      if (seen.has(identity)) throw new RangeError(`Duplicate flow-field warmth key: ${identity}`);
+      seen.add(identity);
+      if (!graph.regionTiles.has(key.destinationRegion)) throw new RangeError(`Missing flow-field destination region: ${String(key.destinationRegion)}`);
+      this.setForContext(computeRegionFlowField(graph, doors, key.destinationRegion, key.context), key.context);
+    }
   }
 
   public size(): number {
@@ -256,6 +293,6 @@ export function getOrComputeRegionFlowField(
   const cached = cache.get(destinationRegion, context, graph, doors);
   if (cached !== undefined) return cached;
   const field = computeRegionFlowField(graph, doors, destinationRegion, context, stats);
-  cache.set(field);
+  cache.setForContext(field, context);
   return field;
 }

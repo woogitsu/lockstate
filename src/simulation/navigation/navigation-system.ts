@@ -2,7 +2,7 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { ChunkPosition, TilePosition } from '../world/coordinates';
 import { type ChunkState, SparseWorld } from '../world/sparse-world';
 import { DoorRegistry } from './door';
-import { FlowFieldCache, type FlowFieldCacheMetrics } from './flow-field';
+import { FlowFieldCache, type FlowFieldCacheMetrics, type FlowFieldWarmthKey } from './flow-field';
 import {
   PathRequestQueue,
   type PendingPathRequestSnapshot,
@@ -12,7 +12,7 @@ import {
 } from './path-request-queue';
 import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
 import type { Route, RouteResult } from './route';
-import { RouteCache, type RouteCacheMetrics } from './route-cache';
+import { RouteCache, type RouteCacheMetrics, type RouteCacheWarmthKey } from './route-cache';
 import type { RouteContext } from './route-context';
 import { isEdgeTraversable } from './traversal';
 
@@ -30,6 +30,10 @@ export interface ResolvedPathRequestSnapshot {
 export interface NavigationInFlightSnapshot {
   readonly pending: readonly PendingPathRequestSnapshot[];
   readonly results: readonly ResolvedPathRequestSnapshot[];
+  readonly cacheWarmth?: {
+    readonly routes: readonly RouteCacheWarmthKey[];
+    readonly fields: readonly FlowFieldWarmthKey[];
+  };
 }
 
 function copyRoute(route: Route): Route {
@@ -214,13 +218,12 @@ export class NavigationSystem implements SystemRegistration {
    *   resolves at order 150 and `ActionSystem` collects it at its next
    *   reconsideration, up to twenty ticks later; a save in that window holds a
    *   route that no owner could re-ask for without paying the search again at a
-   *   different tick, against caches a restore rebuilds cold.
+   *   different tick. The later #1373 amendment saves cache membership too.
    *
    * So the queue's own contents are the save's, ids and all, and every owner
-   * keeps the id it already held. Caches (`RouteCache`, flow fields, the
-   * region graph) are still **not** carried: they are derived from the world
-   * and the door registry, both persisted, which is ADR 0007's line and is
-   * unchanged.
+   * keeps the id it already held. The later ADR 0007 amendment carries cache
+   * membership as structured keys and rebuilds answers from world and doors.
+   * The region graph remains derived.
    *
    * ## Why a result is carried without `expansions`, `usedFlowField` and `waitedTicks`
    *
@@ -254,14 +257,22 @@ export class NavigationSystem implements SystemRegistration {
    * cache warmth was built and withdrawn for its latency cost. ADR 0059's
    * amendment under "Determinism" carries the numbers and the open choice.
    *
+   * **Superseded 2026-09-25:** ADR 0007's cache-warmth amendment now saves
+   * structured cache keys. The budget-bound restore test requires equality.
+   *
    * Deterministic: both lists ascending by id.
    */
   public getInFlightSnapshot(): NavigationInFlightSnapshot {
+    const graph = this.ensureGraph();
     return {
       pending: this.queue.getSnapshot(),
       results: [...this.results.values()]
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+      cacheWarmth: {
+        routes: this.routeCache.getWarmthSnapshot(graph, this.doors),
+        fields: this.flowFieldCache.getWarmthSnapshot(graph, this.doors),
+      },
     };
   }
 
@@ -274,6 +285,11 @@ export class NavigationSystem implements SystemRegistration {
         throw new RangeError(`Path request id is both waiting and resolved, or resolved twice, in a snapshot: ${outcome.id}`);
       }
       this.results.set(outcome.id, { id: outcome.id, result: copyResult(outcome.result), usedFlowField: false, expansions: 0, waitedTicks: 0 });
+    }
+    if (snapshot.cacheWarmth !== undefined) {
+      const graph = this.ensureGraph();
+      this.flowFieldCache.loadWarmthSnapshot(snapshot.cacheWarmth.fields, graph, this.doors);
+      this.routeCache.loadWarmthSnapshot(snapshot.cacheWarmth.routes, this.world, graph, this.doors);
     }
   }
 

@@ -4,6 +4,8 @@ import type { NavigationGraph } from './region-graph';
 import { routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
 import type { RouteResult } from './route';
+import { findRoute } from './router';
+import type { SparseWorld } from '../world/sparse-world';
 
 function cacheKey(origin: TilePosition, destination: TilePosition, context: RouteContext): string {
   return `${tileKey(origin)}->${tileKey(destination)}#${routeContextFingerprint(context)}`;
@@ -26,10 +28,19 @@ function crossedDoorIds(result: RouteResult): readonly string[] {
 }
 
 interface CacheEntry {
+  readonly origin: TilePosition;
+  readonly destination: TilePosition;
+  readonly context: RouteContext;
   readonly result: RouteResult;
   readonly geometrySignature: string;
   /** Every door this result depended on and what the search concluded about each, captured at compute time. */
   readonly dependencies: DoorDependencies;
+}
+
+export interface RouteCacheWarmthKey {
+  readonly origin: TilePosition;
+  readonly destination: TilePosition;
+  readonly context: RouteContext;
 }
 
 /**
@@ -116,10 +127,35 @@ export class RouteCache {
     dependencyDoorIds: Iterable<string>,
   ): void {
     this.entries.set(cacheKey(origin, destination, context), {
+      origin: { ...origin },
+      destination: { ...destination },
+      context: structuredClone(context),
       result,
       geometrySignature: graph.geometrySignature,
       dependencies: captureDoorDependencies([...dependencyDoorIds, ...crossedDoorIds(result)], doors, context),
     });
+  }
+
+  /** Only valid membership is saved; values are reproducibly rebuilt from world and doors. */
+  public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly RouteCacheWarmthKey[] {
+    return [...this.entries.entries()]
+      .filter(([_key, entry]) => entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.dependencies, doors, entry.context))
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([_key, entry]) => ({ origin: { ...entry.origin }, destination: { ...entry.destination }, context: structuredClone(entry.context) }));
+  }
+
+  /** Recompute keys without charging simulation work; reject duplicate identities. */
+  public loadWarmthSnapshot(keys: readonly RouteCacheWarmthKey[], world: SparseWorld, graph: NavigationGraph, doors: DoorRegistry): void {
+    this.entries.clear();
+    const seen = new Set<string>();
+    for (const key of keys) {
+      const identity = cacheKey(key.origin, key.destination, key.context);
+      if (seen.has(identity)) throw new RangeError(`Duplicate route-cache warmth key: ${identity}`);
+      seen.add(identity);
+      const dependencies = new Set<string>();
+      const result = findRoute(world, doors, graph, key.origin, key.destination, key.context, undefined, dependencies);
+      this.set(key.origin, key.destination, key.context, graph, doors, result, dependencies);
+    }
   }
 
   public size(): number {

@@ -537,6 +537,13 @@ work are not.**
   "Determinism". `tests/determinism/restore-mid-walk-exactness.test.ts` pins
   the case as a known divergence.
 
+  **RESOLVED 2026-09-25 under the owner's cache-warmth ruling.** The save now
+  carries valid route and flow-field cache keys; restore deterministically
+  rebuilds their answers from world and doors before a simulation tick.
+  The former inequality assertion went red and now requires equality at the
+  budget-bound 24-prisoner and 36-prisoner checkpoints. Older saves without
+  those keys still load with cold caches.
+
   **`IncidentResponseSystem` was listed here as a fifth and does not belong,
   which was measured rather than reasoned (#352).** It cannot re-request: the
   incident lifecycle is forward-only, so `advanceResponse`'s no-record path can

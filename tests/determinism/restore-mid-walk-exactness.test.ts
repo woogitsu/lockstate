@@ -395,6 +395,27 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
     expect(decoded.ok).toBe(true);
   });
 
+  it('accepts an earlier in-flight save without cache keys and restores cold', () => {
+    const saved = savedWithWalkers();
+    const bundle = captureSessionSnapshot(saved);
+    const inFlight = bundle.simulation?.inFlight;
+    if (inFlight === undefined) throw new Error('fixture has no in-flight section');
+    const { cacheWarmth: _oldBuildDidNotWriteKeys, ...navigation } = inFlight.navigation;
+    const simulation = { ...bundle.simulation!, inFlight: { ...inFlight, navigation } };
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'before-cache-warmth', revision: 1,
+      createdAt: 1, updatedAt: 2, kernel: bundle.kernel, world: bundle.world,
+      construction: bundle.construction, entities: bundle.entities!, simulation,
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, SEED).runtime;
+    expect(restored.navigation.getRouteCacheMetrics().size).toBe(0);
+    expect(restored.navigation.getFlowFieldCacheMetrics().size).toBe(0);
+    expect(restored.navigation.getInFlightSnapshot().pending).toEqual(inFlight.navigation.pending);
+  });
+
   it('resets only the traveller whose carried request the restored queue does not hold', () => {
     // A tick where somebody holds an outstanding request *and* somebody else is
     // mid-walk, found by stepping rather than chosen.
@@ -434,18 +455,17 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
 });
 
 /**
- * **A KNOWN DIVERGENCE, PINNED SO IT CANNOT BE FORGOTTEN OR SILENTLY FIXED.**
- * This case asserts that the save *does not* restore to the same prison, and
- * it is written to go red the day that stops being true. The case that goes
- * red then should be inverted to require equality, not deleted.
+ * The previously pinned budget-bound divergence now requires equality. Its
+ * old inequality assertion went red when cache warmth was first restored;
+ * that red result is the proof that this gate sees the production change.
  *
  * `workBudgetPerTick` (2,000 expanded nodes) binds when enough prisoners ask
  * for a route on the same tick. Here that is 24 prisoners in six rows of
  * cells, admitted 7 ticks apart, all re-targeting at the tick-3461 regime
  * block change. A `RouteCache` or `FlowFieldCache` hit costs 0 against the
- * budget. A restore starts both caches empty. So a restored session pays for
- * searches the saved one had already paid for, and on a binding tick it stops
- * serving at a different request.
+ * budget. A restore used to start both caches empty and pay again for those
+ * searches; on a binding tick it served a different request set. Cache keys
+ * now cross the save boundary and their answers are rebuilt from the world.
  *
  * Measured through a real save and restore: every save taken 1 to 40 ticks
  * before the block change served a different set by tick 3463. With 36
@@ -453,15 +473,14 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
  * ticks before tick 5801. Replaying each binding tick's pending queue warm
  * against cold, the served set differed on 13 of 331 binding ticks.
  *
- * **Why it is pinned rather than fixed.** Charging the budget what a request
- * costs cold was built, made both cases equal, and was withdrawn by the commit after it, whose message carries the measurements:
+ * Charging the budget what a request costs cold was built, made both cases
+ * equal, and was withdrawn by the commit after it, whose message measured:
  * the full `navigation.production.meal-rush` benchmark took 211 ticks to drain
- * instead of 26. The choice between that, persisting the caches' warmth, and
- * accepting this is ADR 0007's owner's to make, and ADR 0059's amendment under
- * "Determinism" states it.
+ * instead of 26. The owner chose cache warmth persistence; ADR 0007 records
+ * its size measurement and restore rule.
  */
-describe('a save taken before the navigation budget binds (#1373, KNOWN DIVERGENCE)', () => {
-  it('24 prisoners at the tick-3461 block change: a save 1 tick before it serves a different set', { timeout: 120_000 }, () => {
+describe('a save taken before the navigation budget binds (#1373, cache warmth)', () => {
+  it('24 prisoners at the tick-3461 block change: a save 1 tick before it serves the same set', { timeout: 120_000 }, () => {
     const staffing: Staffing = { ...PRISONERS_ONLY, cells: 24, admissionGapTicks: 7 };
     const binds = 3_461;
     const continuous = buildPrison(staffing);
@@ -472,11 +491,27 @@ describe('a save taken before the navigation budget binds (#1373, KNOWN DIVERGEN
 
     const base = buildPrison(staffing);
     stepTo(base, binds - 1);
+    const warmth = base.navigation.getInFlightSnapshot().cacheWarmth;
+    expect(warmth?.routes.length, 'the save must actually contain warmed route keys').toBeGreaterThan(0);
+    expect(warmth?.fields.length, 'the save must actually contain a warmed shared field').toBeGreaterThan(0);
     const restored = saveAndRestore(base);
     expect(captured(restored), 'the restore itself is still a fixed point').toBe(captured(base));
     stepTo(restored, binds + 2);
     const differences = firstDifferences(JSON.parse(captured(continuous)), JSON.parse(captured(restored)));
-    expect(differences.length, 'the divergence this case pins has gone: invert it to require equality').toBeGreaterThan(0);
-    expect(differences[0]).toMatch(/^\.simulation\.inFlight\.navigation\.pending/);
+    expect(differences).toEqual([]);
+  });
+
+  it('36 prisoners: cache warmth survives a save 600 ticks before the block change', { timeout: 120_000 }, () => {
+    const staffing: Staffing = { ...PRISONERS_ONLY, cells: 36, admissionGapTicks: 7 };
+    const binds = 5_801;
+    const continuous = buildPrison(staffing);
+    stepTo(continuous, binds + 2);
+    const base = buildPrison(staffing);
+    stepTo(base, binds - 600);
+    expect(base.navigation.getInFlightSnapshot().cacheWarmth?.routes.length).toBeGreaterThan(0);
+    const restored = saveAndRestore(base);
+    expect(captured(restored)).toBe(captured(base));
+    stepTo(restored, binds + 2);
+    expect(firstDifferences(JSON.parse(captured(continuous)), JSON.parse(captured(restored)))).toEqual([]);
   });
 });

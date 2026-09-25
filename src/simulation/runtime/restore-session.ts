@@ -161,6 +161,10 @@ export interface RestoredScopeEntry {
  *   which the payload carries -- on its first scheduled update. See
  *   `IncidentResponseSystem.releaseOrphanedClaims`.
  *
+ *   **Superseded by #1373:** current saves carry pending path requests and
+ *   cache membership keys in `simulation.inFlight`. The answers are rebuilt
+ *   from the saved world and doors; older saves still follow the old reset.
+ *
  * `docs/PERSISTENCE.md` records the reason for every exclusion.
  * `restoreSimulationRuntime` returns this summary so a caller -- and the
  * player-facing UI -- can be honest about what came back.

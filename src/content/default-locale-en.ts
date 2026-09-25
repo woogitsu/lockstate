@@ -4343,7 +4343,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // reassurance" -- that split is a copy decision and is deliberately not made
   // here: the sentence moves whole.
   'save.scope.room-caches': 'room and topology caches (recomputed from the world)',
-  'save.scope.navigation-caches': 'navigation caches and in-flight path requests (re-issued on the next tick)',
+  'save.scope.navigation-caches': 'navigation cache results (rebuilt after loading)',
 
   // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
   // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the

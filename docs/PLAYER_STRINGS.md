@@ -540,7 +540,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `save.scope.incidents` | incidents, gangs and tunnels | `src/content/default-locale-en.ts:4339` |
 | `save.scope.names` | prisoner and staff names | `src/content/default-locale-en.ts:4340` |
 | `save.scope.room-caches` | room and topology caches (recomputed from the world) | `src/content/default-locale-en.ts:4345` |
-| `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | `src/content/default-locale-en.ts:4346` |
+| `save.scope.navigation-caches` | navigation cache results (rebuilt after loading) | `src/content/default-locale-en.ts:4346` |
 | `input.action.camera.up` | Pan camera up | `src/content/default-locale-en.ts:4354` |
 | `input.action.camera.down` | Pan camera down | `src/content/default-locale-en.ts:4355` |
 | `input.action.camera.left` | Pan camera left | `src/content/default-locale-en.ts:4356` |

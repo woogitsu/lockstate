@@ -515,3 +515,48 @@ What this amendment does **not** touch: the work-unit budget, the fairness rule,
 the "always at least one request per tick" rule, the deferred-status decision
 amended on 2026-08-25, and `docs/NAVIGATION.md`'s hierarchical-versus-flat-optimal
 caveat, which is a different claim and still stands.
+
+### Amendment, 2026-09-25: preserve cache warmth across a save (#1373)
+
+The owner chose *"Zapisywać pamięć tras (zalecane)"* on 2026-09-23 in
+[#1373](https://github.com/woogitsu/lockstate/issues/1373#issuecomment-5794814425).
+That is the label of an offered option, not a free-form sentence by the owner.
+It authorises saving valid route-cache and flow-field-cache keys and rebuilding
+their values deterministically on restore. The in-flight work from ADR 0059
+lands first, separately. A legacy save with no cache keys still starts cold.
+
+**Size measured before implementation.** On the existing 24-cell navigation
+fixture, 24 distinct routes to one canteen activated one shared field and
+drained in one tick. Serialised as JSON, the two opaque key lists occupied
+855 + 29 = **884 bytes**, but those strings alone cannot safely reconstruct
+arbitrary `RouteContext` values: role and permission strings may contain their
+separator characters. The planned structured keys, each carrying the two
+tile positions and full context, occupied **3,358 bytes**. Serialising the
+cache *values* as well (routes, fields and door verdict maps) occupied
+**23,874 bytes** on the same fixture. The fixture's world snapshot alone was
+1,806 bytes; that is a component comparison, not a claim about the size of a
+complete prison save. The measurement ran before any persistence code changed,
+using `buildCellBlockFixture(24)` and `PathRequestQueue` with its real
+threshold and 400-expansion budget. It establishes the local size trade-off:
+rebuildable structured keys are about **7.1 times smaller** than full cached
+values in this case. Larger prison saves need separate measurement rather
+than extrapolation from one fixture.
+
+The save records keys in deterministic order. A restore first reconstructs
+the world, doors and graph, then recomputes the selected cache entries against
+that state without charging simulation ticks or changing queue order. The
+same dependency tracking and invalidation checks continue to govern later
+door or geometry changes. An entry that no longer matches the restored world
+is discarded, never treated as authoritative routing state. Diagnostics
+(`hits`, `misses`, expansions) remain session-local; only the presence of a
+valid entry influences the next tick's work budget.
+
+This amends the previous claim that caches are always rebuilt *cold* on
+restore. They remain derived state, but their **membership** becomes part of
+the save because cache hits spend zero expansions and therefore decide which
+requests can fit under `workBudgetPerTick`. The known 24/36-prisoner
+divergence pinned in `restore-mid-walk-exactness.test.ts` is the gate: a
+save/restore run must agree with the continuous run at the next budget-bound
+service tick and later checkpoints. A cache whose keys cannot be validated
+or rebuilt without changing its answer is a refused payload, not silent
+fallback to a different game's timeline.

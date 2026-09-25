@@ -485,6 +485,11 @@ tick later than the one it was saved from. No fixture here makes it bind.
 kept so the correction can be read against it, and the question is open.**
 Measured on 2026-09-23:
 
+**Subsequent resolution, 2026-09-25:** the owner chose cache warmth persistence
+in #1373. ADR 0007's amendment records the pre-implementation size measurement
+and deterministic key rebuild. The previous cold-cache account below remains
+the measured defect that led to this choice; it is no longer current behavior.
+
 - *"It did not bind on any save the test takes"* was true only of the
   12-prisoner fixture.
 - *"A tick later"* understated the effect. In six rows of cells with 24
