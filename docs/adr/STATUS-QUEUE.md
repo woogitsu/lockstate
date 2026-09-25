@@ -29454,7 +29454,7 @@ it.
 
 ## 3. The 2026-09-25 re-anchor at 42fc9649 (v0.0.784)
 
-Re-read §§3-6 against main @ 42fc9649 (**v0.0.784**). The ADR census remains **Next free number: 0124**.
+Re-read at `42fc9649` (**v0.0.784**) against main. The ADR census remains **Next free number: 0124**.
 
 ## How to act on a future entry, mechanically
 

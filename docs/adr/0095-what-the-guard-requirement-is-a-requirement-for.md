@@ -191,9 +191,13 @@ nothing about the unassigned axis. One level down settles it.
 
 `describeStaffCoverage` (`src/ui/hud/staff-panel.ts:461`-`:520`,
 `describeStaffCoverage`) has three
+
+> `export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {`
+
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`
 (`src/ui/simulation-staff-coverage.ts`, `staffCoverageFromProjection`, whose own docblock says
+> `staffCoverageFromProjection`
 
 > *What it computes, which is nothing.*
 *"What it computes, which is nothing"*). `shortage <= 0` with `assigned > 0` is
