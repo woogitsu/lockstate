@@ -456,6 +456,13 @@ sprite while leaving the bed's rail silhouette and cell furniture footprint
 unchanged. The older side-by-side image above remains evidence for the 2026-09-06
 model, not an assessment of this revision.
 
+**2026-09-25 stove revision:** the existing 2×1 kitchen stove keeps its
+materials, controls, and four burner locations. Each burner now has eight
+separate cast-iron pot supports and a smaller steel cap, so the dark well and
+radial grate remain visible in the game atlas rather than forming one flat
+cross. The furnished 1920×1080 kitchen captures the same buildables before and
+after the Blender change; neither kitchen rules nor player text change.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed

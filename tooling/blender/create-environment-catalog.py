@@ -926,11 +926,16 @@ def furniture(collection, root, asset_id):
                     (x, y, 1.050), (0.46, 0.34, 0.028), "stove_heat", 0.028)
                 cylinder(collection, root, f"Burner rim.{x}.{y}", (x, y, 1.067), 0.166, 0.033, "steel", 48)
                 cylinder(collection, root, f"Dark burner well.{x}.{y}", (x, y, 1.087), 0.143, 0.010, "shade", 48)
-                cylinder(collection, root, f"Burner cap.{x}.{y}", (x, y, 1.102), 0.061, 0.027, "canteen_steel", 32)
-                box(collection, root, f"Cast-iron crossbar east-west.{x}.{y}",
-                    (x, y, 1.125), (0.39, 0.045, 0.045), "shade", 0.009)
-                box(collection, root, f"Cast-iron crossbar north-south.{x}.{y}",
-                    (x, y, 1.127), (0.045, 0.30, 0.045), "shade", 0.009)
+                cylinder(collection, root, f"Burner cap.{x}.{y}", (x, y, 1.102), 0.048, 0.027, "steel", 32)
+                # Eight separate tapered-looking pot supports reveal the
+                # burner circle at game scale. The old pair of crossing bars
+                # hid the well and read as a flat plus sign from overhead.
+                for support_index in range(8):
+                    angle = 2 * math.pi * support_index / 8
+                    support = box(collection, root, f"Cast-iron pot support.{x}.{y}.{support_index}",
+                        (x + 0.126 * math.cos(angle), y + 0.126 * math.sin(angle), 1.126),
+                        (0.025, 0.132, 0.045), "shade", 0.008)
+                    support.rotation_euler.z = angle - math.pi / 2
         box(collection, root, "Overhead control lip", (0, 0.415, 1.058), (1.88, 0.13, 0.058), "galvanized_edge", 0.015)
         box(collection, root, "Control fascia", (0, 0.48, 0.82), (1.88, 0.07, 0.22), "galvanized_edge", 0.012)
         for x in (-0.69, -0.23, 0.23, 0.69):
