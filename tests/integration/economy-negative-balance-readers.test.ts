@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { formatNumber } from '../../src/services/localization/format';
 import { PayrollSystem, staffDailyWageMinorUnits, Treasury } from '../../src/simulation/economy';
@@ -8,7 +9,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
 import { SIMULATION_PROTOCOL_VERSION, statusCountsSchema } from '../../src/simulation/protocol/types';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
 import { ZEROED_COUNTS } from '../helpers/hud-counts';
@@ -93,7 +94,7 @@ function submit(runtime: SimulationRuntime, id: string, command: Parameters<type
  * an assigned balance: this is the same method `PayrollSystem` reaches.
  */
 function prisonUnderWater(depth: number): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   runtime.treasury.setOverdraftFloor(-depth);
   expect(runtime.treasury.spend(runtime.treasury.balanceMinorUnits + depth, 'wages')).toBe(true);
   expect(runtime.treasury.balanceMinorUnits).toBe(-depth);
@@ -171,7 +172,7 @@ describe('the status channel carries a negative balance instead of refusing the 
   });
 
   it('still accepts the identical prison one minor unit above the boundary', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     runtime.treasury.setOverdraftFloor(-2_000);
     submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 625 });
     expect(runtime.treasury.balanceMinorUnits).toBe(0);

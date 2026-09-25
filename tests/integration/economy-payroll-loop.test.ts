@@ -1,15 +1,19 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
+
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { SIMULATION_PROTOCOL_VERSION, workerToMainMessageSchema, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+
+/** Historical 25,000-grant scenario, kept to measure its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **The prison now costs money to run.**
@@ -37,7 +41,7 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ## Where the figures come from
  *
  * Read off runs of this fixture and written out. `WAGE` and the opening balance
- * are read from content and from `TREASURY_STARTING_BALANCE_MINOR_UNITS`, so
+ * are read from content and from `SCENARIO_STARTING_BALANCE_MINOR_UNITS`, so
  * moving the guard band moves this file with it rather than breaking it -- but
  * every *balance* is a literal, so an implementation that charged twice, or
  * once, or never would move one of them.
@@ -69,7 +73,7 @@ function cellRect(index: number): { readonly x: number; readonly y: number; read
 
 /** A prison of `cells` furnished cells, built through the real command path and standing by tick 1,000. */
 function beddedPrison(cells: number): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   const rects = Array.from({ length: cells }, (_unused, index) => cellRect(index));
   // One plank per bed: `materialsRequired[0].quantity` is the object's
   // footprint width and `bed-wooden` is one tile wide.
@@ -102,21 +106,21 @@ describe('the payroll is on the kernel of a session a player can start', () => {
     // balance, and a balance that failed to move is indistinguishable from a
     // prison that owed nothing -- so the registration is checked where it
     // cannot be confused with an arithmetic result.
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     expect(runtime.kernel.systemExecutionOrder).toContainEqual({ id: 'economy.payroll', order: 130 });
   });
 
   it('bills the catalogue`s wage per guard per in-game day, out of a real hire', () => {
-    const runtime = createNewSimulationRuntime(SEED);
-    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    const runtime = createHistoricalOpeningRuntime(SEED);
+    expect(runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
 
     hire(runtime, 2);
     // Two engagement charges of one day's wage each, before any day has ended.
-    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - 2 * WAGE);
+    expect(runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - 2 * WAGE);
 
     // One tick short of the first boundary the payroll has not run.
     stepTo(runtime, DAY_LENGTH_TICKS - 1);
-    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - 2 * WAGE);
+    expect(runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS - 2 * WAGE);
 
     // 25,000 less two hires at 80 and then two wages at 80: 24,680. Written
     // out, because an implementation that charged the roster once at session
@@ -134,7 +138,7 @@ describe('the payroll is on the kernel of a session a player can start', () => {
   });
 
   it('publishes what the roster costs and what it owes, on the channel the HUD reads', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).dailyWageBillMinorUnits).toBe(0);
 
     hire(runtime, 3);
@@ -151,7 +155,7 @@ describe('hiring before there is anybody to guard is a decision the balance now 
     // The trade-off this whole step exists to create, in its plainest form: an
     // empty prison earns nothing (`StateIncomeSystem` pays per *occupied
     // place*) and three guards cost 240 a day.
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     hire(runtime, 3);
 
     const balances = [24_520, 24_280, 24_040, 23_800];
@@ -423,9 +427,12 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * Day 14 reaches 2,460 (still under the bound, unaffected); day 15 would
      * add the 960 bill's usual 520 and land on 2,980, and decision 3(c) caps
      * the *carried* figure at exactly 2,500 instead -- the 480 above the bound
-     * forgiven rather than deferred, per that decision's own words.
+     * forgiven rather than deferred, per that decision's own words. Since
+     * #641, the shipped grant and its derived facility move the shared arrears
+     * cap to 10,000. This historical 25,000-grant scenario now carries the
+     * full measured 2,980 on day 15.
      */
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
     // Filtered to `economy.wages-unpaid` for the reason the first check above
     // is: the two rung-crossing events from day 8 are still on the channel
     // (nothing here retires them) and are not paydays. **This comment said
@@ -449,7 +456,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     ).toBe(6);
     // 2,980 uncapped, kept above; the arrears bound (ADR 0096 decision 3(c))
     // caps the sentence's own figure at 2,500, same as `unpaidWagesMinorUnits`.
-    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_500 });
+    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_980 });
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // eight events for eight real things that happened, none of them repeated.
@@ -593,8 +600,9 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * ADR 0096 decision 3(c)'s arrears bound (accepted 2026-09-10): day 14 is
      * 2,460, day 15's usual +520 would reach 2,980, and it is capped at
      * `ARREARS_BOUND_MINOR_UNITS` (2,500) instead -- forgiven, not deferred.
+     * With #641's derived 10,000 cap, the historical scenario carries 2,980.
      */
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
   });
 
   /**

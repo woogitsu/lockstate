@@ -1,10 +1,11 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { intakeStageFromIndex } from '../../src/simulation/prisoners/components';
 import { NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -82,7 +83,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * two.
  */
 function prisonWithBedOrdered(seed = SEED): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(seed);
+  const runtime = createHistoricalOpeningRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
@@ -413,7 +414,7 @@ describe('what the placement does to the rest of the prison', () => {
     // still ends with the same bed in the same cell: the placement is refused
     // or accepted on the state at its own tick, and none of the three depends
     // on which of the others ran first.
-    const reordered = createNewSimulationRuntime(SEED);
+    const reordered = createHistoricalOpeningRuntime(SEED);
     wallRoomPerimeter(reordered.world, CELL_RECT, { doors: reordered.navigation.doors });
     submit(reordered, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(reordered, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));

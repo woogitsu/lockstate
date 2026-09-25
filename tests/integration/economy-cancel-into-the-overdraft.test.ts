@@ -1,17 +1,19 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
-  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
+const SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS = -2_500;
 
 /**
  * **Over-drag the build queue into the standing overdraft, then take it all
@@ -133,7 +135,7 @@ const PLANK_PRICE = UNIT_PRICE.get(PLANK)!;
  * prices that is 313 walls and a balance of −40, and the case below drags
  * further than that on purpose — see its own comment.
  */
-const WALLS_TO_GO_UNDER = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / WALL_COST) + 1;
+const WALLS_TO_GO_UNDER = Math.floor(SCENARIO_STARTING_BALANCE_MINOR_UNITS / WALL_COST) + 1;
 
 interface Edge {
   readonly x: number;
@@ -161,7 +163,7 @@ function edges(count: number): readonly Edge[] {
  * *during* the gesture, which is a different measurement.
  */
 function createSession(seed = 0x717) {
-  const runtime = createNewSimulationRuntime(seed);
+  const runtime = createHistoricalOpeningRuntime(seed);
   let sequence = 0;
 
   const submit = (command: SimulationCommand): void => {
@@ -230,13 +232,13 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     const orderIds = Array.from({ length: WALLS_TO_GO_UNDER }, (unused, index) => `wall-${String(index)}`);
 
     session.atOneTick(placements(orderIds));
-    const spent = TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
+    const spent = SCENARIO_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
     expect(spent, 'the whole drag bought itself on the placing tick').toBe(WALLS_TO_GO_UNDER * WALL_COST);
     expect(session.runtime.treasury.balanceMinorUnits, 'and it is under water').toBeLessThan(0);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'nothing has landed yet').toBe(0);
 
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(SCENARIO_STARTING_BALANCE_MINOR_UNITS);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
 
@@ -317,9 +319,9 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     session.atOneTick(placements(orderIds));
     const strandedBalance = session.runtime.treasury.balanceMinorUnits;
     expect(strandedBalance, '328 walls at 80, out of a 25,000 facility').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - walls * WALL_COST,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - walls * WALL_COST,
     );
-    expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(SCENARIO_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(strandedBalance, 'and past the rung a Buy press is refused at').toBeLessThan(
       INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + PLANK_PRICE,
     );
@@ -343,14 +345,14 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     // The undo. Before #717 this moved neither figure: −1,240 and 656 bricks.
     session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS,
     );
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it').toBe(0);
 
     // And the position really is unlocked: the same press now goes through.
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
     expect(session.runtime.treasury.balanceMinorUnits, 'one plank, out of a whole facility').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+      SCENARIO_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
     );
   }, 60_000);
 

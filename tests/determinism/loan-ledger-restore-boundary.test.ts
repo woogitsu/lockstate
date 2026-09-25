@@ -1,10 +1,11 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { JsonValue } from '../../src/shared/json';
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -42,7 +43,7 @@ import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
  * No player can reach it. `createNewSimulationRuntime` builds a `LoanBook`
  * only when `SimulationRuntimeOptions.loanTerms` is supplied, nothing in
  * `src/` supplies it, and `restoreSimulationRuntime` has no channel through
- * which it could: it calls `createNewSimulationRuntime(seed, { world })` and
+ * which it could: it calls `createHistoricalOpeningRuntime(seed, { world })` and
  * nothing else. So the sessions this file builds are reachable from a test and
  * from `scripts/report-loan-recovery-pricing.mjs`, and from nothing a player
  * touches. Both facts are asserted below rather than cited, because the
@@ -124,7 +125,7 @@ function step(runtime: SimulationRuntime, ticks: number): void {
  * measurement of a repayment rather than of a method call.
  */
 function earningSession(options: { readonly loanTerms?: LoanTerms } = {}): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED, options);
+  const runtime = createHistoricalOpeningRuntime(SEED, options);
   const ring = cellRingEdges();
   const doorway = ring[ring.length - 1] as Edge;
   ring.slice(0, ring.length - 1).forEach((edge, index) => {
@@ -161,7 +162,7 @@ function roundTrip(runtime: SimulationRuntime): SimulationRuntime {
 
 describe('the loan is unreachable without terms, which is what makes the gap below a gap', () => {
   it('gives a default session no ledger at all, and a restore no way to ask for one', () => {
-    expect(createNewSimulationRuntime(SEED).loans, 'no `src/` caller supplies `loanTerms`').toBeUndefined();
+    expect(createHistoricalOpeningRuntime(SEED).loans, 'no `src/` caller supplies `loanTerms`').toBeUndefined();
 
     // The structural half: even a session that *had* a book comes back
     // without one, because `restoreSimulationRuntime` builds its runtime with

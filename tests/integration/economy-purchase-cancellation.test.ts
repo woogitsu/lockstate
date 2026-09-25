@@ -1,12 +1,14 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * Issue #285: **the money spent on a delivery that has not landed comes back,
@@ -34,7 +36,7 @@ import {
  * Because the claim is about money, and money in this repository is integer
  * minor units with no rounding rule. `item.brick` costs **40**
  * (`src/content/procurement-catalog.ts`) and a session starts with **25,000**
- * (`TREASURY_STARTING_BALANCE_MINOR_UNITS`), so every balance below is written
+ * (`SCENARIO_STARTING_BALANCE_MINOR_UNITS`), so every balance below is written
  * out. A figure computed from the code under test -- `before - balance`, or a
  * price read back out of the catalog and multiplied here -- would agree with a
  * refund of the wrong amount, which is exactly the defect class #375 records.
@@ -72,7 +74,7 @@ describe('cancelling a purchase whose delivery has not landed', () => {
     // Not decoration: the literals in this file are only readable claims while
     // these two hold, and a content change that moved either would otherwise
     // turn every assertion below into a different (still green) story.
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(SCENARIO_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
     expect(packCommand({ type: 'CancelMaterialPurchase', orderId: 'buy-1' }).data).toEqual({
       type: 'CancelMaterialPurchase',
       orderId: 'buy-1',
@@ -80,7 +82,7 @@ describe('cancelling a purchase whose delivery has not landed', () => {
   });
 
   it('buys, cancels, and returns the balance to exactly what it was', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
 
     // Three bricks at 40.
@@ -113,7 +115,7 @@ describe('cancelling a purchase whose delivery has not landed', () => {
      * The three quantities differ so the refund is attributable: 1, 2 and 4
      * bricks at 40 is 40, 80 and 160, and only one of those figures is 80.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, 'cmd-a', { type: 'PurchaseMaterials', orderId: 'buy-a', itemId: 'item.brick', quantity: 1 });
     send(runtime, 'cmd-b', { type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 2 });
     send(runtime, 'cmd-c', { type: 'PurchaseMaterials', orderId: 'buy-c', itemId: 'item.brick', quantity: 4 });
@@ -144,7 +146,7 @@ describe('cancelling a purchase whose delivery has not landed', () => {
      * refusal *reaches the log* and not merely that the balance held. A silent
      * no-op here is a Cancel that appeared to refund money.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, 'cmd-buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 2 });
     expect(runtime.treasury.balanceMinorUnits).toBe(24_920);
 
@@ -171,7 +173,7 @@ describe('cancelling a purchase whose delivery has not landed', () => {
      * observable through the counter -- and a handler that swallowed the second
      * would leave `last` looking correct.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, 'cmd-1', { type: 'CancelMaterialPurchase', orderId: 'never-bought' });
     expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
     expect(runtime.refusals.last?.reason).toBe('cancel-purchase.not-pending');
@@ -190,13 +192,13 @@ describe('cancelling a purchase whose delivery has not landed', () => {
      * added for #285 reads state a stored save has held all along -- which is
      * what kept V6 free for #361 and #337.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, 'cmd-buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 3 });
 
     const snapshot = runtime.procurement.snapshot();
     const treasury = runtime.treasury.snapshot();
 
-    const restored = createNewSimulationRuntime(SEED);
+    const restored = createHistoricalOpeningRuntime(SEED);
     restored.procurement.restore(JSON.parse(JSON.stringify(snapshot)) as typeof snapshot);
     restored.treasury.restore(JSON.parse(JSON.stringify(treasury)) as typeof treasury);
     expect(restored.treasury.balanceMinorUnits).toBe(24_880);

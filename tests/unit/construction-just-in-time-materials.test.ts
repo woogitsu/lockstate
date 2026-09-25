@@ -61,7 +61,7 @@ const order = (orderId: string, ...requirements: MaterialRequirement[]): QueuedO
 const oneOrder = (...requirements: MaterialRequirement[]): QueuedOrderDemand[] => [order('order-1', ...requirements)];
 
 function fixture(startingBalance = 25_000) {
-  const treasury = new Treasury();
+  const treasury = new Treasury(25_000);
   if (startingBalance < 25_000) {
     expect(treasury.spend(25_000 - startingBalance, 'construction'), 'the fixture must be able to reach its own opening balance').toBe(true);
   }

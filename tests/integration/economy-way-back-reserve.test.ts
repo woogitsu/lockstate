@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
@@ -6,7 +7,7 @@ import {
 } from '../../src/simulation/economy';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 
 /**
  * **[ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
@@ -65,7 +66,7 @@ function cellRingEdges(): readonly { readonly x: number; readonly y: number; rea
 
 /** Hires `guards`, on day one, and presses nothing else — ADR 0096's own act B. */
 function hireOnly(guards: number): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   for (let index = 0; index < guards; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }

@@ -1,12 +1,14 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
-import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **The `SellMaterials` command reaches `ProcurementSystem.sellStock` through
@@ -63,7 +65,7 @@ function buyAndReceiveBricks(runtime: SimulationRuntime, orderId: string, quanti
 
 describe('selling stock back through SellMaterials', () => {
   it('pins the two figures every credit below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(SCENARIO_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
     expect(packCommand({ type: 'SellMaterials', itemId: 'item.brick', quantity: 5 }).data).toEqual({
       type: 'SellMaterials',
       itemId: 'item.brick',
@@ -72,7 +74,7 @@ describe('selling stock back through SellMaterials', () => {
   });
 
   it('sells bricks back at exactly half the catalogue price, and withdraws them from the container', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     buyAndReceiveBricks(runtime, 'buy-1', 10);
     const balanceAfterBuying = runtime.treasury.balanceMinorUnits;
     expect(balanceAfterBuying, '25,000 - 10 x 40').toBe(24_600);
@@ -87,7 +89,7 @@ describe('selling stock back through SellMaterials', () => {
   });
 
   it('refuses to sell more than the container holds, and credits nothing', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     buyAndReceiveBricks(runtime, 'buy-1', 3);
     const balanceBeforeSale = runtime.treasury.balanceMinorUnits;
 
@@ -100,7 +102,7 @@ describe('selling stock back through SellMaterials', () => {
   });
 
   it('refuses an item the catalogue does not sell, and a malformed quantity, each its own refusal', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
 
     send(runtime, 'cmd-unknown', { type: 'SellMaterials', itemId: 'item.does-not-exist', quantity: 1 });
     expect(runtime.refusals.last?.reason).toBe('sell.unknown-material');
@@ -123,7 +125,7 @@ describe('selling stock back through SellMaterials', () => {
     // Issue #492's rule, applied to `sell.*` exactly as `purchaseSupersessionKey`
     // is applied to `purchase.*`: the key is the item and the quantity, not
     // an id `SellMaterials` does not carry.
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     buyAndReceiveBricks(runtime, 'buy-1', 2);
     const balanceAfterBuyingTwo = runtime.treasury.balanceMinorUnits;
 

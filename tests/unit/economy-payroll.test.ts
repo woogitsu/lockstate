@@ -264,16 +264,18 @@ describe('the day the treasury cannot pay', () => {
      * everything past 2,500 rather than deferring it, so this file's own
      * subject -- arrears climbing without limit while the prison is left
      * alone -- now stops at the bound on day 2 (2,500 of a 1,400-a-day bill is
-     * under two days) and stays there for the other twenty-eight.
+     * under two days) and stays there for the other twenty-eight. #641 raises
+     * the opening grant and its linked facility, so the current derived bound
+     * is 10,000; this same 30-day case reaches that bound instead.
      */
-    expect(payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(payroll.unpaidWagesMinorUnits).toBe(10_000);
   });
 
   it('stops accruing at the bound and forgives what a day would have added past it (ADR 0096 decision 3(c))', () => {
     // One chief at 700/day against a treasury with nothing in it: arrears
-    // climbs 700 a day, uncapped, until it would cross 2,500.
+    // climbs 700 a day until it would cross the current derived 10,000 cap.
     const { kernel, payroll } = payrollOnlyKernel(rosterOf(CHIEF), 0);
-    const expected = [700, 1_400, 2_100, 2_500, 2_500, 2_500];
+    const expected = [700, 1_400, 2_100, 2_800, 3_500, 4_200, 4_900, 5_600, 6_300, 7_000, 7_700, 8_400, 9_100, 9_800, 10_000, 10_000];
     for (let day = 1; day <= expected.length; day += 1) {
       step(kernel, DAY_LENGTH_TICKS);
       expect(payroll.unpaidWagesMinorUnits, `end of day ${String(day)}`).toBe(expected[day - 1]);

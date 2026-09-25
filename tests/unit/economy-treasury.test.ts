@@ -278,7 +278,8 @@ describe('what a shipped session gets (#703 ruling A)', () => {
   });
 
   it('is one tenth of the opening grant, derived rather than written down', () => {
-    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-2_500);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-10_000);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS * 10).toBe(-TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(Number.isSafeInteger(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(true);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'a floor above zero would be a minimum balance').toBeLessThan(0);
@@ -287,6 +288,8 @@ describe('what a shipped session gets (#703 ruling A)', () => {
   it('opens the facility on a new session, unpressed', () => {
     const runtime = createNewSimulationRuntime(0x703);
 
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
+    expect(runtime.treasury.overdraftFloorMinorUnits).toBe(-10_000);
     expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(runtime.treasury.overdraftFloorMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(
@@ -312,11 +315,21 @@ describe('what a shipped session gets (#703 ruling A)', () => {
     const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
 
     expect(restored.treasury.balanceMinorUnits).toBe(0);
-    expect(restored.treasury.overdraftFloorMinorUnits).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    expect(restored.treasury.overdraftFloorMinorUnits).toBe(-10_000);
     expect(
       JSON.stringify(captureSessionSnapshot(runtime)),
       'and no floor is written to the save, at any depth',
     ).not.toContain('overdraft');
+  });
+
+  it('keeps the balance carried by an older 25,000-grant save while applying the current facility', () => {
+    const runtime = createNewSimulationRuntime(0x641);
+    runtime.treasury.restore({ balanceMinorUnits: 25_000 });
+
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+
+    expect(restored.treasury.balanceMinorUnits, 'loading a save must not award the extra 75,000').toBe(25_000);
+    expect(restored.treasury.overdraftFloorMinorUnits).toBe(-10_000);
   });
 });
 
@@ -327,7 +340,7 @@ describe('what a shipped session gets (#703 ruling A)', () => {
  *
  * Ruling 19 -- *"Dać szczeblom własne progi wewnątrz debetu"*, give the rungs
  * their own thresholds inside the overdraft -- gave -1,250 (deliveries),
- * -2,000 (construction) and -2,500 (wages, the floor). #771 found a 750-wide
+ * -2,000 (construction) and the then-current -2,500 (wages, the floor). #771 found a 750-wide
  * band in which the shop refused a purchase the build queue could still fund
  * with the same materials, and the owner ruled *"buying and building stop at
  * the same place"*: construction now reads the same -1,250 deliveries does.
@@ -360,7 +373,7 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     // Equalised by the owner's ruling on #771 (2026-09-01): construction no
     // longer has a rung of its own 750 minor units deeper than deliveries'.
     expect(treasury.floorFor('construction'), 'the same balance a Buy press stops at').toBe(-1_250);
-    expect(treasury.floorFor('wages')).toBe(-2_500);
+    expect(treasury.floorFor('wages')).toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     // Not a fourth threshold and not the deepest: see `SpendClass`.
     expect(treasury.floorFor('hiring')).toBe(-1_250);
 
@@ -378,7 +391,7 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     const boundaries = [
       ['deliveries', -1_250],
       ['construction', -1_250],
-      ['wages', -2_500],
+      ['wages', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS],
       ['hiring', -1_250],
     ] as const;
 
@@ -518,7 +531,7 @@ describe('Treasury: the starter rung for a fresh, unfurnished prison (#771 remed
     // this describe already pins.
     expect(fresh.floorFor('deliveries', false)).toBe(-1_250);
     expect(fresh.floorFor('hiring', false)).toBe(-1_250);
-    expect(fresh.floorFor('wages', false), 'mature: still the sentinel that clamps to the overdraft floor').toBe(-2_500);
+    expect(fresh.floorFor('wages', false), 'mature: still the sentinel that clamps to the overdraft floor').toBe(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
   });
 
   /**

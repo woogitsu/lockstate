@@ -1,3 +1,4 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import {
@@ -15,7 +16,7 @@ import {
 import type { JsonValue } from '../../src/shared/json';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -157,7 +158,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * literal.
  */
 function insolventSession(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(0x9a6e5);
+  const runtime = createHistoricalOpeningRuntime(0x9a6e5);
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));
@@ -243,7 +244,7 @@ describe('the arrears field is in the save, and it is what makes a debt survive 
   });
 
   it('writes the section unconditionally, so a solvent prison says "nothing owed" rather than "unknown"', () => {
-    const runtime = createNewSimulationRuntime(0x9a6e5);
+    const runtime = createHistoricalOpeningRuntime(0x9a6e5);
     submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
     const envelope = envelopeOf(captureSessionSnapshot(runtime));
     expect(envelope.payload.simulation?.economy?.payroll).toEqual({ unpaidWagesMinorUnits: 0 });
@@ -287,7 +288,7 @@ describe('a save written before the payroll existed still loads, which is why no
     // Absence is unambiguous *because* of this: it lands where a session that
     // never had a payroll sat, rather than on a value invented at restore.
     expect(restored.payroll.unpaidWagesMinorUnits).toBe(0);
-    expect(createNewSimulationRuntime(0).payroll.unpaidWagesMinorUnits).toBe(0);
+    expect(createHistoricalOpeningRuntime(0).payroll.unpaidWagesMinorUnits).toBe(0);
 
     // The rest of the save is untouched by the absence: the treasury the older
     // build wrote is the treasury that comes back -- ADR 0096 decision 2's

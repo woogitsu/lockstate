@@ -41,7 +41,7 @@ import {
  */
 
 /** The shipped facility, pinned so a change to it fails here with the reason named. */
-const FLOOR = -2_500;
+const FLOOR = -10_000;
 
 /**
  * **The floor a *press* is judged against, which since the owner's ruling 19 of
@@ -153,7 +153,7 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
     expect(
       judgeAffordability(65, 25_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
       'the grant plus the whole facility, which is what the FUNDS chip still shows',
-    ).toBe(27_500);
+    ).toBe(35_000);
   });
 
   /**

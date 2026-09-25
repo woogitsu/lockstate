@@ -9,6 +9,7 @@ import {
 } from '../../src/simulation/runtime/restore-session';
 import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
+import { setHistoricalOpeningTreasury } from '../helpers/historical-opening-treasury';
 
 /**
  * The subtle half of #29: the state pays at the **end** of the in-game day, so
@@ -117,6 +118,7 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
 /** A scenario stepped to `tick`, with intake having had time to house its arrivals. */
 function sessionAtTick(tick: number): SimulationRuntime {
   const runtime = buildDeterminismScenario();
+  setHistoricalOpeningTreasury(runtime);
   submitScenarioCommands(runtime);
   for (let index = 0; index < tick; index += 1) runtime.kernel.step();
   expect(runtime.kernel.tick).toBe(tick);

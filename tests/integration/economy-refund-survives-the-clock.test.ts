@@ -1,15 +1,18 @@
+import { createHistoricalOpeningRuntime } from '../helpers/historical-opening-treasury';
 import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY, createBuildOrder } from '../../src/simulation/construction';
-import { JUST_IN_TIME_ORDER_ID_PREFIX, TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { JUST_IN_TIME_ORDER_ID_PREFIX } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { projectPendingDeliveries } from '../../src/simulation/presentation';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
-  createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+
+/** Historical 25,000-grant scenario: keep its original economy boundary. */
+const SCENARIO_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
 /**
  * **The money a player takes back stays back once the clock runs**
@@ -250,7 +253,7 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  * specific distance from any one rung.
  */
 function drainedPrison(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createHistoricalOpeningRuntime(SEED);
   send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 399 });
   step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
   send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
@@ -270,14 +273,14 @@ const DRAINED_AFTER_SIX_BRICKS = -1_175;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(SCENARIO_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
     expect(BUILDABLE_REGISTRY.get(WALL)!.materialsRequired).toEqual([{ itemId: BRICK, quantity: 2 }]);
     expect(procurableMaterial(BRICK)!.unitPriceMinorUnits).toBe(40);
     expect(2 * 40).toBe(WALL_COST);
   });
 
   it('gives the whole wall run back, and running the clock does not take it away again', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     placeWalls(runtime, 15);
 
     // The measurement issue #687 opens with: fifteen segments, 1,200 spent.
@@ -304,7 +307,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('withdraws one segment per delivery cancelled, and leaves the rest of the run alone', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     placeWalls(runtime, 5);
     expect(balanceOf(runtime)).toBe(25_000 - 5 * WALL_COST);
 
@@ -326,7 +329,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('takes the back of the crew walk', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     // `placeWalls` mints `order-000`, `order-001`, `order-002` in that order,
     // so ascending id and placement order coincide here -- which is what makes
     // the walk legible in this fixture and is exactly why it cannot be the
@@ -352,7 +355,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('never takes a segment the crew has already taken up', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     placeWalls(runtime, 3);
     // Far enough for the first delivery to land and the crew to pick the
     // lowest id up, and not far enough for it to finish.
@@ -379,7 +382,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('leaves the queue alone when the delivery was one the player pressed Buy for', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     // Bought **first**, so the three walls placed after it find their bricks
     // already in flight and buy nothing of their own: every delivery here is
     // the player's, and the queue is standing entirely on the player's stock.
@@ -413,7 +416,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('withdraws nothing when what the prison already has coming covers the queue', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     placeWalls(runtime, 2);
     // Six bricks in flight against four bricks of demand: the queue is covered
     // twice over, and the just-in-time delivery is now surplus.
@@ -445,7 +448,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('leaves undo and redo with nothing to bring back', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     for (let index = 0; index < 3; index += 1) {
       send(runtime, {
         type: 'PlaceBuildOrder',
@@ -478,7 +481,7 @@ describe('a refund survives the clock (#687)', () => {
   });
 
   it('withdraws nothing when the cancellation itself was refused', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     placeWalls(runtime, 3);
     const [landed] = deliveryIds(runtime);
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 1);
@@ -529,7 +532,7 @@ describe('a refund survives the clock (#687)', () => {
    * brick -- so a price change fails there rather than being absorbed here.
    */
   it('gives the money back and spends it again at the same price, and costs only the delivery delay', () => {
-    const withCancel = createNewSimulationRuntime(SEED);
+    const withCancel = createHistoricalOpeningRuntime(SEED);
     send(withCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
     placeWalls(withCancel, 3);
     expect(balanceOf(withCancel)).toBe(25_000 - 6 * 40);
@@ -540,12 +543,12 @@ describe('a refund survives the clock (#687)', () => {
     expect(balanceOf(withCancel)).toBe(25_000);
 
     const cancelledCompletedAt = runToQuiet(withCancel);
-    const withoutCancel = createNewSimulationRuntime(SEED);
+    const withoutCancel = createHistoricalOpeningRuntime(SEED);
     send(withoutCancel, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
     placeWalls(withoutCancel, 3);
     const keptCompletedAt = runToQuiet(withoutCancel);
 
-    const neverBought = createNewSimulationRuntime(SEED);
+    const neverBought = createHistoricalOpeningRuntime(SEED);
     placeWalls(neverBought, 3);
     const neverBoughtCompletedAt = runToQuiet(neverBought);
 
@@ -579,7 +582,7 @@ describe('a refund survives the clock (#687)', () => {
    * rather than one code change apart.
    */
   it('would delete the whole run if a player-bought cancellation withdrew as well', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 10 });
     placeWalls(runtime, 3);
     // Ten bricks in flight against six of demand, so nothing just-in-time was
@@ -638,7 +641,7 @@ describe('a refund survives the clock (#687)', () => {
    * #693 could have settled it and did not.
    */
   it('takes the segment the player drew last, however its id sorts (#693, #722)', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     // Ids deliberately unordered against x, the way a UUID is. Placement is
     // left to right at x = 4..8, one drag down one row.
     const plan = [
@@ -677,7 +680,7 @@ describe('a refund survives the clock (#687)', () => {
    * through commands, because a command is precisely what stamps the ordinal.
    */
   it('still takes the greatest id when no order carries a placement ordinal', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = createHistoricalOpeningRuntime(SEED);
     for (const { id, x } of [
       { id: 'order-ffff', x: 4 },
       { id: 'order-1111', x: 5 },
