@@ -198,6 +198,7 @@ export class PrisonerRecordComponent {
     };
   }
 
+
   public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>): void {
     this.sentenceLengthTicks.set(snapshot.sentenceLengthTicks);
     this.priorIncidentsAtIntake.set(snapshot.priorIncidentsAtIntake);
@@ -374,6 +375,15 @@ export class PrisonerColdState {
   public setPathRequestId(entityId: EntityId, requestId: string | undefined): void {
     if (requestId === undefined) this.currentActionPathRequestId.delete(entityId);
     else this.currentActionPathRequestId.set(entityId, requestId);
+  }
+
+  public getPathRequestSnapshot(): readonly (readonly [EntityId, string])[] {
+    return [...this.currentActionPathRequestId].sort(([a], [b]) => a - b);
+  }
+
+  public loadPathRequestSnapshot(rows: readonly (readonly [EntityId, string])[]): void {
+    this.currentActionPathRequestId.clear();
+    for (const [entityId, requestId] of rows) this.currentActionPathRequestId.set(entityId, requestId);
   }
 
   /**

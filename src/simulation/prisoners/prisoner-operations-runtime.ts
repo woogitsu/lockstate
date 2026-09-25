@@ -4,7 +4,7 @@ import { EntityQuery } from '../entity/query';
 import type { SimulationEventLog } from '../events';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
-import { LocomotionStore, LocomotionSystem } from '../locomotion';
+import { LocomotionStore, LocomotionSystem, type LocomotionSnapshot } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import type { CarryJobExecutor } from '../operations/carry-executor';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
@@ -945,7 +945,7 @@ export class PrisonerOperationsRuntime {
    * round-trips a snapshot without one gets a window that says it opened at 0,
    * which is what a fixture with no clock means.
    */
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0): void {
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot> & { readonly locomotion?: LocomotionSnapshot }, atTick = 0): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -968,7 +968,8 @@ export class PrisonerOperationsRuntime {
     // prisoner is re-planned from the tile the snapshot carried rather than
     // resumed mid-leg. Clearing the headings with it is what stops a recycled
     // component index from inheriting the way its previous occupant faced.
-    this.locomotion.clear();
+    if (snapshot.locomotion === undefined) this.locomotion.clear();
+    else this.locomotion.loadSnapshot(snapshot.locomotion);
 
     // Any entity mid-`'travelling'` referenced a path request in the
     // *previous* NavigationSystem instance's queue -- a fresh one (per this
@@ -977,7 +978,7 @@ export class PrisonerOperationsRuntime {
     // the next reconsideration cycle re-selects and re-requests instead.
     const travellingPhase = ACTION_PHASES.indexOf('travelling');
     const idlePhase = ACTION_PHASES.indexOf('idle');
-    for (let index = 0; index <= this.entityStore.maxActiveIndex; index += 1) {
+    for (let index = 0; snapshot.locomotion === undefined && index <= this.entityStore.maxActiveIndex; index += 1) {
       if (!this.entityStore.isIndexAlive(index)) continue;
       if (this.currentAction.phase[index] !== travellingPhase) continue;
       this.currentAction.phase[index] = idlePhase;

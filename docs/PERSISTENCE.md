@@ -446,6 +446,17 @@ decode boundary owes its caller the same thing.
 
 ### What is deliberately excluded from the payload
 
+**#1373 amendment (2026-09-25).** The pending route queue and resolved results
+described below are now included in new saves, together with prisoner and guard
+locomotion, held request ids and request sequences. Enqueue ticks survive so
+priority aging continues from the same tick. Search travel state also resumes.
+Older saves, which lack these optional fields, still use the reset behavior
+documented below. Navigation route and flow caches remain derived and are not
+saved; diagnostic counters may therefore differ after a restore without
+changing simulation decisions. Incident response requests are excluded from
+the saved queue because that system deliberately reconstructs its response.
+No save schema version bump is needed under ADR 0038's additive-field rule.
+
 Every entry here is an exclusion with a stated reason, not a gap. The rule
 V3 applies is: **authoritative state is persisted; derived state and in-flight
 work are not.**

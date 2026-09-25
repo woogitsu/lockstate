@@ -22,20 +22,15 @@ import type { TilePosition } from '../world/coordinates';
  * arithmetic below is integer addition rather than a vector library, and the
  * invariant is checked in `beginWalk` rather than assumed.
  *
- * ### Why sub-tile progress is integer, and not saved
+ * ### Why sub-tile progress is integer, and how it is saved
  *
  * Integer, because ADR 0020 makes the kernel's state deterministic and
  * reproducible from a seed; a fixed-point offset in `1/256` of a tile is exact
  * under addition where a float accumulator is exact only in practice.
  *
- * Not saved, because a walk is already transient state that no save carries.
- * `PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
- * `idle` and clears its path request, and `GuardRoster.loadSnapshot` documents
- * the same mid-leg reset, both because the path request named a queue entry in
- * a `NavigationSystem` a restored session rebuilds empty. A walk is the second
- * half of exactly that state, so it is dropped for exactly that reason, and
- * **no save-format field is added by this module** -- the actor resumes from
- * the tile it had reached, which is the tile the snapshot already carried.
+ * Session saves now carry the integer offset, waypoints and heading together
+ * with navigation's pending work (ADR 0059 option 5). Older saves without
+ * these optional fields retain the earlier idle-on-reached-tile reset.
  *
  * ### What it costs
  *
@@ -54,7 +49,7 @@ import type { TilePosition } from '../world/coordinates';
  * reconsiders on its own cadence, which is what keeps this off AGENTS.md
  * boundary 9's budgeted pathfinding path.
  *
- * **Still no save-format field.** The re-validation is asked at the moment of
+ * The re-validation is asked at the moment of
  * crossing rather than carried as a validity token on the route, so a walk
  * gains no state a snapshot would have to version -- the paragraph above stays
  * true, and that is one of the reasons the traversal-time rule was chosen over
@@ -141,6 +136,17 @@ interface WalkState {
   progress: number;
   headingX: HeadingComponent;
   headingY: HeadingComponent;
+}
+
+export interface LocomotionSnapshot {
+  readonly walks: readonly (readonly [number, {
+    readonly waypoints: readonly TilePosition[];
+    readonly next: number;
+    readonly progress: number;
+    readonly headingX: HeadingComponent;
+    readonly headingY: HeadingComponent;
+  }])[];
+  readonly headings: readonly (readonly [number, { readonly x: HeadingComponent; readonly y: HeadingComponent }])[];
 }
 
 function headingComponent(delta: number): HeadingComponent {
@@ -274,6 +280,31 @@ export class LocomotionStore {
   public clear(): void {
     this.walks.clear();
     this.headings.clear();
+  }
+
+  /** Save the exact leg and facing direction, including headings of standing actors. */
+  public getSnapshot(): LocomotionSnapshot {
+    return {
+      walks: [...this.walks].sort(([a], [b]) => a - b).map(([key, walk]) => [key, {
+        waypoints: walk.waypoints.map((tile) => ({ ...tile })),
+        next: walk.next,
+        progress: walk.progress,
+        headingX: walk.headingX,
+        headingY: walk.headingY,
+      }] as const),
+      headings: [...this.headings].sort(([a], [b]) => a - b).map(([key, heading]) => [key, { ...heading }] as const),
+    };
+  }
+
+  public loadSnapshot(snapshot: LocomotionSnapshot): void {
+    this.clear();
+    for (const [key, heading] of snapshot.headings) this.headings.set(key, { ...heading });
+    for (const [key, walk] of snapshot.walks) {
+      if (walk.next < 1 || walk.next >= walk.waypoints.length || walk.progress < 0 || walk.progress >= LOCOMOTION_SUBTILE_UNITS) {
+        throw new RangeError(`Invalid saved walk for actor ${String(key)}.`);
+      }
+      this.walks.set(key, { ...walk, waypoints: walk.waypoints.map((tile) => ({ ...tile })) });
+    }
   }
 
   /**
