@@ -85,6 +85,8 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  */
 export const PUBLISHED_ASSET_IDS = [
   'fixture.cell.toilet_sink',
+  'fixture.cell.waste_bin',
+  'fixture.shower.head',
   'furniture.corridor.bench.variants',
   'furniture.office.desk.employee.variants',
 ];

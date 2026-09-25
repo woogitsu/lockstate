@@ -2823,6 +2823,12 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
     'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #3',
 ] as const;
 
+// These five sweep viewports never enter the short, enlarged desktop layout.
+// The trigger is mounted but deliberately hidden there; the dedicated Full HD
+// page-zoom test opens it and checks all six tabs by pointer and keyboard.
+const NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER =
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--bordered hud-navigation-drawer__trigger "Show the sections"';
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -5027,6 +5033,7 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+      NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
     ];
     const neverLaidOut = inventory.controls.filter(
       (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
@@ -11673,9 +11680,14 @@ test.describe('the assembled application', () => {
         }, scale);
         await page.setViewportSize({ width, height });
         await openApp(page);
+        const drawerPlacement = (await page.locator('.hud').getAttribute('data-layout-navigation-placement')) === 'drawer';
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
         await page.locator('.ui-tab[data-tab="build"]').click();
+        // Selecting a tab closes the temporary drawer. Reopen it to measure
+        // the six tabs in the state where a player can press them.
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
 
-        const report = await page.evaluate(() => {
+        const report = await page.evaluate((drawerOpen) => {
           const outside: string[] = [];
           const unreachable: string[] = [];
           const selectors = [
@@ -11706,7 +11718,7 @@ test.describe('the assembled application', () => {
           }
           // Presence is not reachability. Only a real hit test says whether
           // the pixel at a control's centre belongs to that control.
-          for (const control of document.querySelectorAll<HTMLElement>('.ui-tab, .display-scale__cycle')) {
+          for (const control of document.querySelectorAll<HTMLElement>(drawerOpen ? '.ui-tab' : '.ui-tab, .display-scale__cycle')) {
             const rect = control.getBoundingClientRect();
             const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
             if (hit === null || !control.contains(hit)) {
@@ -11784,7 +11796,16 @@ test.describe('the assembled application', () => {
             // the second half of the #88 fix and it must survive every scale.
             railOverflow: rail === null ? -1 : rail.scrollHeight - rail.clientHeight,
           };
-        });
+        }, drawerPlacement);
+
+        if (drawerPlacement) {
+          await page.locator('.hud-navigation-drawer__trigger').click();
+          const scaleReachable = await page.locator('.display-scale__cycle').evaluate((control) => {
+            const rect = control.getBoundingClientRect();
+            return control.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+          });
+          expect(scaleReachable, `scale control is covered at ${width}x${height} and ${scale * 100}%`).toBe(true);
+        }
 
         expect(report.outside, `laid outside the viewport at ${width}x${height} and ${scale * 100}%`).toEqual([]);
         expect(report.unreachable, `covered by something else at ${width}x${height} and ${scale * 100}%`).toEqual([]);

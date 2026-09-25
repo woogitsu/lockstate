@@ -84,6 +84,8 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
+  'env.object.shower-head',
+  'env.object.waste-bin',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -319,6 +321,20 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
     note: 'Employee desk with a dark blotter, rendered top-down (ADR 0100). Drawn on object.desk.',
+  },
+  'env.object.shower-head': {
+    kind: 'rendered-art',
+    renderedArtId: 'fixture.shower.head',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Wall-mounted shower fixture with a perforated circular head, modelled for the 1×1 object.shower-head footprint.',
+  },
+  'env.object.waste-bin': {
+    kind: 'rendered-art',
+    renderedArtId: 'fixture.cell.waste_bin',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Open institutional waste bin with a pale rim and foot pedal, modelled for the 1×1 object.waste-bin footprint.',
   },
   /*
    * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,

@@ -792,8 +792,15 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `5ed25544` (**v0.0.759**) by the delta method,
-from `4ac515b4`. This is #1400's merge commit, the most recent non-release
+Re-anchored at `main` @ `9e6361c9` (**v0.0.762**) by the delta method,
+from `5ed25544`. This is the Full HD inspector integration commit in the
+first-parent history of the main tree this branch read. The previous anchor
+was twenty-three first-parent landings ago, thirteen over the unchanged
+ten-landing budget. This pass re-read §§3-6 against the changed paths and
+records its live findings in the new §3 entry below.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`5ed25544` (**v0.0.759**) by the delta method,"* from `4ac515b4`. This was #1400's merge commit, the most recent non-release
 first-parent commit in the `main` tree this pass read; release commit
 `2b3ec44e` sits above it. The previous anchor was eleven landings ago,
 one over the unchanged ten-landing budget. This pass re-read §§3-6, including
@@ -21786,6 +21793,39 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-09-25 Full HD pass: twenty-three first-parent landings and no new ADR
+
+Read at `9e6361c9` (**v0.0.762**). The window from `5ed25544` contains
+twenty-three first-parent landings, thirty-eight commits in all and twenty-eight
+changed paths. Most changes are the Full HD HUD composition and its browser
+tests. Two numbered ADRs changed only source coordinates: ADR 0025 re-aimed
+`HudIntent` and the quoted `staffPanel.setVisible` line; ADR 0106 re-aimed
+the `hud.build.remove-hint` declaration after locale lines moved. Their Status
+blocks and decisions are unchanged. No ADR index, migration, deployment
+document or session-controller source changed. The next free ADR number remains 0124, and
+§2 still holds nine live entries. This pass does not turn layout work into an
+ADR acceptance or infer that a cited simulation decision changed from it.
+
+**§4 remains a live deployment risk.** Neither ADR 0016 nor the deployment
+workflow changed in this window. The separate-production-project constraint
+still has no mechanical enforcement in the cited path.
+
+**§5 was compared with the changed-path list.** The stale-writer sources,
+handshake protocol, and `zoningNoticeSchema` source cited by the preceding pass
+are unchanged. The HUD files did change: the current `HudIntent` declaration is
+at `src/ui/hud/hud.ts:376`, and the current
+`staffPanel.setVisible(state.activeTab === 'manage')` line is at
+`src/ui/hud/hud.ts:2980`; the second coordinate is corrected in ADR 0025 in
+this pass, beside its quoted code. These are source locations, not evidence
+that the Status or decision of that ADR moved.
+
+**§6 still has the same status-reference gate and the same blind spots.** The
+gate and its documented exceptions are unchanged. No ADR Status or index row
+changed in the window. The 23-landing overrun is a failure of the anchor
+cadence, not evidence of a new owner decision; neither staleness budget is
+raised. The quotation gate separately caught the stale ADR 0025 source
+coordinate and a spent ADR 0031 budget row, both corrected with this anchor.
 
 ## 3. The 2026-09-25 pass: eleven landings, five owner acceptances, and a red gate on main
 
