@@ -207,6 +207,31 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the preparation counter reads in a furnished Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.prep-counter')).toEqual([
+      expect.objectContaining({ x: 2 * fixture.tileSizePx, y: 6 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_PREP_COUNTER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('prep-counter-1920x1080.png') });
+    }
+  });
+
+  test('the preparation tray has open dark space between individual leaves', async ({ page }) => {
+    await openHarness(page);
+    const leafGap = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.prep-counter');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 193, frame.y + 62);
+    });
+    expect(leafGap?.[3]).toBe(255);
+    expect(leafGap?.[1], 'the green pan should show its dark recess between leaves').toBeLessThan(105);
+  });
+
   test('the refrigerator top reveals the split between its two doors', async ({ page }) => {
     await openHarness(page);
     const doors = await page.evaluate(() => {
