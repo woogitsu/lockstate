@@ -3845,6 +3845,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+  // The renderer owns the projection and camera; the HUD only paints it.
+  worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
 
   /*
    * The build identity, in the corner, from first paint.
