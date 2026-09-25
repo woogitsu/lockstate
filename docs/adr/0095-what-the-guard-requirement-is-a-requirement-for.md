@@ -99,7 +99,7 @@ own work.
 > same shape `AGENTS.md` flags in its entries of 2026-09-08 and 2026-09-09.
 >
 > **What the catch-up changed and what it deliberately did not.** Coordinates
-> into `src/` (`src/simulation/security/deployment-system.ts:328`) were re-aimed at the files as they stand on that commit, and one
+> into the source tree were re-aimed at the files as they stand on that commit, and one
 > row of the measured ladder is corrected in a marked note where issue #996
 > moved it. **No measurement was re-run and re-stated as though it had been
 > taken today**: every figure below is dated to `ac58c457` in the text, and the
@@ -151,7 +151,7 @@ finding.
 2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
    phase (`src/simulation/security/guard-roster.ts:245`-`:246`,
    `unassignedGuardIds`). **A posted guard is not unassigned**, and nothing in
-   `src/` returns a posted guard to that phase except `unassign` (`unassignedGuardIds`), which no
+   the source tree returns a posted guard to that phase except `unassign` (`unassignedGuardIds`), which no
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
