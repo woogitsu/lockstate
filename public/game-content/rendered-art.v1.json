@@ -505,8 +505,8 @@
     {
       "assetId": "furniture.delivery.dock_gate.closed",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.670e4def6473.png",
-      "sha256": "670e4def64736a6480a37d3384fc2a5df151855120bbcc6eadce1893df932afb",
+      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.bcf24bc6bdc0.png",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
       "dimensionsPx": {
         "width": 768,
         "height": 256
@@ -805,8 +805,8 @@
     {
       "assetId": "furniture.utility.control_panel",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.utility.control_panel.ac3a8e152b66.png",
-      "sha256": "ac3a8e152b66662520579956c01a49602f14cccd20ffe07423b9868fa57a9305",
+      "image": "source-art/rendered.furniture.utility.control_panel.e9554be24497.png",
+      "sha256": "e9554be244978f3588de4e4cecfa33ab37e4ef918debd6b39d5d0de1c587ed2d",
       "dimensionsPx": {
         "width": 256,
         "height": 256

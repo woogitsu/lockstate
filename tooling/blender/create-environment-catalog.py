@@ -860,8 +860,12 @@ def furniture(collection, root, asset_id):
         for x in (-0.14, 0.075):
             box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
             for row, y in enumerate((-0.18, 0, 0.18)):
-                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
-                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+                # A recessed cradle and a raised, offset handle read as a
+                # breaker lever at 64 px; the former square caps read as keys.
+                box(collection, root, f"Breaker cradle.{x}.{row}", (x, y, 1.243), (0.138, 0.135, 0.020), "galvanized_edge", 0.009)
+                box(collection, root, f"Breaker pivot.{x}.{row}", (x, y + 0.027, 1.257), (0.098, 0.060, 0.018), "shade", 0.006)
+                box(collection, root, f"Cream lever.{x}.{row}", (x, y - 0.021, 1.296), (0.090, 0.083, 0.084), "paper_cream", 0.012)
+                box(collection, root, f"Lever top glint.{x}.{row}", (x, y - 0.040, 1.343), (0.075, 0.016, 0.007), "light", 0.002)
         for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
             cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
             cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
@@ -888,6 +892,19 @@ def furniture(collection, root, asset_id):
                 (2.72, 0.10, 0.055), "canteen_wood", 0.008)
             box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
                 (2.74, 0.012, 0.009), "shade", 0.002)
+        # The four-view reference has steel corner braces and amber reflectors.
+        # Carry them onto the overhead face, where the player actually sees
+        # this long, otherwise featureless closed gate at three tiles wide.
+        for side in (-1, 1):
+            box(collection, root, f"Brace upright.{side}",
+                (side * 1.34, 0, 0.72), (0.055, 0.74, 0.055),
+                "galvanized_edge", 0.007)
+            box(collection, root, f"Amber reflector shadow.{side}",
+                (side * 0.86, 0.355, 0.711), (0.18, 0.08, 0.015),
+                "shade", 0.004)
+            box(collection, root, f"Amber reflector.{side}",
+                (side * 0.86, 0.355, 0.723), (0.145, 0.047, 0.012),
+                "dock_amber", 0.004)
         for x in (-1.43, 1.43):
             box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
                 (0.12, 0.94, 0.91), "canteen_steel", 0.016)
@@ -901,11 +918,11 @@ def furniture(collection, root, asset_id):
         for x in (-0.70, 0.70):
             box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
                 (0.17, 0.045, 0.018), "dock_amber", 0.004)
-        for x, angle in ((-0.98, -0.42), (0.98, 0.42)):
-            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, -0.035, 0.749),
-                        (0.83, 0.045, 0.055), "galvanized", 0.009)
+        for x, angle in ((-1.03, 0.73), (1.03, -0.73)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, 0, 0.749),
+                        (0.89, 0.07, 0.055), "galvanized_edge", 0.009)
             brace.rotation_euler.z = angle
-            cylinder(collection, root, f"Brace pivot.{x}", (x, -0.035, 0.79),
+            cylinder(collection, root, f"Brace pivot.{x}", (x, 0, 0.79),
                      0.026, 0.016, "steel", 16)
     elif asset_id == "furniture.kitchen.prep_counter":
         # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
