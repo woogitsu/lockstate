@@ -80,7 +80,7 @@ export function isSafeRenderedArtPath(value, { published } = { published: true }
   if (normalized !== value || normalized.startsWith('/') || normalized.split('/').includes('..')) return false;
   return published
     ? /^source-art\/rendered\.[^/]+\.png$/u.test(value)
-    : /^rendered\.[^/]+\.png$/u.test(value);
+    : /^[^/]+\.png$/u.test(value);
 }
 
 /**
