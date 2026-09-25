@@ -205,7 +205,7 @@ and they close the first question this document had to ask: is the floor doing
 what the ruled constants say it does?** It is, exactly. **ARITHMETIC** over
 constants that were opened: a fresh, unfurnished prison's `'deliveries'` and
 `'hiring'` rung is `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
-= −1,250 + 65 = **−1,185** (`src/simulation/economy/treasury.ts:507`), and
+= −1,250 + 65 = **−1,185** (`src/simulation/economy/treasury.ts:515`), and
 `Treasury.canAfford` requires `balance − amount ≥ floor`. So one brick at 40
 needs a balance of at least −1,145, and from −2,500 the shortfall is
 **1,355**; one hire at 80 needs at least −1,105, and the shortfall is
@@ -231,7 +231,7 @@ income.**
   decision 3: *"Arrears are paid before the day they precede"*).
 - **VERIFIED, read.** `'wages'` is the one spend class with **no rung of its
   own**: `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages` is
-  `Number.NEGATIVE_INFINITY` (`src/simulation/economy/treasury.ts:430`),
+  `Number.NEGATIVE_INFINITY` (`src/simulation/economy/treasury.ts:438`),
   clamped by `rungFloorMinorUnits` only to the overdraft floor of −2,500. So
   the undeclinable charge spends the 65 minor units of headroom that
   `STARTER_RUNG_FLOORS_MINOR_UNITS` exists to reserve, and the reserve's own
@@ -287,7 +287,7 @@ able to cancel (#860, #861, #862).
 
 - **A reserve exists and is one plank wide.**
   `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`
-  (`src/simulation/economy/treasury.ts:507`), the owner's second ruling on
+  (`src/simulation/economy/treasury.ts:515`), the owner's second ruling on
   #771, and `isFreshUnfurnishedPrison` is read live from
   `roomInstances.totalResidentCapacity === 0`
   (`src/simulation/runtime/session-commands.ts:403`). It reserves the **plank**

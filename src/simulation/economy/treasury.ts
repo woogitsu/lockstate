@@ -292,7 +292,15 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * to raise it. What the player is told about it is ADR 0081 open question 2 and
  * is the owner's.
  */
-export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
+/** The approved one-tenth facility, calculated from this prison's opening grant. */
+export function overdraftFloorForOpeningBalance(openingBalanceMinorUnits: number): number {
+  if (!Number.isSafeInteger(openingBalanceMinorUnits) || openingBalanceMinorUnits < 0) {
+    throw new RangeError('An opening balance must be a non-negative safe integer of minor units.');
+  }
+  return -Math.trunc(openingBalanceMinorUnits / 10);
+}
+
+export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = overdraftFloorForOpeningBalance(TREASURY_STARTING_BALANCE_MINOR_UNITS);
 
 /**
  * **Which rung of ADR 0017 decision 8's insolvency ladder a spend belongs to.**
@@ -682,9 +690,9 @@ export class Treasury {
    * did before ADR 0075 decision 2.
    *
    * **The default stays `0` and the shipped floor is applied by the composition
-   * root, not here.** `createNewSimulationRuntime` calls
-   * `setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` on the treasury
-   * it builds (`src/simulation/runtime/new-session.ts`), so a session has the
+   * root, not here.** `createNewSimulationRuntime` uses
+   * `createOpeningTreasury` (`src/simulation/runtime/new-session.ts`) to apply
+   * the facility calculated from that session's opening grant, so a session has the
    * facility and a bare `new Treasury()` in a test does not — which is what
    * keeps the boundary cases in `tests/unit/economy-treasury.test.ts` about
    * this class rather than about a magnitude somebody may move.
