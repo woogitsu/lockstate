@@ -178,15 +178,6 @@ const PARKED_TREES: readonly ParkedTree[] = [
       "A payment provider, which #36's own Out of scope requires a separate commercial and legal review to choose, and — for the free-tier half, which needs no provider — cloud save, because the slots being counted are cloud slots. Its server half is live: `entitlements`, `entitlement_events`, `record_entitlement_event`, and `supabase/tests/002`, `003` and `004` in CI.",
     whatWouldMakeItDead: 'The owner deciding there will be no paid tier.',
   },
-  {
-    prefix: 'src/ui/account/',
-    modules: 4,
-    what: "The pure account-session and save-list layer for #34 phase 1 (ADR 0043): `account-session.ts` (a five-state reducer, no Supabase call), `account-preferences.ts`, `save-list-projection.ts` and `cloud-slot-availability.ts`. Its own commit message (`fee6115`) states it stays out of the graph on purpose: none of the four imports `src/persistence/cloud/`, so wiring cloud save and wiring this tree are the same event.",
-    waitingOn:
-      "Two things, neither of which this tree can supply on its own. First, the DOM save/account panel (#34 phase 2) that would call it -- deliberately not built alongside phase 1 because `vitest.config.ts` runs in `environment: 'node'` with no jsdom, so a module touching `document` is unreachable from `pnpm test` and needs the browser suite instead. Second, the same owner decision `src/persistence/cloud/` is waiting on: `account-session.ts` says outright that 'nothing here talks to Supabase' and that performing the effect -- calling `signInAnonymously`, calling `linkIdentity` -- 'belongs to the caller, which does not exist yet'.",
-    whatWouldMakeItDead:
-      "The same event that would kill `src/persistence/cloud/`: the owner deciding cloud save is out of scope. Short of that, this tree is a phase of work already in flight and not a candidate for deletion on its own terms.",
-  },
 ];
 
 /**
@@ -201,6 +192,8 @@ const PARKED_TREES: readonly ParkedTree[] = [
  * is a gate rather than a note in both directions.
  */
 const WIRED_TREES: Readonly<Record<string, string>> = {
+  'src/ui/account/':
+    'Wired for local saves in Manage (#1168). manage-saves-panel.ts reads real local slot metadata through a host-supplied SessionController port and projects it with save-list-projection.ts. This does not wire cloud-slot-availability.ts or the parked Supabase client; the panel says cloud saves are unavailable.',
   'src/services/telemetry/':
     'Wired 2026-08-27 (#36, #446). ADR 0044 open question 2 -- "does Lockstate collect telemetry at all?" -- was the owner\'s and was answered yes, so the tree gained the three things it was waiting on: a consent surface (`src/ui/telemetry-consent-prompt.ts` over `src/services/telemetry/consent-flow.ts`), a host pump called from `src/main.ts`\'s idle callback, and a transport whose destination comes from deployment configuration and which is not constructed at all when that configuration is absent. `tests/unit/services-layer-boundaries.test.ts`\'s I/O allow-list -- the "deliberately empty" one ADR 0044 named as the structural obstacle -- now holds exactly one entry, `services/telemetry/http-transport.ts`.',
 };
@@ -213,6 +206,10 @@ const WIRED_TREES: Readonly<Record<string, string>> = {
  * above the whole of the finding rather than the largest part of a longer tail.
  */
 const UNREACHABLE_MODULES: Readonly<Record<string, string>> = {
+  'src/ui/account/account-preferences.ts':
+    'Versioned account preferences remain unused while account identity has no effectful caller. The local Manage saves panel needs no account preferences to list IndexedDB slots.',
+  'src/ui/account/cloud-slot-availability.ts':
+    'Cloud slot entitlements have no production reader while the Supabase client and sign-in flow remain parked. The local Manage panel must not imply a cloud flow.',
   'src/persistence/index.ts':
     'A barrel with no importer anywhere — not `src/`, not `tests/`. Every consumer writes the direct specifier, which is what `content-validation-reachability-contract.test.ts` argues is the barrel\'s structural problem: it is the module a direct import is always free to skip.',
   'src/persistence/local/index.ts': 'The same, one directory down. No importer in `src/` or `tests/`.',
@@ -320,6 +317,8 @@ describe('the walk this gate rules on reaches a real graph', () => {
       'src/services/telemetry/pipeline.ts',
       'src/services/telemetry/http-transport.ts',
       'src/services/telemetry/consent-flow.ts',
+      'src/ui/account/manage-saves-panel.ts',
+      'src/ui/account/save-list-projection.ts',
     ]) {
       expect(readFromDisk(module), `${module} has moved; this control names a module that no longer exists`).toBeDefined();
       expect(reachedByValue.has(module), `${module} is no longer in the production graph, which is a finding of its own`).toBe(
@@ -383,7 +382,7 @@ describe('every unreachable module under src/services and src/persistence is acc
   });
 });
 
-describe('the four parked trees are parked, wholly and deliberately', () => {
+describe('the remaining parked trees are parked, wholly and deliberately', () => {
   it('reaches no module in any of them, even following type-only imports', () => {
     // Stronger than the value-import walk on purpose. A parked tree that some
     // reachable module type-imports from is still contributing nothing at

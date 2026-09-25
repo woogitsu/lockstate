@@ -4113,6 +4113,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // ---------------------------------------------------------------
   'save.panel.region': 'Prison saves',
   'save.panel.title': 'Prisons',
+  'save.manage.title': 'Saved prisons',
+  'save.manage.local': 'On this device',
+  'save.manage.cloud-unavailable': 'Cloud saves are unavailable in this version because the game has no cloud connection.',
 
   'save.action.create': 'New prison',
   'save.action.save': 'Save now',
