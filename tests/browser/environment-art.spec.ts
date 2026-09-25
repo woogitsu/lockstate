@@ -282,6 +282,34 @@ test.describe('the environment artwork', () => {
     expect(recess?.[0], 'six flat cream keycaps hide the breaker recesses').toBeLessThan(90);
   });
 
+  test('the closed loading gate reads as braced timber at Full HD game scale', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const camera = async () => {
+      const fixture = await openHarness(page);
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+        { x: 46.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
+      return fixture;
+    };
+    const fixture = await camera();
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.loading-dock-door');
+      return {
+        sprites: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.object.loading-dock-door'),
+        brace: frame === undefined ? undefined : harness.atlasPixel(frame.x + 60, frame.y + 50),
+      };
+    });
+    expect(result.sprites).toContainEqual(expect.objectContaining({
+      x: 45 * fixture.tileSizePx,
+      y: 4 * fixture.tileSizePx,
+    }));
+    expect(result.brace?.[3]).toBe(255);
+    expect(result.brace?.[0], 'the overhead brace disappears into the timber').toBeGreaterThan(150);
+    if (process.env['LOCKSTATE_CAPTURE_GATE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('gate-after-1920x1080.png') });
+    }
+  });
+
   test('the refrigerator top reveals the split between its two doors', async ({ page }) => {
     await openHarness(page);
     const doors = await page.evaluate(() => {

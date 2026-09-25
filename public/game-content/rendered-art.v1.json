@@ -505,8 +505,8 @@
     {
       "assetId": "furniture.delivery.dock_gate.closed",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.670e4def6473.png",
-      "sha256": "670e4def64736a6480a37d3384fc2a5df151855120bbcc6eadce1893df932afb",
+      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.bcf24bc6bdc0.png",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
       "dimensionsPx": {
         "width": 768,
         "height": 256
