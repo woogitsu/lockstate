@@ -772,8 +772,8 @@
     {
       "assetId": "furniture.security.surveillance_console",
       "image": "furniture.security.surveillance_console.png",
-      "sha256": "ac5f77ba35eb5ecb2bf1cf1b321a8bc5848625c81db6886db54cf4016f5ddeb9",
-      "pixelSha256": "1e28291f2bcf992cc58fc879033f62bb0f4a656541b1c7c21926abb5c5983e1a",
+      "sha256": "47a348f72b3bfc89e8d8ed0d8f3660ff9a5e12aea07cf233b2526088f96a8b16",
+      "pixelSha256": "e26464f9c4470a75c550d515da71a812e291375677942d1097ecb9a6d9ece824",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0

@@ -443,8 +443,8 @@ def canteen_wood_material():
     return item
 
 
-def console_screen_material():
-    """Pack the original CCTV concept swatch inside the source scene."""
+def console_screen_material(camera_index):
+    """Give each CCTV hood its own camera crop of the packed corridor swatch."""
     texture_path = ROOT / "assets/source/textures/security-console-cctv-v1.png"
     if not texture_path.is_file():
         raise FileNotFoundError(f"Console monitor texture is missing: {texture_path}")
@@ -455,6 +455,15 @@ def console_screen_material():
     texture = nodes.new("ShaderNodeTexImage")
     texture.image = image
     texture.extension = "CLIP"
+    coordinates = nodes.new("ShaderNodeTexCoord")
+    crop = nodes.new("ShaderNodeVectorMath")
+    crop.operation = "MULTIPLY_ADD"
+    # Three overlapping views keep one authored texture while avoiding the
+    # unmistakable threefold clone at the game's 128-by-64-pixel footprint.
+    crop.inputs[1].default_value = (0.56, 0.82, 1.0)
+    crop.inputs[2].default_value = ((0.0, 0.22, 0.44)[camera_index], 0.09, 0.0)
+    links.new(coordinates.outputs["Generated"], crop.inputs[0])
+    links.new(crop.outputs["Vector"], texture.inputs["Vector"])
     shader = nodes.get("Principled BSDF")
     links.new(texture.outputs["Color"], shader.inputs["Base Color"])
     if shader.inputs.get("Emission Color") is not None:
@@ -852,7 +861,7 @@ def furniture(collection, root, asset_id):
         for index, (x, width) in enumerate(((-0.64, 0.47), (0, 0.65), (0.64, 0.47))):
             box(collection, root, f"Monitor raised housing.{index}", (x, -0.23, 1.215), (width, 0.38, 0.23), "console_enamel", 0.022)
             box(collection, root, f"Monitor black rebate.{index}", (x, -0.23, 1.344), (width - 0.055, 0.31, 0.023), "shade", 0.007)
-            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), "console_screen", 0.007)
+            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), f"console_screen_{index}", 0.007)
             box(collection, root, f"Monitor hood.{index}", (x, -0.413, 1.372), (width, 0.075, 0.055), "console_enamel", 0.012)
             box(collection, root, f"Monitor footer.{index}", (x, -0.047, 1.373), (width, 0.034, 0.047), "steel", 0.007)
         box(collection, root, "Keyboard inset shadow", (0, 0.255, 1.084), (0.66, 0.28, 0.014), "shade", 0.011)
@@ -2165,7 +2174,8 @@ def main():
     MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
     MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
     MATERIALS["console_enamel"] = material("Worn blue-grey surveillance enamel", (0.17, 0.23, 0.30, 1), 0.58)
-    MATERIALS["console_screen"] = console_screen_material()
+    for index in range(3):
+        MATERIALS[f"console_screen_{index}"] = console_screen_material(index)
     MATERIALS["console_amber"] = material("Amber console indicator", (0.94, 0.45, 0.045, 1), 0.27)
     MATERIALS["console_teal"] = material("Teal console indicator", (0.035, 0.65, 0.64, 1), 0.27)
     MATERIALS["console_red"] = material("Guarded emergency control", (0.65, 0.06, 0.04, 1), 0.36)
