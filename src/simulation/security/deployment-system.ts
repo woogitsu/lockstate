@@ -7,7 +7,7 @@ import { resolveStaffRouteContext } from './access-policy';
 import { isAtPost } from './deployment-phase';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
 import { claimableGuardIds, isPostEligibleStaffRoleId } from './post-eligibility';
-import { resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
+import { DEFAULT_SECTOR_PRISONERS_PER_GUARD, assertValidSectorPrisonersPerGuard, resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
 import type { SecuritySectorRegistry } from './sector';
@@ -114,7 +114,10 @@ export class DeploymentSystem implements SystemRegistration {
      * schedule does not have to.
      */
     private readonly resolveOccupantCount?: SectorOccupantCountResolver,
-  ) {}
+    private readonly prisonersPerGuard = DEFAULT_SECTOR_PRISONERS_PER_GUARD,
+  ) {
+    assertValidSectorPrisonersPerGuard(prisonersPerGuard);
+  }
 
   public getMetrics(): { readonly deploymentFailures: number } {
     return { deploymentFailures: this.deploymentFailures };
@@ -166,6 +169,7 @@ export class DeploymentSystem implements SystemRegistration {
       scheduled,
       this.resolveOccupantCount(sectorId),
       sectorOccupantCountIsComplete(sectorId),
+      this.prisonersPerGuard,
     );
   }
 
