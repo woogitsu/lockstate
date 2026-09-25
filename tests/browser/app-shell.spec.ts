@@ -4034,6 +4034,10 @@ test.describe('the assembled application', () => {
         // The local-save list is a disclosure on this tab. Its row controls
         // must be reachable when the player opens it, not exempted as hidden.
         const savedPrisons = page.locator('.manage-saves');
+        // Quick Save and Manage refresh independently. Wait for the actual
+        // row before opening, so a late refresh cannot add hidden controls
+        // after this state was measured.
+        await expect(savedPrisons.locator('.manage-saves__item')).toHaveCount(1);
         await savedPrisons.locator('summary').click();
         const expanded = await controlReachability(page);
         inventory = expanded;
