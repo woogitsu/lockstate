@@ -4,7 +4,15 @@ Run against environment.mvp.catalog.blend with Blender 5.2. The chair's
 collection is rebuilt from fixed dimensions, so running twice is idempotent.
 """
 
+import sys
+from pathlib import Path
+
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402
+
+pipeline_common.require_blender_version()
 
 ASSET_ID = "furniture.chair.wooden"
 collection = bpy.data.collections[ASSET_ID]
