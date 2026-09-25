@@ -1,4 +1,4 @@
-﻿# ADR 0095: What the guard requirement is a requirement for
+# ADR 0095: What the guard requirement is a requirement for
 
 ## Status
 
@@ -151,7 +151,7 @@ finding.
 2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
    phase (`src/simulation/security/guard-roster.ts:245`-`:246`,
    `unassignedGuardIds`). **A posted guard is not unassigned**, and nothing in
-   `src/` returns a posted guard to that phase except `unassign` (the code path that returns a posted guard to the pool), which no
+   `src/` returns a posted guard to that phase except `unassign` (`returnPostedGuardToPool`), which no
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
