@@ -20,7 +20,7 @@ import {
   zoningTintAlphaOverArt,
   type StructureAppearance,
 } from '../world/appearance';
-import { edgeArt, objectSprite, zonedFloorSprite } from '../world/environment-art';
+import { edgeArt, objectSprite, terrainFloorSpriteByNumericId, zonedFloorSprite } from '../world/environment-art';
 import { buildRowIndex, type RowContent } from '../world/row-index';
 import { slabFaces, type Rect } from '../world/structure-geometry';
 import { catalogueObjectId, isDrawnAsWorldEdge, type StructurePhase } from '../world/structures';
@@ -330,7 +330,8 @@ export class TileLayer {
           // already reads every tile. A separate pass measured 73-79 us per
           // 32x32 chunk, which is the same order as the whole revision cost
           // `buildRowIndex` pays for that chunk.
-          const candidate = art === undefined ? undefined : zonedFloorSprite(sample.zoning);
+          const candidate = art === undefined ? undefined :
+            (zonedFloorSprite(sample.zoning) ?? terrainFloorSpriteByNumericId(sample.terrainNumericId));
           const sprite = candidate !== undefined && art?.has(candidate) === true ? candidate : undefined;
           floors[localY * size + localX] = sprite;
           if (sprite !== undefined) {

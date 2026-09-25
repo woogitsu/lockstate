@@ -6,6 +6,11 @@ import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import {
   INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE,
+  LAUNDRY_FLOOR_ART_BASE_FOR_DRIFT_GATE,
   ZONING_TINT_ALPHA,
   ZONING_TINT_ALPHA_OVER_ART,
   zoningTint,
@@ -14,13 +19,10 @@ import {
 import { LFS_POINTER_PREFIX } from '../../tooling/source-art-lfs-guard.mjs';
 
 /**
- * ADR 0101 (accepted 2026-09-07, option 1): eight of the eighteen shipped
- * room tints blend to *less* colour, over floor art, than painting no tint at
- * all -- `env.floor.institutional` leans blue by ~26.5 units of its own, and
- * a partial-alpha blend of a hue near that lean's complement desaturates the
- * result toward the floor rather than shifting it toward the tint. Issue
- * #1061 found the worst case by playing: Holding Cell drew its name on the
- * map over a plainly grey floor.
+ * ADR 0101 (accepted 2026-09-07, option 1) fixed eight washed-out room
+ * tints over the old blue source-art floor. The published Blender floor is
+ * nearly neutral. This suite pins the updated substrate and checks that
+ * each room stays legible without spending a stronger colour wash.
  *
  * This is a test over what actually reaches the pixels, not over the tint
  * table -- `tests/unit/appearance-zoning-tint.test.ts` already proves
@@ -28,12 +30,12 @@ import { LFS_POINTER_PREFIX } from '../../tooling/source-art-lfs-guard.mjs';
  * correct, which is exactly why that test could not have caught this. Every
  * blend below is computed independently of `appearance.ts`'s own internal
  * helpers -- this file writes its own `blend`/`spread`, deliberately not
- * importing `blendOverInstitutionalFloor` or `channelSpread` -- so that a bug
+ * importing `blendOverFloor` or `channelSpread` -- so that a bug
  * in the production arithmetic and a bug in a shared helper cannot cancel
  * each other out.
  */
 
-const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [116.396, 128.916, 142.908];
+const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585, 191.587, 189.641];
 const FLOOR_SPREAD = spread(INSTITUTIONAL_FLOOR_ART_BASE);
 
 function spread(rgb: readonly [number, number, number]): number {
@@ -54,14 +56,8 @@ function blend(tint: number, alpha: number): readonly [number, number, number] {
 const rooms = [...defaultRoomContentRegistry.all()];
 
 /**
- * Reproduced from ADR 0101 Context §1's re-derivation (itself independent of
- * the issue and of the unmerged branch): the eight rooms whose blend at the
- * flat `ZONING_TINT_ALPHA_OVER_ART` (0.14) reads *less* coloured than the
- * bare floor's own 26.5-unit spread. Two of them -- `room.holding-cell` and
- * `room.solitary-cell` -- are the pair issue #1061 actually screenshotted;
- * the other six rest on the same arithmetic applied further from the point
- * it was validated against a person's eye (ADR 0101's own weakest-claim
- * section says the same).
+ * The eight rooms that needed compensation on the old floor. They must be
+ * checked explicitly because their colours were the original regression.
  */
 const RAISED_ROOM_IDS = [
   'room.solitary-cell',
@@ -75,13 +71,8 @@ const RAISED_ROOM_IDS = [
 ] as const;
 
 /**
- * Of the eight raised rooms, these four sit close enough to the floor's own
- * complement that even the `ZONING_TINT_ALPHA` cap does not fully clear
- * `FLOOR_SPREAD` -- their own uncapped minimum sits a little above 0.28
- * (`room.holding-cell` and `room.solitary-cell` need ~0.339, `room.reception`
- * and `room.kitchen` need ~0.281), so all four land exactly at the cap
- * instead. See `minimumLegibleAlphaOverArt`'s own docblock in `appearance.ts`
- * for why the cap stops there rather than going higher.
+ * Four rooms that hit the 0.28 cap on the old floor. The new floor should
+ * make their tint visible at 0.14 without a special case.
  */
 const RAISED_BUT_NOT_FULLY_CLEARED_ROOM_IDS = [
   'room.solitary-cell',
@@ -94,7 +85,7 @@ describe('zoning tint legibility over floor art', () => {
   it('has the untinted floor at the spread this whole file is testing against', () => {
     // A canary on the shared constant above, so a typo in it fails here
     // rather than silently changing every assertion below.
-    expect(FLOOR_SPREAD).toBeCloseTo(26.51, 1);
+    expect(FLOOR_SPREAD).toBeCloseTo(4.002, 2);
   });
 
   it('resolves a tint and an alpha for every catalogued room', () => {
@@ -116,16 +107,16 @@ describe('zoning tint legibility over floor art', () => {
     }
   });
 
-  it('raises exactly the eight rooms ADR 0101 names, each above the flat alpha', () => {
+  it('does not need the old eight-room compensation on the neutral Blender floor', () => {
     for (const id of RAISED_ROOM_IDS) {
       const room = rooms.find((candidate) => candidate.id === id);
       expect(room, id).not.toBeUndefined();
       const alpha = zoningTintAlphaOverArt(room!.numericId);
-      expect(alpha, id).toBeGreaterThan(ZONING_TINT_ALPHA_OVER_ART);
+      expect(alpha, id).toBe(ZONING_TINT_ALPHA_OVER_ART);
     }
   });
 
-  it('clears the untinted floor for the four raised rooms the ZONING_TINT_ALPHA cap is enough for', () => {
+  it('clears the untinted floor for the four other formerly raised rooms', () => {
     for (const id of RAISED_ROOM_IDS) {
       if (RAISED_BUT_NOT_FULLY_CLEARED_ROOM_IDS.includes(id as (typeof RAISED_BUT_NOT_FULLY_CLEARED_ROOM_IDS)[number])) {
         continue;
@@ -137,31 +128,18 @@ describe('zoning tint legibility over floor art', () => {
     }
   });
 
-  /**
-   * `room.holding-cell`, `room.solitary-cell`, `room.reception` and
-   * `room.kitchen` sit close enough to the floor's own complement that even
-   * the `ZONING_TINT_ALPHA` cap cannot fully clear `FLOOR_SPREAD` -- their own
-   * uncapped minimum is ~0.339 for the first two and ~0.281 for the second
-   * two, all a little above the 0.28 cap (ADR 0101 Context §4's own sweep,
-   * and `minimumLegibleAlphaOverArt`'s docblock reproduces the arithmetic).
-   * What this test pins instead: the alpha lands exactly at the cap, and the
-   * result is a real, substantial improvement over the flat 0.14 rather than
-   * the flat value with no effect. The margin is stated as an absolute delta
-   * rather than a ratio because the four rooms start from very different
-   * flat-alpha spreads (4.7 to 16.8) and a single ratio threshold that held
-   * for the smallest would be vacuous for the largest.
-   */
-  it('raises the four hardest rooms to the ZONING_TINT_ALPHA cap and well above their flat-alpha spread', () => {
+  /** The formerly capped rooms should clear the new floor without extra wash. */
+  it('keeps the formerly hardest rooms legible without a stronger wash', () => {
     for (const id of RAISED_BUT_NOT_FULLY_CLEARED_ROOM_IDS) {
       const room = rooms.find((candidate) => candidate.id === id)!;
       const tint = zoningTint(room.numericId)!;
       const alpha = zoningTintAlphaOverArt(room.numericId);
-      expect(alpha, id).toBeCloseTo(ZONING_TINT_ALPHA, 6);
+      expect(alpha, id).toBe(ZONING_TINT_ALPHA_OVER_ART);
 
       const atFlat = spread(blend(tint, ZONING_TINT_ALPHA_OVER_ART));
       const atRaised = spread(blend(tint, alpha));
-      expect(atRaised - atFlat, id).toBeGreaterThan(8);
-      expect(atRaised, id).toBeLessThan(FLOOR_SPREAD); // confirms the cap, not a coincidence, is what stops it short
+      expect(atRaised, id).toBeCloseTo(atFlat, 6);
+      expect(atRaised, id).toBeGreaterThan(FLOOR_SPREAD);
     }
   });
 
@@ -175,27 +153,72 @@ describe('zoning tint legibility over floor art', () => {
     }
   });
 
-  /**
-   * Holding Cell, specifically, is the tile #1061 screenshotted as plain
-   * grey. This asserts the direction a player would actually see: red
-   * leading blue in the raised blend, and blue leading red in the untinted
-   * floor -- i.e. the fix does not merely change a number, it flips which
-   * channel leads toward the tint's own assigned hue (`0xd17b4f`, R-forward).
-   */
-  it('room.holding-cell: the raised blend leans warm where the untinted floor leans blue', () => {
+  /** Holding Cell's warm tint must stay visible over the neutral floor. */
+  it('room.holding-cell: the tint leans warm over a nearly neutral floor', () => {
     const room = rooms.find((candidate) => candidate.id === 'room.holding-cell')!;
     const tint = zoningTint(room.numericId)!;
     const alpha = zoningTintAlphaOverArt(room.numericId);
     const [r, , b] = blend(tint, alpha);
-    expect(r, 'raised red channel').toBeGreaterThan(b);
-    expect(INSTITUTIONAL_FLOOR_ART_BASE[2] - INSTITUTIONAL_FLOOR_ART_BASE[0], 'untinted floor leans blue').toBeGreaterThan(20);
+    expect(r, 'tinted red channel').toBeGreaterThan(b);
+    expect(FLOOR_SPREAD, 'untinted floor is nearly neutral').toBeLessThan(5);
+  });
+
+  it('room.kitchen: its own tile keeps the assigned tint visible without increasing the wash', () => {
+    const room = rooms.find((candidate) => candidate.id === 'room.kitchen')!;
+    const tint = zoningTint(room.numericId)!;
+    const floor = KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE;
+    const alpha = zoningTintAlphaOverArt(room.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const colour = floor.map((channel, index) =>
+      channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha,
+    ) as [number, number, number];
+    expect(spread(colour)).toBeGreaterThan(spread(floor));
+  });
+
+  it('room.canteen: its warm tile keeps the tint visible and stays distinct from the kitchen at the flat wash', () => {
+    const kitchen = rooms.find((candidate) => candidate.id === 'room.kitchen')!;
+    const canteen = rooms.find((candidate) => candidate.id === 'room.canteen')!;
+    const alpha = zoningTintAlphaOverArt(canteen.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const composite = (floor: readonly [number, number, number], tint: number): readonly [number, number, number] =>
+      floor.map((channel, index) => channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha) as [number, number, number];
+    const canteenColour = composite(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(canteen.numericId)!);
+    const kitchenColour = composite(KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(kitchen.numericId)!);
+    expect(spread(canteenColour)).toBeGreaterThan(spread(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE));
+    const separation = Math.hypot(...canteenColour.map((channel, index) => channel - kitchenColour[index]!));
+    expect(separation).toBeGreaterThan(30);
+  });
+
+  it('room.yard: outdoor earth keeps the assigned tint visible at the flat wash', () => {
+    const yard = rooms.find((candidate) => candidate.id === 'room.yard')!;
+    const floor = YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE;
+    const tint = zoningTint(yard.numericId)!;
+    const alpha = zoningTintAlphaOverArt(yard.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const colour = floor.map((channel, index) =>
+      channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha,
+    ) as [number, number, number];
+    expect(spread(colour)).toBeGreaterThan(spread(floor));
+  });
+
+  it('room.shower-room: ceramic stays legible at the flat wash beside Laundry aggregate', () => {
+    const shower = rooms.find((candidate) => candidate.id === 'room.shower-room')!;
+    const laundry = rooms.find((candidate) => candidate.id === 'room.laundry')!;
+    const alpha = zoningTintAlphaOverArt(shower.numericId);
+    expect(alpha).toBe(ZONING_TINT_ALPHA_OVER_ART);
+    const composite = (floor: readonly [number, number, number], tint: number): readonly [number, number, number] =>
+      floor.map((channel, index) => channel * (1 - alpha) + ((tint >> (16 - index * 8)) & 0xff) * alpha) as [number, number, number];
+    const showerColour = composite(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(shower.numericId)!);
+    const laundryColour = composite(LAUNDRY_FLOOR_ART_BASE_FOR_DRIFT_GATE, zoningTint(laundry.numericId)!);
+    expect(spread(showerColour)).toBeGreaterThan(spread(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE));
+    expect(Math.hypot(...showerColour.map((value, index) => value - laundryColour[index]!))).toBeGreaterThan(20);
   });
 });
 
 /**
  * The substrate-drift gate. `INSTITUTIONAL_FLOOR_ART_BASE` in `appearance.ts`
  * is a MEASURED constant -- appearance.ts is a data module and must not gain
- * a PNG decoder of its own -- so if the floor art or its crop rectangle ever
+ * a PNG decoder of its own -- so if the published floor render ever
  * changes, every per-room alpha computed from it goes stale **silently**:
  * nothing at runtime would notice. This is the one thing that does: it
  * decodes the real PNG at test time, independently of `appearance.ts`, and
@@ -211,40 +234,89 @@ describe('zoning tint legibility over floor art', () => {
 describe('the substrate the per-room alpha table assumes, checked against the art on disk', () => {
   const REPOSITORY_ROOT = resolve(__dirname, '../..');
   const floorSprite = ENVIRONMENT_SPRITES['env.floor.institutional'];
+  const kitchenSprite = ENVIRONMENT_SPRITES['env.floor.kitchen'];
+  const canteenSprite = ENVIRONMENT_SPRITES['env.floor.canteen'];
+  const yardSprite = ENVIRONMENT_SPRITES['env.floor.yard'];
+  const showerSprite = ENVIRONMENT_SPRITES['env.floor.shower'];
+  const laundrySprite = ENVIRONMENT_SPRITES['env.floor.laundry'];
 
-  function resolveFloorArtPath(): string {
-    if (floorSprite.kind !== 'source-art') throw new Error('env.floor.institutional is no longer source-art');
-    const catalogPath = join(REPOSITORY_ROOT, 'public/game-content/source-art.v1.json');
+  function resolveFloorArtPath(sprite: typeof floorSprite): string {
+    if (sprite.kind !== 'rendered-art') throw new Error('the floor is no longer rendered-art');
+    const catalogPath = join(REPOSITORY_ROOT, 'public/game-content/rendered-art.v1.json');
     const catalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as {
       entries: readonly { assetId: string; image: string }[];
     };
-    const entry = catalog.entries.find((candidate) => candidate.assetId === floorSprite.assetId);
+    const entry = catalog.entries.find((candidate) => candidate.assetId === sprite.renderedArtId);
     if (entry === undefined) {
-      throw new Error(`${floorSprite.assetId} has no entry in ${catalogPath}`);
+      throw new Error(`${sprite.renderedArtId} has no entry in ${catalogPath}`);
     }
     return join(REPOSITORY_ROOT, 'public/game-content', entry.image);
   }
 
-  const floorArtPath = resolveFloorArtPath();
+  const floorArtPath = resolveFloorArtPath(floorSprite);
+  const kitchenArtPath = resolveFloorArtPath(kitchenSprite);
+  const canteenArtPath = resolveFloorArtPath(canteenSprite);
+  const yardArtPath = resolveFloorArtPath(yardSprite);
+  const showerArtPath = resolveFloorArtPath(showerSprite);
+  const laundryArtPath = resolveFloorArtPath(laundrySprite);
   const head = readFileSync(floorArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8');
   const isLfsPointer = head === LFS_POINTER_PREFIX;
+  const kitchenIsLfsPointer = readFileSync(kitchenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const canteenIsLfsPointer = readFileSync(canteenArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const yardIsLfsPointer = readFileSync(yardArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const showerIsLfsPointer = readFileSync(showerArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
+  const laundryIsLfsPointer = readFileSync(laundryArtPath).subarray(0, LFS_POINTER_PREFIX.length).toString('utf8') === LFS_POINTER_PREFIX;
 
   it.skipIf(isLfsPointer)(
-    'decodes to the mean colour INSTITUTIONAL_FLOOR_ART_BASE assumes, at the crop the painter actually draws',
+    'decodes to the mean colour INSTITUTIONAL_FLOOR_ART_BASE assumes for the published Blender tile',
     () => {
-      if (floorSprite.kind !== 'source-art') throw new Error('unreachable: guarded by resolveFloorArtPath');
+      if (floorSprite.kind !== 'rendered-art') throw new Error('unreachable: guarded by resolveFloorArtPath');
       const decoded = decodePng(readFileSync(floorArtPath));
-      const crop = floorSprite.sourceRectPx;
-      const mean = meanColorOver(decoded, crop.x, crop.y, crop.width, crop.height);
+      const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
 
       // A tight tolerance: this is a deterministic decode of an immutable,
-      // checked-in file, so anything beyond rounding drift means the art (or
-      // the crop rectangle) actually moved and the alpha table is stale.
+      // checked-in file, so anything beyond rounding drift means the render
+      // actually moved and the alpha table is stale.
       expect(mean[0], 'red').toBeCloseTo(INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE[0], 1);
       expect(mean[1], 'green').toBeCloseTo(INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE[1], 1);
       expect(mean[2], 'blue').toBeCloseTo(INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE[2], 1);
     },
   );
+  it.skipIf(kitchenIsLfsPointer)('decodes to the mean colour used to calibrate the kitchen tint', () => {
+    const decoded = decodePng(readFileSync(kitchenArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(KITCHEN_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(canteenIsLfsPointer)('decodes to the mean colour used to calibrate the canteen tint', () => {
+    const decoded = decodePng(readFileSync(canteenArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(CANTEEN_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(yardIsLfsPointer)('decodes to the mean colour used to calibrate the Yard tint', () => {
+    const decoded = decodePng(readFileSync(yardArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(YARD_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(showerIsLfsPointer)('decodes to the mean colour used to calibrate the shower tint', () => {
+    const decoded = decodePng(readFileSync(showerArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(SHOWER_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
+  it.skipIf(laundryIsLfsPointer)('decodes to the mean colour used to calibrate the laundry tint', () => {
+    const decoded = decodePng(readFileSync(laundryArtPath));
+    const mean = meanColorOver(decoded, 0, 0, decoded.width, decoded.height);
+    for (let channel = 0; channel < 3; channel += 1) {
+      expect(mean[channel], `channel ${channel}`).toBeCloseTo(LAUNDRY_FLOOR_ART_BASE_FOR_DRIFT_GATE[channel]!, 1);
+    }
+  });
 });
 
 /** A decoded 8-bit RGB(A) raster: raw scanline bytes, filters already undone. */

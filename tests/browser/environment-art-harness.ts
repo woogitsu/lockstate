@@ -1,11 +1,15 @@
 import Phaser from 'phaser';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { defaultMessageCatalogEn } from '../../src/services/localization';
+import { Localizer } from '../../src/services/localization/localizer';
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import type { RenderFeed, RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { RenderStructure } from '../../src/rendering/world/structures';
 import type { TileLayer } from '../../src/rendering/phaser/tile-layer';
+import type { RoomLabelLayer } from '../../src/rendering/phaser/room-label-layer';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
@@ -49,12 +53,60 @@ const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
   chunkSizeTiles: CHUNK_SIZE_TILES,
   tileSizePx: TILE_SIZE_PX,
+  grassTileX: 0,
+  grassTileY: 1,
+  concreteTileX: 0,
+  concreteTileY: 0,
+  gravelTileX: 0,
+  gravelTileY: 2,
+  rockTileX: 0,
+  rockTileY: 3,
   // A four-by-three room, walled along its northern row, with a door in that
   // wall and one segment of west wall.
   zonedMinTileX: 2,
   zonedMinTileY: 2,
   zonedMaxTileX: 5,
   zonedMaxTileY: 4,
+  kitchenMinTileX: 2,
+  kitchenMinTileY: 6,
+  kitchenMaxTileX: 5,
+  kitchenMaxTileY: 8,
+  canteenMinTileX: 7,
+  canteenMinTileY: 6,
+  canteenMaxTileX: 10,
+  canteenMaxTileY: 8,
+  yardMinTileX: 12,
+  yardMinTileY: 12,
+  yardMaxTileX: 19,
+  yardMaxTileY: 19,
+  showerFloorMinTileX: 12,
+  showerFloorMinTileY: 12,
+  showerFloorMaxTileX: 14,
+  showerFloorMaxTileY: 14,
+  laundryFloorMinTileX: 17,
+  laundryFloorMinTileY: 12,
+  laundryFloorMaxTileX: 19,
+  laundryFloorMaxTileY: 14,
+  infirmaryFloorMinTileX: 17,
+  infirmaryFloorMinTileY: 17,
+  infirmaryFloorMaxTileX: 20,
+  infirmaryFloorMaxTileY: 20,
+  commonRoomFloorMinTileX: 24,
+  commonRoomFloorMinTileY: 17,
+  commonRoomFloorMaxTileX: 28,
+  commonRoomFloorMaxTileY: 21,
+  classroomFloorMinTileX: 17,
+  classroomFloorMinTileY: 24,
+  classroomFloorMaxTileX: 21,
+  classroomFloorMaxTileY: 28,
+  staffFloorMinTileX: 28,
+  staffFloorMinTileY: 24,
+  staffFloorMaxTileX: 30,
+  staffFloorMaxTileY: 26,
+  securityFloorMinTileX: 24,
+  securityFloorMinTileY: 24,
+  securityFloorMaxTileX: 26,
+  securityFloorMaxTileY: 26,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -80,6 +132,30 @@ const FIXTURE: HarnessWorldFixture = {
   wasteBinTileY: 4,
   storageRackTileX: 20,
   storageRackTileY: 4,
+  chairTileX: 22,
+  chairTileY: 4,
+  diningTableTileX: 24,
+  diningTableTileY: 4,
+  medicalBedTileX: 28,
+  medicalBedTileY: 4,
+  medicineCabinetTileX: 30,
+  medicineCabinetTileY: 4,
+  stoveTileX: 32,
+  stoveTileY: 4,
+  washingMachineTileX: 34,
+  washingMachineTileY: 4,
+  fridgeTileX: 36,
+  fridgeTileY: 4,
+  securityConsoleTileX: 42,
+  securityConsoleTileY: 4,
+  utilityPanelTileX: 44,
+  utilityPanelTileY: 4,
+  loadingDockDoorTileX: 45,
+  loadingDockDoorTileY: 4,
+  prepCounterTileX: 38,
+  prepCounterTileY: 4,
+  bookshelfTileX: 40,
+  bookshelfTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -97,13 +173,182 @@ function buildFrame(): RenderFrame {
   const world = new SparseWorld(CHUNK_SIZE_TILES);
   world.load(chunk);
   world.setOwned(chunk, true);
+  const includeYard = new URLSearchParams(window.location.search).has('roomLabels');
+  const includeShowerFloor = new URLSearchParams(window.location.search).has('showerFloor');
+  const includeInfirmaryFloor = new URLSearchParams(window.location.search).has('infirmaryFloor');
+  const includeCommonRoomFloor = new URLSearchParams(window.location.search).has('commonRoomFloor');
+  const includeClassroomFloor = new URLSearchParams(window.location.search).has('classroomFloor');
+  const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
+  const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
+  const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
+  const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
+  const includeWasherVisual = new URLSearchParams(window.location.search).has('washerVisual');
+  const includeShowerVisual = new URLSearchParams(window.location.search).has('showerVisual');
+  if (includeYard) {
+    // The outdoor 8x8 Yard occupies four later chunks. It must be owned like
+    // player-built land; otherwise the unowned shade hides its material.
+    for (const chunkX of [1, 2]) {
+      for (const chunkY of [1, 2]) {
+        const yardChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(chunkY) };
+        world.load(yardChunk);
+        world.setOwned(yardChunk, true);
+      }
+    }
+  }
+  if (includeShowerFloor || includeInfirmaryFloor) {
+    // The two 3x3 wet rooms occupy separate owned chunks, leaving the default
+    // fixture untouched for object/edge tests that inspect pooled sprites.
+    for (const chunkX of [1, 2]) {
+      const roomChunk = { x: chunkCoordinate(chunkX), y: chunkCoordinate(1) };
+      world.load(roomChunk);
+      world.setOwned(roomChunk, true);
+    }
+  }
+  if (includeShowerVisual) {
+    for (let tileX = FIXTURE.showerFloorMinTileX; tileX <= FIXTURE.showerFloorMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.showerFloorMinTileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.showerFloorMaxTileY + 1) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.showerFloorMinTileY; tileY <= FIXTURE.showerFloorMaxTileY; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.showerFloorMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.showerFloorMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+    }
+  }
+  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
+    const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(2) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
+    const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(2) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeClassroomFloor) {
+    const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(3) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeSecurityFloor || includeStaffFloor) {
+    const roomChunk = { x: chunkCoordinate(3), y: chunkCoordinate(3) };
+    world.load(roomChunk);
+    world.setOwned(roomChunk, true);
+  }
+  if (includeStaffFloor) {
+    const staffRoom = defaultRoomContentRegistry.getById('room.staff-room');
+    if (staffRoom === undefined) throw new Error('The staff room is missing from the catalog.');
+    for (let tileY = FIXTURE.staffFloorMinTileY; tileY <= FIXTURE.staffFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.staffFloorMinTileX; tileX <= FIXTURE.staffFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, staffRoom.numericId);
+      }
+    }
+  }
+  for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
+  }
+  // The same SparseWorld snapshot path used by persisted maps carries this
+  // concrete strip into WorldRenderView; no paint UI is part of this fixture.
+  for (let x = FIXTURE.concreteTileX; x < FIXTURE.concreteTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.concreteTileY) }, 'concrete');
+  }
+  for (let x = FIXTURE.gravelTileX; x < FIXTURE.gravelTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.gravelTileY) }, 'gravel');
+  }
+  for (let x = FIXTURE.rockTileX; x < FIXTURE.rockTileX + 2; x += 1) {
+    world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.rockTileY) }, 'rock');
+  }
 
-  const room = defaultRoomContentRegistry.all()[0];
-  if (room === undefined) throw new Error('The room catalog is empty, so nothing can be zoned.');
+  const room = defaultRoomContentRegistry.getById('room.cell');
+  if (room === undefined) throw new Error('The cell room is missing from the catalog.');
 
-  for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY; tileY += 1) {
+  for (let tileY = FIXTURE.zonedMinTileY; tileY <= FIXTURE.zonedMaxTileY + (includeBedVisual ? 1 : 0); tileY += 1) {
     for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
       world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
+    }
+  }
+  const kitchen = defaultRoomContentRegistry.getById('room.kitchen');
+  if (kitchen === undefined) throw new Error('The kitchen room is missing from the catalog.');
+  for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
+    for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
+      world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, kitchen.numericId);
+    }
+  }
+  if (includeStoveVisual) {
+    for (let tileX = FIXTURE.kitchenMinTileX; tileX <= FIXTURE.kitchenMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.kitchenMinTileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.kitchenMaxTileY + 1) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.kitchenMinTileY; tileY <= FIXTURE.kitchenMaxTileY; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.kitchenMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.kitchenMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+    }
+  }
+  const canteen = defaultRoomContentRegistry.getById('room.canteen');
+  if (canteen === undefined) throw new Error('The canteen room is missing from the catalog.');
+  for (let tileY = FIXTURE.canteenMinTileY; tileY <= FIXTURE.canteenMaxTileY; tileY += 1) {
+    for (let tileX = FIXTURE.canteenMinTileX; tileX <= FIXTURE.canteenMaxTileX; tileX += 1) {
+      world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, canteen.numericId);
+    }
+  }
+  if (includeYard) {
+    const yard = defaultRoomContentRegistry.getById('room.yard');
+    if (yard === undefined) throw new Error('The yard room is missing from the catalog.');
+    for (let tileY = FIXTURE.yardMinTileY; tileY <= FIXTURE.yardMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.yardMinTileX; tileX <= FIXTURE.yardMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, yard.numericId);
+      }
+    }
+  }
+  if (includeShowerFloor || includeInfirmaryFloor) {
+    for (const [roomId, minX, minY, maxX, maxY] of [
+      ['room.shower-room', FIXTURE.showerFloorMinTileX, FIXTURE.showerFloorMinTileY,
+        FIXTURE.showerFloorMaxTileX, FIXTURE.showerFloorMaxTileY],
+      ['room.laundry', FIXTURE.laundryFloorMinTileX, FIXTURE.laundryFloorMinTileY,
+        FIXTURE.laundryFloorMaxTileX, FIXTURE.laundryFloorMaxTileY],
+    ] as const) {
+      const room = defaultRoomContentRegistry.getById(roomId);
+      if (room === undefined) throw new Error(`The ${roomId} room is missing from the catalog.`);
+      for (let tileY = minY; tileY <= maxY; tileY += 1) {
+        for (let tileX = minX; tileX <= maxX; tileX += 1) {
+          world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, room.numericId);
+        }
+      }
+    }
+  }
+  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
+    const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
+    if (infirmary === undefined) throw new Error('The infirmary room is missing from the catalog.');
+    for (let tileY = FIXTURE.infirmaryFloorMinTileY; tileY <= FIXTURE.infirmaryFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.infirmaryFloorMinTileX; tileX <= FIXTURE.infirmaryFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, infirmary.numericId);
+      }
+    }
+  }
+  if (includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
+    const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
+    if (commonRoom === undefined) throw new Error('The common room is missing from the catalog.');
+    for (let tileY = FIXTURE.commonRoomFloorMinTileY; tileY <= FIXTURE.commonRoomFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.commonRoomFloorMinTileX; tileX <= FIXTURE.commonRoomFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, commonRoom.numericId);
+      }
+    }
+  }
+  if (includeClassroomFloor) {
+    const classroom = defaultRoomContentRegistry.getById('room.classroom');
+    if (classroom === undefined) throw new Error('The classroom is missing from the catalog.');
+    for (let tileY = FIXTURE.classroomFloorMinTileY; tileY <= FIXTURE.classroomFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.classroomFloorMinTileX; tileX <= FIXTURE.classroomFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, classroom.numericId);
+      }
+    }
+  }
+  if (includeSecurityFloor) {
+    const securityOffice = defaultRoomContentRegistry.getById('room.security-office');
+    if (securityOffice === undefined) throw new Error('The security office is missing from the catalog.');
+    for (let tileY = FIXTURE.securityFloorMinTileY; tileY <= FIXTURE.securityFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.securityFloorMinTileX; tileX <= FIXTURE.securityFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, securityOffice.numericId);
+      }
     }
   }
   for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
@@ -116,6 +361,17 @@ function buildFrame(): RenderFrame {
     { x: tileCoordinate(FIXTURE.westWallTileX), y: tileCoordinate(FIXTURE.westWallTileY) },
     WALL_EDGE_NUMERIC_ID,
   );
+  if (includeBedVisual) {
+    // A small furnished cell, retaining the ordinary zoning and object IDs.
+    // This route is a visual fixture only; the default test map is untouched.
+    for (let tileX = FIXTURE.zonedMinTileX; tileX <= FIXTURE.zonedMaxTileX; tileX += 1) {
+      world.setTopEdge({ x: tileCoordinate(tileX), y: tileCoordinate(FIXTURE.zonedMaxTileY + 2) }, WALL_EDGE_NUMERIC_ID);
+    }
+    for (let tileY = FIXTURE.zonedMinTileY + 1; tileY <= FIXTURE.zonedMaxTileY + 1; tileY += 1) {
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.zonedMinTileX), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+      world.setLeftEdge({ x: tileCoordinate(FIXTURE.zonedMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
+    }
+  }
 
   /*
    * One finished wall order, on a tile whose north edge the world already
@@ -145,8 +401,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-bed',
       definitionId: 'bed-wooden',
-      tileX: FIXTURE.bedTileX,
-      tileY: FIXTURE.bedTileY,
+      tileX: includeBedVisual ? 3 : FIXTURE.bedTileX,
+      tileY: includeBedVisual ? 3 : FIXTURE.bedTileY,
       phase: 'built',
     },
     /*
@@ -159,8 +415,8 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-toilet',
       definitionId: 'toilet-brick',
-      tileX: FIXTURE.toiletTileX,
-      tileY: FIXTURE.toiletTileY,
+      tileX: includeBedVisual ? 5 : FIXTURE.toiletTileX,
+      tileY: includeBedVisual ? 3 : FIXTURE.toiletTileY,
       phase: 'built',
     },
     /*
@@ -185,10 +441,17 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-shower-head',
       definitionId: 'shower-head-brick',
-      tileX: FIXTURE.showerTileX,
-      tileY: FIXTURE.showerTileY,
+      tileX: includeShowerVisual ? 12 : FIXTURE.showerTileX,
+      tileY: includeShowerVisual ? 13 : FIXTURE.showerTileY,
       phase: 'built',
     },
+    ...(includeShowerVisual ? [{
+      id: 'shower-visual-second-head',
+      definitionId: 'shower-head-brick',
+      tileX: 14,
+      tileY: 13,
+      phase: 'built' as const,
+    }] : []),
     {
       id: 'finished-waste-bin',
       definitionId: 'waste-bin-brick',
@@ -199,10 +462,149 @@ function buildFrame(): RenderFrame {
     {
       id: 'finished-storage-rack',
       definitionId: 'storage-rack-wooden',
-      tileX: FIXTURE.storageRackTileX,
-      tileY: FIXTURE.storageRackTileY,
+      tileX: includeStoveVisual ? 5 : FIXTURE.storageRackTileX,
+      tileY: includeStoveVisual ? 6 : FIXTURE.storageRackTileY,
       phase: 'built',
     },
+    {
+      id: 'finished-chair',
+      definitionId: 'chair-wooden',
+      tileX: FIXTURE.chairTileX,
+      tileY: FIXTURE.chairTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-dining-table',
+      definitionId: 'dining-table-wooden',
+      tileX: FIXTURE.diningTableTileX,
+      tileY: FIXTURE.diningTableTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-medical-bed',
+      definitionId: 'medical-bed-wooden',
+      tileX: FIXTURE.medicalBedTileX,
+      tileY: FIXTURE.medicalBedTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-medicine-cabinet',
+      definitionId: 'medicine-cabinet-wooden',
+      tileX: FIXTURE.medicineCabinetTileX,
+      tileY: FIXTURE.medicineCabinetTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-stove',
+      definitionId: 'stove-brick',
+      tileX: includeStoveVisual ? 2 : FIXTURE.stoveTileX,
+      tileY: includeStoveVisual ? 7 : FIXTURE.stoveTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-washing-machine',
+      definitionId: 'washing-machine-brick',
+      tileX: includeWasherVisual ? 17 : FIXTURE.washingMachineTileX,
+      tileY: includeWasherVisual ? 13 : FIXTURE.washingMachineTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-fridge',
+      definitionId: 'fridge-brick',
+      tileX: includeStoveVisual ? 5 : FIXTURE.fridgeTileX,
+      tileY: includeStoveVisual ? 7 : FIXTURE.fridgeTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-security-console',
+      definitionId: 'security-console-brick',
+      tileX: FIXTURE.securityConsoleTileX,
+      tileY: FIXTURE.securityConsoleTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-utility-panel',
+      definitionId: 'utility-panel-brick',
+      tileX: FIXTURE.utilityPanelTileX,
+      tileY: FIXTURE.utilityPanelTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-loading-dock-door',
+      definitionId: 'loading-dock-door-wooden',
+      tileX: FIXTURE.loadingDockDoorTileX,
+      tileY: FIXTURE.loadingDockDoorTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-prep-counter',
+      definitionId: 'prep-counter-brick',
+      tileX: includeStoveVisual ? 2 : FIXTURE.prepCounterTileX,
+      tileY: includeStoveVisual ? 6 : FIXTURE.prepCounterTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-bookshelf',
+      definitionId: 'bookshelf-wooden',
+      tileX: FIXTURE.bookshelfTileX,
+      tileY: FIXTURE.bookshelfTileY,
+      phase: 'built',
+    },
+    ...(includeInfirmaryFloor ? [
+      {
+        id: 'infirmary-floor-medical-bed',
+        definitionId: 'medical-bed-wooden',
+        tileX: 17,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+      {
+        id: 'infirmary-floor-medicine-cabinet',
+        definitionId: 'medicine-cabinet-wooden',
+        tileX: 20,
+        tileY: 18,
+        phase: 'built' as const,
+      },
+    ] : []),
+    ...(includeCommonRoomFloor ? [
+      {
+        id: 'common-room-floor-bench-west',
+        definitionId: 'bench-wooden',
+        tileX: 24,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+      {
+        id: 'common-room-floor-bench-east',
+        definitionId: 'bench-wooden',
+        tileX: 27,
+        tileY: 17,
+        phase: 'built' as const,
+      },
+    ] : []),
+    ...(includeClassroomFloor ? [
+      {
+        id: 'classroom-floor-bookshelf',
+        definitionId: 'bookshelf-wooden',
+        tileX: 18,
+        tileY: 24,
+        phase: 'built' as const,
+      },
+      ...[[17, 25], [21, 25], [17, 28], [21, 28]].map(([tileX, tileY], index) => ({
+        id: `classroom-floor-chair-${index}`,
+        definitionId: 'chair-wooden',
+        tileX: tileX!,
+        tileY: tileY!,
+        phase: 'built' as const,
+      })),
+    ] : []),
+    ...(includeSecurityFloor ? [{
+      id: 'security-floor-console',
+      definitionId: 'security-console-brick',
+      tileX: 24,
+      tileY: 24,
+      phase: 'built' as const,
+    }] : []),
   ];
 
   return {
@@ -219,10 +621,25 @@ const frame = buildFrame();
 const feed: RenderFeed = { readFrame: () => frame };
 
 const errors: string[] = [];
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
 const scene = new WorldScene({
   feed,
   keyValueStore: memoryStore(),
+  ...(new URLSearchParams(window.location.search).has('roomLabels')
+    || new URLSearchParams(window.location.search).has('showerFloor')
+    || new URLSearchParams(window.location.search).has('infirmaryFloor')
+    || new URLSearchParams(window.location.search).has('commonRoomFloor')
+    || new URLSearchParams(window.location.search).has('classroomFloor')
+    || new URLSearchParams(window.location.search).has('securityFloor')
+    || new URLSearchParams(window.location.search).has('staffFloor')
+    || new URLSearchParams(window.location.search).has('bedVisual')
+    || new URLSearchParams(window.location.search).has('stoveVisual') ? {
+    roomName: (zoningNumericId: number): string | undefined => {
+      const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+      return room === undefined ? undefined : localizer.format(room.nameKey);
+    },
+  } : {}),
   loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   onError: (error) => {
     errors.push(error.message);
@@ -242,6 +659,7 @@ const game = new Phaser.Game({
 /** The scene keeps its layers private, which is correct; the cast is confined here. */
 interface SceneInternals {
   readonly tiles: TileLayer | undefined;
+  readonly roomLabels: RoomLabelLayer | undefined;
 }
 const internals = scene as unknown as SceneInternals;
 
@@ -353,8 +771,9 @@ const harness: LockstateEnvironmentArtHarness = {
   },
   atlasPixel,
   tileSprites,
-  centreCameraOn: async (worldX, worldY) => {
-    scene.cameras.main.setZoom(1);
+  roomLabels: () => internals.roomLabels?.drawn ?? [],
+  centreCameraOn: async (worldX, worldY, zoom = 1) => {
+    scene.cameras.main.setZoom(zoom);
     scene.cameras.main.centerOn(worldX, worldY);
     // Two frames: one for the camera matrix `preRender` rebuilds, one for the
     // frame drawn with it.

@@ -150,14 +150,29 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  * since ADR 0098 option A, not by category), drawn over this at a reduced
  * alpha, so "which room is this" survives the floor being art.
  *
- * One floor for every category today. This returns per zoning id rather than
- * per category so a later split -- concrete for utility and logistics, linoleum
- * for the rest -- is a change in this function and nowhere else.
+ * The kitchen uses a washable, non-slip tile, the canteen uses warm terrazzo,
+ * the shower uses matte ceramic, the laundry uses sealed aggregate, the
+ * Infirmary uses hygienic sheet vinyl, the Staff Room uses warm woven vinyl,
+ * Standard and Solitary Cells use sealed
+ * concrete, and the outdoor yard uses compacted earth. Other rooms keep
+ * institutional linoleum. This returns per zoning id
+ * so their material agrees with use.
  */
 export function zonedFloorSprite(zoningNumericId: number): EnvironmentSpriteId | undefined {
   if (zoningNumericId === 0) return undefined;
   const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
   if (room === undefined) return undefined;
+  if (room.id === 'room.kitchen') return 'env.floor.kitchen';
+  if (room.id === 'room.canteen') return 'env.floor.canteen';
+  if (room.id === 'room.yard') return 'env.floor.yard';
+  if (room.id === 'room.shower-room') return 'env.floor.shower';
+  if (room.id === 'room.laundry') return 'env.floor.laundry';
+  if (room.id === 'room.infirmary') return 'env.floor.infirmary';
+  if (room.id === 'room.common-room') return 'env.floor.common-room';
+  if (room.id === 'room.classroom') return 'env.floor.classroom';
+  if (room.id === 'room.security-office') return 'env.floor.security-office';
+  if (room.id === 'room.cell' || room.id === 'room.solitary-cell') return 'env.floor.cell';
+  if (room.id === 'room.staff-room') return 'env.floor.staff-room';
   return 'env.floor.institutional';
 }
 
@@ -168,18 +183,13 @@ export interface ArtCoverage {
 }
 
 /**
- * Every terrain is on the colour fallback, and each for a reason worth stating
- * once rather than guessing at later:
+ * One terrain type remains on the colour fallback:
  *
- * - `dirt`, `grass`, `gravel`, `rock`, `water` -- no sheet is ground. The 23
- *   sheets are two interior floors, two wall module sets, two door sets,
- *   furniture, fixtures, perimeter structures and security devices.
- * - `concrete` -- `floor.concrete.variants` would fit it exactly, and it is
- *   *not* mapped because no code path can produce a concrete tile: see
- *   `zonedFloorSprite` above. Mapping it would add 2.3 MB to the first load to
- *   draw nothing. This is the row to add when terrain painting arrives.
+ * - `water` -- no published Blender render covers
+ *   it. Dirt, grass, concrete, gravel and rock have separate Blender renders. The UI has
+ *   no terrain painting control yet, but saved worlds can contain these tiles.
  */
-export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt', 'grass', 'gravel', 'rock', 'water'];
+export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['water'];
 
 /**
  * Every catalogued object **except `object.bed`** is on the colour fallback.
@@ -258,34 +268,48 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * **2026-09-23:** A separate open wooden rack model now serves this object.
  * The rejected closed locker and the playtest finding above remain historical
  * evidence for why the new render needs distinct shelves and visible contents.
+ * A new wooden chair likewise replaces the rejected cushion-only visitor
+ * render: the back slats, seat frame and front feet are distinct in its frame.
+ * The older chair finding above remains the reason this new model was needed.
+ * The dining table also leaves the fallback: its new 3x2 render shows three
+ * fixed stools, matching the simulation's three dining places, rather than
+ * stretching the unrelated 2x1 cell table-and-stool render across six tiles.
+ * The twin laundry washer has its own 2x1 model with two top-visible drum windows.
+ * The 2x1 surveillance console now has its own three-screen model rather
+ * than a generic desk or coloured slab; its low monitor hoods face the
+ * game's overhead camera.
+ * A purpose-built 1x1 utility panel now exposes its six large breakers and
+ * guarded switch to the overhead view, so it no longer needs a coloured slab.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bookshelf',
-  'object.chair',
-  'object.dining-table',
-  'object.fridge',
-  'object.loading-dock-door',
-  'object.medical-bed',
-  'object.medicine-cabinet',
-  'object.prep-counter',
-  'object.security-console',
   'object.sink',
-  'object.stove',
-  'object.utility-panel',
-  'object.washing-machine',
 ];
 
 /**
- * Terrain id -> floor art. **Empty in this slice, and empty is the row set, not
- * a stub:** the comment on `TERRAIN_ON_COLOUR_FALLBACK` says why each of the six
- * terrains is not in it. Mapping `concrete` when terrain painting arrives is one
- * line here and no change to the painter.
+ * Terrain id -> exterior floor art. The same mapping handles defaults and
+ * terrain restored from a saved world; the painter keeps a colour fallback.
  */
-const FLOOR_SPRITE_BY_TERRAIN_ID: Readonly<Record<string, EnvironmentSpriteId>> = {};
+const FLOOR_SPRITE_BY_TERRAIN_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
+  dirt: 'env.terrain.dirt',
+  grass: 'env.terrain.grass',
+  concrete: 'env.terrain.concrete',
+  gravel: 'env.terrain.gravel',
+  rock: 'env.terrain.rock',
+};
+
+const TERRAIN_ID_BY_NUMERIC_ID: ReadonlyMap<number, string> = new Map(
+  DEFAULT_TERRAIN_DEFINITIONS.map((definition) => [definition.numericId, definition.id]),
+);
 
 /** Undefined for a terrain this renderer has no art for: the painter fills it with a colour. */
 export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | undefined {
   return FLOOR_SPRITE_BY_TERRAIN_ID[terrainId];
+}
+
+/** Numeric terrain identity from the render feed, resolved through the shared catalogue. */
+export function terrainFloorSpriteByNumericId(numericId: number): EnvironmentSpriteId | undefined {
+  const terrainId = TERRAIN_ID_BY_NUMERIC_ID.get(numericId);
+  return terrainId === undefined ? undefined : terrainFloorSprite(terrainId);
 }
 
 /**
@@ -329,12 +353,24 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
+  'object.medical-bed': 'env.object.medical-bed',
+  'object.medicine-cabinet': 'env.object.medicine-cabinet',
+  'object.stove': 'env.object.stove',
+  'object.fridge': 'env.object.fridge',
+  'object.washing-machine': 'env.object.washing-machine',
+  'object.security-console': 'env.object.security-console',
+  'object.utility-panel': 'env.object.utility-panel',
+  'object.loading-dock-door': 'env.object.loading-dock-door',
+  'object.prep-counter': 'env.object.prep-counter',
+  'object.bookshelf': 'env.object.bookshelf',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
   'object.shower-head': 'env.object.shower-head',
   'object.waste-bin': 'env.object.waste-bin',
   'object.storage-rack': 'env.object.storage-rack',
+  'object.chair': 'env.object.chair',
+  'object.dining-table': 'env.object.dining-table',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */
