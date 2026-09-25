@@ -232,6 +232,31 @@ test.describe('the environment artwork', () => {
     expect(leafGap?.[1], 'the green pan should show its dark recess between leaves').toBeLessThan(105);
   });
 
+  test('the library bookshelf reads in a Full HD room', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'classroomFloor');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 19 * fixture.tileSizePx, y: 25 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.bookshelf')).toContainEqual(
+      expect.objectContaining({ x: 18 * fixture.tileSizePx, y: 24 * fixture.tileSizePx }),
+    );
+    if (process.env['LOCKSTATE_CAPTURE_BOOKSHELF_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('bookshelf-1920x1080.png') });
+    }
+  });
+
+  test('the bookshelf upright is blue-grey rather than a bright divider', async ({ page }) => {
+    await openHarness(page);
+    const upright = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.bookshelf');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 92, frame.y + 60);
+    });
+    expect(upright?.[3]).toBe(255);
+    expect(upright?.[0], 'a light post overwhelms both rows of books at world scale').toBeLessThan(160);
+  });
+
   test('the refrigerator top reveals the split between its two doors', async ({ page }) => {
     await openHarness(page);
     const doors = await page.evaluate(() => {

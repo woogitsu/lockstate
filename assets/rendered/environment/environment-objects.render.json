@@ -637,8 +637,8 @@
     {
       "assetId": "furniture.library.bookshelf",
       "image": "furniture.library.bookshelf.png",
-      "sha256": "71ed21db2df62db0ac30ed37f50e3ab2200caf77bd59566786f5f2511a3c5814",
-      "pixelSha256": "4125dd619252af9b88506e027ed4385b4e4394e0db5643b14ac6f9018d9d5b17",
+      "sha256": "6859e73c42d86f661aed9150017198466961b849e845e686f523f495722e3f05",
+      "pixelSha256": "8c2afa5caf49cf3326efaa6cdd2a04425f0c1df3919ca33eeea252d2a2c2abf9",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -654,11 +654,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 33,
+        "x": 35,
         "y": 19,
-        "width": 446,
+        "width": 442,
         "height": 218,
-        "opaquePixels": 97064
+        "opaquePixels": 96226
       }
     },
     {
