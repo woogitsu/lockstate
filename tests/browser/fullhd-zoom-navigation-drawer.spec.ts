@@ -82,3 +82,29 @@ for (const uiScale of [1.75, 2]) {
     }
   });
 }
+
+test('a collapsed navigation can be restored from the Full HD zoom drawer after reload', async ({ page }) => {
+  await page.setViewportSize({ width: 960, height: 540 });
+  await page.goto('/index.html');
+  await page.evaluate(() => {
+    localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: 2 }));
+    localStorage.setItem('lockstate.settings.layout', JSON.stringify({ version: 1, collapsed: ['navigation'] }));
+  });
+  await page.reload();
+  await expect(page.locator('.hud')).toHaveAttribute('data-layout-navigation', 'collapsed');
+  await page.reload();
+
+  const hud = page.locator('.hud');
+  await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');
+  await expect(hud).toHaveAttribute('data-layout-navigation', 'collapsed');
+  const trigger = page.locator('.hud-navigation-drawer__trigger');
+  await trigger.click();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect(hud).toHaveAttribute('data-layout-navigation', 'open');
+  const tabs = page.locator('.hud-tabs__inner');
+  await expect(tabs.locator('.ui-tab')).toHaveCount(6);
+  for (const tab of await tabs.locator('.ui-tab').all()) {
+    await tab.scrollIntoViewIfNeeded();
+    await expect(tab).toBeInViewport();
+  }
+});

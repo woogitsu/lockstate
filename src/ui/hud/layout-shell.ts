@@ -291,7 +291,12 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     label: t(HUD_MESSAGE_KEY.layoutShowNavigation),
     variant: 'bordered',
     size: 'sm',
-    onActivate: () => setDrawerOpen(!drawerOpen),
+    onActivate: () => {
+      if (!drawerOpen && geometry.navigationPlacement === 'drawer' && geometry.navigation.collapsed) {
+        apply(withRegionCollapsed(settings, 'navigation', false), true);
+      }
+      setDrawerOpen(!drawerOpen);
+    },
   });
   drawerButton.element.classList.add('hud-navigation-drawer__trigger');
   const drawerButtonText = element('span', { text: t(HUD_MESSAGE_KEY.layoutShowNavigation) });
