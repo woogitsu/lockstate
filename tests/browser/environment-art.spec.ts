@@ -207,6 +207,37 @@ test.describe('the environment artwork', () => {
     }
   });
 
+  test('the refrigerator top reveals the split between its two doors', async ({ page }) => {
+    await openHarness(page);
+    const doors = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.fridge');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        seam: harness.atlasPixel(frame.x + 64, frame.y + 91),
+        enamel: harness.atlasPixel(frame.x + 57, frame.y + 91),
+      };
+    });
+    expect(doors?.size).toEqual([128, 128]);
+    expect(doors?.seam?.[3]).toBe(255);
+    expect(doors?.enamel?.[3]).toBe(255);
+    expect(channelDistance(doors!.seam!, doors!.enamel!)).toBeGreaterThan(20);
+  });
+
+  test('the split refrigerator reads beside the stove in a Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4.5 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.fridge')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_FRIDGE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('fridge-1920x1080.png') });
+    }
+  });
+
   test('two shower fixtures are drawn over ceramic in a furnished Full HD room', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page, 'showerVisual');
