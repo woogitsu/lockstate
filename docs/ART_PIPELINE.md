@@ -333,6 +333,12 @@ plates; its repeated edge is kept subdued. The wall and frontal door faces are s
 reliefs representing elevations in the game's 2D projection. The frontal door
 matches its rendered overhead cap.
 
+The three `terrain.dirt.compacted.variant-*` modules share the original dirt
+material, lighting and zero-margin frame. Only inset grit and scuff positions
+change, so any two variants can meet at a tile edge. `terrainFloorSpriteAt`
+chooses among the four images from integer world coordinates in the renderer;
+the terrain id, simulation and save format do not change.
+
 The later `floor.infirmary.vinyl` tile follows the same zero-margin contract.
 Its base shader uses periodic coordinates so opposite edges meet, and the
 small embedded flecks stay inside the rim. The concept's square seams are

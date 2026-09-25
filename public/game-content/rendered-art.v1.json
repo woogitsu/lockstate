@@ -878,6 +878,81 @@
       }
     },
     {
+      "assetId": "terrain.dirt.compacted.variant-b",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.dirt.compacted.variant-b.945dcada4895.png",
+      "sha256": "945dcada48954dafd25f8f619165a5427ad738d3a3d741b7a72e6234e9186a97",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted.variant-c",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.dirt.compacted.variant-c.845351a7dca3.png",
+      "sha256": "845351a7dca3d32e8e50bfdaada1e71a3b5f154b7b1d7c820c01a25beeabf51b",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted.variant-d",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.dirt.compacted.variant-d.9428052d56cd.png",
+      "sha256": "9428052d56cd12921e73e3d23c383b48465ca9e14c680ddd4e037d86095f8dd8",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "terrain.grass.mown",
       "contentVersion": 1,
       "image": "source-art/rendered.terrain.grass.mown.24f4e0f9b271.png",

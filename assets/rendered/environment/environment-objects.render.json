@@ -1594,6 +1594,90 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "terrain.dirt.compacted.variant-b",
+      "image": "terrain.dirt.compacted.variant-b.png",
+      "sha256": "945dcada48954dafd25f8f619165a5427ad738d3a3d741b7a72e6234e9186a97",
+      "pixelSha256": "a576dc6eb91259f118db95d003e73dc273c4a7ff054f50e42b321665a591cfd8",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted.variant-c",
+      "image": "terrain.dirt.compacted.variant-c.png",
+      "sha256": "845351a7dca3d32e8e50bfdaada1e71a3b5f154b7b1d7c820c01a25beeabf51b",
+      "pixelSha256": "5992d33fa980d3b0d434e8e39228ce3d963fe529c8f2f22bea12ba1bc83b29ae",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted.variant-d",
+      "image": "terrain.dirt.compacted.variant-d.png",
+      "sha256": "9428052d56cd12921e73e3d23c383b48465ca9e14c680ddd4e037d86095f8dd8",
+      "pixelSha256": "3c52e11a6a200f350c38e75ff355ff5871c631198f05f039c4a5cc4114e10639",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

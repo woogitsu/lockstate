@@ -76,6 +76,9 @@ export type EnvironmentArtCatalogKind = 'source-art' | 'rendered-art';
  */
 export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.dirt',
+  'env.terrain.dirt.b',
+  'env.terrain.dirt.c',
+  'env.terrain.dirt.d',
   'env.terrain.grass',
   'env.terrain.concrete',
   'env.terrain.gravel',
@@ -184,6 +187,21 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered compacted dirt with fine mineral grit, one seamless tile per repeat.',
+  },
+  'env.terrain.dirt.b': {
+    kind: 'rendered-art', renderedArtId: 'terrain.dirt.compacted.variant-b',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender compacted earth, same periodic border and shifted inset mineral grit.',
+  },
+  'env.terrain.dirt.c': {
+    kind: 'rendered-art', renderedArtId: 'terrain.dirt.compacted.variant-c',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender compacted earth, same periodic border and shifted inset mineral grit.',
+  },
+  'env.terrain.dirt.d': {
+    kind: 'rendered-art', renderedArtId: 'terrain.dirt.compacted.variant-d',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender compacted earth, same periodic border and shifted inset mineral grit.',
   },
   /** Seamless mown turf beneath unzoned outdoor tiles. */
   'env.terrain.grass': {

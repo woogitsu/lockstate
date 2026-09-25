@@ -123,6 +123,9 @@ MODELS = (
     ("floor.security-office.antistatic", (1, 1)),
     ("floor.cell.sealed-concrete", (1, 1)),
     ("floor.staff-room.woven-vinyl", (1, 1)),
+    ("terrain.dirt.compacted.variant-b", (1, 1)),
+    ("terrain.dirt.compacted.variant-c", (1, 1)),
+    ("terrain.dirt.compacted.variant-d", (1, 1)),
 )
 
 
@@ -1569,24 +1572,43 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Short grass blade.{index}",
                 (x, y, 0.081), (0.0035, length, 0.001),
                 "grass_blade_light" if index % 3 else "grass_blade_dark", 0)
-    elif asset_id == "terrain.dirt.compacted":
+    elif asset_id == "terrain.dirt.compacted" or asset_id.startswith("terrain.dirt.compacted.variant-"):
         # Unzoned ground covers most of the world. Keep the entire border
         # uniform so chunk-sized repeated rectangles have no hard seam.
         box(collection, root, "Compacted earth", (0, 0, 0.04),
             (1, 1, 0.08), "dirt_base", 0)
+        variant = {"terrain.dirt.compacted": 0, "terrain.dirt.compacted.variant-b": 1,
+                   "terrain.dirt.compacted.variant-c": 2, "terrain.dirt.compacted.variant-d": 3}[asset_id]
         for index in range(42):
-            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.84
-            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.84
+            x = (((index * 43 + 13 + variant * 31) % 137) / 137 - 0.5) * 0.84
+            y = (((index * 71 + 31 + variant * 47) % 139) / 139 - 0.5) * 0.84
             width = 0.004 + (index % 3) * 0.002
             box(collection, root, f"Small mineral grit.{index}",
                 (x, y, 0.081), (width, width * 0.67, 0.001),
                 "dirt_grit_light" if index % 3 else "dirt_grit_dark", 0)
         for index in range(4):
-            x = (((index * 29 + 9) % 61) / 61 - 0.5) * 0.70
-            y = (((index * 37 + 23) % 67) / 67 - 0.5) * 0.70
+            x = (((index * 29 + 9 + variant * 11) % 61) / 61 - 0.5) * 0.70
+            y = (((index * 37 + 23 + variant * 13) % 67) / 67 - 0.5) * 0.70
             box(collection, root, f"Fine dry scuff.{index}",
                 (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
                 "dirt_scuff", 0)
+        if variant:
+            # Marks large enough to survive the 256 -> 128 -> 64 px path.
+            # Their centres and full extents remain inside +/-0.37 tiles;
+            # every variant therefore retains the same untouched border.
+            for index in range(9):
+                x = (((index * 31 + variant * 17) % 47) / 47 - 0.5) * 0.64
+                y = (((index * 23 + variant * 19) % 43) / 43 - 0.5) * 0.64
+                width = 0.025 + (index % 3) * 0.009
+                box(collection, root, f"Inset coarse grit.{index}",
+                    (x, y, 0.081), (width, width * 0.48, 0.001),
+                    "dirt_grit_light" if index % 3 else "dirt_grit_dark", 0.004)
+            for index in range(2):
+                x = (((index * 17 + variant * 13) % 29) / 29 - 0.5) * 0.48
+                y = (((index * 11 + variant * 7) % 31) / 31 - 0.5) * 0.48
+                box(collection, root, f"Subtle worn mark.{index}",
+                    (x, y, 0.081), (0.12 + 0.03 * index, 0.010, 0.001),
+                    "dirt_scuff", 0.004)
     elif asset_id == "floor.yard.compacted-earth":
         # An outdoor 8x8 yard must not read as an indoor linoleum block.
         # The border stays bare earth and all modeled grit/tufts are inset,

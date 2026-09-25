@@ -60,6 +60,59 @@ function channelDistance(left: HarnessPixel, right: HarnessPixel): number {
 }
 
 test.describe('the environment artwork', () => {
+  test('four dirt renders share an opaque edge at the 64 px game tile scale', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openHarness(page);
+    const drawn = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites()
+      .map(sprite => sprite.frameName).filter(name => name.startsWith('env.terrain.dirt')));
+    expect(new Set(drawn)).toEqual(new Set([
+      'env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d',
+    ]));
+    if (process.env['LOCKSTATE_CAPTURE_DIRT_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('dirt-variants-1920x1080.png') });
+    }
+    const samples = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const ids = ['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d'];
+      return ids.map((id) => {
+        const frame = harness.atlasFrame(id)!;
+        const edge = [0, 16, 32, 48, 64, 80, 96, 112, 127];
+        return {
+          size: [frame.width, frame.height],
+          left: edge.map(y => harness.atlasPixel(frame.x, frame.y + y)),
+          right: edge.map(y => harness.atlasPixel(frame.x + 127, frame.y + y)),
+          top: edge.map(x => harness.atlasPixel(frame.x + x, frame.y)),
+          bottom: edge.map(x => harness.atlasPixel(frame.x + x, frame.y + 127)),
+        };
+      });
+    });
+    for (const first of samples) {
+      expect(first.size).toEqual([128, 128]);
+      for (const second of samples) {
+        for (let index = 0; index < first.left.length; index += 1) {
+          expect(first.right[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(second.left[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(channelDistance(first.right[index]!, second.left[index]!)).toBeLessThanOrEqual(8);
+          expect(channelDistance(first.bottom[index]!, second.top[index]!)).toBeLessThanOrEqual(8);
+        }
+      }
+    }
+    const visibleMarks = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const base = harness.atlasFrame('env.terrain.dirt')!;
+      return ([['b', 78, 32], ['c', 55, 57], ['d', 54, 55]] as const).map(([variant, x, y]) => {
+        const frame = harness.atlasFrame(`env.terrain.dirt.${variant}`)!;
+        return {
+          original: harness.atlasPixel(base.x + x, base.y + y),
+          variant: harness.atlasPixel(frame.x + x, frame.y + y),
+        };
+      });
+    });
+    for (const mark of visibleMarks) {
+      expect(channelDistance(mark.original!, mark.variant!)).toBeGreaterThanOrEqual(12);
+    }
+  });
+
   test('the wooden chair has a clear air gap and one continuous seat at game scale', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page);
@@ -873,12 +926,12 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
     expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
-    const dirt = sprites.filter((sprite) => sprite.frameName === 'env.terrain.dirt');
+    const dirt = sprites.filter((sprite) => sprite.frameName.startsWith('env.terrain.dirt'));
     expect(dirt.length).toBeGreaterThan(0);
     const x = 3.5 * fixture.tileSizePx;
     const y = 1.5 * fixture.tileSizePx;
     expect(dirt.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
-    expect(dirt.some((sprite) => sprite.width > fixture.tileSizePx), 'outdoor dirt should merge into runs').toBe(true);
+    expect(dirt.every((sprite) => sprite.width >= fixture.tileSizePx), 'outdoor dirt spans complete tiles').toBe(true);
     const withArt = await page.evaluate(async ({ x, y }) => {
       const harness = window.lockstateEnvironmentArtHarness!;
       await harness.centreCameraOn(x, y);

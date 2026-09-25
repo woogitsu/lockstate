@@ -312,6 +312,17 @@ export function terrainFloorSpriteByNumericId(numericId: number): EnvironmentSpr
   return terrainId === undefined ? undefined : terrainFloorSprite(terrainId);
 }
 
+/** Stable presentation-only variation: terrain identity and save bytes stay unchanged. */
+export function terrainFloorSpriteAt(numericId: number, tileX: number, tileY: number): EnvironmentSpriteId | undefined {
+  const sprite = terrainFloorSpriteByNumericId(numericId);
+  if (sprite !== 'env.terrain.dirt') return sprite;
+  let hash = Math.imul(tileX, 73856093) ^ Math.imul(tileY, 19349663);
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x7feb352d);
+  const variant = (hash ^ (hash >>> 15)) & 3;
+  return (['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d'] as const)[variant];
+}
+
 /**
  * Catalogued object id -> art.
  *
