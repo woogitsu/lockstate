@@ -928,8 +928,9 @@ test.describe('the environment artwork', () => {
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
     const dirt = sprites.filter((sprite) => sprite.frameName.startsWith('env.terrain.dirt'));
     expect(dirt.length).toBeGreaterThan(0);
+    // Row 1 is grass in the current fixture; row 5 is bare owned earth.
     const x = 3.5 * fixture.tileSizePx;
-    const y = 1.5 * fixture.tileSizePx;
+    const y = 5.5 * fixture.tileSizePx;
     expect(dirt.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
     expect(dirt.every((sprite) => sprite.width >= fixture.tileSizePx), 'outdoor dirt spans complete tiles').toBe(true);
     const withArt = await page.evaluate(async ({ x, y }) => {
