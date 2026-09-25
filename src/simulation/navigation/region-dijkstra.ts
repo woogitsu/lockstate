@@ -77,7 +77,12 @@ export function runRegionDijkstra(
     frontier.pop();
     if (visited.has(currentRegion)) continue;
     visited.add(currentRegion);
-    if (stats !== undefined) stats.expansions += 1;
+    if (stats !== undefined) {
+      stats.expansions += 1;
+      if (stats.maxExpansions !== undefined && stats.expansions > stats.maxExpansions) {
+        throw new RangeError('Navigation cache warmth exceeds the restore work budget.');
+      }
+    }
     if (stopAt !== undefined && currentRegion === stopAt) break;
 
     for (const portal of graph.regionPortals.get(currentRegion) ?? []) {

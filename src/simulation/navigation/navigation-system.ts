@@ -15,6 +15,7 @@ import type { Route, RouteResult } from './route';
 import { RouteCache, type RouteCacheMetrics, type RouteCacheWarmthKey } from './route-cache';
 import type { RouteContext } from './route-context';
 import { isEdgeTraversable } from './traversal';
+import { MAX_CACHE_WARMTH_REBUILD_EXPANSIONS } from './cache-limits';
 
 /**
  * A resolved route as a save carries it: the answer, without the three
@@ -288,8 +289,9 @@ export class NavigationSystem implements SystemRegistration {
     }
     if (snapshot.cacheWarmth !== undefined) {
       const graph = this.ensureGraph();
-      this.flowFieldCache.loadWarmthSnapshot(snapshot.cacheWarmth.fields, graph, this.doors);
-      this.routeCache.loadWarmthSnapshot(snapshot.cacheWarmth.routes, this.world, graph, this.doors);
+      const restoreWork = { expansions: 0, maxExpansions: MAX_CACHE_WARMTH_REBUILD_EXPANSIONS };
+      this.flowFieldCache.loadWarmthSnapshot(snapshot.cacheWarmth.fields, graph, this.doors, restoreWork);
+      this.routeCache.loadWarmthSnapshot(snapshot.cacheWarmth.routes, this.world, graph, this.doors, restoreWork);
     }
   }
 

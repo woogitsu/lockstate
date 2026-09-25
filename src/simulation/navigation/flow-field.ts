@@ -1,4 +1,5 @@
 import type { SparseWorld } from '../world/sparse-world';
+import { MAX_FLOW_FIELD_WARMTH_KEYS } from './cache-limits';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import { boundedLocalSearch, type SearchStats } from './local-search';
 import type { DoorRegistry } from './door';
@@ -235,11 +236,18 @@ export class FlowFieldCache {
 
   public set(field: RegionFlowField): void {
     this.entries.set(flowFieldCacheKey(field.destinationRegion, field.contextFingerprint), field);
+    if (this.entries.size > MAX_FLOW_FIELD_WARMTH_KEYS) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest !== undefined) {
+        this.entries.delete(oldest);
+        this.contexts.delete(oldest);
+      }
+    }
   }
 
   public setForContext(field: RegionFlowField, context: RouteContext): void {
     const key = flowFieldCacheKey(field.destinationRegion, field.contextFingerprint);
-    this.entries.set(key, field);
+    this.set(field);
     this.contexts.set(key, structuredClone(context));
   }
 
@@ -249,11 +257,11 @@ export class FlowFieldCache {
         const context = this.contexts.get(key);
         return context !== undefined && entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.doorDependencies, doors, context);
       })
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([key, entry]) => ({ destinationRegion: entry.destinationRegion, context: structuredClone(this.contexts.get(key)!) }));
   }
 
-  public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry): void {
+  public loadWarmthSnapshot(keys: readonly FlowFieldWarmthKey[], graph: NavigationGraph, doors: DoorRegistry, stats?: SearchStats): void {
+    if (keys.length > MAX_FLOW_FIELD_WARMTH_KEYS) throw new RangeError('Too many flow-field warmth keys.');
     this.entries.clear();
     this.contexts.clear();
     const seen = new Set<string>();
@@ -262,7 +270,7 @@ export class FlowFieldCache {
       if (seen.has(identity)) throw new RangeError(`Duplicate flow-field warmth key: ${identity}`);
       seen.add(identity);
       if (!graph.regionTiles.has(key.destinationRegion)) throw new RangeError(`Missing flow-field destination region: ${String(key.destinationRegion)}`);
-      this.setForContext(computeRegionFlowField(graph, doors, key.destinationRegion, key.context), key.context);
+      this.setForContext(computeRegionFlowField(graph, doors, key.destinationRegion, key.context, stats), key.context);
     }
   }
 

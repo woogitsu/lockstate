@@ -836,7 +836,14 @@ export function restoreSessionSystems(
   //    rather than the empty one `createNewSimulationRuntime` built. Absent on
   //    a save written before the section existed, and then the queue stays
   //    empty, which is what every such save restored to.
-  if (systems.inFlight !== undefined) runtime.navigation.loadInFlightSnapshot(systems.inFlight.navigation);
+  if (systems.inFlight !== undefined) {
+    try {
+      runtime.navigation.loadInFlightSnapshot(systems.inFlight.navigation);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+      throw new SnapshotRefusedError('damaged-payload', `Navigation cache warmth could not be restored: ${error.message}`);
+    }
+  }
   /*
    *    **A sector the runtime already holds gets the payload's definition
    *    applied over it, not skipped** ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)

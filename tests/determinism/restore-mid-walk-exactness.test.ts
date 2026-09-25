@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { JsonValue } from '../../src/shared/json';
 import { canonicalJson } from '../../src/simulation/determinism/canonical';
 import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
@@ -414,6 +415,47 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
     expect(restored.navigation.getRouteCacheMetrics().size).toBe(0);
     expect(restored.navigation.getFlowFieldCacheMetrics().size).toBe(0);
     expect(restored.navigation.getInFlightSnapshot().pending).toEqual(inFlight.navigation.pending);
+  });
+
+  it('rejects imported saves beyond either cache membership cap', () => {
+    const saved = savedWithWalkers();
+    const raw = envelopeWithout(saved, false) as {
+      checksum: string;
+      payload: { simulation: { inFlight: { navigation: { cacheWarmth: { routes: unknown[]; fields: unknown[] } } } } }
+    };
+    const route = saved.navigation.getInFlightSnapshot().cacheWarmth?.routes[0];
+    if (route === undefined) throw new Error('fixture must have one warmed route');
+    raw.payload.simulation.inFlight.navigation.cacheWarmth.routes = Array.from({ length: 10_001 }, () => route);
+    raw.checksum = computeSaveChecksum(raw.payload as unknown as JsonValue);
+    const decoded = decodeSaveEnvelope(raw);
+    expect(decoded.ok).toBe(false);
+    if (!decoded.ok) expect(decoded.error.code).toBe('invalid-shape');
+
+    const field = { destinationRegion: 0, context: route.context };
+    raw.payload.simulation.inFlight.navigation.cacheWarmth.routes = [route];
+    raw.payload.simulation.inFlight.navigation.cacheWarmth.fields = Array.from({ length: 257 }, () => field);
+    raw.checksum = computeSaveChecksum(raw.payload as unknown as JsonValue);
+    const fieldsDecoded = decodeSaveEnvelope(raw);
+    expect(fieldsDecoded.ok).toBe(false);
+    if (!fieldsDecoded.ok) expect(fieldsDecoded.error.code).toBe('invalid-shape');
+  });
+
+  it('refuses malformed duplicate warmth keys as a damaged snapshot', () => {
+    const saved = savedWithWalkers();
+    const bundle = JSON.parse(JSON.stringify(captureSessionSnapshot(saved))) as SessionSnapshotBundle;
+    const inFlight = bundle.simulation?.inFlight;
+    const route = inFlight?.navigation.cacheWarmth?.routes[0];
+    if (inFlight === undefined || route === undefined) throw new Error('fixture lacks cache warmth');
+    const damaged: SessionSnapshotBundle = {
+      ...bundle,
+      simulation: { ...bundle.simulation!, inFlight: {
+        ...inFlight,
+        navigation: { ...inFlight.navigation, cacheWarmth: {
+          routes: [route, route], fields: inFlight.navigation.cacheWarmth?.fields ?? [],
+        } },
+      } },
+    };
+    expect(() => restoreSimulationRuntime(damaged, SEED)).toThrow('Navigation cache warmth could not be restored: Duplicate route-cache warmth key');
   });
 
   it('resets only the traveller whose carried request the restored queue does not hold', () => {

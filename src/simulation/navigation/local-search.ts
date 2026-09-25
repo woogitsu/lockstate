@@ -21,6 +21,8 @@ export interface LocalSearchOptions {
  */
 export interface SearchStats {
   expansions: number;
+  /** Optional cumulative ceiling used only while rebuilding cache membership from an imported save. */
+  maxExpansions?: number;
 }
 
 export interface LocalSearchResult {
@@ -167,7 +169,12 @@ export function boundedLocalSearch(
     // entry that was popped earlier, so this one is the superseded copy of an
     // already-closed tile. Not a node, not an expansion.
     if (closed.has(currentKey)) continue;
-    if (stats !== undefined) stats.expansions += 1;
+    if (stats !== undefined) {
+      stats.expansions += 1;
+      if (stats.maxExpansions !== undefined && stats.expansions > stats.maxExpansions) {
+        throw new RangeError('Navigation cache warmth exceeds the restore work budget.');
+      }
+    }
 
     if (currentKey === destinationKey) {
       const waypoints: TilePosition[] = [currentTile];

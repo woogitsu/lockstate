@@ -6,6 +6,8 @@ import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependenci
 import type { RouteResult } from './route';
 import { findRoute } from './router';
 import type { SparseWorld } from '../world/sparse-world';
+import type { SearchStats } from './local-search';
+import { MAX_ROUTE_CACHE_WARMTH_KEYS } from './cache-limits';
 
 function cacheKey(origin: TilePosition, destination: TilePosition, context: RouteContext): string {
   return `${tileKey(origin)}->${tileKey(destination)}#${routeContextFingerprint(context)}`;
@@ -134,18 +136,22 @@ export class RouteCache {
       geometrySignature: graph.geometrySignature,
       dependencies: captureDoorDependencies([...dependencyDoorIds, ...crossedDoorIds(result)], doors, context),
     });
+    if (this.entries.size > MAX_ROUTE_CACHE_WARMTH_KEYS) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest !== undefined) this.entries.delete(oldest);
+    }
   }
 
   /** Only valid membership is saved; values are reproducibly rebuilt from world and doors. */
   public getWarmthSnapshot(graph: NavigationGraph, doors: DoorRegistry): readonly RouteCacheWarmthKey[] {
     return [...this.entries.entries()]
       .filter(([_key, entry]) => entry.geometrySignature === graph.geometrySignature && doorDependenciesStillHold(entry.dependencies, doors, entry.context))
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([_key, entry]) => ({ origin: { ...entry.origin }, destination: { ...entry.destination }, context: structuredClone(entry.context) }));
   }
 
   /** Recompute keys without charging simulation work; reject duplicate identities. */
-  public loadWarmthSnapshot(keys: readonly RouteCacheWarmthKey[], world: SparseWorld, graph: NavigationGraph, doors: DoorRegistry): void {
+  public loadWarmthSnapshot(keys: readonly RouteCacheWarmthKey[], world: SparseWorld, graph: NavigationGraph, doors: DoorRegistry, stats?: SearchStats): void {
+    if (keys.length > MAX_ROUTE_CACHE_WARMTH_KEYS) throw new RangeError('Too many route-cache warmth keys.');
     this.entries.clear();
     const seen = new Set<string>();
     for (const key of keys) {
@@ -153,7 +159,7 @@ export class RouteCache {
       if (seen.has(identity)) throw new RangeError(`Duplicate route-cache warmth key: ${identity}`);
       seen.add(identity);
       const dependencies = new Set<string>();
-      const result = findRoute(world, doors, graph, key.origin, key.destination, key.context, undefined, dependencies);
+      const result = findRoute(world, doors, graph, key.origin, key.destination, key.context, stats, dependencies);
       this.set(key.origin, key.destination, key.context, graph, doors, result, dependencies);
     }
   }

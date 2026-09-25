@@ -542,7 +542,9 @@ rebuildable structured keys are about **7.1 times smaller** than full cached
 values in this case. Larger prison saves need separate measurement rather
 than extrapolation from one fixture.
 
-The save records keys in deterministic order. A restore first reconstructs
+The save records keys in deterministic insertion order, which matters when a
+bounded cache evicts its oldest entry: sorting by identity on save would make
+the restored run evict a different route later. A restore first reconstructs
 the world, doors and graph, then recomputes the selected cache entries against
 that state without charging simulation ticks or changing queue order. The
 same dependency tracking and invalidation checks continue to govern later
@@ -560,3 +562,19 @@ save/restore run must agree with the continuous run at the next budget-bound
 service tick and later checkpoints. A cache whose keys cannot be validated
 or rebuilt without changing its answer is a refused payload, not silent
 fallback to a different game's timeline.
+
+**Import and restore work limits.** Route-cache membership is capped at
+10,000 entries (two retained legs per supported 5,000 prisoners), shared
+flow-field membership at 256 destination/context pairs, with oldest-entry
+eviction applied to the live cache as well as `.max()` validation at the save
+boundary. This means a live writer does not emit a list a reader refuses
+solely for length. Rebuilding all keys shares one hard ceiling of 250,000
+expanded tile/region nodes, enforced inside both search loops rather than
+checked after an expensive route completes. An imported save beyond either
+array cap is `invalid-shape`; one whose keys consume more work is refused as
+`damaged-payload`. The limit bounds import cost at the expense of refusing a
+save whose cache warmth is pathological for its world size; it never silently
+loads with cold cache and then claims an exact continuation. The 24/36-person
+budget-binding fixtures remain well below both limits. The 5,000-actor meal
+rush still needs a measured full-size save/restore benchmark; the 24-route
+size sample above cannot establish its load latency.

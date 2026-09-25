@@ -16,6 +16,7 @@ import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/reg
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
+import { MAX_FLOW_FIELD_WARMTH_KEYS, MAX_ROUTE_CACHE_WARMTH_KEYS } from '../simulation/navigation/cache-limits';
 import { LOCOMOTION_SUBTILE_UNITS } from '../simulation/locomotion/locomotion';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
@@ -1474,8 +1475,8 @@ const inFlightSectionSchema = z
         pending: z.array(pendingPathRequestSchema),
         results: z.array(resolvedPathRequestSchema),
         cacheWarmth: z.object({
-          routes: z.array(z.object({ origin: tilePositionSchema, destination: tilePositionSchema, context: routeContextSchema }).strict()),
-          fields: z.array(z.object({ destinationRegion: z.number().int(), context: routeContextSchema }).strict()),
+          routes: z.array(z.object({ origin: tilePositionSchema, destination: tilePositionSchema, context: routeContextSchema }).strict()).max(MAX_ROUTE_CACHE_WARMTH_KEYS),
+          fields: z.array(z.object({ destinationRegion: z.number().int(), context: routeContextSchema }).strict()).max(MAX_FLOW_FIELD_WARMTH_KEYS),
         }).strict().optional(),
       })
       .strict(),

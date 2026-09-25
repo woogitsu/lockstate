@@ -294,7 +294,7 @@ describe('every restored-scope key resolves in the bundled default locale', () =
       'save.scope.incidents': 'incidents, gangs and tunnels',
       'save.scope.names': 'prisoner and staff names',
       'save.scope.room-caches': 'room and topology caches (recomputed from the world)',
-      'save.scope.navigation-caches': 'navigation cache results (rebuilt after loading)',
+      'save.scope.navigation-caches': 'navigation cache results (recomputed as needed)',
     });
   });
 
