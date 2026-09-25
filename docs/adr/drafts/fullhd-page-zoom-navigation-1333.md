@@ -79,7 +79,7 @@ and return keyboard focus to the trigger. The save area scrolls inside its own
 rail at these enlarged sizes.
 
 The new `fullhd-zoom-navigation-drawer.spec.ts` passed at both 175% and 200%
-interface scale. Nine focused browser cases passed, including seven chrome
+interface scale. Ten focused browser cases passed, including seven chrome
 cases; TypeScript and the 40 HUD layout unit tests passed. The existing
 36-combination zoom ratchet remained at 12/36 known failures (ceiling 12)
 after making every metric visible. CI and a visual run with materialised art
@@ -91,3 +91,10 @@ own wrapped metrics made the next fit measurement taller. The shell now
 measures the strip without the drawer rule before choosing the next placement;
 the browser test observed the failure before the change and the bar/drawer
 transition passing afterward. Seventeen regular Full HD browser cases passed.
+
+A separate regression test starts with the navigation collapsed in persisted
+layout settings and reloads the page. Before the fix the drawer trigger stayed
+visible but did nothing because the normal restore arrow was hidden in drawer
+placement. The trigger now restores navigation and opens the six tabs in one
+action. The test went red before this change and all three drawer cases passed
+afterward.
