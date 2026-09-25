@@ -632,6 +632,24 @@ outward-facing or unrevertable, which is the whole reason:
    `tests/foundation/ci-configuration-contract.test.ts` pins both call sites,
    because neither job runs in CI and every other gate in the repository would
    stay green if a later edit removed them.
+
+   **A NEW NARROW RELEASE ON 2026-09-23, FOR THE FIRST NEW STAGE-7 RENDERS.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko te dwa
+   globy"* or *"Nie — pozostaw partię na gałęzi"*. They chose:
+
+   > Tak — dopisz tylko te dwa globy
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner, rather than typed by the owner. It authorises
+   exactly two comma-separated segments on the `browser` job's existing
+   `git lfs pull --include=` line in `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.fixture.shower.head.*.png`
+   - `public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png`
+
+   No other line, job, workflow, dashboard or asset id is released. The
+   `fixture.cell.sink` Blender render is source art only and has no published
+   sprite or glob; `object.sink` still has no buildable path.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
@@ -789,6 +807,33 @@ An instruction from the owner that changes nothing inside the four reservations
 still has to survive the session it was given in. It is recorded here, in their
 words and dated, in the same shape as a release — the difference being stated
 rather than left for a reader to infer.
+
+**The game's minimum design viewport, 2026-09-24.** The owner directly wrote:
+
+> rób grę pod minimum full hd, nie patrz mniejsze, bo to nie ma sensu, czyli aby było grywalne przy 1920x1080 i więej
+
+Then: *"i zapisz to w repo"*. The current HUD overhaul therefore targets
+**1920×1080 and larger** for visual design, interaction layout and gameplay
+acceptance. The earlier 900px and phone mockups are research evidence, not
+acceptance targets for this redesign. This instruction does not itself change
+the shipped small-screen UI; it supersedes a plan to spend the redesign on
+sub-Full-HD optimization. This is the owner's own typed wording, not a
+clickable option label.
+
+**The Full HD HUD direction, 2026-09-24.** After seeing two 1920×1080
+mockups, the owner selected the clickable option:
+
+> A — wszystkie odczyty stale na górze
+
+The alternative offered was *"B — duża mapa, odczyty pod przyciskiem
+(zalecane)"*. This selects a Full HD shell with all nine existing status
+metrics persistently visible, a left section rail and a right contextual
+work panel. It does not license invented status values or moving the existing
+SavePanel out of its owner-approved aside slot. **Provenance is the weaker
+kind:** the option label was written by the agent and clicked by the owner,
+not typed by the owner as a free-form instruction. The three supplied Prison
+Architect screenshots and dated 1920×1080 A/B mockups are visual research,
+not source assets for the game.
 
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:

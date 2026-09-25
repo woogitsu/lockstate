@@ -265,13 +265,11 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.medicine-cabinet',
   'object.prep-counter',
   'object.security-console',
-  'object.shower-head',
   'object.sink',
   'object.storage-rack',
   'object.stove',
   'object.utility-panel',
   'object.washing-machine',
-  'object.waste-bin',
 ];
 
 /**
@@ -331,6 +329,8 @@ const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
+  'object.shower-head': 'env.object.shower-head',
+  'object.waste-bin': 'env.object.waste-bin',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

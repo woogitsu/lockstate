@@ -91,6 +91,33 @@
       }
     },
     {
+      "assetId": "fixture.cell.sink",
+      "image": "fixture.cell.sink.png",
+      "sha256": "5fddde4e21888054227d99648fa3d3a3771faaad7fff09f456c894a2d55288a7",
+      "pixelSha256": "719721ff8504c0ed6a3be9d52007e7a92d9744c067ef83ae48ec8dbd5a4b812a",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 40,
+        "y": 32,
+        "width": 176,
+        "height": 175,
+        "opaquePixels": 29867
+      }
+    },
+    {
       "assetId": "fixture.cell.toilet_sink",
       "image": "fixture.cell.toilet_sink.png",
       "sha256": "bc8b067ea1469da66cf09e25d495105666ec101f02c2d3f227852a467a9bba1e",
@@ -115,6 +142,60 @@
         "width": 138,
         "height": 202,
         "opaquePixels": 20684
+      }
+    },
+    {
+      "assetId": "fixture.cell.waste_bin",
+      "image": "fixture.cell.waste_bin.png",
+      "sha256": "fa89fbba885800ee56423fdba4ae47d1f4a6daf2238c6e0552ed16785ba0f7cb",
+      "pixelSha256": "8d54d24bf76c95bba80f5310de12d79946a2746b5a1f51986c2d68e1985acde4",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 42,
+        "y": 27,
+        "width": 172,
+        "height": 187,
+        "opaquePixels": 23826
+      }
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "image": "fixture.shower.head.png",
+      "sha256": "bb3bfecc78ce87f82ac169f973cacc21f8c37e3352931151ddd730fa3a50bf5f",
+      "pixelSha256": "edc763d84b325c0f32e063f3f8c3773f1daf00e730b3fbdc2493b57db5baa09c",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 56,
+        "y": 26,
+        "width": 144,
+        "height": 169,
+        "opaquePixels": 15583
       }
     },
     {

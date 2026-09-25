@@ -84,6 +84,7 @@ export interface DisplayScaleControl {
 export function applyUiScale(root: HTMLElement, scale: number): void {
   const step = snapUiScaleToStep(scale);
   root.style.setProperty('--ui-scale', String(step));
+  root.dataset['uiScaleStep'] = String(Math.round(step * 100));
   /*
    * And one attribute beside it, for the single rule a multiplier cannot
    * express.

@@ -2823,6 +2823,12 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
     'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #3',
 ] as const;
 
+// These five sweep viewports never enter the short, enlarged desktop layout.
+// The trigger is mounted but deliberately hidden there; the dedicated Full HD
+// page-zoom test opens it and checks all six tabs by pointer and keyboard.
+const NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER =
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--bordered hud-navigation-drawer__trigger "Show the sections"';
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -2873,20 +2879,12 @@ const NEVER_LAID_OUT_BELOW_720 = [
    * fails the moment the corner comes back, which is what will retire all
    * three of these together.
    *
-   * **Its label is the authored sentence, truncated to 32 characters by the
-   * inventory's own `textContent.slice(0, 32)` -- and it is stable across the
-   * latch, which is luck worth naming rather than relying on silently.** The
-   * two strings the surface can carry are
-   * `'No map is drawn here yet — pressing may move the camera'` before a press
-   * has proved the camera moves and
-   * `'No map is drawn here yet — press to jump the camera there'` after, and
-   * their first 32 characters are identical, so this entry does not depend on
-   * which state the sweep happens to find. Reword either sentence past that
-   * 32nd character and nothing here moves; reword the shared prefix and this
-   * line has to move with it.
+   * The Full HD operations HUD now draws an actual map on this button. Its
+   * inventory name is the first 32 characters of the current label. The
+   * corner remains hidden below 720px, so this is still an honest exemption.
    */
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ' +
-    'button.hud-minimap__surface "No map is drawn here yet — press"',
+    'button.hud-minimap__surface "Prison map — press to move the c"',
   /*
    * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
    * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
@@ -5035,6 +5033,7 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+      NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
     ];
     const neverLaidOut = inventory.controls.filter(
       (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
@@ -11473,7 +11472,7 @@ test.describe('the assembled application', () => {
     await page.goto(APP_URL);
 
     // The three things a blank page has none of.
-    await expect(page.locator('canvas')).toHaveCount(1);
+    await expect(page.locator('#game-root canvas')).toHaveCount(1);
     await expect(page.locator('.hud')).toHaveCount(1);
     expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
 
@@ -11485,7 +11484,7 @@ test.describe('the assembled application', () => {
     // the default bindings, so a working camera is the observable form of that
     // claim -- and it is the half a try/catch around `JSON.parse` alone would
     // not deliver, since it never reaches the parse.
-    await expect(page.locator('canvas')).toBeVisible();
+    await expect(page.locator('#game-root canvas')).toBeVisible();
   });
 
   /**
@@ -11681,9 +11680,14 @@ test.describe('the assembled application', () => {
         }, scale);
         await page.setViewportSize({ width, height });
         await openApp(page);
+        const drawerPlacement = (await page.locator('.hud').getAttribute('data-layout-navigation-placement')) === 'drawer';
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
         await page.locator('.ui-tab[data-tab="build"]').click();
+        // Selecting a tab closes the temporary drawer. Reopen it to measure
+        // the six tabs in the state where a player can press them.
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
 
-        const report = await page.evaluate(() => {
+        const report = await page.evaluate((drawerOpen) => {
           const outside: string[] = [];
           const unreachable: string[] = [];
           const selectors = [
@@ -11714,7 +11718,7 @@ test.describe('the assembled application', () => {
           }
           // Presence is not reachability. Only a real hit test says whether
           // the pixel at a control's centre belongs to that control.
-          for (const control of document.querySelectorAll<HTMLElement>('.ui-tab, .display-scale__cycle')) {
+          for (const control of document.querySelectorAll<HTMLElement>(drawerOpen ? '.ui-tab' : '.ui-tab, .display-scale__cycle')) {
             const rect = control.getBoundingClientRect();
             const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
             if (hit === null || !control.contains(hit)) {
@@ -11792,7 +11796,16 @@ test.describe('the assembled application', () => {
             // the second half of the #88 fix and it must survive every scale.
             railOverflow: rail === null ? -1 : rail.scrollHeight - rail.clientHeight,
           };
-        });
+        }, drawerPlacement);
+
+        if (drawerPlacement) {
+          await page.locator('.hud-navigation-drawer__trigger').click();
+          const scaleReachable = await page.locator('.display-scale__cycle').evaluate((control) => {
+            const rect = control.getBoundingClientRect();
+            return control.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+          });
+          expect(scaleReachable, `scale control is covered at ${width}x${height} and ${scale * 100}%`).toBe(true);
+        }
 
         expect(report.outside, `laid outside the viewport at ${width}x${height} and ${scale * 100}%`).toEqual([]);
         expect(report.unreachable, `covered by something else at ${width}x${height} and ${scale * 100}%`).toEqual([]);
@@ -11954,9 +11967,12 @@ test.describe('the assembled application', () => {
       expect(reading, `the status strip is not on the page at ${width}x${height}`).not.toBeNull();
       const at = `${width}x${height}`;
 
-      // The property. Every chip the strip is wide enough to show is shown --
-      // so nothing else on the strip is taking room the readout needed.
-      if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
+      // The Full HD operations frame deliberately gives the metrics row back
+      // the strip's right-hand control gutter. Its row can therefore be wider
+      // than the strip's content box, while all nine chips remain on screen.
+      if (width >= 1920 && height >= 1080) {
+        expect(reading!.fullyVisible, `${at}: the permanent Full HD status row lost a chip`).toBe(reading!.chips);
+      } else if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
         expect(
           reading!.fullyVisible,
           `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +
