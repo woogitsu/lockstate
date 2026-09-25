@@ -860,8 +860,12 @@ def furniture(collection, root, asset_id):
         for x in (-0.14, 0.075):
             box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
             for row, y in enumerate((-0.18, 0, 0.18)):
-                box(collection, root, f"Breaker switch.{x}.{row}", (x, y, 1.253), (0.13, 0.125, 0.06), "light", 0.018)
-                box(collection, root, f"Breaker notch.{x}.{row}", (x, y - 0.025, 1.288), (0.09, 0.015, 0.008), "galvanized_edge", 0.003)
+                # A recessed cradle and a raised, offset handle read as a
+                # breaker lever at 64 px; the former square caps read as keys.
+                box(collection, root, f"Breaker cradle.{x}.{row}", (x, y, 1.243), (0.138, 0.135, 0.020), "galvanized_edge", 0.009)
+                box(collection, root, f"Breaker pivot.{x}.{row}", (x, y + 0.027, 1.257), (0.098, 0.060, 0.018), "shade", 0.006)
+                box(collection, root, f"Cream lever.{x}.{row}", (x, y - 0.021, 1.296), (0.090, 0.083, 0.084), "paper_cream", 0.012)
+                box(collection, root, f"Lever top glint.{x}.{row}", (x, y - 0.040, 1.343), (0.075, 0.016, 0.007), "light", 0.002)
         for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
             cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
             cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
