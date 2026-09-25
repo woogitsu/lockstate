@@ -339,6 +339,12 @@ change, so any two variants can meet at a tile edge. `terrainFloorSpriteAt`
 chooses among the four images from integer world coordinates in the renderer;
 the terrain id, simulation and save format do not change.
 
+The three `terrain.grass.mown.variant-*` modules follow the same rule for turf:
+the periodic Blender material and opaque edge are identical, while short
+blades and inset clusters vary. The renderer uses the same world-coordinate
+hash to choose one of four grass frames. This is presentation only; a saved
+grass tile retains the same terrain identity and does not acquire a variant field.
+
 The later `floor.infirmary.vinyl` tile follows the same zero-margin contract.
 Its base shader uses periodic coordinates so opposite edges meet, and the
 small embedded flecks stay inside the rim. The concept's square seams are

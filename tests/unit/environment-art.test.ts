@@ -376,18 +376,22 @@ describe('declared fallback', () => {
     expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 
-  it('selects stable dirt variants by world tile, without varying other terrain', () => {
-    const ids = new Set<string>();
+  it('selects stable dirt and grass variants by world tile, without varying other terrain', () => {
+    const dirtIds = new Set<string>();
+    const grassIds = new Set<string>();
     for (let y = -8; y < 8; y += 1) {
       for (let x = -8; x < 8; x += 1) {
         const sprite = terrainFloorSpriteAt(0, x, y);
         expect(sprite).toBe(terrainFloorSpriteAt(0, x, y));
-        ids.add(sprite!);
-        expect(terrainFloorSpriteAt(1, x, y)).toBe('env.terrain.grass');
+        dirtIds.add(sprite!);
+        const grass = terrainFloorSpriteAt(1, x, y);
+        expect(grass).toBe(terrainFloorSpriteAt(1, x, y));
+        grassIds.add(grass!);
         expect(terrainFloorSpriteAt(5, x, y)).toBeUndefined();
       }
     }
-    expect(ids).toEqual(new Set(['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d']));
+    expect(dirtIds).toEqual(new Set(['env.terrain.dirt', 'env.terrain.dirt.b', 'env.terrain.dirt.c', 'env.terrain.dirt.d']));
+    expect(grassIds).toEqual(new Set(['env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d']));
     expect(Array.from({ length: 16 }, (_, x) => terrainFloorSpriteAt(0, x, 2)))
       .not.toEqual(Array.from({ length: 16 }, (_, x) => terrainFloorSpriteAt(0, x + 4, 2)));
   });

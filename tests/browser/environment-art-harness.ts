@@ -243,7 +243,7 @@ function buildFrame(): RenderFrame {
       }
     }
   }
-  for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 2; x += 1) {
+  for (let x = FIXTURE.grassTileX; x < FIXTURE.grassTileX + 6; x += 1) {
     world.setTerrain({ x: tileCoordinate(x), y: tileCoordinate(FIXTURE.grassTileY) }, 'grass');
   }
   // The same SparseWorld snapshot path used by persisted maps carries this

@@ -3,7 +3,7 @@ import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { ENVIRONMENT_SPRITE_IDS, ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, PLANNED_OBJECT_TINT, edgeAppearance } from '../../src/rendering/world/appearance';
-import { objectSprite } from '../../src/rendering/world/environment-art';
+import { objectSprite, terrainFloorSpriteAt } from '../../src/rendering/world/environment-art';
 import { catalogueObjectId } from '../../src/rendering/world/structures';
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harness-api';
@@ -948,33 +948,50 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
   });
 
-  test('the Blender grass tiles a painted outdoor strip and restores colour fallback', async ({ page }) => {
+  test('the Blender grass tiles a painted outdoor strip and restores colour fallback', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page);
     expect(ENVIRONMENT_SPRITES['env.terrain.grass'].kind).toBe('rendered-art');
     const borders = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
-      const frame = harness.atlasFrame('env.terrain.grass');
-      if (!frame) return undefined;
-      return {
-        size: [frame.width, frame.height],
-        left: harness.atlasPixel(frame.x, frame.y + 64),
-        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
-        top: harness.atlasPixel(frame.x + 64, frame.y),
-        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
-      };
+      return ['env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d'].map((id) => {
+        const frame = harness.atlasFrame(id)!;
+        const samples = [0, 16, 32, 48, 64, 80, 96, 112, 127];
+        return {
+          size: [frame.width, frame.height],
+          left: samples.map(y => harness.atlasPixel(frame.x, frame.y + y)),
+          right: samples.map(y => harness.atlasPixel(frame.x + 127, frame.y + y)),
+          top: samples.map(x => harness.atlasPixel(frame.x + x, frame.y)),
+          bottom: samples.map(x => harness.atlasPixel(frame.x + x, frame.y + 127)),
+        };
+      });
     });
-    expect(borders?.size).toEqual([128, 128]);
-    for (const pixel of [borders!.left, borders!.right, borders!.top, borders!.bottom]) {
-      expect(pixel?.[3]).toBeGreaterThan(200);
+    for (const first of borders) {
+      expect(first.size).toEqual([128, 128]);
+      for (const second of borders) {
+        for (let index = 0; index < first.left.length; index += 1) {
+          expect(first.right[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(second.left[index]![3]).toBeGreaterThanOrEqual(252);
+          expect(channelDistance(first.right[index]!, second.left[index]!)).toBeLessThanOrEqual(12);
+          expect(channelDistance(first.bottom[index]!, second.top[index]!)).toBeLessThanOrEqual(12);
+        }
+      }
     }
-    expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
-    expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
-    const grass = sprites.filter((sprite) => sprite.frameName === 'env.terrain.grass');
+    const grass = sprites.filter((sprite) => sprite.frameName.startsWith('env.terrain.grass'));
     const x = (fixture.grassTileX + 0.5) * fixture.tileSizePx;
     const y = (fixture.grassTileY + 0.5) * fixture.tileSizePx;
-    expect(grass.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(new Set(grass.map((sprite) => sprite.frameName))).toEqual(new Set([
+      'env.terrain.grass', 'env.terrain.grass.b', 'env.terrain.grass.c', 'env.terrain.grass.d',
+    ]));
+    expect(grass.some((sprite) => sprite.frameName === terrainFloorSpriteAt(1, fixture.grassTileX, fixture.grassTileY)
+      && x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
     expect(grass.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    if (process.env['LOCKSTATE_CAPTURE_GRASS_ART'] === '1') {
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 2),
+        { x: (fixture.grassTileX + 3) * fixture.tileSizePx, y: (fixture.grassTileY + 0.5) * fixture.tileSizePx });
+      await page.screenshot({ path: testInfo.outputPath('grass-variants-1920x1080.png') });
+    }
     const withArt = await page.evaluate(async ({ x, y }) => {
       const harness = window.lockstateEnvironmentArtHarness!;
       await harness.centreCameraOn(x, y);

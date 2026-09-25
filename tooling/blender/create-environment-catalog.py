@@ -126,6 +126,9 @@ MODELS = (
     ("terrain.dirt.compacted.variant-b", (1, 1)),
     ("terrain.dirt.compacted.variant-c", (1, 1)),
     ("terrain.dirt.compacted.variant-d", (1, 1)),
+    ("terrain.grass.mown.variant-b", (1, 1)),
+    ("terrain.grass.mown.variant-c", (1, 1)),
+    ("terrain.grass.mown.variant-d", (1, 1)),
 )
 
 
@@ -1562,16 +1565,28 @@ def architectural(collection, root, asset_id):
             box(collection, root, f"Fine exposed aggregate.{index}",
                 (x, y, 0.081), (radius, radius * 0.72, 0.001),
                 "concrete_aggregate_light" if index % 3 else "concrete_aggregate_dark", 0)
-    elif asset_id == "terrain.grass.mown":
+    elif asset_id == "terrain.grass.mown" or asset_id.startswith("terrain.grass.mown.variant-"):
+        # Every variant retains the same continuous border surface.
         box(collection, root, "Mown grass mat", (0, 0, 0.04),
             (1, 1, 0.08), "grass_base", 0)
+        variant = {"terrain.grass.mown": 0, "terrain.grass.mown.variant-b": 1,
+                   "terrain.grass.mown.variant-c": 2, "terrain.grass.mown.variant-d": 3}[asset_id]
         for index in range(110):
-            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.86
-            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.86
+            x = (((index * 43 + 13 + variant * 37) % 137) / 137 - 0.5) * 0.86
+            y = (((index * 71 + 31 + variant * 53) % 139) / 139 - 0.5) * 0.86
             length = 0.012 + (index % 4) * 0.004
             box(collection, root, f"Short grass blade.{index}",
                 (x, y, 0.081), (0.0035, length, 0.001),
                 "grass_blade_light" if index % 3 else "grass_blade_dark", 0)
+        if variant:
+            # Larger, inset clusters survive the game's 64 px tile scale.
+            for index in range(18):
+                x = (((index * 31 + variant * 19) % 47) / 47 - 0.5) * 0.67
+                y = (((index * 23 + variant * 17) % 43) / 43 - 0.5) * 0.67
+                blade = box(collection, root, f"Mown blade cluster.{index}",
+                    (x, y, 0.082), (0.009, 0.045 + 0.007 * (index % 3), 0.001),
+                    "grass_blade_light" if index % 4 else "grass_blade_dark", 0.003)
+                blade.rotation_euler.z = ((index + variant) % 5 - 2) * 0.19
     elif asset_id == "terrain.dirt.compacted" or asset_id.startswith("terrain.dirt.compacted.variant-"):
         # Unzoned ground covers most of the world. Keep the entire border
         # uniform so chunk-sized repeated rectangles have no hard seam.

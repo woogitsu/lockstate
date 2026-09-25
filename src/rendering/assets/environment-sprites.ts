@@ -80,6 +80,9 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.dirt.c',
   'env.terrain.dirt.d',
   'env.terrain.grass',
+  'env.terrain.grass.b',
+  'env.terrain.grass.c',
+  'env.terrain.grass.d',
   'env.terrain.concrete',
   'env.terrain.gravel',
   'env.terrain.rock',
@@ -210,6 +213,21 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered mown olive grass with subtle short blades, one seamless tile per repeat.',
+  },
+  'env.terrain.grass.b': {
+    kind: 'rendered-art', renderedArtId: 'terrain.grass.mown.variant-b',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender mown turf with inset blade clusters, sharing the original continuous border.',
+  },
+  'env.terrain.grass.c': {
+    kind: 'rendered-art', renderedArtId: 'terrain.grass.mown.variant-c',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender mown turf with a second inset blade arrangement and seamless border.',
+  },
+  'env.terrain.grass.d': {
+    kind: 'rendered-art', renderedArtId: 'terrain.grass.mown.variant-d',
+    runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0,
+    note: 'Blender mown turf with a third inset blade arrangement and seamless border.',
   },
   /** Outdoor poured concrete for unzoned concrete terrain tiles. */
   'env.terrain.concrete': {

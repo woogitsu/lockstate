@@ -142,7 +142,7 @@ describe('environment render aspect invariant (recomputed, not trusted)', () => 
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(61);
+    expect(sidecar.entries.length).toBe(64);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

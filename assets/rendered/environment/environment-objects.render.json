@@ -1288,6 +1288,90 @@
       }
     },
     {
+      "assetId": "terrain.grass.mown.variant-b",
+      "image": "terrain.grass.mown.variant-b.png",
+      "sha256": "91b9d89434010f805ae7b5e0f54b84a7c03ed7bc8ad3289fc0d967b04507ec46",
+      "pixelSha256": "0ca6d73938532904569911067fb6b845ff539fae897dbc70a24f0ea6970bea54",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.grass.mown.variant-c",
+      "image": "terrain.grass.mown.variant-c.png",
+      "sha256": "47793caa1a614de3d59276c94183ace90db2f7146f1eb8c5fdb27f026bbc4a0e",
+      "pixelSha256": "ebe5269ccf36485d0c4e67ab4b0fa3dab7cf729986114a868e03bed41a0ad2c4",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.grass.mown.variant-d",
+      "image": "terrain.grass.mown.variant-d.png",
+      "sha256": "38b2d61234e7463026308954a2791ccaac70e0a833ff754a49109f08b51bfd9a",
+      "pixelSha256": "5c49608bad32f4586e948cd2dbc4e8fcb13a22193e216a634f049d8e3638fcbc",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
       "assetId": "terrain.concrete.paving",
       "image": "terrain.concrete.paving.png",
       "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6",
