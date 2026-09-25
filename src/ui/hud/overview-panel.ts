@@ -145,6 +145,7 @@ export function createOverviewPanel(options: OverviewPanelOptions): OverviewPane
   });
 
   const figures = element('div', { className: 'hud-overview__figures', children: rows });
+  const incomeNote = eyebrowText(t(HUD_MESSAGE_KEY.overviewIncomeNote), 'hud-overview__income-note');
   /*
    * The sentinel, and it is a sibling of the figures rather than a state of
    * them: the two are never both on screen, and building it as a fourth row
@@ -163,6 +164,7 @@ export function createOverviewPanel(options: OverviewPanelOptions): OverviewPane
     const shown = readout;
     figures.hidden = shown === undefined;
     none.hidden = shown !== undefined;
+    incomeNote.hidden = shown === undefined;
     for (const row of OVERVIEW_ROWS) {
       const value = values.get(row.id);
       if (value === undefined) continue;
@@ -201,7 +203,7 @@ export function createOverviewPanel(options: OverviewPanelOptions): OverviewPane
    * other.
    */
   const foldSlot = element('div', { className: 'hud-overview__fold' });
-  panel.body.append(figures, none, foldSlot);
+  panel.body.append(figures, incomeNote, none, foldSlot);
   /*
    * The single authority on which of the two has a box, run once here rather
    * than by an initial `hidden` on either element: a second assignment would be

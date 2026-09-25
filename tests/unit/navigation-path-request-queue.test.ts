@@ -94,6 +94,22 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
     expect(queue.size()).toBe(1);
   });
 
+  it('keeps enqueue age and priority ordering across a saved queue', () => {
+    const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
+    const options = { agingIntervalTicks: 10, flowFieldActivationThreshold: 1000 };
+    const before = new PathRequestQueue(options);
+    before.enqueue({ id: 'older', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
+    before.enqueue({ id: 'newer', origin: cellTiles[1]!, destination: canteenTiles[0]!, context: GUARD, priority: 1 }, 10);
+
+    const saved = structuredClone(before.getSnapshot());
+    const restored = new PathRequestQueue(options);
+    restored.loadSnapshot(saved);
+    expect(restored.getSnapshot()).toEqual(saved);
+
+    const params = { tick: 10, workBudget: 1, world, doors, graph, routeCache, flowFieldCache };
+    expect(restored.processTick(params).map(({ id }) => id)).toEqual(['older']);
+  });
+
   it('orders the whole tick oldest-first among equally-ranked requests, not merely its head', () => {
     const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
     const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });

@@ -3,10 +3,10 @@
   "kind": "lockstate.rendered-art-catalog",
   "entries": [
     {
-      "assetId": "fixture.cell.toilet_sink",
+      "assetId": "door.interior.face",
       "contentVersion": 1,
-      "image": "source-art/rendered.fixture.cell.toilet_sink.bc8b067ea146.png",
-      "sha256": "bc8b067ea1469da66cf09e25d495105666ec101f02c2d3f227852a467a9bba1e",
+      "image": "source-art/rendered.door.interior.face.42f3b6c34aa4.png",
+      "sha256": "42f3b6c34aa408b28bc1ea63830300d52e2b69afbf0e23ec712de9f1d06110d3",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -16,8 +16,458 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1.1648,
-        "height": 1.1648
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "door.interior.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.door.interior.variants.9b9161ac53e9.png",
+      "sha256": "9b9161ac53e9125ca0910c73128671e2482b14fad0b401c1a9880de1eeea127a",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 64
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 0.25
+      },
+      "frameTiles": {
+        "width": 1.4784,
+        "height": 0.3696
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "contentVersion": 1,
+      "image": "source-art/rendered.fixture.cell.toilet_sink.be3079343f3c.png",
+      "sha256": "be3079343f3cd01ecf52190684cab4756106ae6b9fad8043704773f881876588",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.294093,
+        "height": 1.294093
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "fixture.cell.waste_bin",
+      "contentVersion": 1,
+      "image": "source-art/rendered.fixture.cell.waste_bin.45fa134cca8c.png",
+      "sha256": "45fa134cca8ca7f867107c6c3b638ceb89f2dc71d9da04a013ddfff07192149e",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.209602,
+        "height": 1.209602
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "contentVersion": 1,
+      "image": "source-art/rendered.fixture.shower.head.9c5d57a07942.png",
+      "sha256": "9c5d57a07942b8c1b43bf088a8ec69cbd8cfbd47b0200eaf4f2f7950d9841cb1",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.canteen.terrazzo.ed4339ecbef4.png",
+      "sha256": "ed4339ecbef4d51769bc5e1ff655fa510d3fb873d0106e50819c42d4b88c1d6c",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.cell.sealed-concrete.ce7e0bef8213.png",
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.classroom.oak-laminate",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.classroom.oak-laminate.3447b706bed8.png",
+      "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.common-room.cork-rubber",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.common-room.cork-rubber.f279d76d4d30.png",
+      "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.infirmary.vinyl",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.infirmary.vinyl.8d8ce9ca121f.png",
+      "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.kitchen.nonslip",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.kitchen.nonslip.9e83b26d596c.png",
+      "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.laundry.nonslip",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.laundry.nonslip.1355322ca365.png",
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.linoleum.institutional.cb4bae62ae53.png",
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.security-office.antistatic",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.security-office.antistatic.9304f6a7697b.png",
+      "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.shower.ceramic.6917ab6272c4.png",
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.staff-room.woven-vinyl",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.staff-room.woven-vinyl.8a17ffe2678c.png",
+      "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "floor.yard.compacted-earth",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.yard.compacted-earth.05788bcaeb33.png",
+      "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.cell.bed.single.variants.2ea305e52adf.png",
+      "sha256": "2ea305e52adfca7fc17155d9f3c9098571b55fbc57650ad8ff7a88c865e1c97f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 512
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 2
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 2.24
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.chair.wooden",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.chair.wooden.6ae35ea8d80c.png",
+      "sha256": "6ae35ea8d80cea28ef437e3581885613aa7e4493405a804e4d61402bc5288524",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.125597,
+        "height": 1.125597
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {
@@ -30,8 +480,8 @@
     {
       "assetId": "furniture.corridor.bench.variants",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.corridor.bench.variants.4afd4a1258e7.png",
-      "sha256": "4afd4a1258e75bade1daa19094c74043843b348cc5d6992c7b1c29a708434737",
+      "image": "source-art/rendered.furniture.corridor.bench.variants.a087e82cdb95.png",
+      "sha256": "a087e82cdb951d241b9a8b27720ec4c6dc9c4ac8fba3d779b5fa85e13a784673",
       "dimensionsPx": {
         "width": 512,
         "height": 256
@@ -53,10 +503,85 @@
       }
     },
     {
-      "assetId": "furniture.office.desk.employee.variants",
+      "assetId": "furniture.delivery.dock_gate.closed",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.office.desk.employee.variants.70767a391cbe.png",
-      "sha256": "70767a391cbec4bbb8f2aeddf099087fe643a5815ca5f85cff7a6fd0eed6c82d",
+      "image": "source-art/rendered.furniture.delivery.dock_gate.closed.bcf24bc6bdc0.png",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
+      "dimensionsPx": {
+        "width": 768,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 3,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.dining.table.wooden",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.dining.table.wooden.66e5668df4c8.png",
+      "sha256": "66e5668df4c847f2ba32687b704257bdfc74ace28286ea873232cb79fc98ed08",
+      "dimensionsPx": {
+        "width": 768,
+        "height": 512
+      },
+      "footprintTiles": {
+        "width": 3,
+        "height": 2
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 2.24
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.fridge",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.fridge.a0a128f087d4.png",
+      "sha256": "a0a128f087d4ad2d248380572d539dffaad4e93dc74bea9ab08f0ca5d67c4c39",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.prep_counter",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.prep_counter.6e8c2104ed63.png",
+      "sha256": "6e8c2104ed63df08a2b522bffedfcf9826cec5a339cc4785e110e30fcf993b63",
       "dimensionsPx": {
         "width": 512,
         "height": 256
@@ -68,6 +593,406 @@
       "frameTiles": {
         "width": 2.24,
         "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.stove",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.kitchen.stove.bb1a573dde96.png",
+      "sha256": "bb1a573dde9672f19c9b53c1933910eb562413cfbdfa7813406328c1a53f89be",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.307197,
+        "height": 1.153599
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.laundry.washing_machine.twin",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.laundry.washing_machine.twin.6c7893d6cb0b.png",
+      "sha256": "6c7893d6cb0be8bf46352cd0308af86fb281d6824f9cd47d65e200ba32f942d2",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.library.bookshelf",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.library.bookshelf.6859e73c42d8.png",
+      "sha256": "6859e73c42d86f661aed9150017198466961b849e845e686f523f495722e3f05",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.medical.bed.single",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.medical.bed.single.f6b90e527aaf.png",
+      "sha256": "f6b90e527aaf82cfa9232befd24687dd508d050e7cae7a82bfca0ddcc01a1aa5",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 512
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 2
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 2.24
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.medical.cabinet",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.medical.cabinet.ecbbc209a594.png",
+      "sha256": "ecbbc209a594167b974b3f8ab2e17f2960ccc997c814852fbf7b8e2bddb5677f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.848002,
+        "height": 1.848002
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.office.desk.employee.variants.a7f51480a957.png",
+      "sha256": "a7f51480a957ba348af55a8a2905973f06df47b6a954c8d7cef6f95e4fa5f8d8",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.security.surveillance_console",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.security.surveillance_console.47a348f72b3b.png",
+      "sha256": "47a348f72b3bfc89e8d8ed0d8f3660ff9a5e12aea07cf233b2526088f96a8b16",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.storage.rack.wooden.43bb88659bec.png",
+      "sha256": "43bb88659bec3f6e79393bdac3aaf3fc4df78d803301a1f3ccb5514e419f3bc4",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.utility.control_panel",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.utility.control_panel.e9554be24497.png",
+      "sha256": "e9554be244978f3588de4e4cecfa33ab37e4ef918debd6b39d5d0de1c587ed2d",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.concrete.paving",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.concrete.paving.71ccffb2cc51.png",
+      "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.dirt.compacted.4e656013fc9c.png",
+      "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.grass.mown",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.grass.mown.24f4e0f9b271.png",
+      "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.gravel.service_path",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.gravel.service_path.e9335cef165f.png",
+      "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "terrain.rock.bedrock",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.rock.bedrock.fcfa401381d1.png",
+      "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "wall.interior.cap.overhead",
+      "contentVersion": 1,
+      "image": "source-art/rendered.wall.interior.cap.overhead.ed4387eb9462.png",
+      "sha256": "ed4387eb9462595489a86efbc44a4bcbe3b512ec5c04752c4a26beb78bc3d6bc",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 64
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 0.25
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 0.25
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "wall.interior.face",
+      "contentVersion": 1,
+      "image": "source-art/rendered.wall.interior.face.129ac9c633e2.png",
+      "sha256": "129ac9c633e2be1aea8cbcf413c9743b6583756ffd9f724ecfe03825bd985d36",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {

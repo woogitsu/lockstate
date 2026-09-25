@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -112,6 +114,86 @@ function step(runtime: SimulationRuntime, count: number): void {
 }
 
 describe('session snapshot / restore fidelity', () => {
+  it('keeps an active contraband search at the same target and dwell tick', () => {
+    const continuous = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(continuous);
+    while (continuous.searchSystem.getSnapshot().active.length === 0 && continuous.kernel.tick < 300) continuous.kernel.step();
+    expect(continuous.searchSystem.getSnapshot().active.length).toBeGreaterThan(0);
+    const bundle = captureSessionSnapshot(continuous);
+    const { runtime: restored } = restoreSimulationRuntime(bundle, SCENARIO_SEED);
+    expect(toJsonValue(restored.searchSystem.getSnapshot())).toEqual(toJsonValue(continuous.searchSystem.getSnapshot()));
+    step(continuous, 80);
+    step(restored, 80);
+    expect(toJsonValue(restored.searchSystem.getSnapshot())).toEqual(toJsonValue(continuous.searchSystem.getSnapshot()));
+  });
+
+  it('continues the same prisoner walk after a mid-route save', () => {
+    const continuous = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(continuous);
+    while (continuous.prisoners.locomotion.walkingCount === 0 && continuous.kernel.tick < 300) {
+      continuous.kernel.step();
+    }
+    expect(continuous.prisoners.locomotion.walkingCount).toBeGreaterThan(0);
+
+    const bundle = captureSessionSnapshot(continuous);
+    const { runtime: restored } = restoreSimulationRuntime(bundle, SCENARIO_SEED);
+    expect(toJsonValue(captureSessionSnapshot(restored))).toEqual(toJsonValue(bundle));
+    expect(toJsonValue(captureSessionSnapshot(restored).simulation?.prisoners)).toEqual(
+      toJsonValue(bundle.simulation?.prisoners),
+    );
+
+    step(continuous, 80);
+    step(restored, 80);
+    expect(toJsonValue(captureSessionSnapshot(restored).simulation?.prisoners)).toEqual(
+      toJsonValue(captureSessionSnapshot(continuous).simulation?.prisoners),
+    );
+    expect(toJsonValue(captureSessionSnapshot(restored))).toEqual(toJsonValue(captureSessionSnapshot(continuous)));
+  });
+
+  it('keeps the earlier reset rule for a save without walking and route fields', () => {
+    const runtime = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(runtime);
+    while (runtime.prisoners.locomotion.walkingCount === 0 && runtime.kernel.tick < 300) runtime.kernel.step();
+    const bundle = captureSessionSnapshot(runtime);
+    const systems = bundle.simulation!;
+    const { locomotion: _walks, pathRequestSequence: _sequence, ...prisoners } = systems.prisoners;
+    const { currentActionPathRequestId: _requestIds, ...coldState } = prisoners.coldState;
+    const { work: _work, ...navigation } = systems.navigation;
+    const { locomotion: _guardWalks, ...guards } = systems.security.guards;
+    const legacy = {
+      ...bundle,
+      simulation: {
+        ...systems,
+        prisoners: { ...prisoners, coldState },
+        navigation,
+        security: { ...systems.security, guards },
+      },
+    };
+    const restored = restoreSimulationRuntime(legacy, SCENARIO_SEED).runtime;
+    expect(restored.prisoners.locomotion.walkingCount).toBe(0);
+    expect(restored.navigation.pendingCount()).toBe(0);
+    expect(restored.prisoners.currentAction.phase[0]).toBe(ACTION_PHASES.indexOf('idle'));
+  });
+
+  it('round-trips a walking prisoner through the JSON save envelope', () => {
+    const runtime = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(runtime);
+    while (runtime.prisoners.locomotion.walkingCount === 0 && runtime.kernel.tick < 300) runtime.kernel.step();
+    const bundle = captureSessionSnapshot(runtime);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'walking-prison', revision: 1,
+      createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      masterSeed: bundle.masterSeed!, kernel: bundle.kernel, world: bundle.world,
+      construction: bundle.construction, entities: bundle.entities!,
+      simulation: bundle.simulation!, identity: bundle.identity!,
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded).toMatchObject({ ok: true, migrated: false });
+    if (!decoded.ok) throw new Error('the walking save must decode');
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as typeof bundle).runtime;
+    expect(toJsonValue(captureSessionSnapshot(restored))).toEqual(toJsonValue(bundle));
+  });
+
   it('restoring mid-run and continuing lands on the same state as never restoring at all', () => {
     const continuous = buildCarriedScopeSession();
     submitCarriedScopeCommands(continuous);
@@ -172,7 +254,7 @@ describe('session snapshot / restore fidelity', () => {
     expect(liveness.freeIndices[0]).toBe(1);
   });
 
-  it('a captured bundle survives a restore with only the documented in-flight travel reset, and that reset is a fixed point', () => {
+  it('a captured bundle preserves in-flight travel and remains a fixed point', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(runtime);
     step(runtime, 55); // stops with the tick-70 command still queued
@@ -197,9 +279,8 @@ describe('session snapshot / restore fidelity', () => {
     expect(toJsonValue(afterFirst.simulation?.security.sectorDefinitions)).toEqual(toJsonValue(bundle.simulation?.security.sectorDefinitions));
     expect(toJsonValue(afterFirst.simulation?.contraband.items)).toEqual(toJsonValue(bundle.simulation?.contraband.items));
 
-    // The reset really fired here, so the idempotence check below is not
-    // trivially satisfied by a session with nothing in flight.
-    expect(toJsonValue(afterFirst.simulation?.security.guards)).not.toEqual(toJsonValue(bundle.simulation?.security.guards));
+    // The saved guard walk and its route work survive this restore.
+    expect(toJsonValue(afterFirst.simulation?.security.guards)).toEqual(toJsonValue(bundle.simulation?.security.guards));
 
     // And it is a fixed point: restoring the restored bundle changes nothing
     // more. Without this a save written by an already-restored session would
@@ -269,9 +350,8 @@ describe('session snapshot / restore fidelity', () => {
     expect(restored.contraband.all()).toEqual(runtime.contraband.all());
     expect(restored.securityGuards.allGuardIds()).toEqual(runtime.securityGuards.allGuardIds());
 
-    // The right-hand list, likewise: a restored session's navigation is a
-    // fresh instance, not the one the save was taken against, so its queue
-    // and caches start from zero.
+    // Pending work survives with its enqueue tick; performance counters and
+    // derived route caches start fresh on restore.
     expect(runtime.navigation.getQueueMetrics().resolvedCount).toBeGreaterThan(0);
     expect(restored.navigation.getQueueMetrics().resolvedCount).toBe(0);
   });

@@ -1176,6 +1176,7 @@ export const HUD_MESSAGE_KEY = {
    */
   overviewTitle: 'hud.overview.title',
   overviewNone: 'hud.overview.none',
+  overviewIncomeNote: 'hud.overview.income-note',
   overviewWages: 'hud.overview.wages',
 
   intakeTitle: 'hud.intake.title',

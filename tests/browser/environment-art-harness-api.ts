@@ -36,10 +36,58 @@ export type HarnessPixel = readonly [number, number, number, number];
 export interface HarnessWorldFixture {
   readonly chunkSizeTiles: number;
   readonly tileSizePx: number;
+  readonly grassTileX: number;
+  readonly grassTileY: number;
+  readonly concreteTileX: number;
+  readonly concreteTileY: number;
+  readonly gravelTileX: number;
+  readonly gravelTileY: number;
+  readonly rockTileX: number;
+  readonly rockTileY: number;
   readonly zonedMinTileX: number;
   readonly zonedMinTileY: number;
   readonly zonedMaxTileX: number;
   readonly zonedMaxTileY: number;
+  readonly kitchenMinTileX: number;
+  readonly kitchenMinTileY: number;
+  readonly kitchenMaxTileX: number;
+  readonly kitchenMaxTileY: number;
+  readonly canteenMinTileX: number;
+  readonly canteenMinTileY: number;
+  readonly canteenMaxTileX: number;
+  readonly canteenMaxTileY: number;
+  readonly yardMinTileX: number;
+  readonly yardMinTileY: number;
+  readonly yardMaxTileX: number;
+  readonly yardMaxTileY: number;
+  readonly showerFloorMinTileX: number;
+  readonly showerFloorMinTileY: number;
+  readonly showerFloorMaxTileX: number;
+  readonly showerFloorMaxTileY: number;
+  readonly laundryFloorMinTileX: number;
+  readonly laundryFloorMinTileY: number;
+  readonly laundryFloorMaxTileX: number;
+  readonly laundryFloorMaxTileY: number;
+  readonly infirmaryFloorMinTileX: number;
+  readonly infirmaryFloorMinTileY: number;
+  readonly infirmaryFloorMaxTileX: number;
+  readonly infirmaryFloorMaxTileY: number;
+  readonly commonRoomFloorMinTileX: number;
+  readonly commonRoomFloorMinTileY: number;
+  readonly commonRoomFloorMaxTileX: number;
+  readonly commonRoomFloorMaxTileY: number;
+  readonly classroomFloorMinTileX: number;
+  readonly classroomFloorMinTileY: number;
+  readonly classroomFloorMaxTileX: number;
+  readonly classroomFloorMaxTileY: number;
+  readonly staffFloorMinTileX: number;
+  readonly staffFloorMinTileY: number;
+  readonly staffFloorMaxTileX: number;
+  readonly staffFloorMaxTileY: number;
+  readonly securityFloorMinTileX: number;
+  readonly securityFloorMinTileY: number;
+  readonly securityFloorMaxTileX: number;
+  readonly securityFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;
@@ -75,18 +123,44 @@ export interface HarnessWorldFixture {
    * publishing lane (#1020) sits beside it: `deskTileX`/`Y`, far enough apart
    * that the two footprints do not touch.
    *
-   * **A third pair, `storageRackTileX`/`Y`, stood here from 2026-09-06 to
-   * 2026-09-07** for `object.storage-rack`, which joined the fallback in the
-   * same #1020 pass and left it again the next day (#1059) once a playtest
-   * found its render illegible at every zoom -- see
-   * `environment-art.spec.ts`'s note on `RENDERED_OBJECT_CASES`. Removed
-   * along with the fixture structure that used it rather than left standing
-   * with nothing reading it.
+   * `storageRackTileX`/`Y` stood here briefly in 2026-09-06, then left when
+   * the closed-locker render proved illegible as a rack (#1059). The current
+   * pair tests a purpose-built open wooden rack.
    */
   readonly benchTileX: number;
   readonly benchTileY: number;
   readonly deskTileX: number;
   readonly deskTileY: number;
+  readonly showerTileX: number;
+  readonly showerTileY: number;
+  readonly wasteBinTileX: number;
+  readonly wasteBinTileY: number;
+  readonly storageRackTileX: number;
+  readonly storageRackTileY: number;
+  readonly chairTileX: number;
+  readonly chairTileY: number;
+  readonly diningTableTileX: number;
+  readonly diningTableTileY: number;
+  readonly medicalBedTileX: number;
+  readonly medicalBedTileY: number;
+  readonly medicineCabinetTileX: number;
+  readonly medicineCabinetTileY: number;
+  readonly washingMachineTileX: number;
+  readonly washingMachineTileY: number;
+  readonly fridgeTileX: number;
+  readonly fridgeTileY: number;
+  readonly prepCounterTileX: number;
+  readonly prepCounterTileY: number;
+  readonly bookshelfTileX: number;
+  readonly bookshelfTileY: number;
+  readonly stoveTileX: number;
+  readonly stoveTileY: number;
+  readonly securityConsoleTileX: number;
+  readonly securityConsoleTileY: number;
+  readonly utilityPanelTileX: number;
+  readonly utilityPanelTileY: number;
+  readonly loadingDockDoorTileX: number;
+  readonly loadingDockDoorTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {
@@ -102,8 +176,9 @@ export interface LockstateEnvironmentArtHarness {
   atlasPixel(x: number, y: number): HarnessPixel | undefined;
   /** Every tiling sprite currently on the display list, sorted by position. */
   tileSprites(): readonly HarnessTileSprite[];
-  /** Points the camera at a world position at zoom 1 and waits for the frame drawn with it. */
-  centreCameraOn(worldX: number, worldY: number): Promise<void>;
+  roomLabels(): readonly { readonly text: string; readonly worldX: number; readonly worldY: number }[];
+  /** Points the camera at a world position and waits for the frame drawn with it. */
+  centreCameraOn(worldX: number, worldY: number, zoom?: number): Promise<void>;
   /**
    * The colour at the exact centre of the drawing buffer, through the
    * renderer's own snapshot path.

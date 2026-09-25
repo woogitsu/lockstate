@@ -25,6 +25,20 @@ const root = resolve(import.meta.dirname, '..', '..');
  * the source-art generator's own guard.
  */
 describe('rendered-art pipeline contract', () => {
+  it('keeps the unpublished sink source render consistent with its sidecar', async () => {
+    const sidecar = JSON.parse(await readFile(resolve(root, 'assets/rendered/environment/environment-objects.render.json'), 'utf8')) as {
+      entries: Array<{ assetId: string; image: string; sha256: string }>;
+    };
+    const sink = sidecar.entries.find((entry) => entry.assetId === 'fixture.cell.sink');
+    expect(sink).toBeDefined();
+    const bytes = await readFile(resolve(root, 'assets/rendered/environment', sink!.image));
+    const pointer = bytes.subarray(0, 200).toString('utf8');
+    const hash = pointer.startsWith('version https://git-lfs.github.com/spec/v1')
+      ? /oid sha256:([a-f0-9]{64})/u.exec(pointer)?.[1]
+      : createHash('sha256').update(bytes).digest('hex');
+    expect(hash, 'the prepared sink source render must match its reproducible sidecar').toBe(sink!.sha256);
+  });
+
   it('declares a content hash that matches the committed render and the published copy, in a full or pointer-only checkout', async () => {
     const catalogPath = resolve(root, 'public/game-content/rendered-art.v1.json');
     const catalog = JSON.parse(await readFile(catalogPath, 'utf8')) as {
@@ -96,16 +110,22 @@ describe('rendered-art pipeline contract', () => {
 /**
  * `frameAspectDriftFromFootprint == 0.0 "by construction"` is the second claim
  * PR #1041's renderer made, and `docs/ART_PIPELINE.md` ("Reproducibility")
- * records it holding for all 23 models -- but until this test, nothing
+ * records it holding for the original 23 models -- but until this test, nothing
  * checked that *claim itself*, only that the field the renderer writes stays
  * near zero (`tooling/validate-rendered-art-catalog.mjs`'s old Check 3, and
  * only for the currently-published subset of the 23).
  *
  * This recomputes the aspect identity from the sidecar's own primitive
- * fields -- `footprintTiles` and `sizePx` -- for every one of the 23 entries,
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 56 entries,
  * using `exactPixelAspectMatchesFootprint`, which never reads
- * `frameAspectDriftFromFootprint` at all. It runs with no Blender, no image
- * bytes and no LFS content: `environment-objects.render.json` is plain
+ * `frameAspectDriftFromFootprint` at all. The 2026-09-23 fixture batch adds
+ * three more models, including the unpublished sink; the storage-rack batch
+ * adds one more, the wooden-chair batch another, and the dining-table batch
+ * adds the 29th; later medical, kitchen, laundry, security, utility and
+ * library, wall cap, wall face, door face and dirt models bring the catalog to
+ * 47 after the slate bedrock tile, then the kitchen, canteen, yard, shower,
+ * laundry, Infirmary, Common Room, Classroom and Security Office floors make 56. It runs with no Blender,
+ * no image bytes and no LFS content: `environment-objects.render.json` is plain
  * committed JSON, so this is part of `pnpm test` and therefore of every CI
  * `verify` run, unlike the render-determinism gate
  * (`tests/determinism/environment-render-determinism.test.ts`), which needs
@@ -117,12 +137,12 @@ describe('rendered-art pipeline contract', () => {
  * determinism gate's job, not this one's.
  */
 describe('environment render aspect invariant (recomputed, not trusted)', () => {
-  it('exactly reproduces the footprint aspect, for every one of the 23 rendered entries', async () => {
+  it('exactly reproduces the footprint aspect, for every one of the 56 rendered entries', async () => {
     const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
     const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
       entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
     };
-    expect(sidecar.entries.length).toBe(23);
+    expect(sidecar.entries.length).toBe(58);
 
     const failures: string[] = [];
     for (const entry of sidecar.entries) {

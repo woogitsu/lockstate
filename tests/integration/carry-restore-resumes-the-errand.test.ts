@@ -272,9 +272,9 @@ describe('issue #882: a restore hands the errand back rather than turning it int
     expect(continuous, 'the reference run must complete, or there is nothing to compare against').toBeDefined();
 
     const restored = restoreSimulationRuntime(bundle).runtime;
-    // The restore rule ADR 0093 decision 5 depends on: a carrier comes back
-    // idle, holding the carry in `actionIndex`, with the job still theirs.
-    expect(readCarrier(restored)).toMatchObject({ actionId: 'action.carry', phase: 'idle', jobState: 'assigned', jobLeg: 'dropoff' });
+    expect(captureSessionSnapshot(restored)).toEqual(bundle);
+    // A new save carries the leg itself; the carrier remains in transit.
+    expect(readCarrier(restored)).toMatchObject({ actionId: 'action.carry', phase: 'travelling', jobState: 'assigned', jobLeg: 'dropoff' });
 
     const afterRestore = completedAt(restored);
     expect(
@@ -282,10 +282,17 @@ describe('issue #882: a restore hands the errand back rather than turning it int
       `the restored carrier never finished the errand within ${RUN_FOR} ticks; they were last seen doing ${JSON.stringify(readCarrier(restored))}`,
     ).toBeDefined();
     expect(readCarrier(restored)).toMatchObject({ jobState: 'completed', inTheDepot: 4 });
-    expect(
-      afterRestore! - continuous!,
-      'ADR 0093 decision 5 (landing note 3): a restore costs a carry at most two reconsideration cycles',
-    ).toBeLessThanOrEqual(RESTORE_BOUND_TICKS);
+    expect(afterRestore, 'a saved walk must complete at the same tick as continuous play').toBe(continuous);
+  });
+
+  it('matches continuous carry state on every tick after a mid-route save', () => {
+    const live = aCarrierMidDropOff();
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(live)).runtime;
+    for (let tick = 0; tick < 80; tick += 1) {
+      live.kernel.step();
+      restored.kernel.step();
+      expect(captureSessionSnapshot(restored), `drift after tick ${String(live.kernel.tick)}`).toEqual(captureSessionSnapshot(live));
+    }
   });
 
   it('does not let the restored carrier choose anything but the errand while they hold the goods', () => {

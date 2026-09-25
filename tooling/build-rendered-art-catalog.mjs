@@ -68,6 +68,13 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  * list follows that file rather than the other way round, so it shrank back
  * to three the moment the sprite registry did, and a fourth object gets a row
  * here only once it has one there again.
+ *
+ * **2026-09-23:** The storage rack returns with its own open-shelf model,
+ * `furniture.storage.rack.wooden`; the closed locker remains unpublished.
+ * `object.chair` now uses a separate slatted-back wooden model, not the
+ * cushion-only visitor-chair render rejected by the same legibility pass.
+ * The 3x2 canteen table is a separate model with three seats; the existing
+ * 2x1 cell table-and-stool collection does not describe that buildable.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -84,9 +91,46 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  * keeps `OBJECTS_ON_COLOUR_FALLBACK` honest against the sprite registries.
  */
 export const PUBLISHED_ASSET_IDS = [
+  'door.interior.variants',
+  'door.interior.face',
+  'wall.interior.cap.overhead',
+  'floor.linoleum.institutional',
+  'floor.kitchen.nonslip',
+  'floor.canteen.terrazzo',
+  'floor.yard.compacted-earth',
+  'floor.shower.ceramic',
+  'floor.laundry.nonslip',
+  'floor.infirmary.vinyl',
+  'floor.common-room.cork-rubber',
+  'floor.classroom.oak-laminate',
+  'floor.security-office.antistatic',
+  'floor.cell.sealed-concrete',
+  'floor.staff-room.woven-vinyl',
   'fixture.cell.toilet_sink',
+  'fixture.cell.waste_bin',
+  'fixture.shower.head',
+  'furniture.cell.bed.single.variants',
+  'furniture.chair.wooden',
   'furniture.corridor.bench.variants',
+  'furniture.dining.table.wooden',
+  'furniture.kitchen.fridge',
+  'furniture.delivery.dock_gate.closed',
+  'furniture.kitchen.stove',
+  'furniture.kitchen.prep_counter',
+  'furniture.library.bookshelf',
+  'furniture.laundry.washing_machine.twin',
+  'furniture.medical.bed.single',
+  'furniture.medical.cabinet',
   'furniture.office.desk.employee.variants',
+  'furniture.security.surveillance_console',
+  'furniture.storage.rack.wooden',
+  'furniture.utility.control_panel',
+  'wall.interior.face',
+  'terrain.dirt.compacted',
+  'terrain.grass.mown',
+  'terrain.concrete.paving',
+  'terrain.gravel.service_path',
+  'terrain.rock.bedrock',
 ];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));

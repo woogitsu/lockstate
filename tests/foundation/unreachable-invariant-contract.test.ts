@@ -142,17 +142,18 @@ describe('every exported invariant enforcer is reachable from a path that runs',
     expect(MODULES.map((module) => module.file)).toContain('src/simulation/prisoners/regime.ts');
     expect(MODULES.map((module) => module.file)).toContain('src/simulation/security/deployment-schedule.ts');
 
-    // The three exported enforcers `src/` declares today, named so a pattern
+    // The four exported enforcers `src/` declares today, named so a pattern
     // that stops matching one of them fails here rather than passing quietly.
     expect(REPORT.enforcers.map((enforcer) => `${enforcer.file} -> ${enforcer.name}`)).toEqual([
       'src/simulation/identity/name-pool.ts -> assertValidActorNamePool',
       'src/simulation/prisoners/regime.ts -> assertGaplessSchedule',
       'src/simulation/security/deployment-schedule.ts -> assertGaplessDeploymentSchedule',
+      'src/simulation/security/sector-staffing.ts -> assertValidSectorPrisonersPerGuard',
     ]);
     expect(REPORT.callSiteCount).toBeGreaterThan(10);
   });
 
-  it('finds the real call sites of the two wired enforcers, by kind', () => {
+  it('finds the real call sites of the three wired enforcers, by kind', () => {
     // The scan is only worth its allow-list if it can tell a wired enforcer
     // from an unwired one on the real tree, so both wired shapes are pinned
     // against the files that hold them.
@@ -182,6 +183,11 @@ describe('every exported invariant enforcer is reachable from a path that runs',
     expect(regime.ownModuleCallSites.map((site) => site.file)).toEqual(['src/simulation/prisoners/regime.ts']);
     expect(regime.testCallSites.length).toBeGreaterThan(0);
     expect(isWired(regime)).toBe(true);
+
+    const staffingRatio = REPORT.enforcers.find((enforcer) => enforcer.name === 'assertValidSectorPrisonersPerGuard')!;
+    expect(staffingRatio.crossModuleCallSites.map((site) => site.file)).toEqual(['src/simulation/security/deployment-system.ts']);
+    expect(staffingRatio.ownModuleCallSites.map((site) => site.file)).toEqual(['src/simulation/security/sector-staffing.ts']);
+    expect(isWired(staffingRatio)).toBe(true);
   });
 
   it('reads the rule out of code and not out of prose about the rule, on the real tree', () => {

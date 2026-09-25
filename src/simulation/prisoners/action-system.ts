@@ -363,6 +363,14 @@ export class ActionSystem implements SystemRegistration {
   private substitutionsCountedSinceTick = 0;
   private requestSequence = 0;
 
+  public getPathRequestSequence(): number {
+    return this.requestSequence;
+  }
+
+  public restorePathRequestSequence(sequence: number): void {
+    this.requestSequence = sequence;
+  }
+
   public constructor(
     private readonly store: EntityStore,
     private readonly query: EntityQuery,

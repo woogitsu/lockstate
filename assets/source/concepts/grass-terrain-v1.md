@@ -1,0 +1,5 @@
+# Mown outdoor grass — visual source
+
+`grass-terrain-multiview-v1.png` is an original four-panel concept generated with the built-in image generation tool for this project. Prompt: “Original four-view environment concept sheet for a polished top-down 2D prison management simulation game: compact mown outdoor grass terrain tile. Four panels: directly overhead material study, 30-degree raking light closeup, 3x3 seamless tiled field preview, palette/material breakdown. Rich muted olive and moss greens, fine irregular short grass blades and restrained warm earth peeking through, subtle natural variation without conspicuous repeating icons or large flowers. Clean game art direction with readable texture at small scale, no characters, no buildings, no text, no logos, no reference to any existing game.”
+
+The Blender material is an original procedural interpretation. The concept supplies palette, density and scale; the runtime sprite is rendered from Blender, not cropped from this sheet. Its edges must repeat without visible seams, and its colour must remain distinct from compacted dirt.

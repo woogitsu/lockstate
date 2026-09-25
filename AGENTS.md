@@ -632,6 +632,69 @@ outward-facing or unrevertable, which is the whole reason:
    `tests/foundation/ci-configuration-contract.test.ts` pins both call sites,
    because neither job runs in CI and every other gate in the repository would
    stay green if a later edit removed them.
+
+   **A NEW NARROW RELEASE ON 2026-09-23, FOR THE FIRST NEW STAGE-7 RENDERS.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko te dwa
+   globy"* or *"Nie — pozostaw partię na gałęzi"*. They chose:
+
+   > Tak — dopisz tylko te dwa globy
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner, rather than typed by the owner. It authorises
+   exactly two comma-separated segments on the `browser` job's existing
+   `git lfs pull --include=` line in `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.fixture.shower.head.*.png`
+   - `public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png`
+
+   No other line, job, workflow, dashboard or asset id is released. The
+   `fixture.cell.sink` Blender render is source art only and has no published
+   sprite or glob; `object.sink` still has no buildable path.
+
+   **A SECOND NARROW RELEASE ON 2026-09-23, FOR THE WOODEN STORAGE RACK.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko ten glob
+   (zalecane)"* or *"Nie — pozostaw gałąź bez tej zmiany"*. They chose:
+
+   > Tak — dopisz tylko ten glob (zalecane)
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner. It authorises exactly one comma-separated
+   segment on the `browser` job's existing `git lfs pull --include=` line in
+   `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.furniture.storage.rack.wooden.*.png`
+
+   No other CI line, job, workflow or asset id is released by this decision.
+
+   **A THIRD NARROW RELEASE ON 2026-09-23, FOR THE WOODEN CHAIR.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko ten
+   glob"* or *"Nie — zostaw gałąź bez zmiany"*. They chose:
+
+   > Tak — dopisz tylko ten glob
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner. It authorises exactly one comma-separated
+   segment on the `browser` job's existing `git lfs pull --include=` line in
+   `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.furniture.chair.wooden.*.png`
+
+   No other CI line, job, workflow or asset id is released by this decision.
+
+   **A FOURTH NARROW RELEASE ON 2026-09-23, FOR THE DINING TABLE.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko ten
+   glob"* or *"Nie — pozostaw tę partię na gałęzi"*. They chose:
+
+   > Tak — dopisz tylko ten glob
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner. It authorises exactly one comma-separated
+   segment on the `browser` job's existing `git lfs pull --include=` line in
+   `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.furniture.dining.table.wooden.*.png`
+
+   No other CI line, job, workflow or asset id is released by this decision.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
@@ -1318,6 +1381,11 @@ batch is still a separate release, still needs the owner's own dated words,
 and is still bounded to the `git lfs pull --include=` list in the `browser`
 job of `.github/workflows/ci.yml`.
 
+**Superseded on 2026-09-23 for future art globs by ruling 31 below.** This
+paragraph records the earlier decision and the batches released under it;
+the owner has since given standing permission to append needed art globs to
+this exact `browser` LFS include list without asking for each batch.
+
 **The first batch was researched and there is none, which is why this entry
 records a method with no spend against it.** The research is at
 `docs/research/2026-09-21-what-stage-7s-first-glob-request-would-have-to-name.md`.
@@ -1776,6 +1844,76 @@ authorises a save-format addition. The field is optional, so an older save
 restores exactly as it does today. It does not decide whether
 `SAVE_SCHEMA_VERSION` moves; ADR 0038's rule does. It is not a reservation
 release: nothing under `supabase/migrations/` is involved.
+
+**30. The Stage-7 art must be visually rich and modelled from multi-angle
+concepts (2026-09-23).** After seeing the first furniture and fixture renders,
+the owner supplied three Prison Architect screenshots and wrote:
+
+> czekaj, trzeba ten wygląd poprawić, wygeneruj w gpt 2.5 wizualizacje pod różnymi kątami jak trzeba i na podstzwie tego w blenderze rób, bo to za brzydko wygląda to co robisz, to ma być ładne jak prison architekt
+
+The owner then replied *"super jest"* to the new dining-table concept. This is
+direct user wording, not a clickable-option label. It establishes a visual
+quality correction and the concept-to-Blender workflow for this batch. The
+available image-generation tool does not expose its backend model version, so
+the committed concept provenance does not claim it used GPT 2.5. The reference
+screenshots guide richness and readability; the assets remain original. This
+feedback does not release any additional `ci.yml` glob, PR or merge beyond the
+individually recorded releases above.
+
+**31. Standing permission to append the art LFS globs needed as work proceeds
+(2026-09-23).** For the new cell bed the owner was offered *"Tak — dopisz tylko
+ten glob"* or *"Nie — zostaw model bez publikacji"* and chose:
+
+> Tak — dopisz tylko ten glob
+
+This releases exactly
+`public/game-content/source-art/rendered.furniture.cell.bed.single.variants.*.png`
+in the `browser` job's `git lfs pull --include=` list in `.github/workflows/ci.yml`.
+Immediately afterwards, without a further multiple-choice prompt, the owner
+wrote:
+
+> daję ci odgórną zgodę żeby wszystko dopisywać na bieżąco, bez pytania
+
+In the context of the immediately preceding LFS-glob request, this gives
+standing permission to append the specific art globs needed by later Stage-7
+batches to that same `browser` include list without another per-batch request.
+The exact words are direct user wording, not an agent-written option; the
+preceding clickable choice has the weaker provenance used for such choices
+elsewhere in this file. The standing permission does not name another CI job,
+another workflow edit, a pull request, a merge, or another owner reservation.
+
+
+**32. Allow the decoded-art assertion to have no legacy `assetId` entries
+(2026-09-24).** The all-rendered catalogue in the dining-table art branch has
+zero `assetId` entries and 29 `renderedArtId` entries. In the `browser` job,
+`set -euo pipefail` made the legacy `grep` exit before the rendered PNG check
+could run. The agent prepared commit `e8990586`, which lets either list be empty
+but fails if both are empty, and offered *"Tak — zastosuj tę poprawkę"* or
+*"Nie — pozostaw CI bez zmiany"*. The owner chose:
+
+> Tak — zastosuj tę poprawkę
+
+This is a separate release of reservation 3 for exactly that change to the
+`Assert the environment sheets decoded` step in `.github/workflows/ci.yml`.
+It does not authorise other workflow changes. This option was written by the
+agent and clicked by the owner, so it has the weaker provenance of a selected
+option rather than a free-form owner instruction.
+
+**33. Kitchen zoning tint may use a blue-grey exception (2026-09-24).** The
+Blender kitchen floor was shown in the game with the existing greenish tint
+`0xa6d14f` and with a proposed blue-grey tint `0x719db7`, at zoom 1 and
+0.512. Against the adjacent pale green floor, the second version makes the
+kitchen read as a distinct, restrained ceramic or steel surface. The agent
+offered *"Tak — niebieskoszara kuchnia (zalecane)"* or *"Nie — zachowaj
+obecną paletę"*. The owner chose:
+
+> Tak — niebieskoszara kuchnia (zalecane)
+
+This changes only `room.kitchen` in `ZONING_TINT_BY_ROOM_ID`. The other room
+tints and the opacity rules remain as they were. It is an explicit exception
+to ADR 0098's original evenly spaced eighteen-hue palette, not a claim that
+colour alone identifies a room or a reopening of #1061. The owner selected an
+agent-written option, so this has the weaker provenance of a clickable choice.
 
 
 ## Required workflow for every issue

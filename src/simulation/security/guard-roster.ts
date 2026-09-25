@@ -1,6 +1,6 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
 import type { ActorIdentityMinter } from '../identity/actor-identity';
-import { LocomotionStore } from '../locomotion';
+import { LocomotionStore, type LocomotionSnapshot } from '../locomotion';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
@@ -275,18 +275,16 @@ export class GuardRoster {
    *   no patrol route -- which since ADR 0036 is every session a player can
    *   start -- nothing in `src/` ever moved it again.
    */
-  public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']>): void {
+  public loadSnapshot(snapshot: ReturnType<GuardRoster['getSnapshot']> & { readonly locomotion?: LocomotionSnapshot }): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
-    // No save carries a walk (ADR 0059's rule, unchanged for a second
-    // population): a restored `'travelling'` guard's path request named the
-    // previous `NavigationSystem` instance's queue and is dropped below in the
-    // same way, so any in-flight walk is equally unresumable and is cleared
-    // rather than left pointing at waypoints nothing will ever finish.
-    this.locomotion.clear();
+    // Older saves lack locomotion and route work, so retain their reset rule.
+    // Current session saves restore both and preserve the travelling phase.
+    if (snapshot.locomotion === undefined) this.locomotion.clear();
+    else this.locomotion.loadSnapshot(snapshot.locomotion);
     this.records.clear();
     for (const [entityId, record] of snapshot.records) {
       const restored: GuardRecord = { ...record };
-      if (restored.deploymentPhase === 'travelling') {
+      if (snapshot.locomotion === undefined && restored.deploymentPhase === 'travelling') {
         restored.pathRequestId = undefined;
         restored.deploymentPhase = restored.sectorId === undefined ? 'unassigned' : 'on-post';
         // `undefined`, not `0`: PatrolSystem only treats an `'on-post'` guard

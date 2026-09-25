@@ -39,6 +39,8 @@ Nothing here is textured, because nothing in this pipeline is: these are flat
 materials under two suns. That ceiling is real and is stated in the pull
 request rather than implied away.
 """
+import math
+import random
 import sys
 from pathlib import Path
 
@@ -60,12 +62,23 @@ PALETTE = {
     "wood": ((0.28, 0.12, 0.035, 1), 0.6), "light": ((0.9, 0.92, 0.82, 1), 0.75),
     "porcelain": ((0.78, 0.8, 0.81, 1), 0.25), "linen": ((0.46, 0.45, 0.41, 1), 0.88),
     "blanket": ((0.1, 0.17, 0.24, 1), 0.92), "shade": ((0.035, 0.04, 0.045, 1), 0.9),
+    "galvanized": ((0.53, 0.57, 0.57, 1), 0.59),
+    "galvanized_edge": ((0.72, 0.74, 0.72, 1), 0.47),
+    "metal_recess": ((0.075, 0.085, 0.085, 1), 0.82),
+    "medical_teal": ((0.04, 0.35, 0.38, 1), 0.72),
+    "fridge_steel": ((0.20, 0.29, 0.38, 1), 0.62),
+    "fridge_enamel": ((0.95, 0.91, 0.78, 1), 0.38),
+    "dock_amber": ((0.72, 0.36, 0.045, 1), 0.63),
+    "book_cream": ((0.75, 0.66, 0.48, 1), 0.83),
+    "book_rust": ((0.45, 0.19, 0.10, 1), 0.84),
+    "book_olive": ((0.22, 0.29, 0.18, 1), 0.86),
+    "book_navy": ((0.09, 0.15, 0.23, 1), 0.87),
 }
 
 MODELS = (
     ("door.interior.variants", (1, 0.25)), ("door.security.variants", (1, 0.25)),
     ("fixture.ceiling_light.panel.variants", (1, 0.4)), ("fixture.cell.toilet_sink", (1, 1)),
-    ("floor.concrete.variants", (2, 2)), ("floor.linoleum.institutional", (2, 2)),
+    ("floor.concrete.variants", (2, 2)), ("floor.linoleum.institutional", (1, 1)),
     ("furniture.cell.bed.single.variants", (1, 2)), ("furniture.cell.locker.variants", (1, 1)),
     ("furniture.cell.table_stool", (2, 1)), ("furniture.corridor.bench.variants", (2, 1)),
     ("furniture.office.desk.employee.variants", (2, 1)), ("furniture.reception.counter.variants", (3, 1)),
@@ -75,6 +88,41 @@ MODELS = (
     ("security.camera.wall.variants", (0.6, 0.4)), ("security.checkpoint.turnstile.variants", (2, 1)),
     ("storage.container.variants", (2, 1)), ("wall.exterior.modules", (2, 0.25)),
     ("wall.interior.modules", (2, 0.2)),
+    # Append new collections: existing origins are part of the reproducible scene.
+    ("fixture.cell.sink", (1, 1)), ("fixture.shower.head", (1, 1)),
+    ("fixture.cell.waste_bin", (1, 1)),
+    ("furniture.storage.rack.wooden", (1, 1)),
+    ("furniture.chair.wooden", (1, 1)),
+    ("furniture.dining.table.wooden", (3, 2)),
+    ("furniture.medical.bed.single", (1, 2)),
+    ("furniture.laundry.washing_machine.twin", (2, 1)),
+    ("furniture.medical.cabinet", (1, 1)),
+    ("furniture.kitchen.stove", (2, 1)),
+    ("furniture.kitchen.fridge", (1, 1)),
+    ("furniture.security.surveillance_console", (2, 1)),
+    ("furniture.utility.control_panel", (1, 1)),
+    ("furniture.delivery.dock_gate.closed", (3, 1)),
+    ("furniture.kitchen.prep_counter", (2, 1)),
+    ("furniture.library.bookshelf", (2, 1)),
+    ("wall.interior.face", (1, 1)),
+    ("door.interior.face", (1, 1)),
+    ("wall.interior.cap.overhead", (1, 0.25)),
+    ("terrain.dirt.compacted", (1, 1)),
+    ("terrain.grass.mown", (1, 1)),
+    ("terrain.concrete.paving", (1, 1)),
+    ("terrain.gravel.service_path", (1, 1)),
+    ("terrain.rock.bedrock", (1, 1)),
+    ("floor.kitchen.nonslip", (1, 1)),
+    ("floor.canteen.terrazzo", (1, 1)),
+    ("floor.yard.compacted-earth", (1, 1)),
+    ("floor.shower.ceramic", (1, 1)),
+    ("floor.laundry.nonslip", (1, 1)),
+    ("floor.infirmary.vinyl", (1, 1)),
+    ("floor.common-room.cork-rubber", (1, 1)),
+    ("floor.classroom.oak-laminate", (1, 1)),
+    ("floor.security-office.antistatic", (1, 1)),
+    ("floor.cell.sealed-concrete", (1, 1)),
+    ("floor.staff-room.woven-vinyl", (1, 1)),
 )
 
 
@@ -90,6 +138,499 @@ def material(name, color, roughness):
 
 
 MATERIALS = {}
+
+
+def rock_slate_material(name, dark, light):
+    item = material(name, dark, 0.97)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    strata = nodes.new("ShaderNodeTexNoise")
+    strata.inputs["Scale"].default_value = 5.2
+    strata.inputs["Detail"].default_value = 3.0
+    links.new(coords.outputs["Generated"], strata.inputs["Vector"])
+    grain = nodes.new("ShaderNodeTexNoise")
+    grain.inputs["Scale"].default_value = 38.0
+    grain.inputs["Detail"].default_value = 4.0
+    grain.inputs["Roughness"].default_value = 0.72
+    links.new(coords.outputs["Generated"], grain.inputs["Vector"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.28
+    ramp.color_ramp.elements[0].color = dark
+    ramp.color_ramp.elements[1].position = 0.72
+    ramp.color_ramp.elements[1].color = light
+    links.new(strata.outputs["Fac"], ramp.inputs["Fac"])
+    shader = nodes.get("Principled BSDF")
+    fracture = nodes.new("ShaderNodeTexVoronoi")
+    fracture.feature = "DISTANCE_TO_EDGE"
+    fracture.inputs["Scale"].default_value = 6.0
+    links.new(coords.outputs["Generated"], fracture.inputs["Vector"])
+    crack = nodes.new("ShaderNodeMapRange")
+    crack.inputs["From Min"].default_value = 0.01
+    crack.inputs["From Max"].default_value = 0.045
+    crack.inputs["To Min"].default_value = 0.36
+    crack.inputs["To Max"].default_value = 0.0
+    links.new(fracture.outputs["Distance"], crack.inputs["Value"])
+    shade = nodes.new("ShaderNodeMixRGB")
+    shade.blend_type = "MIX"
+    shade.inputs[2].default_value = (0.07, 0.09, 0.11, 1)
+    links.new(crack.outputs["Result"], shade.inputs[0])
+    links.new(ramp.outputs["Color"], shade.inputs[1])
+    links.new(shade.outputs[0], shader.inputs["Base Color"])
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.20
+    bump.inputs["Distance"].default_value = 0.012
+    links.new(grain.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
+
+
+def gravel_matrix_material():
+    """Tile-periodic fine matrix keeps the densely placed stones joined edge to edge."""
+    item = material("Compacted gravel warm dust matrix", (0.17, 0.15, 0.12, 1), 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 7.3
+    noise.inputs["Detail"].default_value = 3.4
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.105, 0.095, 0.080, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.24, 0.21, 0.17, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def concrete_paving_material():
+    """Tile-periodic warm grey aggregate with small scale tonal drift."""
+    item = material("Outdoor poured concrete fine aggregate", (0.20, 0.20, 0.18, 1), 0.96)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 6.3
+    noise.inputs["Detail"].default_value = 3.2
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.13, 0.14, 0.14, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.27, 0.26, 0.23, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def grass_surface_material():
+    """Periodic 4D noise joins tile edges while varying short olive turf."""
+    item = material("Mown olive grass with sparse dry thatch", (0.055, 0.12, 0.025, 1), 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 5.8
+    noise.inputs["Detail"].default_value = 3.5
+    links.new(vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.025, 0.065, 0.014, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.105, 0.20, 0.045, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def dirt_surface_material(name="Dark compacted warm earth",
+                          low=(0.115, 0.075, 0.048, 1),
+                          high=(0.215, 0.150, 0.098, 1),
+                          middle=None, low_position=0.24, high_position=0.76):
+    """Periodic 4D noise makes both tile borders identical without a grid."""
+    item = material(name, high, 0.98)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel, operation):
+        angle = nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2.0 * math.pi
+        links.new(split.outputs[channel], angle.inputs[0])
+        trig = nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    periodic_vector = nodes.new("ShaderNodeCombineXYZ")
+    links.new(periodic("X", "SINE"), periodic_vector.inputs["X"])
+    links.new(periodic("X", "COSINE"), periodic_vector.inputs["Y"])
+    links.new(periodic("Y", "SINE"), periodic_vector.inputs["Z"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 3.5
+    noise.inputs["Detail"].default_value = 3.0
+    links.new(periodic_vector.outputs["Vector"], noise.inputs["Vector"])
+    links.new(periodic("Y", "COSINE"), noise.inputs["W"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = low_position
+    ramp.color_ramp.elements[0].color = low
+    ramp.color_ramp.elements[1].position = high_position
+    ramp.color_ramp.elements[1].color = high
+    if middle is not None:
+        ramp.color_ramp.elements.new(0.5).color = middle
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def galvanized_material():
+    """Subtle mottling keeps the fixture readable as aged zinc at game scale."""
+    item = material("Worn galvanized fixture metal", (0.53, 0.57, 0.57, 1), 0.59)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    coords = nodes.new("ShaderNodeTexCoord")
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 18
+    noise.inputs["Detail"].default_value = 3
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.30, 0.33, 0.33, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.68, 0.70, 0.68, 1)
+    links.new(coords.outputs["Generated"], noise.inputs["Vector"])
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def shower_enamel_material():
+    """Restrained enamel wear from the four-view mount reference."""
+    item = material("Shower blue-grey enamel", (0.17, 0.27, 0.34, 1), 0.51)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 24
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.12, 0.20, 0.27, 1)
+    ramp.color_ramp.elements[1].color = (0.24, 0.34, 0.40, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def bin_enamel_material():
+    """Worn blue-grey coating on the bin shell, kept subtle at 64 pixels."""
+    item = material("Waste bin worn blue-grey enamel", (0.22, 0.30, 0.35, 1), 0.62)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 19
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.17, 0.24, 0.28, 1)
+    ramp.color_ramp.elements[1].color = (0.32, 0.39, 0.42, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def toilet_porcelain_material():
+    """Quiet ceramic speckling from the four-view reference, visible up close only."""
+    item = material("Cell toilet warm glazed porcelain", (0.82, 0.80, 0.73, 1), 0.29)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 32
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.22
+    ramp.color_ramp.elements[0].color = (0.70, 0.68, 0.62, 1)
+    ramp.color_ramp.elements[1].position = 0.77
+    ramp.color_ramp.elements[1].color = (0.89, 0.87, 0.79, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def washer_enamel_material():
+    """Very fine scuffs break up broad cabinet planes without noisy 64px output."""
+    item = material("Worn blue-grey washer enamel", (0.28, 0.37, 0.44, 1), 0.42)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 45
+    noise.inputs["Detail"].default_value = 2
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.19, 0.27, 0.33, 1)
+    ramp.color_ramp.elements[1].color = (0.38, 0.47, 0.54, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def canteen_wood_material():
+    """Pack the approved concept-derived tabletop texture into the .blend."""
+    texture_path = ROOT / "assets/source/textures/dining-table-wood-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Canteen wood texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Canteen textured tabletop", (0.45, 0.27, 0.12, 1), 0.78)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def console_screen_material(camera_index):
+    """Give each CCTV hood its own camera crop of the packed corridor swatch."""
+    texture_path = ROOT / "assets/source/textures/security-console-cctv-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Console monitor texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Surveillance monitor CCTV glass", (0.025, 0.22, 0.25, 1), 0.27)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    coordinates = nodes.new("ShaderNodeTexCoord")
+    crop = nodes.new("ShaderNodeVectorMath")
+    crop.operation = "MULTIPLY_ADD"
+    # Three overlapping views keep one authored texture while avoiding the
+    # unmistakable threefold clone at the game's 128-by-64-pixel footprint.
+    crop.inputs[1].default_value = (0.56, 0.82, 1.0)
+    crop.inputs[2].default_value = ((0.0, 0.22, 0.44)[camera_index], 0.09, 0.0)
+    links.new(coordinates.outputs["Generated"], crop.inputs[0])
+    links.new(crop.outputs["Vector"], texture.inputs["Vector"])
+    shader = nodes.get("Principled BSDF")
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if shader.inputs.get("Emission Color") is not None:
+        links.new(texture.outputs["Color"], shader.inputs["Emission Color"])
+        shader.inputs["Emission Strength"].default_value = 0.32
+    return item
+
+
+def prep_board_material():
+    """Reuse the packed grain with a deeper food-safe walnut stain."""
+    texture_path = ROOT / "assets/source/textures/dining-table-wood-v1.png"
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Walnut prep board", (0.30, 0.15, 0.07, 1), 0.82)
+    nodes, links = item.node_tree.nodes, item.node_tree.links
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    tint = nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    tint.inputs[0].default_value = 1
+    tint.inputs[2].default_value = (0.46, 0.34, 0.25, 1)
+    links.new(texture.outputs["Color"], tint.inputs[1])
+    links.new(tint.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
+
+
+def corridor_bench_wood_material(index=0):
+    """Give each plank its own grain region and subdued warm wood tint."""
+    texture_path = ROOT / "assets/source/textures/corridor-bench-wood-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Corridor bench wood texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material(f"Corridor bench worn wood plank {index}", (0.48, 0.27, 0.11, 1), 0.76)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    shift = nodes.new("ShaderNodeVectorMath")
+    shift.operation = "ADD"
+    shift.inputs[1].default_value = (index * 0.13, index * 0.19, 0)
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "REPEAT"
+    tint = nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    tint.inputs[0].default_value = 1
+    warmth = (0.80, 0.76, 0.72, 0.84)[index]
+    tint.inputs[2].default_value = (warmth, warmth * 0.83, warmth * 0.67, 1)
+    links.new(coords.outputs["Generated"], shift.inputs[0])
+    links.new(shift.outputs["Vector"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], tint.inputs[1])
+    links.new(tint.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def employee_desk_laminate_material():
+    """Pack the desk's original grey-oak swatch into the Blender source."""
+    texture_path = ROOT / "assets/source/textures/employee-desk-laminate-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Employee desk laminate texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Employee desk grey laminate", (0.48, 0.45, 0.40, 1), 0.78)
+    nodes = item.node_tree.nodes
+    links = item.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    return item
+
+
+def cell_bed_fabric_material(filename, label, base_color):
+    """Pack a concept-derived bed textile into the reproducible scene."""
+    texture_path = ROOT / "assets/source/textures" / filename
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Cell bed fabric texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material(label, base_color, 0.92)
+    nodes = item.node_tree.nodes
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    nodes_links = item.node_tree.links
+    nodes_links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    nodes_links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if filename.startswith("cell-bed-"):
+        # The image's broad weave is visible in the concept but otherwise
+        # flattens under the orthographic game camera. Use the same packed
+        # texture for modest surface normals, with no extra asset or UV drift.
+        bump = nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value = 0.46
+        bump.inputs["Distance"].default_value = 0.035
+        nodes_links.new(texture.outputs["Color"], bump.inputs["Height"])
+        nodes_links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
+
+
+def medical_sheet_material():
+    """Subtle woven tone and normal variation for the washable patient sheet."""
+    item = material("Medical pale sage woven patient sheet", (0.66, 0.75, 0.73, 1), 0.9)
+    nodes = item.node_tree.nodes
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    weave = nodes.new("ShaderNodeTexNoise")
+    weave.inputs["Scale"].default_value = 24.0
+    weave.inputs["Detail"].default_value = 2.0
+    weave.inputs["Roughness"].default_value = 0.58
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.22
+    ramp.color_ramp.elements[0].color = (0.51, 0.63, 0.63, 1)
+    ramp.color_ramp.elements[1].position = 0.78
+    ramp.color_ramp.elements[1].color = (0.76, 0.83, 0.80, 1)
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.28
+    bump.inputs["Distance"].default_value = 0.022
+    links = item.node_tree.links
+    links.new(coords.outputs["Generated"], weave.inputs["Vector"])
+    links.new(weave.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], shader.inputs["Base Color"])
+    links.new(weave.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
+
+
+def canteen_steel_material():
+    texture_path = ROOT / "assets/source/textures/dining-table-steel-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Canteen steel texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Canteen worn steel", (0.24, 0.26, 0.27, 1), 0.64)
+    nodes = item.node_tree.nodes
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    item.node_tree.links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    shader = nodes.get("Principled BSDF")
+    item.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    shader.inputs["Metallic"].default_value = 0.38
+    return item
+
+
+def chair_seat_material():
+    texture_path = ROOT / "assets/source/textures/wooden-chair-seat-v1.png"
+    if not texture_path.is_file():
+        raise FileNotFoundError(f"Wooden chair seat texture is missing: {texture_path}")
+    image = bpy.data.images.load(str(texture_path), check_existing=True)
+    image.pack()
+    item = material("Worn chair seat planks", (0.47, 0.27, 0.10, 1), 0.80)
+    nodes = item.node_tree.nodes
+    coords = nodes.new("ShaderNodeTexCoord")
+    texture = nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    texture.extension = "CLIP"
+    item.node_tree.links.new(coords.outputs["Generated"], texture.inputs["Vector"])
+    item.node_tree.links.new(texture.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
+    return item
 
 
 def move_to_collection(item, collection):
@@ -113,8 +654,135 @@ def box(collection, root, name, offset, size, surface, bevel=0.03):
     return item
 
 
+def cloth_surface(collection, root, name, width, length, centre_y, base_z, amplitude, surface):
+    """A low curved cloth sheet whose broad folds shade softly from overhead."""
+    columns, rows = 12, 28
+    vertices = []
+    for row in range(rows + 1):
+        v = row / rows
+        y = centre_y + (v - 0.5) * length
+        for column in range(columns + 1):
+            u = column / columns
+            x = (u - 0.5) * width
+            envelope = math.sin(math.pi * u) * math.sin(math.pi * v)
+            wave = (0.70 * math.sin(5.2 * math.pi * v + 0.65 * u)
+                    + 0.30 * math.sin(9.4 * math.pi * v - 0.85 * u))
+            vertices.append((x, y, base_z + amplitude * envelope * wave))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
+def cloth_crease(collection, root, name, centre_y, phase, surface):
+    """Low, tapered fabric folds which remain legible in the game's top view."""
+    columns, rows = 30, 10
+    vertices = []
+    for row in range(rows + 1):
+        across = row / rows
+        for column in range(columns + 1):
+            u = column / columns
+            x = (u - 0.5) * 0.68
+            y = centre_y + 0.045 * (across - 0.5) + 0.017 * math.sin(math.pi * u * 1.3 + phase)
+            taper = math.sin(math.pi * u) ** 0.8
+            crest = (math.sin(math.pi * across) ** 2.2) * taper
+            vertices.append((x, y, 0.683 + 0.040 * crest))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
+def washer_fabric_fold(collection, root, name, centre, length, width, angle, phase, surface):
+    """Rounded, low cloth fold under the washer glazing, with fixed mesh order."""
+    columns, rows = 20, 8
+    vertices = []
+    cosine, sine = math.cos(angle), math.sin(angle)
+    for row in range(rows + 1):
+        across = row / rows
+        for column in range(columns + 1):
+            along = column / columns
+            taper = math.sin(math.pi * along) ** 0.55
+            local_x = (along - 0.5) * length
+            local_y = (across - 0.5) * width * taper
+            x = centre[0] + local_x * cosine - local_y * sine
+            y = centre[1] + local_x * sine + local_y * cosine
+            crest = math.sin(math.pi * along) * math.sin(math.pi * across)
+            z = centre[2] + 0.023 * crest + 0.006 * crest * math.sin(3 * math.pi * along + phase)
+            vertices.append((x, y, z))
+    faces = []
+    stride = columns + 1
+    for row in range(rows):
+        for column in range(columns):
+            first = row * stride + column
+            faces.append((first, first + 1, first + stride + 1, first + stride))
+    mesh = bpy.data.meshes.new(f"{name} mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.materials.append(MATERIALS[surface])
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    item = bpy.data.objects.new(name, mesh)
+    collection.objects.link(item)
+    item.parent = root
+    return item
+
+
 def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
+    item = bpy.context.object
+    item.name, item.parent = name, root
+    item.matrix_parent_inverse = root.matrix_world.inverted()
+    item.data.materials.append(MATERIALS[surface])
+    move_to_collection(item, collection)
+    return item
+
+
+def prepared_ingredient(collection, root, name, offset, scale, surface, angle=0, smooth=True):
+    """A rounded piece of produce; irregular spacing reads as food at 64px/tile."""
+    mesh = pipeline_common.uv_sphere_mesh(f"{name} mesh", segments=12, ring_count=6)
+    item = pipeline_common.add_mesh_object(name, mesh, (
+        root.location.x + offset[0], root.location.y + offset[1], offset[2],
+    ))
+    item.name, item.scale = name, scale
+    item.rotation_euler.z = angle
+    item.data.materials.append(MATERIALS[surface])
+    if smooth:
+        for polygon in item.data.polygons:
+            polygon.use_smooth = True
+    item.parent = root
+    item.matrix_parent_inverse = root.matrix_world.inverted()
+    move_to_collection(item, collection)
+    return item
+
+
+def torus(collection, root, name, offset, major_radius, minor_radius, surface):
+    bpy.ops.mesh.primitive_torus_add(
+        major_segments=48, minor_segments=8,
+        location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]),
+        major_radius=major_radius, minor_radius=minor_radius,
+    )
     item = bpy.context.object
     item.name, item.parent = name, root
     item.matrix_parent_inverse = root.matrix_world.inverted()
@@ -132,16 +800,547 @@ def empty(collection, name, location):
 
 
 def furniture(collection, root, asset_id):
-    if "bed" in asset_id:
-        # Head and foot rails stand proud of the mattress so the bed has ends
-        # from above; the pillow and the folded blanket are the two features
-        # that make it a bed rather than a slab at 64px.
-        box(collection, root, "Frame", (0, 0, 0.4), (0.94, 1.96, 0.14), "steel", 0.04)
-        box(collection, root, "Head rail", (0, -0.93, 0.6), (0.94, 0.1, 0.26), "steel", 0.05)
-        box(collection, root, "Foot rail", (0, 0.93, 0.62), (0.94, 0.1, 0.2), "steel", 0.05)
-        box(collection, root, "Mattress", (0, 0, 0.57), (0.82, 1.74, 0.2), "linen", 0.05)
-        box(collection, root, "Blanket", (0, 0.56, 0.695), (0.82, 0.56, 0.05), "blanket", 0.03)
-        box(collection, root, "Pillow", (0, -0.62, 0.735), (0.64, 0.34, 0.13), "light", 0.06)
+    if asset_id == "furniture.kitchen.fridge":
+        # V3 four-view reference: a raised, recessed condenser grille gives
+        # the one-tile refrigerator a readable service silhouette from above.
+        for x in (-0.36, 0.36):
+            for y in (-0.34, 0.34):
+                cylinder(collection, root, f"Adjustable foot.{x}.{y}", (x, y, 0.055), 0.045, 0.11, "steel", 16)
+        box(collection, root, "Black insulated plinth", (0, 0, 0.12), (0.82, 0.79, 0.18), "shade", 0.024)
+        box(collection, root, "Blue-grey steel cabinet", (0, -0.01, 0.86), (0.86, 0.83, 1.37), "fridge_steel", 0.048)
+        box(collection, root, "Roof rim", (0, -0.01, 1.56), (0.88, 0.85, 0.055), "steel", 0.03)
+        box(collection, root, "Roof panel", (0, -0.01, 1.594), (0.80, 0.77, 0.022), "fridge_steel", 0.025)
+        box(collection, root, "Condenser gasket", (0, -0.18, 1.618), (0.73, 0.40, 0.035), "shade", 0.028)
+        box(collection, root, "Raised service deck", (0, -0.18, 1.647), (0.69, 0.36, 0.045), "fridge_steel", 0.028)
+        box(collection, root, "Dark vent recess", (-0.075, -0.18, 1.673), (0.47, 0.275, 0.012), "steel", 0.012)
+        for y in (-0.29, -0.22, -0.15, -0.08):
+            box(collection, root, f"Deep condenser slot.{y}", (-0.075, y, 1.685),
+                (0.42, 0.032, 0.015), "shade", 0.009)
+        cylinder(collection, root, "Round service cap", (0.245, -0.18, 1.686),
+            0.054, 0.027, "galvanized_edge", 24)
+        cylinder(collection, root, "Service cap inset", (0.245, -0.18, 1.703),
+            0.035, 0.009, "steel", 24)
+        box(collection, root, "Tiny teal temperature lamp", (0.245, -0.015, 1.683),
+            (0.055, 0.018, 0.013), "fridge_teal", 0.003)
+        for x in (-0.30, 0.30):
+            for y in (-0.32, -0.04):
+                cylinder(collection, root, f"Service deck screw.{x}.{y}",
+                    (x, y, 1.674), 0.013, 0.009, "steel", 12)
+        box(collection, root, "Cream front roof cap", (0, 0.26, 1.617), (0.80, 0.27, 0.035), "fridge_enamel", 0.028)
+        box(collection, root, "Roof compartment joint", (0, 0.176, 1.639), (0.79, 0.016, 0.008), "steel", 0.006)
+        # The overhead camera cannot see the vertical doors. Continue their
+        # centre reveal over the roof cap and expose both pull handles here.
+        box(collection, root, "Twin-door top reveal", (0, 0.26, 1.643), (0.018, 0.24, 0.009), "steel", 0.003)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Visible top handle.{x}", (x, 0.30, 1.665), (0.055, 0.16, 0.045), "galvanized_edge", 0.016)
+        box(collection, root, "Front gasket", (0, 0.415, 0.90), (0.79, 0.024, 1.20), "shade", 0.018)
+        for x in (-0.20, 0.20):
+            box(collection, root, f"Cream enamel refrigerator door.{x}", (x, 0.447, 0.77), (0.38, 0.068, 0.95), "fridge_enamel", 0.042)
+            box(collection, root, f"Cream upper hatch.{x}", (x, 0.447, 1.38), (0.38, 0.068, 0.24), "fridge_enamel", 0.04)
+        box(collection, root, "Compartment seam", (0, 0.487, 1.245), (0.75, 0.014, 0.023), "steel", 0.008)
+        box(collection, root, "Raised door lip", (0, 0.43, 1.57), (0.81, 0.11, 0.06), "porcelain", 0.025)
+        for x in (-0.11, 0.11):
+            box(collection, root, f"Door handle upper foot.{x}", (x, 0.46, 1.13), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Door handle lower foot.{x}", (x, 0.46, 0.76), (0.10, 0.05, 0.07), "steel", 0.012)
+            box(collection, root, f"Brushed steel pull.{x}", (x, 0.475, 0.945), (0.075, 0.035, 0.42), "galvanized_edge", 0.018)
+        box(collection, root, "Visible top door reveal", (0, 0.44, 1.613), (0.80, 0.07, 0.028), "shade", 0.006)
+    elif asset_id == "furniture.security.surveillance_console":
+        # assets/source/concepts/security-console-multiview-v1.png.
+        # Low monitor hoods expose all three teal screens to the overhead camera.
+        for x in (-0.86, 0.86):
+            for y in (-0.36, 0.36):
+                box(collection, root, f"Grounded steel foot.{x}.{y}", (x, y, 0.09), (0.17, 0.17, 0.18), "steel", 0.015)
+                box(collection, root, f"Foot collar.{x}.{y}", (x, y, 0.19), (0.19, 0.19, 0.06), "galvanized_edge", 0.009)
+        box(collection, root, "Deep cabinet shadow", (0, 0, 0.30), (1.87, 0.85, 0.20), "steel", 0.025)
+        box(collection, root, "Powder-coated cabinet", (0, 0, 0.67), (1.87, 0.85, 0.64), "console_enamel", 0.035)
+        box(collection, root, "Recessed front door", (0, 0.432, 0.62), (1.45, 0.018, 0.42), "galvanized", 0.009)
+        for x in (-0.12, 0.12):
+            box(collection, root, f"Door pull.{x}", (x, 0.449, 0.65), (0.043, 0.012, 0.13), "steel", 0.005)
+        box(collection, root, "Bevelled control deck", (0, 0, 1.015), (1.96, 0.96, 0.12), "console_enamel", 0.035)
+        box(collection, root, "Dark monitor rail", (0, -0.23, 1.092), (1.85, 0.42, 0.03), "steel", 0.014)
+        for index, (x, width) in enumerate(((-0.64, 0.47), (0, 0.65), (0.64, 0.47))):
+            box(collection, root, f"Monitor raised housing.{index}", (x, -0.23, 1.215), (width, 0.38, 0.23), "console_enamel", 0.022)
+            box(collection, root, f"Monitor black rebate.{index}", (x, -0.23, 1.344), (width - 0.055, 0.31, 0.023), "shade", 0.007)
+            box(collection, root, f"Teal surveillance glass.{index}", (x, -0.23, 1.359), (width - 0.086, 0.275, 0.014), f"console_screen_{index}", 0.007)
+            box(collection, root, f"Monitor hood.{index}", (x, -0.413, 1.372), (width, 0.075, 0.055), "console_enamel", 0.012)
+            box(collection, root, f"Monitor footer.{index}", (x, -0.047, 1.373), (width, 0.034, 0.047), "steel", 0.007)
+        box(collection, root, "Keyboard inset shadow", (0, 0.255, 1.084), (0.66, 0.28, 0.014), "shade", 0.011)
+        box(collection, root, "Keyboard deck", (0, 0.255, 1.096), (0.61, 0.23, 0.016), "steel", 0.007)
+        for row, y in enumerate((0.17, 0.23, 0.29, 0.35)):
+            for col, x in enumerate((-0.25, -0.18, -0.11, -0.04, 0.03, 0.10, 0.17, 0.24)):
+                box(collection, root, f"Key.{row}.{col}", (x, y, 1.108), (0.045, 0.038, 0.008), "galvanized", 0.003)
+        for x in (-0.60, 0.60):
+            cylinder(collection, root, f"Control stick base.{x}", (x, 0.25, 1.103), 0.105, 0.03, "steel", 24)
+            cylinder(collection, root, f"Control stick shaft.{x}", (x, 0.25, 1.175), 0.037, 0.13, "galvanized_edge", 20)
+            cylinder(collection, root, f"Control stick knob.{x}", (x, 0.25, 1.252), 0.066, 0.05, "steel", 24)
+        for x in (-0.84, -0.76, 0.75):
+            for y in (0.18, 0.27):
+                cylinder(collection, root, f"Action lens.{x}.{y}", (x, y, 1.107), 0.032, 0.016, "console_amber" if x < 0 else "console_teal", 16)
+        box(collection, root, "Red guarded switch base", (0.83, 0.34, 1.104), (0.12, 0.11, 0.024), "shade", 0.008)
+        box(collection, root, "Red guarded switch", (0.83, 0.34, 1.13), (0.071, 0.069, 0.039), "console_red", 0.008)
+        for x in (-0.91, 0.91):
+            for y in (-0.43, 0.43):
+                cylinder(collection, root, f"Deck bolt.{x}.{y}", (x, y, 1.085), 0.014, 0.012, "galvanized_edge", 12)
+    elif asset_id == "furniture.utility.control_panel":
+        # Four-view original reference: assets/source/concepts/utility-panel-multiview-v1.png.
+        # The overhead read is six cream breakers, two lenses and one red guarded switch.
+        box(collection, root, "Anchor plinth", (0, 0, 0.075), (0.91, 0.91, 0.15), "steel", 0.018)
+        box(collection, root, "Powder-coated steel cabinet", (0, 0, 0.57), (0.83, 0.81, 0.98), "utility_enamel", 0.035)
+        box(collection, root, "Front access hatch shadow", (0, 0.414, 0.54), (0.64, 0.011, 0.60), "steel", 0.009)
+        box(collection, root, "Front access hatch", (0, 0.426, 0.54), (0.58, 0.015, 0.54), "utility_enamel", 0.012)
+        for z in (0.32, 0.76):
+            box(collection, root, f"Front hinge.{z}", (0.32, 0.438, z), (0.04, 0.032, 0.10), "galvanized_edge", 0.007)
+        box(collection, root, "Top angled housing", (0, 0, 1.105), (0.94, 0.91, 0.15), "utility_enamel", 0.055)
+        box(collection, root, "Deep inset control shadow", (0, 0, 1.195), (0.77, 0.72, 0.025), "steel", 0.025)
+        box(collection, root, "Dark breaker panel", (-0.035, 0, 1.212), (0.62, 0.62, 0.012), "metal_recess", 0.015)
+        for x in (-0.14, 0.075):
+            box(collection, root, f"Breaker bank groove.{x}", (x, 0, 1.222), (0.17, 0.52, 0.018), "shade", 0.009)
+            for row, y in enumerate((-0.18, 0, 0.18)):
+                # A recessed cradle and a raised, offset handle read as a
+                # breaker lever at 64 px; the former square caps read as keys.
+                box(collection, root, f"Breaker cradle.{x}.{row}", (x, y, 1.243), (0.138, 0.135, 0.020), "galvanized_edge", 0.009)
+                box(collection, root, f"Breaker pivot.{x}.{row}", (x, y + 0.027, 1.257), (0.098, 0.060, 0.018), "shade", 0.006)
+                box(collection, root, f"Cream lever.{x}.{row}", (x, y - 0.021, 1.296), (0.090, 0.083, 0.084), "paper_cream", 0.012)
+                box(collection, root, f"Lever top glint.{x}.{row}", (x, y - 0.040, 1.343), (0.075, 0.016, 0.007), "light", 0.002)
+        for y, color in ((-0.19, "utility_amber"), (0.13, "utility_teal")):
+            cylinder(collection, root, f"Indicator bezel.{y}", (-0.32, y, 1.232), 0.069, 0.022, "galvanized_edge", 24)
+            cylinder(collection, root, f"Status lens.{y}", (-0.32, y, 1.250), 0.046, 0.021, color, 24)
+        box(collection, root, "Master switch guard base", (0.30, -0.01, 1.23), (0.15, 0.26, 0.035), "shade", 0.011)
+        box(collection, root, "Red master switch", (0.30, -0.01, 1.277), (0.095, 0.15, 0.065), "utility_red", 0.014)
+        for y in (-0.11, 0.11):
+            box(collection, root, f"Steel switch guard.{y}", (0.30, y, 1.296), (0.15, 0.025, 0.08), "galvanized_edge", 0.009)
+        # Alternating hazard paint is a nonverbal 64px recognition cue.
+        box(collection, root, "Hazard stripe ground", (0.397, 0, 1.206), (0.063, 0.68, 0.012), "shade", 0.004)
+        for index, y in enumerate((-0.25, -0.09, 0.07, 0.23)):
+            stripe = box(collection, root, f"Yellow hazard diagonal.{index}", (0.397, y, 1.216), (0.056, 0.09, 0.008), "utility_yellow", 0.002)
+            stripe.rotation_euler.z = 0.38
+        for x in (-0.40, 0.40):
+            for y in (-0.39, 0.39):
+                cylinder(collection, root, f"Top bolt.{x}.{y}", (x, y, 1.19), 0.017, 0.011, "galvanized_edge", 12)
+    elif asset_id == "furniture.delivery.dock_gate.closed":
+        # Concept: assets/source/concepts/loading-dock-door-multiview-v1.png.
+        # This buildable is a closed, tile-addressed object, not a navigable
+        # door edge. The continuous slatted surface makes that clear overhead.
+        box(collection, root, "Recessed gate shadow", (0, 0, 0.25), (2.88, 0.85, 0.48), "shade", 0.018)
+        box(collection, root, "Heavy timber backing", (0, 0, 0.56), (2.78, 0.74, 0.12), "wood", 0.012)
+        for row, y in enumerate((-0.30, -0.18, -0.06, 0.06, 0.18, 0.30)):
+            box(collection, root, f"Gate timber slat.{row}", (0, y, 0.655),
+                (2.72, 0.10, 0.055), "canteen_wood", 0.008)
+            box(collection, root, f"Slat dark joint.{row}", (0, y + 0.052, 0.652),
+                (2.74, 0.012, 0.009), "shade", 0.002)
+        # The four-view reference has steel corner braces and amber reflectors.
+        # Carry them onto the overhead face, where the player actually sees
+        # this long, otherwise featureless closed gate at three tiles wide.
+        for side in (-1, 1):
+            box(collection, root, f"Brace upright.{side}",
+                (side * 1.34, 0, 0.72), (0.055, 0.74, 0.055),
+                "galvanized_edge", 0.007)
+            box(collection, root, f"Amber reflector shadow.{side}",
+                (side * 0.86, 0.355, 0.711), (0.18, 0.08, 0.015),
+                "shade", 0.004)
+            box(collection, root, f"Amber reflector.{side}",
+                (side * 0.86, 0.355, 0.723), (0.145, 0.047, 0.012),
+                "dock_amber", 0.004)
+        for x in (-1.43, 1.43):
+            box(collection, root, f"Steel side track.{x}", (x, 0, 0.59),
+                (0.12, 0.94, 0.91), "canteen_steel", 0.016)
+            box(collection, root, f"Track dark channel.{x}", (x, 0, 1.055),
+                (0.047, 0.84, 0.016), "shade", 0.004)
+            for y in (-0.37, 0.37):
+                cylinder(collection, root, f"Track bolt.{x}.{y}", (x, y, 1.07),
+                         0.024, 0.02, "galvanized_edge", 16)
+        box(collection, root, "North steel header", (0, -0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        box(collection, root, "South steel threshold", (0, 0.41, 0.70), (2.89, 0.08, 0.23), "canteen_steel", 0.012)
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Amber threshold reflector.{x}", (x, 0.41, 0.827),
+                (0.17, 0.045, 0.018), "dock_amber", 0.004)
+        for x, angle in ((-1.03, 0.73), (1.03, -0.73)):
+            brace = box(collection, root, f"Diagonal steel brace.{x}", (x, 0, 0.749),
+                        (0.89, 0.07, 0.055), "galvanized_edge", 0.009)
+            brace.rotation_euler.z = angle
+            cylinder(collection, root, f"Brace pivot.{x}", (x, 0, 0.79),
+                     0.026, 0.016, "steel", 16)
+    elif asset_id == "furniture.kitchen.prep_counter":
+        # Original four-view design in assets/source/concepts/prep-counter-multiview-v1.png.
+        # Board, three distinct ingredient wells and rear lip are the overhead read.
+        for x in (-0.88, 0.88):
+            for y in (-0.39, 0.39):
+                cylinder(collection, root, f"Adjustable foot.{x}.{y}", (x, y, 0.09), 0.065, 0.17, "steel", 20)
+                cylinder(collection, root, f"Foot collar.{x}.{y}", (x, y, 0.18), 0.075, 0.035, "galvanized_edge", 20)
+        box(collection, root, "Dark lower base", (0, 0, 0.28), (1.83, 0.83, 0.23), "steel", 0.033)
+        box(collection, root, "Brushed steel cabinet", (0, 0, 0.64), (1.87, 0.86, 0.64), "canteen_steel", 0.035)
+        box(collection, root, "Overhanging rolled worktop", (0, 0, 1.00), (1.96, 0.95, 0.11), "galvanized_edge", 0.027)
+        box(collection, root, "Brushed worktop face", (0, 0, 1.062), (1.88, 0.87, 0.026), "canteen_steel", 0.023)
+        box(collection, root, "Raised rear hygiene lip", (0, -0.43, 1.16), (1.93, 0.072, 0.22), "galvanized_edge", 0.024)
+        box(collection, root, "Back lip dark seam", (0, -0.384, 1.073), (1.81, 0.014, 0.01), "steel", 0.003)
+        # The board is one generous shape, rather than a row of tiny strokes.
+        box(collection, root, "Board dark inset", (-0.47, 0.055, 1.083), (0.86, 0.66, 0.029), "steel", 0.038)
+        box(collection, root, "Worn walnut cutting board", (-0.47, 0.055, 1.118), (0.82, 0.62, 0.060), "prep_board", 0.05)
+        for x in (-0.73, -0.69):
+            box(collection, root, f"Board knife mark.{x}", (x, 0.04, 1.151), (0.008, 0.35, 0.004), "wood", 0.002)
+        # Three open stainless hotel pans with different broad food colors.
+        for well_index, (x, food) in enumerate(((0.26, "prep_red"), (0.51, "prep_green"), (0.76, "prep_cream"))):
+            box(collection, root, f"Tray shadow.{well_index}", (x, 0.058, 1.079), (0.235, 0.68, 0.022), "steel", 0.016)
+            box(collection, root, f"Tray rolled rim.{well_index}", (x, 0.058, 1.095), (0.225, 0.66, 0.016), "galvanized_edge", 0.013)
+            box(collection, root, f"Recessed tray well.{well_index}", (x, 0.058, 1.105), (0.185, 0.57, 0.012), "metal_recess", 0.012)
+            # The old identical 2x4 rectangular grid read as eight coloured
+            # buttons at gameplay scale. Use different silhouettes per tray:
+            # round tomatoes, broad overlapping leaves and pale chopped roots.
+            for piece, (dx, y, sx, sy, turn) in enumerate((
+                (-0.040, -0.145, 0.043, 0.052, -0.26),
+                (0.045, -0.087, 0.047, 0.059, 0.18),
+                (-0.036, -0.005, 0.046, 0.058, 0.32),
+                (0.040, 0.071, 0.044, 0.053, -0.22),
+                (-0.034, 0.153, 0.045, 0.057, 0.13),
+                (0.038, 0.231, 0.041, 0.050, -0.34),
+            )):
+                if well_index == 1:
+                    # Leaf blades lie at varied angles and overlap along the
+                    # centre vein, so the green pan remains organic at 128x64.
+                    prepared_ingredient(collection, root, f"Leaf.{piece}",
+                                        (x + dx, y, 1.132), (sx * 0.72, sy * 1.55, 0.014),
+                                        "prep_green", turn, smooth=False)
+                    prepared_ingredient(collection, root, f"Leaf highlight.{piece}",
+                                        (x + dx - 0.008, y - 0.010, 1.141),
+                                        (sx * 0.18, sy * 1.03, 0.006), "prep_green_light", turn, smooth=False)
+                else:
+                    prepared_ingredient(collection, root, f"Prepared produce.{well_index}.{piece}",
+                                        (x + dx, y, 1.131),
+                                        (sx if well_index == 0 else sx * 0.88,
+                                         sy if well_index == 0 else sy * 0.81, 0.025),
+                                        food, turn)
+        # Cabinet drawers and recessed pulls survive oblique inspection without
+        # adding decorative clutter to the true-overhead sprite.
+        for z in (0.58, 0.82):
+            box(collection, root, f"Drawer front.{z}", (-0.48, 0.443, z), (0.70, 0.016, 0.20), "galvanized", 0.008)
+            box(collection, root, f"Drawer pull.{z}", (-0.48, 0.454, z), (0.18, 0.015, 0.045), "steel", 0.005)
+        box(collection, root, "Cupboard seam", (0.20, 0.445, 0.65), (0.014, 0.015, 0.59), "steel", 0.003)
+        for x in (0.33, 0.79):
+            box(collection, root, f"Recessed cupboard pull.{x}", (x, 0.451, 0.74), (0.035, 0.013, 0.14), "steel", 0.006)
+    elif asset_id == "furniture.library.bookshelf":
+        # Four-view concept: assets/source/concepts/bookshelf-multiview-v1.png.
+        # Two open, book-filled rows, three broad bays, and dark shelf voids
+        # remain legible when the 2x1 object is drawn at 128x64 world pixels.
+        box(collection, root, "Steel base plinth", (0, 0, 0.13), (1.88, 0.86, 0.25), "steel", 0.018)
+        box(collection, root, "Warm timber backing", (0, -0.015, 0.70), (1.76, 0.79, 0.11), "canteen_wood", 0.013)
+        for x in (-0.92, -0.32, 0.32, 0.92):
+            # The old pale 0.075-wide posts dominated both rows from above;
+            # the accepted concept uses slim blue-grey cheeks around the books.
+            box(collection, root, f"Blue-grey upright.{x}", (x, 0, 0.67), (0.060, 0.89, 1.33), "fridge_steel", 0.013)
+            box(collection, root, f"Upright top cap.{x}", (x, 0, 1.35), (0.079, 0.90, 0.045), "fridge_steel", 0.009)
+        for row, y in enumerate((-0.23, 0.22)):
+            box(collection, root, f"Dark open shelf.{row}", (0, y, 0.755), (1.77, 0.345, 0.095), "shade", 0.008)
+            box(collection, root, f"Timber shelf lip.{row}", (0, y + 0.19, 0.87), (1.79, 0.055, 0.14), "canteen_wood", 0.009)
+            for bay, centre in enumerate((-0.62, 0, 0.62)):
+                # Five individual spines per bay. Omitted volumes leave short
+                # dark gaps instead of an unbroken decorative stripe.
+                for slot, dx in enumerate((-0.22, -0.11, 0.0, 0.11, 0.22)):
+                    if (row, bay, slot) in ((0, 0, 3), (0, 1, 3), (1, 0, 1), (1, 2, 1), (1, 2, 4)):
+                        continue
+                    height = 0.27 + ((row * 7 + bay * 3 + slot * 2) % 4) * 0.035
+                    colour = ("book_cream", "book_rust", "book_olive", "book_navy")[(row + bay * 2 + slot) % 4]
+                    offset_x = centre + dx + (((row * 5 + bay * 3 + slot * 7) % 5) - 2) * 0.006
+                    width = 0.073 + ((row * 2 + bay + slot * 3) % 4) * 0.008
+                    depth = 0.21 + ((row + bay * 2 + slot) % 3) * 0.018
+                    offset_y = y + ((bay + slot) % 3 - 1) * 0.009
+                    box(collection, root, f"Book.{row}.{bay}.{slot}", (offset_x, offset_y, 0.90 + height / 2),
+                        (width, depth, height), colour, 0.005)
+                    box(collection, root, f"Page edge.{row}.{bay}.{slot}", (offset_x, offset_y + depth / 2 - 0.008, 0.90 + height),
+                        (width * 0.72, 0.013, 0.012), "light", 0.002)
+        box(collection, root, "Back retaining rail", (0, -0.45, 1.24), (1.88, 0.045, 0.21), "fridge_steel", 0.012)
+        box(collection, root, "Front retaining rail", (0, 0.45, 0.75), (1.88, 0.045, 0.17), "fridge_steel", 0.012)
+    elif asset_id == "furniture.kitchen.stove":
+        # V3 four-view reference adds cast-iron grates and an overhead-readable
+        # control lip; the four burners remain inside the same 2x1 footprint.
+        for x in (-0.82, 0.82):
+            for y in (-0.34, 0.34):
+                box(collection, root, f"Heavy foot.{x}.{y}", (x, y, 0.07), (0.20, 0.17, 0.14), "steel", 0.012)
+        box(collection, root, "Oven carcass", (0, 0, 0.49), (1.88, 0.87, 0.88), "canteen_steel", 0.028)
+        box(collection, root, "Dark top lip", (0, 0, 0.965), (1.95, 0.92, 0.09), "steel", 0.018)
+        box(collection, root, "Worn cooking deck", (0, -0.025, 1.02), (1.89, 0.80, 0.034), "canteen_steel", 0.016)
+        box(collection, root, "Rear splash guard", (0, -0.425, 1.15), (1.95, 0.055, 0.31), "galvanized", 0.012)
+        box(collection, root, "Guard dark rim", (0, -0.424, 1.31), (1.95, 0.06, 0.018), "steel", 0.006)
+        for x in (-0.53, 0.53):
+            for y in (-0.22, 0.15):
+                box(collection, root, f"Recessed burner pan.{x}.{y}",
+                    (x, y, 1.050), (0.46, 0.34, 0.028), "stove_heat", 0.028)
+                cylinder(collection, root, f"Burner rim.{x}.{y}", (x, y, 1.067), 0.166, 0.033, "steel", 48)
+                cylinder(collection, root, f"Dark burner well.{x}.{y}", (x, y, 1.087), 0.143, 0.010, "shade", 48)
+                cylinder(collection, root, f"Burner cap.{x}.{y}", (x, y, 1.102), 0.048, 0.027, "steel", 32)
+                # Eight separate tapered-looking pot supports reveal the
+                # burner circle at game scale. The old pair of crossing bars
+                # hid the well and read as a flat plus sign from overhead.
+                for support_index in range(8):
+                    angle = 2 * math.pi * support_index / 8
+                    support = box(collection, root, f"Cast-iron pot support.{x}.{y}.{support_index}",
+                        (x + 0.126 * math.cos(angle), y + 0.126 * math.sin(angle), 1.126),
+                        (0.025, 0.132, 0.045), "shade", 0.008)
+                    support.rotation_euler.z = angle - math.pi / 2
+        box(collection, root, "Overhead control lip", (0, 0.415, 1.058), (1.88, 0.13, 0.058), "galvanized_edge", 0.015)
+        box(collection, root, "Control fascia", (0, 0.48, 0.82), (1.88, 0.07, 0.22), "galvanized_edge", 0.012)
+        for x in (-0.69, -0.23, 0.23, 0.69):
+            cylinder(collection, root, f"Top control knob.{x}", (x, 0.415, 1.105), 0.047, 0.042, "shade", 24)
+            box(collection, root, f"Pale knob index.{x}", (x, 0.401, 1.129), (0.012, 0.025, 0.007), "light", 0.002)
+        cylinder(collection, root, "Amber status lamp", (0.84, 0.415, 1.092), 0.019, 0.028, "stove_amber", 16)
+        for x in (-0.47, 0.47):
+            box(collection, root, f"Oven door frame.{x}", (x, 0.442, 0.42), (0.85, 0.025, 0.58), "galvanized_edge", 0.012)
+            box(collection, root, f"Oven window.{x}", (x, 0.456, 0.42), (0.62, 0.008, 0.30), "metal_recess", 0.018)
+            box(collection, root, f"Oven handle.{x}", (x, 0.46, 0.68), (0.57, 0.05, 0.04), "steel", 0.014)
+    elif asset_id == "furniture.medical.cabinet":
+        # V3 four-view reference: the raised lid exposes an organized dark tray.
+        # Separate supplies must survive reduction to a one-tile game sprite.
+        for x in (-0.38, 0.38):
+            for y in (-0.36, 0.36):
+                box(collection, root, f"Rubber foot.{x}.{y}", (x, y, 0.055), (0.14, 0.14, 0.11), "shade", 0.01)
+        box(collection, root, "Worn blue-grey enclosure", (0, 0, 0.62), (0.86, 0.82, 1.13), "medical_enamel", 0.045)
+        box(collection, root, "Recessed front shadow", (0, 0.416, 0.63), (0.75, 0.014, 0.92), "metal_recess", 0.004)
+        for x in (-0.19, 0.19):
+            box(collection, root, f"Locking door.{x}", (x, 0.433, 0.63), (0.35, 0.018, 0.89), "medical_enamel", 0.012)
+            box(collection, root, f"Recessed handle.{x}", (x * 0.38, 0.45, 0.67), (0.055, 0.012, 0.19), "metal_recess", 0.006)
+            cylinder(collection, root, f"Door lock.{x}", (x * 0.4, 0.454, 0.92), 0.021, 0.013, "steel", 16)
+            for z in (0.37, 0.86):
+                box(collection, root, f"Hinge.{x}.{z}", (x * 2.13, 0.444, z), (0.024, 0.04, 0.09), "steel", 0.006)
+        box(collection, root, "Rolled enamel tray outer", (0, 0, 1.225), (0.94, 0.90, 0.09), "medical_enamel", 0.045)
+        box(collection, root, "Dark recessed supply tray", (0, 0, 1.274), (0.77, 0.72, 0.012), "metal_recess", 0.028)
+        for x in (-0.42, 0.42):
+            box(collection, root, f"Bright tray side lip.{x}", (x, 0, 1.286), (0.055, 0.83, 0.035), "galvanized_edge", 0.018)
+        for y in (-0.39, 0.39):
+            box(collection, root, f"Bright tray end lip.{y}", (0, y, 1.286), (0.85, 0.045, 0.035), "galvanized_edge", 0.018)
+        cylinder(collection, root, "Cream rolled bandage", (-0.23, -0.06, 1.325), 0.105, 0.085, "paper_cream", 24)
+        box(collection, root, "Bandage retaining strap", (-0.23, -0.06, 1.375), (0.21, 0.045, 0.015), "shade", 0.006)
+        for index, y in enumerate((-0.17, 0.08)):
+            box(collection, root, f"Teal medicine carton.{index}", (0.13, y, 1.33), (0.16, 0.20, 0.10), "medical_teal", 0.012)
+            box(collection, root, f"Carton cream label.{index}", (0.13, y, 1.385), (0.12, 0.11, 0.008), "paper_cream", 0.003)
+        cylinder(collection, root, "Ochre antiseptic bottle", (0.17, 0.27, 1.35), 0.075, 0.12, "medical_ochre", 24)
+        cylinder(collection, root, "Bottle pale cap", (0.17, 0.27, 1.42), 0.058, 0.018, "paper_cream", 24)
+        for x in (-0.25, 0.25):
+            box(collection, root, f"Steel lid hinge.{x}", (x, -0.46, 1.30), (0.13, 0.11, 0.08), "steel", 0.012)
+        box(collection, root, "Raised lid dark gasket", (0, -0.63, 1.51), (0.82, 0.39, 0.055), "metal_recess", 0.030)
+        box(collection, root, "Raised lid enamel", (0, -0.63, 1.55), (0.78, 0.35, 0.05), "medical_enamel", 0.030)
+        box(collection, root, "Lid cross horizontal", (0, -0.63, 1.583), (0.23, 0.065, 0.009), "medical_red", 0.003)
+        box(collection, root, "Lid cross vertical", (0, -0.63, 1.588), (0.065, 0.23, 0.009), "medical_red", 0.003)
+        box(collection, root, "Front latch", (0, 0.47, 1.29), (0.12, 0.10, 0.07), "steel", 0.011)
+        for x in (-0.38, 0.38):
+            for y in (-0.36, 0.36):
+                cylinder(collection, root, f"Rim corner rivet.{x}.{y}", (x, y, 1.306), 0.014, 0.009, "steel", 12)
+    elif asset_id == "furniture.laundry.washing_machine.twin":
+        # Multi-angle original concept and overhead adaptation under assets/source/concepts/.
+        # Two deep portholes and paired amber controls stay legible at 128x64 px.
+        box(collection, root, "Raised dark plinth", (0, 0, 0.10), (1.91, 0.91, 0.19), "steel", 0.034)
+        box(collection, root, "Blue-grey enamel cabinet", (0, 0, 0.61), (1.91, 0.92, 0.89), "washer_enamel", 0.036)
+        box(collection, root, "Top deck gasket", (0, 0, 1.058), (1.82, 0.83, 0.025), "steel", 0.026)
+        box(collection, root, "Top service deck", (0, 0, 1.075), (1.78, 0.79, 0.023), "washer_enamel", 0.026)
+        box(collection, root, "Black control rail", (0, -0.35, 1.103), (1.74, 0.12, 0.022), "shade", 0.01)
+        box(collection, root, "Central bay seam", (0, 0.05, 1.098), (0.018, 0.70, 0.012), "steel", 0.002)
+        for x in (-0.48, 0.48):
+            # A dark sunken well and elevated broad nickel ring give the depth
+            # that the first top-down blockout lacked.
+            cylinder(collection, root, f"Drum recess.{x}", (x, 0.092, 1.110), 0.335, 0.019, "shade", 64)
+            cylinder(collection, root, f"Teal laundry under glass.{x}", (x, 0.092, 1.122), 0.267, 0.012, "medical_teal", 64)
+            cylinder(collection, root, f"Smoked glazing.{x}", (x, 0.092, 1.145), 0.274, 0.019, "washer_glass", 64)
+            washer_fabric_fold(collection, root, f"Curved cloth fold A.{x}",
+                               (x - 0.055, 0.072, 1.163), 0.31, 0.14, 0.50, 0.0, "medical_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold B.{x}",
+                               (x + 0.070, 0.137, 1.168), 0.28, 0.15, -0.62, 1.2, "washer_fabric")
+            washer_fabric_fold(collection, root, f"Curved cloth fold C.{x}",
+                               (x + 0.035, 0.026, 1.158), 0.19, 0.10, 0.28, 2.1, "medical_fabric")
+            torus(collection, root, f"Machined steel door bezel.{x}", (x, 0.092, 1.165), 0.293, 0.038, "galvanized_edge")
+            torus(collection, root, f"Inner rubber seal.{x}", (x, 0.092, 1.171), 0.252, 0.012, "shade")
+            box(collection, root, f"Door handle.{x}", (x - 0.32, 0.09, 1.186), (0.085, 0.17, 0.045), "galvanized_edge", 0.014)
+            cylinder(collection, root, f"Dial body.{x}", (x + 0.31, -0.35, 1.129), 0.038, 0.028, "galvanized_edge", 32)
+            cylinder(collection, root, f"Dial face.{x}", (x + 0.31, -0.35, 1.148), 0.021, 0.011, "shade", 32)
+            for shift in (-0.18, -0.11):
+                box(collection, root, f"Amber indicator.{x}.{shift}", (x + shift, -0.35, 1.124), (0.045, 0.036, 0.016), "washer_amber", 0.005)
+            for screw_y in (-0.36, 0.4):
+                cylinder(collection, root, f"Deck screw.{x}.{screw_y}", (x, screw_y, 1.111), 0.014, 0.009, "galvanized_edge", 12)
+        for x in (-0.91, 0.91):
+            for y in (-0.42, 0.42):
+                box(collection, root, f"Bolted corner.{x}.{y}", (x, y, 1.095), (0.10, 0.10, 0.025), "galvanized_edge", 0.007)
+                cylinder(collection, root, f"Corner bolt.{x}.{y}", (x, y, 1.115), 0.014, 0.01, "steel", 12)
+    elif asset_id == "furniture.medical.bed.single":
+        # assets/source/concepts/medical-bed-multiview-v1.png: rails and the
+        # medical cross separate this from the ordinary cell bed at game scale.
+        for x in (-0.39, 0.39):
+            for y in (-0.84, 0.84):
+                cylinder(collection, root, f"Inset caster.{x}.{y}", (x, y, 0.09), 0.064, 0.12, "steel", 16)
+                cylinder(collection, root, f"Caster hub.{x}.{y}", (x, y, 0.16), 0.026, 0.012, "galvanized_edge", 12)
+        box(collection, root, "Medical steel base", (0, 0, 0.39), (0.87, 1.78, 0.12), "galvanized", 0.025)
+        box(collection, root, "Adjustable head base", (0, -0.51, 0.54), (0.76, 0.64, 0.10), "galvanized_edge", 0.025)
+        box(collection, root, "Washable mattress edge", (0, 0, 0.58), (0.76, 1.67, 0.20), "porcelain", 0.055)
+        box(collection, root, "Teal medical mattress", (0, 0, 0.695), (0.71, 1.62, 0.035), "medical_fabric", 0.022)
+        # Keep the adjustable head separate from the body. A dark pivot line,
+        # raised teal cushion and lit lower edge make the articulation visible
+        # from directly overhead, where the former flat cover hid it.
+        box(collection, root, "Head articulation gap", (0, -0.285, 0.725), (0.71, 0.025, 0.020), "shade", 0.007)
+        box(collection, root, "Raised head cover", (0, -0.51, 0.762), (0.71, 0.54, 0.105), "medical_fabric", 0.055)
+        box(collection, root, "Head cushion lower edge", (0, -0.275, 0.823), (0.68, 0.030, 0.014), "medical_teal", 0.007)
+        box(collection, root, "Cream medical pillow", (0, -0.57, 0.855), (0.58, 0.30, 0.085), "light", 0.075)
+        # A tucked pale sage patient sheet and folded teal cover distinguish the
+        # infirmary bed from the prison-cell mattress at one-tile width.
+        box(collection, root, "Patient sheet shadow", (0, 0.16, 0.735), (0.68, 0.64, 0.027), "medical_sheet_shadow", 0.022)
+        box(collection, root, "Washable pale patient sheet", (0, 0.15, 0.758), (0.63, 0.60, 0.040), "medical_sheet", 0.072)
+        cloth_surface(collection, root, "Patient sheet soft folds", 0.55, 0.50,
+                      0.15, 0.779, 0.031, "medical_sheet")
+        for x in (-0.305, 0.305):
+            box(collection, root, f"Sheet tucked side fold.{x}", (x, 0.15, 0.774),
+                (0.022, 0.52, 0.019), "medical_sheet_hem", 0.008)
+        box(collection, root, "Sheet rolled upper fold shadow", (0, -0.135, 0.782),
+            (0.60, 0.035, 0.018), "medical_sheet_shadow", 0.009)
+        box(collection, root, "Sheet rolled upper fold", (0, -0.16, 0.803),
+            (0.59, 0.052, 0.030), "medical_sheet_hem", 0.015)
+        box(collection, root, "Sheet lower stitched hem", (0, 0.437, 0.783),
+            (0.59, 0.013, 0.008), "medical_sheet_hem", 0.004)
+        box(collection, root, "Folded teal foot blanket", (0, 0.58, 0.770), (0.69, 0.45, 0.085), "medical_fabric", 0.039)
+        cloth_surface(collection, root, "Foot cover soft folds", 0.63, 0.34,
+                      0.58, 0.817, 0.013, "medical_fabric")
+        box(collection, root, "Foot blanket contrast band", (0, 0.405, 0.820), (0.68, 0.055, 0.012), "medical_teal", 0.007)
+        box(collection, root, "Foot blanket turned hem", (0, 0.77, 0.816), (0.67, 0.045, 0.010), "light", 0.005)
+        box(collection, root, "Foot medical cross horizontal", (0, 0.60, 0.839), (0.16, 0.048, 0.012), "medical_red", 0.004)
+        box(collection, root, "Foot medical cross vertical", (0, 0.60, 0.847), (0.050, 0.16, 0.012), "medical_red", 0.004)
+        # Pair of short safety rails on each side, with a visible break.
+        for x in (-0.44, 0.44):
+            for y in (-0.27, 0.35):
+                box(collection, root, f"Safety rail.{x}.{y}", (x, y, 0.77), (0.065, 0.47, 0.18), "porcelain", 0.02)
+                box(collection, root, f"Rail slot.{x}.{y}", (x, y, 0.866), (0.035, 0.27, 0.01), "shade", 0.004)
+        for y in (-0.88, 0.88):
+            box(collection, root, f"End panel.{y}", (0, y, 0.65), (0.78, 0.09, 0.34), "porcelain", 0.028)
+            for x in (-0.32, 0.32):
+                cylinder(collection, root, f"Panel bolt.{x}.{y}", (x, y, 0.826), 0.018, 0.01, "steel", 12)
+        box(collection, root, "Foot cross horizontal", (0, 0.88, 0.832), (0.19, 0.042, 0.01), "medical_teal", 0.003)
+        box(collection, root, "Foot cross vertical", (0, 0.88, 0.838), (0.045, 0.078, 0.01), "medical_teal", 0.003)
+    elif "bed" in asset_id:
+        # Four-view reference: assets/source/concepts/cell-bed-multiview-v2.png.
+        # Rails, pillow and orange blanket fold are legible from directly above.
+        box(collection, root, "Steel mattress support", (0, 0, 0.38), (0.85, 1.76, 0.11), "steel", 0.025)
+        for x in (-0.43, 0.43):
+            box(collection, root, f"Side rail.{x}", (x, 0, 0.51), (0.06, 1.79, 0.09), "canteen_steel", 0.025)
+            for y in (-0.88, 0.88):
+                cylinder(collection, root, f"Corner post.{x}.{y}", (x, y, 0.40), 0.045, 0.80, "canteen_steel", 24)
+                cylinder(collection, root, f"Post cap.{x}.{y}", (x, y, 0.81), 0.034, 0.015, "galvanized_edge", 24)
+                cylinder(collection, root, f"Cap bolt.{x}.{y}", (x, y, 0.825), 0.012, 0.008, "shade", 12)
+        for y in (-0.88, 0.88):
+            box(collection, root, f"End rail.{y}", (0, y, 0.72), (0.82, 0.055, 0.055), "canteen_steel", 0.025)
+            box(collection, root, f"Lower end rail.{y}", (0, y, 0.44), (0.82, 0.05, 0.055), "steel", 0.020)
+        box(collection, root, "Mattress edge band", (0, 0, 0.54), (0.76, 1.68, 0.21), "linen", 0.045)
+        box(collection, root, "Woven grey mattress cover", (0, 0, 0.658), (0.73, 1.65, 0.04), "bed_mattress", 0.024)
+        cloth_surface(collection, root, "Softly rumpled mattress top", 0.70, 1.53,
+            0, 0.681, 0.018, "bed_mattress")
+        for fold_index, fold_y in enumerate((-0.30, -0.08, 0.15)):
+            cloth_crease(collection, root, f"Mattress fabric fold.{fold_index}",
+                fold_y, fold_index, "bed_mattress")
+        box(collection, root, "Pillow shadow", (0, -0.57, 0.688), (0.62, 0.34, 0.035), "shade", 0.025)
+        box(collection, root, "Cream pillow", (0, -0.57, 0.737), (0.60, 0.32, 0.09), "light", 0.06)
+        box(collection, root, "Raised pillow cotton centre", (0, -0.57, 0.787),
+            (0.52, 0.25, 0.018), "bed_pillow_top", 0.055)
+        for x in (-0.245, 0.245):
+            box(collection, root, f"Pillow cover side seam.{x}",
+                (x, -0.57, 0.795), (0.008, 0.19, 0.003), "bed_pillow_seam", 0.002)
+        for y in (-0.665, -0.475):
+            box(collection, root, f"Pillow cover end seam.{y}",
+                (0, y, 0.795), (0.44, 0.006, 0.003), "bed_pillow_seam", 0.002)
+        box(collection, root, "Folded orange blanket base", (0, 0.52, 0.694), (0.74, 0.52, 0.055), "bed_blanket", 0.025)
+        box(collection, root, "Orange blanket fold", (0, 0.71, 0.733), (0.74, 0.09, 0.035), "bed_blanket", 0.018)
+        box(collection, root, "Blanket fold shadow", (0, 0.76, 0.716), (0.70, 0.018, 0.012), "shade", 0.003)
+        cloth_surface(collection, root, "Softly rumpled orange blanket top", 0.70, 0.44,
+            0.49, 0.724, 0.014, "bed_blanket")
+    elif asset_id == "furniture.storage.rack.wooden":
+        # The multiview concept in assets/source/concepts/ shows open shelf
+        # gaps, worn timber and bolted steel corners. From above the shelf
+        # boards, different stored goods and dark gaps must stay separate at
+        # the game's 1x1-tile size; a closed panel would repeat the old locker
+        # failure that sent this object back to a colour slab.
+        for x in (-0.43, 0.43):
+            for y in (-0.39, 0.39):
+                box(collection, root, f"Corner post.{x}.{y}", (x, y, 0.68), (0.08, 0.08, 1.36), "canteen_wood", 0.012)
+                box(collection, root, f"Steel corner cap.{x}.{y}", (x, y, 1.36), (0.13, 0.13, 0.07), "canteen_steel", 0.012)
+                cylinder(collection, root, f"Corner bolt.{x}.{y}", (x, y, 1.402), 0.018, 0.012, "light", 12)
+        box(collection, root, "Rear brace", (0, 0.43, 0.96), (0.83, 0.045, 0.16), "canteen_steel", 0.008)
+        # The shelves descend towards the viewer. A straight-down camera can
+        # then see all three, while an oblique view still shows plausible
+        # distinct tiers instead of three boards floating at one height.
+        for index_shelf, (y, height) in enumerate(((-0.29, 1.17), (0, 0.83), (0.29, 0.49))):
+            box(collection, root, f"Worn shelf.{index_shelf}", (0, y, height), (0.81, 0.24, 0.085), "canteen_wood", 0.012)
+            box(collection, root, f"Shelf lip.{index_shelf}", (0, y + 0.13, height - 0.02), (0.81, 0.025, 0.05), "canteen_steel", 0.006)
+        # Unequal crates and folded bundles, with visible openings and bands.
+        box(collection, root, "North wooden crate", (-0.19, -0.29, 1.29), (0.27, 0.12, 0.16), "canteen_wood", 0.009)
+        box(collection, root, "North crate handle", (-0.19, -0.29, 1.377), (0.10, 0.025, 0.006), "shade", 0)
+        for index_fold, y in enumerate((-0.315, -0.265)):
+            box(collection, root, f"North folded blanket.{index_fold}", (0.19, y, 1.27 + index_fold * 0.035), (0.25, 0.07, 0.06), "green", 0.013)
+        box(collection, root, "North bundle strap", (0.19, -0.29, 1.352), (0.045, 0.14, 0.015), "canteen_steel", 0.003)
+        box(collection, root, "Middle steel toolbox", (-0.15, 0, 0.96), (0.29, 0.13, 0.17), "canteen_steel", 0.010)
+        box(collection, root, "Toolbox clasp", (-0.15, 0, 1.052), (0.05, 0.03, 0.010), "light", 0.003)
+        box(collection, root, "Middle carton", (0.20, 0, 0.94), (0.23, 0.12, 0.13), "linen", 0.008)
+        box(collection, root, "South carton", (-0.19, 0.29, 0.59), (0.25, 0.12, 0.13), "linen", 0.008)
+        for index_fold, y in enumerate((0.265, 0.315)):
+            box(collection, root, f"South folded bundle.{index_fold}", (0.18, y, 0.58 + index_fold * 0.035), (0.26, 0.07, 0.055), "light", 0.012)
+        box(collection, root, "South bundle strap", (0.18, 0.29, 0.66), (0.045, 0.15, 0.014), "canteen_steel", 0.003)
+    elif asset_id == "furniture.chair.wooden":
+        # The v3 four-view concept keeps the air gaps readable from above.
+        # Three separate boards and two separate back planks avoid a flat tile.
+        for x in (-0.32, 0.32):
+            cylinder(collection, root, f"Rear tubular post.{x}", (x, -0.42, 0.64), 0.040, 1.28, "canteen_steel", 16)
+            cylinder(collection, root, f"Rear rubber foot.{x}", (x, -0.42, 0.035), 0.066, 0.07, "shade", 16)
+            cylinder(collection, root, f"Front tubular leg.{x}", (x, 0.43, 0.27), 0.043, 0.54, "canteen_steel", 16)
+            cylinder(collection, root, f"Front rubber foot.{x}", (x, 0.43, 0.035), 0.068, 0.07, "shade", 16)
+            box(collection, root, f"Side steel bearer.{x}", (x, 0.11, 0.49), (0.070, 0.67, 0.085), "canteen_steel", 0.018)
+        box(collection, root, "Steel rear seat tie", (0, -0.22, 0.47), (0.65, 0.055, 0.065), "canteen_steel", 0.018)
+        box(collection, root, "Steel front seat tie", (0, 0.40, 0.47), (0.65, 0.055, 0.065), "canteen_steel", 0.018)
+        for index, y in enumerate((-0.075, 0.13, 0.335)):
+            box(collection, root, f"Individual walnut seat plank.{index}", (0, y, 0.56),
+                (0.63, 0.185, 0.070), f"bench_wood_{index}", 0.027)
+            for x in (-0.26, 0.26):
+                cylinder(collection, root, f"Recessed seat rivet.{index}.{x}",
+                    (x, y, 0.601), 0.014, 0.008, "canteen_steel", 12)
+        for index, (z, y) in enumerate(((1.15, -0.49), (1.00, -0.34))):
+            box(collection, root, f"Separated walnut back plank.{index}",
+                (0, y, z), (0.64, 0.075, 0.105), f"bench_wood_{index + 1}", 0.026)
+            for x in (-0.27, 0.27):
+                cylinder(collection, root, f"Back plank rivet.{index}.{x}",
+                    (x, y, z + 0.057), 0.014, 0.008, "canteen_steel", 12)
+    elif asset_id == "furniture.dining.table.wooden":
+        # V3 four-view concept: individual walnut planks and three wooden
+        # stools keep the three dining places legible from directly above.
+        box(collection, root, "Table underframe", (0, -0.27, 0.65), (2.70, 1.04, 0.15), "canteen_steel", 0.025)
+        for x in (-1.13, 1.13):
+            box(collection, root, f"Trestle.{x}", (x, -0.27, 0.34), (0.16, 0.92, 0.68), "canteen_steel", 0.015)
+            box(collection, root, f"Floor plate.{x}", (x, -0.27, 0.04), (0.34, 0.98, 0.08), "steel", 0.012)
+        box(collection, root, "Stool support rail", (0, 0.50, 0.38), (2.58, 0.10, 0.14), "canteen_steel", 0.015)
+        box(collection, root, "Deep bolted tabletop rim", (0, -0.27, 0.76), (2.84, 1.18, 0.12), "canteen_steel", 0.045)
+        box(collection, root, "Dark tabletop inset", (0, -0.27, 0.822), (2.70, 1.04, 0.019), "shade", 0.019)
+        for index, y in enumerate((-0.655, -0.395, -0.135, 0.125)):
+            box(collection, root, f"Individual walnut tabletop plank.{index}",
+                (0, y, 0.857), (2.69, 0.246, 0.052), f"bench_wood_{index}", 0.027)
+            for x in (-1.27, 1.27):
+                cylinder(collection, root, f"Recessed tabletop bolt.{index}.{x}",
+                    (x, y, 0.886), 0.017, 0.010, "canteen_steel", 12)
+        # Three sparse meal stations face the fixed stools. The pale plates
+        # carry the silhouette at game scale; the trays and utensils provide
+        # context without covering the walnut planks.
+        for index, x in enumerate((-0.88, 0, 0.88)):
+            box(collection, root, f"Meal tray shadow.{index}",
+                (x, -0.25, 0.895), (0.72, 0.60, 0.014), "shade", 0.045)
+            box(collection, root, f"Brushed meal tray.{index}",
+                (x, -0.25, 0.907), (0.69, 0.57, 0.021), "galvanized", 0.045)
+            cylinder(collection, root, f"Enamel plate rim.{index}",
+                (x, -0.26, 0.926), 0.205, 0.022, "porcelain", 32)
+            cylinder(collection, root, f"Recessed plate well.{index}",
+                (x, -0.26, 0.940), 0.150, 0.010, "light", 32)
+            box(collection, root, f"Fork.{index}",
+                (x - 0.265, -0.26, 0.928), (0.030, 0.29, 0.012), "canteen_steel", 0.008)
+            box(collection, root, f"Spoon.{index}",
+                (x + 0.265, -0.26, 0.928), (0.035, 0.29, 0.012), "canteen_steel", 0.008)
+        for index, x in enumerate((-0.88, 0, 0.88)):
+            cylinder(collection, root, f"Stool floor mount.{index}", (x, 0.69, 0.045), 0.14, 0.08, "steel", 16)
+            for bolt_x in (-0.08, 0.08):
+                cylinder(collection, root, f"Stool floor bolt.{index}.{bolt_x}",
+                    (x + bolt_x, 0.69, 0.088), 0.014, 0.009, "light", 12)
+            cylinder(collection, root, f"Stool post.{index}", (x, 0.69, 0.30), 0.070, 0.53, "canteen_steel", 16)
+            cylinder(collection, root, f"Stool dark rim.{index}", (x, 0.69, 0.59), 0.27, 0.12, "canteen_steel", 32)
+            cylinder(collection, root, f"Worn wooden stool seat.{index}",
+                (x, 0.69, 0.657), 0.225, 0.028, f"bench_wood_{index}", 32)
+            for bolt_x in (-0.18, 0.18):
+                cylinder(collection, root, f"Stool seat rivet.{index}.{bolt_x}",
+                    (x + bolt_x, 0.69, 0.675), 0.012, 0.009, "canteen_steel", 12)
     elif "locker" in asset_id:
         # A locker is a box from above and there is no honest way round that.
         # What the top can carry is a rim and the seam between two doors, which
@@ -159,23 +1358,85 @@ def furniture(collection, root, asset_id):
             cylinder(collection, root, f"Stool.{x}", (x, 0, 0.5), 0.22, 0.1, "wood")
             cylinder(collection, root, f"Stool base.{x}", (x, 0, 0.23), 0.06, 0.44, "steel")
     elif "bench" in asset_id:
-        # Three slats with gaps: the gaps are the only thing that reads from
-        # above, and one plank read as a shelf.
-        for index, y in enumerate((-0.15, 0.0, 0.15)):
-            box(collection, root, f"Slat.{index}", (0, y, 0.54), (1.76, 0.12, 0.06), "wood", 0.02)
-        for x in (-0.7, 0.7):
-            box(collection, root, f"Leg.{x}", (x, 0, 0.26), (0.08, 0.44, 0.52), "steel", 0.02)
-    elif "desk" in asset_id or "reception" in asset_id:
-        length = 2.7 if "reception" in asset_id else 1.7
-        box(collection, root, "Counter", (0, 0, 0.92), (length, 0.72, 0.1), "wood", 0.03)
-        box(collection, root, "Cabinet", (0, 0.2, 0.42), (length * 0.9, 0.46, 0.82), "steel")
-        if "reception" in asset_id:
-            # A transaction ledge one step above the worktop: from above it is
-            # the band that tells a counter from a desk.
-            box(collection, root, "Ledge", (0, -0.28, 1.06), (length, 0.22, 0.12), "concrete", 0.03)
-        else:
-            box(collection, root, "Blotter", (-0.16, -0.04, 0.976), (0.86, 0.46, 0.012), "shade", 0)
-            box(collection, root, "Tray", (0.58, -0.06, 1.0), (0.4, 0.3, 0.06), "steel", 0.02)
+        # Four-view source: corridor-bench-multiview-v3.png. The darker steel
+        # end brackets and individual plank grain read at 128x64 world pixels.
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Steel seat bearer.{x}", (x, 0, 0.48), (0.095, 0.74, 0.075), "canteen_steel", 0.012)
+            for y in (-0.41, 0.41):
+                box(collection, root, f"Anchor plate.{x}.{y}", (x, y, 0.032), (0.18, 0.13, 0.064), "steel", 0.012)
+                box(collection, root, f"Angled support.{x}.{y}", (x, y * 0.55, 0.27), (0.075, 0.08, 0.43), "canteen_steel", 0.012)
+                cylinder(collection, root, f"Anchor bolt.{x}.{y}", (x, y, 0.070), 0.022, 0.016, "shade", 12)
+        box(collection, root, "Lower steel tie", (0, 0, 0.24), (1.50, 0.055, 0.055), "canteen_steel", 0.008)
+        # The far plank is a raised back. A broad dark reveal below it remains
+        # visible at 128x64, so the three lower seat planks do not read as a
+        # single tabletop when the Common Room has two benches side by side.
+        for x in (-0.70, 0.70):
+            box(collection, root, f"Raised back upright.{x}", (x, -0.33, 0.67),
+                (0.08, 0.075, 0.39), "canteen_steel", 0.012)
+        box(collection, root, "Back-to-seat shadow reveal", (0, -0.205, 0.515),
+            (1.74, 0.066, 0.014), "shade", 0.004)
+        for index, (y, height) in enumerate(((-0.34, 0.83), (-0.10, 0.57), (0.10, 0.57), (0.30, 0.57))):
+            box(collection, root, f"Worn timber slat.{index}", (0, y, height),
+                (1.82, 0.155, 0.085), f"bench_wood_{index}", 0.035)
+            box(collection, root, f"Crowned wood edge.{index}", (0, y - 0.063, height + 0.052),
+                (1.74, 0.012, 0.009), "bench_edge", 0.003)
+            for x in (-0.79, 0.79):
+                cylinder(collection, root, f"Recessed seat bolt.{index}.{x}",
+                    (x, y, height + 0.050), 0.014, 0.008, "shade", 12)
+        for x in (-0.935, 0.935):
+            box(collection, root, f"Exposed steel end bracket.{x}", (x, 0, 0.56), (0.066, 0.73, 0.085), "steel", 0.016)
+            for y in (-0.29, 0.29):
+                cylinder(collection, root, f"End bracket rivet.{x}.{y}", (x, y, 0.610), 0.019, 0.009, "metal_recess", 12)
+    elif "desk" in asset_id:
+        # Four-view reference: employee-desk-multiview-v3.png. The desk remains
+        # legible at 128x64: low lamp, wide open ledger and paper tray are
+        # separate large shapes on a textured top, not tiny printed details.
+        for x in (-0.75, 0.75):
+            for y in (-0.30, 0.30):
+                box(collection, root, f"Steel leg.{x}.{y}", (x, y, 0.44), (0.075, 0.075, 0.88), "canteen_steel", 0.012)
+                box(collection, root, f"Leg foot.{x}.{y}", (x, y, 0.035), (0.12, 0.12, 0.07), "steel", 0.012)
+        box(collection, root, "Front frame rail", (0, 0.29, 0.77), (1.51, 0.055, 0.14), "steel", 0.01)
+        box(collection, root, "Drawer pedestal shell", (0.56, 0.25, 0.45), (0.50, 0.40, 0.78), "canteen_steel", 0.015)
+        box(collection, root, "Pedestal visible top", (0.56, 0.25, 0.85), (0.54, 0.42, 0.035), "steel", 0.01)
+        for index, height in enumerate((0.25, 0.45, 0.65)):
+            box(collection, root, f"Drawer front.{index}", (0.56, 0.458, height), (0.43, 0.012, 0.16), "steel", 0.006)
+            box(collection, root, f"Drawer pull.{index}", (0.56, 0.471, height), (0.13, 0.023, 0.018), "galvanized_edge", 0.006)
+        box(collection, root, "Dark worktop edge band", (0, -0.04, 0.91), (1.84, 0.78, 0.09), "steel", 0.018)
+        box(collection, root, "Grey oak laminate", (0, -0.04, 0.965), (1.79, 0.73, 0.035), "desk_laminate", 0.018)
+        # A circular lamp hood reads from above; the slim angled arm records
+        # the actual construction without obscuring the papers beneath.
+        cylinder(collection, root, "Lamp bolted base", (-0.72, -0.27, 1.020), 0.078, 0.050, "desk_teal", 32)
+        cylinder(collection, root, "Lamp stem", (-0.72, -0.27, 1.105), 0.021, 0.17, "galvanized_edge", 16)
+        arm = box(collection, root, "Lamp articulated arm", (-0.57, -0.27, 1.177), (0.31, 0.027, 0.028), "galvanized_edge", 0.009)
+        arm.rotation_euler[1] = -0.12
+        cylinder(collection, root, "Lamp enamel hood", (-0.40, -0.27, 1.190), 0.115, 0.080, "desk_teal", 48)
+        cylinder(collection, root, "Lamp warm diffuser", (-0.40, -0.27, 1.145), 0.082, 0.008, "paper_cream", 48)
+        # The underside diffuser is hidden from the overhead camera. A slim
+        # top seam and the articulated swivel identify this disc as a lamp.
+        torus(collection, root, "Lamp hood top seam", (-0.40, -0.27, 1.231), 0.096, 0.009, "desk_ink")
+        cylinder(collection, root, "Lamp swivel collar", (-0.40, -0.27, 1.245), 0.055, 0.022, "galvanized_edge", 32)
+        cylinder(collection, root, "Lamp dark swivel", (-0.40, -0.27, 1.262), 0.037, 0.015, "desk_ink", 32)
+        box(collection, root, "Olive paperwork tray", (-0.53, 0.10, 1.004), (0.34, 0.38, 0.052), "green", 0.014)
+        box(collection, root, "Terracotta folder in tray", (-0.53, 0.10, 1.038), (0.27, 0.30, 0.012), "paper_orange", 0.004)
+        box(collection, root, "Cream sheet in tray", (-0.54, 0.075, 1.054), (0.25, 0.24, 0.012), "paper_cream", 0.004)
+        box(collection, root, "Ledger dark cover", (0.04, 0.05, 1.004), (0.60, 0.38, 0.018), "desk_teal", 0.008)
+        box(collection, root, "Ledger left page", (-0.105, 0.05, 1.020), (0.28, 0.34, 0.013), "paper_cream", 0.006)
+        box(collection, root, "Ledger right page", (0.185, 0.05, 1.020), (0.28, 0.34, 0.013), "paper_cream", 0.006)
+        box(collection, root, "Ledger centre seam", (0.04, 0.05, 1.031), (0.012, 0.33, 0.008), "desk_ink", 0.002)
+        for index, y in enumerate((-0.075, -0.005, 0.065, 0.135)):
+            for x in (-0.10, 0.19):
+                box(collection, root, f"Ledger rule.{index}.{x}", (x, y, 1.033), (0.18, 0.006, 0.004), "desk_ink", 0)
+        cylinder(collection, root, "Pencil cup outer", (0.58, -0.12, 1.070), 0.073, 0.13, "desk_ink", 24)
+        cylinder(collection, root, "Pencil cup opening", (0.58, -0.12, 1.141), 0.052, 0.008, "shade", 24)
+        for index, x in enumerate((0.55, 0.59, 0.62)):
+            cylinder(collection, root, f"Pencil point.{index}", (x, -0.12, 1.165), 0.009, 0.050, "paper_orange" if index == 1 else "paper_cream", 8)
+        cylinder(collection, root, "Cable grommet dark surround", (0.72, -0.29, 0.989), 0.058, 0.009, "steel", 32)
+        cylinder(collection, root, "Cable opening", (0.72, -0.29, 0.996), 0.036, 0.01, "shade", 32)
+    elif "reception" in asset_id:
+        box(collection, root, "Counter", (0, 0, 0.92), (2.7, 0.72, 0.1), "wood", 0.03)
+        box(collection, root, "Cabinet", (0, 0.2, 0.42), (2.43, 0.46, 0.82), "steel")
+        # The higher transaction ledge distinguishes this from an employee desk.
+        box(collection, root, "Ledge", (0, -0.28, 1.06), (2.7, 0.22, 0.12), "concrete", 0.03)
     else:
         box(collection, root, "Chair seat", (0, 0, 0.46), (0.5, 0.46, 0.08), "blue", 0.04)
         box(collection, root, "Back gap", (0, 0.185, 0.51), (0.54, 0.04, 0.06), "shade", 0)
@@ -231,38 +1492,534 @@ def perimeter(collection, root, asset_id):
 
 
 def architectural(collection, root, asset_id):
-    if asset_id.startswith("floor"):
+    if asset_id == "terrain.rock.bedrock":
+        box(collection, root, "Continuous dark slate bedrock", (0, 0, 0.04),
+            (1, 1, 0.08), "rock_matrix", 0)
+        # Each face is its own shallow, bevelled slate plate. The quiet
+        # periodic matrix connects neighbouring tiles without a bright seam.
+        plates = (
+            ((-.46, -.43), (-.13, -.45), (-.04, -.25), (-.25, -.13), (-.47, -.20)),
+            ((-.09, -.46), (.34, -.45), (.46, -.27), (.24, -.16), (.02, -.24)),
+            ((-.47, -.16), (-.26, -.11), (-.15, .15), (-.42, .27), (-.47, .13)),
+            ((-.20, -.08), (.19, -.17), (.42, -.05), (.33, .13), (.02, .23), (-.14, .13)),
+            ((.40, -.20), (.47, -.11), (.47, .25), (.34, .18)),
+            ((-.46, .31), (-.14, .20), (.04, .36), (-.06, .46), (-.45, .46)),
+            ((.06, .26), (.31, .18), (.47, .30), (.46, .46), (.10, .46)),
+        )
+        palette = ("rock_slate_1", "rock_slate_2", "rock_slate_3")
+        for index, outline in enumerate(plates):
+            bottom = [(x, y, .081) for x, y in outline]
+            top = [(x * .987, y * .987, .091 + (index % 3) * .002) for x, y in outline]
+            count = len(outline)
+            faces = [tuple(range(count, 2 * count)), tuple(reversed(range(count)))]
+            faces += [(i, (i + 1) % count, (i + 1) % count + count, i + count) for i in range(count)]
+            mesh = bpy.data.meshes.new(f"Bedrock plate mesh.{index}")
+            mesh.from_pydata(bottom + top, [], faces)
+            mesh.materials.append(MATERIALS[palette[index % len(palette)]])
+            stone = bpy.data.objects.new(f"Layered slate plate.{index}", mesh)
+            collection.objects.link(stone)
+            stone.parent = root
+        # Hairline mineral veins give the larger plates scale at 64 px/tile.
+        for index, (x, y, length) in enumerate(((-.27, -.31, .16), (.15, -.34, .14),
+            (-.28, .035, .11), (.03, .02, .19), (.23, .32, .12))):
+            vein = box(collection, root, f"Thin slate vein.{index}",
+                (x, y, .098), (length, .004, .001), "rock_vein", 0)
+            vein.rotation_euler.z = .17 if index % 2 else -.24
+    elif asset_id == "terrain.gravel.service_path":
+        box(collection, root, "Compacted gravel matrix", (0, 0, 0.04),
+            (1, 1, 0.08), "gravel_matrix", 0)
+        # Stones are shallow enough to read as a surface, not obstacles. Keep
+        # them within the one-tile frame; periodic matrix noise joins borders.
+        palette = ("gravel_stone_dark", "gravel_stone_grey", "gravel_stone_tan", "gravel_stone_pale")
+        state = 0x723A19C5
+        def next_random():
+            nonlocal state
+            state = (1664525 * state + 1013904223) & 0xffffffff
+            return state / 4294967296.0
+        for index in range(460):
+            x = (next_random() - 0.5) * 0.965
+            y = (next_random() - 0.5) * 0.965
+            size = 0.006 + next_random() * 0.015
+            box(collection, root, f"Embedded angular pebble.{index}",
+                (x, y, 0.081), (size, size * (0.65 + next_random() * 0.25), 0.0025),
+                palette[index % len(palette)], 0.001)
+    elif asset_id == "terrain.concrete.paving":
+        box(collection, root, "Poured concrete paving", (0, 0, 0.04),
+            (1, 1, 0.08), "concrete_paving", 0)
+        # A seam on only east and south edges forms one restrained joint per
+        # repeated tile, without double-width lines at shared boundaries.
+        box(collection, root, "East expansion joint", (0.496, 0, 0.081),
+            (0.008, 1, 0.002), "concrete_joint", 0)
+        box(collection, root, "South expansion joint", (0, 0.496, 0.082),
+            (1, 0.008, 0.002), "concrete_joint", 0)
+        for index in range(140):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.88
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.88
+            radius = 0.005 + (index % 4) * 0.002
+            box(collection, root, f"Fine exposed aggregate.{index}",
+                (x, y, 0.081), (radius, radius * 0.72, 0.001),
+                "concrete_aggregate_light" if index % 3 else "concrete_aggregate_dark", 0)
+    elif asset_id == "terrain.grass.mown":
+        box(collection, root, "Mown grass mat", (0, 0, 0.04),
+            (1, 1, 0.08), "grass_base", 0)
+        for index in range(110):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.86
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.86
+            length = 0.012 + (index % 4) * 0.004
+            box(collection, root, f"Short grass blade.{index}",
+                (x, y, 0.081), (0.0035, length, 0.001),
+                "grass_blade_light" if index % 3 else "grass_blade_dark", 0)
+    elif asset_id == "terrain.dirt.compacted":
+        # Unzoned ground covers most of the world. Keep the entire border
+        # uniform so chunk-sized repeated rectangles have no hard seam.
+        box(collection, root, "Compacted earth", (0, 0, 0.04),
+            (1, 1, 0.08), "dirt_base", 0)
+        for index in range(42):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.84
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.84
+            width = 0.004 + (index % 3) * 0.002
+            box(collection, root, f"Small mineral grit.{index}",
+                (x, y, 0.081), (width, width * 0.67, 0.001),
+                "dirt_grit_light" if index % 3 else "dirt_grit_dark", 0)
+        for index in range(4):
+            x = (((index * 29 + 9) % 61) / 61 - 0.5) * 0.70
+            y = (((index * 37 + 23) % 67) / 67 - 0.5) * 0.70
+            box(collection, root, f"Fine dry scuff.{index}",
+                (x, y, 0.081), (0.07 + 0.01 * (index % 3), 0.002, 0.001),
+                "dirt_scuff", 0)
+    elif asset_id == "floor.yard.compacted-earth":
+        # An outdoor 8x8 yard must not read as an indoor linoleum block.
+        # The border stays bare earth and all modeled grit/tufts are inset,
+        # so the repeat meets its own edges without clipped blades or seams.
+        box(collection, root, "Compacted yard soil", (0, 0, 0.04),
+            (1, 1, 0.08), "yard_ground", 0)
+        for index in range(54):
+            x = (((index * 43 + 13) % 137) / 137 - 0.5) * 0.82
+            y = (((index * 71 + 31) % 139) / 139 - 0.5) * 0.82
+            width = 0.008 + (index % 3) * 0.003
+            box(collection, root, f"Yard mineral grit.{index}",
+                (x, y, 0.081), (width, width * 0.67, 0.001),
+                "yard_grit_light" if index % 4 else "yard_grit_dark", 0)
+        yard_rng = random.Random(20260924)
+        for index in range(3):
+            x = yard_rng.uniform(-0.33, 0.33)
+            y = yard_rng.uniform(-0.33, 0.33)
+            for blade in range(3):
+                grass = box(collection, root, f"Worn yard grass.{index}.{blade}",
+                    (x + (blade - 1) * 0.007, y + ((index + blade) % 3 - 1) * 0.007, 0.081),
+                    (0.008, 0.035 + 0.005 * blade, 0.001),
+                    "yard_grass_light" if blade == 1 else "yard_grass_dark", 0)
+                grass.rotation_euler.z = (blade - 1) * 0.48
+    elif asset_id == "floor.laundry.nonslip":
+        # Continuous sealed aggregate, distinct from the shower's four-square
+        # ceramic. Sparse mineral grit survives 64 px without a repeated drain
+        # or cross-shaped seam appearing once in every game tile.
+        box(collection, root, "Sealed laundry aggregate", (0, 0, 0.04),
+            (1, 1, 0.08), "laundry_base", 0)
+        laundry_rng = random.Random(20260924)
+        for index in range(200):
+            x = laundry_rng.uniform(-0.48, 0.48)
+            y = laundry_rng.uniform(-0.48, 0.48)
+            width = laundry_rng.uniform(0.008, 0.022)
+            box(collection, root, f"Non-slip laundry grain.{index}",
+                (x, y, 0.081), (width, width * laundry_rng.uniform(0.5, 1.1), 0.001),
+                "laundry_grit_light" if index % 3 else "laundry_grit_dark", 0)
+    elif asset_id == "floor.infirmary.vinyl":
+        # Continuous hygienic sheet vinyl. The repeat has neither tile-sized
+        # seams nor medical symbols: both would form a grid beneath room names.
+        # The base shader is periodic at opposite edges; sparse inset flecks
+        # add a little material identity without an edge discontinuity.
+        box(collection, root, "Seamless infirmary sheet vinyl", (0, 0, 0.04),
+            (1, 1, 0.08), "infirmary_vinyl", 0)
+        infirmary_rng = random.Random(20260924)
+        for index in range(92):
+            x = infirmary_rng.uniform(-0.46, 0.46)
+            y = infirmary_rng.uniform(-0.46, 0.46)
+            width = infirmary_rng.uniform(0.005, 0.012)
+            box(collection, root, f"Embedded infirmary fleck.{index}",
+                (x, y, 0.081), (width, width * infirmary_rng.uniform(0.62, 1.28), 0.001),
+                "infirmary_fleck_light" if index % 4 else "infirmary_fleck_teal", 0)
+    elif asset_id == "floor.common-room.cork-rubber":
+        # Warm resilient recreation flooring without tile-sized seams. Its
+        # periodic base meets on every edge and inset chips give material
+        # character without competing with benches or room labels.
+        box(collection, root, "Seamless common room composite", (0, 0, 0.04),
+            (1, 1, 0.08), "common_room_composite", 0)
+        common_rng = random.Random(20260925)
+        for index in range(112):
+            x = common_rng.uniform(-0.46, 0.46)
+            y = common_rng.uniform(-0.46, 0.46)
+            width = common_rng.uniform(0.006, 0.014)
+            box(collection, root, f"Embedded common room granule.{index}",
+                (x, y, 0.081), (width, width * common_rng.uniform(0.6, 1.4), 0.001),
+                "common_room_granule_ochre" if index % 4 else "common_room_granule_charcoal", 0)
+    elif asset_id == "floor.classroom.oak-laminate":
+        # Three slim, stagger-joined resilient oak-look planks per game tile.
+        # Narrow joints indicate a continuous floor rather than square tiles;
+        # matching rim joints make the module repeat without transparent gaps.
+        box(collection, root, "Classroom plank joint substrate", (0, 0, 0.04),
+            (1, 1, 0.08), "classroom_oak_joint", 0)
+        for row, end_x in enumerate((0.23, -0.32, 0.39)):
+            y = (row - 1) / 3
+            box(collection, root, f"Resilient oak-look plank.{row}",
+                (0, y, 0.081), (1, 0.322, 0.002),
+                f"classroom_oak_{row}", 0)
+            box(collection, root, f"Staggered plank end joint.{row}",
+                (end_x, y, 0.0825), (0.006, 0.310, 0.001), "classroom_oak_joint", 0)
+        classroom_rng = random.Random(20260926)
+        for index in range(30):
+            row = index % 3
+            x = classroom_rng.uniform(-0.42, 0.42)
+            y = (row - 1) / 3 + classroom_rng.uniform(-0.125, 0.125)
+            length = classroom_rng.uniform(0.07, min(0.3, 0.92 - abs(x) * 2))
+            box(collection, root, f"Fine classroom wood grain.{index}",
+                (x, y, 0.0827), (length, 0.003, 0.0004),
+                "classroom_oak_grain", 0)
+    elif asset_id == "floor.security-office.antistatic":
+        # Poured anti-static resin stays light enough beneath the blue-violet
+        # room wash for the dark surveillance console to read. Periodic base
+        # colour and inset grains keep the 3x3 repeat free of square seams.
+        box(collection, root, "Seamless security office resin", (0, 0, 0.04),
+            (1, 1, 0.08), "security_floor_resin", 0)
+        security_rng = random.Random(20260927)
+        for index in range(64):
+            x = security_rng.uniform(-0.445, 0.445)
+            y = security_rng.uniform(-0.445, 0.445)
+            width = security_rng.uniform(0.027, 0.044)
+            box(collection, root, f"Embedded security conductive grain.{index}",
+                (x, y, 0.081), (width, width * security_rng.uniform(0.55, 1.2), 0.001),
+                "security_floor_graphite" if index % 3 else "security_floor_blue_steel", 0)
+    elif asset_id == "floor.cell.sealed-concrete":
+        # Pale sealed concrete is distinct from institutional linoleum but
+        # quiet beneath cell zoning, furniture, names and occupant markers.
+        # A periodic base and inset aggregate avoid square seams on repeat.
+        box(collection, root, "Seamless sealed cell concrete", (0, 0, 0.04),
+            (1, 1, 0.08), "cell_floor_concrete", 0)
+        cell_rng = random.Random(20260925)
+        for index in range(118):
+            x = cell_rng.uniform(-0.455, 0.455)
+            y = cell_rng.uniform(-0.455, 0.455)
+            width = cell_rng.uniform(0.005, 0.014)
+            box(collection, root, f"Embedded cell floor aggregate.{index}",
+                (x, y, 0.081), (width, width * cell_rng.uniform(0.58, 1.32), 0.001),
+                "cell_floor_aggregate_light" if index % 4 else "cell_floor_aggregate_dark", 0)
+    elif asset_id == "floor.staff-room.woven-vinyl":
+        # A quiet warm resilient sheet for the staff room, with sparse woven
+        # flecks inset away from the boundaries so repeated tiles stay seamless.
+        box(collection, root, "Seamless staff room woven vinyl", (0, 0, 0.04),
+            (1, 1, 0.08), "staff_floor_vinyl", 0)
+        staff_rng = random.Random(20260925)
+        for index in range(112):
+            x = staff_rng.uniform(-0.455, 0.455)
+            y = staff_rng.uniform(-0.455, 0.455)
+            length = staff_rng.uniform(0.030, 0.064)
+            box(collection, root, f"Embedded staff floor fibre.{index}",
+                (x, y, 0.081), (length, 0.008, 0.001),
+                "staff_floor_fibre_light" if index % 3 else "staff_floor_fibre_dark", 0)
+    elif asset_id == "floor.shower.ceramic":
+        # Four matte ceramic squares per game tile make a real 3x3 shower read
+        # as a wet room at both zoom levels. Exposed dark backing forms thin,
+        # continuous recessed grout at half-tile and whole-tile intervals.
+        box(collection, root, "Recessed shower grout bed", (0, 0, 0.04),
+            (1, 1, 0.08), "shower_grout", 0)
+        for row in range(2):
+            for column in range(2):
+                box(collection, root, f"Matte shower ceramic.{row}.{column}",
+                    ((column - 0.5) * 0.5, (row - 0.5) * 0.5, 0.082),
+                    (0.470, 0.470, 0.004), f"shower_tile_{row * 2 + column}", 0)
+        for index in range(48):
+            x = (((index * 41 + 19) % 113) / 113 - 0.5) * 0.88
+            y = (((index * 67 + 23) % 127) / 127 - 0.5) * 0.88
+            width = 0.006 + (index % 3) * 0.002
+            box(collection, root, f"Shower mineral speckle.{index}",
+                (x, y, 0.085), (width, width * 0.74, 0.001),
+                "shower_speckle_light" if index % 4 else "shower_speckle_dark", 0)
+    elif asset_id == "floor.canteen.terrazzo":
+        # Warm, washable stone-composite floor. A fine integral border gives
+        # dining furniture a quiet visual base without a noisy checkerboard.
+        box(collection, root, "Warm canteen terrazzo", (0, 0, 0.04),
+            (1, 1, 0.08), "canteen_floor", 0)
+        box(collection, root, "East fine grout", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "canteen_joint", 0)
+        box(collection, root, "South fine grout", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "canteen_joint", 0)
+        for index in range(64):
+            x = (((index * 43 + 13) % 107) / 107 - 0.5) * 0.86
+            y = (((index * 61 + 19) % 111) / 111 - 0.5) * 0.86
+            size = 0.006 + (index % 4) * 0.002
+            box(collection, root, f"Embedded warm stone.{index}", (x, y, 0.081),
+                (size, size * 0.72, 0.001),
+                "canteen_chip_light" if index % 3 else "canteen_chip_dark", 0)
+    elif asset_id == "floor.kitchen.nonslip":
+        # Large matte quarry tiles have a visible, recessed square joint and
+        # fine aggregate. They read as a washable work surface at 64 px while
+        # the tiny grains avoid turning a whole kitchen into a noisy grid.
+        box(collection, root, "Blue grey non-slip kitchen tile", (0, 0, 0.04),
+            (1, 1, 0.08), "kitchen_tile", 0)
+        box(collection, root, "East recessed joint", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "kitchen_joint", 0)
+        box(collection, root, "South recessed joint", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "kitchen_joint", 0)
+        for index in range(72):
+            x = (((index * 47 + 17) % 109) / 109 - 0.5) * 0.84
+            y = (((index * 67 + 31) % 113) / 113 - 0.5) * 0.84
+            size = 0.006 + (index % 3) * 0.003
+            box(collection, root, f"Embedded grit.{index}", (x, y, 0.081),
+                (size, size * 0.7, 0.001),
+                "kitchen_grit_light" if index % 4 else "kitchen_grit_dark", 0)
+    elif asset_id == "floor.linoleum.institutional":
+        # The module repeats every tile. Geometry reaches the frame on all
+        # sides, while the slim east/south seams complete the square joint.
+        box(collection, root, "Cool institutional linoleum", (0, 0, 0.04),
+            (1, 1, 0.08), "floor_lino", 0)
+        box(collection, root, "East fine grout", (0.492, 0, 0.081),
+            (0.016, 1, 0.002), "floor_joint", 0)
+        box(collection, root, "South fine grout", (0, 0.492, 0.082),
+            (1, 0.016, 0.002), "floor_joint", 0)
+        # Small deterministic mineral flecks add scale without a directional
+        # noise gradient or a distracting motif on a larger room floor.
+        for index in range(86):
+            x = (((index * 37 + 11) % 89) / 89 - 0.5) * 0.85
+            y = (((index * 53 + 29) % 97) / 97 - 0.5) * 0.85
+            size = 0.007 + (index % 4) * 0.003
+            box(collection, root, f"Mineral speckle.{index}", (x, y, 0.081),
+                (size, size * 0.65, 0.001),
+                "floor_fleck_light" if index % 4 else "floor_fleck_dark", 0)
+        for index in range(7):
+            x = (((index * 23 + 9) % 67) / 67 - 0.5) * 0.74
+            y = (((index * 41 + 13) % 71) / 71 - 0.5) * 0.72
+            box(collection, root, f"Fine traffic scuff.{index}", (x, y, 0.0815),
+                (0.05 + 0.008 * (index % 3), 0.002, 0.001),
+                "floor_scuff", 0)
+    elif asset_id.startswith("floor"):
         # A 2x2 module with the joint between its four tiles cut into the top,
         # so a floor reads as a floor rather than as one flat colour.
         box(collection, root, "Tile", (0, 0, 0.06), (2, 2, 0.12), "concrete" if "concrete" in asset_id else "green", 0)
         box(collection, root, "Joint north-south", (0, 0, 0.121), (0.035, 2, 0.004), "shade", 0)
         box(collection, root, "Joint east-west", (0, 0, 0.121), (2, 0.035, 0.004), "shade", 0)
+    elif asset_id == "wall.interior.face":
+        # This is an elevation laid flat for the game's orthographic world
+        # projection. The full-width bands and east panel joint tile by pixel.
+        box(collection, root, "Pale plaster face", (0, 0, 0.04),
+            (1.0, 1.0, 0.08), "wall_cap_plaster", 0)
+        box(collection, root, "Blue grey coping band", (0, -0.425, 0.082),
+            (1.0, 0.15, 0.004), "wall_face_coping", 0)
+        box(collection, root, "Coping enamel highlight", (0, -0.442, 0.085),
+            (1.0, 0.028, 0.002), "wall_cap_inlay", 0)
+        box(collection, root, "Coping lower reveal", (0, -0.348, 0.084),
+            (1.0, 0.008, 0.002), "shade", 0)
+        box(collection, root, "Dark skirting", (0, 0.421, 0.083),
+            (1.0, 0.158, 0.004), "wall_face_skirting", 0)
+        box(collection, root, "Skirting upper edge", (0, 0.340, 0.086),
+            (1.0, 0.008, 0.002), "shade", 0)
+        box(collection, root, "Panel boundary", (0.494, 0.002, 0.084),
+            (0.012, 0.67, 0.002), "wall_face_joint", 0)
+        for index in range(24):
+            x = (((index * 37 + 9) % 83) / 83 - 0.5) * 0.82
+            y = (((index * 53 + 17) % 89) / 89 - 0.5) * 0.54
+            box(collection, root, f"Plaster mineral grain.{index}",
+                (x, y, 0.082), (0.008 + 0.002 * (index % 3), 0.003, 0.001),
+                "wall_face_grain", 0)
+    elif asset_id == "wall.interior.cap.overhead":
+        # A one-tile cap that repeats without a transparent frame at each
+        # joint. Keep both long faces continuous across the tile boundaries.
+        box(collection, root, "Warm painted wall core", (0, 0, 1.25),
+            (1.0, 0.25, 2.50), "wall_cap_plaster", 0)
+        box(collection, root, "Full-width coping plate", (0, 0, 2.55),
+            (1.0, 0.25, 0.10), "wall_cap_metal", 0)
+        box(collection, root, "Pale central enamel inlay", (0, 0, 2.607),
+            (1.0, 0.18, 0.014), "wall_cap_inlay", 0)
+        for y in (-0.115, 0.115):
+            box(collection, root, f"Dark continuous edge seam.{y}",
+                (0, y, 2.610), (1.0, 0.015, 0.013), "shade", 0)
+        for x in (-0.43, 0.43):
+            cylinder(collection, root, f"Coping anchor.{x}",
+                (x, 0, 2.625), 0.014, 0.011, "steel", 12)
     elif asset_id.startswith("wall"):
         box(collection, root, "Wall module", (0, 0, 1.25), (2, 0.22, 2.5), "concrete")
         box(collection, root, "Coping", (0, 0, 2.53), (2, 0.26, 0.07), "steel", 0.02)
         box(collection, root, "Panel joint", (0, 0, 1.31), (0.04, 0.24, 2.62), "shade", 0)
         box(collection, root, "Base stripe", (0, -0.12, 0.42), (2, 0.03, 0.45), "green", 0)
+    elif asset_id == "door.interior.face":
+        # A front elevation laid flat for the orthographic 2D world. The
+        # walnut and galvanized materials match the existing overhead cap.
+        box(collection, root, "Wall around closed door", (0, 0, 0.04),
+            (1, 1, 0.08), "wall_cap_plaster", 0)
+        box(collection, root, "Wall coping across head", (0, -0.468, 0.084),
+            (1, 0.064, 0.005), "wall_cap_metal", 0)
+        box(collection, root, "Doorway recessed reveal", (0, 0.055, 0.085),
+            (0.91, 0.87, 0.008), "shade", 0)
+        box(collection, root, "Warm timber door leaf", (0, 0.064, 0.092),
+            (0.76, 0.80, 0.009), "bench_wood_1", 0)
+        for x in (-0.436, 0.436):
+            box(collection, root, f"Galvanized side jamb.{x}", (x, 0.055, 0.10),
+                (0.073, 0.89, 0.016), "galvanized", 0.004)
+            box(collection, root, f"Dark jamb rebate.{x}", (x * 0.91, 0.050, 0.111),
+                (0.012, 0.80, 0.004), "shade", 0)
+        box(collection, root, "Galvanized frame header", (0, -0.390, 0.104),
+            (0.94, 0.068, 0.019), "galvanized", 0.005)
+        box(collection, root, "Dark timber threshold", (0, 0.475, 0.102),
+            (0.86, 0.034, 0.010), "shade", 0)
+        for y in (-0.18, 0.20):
+            box(collection, root, f"Inset timber panel.{y}", (0, y, 0.104),
+                (0.57, 0.26, 0.015), "door_face_panel", 0.01)
+            box(collection, root, f"Inset panel lower bevel.{y}", (0, y + 0.119, 0.113),
+                (0.55, 0.012, 0.004), "door_face_edge", 0)
+        for index in range(11):
+            x = -0.26 + (index % 6) * 0.10
+            y = -0.31 + (index // 6) * 0.60
+            box(collection, root, f"Fine timber grain.{index}", (x, y, 0.112),
+                (0.004, 0.14 + 0.02 * (index % 3), 0.001), "door_face_grain", 0)
+        cylinder(collection, root, "Round steel handle escutcheon", (0.295, 0.004, 0.126),
+            0.038, 0.016, "galvanized_edge", 24)
+        cylinder(collection, root, "Handle dark centre", (0.295, 0.004, 0.138),
+            0.016, 0.010, "shade", 20)
+        for y in (-0.265, 0.29):
+            box(collection, root, f"Left steel hinge.{y}", (-0.38, y, 0.117),
+                (0.038, 0.065, 0.011), "steel", 0.004)
+    elif asset_id == "door.interior.variants":
+        # The v3 four-view reference puts a timber slab inside two galvanized
+        # jambs, leaving the latch and hinge legible in true overhead view.
+        box(collection, root, "Doorway dark reveal", (0, 0, 1.20), (1.00, 0.26, 2.40), "shade", 0.010)
+        box(collection, root, "Warm timber door leaf", (0, 0, 1.23), (0.86, 0.17, 2.46), "canteen_wood", 0.018)
+        box(collection, root, "Timber top edge", (0, 0, 2.475), (0.87, 0.16, 0.045), "bench_wood_1", 0.013)
+        for x in (-0.50, 0.50):
+            box(collection, root, f"Galvanized jamb.{x}", (x, 0, 1.33),
+                (0.115, 0.30, 2.66), "galvanized", 0.014)
+            box(collection, root, f"Jamb top cap.{x}", (x, 0, 2.681),
+                (0.13, 0.33, 0.032), "galvanized_edge", 0.010)
+        box(collection, root, "Dark threshold line", (0, 0.105, 2.50),
+            (0.86, 0.022, 0.018), "shade", 0.004)
+        for y in (-0.07, 0.07):
+            box(collection, root, f"Hinge plate.{y}", (-0.438, y, 2.53),
+                (0.07, 0.055, 0.030), "steel", 0.005)
+        box(collection, root, "Inset latch bezel", (0.305, 0, 2.505),
+            (0.11, 0.11, 0.020), "galvanized_edge", 0.007)
+        box(collection, root, "Dark latch recess", (0.305, 0, 2.521),
+            (0.065, 0.055, 0.010), "shade", 0.004)
     elif asset_id.startswith("door"):
         box(collection, root, "Frame", (0, 0, 1.3), (1.15, 0.28, 2.6), "concrete")
         box(collection, root, "Frame head", (0, 0, 2.62), (1.21, 0.32, 0.06), "steel", 0.02)
         box(collection, root, "Door", (0, -0.2, 1.25), (0.82, 0.09, 2.25), "blue" if "security" in asset_id else "wood")
         box(collection, root, "Reveal", (0, -0.152, 1.25), (0.88, 0.012, 2.31), "shade", 0)
         box(collection, root, "Window", (0, -0.246, 1.6), (0.25, 0.02, 0.42), "steel", 0)
+    elif asset_id == "fixture.cell.sink":
+        # sink-multiview-v1.png: a broad enamel lip, an indented cool-grey
+        # bowl and three metallic shapes at the back survive the 64 px view.
+        # Build the depression in stacked depth, not as one dark square.
+        box(collection, root, "Wall mounting rail", (0, -0.39, 0.68), (0.79, 0.13, 0.21), "galvanized", 0.025)
+        for x in (-0.34, 0.34):
+            cylinder(collection, root, f"Mounting bolt.{x}", (x, -0.39, 0.80), 0.023, 0.015, "steel", 16)
+        box(collection, root, "Under-basin support", (0, 0.07, 0.35), (0.48, 0.45, 0.32), "porcelain", 0.15)
+        cylinder(collection, root, "Drain pipe", (0, 0.11, 0.13), 0.06, 0.22, "galvanized_edge", 24)
+        basin = cylinder(collection, root, "Oval enamel basin", (0, 0.04, 0.58), 0.43, 0.19, "porcelain", 64)
+        basin.scale.y = 0.84
+        well = cylinder(collection, root, "Dark recessed basin", (0, 0.045, 0.684), 0.345, 0.025, "metal_recess", 64)
+        well.scale.y = 0.77
+        inner = cylinder(collection, root, "Cool glazed inner bowl", (0, 0.06, 0.703), 0.285, 0.012, "sink_inner", 64)
+        inner.scale.y = 0.74
+        lip = torus(collection, root, "Thick rolled enamel lip", (0, 0.04, 0.69), 0.388, 0.052, "porcelain")
+        lip.scale.y = 0.84
+        cylinder(collection, root, "Drain steel ring", (0, 0.09, 0.716), 0.066, 0.014, "galvanized_edge", 32)
+        cylinder(collection, root, "Drain dark centre", (0, 0.09, 0.728), 0.043, 0.012, "shade", 32)
+        for x, mark in ((-0.23, "shower_hot"), (0.23, "shower_cold")):
+            cylinder(collection, root, f"Valve foot.{x}", (x, -0.29, 0.72), 0.09, 0.052, "galvanized", 32)
+            cylinder(collection, root, f"Valve grip.{x}", (x, -0.29, 0.756), 0.068, 0.025, "galvanized_edge", 24)
+            cylinder(collection, root, f"Valve colour.{x}", (x, -0.29, 0.773), 0.035, 0.012, mark, 24)
+        cylinder(collection, root, "Faucet mounting collar", (0, -0.31, 0.74), 0.078, 0.055, "galvanized_edge", 32)
+        box(collection, root, "Brushed steel tap neck", (0, -0.21, 0.81), (0.105, 0.24, 0.105), "galvanized", 0.048)
+        box(collection, root, "Brushed steel spout", (0, -0.07, 0.83), (0.11, 0.15, 0.08), "galvanized_edge", 0.033)
+        cylinder(collection, root, "Dark spout outlet", (0, -0.005, 0.785), 0.037, 0.012, "shade", 24)
+    elif asset_id == "fixture.shower.head":
+        # Reference: shower-head-multiview-v3.png. Broad dark face and two
+        # nozzle rings survive the one-tile downsample; colored service valves
+        # flank the pipe without becoming a separate buildable object.
+        box(collection, root, "Enamel wall mounting plate", (0, -0.40, 0.86), (0.68, 0.18, 0.25), "shower_enamel", 0.034)
+        box(collection, root, "Worn raised plate rim", (0, -0.40, 0.996), (0.71, 0.20, 0.028), "galvanized_edge", 0.017)
+        box(collection, root, "Inset blue-grey face", (0, -0.40, 1.014), (0.61, 0.13, 0.014), "shower_enamel", 0.012)
+        for x in (-0.27, 0.27):
+            for y in (-0.45, -0.35):
+                cylinder(collection, root, f"Dark plate bolt.{x}.{y}", (x, y, 1.032), 0.023, 0.014, "steel", 12)
+        cylinder(collection, root, "Wall pipe socket", (0, -0.30, 1.05), 0.105, 0.13, "galvanized_edge", 32)
+        cylinder(collection, root, "Recessed steel socket cover", (0, -0.30, 1.124),
+            0.073, 0.014, "steel", 48)
+        cylinder(collection, root, "Small retaining screw", (0, -0.30, 1.136),
+            0.018, 0.008, "galvanized_edge", 48)
+        box(collection, root, "Bent brushed-steel arm", (0, -0.175, 1.055), (0.105, 0.30, 0.10), "galvanized", 0.045)
+        cylinder(collection, root, "Coupling dark joint", (0, -0.085, 0.88), 0.095, 0.058, "steel", 32)
+        cylinder(collection, root, "Head coupling bright sleeve", (0, -0.075, 0.89), 0.108, 0.062, "galvanized_edge", 32)
+        cylinder(collection, root, "Shallow shower head shell", (0, 0.155, 0.81), 0.32, 0.20, "galvanized", 64)
+        torus(collection, root, "Teal rolled head ring", (0, 0.155, 0.920), 0.277, 0.031, "shower_teal")
+        cylinder(collection, root, "Deep charcoal nozzle face", (0, 0.155, 0.918), 0.263, 0.018, "metal_recess", 64)
+        for ring_index, (radius, count) in enumerate(((0.115, 8), (0.204, 13))):
+            for hole_index in range(count):
+                angle = 2 * math.pi * hole_index / count
+                x = radius * math.cos(angle)
+                y = 0.155 + radius * math.sin(angle)
+                cylinder(collection, root, f"Nozzle.{ring_index}.{hole_index}", (x, y, 0.936), 0.016, 0.012, "shower_nozzle", 12)
+        cylinder(collection, root, "Centre diffuser surround", (0, 0.155, 0.937), 0.055, 0.012, "galvanized_edge", 32)
+        cylinder(collection, root, "Centre dark diffuser", (0, 0.155, 0.946), 0.032, 0.010, "shade", 32)
+        for x, surface in ((-0.255, "shower_hot"), (0.255, "shower_cold")):
+            cylinder(collection, root, f"Service valve body.{x}", (x, -0.20, 0.88), 0.070, 0.13, "galvanized_edge", 24)
+            cylinder(collection, root, f"Service valve lens.{x}", (x, -0.20, 0.955), 0.038, 0.014, surface, 24)
+    elif asset_id == "fixture.cell.waste_bin":
+        # Four-view reference: waste-bin-multiview-v3.png. Pale paper and one
+        # orange card break the cavity's single flat circle at world scale.
+        cylinder(collection, root, "Tapered blue-grey bin shell", (0, 0.045, 0.34), 0.34, 0.68, "bin_enamel", 64)
+        cylinder(collection, root, "Lower dark reinforcing band", (0, 0.045, 0.11), 0.345, 0.045, "steel", 64)
+        torus(collection, root, "Teal upper enamel band", (0, 0.045, 0.65), 0.328, 0.025, "bin_teal")
+        cylinder(collection, root, "Deep open bin cavity", (0, 0.045, 0.688), 0.285, 0.024, "bin_liner", 64)
+        cylinder(collection, root, "Cavity bottom shadow", (0, 0.045, 0.702), 0.22, 0.010, "shade", 48)
+        for index, (x, y, angle) in enumerate(((-0.11, 0.03, 0.42), (0.09, -0.06, -0.36), (-0.02, 0.15, -0.48))):
+            scrap = box(collection, root, f"Crumpled pale paper.{index}", (x, y, 0.73 + index * 0.006), (0.13, 0.11, 0.04), "bin_paper", 0.028)
+            scrap.rotation_euler.z = angle
+            crease = box(collection, root, f"Folded paper facet.{index}", (x + 0.025, y, 0.756 + index * 0.006), (0.062, 0.09, 0.009), "light", 0.004)
+            crease.rotation_euler.z = angle
+        card = box(collection, root, "Discarded orange cardboard", (0.12, 0.12, 0.762), (0.13, 0.10, 0.024), "bin_card", 0.010)
+        card.rotation_euler.z = 0.27
+        torus(collection, root, "Broad brushed steel rolled rim", (0, 0.045, 0.716), 0.303, 0.044, "galvanized_edge")
+        torus(collection, root, "Dark liner fold beneath rim", (0, 0.045, 0.735), 0.251, 0.010, "bin_liner")
+        box(collection, root, "Heavy rear hinge", (0, -0.315, 0.76), (0.32, 0.085, 0.11), "steel", 0.017)
+        for x in (-0.12, 0.12):
+            cylinder(collection, root, f"Hinge pin.{x}", (x, -0.315, 0.827), 0.027, 0.016, "galvanized_edge", 16)
+        lid = cylinder(collection, root, "Raised oval lid shell", (0, -0.445, 0.87), 0.26, 0.058, "bin_enamel", 64)
+        lid.rotation_euler.x = 0.78
+        lid_rim = torus(collection, root, "Lid bright rolled edge", (0, -0.445, 0.91), 0.231, 0.028, "galvanized_edge")
+        lid_rim.rotation_euler.x = 0.78
+        lid_inset = cylinder(collection, root, "Dark underside of open lid", (0, -0.445, 0.915), 0.20, 0.010, "metal_recess", 48)
+        lid_inset.rotation_euler.x = 0.78
+        box(collection, root, "Pedal linkage", (0, 0.37, 0.052), (0.09, 0.17, 0.056), "steel", 0.012)
+        box(collection, root, "Foot pedal steel rim", (0, 0.455, 0.080), (0.27, 0.13, 0.045), "galvanized_edge", 0.018)
+        box(collection, root, "Foot pedal dark grip", (0, 0.455, 0.109), (0.20, 0.092, 0.012), "metal_recess", 0.008)
+        for y in (0.427, 0.455, 0.483):
+            box(collection, root, f"Foot pedal rib.{y}", (0, y, 0.119), (0.17, 0.008, 0.008), "galvanized_edge", 0.002)
     elif "toilet" in asset_id:
-        # The one model whose shipped sheet cannot be used at all: the owner's
-        # sheet holds a 1:2.5 combined column and the catalogue declares (1, 1).
-        # Built to be read from directly above -- a rectangular cistern with a
-        # basin sunk into it at the north, a seat with a dark opening at the
-        # south, and the two joined by a visible spine.
-        box(collection, root, "Cistern", (0, -0.33, 0.31), (0.62, 0.28, 0.62), "porcelain", 0.04)
-        cylinder(collection, root, "Basin", (0, -0.33, 0.6), 0.19, 0.06, "porcelain")
-        cylinder(collection, root, "Basin well", (0, -0.33, 0.625), 0.13, 0.03, "steel")
-        cylinder(collection, root, "Drain", (0, -0.33, 0.641), 0.045, 0.02, "shade", 8)
-        box(collection, root, "Tap", (0, -0.45, 0.68), (0.07, 0.1, 0.1), "steel", 0.02)
-        box(collection, root, "Spine", (0, -0.11, 0.46), (0.12, 0.2, 0.12), "porcelain", 0.03)
-        cylinder(collection, root, "Bowl", (0, 0.12, 0.21), 0.25, 0.42, "porcelain")
-        cylinder(collection, root, "Seat", (0, 0.12, 0.445), 0.27, 0.05, "light")
-        cylinder(collection, root, "Opening", (0, 0.12, 0.462), 0.155, 0.06, "shade")
+        # Reference: cell-toilet-multiview-v3.png. The buildable object is a
+        # toilet; the historical collection ID remains stable for consumers.
+        box(collection, root, "Anchored pedestal foot", (0, 0.15, 0.07), (0.54, 0.69, 0.13), "toilet_porcelain", 0.065)
+        box(collection, root, "Tapered pedestal", (0, 0.16, 0.29), (0.41, 0.47, 0.47), "toilet_porcelain", 0.13)
+        bowl = cylinder(collection, root, "Sculpted ceramic bowl", (0, 0.16, 0.52), 0.34, 0.30, "toilet_porcelain", 64)
+        bowl.scale.y = 1.20
+        cavity = cylinder(collection, root, "Bowl depth shadow", (0, 0.16, 0.683), 0.25, 0.026, "shade", 64)
+        cavity.scale.y = 1.19
+        water = cylinder(collection, root, "Water at basin bottom", (0, 0.18, 0.701), 0.1152, 0.016, "toilet_water", 64)
+        water.scale.y = 1.13
+        cylinder(collection, root, "Recessed dark drain", (0, 0.18, 0.718), 0.063, 0.012, "shade", 48)
+        inner = torus(collection, root, "Inner glazed bowl contour", (0, 0.16, 0.711), 0.21, 0.037, "porcelain")
+        inner.scale.y = 1.20
+        seat = torus(collection, root, "Broad oval raised seat", (0, 0.16, 0.738), 0.293, 0.061, "toilet_porcelain")
+        seat.scale.y = 1.18
+        box(collection, root, "Seat rear hinge", (0, -0.24, 0.73), (0.34, 0.10, 0.08), "galvanized_edge", 0.025)
+        box(collection, root, "Cistern teal ceramic band", (0, -0.375, 0.70), (0.77, 0.24, 0.30), "medical_teal", 0.07)
+        box(collection, root, "Cistern glazed body", (0, -0.375, 0.87), (0.77, 0.25, 0.30), "toilet_porcelain", 0.075)
+        box(collection, root, "Cistern lip", (0, -0.375, 1.047), (0.81, 0.28, 0.046), "light", 0.02)
+        box(collection, root, "Top-visible teal front trim", (0, -0.218, 1.071), (0.69, 0.038, 0.016), "medical_teal", 0.008)
+        cylinder(collection, root, "Flush button outer ring", (0, -0.38, 1.081), 0.085, 0.022, "galvanized_edge", 48)
+        cylinder(collection, root, "Flush button centre", (0, -0.38, 1.095), 0.052, 0.015, "steel", 48)
+        cylinder(collection, root, "Supply pipe", (0.43, -0.38, 0.44), 0.037, 0.77, "galvanized_edge", 24)
+        cylinder(collection, root, "Supply floor flange", (0.43, -0.38, 0.045), 0.09, 0.035, "steel", 32)
+        for x in (-0.22, 0.22):
+            cylinder(collection, root, f"Foot anchor.{x}", (x, 0.40, 0.15), 0.035, 0.017, "galvanized_edge", 16)
     else:
         box(collection, root, "Housing", (0, 0.02, 1.7), (1.4, 0.5, 0.24), "steel")
         box(collection, root, "Ceiling panel", (0, 0, 1.87), (1.2, 0.45, 0.18), "light", 0.01)
@@ -300,7 +2057,184 @@ def main():
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
     for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
-    for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
+    MATERIALS["gravel_matrix"] = gravel_matrix_material()
+    MATERIALS["rock_matrix"] = material("Weathered blue grey bedrock matrix", (0.045, 0.055, 0.070, 1), 0.99)
+    MATERIALS["rock_slate_1"] = rock_slate_material("Bedrock blue slate", (0.045, 0.062, 0.082, 1), (0.15, 0.18, 0.21, 1))
+    MATERIALS["rock_slate_2"] = rock_slate_material("Bedrock warm slate", (0.060, 0.072, 0.083, 1), (0.17, 0.18, 0.19, 1))
+    MATERIALS["rock_slate_3"] = rock_slate_material("Bedrock dark slate", (0.035, 0.050, 0.068, 1), (0.13, 0.15, 0.17, 1))
+    MATERIALS["rock_vein"] = material("Bedrock faint quartz vein", (0.19, 0.21, 0.21, 1), 0.99)
+    MATERIALS["gravel_stone_dark"] = material("Gravel charcoal chippings", (0.10, 0.11, 0.12, 1), 0.99)
+    MATERIALS["gravel_stone_grey"] = material("Gravel blue-grey chippings", (0.22, 0.23, 0.23, 1), 0.99)
+    MATERIALS["gravel_stone_tan"] = material("Gravel warm ochre chippings", (0.33, 0.26, 0.19, 1), 0.99)
+    MATERIALS["gravel_stone_pale"] = material("Gravel pale limestone chippings", (0.34, 0.31, 0.27, 1), 0.99)
+    MATERIALS["concrete_paving"] = concrete_paving_material()
+    MATERIALS["concrete_joint"] = material("Concrete recessed expansion joint", (0.18, 0.20, 0.20, 1), 0.99)
+    MATERIALS["concrete_aggregate_light"] = material("Concrete fine warm aggregate", (0.34, 0.32, 0.27, 1), 0.98)
+    MATERIALS["concrete_aggregate_dark"] = material("Concrete fine blue-grey aggregate", (0.12, 0.15, 0.17, 1), 0.98)
+    MATERIALS["grass_base"] = grass_surface_material()
+    MATERIALS["grass_blade_light"] = material("Short olive grass blade highlight", (0.12, 0.23, 0.045, 1), 0.99)
+    MATERIALS["grass_blade_dark"] = material("Short deep grass blade", (0.025, 0.09, 0.02, 1), 0.99)
+    MATERIALS["dirt_base"] = dirt_surface_material()
+    MATERIALS["dirt_grit_light"] = material("Dry tan mineral grit", (0.24, 0.16, 0.10, 1), 0.98)
+    MATERIALS["dirt_grit_dark"] = material("Dark earth grit", (0.11, 0.08, 0.06, 1), 0.98)
+    MATERIALS["dirt_scuff"] = material("Faint dust scuff", (0.20, 0.14, 0.09, 1), 0.98)
+    MATERIALS["floor_lino"] = material("Institutional cool grey-green linoleum", (0.55, 0.61, 0.57, 1), 0.82)
+    MATERIALS["floor_joint"] = material("Institutional linoleum fine joint", (0.39, 0.45, 0.43, 1), 0.96)
+    MATERIALS["floor_fleck_light"] = material("Linoleum pale mineral flecks", (0.67, 0.70, 0.64, 1), 0.95)
+    MATERIALS["floor_fleck_dark"] = material("Linoleum dark mineral flecks", (0.42, 0.49, 0.48, 1), 0.93)
+    MATERIALS["floor_scuff"] = material("Subtle worn traffic scuffs", (0.47, 0.54, 0.51, 1), 0.94)
+    MATERIALS["kitchen_tile"] = material("Washable blue grey non-slip quarry tile", (0.38, 0.47, 0.51, 1), 0.94)
+    MATERIALS["kitchen_joint"] = material("Kitchen tile recessed charcoal grout", (0.23, 0.29, 0.32, 1), 0.99)
+    MATERIALS["kitchen_grit_light"] = material("Kitchen tile pale mineral grain", (0.53, 0.60, 0.60, 1), 0.97)
+    MATERIALS["kitchen_grit_dark"] = material("Kitchen tile dark mineral grain", (0.28, 0.35, 0.37, 1), 0.99)
+    MATERIALS["canteen_floor"] = material("Warm washable canteen terrazzo", (0.97, 0.34, 0.29, 1), 0.88)
+    MATERIALS["canteen_joint"] = material("Fine muted terracotta grout", (0.42, 0.29, 0.23, 1), 0.98)
+    MATERIALS["canteen_chip_light"] = material("Pale limestone chips", (0.77, 0.66, 0.53, 1), 0.95)
+    MATERIALS["canteen_chip_dark"] = material("Ochre mineral chips", (0.48, 0.34, 0.27, 1), 0.98)
+    MATERIALS["yard_ground"] = dirt_surface_material(
+        "Warm compacted yard earth with scattered dry growth",
+        (0.140, 0.085, 0.040, 1),
+        (0.220, 0.160, 0.105, 1),
+        middle=(0.180, 0.120, 0.070, 1),
+        low_position=0.38,
+        high_position=0.62,
+    )
+    MATERIALS["yard_grit_light"] = material("Yard pale limestone grains", (0.36, 0.31, 0.23, 1), 0.98)
+    MATERIALS["yard_grit_dark"] = material("Yard dark mineral grains", (0.13, 0.11, 0.08, 1), 0.98)
+    MATERIALS["yard_grass_light"] = material("Yard worn olive grass", (0.22, 0.29, 0.10, 1), 0.99)
+    MATERIALS["yard_grass_dark"] = material("Yard short dark grass", (0.09, 0.16, 0.05, 1), 0.99)
+    MATERIALS["laundry_base"] = material("Warm grey sealed laundry concrete", (0.58, 0.45, 0.37, 1), 0.98)
+    MATERIALS["laundry_grit_light"] = material("Pale embedded anti-slip mineral", (0.52, 0.50, 0.44, 1), 0.99)
+    MATERIALS["laundry_grit_dark"] = material("Dark embedded anti-slip mineral", (0.15, 0.17, 0.16, 1), 0.99)
+    MATERIALS["infirmary_vinyl"] = dirt_surface_material(
+        "Pale hygienic infirmary sheet vinyl",
+        (0.57, 0.63, 0.64, 1), (0.68, 0.73, 0.73, 1),
+        middle=(0.63, 0.68, 0.69, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["infirmary_fleck_light"] = material("Infirmary pale embedded mineral", (0.78, 0.82, 0.80, 1), 0.91)
+    MATERIALS["infirmary_fleck_teal"] = material("Infirmary muted teal mineral", (0.38, 0.56, 0.57, 1), 0.94)
+    MATERIALS["common_room_composite"] = dirt_surface_material(
+        "Warm resilient common room cork rubber",
+        (0.40, 0.22, 0.11, 1), (0.57, 0.34, 0.18, 1),
+        middle=(0.49, 0.28, 0.15, 1), low_position=0.30, high_position=0.70)
+    MATERIALS["common_room_granule_ochre"] = material("Recycled warm ochre granule", (0.65, 0.47, 0.28, 1), 0.96)
+    MATERIALS["common_room_granule_charcoal"] = material("Recycled charcoal granule", (0.16, 0.16, 0.15, 1), 0.98)
+    MATERIALS["classroom_oak_joint"] = material("Classroom oak laminate narrow joint", (0.30, 0.20, 0.10, 1), 0.95)
+    MATERIALS["classroom_oak_0"] = material("Classroom pale oak plank A", (0.72, 0.42, 0.13, 1), 0.88)
+    MATERIALS["classroom_oak_1"] = material("Classroom pale oak plank B", (0.65, 0.38, 0.11, 1), 0.88)
+    MATERIALS["classroom_oak_2"] = material("Classroom pale oak plank C", (0.78, 0.46, 0.15, 1), 0.88)
+    MATERIALS["classroom_oak_grain"] = material("Classroom understated wood grain", (0.52, 0.28, 0.10, 1), 0.94)
+    MATERIALS["security_floor_resin"] = dirt_surface_material(
+        "Light warm greige anti-static security resin",
+        (0.52, 0.39, 0.27, 1), (0.65, 0.52, 0.38, 1),
+        middle=(0.59, 0.46, 0.33, 1), low_position=0.32, high_position=0.68)
+    MATERIALS["security_floor_graphite"] = material("Inset conductive graphite grain", (0.24, 0.25, 0.26, 1), 0.96)
+    MATERIALS["security_floor_blue_steel"] = material("Inset muted blue steel grain", (0.30, 0.38, 0.42, 1), 0.94)
+    MATERIALS["cell_floor_concrete"] = dirt_surface_material(
+        "Pale sealed cool grey cell concrete",
+        (0.47, 0.52, 0.55, 1), (0.59, 0.63, 0.65, 1),
+        middle=(0.53, 0.57, 0.60, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["cell_floor_aggregate_light"] = material("Cell concrete pale aggregate", (0.68, 0.70, 0.69, 1), 0.95)
+    MATERIALS["cell_floor_aggregate_dark"] = material("Cell concrete fine dark aggregate", (0.32, 0.37, 0.39, 1), 0.96)
+    MATERIALS["staff_floor_vinyl"] = dirt_surface_material(
+        "Staff room warm woven vinyl", (0.40, 0.31, 0.23, 1), (0.54, 0.44, 0.34, 1),
+        middle=(0.47, 0.38, 0.29, 1), low_position=0.34, high_position=0.66)
+    MATERIALS["staff_floor_fibre_light"] = material("Staff vinyl pale woven fibre", (0.69, 0.60, 0.47, 1), 0.94)
+    MATERIALS["staff_floor_fibre_dark"] = material("Staff vinyl muted woven fibre", (0.24, 0.21, 0.18, 1), 0.96)
+    MATERIALS["shower_grout"] = material("Recessed blue grey shower grout", (0.20, 0.26, 0.29, 1), 0.99)
+    for index, shade in enumerate((
+        (0.27, 0.35, 0.41, 1),
+        (0.29, 0.37, 0.43, 1),
+        (0.28, 0.36, 0.42, 1),
+        (0.30, 0.38, 0.44, 1),
+    )):
+        MATERIALS[f"shower_tile_{index}"] = material(f"Matte wet-room ceramic {index + 1}", shade, 0.94)
+    MATERIALS["shower_speckle_light"] = material("Subtle shower ceramic mineral", (0.41, 0.48, 0.50, 1), 0.98)
+    MATERIALS["shower_speckle_dark"] = material("Dark shower ceramic mineral", (0.23, 0.28, 0.31, 1), 0.99)
+    MATERIALS["galvanized"] = galvanized_material()
+    MATERIALS["shower_enamel"] = shower_enamel_material()
+    MATERIALS["shower_teal"] = material("Shower trim muted teal", (0.04, 0.34, 0.38, 1), 0.46)
+    MATERIALS["shower_nozzle"] = material("Shower pale nozzle jets", (0.68, 0.72, 0.68, 1), 0.39)
+    MATERIALS["shower_hot"] = material("Shower hot service mark", (0.58, 0.13, 0.09, 1), 0.54)
+    MATERIALS["shower_cold"] = material("Shower cold service mark", (0.09, 0.26, 0.55, 1), 0.54)
+    MATERIALS["bin_enamel"] = bin_enamel_material()
+    MATERIALS["bin_teal"] = material("Waste bin muted teal band", (0.05, 0.31, 0.34, 1), 0.65)
+    MATERIALS["bin_liner"] = material("Waste bin black liner", (0.025, 0.032, 0.037, 1), 0.90)
+    MATERIALS["bin_paper"] = material("Crumpled waste paper", (0.69, 0.66, 0.57, 1), 0.94)
+    MATERIALS["bin_card"] = material("Discarded ochre carton", (0.52, 0.31, 0.14, 1), 0.91)
+    MATERIALS["toilet_porcelain"] = toilet_porcelain_material()
+    MATERIALS["toilet_water"] = material("Cell toilet dark still water", (0.075, 0.18, 0.23, 1), 0.21)
+    MATERIALS["sink_inner"] = material("Sink cool glazed inner bowl", (0.43, 0.55, 0.59, 1), 0.26)
+    MATERIALS["canteen_wood"] = canteen_wood_material()
+    for index in range(4): MATERIALS[f"bench_wood_{index}"] = corridor_bench_wood_material(index)
+    MATERIALS["bench_edge"] = material("Bench rounded wood edge", (0.53, 0.31, 0.12, 1), 0.66)
+    MATERIALS["desk_laminate"] = employee_desk_laminate_material()
+    MATERIALS["desk_teal"] = material("Desk blue-grey enamel", (0.13, 0.23, 0.29, 1), 0.55)
+    MATERIALS["desk_ink"] = material("Ledger ink and cup", (0.075, 0.12, 0.15, 1), 0.75)
+    MATERIALS["paper_cream"] = material("Aged desk paper", (0.87, 0.79, 0.63, 1), 0.92)
+    MATERIALS["paper_orange"] = material("Desk folder terracotta", (0.65, 0.31, 0.16, 1), 0.88)
+    MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
+    MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
+    MATERIALS["bed_pillow_top"] = material("Pillow raised cotton centre", (0.84, 0.82, 0.76, 1), 0.89)
+    MATERIALS["bed_pillow_seam"] = material("Pillow cover stitched seam", (0.58, 0.57, 0.53, 1), 0.92)
+    MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["medical_sheet"] = medical_sheet_material()
+    MATERIALS["medical_sheet_hem"] = material("Medical linen folded hem", (0.74, 0.81, 0.79, 1), 0.88)
+    MATERIALS["medical_sheet_shadow"] = material("Medical linen edge shade", (0.32, 0.47, 0.49, 1), 0.91)
+    MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
+    MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)
+    MATERIALS["wall_cap_inlay"] = material("Interior wall pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)
+    MATERIALS["wall_face_skirting"] = material("Interior wall dark blue grey skirting", (0.22, 0.29, 0.34, 1), 0.78)
+    MATERIALS["wall_face_coping"] = material("Interior wall blue grey enamel coping", (0.27, 0.38, 0.45, 1), 0.61)
+    MATERIALS["wall_face_joint"] = material("Interior wall recessed panel joint", (0.40, 0.43, 0.43, 1), 0.94)
+    MATERIALS["wall_face_grain"] = material("Interior wall fine plaster grain", (0.63, 0.62, 0.57, 1), 0.95)
+    MATERIALS["door_face_panel"] = material("Interior door recessed walnut panel", (0.38, 0.20, 0.09, 1), 0.80)
+    MATERIALS["door_face_edge"] = material("Interior door panel worn edge", (0.54, 0.33, 0.16, 1), 0.72)
+    MATERIALS["door_face_grain"] = material("Interior door fine walnut grain", (0.49, 0.29, 0.13, 1), 0.85)
+    MATERIALS["stove_heat"] = material("Stove dark heat patina", (0.23, 0.16, 0.12, 1), 0.78)
+    MATERIALS["stove_amber"] = material("Stove amber status lamp", (0.90, 0.43, 0.035, 1), 0.30)
+    MATERIALS["fridge_teal"] = material("Refrigerator status lens", (0.04, 0.43, 0.45, 1), 0.30)
+    MATERIALS["medical_enamel"] = material("Worn blue-grey first aid enamel", (0.48, 0.58, 0.61, 1), 0.58)
+    MATERIALS["medical_red"] = material("Muted red first aid cross", (0.57, 0.18, 0.16, 1), 0.72)
+    MATERIALS["medical_ochre"] = material("Amber antiseptic vial", (0.58, 0.34, 0.09, 1), 0.45)
+    MATERIALS["washer_enamel"] = washer_enamel_material()
+    MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
+    MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
+    MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
+    MATERIALS["console_enamel"] = material("Worn blue-grey surveillance enamel", (0.17, 0.23, 0.30, 1), 0.58)
+    for index in range(3):
+        MATERIALS[f"console_screen_{index}"] = console_screen_material(index)
+    MATERIALS["console_amber"] = material("Amber console indicator", (0.94, 0.45, 0.045, 1), 0.27)
+    MATERIALS["console_teal"] = material("Teal console indicator", (0.035, 0.65, 0.64, 1), 0.27)
+    MATERIALS["console_red"] = material("Guarded emergency control", (0.65, 0.06, 0.04, 1), 0.36)
+    MATERIALS["utility_enamel"] = material("Aged utility cabinet enamel", (0.20, 0.30, 0.39, 1), 0.60)
+    MATERIALS["utility_amber"] = material("Utility amber indicator", (0.95, 0.45, 0.05, 1), 0.30)
+    MATERIALS["utility_teal"] = material("Utility teal indicator", (0.02, 0.53, 0.55, 1), 0.30)
+    MATERIALS["utility_red"] = material("Utility red master switch", (0.61, 0.065, 0.04, 1), 0.37)
+    MATERIALS["utility_yellow"] = material("Utility hazard yellow", (0.92, 0.56, 0.06, 1), 0.64)
+    MATERIALS["prep_board"] = prep_board_material()
+    MATERIALS["bench_wood"] = corridor_bench_wood_material()
+    MATERIALS["desk_laminate"] = employee_desk_laminate_material()
+    MATERIALS["bed_mattress"] = cell_bed_fabric_material("cell-bed-mattress-v1.png", "Cell bed woven grey mattress", (0.45, 0.44, 0.43, 1))
+    MATERIALS["bed_blanket"] = cell_bed_fabric_material("cell-bed-blanket-v1.png", "Cell bed muted orange blanket", (0.55, 0.25, 0.12, 1))
+    MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["washer_enamel"] = washer_enamel_material()
+    MATERIALS["washer_glass"] = material("Smoked teal drum glazing", (0.045, 0.13, 0.16, 1), 0.16)
+    MATERIALS["washer_fabric"] = material("Pale cloth inside washer", (0.44, 0.62, 0.64, 1), 0.83)
+    MATERIALS["washer_amber"] = material("Amber washer status lens", (0.89, 0.38, 0.055, 1), 0.31)
+    MATERIALS["prep_red"] = material("Prepared red vegetables", (0.65, 0.15, 0.08, 1), 0.66)
+    MATERIALS["prep_green"] = material("Prepared green vegetables", (0.13, 0.33, 0.11, 1), 0.77)
+    MATERIALS["prep_green_light"] = material("Leaf central veins", (0.25, 0.43, 0.16, 1), 0.82)
+    MATERIALS["prep_cream"] = material("Prepared pale vegetables", (0.78, 0.70, 0.46, 1), 0.78)
+    MATERIALS["canteen_steel"] = canteen_steel_material()
+    MATERIALS["chair_wood"] = chair_seat_material()
+    # Keep the source-art branches' origin slots. EEVEE's sampling can change
+    # slightly when a model moves, even though the renderer isolates it.
+    original_art_slots = {
+        "furniture.kitchen.prep_counter": 31,
+        "furniture.library.bookshelf": 32,
+    }
+    for index, (asset_id, footprint) in enumerate(MODELS):
+        create_model(asset_id, footprint, original_art_slots.get(asset_id, index))
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT))
 

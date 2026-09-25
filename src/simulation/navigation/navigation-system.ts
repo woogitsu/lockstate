@@ -7,6 +7,7 @@ import {
   PathRequestQueue,
   type PathRequestPriority,
   type PathRequestQueueMetrics,
+  type PathRequestQueueSnapshot,
   type ResolvedPathRequest,
 } from './path-request-queue';
 import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
@@ -19,6 +20,11 @@ export interface NavigationSystemOptions {
   readonly workBudgetPerTick: number;
   readonly agingIntervalTicks: number;
   readonly flowFieldActivationThreshold: number;
+}
+
+export interface NavigationWorkSnapshot {
+  readonly queue: PathRequestQueueSnapshot;
+  readonly results: readonly (readonly [string, ResolvedPathRequest])[];
 }
 
 /**
@@ -150,6 +156,19 @@ export class NavigationSystem implements SystemRegistration {
 
   public getQueueMetrics(): PathRequestQueueMetrics {
     return this.queue.getMetrics();
+  }
+
+  public getWorkSnapshot(): NavigationWorkSnapshot {
+    return {
+      queue: this.queue.getSnapshot(),
+      results: [...this.results].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([id, result]) => [id, structuredClone(result)] as const),
+    };
+  }
+
+  public loadWorkSnapshot(snapshot: NavigationWorkSnapshot): void {
+    this.queue.loadSnapshot(snapshot.queue);
+    this.results.clear();
+    for (const [id, result] of snapshot.results) this.results.set(id, structuredClone(result));
   }
 
   public getRouteCacheMetrics(): RouteCacheMetrics {

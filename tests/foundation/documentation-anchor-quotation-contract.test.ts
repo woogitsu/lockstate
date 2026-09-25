@@ -243,7 +243,12 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(__dirname, '../..');
 
 /** Read-only dated history. See the blind-spot list. */
-const RESEARCH = join('docs', 'research');
+const RESEARCH = 'docs/research';
+
+/** Compare document keys and exclusions using repository-style separators. */
+function documentPath(file: string): string {
+  return relative(ROOT, file).replaceAll('\\', '/');
+}
 
 /** The two trees whose churn the sweep measured. */
 const IN_SCOPE_ROOTS = ['src/', 'tests/'] as const;
@@ -280,7 +285,7 @@ const markdownFiles = [
   ...readdirSync(ROOT)
     .filter((entry) => entry.endsWith('.md'))
     .map((entry) => join(ROOT, entry)),
-].filter((file) => !relative(ROOT, file).startsWith(RESEARCH));
+].filter((file) => !documentPath(file).startsWith(RESEARCH));
 
 /**
  * The same anchor form the sibling gate reads, deliberately character for
@@ -422,7 +427,7 @@ function withinAny(ranges: readonly (readonly [number, number])[], offset: numbe
 }
 
 function citationsIn(file: string, scanArchive = false): readonly Citation[] {
-  const source = relative(ROOT, file);
+  const source = documentPath(file);
   const text = readFileSync(file, 'utf8');
   const spans = codeSpansIn(text);
   const archive = scanArchive ? [] : archiveRangesIn(source, text);
@@ -764,7 +769,6 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0026-entity-id-lifetime.md': 3,
   'docs/adr/0028-object-placement-and-derived-room-capacity.md': 18,
   'docs/adr/0029-concurrent-room-use-claims.md': 6,
-  'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
   'docs/adr/0038-what-makes-a-save-compatible.md': 15,
   'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 4,

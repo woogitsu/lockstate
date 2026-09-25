@@ -121,7 +121,15 @@ function prisonSavedMidJourney(withSpareGuard = false): SimulationRuntime {
     expect(live.securityGuards.getDeploymentPhase(1)).toBe('unassigned');
   }
 
-  return restoreSimulationRuntime(captureSessionSnapshot(live), SEED).runtime;
+  const snapshot = captureSessionSnapshot(live);
+  const simulation = snapshot.simulation!;
+  const { work: _work, ...navigation } = simulation.navigation;
+  const { locomotion: _locomotion, ...guards } = simulation.security.guards;
+  // These assertions pin the original compatibility rule for an older save.
+  return restoreSimulationRuntime({
+    ...snapshot,
+    simulation: { ...simulation, navigation, security: { ...simulation.security, guards } },
+  }, SEED).runtime;
 }
 
 function rosterPhases(runtime: SimulationRuntime): readonly string[] {
