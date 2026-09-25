@@ -231,6 +231,18 @@ outward-facing or unrevertable, which is the whole reason:
    the Cloudflare or Supabase dashboards. Nothing in this repository can read
    back what those dashboards hold, so a change there cannot be verified here.
 
+   **RUNNER SELECTORS RELEASED ON 2026-09-24.** The owner directly wrote:
+
+   > zmieniam prywatność repo z prywatnego na publiczny, zmień runery na ubuntu latest
+
+   ("I am changing the repository from private to public; change the runners
+   to ubuntu latest.") This supersedes the 2026-09-13 self-hosted selector
+   instruction recorded below. It authorises changing every workflow job's
+   `runs-on` to `ubuntu-latest` and the selector contracts and operational
+   comments that depend on it. It does not authorise a deployment, database
+   migration, or change to any other reserved destination setting. The older
+   runner measurements remain historical evidence, not a current selector.
+
    **NARROWLY RELEASED ON 2026-09-06, FOR ONE CHANGE IN ONE FILE.** Asked how
    to unblock object art, the owner answered:
 
@@ -792,10 +804,41 @@ an instruction about publication cadence, **not a release of any of the four
 reservations above**; notably it grants no production deployment or server,
 migration, or untrue player-facing text decision.
 
+**The game's minimum design viewport, 2026-09-24.** The owner directly wrote:
+
+> rób grę pod minimum full hd, nie patrz mniejsze, bo to nie ma sensu, czyli aby było grywalne przy 1920x1080 i więej
+
+Then: *"i zapisz to w repo"*. The current HUD overhaul therefore targets
+**1920×1080 and larger** for visual design, interaction layout and gameplay
+acceptance. The earlier 900px and phone mockups are research evidence, not
+acceptance targets for this redesign. This instruction does not itself change
+the shipped small-screen UI; it supersedes a plan to spend the redesign on
+sub-Full-HD optimization. This is the owner's own typed wording, not a
+clickable option label.
+
+**The Full HD HUD direction, 2026-09-24.** After seeing two 1920×1080
+mockups, the owner selected the clickable option:
+
+> A — wszystkie odczyty stale na górze
+
+The alternative offered was *"B — duża mapa, odczyty pod przyciskiem
+(zalecane)"*. This selects a Full HD shell with all nine existing status
+metrics persistently visible, a left section rail and a right contextual
+work panel. It does not license invented status values or moving the existing
+SavePanel out of its owner-approved aside slot. **Provenance is the weaker
+kind:** the option label was written by the agent and clicked by the owner,
+not typed by the owner as a free-form instruction. The three supplied Prison
+Architect screenshots and dated 1920×1080 A/B mockups are visual research,
+not source assets for the game.
+
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:
 
 > runnery to po prostu self hosted i tak ustaw wszędzie
+
+**Superseded on 2026-09-24** by the owner's direct `ubuntu-latest` instruction
+in reservation 3 above. The rest of this block records why the earlier
+contract was written; it no longer describes the required runner selector.
 
 ("the runners are just self-hosted, so set it that way everywhere.") **Every
 `runs-on:` on disk already read `self-hosted` when that was said** — the label
