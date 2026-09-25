@@ -171,7 +171,7 @@ module doc, and `tests/determinism/` gains a pin for it.
   ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)), and the
   exception carried its own escape clause: if routing state ever enters a save,
   they become category 1. **That clause has since fired.** `pathRequestId` is a
-  field of the persisted job record (`src/persistence/save-schema.ts:672`) and
+  field of the persisted job record (`src/persistence/save-schema.ts:730`) and
   of the persisted guard record (`:734`), both inside the `simulation` section
   of the shipped payload — which is now **three** payload versions and not two:
   `:1296` for V3, `:1326` for V4 and `:1395` for V5. What keeps it harmless
