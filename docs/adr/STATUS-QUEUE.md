@@ -796,8 +796,7 @@ Re-anchored at `main` @ `1b7dedaac` (**v0.0.785**) by the delta method,
 from `dbd24ea3`. This is the release commit after the latest main landing, the last
 first-parent landing in the `main` tree this branch read. Twenty-four non-release
 first-parent landings and the intervening commits were unread at the start of this
-pass: one landing below the ten-landing budget and sixty-four commits below
-the hundred-commit budget. The dated §3 entry below records the re-reading
+pass: the previous window was within the budget; this pass resets the measurement without raising either budget. The dated §3 entry below records the re-reading
 of §§3-6; neither budget moves.
 
 **The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
