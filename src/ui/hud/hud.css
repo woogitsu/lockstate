@@ -453,6 +453,18 @@
 .hud-minimap { min-height: 0; }
 .hud-minimap__surface { min-height: 0; }
 
+/* In Full HD Build the same live alerts fold sits beside the collapsed
+   minimap body. It keeps its existing corner width and remains actionable. */
+.hud__corner > .hud-alerts--detached {
+  width: calc(396px * var(--ui-scale));
+  max-width: 100%;
+  min-height: 0;
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+}
+
 /*
  * The camera zoom pair, above the minimap frame (issue #1023).
  *
