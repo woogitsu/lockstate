@@ -561,6 +561,33 @@ def cell_bed_fabric_material(filename, label, base_color):
     return item
 
 
+def medical_sheet_material():
+    """Subtle woven tone and normal variation for the washable patient sheet."""
+    item = material("Medical pale sage woven patient sheet", (0.66, 0.75, 0.73, 1), 0.9)
+    nodes = item.node_tree.nodes
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    weave = nodes.new("ShaderNodeTexNoise")
+    weave.inputs["Scale"].default_value = 24.0
+    weave.inputs["Detail"].default_value = 2.0
+    weave.inputs["Roughness"].default_value = 0.58
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.22
+    ramp.color_ramp.elements[0].color = (0.51, 0.63, 0.63, 1)
+    ramp.color_ramp.elements[1].position = 0.78
+    ramp.color_ramp.elements[1].color = (0.76, 0.83, 0.80, 1)
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.28
+    bump.inputs["Distance"].default_value = 0.022
+    links = item.node_tree.links
+    links.new(coords.outputs["Generated"], weave.inputs["Vector"])
+    links.new(weave.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], shader.inputs["Base Color"])
+    links.new(weave.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    return item
+
+
 def canteen_steel_material():
     texture_path = ROOT / "assets/source/textures/dining-table-steel-v1.png"
     if not texture_path.is_file():
@@ -1132,9 +1159,35 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Adjustable head base", (0, -0.51, 0.54), (0.76, 0.64, 0.10), "galvanized_edge", 0.025)
         box(collection, root, "Washable mattress edge", (0, 0, 0.58), (0.76, 1.67, 0.20), "porcelain", 0.055)
         box(collection, root, "Teal medical mattress", (0, 0, 0.695), (0.71, 1.62, 0.035), "medical_fabric", 0.022)
-        box(collection, root, "Raised head cover", (0, -0.51, 0.725), (0.71, 0.56, 0.06), "medical_fabric", 0.035)
-        box(collection, root, "Cream medical pillow", (0, -0.57, 0.79), (0.58, 0.30, 0.075), "light", 0.05)
-        box(collection, root, "Teal blanket fold", (0, 0.17, 0.731), (0.70, 0.09, 0.035), "medical_fabric", 0.018)
+        # Keep the adjustable head separate from the body. A dark pivot line,
+        # raised teal cushion and lit lower edge make the articulation visible
+        # from directly overhead, where the former flat cover hid it.
+        box(collection, root, "Head articulation gap", (0, -0.285, 0.725), (0.71, 0.025, 0.020), "shade", 0.007)
+        box(collection, root, "Raised head cover", (0, -0.51, 0.762), (0.71, 0.54, 0.105), "medical_fabric", 0.055)
+        box(collection, root, "Head cushion lower edge", (0, -0.275, 0.823), (0.68, 0.030, 0.014), "medical_teal", 0.007)
+        box(collection, root, "Cream medical pillow", (0, -0.57, 0.855), (0.58, 0.30, 0.085), "light", 0.075)
+        # A tucked pale sage patient sheet and folded teal cover distinguish the
+        # infirmary bed from the prison-cell mattress at one-tile width.
+        box(collection, root, "Patient sheet shadow", (0, 0.16, 0.735), (0.68, 0.64, 0.027), "medical_sheet_shadow", 0.022)
+        box(collection, root, "Washable pale patient sheet", (0, 0.15, 0.758), (0.63, 0.60, 0.040), "medical_sheet", 0.072)
+        cloth_surface(collection, root, "Patient sheet soft folds", 0.55, 0.50,
+                      0.15, 0.779, 0.031, "medical_sheet")
+        for x in (-0.305, 0.305):
+            box(collection, root, f"Sheet tucked side fold.{x}", (x, 0.15, 0.774),
+                (0.022, 0.52, 0.019), "medical_sheet_hem", 0.008)
+        box(collection, root, "Sheet rolled upper fold shadow", (0, -0.135, 0.782),
+            (0.60, 0.035, 0.018), "medical_sheet_shadow", 0.009)
+        box(collection, root, "Sheet rolled upper fold", (0, -0.16, 0.803),
+            (0.59, 0.052, 0.030), "medical_sheet_hem", 0.015)
+        box(collection, root, "Sheet lower stitched hem", (0, 0.437, 0.783),
+            (0.59, 0.013, 0.008), "medical_sheet_hem", 0.004)
+        box(collection, root, "Folded teal foot blanket", (0, 0.58, 0.770), (0.69, 0.45, 0.085), "medical_fabric", 0.039)
+        cloth_surface(collection, root, "Foot cover soft folds", 0.63, 0.34,
+                      0.58, 0.817, 0.013, "medical_fabric")
+        box(collection, root, "Foot blanket contrast band", (0, 0.405, 0.820), (0.68, 0.055, 0.012), "medical_teal", 0.007)
+        box(collection, root, "Foot blanket turned hem", (0, 0.77, 0.816), (0.67, 0.045, 0.010), "light", 0.005)
+        box(collection, root, "Foot medical cross horizontal", (0, 0.60, 0.839), (0.16, 0.048, 0.012), "medical_red", 0.004)
+        box(collection, root, "Foot medical cross vertical", (0, 0.60, 0.847), (0.050, 0.16, 0.012), "medical_red", 0.004)
         # Pair of short safety rails on each side, with a visible break.
         for x in (-0.44, 0.44):
             for y in (-0.27, 0.35):
@@ -2088,6 +2141,9 @@ def main():
     MATERIALS["bed_pillow_top"] = material("Pillow raised cotton centre", (0.84, 0.82, 0.76, 1), 0.89)
     MATERIALS["bed_pillow_seam"] = material("Pillow cover stitched seam", (0.58, 0.57, 0.53, 1), 0.92)
     MATERIALS["medical_fabric"] = cell_bed_fabric_material("medical-bed-teal-fabric-v1.png", "Medical bed teal fabric", (0.04, 0.35, 0.38, 1))
+    MATERIALS["medical_sheet"] = medical_sheet_material()
+    MATERIALS["medical_sheet_hem"] = material("Medical linen folded hem", (0.74, 0.81, 0.79, 1), 0.88)
+    MATERIALS["medical_sheet_shadow"] = material("Medical linen edge shade", (0.32, 0.47, 0.49, 1), 0.91)
     MATERIALS["wall_cap_plaster"] = material("Interior wall warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
     MATERIALS["wall_cap_metal"] = material("Interior wall blue-grey coping", (0.39, 0.46, 0.50, 1), 0.64)
     MATERIALS["wall_cap_inlay"] = material("Interior wall pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)

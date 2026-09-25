@@ -664,8 +664,8 @@
     {
       "assetId": "furniture.medical.bed.single",
       "image": "furniture.medical.bed.single.png",
-      "sha256": "81c72f1c30c6273c1cf09b4ab418b36fcea5d53b1d6637c5f8dbd151497539a0",
-      "pixelSha256": "8b18e7610a7820bdd432769cefb791a82a1e7b0a5648cd3e9f8ca54ac15ecb50",
+      "sha256": "f6b90e527aaf82cfa9232befd24687dd508d050e7cae7a82bfca0ddcc01a1aa5",
+      "pixelSha256": "33f1f0c169e2d3db97449c1c0595527d944c45d8b22bac0ed42d95e41f18b6db",
       "footprintTiles": {
         "width": 1.0,
         "height": 2.0
