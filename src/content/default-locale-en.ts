@@ -2727,6 +2727,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.overview.title': 'Finances',
   'hud.overview.none': 'No prison is reporting.',
+  'hud.overview.income-note': 'State income is paid for occupied places at the end of each day.',
   'hud.overview.wages': 'Wages a day',
 
   'hud.intake.title': 'Intake',

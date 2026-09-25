@@ -12,15 +12,15 @@
     {
       "assetId": "door.interior.variants",
       "image": "door.interior.variants.png",
-      "sha256": "baa834a5d1cb68ee3e1536f0cbcdd07d018cf1aeec74793d422bf35c388e5fa9",
-      "pixelSha256": "36434ebcbf81f52c28fb22a7a57cbf9d9b3fa653fc3fd7998436c0c5b7d8808c",
+      "sha256": "9b9161ac53e9125ca0910c73128671e2482b14fad0b401c1a9880de1eeea127a",
+      "pixelSha256": "42566169e34167a612643105b1bcd44e6f0214a161f2e09eff71f934169e9948",
       "footprintTiles": {
         "width": 1.0,
         "height": 0.25
       },
       "frameTiles": {
-        "width": 2.29376,
-        "height": 0.57344
+        "width": 1.4784,
+        "height": 0.3696
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -29,11 +29,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 59,
+        "x": 29,
         "y": 2,
-        "width": 138,
-        "height": 49,
-        "opaquePixels": 6180
+        "width": 198,
+        "height": 60,
+        "opaquePixels": 10080
       }
     },
     {
@@ -91,17 +91,44 @@
       }
     },
     {
-      "assetId": "fixture.cell.toilet_sink",
-      "image": "fixture.cell.toilet_sink.png",
-      "sha256": "bc8b067ea1469da66cf09e25d495105666ec101f02c2d3f227852a467a9bba1e",
-      "pixelSha256": "98ecca3241d5032f134077720d7b46bc754c35029da98e5c21d8108ebd659f50",
+      "assetId": "fixture.cell.sink",
+      "image": "fixture.cell.sink.png",
+      "sha256": "e198db48f44fac6da194390e5e1a3bc944854e7b44076dc596cef0b0e329e9f3",
+      "pixelSha256": "3b4a51bd4a1ae534c5bc79528e4ce764365903209e95f6856d4225f8a97bbecb",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.1648,
-        "height": 1.1648
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 26,
+        "y": 23,
+        "width": 204,
+        "height": 200,
+        "opaquePixels": 33772
+      }
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "image": "fixture.cell.toilet_sink.png",
+      "sha256": "be3079343f3cd01ecf52190684cab4756106ae6b9fad8043704773f881876588",
+      "pixelSha256": "fc9292618c25a85b3fe91363264f350115a5a94d29df575ba08152310850ab16",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.294093,
+        "height": 1.294093
       },
       "overhangsFootprint": true,
       "sizePx": {
@@ -110,11 +137,65 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 59,
+        "x": 47,
+        "y": 25,
+        "width": 185,
+        "height": 218,
+        "opaquePixels": 29207
+      }
+    },
+    {
+      "assetId": "fixture.cell.waste_bin",
+      "image": "fixture.cell.waste_bin.png",
+      "sha256": "45fa134cca8ca7f867107c6c3b638ceb89f2dc71d9da04a013ddfff07192149e",
+      "pixelSha256": "7e0a1464a78930b39144963ccdd1c9c688f997300636cfb90bf5a6f83239f637",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.209602,
+        "height": 1.209602
+      },
+      "overhangsFootprint": true,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 52,
+        "y": 29,
+        "width": 152,
+        "height": 214,
+        "opaquePixels": 26410
+      }
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "image": "fixture.shower.head.png",
+      "sha256": "9c5d57a07942b8c1b43bf088a8ec69cbd8cfbd47b0200eaf4f2f7950d9841cb1",
+      "pixelSha256": "dac310db3954e8df80ef45e4487a066e4c18eb9fad01e129ff2f42fead476c40",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 46,
         "y": 13,
-        "width": 138,
-        "height": 202,
-        "opaquePixels": 20684
+        "width": 164,
+        "height": 225,
+        "opaquePixels": 28117
       }
     },
     {
@@ -147,35 +228,120 @@
     {
       "assetId": "floor.linoleum.institutional",
       "image": "floor.linoleum.institutional.png",
-      "sha256": "ecee689ea785273303e7e8ad3ddf56d49c1a0d4ac3c2fddfa9aae137d0d3e7af",
-      "pixelSha256": "150beac21ee984a0a6501f325309bb96928eb018ae7e55548bcd0818eac7bd06",
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f",
+      "pixelSha256": "d25b9d891718b375d038ca89eecf8e43c38070b6b0e9d82b7366ff747e4f280f",
       "footprintTiles": {
-        "width": 2.0,
-        "height": 2.0
+        "width": 1,
+        "height": 1
       },
       "frameTiles": {
-        "width": 2.24,
-        "height": 2.24
+        "width": 1,
+        "height": 1
       },
+      "marginFraction": 0,
       "overhangsFootprint": false,
       "sizePx": {
-        "width": 512,
-        "height": 512
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.yard.compacted-earth",
+      "image": "floor.yard.compacted-earth.png",
+      "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16",
+      "pixelSha256": "cef63df906d37eb58dbef38c9dc93a54a1f5efdae98d66f661ca0f5be67adae6",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 26,
-        "y": 26,
-        "width": 460,
-        "height": 460,
-        "opaquePixels": 211596
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "image": "floor.shower.ceramic.png",
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818",
+      "pixelSha256": "5bdcc208240e1525e1503da3d24b3bee71aae497b83309433594da0b9fc86393",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.laundry.nonslip",
+      "image": "floor.laundry.nonslip.png",
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655",
+      "pixelSha256": "8e189359195e01398f83f4ca0dba690d8eaa7b6ff14c7964b29c6fac6c55d19a",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
       }
     },
     {
       "assetId": "furniture.cell.bed.single.variants",
       "image": "furniture.cell.bed.single.variants.png",
-      "sha256": "18fc1cc68ee4dded86cbfbd4fa55a370d2100cdebf45d7daed54440d3fe93ceb",
-      "pixelSha256": "57d0ecb3fa2cc0783a748f3e8af915138e86056c8e91dfba293a8516bdd01dd7",
+      "sha256": "2ea305e52adfca7fc17155d9f3c9098571b55fbc57650ad8ff7a88c865e1c97f",
+      "pixelSha256": "26bb3153becbffc82bd0caee304c96b2146164e525b924342590a2529c4231f5",
       "footprintTiles": {
         "width": 1.0,
         "height": 2.0
@@ -191,11 +357,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 19,
-        "y": 31,
-        "width": 218,
-        "height": 450,
-        "opaquePixels": 97972
+        "x": 18,
+        "y": 43,
+        "width": 220,
+        "height": 426,
+        "opaquePixels": 88944
       }
     },
     {
@@ -253,10 +419,37 @@
       }
     },
     {
+      "assetId": "furniture.chair.wooden",
+      "image": "furniture.chair.wooden.png",
+      "sha256": "6ae35ea8d80cea28ef437e3581885613aa7e4493405a804e4d61402bc5288524",
+      "pixelSha256": "00c1b587026a6312bc122f70582c1dccb0af4be190aaef5d2f100368c6edc018",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.125597,
+        "height": 1.125597
+      },
+      "overhangsFootprint": true,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 39,
+        "y": 13,
+        "width": 178,
+        "height": 223,
+        "opaquePixels": 27434
+      }
+    },
+    {
       "assetId": "furniture.corridor.bench.variants",
       "image": "furniture.corridor.bench.variants.png",
-      "sha256": "4afd4a1258e75bade1daa19094c74043843b348cc5d6992c7b1c29a708434737",
-      "pixelSha256": "dcaf055ea8a7607369db154a26056cdfb4d226ba4888b4ec453e5e7da62c1855",
+      "sha256": "a087e82cdb951d241b9a8b27720ec4c6dc9c4ac8fba3d779b5fa85e13a784673",
+      "pixelSha256": "2426f9ef3fbe42ee0c91ac20c189d908e6c711f7ce721ca605d67867b5e26ccb",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -272,18 +465,261 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 54,
-        "y": 77,
-        "width": 404,
-        "height": 102,
-        "opaquePixels": 36713
+        "x": 34,
+        "y": 18,
+        "width": 444,
+        "height": 220,
+        "opaquePixels": 79664
+      }
+    },
+    {
+      "assetId": "furniture.delivery.dock_gate.closed",
+      "image": "furniture.delivery.dock_gate.closed.png",
+      "sha256": "bcf24bc6bdc02cb9c27877f43a27be05b476d1ceec2da560e915f78548577084",
+      "pixelSha256": "e5f3c407c85db85aca1c40f61c0a6545361d75ba7ed8aa740215973c89919d35",
+      "footprintTiles": {
+        "width": 3.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 768,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 42,
+        "y": 19,
+        "width": 684,
+        "height": 218,
+        "opaquePixels": 142804
+      }
+    },
+    {
+      "assetId": "furniture.dining.table.wooden",
+      "image": "furniture.dining.table.wooden.png",
+      "sha256": "66e5668df4c847f2ba32687b704257bdfc74ace28286ea873232cb79fc98ed08",
+      "pixelSha256": "3d9cb42c9d514962bcf3104d9b89a15c10b2c719fb6500f464bca360c6a8594a",
+      "footprintTiles": {
+        "width": 3.0,
+        "height": 2.0
+      },
+      "frameTiles": {
+        "width": 3.36,
+        "height": 2.24
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 768,
+        "height": 512
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 58,
+        "y": 58,
+        "width": 652,
+        "height": 419,
+        "opaquePixels": 222409
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.fridge",
+      "image": "furniture.kitchen.fridge.png",
+      "sha256": "a0a128f087d4ad2d248380572d539dffaad4e93dc74bea9ab08f0ca5d67c4c39",
+      "pixelSha256": "a0c65bd5f40f65848a89aa200db27c80365cf2ed328c12e8b7a57e6cf1a9f571",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 26,
+        "y": 27,
+        "width": 204,
+        "height": 215,
+        "opaquePixels": 43436
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.prep_counter",
+      "image": "furniture.kitchen.prep_counter.png",
+      "sha256": "6e8c2104ed63df08a2b522bffedfcf9826cec5a339cc4785e110e30fcf993b63",
+      "pixelSha256": "947d68bb65cc13f94e46dc3fba92acbc27d942f464e3db6315abca0258f3731d",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 31,
+        "y": 18,
+        "width": 450,
+        "height": 220,
+        "opaquePixels": 98940
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.stove",
+      "image": "furniture.kitchen.stove.png",
+      "sha256": "bb1a573dde9672f19c9b53c1933910eb562413cfbdfa7813406328c1a53f89be",
+      "pixelSha256": "3dc5749754ac14e015ca80461d9e90d56414c10a2c04e7f10e40d4320268b7e1",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.307197,
+        "height": 1.153599
+      },
+      "overhangsFootprint": true,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 38,
+        "y": 25,
+        "width": 436,
+        "height": 218,
+        "opaquePixels": 94819
+      }
+    },
+    {
+      "assetId": "furniture.laundry.washing_machine.twin",
+      "image": "furniture.laundry.washing_machine.twin.png",
+      "sha256": "6c7893d6cb0be8bf46352cd0308af86fb281d6824f9cd47d65e200ba32f942d2",
+      "pixelSha256": "a0f97643c409670385f41bb57b312800d289371c917be7a18bf3dd455162ca24",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 35,
+        "y": 19,
+        "width": 442,
+        "height": 218,
+        "opaquePixels": 93296
+      }
+    },
+    {
+      "assetId": "furniture.library.bookshelf",
+      "image": "furniture.library.bookshelf.png",
+      "sha256": "6859e73c42d86f661aed9150017198466961b849e845e686f523f495722e3f05",
+      "pixelSha256": "8c2afa5caf49cf3326efaa6cdd2a04425f0c1df3919ca33eeea252d2a2c2abf9",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 35,
+        "y": 19,
+        "width": 442,
+        "height": 218,
+        "opaquePixels": 96226
+      }
+    },
+    {
+      "assetId": "furniture.medical.bed.single",
+      "image": "furniture.medical.bed.single.png",
+      "sha256": "f6b90e527aaf82cfa9232befd24687dd508d050e7cae7a82bfca0ddcc01a1aa5",
+      "pixelSha256": "33f1f0c169e2d3db97449c1c0595527d944c45d8b22bac0ed42d95e41f18b6db",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 2.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 2.24
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 512
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 43,
+        "width": 218,
+        "height": 426,
+        "opaquePixels": 89330
+      }
+    },
+    {
+      "assetId": "furniture.medical.cabinet",
+      "image": "furniture.medical.cabinet.png",
+      "sha256": "ecbbc209a594167b974b3f8ab2e17f2960ccc997c814852fbf7b8e2bddb5677f",
+      "pixelSha256": "0b0aabeebbe61537aa41c53e2d93aa158fc3f6ebd1da517a99cd85da20d7f32d",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.848002,
+        "height": 1.848002
+      },
+      "overhangsFootprint": true,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 62,
+        "y": 13,
+        "width": 132,
+        "height": 188,
+        "opaquePixels": 22943
       }
     },
     {
       "assetId": "furniture.office.desk.employee.variants",
       "image": "furniture.office.desk.employee.variants.png",
-      "sha256": "70767a391cbec4bbb8f2aeddf099087fe643a5815ca5f85cff7a6fd0eed6c82d",
-      "pixelSha256": "dbf3fdbd29b81ae1f43e4665afc410e9768bfa21db485ed5e1126d43b55489e5",
+      "sha256": "a7f51480a957ba348af55a8a2905973f06df47b6a954c8d7cef6f95e4fa5f8d8",
+      "pixelSha256": "27f796cedf182c745db526384a738cf9d8507e17e82c6f0bde660cc505d3fa80",
       "footprintTiles": {
         "width": 2.0,
         "height": 1.0
@@ -299,11 +735,11 @@
       },
       "frameAspectDriftFromFootprint": 0.0,
       "opaqueBoundsPx": {
-        "x": 61,
-        "y": 45,
-        "width": 390,
-        "height": 182,
-        "opaquePixels": 70296
+        "x": 45,
+        "y": 29,
+        "width": 422,
+        "height": 210,
+        "opaquePixels": 79372
       }
     },
     {
@@ -331,6 +767,87 @@
         "width": 620,
         "height": 189,
         "opaquePixels": 116093
+      }
+    },
+    {
+      "assetId": "furniture.security.surveillance_console",
+      "image": "furniture.security.surveillance_console.png",
+      "sha256": "47a348f72b3bfc89e8d8ed0d8f3660ff9a5e12aea07cf233b2526088f96a8b16",
+      "pixelSha256": "e26464f9c4470a75c550d515da71a812e291375677942d1097ecb9a6d9ece824",
+      "footprintTiles": {
+        "width": 2.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 512,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 31,
+        "y": 17,
+        "width": 450,
+        "height": 222,
+        "opaquePixels": 99812
+      }
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "image": "furniture.storage.rack.wooden.png",
+      "sha256": "43bb88659bec3f6e79393bdac3aaf3fc4df78d803301a1f3ccb5514e419f3bc4",
+      "pixelSha256": "839d0693b483553434bed8b42a9c2a4ed8417d51d4feabf97a2455738b760b0a",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 14,
+        "y": 23,
+        "width": 228,
+        "height": 210,
+        "opaquePixels": 38829
+      }
+    },
+    {
+      "assetId": "furniture.utility.control_panel",
+      "image": "furniture.utility.control_panel.png",
+      "sha256": "e9554be244978f3588de4e4cecfa33ab37e4ef918debd6b39d5d0de1c587ed2d",
+      "pixelSha256": "1ce84cd9a49e95a4a581997e2775d7afe0afc7ef18eaf798b4f4909ed6ad84fe",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 19,
+        "y": 23,
+        "width": 218,
+        "height": 210,
+        "opaquePixels": 45608
       }
     },
     {
@@ -628,6 +1145,454 @@
         "width": 340,
         "height": 47,
         "opaquePixels": 15964
+      }
+    },
+    {
+      "assetId": "wall.interior.cap.overhead",
+      "image": "wall.interior.cap.overhead.png",
+      "sha256": "ed4387eb9462595489a86efbc44a4bcbe3b512ec5c04752c4a26beb78bc3d6bc",
+      "pixelSha256": "107009b8bab8cceafd4e9a05a89982ca7e4201974d518195e4167a75164f385d",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 0.25
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 0.25
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 64
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 64,
+        "opaquePixels": 16384
+      }
+    },
+    {
+      "assetId": "wall.interior.face",
+      "image": "wall.interior.face.png",
+      "sha256": "129ac9c633e2be1aea8cbcf413c9743b6583756ffd9f724ecfe03825bd985d36",
+      "pixelSha256": "b589823ca64d9f274f885c61ea6f3e01584248e1ddf6b39619201b2925f42fa1",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "door.interior.face",
+      "image": "door.interior.face.png",
+      "sha256": "42f3b6c34aa408b28bc1ea63830300d52e2b69afbf0e23ec712de9f1d06110d3",
+      "pixelSha256": "0b364fecc2f440af8155a9a0f70b090e3f50768e646bb0360bcd4df74e67317f",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.dirt.compacted",
+      "image": "terrain.dirt.compacted.png",
+      "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458",
+      "pixelSha256": "92ef7436b68bbe2ddb14842ee0fb013143a1057b1969407c336884bfda1f6b0a",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.grass.mown",
+      "image": "terrain.grass.mown.png",
+      "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0",
+      "pixelSha256": "f7f118156ac51d69cc8413e985372af46fd4c9ceee97232563459febb86a09d6",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.concrete.paving",
+      "image": "terrain.concrete.paving.png",
+      "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6",
+      "pixelSha256": "987c49e09deab2601c61917b44c4e69e4f10217936480fd57f012323ee13e1ea",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.gravel.service_path",
+      "image": "terrain.gravel.service_path.png",
+      "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529",
+      "pixelSha256": "a9e41755a75fbdb4e17e978ef7d8ce7df18d826cfdf152758b51350f71ab6dca",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "terrain.rock.bedrock",
+      "image": "terrain.rock.bedrock.png",
+      "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0",
+      "pixelSha256": "ca1d9793e2346d130369835e4992e6c327c1b4bb5bf2da63ce56b40b13acb5e1",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.kitchen.nonslip",
+      "image": "floor.kitchen.nonslip.png",
+      "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92",
+      "pixelSha256": "05ca75ec25098863d37e870ff5a351de081a0f74313e8df648be348268e9aa20",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "image": "floor.canteen.terrazzo.png",
+      "sha256": "ed4339ecbef4d51769bc5e1ff655fa510d3fb873d0106e50819c42d4b88c1d6c",
+      "pixelSha256": "8888193aee2853bc36e569d930807c03de7cbbc82a362c0ff43d6f8eb8c9fb4a",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.infirmary.vinyl",
+      "image": "floor.infirmary.vinyl.png",
+      "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0",
+      "pixelSha256": "d64872bca32f37acc0cb5c09a1745d455e3b07c8a099942adc8ecf4e336cc499",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.common-room.cork-rubber",
+      "image": "floor.common-room.cork-rubber.png",
+      "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635",
+      "pixelSha256": "f50a1b2f94754fb7870c232db7bbc97950f3df34a448ae9044992edeee28fb06",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.classroom.oak-laminate",
+      "image": "floor.classroom.oak-laminate.png",
+      "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc",
+      "pixelSha256": "83b4d183290485cc93c9412c211edf1806857d5c9c64d74750e91d83845d460e",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.security-office.antistatic",
+      "image": "floor.security-office.antistatic.png",
+      "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d",
+      "pixelSha256": "e2c8b68673a401a240629dd7be4700c1a1d024a845a3647404d42d57ea288585",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "image": "floor.cell.sealed-concrete.png",
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448",
+      "pixelSha256": "965d7c2ed6a1d4d553e246af9f9504cf896fbe5f2f2aaae0993063a2fadf2e06",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
+    },
+    {
+      "assetId": "floor.staff-room.woven-vinyl",
+      "image": "floor.staff-room.woven-vinyl.png",
+      "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8",
+      "pixelSha256": "f1e1bbdf98bec2e58d8deed39d1f6dd2e966a8ee5cd1097d85194c8254423963",
+      "footprintTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "frameTiles": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "marginFraction": 0.0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0.0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
       }
     }
   ]

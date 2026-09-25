@@ -302,10 +302,10 @@ on `main`:
 
 | subject | the table's column | 2026-09-15 |
 | --- | --- | --- |
-| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1227` |
+| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1344` |
 | V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1361` |
 | V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1391` |
-| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1034` |
+| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1151` |
 | registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
 | constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
 | passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |

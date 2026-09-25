@@ -668,16 +668,33 @@ const alertsSectionSchema = z
   })
   .strict();
 
+const locomotionSnapshotSchema = z.object({
+  walks: z.array(z.tuple([entityIdSchema, z.object({
+    waypoints: z.array(tilePositionSchema).min(2),
+    next: z.number().int().min(1),
+    progress: z.number().int().min(0).max(255),
+    headingX: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+    headingY: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+  }).strict()])),
+  headings: z.array(z.tuple([entityIdSchema, z.object({
+    x: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+    y: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+  }).strict()])),
+}).strict();
+
 const prisonersSectionSchemaFor = <RoomInstance extends z.ZodTypeAny>(
   needLevelMax: number,
   roomInstance: RoomInstance,
 ) =>
   z.object({
     components: prisonerComponentsSchemaFor(needLevelMax),
+    locomotion: locomotionSnapshotSchema.optional(),
+    pathRequestSequence: z.number().int().min(0).optional(),
     coldState: z
       .object({
         accommodationInstanceId: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
         currentActionTargetInstanceId: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
+        currentActionPathRequestId: z.array(z.tuple([entityIdSchema, z.string().min(1)])).optional(),
       })
       .strict(),
     roomInstanceDefinitions: z.array(roomInstance),
@@ -752,7 +769,59 @@ const doorDefinitionSchema = z
   })
   .strict();
 
-const navigationSectionSchema = z.object({ doors: z.array(doorDefinitionSchema) }).strict();
+const savedRouteContextSchema = z.object({
+  role: z.string(),
+  securityClearance: z.number(),
+  permissions: z.array(z.string()).optional(),
+  emergencyOverride: z.boolean().optional(),
+}).strict();
+
+const savedRouteBlockedBySchema = z.object({
+  doorId: z.string(),
+  reason: z.enum(['locked', 'insufficient-clearance', 'missing-permission']),
+}).strict();
+
+const savedRouteFailureSchema = z.object({
+  reason: z.enum(['invalid-origin', 'invalid-destination', 'unreachable', 'permission-denied']),
+  blockedBy: savedRouteBlockedBySchema.optional(),
+}).strict();
+
+const savedRouteResultSchema = z.discriminatedUnion('ok', [
+  z.object({ ok: z.literal(true), route: z.object({
+    segments: z.array(z.object({
+      regionId: z.number().int(),
+      waypoints: z.array(tilePositionSchema),
+      enteredViaDoorId: z.string().optional(),
+    }).strict()),
+    totalCost: z.number(),
+  }).strict() }).strict(),
+  z.object({ ok: z.literal(false), failure: savedRouteFailureSchema }).strict(),
+]);
+
+const navigationSectionSchema = z.object({
+  doors: z.array(doorDefinitionSchema),
+  work: z.object({
+    queue: z.object({
+      pending: z.array(z.object({
+        request: z.object({
+          id: z.string().min(1),
+          origin: tilePositionSchema,
+          destination: tilePositionSchema,
+          context: savedRouteContextSchema,
+          priority: z.number(),
+        }).strict(),
+        enqueuedAtTick: tickSchema,
+      }).strict()),
+    }).strict(),
+    results: z.array(z.tuple([z.string().min(1), z.object({
+      id: z.string().min(1),
+      result: savedRouteResultSchema,
+      usedFlowField: z.boolean(),
+      expansions: z.number().int().min(0),
+      waitedTicks: z.number().int().min(0),
+    }).strict()])),
+  }).strict().optional(),
+}).strict();
 
 const securitySectorDefinitionSchema = z
   .object({
@@ -804,10 +873,11 @@ const securitySectionSchema = z
         // would cost 500 padded slots for a prison with twelve guards.
         entityStore: entityStoreSnapshotV2Schema,
         records: z.array(z.tuple([entityIdSchema, guardRecordSchema])),
+        locomotion: locomotionSnapshotSchema.optional(),
       })
       .strict(),
     schedules: z.array(deploymentScheduleSchema),
-    deployment: z.object({ metrics: z.object({ deploymentFailures: z.number().int().min(0) }).strict() }).strict(),
+    deployment: z.object({ metrics: z.object({ deploymentFailures: z.number().int().min(0) }).strict(), pathRequestSequence: z.number().int().min(0).optional() }).strict(),
     patrol: z
       .object({
         metrics: z
@@ -817,6 +887,7 @@ const securitySectionSchema = z
             loopsMissed: z.number().int().min(0),
           })
           .strict(),
+        pathRequestSequence: z.number().int().min(0).optional(),
       })
       .strict(),
   })
@@ -833,6 +904,8 @@ const contrabandProvenanceSchema = z
 
 const searchTargetSchema = z.object({ holderKind: z.enum(['prisoner', 'staff', 'cell', 'container']), holderId: z.string().min(1) }).strict();
 const searchScopeSchema = z.enum(['person', 'cell', 'sector', 'delivery']);
+
+const savedSearchJobStateSchema = z.enum(['travelling', 'searching']);
 
 const contrabandSectionSchema = z
   .object({
@@ -951,10 +1024,15 @@ const contrabandSectionSchema = z
                 targets: z.array(searchTargetSchema),
                 guardIds: z.array(entityIdSchema),
                 currentTargetIndex: z.number().int().min(0),
+                state: savedSearchJobStateSchema.optional(),
+                travelInFlight: z.boolean().optional(),
+                pathRequestIdsByGuard: z.array(z.tuple([entityIdSchema, z.string().min(1)])).optional(),
+                dwellStartedAtTick: tickSchema.optional(),
               })
               .strict(),
           ]),
         ),
+        requestSequence: z.number().int().min(0).optional(),
         metrics: z
           .object({
             itemsDiscovered: z.number().int().min(0),

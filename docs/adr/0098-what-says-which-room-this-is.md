@@ -38,6 +38,25 @@
 **Accepted by the owner on 2026-09-06 — all four decisions, against a summary
 rather than against this document's 855 lines.**
 
+**Amended by the owner on 2026-09-24 for `room.yard` only.** The owner was
+shown a comparison of the same Blender compacted-earth tile in an owned 8×8
+Yard at zoom 1 and 0.5. The choices were presented as **„Tak — ochrowe
+podwórze”** and **„Nie — zachowaj obecną paletę”**; the owner selected the
+former. This is a ruling on the integrator's shorter A/B summary and images,
+not a claim that the owner read this full ADR. The weaker option, retaining
+`0x4fd1a6`, preserved the original even 20° spacing but made the new outdoor
+floor read as a pale mint mat and forced ADR 0101's alpha search to its 0.28
+cap without meeting its own channel-spread criterion. The selected option
+sets only `room.yard` to ochre `0xddb35a`; the other 17 room tints and ADR
+0101's alpha model remain unchanged. On the measured Yard substrate,
+`0xddb35a` reaches the flat 0.14 alpha and clears the substrate spread.
+This explicit exception ends the original palette's equal 20° spacing.
+The nearest tint-only pair becomes Yard and Solitary Cell: 2.92 effective
+RGB units at the flat art alpha, versus the former 6.02 minimum among the
+other 17. This is a real loss of palette separation. In the actual map those
+rooms still have different floor materials and names; the owner selected the
+outdoor material's readability with that tradeoff recorded.
+
 The two rulings recorded below settled a *channel* and a *table*, and said so
 themselves: *"They do not accept this document's decisions 1 to 4."* This is
 that acceptance, taken separately and later the same day. Asked what should
@@ -99,6 +118,16 @@ requirement this repository holds itself to, and decision 4's boundary — no
 distinct look at every zoom, no room *instance* identity, nothing about how a
 room is *doing* — is now binding rather than proposed. **It does not touch
 ADR 0097, which stays Accepted**, and it takes no second bite at 0097's pixels.
+
+**2026-09-24 palette amendment.** After seeing the Blender kitchen floor with
+both the original `0xa6d14f` tint and a blue-grey `0x719db7` tint at zoom 1
+and 0.512, the owner chose the latter for `room.kitchen` alone. The other
+seventeen tints and alpha rules remain unchanged. The eighteen hues were
+evenly spaced when #1047 shipped; that is historical, not a description of
+the palette after this exception. The room name still carries identification,
+and the map tint still follows the room id. See `AGENTS.md` decision 33 for
+the exact option and provenance. This is an aesthetic art decision, not a
+claim that #1061 remained open.
 
 > **Superseded 2026-09-06 by the paragraphs above; kept rather than overwritten,
 > per `docs/AGENT_WORKFLOW.md` §4, because a reader should see that this
@@ -217,17 +246,20 @@ reason: nothing here still claims to be verbatim.
 
 `ZONING_TINT_BY_CATEGORY` was at `src/rendering/world/appearance.ts:85`, keyed
 by `RoomCategory` rather than by room id, and no longer exists at all:
-`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) is what
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:122`) is what
 option A put in its place. The floor underneath could not
-make up the difference, because there is one floor:
+make up the difference at `430906af` (v0.0.757), because there was one floor:
 
 `return 'env.floor.institutional';`
-(verbatim in `src/rendering/world/environment-art.ts`)
+This is the historical return in `src/rendering/world/environment-art.ts`;
+Blender room floors have since replaced it.
 
 `zonedFloorSprite` branches on nothing but whether the zoning id names a known
 room, and its docblock says so in the sentence that also anticipates option D
 below: `One floor for every category today. This returns per zoning id rather than per category so a later split -- concrete for utility and logistics, linoleum for the rest -- is a change in this function and nowhere else.`
-(verbatim in `src/rendering/world/environment-art.ts`)
+This quotes the docblock as it stood at `430906af` (v0.0.757); the Blender
+room-floor replacement has since removed that sentence from
+`src/rendering/world/environment-art.ts`.
 
 **The one correction, and it is in the issue's favour.** MEASURED, by parsing
 `src/content/room-catalog.ts` and grouping its rows: **18 rooms, 11 categories,
@@ -313,11 +345,11 @@ gap is 36°.
 produce through a 0.14 wash is `255 × 0.14 = 35.7` units. That is the whole
 budget of this channel, before any question of how many marks have to share it.
 
-**What that budget is spent against.** MEASURED, by decoding
+**What that budget was spent against before the Blender floor replacement.** HISTORICAL MEASUREMENT, by decoding
 `public/game-content/source-art/floor.linoleum.institutional.788e81d4e081.png`
 and taking `env.floor.institutional`'s own crop —
 `sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }`
-(verbatim in `src/rendering/assets/environment-sprites.ts`) — then box-averaging
+(the former source-art crop, no longer present in `src/rendering/assets/environment-sprites.ts`) — then box-averaging
 it down to the 64×64 pixels one tile occupies at zoom 1, which is
 `export const TILE_SIZE_PX = 64;`
 (verbatim in `src/rendering/tile-metrics.ts`):
@@ -327,6 +359,12 @@ it down to the 64×64 pixels one tile occupies at zoom 1, which is
 | 304×304, as shipped | 12.73 / 11.68 / 9.47 | 11.68 | 36.1 |
 | 128×128, the packed frame | 11.36 / 9.98 / 8.13 | 10.08 | 30.3 |
 | **64×64, one tile at zoom 1** | **9.92 / 8.40 / 6.65** | **8.55** | **25.4** |
+
+The published `env.floor.institutional` now uses a 256×256 Blender render. Its
+measured mean is `rgb(187.585, 191.587, 189.641)` and its channel spread is
+about 4.0. The older crop statistics above remain the evidence for the
+original decision, but the current alpha table and its drift test use the
+Blender render.
 
 **So the mark that distinguishes a Reception from a Kitchen is 4.06 units,
 painted onto a texture whose own pixel-to-pixel spread across one tile is 25.4
@@ -569,6 +607,24 @@ exactly `room.cell`, `room.holding-cell`, `room.solitary-cell`,
 `room.reception`, `room.kitchen`, `room.canteen`, `room.garbage-room` and
 `room.utility-room` — the other ten keep the flat 0.14 this decision's table
 was built on, unchanged.
+
+**2026-09-24 substrate update.** The paragraph above records the behaviour
+with the former blue source-art floor. The published Blender floor is now
+nearly neutral (measured channel spread ≈4.0), so all eighteen room tints
+clear that floor at the flat 0.14 alpha. `zoningTintAlphaOverArt` still
+computes the per-room value and retains the ADR 0101 cap for a future art
+change, but presently returns 0.14 for every shipped room. Accordingly the
+shared-alpha identity holds again for all 153 current pairs. The 45/108 split
+and its consequence below remain the historical record of the previous
+substrate, not a claim about the currently rendered Blender floor.
+
+**2026-09-24 Kitchen floor correction.** The preceding claim of one substrate
+for all 153 pairs was true when every room used the same Blender floor. Kitchen
+now has its own Blender floor, so a comparison involving Kitchen no longer
+cancels a common base, even though the current alpha remains 0.14. The
+palette-only distance check still measures the tint table; it does not measure
+the full difference between two rooms drawn on different floors. This
+correction leaves the historical 45/108 analysis above intact.
 
 **What this decision's own identity assumed, quoted rather than paraphrased
 so the amendment is checkable against it:**

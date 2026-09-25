@@ -146,6 +146,13 @@ import { DEFAULT_SECURITY_SECTOR_ID, DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUN
  */
 export const DEFAULT_SECTOR_PRISONERS_PER_GUARD = 8;
 
+/** A staffing ratio counts whole prisoners per guard and must never divide by zero. */
+export function assertValidSectorPrisonersPerGuard(prisonersPerGuard: number): void {
+  if (!Number.isSafeInteger(prisonersPerGuard) || prisonersPerGuard <= 0) {
+    throw new RangeError('Prisoners per guard must be a positive safe integer.');
+  }
+}
+
 /** How many prisoners a sector currently holds — `src/simulation/security/sector-occupancy.ts` answers it for a session. */
 export type SectorOccupantCountResolver = (sectorId: string) => number;
 
@@ -175,7 +182,9 @@ export function resolveOccupancyScaledGuardCount(
    * than a flag.
    */
   occupantCountIsComplete = false,
+  prisonersPerGuard = DEFAULT_SECTOR_PRISONERS_PER_GUARD,
 ): number {
+  assertValidSectorPrisonersPerGuard(prisonersPerGuard);
   if (scheduledGuardCount <= 0) return scheduledGuardCount;
   /*
    * Issue #533. Checked *before* the floor rather than folded into the
@@ -187,7 +196,7 @@ export function resolveOccupancyScaledGuardCount(
    * caller's bug and must not read as a demand.
    */
   if (occupantCountIsComplete && occupantCount <= 0) return 0;
-  return Math.max(scheduledGuardCount, Math.ceil(Math.max(0, occupantCount) / DEFAULT_SECTOR_PRISONERS_PER_GUARD));
+  return Math.max(scheduledGuardCount, Math.ceil(Math.max(0, occupantCount) / prisonersPerGuard));
 }
 
 /**

@@ -75,15 +75,46 @@ export type EnvironmentArtCatalogKind = 'source-art' | 'rendered-art';
  * to a blank tile.
  */
 export const ENVIRONMENT_SPRITE_IDS = [
+  'env.terrain.dirt',
+  'env.terrain.grass',
+  'env.terrain.concrete',
+  'env.terrain.gravel',
+  'env.terrain.rock',
   'env.floor.institutional',
+  'env.floor.kitchen',
+  'env.floor.canteen',
+  'env.floor.yard',
+  'env.floor.shower',
+  'env.floor.laundry',
+  'env.floor.infirmary',
+  'env.floor.common-room',
+  'env.floor.classroom',
+  'env.floor.security-office',
+  'env.floor.cell',
+  'env.floor.staff-room',
   'env.wall.interior.face',
   'env.wall.interior.cap',
   'env.door.interior.face',
   'env.door.interior.cap',
   'env.object.bed',
+  'env.object.medical-bed',
+  'env.object.medicine-cabinet',
+  'env.object.fridge',
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
+  'env.object.shower-head',
+  'env.object.waste-bin',
+  'env.object.storage-rack',
+  'env.object.chair',
+  'env.object.dining-table',
+  'env.object.stove',
+  'env.object.washing-machine',
+  'env.object.security-console',
+  'env.object.utility-panel',
+  'env.object.loading-dock-door',
+  'env.object.prep-counter',
+  'env.object.bookshelf',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -146,105 +177,246 @@ export interface RenderedArtSpriteDefinition extends EnvironmentSpriteDefinition
 export type EnvironmentSpriteDefinition = SourceArtSpriteDefinition | RenderedArtSpriteDefinition;
 
 export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>> = {
-  /**
-   * The small clean swatch from the bottom-right of the linoleum sheet rather
-   * than its large hero square top-left: the hero square carries a slightly
-   * darker rim that reads as a grid line under every tile when it is repeated,
-   * and this one tiles without a visible seam.
-   */
-  'env.floor.institutional': {
-    kind: 'source-art',
-    assetId: 'floor.linoleum.institutional',
-    sourceRectPx: { x: 732, y: 711, width: 304, height: 304 },
+  /** Seamless compacted earth beneath unzoned outdoor tiles. */
+  'env.terrain.dirt': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.dirt.compacted',
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Speckled institutional linoleum, square swatch, tiles seamlessly at one tile per repeat.',
+    note: 'Original Blender-rendered compacted dirt with fine mineral grit, one seamless tile per repeat.',
   },
-  /**
-   * A centre slice of the frontal wall module, not the whole module. The module
-   * is 488x273 -- 1.79 tiles wide for one tile of height -- so drawing it whole
-   * on a one-tile wall squashes it; a 290-wide slice is one tile at the same
-   * scale, and repeats with its own panel joint landing on each tile boundary.
-   */
-  'env.wall.interior.face': {
-    kind: 'source-art',
-    assetId: 'wall.interior.modules',
-    sourceRectPx: { x: 150, y: 672, width: 290, height: 273 },
-    runtimeSizePx: { width: 128, height: 124 },
+  /** Seamless mown turf beneath unzoned outdoor tiles. */
+  'env.terrain.grass': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.grass.mown',
+    runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Frontal interior wall elevation: coping band, plaster, dark skirting. Drawn on east-west walls.',
+    note: 'Original Blender-rendered mown olive grass with subtle short blades, one seamless tile per repeat.',
+  },
+  /** Outdoor poured concrete for unzoned concrete terrain tiles. */
+  'env.terrain.concrete': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.concrete.paving',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered grey outdoor paving with fine aggregate and restrained expansion joints.',
+  },
+  /** Small embedded gravel for unzoned service paths. */
+  'env.terrain.gravel': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.gravel.service_path',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered compacted gravel with angular grey, ochre and limestone chippings.',
+  },
+  /** Shallow layered slate bedrock on unbuildable natural rock tiles. */
+  'env.terrain.rock': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.rock.bedrock',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered slate plates with recessed natural fractures.',
   },
   /**
-   * The coping band alone, turned a quarter. This is the only top-down wall
-   * surface any sheet contains, and it is an approximation: the sheets hold
-   * elevations and three-quarter views, never a cap seen from directly above.
+   * The Blender floor module is a complete one-tile frame. Its east and south
+   * fine joints meet adjacent copies, while the image reaches all four edges.
    */
+  'env.floor.institutional': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.linoleum.institutional',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered cool institutional linoleum with fine joints and wear, one seamless tile per repeat.',
+  },
+  'env.floor.kitchen': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.kitchen.nonslip',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered washable blue-grey non-slip kitchen tile; seamless one-tile repeat with fine mineral grit.',
+  },
+  'env.floor.canteen': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.canteen.terrazzo',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered warm washable terrazzo for the canteen; one seamless tile per repeat.',
+  },
+  'env.floor.yard': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.yard.compacted-earth',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered compacted earth with sparse short grass for the outdoor Yard; one seamless tile per repeat.',
+  },
+  'env.floor.shower': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.shower.ceramic',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered matte blue-grey ceramic with recessed grout for the shower room.',
+  },
+  'env.floor.laundry': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.laundry.nonslip',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered sealed aggregate for the laundry; one seamless tile per repeat.',
+  },
+  'env.floor.infirmary': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.infirmary.vinyl',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale hygienic sheet vinyl for the Infirmary; one seamless tile per repeat.',
+  },
+  'env.floor.common-room': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.common-room.cork-rubber',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered warm resilient cork-rubber composite for the Common Room; one seamless tile per repeat.',
+  },
+  'env.floor.classroom': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.classroom.oak-laminate',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale oak-look resilient planks for the Classroom; one seamless tile per repeat.',
+  },
+  'env.floor.security-office': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.security-office.antistatic',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered light anti-static resin for the Security Office; one seamless tile per repeat.',
+  },
+  'env.floor.cell': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.cell.sealed-concrete',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered pale sealed concrete for standard and solitary cells; one seamless tile per repeat.',
+  },
+  'env.floor.staff-room': {
+    kind: 'rendered-art',
+    renderedArtId: 'floor.staff-room.woven-vinyl',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered warm woven sheet vinyl for the Staff Room; one seamless tile per repeat.',
+  },
+  /** A complete Blender-modeled wall elevation, one module per repeat. */
+  'env.wall.interior.face': {
+    kind: 'rendered-art',
+    renderedArtId: 'wall.interior.face',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original wall elevation: enamel coping, pale plaster, panel joint and dark skirting. Drawn on east-west walls.',
+  },
+  /** A seamless Blender-rendered overhead coping strip, one tile per repeat. */
   'env.wall.interior.cap': {
-    kind: 'source-art',
-    assetId: 'wall.interior.modules',
-    sourceRectPx: { x: 150, y: 672, width: 290, height: 30 },
-    runtimeSizePx: { width: 128, height: 28 },
+    kind: 'rendered-art',
+    renderedArtId: 'wall.interior.cap.overhead',
+    runtimeSizePx: { width: 128, height: 32 },
     quarterTurns: 1,
-    note: 'Top coping of the same wall module, turned to run north-south. Drawn on north-south walls.',
+    note: 'True overhead interior wall coping with pale enamel, dark edge seams and steel anchors. Drawn on north-south walls.',
   },
   'env.door.interior.face': {
-    kind: 'source-art',
-    assetId: 'door.interior.variants',
-    sourceRectPx: { x: 48, y: 25, width: 255, height: 467 },
-    runtimeSizePx: { width: 128, height: 124 },
+    kind: 'rendered-art',
+    renderedArtId: 'door.interior.face',
+    runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Closed interior door, frontal, with its frame. Drawn on east-west door edges.',
+    note: 'Original Blender closed walnut door elevation with galvanized jambs, inset panels and handle. Drawn on east-west door edges.',
   },
   'env.door.interior.cap': {
-    kind: 'source-art',
-    assetId: 'door.interior.variants',
-    sourceRectPx: { x: 48, y: 25, width: 255, height: 22 },
-    runtimeSizePx: { width: 128, height: 28 },
+    kind: 'rendered-art',
+    renderedArtId: 'door.interior.variants',
+    runtimeSizePx: { width: 128, height: 32 },
     quarterTurns: 1,
-    note: 'Head of the same door frame, turned to run north-south. Drawn on north-south door edges.',
+    note: 'Original Blender overhead interior door: timber cap, galvanized jambs, hinge and recessed latch. Turned to run north-south.',
   },
   /**
-   * The one *top-down* bed on the sheet, and the first frame here that is a
-   * whole object rather than a slice of a surface.
-   *
-   * The sheet holds eight renders in two rows of four: three-quarter views, a
-   * side elevation, a head-on view, and -- second row of the upper block --
-   * one bed photographed from directly above, made, with the pillow to the
-   * west. That last one is the only view this projection can use, because
-   * `tile-layer.ts` draws the world from directly above and slightly in front
-   * and an object sprite is a flat frame with no elevation of its own.
-   *
-   * **Measured with the alpha scan this file's header describes, but with its
-   * *shrink* step deliberately omitted, and that is a real divergence rather
-   * than an oversight.** The shrink exists so a *tiling* frame carries no
-   * antialiased rim to smear into a seam; on a discrete object it would eat
-   * the bed's own frame -- the tubular head and foot rails are the outermost
-   * pixels and are exactly the ones a shrink to `alpha >= 240` discards. What
-   * is used instead is the 8-connected component's bounding box: 428x197 at
-   * (757, 305), which is the whole bed and nothing else (79,571 opaque pixels
-   * inside the rect, and the same figure for the component alone).
-   *
-   * **Then padded outwards with transparent sheet to 460x230 at (740, 288),
-   * which is exactly 2:1.** `object.bed`'s footprint is 1x2 tiles, so the
-   * frame is drawn into a 1x2 rectangle; cutting the tight 428x197 box would
-   * have resampled 2.172:1 into 2:1 and stretched the bed 8% along its length.
-   * Padding is free -- the sheet is transparent between renders, and the
-   * nearest other component is more than 6px outside this rectangle on every
-   * side, so the crop carries no fragment of a neighbour and its own border
-   * rows and columns are fully transparent.
-   *
-   * The turn is the same mechanism the wall caps use and is needed for the
-   * same reason: the bed is authored lying east-west and stands north-south.
-   * `environment-textures.ts` turns clockwise, so the pillow ends up at the
-   * bed's northern end.
+   * Original Blender modelled bed. The native 256x512 overhead render already
+   * has the pillow north and a 1:2 aspect, so it needs no crop or rotation.
+   * The earlier owner sheet crop remains catalogued as source art but is no
+   * longer used for this object. See assets/source/concepts/cell-bed-v2.md.
    */
   'env.object.bed': {
-    kind: 'source-art',
-    assetId: 'furniture.cell.bed.single.variants',
-    sourceRectPx: { x: 740, y: 288, width: 460, height: 230 },
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.cell.bed.single.variants',
+    runtimeSizePx: { width: 128, height: 256 },
+    quarterTurns: 0,
+    note: 'Single steel-frame cell bed with grey mattress and folded orange blanket, pillow north. Drawn on object.bed.',
+  },
+  'env.object.medical-bed': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.medical.bed.single',
+    runtimeSizePx: { width: 128, height: 256 },
+    quarterTurns: 0,
+    note: 'Adjustable medical bed with teal washable cover, white safety rails and a marked foot panel. Drawn on object.medical-bed.',
+  },
+  'env.object.medicine-cabinet': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.medical.cabinet',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Locking infirmary cabinet with pale enamel top and teal medical cross. Drawn on object.medicine-cabinet.',
+  },
+  'env.object.stove': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.stove',
     runtimeSizePx: { width: 256, height: 128 },
-    quarterTurns: 1,
-    note: 'Single bed seen from directly above, made, pillow to the north once turned. Drawn on object.bed.',
+    quarterTurns: 0,
+    note: 'Commercial four-burner cooker with steel deck, rear splash guard and oven doors. Drawn on object.stove.',
+  },
+  'env.object.washing-machine': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.laundry.washing_machine.twin',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Twin-bay institutional washer with two visible drum hatches and paired controls. Drawn on object.washing-machine.',
+  },
+  'env.object.fridge': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.fridge',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Insulated kitchen refrigerator with blue-grey steel top, cream enamel front cap and separated freezer door. Drawn on object.fridge.',
+  },
+  'env.object.security-console': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.security.surveillance_console',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Blue-grey security console with three overhead-visible CCTV monitors, keyboard, joysticks and guarded control. Drawn on object.security-console.',
+  },
+  'env.object.utility-panel': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.utility.control_panel',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Blue-grey utility-control cabinet with six top-visible breakers, two status lenses and a guarded red switch. Drawn on object.utility-panel.',
+  },
+  'env.object.loading-dock-door': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.delivery.dock_gate.closed',
+    runtimeSizePx: { width: 384, height: 128 },
+    quarterTurns: 0,
+    note: 'Closed three-tile timber delivery gate with steel tracks. Drawn on object.loading-dock-door; it is not a navigable door edge.',
+  },
+  'env.object.prep-counter': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.kitchen.prep_counter',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Brushed steel kitchen work counter with a walnut board and three recessed ingredient pans. Drawn on object.prep-counter.',
+  },
+  'env.object.bookshelf': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.library.bookshelf',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Low institutional bookshelf with two open rows of books and three steel-framed bays. Drawn on object.bookshelf.',
   },
   /**
    * The second catalogued object drawn as artwork, and the first from ADR
@@ -288,8 +460,8 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
    * `furniture.corridor.bench.variants` is a straight name match for
    * `object.bench` and its footprint (2x1) is exact -- no stretch in either
    * direction. Viewed at the actual on-screen size (128x64 world px at zoom
-   * 1, half of `runtimeSizePx` below), the three wooden slats and their two
-   * mounting brackets stay legible; this is the render this ADR's
+   * 1, half of `runtimeSizePx` below), the four wooden slats and steel
+   * supports stay legible; this is the render this ADR's
    * "does it read as the thing it names" test was written for.
    *
    * `quarterTurns: 0` for the same reason `env.object.toilet` carries it:
@@ -301,13 +473,13 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'furniture.corridor.bench.variants',
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
-    note: 'Corridor bench, three wooden slats on brackets, rendered top-down (ADR 0100). Drawn on object.bench.',
+    note: 'Corridor bench with four worn wooden slats, steel frame and floor anchors, drawn on object.bench.',
   },
   /**
    * `furniture.office.desk.employee.variants` is a straight name match for
-   * `object.desk` and its footprint (2x1) is exact. Viewed at 128x64: a wood
-   * desktop, a dark blotter/mat and a small pale object beside it (a
-   * keyboard or a stack of paper, seen top-down and flat) -- distinct enough
+   * `object.desk` and its footprint (2x1) is exact. Viewed at 128x64: a
+   * grey-oak laminate top, an olive paperwork tray and a projecting drawer
+   * pedestal stay distinct enough
    * from a bare rectangle to read as furniture with something on it, which is
    * the property the bench above and the toilet already have and `object.chair`'s
    * rejected render does not (`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK`
@@ -318,7 +490,42 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'furniture.office.desk.employee.variants',
     runtimeSizePx: { width: 256, height: 128 },
     quarterTurns: 0,
-    note: 'Employee desk with a dark blotter, rendered top-down (ADR 0100). Drawn on object.desk.',
+    note: 'Employee desk with grey-oak top, paperwork tray and steel drawer pedestal, drawn on object.desk.',
+  },
+  'env.object.shower-head': {
+    kind: 'rendered-art',
+    renderedArtId: 'fixture.shower.head',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Wall-mounted shower fixture with a perforated circular head, modelled for the 1×1 object.shower-head footprint.',
+  },
+  'env.object.waste-bin': {
+    kind: 'rendered-art',
+    renderedArtId: 'fixture.cell.waste_bin',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Open institutional waste bin with a pale rim and foot pedal, modelled for the 1×1 object.waste-bin footprint.',
+  },
+  'env.object.storage-rack': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.storage.rack.wooden',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Open wooden storage rack with three distinct shelves and visible stored goods, drawn on object.storage-rack.',
+  },
+  'env.object.chair': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.chair.wooden',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Wooden chair with three separated back slats, a framed seat and visible front feet, drawn on object.chair.',
+  },
+  'env.object.dining-table': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.dining.table.wooden',
+    runtimeSizePx: { width: 384, height: 256 },
+    quarterTurns: 0,
+    note: 'Wooden canteen table with three fixed stools and place settings, matching the three dining places on object.dining-table.',
   },
   /*
    * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,
@@ -329,9 +536,9 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
    * own docblock did not: at both zoom 1 and `ZOOM_BOUNDS.max`, the frame is a
    * flat grey-blue rectangle with one vertical seam and nothing else,
    * failing the exact bar `object.chair` was refused on in the same pass this
-   * row was added by. Left as a removal rather than silently absent, per this
-   * file's own convention of recording *why* a sprite was not wired -- here,
-   * why one that briefly was no longer is.
+   * row was added by. The new row above uses a distinct open-rack model rather
+   * than reusing that closed locker. This history explains why its asset id
+   * deliberately differs from `furniture.cell.locker.variants`.
    */
 };
 

@@ -159,15 +159,17 @@ Everything the tile layer draws from those six is in one method,
 paints from three inputs and no more:
 
 1. **The floor sprite**, chosen per tile at
-   `src/rendering/phaser/tile-layer.ts:333`, from a function whose body is five
-   lines and whose last line is a literal:
+   `src/rendering/phaser/tile-layer.ts:333`. At `430906af` (v0.0.757) the
+   selector had five lines and ended with a literal:
 
    `return 'env.floor.institutional';`
-   (verbatim in `src/rendering/world/environment-art.ts`)
+   This is a quotation from that historical version of
+   `src/rendering/world/environment-art.ts`; Blender room floors have since
+   replaced the single-floor return.
 
-   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:156-161`) branches
-   on nothing except whether the zoning id names a known room. Its own docblock
-   says so at `:152-154` — *"One floor for every category today."*
+   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:156-161`) then
+   branched on nothing except whether the zoning id named a known room. Its
+   docblock said so at `:152-154` — *"One floor for every category today."*
 
 2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at the
    time this was written one of two alphas depending only on whether art is
@@ -448,7 +450,7 @@ is left for this decision after #1020 lands.
 
 **#1021 — 18 room types share 11 category tints.** MEASURED and VERIFIED in that
 issue: `ZONING_TINT_BY_CATEGORY` — which no longer exists;
-`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) replaced it
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:122`) replaced it
 on 2026-09-06 at `6ae68237`, with 18 rows keyed by room id — has 11 rows and
 `src/content/room-catalog.ts` defines 18 rooms (VERIFIED by count:
 `roomCategorySchema` at
@@ -758,7 +760,7 @@ chooses, because its cheapest option becomes unavailable.
 **Read this before acting on the paragraph above. Checked 2026-09-08: both
 decisions survive the move, and it is the last sentence that is spent rather
 than the claim.** The table is now `ZONING_TINT_BY_ROOM_ID`
-(`src/rendering/world/appearance.ts:118`), keyed by the room's own catalogue id
+(`src/rendering/world/appearance.ts:122`), keyed by the room's own catalogue id
 with 18 rows instead of 11 — #1021's cheapest direction, taken as
 [ADR 0098](./0098-what-says-which-room-this-is.md) option A at `6ae68237` on
 2026-09-06, the day after this document was accepted. Three consequences, and

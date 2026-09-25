@@ -263,8 +263,9 @@ declared footprint is an exact multiple of 1/20 of a tile, so the pixel size is
 taken from the footprint reduced to lowest integer terms and `res_x / res_y`
 equals `footprint_w / footprint_h` with no rounding. The recorded drift is `0`
 for all 23 models. A consumer reading one of these PNGs whole therefore needs
-`quarterTurns: 0`; the quarter-turn `env.object.bed` carries exists because the
-*owner's sheet* holds the bed lying east-west, not because a bed needs turning.
+`quarterTurns: 0`. The earlier owner-sheet crop needed a quarter-turn because
+that sheet holds the bed east-west; since the 2026-09-23 Blender revision,
+`env.object.bed` reads a north-up render and uses `quarterTurns: 0`.
 
 **The frame is the footprint plus a stated transparent margin**, 6% on each
 side, not a tight crop. Issue #1028 measured why: the alpha scan in
@@ -272,6 +273,11 @@ side, not a tight crop. Issue #1028 measured why: the alpha scan in
 its rim is not fully opaque, which is right for a *tiling* frame and wrong for a
 discrete object, whose outermost pixels are its own silhouette -- a bed's head
 and foot rails.
+
+The Blender `wall.interior.cap.overhead` frame is a tiling surface exception:
+its margin is zero, and its alpha reaches every edge. This lets adjacent wall
+cap repeats meet without transparent seams. The frontal wall face continues
+to use the source-art sheet.
 
 **Where a model overhangs its declared footprint the frame grows uniformly**, so
 the aspect never moves and nothing is clipped, and `frameTiles` plus
@@ -315,14 +321,49 @@ gone before the file lands. `--verify-determinism` is therefore not needed:
 running the script twice and comparing digests is sufficient, and both the file
 digest and the raw-pixel digest are recorded per asset in the sidecar.
 
-**What it does not do.** It renders discrete objects. A *tiling* surface --
-floor, wall face, wall cap -- needs a zero-margin frame whose edges meet their
-own repeat exactly, and a 6% transparent margin is precisely wrong for that. The
-four surface frames in `environment-sprites.ts` remain cut from the owner
-sheets, and nothing here changes them.
+**Tiling surfaces.** Floors and wall runs need zero-margin frames whose edges
+meet their own repeat exactly; a 6% transparent margin creates visible gaps.
+The rendered `floor.linoleum.institutional`, `floor.kitchen.nonslip`,
+`floor.canteen.terrazzo`, `floor.yard.compacted-earth`, `floor.shower.ceramic`, `floor.laundry.nonslip`, `terrain.dirt.compacted`, `terrain.grass.mown`,
+`terrain.concrete.paving`, `terrain.gravel.service_path`, `terrain.rock.bedrock`,
+`wall.interior.cap.overhead`, `wall.interior.face`, and `door.interior.face`
+modules use zero margins. The outdoor dirt, grass, concrete and gravel materials use periodic noise so
+opposite tile edges agree. Bedrock has a continuous dark matrix and shallow slate
+plates; its repeated edge is kept subdued. The wall and frontal door faces are shallow Blender
+reliefs representing elevations in the game's 2D projection. The frontal door
+matches its rendered overhead cap.
+
+The later `floor.infirmary.vinyl` tile follows the same zero-margin contract.
+Its base shader uses periodic coordinates so opposite edges meet, and the
+small embedded flecks stay inside the rim. The concept's square seams are
+omitted from the rendered sheet to avoid a visible grid under Infirmary labels.
+
+The `floor.common-room.cork-rubber` tile is also zero-margin and periodic.
+Its fine ochre and charcoal inset granules add warmth under recreation benches
+without drawing a grid across the 5x5 Common Room or obscuring its name.
+
+The `floor.classroom.oak-laminate` tile fills the 1x1 frame with narrow
+oak-look resilient planks. Their fine horizontal joints meet at the module
+edges, while staggered end joints avoid a tile-sized square grid. The source
+stays warm under the existing Classroom zoning tint.
+
+The `floor.security-office.antistatic` tile uses a light warm greige periodic
+resin and sparse inset graphite and blue-steel grains. Its zero-margin edges
+meet without a grid across the 3x3 Security Office, while the surveillance
+console and room name stay legible under the existing tint.
+
+The `floor.cell.sealed-concrete` tile is a pale cool grey poured surface with
+fine inset mineral aggregate. The periodic base meets at all four zero-margin
+edges without a tile-sized grid; Standard and Solitary Cells use it beneath
+their unchanged zoning tints. The holding cell keeps institutional linoleum.
+
+The `floor.staff-room.woven-vinyl` tile is a warm, resilient sheet with fine
+inset fibres. Its one-tile Blender frame has zero margin and a periodic base,
+so the 3×3 Staff Room reads as a continuous floor beneath its existing zoning
+tint. Its object requirements, label and room colour are unchanged.
 
 **Where the output is, and what it measures.** `assets/rendered/environment/`
-holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
+holds the PNGs and their sidecar, tracked with Git LFS by the
 same kind of `.gitattributes` rule as the sheets beside them. Measured on
 2026-09-06 with two independent runs of the renderer executing *concurrently*
 against the same `.blend`:
@@ -387,9 +428,9 @@ than the pinned one: `pipeline_common.require_blender_version()` refuses to
 run under any other, and this gate never sets
 `LOCKSTATE_ALLOW_BLENDER_MISMATCH` to get past that refusal.
 
-`assets/rendered/evidence/` holds three pictures, because a claim that art looks
-better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
-owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
+`assets/rendered/evidence/` holds three pictures from the 2026-09-06 pass.
+`bed-vs-owner-sheet.png` puts that pass's rendered bed beside the
+owner sheet's then-declared `env.object.bed` crop -- (740, 288, 460x230), resampled
 and quarter-turned exactly as `environment-textures.ts` would -- at 3x and at
 the 128x256 the game actually draws; `geometry-before-after.png` pairs six
 objects across the 2026-09-06 remodel; `all-23-objects.png` is the whole set.
@@ -404,6 +445,72 @@ more of: a blue blanket against a grey sheet reads at 64px where dark grey
 against cream does not. So the render is not better *art*; it is better *sprite*
 at this scale, and it is the only option at all for an object whose sheet holds
 no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
+
+**2026-09-25 bed revision, without rewriting the earlier comparison:** the
+cell bed keeps its 1×2 frame and existing grey/orange colour relationship, but
+its Blender geometry now gives the mattress and blanket gently undulating
+cloth surfaces, three low mattress folds, and the pillow a raised cotton centre
+with cover seams. These
+features are deliberately broad enough to survive the 128×256 game
+sprite while leaving the bed's rail silhouette and cell furniture footprint
+unchanged. The older side-by-side image above remains evidence for the 2026-09-06
+model, not an assessment of this revision.
+
+**2026-09-25 stove revision:** the existing 2×1 kitchen stove keeps its
+materials, controls, and four burner locations. Each burner now has eight
+separate cast-iron pot supports and a smaller steel cap, so the dark well and
+radial grate remain visible in the game atlas rather than forming one flat
+cross. The furnished 1920×1080 kitchen captures the same buildables before and
+after the Blender change; neither kitchen rules nor player text change.
+
+**2026-09-25 shower fixture revision:** the existing 1×1 shower head keeps its
+blue-grey enamel, teal rim, valve colours, and perforated face. A recessed
+steel socket cover and small retaining screw replace the large flat bright
+circle visible above the head in the top-down game view. The source scene and
+furnished Full HD shower capture carry this detail; room rules are unchanged.
+
+**2026-09-25 cell toilet revision:** the existing 1×1 toilet keeps its ceramic
+rim, tank, footprint, and materials. A smaller still-water surface exposes the
+dark inner bowl, with a recessed drain at its centre. This follows the approved
+multi-view concept's bowl depth and remains legible in the furnished Full HD
+cell capture. The object identity, building rules, and player text are unchanged.
+
+**2026-09-25 employee desk revision:** the existing 2×1 desk keeps its grey-oak
+top, paper layout, footprint, and materials. The lamp gains an enamel hood seam
+and a dark swivel above the hood, making its silhouette legible from the game's
+overhead view. The furnished Full HD desk capture compares the same scene
+before and after; no building rule or player text changes.
+
+**2026-09-25 refrigerator revision:** the existing 1×1 kitchen refrigerator
+keeps its condenser deck and colour scheme. The centre join of its two doors
+now reaches the top cap, with paired steel pulls visible from the overhead game
+camera. This follows the accepted four-view reference and distinguishes the
+refrigerator from the nearby stove in the furnished Full HD kitchen. Building
+rules, object identity, and player text remain unchanged.
+
+**2026-09-25 twin washer revision:** the two existing drum windows retain their
+position, size, metal bezels, and materials. Three flat overlapping rectangles
+inside each window formed bright, angular shards at game scale. The Blender
+scene now shapes these as low, rounded cloth folds under the same glazing, as
+in the accepted overhead reference. The furnished Full HD Laundry capture
+compares the same machine before and after; its footprint and rules do not change.
+
+**2026-09-23 addition, without rewriting the earlier comparison:** the new
+`furniture.dining.table.wooden` model no longer uses only flat materials. The
+owner's Prison Architect references and a generated four-view concept informed
+its geometry; two fixed, project-local wood and steel material images are packed
+into the Blender source scene. The source images live under
+`assets/source/textures/`, and the concept sheet under `assets/source/concepts/`.
+Neither generated image is published directly as a game sprite. The sprite is
+still the orthographic Blender render with the same footprint, margin, sidecar
+hash, atlas and LFS checks. The material images themselves are fixed inputs,
+not reproducible from their prompts; with those inputs committed, two local
+Blender 5.2.1 renders produced identical PNG bytes. The old sentence about
+"no textures anywhere" describes the 2026-09-06 set, not this later model.
+The storage rack and wooden chair were then rebuilt against their own
+four-view references, reusing the packed wood and steel materials; the chair
+also has a fixed seat material under `assets/source/textures/`. Their runtime
+PNGs likewise come only from Blender.
 
 **Blender needs an EGL library even in `--background`.** On a container without
 one, every render fails with `Couldn't open libEGL.so.1` before writing
