@@ -144,7 +144,7 @@ finding.
 
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
-   (`src/simulation/security/deployment-system.ts:335`-`:355`,
+   (`src/simulation/security/deployment-system.ts:335`-`:348`,
    `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
@@ -155,10 +155,10 @@ finding.
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
-   (`src/simulation/security/post-eligibility.ts:103`).
+   (`src/simulation/security/post-eligibility.ts:110`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
-   (`src/simulation/security/deployment-system.ts:349`, `claimableGuardIds`),
+   (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
    `IncidentResponseSystem`'s responder claim
    (`src/simulation/incidents/response-system.ts:553`,
    `claimableResponders`), the sector sweep duty
