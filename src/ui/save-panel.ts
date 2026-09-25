@@ -692,22 +692,10 @@ export class SavePanel {
     );
     this.disclosure.append(actions);
 
-    // The create button must be a sibling of <details> so it remains visible
-    // when the native disclosure is closed. In DOM order that puts the open
-    // disclosure's actions between the summary and Create, although the two
-    // controls share the first visual row. Bridge just those Tab boundaries;
-    // the rest of the panel retains native focus order and details semantics.
-    this.root.addEventListener('keydown', (event) => {
-      if (event.key !== 'Tab' || !this.disclosure.open || this.createButton.disabled) return;
-      const firstAction = actions.querySelector<HTMLButtonElement>('button:not(:disabled)');
-      let next: HTMLElement | null = null;
-      if (event.target === heading && !event.shiftKey) next = this.createButton;
-      else if (event.target === this.createButton) next = event.shiftKey ? heading : firstAction;
-      else if (event.target === firstAction && event.shiftKey) next = this.createButton;
-      if (next === null) return;
-      event.preventDefault();
-      next.focus();
-    });
+    // Keep the sibling create action in the document's native focus order.
+    // The compact panel deliberately changes visual placement with CSS; a
+    // keydown bridge here would create a second focus graph and can trap Tab
+    // inside the disclosure when the browser exits its last descendant.
 
     this.listElement = document.createElement('ul');
     this.listElement.className = 'save-panel__list';
