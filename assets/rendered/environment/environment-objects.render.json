@@ -502,8 +502,8 @@
     {
       "assetId": "furniture.dining.table.wooden",
       "image": "furniture.dining.table.wooden.png",
-      "sha256": "d6ae4d7dffb3e28d7d438aa73ec4cee7b128010aa084f44e83563d67c884b399",
-      "pixelSha256": "5e36e93b33188d69cce2217d76d7ba748d795261baecf777567dd06415b07f30",
+      "sha256": "66e5668df4c847f2ba32687b704257bdfc74ace28286ea873232cb79fc98ed08",
+      "pixelSha256": "3d9cb42c9d514962bcf3104d9b89a15c10b2c719fb6500f464bca360c6a8594a",
       "footprintTiles": {
         "width": 3.0,
         "height": 2.0

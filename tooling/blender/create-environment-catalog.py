@@ -1313,6 +1313,22 @@ def furniture(collection, root, asset_id):
             for x in (-1.27, 1.27):
                 cylinder(collection, root, f"Recessed tabletop bolt.{index}.{x}",
                     (x, y, 0.886), 0.017, 0.010, "canteen_steel", 12)
+        # Three sparse meal stations face the fixed stools. The pale plates
+        # carry the silhouette at game scale; the trays and utensils provide
+        # context without covering the walnut planks.
+        for index, x in enumerate((-0.88, 0, 0.88)):
+            box(collection, root, f"Meal tray shadow.{index}",
+                (x, -0.25, 0.895), (0.72, 0.60, 0.014), "shade", 0.045)
+            box(collection, root, f"Brushed meal tray.{index}",
+                (x, -0.25, 0.907), (0.69, 0.57, 0.021), "galvanized", 0.045)
+            cylinder(collection, root, f"Enamel plate rim.{index}",
+                (x, -0.26, 0.926), 0.205, 0.022, "porcelain", 32)
+            cylinder(collection, root, f"Recessed plate well.{index}",
+                (x, -0.26, 0.940), 0.150, 0.010, "light", 32)
+            box(collection, root, f"Fork.{index}",
+                (x - 0.265, -0.26, 0.928), (0.030, 0.29, 0.012), "canteen_steel", 0.008)
+            box(collection, root, f"Spoon.{index}",
+                (x + 0.265, -0.26, 0.928), (0.035, 0.29, 0.012), "canteen_steel", 0.008)
         for index, x in enumerate((-0.88, 0, 0.88)):
             cylinder(collection, root, f"Stool floor mount.{index}", (x, 0.69, 0.045), 0.14, 0.08, "steel", 16)
             for bolt_x in (-0.08, 0.08):
