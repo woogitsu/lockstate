@@ -34,6 +34,41 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
 
+test('FullHD save panel starts compact, keeps status visible and opens by keyboard', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(HARNESS_URL);
+  await page.waitForFunction(() => 'lockstateUiHarness' in window);
+  await page.evaluate(() => window.lockstateUiHarness.mountSavePanel());
+
+  const panel = page.locator('.save-panel');
+  const disclosure = panel.locator('details');
+  const summary = panel.locator('summary');
+  await expect(disclosure).not.toHaveAttribute('open', '');
+  await expect(summary).toBeVisible();
+  await expect(panel.locator('.save-panel__status')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'New prison' })).toBeHidden();
+
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(disclosure).toHaveAttribute('open', '');
+  await expect(panel.getByRole('button', { name: 'New prison' })).toBeVisible();
+  await expect(summary).toBeFocused();
+
+  await page.evaluate(() => window.lockstateUiHarness.clickSaveButton('New prison'));
+  await summary.click();
+  await page.evaluate(() => window.lockstateUiHarness.releaseCreate('worker-timeout'));
+  await page.evaluate(() => window.lockstateUiHarness.settleSavePanel());
+  await expect(disclosure).not.toHaveAttribute('open', '');
+  await expect(panel.locator('.save-panel__status')).toContainText('did not reply within 15000ms');
+  await expect(panel.locator('.save-panel__status')).toBeVisible();
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(summary).toBeVisible();
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button', { name: 'New prison' })).toBeVisible();
+});
+
 /**
  * Pairs a rendered-text assertion with the fact that the text is on screen.
  *
