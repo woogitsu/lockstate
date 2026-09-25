@@ -74,6 +74,10 @@ const FIXTURE: HarnessWorldFixture = {
   benchTileY: 4,
   deskTileX: 13,
   deskTileY: 4,
+  showerTileX: 16,
+  showerTileY: 4,
+  wasteBinTileX: 18,
+  wasteBinTileY: 4,
   // storageRackTileX/Y stood here for object.storage-rack from 2026-09-06
   // to 2026-09-07; removed with the fixture structure below it once #1059
   // reverted that object to the colour fallback.
@@ -177,6 +181,20 @@ function buildFrame(): RenderFrame {
       definitionId: 'desk-wooden',
       tileX: FIXTURE.deskTileX,
       tileY: FIXTURE.deskTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-shower-head',
+      definitionId: 'shower-head-brick',
+      tileX: FIXTURE.showerTileX,
+      tileY: FIXTURE.showerTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-waste-bin',
+      definitionId: 'waste-bin-brick',
+      tileX: FIXTURE.wasteBinTileX,
+      tileY: FIXTURE.wasteBinTileY,
       phase: 'built',
     },
     /*

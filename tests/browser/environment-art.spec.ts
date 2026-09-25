@@ -446,23 +446,40 @@ test.describe('the environment artwork', () => {
     readonly label: string;
     readonly buildableId: string;
     readonly catalogueId: string;
+    readonly expectedSpriteId: string;
     readonly tileOf: (fixture: HarnessWorldFixture) => readonly [number, number];
   }[] = [
     {
       label: 'bench',
       buildableId: 'bench-wooden',
       catalogueId: 'object.bench',
+      expectedSpriteId: 'env.object.bench',
       tileOf: (fixture) => [fixture.benchTileX, fixture.benchTileY],
     },
     {
       label: 'desk',
       buildableId: 'desk-wooden',
       catalogueId: 'object.desk',
+      expectedSpriteId: 'env.object.desk',
       tileOf: (fixture) => [fixture.deskTileX, fixture.deskTileY],
+    },
+    {
+      label: 'shower head',
+      buildableId: 'shower-head-brick',
+      catalogueId: 'object.shower-head',
+      expectedSpriteId: 'env.object.shower-head',
+      tileOf: (fixture) => [fixture.showerTileX, fixture.showerTileY],
+    },
+    {
+      label: 'waste bin',
+      buildableId: 'waste-bin-brick',
+      catalogueId: 'object.waste-bin',
+      expectedSpriteId: 'env.object.waste-bin',
+      tileOf: (fixture) => [fixture.wasteBinTileX, fixture.wasteBinTileY],
     },
   ];
 
-  for (const { label, buildableId, catalogueId, tileOf } of RENDERED_OBJECT_CASES) {
+  for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {
     test(`draws a finished ${label} from the atlas, over exactly the tiles the simulation reserved`, async ({ page }) => {
       const fixture = await openHarness(page);
       const tile = fixture.tileSizePx;
@@ -472,6 +489,7 @@ test.describe('the environment artwork', () => {
       expect(objectId, `${buildableId} no longer places a catalogued object`).toBe(catalogueId);
       const spriteId = objectSprite(objectId!);
       expect(spriteId, `${catalogueId} is no longer mapped to artwork`).toBeDefined();
+      expect(spriteId, `${catalogueId} resolves to the wrong model`).toBe(expectedSpriteId);
       const footprint = defaultObjectRegistry.getById(objectId!)?.footprint;
       expect(footprint, `${catalogueId} is not in the object catalog`).toBeDefined();
 
