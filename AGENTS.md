@@ -808,6 +808,33 @@ still has to survive the session it was given in. It is recorded here, in their
 words and dated, in the same shape as a release — the difference being stated
 rather than left for a reader to infer.
 
+**The game's minimum design viewport, 2026-09-24.** The owner directly wrote:
+
+> rób grę pod minimum full hd, nie patrz mniejsze, bo to nie ma sensu, czyli aby było grywalne przy 1920x1080 i więej
+
+Then: *"i zapisz to w repo"*. The current HUD overhaul therefore targets
+**1920×1080 and larger** for visual design, interaction layout and gameplay
+acceptance. The earlier 900px and phone mockups are research evidence, not
+acceptance targets for this redesign. This instruction does not itself change
+the shipped small-screen UI; it supersedes a plan to spend the redesign on
+sub-Full-HD optimization. This is the owner's own typed wording, not a
+clickable option label.
+
+**The Full HD HUD direction, 2026-09-24.** After seeing two 1920×1080
+mockups, the owner selected the clickable option:
+
+> A — wszystkie odczyty stale na górze
+
+The alternative offered was *"B — duża mapa, odczyty pod przyciskiem
+(zalecane)"*. This selects a Full HD shell with all nine existing status
+metrics persistently visible, a left section rail and a right contextual
+work panel. It does not license invented status values or moving the existing
+SavePanel out of its owner-approved aside slot. **Provenance is the weaker
+kind:** the option label was written by the agent and clicked by the owner,
+not typed by the owner as a free-form instruction. The three supplied Prison
+Architect screenshots and dated 1920×1080 A/B mockups are visual research,
+not source assets for the game.
+
 **The runner selector, 2026-09-13.** Told what the workflows currently ask for,
 the owner answered:
 
