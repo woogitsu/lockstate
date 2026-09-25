@@ -3391,6 +3391,37 @@ const HUD_LAYOUT_VIEWPORTS = [
 ] as const;
 
 test.describe('the assembled application', () => {
+  test('FullHD save disclosure returns catalogue space while preserving save access', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await page.locator('[data-tab="build"]').first().click();
+    const measure = () => page.evaluate(() => {
+      const saves = document.querySelector('.save-panel')!.getBoundingClientRect();
+      const build = document.querySelector('.hud-build')!.getBoundingClientRect();
+      const list = document.querySelector('.hud-build__list')!.getBoundingClientRect();
+      const rows = [...document.querySelectorAll('.hud-build__list > .ui-row')];
+      return {
+        saves: saves.height,
+        build: build.height,
+        list: list.height,
+        listScroll: document.querySelector('.hud-build__list')!.scrollHeight,
+        rows: rows.length,
+        fullRows: rows.filter((row) => {
+          const box = row.getBoundingClientRect();
+          return box.top >= list.top && box.bottom <= list.bottom;
+        }).length,
+      };
+    });
+    const compact = await measure();
+    await page.screenshot({ path: 'test-results/fullhd-save-compact.png' });
+    await expect(page.locator('.save-panel summary')).toBeVisible();
+    await page.locator('.save-panel summary').click();
+    const expanded = await measure();
+    console.log({ compact, expanded });
+    expect(compact.saves).toBeLessThan(expanded.saves);
+    expect(compact.build).toBeGreaterThan(expanded.build);
+    expect(compact.fullRows).toBeGreaterThan(expanded.fullRows);
+  });
   test('the renderer canvas is the size of the window, and stays that way across resizes', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);

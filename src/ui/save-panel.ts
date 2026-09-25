@@ -583,6 +583,8 @@ export function orderDeletedPrisonsForDisplay(deleted: readonly DeletedPrison[])
 export class SavePanel {
   private readonly root: HTMLElement;
   private readonly statusElement: HTMLElement;
+  private readonly disclosure: HTMLDetailsElement;
+  private readonly disclosureHeading: HTMLElement;
   private readonly listElement: HTMLElement;
   private readonly detailElement: HTMLElement;
   /** The three header actions, registered once. */
@@ -663,10 +665,18 @@ export class SavePanel {
     this.root.className = 'save-panel';
     this.root.setAttribute('aria-label', this.text(SAVE_PANEL_MESSAGE_KEY.panelRegion));
 
-    const heading = document.createElement('h2');
+    this.disclosure = document.createElement('details');
+    this.disclosure.className = 'save-panel__disclosure';
+    // The large desktop rail has the tightest vertical budget. Native details
+    // retains keyboard, touch and accessibility semantics without a second
+    // state machine. Smaller viewports keep the existing first-run route open.
+    this.disclosure.open = !window.matchMedia('(min-width: 1700px) and (min-height: 900px)').matches;
+    const heading = document.createElement('summary');
     heading.className = 'save-panel__heading';
     heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.panelTitle);
-    this.root.append(heading);
+    this.disclosureHeading = heading;
+    this.disclosure.append(heading);
+    this.root.append(this.disclosure);
 
     const actions = document.createElement('div');
     actions.className = 'save-panel__actions';
@@ -675,19 +685,15 @@ export class SavePanel {
       this.createButton,
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionSave, () => this.requestSaveNow()),
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionExport, () => this.requestExport()),
-      // Beside Export, in the same always-visible row and behind no
-      // disclosure: measured on the assembled page, the row wraps to a second
-      // line of `--tap-target` and the panel is a scroll container whose
-      // height the rail decides, so the fourth button costs the Build panel
-      // nothing at any of the five viewports the browser suite visits. See
-      // `docs/PERSISTENCE.md`.
+      // Beside Export in the expanded controls. The compact FullHD state
+      // leaves all four actions one keyboard or touch disclosure away.
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionImport, () => this.requestImport()),
     );
-    this.root.append(actions);
+    this.disclosure.append(actions);
 
     this.listElement = document.createElement('ul');
     this.listElement.className = 'save-panel__list';
-    this.root.append(this.listElement);
+    this.disclosure.append(this.listElement);
 
     this.statusElement = document.createElement('p');
     this.statusElement.className = 'save-panel__status';
@@ -993,7 +999,7 @@ export class SavePanel {
     if (!this.focusAfterDeletion) return;
     this.focusAfterDeletion = false;
     if (!keyboardIsUnclaimed(ambientFocusOwner())) return;
-    handOffFocus(this.createButton);
+    handOffFocus(this.disclosure.open ? this.createButton : this.disclosureHeading);
   }
 
   /*

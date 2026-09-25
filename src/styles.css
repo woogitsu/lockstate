@@ -86,12 +86,55 @@ canvas {
 }
 
 .save-panel__heading {
-  margin: 0 0 var(--space-2);
+  min-height: var(--tap-target);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
   font-size: var(--text-size-label);
   font-weight: 500;
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   color: var(--text-subtle);
+}
+
+.save-panel__heading:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.save-panel__heading::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+.save-panel__disclosure[open] .save-panel__heading::after {
+  transform: rotate(45deg);
+}
+
+.save-panel__disclosure[open] .save-panel__heading {
+  margin-bottom: var(--space-2);
+}
+
+/* In the wide Build rail, let the space returned by a folded save panel reach
+   the catalogue. The rail and Build's list otherwise keep their old fixed
+   content heights and the freed pixels become an empty gap. */
+@media (min-width: 1700px) and (min-height: 900px) {
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud__aside {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud__side,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build > .ui-panel__body,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build__list {
+    flex: 1 1 auto;
+    max-height: none;
+  }
 }
 
 .save-panel__actions {
