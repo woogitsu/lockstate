@@ -792,8 +792,16 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `4ac515b4` (**v0.0.747**) by the delta method,
-from `03e47695`. This is #1365's merge commit, the last merge on `main` and
+Re-anchored at `main` @ `5ed25544` (**v0.0.759**) by the delta method,
+from `4ac515b4`. This is #1400's merge commit, the most recent non-release
+first-parent commit in the `main` tree this pass read; the release commit above
+it brings the tree to v0.0.760. The previous anchor was eleven landings ago,
+one over the unchanged ten-landing budget. This pass re-read §§3-6, including
+the owner decisions and live citations named in the new §3 entry below.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`4ac515b4` (**v0.0.747**) by the delta method,"* from `03e47695`.
+In that dated reading this was #1365's merge commit, the last merge on `main` and
 the tip of `main` itself; `package.json` ships **0.0.747** at it and **no
 release commit sits above it**, so the release assertion reads 747 − 747 =
 **zero**. It is the merge rather than a release commit for the reason every
@@ -21779,6 +21787,62 @@ class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
 
+## 3. The 2026-09-25 pass: eleven landings, five owner acceptances, and a red gate on main
+
+Read at `5ed25544` (**v0.0.759**). The window `4ac515b4..5ed25544` has
+**eleven non-release first-parent landings**, **24 commits in all**, and
+**114 changed paths**. The release sequence
+goes from v0.0.747 at the old anchor to v0.0.759 at #1400's merge, followed by
+the v0.0.760 release commit. Counting releases would report thirteen steps at
+the current tip; the gate correctly reports eleven landings against its budget
+of ten. `main` CI run 36076059855 is red in `verify` on this staleness gate.
+Neither budget is raised. The merge subjects, read from the first-parent log,
+are #1366, #1367, #1368, #1369, #1371, #1372, #1374, #1375, #1399, #1380
+and #1400. The window includes 31 `src/` paths, 41 `tests/` paths and 31
+`docs/` paths; the remaining paths include workflow and package changes.
+
+**The ADR census changed by decisions, not by arrivals.** The numbered ADR
+files still total **117**, with no new numbered document above 0123 and the
+index still naming **Next free number: 0124**. Each document's Status and its
+index row now yield **42 Proposed and 75 Accepted**, against 47 and 70 at the old
+anchor. The five owner acceptances recorded in the changed rows are ADR 0052,
+0054, 0090, 0092 and decision 1 of 0095; ADR 0002's row was amended but was
+already Accepted. The distinction matters for §5: an acceptance changes an
+authority statement; it does not itself prove that its implementation has
+landed. §2's nine live entries remain nine; none of these five approvals
+creates or retires a §2 row.
+
+**§4's deployment risk still stands.** The migration workflow changed only
+its `migrate` job runner from `self-hosted` to `ubuntu-latest` in this window.
+Its `workflow_dispatch` trigger, typed project-ref confirmation and
+environment-gated apply path remain. `docs/DEPLOYMENT.md`, ADR 0016 and the
+migration files did not change. The separate-production-project constraint is
+still a human constraint; the runner change does not enforce it.
+
+**§5's live readings were checked against their subjects.** The two
+`docs/PERSISTENCE.md` spans and both session-controller branches describing a
+stale writer are unchanged by this window. The protocol's handshake sources
+still give four hits in `types.ts`, two in `transferables.ts` and three in
+`state-machine.ts`; ADR 0003's independently cited measurement did not move.
+The `zoningNoticeSchema` declaration *did* move from line 1740 to line 1765
+as `types.ts` grew, with no change to that 4/2/3 split. The former number is
+kept only as a dated reading, not as a live citation. The new owner acceptance
+of ADR 0095 is scoped to its decision 1 and does not silently approve the
+other options recorded in that ADR. The HUD and simulation paths changed in
+the window, so this pass does not infer from their old line numbers that any
+new implementation satisfies an ADR; the Status sections and index remain
+the authority for which decisions were accepted.
+
+**§6's status-reference contract remains the executable check on stale
+present-tense status claims.** Its test file and the two documented exceptions
+(`docs/research/` as dated evidence, applied migrations as immutable history)
+are unchanged. The five approvals above were reconciled against the index;
+the contract remains a required CI gate. This does not make its known blind spots
+disappear: counts without a named ADR, negation and this historical file still
+need human reading. The weakest claim of this pass is its non-exhaustive review
+of individual `file:line` coordinates across the 114-path window; the
+documentation quotation gate checks the measurable subset separately.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -22053,7 +22117,7 @@ can see the dashboard setting that would break it. That last clause is the half
 no window of any kind reaches, and ending the absence run changes nothing about
 it.
 
-**RE-VERIFIED AT `4ac515b4`, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
+**THE `4ac515b4` PASS RECHECKED THIS RISK, AND THE RUN OF WINDOWS TOUCHING NO WORKFLOW FILE
 IS AT THREE — while both halves of this section's own evidence stay outside the
 window for a ninth anchor running.** `git diff --name-only
 03e47695..4ac515b4 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**,
