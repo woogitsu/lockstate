@@ -794,8 +794,8 @@ this one.
 
 Re-anchored at `main` @ `5ed25544` (**v0.0.759**) by the delta method,
 from `4ac515b4`. This is #1400's merge commit, the most recent non-release
-first-parent commit in the `main` tree this pass read; the release commit above
-it brings the tree to v0.0.760. The previous anchor was eleven landings ago,
+first-parent commit in the `main` tree this pass read; release commit
+`2b3ec44e` sits above it. The previous anchor was eleven landings ago,
 one over the unchanged ten-landing budget. This pass re-read §§3-6, including
 the owner decisions and live citations named in the new §3 entry below.
 
@@ -21793,7 +21793,7 @@ Read at `5ed25544` (**v0.0.759**). The window `4ac515b4..5ed25544` has
 **eleven non-release first-parent landings**, **24 commits in all**, and
 **114 changed paths**. The release sequence
 goes from v0.0.747 at the old anchor to v0.0.759 at #1400's merge, followed by
-the v0.0.760 release commit. Counting releases would report thirteen steps at
+release commit `2b3ec44e`. Counting releases would report thirteen steps at
 the current tip; the gate correctly reports eleven landings against its budget
 of ten. `main` CI run 36076059855 is red in `verify` on this staleness gate.
 Neither budget is raised. The merge subjects, read from the first-parent log,
