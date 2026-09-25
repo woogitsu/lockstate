@@ -1,5 +1,4 @@
 import { expect, test, type Page } from './network-changed-fixture';
-import { resolve } from 'node:path';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { ENVIRONMENT_SPRITE_IDS, ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
@@ -291,17 +290,6 @@ test.describe('the environment artwork', () => {
         { x: 46.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
       return fixture;
     };
-    if (process.env['LOCKSTATE_CAPTURE_GATE_ART'] === '1') {
-      await page.route('**/game-content/source-art/rendered.furniture.delivery.dock_gate.closed.*.png', async (route) => {
-        await route.fulfill({
-          path: resolve('public/game-content/source-art/rendered.furniture.delivery.dock_gate.closed.670e4def6473.png'),
-          contentType: 'image/png',
-        });
-      });
-      await camera();
-      await page.screenshot({ path: testInfo.outputPath('gate-before-1920x1080.png') });
-      await page.unrouteAll();
-    }
     const fixture = await camera();
     const result = await page.evaluate(() => {
       const harness = window.lockstateEnvironmentArtHarness!;
