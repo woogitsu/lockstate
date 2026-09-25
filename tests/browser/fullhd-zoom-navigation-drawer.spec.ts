@@ -80,6 +80,9 @@ for (const uiScale of [1.75, 2]) {
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await expect(trigger).toBeFocused();
       await expect(trigger).toContainText('Show the sections');
+      await page.setViewportSize({ width: 960, height: 750 });
+      await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'bar');
+      await expect(page.locator('.hud-layout__arrow[data-layout-region="navigation"]')).toBeFocused();
     }
   });
 }
@@ -92,7 +95,6 @@ test('a collapsed navigation can be restored from the Full HD zoom drawer when l
   });
   await page.goto('/index.html');
   await expect(page.locator('.hud')).toHaveAttribute('data-layout-navigation', 'collapsed');
-  await page.reload();
 
   const hud = page.locator('.hud');
   await expect(hud).toHaveAttribute('data-layout-navigation-placement', 'drawer');

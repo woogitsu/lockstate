@@ -91,6 +91,9 @@ own wrapped metrics made the next fit measurement taller. The shell now
 measures the strip without the drawer rule before choosing the next placement;
 the browser test observed the failure before the change and the bar/drawer
 transition passing afterward. Seventeen regular Full HD browser cases passed.
+When the closed drawer trigger has keyboard focus and the window grows back to
+the bar layout, focus moves to the visible navigation control. The browser test
+failed with focus on the now-hidden trigger before that handoff was added.
 
 A separate regression test starts with the navigation collapsed in persisted
 layout settings. Before the fix the drawer trigger stayed

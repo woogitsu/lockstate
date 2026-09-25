@@ -749,6 +749,9 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       toggle.element.dataset['collapsed'] = collapsed ? 'true' : 'false';
     }
     restoreDrawerFocusIfHidden();
+    if (geometry.navigationPlacement !== 'drawer' && document.activeElement === drawerButton.element) {
+      handOffFocus(toggles.navigation.element);
+    }
 
     navigationSeparator.setRange(geometry.navigation.range);
     navigationSeparator.setSize(geometry.navigation.size);
