@@ -148,6 +148,7 @@ finding.
    `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
+   > `private assignUnassignedGuards(tick: number): void {`
 2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
    phase (`src/simulation/security/guard-roster.ts:245`-`:246`,
    `unassignedGuardIds`). **A posted guard is not unassigned**, and nothing in
