@@ -3140,13 +3140,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   /**
    * At phone width the expanded catalogue can cover the centre of the playable
-   * canvas. The player has just asked to act on that canvas, so yield it as
-   * Rooms does when zoning. Hit-testing the centre rather than assuming a
-   * viewport breakpoint also leaves the desktop panel open beside the map.
+   * canvas. Yield it on entering Build as well as when arming a tool, so a
+   * player can see the map before choosing what to place. Hit-testing the
+   * centre rather than assuming a viewport breakpoint leaves the desktop
+   * catalogue open beside the map.
    * The header remains a 44px disclosure: it announces its collapsed state and
    * lets the player reopen the panel to change or stop the armed tool.
    */
-  function foldForWorldIfOccluded(): void {
+  function foldForWorldIfOccluded(focusDisclosure = true): void {
     if (panelCollapsed) return;
     const canvas = document.querySelector<HTMLCanvasElement>('#game-root canvas');
     if (canvas === null) return;
@@ -3157,9 +3158,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     if (!panel.element.contains(document.elementFromPoint(x, y))) return;
     panelCollapsed = true;
     panel.setCollapsed(true);
-    // The arm/remove press was inside the body we just hid. Keep keyboard and
-    // screen-reader focus on the visible disclosure that reopens those actions.
-    panel.toggle?.focus();
+    // An arm/remove press was inside the body we just hid. On tab entry the
+    // active tab itself remains the useful focus anchor; do not steal it.
+    if (focusDisclosure) panel.toggle?.focus();
   }
   panel.body.append(
     catalogue.element,
@@ -3340,7 +3341,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       options.onArm(false, selectedId, false);
     },
     setVisible(visible: boolean): void {
+      const entering = visible && panel.element.hidden;
       panel.element.hidden = !visible;
+      // The panel has to be laid out for hit-testing. This transition runs
+      // only on entry, so manually reopening the catalogue stays possible.
+      if (entering) foldForWorldIfOccluded(false);
       // The queue goes with the tab. Nothing refreshes it from another tab --
       // the host only asks while this one is showing -- so a block left behind
       // would be a list of ids that were true when the player walked away, and

@@ -23,6 +23,9 @@ test('arming Build reveals the map on a phone and one touch places the selected 
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   await page.locator('.ui-tab[data-tab="build"]').click();
+  // #899 opens Build map-first on this viewport. Reopen its catalogue to
+  // exercise #517's original select/arm/touch path from a real visible row.
+  await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
   await page.locator('.hud-build__list [data-buildable="bed-wooden"]').click();
 
   const mapCentre = { x: 188, y: 500 };
