@@ -75,6 +75,9 @@ MODELS = (
     ("security.camera.wall.variants", (0.6, 0.4)), ("security.checkpoint.turnstile.variants", (2, 1)),
     ("storage.container.variants", (2, 1)), ("wall.exterior.modules", (2, 0.25)),
     ("wall.interior.modules", (2, 0.2)),
+    # Append new collections: existing origins are part of the reproducible scene.
+    ("fixture.cell.sink", (1, 1)), ("fixture.shower.head", (1, 1)),
+    ("fixture.cell.waste_bin", (1, 1)),
 )
 
 
@@ -248,6 +251,40 @@ def architectural(collection, root, asset_id):
         box(collection, root, "Door", (0, -0.2, 1.25), (0.82, 0.09, 2.25), "blue" if "security" in asset_id else "wood")
         box(collection, root, "Reveal", (0, -0.152, 1.25), (0.88, 0.012, 2.31), "shade", 0)
         box(collection, root, "Window", (0, -0.246, 1.6), (0.25, 0.02, 0.42), "steel", 0)
+    elif asset_id == "fixture.cell.sink":
+        # A separate hand-washing fixture. Its broad oval basin, dark well and
+        # paired taps remain distinct at the 64 px world scale; unlike the
+        # combined toilet sheet, the model fits its own 1x1 footprint.
+        box(collection, root, "Wall rail", (0, -0.35, 0.57), (0.72, 0.13, 0.16), "steel", 0.025)
+        box(collection, root, "Basin body", (0, 0.02, 0.48), (0.76, 0.64, 0.22), "porcelain", 0.12)
+        box(collection, root, "Basin well", (0, 0.04, 0.603), (0.55, 0.40, 0.018), "shade", 0.12)
+        box(collection, root, "Inner porcelain", (0, 0.04, 0.616), (0.43, 0.28, 0.012), "porcelain", 0.12)
+        cylinder(collection, root, "Drain", (0, 0.06, 0.63), 0.055, 0.014, "steel", 24)
+        for x in (-0.21, 0.21):
+            cylinder(collection, root, f"Tap base.{x}", (x, -0.28, 0.64), 0.06, 0.065, "steel", 16)
+            box(collection, root, f"Tap lever.{x}", (x, -0.285, 0.69), (0.15, 0.035, 0.035), "steel", 0.012)
+        box(collection, root, "Spout", (0, -0.20, 0.69), (0.07, 0.22, 0.07), "steel", 0.025)
+    elif asset_id == "fixture.shower.head":
+        # The shower is wall-mounted. The broad perforated head and two valves
+        # read from above without painting a false floor into this sprite.
+        box(collection, root, "Wall bracket", (0, -0.38, 0.88), (0.62, 0.12, 0.16), "steel", 0.025)
+        box(collection, root, "Supply arm", (0, -0.21, 0.93), (0.10, 0.30, 0.10), "steel", 0.025)
+        cylinder(collection, root, "Shower head", (0, 0.04, 0.89), 0.25, 0.11, "steel", 32)
+        cylinder(collection, root, "Face", (0, 0.04, 0.956), 0.21, 0.018, "porcelain", 32)
+        for x in (-0.11, 0, 0.11):
+            for y in (-0.07, 0.04, 0.15):
+                cylinder(collection, root, f"Nozzle.{x}.{y}", (x, y, 0.971), 0.017, 0.012, "shade", 8)
+        for x in (-0.23, 0.23):
+            cylinder(collection, root, f"Valve.{x}", (x, -0.37, 0.96), 0.065, 0.05, "steel", 16)
+            box(collection, root, f"Valve grip.{x}", (x, -0.37, 1.0), (0.15, 0.035, 0.035), "porcelain", 0.01)
+    elif asset_id == "fixture.cell.waste_bin":
+        # Open top and pale inner liner distinguish this from a locker or a
+        # solid storage crate at the in-game 64 px scale.
+        cylinder(collection, root, "Outer bin", (0, 0, 0.31), 0.34, 0.62, "steel", 32)
+        cylinder(collection, root, "Rim", (0, 0, 0.635), 0.37, 0.055, "light", 32)
+        cylinder(collection, root, "Opening", (0, 0, 0.669), 0.28, 0.02, "shade", 32)
+        cylinder(collection, root, "Liner", (0, 0, 0.679), 0.19, 0.01, "linen", 32)
+        box(collection, root, "Foot pedal", (0, -0.36, 0.08), (0.22, 0.15, 0.07), "steel", 0.02)
     elif "toilet" in asset_id:
         # The one model whose shipped sheet cannot be used at all: the owner's
         # sheet holds a 1:2.5 combined column and the catalogue declares (1, 1).

@@ -632,6 +632,24 @@ outward-facing or unrevertable, which is the whole reason:
    `tests/foundation/ci-configuration-contract.test.ts` pins both call sites,
    because neither job runs in CI and every other gate in the repository would
    stay green if a later edit removed them.
+
+   **A NEW NARROW RELEASE ON 2026-09-23, FOR THE FIRST NEW STAGE-7 RENDERS.**
+   The owner was offered two clickable options: *"Tak — dopisz tylko te dwa
+   globy"* or *"Nie — pozostaw partię na gałęzi"*. They chose:
+
+   > Tak — dopisz tylko te dwa globy
+
+   This is the weaker provenance: the option label was written by the agent,
+   then selected by the owner, rather than typed by the owner. It authorises
+   exactly two comma-separated segments on the `browser` job's existing
+   `git lfs pull --include=` line in `.github/workflows/ci.yml`:
+
+   - `public/game-content/source-art/rendered.fixture.shower.head.*.png`
+   - `public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png`
+
+   No other line, job, workflow, dashboard or asset id is released. The
+   `fixture.cell.sink` Blender render is source art only and has no published
+   sprite or glob; `object.sink` still has no buildable path.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.

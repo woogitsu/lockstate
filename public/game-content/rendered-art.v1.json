@@ -28,6 +28,56 @@
       }
     },
     {
+      "assetId": "fixture.cell.waste_bin",
+      "contentVersion": 1,
+      "image": "source-art/rendered.fixture.cell.waste_bin.fa89fbba8858.png",
+      "sha256": "fa89fbba885800ee56423fdba4ae47d1f4a6daf2238c6e0552ed16785ba0f7cb",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "contentVersion": 1,
+      "image": "source-art/rendered.fixture.shower.head.bb3bfecc78ce.png",
+      "sha256": "bb3bfecc78ce87f82ac169f973cacc21f8c37e3352931151ddd730fa3a50bf5f",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.corridor.bench.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.corridor.bench.variants.4afd4a1258e7.png",
