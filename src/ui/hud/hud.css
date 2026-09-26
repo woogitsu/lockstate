@@ -2745,6 +2745,16 @@
    `.hud-intake__pipeline-count` already takes for the same reason. */
 .hud-overview__value { font-variant-numeric: tabular-nums; }
 
+/* The income explanation is a sentence, not a one-line eyebrow label. Its
+   default nowrap width exceeds the inspector at both Full HD and larger
+   viewports, hiding the day-end rule at the very place that teaches it. */
+.hud-overview__income-note:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* The sentinel sentence. An eyebrow's default single-line uppercase treatment
    would clip it, so it wraps and keeps its case, exactly as
    `.hud-intake__note` does one panel down. */
