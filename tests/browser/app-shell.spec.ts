@@ -4028,6 +4028,21 @@ test.describe('the assembled application', () => {
         reachability.unreachable,
         `controls covered by something else on the ${tab} tab at ${width}x${height}`,
       ).toEqual([]);
+      if (tab === 'manage') {
+        // The local-save list is a disclosure on this tab. Its row controls
+        // must be reachable when the player opens it, not exempted as hidden.
+        const savedPrisons = page.locator('.manage-saves');
+        // Quick Save and Manage refresh independently. Wait for the actual
+        // row before opening, so a late refresh cannot add hidden controls
+        // after this state was measured.
+        await expect(savedPrisons.locator('.manage-saves__item')).toHaveCount(1);
+        await savedPrisons.locator('summary').click();
+        const expanded = await controlReachability(page);
+        inventory = expanded;
+        record(expanded);
+        expect(expanded.unreachable, `Manage saves controls unreachable at ${width}x${height}`).toEqual([]);
+        await savedPrisons.locator('summary').click();
+      }
     }
 
     /*
@@ -5011,10 +5026,27 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
 
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // The inventory is an element snapshot, not a catalogue of labels. A
+    // background save can replace Manage's row after its first measurement,
+    // minting new element ids while its disclosure is shut. Revisit both
+    // panels at the end so the final accounting tests the controls that are
+    // actually in the document now.
+    const finalBuild = await controlReachability(page);
+    record(finalBuild);
+    const finalSaves = page.locator('.manage-saves');
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(finalSaves.locator('.manage-saves__item')).toHaveCount(1);
+    if ((await finalSaves.getAttribute('open')) === null) await finalSaves.locator('summary').click();
+    await expect(finalSaves).toHaveAttribute('open', '');
+    await expect(finalSaves.getByRole('button', { name: 'Load' })).toBeVisible();
+    await expect(finalSaves.getByRole('button', { name: 'Delete' })).toBeVisible();
+    inventory = await controlReachability(page);
+    record(inventory);
+    expect(inventory.unreachable, `final Manage controls unreachable at ${width}x${height}`).toEqual([]);
 
     // Nothing got a free pass by never being laid out. At desktop widths the
-    // Build tab with its coordinates expanded shows every control there is,
-    // so the list is empty; at 720px and below the responsive rules drop
+    // Build and Manage controls have each been revisited in their visible
+    // state, so the list is empty; at 720px and below the responsive rules drop
     // `.hud__corner` outright — the minimap and the alerts section — and
     // those two controls genuinely cannot be reached at any tab. That is a
     // deliberate responsive decision (see `hud.css`), named here so it stays
@@ -8565,6 +8597,42 @@ test.describe('the assembled application', () => {
 
     await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
     await expect(page.locator('.save-panel__empty')).toHaveCount(0);
+  });
+
+  test('Manage lists local saves, confirms deletion, restores it, and states why cloud saves are unavailable (#1168)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await expect(page.locator('.manage-saves')).toBeHidden();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await expect(details).toBeVisible();
+    await details.locator('summary').click();
+    await expect(details.locator('.manage-saves__cloud')).toHaveText(
+      'Cloud saves are unavailable in this version because the game has no cloud connection.',
+    );
+    await expect(details.locator('.manage-saves__list')).toContainText('No prisons yet.');
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(1);
+    await expect(details.locator('.manage-saves__name')).toContainText('New Prison (1 gen)');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+
+    const second = details.locator('.manage-saves__item').last();
+    await second.getByRole('button', { name: 'Load' }).click();
+    await expect(details.locator('.manage-saves__status')).toHaveText('Loaded.');
+
+    await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(details.getByRole('button', { name: 'Delete permanently' })).toBeVisible();
+    await expect(details.getByRole('button', { name: 'Keep' })).toBeFocused();
+    await details.getByRole('button', { name: 'Keep' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+    await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
+    await details.getByRole('button', { name: 'Delete permanently' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(1);
+    await details.getByRole('button', { name: 'Bring it back' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(0);
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
   });
 
   /**

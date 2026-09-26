@@ -25,6 +25,9 @@ import type { LocalizationKey } from '../content/localization';
 export const SAVE_PANEL_MESSAGE_KEY = {
   panelRegion: 'save.panel.region',
   panelTitle: 'save.panel.title',
+  manageTitle: 'save.manage.title',
+  manageLocal: 'save.manage.local',
+  manageCloudUnavailable: 'save.manage.cloud-unavailable',
 
   actionCreate: 'save.action.create',
   defaultPrisonName: 'save.default-prison-name',

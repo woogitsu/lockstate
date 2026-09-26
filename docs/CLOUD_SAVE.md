@@ -237,6 +237,13 @@ design. That gap is now closed except where noted:
   production graph reaches any module *in* it. Both failure messages name this
   document, because wiring it means correcting this bullet in the same change.
 
+  **Correction, 2026-09-24 (#1168).** Zarządzaj now mounts a local saves
+  panel using `src/ui/account/save-list-projection.ts` and real IndexedDB slot
+  metadata. That makes part of `src/ui/account/` reachable, so the older claim
+  that the whole account tree is unreachable is historical. The cloud client,
+  sign-in effects and cloud slot availability remain unconnected; the panel
+  explicitly says cloud saves are unavailable in this version.
+
 ### Running the local stack
 
 `supabase/config.toml` is committed. It holds no secrets: every provider
