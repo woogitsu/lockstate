@@ -223,10 +223,6 @@ export async function validateRenderedArtCatalog(options = {}) {
       continue;
     }
     seen.add(entry.assetId);
-    if (typeof entry.image !== 'string' || seenImages.has(entry.image)) {
-      report(`${catalogPath} has a missing or duplicate published image path ("${entry.image}")`);
-    }
-    seenImages.add(entry.image);
 
     const sidecarEntry = sidecarById.get(entry.assetId);
     if (sidecarEntry === undefined) {
@@ -242,6 +238,10 @@ export async function validateRenderedArtCatalog(options = {}) {
       report(`"${entry.assetId}": committed render path "${sidecarEntry.image}" is not a safe rendered-art path`);
       continue;
     }
+    if (seenImages.has(entry.image)) {
+      report(`${catalogPath} has a duplicate published image path ("${entry.image}")`);
+    }
+    seenImages.add(entry.image);
 
     // Check 1: catalog sha256 agrees with the sidecar's, unconditionally --
     // both are plain committed JSON, readable without pulling anything.
