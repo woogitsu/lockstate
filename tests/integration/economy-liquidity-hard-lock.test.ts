@@ -220,7 +220,8 @@ const SEED = 0x0ec002;
  * only where it sits has moved, which is the same correction #703 ruling A made
  * to the same sentence one ruling earlier.
  */
-const OVERDRAFT_ROOM = 2_500;
+const OVERDRAFT_ROOM = 10_000;
+const LEGACY_BALANCE = 25_000;
 /**
  * The first rung, which is what bounds a press (ruling 19). Written out and
  * pinned beside `OVERDRAFT_ROOM` for the same reason.
@@ -268,9 +269,15 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 const stockOf = (runtime: SimulationRuntime, itemId: string): number =>
   runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf(itemId);
 
+function spentDownRuntime(): SimulationRuntime {
+  const runtime = createNewSimulationRuntime(SEED);
+  expect(runtime.treasury.spend(75_000, 'wages'), 'measure the historical lock after earlier spending').toBe(true);
+  return runtime;
+}
+
 describe('the treasury spent to nothing on one legal purchase (ECON-002)', () => {
   it('pins every figure the sequences below are written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(100_000);
     expect(procurableMaterial('item.brick')?.unitPriceMinorUnits).toBe(40);
     expect(procurableMaterial('item.wood-plank')?.unitPriceMinorUnits).toBe(65);
     /*
@@ -283,7 +290,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS, 'ruling 19: the rung a mature prison`s press stops at').toBe(
       -DELIVERY_RUNG_ROOM,
     );
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS - BRICKS_TO_THE_RUNG * 40, 'the pre-starter-rung reproduction').toBe(
+    expect(LEGACY_BALANCE - BRICKS_TO_THE_RUNG * 40, 'the pre-starter-rung reproduction').toBe(
       BALANCE_AT_THE_RUNG,
     );
     /*
@@ -302,7 +309,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'shallower by exactly one plank, so subtracting it back out lands on the unaffected construction rung',
     ).toBe(INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS);
     expect(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - STARTER_BRICKS_TO_THE_RUNG * 40,
+      LEGACY_BALANCE - STARTER_BRICKS_TO_THE_RUNG * 40,
       'the largest press a fresh, unfurnished prison can make',
     ).toBe(STARTER_BALANCE_AT_THE_RUNG);
   });
@@ -480,7 +487,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * around the old one -- kept as the first live assertion below, because
      * "this press is now refused" is itself half of the proof.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = spentDownRuntime();
     expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the facility is standing, unpressed').toBe(-OVERDRAFT_ROOM);
 
@@ -701,7 +708,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * and not a point, and the same two facts on either side of it, three
      * rulings later.
      */
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = spentDownRuntime();
     send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG });
     expect(runtime.treasury.balanceMinorUnits).toBe(STARTER_BALANCE_AT_THE_RUNG);
     stepTo(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
@@ -716,7 +723,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     // And the far edge of the zone, so this is a width and not a point: 653
     // bricks leaves -1,120, which is exactly 65 of press room, and the plank
     // goes through by a direct press -- no construction order needed here.
-    const escaped = createNewSimulationRuntime(SEED);
+    const escaped = spentDownRuntime();
     send(escaped, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG - 1 });
     expect(escaped.treasury.balanceMinorUnits).toBe(-1_120);
     send(escaped, 'buy-plank', { type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 });
@@ -806,7 +813,7 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * ruling 19 alone did, one release before this one.
    */
   it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
-    const runtime = createNewSimulationRuntime(SEED);
+    const runtime = spentDownRuntime();
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
     // and it never presses a purchase again.
@@ -873,14 +880,14 @@ describe('the same lock reached by a charge the player cannot decline', () => {
 
     stepTo(runtime, 35 * 2_400);
     expect(runtime.treasury.balanceMinorUnits).toBe(-55);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'the bound: 2,450 + 80 would be 2,530, forgiven down to 2,500').toBe(
-      2_500,
-    );
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the larger bound still admits the next full payday').toBe(2_530);
 
     stepTo(runtime, 40 * 2_400);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'and it stays there -- nothing past the bound is ever remembered').toBe(
-      2_500,
-    );
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_930);
+    stepTo(runtime, 129 * 2_400);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'arrears stop at one tenth of the new grant').toBe(10_000);
+    stepTo(runtime, 134 * 2_400);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'nothing past the new bound is remembered').toBe(10_000);
 
     // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (-2,500) is cited here rather than
     // silently dropped: it is what this same fixture reached under ruling 19
