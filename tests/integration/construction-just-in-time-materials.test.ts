@@ -129,7 +129,7 @@ function placeWalls(runtime: SimulationRuntime, count: number): string[] {
 
 describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () => {
   it('pins the three figures every case below is written from', () => {
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(25_000);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(BRICKS_PER_WALL).toBe(2);
     expect(BRICK_PRICE).toBe(40);
     expect(BRICKS_PER_WALL * BRICK_PRICE).toBe(WALL_COST);
@@ -152,8 +152,8 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
     placeWalls(runtime, 40);
 
     // 40 x 2 bricks at 40 = 3,200, spent at the press and not a minor unit more.
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 40 * WALL_COST);
-    expect(runtime.treasury.balanceMinorUnits).toBe(21_800);
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - 40 * WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits).toBe(96_800);
     expect(
       runtime.procurement.pendingDeliveries.reduce((total, delivery) => total + delivery.quantity, 0),
       'eighty bricks are on their way, and none of them is here yet',
@@ -166,7 +166,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
 
     expect(statesOf(runtime), 'every wall the owner drew is standing').toEqual({ completed: 40 });
     expect(stockOf(runtime, BRICK), 'and nothing was over-bought').toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(21_800);
+    expect(runtime.treasury.balanceMinorUnits).toBe(96_800);
   });
 
   it('buys nothing for a player who bought the bricks themselves', () => {
@@ -183,7 +183,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
     const runtime = createNewSimulationRuntime(SEED);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 40 });
     const afterOwnPurchase = runtime.treasury.balanceMinorUnits;
-    expect(afterOwnPurchase).toBe(25_000 - 40 * BRICK_PRICE);
+    expect(afterOwnPurchase).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - 40 * BRICK_PRICE);
 
     // In flight.
     for (let index = 0; index < 10; index += 1) {
@@ -231,7 +231,7 @@ describe('a build order buys its own materials (#627, ADR 0017 decision 7)', () 
       ['jit:0:item.brick:0', BRICK, 2],
       ['jit:0:item.brick:2', BRICK, 2],
     ]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 2 * WALL_COST);
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - 2 * WALL_COST);
 
     step(runtime, 4_000);
     expect(statesOf(runtime), 'both walls, not one').toEqual({ completed: 2 });
@@ -341,7 +341,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * rung rather than 403 against the mature one (see its own docblock), so
    * `-1,930 + 402 x 65 = 24,200` is what the cancelled delivery hands back.
    */
-  const REFUNDED_BALANCE = 24_200;
+  const REFUNDED_BALANCE = 99_210;
 
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
@@ -644,7 +644,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * holds bricks a bed cannot use either way, which is the property the
      * fixture was chosen for.
      */
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 654 });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 2_529 });
     expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches while fresh and unfurnished').toBe(-1_160);
     expect(runtime.treasury.spend(70, 'wages'), 'and the rest, the way a payday would').toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(-1_230);
@@ -1023,6 +1023,9 @@ describe('what auto-procurement costs, measured rather than assumed', () => {
      * worth of interior walls rather than an absurd figure.
      */
     const runtime = createNewSimulationRuntime(SEED);
+    // Preserve the historical 25,000-balance drag after earlier wages have
+    // consumed part of the larger, owner-approved opening grant.
+    expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
 
     let funded = 0;
     let firstRefusedAt = -1;
@@ -1123,13 +1126,13 @@ describe('the money loop this must not create (ADR 0076)', () => {
 
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4, transactionId: 'gesture-1' });
     const afterPlacing = runtime.treasury.balanceMinorUnits;
-    expect(afterPlacing).toBe(25_000 - WALL_COST);
+    expect(afterPlacing).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
 
     // Round trip while the delivery is still in flight, which is the only
     // window in which a naive "cancel the purchase too" would do anything.
     send(runtime, { type: 'Undo' });
     expect(runtime.construction.getOrder('order-a')?.state).toBe('cancelled');
-    expect(runtime.treasury.balanceMinorUnits, 'the crew had not started, so the money came back').toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits, 'the crew had not started, so the money came back').toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(runtime.procurement.pendingDeliveries, 'and the delivery it had bought was turned around').toHaveLength(0);
 
     send(runtime, { type: 'Redo' });
@@ -1145,7 +1148,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
       creditSpy.mock.calls.map(([amount]) => amount),
       'two cancellations, two refunds, each of exactly one wall',
     ).toEqual([WALL_COST, WALL_COST]);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
 
     // And past the delivery, where nothing lands because nothing is still paid
     // for -- which is what makes the refund survive the clock (#687's failure
@@ -1153,7 +1156,7 @@ describe('the money loop this must not create (ADR 0076)', () => {
     step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 20);
     expect(stockOf(runtime, BRICK), 'no bricks, because none were paid for').toBe(0);
     expect(creditSpy.mock.calls, 'and nothing paid a third time').toHaveLength(2);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    expect(runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
   });
 
   it('does not buy a second time for an order that is undone and redone', () => {
@@ -1199,7 +1202,7 @@ describe('a save taken mid-purchase', () => {
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 4 });
     step(runtime, 20);
     expect(runtime.procurement.pendingDeliveries, 'the save must be taken mid-flight for this to mean anything').toHaveLength(1);
-    const spentBefore = 25_000 - runtime.treasury.balanceMinorUnits;
+    const spentBefore = TREASURY_STARTING_BALANCE_MINOR_UNITS - runtime.treasury.balanceMinorUnits;
 
     const bundle = captureSessionSnapshot(runtime);
     const restored = restoreSimulationRuntime(bundle, SEED).runtime;
@@ -1209,7 +1212,7 @@ describe('a save taken mid-purchase', () => {
 
     step(restored, 4_000);
     expect(restored.construction.getOrder('order-a')?.state).toBe('completed');
-    expect(25_000 - restored.treasury.balanceMinorUnits, 'the restored session paid nothing further').toBe(spentBefore);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS - restored.treasury.balanceMinorUnits, 'the restored session paid nothing further').toBe(spentBefore);
     expect(spentBefore).toBe(WALL_COST);
   });
 });

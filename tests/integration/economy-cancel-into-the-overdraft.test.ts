@@ -4,7 +4,6 @@ import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -133,7 +132,8 @@ const PLANK_PRICE = UNIT_PRICE.get(PLANK)!;
  * prices that is 313 walls and a balance of −40, and the case below drags
  * further than that on purpose — see its own comment.
  */
-const WALLS_TO_GO_UNDER = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / WALL_COST) + 1;
+const LEGACY_BALANCE = 25_000;
+const WALLS_TO_GO_UNDER = Math.floor(LEGACY_BALANCE / WALL_COST) + 1;
 
 interface Edge {
   readonly x: number;
@@ -162,6 +162,9 @@ function edges(count: number): readonly Edge[] {
  */
 function createSession(seed = 0x717) {
   const runtime = createNewSimulationRuntime(seed);
+  // Keep this historical 25,000-balance drag fixture after the larger grant.
+  expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
+  runtime.treasury.setOverdraftFloor(-2_500);
   let sequence = 0;
 
   const submit = (command: SimulationCommand): void => {
@@ -230,13 +233,13 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     const orderIds = Array.from({ length: WALLS_TO_GO_UNDER }, (unused, index) => `wall-${String(index)}`);
 
     session.atOneTick(placements(orderIds));
-    const spent = TREASURY_STARTING_BALANCE_MINOR_UNITS - session.runtime.treasury.balanceMinorUnits;
+    const spent = LEGACY_BALANCE - session.runtime.treasury.balanceMinorUnits;
     expect(spent, 'the whole drag bought itself on the placing tick').toBe(WALLS_TO_GO_UNDER * WALL_COST);
     expect(session.runtime.treasury.balanceMinorUnits, 'and it is under water').toBeLessThan(0);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'nothing has landed yet').toBe(0);
 
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(LEGACY_BALANCE);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
 
@@ -317,7 +320,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     session.atOneTick(placements(orderIds));
     const strandedBalance = session.runtime.treasury.balanceMinorUnits;
     expect(strandedBalance, '328 walls at 80, out of a 25,000 facility').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - walls * WALL_COST,
+      LEGACY_BALANCE - walls * WALL_COST,
     );
     expect(strandedBalance, 'inside the standing overdraft').toBeGreaterThan(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
     expect(strandedBalance, 'and past the rung a Buy press is refused at').toBeLessThan(
@@ -342,15 +345,13 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
 
     // The undo. Before #717 this moved neither figure: −1,240 and 656 bricks.
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
-    );
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(LEGACY_BALANCE);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it').toBe(0);
 
     // And the position really is unlocked: the same press now goes through.
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
     expect(session.runtime.treasury.balanceMinorUnits, 'one plank, out of a whole facility').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+      LEGACY_BALANCE - PLANK_PRICE,
     );
   }, 60_000);
 

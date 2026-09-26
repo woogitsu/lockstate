@@ -63,7 +63,7 @@ const PRESS_FLOOR = -1_250;
 
 describe('judgeAffordability: the one comparison the host makes about money', () => {
   it('is the same boundary `Treasury.canAfford` decides, to the minor unit', () => {
-    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, '#703 ruling A: one tenth of the opening grant').toBe(FLOOR);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, '#641: one tenth of the larger opening grant').toBe(-10_000);
     expect(INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS, 'ruling 19: the first rung').toBe(PRESS_FLOOR);
     expect(HOST_PRESS_FLOOR_MINOR_UNITS, 'and it is the rung the host judges a press against').toBe(PRESS_FLOOR);
 
@@ -153,7 +153,7 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
     expect(
       judgeAffordability(65, 25_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
       'the grant plus the whole facility, which is what the FUNDS chip still shows',
-    ).toBe(27_500);
+    ).toBe(35_000);
   });
 
   /**

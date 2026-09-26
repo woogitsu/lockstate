@@ -552,6 +552,11 @@ where ADR 0049 put it** — decision 4 of that ADR left *"morale and incident
 consequences"* to *"the rung after this one"*, and unpaid staff who stop working
 are a better consequence than a number that grows for ever behind glass.
 
+**Implementation update (#641, #976):** The arrears cap still derives from
+the overdraft facility. The approved 100,000 opening grant moves that facility
+to −10,000 and the cap to 10,000. The 2,500 above is the historical value in
+the measured 25,000-grant scenario.
+
 ### 4. What the player must learn, and when
 
 **No string is authored here.** The owner released the choice of words on

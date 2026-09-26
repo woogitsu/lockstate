@@ -460,7 +460,7 @@ describe('six prisoners and a canteen that seats three', () => {
 
     const spent = PLANKS * 65 + BRICKS * 40;
     expect(spent).toBe(1_020);
-    expect(contended.treasury.balanceMinorUnits).toBe(25_000 - spent);
+    expect(contended.treasury.balanceMinorUnits).toBe(100_000 - spent);
     expect(control.treasury.balanceMinorUnits).toBe(contended.treasury.balanceMinorUnits);
 
     // And both prisons really are finished: an unbuilt order would make every

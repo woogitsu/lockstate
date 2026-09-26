@@ -123,14 +123,14 @@ describe('the payroll is on the kernel of a session a player can start', () => {
     // start would produce 24,840 and one that charged per tick would produce a
     // number nothing here would recognise.
     stepTo(runtime, DAY_LENGTH_TICKS);
-    expect(runtime.treasury.balanceMinorUnits).toBe(24_680);
+    expect(runtime.treasury.balanceMinorUnits).toBe(99_680);
 
     // And again the next day, and the next: 160 a day, for ever, declined by
     // nobody.
     stepTo(runtime, DAY_LENGTH_TICKS * 2);
-    expect(runtime.treasury.balanceMinorUnits).toBe(24_520);
+    expect(runtime.treasury.balanceMinorUnits).toBe(99_520);
     stepTo(runtime, DAY_LENGTH_TICKS * 3);
-    expect(runtime.treasury.balanceMinorUnits).toBe(24_360);
+    expect(runtime.treasury.balanceMinorUnits).toBe(99_360);
   });
 
   it('publishes what the roster costs and what it owes, on the channel the HUD reads', () => {
@@ -154,7 +154,7 @@ describe('hiring before there is anybody to guard is a decision the balance now 
     const runtime = createNewSimulationRuntime(SEED);
     hire(runtime, 3);
 
-    const balances = [24_520, 24_280, 24_040, 23_800];
+    const balances = [99_520, 99_280, 99_040, 98_800];
     for (let day = 1; day <= balances.length; day += 1) {
       stepTo(runtime, DAY_LENGTH_TICKS * day);
       expect(runtime.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(balances[day - 1]);
@@ -162,7 +162,7 @@ describe('hiring before there is anybody to guard is a decision the balance now 
 
     // Thirty days of it: 25,000 less three hires at 80 and thirty days at 240.
     stepTo(runtime, DAY_LENGTH_TICKS * 30);
-    expect(runtime.treasury.balanceMinorUnits).toBe(17_560);
+    expect(runtime.treasury.balanceMinorUnits).toBe(92_560);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
   });
 
@@ -219,7 +219,7 @@ describe('hiring before there is anybody to guard is a decision the balance now 
      * Nothing else in this fixture moved on either date -- same seed, same
      * build, same eight admissions, same ten days.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(42_640);
+    expect(runtime.treasury.balanceMinorUnits).toBe(117_640);
   });
 });
 
@@ -235,11 +235,14 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
    */
   function overcommitted(): SimulationRuntime {
     const runtime = beddedPrison(8);
+    // Retain this historical ladder walk at its original floor; the current
+    // 10,000 floor is exercised separately by the grant and insolvency tests.
+    runtime.treasury.setOverdraftFloor(-2_500);
     hire(runtime, 12);
     admit(runtime, 2);
     // 550 bricks at 40: 22,000 of the remaining balance, leaving too little to
     // meet a 960 payroll for long.
-    submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 550 }));
+    submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 2_425 }));
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     return runtime;
   }
@@ -425,7 +428,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * the *carried* figure at exactly 2,500 instead -- the 480 above the bound
      * forgiven rather than deferred, per that decision's own words.
      */
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
     // Filtered to `economy.wages-unpaid` for the reason the first check above
     // is: the two rung-crossing events from day 8 are still on the channel
     // (nothing here retires them) and are not paydays. **This comment said
@@ -449,7 +452,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     ).toBe(6);
     // 2,980 uncapped, kept above; the arrears bound (ADR 0096 decision 3(c))
     // caps the sentence's own figure at 2,500, same as `unpaidWagesMinorUnits`.
-    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_500 });
+    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_980 });
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // eight events for eight real things that happened, none of them repeated.
@@ -594,7 +597,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * 2,460, day 15's usual +520 would reach 2,980, and it is capped at
      * `ARREARS_BOUND_MINOR_UNITS` (2,500) instead -- forgiven, not deferred.
      */
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
   });
 
   /**

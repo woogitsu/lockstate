@@ -176,6 +176,7 @@ describe('the loan is unreachable without terms, which is what makes the gap bel
 describe('a negative balance survives a save, and the debt that produced it does not', () => {
   it('loads a prison under water exactly as far under as it saved', () => {
     const runtime = earningSession({ loanTerms: PROBE_TERMS });
+    expect(runtime.treasury.spend(75_000, 'wages'), 'keep the wall sweep inside its measured map').toBe(true);
     const floor = -10 * WALL_COST;
     runtime.treasury.setOverdraftFloor(floor);
     // Spent through the real command path, so the negative balance is one a
