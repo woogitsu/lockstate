@@ -534,6 +534,14 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(600);
   });
 
+  it('pays one prisoner-day when restored room claims name the same prisoner twice', () => {
+    const registry = registryWithOccupiedCells(0, 2);
+    registry.loadSnapshot([['cell-0', [0]], ['cell-1', [0]]]);
+
+    expect(registry.residentIdsWithExistingPlace()).toEqual([0]);
+    expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS);
+  });
+
   it('credits what the day is worth through a real kernel day, not merely from the pure function', () => {
     const prison = wellRunPrison(4);
     floorNeeds(prison, 0, 2);

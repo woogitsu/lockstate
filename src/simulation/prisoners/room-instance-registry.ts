@@ -806,14 +806,22 @@ export class RoomInstanceRegistry {
    * `O(P log P)` in housed prisoners with one array, the same cost class as
    * `residentIds`, and paid on the same two paths: once per in-game day at the
    * grant boundary and once per projection.
+   * A conflicting saved claim may name one entity in two rooms. Both claims
+   * remain in the room ledger for cleanup, but this payable list includes that
+   * entity once; one person cannot earn two prisoner-day grants.
    */
   public residentIdsWithExistingPlace(): readonly EntityId[] {
     const result: EntityId[] = [];
+    // A restored payload can claim the same prisoner in two rooms. Keep both
+    // room claims for cleanup, but pay one prisoner-day only once.
+    const seen = new Set<EntityId>();
     for (const [instanceId, occupants] of this.occupants) {
       if (occupants.size === 0) continue;
       const instance = this.instances.get(instanceId);
       if (instance === undefined) continue;
       for (const entityId of residentsWithExistingPlace(this.occupantsOf(instanceId), instance.residentCapacity)) {
+        if (seen.has(entityId)) continue;
+        seen.add(entityId);
         result.push(entityId);
       }
     }
