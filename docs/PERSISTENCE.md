@@ -125,6 +125,16 @@ reset (`job-performing-restart-bound`, `snapshot-restore-fidelity`,
 their original assertions against a bundle with the section removed, which is
 the older-save proof.
 
+**V7 correction, 2026-09-26 (#1459).** V6 also accepted travel fields under
+`navigation`, `prisoners`, `security` and `contraband.search`, while the runtime
+captured and restored the atomic `simulation.inFlight` section. V7 removes
+those legacy paths from newly written saves. Its V6→V7 migration moves their
+values into `inFlight` when that section is absent; when both copies exist,
+`inFlight` wins because it is the copy V6 restore actually read. Historical V6
+validation remains frozen, and an older save with no travel data still has no
+`inFlight` section after migration. This is a local save-envelope migration;
+`supabase/migrations/` is unchanged.
+
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
 `SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three
@@ -1187,7 +1197,7 @@ checked-in V1 fixture, so a loss is both caught and attributed to a link. The
 rule it stands for: a migration assertion must name a value the migration did
 not produce.
 
-### Adding a V6 later
+### Adding a later save version
 
 The steps below are what V4 (#259) and V5 (ADR 0028) both did, and are the
 pattern to follow.
@@ -1202,11 +1212,11 @@ pattern to follow.
    and the two shapes cannot drift apart in any other respect. Make the
    factory *generic* in a schema it takes, so the inferred payload type keeps
    the real shape instead of widening to `any`.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(6, v6Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 5, toVersion: 6, migrate })`,
+2. Register the new version's schema once; retain every historical schema.
+3. Register exactly one migration from the preceding version to the new one,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `6`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` by one. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
    longer sweeps a rename through the repository the way V2 did — but a test
    that hand-writes an envelope with a *literal* version does not benefit, so

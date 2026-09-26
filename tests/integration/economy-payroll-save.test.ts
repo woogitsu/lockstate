@@ -412,7 +412,7 @@ describe('the historical chain still walks a save older than the field', () => {
 });
 
 describe('the version this all rests on', () => {
-  it('is 6, and the bump that took it there is not payroll\'s', () => {
+  it('is 7, and neither subsequent bump was payroll\'s', () => {
     // Pinned rather than deleted, for the reason
     // `economy-state-income-persistence.test.ts` gives about the same number:
     // what this guards is that a bump has a reason, not that the number never
@@ -420,7 +420,8 @@ describe('the version this all rests on', () => {
     // unambiguous, which is the pattern five fields took before it. The reason
     // for 6 is ADR 0113's `simulation.regimeSchedules`, which is required
     // precisely because its absence is *not* unambiguous once a schedule can be
-    // edited -- the distinction this assertion exists to keep visible.
-    expect(SAVE_SCHEMA_VERSION).toBe(6);
+    // edited. Version 7 relocates travel fields (#1459), still unrelated to
+    // payroll's optional section.
+    expect(SAVE_SCHEMA_VERSION).toBe(7);
   });
 });
