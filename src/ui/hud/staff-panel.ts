@@ -1312,10 +1312,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         itemId: row.guardId === undefined ? undefined : String(row.guardId),
         freedAtMs: row.freedAtMs,
       })),
-      guards.map((guard) => String(guard.entityId)).reverse(),
+      guards.map((guard) => String(guard.entityId)),
       nowMs,
       HELD_GUARD_ROW_SETTLE_MS,
-      'bottom',
+      'top',
     );
 
     let drawn = 0;
@@ -1775,10 +1775,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         itemId: row.staffId === undefined ? undefined : String(row.staffId),
         freedAtMs: row.freedAtMs,
       })),
-      rosterWindow.map((member) => String(member.entityId)).reverse(),
+      rosterWindow.map((member) => String(member.entityId)),
       nowMs,
       STAFF_ROSTER_ROW_SETTLE_MS,
-      'bottom',
+      'top',
     );
 
     let drawn = 0;

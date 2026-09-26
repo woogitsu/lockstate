@@ -2400,10 +2400,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const nowMs = performance.now();
     const assignments = assignPooledRows(
       deliveryRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
-      shown.deliveries.map((delivery) => delivery.orderId).reverse(),
+      shown.deliveries.map((delivery) => delivery.orderId),
       nowMs,
       PENDING_DELIVERY_ROW_SETTLE_MS,
-      'bottom',
+      'top',
     );
 
     let drawn = 0;
@@ -2909,10 +2909,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // panel's deliveries have the identical hazard and will hand it the
       // identical shape.
       queueRows.map((row) => ({ itemId: row.orderId, freedAtMs: row.freedAtMs })),
-      shown.orders.map((order) => order.orderId).reverse(),
+      shown.orders.map((order) => order.orderId),
       nowMs,
       BUILD_QUEUE_ROW_SETTLE_MS,
-      'bottom',
+      'top',
     );
 
     let drawn = 0;
