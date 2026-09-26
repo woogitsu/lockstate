@@ -443,6 +443,20 @@ describe('the release is a claim release and not a dismissal', () => {
   });
 });
 
+describe('a response loses containment when its guard quorum is released', () => {
+  it('does not resolve a riot after one of its four responders is recalled', () => {
+    const runtime = buildRespondingPrison();
+    while (runtime.incidents.get(INCIDENT_ID)!.state !== 'responding') runtime.kernel.step();
+    expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([0, 1, 2, 3]);
+
+    submitRelease(runtime, 0, 0);
+    expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([1, 2, 3]);
+    step(runtime, 700);
+
+    expect(runtime.incidents.get(INCIDENT_ID)?.state).toBe('lapsed');
+  });
+});
+
 describe('releasing is deterministic', () => {
   it('produces byte-identical state for the same seed and the same command sequence', () => {
     // `docs/DETERMINISM.md`: the release draws no RNG, iterates claimants in
