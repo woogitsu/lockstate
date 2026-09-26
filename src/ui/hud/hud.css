@@ -1915,6 +1915,15 @@
 
 .hud-staff__held-more[hidden] { display: none; }
 
+/* Keep the confirmation's place in the bottom-anchored Staff panel even while
+   it is hidden. Revealing it must not move a dismiss button under a pointer
+   between the two presses. A little spare height also absorbs fractional font
+   rounding at the short viewport. */
+.hud-staff__dismiss-slot {
+  min-height: max(40px, calc(3.5 * var(--text-size-label) * var(--label-line-height)));
+}
+.hud-staff__dismiss-confirm { padding-bottom: var(--hairline); }
+
 /* The standing daily wage bill, in the `On the payroll` header (issue #639
    ruling 2). Exactly `.hud-build__queue-count`'s treatment one panel over, and
    for its reasons: the header is the only part of a collapsed section a player
@@ -1926,12 +1935,6 @@
   font-variant-numeric: tabular-nums;
   color: var(--text-subtle);
 }
-
-/* Keep the roster rows under the same screen coordinates during the two-press
-   dismissal. Revealing the confirmation used to grow this bottom-anchored
-   panel by 40px and put the next press on a different person's row. */
-.hud-staff__dismiss-slot { min-height: 40px; }
-.hud-staff__dismiss-confirm { padding-bottom: var(--hairline); }
 
 .hud-build__coords {
   display: grid;

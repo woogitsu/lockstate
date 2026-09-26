@@ -21757,13 +21757,16 @@ recorded it; §4 carries the correction to the note they left there.
 - **The index agrees independently.** `grep -cE '^\|.*\| *\*{0,2}Proposed'
   docs/adr/README.md` returns **47** at this anchor and **41** at
   `03e47695`, matching the census at both ends.
-- **Next free number: 0124**, re-derived at the commit this pass finishes on
+- **At this pass, 0124 was the next free number** (ADR 0124 has since been added;
+  the live README now names 0125), re-derived at the commit this pass finishes on
   rather than carried: `ls docs/adr/ | grep -E '^[0-9]{4}-' | sed 's/-.*//' |
   sort -n | tail -1` returns **0123** across **117** ADR files, and 0123 + 1 is
-  0124, which is what `docs/adr/README.md` states. **The figure was verified
+  0124, which is what `docs/adr/README.md` stated at that pass. **The figure was verified
   against disk rather than taken off the README**, which the brief that ordered
   this pass insisted on and which is this repository's standing lesson about
   restated numbers.
+- **Current index: Next free number: 0125.** ADR 0124 was added after the
+  historical pass above; this is the live value in `docs/adr/README.md`.
 
 ### What this pass deliberately did not chase
 
