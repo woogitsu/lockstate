@@ -26,11 +26,14 @@ breaking format change.
 `actor.guard.response` is an authored guard variant for a live incident claim.
 It keeps the same eight facings, frame and foot pivot, while its dedicated
 [`guard-response-8-direction.contract.json`](../assets/contracts/guard-response-8-direction.contract.json)
-uses four gesture frames at 6 fps. The Blender model holds a radio by the ear;
+uses four gesture frames at 6 fps. The Blender model raises a handheld radio
+beside the head, making the silhouette distinct at default game zoom;
 the renderer loops these frames only while the simulation's incident response
 system names that guard. This doubles as a quiet dispatch/readiness cue, not a
 combat depiction. The four-frame atlas uses 1040×3104 pixels rather than an
 eight-frame 2080×3104 sheet, limiting decoded texture growth at startup.
+The Full HD comparison with a resting guard at default zoom is
+`assets/rendered/evidence/guard-incident-response-default-zoom-1920x1080.png`.
 
 ## Blender source scene
 
