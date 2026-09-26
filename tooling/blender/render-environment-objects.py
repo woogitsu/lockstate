@@ -479,7 +479,7 @@ def cli_arguments():
     separator = sys.argv.index("--") if "--" in sys.argv else len(sys.argv)
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default=DEFAULT_OUTPUT, type=Path)
-    parser.add_argument("--only", default="", help="comma-separated asset ids; default is every collection")
+    parser.add_argument("--only", help="comma-separated asset ids; default is every collection")
     parser.add_argument("--pixels-per-tile", default=PIXELS_PER_TILE, type=int)
     return parser.parse_args(sys.argv[separator + 1:])
 
@@ -489,6 +489,14 @@ def main() -> None:
     args = cli_arguments()
     global PIXELS_PER_TILE
     PIXELS_PER_TILE = args.pixels_per_tile
+    wanted = [name.strip() for name in args.only.split(",") if name.strip()] if args.only is not None else None
+    if wanted is not None:
+        if not wanted:
+            raise SystemExit("--only needs at least one asset id")
+        available = {collection.get("assetId") for collection in bpy.data.collections if collection.get("assetId") is not None}
+        unknown = sorted(set(wanted) - available)
+        if unknown:
+            raise SystemExit(f"unknown --only asset id(s): {', '.join(unknown)}")
     output = args.output if args.output.is_absolute() else ROOT / args.output
     output.mkdir(parents=True, exist_ok=True)
 
@@ -496,7 +504,6 @@ def main() -> None:
     view_layer = bpy.context.view_layer
     camera = _prepare_scene(scene)
 
-    wanted = [name for name in args.only.split(",") if name] or None
     entries = []
     for collection in sorted(bpy.data.collections, key=lambda item: item.name):
         asset_id = collection.get("assetId")
