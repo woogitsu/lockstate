@@ -66,6 +66,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.treatment",
+      "manifest": "actor.prisoner.treatment.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "recover"
+      ]
+    },
+    {
       "assetId": "actor.staff.base",
       "manifest": "actor.staff.base.atlas-manifests.json",
       "clips": [
