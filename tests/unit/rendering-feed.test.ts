@@ -20,6 +20,8 @@ import {
 import { createBuildOrder } from '../../src/simulation/construction/build-order';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
 import { LOCOMOTION_SUBTILE_UNITS } from '../../src/simulation/locomotion';
+import { ACTION_PHASES, actionIndexOf } from '../../src/simulation/prisoners/components';
+import { INFIRMARY_TREATMENT_ACTION_ID } from '../../src/simulation/prisoners/injury';
 import { writeRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
 
 /** Sub-tile units in a tile, spelled once so the records below read as tiles. */
@@ -1177,6 +1179,18 @@ describe('actors from a session snapshot', () => {
       [1, 1],
       [5, 5],
     ]);
+  });
+
+  it('restores treatment art only for a prisoner performing that action', () => {
+    const runtime = prisonWith([[1, 1], [2, 1]]);
+    runtime.prisoners.currentAction.actionIndex[0] = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+    runtime.prisoners.currentAction.phase[0] = ACTION_PHASES.indexOf('performing');
+    runtime.prisoners.currentAction.actionIndex[1] = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+    runtime.prisoners.currentAction.phase[1] = ACTION_PHASES.indexOf('travelling');
+    const bundle = captureSessionSnapshot(runtime);
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+    expect(actors.map((actor) => actor.assetId)).toEqual(['actor.prisoner.treatment', PRISONER_ACTOR_ASSET_ID]);
+    expect(selectActorPose(actors[0]!)).toMatchObject({ clipId: 'recover' });
   });
 
   it('publishes no movement and no facing, because the snapshot carries neither', () => {

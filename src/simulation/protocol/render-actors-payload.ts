@@ -366,8 +366,10 @@ const CONTRABAND_SEARCH_SHIFT = 13;
 const OPEN_RIOT_SHIFT = 14;
 /** Bit 15: this prisoner participates in an open assault. */
 const OPEN_ASSAULT_SHIFT = 15;
+/** Bit 16: this prisoner is performing the existing infirmary-treatment action. */
+const TREATMENT_SHIFT = 16;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false, treatment = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
@@ -375,7 +377,8 @@ export function packRenderActorFields(population: number, headingX = 0, headingY
     (incidentResponse ? 1 << INCIDENT_RESPONSE_SHIFT : 0) |
     (contrabandSearch ? 1 << CONTRABAND_SEARCH_SHIFT : 0) |
     (openRiot ? 1 << OPEN_RIOT_SHIFT : 0) |
-    (openAssault ? 1 << OPEN_ASSAULT_SHIFT : 0)
+    (openAssault ? 1 << OPEN_ASSAULT_SHIFT : 0) |
+    (treatment ? 1 << TREATMENT_SHIFT : 0)
   );
 }
 
@@ -393,6 +396,10 @@ export function renderActorOpenRiot(packedFields: number): boolean {
 
 export function renderActorOpenAssault(packedFields: number): boolean {
   return ((packedFields >>> OPEN_ASSAULT_SHIFT) & 1) === 1;
+}
+
+export function renderActorTreatment(packedFields: number): boolean {
+  return ((packedFields >>> TREATMENT_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {
