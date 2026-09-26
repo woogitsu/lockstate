@@ -6,7 +6,7 @@ import { expect, it } from 'vitest';
 
 const root = resolve(__dirname, '../..');
 
-it('regenerates owner sheets without removing published Blender renders', async () => {
+it('regenerates owner sheets without removing immutable published URLs', async () => {
   const fixture = await mkdtemp(join(tmpdir(), 'lockstate-source-art-shared-'));
   try {
     const tooling = join(fixture, 'tooling');
@@ -29,7 +29,7 @@ it('regenerates owner sheets without removing published Blender renders', async 
     const result = spawnSync(process.execPath, [join(tooling, 'build-source-art-catalog.mjs')], { cwd: fixture, encoding: 'utf8' });
     expect(result.status, `${result.stdout ?? ''}\n${result.stderr ?? ''}`).toBe(0);
     expect(await readFile(join(published, 'rendered.fixture.object.abcdef012345.png'), 'utf8')).toBe('blender-bytes');
-    await expect(readFile(join(published, `fixture.sheet.${'a'.repeat(12)}.png`))).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(await readFile(join(published, `fixture.sheet.${'a'.repeat(12)}.png`), 'utf8')).toBe('old-sheet');
     const catalog = JSON.parse(await readFile(join(fixture, 'public/game-content/source-art.v1.json'), 'utf8'));
     expect(catalog.entries).toHaveLength(1);
   } finally {

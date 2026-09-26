@@ -63,7 +63,7 @@ export async function assertSourceInputsAreImages({ entries, readHead }) {
     throw new Error(
       `Refusing to run: ${pointers.length} of ${entries.length} inputs under assets/source/generated/ are git-lfs pointer files, not images ` +
         `(${pointers.slice(0, 3).join(', ')}${pointers.length > 3 ? ', …' : ''}). ` +
-        'Run `git lfs pull --include="assets/source/generated"` first. Hashing pointer bytes would publish a catalog of pointer hashes and replace the real owner-sheet output.',
+        'Run `git lfs pull --include="assets/source/generated"` first. Hashing pointer bytes would publish a catalog of pointer hashes instead of real owner-sheet art.',
     );
   }
 }
