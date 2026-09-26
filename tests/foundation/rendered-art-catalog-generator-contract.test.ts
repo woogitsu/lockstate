@@ -123,17 +123,17 @@ describe('the git-lfs guard the rendered-art generator runs before it publishes 
     ).resolves.toBeUndefined();
   });
 
-  it('is awaited by the generator before it copies anything into the published directory', async () => {
+  it('is awaited by the generator before it writes anything into the published directory', async () => {
     const source = await readFile(path.join(repositoryRoot, GENERATOR), 'utf8');
     const refusal = source.indexOf('await assertSourceInputsAreImages(');
-    const firstCopy = source.indexOf('copyFile(');
+    const firstWrite = source.indexOf('await writeFile(path.join(outputDir, image), buffer)');
 
     expect(refusal, 'the generator must await the git-lfs guard').toBeGreaterThan(-1);
-    expect(firstCopy, 'the generator is expected to publish at least one image').toBeGreaterThan(-1);
+    expect(firstWrite, 'the generator is expected to publish at least one image').toBeGreaterThan(-1);
     expect(
       refusal,
-      'the refusal must be awaited before the first copyFile: a guard that fires after publishing has already done the damage',
-    ).toBeLessThan(firstCopy);
+      'the refusal must be awaited before the first image write: a guard that fires after publishing has already done the damage',
+    ).toBeLessThan(firstWrite);
 
     const callLine = source.split('\n').find((line) => line.includes('assertSourceInputsAreImages({'));
     expect(callLine?.trim(), 'the guard must be called unconditionally').toMatch(
