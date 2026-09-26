@@ -126,4 +126,3 @@ test('shows the radio response over the rendered prison room at 1920×1080', asy
     await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-1920x1080.png' });
   }
 });
-
