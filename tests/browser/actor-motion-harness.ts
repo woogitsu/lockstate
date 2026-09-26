@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { worldToScreen } from '../../src/rendering/camera/coordinates';
 import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
 import { SimulationSnapshotFeed } from '../../src/rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
@@ -219,6 +220,36 @@ function actorSprites(): readonly SpritePosition[] {
   return spritesWithAsset(ACTOR_TEXTURE_MARKER);
 }
 
+function actorFootAtZoom(zoom: number): ReturnType<LockstateActorMotionHarness['actorFootAtZoom']> {
+  const image = (scene.children?.list ?? []).find((child) => {
+    const candidate = child as Phaser.GameObjects.Image;
+    return candidate.visible === true && candidate.texture?.key.includes(ACTOR_TEXTURE_MARKER);
+  }) as Phaser.GameObjects.Image | undefined;
+  if (image === undefined) return undefined;
+  const camera = scene.cameras.main;
+  camera.setZoom(zoom);
+  camera.centerOn(image.x, image.y);
+  const topLeftX = image.x - image.originX * image.width * image.scaleX;
+  const topLeftY = image.y - image.originY * image.height * image.scaleY;
+  // The authored atlas contract fixes the visible foot at (128, 352) in a
+  // 256x384 frame. Read the displayed image's geometry, not placement maths.
+  const footWorldX = topLeftX + 128 * image.scaleX;
+  const footWorldY = topLeftY + 352 * image.scaleY;
+  const screenFoot = worldToScreen({ x: footWorldX, y: footWorldY }, {
+    scroll: { x: camera.scrollX, y: camera.scrollY },
+    zoom,
+    viewport: { width: camera.width, height: camera.height },
+  });
+  const projectedWorld = camera.getWorldPoint(screenFoot.x, screenFoot.y);
+  return {
+    world: { x: image.x, y: image.y },
+    origin: { x: image.originX, y: image.originY },
+    frame: { width: image.width, height: image.height },
+    screenFoot,
+    projectedWorld: { x: projectedWorld.x, y: projectedWorld.y },
+  };
+}
+
 /**
  * Every drawn sprite whose texture key names `assetId` -- the atlas image URL
  * `AtlasLibrary` resolves is `${basePath}/${assetId}.<clip>.png`
@@ -343,6 +374,7 @@ const harness: LockstateActorMotionHarness = {
   },
   publicationCount: () => publications,
   actorSprites,
+  actorFootAtZoom,
   spritesWithAsset,
   unresolvedActorCount: () => scene.rendererStats.unresolvedActors,
   motionSamples: () => [...samples],
