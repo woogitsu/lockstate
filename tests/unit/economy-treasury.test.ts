@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import {
+  ARREARS_BOUND_MINOR_UNITS,
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
@@ -155,6 +156,11 @@ describe('Owner-approved opening grant (#641)', () => {
     const runtime = createNewSimulationRuntime();
     expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-10_000);
+    expect(ARREARS_BOUND_MINOR_UNITS).toBe(10_000);
+    expect(runtime.treasury.overdraftFloorMinorUnits).toBe(-10_000);
+    expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.treasury.balanceMinorUnits, 'existing prisons keep their saved balance').toBe(25_000);
   });
 });
 
