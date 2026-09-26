@@ -21,7 +21,7 @@ import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
 import { type RosterPanel, createRosterPanel } from './roster-panel';
-import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
+import { type RoomsPanel, type HudRoomPerimeterPreview, createRoomsPanel } from './rooms-panel';
 import { type SecurityPanel, createSecurityPanel } from './security-panel';
 import {
   HUD_PANEL_IDS,
@@ -220,13 +220,11 @@ export interface HudWorldRoomSource {
    * (`src/simulation/rooms/enclosure.ts`) to answer with it, rather than a
    * second implementation of the same rule.
    *
-   * `'sealed' | 'open'`, not imported from the simulation: the HUD may not
-   * import `src/simulation/**` at all (`AGENTS.md` boundary 1,
-   * `tests/unit/ui-hud-messages.test.ts`), so this is the same two-value union
-   * restated on this side of the boundary, exactly as `HudZoningNoticeViewModel
-   * .enclosure` already is.
+   * The HUD restates the simulation's result shape at its boundary rather
+   * than importing `src/simulation/**` (`AGENTS.md` boundary 1). Its gap is
+   * advisory because the render snapshot can lag the simulation.
    */
-  classifyArea(area: HudRoomArea): 'sealed' | 'open';
+  classifyArea(area: HudRoomArea): HudRoomPerimeterPreview;
 }
 
 /**
@@ -2422,7 +2420,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * guarantee), and two copies of `?? 'open'` is exactly the kind of small
    * duplication that drifts first.
    */
-  const classifyRoomArea = (area: HudRoomArea): 'sealed' | 'open' => options.worldRooms?.classifyArea(area) ?? 'open';
+  const classifyRoomArea = (area: HudRoomArea): HudRoomPerimeterPreview => options.worldRooms?.classifyArea(area) ?? { enclosure: 'open' };
 
   const roomsPanel: RoomsPanel = createRoomsPanel({
     localizer,

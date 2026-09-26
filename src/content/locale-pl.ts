@@ -1364,6 +1364,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.rooms.enclosure-none': 'Jeszcze nieocenione',
   'hud.rooms.enclosure-sealed': 'Otoczone ścianami — to nie jest sprawdzenie drzwi',
   'hud.rooms.enclosure-open': 'Otwarte z co najmniej jednej strony',
+  'hud.rooms.open-north-edge': 'Otwarta krawędź nad polem ({x}, {y}). Postaw tam ścianę lub drzwi.',
+  'hud.rooms.open-west-edge': 'Otwarta krawędź na lewo od pola ({x}, {y}). Postaw tam ścianę lub drzwi.',
   // With the English original for #935: what closes a side, not only that it
   // must be closed. *Wymaga* for the voice `hud.rooms.requires-object` uses.
   'hud.rooms.requirement-enclosed': 'Wymaga ścian lub drzwi dookoła',

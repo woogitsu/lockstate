@@ -269,14 +269,14 @@ describe('RoomTool answers whether a rectangle is enclosed, for whoever asks', (
 
   it('reports open before any world has been handed to it', () => {
     const tool = new RoomTool();
-    expect(tool.classifyArea({ x: 0, y: 0, width: 4, height: 3 })).toBe('open');
+    expect(tool.classifyArea({ x: 0, y: 0, width: 4, height: 3 }).enclosure).toBe('open');
   });
 
   it('reports sealed for a rectangle whose own perimeter is fully walled', () => {
     const tool = new RoomTool();
     const area = { x: 1, y: 1, width: 4, height: 3 };
     tool.setWorld(worldWalledAt(area));
-    expect(tool.classifyArea(area)).toBe('sealed');
+    expect(tool.classifyArea(area).enclosure).toBe('sealed');
   });
 
   it('reports open for a rectangle with even one gap in its perimeter', () => {
@@ -287,18 +287,20 @@ describe('RoomTool answers whether a rectangle is enclosed, for whoever asks', (
     // A rectangle drawn one tile larger on every side is walled nowhere along
     // its own new perimeter -- the walls above belong to the smaller room, not
     // to this one.
-    expect(tool.classifyArea({ x: 0, y: 0, width: 6, height: 5 })).toBe('open');
+    expect(tool.classifyArea({ x: 0, y: 0, width: 6, height: 5 })).toEqual({
+      enclosure: 'open', gap: { tile: { x: 0, y: 0 }, edge: 'north' },
+    });
   });
 
   it('follows the newest world handed to it, replacing rather than merging with the last one', () => {
     const tool = new RoomTool();
     const area = { x: 2, y: 2, width: 3, height: 3 };
     tool.setWorld(worldWalledAt(area));
-    expect(tool.classifyArea(area)).toBe('sealed');
+    expect(tool.classifyArea(area).enclosure).toBe('sealed');
 
     // An empty world arrives -- a fresh session, or a snapshot that has not
     // materialised this land -- and the old answer must not survive it.
     tool.setWorld(WorldRenderView.empty());
-    expect(tool.classifyArea(area)).toBe('open');
+    expect(tool.classifyArea(area).enclosure).toBe('open');
   });
 });

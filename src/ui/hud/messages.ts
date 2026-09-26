@@ -1309,6 +1309,8 @@ export const HUD_MESSAGE_KEY = {
   roomsEnclosureNone: 'hud.rooms.enclosure-none',
   roomsEnclosureSealed: 'hud.rooms.enclosure-sealed',
   roomsEnclosureOpen: 'hud.rooms.enclosure-open',
+  roomsOpenNorthEdge: 'hud.rooms.open-north-edge',
+  roomsOpenWestEdge: 'hud.rooms.open-west-edge',
   roomsRequirementEnclosed: 'hud.rooms.requirement-enclosed',
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',

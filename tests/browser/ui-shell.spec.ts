@@ -4311,6 +4311,26 @@ test.describe('the Rooms panel', () => {
     ]);
   });
 
+  test('an open room preview points to its first missing edge at Full HD (#886)', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('open'));
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomGap({ x: 4, y: 6, edge: 'north' }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 4, height: 3 }));
+    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).noteText)
+      .toBe('Open edge above tile (4, 6). Add a wall or door there.');
+    const note = page.locator('.hud-rooms__note');
+    await expect(note).toBeVisible();
+    expect(await note.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomGap({ x: 8, y: 7, edge: 'west' }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+    await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ x: 4, y: 6, width: 4, height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).noteText)
+      .toBe('Open edge left of tile (8, 7). Add a wall or door there.');
+  });
+
   test('a sealed rectangle for a room type that must be enclosed is unchanged (issue #493)', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('sealed'));
     await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));

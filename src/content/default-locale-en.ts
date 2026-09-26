@@ -3651,6 +3651,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.rooms.enclosure-sealed': 'Walled in — not a door check',
   'hud.rooms.enclosure-open': 'Open on at least one side',
+  'hud.rooms.open-north-edge': 'Open edge above tile ({x}, {y}). Add a wall or door there.',
+  'hud.rooms.open-west-edge': 'Open edge left of tile ({x}, {y}). Add a wall or door there.',
   // **It read "Must be enclosed" until #935**, which names the rule and not
   // what satisfies it -- the gap #921 measured at the refusal, one step
   // earlier. What closes a side is exactly a wall or a door: `edgeNumericIdFor`
