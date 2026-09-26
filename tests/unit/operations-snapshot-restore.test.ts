@@ -33,6 +33,73 @@ const DESTINATION_TILE = { x: tileCoordinate(9), y: tileCoordinate(9) };
  * `tests/integration/session-save-round-trip.test.ts`.
  */
 describe('operations snapshot/restore: jobs, reservations, inventories and utility networks together', () => {
+  it('reconciles two restored jobs claiming the same living carrier without stranding stock', () => {
+    const containers = new ContainerRegistry();
+    const source = new Container('delivery-bay-0');
+    containers.register(source);
+    containers.register(new Container('storage-0'));
+    source.deposit('item.brick', 10);
+
+    const originalBoard = new JobBoard();
+    for (const id of ['carry-1', 'carry-2']) {
+      originalBoard.submitCarryItem({ id, priority: 1, itemId: 'item.brick', quantity: 4,
+        sourceContainerId: 'delivery-bay-0', sourceTile: SOURCE_TILE,
+        destinationContainerId: 'storage-0', destinationTile: DESTINATION_TILE }, 0);
+    }
+    const originalExecutor = new CarryJobExecutor(originalBoard, containers);
+    originalExecutor.claimAvailableJobFor(1);
+    originalExecutor.claimAvailableJobFor(2);
+    expect(source.reservedOf('item.brick')).toBe(8);
+
+    // The persisted shape accepts both jobs, but the worker index can hold
+    // only one. Simulate a save with two active claims on the same live id.
+    const snapshot = originalBoard.getSnapshot().map((job) =>
+      job.id === 'carry-2' ? { ...job, assignedWorkerId: 1 } : job);
+    const restoredBoard = new JobBoard();
+    restoredBoard.loadSnapshot(snapshot);
+    const executor = new CarryJobExecutor(restoredBoard, containers);
+
+    expect(executor.reconcileRestoredJobs((id) => id === 1)).toBe(1);
+    expect(restoredBoard.getById('carry-1')?.state).toBe('failed');
+    expect(restoredBoard.getById('carry-1')?.failReason).toBe('duplicate-carrier-claim');
+    expect(restoredBoard.getById('carry-1')?.assignedWorkerId).toBeUndefined();
+    expect(restoredBoard.getById('carry-2')?.state).toBe('assigned');
+    expect(restoredBoard.activeJobFor(1)?.id).toBe('carry-2');
+    expect(source.reservedOf('item.brick')).toBe(4);
+    expect(executor.pickUp(restoredBoard.getById('carry-2')!)).toBe(true);
+    expect(executor.reconcileRestoredJobs((id) => id === 1)).toBe(0);
+  });
+
+  it('returns goods already picked up by the discarded duplicate claim', () => {
+    const containers = new ContainerRegistry();
+    const source = new Container('delivery-bay-0');
+    containers.register(source);
+    containers.register(new Container('storage-0'));
+    source.deposit('item.brick', 10);
+    const board = new JobBoard();
+    for (const id of ['carry-1', 'carry-2']) {
+      board.submitCarryItem({ id, priority: 1, itemId: 'item.brick', quantity: 4,
+        sourceContainerId: 'delivery-bay-0', sourceTile: SOURCE_TILE,
+        destinationContainerId: 'storage-0', destinationTile: DESTINATION_TILE }, 0);
+    }
+    const live = new CarryJobExecutor(board, containers);
+    live.claimAvailableJobFor(1);
+    live.claimAvailableJobFor(2);
+    expect(live.pickUp(board.getById('carry-1')!)).toBe(true);
+    expect(source.quantityOf('item.brick')).toBe(6);
+    expect(source.reservedOf('item.brick')).toBe(4);
+
+    const snapshot = board.getSnapshot().map((job) =>
+      job.id === 'carry-2' ? { ...job, assignedWorkerId: 1 } : job);
+    const restoredBoard = new JobBoard();
+    restoredBoard.loadSnapshot(snapshot);
+    const restored = new CarryJobExecutor(restoredBoard, containers);
+
+    expect(restored.reconcileRestoredJobs((id) => id === 1)).toBe(1);
+    expect(source.quantityOf('item.brick')).toBe(10);
+    expect(source.reservedOf('item.brick')).toBe(4);
+    expect(restoredBoard.activeJobFor(1)?.id).toBe('carry-2');
+  });
   it('resumes an interrupted job, preserves carrier assignment, container reservations and utility state after a full restore', () => {
     const containers = new ContainerRegistry();
     const source = new Container('delivery-bay-0');
