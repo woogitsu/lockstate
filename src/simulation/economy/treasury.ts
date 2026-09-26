@@ -184,8 +184,10 @@ import { procurableMaterial } from '../../content/procurement-catalog';
  *
  * The owner raised the grant to 100,000 in #641 on 2026-09-23 after measuring
  * the cost of a first prison and the wall-drag trap. This places that trap
- * roughly four screenfuls away; ADR 0075's development grant remains the
- * recovery path when a player spends the balance anyway. The overdraft floor
+ * roughly four screenfuls away. It does not eliminate the hard lock: a player
+ * can still exhaust the larger grant on walls before buying a first bed.
+ * ADR 0075's development grants are accepted design, but no threshold grant
+ * is implemented yet, so this change alone must not close #641. The overdraft floor
  * and arrears bound are each one tenth of this grant by the same ruling.
  * Existing saves retain their recorded balance; only new prisons receive this
  * grant. It is an opening balance, not recurring state income.
@@ -396,7 +398,7 @@ export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_DE
  *
  * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
  * "no rung of its own above the treasury's floor".** Ruling 19 puts the third
- * rung *at* the floor (−2,500 today), and the floor already has an owner --
+ * rung *at* the floor (−10,000 with the #641 opening grant), and the floor already has an owner --
  * `Treasury.setOverdraftFloor`, fed by `createNewSimulationRuntime` from
  * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`. Writing −2,500 here would be a second
  * copy of a number that is already defined once, and the two copies would
