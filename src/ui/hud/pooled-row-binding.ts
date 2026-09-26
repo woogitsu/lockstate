@@ -164,6 +164,8 @@ export type PooledRowAssignment =
   /** Names nothing and has no box. Only ever in the trailing run. */
   | { readonly kind: 'empty' };
 
+export type PooledRowAnchor = 'top' | 'bottom';
+
 /**
  * Assigns a publication's items to a pool of rows without ever putting a
  * different item in a place a player may still be aiming at.
@@ -188,7 +190,12 @@ export function assignPooledRows(
   itemIds: readonly string[],
   nowMs: number,
   settleMs: number,
+  anchor: PooledRowAnchor = 'top',
 ): readonly PooledRowAssignment[] {
+  const order = anchor === 'bottom'
+    ? rows.map((_, index) => rows.length - 1 - index)
+    : rows.map((_, index) => index);
+  const orderedRows = order.map((index) => rows[index]!);
   const wanted = new Set(itemIds);
   const held = new Set<string>();
   const assignments: PooledRowAssignment[] = [];
@@ -202,7 +209,7 @@ export function assignPooledRows(
    * caller stamps `freedAtMs` from the transition it can see for itself: it
    * held an item before this call and does not after.
    */
-  for (const row of rows) {
+  for (const row of orderedRows) {
     const { itemId } = row;
     if (itemId !== undefined && wanted.has(itemId) && !held.has(itemId)) {
       held.add(itemId);
@@ -221,14 +228,14 @@ export function assignPooledRows(
    */
   const arriving = [...new Set(itemIds)].filter((itemId) => !held.has(itemId));
   let next = 0;
-  for (const [index, row] of rows.entries()) {
-    if (assignments[index]?.kind !== 'holds-open') continue;
+  for (const [orderedIndex, row] of orderedRows.entries()) {
+    if (assignments[orderedIndex]?.kind !== 'holds-open') continue;
     if (row.itemId !== undefined) continue;
     if (row.freedAtMs !== undefined && nowMs - row.freedAtMs < settleMs) continue;
     const itemId = arriving[next];
     if (itemId === undefined) break;
     next += 1;
-    assignments[index] = { kind: 'fills', itemId };
+    assignments[orderedIndex] = { kind: 'fills', itemId };
   }
 
   /*
@@ -246,5 +253,5 @@ export function assignPooledRows(
     if (!occupiedBelow) assignments[index] = { kind: 'empty' };
   }
 
-  return assignments;
+  return anchor === 'bottom' ? assignments.reverse() : assignments;
 }
