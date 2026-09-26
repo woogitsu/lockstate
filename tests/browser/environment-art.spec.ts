@@ -1053,6 +1053,48 @@ test.describe('the environment artwork', () => {
     expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(12);
   });
 
+  test('the Blender water surface draws saved water tiles at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.water'].kind).toBe('rendered-art');
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.water');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of [pixels!.centre, pixels!.left, pixels!.right]) {
+      expect(pixel?.[3]).toBeGreaterThan(250);
+    }
+    const water = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites()
+      .filter((sprite) => sprite.frameName === 'env.terrain.water'));
+    const x = (fixture.waterTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.waterTileY + 0.5) * fixture.tileSizePx;
+    expect(water.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(water.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3), { x, y });
+    if (process.env['LOCKSTATE_CAPTURE_WATER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('saved-water-terrain-1920x1080.png') });
+    }
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(12);
+  });
+
   test('packs the Blender overhead door cap and frontal door face', async ({ page }) => {
     expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
     expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('rendered-art');

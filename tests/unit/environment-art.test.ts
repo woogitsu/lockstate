@@ -358,7 +358,7 @@ describe('declared fallback', () => {
 
   it('accounts for every terrain exactly once', () => {
     const coverage = terrainArtCoverage();
-    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass', 'gravel', 'rock']);
+    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass', 'gravel', 'rock', 'water']);
     expect([...coverage.onFallback]).toEqual([...TERRAIN_ON_COLOUR_FALLBACK]);
     expect([...coverage.drawn, ...coverage.onFallback].sort()).toEqual(
       DEFAULT_TERRAIN_DEFINITIONS.map((definition) => definition.id).sort(),
@@ -371,7 +371,7 @@ describe('declared fallback', () => {
     expect(terrainFloorSpriteByNumericId(2)).toBe('env.terrain.gravel');
     expect(terrainFloorSpriteByNumericId(3)).toBe('env.terrain.concrete');
     expect(terrainFloorSpriteByNumericId(4)).toBe('env.terrain.rock');
-    expect(terrainFloorSpriteByNumericId(5)).toBeUndefined();
+    expect(terrainFloorSpriteByNumericId(5)).toBe('env.terrain.water');
     expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 
