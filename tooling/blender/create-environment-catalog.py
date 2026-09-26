@@ -909,10 +909,12 @@ def furniture(collection, root, asset_id):
         box(collection, root, "Red master switch", (0.30, -0.01, 1.277), (0.095, 0.15, 0.065), "utility_red", 0.014)
         for y in (-0.11, 0.11):
             box(collection, root, f"Steel switch guard.{y}", (0.30, y, 1.296), (0.15, 0.025, 0.08), "galvanized_edge", 0.009)
-        # Alternating hazard paint is a nonverbal 64px recognition cue.
-        box(collection, root, "Hazard stripe ground", (0.397, 0, 1.206), (0.063, 0.68, 0.012), "shade", 0.004)
+        # Give the warning paint enough width to remain one striped band at
+        # 64px per tile; the former slivers collapsed into isolated dots.
+        box(collection, root, "Hazard stripe ground", (0.397, 0, 1.206), (0.105, 0.68, 0.012), "shade", 0.004)
+        box(collection, root, "Yellow hazard band", (0.397, 0, 1.216), (0.082, 0.65, 0.008), "utility_yellow", 0.002)
         for index, y in enumerate((-0.25, -0.09, 0.07, 0.23)):
-            stripe = box(collection, root, f"Yellow hazard diagonal.{index}", (0.397, y, 1.216), (0.056, 0.09, 0.008), "utility_yellow", 0.002)
+            stripe = box(collection, root, f"Dark hazard diagonal.{index}", (0.397, y, 1.223), (0.085, 0.045, 0.006), "shade", 0.001)
             stripe.rotation_euler.z = 0.38
         for x in (-0.40, 0.40):
             for y in (-0.39, 0.39):
