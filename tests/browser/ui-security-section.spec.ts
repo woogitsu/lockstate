@@ -47,7 +47,7 @@ const SECURITY: HudSecurityViewModel = {
   sectors: [
     {
       sectorId: 'sector.default',
-      gradeLabelKey: 'security-grade.standard.name',
+      gradeLabelKey: 'grade.general.name',
       controlStateLabelKey: 'sector-control-state.normal.name',
       underLockdown: false,
       required: 2,
