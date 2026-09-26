@@ -8,7 +8,8 @@ import {
   RENDER_ACTOR_POPULATION_PRISONER,
   RenderActorsKeyframeWriter,
 } from '../../src/simulation/protocol/render-actors-payload';
-import { encodeRenderActorsKeyframe, type RenderGuardSource } from '../../src/simulation/worker/render-actors-keyframe';
+import { encodeRenderActorsKeyframe, openAssaultParticipantIds, type RenderGuardSource } from '../../src/simulation/worker/render-actors-keyframe';
+import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
 import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
@@ -162,7 +163,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(buffer.byteLength).toBe(64);
 
     const read = readRenderActorsPayload(buffer);
-    expect(read.layoutVersion).toBe(7);
+    expect(read.layoutVersion).toBe(8);
     expect(read.roomCount).toBe(0);
     expect(read.rooms).toEqual([]);
     expect(read.flags).toBe(1);
@@ -223,8 +224,8 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
      */
     const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 0x01020304, x: 0, y: 0 }]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
     const bytes = new Uint8Array(buffer);
-    // The layout version, word 0, is 7: low byte first.
-    expect([...bytes.slice(0, 4)]).toEqual([7, 0, 0, 0]);
+    // The layout version, word 0, is 8: low byte first.
+    expect([...bytes.slice(0, 4)]).toEqual([8, 0, 0, 0]);
     // The first record's entity id, word 6 -- word 4 is ADR 0099's marker and
     // word 5 is ADR 0097's room count, zero here because this source has no
     // rooms.
@@ -487,6 +488,20 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(selectActorPose(render()[1]!)).toMatchObject({ clipId: 'agitate' });
     participants.clear();
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
+  });
+
+  it('shows both open-assault participants and returns them to calm art on closure', () => {
+    const incidents = new IncidentLog();
+    incidents.open({ id: 'assault-1', type: 'assault', sectorId: 'wing', participantIds: [10, 11], severity: 4, causeFactors: [] }, 10);
+    incidents.open({ id: 'riot-1', type: 'riot', sectorId: 'wing', participantIds: [12], severity: 4, causeFactors: [] }, 10);
+    const render = () => actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      sourceOf([{ id: 10, x: 2, y: 3 }, { id: 11, x: 4, y: 5 }, { id: 12, x: 6, y: 7 }]),
+      TICKS_PER_SECOND, NO_WORLD_CHANGE, undefined, undefined, undefined, undefined, undefined, openAssaultParticipantIds(incidents),
+    )));
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.assault', 'actor.prisoner.assault', 'actor.prisoner.base']);
+    expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'struggle' });
+    incidents.transition('assault-1', 'lapsed', 20);
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base', 'actor.prisoner.base']);
   });
 
   it('does not apply a guard-only response bit to a prisoner record', () => {

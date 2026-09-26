@@ -6,6 +6,17 @@ import {
   RenderActorsKeyframeWriter,
 } from '../protocol/render-actors-payload';
 import type { RoomConditionRow } from './room-conditions';
+import type { IncidentLog } from '../incidents/incident';
+
+/** Project the existing open-incident ledger once per delta, never per prisoner. */
+export function openAssaultParticipantIds(incidents: Pick<IncidentLog, 'openIncidents'>): ReadonlySet<number> {
+  const ids = new Set<number>();
+  for (const incident of incidents.openIncidents()) {
+    if (incident.type !== 'assault') continue;
+    for (const id of incident.participantIds) ids.add(id);
+  }
+  return ids;
+}
 
 /**
  * The worker's half of the render delta channel: one keyframe, read off the
@@ -176,6 +187,7 @@ export function encodeRenderActorsKeyframe(
   respondingGuards?: readonly number[],
   searchingGuards?: readonly number[],
   riotParticipants?: { isOpenRiotParticipant(entityId: number): boolean },
+  assaultParticipants?: ReadonlySet<number>,
 ): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
     throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
@@ -205,7 +217,7 @@ export function encodeRenderActorsKeyframe(
     locomotion.read(index, position.tileX[index]!, position.tileY[index]!, reading);
     writer.writeRecord(
       entityStore.getIdByIndex(index),
-      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false),
+      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false, assaultParticipants?.has(entityStore.getIdByIndex(index)) ?? false),
       reading.subX,
       reading.subY,
       // Sub-tile units a *tick* become sub-tile units a wall-clock second

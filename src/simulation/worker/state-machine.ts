@@ -30,7 +30,7 @@ import {
 import { refusalBandCeilingPassed } from '../refusals/refusal-band-lifetime';
 import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } from '../runtime/restore-refusal';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
-import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
+import { encodeRenderActorsKeyframe, openAssaultParticipantIds } from './render-actors-keyframe';
 import { collectRoomConditions, type RoomConditionRow } from './room-conditions';
 import { editHistoryAvailability } from '../construction/handler';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
@@ -917,6 +917,7 @@ export class SimulationWorkerStateMachine {
     // counter is incremented at the write sites that change what the renderer
     // draws, never here.
     const worldRevision = this._runtime.world.drawnWorldRevision;
+    const assaultParticipants = openAssaultParticipantIds(this._runtime.incidents);
     const data = encodeRenderActorsKeyframe(
       this._runtime.prisoners,
       ticksPerWallSecond,
@@ -926,6 +927,7 @@ export class SimulationWorkerStateMachine {
       this._runtime.incidentResponseSystem.claimedGuardIds(),
       this._runtime.searchSystem.claimedGuardIds(),
       this._runtime.incidents,
+      assaultParticipants,
     );
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
