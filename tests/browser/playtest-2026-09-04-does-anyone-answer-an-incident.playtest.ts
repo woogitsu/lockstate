@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { buildAndPopulate, currentTick, fastForwardToMax, installTee, openApp, panelText, tab } from './playtest-harness';
 
 /**
@@ -382,12 +382,8 @@ test('act 2: an unguarded prison, and what the screen says when nobody answers',
 /**
  * Act 3 -- the edge the brief asks about by name: `'responding' -> 'lapsed'`.
  *
- * `IncidentResponseSystem.releaseResponder` (`response-system.ts:389-400`)
- * deletes the response record when its last responder is taken off it, and
- * `advanceResponse`'s no-record path (`:778-803`) then lapses the incident at
- * its own deadline -- from `'responding'`, with guards who had already
- * arrived. The player-reachable way to do that is the Release control on the
- * Staff panel's held-guard rows, which is what this act presses.
+ * Recalling one arrived guard can leave a live response record below its
+ * required quorum. The containment timer must not resolve that incident.
  *
  * **Why it steps the clock instead of watching it.**
  * `DEFAULT_INCIDENT_RESPONSE_POLICY.containmentTicks` is 60, so `'responding'`
@@ -396,17 +392,17 @@ test('act 2: an unguarded prison, and what the screen says when nobody answers',
  * failed on exactly that and their failures are recorded in the research note:
  * polling at 4x missed whole incidents between samples, and pressing Pause on
  * sight of `'responding'` lost the race to the containment timer. So this act
- * never lets the clock free-run once the prison is warm: it advances in 600ms
- * bursts of 1x (about twelve ticks) with the clock paused between them. Pause
+ * never lets the clock free-run once the prison is warm: it advances in 120ms
+ * bursts of 1x (about two ticks) with the clock paused between them. Pause
  * and Play are gestures a player has -- the transport buttons -- not a harness
  * back door.
  *
- * As landed it catches `'notified'` rather than `'responding'`, and releasing
- * every responder there produced `active -> notified -> lapsed`. A shorter
- * burst would be the way to aim one state further.
+ * The Full HD follow-up for #1506 catches `'responding'`, recalls exactly one
+ * responder through the visible Staff control, and asserts the incident lapses.
  */
-test('act 3: release every responder mid-response and watch the ending', async ({ page }) => {
+test('act 3: recall one responder during containment and watch the ending', async ({ page }) => {
   test.setTimeout(1_500_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
   await installTee(page);
   await installProjectionProbe(page);
   await openApp(page);
@@ -444,9 +440,9 @@ test('act 3: release every responder mid-response and watch the ending', async (
   await page.waitForTimeout(400);
 
   /*
-   * Phase 2: never let the clock free-run again. Each step is one 600ms burst
-   * of 1x, which is about **12 ticks**, against a `'responding'` window of 60
-   * -- five samples inside it. The constant press latency cancels between the
+   * Phase 2: never let the clock free-run again. Each step is one 120ms burst
+   * of 1x, about two ticks against a `'responding'` window of 60. The constant
+   * press latency cancels between the
    * unpause and the pause of one burst, so the burst length is wall time, not
    * latency.
    */
@@ -455,14 +451,14 @@ test('act 3: release every responder mid-response and watch the ending', async (
   for (let step = 0; step < 1_200; step += 1) {
     const view = await readIncidents(page);
     const row = view?.active[0];
-    if (row !== undefined && (row.state === 'responding' || row.state === 'notified')) {
+    if (row !== undefined && row.state === 'responding') {
       target = row.incidentId;
       caughtState = row.state;
       console.log(`[act3] caught ${row.incidentId} in '${row.state}' after ${step} burst(s), sev ${row.severity}, required ${String(row.requiredResponders)}`);
       break;
     }
     await normalSpeed.click();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(120);
     await pause.click();
     await page.waitForTimeout(120);
   }
@@ -476,31 +472,18 @@ test('act 3: release every responder mid-response and watch the ending', async (
   }
 
   const beforeRelease = await readIncidentDetail(page, target);
+  expect(beforeRelease?.state).toBe('responding');
   console.log(`[act3] before release: state=${beforeRelease?.state} timeline=${JSON.stringify(beforeRelease?.timeline)}`);
   const staffBefore = await readStaffPanel(page);
   console.log(`[act3] held before release: ${JSON.stringify(staffBefore.held)}`);
   console.log(`[act3] screen before release: ${JSON.stringify(await readScreen(page))}`);
 
-  // Press every Release control the held block offers, repeatedly, until the
-  // block reports nothing held. The clock is paused throughout.
-  for (let sweep = 0; sweep < 12; sweep += 1) {
-    await tab(page, 'manage').click();
-    const controls = page.locator('.hud-staff__held .hud-staff__held-row button');
-    const count = await controls.count();
-    let pressed = 0;
-    for (let index = 0; index < count; index += 1) {
-      const control = controls.nth(index);
-      if (!(await control.isVisible())) continue;
-      if (await control.isDisabled()) continue;
-      await control.click();
-      pressed += 1;
-      await page.waitForTimeout(250);
-    }
-    const held = (await panelText(page, '.hud-staff__held')).replace(/\n/g, ' | ');
-    console.log(`[act3] release sweep ${sweep}: pressed ${pressed}, held now ${JSON.stringify(held)} at tick ${await currentTick(page)}`);
-    if (pressed === 0) break;
-    await page.waitForTimeout(400);
-  }
+  await tab(page, 'manage').click();
+  const responderRow = page.locator('.hud-staff__held .hud-staff__held-row').filter({ hasText: 'Incident Response' }).first();
+  expect(await page.locator('.hud-staff__held .hud-staff__held-row').filter({ hasText: 'Incident Response' }).count()).toBeGreaterThan(1);
+  await responderRow.locator('button').click();
+  expect(await page.locator('.hud-staff__held .hud-staff__held-row').filter({ hasText: 'Incident Response' }).count()).toBe(1);
+  console.log(`[act3] recalled one responder at tick ${await currentTick(page)}; held now ${JSON.stringify(await panelText(page, '.hud-staff__held'))}`);
 
   // The clock has to run for the release commands to be applied at all --
   // a submitted command is executed on a tick, and the deadline that decides
@@ -539,6 +522,7 @@ test('act 3: release every responder mid-response and watch the ending', async (
   }
 
   const finalDetail = await readIncidentDetail(page, target);
+  expect(finalDetail?.state).toBe('lapsed');
   console.log(`[act3] TARGET FINAL ${target}: state=${finalDetail?.state} timeline=${JSON.stringify(finalDetail?.timeline)} outcome=${JSON.stringify(finalDetail?.outcome)}`);
   const view = await readIncidents(page);
   await dumpTimelines(page, 'act3', view);
