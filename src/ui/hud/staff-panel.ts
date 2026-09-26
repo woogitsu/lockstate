@@ -1753,7 +1753,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       return;
     }
 
-    const rosterWindow = shown.staff.slice(0, STAFF_ROSTER_ROW_LIMIT);
+    const rosterWindow = [...shown.staff].sort((left, right) => left.entityId - right.entityId).slice(0, STAFF_ROSTER_ROW_LIMIT);
     const members = new Map(rosterWindow.map((member) => [String(member.entityId), member]));
     /*
      * Which row names whom -- `assignPooledRows`, not `staff[index]`, and that
