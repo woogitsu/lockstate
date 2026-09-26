@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-guard.mjs';
@@ -18,12 +18,17 @@ if (intake.schemaVersion !== 1 || !Array.isArray(intake.entries)) throw new Erro
  * executed -- not merely read -- by
  * `tests/foundation/art-catalog-generator-contract.test.ts`.
  *
- * Awaited before the `rm` on purpose. A guard that fires after the output
- * directory is gone has already done the damage.
+ * Awaited before publishing. This directory also holds Blender renders, so
+ * regenerating owner sheets must never remove the whole directory.
  */
 await assertSourceInputsAreImages({ entries: intake.entries, readHead: readSourceHead(sourceDir) });
 
-await rm(outputDir, { recursive: true, force: true });
+// Only files named by the previous owner-sheet catalog belong to this lane.
+// The same directory also contains independently published Blender renders.
+const previousCatalog = await readFile(outputManifest, 'utf8').then(JSON.parse).catch((error) => {
+  if (error?.code === 'ENOENT') return { entries: [] };
+  throw error;
+});
 await mkdir(outputDir, { recursive: true });
 const entries = [];
 for (const assetId of [...intake.entries].sort()) {
@@ -46,4 +51,14 @@ for (const assetId of [...intake.entries].sort()) {
 }
 await mkdir(path.dirname(outputManifest), { recursive: true });
 await writeFile(outputManifest, `${JSON.stringify({ schemaVersion: 1, kind: 'lockstate.source-art-catalog', entries }, null, 2)}\n`);
+const currentImages = new Set(entries.map((entry) => entry.image));
+for (const previous of previousCatalog.entries ?? []) {
+  const safeName = typeof previous.assetId === 'string' && /^[a-z0-9._-]+$/u.test(previous.assetId)
+    && typeof previous.sha256 === 'string' && /^[a-f0-9]{64}$/u.test(previous.sha256)
+    ? `${previous.assetId}.${previous.sha256.slice(0, 12)}.png` : undefined;
+  if (safeName === undefined || previous.image !== `source-art/${safeName}` || currentImages.has(previous.image)) continue;
+  await unlink(path.join(outputDir, safeName)).catch((error) => {
+    if (error?.code !== 'ENOENT') throw error;
+  });
+}
 console.log(`Generated ${entries.length} content-addressed source-art entries.`);
