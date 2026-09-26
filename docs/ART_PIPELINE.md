@@ -40,6 +40,16 @@ render-actors layout 6; the renderer selects this atlas only while that claim
 is live. The Full HD world preview is
 `assets/rendered/evidence/guard-search-1920x1080.png`.
 
+`actor.prisoner.riot` gives an existing open riot a visible world cue. Its
+Blender scene keeps the base prisoner's orange uniform, fixed camera and foot
+pivot while alternating one raised arm in four `agitate` frames across eight
+facings. The worker reads `IncidentLog.isOpenRiotParticipant` and publishes
+that existing fact in render-actors layout 7; resolving the riot restores the
+base atlas. The Full HD comparison with a calm prisoner is
+`assets/rendered/evidence/prisoner-riot-1920x1080.png`.
+The default-zoom Full HD comparison uses four agitated prisoners and one calm
+prisoner in `assets/rendered/evidence/prisoner-riot-default-zoom-1920x1080.png`.
+
 ## Blender source scene
 
 Each `.blend` source must contain:
@@ -49,7 +59,7 @@ Each `.blend` source must contain:
 - a parent empty named `SpriteRoot`; the character's authored forward direction
   at rotation zero is `south`;
 - timeline frames 1–8 for the base walk cycle (the first frame is also idle);
-  the guard response and search variants render frames 1–4 as looping duty gestures;
+  the guard response/search and prisoner riot variants render frames 1–4 as looping gestures;
 - world lighting and the actor model/rig, with no opaque backdrop.
 
 `export-directional-sprites.py` preserves the authored camera and rotates

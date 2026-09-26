@@ -8,6 +8,9 @@ import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simu
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { hashFullRuntime } from '../helpers/determinism-state';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { encodeRenderActorsKeyframe } from '../../src/simulation/worker/render-actors-keyframe';
+import { decodeRenderActorsPayload } from '../../src/simulation/protocol/render-actors-payload';
+import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
 
 /**
  * **A riot changes what its participants do**
@@ -520,6 +523,10 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     stepTo(live, RIOT_TICK + 100);
     expect(theRiot(live).state).toBe('active');
     expect(live.incidents.isOpenRiotParticipant(0)).toBe(true);
+    const liveRender = actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      live.prisoners, 20, 0, undefined, undefined, undefined, undefined, live.incidents,
+    )));
+    expect(liveRender.filter((actor) => actor.assetId === 'actor.prisoner.riot')).toHaveLength(2);
 
     // Stated as a pinned value, because "no schema bump" is the claim: nothing
     // in ADR 0057 added a persisted field, so this number is the one the tree
@@ -537,6 +544,10 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // `openIdsBySectorId`.
     expect(restored.incidents.isOpenRiotParticipant(0)).toBe(true);
     expect(restored.incidents.isOpenRiotParticipant(1)).toBe(true);
+    const restoredRender = actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      restored.prisoners, 20, 0, undefined, undefined, undefined, undefined, restored.incidents,
+    )));
+    expect(restoredRender.filter((actor) => actor.assetId === 'actor.prisoner.riot')).toHaveLength(2);
 
     // Behavioural, not structural. Both sessions run the same 400 ticks from
     // the same tick and spend them the same way -- under the riot regime, with

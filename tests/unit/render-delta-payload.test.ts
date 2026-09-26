@@ -162,7 +162,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(buffer.byteLength).toBe(64);
 
     const read = readRenderActorsPayload(buffer);
-    expect(read.layoutVersion).toBe(6);
+    expect(read.layoutVersion).toBe(7);
     expect(read.roomCount).toBe(0);
     expect(read.rooms).toEqual([]);
     expect(read.flags).toBe(1);
@@ -223,8 +223,8 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
      */
     const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 0x01020304, x: 0, y: 0 }]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
     const bytes = new Uint8Array(buffer);
-    // The layout version, word 0, is 6: low byte first.
-    expect([...bytes.slice(0, 4)]).toEqual([6, 0, 0, 0]);
+    // The layout version, word 0, is 7: low byte first.
+    expect([...bytes.slice(0, 4)]).toEqual([7, 0, 0, 0]);
     // The first record's entity id, word 6 -- word 4 is ADR 0099's marker and
     // word 5 is ADR 0097's room count, zero here because this source has no
     // rooms.
@@ -474,6 +474,19 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(actors.map((actor) => actor.assetId)).toEqual(['actor.guard.base', 'actor.guard.search']);
     expect(actors.map((actor) => actor.contrabandSearch ?? false)).toEqual([false, true]);
     expect(selectActorPose(actors[1]!)).toMatchObject({ clipId: 'search' });
+  });
+
+  it('animates only prisoners named by an open riot, restoring base art after it closes', () => {
+    const participants = new Set([11]);
+    const render = () => actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      sourceOf([{ id: 10, x: 2, y: 3 }, { id: 11, x: 4, y: 5 }]),
+      TICKS_PER_SECOND, NO_WORLD_CHANGE, undefined, undefined, undefined, undefined,
+      { isOpenRiotParticipant: (entityId) => participants.has(entityId) },
+    )));
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.riot']);
+    expect(selectActorPose(render()[1]!)).toMatchObject({ clipId: 'agitate' });
+    participants.clear();
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
   });
 
   it('does not apply a guard-only response bit to a prisoner record', () => {

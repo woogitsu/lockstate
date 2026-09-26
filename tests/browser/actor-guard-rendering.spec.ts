@@ -141,3 +141,21 @@ test('shows the Blender search gesture in the rendered prison room at 1920×1080
     await page.screenshot({ path: 'assets/rendered/evidence/guard-search-1920x1080.png' });
   }
 });
+
+test('shows an agitated prisoner beside a calm prisoner in the rendered prison at 1920×1080', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/environment-art-harness.html?prisonerRiotVisual=1');
+  await page.evaluate(async () => {
+    await window.lockstateEnvironmentArtHarness!.ready;
+    await window.lockstateEnvironmentArtHarness!.artLoaded;
+  });
+  await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.riot').length === 4);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.base'))).toHaveLength(1);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
+  if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
+    await page.screenshot({ path: 'assets/rendered/evidence/prisoner-riot-1920x1080.png' });
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 1));
+    await page.screenshot({ path: 'assets/rendered/evidence/prisoner-riot-default-zoom-1920x1080.png' });
+  }
+});
