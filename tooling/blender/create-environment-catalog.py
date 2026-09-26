@@ -1117,8 +1117,11 @@ def furniture(collection, root, asset_id):
             box(collection, root, f"Steel lid hinge.{x}", (x, -0.46, 1.30), (0.13, 0.11, 0.08), "steel", 0.012)
         box(collection, root, "Raised lid dark gasket", (0, -0.63, 1.51), (0.82, 0.39, 0.055), "metal_recess", 0.030)
         box(collection, root, "Raised lid enamel", (0, -0.63, 1.55), (0.78, 0.35, 0.05), "medical_enamel", 0.030)
-        box(collection, root, "Lid cross horizontal", (0, -0.63, 1.583), (0.23, 0.065, 0.009), "medical_red", 0.003)
-        box(collection, root, "Lid cross vertical", (0, -0.63, 1.588), (0.065, 0.23, 0.009), "medical_red", 0.003)
+        # The open V3 lid remains, but its identity mark must survive the
+        # one-tile game draw beside the much clearer medical bed.
+        box(collection, root, "Lid cross horizontal", (0, -0.63, 1.583), (0.38, 0.10, 0.014), "medical_teal", 0.004)
+        box(collection, root, "Lid cross vertical", (0, -0.63, 1.589), (0.10, 0.28, 0.014), "medical_teal", 0.004)
+        box(collection, root, "Lid teal edge", (0, -0.82, 1.573), (0.72, 0.025, 0.018), "medical_teal", 0.004)
         box(collection, root, "Front latch", (0, 0.47, 1.29), (0.12, 0.10, 0.07), "steel", 0.011)
         for x in (-0.38, 0.38):
             for y in (-0.36, 0.36):
