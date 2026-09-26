@@ -176,6 +176,8 @@ export interface LockstateEnvironmentArtHarness {
   atlasPixel(x: number, y: number): HarnessPixel | undefined;
   /** Every tiling sprite currently on the display list, sorted by position. */
   tileSprites(): readonly HarnessTileSprite[];
+  /** Names of visible Phaser actor frames from one logical asset. */
+  actorFrames(assetId: string): readonly string[];
   roomLabels(): readonly { readonly text: string; readonly worldX: number; readonly worldY: number }[];
   /** Points the camera at a world position and waits for the frame drawn with it. */
   centreCameraOn(worldX: number, worldY: number, zoom?: number): Promise<void>;
