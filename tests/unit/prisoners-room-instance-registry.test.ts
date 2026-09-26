@@ -924,6 +924,17 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.totalOccupancy).toBe(2);
     });
 
+    it('counts the union when a saved room instance has more than one occupancy row', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 3, concurrentUseCapacity: 3, objectCapabilities: ['sleep-surface'] });
+
+      registry.loadSnapshot([['cell-1', [7]], ['cell-1', [7, 9]]]);
+
+      expect(registry.occupantsOf('cell-1')).toEqual([7, 9]);
+      expect(registry.occupancyOf('cell-1')).toBe(2);
+      expect(registry.totalOccupancy).toBe(2);
+    });
+
     it('keeps the two counts equal for an ordinary payload, so the case above is about the duplicate and not about restoring at all', () => {
       const registry = new RoomInstanceRegistry();
       registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
