@@ -32,6 +32,7 @@ const defaultContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'ch
 const responseContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'guard-response-8-direction.contract.json');
 const searchContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'guard-search-8-direction.contract.json');
 const riotContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-riot-8-direction.contract.json');
+const assaultContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-assault-8-direction.contract.json');
 const PNG_SIGNATURE = '89504e470d0a1a0a';
 const LFS_POINTER_PREFIX = 'version https://git-lfs.github.com/spec/v1';
 
@@ -269,6 +270,9 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
   const riotContract = options.contract === undefined
     ? JSON.parse(await readFile(riotContractPath, 'utf8'))
     : contract;
+  const assaultContract = options.contract === undefined
+    ? JSON.parse(await readFile(assaultContractPath, 'utf8'))
+    : contract;
 
   const manifestFiles = options.manifestName
     ? [options.manifestName]
@@ -314,7 +318,7 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
     }
 
     for (const manifest of manifests) {
-      const authoredContract = manifest.assetId === 'actor.guard.response' ? responseContract : manifest.assetId === 'actor.guard.search' ? searchContract : manifest.assetId === 'actor.prisoner.riot' ? riotContract : contract;
+      const authoredContract = manifest.assetId === 'actor.guard.response' ? responseContract : manifest.assetId === 'actor.guard.search' ? searchContract : manifest.assetId === 'actor.prisoner.riot' ? riotContract : manifest.assetId === 'actor.prisoner.assault' ? assaultContract : contract;
       await validateClipManifest(manifest, { atlasDirectory, contract: authoredContract, report, pivots });
       atlasCount += 1;
     }
