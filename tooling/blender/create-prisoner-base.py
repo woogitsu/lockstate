@@ -21,6 +21,7 @@ ACTOR_IDS = (
     "actor.guard.search",
     "actor.prisoner.riot",
     "actor.prisoner.assault",
+    "actor.prisoner.treatment",
     "actor.medic.base",
     "actor.cook.base",
     "actor.staff.base",
@@ -203,6 +204,15 @@ def animate_assault_arm(item, side):
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
 
 
+def animate_treatment_arm(item, side):
+    """A patient holds the injured arm close while the other supports it."""
+    poses = (-65, -72, -68, -62, -65) if side == -1 else (-44, -48, -46, -42, -44)
+    item.rotation_euler.y = math.radians(62 * side)
+    for frame, degrees in enumerate(poses, start=1):
+        item.rotation_euler.x = math.radians(degrees)
+        item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
+
+
 def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
@@ -214,6 +224,7 @@ def build_detailed_actor(root, asset_id):
     search = asset_id == "actor.guard.search"
     riot = asset_id == "actor.prisoner.riot"
     assault = asset_id == "actor.prisoner.assault"
+    treatment = asset_id == "actor.prisoner.treatment"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
     staff = asset_id == "actor.staff.base"
@@ -236,6 +247,7 @@ def build_detailed_actor(root, asset_id):
     hair = mat("Short dark hair", (0.014, 0.010, 0.009), 0.88)
     shoe = mat("Worn charcoal shoes", (0.018, 0.020, 0.021), 0.85)
     undershirt = mat("Pale undershirt", (0.76, 0.72, 0.65), 0.91)
+    bandage = mat("Pale patient bandage", (0.84, 0.82, 0.73), 0.92) if treatment else None
     button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
     badge = mat("Guard badge and patches", (0.49, 0.55, 0.57), 0.46) if guard else None
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
@@ -392,6 +404,11 @@ def build_detailed_actor(root, asset_id):
             cylinder(f"Blue sleeve band.{side}", (side * 0.445, 0, 2.28), 0.153, 0.08, staff_blue, arm)
         cylinder(f"Sleeve cuff.{side}", (side * 0.445, 0, 2.05), 0.132, 0.045, dark_seam, arm)
         limb(f"Forearm.{side}", (side * 0.445, 0, 1.85), 0.096, 0.35, skin, arm)
+        if treatment and side == -1:
+            # Gauze wraps the injured forearm rather than floating across the
+            # torso; the whole arm is held inward by the treatment pose.
+            cylinder("Patient forearm bandage", (side * 0.445, 0, 1.87),
+                     0.118, 0.27, bandage, arm)
         sphere(f"Hand.{side}", (side * 0.445, 0, 1.66), (0.096, 0.090, 0.15), skin, arm)
         if response:
             if side == -1:
@@ -415,6 +432,8 @@ def build_detailed_actor(root, asset_id):
             animate_riot_arm(arm, side)
         elif assault:
             animate_assault_arm(arm, side)
+        elif treatment:
+            animate_treatment_arm(arm, side)
         else:
             animate(arm, 1 if side == -1 else -1)
 
@@ -424,7 +443,7 @@ def build_detailed_actor(root, asset_id):
         cube(f"Trouser seam.{side}", (side * 0.215, -0.19, 0.95), (0.014, 0.01, 0.48), dark_seam, leg, 0.002)
         sphere(f"Work shoe upper.{side}", (side * 0.215, -0.12, 0.205), (0.19, 0.27, 0.16), shoe, leg)
         cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
-        if not response and not search and not riot and not assault:
+        if not response and not search and not riot and not assault and not treatment:
             animate(leg, -1 if side == -1 else 1)
 
 
