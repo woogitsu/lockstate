@@ -2615,6 +2615,19 @@
   color: var(--text-subtle);
 }
 
+/* At Full HD, the Polish refundable total is wider than the 313px header
+   beside its label. Give the amount its own line before it reaches the rail's
+   clipped edge; the refund control below stays visible in this height budget. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-build__deliveries-header { flex-wrap: wrap; }
+  .hud-build__deliveries-count {
+    max-width: 100%;
+    margin-left: auto;
+    white-space: normal;
+    text-align: right;
+  }
+}
+
 .hud-build__delivery-list:not([hidden]) {
   display: flex;
   flex-direction: column;
