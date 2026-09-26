@@ -28,6 +28,8 @@ export interface RenderActor {
   readonly incidentResponse?: boolean;
   /** A live contraband search has claimed this guard. */
   readonly contrabandSearch?: boolean;
+  /** An open riot names this prisoner as a participant. */
+  readonly openRiot?: boolean;
 }
 
 /**

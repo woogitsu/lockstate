@@ -925,6 +925,7 @@ export class SimulationWorkerStateMachine {
       this.roomConditions(worldRevision),
       this._runtime.incidentResponseSystem.claimedGuardIds(),
       this._runtime.searchSystem.claimedGuardIds(),
+      this._runtime.incidents,
     );
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,

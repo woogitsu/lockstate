@@ -50,6 +50,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.riot",
+      "manifest": "actor.prisoner.riot.atlas-manifests.json",
+      "clips": [
+        "agitate",
+        "idle"
+      ]
+    },
+    {
       "assetId": "actor.staff.base",
       "manifest": "actor.staff.base.atlas-manifests.json",
       "clips": [
