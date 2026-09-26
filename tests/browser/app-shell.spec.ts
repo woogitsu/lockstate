@@ -8630,9 +8630,36 @@ test.describe('the assembled application', () => {
     await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
     await details.getByRole('button', { name: 'Delete permanently' }).click();
     await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(1);
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id] .manage-saves__name'))
+      .toContainText('New Prison — deleted.');
     await details.getByRole('button', { name: 'Bring it back' }).click();
     await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(0);
     await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+  });
+
+  test('Manage keeps the built-in prison name localized after reload and deletion', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+
+    await page.evaluate(() => {
+      localStorage.setItem('lockstate.settings.language', JSON.stringify({ version: 1, preference: 'pl' }));
+    });
+    await page.reload();
+    await openApp(page);
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await details.locator('summary').click();
+    await expect(details.locator('.manage-saves__name')).toContainText('Nowe więzienie (1');
+    await details.getByRole('button', { name: 'Usuń', exact: true }).click();
+    await expect(details.getByRole('button', { name: 'Zachowaj' })).toBeFocused();
+    await details.getByRole('button', { name: 'Usuń trwale' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id] .manage-saves__name'))
+      .toContainText('Nowe więzienie — usunięto.');
+    await details.getByRole('button', { name: 'Przywróć' }).click();
+    await expect(details.locator('.manage-saves__name')).toContainText('Nowe więzienie (1');
+    await expect(details.getByRole('button', { name: 'Wczytaj' })).toBeFocused();
   });
 
   /**

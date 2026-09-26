@@ -67,6 +67,13 @@ export class ManageSavesPanel {
     return this.localizer.format(key, parameters);
   }
 
+  /** Keep the Manage list and the quick-save list in agreement for unnamed slots. */
+  private prisonName(prison: { readonly prisonId: string; readonly displayName?: string | undefined; readonly usesDefaultName?: true }): string {
+    return prison.displayName ?? (prison.usesDefaultName === true
+      ? this.text(KEY.defaultPrisonName)
+      : prison.prisonId);
+  }
+
   private button(label: string, action: () => void, focusAction: string): HTMLButtonElement {
     const button = document.createElement('button');
     button.type = 'button';
@@ -148,7 +155,7 @@ export class ManageSavesPanel {
       const item = document.createElement('li');
       item.className = 'manage-saves__item';
       item.dataset['prisonId'] = row.prisonId;
-      const named = row.displayName ?? row.prisonId;
+      const named = this.prisonName(row);
       const name = document.createElement('span');
       name.className = 'manage-saves__name';
       name.textContent = this.text(KEY.listItem, { name: named, count: row.retainedGenerations });
@@ -198,7 +205,7 @@ export class ManageSavesPanel {
       const item = document.createElement('li');
       item.className = 'manage-saves__item';
       item.dataset['deletedPrisonId'] = deleted.prisonId;
-      const named = deleted.displayName ?? deleted.prisonId;
+      const named = this.prisonName(deleted);
       const name = document.createElement('span');
       name.className = 'manage-saves__name';
       name.textContent = this.text(KEY.tombstoneItem, { name: named });
