@@ -949,6 +949,13 @@ export class IncidentResponseSystem implements SystemRegistration {
     }
 
     // incident.state === 'responding'
+    // `ReleaseGuardAssignment` can recall an arrived responder after the
+    // transition to responding. The containment timer cannot finish on the
+    // strength of guards who are no longer serving this incident.
+    if (record.arrivedGuardIds.size < this.requiredResponderCount(incident.severity)) {
+      if (this.isPastDeadline(incident, tick)) this.lapse(incident, tick);
+      return;
+    }
     const startedAt = record.containmentStartedAtTick ?? tick;
     if (tick - startedAt < this.policy.containmentTicks) return;
 
