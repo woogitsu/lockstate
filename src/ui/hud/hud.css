@@ -6234,6 +6234,11 @@
     justify-content: flex-start;
   }
 
+  /* The rail's flex display otherwise overrides the browser's [hidden] rule. */
+  .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner[hidden] {
+    display: none;
+  }
+
   /*
    * The column takes the rail's full height and centres the tabs in it, and it
    * **scrolls** rather than clipping if it ever holds more than it can show.
