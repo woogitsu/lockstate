@@ -39,7 +39,7 @@ export class CellSharingAssessmentLedger {
   public reconcile(roomInstanceId: string, occupants: readonly CellSharingView[], atTick: number, source: 'placement' | 'restored' = 'placement'): void {
     const ordered = orderedOccupants(occupants);
     const present = new Set(ordered.map(({ entityId }) => entityId));
-    for (const [entityId, record] of this.byPrisoner) {
+    for (const [entityId, record] of [...this.byPrisoner.entries()].sort(([a], [b]) => a - b)) {
       if (record.roomInstanceId === roomInstanceId && !present.has(entityId)) this.byPrisoner.delete(entityId);
     }
     const inputs = ordered.map(({ entityId, riskTier }) => `${entityId}:${riskTier}`).join(',');
@@ -73,8 +73,12 @@ export class CellSharingAssessmentLedger {
     for (const record of snapshot) this.byPrisoner.set(record.entityId, { ...record });
   }
 
+  public forget(entityId: EntityId): void {
+    this.byPrisoner.delete(entityId);
+  }
+
   public retainRooms(existingRoomIds: ReadonlySet<string>): void {
-    for (const [entityId, record] of this.byPrisoner) {
+    for (const [entityId, record] of [...this.byPrisoner.entries()].sort(([a], [b]) => a - b)) {
       if (!existingRoomIds.has(record.roomInstanceId)) this.byPrisoner.delete(entityId);
     }
   }

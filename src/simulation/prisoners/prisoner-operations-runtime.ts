@@ -550,6 +550,7 @@ export class PrisonerOperationsRuntime {
       bitset: this.bitset,
       coldState: this.coldState,
       roomInstances: this.roomInstances,
+      cellSharingAssessments: this.cellSharingAssessments,
       navigation: options.navigation,
       // `exactOptionalPropertyTypes` is on, so an absent collaborator has to be
       // an absent *key*: spreading a conditional is what keeps

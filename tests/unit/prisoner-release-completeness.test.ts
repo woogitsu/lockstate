@@ -253,7 +253,7 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     // board's worker index *and* the job's own `assignedWorkerId`, which is the
     // field that index is derived from. Both have to go, and both do: ending
     // the job clears the index and moves the job to a terminal state.
-    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 9 });
+    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 11 });
 
     expect(runtime.prisoners.releasePrisoner(entityId)).toBe(true);
 
