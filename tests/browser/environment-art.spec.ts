@@ -60,7 +60,7 @@ function channelDistance(left: HarnessPixel, right: HarnessPixel): number {
 }
 
 test.describe('the environment artwork', () => {
-  test('the wooden chair has a clear air gap and one continuous seat at game scale', async ({ page }) => {
+  test('the wooden chair has two back rails and separated seat boards at game scale', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page);
     const chair = await page.evaluate(() => {
@@ -69,15 +69,21 @@ test.describe('the environment artwork', () => {
       if (frame === undefined) return undefined;
       return {
         size: [frame.width, frame.height],
-        back: harness.atlasPixel(frame.x + 64, frame.y + 15),
-        gap: harness.atlasPixel(frame.x + 64, frame.y + 30),
-        seat: harness.atlasPixel(frame.x + 64, frame.y + 67),
+        upperBack: harness.atlasPixel(frame.x + 64, frame.y + 15),
+        backGap: harness.atlasPixel(frame.x + 64, frame.y + 20),
+        lowerBack: harness.atlasPixel(frame.x + 64, frame.y + 27),
+        seatGap: harness.atlasPixel(frame.x + 64, frame.y + 39),
+        board: harness.atlasPixel(frame.x + 64, frame.y + 68),
+        boardGap: harness.atlasPixel(frame.x + 64, frame.y + 63),
       };
     });
     expect(chair?.size).toEqual([128, 128]);
-    expect(chair?.back?.[3]).toBeGreaterThan(240);
-    expect(chair?.gap?.[3]).toBeLessThan(20);
-    expect(chair?.seat?.[3]).toBeGreaterThan(240);
+    expect(chair?.upperBack?.[3]).toBeGreaterThan(240);
+    expect(chair?.backGap?.[3]).toBeLessThan(20);
+    expect(chair?.lowerBack?.[3]).toBeGreaterThan(240);
+    expect(chair?.seatGap?.[3]).toBeLessThan(20);
+    expect(chair?.board?.[3]).toBeGreaterThan(240);
+    expect(chair!.board![0] - chair!.boardGap![0]).toBeGreaterThan(50);
     await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
       { x: (fixture.chairTileX + 0.5) * fixture.tileSizePx, y: (fixture.chairTileY + 0.5) * fixture.tileSizePx });
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
