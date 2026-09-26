@@ -170,8 +170,8 @@ def animate(item, phase):
 
 def animate_response_arm(item):
     """A restrained radio acknowledgement, readable without implying combat."""
-    for frame, degrees in ((1, -130), (2, -134), (3, -138), (4, -142),
-                           (5, -140), (6, -136), (7, -132), (8, -128), (9, -130)):
+    for frame, degrees in ((1, 150), (2, 154), (3, 158), (4, 162),
+                           (5, 160), (6, 156), (7, 152), (8, 148), (9, 150)):
         item.rotation_euler.y = math.radians(degrees)
         item.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
 
