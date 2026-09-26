@@ -158,6 +158,22 @@ describe('every enumeration is in tile order', () => {
     expect(registry.size).toBe(1);
     expect(registry.objectAt(TILE(1, 1))).toBeDefined();
   });
+
+  it('chooses the same object and orientation when saved rows conflict at one anchor', () => {
+    const anchor = TILE(3, 4);
+    const bed = placedObjectAt('object.bed', anchor, 1);
+    const toilet = placedObjectAt('object.toilet', anchor, 0);
+    const bedOtherOrientation = placedObjectAt('object.bed', anchor, 2);
+    const rows = [toilet, bedOtherOrientation, bed];
+    const winners = [rows, [...rows].reverse()].map((order) => {
+      const registry = new PlacedObjectRegistry();
+      expect(registry.loadSnapshot(order)).toBe(1);
+      return registry.getSnapshot();
+    });
+
+    expect(winners[0]).toEqual(winners[1]);
+    expect(winners[0]).toEqual([bed]);
+  });
 });
 
 describe('the footprint an orientation produces', () => {

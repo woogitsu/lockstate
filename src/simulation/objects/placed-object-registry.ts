@@ -228,9 +228,16 @@ export class PlacedObjectRegistry {
     this.objects.clear();
     this.tileIndex.clear();
     let placed = 0;
-    // Ascending `(y, x)` before anything is written, so a snapshot whose array
-    // order was disturbed in transit still produces the same registry.
-    const ordered = [...snapshot].sort((a, b) => a.anchorTile.y - b.anchorTile.y || a.anchorTile.x - b.anchorTile.x);
+    // Conflicting saved rows may share an anchor even though a live registry
+    // cannot. Break that tie by catalogue id and orientation, not the saved
+    // placedObjectId (which is re-derived below). Otherwise the first row to
+    // claim the tile depends on the incoming array order.
+    const ordered = [...snapshot].sort((a, b) =>
+      a.anchorTile.y - b.anchorTile.y ||
+      a.anchorTile.x - b.anchorTile.x ||
+      (a.objectId < b.objectId ? -1 : a.objectId > b.objectId ? 1 : 0) ||
+      a.orientation - b.orientation,
+    );
     for (const object of ordered) {
       if (this.place({ ...object, placedObjectId: placedObjectIdFor(object.anchorTile) })) placed += 1;
     }
