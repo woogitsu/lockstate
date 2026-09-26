@@ -219,6 +219,15 @@ async function executeRun(options, runDirectory) {
   if (!Array.isArray(sidecar.entries) || sidecar.entries.length === 0) {
     throw new Error(`${sidecarPath} declares no entries -- did --only name a collection the catalogue does not have?`);
   }
+  if (options.only.length > 0) {
+    const requested = new Set(options.only);
+    const rendered = new Set(sidecar.entries.map((entry) => entry.assetId));
+    const missing = [...requested].filter((id) => !rendered.has(id));
+    const unexpected = [...rendered].filter((id) => !requested.has(id));
+    if (missing.length > 0 || unexpected.length > 0) {
+      throw new Error(`${sidecarPath} does not match --only: missing [${missing.join(', ')}], unexpected [${unexpected.join(', ')}]`);
+    }
+  }
 
   const artefacts = new Map([['environment-objects.render.json', await digest(sidecarPath)]]);
   for (const entry of sidecar.entries) {
