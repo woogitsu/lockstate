@@ -7,6 +7,7 @@ import {
   renderActorHeadingY,
   renderActorIncidentResponse,
   renderActorContrabandSearch,
+  renderActorOpenRiot,
   renderActorPopulation,
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
@@ -82,7 +83,9 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
   for (let record = 0; record < payload.recordCount; record += 1) {
     const packedFields = payload.packedFields[record]!;
     const population = renderActorPopulation(packedFields);
-    const assetId = population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
+    const assetId = population === RENDER_ACTOR_POPULATION_PRISONER && renderActorOpenRiot(packedFields)
+      ? 'actor.prisoner.riot'
+      : population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
       ? 'actor.guard.response'
       : population === RENDER_ACTOR_POPULATION_GUARD && renderActorContrabandSearch(packedFields)
         ? 'actor.guard.search'
@@ -103,6 +106,7 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
       deltaY: payload.velocitySubY[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       ...(population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields) ? { incidentResponse: true } : {}),
       ...(population === RENDER_ACTOR_POPULATION_GUARD && !renderActorIncidentResponse(packedFields) && renderActorContrabandSearch(packedFields) ? { contrabandSearch: true } : {}),
+      ...(population === RENDER_ACTOR_POPULATION_PRISONER && renderActorOpenRiot(packedFields) ? { openRiot: true } : {}),
       // `exactOptionalPropertyTypes` is on, so "no facing" has to be an absent
       // key rather than an explicit `undefined`.
       ...(headingX === 0 && headingY === 0 ? {} : { facing: directionFromMovement(headingX, headingY, DEFAULT_FACING) }),

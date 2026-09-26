@@ -89,8 +89,8 @@ describe('the render delta carries one condition ordinal per room', () => {
     expect(() => decodeRenderActorsPayload(truncated)).toThrow(/must be 36 bytes, got 28/);
   });
 
-  it('versions the payload, including the search flag in layout 6', () => {
-    expect(RENDER_ACTORS_LAYOUT_VERSION).toBe(6);
-    expect(RENDER_ACTORS_SCHEMA_VERSION).toBe(6);
+  it('versions the payload, including the riot flag in layout 7', () => {
+    expect(RENDER_ACTORS_LAYOUT_VERSION).toBe(7);
+    expect(RENDER_ACTORS_SCHEMA_VERSION).toBe(7);
   });
 });

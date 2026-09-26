@@ -175,6 +175,7 @@ export function encodeRenderActorsKeyframe(
   rooms?: readonly RoomConditionRow[],
   respondingGuards?: readonly number[],
   searchingGuards?: readonly number[],
+  riotParticipants?: { isOpenRiotParticipant(entityId: number): boolean },
 ): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
     throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
@@ -204,7 +205,7 @@ export function encodeRenderActorsKeyframe(
     locomotion.read(index, position.tileX[index]!, position.tileY[index]!, reading);
     writer.writeRecord(
       entityStore.getIdByIndex(index),
-      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY),
+      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false),
       reading.subX,
       reading.subY,
       // Sub-tile units a *tick* become sub-tile units a wall-clock second
