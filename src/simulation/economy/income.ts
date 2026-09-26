@@ -264,7 +264,7 @@ export interface OccupiedPlaceSource {
  */
 export interface PrisonerDayGrantSource {
   readonly roomInstances: OccupiedPlaceSource;
-  readonly entityStore: { getIndex(entityId: EntityId): number };
+  readonly entityStore: { getIndex(entityId: EntityId): number; isAlive(entityId: EntityId): boolean };
   readonly needs: NeedsComponent;
 }
 
@@ -717,6 +717,9 @@ export function stateIncomeForOccupiedPlaces(
 ): number {
   let total = 0;
   for (const entityId of occupiedPlaceIds) {
+    // A save can still name a departed prisoner in a room occupancy row.
+    // getIndex only masks the id and would pay the recycled slot's needs.
+    if (!source.entityStore.isAlive(entityId)) continue;
     total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
   }
   return total;
