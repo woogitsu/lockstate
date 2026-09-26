@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "lockstate.character-directional-sprite-contract",
+  "coordinateSystem": {
+    "world": "right-handed; +x=east, +y=south; direction describes actor movement in world space",
+    "camera": "fixed isometric game camera; render the actor facing the movement direction",
+    "clockwiseDirectionOrder": ["south", "southWest", "west", "northWest", "north", "northEast", "east", "southEast"]
+  },
+  "frame": {
+    "widthPx": 256,
+    "heightPx": 384,
+    "footPivotPx": { "x": 128, "y": 352 },
+    "transparentPaddingPx": 8,
+    "logicalFootprintTiles": { "width": 1, "height": 1 }
+  },
+  "clips": {
+    "idle": { "framesPerDirection": 1, "fps": 1, "loop": true },
+    "struggle": { "framesPerDirection": 4, "fps": 8, "loop": true }
+  },
+  "render": {
+    "sourceFrameStart": 1,
+    "orthographic": true,
+    "bakeWorldLighting": true,
+    "backgroundAlpha": true,
+    "allowCameraChangesPerDirection": false
+  },
+  "naming": {
+    "assetIdPattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$",
+    "framePath": "{assetId}/{clip}/{direction}/{frame}.png",
+    "frameNumber": "zero-padded to three digits; starts at 000"
+  },
+  "atlas": {
+    "layout": "one clip per atlas; rows follow clockwiseDirectionOrder and columns follow frame order",
+    "extrudePx": 2,
+    "maxDimensionPx": 4096,
+    "premultipliedAlpha": false
+  }
+}
