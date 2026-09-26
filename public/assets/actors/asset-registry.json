@@ -26,6 +26,14 @@
       ]
     },
     {
+      "assetId": "actor.guard.search",
+      "manifest": "actor.guard.search.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "search"
+      ]
+    },
+    {
       "assetId": "actor.medic.base",
       "manifest": "actor.medic.base.atlas-manifests.json",
       "clips": [

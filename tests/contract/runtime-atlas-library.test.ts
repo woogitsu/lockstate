@@ -43,12 +43,13 @@ describe('runtime atlas library', () => {
       'actor.cook.base',
       'actor.guard.base',
       'actor.guard.response',
+      'actor.guard.search',
       'actor.medic.base',
       'actor.prisoner.base',
       'actor.staff.base',
     ]);
     for (const assetId of library.assetIds()) {
-      expect(library.clipIds(assetId)).toEqual(assetId === 'actor.guard.response' ? ['idle', 'respond'] : ['idle', 'walk']);
+      expect(library.clipIds(assetId)).toEqual(assetId === 'actor.guard.response' ? ['idle', 'respond'] : assetId === 'actor.guard.search' ? ['idle', 'search'] : ['idle', 'walk']);
     }
   });
 
@@ -81,7 +82,7 @@ describe('runtime atlas library', () => {
     // the manifest -- callers address everything else by logical id.
     const frame = library.resolveFrame('actor.guard.base', 'idle', 'south', 0);
     expect(frame.imageUrl).toBe('/assets/actors/actor.guard.base.idle.png');
-    expect(library.imageUrls()).toHaveLength(12);
+    expect(library.imageUrls()).toHaveLength(14);
   });
 
   it('wraps a looping clip and clamps a non-looping one', async () => {

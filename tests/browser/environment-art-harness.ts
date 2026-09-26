@@ -49,6 +49,7 @@ import type {
 
 const CANVAS_PARENT_ID = 'environment-art-harness-root';
 const guardResponseVisual = new URLSearchParams(window.location.search).has('guardResponseVisual');
+const guardSearchVisual = new URLSearchParams(window.location.search).has('guardSearchVisual');
 
 const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
@@ -612,13 +613,18 @@ function buildFrame(): RenderFrame {
     revision: 1,
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
-    actors: guardResponseVisual ? [{
+    actors: guardResponseVisual || guardSearchVisual ? [{
       id: 2 ** 32 + 70,
-      assetId: 'actor.guard.response',
+      assetId: guardSearchVisual ? 'actor.guard.search' : 'actor.guard.response',
       tileX: 4, tileY: 4,
       deltaX: 0, deltaY: 0,
-      incidentResponse: true,
-    }] : [],
+      ...(guardSearchVisual ? { contrabandSearch: true } : { incidentResponse: true }),
+    }, ...(guardSearchVisual ? [{
+      id: 2 ** 32 + 71,
+      assetId: 'actor.guard.base',
+      tileX: 5, tileY: 4,
+      deltaX: 0, deltaY: 0,
+    }] : [])] : [],
     rooms: [],
     roomConditions: [],
   };
@@ -647,7 +653,7 @@ const scene = new WorldScene({
       return room === undefined ? undefined : localizer.format(room.nameKey);
     },
   } : {}),
-  ...(guardResponseVisual ? {} : {
+  ...(guardResponseVisual || guardSearchVisual ? {} : {
     loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   }),
   onError: (error) => {

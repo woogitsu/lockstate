@@ -18,6 +18,7 @@ ACTOR_IDS = (
     "actor.prisoner.base",
     "actor.guard.base",
     "actor.guard.response",
+    "actor.guard.search",
     "actor.medic.base",
     "actor.cook.base",
     "actor.staff.base",
@@ -176,14 +177,22 @@ def animate_response_arm(item):
         item.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
 
 
+def animate_search_arm(item, phase):
+    """A small downward inspection sweep, readable from the overhead camera."""
+    for frame, degrees in ((1, -65), (2, -85), (3, -105), (4, -75), (5, -65)):
+        item.rotation_euler.x = math.radians(degrees * phase)
+        item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
+
+
 def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
 
 def build_detailed_actor(root, asset_id):
     """Model each eight-view concept without changing the actor rig contract."""
-    guard = asset_id in ("actor.guard.base", "actor.guard.response")
+    guard = asset_id in ("actor.guard.base", "actor.guard.response", "actor.guard.search")
     response = asset_id == "actor.guard.response"
+    search = asset_id == "actor.guard.search"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
     staff = asset_id == "actor.staff.base"
@@ -372,6 +381,15 @@ def build_detailed_actor(root, asset_id):
                 animate_response_arm(arm)
             else:
                 arm.rotation_euler.x = math.radians(8)
+        elif search:
+            if side == -1:
+                cube("Search inspection torch", (side * 0.445, -0.025, 1.59),
+                     (0.085, 0.085, 0.24), badge, arm, 0.015)
+                cube("Search torch lens", (side * 0.445, -0.025, 1.37),
+                     (0.07, 0.07, 0.015), badge, arm, 0.006)
+                animate_search_arm(arm, 1)
+            else:
+                arm.rotation_euler.x = math.radians(8)
         else:
             animate(arm, 1 if side == -1 else -1)
 
@@ -381,7 +399,7 @@ def build_detailed_actor(root, asset_id):
         cube(f"Trouser seam.{side}", (side * 0.215, -0.19, 0.95), (0.014, 0.01, 0.48), dark_seam, leg, 0.002)
         sphere(f"Work shoe upper.{side}", (side * 0.215, -0.12, 0.205), (0.19, 0.27, 0.16), shoe, leg)
         cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
-        if not response:
+        if not response and not search:
             animate(leg, -1 if side == -1 else 1)
 
 
