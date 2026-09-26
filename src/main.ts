@@ -4433,7 +4433,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
     const app = document.getElementById('app');
-    if (app !== null) panel.mountEmptyWorldPrompt(app);
+    if (app !== null) panel.mountEmptyWorldPrompt(app, (active) => hud.setMinimapSessionActive(active));
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
@@ -4516,6 +4516,7 @@ const mountedHud =
         ...(roomTool === undefined ? {} : { rooms: roomTool }),
         ...(objectTool === undefined ? {} : { objects: objectTool }),
       });
+mountedHud?.setMinimapSessionActive(false);
 
 // The save panel is laid out by the HUD, so there is nowhere to put it until
 // the HUD is mounted. That is not a new dependency in disguise: with no

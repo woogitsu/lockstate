@@ -584,6 +584,8 @@ export class SavePanel {
   private readonly root: HTMLElement;
   private emptyWorldPrompt: HTMLElement | undefined;
   private emptyWorldChoose: HTMLButtonElement | undefined;
+  private emptyWorldRoute: 'load' | 'restore' | undefined;
+  private onSessionPresenceChange: ((active: boolean) => void) | undefined;
   private readonly statusElement: HTMLElement;
   private readonly listElement: HTMLElement;
   private readonly detailElement: HTMLElement;
@@ -734,8 +736,9 @@ export class SavePanel {
   }
 
   /** A central route into the same create and load controls as the save rail. */
-  public mountEmptyWorldPrompt(parent: HTMLElement): void {
+  public mountEmptyWorldPrompt(parent: HTMLElement, onSessionPresenceChange?: (active: boolean) => void): void {
     if (this.emptyWorldPrompt !== undefined) return;
+    this.onSessionPresenceChange = onSessionPresenceChange;
     const prompt = document.createElement('section');
     prompt.className = 'empty-world-prompt';
     prompt.hidden = true;
@@ -755,9 +758,11 @@ export class SavePanel {
     choose.className = 'save-panel__button';
     choose.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
     choose.addEventListener('click', () => {
-      const load = this.listElement.querySelector<HTMLButtonElement>('.save-panel__item button');
-      load?.scrollIntoView({ block: 'nearest' });
-      load?.focus();
+      const target = this.listElement.querySelector<HTMLButtonElement>(this.emptyWorldRoute === 'restore'
+        ? '.save-panel__item[data-deleted-prison] button'
+        : '.save-panel__item[data-prison] button');
+      target?.scrollIntoView({ block: 'nearest' });
+      target?.focus();
     });
     choose.hidden = true;
     actions.append(choose);
@@ -796,6 +801,7 @@ export class SavePanel {
    */
   public async refresh(): Promise<void> {
     const token = ++this.refreshToken;
+    this.onSessionPresenceChange?.(this.controller.getActiveSession() !== undefined);
 
     let prisons: readonly PrisonSlotMetadata[];
     let deleted: readonly DeletedPrison[];
@@ -837,7 +843,13 @@ export class SavePanel {
     this.armedDeletion = retainDeleteArming(this.armedDeletion, prisons.map((prison) => prison.prisonId));
     const activeId = this.controller.getActiveSession()?.prisonId;
     if (this.emptyWorldPrompt !== undefined) this.emptyWorldPrompt.hidden = activeId !== undefined;
-    if (this.emptyWorldChoose !== undefined) this.emptyWorldChoose.hidden = prisons.length === 0;
+    this.emptyWorldRoute = prisons.length > 0 ? 'load' : deleted.length > 0 ? 'restore' : undefined;
+    if (this.emptyWorldChoose !== undefined) {
+      this.emptyWorldChoose.hidden = this.emptyWorldRoute === undefined;
+      this.emptyWorldChoose.textContent = this.text(this.emptyWorldRoute === 'restore'
+        ? SAVE_PANEL_MESSAGE_KEY.emptyWorldRestore
+        : SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
+    }
 
     // "No prisons yet" is false while a deleted one is still standing there to
     // be brought back, so the empty row is drawn only when the list is empty of

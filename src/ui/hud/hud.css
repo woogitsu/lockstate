@@ -687,6 +687,8 @@
   outline-offset: 2px;
 }
 
+.hud-minimap__surface:disabled { cursor: default; }
+
 /* The placeholder says so in words. An empty dark square is indistinguishable
    from a rendering failure, and a label that only exists for a screen reader
    leaves a sighted player guessing. */

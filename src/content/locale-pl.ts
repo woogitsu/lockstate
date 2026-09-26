@@ -722,6 +722,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.minimap.title': 'Minimapa',
   'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',
+  'hud.minimap.no-prison': 'Utwórz lub wczytaj więzienie, aby zobaczyć mapę',
   'hud.minimap.navigable': 'Nie ma tu jeszcze mapy — naciśnij, aby przenieść tam kamerę',
   'hud.minimap.map-ready': 'Mapa więzienia — naciśnij, aby przesunąć kamerę',
 
@@ -1415,6 +1416,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.empty-world.description': 'Utwórz nowe więzienie albo wróć do zapisu w tej przeglądarce.',
   'save.empty-world.create': 'Utwórz więzienie',
   'save.empty-world.choose': 'Wczytaj zapisane więzienie',
+  'save.empty-world.restore': 'Przywróć usunięte więzienie',
   'save.default-prison-name': 'Nowe więzienie',
   'save.action.save': 'Zapisz teraz',
   'save.action.export': 'Eksportuj',
