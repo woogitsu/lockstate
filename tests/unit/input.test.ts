@@ -464,6 +464,28 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
     typing = false;
     expect(adapter.isActive('camera.up')).toBe(true);
   });
+
+  it('does not start camera movement when a key pressed in text entry remains held after blur', () => {
+    let typing = true;
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => (typing ? ['text-entry'] : ['world']));
+    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([]);
+    typing = false;
+    expect(adapter.isActive('camera.up')).toBe(false);
+    adapter.keyUp({ code: 'KeyW' });
+    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'started', source: 'keyboard' }]);
+    expect(adapter.isActive('camera.up')).toBe(true);
+  });
+
+  it('does not turn a held key into a different action when the context changes', () => {
+    let context: 'world' | 'construction' = 'world';
+    const adapter = new KeyboardInputAdapter([
+      { device: 'keyboard', code: 'KeyQ', action: 'camera.up', contexts: ['world'] },
+      { device: 'keyboard', code: 'KeyQ', action: 'camera.down', contexts: ['construction'] },
+    ], () => [context]);
+    adapter.keyDown({ code: 'KeyQ' });
+    context = 'construction';
+    expect(adapter.isActive('camera.down')).toBe(false);
+  });
 });
 
 /**

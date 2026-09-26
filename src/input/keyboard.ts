@@ -8,6 +8,7 @@ export interface KeyboardEventLike {
 
 export class KeyboardInputAdapter {
   private readonly pressedCodes = new Set<string>();
+  private readonly startedByCode = new Map<string, readonly SemanticActionEvent[]>();
 
   public constructor(
     private readonly bindings: readonly KeyboardBinding[],
@@ -17,12 +18,16 @@ export class KeyboardInputAdapter {
   public keyDown(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (event.repeat || this.pressedCodes.has(event.code)) return [];
     this.pressedCodes.add(event.code);
-    return this.eventsFor(event.code, 'started');
+    const started = this.eventsFor(event.code, 'started');
+    this.startedByCode.set(event.code, started);
+    return started;
   }
 
   public keyUp(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (!this.pressedCodes.delete(event.code)) return [];
-    return this.eventsFor(event.code, 'ended');
+    const started = this.startedByCode.get(event.code) ?? [];
+    this.startedByCode.delete(event.code);
+    return started.map(({ action }) => ({ action, phase: 'ended', source: 'keyboard' as const }));
   }
 
   /**
@@ -46,12 +51,15 @@ export class KeyboardInputAdapter {
    */
   public releaseAll(): void {
     this.pressedCodes.clear();
+    this.startedByCode.clear();
   }
 
   public isActive(action: ActionId): boolean {
     const contexts = this.activeContexts();
     return this.bindings.some((binding) =>
-      binding.action === action && this.pressedCodes.has(binding.code) && intersects(binding.contexts, contexts),
+      binding.action === action
+      && this.startedByCode.get(binding.code)?.some((started) => started.action === action)
+      && intersects(binding.contexts, contexts),
     );
   }
 
