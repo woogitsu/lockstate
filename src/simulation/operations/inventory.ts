@@ -115,7 +115,9 @@ export class Container {
     this.reservedQuantity.clear();
     for (const [itemId, quantity, reserved] of snapshot) {
       if (quantity > 0) this.stock.set(itemId, quantity);
+      else this.stock.delete(itemId);
       if (reserved > 0) this.reservedQuantity.set(itemId, reserved);
+      else this.reservedQuantity.delete(itemId);
     }
   }
 }
