@@ -237,6 +237,10 @@ export async function validateRenderedArtCatalog(options = {}) {
       report(`"${entry.assetId}": committed render path "${sidecarEntry.image}" is not a safe rendered-art path`);
       continue;
     }
+    const expectedPublishedImage = `source-art/rendered.${entry.assetId}.${entry.sha256.slice(0, 12)}.png`;
+    if (entry.image !== expectedPublishedImage) {
+      report(`"${entry.assetId}": published image must be "${expectedPublishedImage}", got "${entry.image}"`);
+    }
 
     // Check 1: catalog sha256 agrees with the sidecar's, unconditionally --
     // both are plain committed JSON, readable without pulling anything.
