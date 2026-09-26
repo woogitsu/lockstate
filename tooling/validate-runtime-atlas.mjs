@@ -6,9 +6,10 @@
  * wired into CI as the `assets` job (see `.github/workflows/ci.yml`) and is
  * available locally as `pnpm verify:assets`.
  *
- * It validates the *generated* runtime batch against the *authored* contract in
- * `assets/contracts/character-8-direction.contract.json`, rather than against
- * numbers repeated here. Anything a manifest asserts about itself -- direction
+ * It validates the *generated* runtime batch against the *authored* eight-view
+ * contract. The guard radio response uses its four-frame cadence in
+ * `guard-response-8-direction.contract.json`; all other actors use
+ * `character-8-direction.contract.json`. Anything a manifest asserts -- direction
  * order, frame size, foot pivot, extrusion, atlas dimensions -- is checked
  * against that contract and against the PNG actually on disk.
  *
@@ -28,11 +29,12 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'character-8-direction.contract.json');
+const responseContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'guard-response-8-direction.contract.json');
 const PNG_SIGNATURE = '89504e470d0a1a0a';
 const LFS_POINTER_PREFIX = 'version https://git-lfs.github.com/spec/v1';
 
 function parseArguments(argv) {
-  const options = { directory: undefined, manifestName: undefined, contract: defaultContractPath };
+  const options = { directory: undefined, manifestName: undefined, contract: undefined };
   const positional = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -256,6 +258,9 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
   const errors = [];
   const report = (message) => errors.push(message);
   const contract = JSON.parse(await readFile(options.contract ?? defaultContractPath, 'utf8'));
+  const responseContract = options.contract === undefined
+    ? JSON.parse(await readFile(responseContractPath, 'utf8'))
+    : contract;
 
   const manifestFiles = options.manifestName
     ? [options.manifestName]
@@ -301,7 +306,8 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
     }
 
     for (const manifest of manifests) {
-      await validateClipManifest(manifest, { atlasDirectory, contract, report, pivots });
+      const authoredContract = manifest.assetId === 'actor.guard.response' ? responseContract : contract;
+      await validateClipManifest(manifest, { atlasDirectory, contract: authoredContract, report, pivots });
       atlasCount += 1;
     }
   }

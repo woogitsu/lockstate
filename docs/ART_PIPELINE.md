@@ -23,6 +23,15 @@ The initial clips are `idle` (one frame at 1 fps) and `walk` (eight frames at
 direction order, pivot, frame dimensions or the meaning of an existing clip is a
 breaking format change.
 
+`actor.guard.response` is an authored guard variant for a live incident claim.
+It keeps the same eight facings, frame and foot pivot, while its dedicated
+[`guard-response-8-direction.contract.json`](../assets/contracts/guard-response-8-direction.contract.json)
+uses four gesture frames at 6 fps. The Blender model holds a radio by the ear;
+the renderer loops these frames only while the simulation's incident response
+system names that guard. This doubles as a quiet dispatch/readiness cue, not a
+combat depiction. The four-frame atlas uses 1040×3104 pixels rather than an
+eight-frame 2080×3104 sheet, limiting decoded texture growth at startup.
+
 ## Blender source scene
 
 Each `.blend` source must contain:
@@ -31,7 +40,8 @@ Each `.blend` source must contain:
 - an empty or object named `SpriteTarget` at the actor foot position;
 - a parent empty named `SpriteRoot`; the character's authored forward direction
   at rotation zero is `south`;
-- timeline frames 1–8 for the walk cycle (the first frame is also idle);
+- timeline frames 1–8 for the base walk cycle (the first frame is also idle);
+  the guard response variant renders frames 1–4 as a looping radio gesture;
 - world lighting and the actor model/rig, with no opaque backdrop.
 
 `export-directional-sprites.py` preserves the authored camera and rotates
@@ -60,7 +70,7 @@ without embedding a list of authored roles.
 ## Validation gate
 
 `tooling/validate-runtime-atlas.mjs` validates a generated batch against
-`assets/contracts/character-8-direction.contract.json` — not against numbers
+the authored character contract (including the guard response variant) — not against numbers
 repeated inside the validator. It checks direction order and completeness, frame
 counts per clip, frame size, extrusion, foot-pivot agreement with the contract
 and across an asset's own clips, atlas dimensions against the contract limit,

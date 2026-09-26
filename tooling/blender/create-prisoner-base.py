@@ -17,6 +17,7 @@ import pipeline_common  # noqa: E402  (Blender does not add the script directory
 ACTOR_IDS = (
     "actor.prisoner.base",
     "actor.guard.base",
+    "actor.guard.response",
     "actor.medic.base",
     "actor.cook.base",
     "actor.staff.base",
@@ -167,13 +168,22 @@ def animate(item, phase):
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
 
 
+def animate_response_arm(item):
+    """A restrained radio acknowledgement, readable without implying combat."""
+    for frame, degrees in ((1, -130), (2, -134), (3, -138), (4, -142),
+                           (5, -140), (6, -136), (7, -132), (8, -128), (9, -130)):
+        item.rotation_euler.y = math.radians(degrees)
+        item.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
+
+
 def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
 
 def build_detailed_actor(root, asset_id):
     """Model each eight-view concept without changing the actor rig contract."""
-    guard = asset_id == "actor.guard.base"
+    guard = asset_id in ("actor.guard.base", "actor.guard.response")
+    response = asset_id == "actor.guard.response"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
     staff = asset_id == "actor.staff.base"
@@ -353,7 +363,17 @@ def build_detailed_actor(root, asset_id):
         cylinder(f"Sleeve cuff.{side}", (side * 0.445, 0, 2.05), 0.132, 0.045, dark_seam, arm)
         limb(f"Forearm.{side}", (side * 0.445, 0, 1.85), 0.096, 0.35, skin, arm)
         sphere(f"Hand.{side}", (side * 0.445, 0, 1.66), (0.096, 0.090, 0.15), skin, arm)
-        animate(arm, 1 if side == -1 else -1)
+        if response:
+            if side == -1:
+                radio = cube("Response radio", (side * 0.445, -0.025, 1.61),
+                             (0.105, 0.075, 0.18), dark_seam, arm, 0.018)
+                cube("Response radio aerial", (side * 0.445, -0.025, 1.82),
+                     (0.018, 0.018, 0.11), dark_seam, arm, 0.004)
+                animate_response_arm(arm)
+            else:
+                arm.rotation_euler.x = math.radians(8)
+        else:
+            animate(arm, 1 if side == -1 else -1)
 
         leg = pivot(f"Leg.{side}", (side * 0.215, 0, 1.50), root)
         sphere(f"Trouser leg.{side}", (side * 0.215, 0, 0.94), (0.185, 0.19, 0.65), fabric, leg)
@@ -361,7 +381,8 @@ def build_detailed_actor(root, asset_id):
         cube(f"Trouser seam.{side}", (side * 0.215, -0.19, 0.95), (0.014, 0.01, 0.48), dark_seam, leg, 0.002)
         sphere(f"Work shoe upper.{side}", (side * 0.215, -0.12, 0.205), (0.19, 0.27, 0.16), shoe, leg)
         cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
-        animate(leg, -1 if side == -1 else 1)
+        if not response:
+            animate(leg, -1 if side == -1 else 1)
 
 
 def main():
