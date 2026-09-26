@@ -18,6 +18,7 @@ export const IDLE_CLIP_ID = 'idle';
 export const WALK_CLIP_ID = 'walk';
 export const RESPOND_CLIP_ID = 'respond';
 export const SEARCH_CLIP_ID = 'search';
+export const AGITATE_CLIP_ID = 'agitate';
 
 /**
  * Speed below which an actor is drawn idle rather than walking, in world
@@ -38,6 +39,7 @@ export interface ActorMotion {
   readonly facing?: AtlasDirection;
   readonly incidentResponse?: boolean;
   readonly contrabandSearch?: boolean;
+  readonly openRiot?: boolean;
 }
 
 /**
@@ -68,6 +70,11 @@ export function selectActorPose(motion: ActorMotion, out: ActorPose = createActo
   }
   if (motion.contrabandSearch) {
     out.clipId = SEARCH_CLIP_ID;
+    out.direction = facing;
+    return out;
+  }
+  if (motion.openRiot) {
+    out.clipId = AGITATE_CLIP_ID;
     out.direction = facing;
     return out;
   }

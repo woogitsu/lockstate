@@ -142,6 +142,12 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * Bit 13 identifies guards claimed by a live contraband search job. It is
  * independent of incident response because both duties use the same guard
  * deployment phase. The worker publishes the claimant, not a renderer guess.
+ *
+ * ### Layout 7: open riot participant
+ *
+ * Bit 14 marks prisoners named in an open riot. The simulation already keeps
+ * this indexed fact for regime selection; publishing it lets the renderer
+ * show agitation in the world without interpreting incident events itself.
  */
 
 /** The payload's `schemaId`, checked by the receiver before it reads a byte. */
@@ -154,7 +160,7 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 6;
+export const RENDER_ACTORS_SCHEMA_VERSION = 7;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
@@ -164,7 +170,7 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * that has the buffer and not the envelope can still tell what it is holding.
  *
  * **1 until ADR 0059, 2 until ADR 0099, 3 until ADR 0097, 4 until the
- * incident-response gesture, 5 until search duty, 6 since.** Layout 1 carried a
+ * incident-response gesture, 5 until search duty, 6 until riot art, 7 since.** Layout 1 carried a
  * whole-tile `i32` position and nothing else, because the simulation had no
  * motion to publish; layout 2 carries a sub-tile position, a velocity and a
  * heading, because it does; layout 3 adds the fifth header word ADR 0099
@@ -178,7 +184,7 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * reader that trusted one while the other stood still would be trusting the
  * half it happened to have.
  */
-export const RENDER_ACTORS_LAYOUT_VERSION = 6;
+export const RENDER_ACTORS_LAYOUT_VERSION = 7;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
@@ -301,7 +307,7 @@ export const RENDER_ACTOR_POPULATION_PRISONER = 0;
  */
 export const RENDER_ACTOR_POPULATION_GUARD = 1;
 
-/** The low byte of the packed-fields word. Bits 8-11 hold heading; bits 12-13 mark live guard duties. */
+/** The low byte of the packed-fields word. Bits 8-11 hold heading; bits 12-14 mark live visual states. */
 export const RENDER_ACTOR_POPULATION_MASK = 0xff;
 
 /**
@@ -350,14 +356,17 @@ const HEADING_Y_SHIFT = 10;
 const INCIDENT_RESPONSE_SHIFT = 12;
 /** Bit 13: this guard belongs to a live contraband search. */
 const CONTRABAND_SEARCH_SHIFT = 13;
+/** Bit 14: this prisoner participates in an open riot. */
+const OPEN_RIOT_SHIFT = 14;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
     (((headingY + HEADING_BIAS) & HEADING_MASK) << HEADING_Y_SHIFT) |
     (incidentResponse ? 1 << INCIDENT_RESPONSE_SHIFT : 0) |
-    (contrabandSearch ? 1 << CONTRABAND_SEARCH_SHIFT : 0)
+    (contrabandSearch ? 1 << CONTRABAND_SEARCH_SHIFT : 0) |
+    (openRiot ? 1 << OPEN_RIOT_SHIFT : 0)
   );
 }
 
@@ -367,6 +376,10 @@ export function renderActorIncidentResponse(packedFields: number): boolean {
 
 export function renderActorContrabandSearch(packedFields: number): boolean {
   return ((packedFields >>> CONTRABAND_SEARCH_SHIFT) & 1) === 1;
+}
+
+export function renderActorOpenRiot(packedFields: number): boolean {
+  return ((packedFields >>> OPEN_RIOT_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {
