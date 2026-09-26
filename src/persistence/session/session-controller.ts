@@ -479,11 +479,12 @@ export class SessionController {
    * dialogs of any kind. See `captureOutgoingSession` for why the save is
    * unconditional and why its failure does not refuse the new prison.
    */
-  public async createPrison(prisonId: string, displayName?: string): Promise<SaveResult> {
+  public async createPrison(prisonId: string, displayName?: string, usesDefaultName?: true): Promise<SaveResult> {
     await this.repository.create({
       prisonId,
       gameVersion: this.gameVersion,
       ...(displayName === undefined ? {} : { displayName }),
+      ...(usesDefaultName === true ? { usesDefaultName: true as const } : {}),
     });
 
     // Drawn per call, not once for the controller's whole lifetime: a

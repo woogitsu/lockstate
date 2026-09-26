@@ -199,7 +199,7 @@ class StubSessions implements SavePanelSessions {
     return IMPORT_OUTCOMES[this.importOutcome];
   }
 
-  public createPrison(prisonId: string, displayName?: string): Promise<SaveResult> {
+  public createPrison(prisonId: string, displayName?: string, usesDefaultName?: true): Promise<SaveResult> {
     this.createCalls += 1;
     const now = Date.now();
     // The row is written *before* the slow step, exactly as the controller
@@ -209,6 +209,7 @@ class StubSessions implements SavePanelSessions {
       prisonId,
       gameVersion: GAME_VERSION,
       ...(displayName === undefined ? {} : { displayName }),
+      ...(usesDefaultName === true ? { usesDefaultName: true as const } : {}),
       currentGenerationId: undefined,
       generationIds: [],
       createdAt: now,
@@ -259,6 +260,7 @@ class StubSessions implements SavePanelSessions {
     return this.deleted.map((entry) => ({
       prisonId: entry.slot.prisonId,
       ...(entry.slot.displayName === undefined ? {} : { displayName: entry.slot.displayName }),
+      ...(entry.slot.usesDefaultName === true ? { usesDefaultName: true as const } : {}),
       deletedAt: entry.deletedAt,
       expiresAt: entry.expiresAt,
     }));
