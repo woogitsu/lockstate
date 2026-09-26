@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { exactPixelAspectMatchesFootprint } from '../../tooling/validate-rendered-art-catalog.mjs';
+import { exactPixelAspectMatchesFootprint, isSafeRenderedArtPath } from '../../tooling/validate-rendered-art-catalog.mjs';
 import { expectOk } from '../helpers/expect-ok';
 
 const root = resolve(import.meta.dirname, '..', '..');
@@ -25,6 +25,14 @@ const root = resolve(import.meta.dirname, '..', '..');
  * the source-art generator's own guard.
  */
 describe('rendered-art pipeline contract', () => {
+  it('rejects catalog paths that could escape the rendered-art roots', () => {
+    expect(isSafeRenderedArtPath('source-art/rendered.furniture.kitchen.stove.abc123.png')).toBe(true);
+    expect(isSafeRenderedArtPath('source-art/../secrets.json')).toBe(false);
+    expect(isSafeRenderedArtPath('source-art/rendered.furniture.kitchen.stove/../../secrets.png')).toBe(false);
+    expect(isSafeRenderedArtPath('rendered.furniture.kitchen.stove.abc123.png', { published: false })).toBe(true);
+    expect(isSafeRenderedArtPath('../outside.png', { published: false })).toBe(false);
+  });
+
   it('keeps the unpublished sink source render consistent with its sidecar', async () => {
     const sidecar = JSON.parse(await readFile(resolve(root, 'assets/rendered/environment/environment-objects.render.json'), 'utf8')) as {
       entries: Array<{ assetId: string; image: string; sha256: string }>;
