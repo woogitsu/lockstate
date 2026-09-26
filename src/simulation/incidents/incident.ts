@@ -398,6 +398,11 @@ export class IncidentLog {
     this.openRiotCountByParticipant.clear();
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record, participantIds: [...record.participantIds], causeFactors: record.causeFactors.map((factor) => ({ ...factor })), timeline: record.timeline.map((entry) => ({ ...entry })) });
+    }
+    // The save reader accepts repeated ids. Match the record map's existing
+    // last-row-wins rule before deriving any index, or an earlier open row can
+    // leave a later terminal row indexed as an active incident forever.
+    for (const [id, record] of this.records) {
       this.noteStart(record.sectorId, record.type, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
         this.noteRiotParticipants(record.type, record.participantIds, 1);
