@@ -56,6 +56,17 @@ describe('IntelligenceLedger: suspicion records with confidence, expiry and targ
     expect(restored.get(newId)).toBeDefined();
     expect(newId).not.toBe(restored.all()[0]!.id);
   });
+
+  it('indexes only the final target when a saved intelligence id appears twice', () => {
+    const ledger = new IntelligenceLedger();
+    ledger.loadSnapshot([
+      ['intel.1', { targetKind: 'cell', targetId: 'old', categoryHint: undefined, confidence: 0.8, sourceType: 'observation', createdAtTick: 1 }],
+      ['intel.1', { targetKind: 'cell', targetId: 'new', categoryHint: undefined, confidence: 0.6, sourceType: 'observation', createdAtTick: 2 }],
+    ]);
+
+    expect(ledger.forTarget('cell', 'old')).toEqual([]);
+    expect(ledger.forTarget('cell', 'new')).toEqual([ledger.get('intel.1')]);
+  });
 });
 
 describe('InformantRegistry / reportInformantTip: reliability-derived, uncertain tips', () => {
