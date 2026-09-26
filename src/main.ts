@@ -4432,6 +4432,8 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
       onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
+    const app = document.getElementById('app');
+    if (app !== null) panel.mountEmptyWorldPrompt(app);
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
