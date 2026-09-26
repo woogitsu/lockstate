@@ -1360,6 +1360,13 @@
   box-sizing: border-box;
 }
 
+/* The flex declarations above otherwise override the browser's [hidden] rule
+   when the inspector rail is collapsed. */
+.hud__aside[hidden],
+.hud__side[hidden] {
+  display: none;
+}
+
 /*
  * `overflow-y: auto` makes the Build panel responsible for its own excess
  * rather than handing it to the rail. Being a scroll container also gives it
@@ -6526,7 +6533,8 @@
     box-sizing: border-box;
   }
 
-  .hud[data-layout-inspector='collapsed'] .hud__rail { width: auto; }
+  /* Keep the restore handle in the viewport after the panel slots disappear. */
+  .hud[data-layout-inspector='collapsed'] .hud__rail { width: var(--tap-target); }
 
   .hud-layout__separator--inspector { left: 0; }
 
