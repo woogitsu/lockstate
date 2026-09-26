@@ -66,9 +66,6 @@ test.describe('the renderer draws a guard', () => {
       (before) => window.lockstateActorMotionHarness!.framesWithAsset('actor.guard.response')[0] !== before,
       firstFrame,
     );
-    if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
-      await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-1920x1080.png' });
-    }
 
     await page.evaluate(() => window.lockstateActorMotionHarness!.publishGuard(2, { x: 9, y: 4 }));
     await page.waitForFunction(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.guard.base').length === 1);
@@ -114,3 +111,19 @@ test.describe('the renderer draws a guard', () => {
     expect(prisonerSprites[0]).toMatchObject({ x: expect.any(Number), y: expect.any(Number) });
   });
 });
+
+test('shows the radio response over the rendered prison room at 1920×1080', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/environment-art-harness.html?guardResponseVisual=1');
+  await page.evaluate(async () => {
+    await window.lockstateEnvironmentArtHarness!.ready;
+    await window.lockstateEnvironmentArtHarness!.artLoaded;
+  });
+  await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.guard.response').length === 1);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
+  if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
+    await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-1920x1080.png' });
+  }
+});
+
