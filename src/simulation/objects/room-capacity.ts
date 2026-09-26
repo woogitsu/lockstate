@@ -355,10 +355,11 @@ export class RoomCapacityResolver {
     if (bounds === undefined) {
       return { residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [] };
     }
+    const roomType = this.rooms.getById(instance.roomCatalogId);
     return deriveRoomCapacity(
       this.placedObjects.inRect(bounds),
       this.objects,
-      this.rooms.getById(instance.roomCatalogId)?.maxResidents,
+      roomType?.forbidsResidency === true ? 0 : roomType?.maxResidents,
     );
   }
 }
