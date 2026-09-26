@@ -136,6 +136,12 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * `IncidentResponseSystem.claimedGuardIds()`; the renderer selects the
  * Blender-authored radio gesture. No clip name, phase or visual effect crosses
  * the simulation boundary.
+ *
+ * ### Layout 6: active contraband search
+ *
+ * Bit 13 identifies guards claimed by a live contraband search job. It is
+ * independent of incident response because both duties use the same guard
+ * deployment phase. The worker publishes the claimant, not a renderer guess.
  */
 
 /** The payload's `schemaId`, checked by the receiver before it reads a byte. */
@@ -148,7 +154,7 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 5;
+export const RENDER_ACTORS_SCHEMA_VERSION = 6;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
@@ -172,7 +178,7 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * reader that trusted one while the other stood still would be trusting the
  * half it happened to have.
  */
-export const RENDER_ACTORS_LAYOUT_VERSION = 5;
+export const RENDER_ACTORS_LAYOUT_VERSION = 6;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
@@ -342,18 +348,25 @@ const HEADING_X_SHIFT = 8;
 const HEADING_Y_SHIFT = 10;
 /** Bit 12: this guard belongs to a live incident response. */
 const INCIDENT_RESPONSE_SHIFT = 12;
+/** Bit 13: this guard belongs to a live contraband search. */
+const CONTRABAND_SEARCH_SHIFT = 13;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
     (((headingY + HEADING_BIAS) & HEADING_MASK) << HEADING_Y_SHIFT) |
-    (incidentResponse ? 1 << INCIDENT_RESPONSE_SHIFT : 0)
+    (incidentResponse ? 1 << INCIDENT_RESPONSE_SHIFT : 0) |
+    (contrabandSearch ? 1 << CONTRABAND_SEARCH_SHIFT : 0)
   );
 }
 
 export function renderActorIncidentResponse(packedFields: number): boolean {
   return ((packedFields >>> INCIDENT_RESPONSE_SHIFT) & 1) === 1;
+}
+
+export function renderActorContrabandSearch(packedFields: number): boolean {
+  return ((packedFields >>> CONTRABAND_SEARCH_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {

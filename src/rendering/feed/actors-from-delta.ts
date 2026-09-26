@@ -6,6 +6,7 @@ import {
   renderActorHeadingX,
   renderActorHeadingY,
   renderActorIncidentResponse,
+  renderActorContrabandSearch,
   renderActorPopulation,
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
@@ -83,7 +84,9 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
     const population = renderActorPopulation(packedFields);
     const assetId = population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
       ? 'actor.guard.response'
-      : KNOWN_POPULATION_ASSETS.get(population);
+      : population === RENDER_ACTOR_POPULATION_GUARD && renderActorContrabandSearch(packedFields)
+        ? 'actor.guard.search'
+        : KNOWN_POPULATION_ASSETS.get(population);
     if (assetId === undefined) continue;
     const headingX = renderActorHeadingX(packedFields);
     const headingY = renderActorHeadingY(packedFields);
@@ -99,6 +102,7 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
       deltaX: payload.velocitySubX[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       deltaY: payload.velocitySubY[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       ...(population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields) ? { incidentResponse: true } : {}),
+      ...(population === RENDER_ACTOR_POPULATION_GUARD && !renderActorIncidentResponse(packedFields) && renderActorContrabandSearch(packedFields) ? { contrabandSearch: true } : {}),
       // `exactOptionalPropertyTypes` is on, so "no facing" has to be an absent
       // key rather than an explicit `undefined`.
       ...(headingX === 0 && headingY === 0 ? {} : { facing: directionFromMovement(headingX, headingY, DEFAULT_FACING) }),

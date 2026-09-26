@@ -174,6 +174,7 @@ export function encodeRenderActorsKeyframe(
    */
   rooms?: readonly RoomConditionRow[],
   respondingGuards?: readonly number[],
+  searchingGuards?: readonly number[],
 ): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
     throw new RangeError(`A render-actors keyframe needs a positive tick rate to express velocity in, got ${String(ticksPerWallSecond)}.`);
@@ -192,6 +193,7 @@ export function encodeRenderActorsKeyframe(
 
   const guardIds = guards?.allGuardIds() ?? [];
   const responders = new Set(respondingGuards ?? []);
+  const searchers = new Set(searchingGuards ?? []);
   const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length, worldRevision, rooms?.length ?? 0);
   // One reading, refilled per actor: the whole cost argument for this encoder
   // is that it allocates nothing per actor, and `WalkReading` is documented as
@@ -226,7 +228,7 @@ export function encodeRenderActorsKeyframe(
       guards.locomotion.read(guardId, tile.x, tile.y, reading);
       writer.writeRecord(
         guardId,
-        packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY, responders.has(guardId)),
+        packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY, responders.has(guardId), searchers.has(guardId)),
         reading.subX,
         reading.subY,
         Math.round(reading.velocitySubX * ticksPerWallSecond),
