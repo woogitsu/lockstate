@@ -210,6 +210,11 @@ export class ContrabandRegistry {
     for (const [id, rest] of snapshot) {
       const record: ContrabandRecord = { id, ...rest, movementLog: rest.movementLog.map((entry) => ({ ...entry })) };
       this.records.set(id, record);
+    }
+    // The save reader accepts repeated ids. Only the final record survives in
+    // records, so derive holder indexes from that same final state.
+    for (const id of [...this.records.keys()].sort()) {
+      const record = this.require(id);
       if (record.state === 'concealed') this.indexAdd(record.holder, id);
     }
   }
