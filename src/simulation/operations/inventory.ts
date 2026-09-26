@@ -172,12 +172,18 @@ export class ContainerMaterialsProvider implements ConstructionMaterialsProvider
   public constructor(private readonly container: Container) {}
 
   public tryAllocate(requirements: readonly MaterialRequirement[]): boolean {
-    for (const requirement of requirements) {
-      if (this.container.availableOf(requirement.itemId) < requirement.quantity) return false;
+    const totals = new Map<string, number>();
+    for (const { itemId, quantity } of requirements) {
+      totals.set(itemId, (totals.get(itemId) ?? 0) + quantity);
     }
-    for (const requirement of requirements) {
-      this.container.reserve(requirement.itemId, requirement.quantity);
-      this.container.withdrawReserved(requirement.itemId, requirement.quantity);
+    for (const [itemId, quantity] of totals) {
+      if (this.container.availableOf(itemId) < quantity) return false;
+    }
+    for (const [itemId, quantity] of totals) {
+      const reservation = this.container.reserve(itemId, quantity);
+      if (!reservation.ok) throw new Error(`Material reservation failed after availability check: ${itemId}`);
+      const withdrawal = this.container.withdrawReserved(itemId, quantity);
+      if (!withdrawal.ok) throw new Error(`Material withdrawal failed after reservation: ${itemId}`);
     }
     return true;
   }

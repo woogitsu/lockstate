@@ -68,6 +68,27 @@ describe('ConstructionSystem + ContainerMaterialsProvider: issue #25 integration
     expect(site.quantityOf('item.brick')).toBe(2); // untouched -- no partial withdrawal happened
   });
 
+  it('does not accept repeated requirements whose combined quantity exceeds stock', () => {
+    const site = new Container('site-0');
+    const provider = new ContainerMaterialsProvider(site);
+    site.deposit('item.brick', 3);
+
+    expect(provider.tryAllocate([
+      { itemId: 'item.brick', quantity: 2 },
+      { itemId: 'item.brick', quantity: 2 },
+    ])).toBe(false);
+    expect(site.quantityOf('item.brick')).toBe(3);
+    expect(site.reservedOf('item.brick')).toBe(0);
+
+    site.deposit('item.brick', 1);
+    expect(provider.tryAllocate([
+      { itemId: 'item.brick', quantity: 2 },
+      { itemId: 'item.brick', quantity: 2 },
+    ])).toBe(true);
+    expect(site.quantityOf('item.brick')).toBe(0);
+    expect(site.reservedOf('item.brick')).toBe(0);
+  });
+
   it('the default (no provider given) ConstructionSystem still behaves exactly like #16 -- unlimited materials, unchanged', () => {
     const world = buildWorld();
     const construction = new ConstructionSystem(world); // no provider argument
