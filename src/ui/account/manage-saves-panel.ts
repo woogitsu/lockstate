@@ -131,7 +131,11 @@ export class ManageSavesPanel {
       connectivity: 'offline',
     });
     if (this.armedId !== undefined && !rows.some((row) => row.prisonId === this.armedId)) this.armedId = undefined;
-    const signature = JSON.stringify({ rows, deleted: inventory.deleted, active: this.sessions.getActiveSession()?.prisonId, armed: this.armedId });
+    // The deletion question includes relative age. Re-entering Manage must
+    // update it even when the save inventory itself has not changed.
+    const armedPrison = inventory.prisons.find((prison) => prison.prisonId === this.armedId);
+    const armedAge = armedPrison === undefined ? undefined : describeSaveAge(Date.now() - armedPrison.updatedAt);
+    const signature = JSON.stringify({ rows, deleted: inventory.deleted, active: this.sessions.getActiveSession()?.prisonId, armed: this.armedId, armedAge });
     if (signature === this.lastRenderedSignature) {
       this.restoreFocus();
       return;
@@ -168,12 +172,11 @@ export class ManageSavesPanel {
         void this.refresh();
       }, 'delete'));
       if (this.armedId === row.prisonId) {
-        const original = inventory.prisons.find((prison) => prison.prisonId === row.prisonId);
-        if (original !== undefined) {
-          const age = describeSaveAge(Date.now() - original.updatedAt);
+        if (armedPrison !== undefined && armedAge !== undefined) {
           const question = document.createElement('span');
           question.className = 'manage-saves__confirm';
-          question.textContent = this.text(describeDeleteConfirmation({ prisonId: row.prisonId, named, updatedAt: original.updatedAt }, this.text(age.messageKey, age.messageParameters)).messageKey, { name: named, age: this.text(age.messageKey, age.messageParameters) });
+          const ageText = this.text(armedAge.messageKey, armedAge.messageParameters);
+          question.textContent = this.text(describeDeleteConfirmation({ prisonId: row.prisonId, named, updatedAt: armedPrison.updatedAt }, ageText).messageKey, { name: named, age: ageText });
           item.append(question);
           item.append(this.button(this.text(KEY.actionDeleteCancel), () => {
             this.armedId = undefined;
