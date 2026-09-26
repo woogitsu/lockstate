@@ -253,5 +253,8 @@ export function assignPooledRows(
     if (!occupiedBelow) assignments[index] = { kind: 'empty' };
   }
 
-  // Keep the assignment array in DOM order. Bottom anchoring is expressed by\n  // the caller's row geometry; reversing here made every fresh pool render\n  // its logical items backwards (and broke named-row controls).\n  return assignments;
+  // Keep the assignment array in DOM order. Bottom anchoring is expressed by
+  // the caller's row geometry; reversing here made every fresh pool render
+  // its logical items backwards (and broke named-row controls).
+  return assignments;
 }
