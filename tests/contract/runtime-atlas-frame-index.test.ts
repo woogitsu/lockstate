@@ -34,6 +34,15 @@ async function loadPublishedIndex(): Promise<AtlasFrameIndex> {
 }
 
 describe('runtime atlas frame index', () => {
+  it('can index only the two populations the live simulation publishes', async () => {
+    const library = await AtlasLibrary.load({
+      fetchJson: async (url) => JSON.parse(await readFile(path.join(publishedAtlasDirectory, url.slice(RUNTIME_ATLAS_BASE_PATH.length + 1)), 'utf8')),
+    });
+    const index = AtlasFrameIndex.fromLibrary(library, ['actor.guard.base', 'actor.prisoner.base']);
+    expect(index.assetIds()).toEqual(['actor.guard.base', 'actor.prisoner.base']);
+    expect(index.images()).toHaveLength(4);
+    expect(index.clip('actor.medic.base', 'idle')).toBeUndefined();
+  });
   it('indexes every published asset, clip and direction', async () => {
     const index = await loadPublishedIndex();
 

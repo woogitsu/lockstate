@@ -31,6 +31,7 @@ import { SimulationWorkerChannel, type SimulationMessageChannel } from './simula
 import SimulationWorker from './simulation/worker/worker.ts?worker';
 import { AtlasLibrary } from './rendering/assets/atlas-library';
 import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-actor-feed';
+import { LIVE_ACTOR_ASSET_IDS } from './rendering/feed/actors-from-delta';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
@@ -601,6 +602,11 @@ document.documentElement.lang = startupLocale.locale;
 const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
+  // The live simulation publishes these two populations. The explicit demo
+  // shows all five authored roles and therefore keeps the full atlas batch.
+  ...(isDemoActorsRequested(window.location.search) ? {} : {
+    actorAssetIds: LIVE_ACTOR_ASSET_IDS,
+  }),
   keyValueStore: resolveBrowserKeyValueStore(),
   // The same object under both ports: the tool is where a gesture leaves the
   // renderer, and since #261 it is where the undo of that gesture leaves too.
