@@ -150,6 +150,14 @@ describe('Treasury: the exact-balance boundary', () => {
   });
 });
 
+describe('Owner-approved opening grant (#641)', () => {
+  it('starts a new prison at 100,000 with a one-tenth overdraft and arrears bound', () => {
+    const runtime = createNewSimulationRuntime();
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-10_000);
+  });
+});
+
 /**
  * The other end of the same comparison, opened by
  * [ADR 0075](../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
@@ -270,7 +278,7 @@ describe('Treasury: the room a facility opens below zero', () => {
  */
 describe('what a shipped session gets (#703 ruling A)', () => {
   it('is one tenth of the opening grant, derived rather than written down', () => {
-    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-2_500);
+    expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-10_000);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS * 10).toBe(-TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(Number.isSafeInteger(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)).toBe(true);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, 'a floor above zero would be a minimum balance').toBeLessThan(0);
@@ -352,7 +360,7 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     // Equalised by the owner's ruling on #771 (2026-09-01): construction no
     // longer has a rung of its own 750 minor units deeper than deliveries'.
     expect(treasury.floorFor('construction'), 'the same balance a Buy press stops at').toBe(-1_250);
-    expect(treasury.floorFor('wages')).toBe(-2_500);
+    expect(treasury.floorFor('wages')).toBe(-10_000);
     // Not a fourth threshold and not the deepest: see `SpendClass`.
     expect(treasury.floorFor('hiring')).toBe(-1_250);
 
@@ -370,7 +378,7 @@ describe('Treasury: the rungs inside the overdraft (ruling 19)', () => {
     const boundaries = [
       ['deliveries', -1_250],
       ['construction', -1_250],
-      ['wages', -2_500],
+      ['wages', -10_000],
       ['hiring', -1_250],
     ] as const;
 
@@ -510,7 +518,7 @@ describe('Treasury: the starter rung for a fresh, unfurnished prison (#771 remed
     // this describe already pins.
     expect(fresh.floorFor('deliveries', false)).toBe(-1_250);
     expect(fresh.floorFor('hiring', false)).toBe(-1_250);
-    expect(fresh.floorFor('wages', false), 'mature: still the sentinel that clamps to the overdraft floor').toBe(-2_500);
+    expect(fresh.floorFor('wages', false), 'mature: still the sentinel that clamps to the overdraft floor').toBe(-10_000);
   });
 
   /**
