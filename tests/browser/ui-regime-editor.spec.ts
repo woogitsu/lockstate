@@ -176,3 +176,40 @@ test.describe('the Regime panel can change the day it reports', () => {
     expect(await editIntents(page)).toEqual([]);
   });
 });
+
+test.describe('Full HD Day-plan explanation (#1514)', () => {
+  test.use({ viewport: { width: 1920, height: 1080 }, locale: 'pl-PL' });
+
+  test('shows the full reason the last allowed category is locked', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.waitForSelector('#game-root canvas');
+    await page.waitForSelector('.save-panel');
+    await page.locator('.save-panel__button').first().click();
+    await expect(page.locator('.save-panel__item-label').first()).toBeVisible();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
+    await page.locator('.hud-regime__editor .ui-section__header').click();
+
+    const reason = page.locator('.hud-regime__editor .ui-toggles__reason:visible').first();
+    await expect(reason).toHaveText(
+      'Blok musi dopuszczać przynajmniej jedną rzecz, dlatego ostatniej nie da się wyłączyć.',
+    );
+    const layout = await reason.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const panel = element.closest('.hud-regime')?.getBoundingClientRect();
+      const scrollRegion = element.closest('.hud-regime__editor-list')?.getBoundingClientRect();
+      return {
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        right: rect.right,
+        bottom: rect.bottom,
+        panelRight: panel?.right ?? 0,
+        scrollBottom: scrollRegion?.bottom ?? 0,
+        viewportBottom: window.innerHeight,
+      };
+    });
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth + 1);
+    expect(layout.right).toBeLessThanOrEqual(layout.panelRight);
+    expect(layout.bottom).toBeLessThanOrEqual(layout.scrollBottom);
+    expect(layout.bottom).toBeLessThanOrEqual(layout.viewportBottom);
+  });
+});
