@@ -4118,6 +4118,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.manage.cloud-unavailable': 'Cloud saves are unavailable in this version because the game has no cloud connection.',
 
   'save.action.create': 'New prison',
+  'save.default-prison-name': 'New Prison',
   'save.action.save': 'Save now',
   'save.action.export': 'Export',
   'save.action.import': 'Import',

@@ -42,6 +42,24 @@ async function seedRawSlotRecord(store: MemoryLocalSaveStore, record: unknown): 
 }
 
 describe('PrisonSaveRepository: CRUD', () => {
+  it('persists a stable default-name marker through deletion and restore without storing translated text', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), {
+      now: () => 1_000,
+      generateGenerationId: idSequence('gen'),
+    });
+    const created = await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', usesDefaultName: true });
+    expect(created.usesDefaultName).toBe(true);
+    expect(created.displayName).toBeUndefined();
+    await repo.save('prison-1', buildEnvelope(1));
+    await repo.delete('prison-1');
+    expect(await repo.listTombstones()).toEqual([{
+      prisonId: 'prison-1', usesDefaultName: true, deletedAt: 1_000, expiresAt: 1_000 + DEFAULT_UNDO_WINDOW_MS,
+    }]);
+    expect(await repo.restoreFromTombstone('prison-1')).toMatchObject({ ok: true });
+    expect((await repo.list())[0]).toMatchObject({ prisonId: 'prison-1', usesDefaultName: true });
+    expect((await repo.list())[0]?.displayName).toBeUndefined();
+  });
+
   it('creates, lists and deletes prison slots', async () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => 1000 });
     const created = await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'Cell Block A' });

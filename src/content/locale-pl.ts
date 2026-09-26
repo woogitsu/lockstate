@@ -1414,6 +1414,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.manage.local': 'Na tym urządzeniu',
   'save.manage.cloud-unavailable': 'Zapisy w chmurze są niedostępne w tej wersji, ponieważ gra nie ma połączenia z chmurą.',
   'save.action.create': 'Nowe więzienie',
+  'save.default-prison-name': 'Nowe więzienie',
   'save.action.save': 'Zapisz teraz',
   'save.action.export': 'Eksportuj',
   'save.action.import': 'Importuj',
