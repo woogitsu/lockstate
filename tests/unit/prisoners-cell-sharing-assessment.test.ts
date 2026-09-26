@@ -38,4 +38,11 @@ describe('CellSharingAssessmentLedger', () => {
       expect.objectContaining({ entityId: 2, initialRating: 3, currentRating: 1, assessedAtTick: 10, reassessedAtTick: 20 }),
     ]);
   });
+
+  it('forgets assessments for rooms that were removed', () => {
+    const ledger = new CellSharingAssessmentLedger();
+    ledger.reconcile('removed-cell', [{ entityId: 1, riskTier: 3 }], 10);
+    ledger.retainRooms(new Set());
+    expect(ledger.forPrisoner(1)).toBeUndefined();
+  });
 });

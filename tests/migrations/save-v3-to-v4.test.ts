@@ -109,6 +109,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
   // `inFlight` beside them, since issue #1373: a V6-only optional section no
   // build before it wrote.
   const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulationWithoutObjects } = bundle.simulation;
+  const { cellSharingAssessments: _cellSharingAssessments, ...v3Prisoners } = bundle.simulation.prisoners;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -117,7 +118,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
     simulation: {
       ...simulationWithoutObjects,
       prisoners: {
-        ...bundle.simulation.prisoners,
+        ...v3Prisoners,
         components: { ...components, needs: wholeLevelNeeds },
         roomInstanceDefinitions: bundle.simulation.prisoners.roomInstanceDefinitions.map((instance) => ({
           instanceId: instance.instanceId,

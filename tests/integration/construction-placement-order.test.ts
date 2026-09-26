@@ -147,7 +147,7 @@ function saveAndLoad(
   // establish it.
   expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
   // V7 relocates travel fields (#1459), likewise independent of this ordinal.
-  expect(SAVE_SCHEMA_VERSION).toBe(7);
+  expect(SAVE_SCHEMA_VERSION).toBe(8);
 
   // Exactly what a stored save is by the time it is read back: a plain value
   // of unknown provenance, fully re-validated and checksum-verified.

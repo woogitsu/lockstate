@@ -1,4 +1,8 @@
 import type { EntityId } from '../entity/entity-store';
+import type { EntityStore } from '../entity/entity-store';
+import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import type { PrisonerRecordComponent } from './components';
+import type { RoomInstanceRegistry } from './room-instance-registry';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 
 /** The assessment made when a prisoner entered a cell, and its latest revision. */
@@ -9,6 +13,8 @@ export interface CellSharingAssessment {
   readonly currentRating: number;
   readonly assessedAtTick: number;
   readonly reassessedAtTick: number;
+  /** Historical saves cannot recover the original placement decision. */
+  readonly source: 'placement' | 'restored';
   /** Sorted occupant ids and classification tiers; detects a meaningful change without depending on iteration order. */
   readonly inputs: string;
 }
@@ -30,7 +36,7 @@ export class CellSharingAssessmentLedger {
     return this.byPrisoner.get(entityId);
   }
 
-  public reconcile(roomInstanceId: string, occupants: readonly CellSharingView[], atTick: number): void {
+  public reconcile(roomInstanceId: string, occupants: readonly CellSharingView[], atTick: number, source: 'placement' | 'restored' = 'placement'): void {
     const ordered = orderedOccupants(occupants);
     const present = new Set(ordered.map(({ entityId }) => entityId));
     for (const [entityId, record] of this.byPrisoner) {
@@ -50,6 +56,7 @@ export class CellSharingAssessmentLedger {
             currentRating,
             assessedAtTick: atTick,
             reassessedAtTick: atTick,
+            source,
             inputs,
           });
     }
@@ -64,5 +71,40 @@ export class CellSharingAssessmentLedger {
   public loadSnapshot(snapshot: readonly CellSharingAssessment[]): void {
     this.byPrisoner.clear();
     for (const record of snapshot) this.byPrisoner.set(record.entityId, { ...record });
+  }
+
+  public retainRooms(existingRoomIds: ReadonlySet<string>): void {
+    for (const [entityId, record] of this.byPrisoner) {
+      if (!existingRoomIds.has(record.roomInstanceId)) this.byPrisoner.delete(entityId);
+    }
+  }
+}
+
+/** Reassesses occupied cells after intake, classification review and sanctions. */
+export class CellSharingAssessmentSystem implements SystemRegistration {
+  public readonly id = 'prisoners.cell-sharing-assessment';
+  public readonly order = 310;
+  public readonly schedule = { intervalTicks: 1, phaseTicks: 0 };
+
+  public constructor(
+    private readonly ledger: CellSharingAssessmentLedger,
+    private readonly store: EntityStore,
+    private readonly records: PrisonerRecordComponent,
+    private readonly rooms: RoomInstanceRegistry,
+  ) {}
+
+  public update(context: SimulationContext): void {
+    this.reconcileAll(context.tick);
+  }
+
+  public reconcileAll(atTick: number, source: 'placement' | 'restored' = 'placement'): void {
+    const rooms = this.rooms.allByRoomCatalogId('room.cell');
+    this.ledger.retainRooms(new Set(rooms.map((room) => room.instanceId)));
+    for (const room of rooms) {
+      const occupants = this.rooms.occupantsOf(room.instanceId)
+        .filter((entityId) => this.store.isAlive(entityId))
+        .map((entityId) => ({ entityId, riskTier: this.records.riskTier[this.store.getIndex(entityId)]! }));
+      this.ledger.reconcile(room.instanceId, occupants, atTick, source);
+    }
   }
 }

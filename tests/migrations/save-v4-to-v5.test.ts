@@ -5,7 +5,6 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
-  migrateSaveEnvelopeV5ToV6,
 } from '../../src/persistence/save-migrations';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 import {
@@ -107,6 +106,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   // `inFlight` beside them, since issue #1373: a V6-only optional section no
   // build before it wrote.
   const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = bundle.simulation;
+  const { cellSharingAssessments: _cellSharingAssessments, ...v4Prisoners } = bundle.simulation.prisoners;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -115,7 +115,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
     simulation: {
       ...simulation,
       prisoners: {
-        ...bundle.simulation.prisoners,
+        ...v4Prisoners,
         roomInstanceDefinitions: bundle.simulation.prisoners.roomInstanceDefinitions.map((instance) => ({
           instanceId: instance.instanceId,
           roomCatalogId: instance.roomCatalogId,
@@ -189,13 +189,11 @@ describe('save-schema V4 -> V5 migration', () => {
   it('recomputes the values it dropped, and lands on the same ones', () => {
     // The other half of "lossless": what the restore *writes* for a migrated row
     // equals what V4 carried. Zero and empty in, zero and empty out.
-    const migrated = migrateSaveEnvelopeV4ToV5(v4EnvelopeWithARoom());
-    // Walked one step further before restoring, since ADR 0113 made
-    // `simulation.regimeSchedules` required at V6: `restoreSimulationRuntime`
-    // takes a current-version bundle, and handing it a V5 payload directly
-    // would be this test asserting about a shape no decode path produces.
+    // The restore consumes the current shape, so walk every registered step.
+    const current = decodeSaveEnvelope(v4EnvelopeWithARoom());
+    if (!current.ok) throw new Error(`V4 fixture must migrate: ${JSON.stringify(current.error)}`);
     const restored = restoreSimulationRuntime(
-      migrateSaveEnvelopeV5ToV6(migrated).payload as unknown as SessionSnapshotBundle,
+      current.value.payload as unknown as SessionSnapshotBundle,
       0,
     ).runtime;
 
@@ -237,8 +235,8 @@ describe('save-schema V4 -> V5 migration', () => {
     // the V5 schema rather than at an assertion about a field.
     const result = decodeSaveEnvelope(throughStorage(v4EnvelopeWithARoom()));
 
+    if (!result.ok) throw new Error(`the V4 save must migrate: ${JSON.stringify(result.error)}`);
     expect(result).toMatchObject({ ok: true, migrated: true });
-    if (!result.ok) throw new Error('the V4 save must migrate for this test to be meaningful');
     expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(result.value.payload.simulation?.prisoners.roomInstanceDefinitions).toEqual([
       { instanceId: CELL_INSTANCE_ID, roomCatalogId: 'room.cell', anchorTile: { x: 4, y: 6 } },
@@ -273,7 +271,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(7);
+      expect(SAVE_SCHEMA_VERSION).toBe(8);
     }
   });
 

@@ -31,6 +31,7 @@ import {
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
 import type { PrisonerTravelSnapshot } from '../prisoners/prisoner-operations-runtime';
+import type { CellSharingAssessment } from '../prisoners/cell-sharing-assessment';
 import type { EncodedRegimeSchedule } from '../prisoners/regime-registry';
 import type { PlacedObject } from '../objects';
 import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
@@ -200,6 +201,8 @@ export interface EncodedPrisoners {
    */
   readonly roomInstanceDefinitions: readonly PersistedRoomInstance[];
   readonly roomInstanceOccupancy: readonly (readonly [string, readonly number[]])[];
+  /** Recorded at placement, then revised when occupants or classification change (#79). */
+  readonly cellSharingAssessments: readonly CellSharingAssessment[];
 }
 
 /**
@@ -720,6 +723,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       },
       roomInstanceDefinitions: roomInstanceDefinitions(runtime),
       roomInstanceOccupancy: runtime.prisoners.roomInstances.getSnapshot().map(([id, occupants]) => [id, [...occupants]] as const),
+      cellSharingAssessments: runtime.prisoners.cellSharingAssessments.getSnapshot(),
     },
     operations: {
       containers: runtime.containers.getSnapshot().map(([id, stock]) => [id, stock.map((entry) => [entry[0], entry[1], entry[2]] as const)] as const),
@@ -1024,6 +1028,10 @@ export function restoreSessionSystems(
   systems.inFlight === undefined
     ? undefined
     : { snapshot: systems.inFlight.prisoners, knowsRequest: (requestId) => runtime.navigation.knowsRequest(requestId) });
+  runtime.prisoners.cellSharingAssessments.loadSnapshot(systems.prisoners.cellSharingAssessments);
+  // A V7 migration has no original placement verdict. Reconstruct only the
+  // current rating, marked as restored, from the occupants and tiers above.
+  runtime.prisoners.cellSharingAssessmentSystem.reconcileAll(runtime.kernel.tick, 'restored');
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);
