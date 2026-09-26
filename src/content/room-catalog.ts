@@ -83,6 +83,12 @@ export const roomDefinitionSchema = z
      */
     openArea: z.boolean().optional(),
     /**
+     * A bed in this room cannot create a residency place. Holding is temporary
+     * overflow, not a cheap cell (#590). Sleep behaviour is a separate rule.
+     * Absent means the normal sleep-surface residency rule applies.
+     */
+    forbidsResidency: z.boolean().optional(),
+    /**
      * **The most prisoners who may *live* in one instance of this room type,
      * whatever it is furnished with.**
      *
@@ -155,7 +161,7 @@ const rawRoomDefinitions: readonly RoomCatalogDefinition[] = [
     { type: 'object', objectId: 'object.bed', minQuantity: 1 },
     { type: 'object', objectId: 'object.toilet', minQuantity: 1 },
   ] },
-  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', openArea: true, requirements: [
+  { schemaVersion: 1, id: 'room.holding-cell', numericId: 2, nameKey: 'room.holding-cell.name', category: 'housing', openArea: true, forbidsResidency: true, requirements: [
     { type: 'enclosed' },
     { type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 },
     { type: 'object', objectId: 'object.bench', minQuantity: 1 },
