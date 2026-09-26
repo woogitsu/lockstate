@@ -396,7 +396,10 @@ export function roomNeedsFromProjections(
     }
   }
 
-  return { unfinishedRooms, totalRooms: list.totals.instances, totalNeeds, needs, atCapacity: atCapacityFrom(list) };
+  return {
+    unfinishedRooms, totalRooms: list.totals.instances, totalNeeds, needs, atCapacity: atCapacityFrom(list),
+    ...(list.totals.utilityLimitedRooms === undefined ? {} : { utilityLimitedRooms: list.totals.utilityLimitedRooms }),
+  };
 }
 
 export class RoomNeedsReader {

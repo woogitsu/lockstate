@@ -1656,6 +1656,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       needsItems,
     ],
   });
+  /**
+   * #595: the count arrives from the same placed-object resolver the action
+   * system reads. A count above zero means at least one provisioner in each
+   * counted room lacks a panel slot and contributes half its normal effect;
+   * one panel placed inside a Utility Room adds exactly eight slots. The
+   * notice therefore reports an observed limit, not merely the room rule.
+   */
+  const powerNotice = element('div', { className: 'hud-rooms__power-notice' });
   /*
    * No initial `hidden` here: `paintNeeds` runs once at construction, below the
    * `panel.body.append`, and it is the single authority on whether this block
@@ -1751,6 +1759,18 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   }
 
   function paintNeeds(): void {
+    const limited = needs?.utilityLimitedRooms ?? 0;
+    powerNotice.hidden = limited === 0;
+    powerNotice.replaceChildren();
+    if (limited > 0) {
+      powerNotice.dataset['limited'] = String(limited);
+      powerNotice.append(
+        eyebrowText(t(HUD_MESSAGE_KEY.roomsUtilityLimited)),
+        eyebrowText(t(HUD_MESSAGE_KEY.roomsUtilityHelp)),
+      );
+    } else {
+      delete powerNotice.dataset['limited'];
+    }
     /*
      * Two states draw nothing and stay two facts: `undefined` is "nothing has
      * been asked" and zero unfinished rooms is "the simulation says every room
@@ -2109,6 +2129,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     catalogue.element,
     element('div', { className: 'hud-rooms__map', children: [actionsRow, areaBlock, note] }),
     needsBlock,
+    powerNotice,
     element('div', { className: 'hud-rooms__status', children: [ruleBlock, enclosureBlock] }),
   );
   paintCatalogue();

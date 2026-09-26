@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { PlacedObjectRegistry } from '../../src/simulation/objects/placed-object-registry';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { utilityProvisionFactors } from '../../src/simulation/prisoners/utility-power';
+import { projectRoomList } from '../../src/simulation/presentation/room-projection';
+import { roomNeedsFromProjections } from '../../src/ui/simulation-room-needs';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
 function fixture() {
@@ -41,5 +43,27 @@ describe('issue #595 utility panel provisioning', () => {
     const { rooms, objects } = fixture();
     expect(objects.place({ placedObjectId: 'outside', objectId: 'object.utility-panel', anchorTile: { x: tileCoordinate(30), y: tileCoordinate(0) }, orientation: 0 })).toBe(true);
     expect(utilityProvisionFactors(rooms, objects).get('shower')).toBe(0.5);
+  });
+
+  it('does not spend a slot on a security console until its information reader exists', () => {
+    const { rooms, objects } = fixture();
+    rooms.register({
+      instanceId: 'security', roomCatalogId: 'room.security-office',
+      anchorTile: { x: tileCoordinate(10), y: tileCoordinate(0) }, width: 2, height: 2,
+      residentCapacity: 0, concurrentUseCapacity: 1, objectCapabilities: ['surveillance'],
+    });
+    expect(objects.place({ placedObjectId: 'console', objectId: 'object.security-console', anchorTile: { x: tileCoordinate(10), y: tileCoordinate(0) }, orientation: 0 })).toBe(true);
+    expect(objects.place({ placedObjectId: 'panel', objectId: 'object.utility-panel', anchorTile: { x: tileCoordinate(20), y: tileCoordinate(0) }, orientation: 0 })).toBe(true);
+    expect(utilityProvisionFactors(rooms, objects).get('shower')).toBeCloseTo(17 / 18);
+  });
+
+  it('publishes rzeczywisty spadek wydajności w odczycie Rooms i usuwa go po dostawieniu paneli', () => {
+    const { rooms, objects } = fixture();
+    const read = () => roomNeedsFromProjections(projectRoomList({ roomInstances: rooms }, {}, { placedObjects: objects }), []);
+    expect(read().utilityLimitedRooms).toBe(1);
+    expect(objects.place({ placedObjectId: 'panel', objectId: 'object.utility-panel', anchorTile: { x: tileCoordinate(20), y: tileCoordinate(0) }, orientation: 0 })).toBe(true);
+    expect(read().utilityLimitedRooms).toBe(1);
+    expect(objects.place({ placedObjectId: 'panel-2', objectId: 'object.utility-panel', anchorTile: { x: tileCoordinate(21), y: tileCoordinate(0) }, orientation: 0 })).toBe(true);
+    expect(read().utilityLimitedRooms).toBe(0);
   });
 });

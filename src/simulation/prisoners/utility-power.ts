@@ -1,4 +1,4 @@
-import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
+import type { PlacedObject } from '../objects/placed-object';
 import { roomContains } from '../objects/room-capacity';
 import type { RoomInstanceRegistry } from './room-instance-registry';
 
@@ -9,7 +9,6 @@ const PROVISIONERS: ReadonlyMap<string, string> = new Map([
   ['object.shower-head', 'room.shower-room'],
   ['object.stove', 'room.kitchen'],
   ['object.washing-machine', 'room.laundry'],
-  ['object.security-console', 'room.security-office'],
 ] as const);
 
 /**
@@ -20,17 +19,18 @@ const PROVISIONERS: ReadonlyMap<string, string> = new Map([
  */
 export function utilityProvisionFactors(
   rooms: RoomInstanceRegistry,
-  objects: PlacedObjectRegistry,
+  objects: { all(): readonly PlacedObject[] },
 ): ReadonlyMap<string, number> {
+  const placed = objects.all();
   const panels = rooms.allByRoomCatalogId('room.utility-room');
   let slots = 0;
-  for (const object of objects.all()) {
+  for (const object of placed) {
     if (object.objectId === 'object.utility-panel' && panels.some((room) => roomContains(room, object.anchorTile))) {
       slots += OBJECTS_PER_UTILITY_PANEL;
     }
   }
   const counts = new Map<string, { total: number; powered: number }>();
-  for (const object of objects.all()) {
+  for (const object of placed) {
     const roomType = PROVISIONERS.get(object.objectId);
     if (roomType === undefined) continue;
     const room = rooms.allByRoomCatalogId(roomType).find((candidate) => roomContains(candidate, object.anchorTile));
