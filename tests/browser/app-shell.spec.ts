@@ -2296,6 +2296,17 @@ async function orderWallRectangles(
   await tabTo(page, 'the Build tab', { selector: '.ui-tab[data-tab="build"]' });
   await page.keyboard.press('Enter');
   await expect(page.locator('.hud-build')).toBeVisible();
+  // #899 leaves the map visible on a phone until the player opens the
+  // catalogue. Do that through the keyboard before the existing buy route.
+  const mobileDrawer = page.locator('.hud-build > .ui-panel__header .ui-panel__toggle');
+  const openedMobileDrawer = (await page.locator('.hud-build').getAttribute('data-collapsed')) === 'true';
+  if (openedMobileDrawer) {
+    await shiftTabTo(page, 'the Build catalogue disclosure', {
+      selector: '.hud-build > .ui-panel__header .ui-panel__toggle',
+    });
+    await page.keyboard.press('Enter');
+    await expect(mobileDrawer).toHaveAttribute('aria-expanded', 'true');
+  }
 
   // A vacuity guard, not a claim: every order below is for whatever this row
   // says, so a catalogue that arrived with something else selected would wall
@@ -2327,7 +2338,8 @@ async function orderWallRectangles(
    * claim was false the day it was written -- but the walk was not re-run at
    * that commit, so that is an inference and not a measurement.
    */
-  await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+  if (openedMobileDrawer) await tabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+  else await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
   if ((await buyToggle.getAttribute('aria-expanded')) === 'false') await page.keyboard.press('Enter');
   await expect(page.locator('.hud-build__buy')).toBeVisible();
 
@@ -4092,6 +4104,11 @@ test.describe('the assembled application', () => {
      * The count is the guard against a vacuous pass.
      */
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // #899 tests the map-first arrival in its own spec. This sweep measures
+    // every control inside Build, so open the phone drawer before doing so.
+    if ((await page.locator('.hud-build').getAttribute('data-collapsed')) === 'true') {
+      await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
+    }
     const saveButtons = await controlReachability(page, '.save-panel__button');
     expect(
       saveButtons.measured.length,
@@ -9381,6 +9398,9 @@ test.describe('the assembled application', () => {
 
     await page.locator('.ui-tab[data-tab="build"]').click();
     const remove = page.locator('.hud-build__remove');
+    // #899 enters Build map-first on a phone. Open the catalogue before
+    // choosing the removal tool; #517 folds it again for the world press.
+    await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
     await expect(remove, 'the removal toggle is not laid out at 375x812').toBeVisible();
 
     // Tappable, not merely visible: the control has to be what a finger at its
@@ -9438,6 +9458,10 @@ test.describe('the assembled application', () => {
     // removing* and then pressed a tile was placing, not removing, and had
     // spent materials. Now the toggle itself stands the tool down, the arm
     // control is untouched here, and pressing it would *arm* instead.
+    // #517 folds the phone catalogue after arming removal to expose the map.
+    // Reopen its visible disclosure before pressing Stop removing.
+    await expect(page.locator('.hud-build')).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
     await remove.click();
     await expect(remove).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
@@ -9613,6 +9637,9 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // #899 starts on the map at phone width; reveal Build before selecting
+    // Remove, then #517 folds the panel again for the world press.
+    await page.locator('.hud-build > .ui-panel__header .ui-panel__toggle').click();
     await page.locator('.hud-build__remove').click();
     expect(await pressOnWorld(page), 'the HUD left no bare world to press at 375x812').toBe(true);
 

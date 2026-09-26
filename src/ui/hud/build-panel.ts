@@ -1346,6 +1346,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       armed = (wasRemoving || !armed) && selectedId !== undefined;
       paintArmed();
       options.onArm(armed, selectedId, removing);
+      if (armed) foldForWorldIfOccluded();
     },
   });
   armButton.element.dataset['armed'] = 'false';
@@ -1434,6 +1435,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       paintArmed();
       paintBuy();
       options.onArm(armed, selectedId, removing);
+      if (armed) foldForWorldIfOccluded();
     },
   });
   removeButton.element.classList.add('hud-build__remove');
@@ -3114,8 +3116,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // Collapsible, because the panel and the thing it operates on compete for
   // the same screen. At 375px it covers most of the world, and the whole
   // interaction is now "point at the world" -- so folding it to its header
-  // while placing is not a nicety. Arming survives the fold: the tool is
-  // still yours, you just want to see what you are doing.
+  // while placing is not a nicety. Arming now folds it when the panel actually
+  // covers the centre of the canvas; the open desktop panel stays open. Arming
+  // survives the fold: the tool is still yours, you just want to see what you
+  // are doing.
   //
   // That paragraph was a claim about a control that did nothing for several
   // releases. `createPanel` folds a panel by setting `hidden` on its body, and
@@ -3141,6 +3145,31 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+
+  /**
+   * At phone width the expanded catalogue can cover the centre of the playable
+   * canvas. Yield it on entering Build as well as when arming a tool, so a
+   * player can see the map before choosing what to place. Hit-testing the
+   * centre rather than assuming a viewport breakpoint leaves the desktop
+   * catalogue open beside the map.
+   * The header remains a 44px disclosure: it announces its collapsed state and
+   * lets the player reopen the panel to change or stop the armed tool.
+   */
+  function foldForWorldIfOccluded(focusDisclosure = true): void {
+    if (panelCollapsed) return;
+    const canvas = document.querySelector<HTMLCanvasElement>('#game-root canvas');
+    if (canvas === null) return;
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    const canvasBox = canvas.getBoundingClientRect();
+    if (x < canvasBox.left || x >= canvasBox.right || y < canvasBox.top || y >= canvasBox.bottom) return;
+    if (!panel.element.contains(document.elementFromPoint(x, y))) return;
+    panelCollapsed = true;
+    panel.setCollapsed(true);
+    // An arm/remove press was inside the body we just hid. On tab entry the
+    // active tab itself remains the useful focus anchor; do not steal it.
+    if (focusDisclosure) panel.toggle?.focus();
+  }
   panel.body.append(
     catalogue.element,
     element('div', {
@@ -3328,7 +3357,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       options.onArm(false, selectedId, false);
     },
     setVisible(visible: boolean): void {
+      const entering = visible && panel.element.hidden;
       panel.element.hidden = !visible;
+      // The panel has to be laid out for hit-testing. This transition runs
+      // only on entry, so manually reopening the catalogue stays possible.
+      if (entering) foldForWorldIfOccluded(false);
       // The queue goes with the tab. Nothing refreshes it from another tab --
       // the host only asks while this one is showing -- so a block left behind
       // would be a list of ids that were true when the player walked away, and
