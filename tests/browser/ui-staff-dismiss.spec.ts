@@ -409,7 +409,7 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
     expect(
       after.map((row) => row.laidOut),
       'the freed place gave its box up, so the rows below it moved under the pointer',
-    ).toEqual([true, true, true]);
+    ).toEqual([false, true, true]);
     /*
      * And the place did not move, which is a second way the same harm arrives
      * and was measured while proving this test can fail.

@@ -230,16 +230,11 @@ test.describe('a delivery row refunds the purchase it named (#877)', () => {
       after.map((row) => row.subject),
       'a landing re-pointed the places under the player',
     ).toEqual([null, 'buy-2', 'buy-3']);
-    /*
-     * And the freed place kept its **box** while a place after it was occupied:
-     * hiding it would slide the two rows below it up a row's height into
-     * whatever pointer was resting there, which is the same harm by geometry
-     * rather than by binding.
-     */
+    /* The unused leading slot collapses; the occupied slots keep their pixels. */
     expect(
       after.map((row) => row.laidOut),
       'the freed place gave its box up, so the rows below it moved under the pointer',
-    ).toEqual([true, true, true]);
+    ).toEqual([false, true, true]);
     /* And it names nothing rather than naming the arriving purchase quietly. */
     expect(after[0]!.label, 'the held-open place still carries a label').toBe('');
     /*
@@ -343,7 +338,7 @@ test.describe('a release row frees the guard it named (#877)', () => {
     expect(
       after.map((row) => row.laidOut),
       'the freed place gave its box up, so the rows below it moved under the pointer',
-    ).toEqual([true, true, true]);
+    ).toEqual([false, true, true]);
     expect(after[0]!.label, 'the held-open place still carries a label').toBe('');
     expect(
       Math.abs(after[1]!.y - aimedAt.y),

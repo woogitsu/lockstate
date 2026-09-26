@@ -13,6 +13,7 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { capturePooledRowAnchor, pinPooledRowHeight, releasePooledRowHeight } from './pooled-row-layout';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -2403,13 +2404,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       shown.deliveries.map((delivery) => delivery.orderId),
       nowMs,
       PENDING_DELIVERY_ROW_SETTLE_MS,
-      'top',
+      'bottom',
     );
 
     let drawn = 0;
+    const restoreAnchor = capturePooledRowAnchor(deliveryRows.map((row) => row.element));
     for (const [index, row] of deliveryRows.entries()) {
+      pinPooledRowHeight(row.element);
       const assignment = assignments[index];
       if (assignment === undefined || assignment.kind === 'empty') {
+        releasePooledRowHeight(row.element);
         if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.element.hidden = true;
         row.orderId = undefined;
@@ -2465,6 +2469,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         `${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`,
       );
     }
+
+    restoreAnchor();
 
     /*
      * How many are behind the last row, and no control to reach them: the rows
@@ -2691,6 +2697,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * the last publication"*); this is the same rule, one panel over.
    */
   function emptyQueueRow(row: QueueRow, forgetSettle = false): void {
+    releasePooledRowHeight(row.element);
     /*
      * The settle stamp goes with the emptying, on the same transition rule the
      * `'holds-open'` branch of `paintQueue` uses: a place that named an order a
@@ -2912,11 +2919,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       shown.orders.map((order) => order.orderId),
       nowMs,
       BUILD_QUEUE_ROW_SETTLE_MS,
-      'top',
+      'bottom',
     );
 
     let drawn = 0;
+    const restoreQueueAnchor = capturePooledRowAnchor(queueRows.map((row) => row.element));
     for (const [index, row] of queueRows.entries()) {
+      pinPooledRowHeight(row.element);
       const assignment = assignments[index];
       if (assignment === undefined || assignment.kind === 'empty') {
         emptyQueueRow(row);
@@ -2981,6 +2990,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // word stays short because the row is narrow at 375px.
       row.cancel.element.setAttribute('aria-label', `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`);
     }
+
+    restoreQueueAnchor();
 
     /*
      * Counted against the rows this pass actually **drew** rather than against
