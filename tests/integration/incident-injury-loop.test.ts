@@ -294,7 +294,7 @@ describe('an incident injures somebody, the infirmary treats them, and the flag 
       ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
     });
     expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(SAVE_SCHEMA_VERSION).toBe(7); // #1459 relocated travel fields; injury remains in the same section.
+    expect(SAVE_SCHEMA_VERSION).toBe(8); // #79 records cell sharing; injury remains in the same section.
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
     expect(decoded).toMatchObject({ ok: true, migrated: false });

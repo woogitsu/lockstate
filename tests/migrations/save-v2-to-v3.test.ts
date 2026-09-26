@@ -210,6 +210,7 @@ describe('the V3 simulation section is validated, not trusted', () => {
         coldState: { accommodationInstanceId: [], currentActionTargetInstanceId: [] },
         roomInstanceDefinitions: [],
         roomInstanceOccupancy: [],
+        cellSharingAssessments: [],
       },
       operations: {
         containers: [],

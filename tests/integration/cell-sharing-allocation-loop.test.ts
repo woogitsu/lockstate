@@ -3,6 +3,10 @@ import { intakeStageFromIndex } from '../../src/simulation/prisoners/components'
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import type { JsonValue } from '../../src/shared/json';
 
 /**
  * Issue #372: **the shipped `AdmitPrisoner` path really does reach
@@ -134,6 +138,66 @@ function stageOf(runtime: SimulationRuntime, index: number): string {
 }
 
 describe('occupant-aware cell allocation reached through AdmitPrisoner (#372)', () => {
+  it('records a placement assessment, revises it after a new cellmate, and saves both ratings', () => {
+    const runtime = twoTwoBedCells();
+    submit(runtime, 'admit-assessment-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION_ONE, ...ARRIVAL }));
+    stepBy(runtime, 40);
+    const firstId = runtime.prisoners.entityStore.getIdByIndex(0)!;
+    expect(runtime.prisoners.cellSharingAssessments.forPrisoner(firstId)).toMatchObject({
+      roomInstanceId: cellAId, initialRating: 0, currentRating: 0, source: 'placement',
+    });
+
+    submit(runtime, 'admit-assessment-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION_TWO, ...ARRIVAL }));
+    stepBy(runtime, 40);
+    const secondId = runtime.prisoners.entityStore.getIdByIndex(1)!;
+    // The first admission is still housed in A; bring its actual, classified
+    // cellmate across to exercise a later change to the room's occupants.
+    runtime.prisoners.roomInstances.release(cellBId, secondId);
+    runtime.prisoners.roomInstances.assign(cellAId, secondId);
+    runtime.prisoners.coldState.setAccommodation(secondId, cellAId);
+    runtime.kernel.step();
+    expect(runtime.prisoners.cellSharingAssessments.forPrisoner(firstId)).toMatchObject({
+      initialRating: 0, currentRating: 2, source: 'placement',
+    });
+    expect(runtime.prisoners.cellSharingAssessments.forPrisoner(secondId)).toMatchObject({
+      initialRating: 2, currentRating: 2, source: 'placement',
+    });
+
+    const bundle = captureSessionSnapshot(runtime);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'cell-risk', revision: 1,
+      createdAt: 1, updatedAt: 1, ...bundle,
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
+    if (!decoded.ok) throw new Error(JSON.stringify(decoded.error));
+    const restored = restoreSimulationRuntime(decoded.value.payload as SessionSnapshotBundle, SEED).runtime;
+    expect(restored.prisoners.cellSharingAssessments.forPrisoner(firstId)).toEqual(
+      runtime.prisoners.cellSharingAssessments.forPrisoner(firstId),
+    );
+    expect(restored.prisoners.cellSharingAssessments.forPrisoner(secondId)).toEqual(
+      runtime.prisoners.cellSharingAssessments.forPrisoner(secondId),
+    );
+
+    // A V7 save cannot know the original decision. Its migration must not
+    // claim that the reconstructed rating was measured at placement.
+    const plain = JSON.parse(JSON.stringify(envelope)) as Record<string, unknown>;
+    const oldPayload = structuredClone(plain.payload) as Record<string, unknown>;
+    const simulation = oldPayload.simulation as Record<string, unknown>;
+    const prisoners = simulation.prisoners as Record<string, unknown>;
+    delete prisoners.cellSharingAssessments;
+    const oldSave = {
+      ...plain, saveSchemaVersion: 7, payload: oldPayload,
+      checksum: computeSaveChecksum(oldPayload as JsonValue),
+    };
+    const migrated = decodeSaveEnvelope(oldSave);
+    if (!migrated.ok) throw new Error(JSON.stringify(migrated.error));
+    expect(migrated.migrated).toBe(true);
+    expect(migrated.value.payload.simulation?.prisoners.cellSharingAssessments).toEqual([]);
+    const fromV7 = restoreSimulationRuntime(migrated.value.payload as SessionSnapshotBundle, SEED).runtime;
+    expect(fromV7.prisoners.cellSharingAssessments.forPrisoner(firstId)).toMatchObject({
+      initialRating: 2, currentRating: 2, source: 'restored',
+    });
+  });
   it('zones and furnishes both cells with no refusal and a two-bed capacity each', () => {
     const runtime = twoTwoBedCells();
     expect(runtime.refusals.count, 'zoning and furnishing must not be refused').toBe(0);

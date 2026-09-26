@@ -12,6 +12,7 @@ import type { AdmissionRequest } from './classification';
 import { ClassificationEarlyWarningSystem } from './classification-early-warning-system';
 import { ClassificationReviewSystem } from './classification-review-system';
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
+import { CellSharingAssessmentLedger, CellSharingAssessmentSystem } from './cell-sharing-assessment';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
 import {
   ACTION_PHASES,
@@ -377,6 +378,8 @@ export class PrisonerOperationsRuntime {
   public readonly classificationEarlyWarningSystem: ClassificationEarlyWarningSystem;
   public readonly dischargeSystem: PrisonerDischargeSystem;
   public readonly sanctionSystem: SanctionSystem;
+  public readonly cellSharingAssessments = new CellSharingAssessmentLedger();
+  public readonly cellSharingAssessmentSystem: CellSharingAssessmentSystem;
 
   /**
    * How many prisoners `admitPrisoner` has allocated this session, counting
@@ -484,6 +487,7 @@ export class PrisonerOperationsRuntime {
     this.classificationEarlyWarningSystem = new ClassificationEarlyWarningSystem(this.entityStore, this.query, this.records, options.disciplinaryEvidence);
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
+    this.cellSharingAssessmentSystem = new CellSharingAssessmentSystem(this.cellSharingAssessments, this.entityStore, this.records, this.roomInstances);
     this.actionSystem = new ActionSystem(
       this.entityStore,
       this.query,
@@ -546,6 +550,7 @@ export class PrisonerOperationsRuntime {
       bitset: this.bitset,
       coldState: this.coldState,
       roomInstances: this.roomInstances,
+      cellSharingAssessments: this.cellSharingAssessments,
       navigation: options.navigation,
       // `exactOptionalPropertyTypes` is on, so an absent collaborator has to be
       // an absent *key*: spreading a conditional is what keeps
@@ -573,6 +578,7 @@ export class PrisonerOperationsRuntime {
     kernel.registerSystem(this.actionSystem);
     kernel.registerSystem(this.locomotionSystem);
     kernel.registerSystem(this.sanctionSystem);
+    kernel.registerSystem(this.cellSharingAssessmentSystem);
   }
 
   /**

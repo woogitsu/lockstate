@@ -491,6 +491,7 @@ describe('kernel system ordering', () => {
       { id: 'contraband.search', order: 290 },
       { id: 'incidents.response', order: 295 },
       { id: 'prisoners.sanctions', order: 300 },
+      { id: 'prisoners.cell-sharing-assessment', order: 310 },
     ]);
   });
 

@@ -111,13 +111,14 @@ function v5EnvelopeWithASession(): SaveEnvelopeV5 {
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
   const { regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = bundle.simulation;
+  const { cellSharingAssessments: _cellSharingAssessments, ...v5Prisoners } = simulation.prisoners;
   const payload = {
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     kernel: bundle.kernel,
     world: bundle.world,
     construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
-    simulation,
+    simulation: { ...simulation, prisoners: v5Prisoners },
     ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
   };
 

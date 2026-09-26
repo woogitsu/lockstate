@@ -101,7 +101,7 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   // edited cannot be recovered from an absent field -- and it is nothing to do
   // with the income line, which still adds no field to the payload. The two
   // paragraphs below the version check are what actually enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(7);
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(8);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);

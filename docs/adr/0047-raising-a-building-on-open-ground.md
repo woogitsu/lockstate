@@ -229,7 +229,7 @@ chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
-(`src/persistence/save-schema.ts:126`–`:129`, `terrain` / `topEdge` / `leftEdge`
+(`src/persistence/save-schema.ts:127`–`:130`, `terrain` / `topEdge` / `leftEdge`
 / `zoning`, each `terrainRleSchema.optional()`; this branch wrote `:115`–`:118`
 on 2026-09-15 and by 2026-09-16, when it merged `origin/main`, that span was a
 blank line and the first three lines of `serializedChunkStateSchema`'s
@@ -512,7 +512,7 @@ cannot be built.
 `terrain`, `topEdge`, `leftEdge` and `zoning` in `SerializedChunkState`
 (`src/simulation/world/sparse-world.ts:45`), in `decodeChunk`'s optional list
 (`:191`) and in `serializedChunkStateSchema`
-(`src/persistence/save-schema.ts:126`–`:129`; the anchor read `:115`–`:118`
+(`src/persistence/save-schema.ts:127`–`:130`; the anchor read `:115`–`:118`
 until 2026-09-16, as above).
 
 `AGENTS.md` boundary 7 **is** engaged here — unlike ADR 0045 decision 4, this
