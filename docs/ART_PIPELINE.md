@@ -512,6 +512,14 @@ independent Blender 5.2.1 renders matched byte for byte. Full HD WorldScene
 captures compare two built bins in a Staff Room at zoom 1 and 3; the browser
 test also verifies that both use the waste-bin atlas frame.
 
+**2026-09-27 wooden chair revision:** the existing buildable 1×1 chair keeps
+its walnut, steel and rubber palette and footprint. `refine-wooden-chair.py`
+now builds three separated seat boards and two back rails with recessed
+rivets, matching the accepted v3 four-view reference. Dark gaps stay visible
+when the Blender render is reduced from 256 to 64 px. Full HD WorldScene
+captures compare four built chairs in a Classroom at zoom 1 and 3. Room
+requirements and seating capability are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed

@@ -455,8 +455,8 @@
     {
       "assetId": "furniture.chair.wooden",
       "contentVersion": 1,
-      "image": "source-art/rendered.furniture.chair.wooden.6ae35ea8d80c.png",
-      "sha256": "6ae35ea8d80cea28ef437e3581885613aa7e4493405a804e4d61402bc5288524",
+      "image": "source-art/rendered.furniture.chair.wooden.f345dee43fcb.png",
+      "sha256": "f345dee43fcb0ec774a8b1e9124bcc20fc612c9665ea86cc0b659406b7bfb0cd",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -466,8 +466,8 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1.125597,
-        "height": 1.125597
+        "width": 1.282401,
+        "height": 1.282401
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {
