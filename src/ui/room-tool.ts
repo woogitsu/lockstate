@@ -1,6 +1,6 @@
 import type { RoomToolPort, TileRect } from '../rendering/build/area-picking';
 import type { WorldRenderView } from '../rendering/world/world-view';
-import { roomPerimeterEnclosure, type RoomEnclosure } from '../simulation/rooms/enclosure';
+import { roomPerimeterEnclosure, type RoomEnclosureResult } from '../simulation/rooms/enclosure';
 import type { HudRoomArea, HudWorldRoomSource, HudRoomGesture } from './hud';
 
 /**
@@ -153,9 +153,9 @@ export class RoomTool implements RoomToolPort, HudWorldRoomSource {
    * value is handed through with no conversion and no second shape to keep in
    * step.
    */
-  public classifyArea(area: HudRoomArea): RoomEnclosure {
-    if (this.world === undefined) return 'open';
-    return roomPerimeterEnclosure(this.world, area).enclosure;
+  public classifyArea(area: HudRoomArea): RoomEnclosureResult {
+    if (this.world === undefined) return { enclosure: 'open' };
+    return roomPerimeterEnclosure(this.world, area);
   }
 
   /**

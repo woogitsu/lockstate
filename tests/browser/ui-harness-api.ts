@@ -1523,6 +1523,7 @@ export interface LockstateUiHarness {
    * it is asserting about.
    */
   setWorldRoomEnclosure(enclosure: 'sealed' | 'open'): void;
+  setWorldRoomGap(gap: { x: number; y: number; edge: 'north' | 'west' } | undefined): void;
   clickRoomType(roomId: string): boolean;
   /**
    * A real click on one of the panel's controls, so a disabled or hidden one
