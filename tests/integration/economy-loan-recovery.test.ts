@@ -149,6 +149,7 @@ interface LockedPosition {
  */
 function lockedPosition(): LockedPosition {
   const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
+  expect(runtime.treasury.spend(75_000, 'wages'), 'restore the measured 25,000-balance wall trap').toBe(true);
   const ring = cellRingEdges();
   const doorway = ring[ring.length - 1] as Edge;
   const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
@@ -342,6 +343,7 @@ describe('what a loan does to the locked position, and what it does not', () => 
    */
   it('leaves the facility untouched when the thirteen orders are never placed', () => {
     const runtime = createNewSimulationRuntime(SEED, { loanTerms: PROBE_TERMS });
+    expect(runtime.treasury.spend(75_000, 'wages'), 'restore the measured 25,000-balance wall trap').toBe(true);
     const ring = cellRingEdges();
     const order = [...ring.slice(0, ring.length - 1), ...fillerEdges(ring)];
     for (let index = 0; index < 312; index += 1) {
