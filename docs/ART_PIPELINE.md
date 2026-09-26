@@ -32,6 +32,14 @@ system names that guard. This doubles as a quiet dispatch/readiness cue, not a
 combat depiction. The four-frame atlas uses 1040×3104 pixels rather than an
 eight-frame 2080×3104 sheet, limiting decoded texture growth at startup.
 
+`actor.guard.search` is the matching inspection variant for a guard claimed by
+`SearchSystem`. Its four-frame `search` clip sweeps a compact inspection torch
+downward. The guard keeps the same uniform silhouette, camera, pivot and eight
+facings as the base model. The worker marks the actual search claimant in
+render-actors layout 6; the renderer selects this atlas only while that claim
+is live. The Full HD world preview is
+`assets/rendered/evidence/guard-search-1920x1080.png`.
+
 ## Blender source scene
 
 Each `.blend` source must contain:
@@ -41,7 +49,7 @@ Each `.blend` source must contain:
 - a parent empty named `SpriteRoot`; the character's authored forward direction
   at rotation zero is `south`;
 - timeline frames 1–8 for the base walk cycle (the first frame is also idle);
-  the guard response variant renders frames 1–4 as a looping radio gesture;
+  the guard response and search variants render frames 1–4 as looping duty gestures;
 - world lighting and the actor model/rig, with no opaque backdrop.
 
 `export-directional-sprites.py` preserves the authored camera and rotates

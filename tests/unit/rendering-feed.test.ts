@@ -624,10 +624,10 @@ describe('the render delta channel feeds the actors', () => {
     } = {},
   ): WorkerToMainMessage {
     const data = writeRenderActorsPayload({
-      // Layout 5 carries an incident-response flag beside ADR 0097's room block. The
+      // Layout 6 carries both live guard-claim flags beside ADR 0097's room block. The
       // cases in this block carry no rooms, which is a zero in the room-count
       // word and the same actor bytes layout 3 wrote.
-      layoutVersion: overrides.layoutVersion ?? 5,
+      layoutVersion: overrides.layoutVersion ?? 6,
       flags: overrides.flags ?? 1,
       worldRevision: overrides.worldRevision ?? 0,
       records,
@@ -754,8 +754,8 @@ describe('the render delta channel feeds the actors', () => {
   it('keeps the actors it has when a payload is one it cannot read', () => {
     const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
       ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
-      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 6 }), /v6/],
-      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 6 }), /layout 6/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 7 }), /v7/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 7 }), /layout 7/],
       ['a changed-only message, which this receiver cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
     ];
 

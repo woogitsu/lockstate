@@ -164,7 +164,7 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * that has the buffer and not the envelope can still tell what it is holding.
  *
  * **1 until ADR 0059, 2 until ADR 0099, 3 until ADR 0097, 4 until the
- * incident-response gesture, 5 since.** Layout 1 carried a
+ * incident-response gesture, 5 until search duty, 6 since.** Layout 1 carried a
  * whole-tile `i32` position and nothing else, because the simulation had no
  * motion to publish; layout 2 carries a sub-tile position, a velocity and a
  * heading, because it does; layout 3 adds the fifth header word ADR 0099
@@ -301,7 +301,7 @@ export const RENDER_ACTOR_POPULATION_PRISONER = 0;
  */
 export const RENDER_ACTOR_POPULATION_GUARD = 1;
 
-/** The low byte of the packed-fields word. Bits 8-11 hold heading; bit 12 marks live incident response. */
+/** The low byte of the packed-fields word. Bits 8-11 hold heading; bits 12-13 mark live guard duties. */
 export const RENDER_ACTOR_POPULATION_MASK = 0xff;
 
 /**

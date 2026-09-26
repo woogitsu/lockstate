@@ -126,3 +126,18 @@ test('shows the radio response over the rendered prison room at 1920×1080', asy
     await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-1920x1080.png' });
   }
 });
+
+test('shows the Blender search gesture in the rendered prison room at 1920×1080', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/environment-art-harness.html?guardSearchVisual=1');
+  await page.evaluate(async () => {
+    await window.lockstateEnvironmentArtHarness!.ready;
+    await window.lockstateEnvironmentArtHarness!.artLoaded;
+  });
+  await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.guard.search').length === 1);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
+  if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
+    await page.screenshot({ path: 'assets/rendered/evidence/guard-search-1920x1080.png' });
+  }
+});
