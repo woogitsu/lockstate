@@ -24,7 +24,7 @@ import { LFS_POINTER_PREFIX, assertSourceInputsAreImages } from '../../tooling/s
  * contract test in `tests/contract/` does fail on the result — its pointer
  * branch compares the catalog hash against the `oid` stated *inside* the
  * pointer, not the pointer's own bytes — so the corruption is not silent. The
- * guard's value is that the images are never deleted in the first place, and
+ * guard's value is that the owner sheets are never replaced in the first place, and
  * that the operator is told to run `git lfs pull` instead of reading a hash
  * mismatch from a test about something else.
  *
@@ -32,7 +32,7 @@ import { LFS_POINTER_PREFIX, assertSourceInputsAreImages } from '../../tooling/s
  *
  * This file used to assert the guard entirely by *reading the generator's
  * source* — that `pointers.push(` and `pointers.length > 0` appeared before
- * `rm(outputDir`. That is a real property and it is still asserted below, but
+ * the first output write. That ordering is still asserted below, but
  * it can only ever prove the guard is **written**. Issue #264 measured the gap:
  * `if (pointers.length > 0 && false)` leaves every searched substring in place
  * and in the same order, so the refusal became unreachable with this file
@@ -86,7 +86,7 @@ describe('the source-art catalog generator', () => {
   });
 });
 
-describe('the git-lfs guard the generator runs before it deletes anything', () => {
+describe('the git-lfs guard the generator runs before publishing', () => {
   it('refuses a pointer-only checkout, naming the files and the remedy', async () => {
     // The state this container is actually in, and the one CI's `verify` job
     // stays in on purpose.
@@ -144,27 +144,27 @@ describe('the git-lfs guard the generator runs before it deletes anything', () =
     );
   });
 
-  it('is awaited by the generator before it deletes the published output', async () => {
+  it('is awaited by the generator before it publishes output', async () => {
     const source = await readFile(path.join(repositoryRoot, GENERATOR), 'utf8');
 
     // Anchored on the *call*, not on the pointer prefix constant. The first
     // version of this test used `indexOf('git-lfs.github.com/spec/v1')`, which
     // finds the constant's declaration -- so moving the entire scan and throw
-    // to *after* the `rm` left the test green, because the constant stayed
+    // to *after* the first output write left the test green, because the constant stayed
     // where it was. Only running that mutation showed it.
     //
     // `await` is part of the anchor: an un-awaited call returns a promise and
-    // execution falls straight through to the `rm`, which is the same defect
+    // execution falls straight through to publishing, which is the same defect
     // as calling it late.
     const refusal = source.indexOf('await assertSourceInputsAreImages(');
-    const destructiveRemove = source.indexOf('rm(outputDir');
+    const firstWrite = source.indexOf('await mkdir(outputDir');
 
     expect(refusal, 'the generator must await the git-lfs guard').toBeGreaterThan(-1);
-    expect(destructiveRemove, 'the generator is expected to clear its output directory').toBeGreaterThan(-1);
+    expect(firstWrite, 'the generator must create its output directory').toBeGreaterThan(-1);
     expect(
       refusal,
-      'the refusal must be awaited before rm(outputDir): a guard that fires after the output directory is gone has already done the damage',
-    ).toBeLessThan(destructiveRemove);
+      'the refusal must be awaited before publishing any output',
+    ).toBeLessThan(firstWrite);
 
     // Unconditional: the call is the whole statement, not the consequent of
     // something. This is the same class of mutation as #264's
