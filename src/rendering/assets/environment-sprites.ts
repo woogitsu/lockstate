@@ -80,6 +80,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.terrain.concrete',
   'env.terrain.gravel',
   'env.terrain.rock',
+  'env.terrain.water',
   'env.floor.institutional',
   'env.floor.kitchen',
   'env.floor.canteen',
@@ -216,6 +217,14 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Original Blender-rendered slate plates with recessed natural fractures.',
+  },
+  /** Quiet deep water for water tiles restored from a saved world. */
+  'env.terrain.water': {
+    kind: 'rendered-art',
+    renderedArtId: 'terrain.water.still',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Original Blender-rendered blue-green still water with small muted ripples; one edge-complete tile per repeat.',
   },
   /**
    * The Blender floor module is a complete one-tile frame. Its east and south

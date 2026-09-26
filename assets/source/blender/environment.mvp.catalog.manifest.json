@@ -4,9 +4,9 @@
   "scale": "1 Blender unit = 1 logical tile",
   "origin": "bottom-center",
   "sourceAttribution": {
-    "license": "owner-supplied, project-internal",
-    "referenceBatch": "owner-generated-2026-08-22"
+    "license": "project-internal",
+    "referenceBatch": "original owner-generated-2026-08-22 batch and later asset-specific concepts under assets/source/concepts"
   },
-  "assetCount": 23,
-  "entries": "See collections in the catalog; collection names equal the generated source-art IDs in assets/source/generated/manifest.json."
+  "assetCount": 59,
+  "entries": "See Blender collections: each collection name is its rendered-art asset ID."
 }

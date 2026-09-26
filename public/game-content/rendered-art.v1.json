@@ -953,6 +953,31 @@
       }
     },
     {
+      "assetId": "terrain.water.still",
+      "contentVersion": 1,
+      "image": "source-art/rendered.terrain.water.still.70763cfc2b0e.png",
+      "sha256": "70763cfc2b0edc8417a3bc53bc9a910b3d9235f51dcfacf793ae90439a2f11aa",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "wall.interior.cap.overhead",
       "contentVersion": 1,
       "image": "source-art/rendered.wall.interior.cap.overhead.ed4387eb9462.png",
