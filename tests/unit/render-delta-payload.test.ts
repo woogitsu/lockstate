@@ -162,7 +162,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(buffer.byteLength).toBe(64);
 
     const read = readRenderActorsPayload(buffer);
-    expect(read.layoutVersion).toBe(5);
+    expect(read.layoutVersion).toBe(6);
     expect(read.roomCount).toBe(0);
     expect(read.rooms).toEqual([]);
     expect(read.flags).toBe(1);
@@ -223,8 +223,8 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
      */
     const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 0x01020304, x: 0, y: 0 }]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
     const bytes = new Uint8Array(buffer);
-    // The layout version, word 0, is 5: low byte first.
-    expect([...bytes.slice(0, 4)]).toEqual([5, 0, 0, 0]);
+    // The layout version, word 0, is 6: low byte first.
+    expect([...bytes.slice(0, 4)]).toEqual([6, 0, 0, 0]);
     // The first record's entity id, word 6 -- word 4 is ADR 0099's marker and
     // word 5 is ADR 0097's room count, zero here because this source has no
     // rooms.
@@ -462,6 +462,18 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(actors.map((actor) => actor.assetId)).toEqual(['actor.guard.base', 'actor.guard.response']);
     expect(actors.map((actor) => actor.incidentResponse ?? false)).toEqual([false, true]);
     expect(selectActorPose(actors[1]!)).toMatchObject({ clipId: 'respond' });
+  });
+
+  it('selects the Blender inspection animation only for guards claimed by a live search', () => {
+    const buffer = encodeRenderActorsKeyframe(
+      sourceOf([]), TICKS_PER_SECOND, NO_WORLD_CHANGE,
+      guardSourceOf([{ id: 10, x: 6, y: 2 }, { id: 11, x: 1, y: 8 }]),
+      undefined, [], [11],
+    );
+    const actors = actorsFromDelta(decodeRenderActorsPayload(buffer));
+    expect(actors.map((actor) => actor.assetId)).toEqual(['actor.guard.base', 'actor.guard.search']);
+    expect(actors.map((actor) => actor.contrabandSearch ?? false)).toEqual([false, true]);
+    expect(selectActorPose(actors[1]!)).toMatchObject({ clipId: 'search' });
   });
 
   it('does not apply a guard-only response bit to a prisoner record', () => {

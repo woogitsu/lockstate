@@ -59,12 +59,13 @@ describe('art pipeline contract', () => {
       'actor.cook.base',
       'actor.guard.base',
       'actor.guard.response',
+      'actor.guard.search',
       'actor.medic.base',
       'actor.prisoner.base',
       'actor.staff.base',
     ]);
     expect(registry.assets.every((asset) => asset.clips.join('|') ===
-      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : 'idle|walk'))).toBe(true);
+      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : asset.assetId === 'actor.guard.search' ? 'idle|search' : 'idle|walk'))).toBe(true);
   });
 
   /**
