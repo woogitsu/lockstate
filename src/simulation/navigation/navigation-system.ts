@@ -264,7 +264,7 @@ export class NavigationSystem implements SystemRegistration {
    */
   public getInFlightSnapshot(): NavigationInFlightSnapshot {
     return {
-      pending: this.queue.getSnapshot(),
+      pending: this.queue.getSnapshot().pending,
       results: [...this.results.values()]
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
@@ -273,7 +273,7 @@ export class NavigationSystem implements SystemRegistration {
 
   /** Replaces the waiting set and the uncollected results with a snapshot's. For a restore, before any owner's `loadSnapshot` asks `knowsRequest`. */
   public loadInFlightSnapshot(snapshot: NavigationInFlightSnapshot): void {
-    this.queue.loadSnapshot(snapshot.pending);
+    this.queue.loadSnapshot({ pending: snapshot.pending });
     this.results.clear();
     for (const outcome of snapshot.results) {
       if (this.results.has(outcome.id) || this.queue.has(outcome.id)) {
@@ -308,7 +308,7 @@ export class NavigationSystem implements SystemRegistration {
    * orphaned (issue #1373).
    */
   public requestIdsWithPrefix(prefix: string): readonly string[] {
-    const waiting = this.queue.getSnapshot().map(({ id }) => id);
+    const waiting = this.queue.getSnapshot().pending.map(({ request }) => request.id);
     const resolved = [...this.results.keys()].sort();
     return [...waiting, ...resolved].filter((id) => id.startsWith(prefix)).sort();
   }
