@@ -642,7 +642,7 @@ describe('the render delta channel feeds the actors', () => {
         tick,
         delta: {
           schemaId: overrides.schemaId ?? 'lockstate.render-actors',
-          schemaVersion: overrides.schemaVersion ?? 5,
+          schemaVersion: overrides.schemaVersion ?? 6,
           transport: 'array-buffer',
           contentType: 'application/x-lockstate-render-actors',
           byteLength: data.byteLength,
