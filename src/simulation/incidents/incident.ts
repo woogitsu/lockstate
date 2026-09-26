@@ -402,7 +402,8 @@ export class IncidentLog {
     // The save reader accepts repeated ids. Match the record map's existing
     // last-row-wins rule before deriving any index, or an earlier open row can
     // leave a later terminal row indexed as an active incident forever.
-    for (const [id, record] of this.records) {
+    for (const id of [...this.records.keys()].sort()) {
+      const record = this.require(id);
       this.noteStart(record.sectorId, record.type, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
         this.noteRiotParticipants(record.type, record.participantIds, 1);
