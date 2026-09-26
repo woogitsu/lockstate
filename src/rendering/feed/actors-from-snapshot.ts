@@ -1,5 +1,7 @@
 import { decodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../../simulation/entity/entity-codec';
 import { packEntityId } from '../../simulation/entity/entity-store';
+import { ACTION_PHASES, actionIndexOf } from '../../simulation/prisoners/components';
+import { INFIRMARY_TREATMENT_ACTION_ID } from '../../simulation/prisoners/injury';
 import {
   composeRenderActorId,
   RENDER_ACTOR_POPULATION_GUARD,
@@ -112,6 +114,8 @@ export const PRISONER_ACTOR_ASSET_ID = 'actor.prisoner.base';
  * `idle`/`walk` clips and atlas manifest, so this decode needed no new art.
  */
 export const GUARD_ACTOR_ASSET_ID = 'actor.guard.base';
+const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 export function actorsFromSnapshot(
   simulation: EncodedSessionSystems | undefined,
@@ -137,12 +141,15 @@ export function actorsFromSnapshot(
       // `composeRenderActorId` folds in the population so this can never
       // collide with a guard at the same raw index -- see its own comment.
       id: composeRenderActorId(RENDER_ACTOR_POPULATION_PRISONER, packEntityId(index, store.generations[index]!)),
-      assetId: PRISONER_ACTOR_ASSET_ID,
+      assetId: components.actionIndex[index] === TREATMENT_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+        ? 'actor.prisoner.treatment' : PRISONER_ACTOR_ASSET_ID,
       tileX: components.tileX[index]!,
       tileY: components.tileY[index]!,
       // Defaults, not simulation state -- see the note above.
       deltaX: 0,
       deltaY: 0,
+      ...(components.actionIndex[index] === TREATMENT_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+        ? { infirmaryTreatment: true } : {}),
     });
   }
 

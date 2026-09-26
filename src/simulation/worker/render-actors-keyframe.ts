@@ -1,4 +1,6 @@
 import { createWalkReading, type WalkReading } from '../locomotion';
+import { ACTION_PHASES, actionIndexOf } from '../prisoners/components';
+import { INFIRMARY_TREATMENT_ACTION_ID } from '../prisoners/injury';
 import {
   packRenderActorFields,
   RENDER_ACTOR_POPULATION_GUARD,
@@ -7,6 +9,9 @@ import {
 } from '../protocol/render-actors-payload';
 import type { RoomConditionRow } from './room-conditions';
 import type { IncidentLog } from '../incidents/incident';
+
+const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 /** Project the existing open-incident ledger once per delta, never per prisoner. */
 export function openAssaultParticipantIds(incidents: Pick<IncidentLog, 'openIncidents'>): ReadonlySet<number> {
@@ -104,6 +109,11 @@ export function openAssaultParticipantIds(incidents: Pick<IncidentLog, 'openInci
 
 /** The narrow slice of `PrisonerOperationsRuntime` this reads. Structural, so a test needs no session. */
 export interface RenderActorSource {
+  /** Optional in small synthetic callers; production reads the live action component. */
+  readonly currentAction?: {
+    readonly actionIndex: Int16Array;
+    readonly phase: Uint8Array;
+  };
   readonly entityStore: {
     readonly maxActiveIndex: number;
     isIndexAlive(index: number): boolean;
@@ -217,7 +227,8 @@ export function encodeRenderActorsKeyframe(
     locomotion.read(index, position.tileX[index]!, position.tileY[index]!, reading);
     writer.writeRecord(
       entityStore.getIdByIndex(index),
-      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false, assaultParticipants?.has(entityStore.getIdByIndex(index)) ?? false),
+      packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false, assaultParticipants?.has(entityStore.getIdByIndex(index)) ?? false,
+        source.currentAction?.actionIndex[index] === TREATMENT_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE),
       reading.subX,
       reading.subY,
       // Sub-tile units a *tick* become sub-tile units a wall-clock second

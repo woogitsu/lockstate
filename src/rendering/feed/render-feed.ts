@@ -32,6 +32,8 @@ export interface RenderActor {
   readonly openRiot?: boolean;
   /** An open assault names this prisoner as a participant. */
   readonly openAssault?: boolean;
+  /** This prisoner is performing the existing infirmary treatment action. */
+  readonly infirmaryTreatment?: boolean;
 }
 
 /**
