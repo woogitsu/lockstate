@@ -561,11 +561,11 @@ describe('cancelling one order by id, which is the command this read model exist
       'cmd-buy',
       runtime.kernel.expectedSequence,
       0,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 402 }),
+      packCommand({ type: 'PurchaseMaterials', orderId: 'order-buy', itemId: 'item.wood-plank', quantity: 1_556 }),
     );
     runTo(runtime, 30);
-    expect(runtime.treasury.balanceMinorUnits, '25,000 - 402 x 65, which is the starter delivery rung').toBe(-1_130);
-    expect(runtime.treasury.spend(800, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
+    expect(runtime.treasury.balanceMinorUnits, '100,000 - 1,556 x 65, near the starter delivery rung').toBe(-1_140);
+    expect(runtime.treasury.spend(790, 'wages'), 'the rest, at the only rung that reaches it').toBe(true);
 
     // Dated at the tick the kernel has reached rather than at 0, because the
     // wage-rung drain above had to happen after the purchase was dispatched and
