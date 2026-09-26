@@ -271,6 +271,31 @@ test.describe('the Security section', () => {
     expect(closed).toContain('5 hurt, 1 got out');
   });
 
+  test('keeps terminal incident facts on separate readable lines at Full HD', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openSection(page, { security: SECURITY, incidents: INCIDENTS_ALL_CLOSED, contraband: CONTRABAND_CLEAN });
+
+    const lines = await page.locator('.hud-security__incidents > .ui-section__body').evaluate((body) => {
+      const selectors = ['.hud-security__incident-summary', '.hud-security__note', '.hud-security__eyebrow'];
+      return [...body.children]
+        .filter((child) => selectors.some((selector) => child.matches(selector)) && !(child as HTMLElement).hidden)
+        .map((child) => {
+          const box = child.getBoundingClientRect();
+          return { text: child.textContent, top: box.top, bottom: box.bottom, right: box.right };
+        });
+    });
+    expect(lines.map((line) => line.text)).toEqual([
+      '0 open of 4 recorded',
+      '5 hurt, 1 got out',
+      'Nothing is open. 4 recorded so far.',
+      'By kind',
+    ]);
+    expect(lines).toHaveLength(4);
+    for (let index = 1; index < lines.length; index += 1) {
+      expect(lines[index]!.top, `line ${index} overlaps the one above it`).toBeGreaterThanOrEqual(lines[index - 1]!.bottom);
+    }
+  });
+
   /** The clean-record sentence, and that it is not painted when something was found. */
   test('says the confiscation record is empty only when it is', async ({ page }) => {
     await openSection(page, { security: SECURITY, incidents: INCIDENTS_NEVER, contraband: CONTRABAND_CLEAN });

@@ -3611,6 +3611,17 @@
    about rather than a cosmetic one. */
 .hud-security__note[hidden] { display: none; }
 
+/* The incident summary and its two notes are spans. In ordinary inline flow
+   their text joins into one run, so a terminal incident reads as
+   "recorded5 hurt...Nothing is open" inside the Full HD rail. Give this
+   section's existing children separate rows; the conditional hidden states
+   and the incident list keep their existing order and behaviour. */
+.hud-security__incidents > .ui-section__body:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 /* An eyebrow that heads a sub-list inside a block, rather than a block. It
    keeps the shared uppercase treatment and only needs the hidden guard, for
    the reason above. */
