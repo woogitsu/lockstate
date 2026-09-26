@@ -669,7 +669,7 @@ const alertsSectionSchema = z
   })
   .strict();
 
-const locomotionSnapshotSchema = z.object({
+const prisonerLocomotionSnapshotSchema = z.object({
   walks: z.array(z.tuple([entityIdSchema, z.object({
     waypoints: z.array(tilePositionSchema).min(2),
     next: z.number().int().min(1),
@@ -689,7 +689,7 @@ const prisonersSectionSchemaFor = <RoomInstance extends z.ZodTypeAny>(
 ) =>
   z.object({
     components: prisonerComponentsSchemaFor(needLevelMax),
-    locomotion: locomotionSnapshotSchema.optional(),
+    locomotion: prisonerLocomotionSnapshotSchema.optional(),
     pathRequestSequence: z.number().int().min(0).optional(),
     coldState: z
       .object({
@@ -874,7 +874,7 @@ const securitySectionSchema = z
         // would cost 500 padded slots for a prison with twelve guards.
         entityStore: entityStoreSnapshotV2Schema,
         records: z.array(z.tuple([entityIdSchema, guardRecordSchema])),
-        locomotion: locomotionSnapshotSchema.optional(),
+        locomotion: prisonerLocomotionSnapshotSchema.optional(),
       })
       .strict(),
     schedules: z.array(deploymentScheduleSchema),

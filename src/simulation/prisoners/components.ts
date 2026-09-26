@@ -377,15 +377,6 @@ export class PrisonerColdState {
     else this.currentActionPathRequestId.set(entityId, requestId);
   }
 
-  public getPathRequestSnapshot(): readonly (readonly [EntityId, string])[] {
-    return [...this.currentActionPathRequestId].sort(([a], [b]) => a - b);
-  }
-
-  public loadPathRequestSnapshot(rows: readonly (readonly [EntityId, string])[]): void {
-    this.currentActionPathRequestId.clear();
-    for (const [entityId, requestId] of rows) this.currentActionPathRequestId.set(entityId, requestId);
-  }
-
   /**
    * Drops every entry this cold state holds for one entity, because that
    * entity has ceased to exist (ADR 0050 decision 2; ADR 0026 question 2).

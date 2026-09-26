@@ -164,40 +164,6 @@ export class PathRequestQueue {
     return this.pending.size;
   }
 
-  /**
-   * Every request still waiting, **ascending by id**, with the tick it was
-   * enqueued on (issue #1373, ADR 0059 option 5).
-   *
-   * `enqueuedAtTick` is carried because it is two thirds of the service
-   * order: `processTick` sorts by effective priority -- which ages by it --
-   * then by it, then by id. A restore that re-enqueued the same requests at
-   * the restore tick would serve them in a different order, and a different
-   * order under a binding `workBudget` is a different tick of arrival.
-   *
-   * Ascending by id rather than in `Map` insertion order, because `processTick`
-   * sorts into a total order before it reads anything, so insertion order is
-   * history rather than state and must not reach a save's checksum.
-   */
-  public getSnapshot(): readonly PendingPathRequestSnapshot[] {
-    return [...this.pending.values()]
-      .map((entry) => ({ ...copyRequest(entry.request), enqueuedAtTick: entry.enqueuedAtTick }))
-      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  }
-
-  /**
-   * Replaces the waiting set with `snapshot`. The counters `getMetrics`
-   * reports are diagnostics of this instance's own work and are left alone:
-   * nothing reads them to decide anything, and no save carries them.
-   */
-  public loadSnapshot(snapshot: readonly PendingPathRequestSnapshot[]): void {
-    this.pending.clear();
-    for (const { enqueuedAtTick, ...request } of snapshot) {
-      if (this.pending.has(request.id)) throw new RangeError(`Path request id appears twice in a snapshot: ${request.id}`);
-      if (!Number.isInteger(enqueuedAtTick) || enqueuedAtTick < 0) throw new RangeError(`Path request ${request.id} has an invalid enqueue tick.`);
-      this.pending.set(request.id, { request: copyRequest(request), enqueuedAtTick });
-    }
-  }
-
   /** Whether `id` is waiting. Read by a restore to tell a live request from one its owner names and no queue holds. */
   public has(id: string): boolean {
     return this.pending.has(id);
