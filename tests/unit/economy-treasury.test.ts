@@ -8,11 +8,12 @@ import {
   Treasury,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  overdraftFloorForOpeningBalance,
   WAGES_STARTER_RESERVE_MINOR_UNITS,
   rungFloorMinorUnits,
   type SpendClass,
 } from '../../src/simulation/economy';
-import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { createNewSimulationRuntime, createOpeningTreasury } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 
 /**
@@ -283,6 +284,14 @@ describe('Treasury: the room a facility opens below zero', () => {
  *   `setOverdraftFloor`. This is the case that says why.
  */
 describe('what a shipped session gets (#703 ruling A)', () => {
+  it('derives a session facility from its actual opening grant (#976, PR #1405)', () => {
+    const custom = createOpeningTreasury(20_000);
+    expect(custom.balanceMinorUnits).toBe(20_000);
+    expect(custom.overdraftFloorMinorUnits).toBe(-2_000);
+    expect(createOpeningTreasury().overdraftFloorMinorUnits).toBe(-10_000);
+    expect(overdraftFloorForOpeningBalance(20_000)).toBe(-2_000);
+    expect(() => overdraftFloorForOpeningBalance(-1)).toThrow(RangeError);
+  });
   it('is one tenth of the opening grant, derived rather than written down', () => {
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).toBe(-10_000);
     expect(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS * 10).toBe(-TREASURY_STARTING_BALANCE_MINOR_UNITS);

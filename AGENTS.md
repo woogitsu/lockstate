@@ -1628,14 +1628,15 @@ open. Offered figures, they chose:
 
 ("100 000 (recommended).") That is the waste-multiplier measurement's
 recommendation: the smallest balance of those measured that keeps the
-drag-wall trap outside ordinary drawing, at about four screenfuls. **It sets a
-number and moves none here.** `TREASURY_STARTING_BALANCE_MINOR_UNITS` is still
-`25_000` at `src/simulation/economy/treasury.ts:203`. **Its docblock at
-`:185-188` says the owner decided *"to keep 25,000"*, and that sentence is
-false.** It was already false after 2026-08-30. It is left alone on purpose, so
-that an implementation agent changes the constant and its docblock in one
-commit. The overdraft floor at `:295` derives from the constant and moves with
-it (#976).
+drag-wall trap outside ordinary drawing, at about four screenfuls. At the
+time of the ruling it set a number and moved none: the constant still read
+`25_000`, and its docblock incorrectly said the owner chose to keep that value.
+
+**Implementation (#641, #976):** A new prison now opens with `100_000`.
+`createOpeningTreasury` derives its `-10_000` overdraft floor from that actual
+opening grant, and the arrears cap derives from the floor as `10_000`.
+Existing saves retain their recorded balance; loading one does not award the
+difference. The earlier 25,000 and 2,500 figures remain historical measurements.
 
 **15. The product name is spelled `LockState.io` everywhere a player sees it
 ([#703](https://github.com/matmaxalez/lockstate/issues/703)).** #703's ruling 8
