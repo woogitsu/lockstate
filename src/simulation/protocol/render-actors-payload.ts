@@ -128,6 +128,14 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * The `flags` word and the removal list are in the layout from the start so
  * that the changed-only messages ADR 0040 puts in a later slice need no
  * version bump.
+ *
+ * ### Layout 5: live incident response
+ *
+ * Bit 12 in each actor's packed fields says that a guard is currently claimed
+ * by a live incident response. The worker reads this from
+ * `IncidentResponseSystem.claimedGuardIds()`; the renderer selects the
+ * Blender-authored radio gesture. No clip name, phase or visual effect crosses
+ * the simulation boundary.
  */
 
 /** The payload's `schemaId`, checked by the receiver before it reads a byte. */
@@ -140,7 +148,7 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 4;
+export const RENDER_ACTORS_SCHEMA_VERSION = 5;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
@@ -149,7 +157,8 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * `u32[0]`. Redundant with `RENDER_ACTORS_SCHEMA_VERSION` on purpose: a reader
  * that has the buffer and not the envelope can still tell what it is holding.
  *
- * **1 until ADR 0059, 2 until ADR 0099, 3 since.** Layout 1 carried a
+ * **1 until ADR 0059, 2 until ADR 0099, 3 until ADR 0097, 4 until the
+ * incident-response gesture, 5 since.** Layout 1 carried a
  * whole-tile `i32` position and nothing else, because the simulation had no
  * motion to publish; layout 2 carries a sub-tile position, a velocity and a
  * heading, because it does; layout 3 adds the fifth header word ADR 0099
@@ -163,7 +172,7 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * reader that trusted one while the other stood still would be trusting the
  * half it happened to have.
  */
-export const RENDER_ACTORS_LAYOUT_VERSION = 4;
+export const RENDER_ACTORS_LAYOUT_VERSION = 5;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
@@ -286,7 +295,7 @@ export const RENDER_ACTOR_POPULATION_PRISONER = 0;
  */
 export const RENDER_ACTOR_POPULATION_GUARD = 1;
 
-/** The low byte of the packed-fields word. Bits 8-11 hold the heading; the remaining 20 bits are reserved and are written as zero. */
+/** The low byte of the packed-fields word. Bits 8-11 hold heading; bit 12 marks live incident response. */
 export const RENDER_ACTOR_POPULATION_MASK = 0xff;
 
 /**
@@ -331,13 +340,20 @@ const HEADING_BIAS = 1;
 const HEADING_MASK = 0b11;
 const HEADING_X_SHIFT = 8;
 const HEADING_Y_SHIFT = 10;
+/** Bit 12: this guard belongs to a live incident response. */
+const INCIDENT_RESPONSE_SHIFT = 12;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
-    (((headingY + HEADING_BIAS) & HEADING_MASK) << HEADING_Y_SHIFT)
+    (((headingY + HEADING_BIAS) & HEADING_MASK) << HEADING_Y_SHIFT) |
+    (incidentResponse ? 1 << INCIDENT_RESPONSE_SHIFT : 0)
   );
+}
+
+export function renderActorIncidentResponse(packedFields: number): boolean {
+  return ((packedFields >>> INCIDENT_RESPONSE_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {

@@ -10,6 +10,7 @@ import {
 } from '../../src/simulation/protocol/render-actors-payload';
 import { encodeRenderActorsKeyframe, type RenderGuardSource } from '../../src/simulation/worker/render-actors-keyframe';
 import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
+import { selectActorPose } from '../../src/rendering/actors/actor-pose';
 import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
 import { LOCOMOTION_SUBTILE_UNITS, type WalkReading } from '../../src/simulation/locomotion';
 import { readRenderActorsPayload, writeRenderActorsPayload } from '../helpers/render-actors-reader';
@@ -161,7 +162,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(buffer.byteLength).toBe(64);
 
     const read = readRenderActorsPayload(buffer);
-    expect(read.layoutVersion).toBe(4);
+    expect(read.layoutVersion).toBe(5);
     expect(read.roomCount).toBe(0);
     expect(read.rooms).toEqual([]);
     expect(read.flags).toBe(1);
@@ -222,8 +223,8 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
      */
     const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 0x01020304, x: 0, y: 0 }]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
     const bytes = new Uint8Array(buffer);
-    // The layout version, word 0, is 4: low byte first.
-    expect([...bytes.slice(0, 4)]).toEqual([4, 0, 0, 0]);
+    // The layout version, word 0, is 5: low byte first.
+    expect([...bytes.slice(0, 4)]).toEqual([5, 0, 0, 0]);
     // The first record's entity id, word 6 -- word 4 is ADR 0099's marker and
     // word 5 is ADR 0097's room count, zero here because this source has no
     // rooms.
@@ -449,6 +450,26 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     // "standing still" answer a prisoner's `locomotion.read` gives, not a
     // guard-specific rule. The next test is the one that used to be false.
     expect(guardRecords.every((record) => record.velocitySubX === 0 && record.velocitySubY === 0)).toBe(true);
+  });
+
+  it('selects the authored radio animation only for guards claimed by a live response', () => {
+    const buffer = encodeRenderActorsKeyframe(
+      sourceOf([]), TICKS_PER_SECOND, NO_WORLD_CHANGE,
+      guardSourceOf([{ id: 10, x: 6, y: 2 }, { id: 11, x: 1, y: 8 }]),
+      undefined, [11],
+    );
+    const actors = actorsFromDelta(decodeRenderActorsPayload(buffer));
+    expect(actors.map((actor) => actor.assetId)).toEqual(['actor.guard.base', 'actor.guard.response']);
+    expect(actors.map((actor) => actor.incidentResponse ?? false)).toEqual([false, true]);
+    expect(selectActorPose(actors[1]!)).toMatchObject({ clipId: 'respond' });
+  });
+
+  it('does not apply a guard-only response bit to a prisoner record', () => {
+    const writer = new RenderActorsKeyframeWriter(1, NO_WORLD_CHANGE);
+    writer.writeRecord(3, packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, 0, 0, true), 0, 0, 0, 0);
+    const [actor] = actorsFromDelta(decodeRenderActorsPayload(writer.finish()));
+    expect(actor?.assetId).toBe(PRISONER_ACTOR_ASSET_ID);
+    expect(actor?.incidentResponse).toBeUndefined();
   });
 
   it("carries a walking guard's sub-tile position and velocity, exactly like a prisoner's (ADR 0088)", () => {

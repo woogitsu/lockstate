@@ -48,6 +48,8 @@ export interface LockstateActorMotionHarness {
    * sprite from it, as opposed to counting the record `unresolved`.
    */
   publishGuard(tick: number, tile: { readonly x: number; readonly y: number }): void;
+  /** Publishes the same guard with the incident-response bit set. */
+  publishGuardResponse(tick: number, tile: { readonly x: number; readonly y: number }): void;
   /**
    * Publishes several records of either population in **one** keyframe, in the
    * order given -- which is what `publishActor` and `publishGuard` cannot do
@@ -91,6 +93,8 @@ export interface LockstateActorMotionHarness {
    * sprite on the same display list.
    */
   spritesWithAsset(assetId: string): readonly SpritePosition[];
+  /** Atlas frame names currently displayed for one authored actor asset. */
+  framesWithAsset(assetId: string): readonly string[];
   /** `ActorLayer.stats.unresolved`: records this build could not find art for. Zero is the claim a drawn guard needs. */
   unresolvedActorCount(): number;
   /**

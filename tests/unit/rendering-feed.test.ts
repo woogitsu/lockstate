@@ -624,10 +624,10 @@ describe('the render delta channel feeds the actors', () => {
     } = {},
   ): WorkerToMainMessage {
     const data = writeRenderActorsPayload({
-      // Layout 4 since ADR 0097's room block landed beside the actors. The
+      // Layout 5 carries an incident-response flag beside ADR 0097's room block. The
       // cases in this block carry no rooms, which is a zero in the room-count
       // word and the same actor bytes layout 3 wrote.
-      layoutVersion: overrides.layoutVersion ?? 4,
+      layoutVersion: overrides.layoutVersion ?? 5,
       flags: overrides.flags ?? 1,
       worldRevision: overrides.worldRevision ?? 0,
       records,
@@ -642,7 +642,7 @@ describe('the render delta channel feeds the actors', () => {
         tick,
         delta: {
           schemaId: overrides.schemaId ?? 'lockstate.render-actors',
-          schemaVersion: overrides.schemaVersion ?? 4,
+          schemaVersion: overrides.schemaVersion ?? 5,
           transport: 'array-buffer',
           contentType: 'application/x-lockstate-render-actors',
           byteLength: data.byteLength,
@@ -754,8 +754,8 @@ describe('the render delta channel feeds the actors', () => {
   it('keeps the actors it has when a payload is one it cannot read', () => {
     const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
       ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
-      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 5 }), /v5/],
-      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 5 }), /layout 5/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 6 }), /v6/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 6 }), /layout 6/],
       ['a changed-only message, which this receiver cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
     ];
 

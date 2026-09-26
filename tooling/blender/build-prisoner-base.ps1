@@ -24,8 +24,11 @@ if (-not (Test-Path -LiteralPath $Blender -PathType Leaf)) {
 # of the render. Without it the output depends on whoever's machine ran it.
 $blenderFlags = @('--background', '--factory-startup', '--python-exit-code', '1')
 
-$actorIds = @('actor.prisoner.base', 'actor.guard.base', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
+$actorIds = @('actor.prisoner.base', 'actor.guard.base', 'actor.guard.response', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
 foreach ($actorId in $actorIds) {
+    $actorContract = if ($actorId -eq 'actor.guard.response') {
+        Join-Path $repositoryRoot 'assets\contracts\guard-response-8-direction.contract.json'
+    } else { $contract }
     $blend = Join-Path $repositoryRoot "assets\source\blender\$actorId.blend"
     $actorIntermediate = Join-Path $intermediate (Join-Path 'build' $actorId)
     & $Blender @blenderFlags --python (Join-Path $PSScriptRoot 'create-prisoner-base.py') -- --asset-id $actorId --output $blend
@@ -34,7 +37,7 @@ foreach ($actorId in $actorIds) {
     & $Blender @blenderFlags $blend --python (Join-Path $PSScriptRoot 'export-directional-sprites.py') -- --asset-id $actorId --output $actorIntermediate
     if ($LASTEXITCODE -ne 0) { throw "Directional sprite export failed for $actorId." }
 
-    & $Blender @blenderFlags --python (Join-Path $PSScriptRoot 'pack-sprite-atlas.py') -- --input $actorIntermediate --contract $contract --output $runtime
+    & $Blender @blenderFlags --python (Join-Path $PSScriptRoot 'pack-sprite-atlas.py') -- --input $actorIntermediate --contract $actorContract --output $runtime
     if ($LASTEXITCODE -ne 0) { throw "Atlas packing failed for $actorId." }
 }
 
