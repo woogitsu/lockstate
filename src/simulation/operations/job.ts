@@ -54,6 +54,7 @@ export const CARRY_JOB_FAIL_REASONS = [
    * departure now has to end the job, and ending a job means naming why.
    */
   'carrier-departed',
+  'duplicate-carrier-claim',
   'reservation-invariant-violated',
   'unknown-destination-container',
   'unknown-source-container',
