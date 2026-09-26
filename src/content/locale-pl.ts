@@ -1413,6 +1413,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'save.action.create': 'Nowe więzienie',
   'save.empty-world.title': 'Rozpocznij grę',
   'save.empty-world.description': 'Utwórz nowe więzienie albo wróć do zapisu w tej przeglądarce.',
+  'save.empty-world.create': 'Utwórz więzienie',
   'save.empty-world.choose': 'Wczytaj zapisane więzienie',
   'save.default-prison-name': 'Nowe więzienie',
   'save.action.save': 'Zapisz teraz',

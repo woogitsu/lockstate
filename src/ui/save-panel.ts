@@ -748,7 +748,7 @@ export class SavePanel {
     description.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldDescription);
     const actions = document.createElement('div');
     actions.className = 'empty-world-prompt__actions';
-    actions.append(this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate()));
+    actions.append(this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.emptyWorldCreate, () => this.requestCreate()));
 
     const choose = document.createElement('button');
     choose.type = 'button';
