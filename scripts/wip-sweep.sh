@@ -36,7 +36,14 @@
 root=$(cd "${1:-$(git rev-parse --show-toplevel)}" && pwd -P) || exit 1
 cd "$root" || exit 1
 while true; do
-  for w in $(git worktree list --porcelain | grep '^worktree ' | cut -d' ' -f2); do
+  # Git's porcelain path occupies the rest of the record. Word splitting (and
+  # `cut -d' ' -f2`) loses every worktree below a directory such as
+  # `Rozwój gier`, silently disabling the backup for the whole workspace.
+  git worktree list --porcelain -z | while IFS= read -r -d '' record; do
+    case "$record" in
+      'worktree '*) w=${record#worktree } ;;
+      *) continue ;;
+    esac
     [ "$(cd "$w" && pwd -P)" = "$root" ] && continue
     b=$(git -C "$w" branch --show-current 2>/dev/null)
     [ -z "$b" ] && continue
