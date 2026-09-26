@@ -490,6 +490,13 @@ def main() -> None:
     global PIXELS_PER_TILE
     PIXELS_PER_TILE = args.pixels_per_tile
     output = args.output if args.output.is_absolute() else ROOT / args.output
+    if args.only and output.resolve() == DEFAULT_OUTPUT.resolve():
+        # Blender returns status 0 for an uncaught Python ValueError here;
+        # SystemExit makes automation observe the refusal as a failed command.
+        raise SystemExit(
+            "--only requires --output outside assets/rendered/environment: "
+            "a partial render would replace the full-batch sidecar"
+        )
     output.mkdir(parents=True, exist_ok=True)
 
     scene = bpy.context.scene
