@@ -8600,7 +8600,7 @@ test.describe('the assembled application', () => {
   });
 
   test('Manage lists local saves, confirms deletion, restores it, and states why cloud saves are unavailable (#1168)', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await openApp(page);
     await expect(page.locator('.manage-saves')).toBeHidden();
     await page.locator('.ui-tab[data-tab="manage"]').click();
@@ -8615,6 +8615,9 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(details.locator('.manage-saves__item')).toHaveCount(1);
     await expect(details.locator('.manage-saves__name')).toContainText('New Prison (1 gen)');
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await expect(details.locator('.manage-saves__name')).toContainText('New Prison (3 gen)');
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(details.locator('.manage-saves__item')).toHaveCount(2);
 
@@ -8630,9 +8633,15 @@ test.describe('the assembled application', () => {
     await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
     await details.getByRole('button', { name: 'Delete permanently' }).click();
     await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(1);
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id] .manage-saves__name'))
+      .toContainText('New Prison');
     await details.getByRole('button', { name: 'Bring it back' }).click();
     await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(0);
     await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+    await expect(details.locator('.manage-saves__name').filter({ hasText: 'New Prison (3 gen)' })).toHaveCount(1);
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(details.locator('.manage-saves__name').filter({ hasText: 'New Prison (3 gen)' })).toHaveCount(1);
   });
 
   /**
