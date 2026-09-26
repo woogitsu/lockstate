@@ -615,8 +615,11 @@ function buildFrame(): RenderFrame {
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
     actors: prisonerRiotVisual ? [
-      { id: 70, assetId: 'actor.prisoner.riot', tileX: 4, tileY: 4, deltaX: 0, deltaY: 0, openRiot: true },
-      { id: 71, assetId: 'actor.prisoner.base', tileX: 5, tileY: 4, deltaX: 0, deltaY: 0 },
+      { id: 70, assetId: 'actor.prisoner.riot', tileX: 3, tileY: 4, deltaX: 0, deltaY: 0, openRiot: true },
+      { id: 71, assetId: 'actor.prisoner.riot', tileX: 4, tileY: 4, deltaX: 0, deltaY: 0, openRiot: true },
+      { id: 72, assetId: 'actor.prisoner.riot', tileX: 5, tileY: 4, deltaX: 0, deltaY: 0, openRiot: true },
+      { id: 73, assetId: 'actor.prisoner.riot', tileX: 4, tileY: 5, deltaX: 0, deltaY: 0, openRiot: true },
+      { id: 74, assetId: 'actor.prisoner.base', tileX: 5, tileY: 5, deltaX: 0, deltaY: 0 },
     ] : guardResponseVisual || guardSearchVisual ? [{
       id: 2 ** 32 + 70,
       assetId: guardSearchVisual ? 'actor.guard.search' : 'actor.guard.response',

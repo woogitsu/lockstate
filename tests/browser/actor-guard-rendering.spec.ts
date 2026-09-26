@@ -150,10 +150,12 @@ test('shows an agitated prisoner beside a calm prisoner in the rendered prison a
     await window.lockstateEnvironmentArtHarness!.artLoaded;
   });
   await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
-  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.riot').length === 1);
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.riot').length === 4);
   expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.base'))).toHaveLength(1);
   expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
   if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
     await page.screenshot({ path: 'assets/rendered/evidence/prisoner-riot-1920x1080.png' });
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 1));
+    await page.screenshot({ path: 'assets/rendered/evidence/prisoner-riot-default-zoom-1920x1080.png' });
   }
 });

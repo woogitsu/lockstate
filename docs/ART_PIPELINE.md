@@ -47,6 +47,8 @@ facings. The worker reads `IncidentLog.isOpenRiotParticipant` and publishes
 that existing fact in render-actors layout 7; resolving the riot restores the
 base atlas. The Full HD comparison with a calm prisoner is
 `assets/rendered/evidence/prisoner-riot-1920x1080.png`.
+The default-zoom Full HD comparison uses four agitated prisoners and one calm
+prisoner in `assets/rendered/evidence/prisoner-riot-default-zoom-1920x1080.png`.
 
 ## Blender source scene
 
