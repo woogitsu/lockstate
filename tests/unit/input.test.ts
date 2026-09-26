@@ -450,9 +450,8 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
   });
 
   it('goes inactive when a text field takes focus mid-hold, without dropping the key', () => {
-    // `isActive` re-reads `activeContexts()` on every call, so the context
-    // change alone is enough -- and the key stays in `pressedCodes`, so
-    // releasing it after the field is blurred still behaves.
+    // The started action stays associated with its key while the context
+    // suppresses movement, and resumes if that context returns before keyup.
     let typing = false;
     const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => (typing ? ['text-entry'] : ['world']));
     adapter.keyDown({ code: 'KeyW' });
@@ -471,7 +470,7 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
     expect(adapter.keyDown({ code: 'KeyW' })).toEqual([]);
     typing = false;
     expect(adapter.isActive('camera.up')).toBe(false);
-    adapter.keyUp({ code: 'KeyW' });
+    expect(adapter.keyUp({ code: 'KeyW' })).toEqual([]);
     expect(adapter.keyDown({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'started', source: 'keyboard' }]);
     expect(adapter.isActive('camera.up')).toBe(true);
   });
@@ -482,9 +481,10 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
       { device: 'keyboard', code: 'KeyQ', action: 'camera.up', contexts: ['world'] },
       { device: 'keyboard', code: 'KeyQ', action: 'camera.down', contexts: ['construction'] },
     ], () => [context]);
-    adapter.keyDown({ code: 'KeyQ' });
+    expect(adapter.keyDown({ code: 'KeyQ' })).toEqual([{ action: 'camera.up', phase: 'started', source: 'keyboard' }]);
     context = 'construction';
     expect(adapter.isActive('camera.down')).toBe(false);
+    expect(adapter.keyUp({ code: 'KeyQ' })).toEqual([{ action: 'camera.up', phase: 'ended', source: 'keyboard' }]);
   });
 });
 
