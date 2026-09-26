@@ -16,6 +16,8 @@ for (const uiScale of [100, 125, 150, 175, 200] as const) {
       const arm = panel.querySelector<HTMLElement>('.hud-build__arm')!;
       const selected = panel.querySelector<HTMLElement>('.hud-build__list > .ui-row[aria-checked="true"]')!;
       const savePanel = document.querySelector<HTMLElement>('.save-panel')!;
+      const create = savePanel.querySelector<HTMLElement>('.save-panel__create')!;
+      const summary = savePanel.querySelector<HTMLElement>('.save-panel__heading')!;
       const saves = [...savePanel.querySelectorAll<HTMLElement>('.save-panel__actions .save-panel__button')];
       const panelBox = panel.getBoundingClientRect();
       const armBox = arm.getBoundingClientRect();
@@ -28,18 +30,28 @@ for (const uiScale of [100, 125, 150, 175, 200] as const) {
       return {
         armVisible: armBox.top >= panelBox.top && armBox.bottom <= panelBox.bottom && isHit(arm, armBox),
         selectedVisible: selectedBox.top >= panelBox.top && selectedBox.bottom <= panelBox.bottom && isHit(selected, selectedBox),
-        savesVisible: saves.length === 4 && saves.every((save) => {
-          const box = save.getBoundingClientRect();
-          return box.bottom <= saveBox.bottom + 1 && isHit(save, box);
-        }),
+        savesCompact: saves.length === 3 && !savePanel.querySelector('details')!.open
+          && isHit(create, create.getBoundingClientRect())
+          && isHit(summary, summary.getBoundingClientRect())
+          && create.getBoundingClientRect().bottom <= saveBox.bottom + 1,
         mapHit: document.elementFromPoint(960, 540)?.tagName,
       };
     });
 
     expect(geometry.armVisible, JSON.stringify(geometry)).toBe(true);
     expect(geometry.selectedVisible, JSON.stringify(geometry)).toBe(true);
-    expect(geometry.savesVisible, JSON.stringify(geometry)).toBe(true);
+    expect(geometry.savesCompact, JSON.stringify(geometry)).toBe(true);
     expect(geometry.mapHit).toBe('CANVAS');
+    await page.locator('.save-panel__heading').click();
+    for (const action of await page.locator('.save-panel__actions .save-panel__button').all()) {
+      await action.scrollIntoViewIfNeeded();
+      await expect(action).toBeVisible();
+      expect(await action.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return hit === element || element.contains(hit);
+      })).toBe(true);
+    }
     if (uiScale === 100 || uiScale === 200) {
       await page.screenshot({ path: testInfo.outputPath(`build-${uiScale}-catalogue.png`) });
     }

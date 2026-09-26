@@ -54,6 +54,7 @@ canvas {
  * the HUD own the geometry without owning the panel.
  */
 .save-panel {
+  position: relative;
   width: var(--hud-rail-panel-width);
   max-width: 100%;
   box-sizing: border-box;
@@ -86,7 +87,11 @@ canvas {
 }
 
 .save-panel__heading {
-  margin: 0 0 var(--space-2);
+  min-height: var(--tap-target);
+  width: calc(100% - 7.5rem);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
   font-size: var(--text-size-label);
   font-weight: 500;
   letter-spacing: var(--label-tracking);
@@ -94,11 +99,65 @@ canvas {
   color: var(--text-subtle);
 }
 
+/* The first-run action shares the compact heading's row. It stays outside
+   <details> so a folded save list cannot hide the way into a new prison. */
+.save-panel__create {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  max-width: 7.5rem;
+}
+
+.save-panel__heading:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.save-panel__heading::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+.save-panel__disclosure[open] .save-panel__heading::after {
+  transform: rotate(45deg);
+}
+
+.save-panel__disclosure[open] .save-panel__heading {
+  margin-bottom: var(--space-2);
+}
+
+/* In the wide Build rail, let the space returned by a folded save panel reach
+   the catalogue. The rail and Build's list otherwise keep their old fixed
+   content heights and the freed pixels become an empty gap. */
+@media (min-width: 1700px) and (min-height: 900px) {
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud__aside {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud__side,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build > .ui-panel__body,
+  .hud[data-active-tab='build']:has(.save-panel__disclosure:not([open])) .hud-build__list {
+    flex: 1 1 auto;
+    max-height: none;
+  }
+}
+
 .save-panel__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
   margin-bottom: var(--space-2);
+}
+
+.save-panel__disclosure:not([open]) ~ .save-panel__actions,
+.save-panel__disclosure:not([open]) ~ .save-panel__list {
+  display: none;
 }
 
 .save-panel__button {
