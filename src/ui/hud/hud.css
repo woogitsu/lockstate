@@ -7199,3 +7199,12 @@
   }
 
 }
+
+/* Full HD desktop breathing room: keep action labels legible while the map
+   still owns the centre of the screen. The compact rail remains unchanged
+   below 1920px so laptop layouts keep their measured geometry. */
+@media (min-width: 1920px) {
+  .hud {
+    --hud-rail-panel-width: max(var(--hud-inspector-width), calc(280px * var(--ui-scale)));
+  }
+}
