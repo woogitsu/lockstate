@@ -306,7 +306,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
      * routes around it rather than asserting on it, because it is not what
      * #664 is about.
      */
-    await page.locator('.save-panel__actions .save-panel__button').first().click();
+    await page.locator('.save-panel__create').click();
     await expect(page.locator('.save-panel__item-label').first()).toBeVisible();
     await expect
       .poll(async () => page.locator('.hud-clock__day').textContent(), { timeout: 30_000 })
@@ -315,7 +315,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
 
     // An explicit save, so the save panel's own status and detail lines are
     // swept in their written-to state rather than only at idle.
-    await page.locator('.save-panel__actions .save-panel__button').nth(1).click();
+    await page.locator('.save-panel__actions .save-panel__button').first().click();
     await sweep(page, 'session: save now pressed');
 
     await walkTabs(page, 'session, clock stopped');
@@ -341,7 +341,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
       await consent.locator('.telemetry-consent__action').nth(1).click();
       await expect(consent).toHaveCount(0);
     }
-    await page.locator('.save-panel__actions .save-panel__button').first().click();
+    await page.locator('.save-panel__create').click();
     await expect(page.locator('.save-panel__item-label').first()).toBeVisible();
     await expect
       .poll(async () => page.locator('.hud-clock__day').textContent(), { timeout: 30_000 })
@@ -386,7 +386,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
       await consent.locator('.telemetry-consent__action').nth(1).click();
       await expect(consent).toHaveCount(0);
     }
-    await page.locator('.save-panel__actions .save-panel__button').first().click();
+    await page.locator('.save-panel__create').click();
     await expect(page.locator('.save-panel__item-label').first()).toBeVisible();
     await expect
       .poll(async () => page.locator('.hud-clock__day').textContent(), { timeout: 30_000 })
@@ -453,7 +453,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
       await expect(consent).toHaveCount(0);
     }
     await page.locator('.ui-tab[data-tab="build"]').click();
-    await page.locator('.save-panel__actions .save-panel__button').first().click();
+    await page.locator('.save-panel__create').click();
     await page.waitForTimeout(2_000);
     await sweep(page, 'failure: save panel status after a refused create');
     console.log(

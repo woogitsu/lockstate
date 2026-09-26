@@ -155,6 +155,11 @@ canvas {
   margin-bottom: var(--space-2);
 }
 
+.save-panel__disclosure:not([open]) ~ .save-panel__actions,
+.save-panel__disclosure:not([open]) ~ .save-panel__list {
+  display: none;
+}
+
 .save-panel__button {
   min-height: var(--tap-target);
   padding: 0 var(--space-3);

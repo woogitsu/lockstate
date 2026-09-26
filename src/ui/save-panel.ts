@@ -673,11 +673,13 @@ export class SavePanel {
     const heading = document.createElement('summary');
     heading.className = 'save-panel__heading';
     heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.panelTitle);
+    heading.setAttribute('aria-controls', 'save-panel-expanded-actions save-panel-saved-prisons');
     this.disclosure.append(heading);
     this.root.append(this.disclosure);
 
     const actions = document.createElement('div');
     actions.className = 'save-panel__actions';
+    actions.id = 'save-panel-expanded-actions';
     // Creating a prison is the first-run route. Keep it available even while
     // the other save controls are folded into the compact desktop rail.
     this.createButton = this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate());
@@ -690,16 +692,15 @@ export class SavePanel {
       // folds these three save actions while creation stays visible.
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionImport, () => this.requestImport()),
     );
-    this.disclosure.append(actions);
-
-    // Keep the sibling create action in the document's native focus order.
-    // The compact panel deliberately changes visual placement with CSS; a
-    // keydown bridge here would create a second focus graph and can trap Tab
-    // inside the disclosure when the browser exits its last descendant.
+    // Keep the expanded controls after Create in DOM order. Putting them
+    // inside <details> makes Tab skip Create whenever the disclosure is open.
+    // CSS follows the native open state while preserving the focus route.
+    this.root.append(actions);
 
     this.listElement = document.createElement('ul');
     this.listElement.className = 'save-panel__list';
-    this.disclosure.append(this.listElement);
+    this.listElement.id = 'save-panel-saved-prisons';
+    this.root.append(this.listElement);
 
     this.statusElement = document.createElement('p');
     this.statusElement.className = 'save-panel__status';
