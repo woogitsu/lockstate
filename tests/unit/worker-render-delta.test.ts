@@ -30,6 +30,8 @@ import {
   RENDER_ACTOR_POPULATION_PRISONER,
 } from '../../src/simulation/protocol/render-actors-payload';
 import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
+import { decodeRenderActorsPayload } from '../../src/simulation/protocol/render-actors-payload';
+import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
 import { expectOk } from '../helpers/expect-ok';
 
 /**
@@ -191,6 +193,8 @@ describe('the worker publishes a render delta', () => {
     expect(read.records.map((record) => ({ ...record, packedFields: record.packedFields & ~(1 << 13) })))
       .toEqual(scenarioActors(scenario).map((record) => ({ ...record, packedFields: record.packedFields & ~(1 << 13) })));
     expect(read.records.some((record) => (record.packedFields & (1 << 13)) !== 0)).toBe(true);
+    const drawnActors = actorsFromDelta(decodeRenderActorsPayload(delta!.payload.delta.data as ArrayBuffer));
+    expect(drawnActors.filter((actor) => actor.assetId === 'actor.guard.search')).toHaveLength(1);
 
     // And a literal, so the comparison above cannot be satisfied by two empty
     // sets or by the same wrong tile read twice. `buildDeterminismScenario`
