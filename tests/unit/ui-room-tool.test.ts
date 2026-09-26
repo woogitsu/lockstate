@@ -292,6 +292,19 @@ describe('RoomTool answers whether a rectangle is enclosed, for whoever asks', (
     });
   });
 
+  it('can name a missing bottom edge in the unloaded tile below the map', () => {
+    const tool = new RoomTool();
+    const world = new SparseWorld(8);
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    world.setTopEdge(tile(1, 6), 1);
+    world.setTopEdge(tile(2, 6), 1);
+    tool.setWorld(WorldRenderView.fromSnapshot(world.snapshot()));
+
+    expect(tool.classifyArea({ x: 1, y: 6, width: 2, height: 2 })).toEqual({
+      enclosure: 'open', gap: { tile: { x: 1, y: 8 }, edge: 'north' },
+    });
+  });
+
   it('follows the newest world handed to it, replacing rather than merging with the last one', () => {
     const tool = new RoomTool();
     const area = { x: 2, y: 2, width: 3, height: 3 };

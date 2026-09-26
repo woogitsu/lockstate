@@ -4318,7 +4318,7 @@ test.describe('the Rooms panel', () => {
     await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
     await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 4, height: 3 }));
     expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).noteText)
-      .toBe('Open edge above tile (4, 6). Add a wall or door there.');
+      .toBe('Open edge above tile (4, 6). Move the room or close that edge.');
     const note = page.locator('.hud-rooms__note');
     await expect(note).toBeVisible();
     expect(await note.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
@@ -4328,7 +4328,7 @@ test.describe('the Rooms panel', () => {
     await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ x: 4, y: 6, width: 4, height: 3 }));
     await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
     expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).noteText)
-      .toBe('Open edge left of tile (8, 7). Add a wall or door there.');
+      .toBe('Open edge left of tile (8, 7). Move the room or close that edge.');
   });
 
   test('a sealed rectangle for a room type that must be enclosed is unchanged (issue #493)', async ({ page }) => {

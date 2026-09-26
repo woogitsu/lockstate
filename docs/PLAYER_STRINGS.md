@@ -408,8 +408,8 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.rooms.enclosure-none` | Not evaluated yet | `src/content/default-locale-en.ts:3609` |
 | `hud.rooms.enclosure-sealed` | Walled in — not a door check | `src/content/default-locale-en.ts:3652` |
 | `hud.rooms.enclosure-open` | Open on at least one side | `src/content/default-locale-en.ts:3653` |
-| `hud.rooms.open-north-edge` | Open edge above tile ({x}, {y}). Add a wall or door there. | `src/content/default-locale-en.ts:3654` |
-| `hud.rooms.open-west-edge` | Open edge left of tile ({x}, {y}). Add a wall or door there. | `src/content/default-locale-en.ts:3655` |
+| `hud.rooms.open-north-edge` | Open edge above tile ({x}, {y}). Move the room or close that edge. | `src/content/default-locale-en.ts:3654` |
+| `hud.rooms.open-west-edge` | Open edge left of tile ({x}, {y}). Move the room or close that edge. | `src/content/default-locale-en.ts:3655` |
 | `hud.rooms.requirement-enclosed` | Needs walls or doors all round | `src/content/default-locale-en.ts:3666` |
 | `hud.rooms.requirement-outdoors` | Must be outdoors | `src/content/default-locale-en.ts:3667` |
 | `hud.rooms.requirement-none` | No enclosure rule | `src/content/default-locale-en.ts:3668` |
