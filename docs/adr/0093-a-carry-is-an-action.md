@@ -225,7 +225,7 @@ occurrence under `src/` and it is the declaration
 `src/`. The only things in this repository that ever put a job on a board or a
 prisoner in the pool are two test helpers doing so by hand
 (`tests/helpers/determinism-scenario.ts:188` and `:195`;
-`tests/determinism/job-performing-restart-bound.test.ts:62` and `:65`). The
+`tests/determinism/job-performing-restart-bound.test.ts:73` and `:65`). The
 adapter that would move a prisoner for a job says of itself that no prisoner is
 registered by default and that doing so is *"a session/scenario/future-regime
 decision"* (`job-worker-adapter.ts:12-16`, in the file this decision **deletes**). #811 calls
@@ -307,11 +307,11 @@ Every writer of a prisoner's tile under `src/simulation/`, because "one
 authority moves the prisoner" is a sentence about an absence and has to be
 checked rather than asserted:
 
-- `src/simulation/prisoners/action-system.ts:836` — `arrive`, writing the
+- `src/simulation/prisoners/action-system.ts:856` — `arrive`, writing the
   destination anchor after the walk has already stepped there.
-- `src/simulation/prisoners/prisoner-operations-runtime.ts:420` — the
+- `src/simulation/prisoners/prisoner-operations-runtime.ts:438` — the
   `writeTile` closure `LocomotionSystem` advances a walk through.
-- `src/simulation/prisoners/prisoner-operations-runtime.ts:1053-1054` — admission,
+- `src/simulation/prisoners/prisoner-operations-runtime.ts:1142-1143` — admission,
   placing a new prisoner on the origin tile before intake (the anchor read
   `:959`, a blank line).
 - `job-worker-adapter.ts:43` (in the file this decision **deletes**) — the job system's
@@ -428,7 +428,7 @@ input to the next.
 **One appended entry, and the paragraph above `DEFAULT_ACTIONS` about appending
 is why that word carries the whole change.** `CurrentActionComponent.actionIndex`
 is a positional index into the array (`src/simulation/prisoners/components.ts:245`)
-and the save carries it verbatim (`src/persistence/save-schema.ts:429`), so the
+and the save carries it verbatim (`src/persistence/save-schema.ts:430`), so the
 entry goes at the end, after `action.kitchen-work`, and
 `tests/unit/prisoners-action-catalog.test.ts` is extended by one row rather
 than reordered.
@@ -477,7 +477,7 @@ two carriers set off for one crate — which is exactly what
 exist, are total, and are tested: `failJob` and `cancel` through
 `compensateHeldStock` ([ADR 0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md)).
 So the four travel-failure exits in `ActionSystem.continueTravelling`
-(`src/simulation/prisoners/action-system.ts:950`; the anchor read `:611`, a bare
+(`src/simulation/prisoners/action-system.ts:970`; the anchor read `:611`, a bare
 `}`) — no path request, a failed
 route, a target that stopped existing, and `loadSnapshot`'s drop-to-idle — gain
 one line each for the carry kind: fail the job, which compensates the goods.
@@ -492,7 +492,7 @@ stays a room-instance id and is **not written** for a carry.
 `:694`) and resolves it
 through the room registry; a job id in that field would be a lie in a field
 name, and the save's `coldState.currentActionTargetInstanceId` array
-(`src/persistence/save-schema.ts:651`; the anchor read `:639`, a bare `})`) would
+(`src/persistence/save-schema.ts:652`; the anchor read `:639`, a bare `})`) would
 carry it. The prisoner → job link
 is the job's own `assignedWorkerId`, read the other way round through a
 `JobBoard.activeJobFor(entityId)` accessor backed by a `Map<EntityId, string>`
@@ -502,7 +502,7 @@ as a use claim under ADR 0029 decision 6, for the same reason: it is a pure
 function of a value the save already holds.
 
 **What `resolveTargetInstance` becomes.** Today it returns
-`RoomInstance | undefined` (`src/simulation/prisoners/action-system.ts:1121`).
+`RoomInstance | undefined` (`src/simulation/prisoners/action-system.ts:1141`).
 For the job kind the resolution is the admission `JobSystem.assignAvailableJobs`
 performs today, moved intact: walk `availableJobsSorted()`, refuse a job whose
 source or destination container is unknown (marking it `failed` with the
@@ -515,7 +515,7 @@ and *a job to walk for*; `beginNextAction` reads a tile off either.
 ### 2. How the scheduler finds a job — and who puts one there
 
 **The board becomes an input to `planIdleSelection`
-(`src/simulation/prisoners/action-system.ts:902`), and it enters as a rule, not
+(`src/simulation/prisoners/action-system.ts:922`), and it enters as a rule, not
 as a score.** When the prisoner's active block allows `work` and
 `board.availableJobsSorted()` is non-empty, `action.carry` is placed at **rank
 0** of `candidates`; otherwise **it is not a candidate at all**. Duty outranks
@@ -624,13 +624,13 @@ open one.
 
 **`LocomotionStore` does, on both legs, and `setPositionTile` is retired.**
 A carry begins exactly as a room action begins: `beginNextAction`
-(`src/simulation/prisoners/action-system.ts:990`) requests a route from the
+(`src/simulation/prisoners/action-system.ts:1010`) requests a route from the
 prisoner's tile to `job.sourceTile`, sets `travelling`, and
 `continueTravelling` hands the resolved route to `beginWalk`
-(`src/simulation/locomotion/locomotion.ts:220`). `prisoners.locomotion` (order
-200, `src/simulation/prisoners/prisoner-operations-runtime.ts:395`) advances
+(`src/simulation/locomotion/locomotion.ts:253`). `prisoners.locomotion` (order
+200, `src/simulation/prisoners/prisoner-operations-runtime.ts:413`) advances
 it one tile per two ticks (ADR 0059's 128 units a tick against 256 to a tile),
-and `onWalksArrived` (`src/simulation/prisoners/action-system.ts:744`)
+and `onWalksArrived` (`src/simulation/prisoners/action-system.ts:764`)
 delivers the arrival on the tick it happens. `arrive` gains a third arm: for
 the job kind there is no room to re-check and no seat to claim; the prisoner
 enters `performing` for the dwell. `continuePerforming` gains the matching
@@ -710,7 +710,7 @@ replaced by a board port: a departing prisoner's active job — #441's release
 path — is failed with a new `CARRY_JOB_FAIL_REASONS` member,
 `'carrier-departed'`, and compensated under ADR 0037. Adding a member is what
 that union's docblock says it is built for, and the save reader's
-`failReason: z.string().optional()` (`src/persistence/save-schema.ts:672`)
+`failReason: z.string().optional()` (`src/persistence/save-schema.ts:673`)
 tolerates it without a bump.
 
 **The order pin moves.** `tests/determinism/kernel-system-order.test.ts:434`
@@ -735,14 +735,20 @@ changes meaning — and it is applied here field by field, because #600
 overstated exactly this cost (*"carrying room instances and their state through
 snapshots and saves is the work"*):
 
+> **2026-09-26 correction for #1376:** the sentence above records this ADR's
+> original carry change. The later in-flight persistence change adds a V7
+> payload; `SAVE_SCHEMA_VERSION` is now `7`
+> (`src/persistence/save-schema.ts:40`). The no-bump ruling above applies to
+> the original carry change, not to the new V7 fields.
+
 - **The appended action.** A new positional index at the end of
   `DEFAULT_ACTIONS`; every existing `actionIndex` in every save keeps its
   meaning. ADR 0042 decision 1 settled that this is a content change and not a
   persistence one, and `tests/unit/prisoners-action-catalog.test.ts` is the
   gate.
 - **A carry in progress** is `actionIndex`, `actionPhase`, `phaseStartedAtTick`
-  (all existing, `src/persistence/save-schema.ts:429-431`) plus the job itself
-  in `operations.jobs` (`src/persistence/save-schema.ts:658-682`, unchanged
+  (all existing, `src/persistence/save-schema.ts:430-432`) plus the job itself
+  in `operations.jobs` (`src/persistence/save-schema.ts:659-683`, unchanged
   shape), whose `assignedWorkerId`, `leg` and `state` say where the goods are.
   The prisoner → job link is derived from the board on load (decision 1). No
   field.
@@ -756,7 +762,7 @@ snapshots and saves is the work"*):
   job. A carrier is instead **re-seated from the board** after it loads —
   `actionIndex` the carry, `travelling`, no request — in the same derived-last
   position `reinstateUseClaims` occupies
-  (`src/simulation/prisoners/prisoner-operations-runtime.ts:864`). Both
+  (`src/simulation/prisoners/prisoner-operations-runtime.ts:882`). Both
   directions close by shape: a job whose worker is not alive, or not a
   carrier, is failed and compensated on load, so nothing leaks; the rebuild is
   keyed by entity id, so nothing doubles.
@@ -770,7 +776,7 @@ snapshots and saves is the work"*):
   reconsideration cycle to the travel restart, and nothing to the dwell).
 - **`operations.jobWorkers` stays in the payload, empty.** The writer keeps
   emitting `{ workers: [], busy: [] }` and the reader keeps validating it
-  (`src/persistence/save-schema.ts:683`) and ignores it. Removing the key
+  (`src/persistence/save-schema.ts:684`) and ignores it. Removing the key
   would be the bump — an older build would refuse the save on a missing
   required key; keeping it costs two empty arrays. An older save with a
   non-empty pool loads cleanly: a listed worker who holds an assigned job is

@@ -38,6 +38,31 @@ interface PendingPathRequest {
   readonly enqueuedAtTick: number;
 }
 
+/**
+ * A waiting request as a save carries it: the input, plus the tick it joined
+ * the queue. Exported for the save boundary alone; `PendingPathRequest` above
+ * stays module-internal for the reason its own comment gives.
+ */
+export interface PendingPathRequestSnapshot extends PathRequestInput {
+  readonly enqueuedAtTick: number;
+}
+
+function copyRequest(request: PathRequestInput): PathRequestInput {
+  const { context } = request;
+  return {
+    id: request.id,
+    origin: { x: request.origin.x, y: request.origin.y },
+    destination: { x: request.destination.x, y: request.destination.y },
+    context: {
+      role: context.role,
+      securityClearance: context.securityClearance,
+      ...(context.permissions === undefined ? {} : { permissions: [...context.permissions] }),
+      ...(context.emergencyOverride === undefined ? {} : { emergencyOverride: context.emergencyOverride }),
+    },
+    priority: request.priority,
+  };
+}
+
 export interface ResolvedPathRequest {
   readonly id: string;
   readonly result: RouteResult;
@@ -137,6 +162,11 @@ export class PathRequestQueue {
    */
   public size(): number {
     return this.pending.size;
+  }
+
+  /** Whether `id` is waiting. Read by a restore to tell a live request from one its owner names and no queue holds. */
+  public has(id: string): boolean {
+    return this.pending.has(id);
   }
 
   public getMetrics(): PathRequestQueueMetrics {

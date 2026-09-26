@@ -16,6 +16,7 @@ import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../simulation/prisoners/reg
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
+import { LOCOMOTION_SUBTILE_UNITS } from '../simulation/locomotion/locomotion';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
@@ -26,6 +27,7 @@ import {
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
   migrateSaveEnvelopeV5ToV6,
+  migrateSaveEnvelopeV6ToV7,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -35,7 +37,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 6 as const;
+export const SAVE_SCHEMA_VERSION = 7 as const;
 
 // --- Kernel / RNG ---
 
@@ -668,7 +670,7 @@ const alertsSectionSchema = z
   })
   .strict();
 
-const locomotionSnapshotSchema = z.object({
+const prisonerLocomotionSnapshotSchema = z.object({
   walks: z.array(z.tuple([entityIdSchema, z.object({
     waypoints: z.array(tilePositionSchema).min(2),
     next: z.number().int().min(1),
@@ -688,7 +690,7 @@ const prisonersSectionSchemaFor = <RoomInstance extends z.ZodTypeAny>(
 ) =>
   z.object({
     components: prisonerComponentsSchemaFor(needLevelMax),
-    locomotion: locomotionSnapshotSchema.optional(),
+    locomotion: prisonerLocomotionSnapshotSchema.optional(),
     pathRequestSequence: z.number().int().min(0).optional(),
     coldState: z
       .object({
@@ -873,7 +875,7 @@ const securitySectionSchema = z
         // would cost 500 padded slots for a prison with twelve guards.
         entityStore: entityStoreSnapshotV2Schema,
         records: z.array(z.tuple([entityIdSchema, guardRecordSchema])),
-        locomotion: locomotionSnapshotSchema.optional(),
+        locomotion: prisonerLocomotionSnapshotSchema.optional(),
       })
       .strict(),
     schedules: z.array(deploymentScheduleSchema),
@@ -1416,6 +1418,180 @@ const regimeScheduleSchema = z
 const regimeSchedulesSectionSchema = z.array(regimeScheduleSchema).min(1);
 
 /**
+ * The work in flight (issue #1373; the owner's ruling of 2026-09-23 on ADR 0059
+ * open question 3, option 5). `EncodedSessionSystems.inFlight` carries the
+ * argument for the section and for its being one section.
+ *
+ * **Optional, and `SAVE_SCHEMA_VERSION` does not move**, on
+ * `docs/PERSISTENCE.md`'s "Adding an optional field without a version bump"
+ * and ADR 0038 decision 1. The three conditions, each checked rather than
+ * assumed:
+ *
+ * - *Optional, and absent means what the older build already did.* No build
+ *   before this one wrote the section, and every one of them restored a save
+ *   by clearing every walk, dropping every traveller to `idle` and starting
+ *   the navigation queue empty -- which is exactly what an absent section
+ *   still means (`PrisonerOperationsRuntime.resetTravelForASaveThatCarriesNone`,
+ *   `GuardRoster.loadSnapshot`, `SearchSystem.loadSnapshot`). Absence is
+ *   unambiguous as a fact about the corpus, the `masterSeed` shape: a live
+ *   capture writes the section unconditionally, empty lists and all, so a
+ *   save of this build without it cannot exist.
+ * - *The key is declared*, here, because the payload is `.strict()` and an
+ *   undeclared key fails the whole save.
+ * - *No existing field changes shape or meaning.* Every key below is new; the
+ *   sections the owners already had are untouched.
+ *
+ * **Declared on V6 alone**, beside `regimeSchedules`, rather than in
+ * `sessionSystemsShapeFor`: that factory is shared with the frozen V3-V5
+ * shapes, and no build that wrote one of those could carry this.
+ *
+ * **The cost ADR 0038 §4 names, stated rather than glossed:** an older V6
+ * build reading a save that carries this key refuses it as `invalid-shape`
+ * (the payload is `.strict()`), where a V7 bump would have refused it as
+ * `unsupported-version`. Both refuse; only the label differs.
+ *
+ * Structural only, like the rest of this file. The semantic rules -- a walk's
+ * legs are one tile along one axis, a request id appears once, a walk is
+ * between its first and last waypoint -- are enforced by the `loadSnapshot`
+ * of the class that owns each list.
+ *
+ * V7 (#1459) subsequently moved the old schema-only travel paths into this
+ * section and bumped the envelope. The V6 statements above describe the
+ * original addition; `sessionSystemsV7Schema` is the current writer's shape.
+ */
+const headingComponentSchema = z.union([z.literal(-1), z.literal(0), z.literal(1)]);
+
+const routeContextSchema = z
+  .object({
+    role: z.string().min(1),
+    securityClearance: z.number().int().min(0),
+    permissions: z.array(z.string().min(1)).optional(),
+    emergencyOverride: z.boolean().optional(),
+  })
+  .strict();
+
+const pendingPathRequestSchema = z
+  .object({
+    id: z.string().min(1),
+    origin: tilePositionSchema,
+    destination: tilePositionSchema,
+    context: routeContextSchema,
+    priority: z.number().int(),
+    enqueuedAtTick: tickSchema,
+  })
+  .strict();
+
+/** Mirrors `RouteFailureReason` (`src/simulation/navigation/route.ts`); `tests/foundation/save-schema-enum-union-contract.test.ts` pins the pair. */
+const routeFailureReasonSchema = z.enum(['invalid-origin', 'invalid-destination', 'unreachable', 'permission-denied']);
+/** Mirrors `DoorAccessDenialReason` (`src/simulation/navigation/route-context.ts`), pinned beside the one above. */
+const doorAccessDenialReasonSchema = z.enum(['locked', 'insufficient-clearance', 'missing-permission']);
+
+const routeResultSchema = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      route: z
+        .object({
+          segments: z.array(
+            z
+              .object({
+                regionId: z.number().int(),
+                waypoints: z.array(tilePositionSchema).min(1),
+                enteredViaDoorId: z.string().min(1).optional(),
+              })
+              .strict(),
+          ),
+          totalCost: z.number().min(0),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ok: z.literal(false),
+      failure: z
+        .object({
+          reason: routeFailureReasonSchema,
+          blockedBy: z
+            .object({ doorId: z.string().min(1), reason: doorAccessDenialReasonSchema })
+            .strict()
+            .optional(),
+        })
+        .strict(),
+    })
+    .strict(),
+]);
+
+const resolvedPathRequestSchema = z
+  .object({
+    id: z.string().min(1),
+    result: routeResultSchema,
+  })
+  .strict();
+
+const walkSchema = z
+  .object({
+    key: z.number().int().min(0),
+    waypoints: z.array(tilePositionSchema).min(2),
+    next: z.number().int().min(1),
+    progress: z.number().int().min(0).max(LOCOMOTION_SUBTILE_UNITS - 1),
+    headingX: headingComponentSchema,
+    headingY: headingComponentSchema,
+  })
+  .strict();
+
+const locomotionSnapshotSchema = z
+  .object({
+    walks: z.array(walkSchema),
+    headings: z.array(z.tuple([z.number().int().min(0), headingComponentSchema, headingComponentSchema])),
+  })
+  .strict();
+
+/** Mirrors `SearchJobState` (`src/simulation/contraband/search-system.ts`), pinned in `tests/foundation/save-schema-enum-union-contract.test.ts`. */
+const searchJobStateSchema = z.enum(['travelling', 'searching']);
+
+const inFlightSectionSchema = z
+  .object({
+    navigation: z
+      .object({
+        pending: z.array(pendingPathRequestSchema),
+        results: z.array(resolvedPathRequestSchema),
+      })
+      .strict(),
+    prisoners: z
+      .object({
+        locomotion: locomotionSnapshotSchema,
+        pathRequestIds: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
+        requestSequence: z.number().int().min(0),
+      })
+      .strict(),
+    guards: z
+      .object({
+        locomotion: locomotionSnapshotSchema,
+        deploymentRequestSequence: z.number().int().min(0),
+        patrolRequestSequence: z.number().int().min(0),
+      })
+      .strict(),
+    search: z
+      .object({
+        requestSequence: z.number().int().min(0),
+        jobs: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              state: searchJobStateSchema,
+              travelInFlight: z.boolean(),
+              pathRequestIdsByGuard: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
+              dwellStartedAtTick: tickSchema.optional(),
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
+
+/**
  * Current shape: V5's, plus the required `regimeSchedules` section
  * (ADR 0113 §2).
  *
@@ -1435,8 +1611,45 @@ const sessionSystemsV6Schema = z
     objects: objectsSectionSchema.optional(),
     alerts: alertsSectionSchema.optional(),
     regimeSchedules: regimeSchedulesSectionSchema,
+    inFlight: inFlightSectionSchema.optional(),
   })
   .strict();
+
+/**
+ * V7 keeps the four owners' settled state in their sections and puts all
+ * travel and path-request state exclusively in `inFlight`. V6 remains frozen
+ * above so saves written before this correction still decode and migrate.
+ */
+const prisonersSectionV7Schema = prisonersSectionSchemaFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5)
+  .omit({ locomotion: true, pathRequestSequence: true })
+  .extend({
+    coldState: prisonersSectionSchemaFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5)
+      .shape.coldState.omit({ currentActionPathRequestId: true }),
+  }).strict();
+const securitySectionV7Schema = securitySectionSchema.extend({
+  guards: securitySectionSchema.shape.guards.omit({ locomotion: true }),
+  deployment: securitySectionSchema.shape.deployment.omit({ pathRequestSequence: true }),
+  patrol: securitySectionSchema.shape.patrol.omit({ pathRequestSequence: true }),
+}).strict();
+const contrabandSectionV7Schema = contrabandSectionSchema.extend({
+  search: contrabandSectionSchema.shape.search.omit({ requestSequence: true }).extend({
+    active: z.array(z.tuple([
+      z.string().min(1),
+      z.object({
+        scope: searchScopeSchema,
+        targets: z.array(searchTargetSchema),
+        guardIds: z.array(entityIdSchema),
+        currentTargetIndex: z.number().int().min(0),
+      }).strict(),
+    ])),
+  }).strict(),
+}).strict();
+const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
+  prisoners: prisonersSectionV7Schema,
+  navigation: navigationSectionSchema.omit({ work: true }),
+  security: securitySectionV7Schema,
+  contraband: contrabandSectionV7Schema,
+}).strict();
 
 // --- Envelope ---
 
@@ -1615,6 +1828,10 @@ const savePayloadV6Schema = z
   })
   .strict();
 
+const savePayloadV7Schema = savePayloadV6Schema.extend({
+  simulation: sessionSystemsV7Schema.optional(),
+}).strict();
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
@@ -1625,9 +1842,11 @@ export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
 export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
 /** Historical V5 payload shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
+/** Historical V6 shape, including the optional legacy travel paths. */
 export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
+export type SavePayloadV7 = DeepReadonly<z.infer<typeof savePayloadV7Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV6;
+export type SavePayload = SavePayloadV7;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1693,13 +1912,18 @@ const saveEnvelopeV5ObjectSchema = z
 const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
 
 const saveEnvelopeV6ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV6Schema })
+  .object({ ...saveEnvelopeMetadataShape(6), payload: savePayloadV6Schema })
   .strict();
 
 const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV6Schema`. */
-const saveEnvelopeMetadataV6Schema = withOrderedTimestamps(
+const saveEnvelopeV7ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV7Schema })
+  .strict();
+const saveEnvelopeV7Schema = withOrderedTimestamps(saveEnvelopeV7ObjectSchema);
+
+/** Validates only metadata; the large payload is parsed independently. */
+const saveEnvelopeMetadataV7Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -1713,13 +1937,15 @@ export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSch
 export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
 /** Historical V5 envelope shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
+/** Historical V6 envelope shape; `migrateSaveEnvelopeV6ToV7` reads it. */
 export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
+export type SaveEnvelopeV7 = DeepReadonly<z.infer<typeof saveEnvelopeV7ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV6;
+export type SaveEnvelope = SaveEnvelopeV7;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1733,7 +1959,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV6Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(6, saveEnvelopeV6Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV7Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -1758,6 +1985,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 5,
   toVersion: 6,
   migrate: (input) => migrateSaveEnvelopeV5ToV6(input as SaveEnvelopeV5),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 6,
+  toVersion: 7,
+  migrate: (input) => migrateSaveEnvelopeV6ToV7(input as SaveEnvelopeV6),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1998,7 +2230,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV6Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV7Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -2006,7 +2238,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV6Schema.parse({
+  const payload = savePayloadV7Schema.parse({
     ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
@@ -2016,7 +2248,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV6Schema.parse({
+  const metadata = saveEnvelopeMetadataV7Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

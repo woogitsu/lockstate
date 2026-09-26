@@ -527,7 +527,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // a group runs. That is the schedule an open riot replaces at the point of
     // use and never writes to, so ADR 0057's claim is untouched by it: no
     // override is in this payload, which is what the assertions below check.
-    expect(SAVE_SCHEMA_VERSION).toBe(6);
+    expect(SAVE_SCHEMA_VERSION).toBe(7); // #1459 moved travel state, not the riot override.
 
     const bundle = captureSessionSnapshot(live);
     const restored = restoreSimulationRuntime(bundle, SEED).runtime;
@@ -576,12 +576,21 @@ describe('a riot survives a save, because nothing about it is stored', () => {
      * question than the old numbers were and a stronger result for this file's
      * own claim, so both are recorded: the divergence is a property of where
      * the window falls, not of the restore.
+     *
+     * **And since issue #1373 it is not a property of the window either.** The
+     * owner's ruling of 2026-09-23 answered ADR 0059 open question 3 -- a save
+     * carries the walk -- so a save taken mid-journey restores the walkers
+     * mid-stride, and the two censuses agree wherever the window falls. The
+     * last assertion below is that claim, added beside the pinned pair rather
+     * than in place of it; `tests/determinism/restore-mid-walk-exactness.test.ts`
+     * is where it is measured across every save tick of a day.
      */
     expect({ live: liveCensus, restored: restoredCensus }).toEqual({
       live: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
       restored: { byAction: { 'action.free-association': 600 }, idleTicks: 200, travellingTicks: 0 },
     });
     expect(restoredCensus.byAction['action.use-toilet']).toBeUndefined();
+    expect(restoredCensus).toEqual(liveCensus);
   });
 
   it('restores after the riot onto the ordinary timetable, which is the other half of the same proof', () => {

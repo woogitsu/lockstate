@@ -11,6 +11,7 @@ import type {
   SaveEnvelopeV4,
   SaveEnvelopeV5,
   SaveEnvelopeV6,
+  SaveEnvelopeV7,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -471,4 +472,134 @@ export function migrateSaveEnvelopeV5ToV6(input: SaveEnvelopeV5): SaveEnvelopeV6
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV6;
+}
+
+/**
+ * V6 -> V7: the eight legacy travel fields move under `simulation.inFlight`.
+ * Older captures normally have none of them: their restore intentionally
+ * cleared travel. A V6 payload carrying any of them is still preserved here.
+ * The old navigation record's diagnostics are deliberately omitted because
+ * the live in-flight contract stores only the route outcome; they never alter
+ * a continuing simulation. An existing in-flight section is authoritative:
+ * it was captured atomically with the queue and the owners, whereas the V6
+ * subsystem fields were optional schema-only declarations. A valid V6 payload
+ * can contain contradictory copies; keeping the atomically captured one is
+ * the same precedence the V6 runtime's restore already applied, and avoids
+ * turning a previously readable save into an error.
+ */
+export function migrateSaveEnvelopeV6ToV7(input: SaveEnvelopeV6): SaveEnvelopeV7 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+  const old = payload.simulation;
+  let simulation: SaveEnvelopeV7['payload']['simulation'];
+  if (old !== undefined) {
+    const { locomotion: prisonerLocomotion, pathRequestSequence, coldState, ...prisoners } = old.prisoners;
+    const { currentActionPathRequestId, ...settledColdState } = coldState;
+    const { work, ...navigation } = old.navigation;
+    const { guards, deployment, patrol, ...security } = old.security;
+    const { locomotion: guardLocomotion, ...settledGuards } = guards;
+    const { pathRequestSequence: deploymentRequestSequence, ...settledDeployment } = deployment;
+    const { pathRequestSequence: patrolRequestSequence, ...settledPatrol } = patrol;
+    const { search, ...contraband } = old.contraband;
+    const { requestSequence: searchRequestSequence, active, ...searchRest } = search;
+    const settledActive = active.map((row) => {
+      const [id, progress] = row as readonly [string, {
+        readonly scope: typeof search.queue[number]['scope'];
+        readonly targets: typeof search.queue[number]['targets'];
+        readonly guardIds: readonly number[];
+        readonly currentTargetIndex: number;
+      } & {
+        readonly state?: 'travelling' | 'searching';
+        readonly travelInFlight?: boolean;
+        readonly pathRequestIdsByGuard?: readonly (readonly [number, string])[];
+        readonly dwellStartedAtTick?: number;
+      }];
+      const { state: _state, travelInFlight: _travel, pathRequestIdsByGuard: _ids,
+        dwellStartedAtTick: _dwell, ...settled } = progress;
+      return [id, settled] as const;
+    });
+    const settledSearch = { ...searchRest, active: settledActive };
+    const convertLocomotion = (snapshot: NonNullable<typeof prisonerLocomotion>) => ({
+      walks: snapshot.walks.map((row) => {
+        const [key, walk] = row as readonly [number, Record<string, unknown>];
+        return { key, ...walk };
+      }),
+      headings: snapshot.headings.map((row) => {
+        const [key, heading] = row as readonly [number, { readonly x: number; readonly y: number }];
+        return [key, heading.x, heading.y] as const;
+      }),
+    });
+    const legacySearchTravel = active.some((row) => {
+      const [, progress] = row as readonly [string, {
+        readonly state?: 'travelling' | 'searching';
+        readonly travelInFlight?: boolean;
+        readonly pathRequestIdsByGuard?: readonly (readonly [number, string])[];
+        readonly dwellStartedAtTick?: number;
+      }];
+      return progress.state !== undefined || progress.travelInFlight !== undefined ||
+        progress.pathRequestIdsByGuard !== undefined || progress.dwellStartedAtTick !== undefined;
+    });
+    const legacyTravel = prisonerLocomotion !== undefined || pathRequestSequence !== undefined ||
+      currentActionPathRequestId !== undefined || work !== undefined || guardLocomotion !== undefined ||
+      deploymentRequestSequence !== undefined || patrolRequestSequence !== undefined ||
+      searchRequestSequence !== undefined || legacySearchTravel;
+    const emptyLocomotion = { walks: [], headings: [] };
+    const inFlight = old.inFlight ?? (legacyTravel ? {
+      navigation: {
+        pending: work?.queue.pending.map(({ request, enqueuedAtTick }) => ({ ...request, enqueuedAtTick })) ?? [],
+        results: work?.results.map((row) => {
+          const [, value] = row as readonly [string, { readonly id: string; readonly result: unknown }];
+          return { id: value.id, result: value.result };
+        }) ?? [],
+      },
+      prisoners: {
+        locomotion: prisonerLocomotion === undefined ? emptyLocomotion : convertLocomotion(prisonerLocomotion),
+        pathRequestIds: currentActionPathRequestId ?? [],
+        requestSequence: pathRequestSequence ?? 0,
+      },
+      guards: {
+        locomotion: guardLocomotion === undefined ? emptyLocomotion : convertLocomotion(guardLocomotion),
+        deploymentRequestSequence: deploymentRequestSequence ?? 0,
+        patrolRequestSequence: patrolRequestSequence ?? 0,
+      },
+      search: {
+        requestSequence: searchRequestSequence ?? 0,
+        jobs: active.flatMap((row) => {
+          const [id, progress] = row as readonly [string, {
+            readonly state?: 'travelling' | 'searching';
+            readonly travelInFlight?: boolean;
+            readonly pathRequestIdsByGuard?: readonly (readonly [number, string])[];
+            readonly dwellStartedAtTick?: number;
+          }];
+          return progress.state === undefined && progress.travelInFlight === undefined &&
+            progress.pathRequestIdsByGuard === undefined && progress.dwellStartedAtTick === undefined
+            ? []
+            : [{
+              id,
+              state: progress.state ?? 'travelling',
+              travelInFlight: progress.travelInFlight ?? false,
+              pathRequestIdsByGuard: progress.pathRequestIdsByGuard ?? [],
+              ...(progress.dwellStartedAtTick === undefined ? {} : { dwellStartedAtTick: progress.dwellStartedAtTick }),
+            }];
+        }),
+      },
+    } : undefined);
+    simulation = {
+      ...old,
+      prisoners: { ...prisoners, coldState: settledColdState },
+      navigation,
+      security: { ...security, guards: settledGuards, deployment: settledDeployment, patrol: settledPatrol },
+      contraband: { ...contraband, search: settledSearch },
+      ...(inFlight === undefined ? {} : { inFlight }),
+    } as SaveEnvelopeV7['payload']['simulation'];
+  }
+  const migratedPayload = {
+    ...payload,
+    ...(simulation === undefined ? {} : { simulation }),
+  } as SaveEnvelopeV7['payload'];
+  return {
+    saveSchemaVersion: 7,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV7;
 }

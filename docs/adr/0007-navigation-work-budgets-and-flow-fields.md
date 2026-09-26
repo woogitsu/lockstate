@@ -21,8 +21,8 @@ When this ADR was written, no real prisoner/staff entity model existed
 `security/deployment-system.ts:128` and `security/patrol-system.ts:103`. The
 decision below is unaffected by that and remains correct: `NavigationSystem`
 is still generic over `id: string`
-(`src/simulation/navigation/navigation-system.ts:77`, in the `requestRoute`
-signature declared at `:76`) and each of the six supplies its own id shape,
+(`src/simulation/navigation/navigation-system.ts:118`, in the `requestRoute`
+signature declared at `:118`) and each of the six supplies its own id shape,
 which is precisely what this Context argued for.
 
 **Five of those seven anchors were re-measured and had drifted; the count of six

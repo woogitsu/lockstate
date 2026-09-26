@@ -377,15 +377,6 @@ export class PrisonerColdState {
     else this.currentActionPathRequestId.set(entityId, requestId);
   }
 
-  public getPathRequestSnapshot(): readonly (readonly [EntityId, string])[] {
-    return [...this.currentActionPathRequestId].sort(([a], [b]) => a - b);
-  }
-
-  public loadPathRequestSnapshot(rows: readonly (readonly [EntityId, string])[]): void {
-    this.currentActionPathRequestId.clear();
-    for (const [entityId, requestId] of rows) this.currentActionPathRequestId.set(entityId, requestId);
-  }
-
   /**
    * Drops every entry this cold state holds for one entity, because that
    * entity has ceased to exist (ADR 0050 decision 2; ADR 0026 question 2).
@@ -415,6 +406,20 @@ export class PrisonerColdState {
       accommodationInstanceId: [...this.accommodationInstanceId.entries()].sort(([a], [b]) => a - b),
       currentActionTargetInstanceId: [...this.currentActionTargetInstanceId.entries()].sort(([a], [b]) => a - b),
     };
+  }
+
+  /**
+   * Every prisoner's outstanding path-request id, ascending by entity id.
+   *
+   * **Not part of `getSnapshot` above, and that is deliberate rather than an
+   * omission** (issue #1373). An id is only meaningful beside the
+   * `NavigationSystem` queue entry it names, so it travels in the save's
+   * `inFlight` section with that queue, and a save that predates the section
+   * carries neither -- which `getSnapshot`'s own two lists cannot express,
+   * because every save that exists carries them.
+   */
+  public getPathRequestSnapshot(): readonly (readonly [EntityId, string])[] {
+    return [...this.currentActionPathRequestId.entries()].sort(([a], [b]) => a - b);
   }
 
   public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>): void {
