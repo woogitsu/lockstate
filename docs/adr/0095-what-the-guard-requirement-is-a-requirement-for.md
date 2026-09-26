@@ -99,7 +99,7 @@ own work.
 > same shape `AGENTS.md` flags in its entries of 2026-09-08 and 2026-09-09.
 >
 > **What the catch-up changed and what it deliberately did not.** Coordinates
-> into `src/` were re-aimed at the files as they stand on that commit, and one
+> into `src/` (`src/simulation/security/deployment-system.ts:335`, `assignUnassignedGuards`) were re-aimed at the files as they stand on that commit, and one
 > row of the measured ladder is corrected in a marked note where issue #996
 > moved it. **No measurement was re-run and re-stated as though it had been
 > taken today**: every figure below is dated to `ac58c457` in the text, and the
@@ -144,18 +144,19 @@ finding.
 
 1. `DeploymentSystem.assignUnassignedGuards` fills a sector to
    `requiredGuardCountFor` and stops
-   (`src/simulation/security/deployment-system.ts:328`-`:348`,
-   `assignUnassignedGuards`). Arrival sets the phase to `'on-post'`
+   (`src/simulation/security/deployment-system.ts:335`-`:348`,
+   `assignUnassignedGuards`, `const sector = this.sectors.getDefinition(sectorId);`). Arrival sets the phase to `'on-post'`
    (`beginDeployment` for a guard already standing there, `onArrivedAtPost`
    for one that walked).
 2. `GuardRoster.unassignedGuardIds()` is `allGuardIds()` filtered to that one
    phase (`src/simulation/security/guard-roster.ts:245`-`:246`,
    `unassignedGuardIds`). **A posted guard is not unassigned**, and nothing in
-   `src/` returns a posted guard to that phase except `unassign`, which no
+   `src/` returns a posted guard to that phase except `unassign` (the code path
+   that returns a posted guard to the pool), which no
    scheduled path calls for a healthy post.
 3. `claimableGuardIds` is that pool, filtered by role and nothing else:
    `return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));`
-   (`src/simulation/security/post-eligibility.ts:110`).
+   (`src/simulation/security/post-eligibility.ts:103`, `claimableGuardIds`).
 4. **Four claimants call it**, and all four therefore claim from what posting
    has left over: `DeploymentSystem` itself
    (`src/simulation/security/deployment-system.ts:342`, `claimableGuardIds`),
@@ -190,7 +191,8 @@ nothing about the unassigned axis. One level down settles it.
 ### What the player is told
 
 `describeStaffCoverage` (`src/ui/hud/staff-panel.ts:461`-`:520`,
-`describeStaffCoverage`) has three
+`describeStaffCoverage`, `export function describeStaffCoverage`) has three
+> `export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {`
 rungs and reads three numbers: `required`, `assigned`, `shortage`, copied
 across the worker boundary unchanged by `staffCoverageFromProjection`
 (`src/ui/simulation-staff-coverage.ts`, whose own docblock says

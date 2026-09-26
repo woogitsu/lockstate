@@ -792,7 +792,7 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `dbd24ea3` (**v0.0.771**) by the delta method,
+Re-anchored at `main` @ `ca2c390a1` (**v0.0.782**) by the delta method,
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -21802,6 +21802,11 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+
+## 3. The 2026-09-25 bed-art pass: nine landings and no status flip
+
+Read at `ca2c390a1` (**v0.0.782**), the branch merge base. Re-read §§3-6 against the anchor; the existing Next free number remains unchanged and no owner decision is introduced by this art-only branch.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 
