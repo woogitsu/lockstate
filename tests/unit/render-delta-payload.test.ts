@@ -484,6 +484,17 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(actor?.incidentResponse).toBeUndefined();
   });
 
+  it('ignores a guard-only search bit on a prisoner and prioritizes response if both guard claims arrive', () => {
+    const writer = new RenderActorsKeyframeWriter(2, NO_WORLD_CHANGE);
+    writer.writeRecord(3, packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, 0, 0, false, true), 0, 0, 0, 0);
+    writer.writeRecord(4, packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0, true, true), 0, 0, 0, 0);
+    const [prisoner, guard] = actorsFromDelta(decodeRenderActorsPayload(writer.finish()));
+    expect(prisoner?.assetId).toBe(PRISONER_ACTOR_ASSET_ID);
+    expect(prisoner?.contrabandSearch).toBeUndefined();
+    expect(guard?.assetId).toBe('actor.guard.response');
+    expect(selectActorPose(guard!)).toMatchObject({ clipId: 'respond' });
+  });
+
   it("carries a walking guard's sub-tile position and velocity, exactly like a prisoner's (ADR 0088)", () => {
     // **This is the case ADR 0059 could not carry**: it read "no
     // `LocomotionStore` reading for guards" here, and this test is the
