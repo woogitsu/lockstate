@@ -160,6 +160,14 @@ describe('assignPooledRows', () => {
     expect(new Set(named).size).toBe(named.length);
   });
 
+  it('keeps the visible slots anchored from the bottom when requested', () => {
+    expect(assignPooledRows(fresh(3), ['a'], 0, SETTLE, 'bottom')).toEqual([
+      { kind: 'empty' },
+      { kind: 'empty' },
+      { kind: 'fills', itemId: 'a' },
+    ]);
+  });
+
   it('holds the invariant across a whole queue draining through a three-row pool', () => {
     /*
      * The property, not an example: twenty orders entering a three-row window

@@ -19,3 +19,5 @@ export function exactPixelAspectMatchesFootprint(
   footprintTiles: { width: number; height: number },
   pixelSize: { width: number; height: number },
 ): { ok: true } | { ok: false; reason: string };
+
+export function isSafeRenderedArtPath(value: unknown, options?: { published?: boolean }): boolean;

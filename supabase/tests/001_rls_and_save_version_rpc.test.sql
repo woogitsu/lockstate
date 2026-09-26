@@ -708,6 +708,38 @@ select lives_ok(
 -- update these three assertions, and cannot land silently. The first two are
 -- what #340 fixes; the third is what makes it a disclosure rather than a
 -- cosmetic inconsistency, and it stays true either way.
+--
+-- THE PIN WAS DISCHARGED, AND THIS NOTE IS THE RECEIPT. The paragraphs above
+-- are kept exactly as written rather than deleted: they are the reason the
+-- two assertions below now read the way they do, and a tripwire that fires
+-- and is then silently reset teaches nobody. What changed, and by what:
+--
+--   supabase/migrations/20260826090000_close_prison_id_existence_oracles.sql
+--   (PR #355, issues #340 and #343) merged the two branches. The lookup in
+--   `create_save_version()` now applies `prisons_select_own`'s own predicate
+--   -- `owner_id = auth.uid()` -- so "no such prison" and "a prison exists
+--   that is not yours" are no longer two states the function can be in.
+--   There is one `not found` and one `raise`:
+--
+--     42501 'prison % is not available for save versions'
+--
+-- So the first two assertions below assert the MERGED answer, and they are
+-- the same assertion twice with a different id -- which is the point, and is
+-- what makes them a closed oracle rather than a pinned one. The prediction
+-- the paragraphs above make is the prediction that came true: it was the
+-- first two that had to change.
+--
+-- The THIRD assertion is unchanged and still passes, exactly as the
+-- paragraph above says it would ("it stays true either way"). It is what
+-- keeps this section meaningful now that the two refusals agree: without it,
+-- two identical refusals would be consistent with the caller simply being
+-- allowed to see the row.
+--
+-- supabase/tests/013_refusal_indistinguishability.test.sql is where the
+-- property is asserted at full strength -- SQLSTATE, message and DETAIL
+-- compared whole, and each pair holding everything constant but the fact
+-- under test. This section remains the cheaper canary in the suite a reader
+-- of `create_save_version()` opens first.
 
 create function pg_temp.save_version_answer(p_prison_id uuid)
 returns text
@@ -728,14 +760,14 @@ set local role authenticated;
 
 select is(
   pg_temp.save_version_answer('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  '42501: not authorized for prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  'TODAY: a prison that exists and belongs to someone else is refused with 42501 and a message naming the prison (#340 -- this assertion must change when the two branches merge)'
+  '42501: prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa is not available for save versions',
+  'a prison that exists and belongs to someone else is refused with the merged answer (#340 closed)'
 );
 
 select is(
   pg_temp.save_version_answer('99999999-9999-9999-9999-999999999999'),
-  'P0001: prison 99999999-9999-9999-9999-999999999999 does not exist',
-  'TODAY: a prison that does not exist is refused with a DIFFERENT sqlstate and a message that says so -- the two answers together are the oracle #340 reports'
+  '42501: prison 99999999-9999-9999-9999-999999999999 is not available for save versions',
+  'and a prison that does not exist is refused with the same sqlstate and the same wording: the two answers are now one'
 );
 
 select is(
