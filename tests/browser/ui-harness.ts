@@ -7,6 +7,7 @@ import {
   buildPseudoLocaleCatalog,
   defaultMessageCatalogEn,
 } from '../../src/services/localization';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import {
   EMPTY_HUD_VIEW_MODEL,
   type HudBuildEdge,
@@ -355,6 +356,7 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+const polishLocalizer = new Localizer({ locale: 'pl', catalogs: [defaultMessageCatalogEn, messageCatalogPl] });
 
 /**
  * The pseudo-locale, derived mechanically from the same catalog (ADR 0011).
@@ -382,9 +384,8 @@ let formatNumberCalls = 0;
 const countingLocalizer: HudLocalizer = {
   format: (key, parameters) => (parameters === undefined ? localizer.format(key) : localizer.format(key, parameters)),
   // Forwarded uncounted: the counter above exists for issue #136's
-  // `Intl.NumberFormat` construction cost, and nothing in the HUD selects a
-  // plural form yet, so counting this one would report a zero that looks like
-  // a measurement.
+  // `Intl.NumberFormat` construction cost, so plural lookups do not belong in
+  // its count.
   formatPlural: (key, count, parameters) =>
     parameters === undefined ? localizer.formatPlural(key, count) : localizer.formatPlural(key, count, parameters),
   formatNumber: (value, options) => {
@@ -1305,7 +1306,7 @@ window.lockstateUiHarness = {
     await new Promise((resolve) => setTimeout(resolve, 0));
   },
 
-  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void {
+  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number; readonly locale?: 'pl' }): void {
     hud?.destroy();
     intents.length = 0;
     // The previous mount's sink belongs to a destroyed HUD; a gesture sent to
@@ -1349,7 +1350,7 @@ window.lockstateUiHarness = {
         // spec's one lever over the answer.
         classifyArea: () => worldRoomEnclosure,
       },
-      localizer: countingLocalizer,
+      localizer: options?.locale === 'pl' ? polishLocalizer : countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
       // the state the real app paints before any session exists.
       viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,

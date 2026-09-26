@@ -763,7 +763,12 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security-section.incident-people': 'Bierze udział: {count}',
   'hud.security-section.incident-timeline': 'Przebieg',
   'hud.security-section.incident-timeline-row': '{state} w ticku {tick}',
-  'hud.security-section.incident-responders': 'Potrzebni funkcjonariusze: {count}',
+  'hud.security-section.incident-responders': {
+    one: 'Potrzebny jest {count} funkcjonariusz.',
+    few: 'Potrzeba {count} funkcjonariuszy.',
+    many: 'Potrzeba {count} funkcjonariuszy.',
+    other: 'Potrzeba {count} funkcjonariuszy.',
+  },
   'hud.security-section.incident-outcome': 'Rannych: {injured}, zniszczenia {damage} z {max}',
   'hud.security-section.incident-escaped': 'Ktoś się wydostał.',
   'hud.security-section.incidents-by-type': 'Według rodzaju',
