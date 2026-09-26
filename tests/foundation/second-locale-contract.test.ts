@@ -640,16 +640,11 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * and checks the collapse directly, rather than asserting the sentence and
    * leaving it untested.
    */
-  '`${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`':
-    "aria-label for a delivery row's Cancel button: a localized word, a " +
-    "hard-coded ': ', and text read back out of the row's own already-" +
-    'localized label. Fixing it means authoring a punctuation-template key ' +
-    "-- copy that reaches a screen-reader user, so the owner's under " +
-    '`AGENTS.md` exclusion 4.',
-  '`${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`':
-    "aria-label for a queue row's Cancel button -- the same shape as the " +
-    'delivery row above it, for the same reason: a localized word, a ' +
-    "hard-coded ': ', and the row's own already-localized label read back.",
+  /*
+   * Both recorded exceptions were retired under #1162. The controls now use
+   * whole catalogue sentences with the row label as a parameter, and this
+   * empty list keeps the gate rejecting a new assembled sentence.
+   */
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {

@@ -1124,6 +1124,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.queue-order': '{buildable} · {x}, {y} · {edge} · zwrot {total}',
   'hud.build.queue-shortfall': 'Czeka na {total}, aby odblokować następne zlecenie.',
   'hud.build.queue-cancel': 'Anuluj',
+  'hud.build.queue-cancel-order': 'Anuluj to zlecenie: {order}',
   'hud.build.queue-unnamed': 'Zlecenie bez nazwy',
   // *i jeszcze {count}* agrees with nothing at any count, so the counted part
   // needs no reshape; only the tail is rewritten.
@@ -1133,6 +1134,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.deliveries-count': 'Kupione: {count} · Zwrot przy anulowaniu: {total}',
   'hud.build.delivery': '{count} × {material} · zwrot {total}',
   'hud.build.delivery-cancel': 'Anuluj',
+  'hud.build.delivery-cancel-item': 'Anuluj tę dostawę: {delivery}',
   'hud.build.delivery-unnamed': 'Materiał bez nazwy',
   'hud.build.deliveries-more':
     'i jeszcze {count} w drodze — te przyjadą pierwsze, a reszta pojawi się, gdy tamte dotrą.',
