@@ -306,6 +306,16 @@ export async function validateRenderedArtCatalog(options = {}) {
         `"${entry.assetId}": catalog dimensionsPx (${entry.dimensionsPx?.width}x${entry.dimensionsPx?.height}) disagrees with the sidecar's sizePx (${sidecarEntry.sizePx?.width}x${sidecarEntry.sizePx?.height})`,
       );
     }
+    for (const field of ['footprintTiles', 'frameTiles']) {
+      const catalogSize = entry[field];
+      const sourceSize = sidecarEntry[field];
+      if (catalogSize?.width !== sourceSize?.width || catalogSize?.height !== sourceSize?.height) {
+        report(`"${entry.assetId}": catalog ${field} ${catalogSize?.width}x${catalogSize?.height} disagrees with sidecar ${field} ${sourceSize?.width}x${sourceSize?.height}`);
+      }
+    }
+    if (entry.frameAspectDriftFromFootprint !== sidecarEntry.frameAspectDriftFromFootprint) {
+      report(`"${entry.assetId}": catalog frameAspectDriftFromFootprint disagrees with the sidecar`);
+    }
   }
 
   return { errors, entryCount: catalog.entries.length };
