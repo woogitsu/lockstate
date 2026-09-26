@@ -2,7 +2,7 @@ import type { EntityId } from '../entity/entity-store';
 import type { RouteFailureReason } from '../navigation/route';
 import type { ContainerRegistry } from './inventory';
 import type { CarryItemJob, CarryJobFailReason, CarryLeg, JobLifecycleState } from './job';
-import type { JobBoard } from './job';
+import { isTerminalJobState, type JobBoard } from './job';
 
 /**
  * What a carry job *does* to stock, with no opinion about who carries it or
@@ -147,6 +147,8 @@ export class CarryJobExecutor {
    * from (ADR 0037).
    */
   public dropOff(job: CarryItemJob): boolean {
+    // A repeated completion must not mint a second copy of the carried stock.
+    if (isTerminalJobState(job.state)) return false;
     const destinationContainer = this.containers.getById(job.destinationContainerId);
     if (destinationContainer === undefined) {
       this.failJob(job, 'unknown-destination-container');
@@ -224,8 +226,12 @@ export class CarryJobExecutor {
    * owner's.
    */
   public failJob(job: CarryItemJob, reason: CarryJobFailReason | RouteFailureReason): void {
-    this.compensateHeldStock(job, job.leg, job.state);
-    this.board.endJob(job.id, 'failed', reason);
+    const stateBeforeEnding = job.state;
+    if (!this.board.endJob(job.id, 'failed', reason)) return;
+    // Compensation belongs to the successful terminal transition. A second
+    // failure report must not release another job's reservation or return the
+    // same carried stock twice.
+    this.compensateHeldStock(job, job.leg, stateBeforeEnding);
   }
 
   /**
