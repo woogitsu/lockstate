@@ -157,3 +157,38 @@ test('shows an agitated prisoner beside a calm prisoner in the rendered prison a
     await page.screenshot({ path: 'assets/rendered/evidence/prisoner-riot-1920x1080.png' });
   }
 });
+
+test('shows both assault participants, animates them, then restores calm sprites in the real renderer', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/actor-motion-harness.html');
+  await page.evaluate(async () => window.lockstateActorMotionHarness!.ready);
+  await page.evaluate(() => window.lockstateActorMotionHarness!.publishAssaultPair(1, true));
+  await page.waitForFunction(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.prisoner.assault').length === 2);
+  const before = await page.evaluate(() => window.lockstateActorMotionHarness!.framesWithAsset('actor.prisoner.assault'));
+  await page.waitForFunction((frames) => {
+    const current = window.lockstateActorMotionHarness!.framesWithAsset('actor.prisoner.assault');
+    return current.length === 2 && current.some((frame, index) => frame !== frames[index]);
+  }, before);
+  expect(await page.evaluate(() => window.lockstateActorMotionHarness!.unresolvedActorCount())).toBe(0);
+  await page.evaluate(() => window.lockstateActorMotionHarness!.publishAssaultPair(2, false));
+  await page.waitForFunction(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.prisoner.base').length === 2);
+  expect(await page.evaluate(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.prisoner.assault'))).toHaveLength(0);
+});
+
+test('shows both assault participants in the Full HD furnished prison', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/environment-art-harness.html?prisonerAssaultVisual=1');
+  await page.evaluate(async () => {
+    await window.lockstateEnvironmentArtHarness!.ready;
+    await window.lockstateEnvironmentArtHarness!.artLoaded;
+  });
+  await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.assault').length === 2);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.prisoner.base'))).toHaveLength(1);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
+  if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
+    await page.screenshot({ path: 'assets/rendered/evidence/prisoner-assault-1920x1080.png' });
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 1));
+    await page.screenshot({ path: 'assets/rendered/evidence/prisoner-assault-default-zoom-1920x1080.png' });
+  }
+});

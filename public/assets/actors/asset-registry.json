@@ -42,6 +42,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.assault",
+      "manifest": "actor.prisoner.assault.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "struggle"
+      ]
+    },
+    {
       "assetId": "actor.prisoner.base",
       "manifest": "actor.prisoner.base.atlas-manifests.json",
       "clips": [

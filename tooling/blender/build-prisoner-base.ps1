@@ -24,7 +24,7 @@ if (-not (Test-Path -LiteralPath $Blender -PathType Leaf)) {
 # of the render. Without it the output depends on whoever's machine ran it.
 $blenderFlags = @('--background', '--factory-startup', '--python-exit-code', '1')
 
-$actorIds = @('actor.prisoner.base', 'actor.prisoner.riot', 'actor.guard.base', 'actor.guard.response', 'actor.guard.search', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
+$actorIds = @('actor.prisoner.base', 'actor.prisoner.riot', 'actor.prisoner.assault', 'actor.guard.base', 'actor.guard.response', 'actor.guard.search', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
 foreach ($actorId in $actorIds) {
     $actorContract = if ($actorId -eq 'actor.guard.response') {
         Join-Path $repositoryRoot 'assets\contracts\guard-response-8-direction.contract.json'
@@ -32,6 +32,8 @@ foreach ($actorId in $actorIds) {
         Join-Path $repositoryRoot 'assets\contracts\guard-search-8-direction.contract.json'
     } elseif ($actorId -eq 'actor.prisoner.riot') {
         Join-Path $repositoryRoot 'assets\contracts\prisoner-riot-8-direction.contract.json'
+    } elseif ($actorId -eq 'actor.prisoner.assault') {
+        Join-Path $repositoryRoot 'assets\contracts\prisoner-assault-8-direction.contract.json'
     } else { $contract }
     $blend = Join-Path $repositoryRoot "assets\source\blender\$actorId.blend"
     $actorIntermediate = Join-Path $intermediate (Join-Path 'build' $actorId)

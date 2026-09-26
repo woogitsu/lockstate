@@ -30,6 +30,8 @@ export interface RenderActor {
   readonly contrabandSearch?: boolean;
   /** An open riot names this prisoner as a participant. */
   readonly openRiot?: boolean;
+  /** An open assault names this prisoner as a participant. */
+  readonly openAssault?: boolean;
 }
 
 /**
