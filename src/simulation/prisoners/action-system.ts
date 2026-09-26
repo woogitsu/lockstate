@@ -332,10 +332,10 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
  * performing prisoner per reconsideration cycle, and so the answer is what the
  * loop *did* rather than what a second reading of the definition predicts.
  */
-function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number): boolean {
+function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number, provisionFactor = 1): boolean {
   let appliedAny = false;
   for (const [needId, perTick] of Object.entries(action.needEffectsPerTick) as [keyof typeof action.needEffectsPerTick, number][]) {
-    needs.adjust(index, needId, perTick * ticksElapsed);
+    needs.adjust(index, needId, perTick * ticksElapsed * provisionFactor);
     appliedAny = true;
   }
   return appliedAny;
@@ -362,6 +362,7 @@ export class ActionSystem implements SystemRegistration {
   private contendedSubstitutionCycles = 0;
   private substitutionsCountedSinceTick = 0;
   private requestSequence = 0;
+  private currentProvisionFactors: ReadonlyMap<string, number> = new Map();
 
   public getPathRequestSequence(): number {
     return this.requestSequence;
@@ -464,6 +465,7 @@ export class ActionSystem implements SystemRegistration {
      * silently half-wired board.
      */
     private readonly carry?: CarryJobExecutor,
+    private readonly provisionFactors?: () => ReadonlyMap<string, number>,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -584,6 +586,9 @@ export class ActionSystem implements SystemRegistration {
    * guarantees and that ADR 0029 decision 7 commitment 3 already names.
    */
   public update(context: SimulationContext): void {
+    // A placement can finish between action cycles; derive once per cycle,
+    // rather than scanning every object for every performing prisoner.
+    this.currentProvisionFactors = this.provisionFactors?.() ?? new Map();
     const arriving: UrgencyRanked[] = [];
     const idle: PlannedSelection[] = [];
 
@@ -784,7 +789,9 @@ export class ActionSystem implements SystemRegistration {
       return;
     }
 
-    if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks)) {
+    const targetRoom = this.coldState.getActionTarget(entityId);
+    const provisionFactor = targetRoom === undefined ? 1 : (this.currentProvisionFactors.get(targetRoom) ?? 1);
+    if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks, provisionFactor)) {
       this.currentAction.needFulfilledLastTick[index] = tick;
     }
 

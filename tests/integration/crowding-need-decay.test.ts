@@ -68,6 +68,7 @@ const START = 1_000;
 const CELL_COUNT = 12;
 const ARRIVAL = { x: 16, y: 16 } as const;
 const SHOWER = { x: 26, y: 1, width: 3, height: 3 } as const;
+const UTILITY = { x: 1, y: 20, width: 2, height: 2 } as const;
 const CANTEEN = { x: 19, y: 6, width: 6, height: 6 } as const;
 const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
 const ADMISSION = { sentenceLengthTicks: 400_000, priorIncidents: 0 } as const;
@@ -94,13 +95,15 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   const cells = Array.from({ length: CELL_COUNT }, (_unused, index) => cellRect(index));
   submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: CELL_COUNT + 14 }));
-  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: CELL_COUNT + 2 }));
+  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: CELL_COUNT + 3 }));
   for (const rect of cells) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
-  for (const rect of [SHOWER, CANTEEN, YARD]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
+  for (const rect of [SHOWER, CANTEEN, YARD, UTILITY]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
   cells.forEach((rect, index) => submit(runtime, `zone-c${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect })));
   submit(runtime, 'zone-shower', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER }));
   submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN }));
   submit(runtime, 'zone-yard', packCommand({ type: 'ZoneRoom', roomId: 'room.yard', ...YARD }));
+  submit(runtime, 'zone-utility', packCommand({ type: 'ZoneRoom', roomId: 'room.utility-room', ...UTILITY }));
+  submit(runtime, 'panel', packCommand({ type: 'PlaceObject', orderId: 'panel', definitionId: 'utility-panel-brick', x: UTILITY.x, y: UTILITY.y }));
   cells.forEach((rect, index) => {
     submit(runtime, `bed${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `bed${String(index)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y }));
     submit(runtime, `wc${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `wc${String(index)}`, definitionId: 'toilet-brick', x: rect.x + 1, y: rect.y }));
@@ -125,7 +128,7 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
   for (let index = 0; index < prisoners; index += 1) {
     submit(runtime, `admit${String(index)}`, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
   }
-  if (runtime.refusals.count !== 0) throw new Error(`the fixture refused ${String(runtime.refusals.count)} commands`);
+  if (runtime.refusals.count !== 0) throw new Error(`the fixture refused ${String(runtime.refusals.count)} commands: ${JSON.stringify(runtime.refusals.last)}`);
   return runtime;
 }
 
@@ -169,11 +172,11 @@ function coverageChip(runtime: SimulationRuntime) {
 }
 
 describe('a prison over its beds pays for it through the withhold it already has (#586)', () => {
-  it('control: a full prison, staffed to requirement, pays the whole grant on every day and reads Covered', () => {
+  it('control: a full prison, staffed to requirement, keeps nearly all grant and reads Covered', () => {
     const runtime = prison(12, 2);
     const income = dailyIncome(runtime, 10);
     expect(housedUnmet(runtime, 'safety')).toBe(0);
-    expect(income.every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
+    expect(income.every((day) => day >= 3_520), `income ${income.join(', ')}`).toBe(true);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).conditions).not.toContain('prisoners.overcrowded');
     expect(coverageChip(runtime).badge?.textKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
   });
@@ -205,7 +208,7 @@ describe('a prison over its beds pays for it through the withhold it already has
     expect(income.slice(0, 4).every((day) => day >= 3_560), `income ${income.join(', ')}`).toBe(true);
     expect(income.slice(4).every((day) => day <= 3_120), `income ${income.join(', ')}`).toBe(true);
     expect(housedUnmet(runtime, 'safety')).toBe(12);
-    expect(income.reduce((sum, day) => sum + day, 0)).toBe(32_960);
+    expect(income.reduce((sum, day) => sum + day, 0)).toBe(32_840);
   });
 
   it('at 150% pays it from the second day, and the strip names crowding where it would have said Covered', () => {

@@ -228,6 +228,8 @@ export interface PrisonerOperationsRuntimeOptions {
    * dropped from a set -- see `PrisonerCarryReleasePort`.
    */
   readonly carryJobs?: CarryJobExecutor;
+  /** Derived room provisioning rates from the session's placed utility panels. */
+  readonly utilityProvisionFactors?: (rooms: RoomInstanceRegistry) => ReadonlyMap<string, number>;
   /**
    * The contraband ground truth (`src/simulation/contraband/item.ts`). Same
    * ownership and optionality as `gangs`: it is session state, and a prisoner
@@ -508,6 +510,7 @@ export class PrisonerOperationsRuntime {
       // (`PrisonerRegimeOverrideResolver`'s own contract).
       combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
       options.carryJobs,
+      options.utilityProvisionFactors === undefined ? undefined : () => options.utilityProvisionFactors!(this.roomInstances),
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(

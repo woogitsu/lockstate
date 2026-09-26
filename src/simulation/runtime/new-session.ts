@@ -55,6 +55,7 @@ import {
   SafetyCoverageSystem,
   type DisciplinaryEvidenceSource,
 } from '../prisoners';
+import { utilityProvisionFactors } from '../prisoners/utility-power';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { RoomNeedsClearedNoticeSystem } from '../rooms/room-needs-cleared-notice';
 import { TopologyManager } from '../rooms/topology';
@@ -593,6 +594,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   const events = new SimulationEventLog();
 
+  const placedObjects = new PlacedObjectRegistry();
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
     navigation,
@@ -626,6 +628,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     regimeOverride: createRiotRegimeOverride(incidents),
     gangs,
     carryJobs,
+    utilityProvisionFactors: (rooms) => utilityProvisionFactors(rooms, placedObjects),
     contraband,
     /*
      * How contraband gets into the prison (ADR 0061 decision 1). The rule is in
@@ -695,7 +698,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * statements -- and answering `false` rather than throwing is what makes that
    * true rather than merely likely.
    */
-  const placedObjects = new PlacedObjectRegistry();
   const roomCapacity = new RoomCapacityResolver(world, prisoners.roomInstances, placedObjects);
   let objectPlacement: ObjectPlacementService | undefined;
 
