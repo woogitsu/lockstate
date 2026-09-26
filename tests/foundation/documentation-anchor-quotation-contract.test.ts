@@ -882,17 +882,10 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      * - ADR 0103's *"(`src/simulation/incidents/gangs.ts:71`) stays
      *   unwritten"*, beside `adjustReputation`. `gangs.ts:71` is
      *   `public adjustReputation(gangId: string, delta: number): void {`. Exact.
-     * - ADR 0093's *"`SAVE_SCHEMA_VERSION` is `5`
-     *   (`src/persistence/save-schema.ts:36`)"*. `save-schema.ts:36` is
-     *   **blank**; the declaration is `:38`. This one is the tolerance
-     *   demonstrating itself: an anchor two lines stale still resolves, because
-     *   the fragment moved with the code and the number did not. (The
-     *   surrounding sentence is separately wrong -- the constant is `6` --
-     *   which is a claim gate's business, not this one's.) **Re-opened for
-     *   issue #1373, which added one import above it:** `:36` is now the
-     *   `actor-identity` import and the declaration is `:39`, three lines on,
-     *   so the row still verifies at the edge of the tolerance and the anchor
-     *   was deliberately left at `:36` to keep this control what it was.
+     * - ADR 0093's dated #1376 correction cites
+     *   `src/persistence/save-schema.ts:40` beside `SAVE_SCHEMA_VERSION`.
+     *   The declaration is on that line in the V7 branch. The original
+     *   carry-era sentence and its stale `:36` remain visible as history.
      *
      * **Not verifying, and every one of the five is a real defect.**
      * - `src/main.ts:621` in ADR 0092 is `: {`, the opening of a conditional
@@ -959,7 +952,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     expect({
       'regime.ts:12': control('docs/adr/0079-a-sentence-long-enough-to-be-a-history.md', 'src/simulation/prisoners/regime.ts:12'),
       'gangs.ts:71': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/incidents/gangs.ts:71'),
-      'save-schema.ts:36': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:36'),
+      'save-schema.ts:40': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:40'),
       'main.ts:621': control('docs/adr/0092-who-decides-where-a-guard-stands.md', 'src/main.ts:621'),
       'new-session.ts:1400': control('docs/adr/0093-a-carry-is-an-action.md', 'src/simulation/runtime/new-session.ts:1400'),
       'actor-identity.ts:210': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:210'),
@@ -968,7 +961,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     }).toEqual({
       'regime.ts:12': true,
       'gangs.ts:71': true,
-      'save-schema.ts:36': true,
+      'save-schema.ts:40': true,
       'main.ts:621': false,
       'new-session.ts:1400': false,
       'actor-identity.ts:210': false,

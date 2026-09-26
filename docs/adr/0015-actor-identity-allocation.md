@@ -297,22 +297,22 @@ grep. Nobody had, and every one of these was wrong:
 | `new-session.ts:248` — constructs `GuardRoster` | `const DEFAULT_GUARD_CAPACITY = 500;` | `:496` |
 
 **Re-swept 2026-09-15, by opening each line rather than by applying an offset.**
-Every entry in the right-hand column above is now history. Where each subject is
-on `main`:
+Every entry in the right-hand column above is now history. The coordinates below
+were re-opened against the 2026-09-26 V7 save branch:
 
-| subject | the table's column | 2026-09-15 |
+| subject | the table's column | 2026-09-26 |
 | --- | --- | --- |
-| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1228` |
-| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1533` |
-| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1563` |
-| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1035` |
+| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1346` |
+| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1691` |
+| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1721` |
+| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1153` |
 | registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
 | constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
 | passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1029` |
+| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1048` |
 
 The seven-key list is still exactly the seven keys, at
-`src/persistence/save-schema.ts:1233-1239`.
+`src/persistence/save-schema.ts:1351-1357`.
 
 Two of those are worse than an offset. **`sessionSystemsSchemaFor` does not
 exist**: `grep -rn "sessionSystemsSchemaFor" src/ tests/` is empty. It was

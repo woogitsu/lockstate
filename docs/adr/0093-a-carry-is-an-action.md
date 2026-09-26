@@ -735,6 +735,12 @@ changes meaning — and it is applied here field by field, because #600
 overstated exactly this cost (*"carrying room instances and their state through
 snapshots and saves is the work"*):
 
+> **2026-09-26 correction for #1376:** the sentence above records this ADR's
+> original carry change. The later in-flight persistence change adds a V7
+> payload; `SAVE_SCHEMA_VERSION` is now `7`
+> (`src/persistence/save-schema.ts:40`). The no-bump ruling above applies to
+> the original carry change, not to the new V7 fields.
+
 - **The appended action.** A new positional index at the end of
   `DEFAULT_ACTIONS`; every existing `actionIndex` in every save keeps its
   meaning. ADR 0042 decision 1 settled that this is a content change and not a
