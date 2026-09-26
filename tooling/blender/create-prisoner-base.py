@@ -179,7 +179,7 @@ def animate_response_arm(item):
 
 def animate_search_arm(item, phase):
     """A small downward inspection sweep, readable from the overhead camera."""
-    for frame, degrees in ((1, -28), (2, -43), (3, -56), (4, -38), (5, -28)):
+    for frame, degrees in ((1, -65), (2, -85), (3, -105), (4, -75), (5, -65)):
         item.rotation_euler.x = math.radians(degrees * phase)
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
 
@@ -387,7 +387,9 @@ def build_detailed_actor(root, asset_id):
                      (0.075, 0.075, 0.21), dark_seam, arm, 0.015)
                 cube("Search torch lens", (side * 0.445, -0.025, 1.37),
                      (0.07, 0.07, 0.015), badge, arm, 0.006)
-            animate_search_arm(arm, 1 if side == -1 else -1)
+                animate_search_arm(arm, 1)
+            else:
+                arm.rotation_euler.x = math.radians(8)
         else:
             animate(arm, 1 if side == -1 else -1)
 

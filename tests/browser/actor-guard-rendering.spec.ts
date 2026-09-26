@@ -139,5 +139,7 @@ test('shows the Blender search gesture in the rendered prison room at 1920×1080
   expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
   if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
     await page.screenshot({ path: 'assets/rendered/evidence/guard-search-1920x1080.png' });
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 1));
+    await page.screenshot({ path: 'assets/rendered/evidence/guard-search-default-zoom-1920x1080.png' });
   }
 });

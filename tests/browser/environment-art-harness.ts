@@ -619,7 +619,12 @@ function buildFrame(): RenderFrame {
       tileX: 4, tileY: 4,
       deltaX: 0, deltaY: 0,
       ...(guardSearchVisual ? { contrabandSearch: true } : { incidentResponse: true }),
-    }] : [],
+    }, ...(guardSearchVisual ? [{
+      id: 2 ** 32 + 71,
+      assetId: 'actor.guard.base',
+      tileX: 5, tileY: 4,
+      deltaX: 0, deltaY: 0,
+    }] : [])] : [],
     rooms: [],
     roomConditions: [],
   };
