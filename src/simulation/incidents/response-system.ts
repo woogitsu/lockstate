@@ -5,7 +5,7 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
 import { resolveStaffRouteContext } from '../security/access-policy';
 import type { GuardRoster } from '../security/guard-roster';
-import { claimableGuardIds } from '../security/post-eligibility';
+import { claimableGuardIds, isPostEligibleStaffRoleId } from '../security/post-eligibility';
 import type { SecuritySectorRegistry } from '../security/sector';
 import type { TilePosition } from '../world/coordinates';
 import type { IncidentRecord, IncidentOutcome } from './incident';
@@ -77,9 +77,10 @@ export interface EscapedPrisoner {
  * consistent outcomes rather than hidden success."
  *
  * Guards are claimed from `claimableGuardIds` -- `unassignedGuardIds()`
- * narrowed to post-eligible roles since ADR 0053 -- out of the same finite
- * roster `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
- * response is a real staffing diversion. **A search draws on a strictly
+ * narrowed to post-eligible roles since ADR 0053 -- and, when those do not
+ * suffice, from this incident's own posted guards. Both come from the same
+ * finite roster `DeploymentSystem` and #27's `SearchSystem` draw from, so
+ * emergency response is a real staffing diversion. **A search draws on a strictly
  * smaller pool than this one since issue #996** (`claimableSearchGuardIds`,
  * which withholds `INCIDENT_RESPONSE_GUARD_RESERVE`): a sweep in flight can no
  * longer be the reason this system has nobody to claim, while this system can
@@ -544,11 +545,11 @@ export class IncidentResponseSystem implements SystemRegistration {
    * cannot fill the response.
    *
    * Split out of `tryDispatch` so that `redispatchInterruptedResponses` claims
-   * responders by exactly the same rule -- ascending entity id, from the whole
-   * post-eligible free pool. `DeploymentSystem` claims out of the same one and
-   * `SearchSystem` out of a subset of it (issue #996), and **nothing narrows
-   * this claim**: the reserve exists for it. A second selection rule for the
-   * re-dispatch path would be a second thing to keep deterministic.
+   * responders by exactly the same rule -- free post-eligible guards first,
+   * then posted guards of the incident's own sector, ascending entity id
+   * within each group. `DeploymentSystem` claims from the free pool and
+   * `SearchSystem` from a subset of it (issue #996). A second selection rule
+   * for re-dispatch would be a second thing to keep deterministic.
    */
   private claimableResponders(incident: IncidentRecord): readonly EntityId[] | undefined {
     const required = this.requiredResponderCount(incident.severity);
@@ -561,8 +562,18 @@ export class IncidentResponseSystem implements SystemRegistration {
      * issue may be blocking.
      */
     const available = claimableGuardIds(this.guards);
-    if (available.length < required) return undefined;
-    return available.slice(0, required);
+    if (available.length >= required) return available.slice(0, required);
+
+    // An incident in a guarded sector can interrupt its own post. Prefer free
+    // guards, then posted guards from this sector in roster order; other
+    // sectors keep their coverage. This prevents full posting from making the
+    // same guards unable to answer the incidents they were hired to contain.
+    const posted = this.guards.allGuardIds().filter((guardId) =>
+      this.guards.getSectorId(guardId) === incident.sectorId
+      && this.guards.getDeploymentPhase(guardId) === 'on-post'
+      && isPostEligibleStaffRoleId(this.guards.getStaffRoleId(guardId)));
+    if (available.length + posted.length < required) return undefined;
+    return [...available, ...posted].slice(0, required);
   }
 
   /**
@@ -590,7 +601,17 @@ export class IncidentResponseSystem implements SystemRegistration {
    * incident open for ever instead of restarting its clock.
    */
   private mountResponse(incident: IncidentRecord, guardIds: readonly EntityId[], tick: number): void {
-    for (const guardId of guardIds) this.guards.setDeploymentPhase(guardId, 'on-search');
+    for (const guardId of guardIds) {
+      if (this.guards.getDeploymentPhase(guardId) === 'on-post') {
+        // A posted guard may be mid-patrol. Hand back its route, stop its walk
+        // and clear the sector assignment before giving it to the response;
+        // otherwise coverage would count a guard who left the post.
+        const requestId = this.guards.getPathRequestId(guardId);
+        if (requestId !== undefined) this.navigation.abandonRequest(requestId);
+        this.guards.unassign(guardId);
+      }
+      this.guards.setDeploymentPhase(guardId, 'on-search');
+    }
     this.respondersDispatched += guardIds.length;
 
     const record: ResponseRecord = { incidentId: incident.id, guardIds: [...guardIds], pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };

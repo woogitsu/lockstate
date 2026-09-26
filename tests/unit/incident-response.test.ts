@@ -4,6 +4,8 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
+import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
+import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 import { SecuritySectorRegistry } from '../../src/simulation/security/sector';
 import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { DEFAULT_INCIDENT_RESPONSE_POLICY, IncidentResponseSystem, type IncidentResponsePolicy } from '../../src/simulation/incidents/response-system';
@@ -32,6 +34,42 @@ function buildHarness(policy: IncidentResponsePolicy = DEFAULT_INCIDENT_RESPONSE
 }
 
 describe('IncidentResponseSystem: real guards, real routes, real lockdown', () => {
+  it('can interrupt the only posted guard to answer an incident in that sector', () => {
+    const { cellBlock, navigation, sectors, guards, incidents, response } = buildHarness();
+    const guardId = guards.hire('staff-role.guard', cellBlock.cellTiles[OPEN_CELL_INDEX]!);
+    const deployment = new DeploymentSystem(sectors, guards, navigation, [constantDeploymentSchedule('block-a', 1)]);
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(deployment);
+    kernel.registerSystem(response);
+    for (let tick = 0; tick < 20 && guards.getDeploymentPhase(guardId) !== 'on-post'; tick += 1) kernel.step();
+    expect(guards.getDeploymentPhase(guardId)).toBe('on-post');
+    expect(deployment.getCoverageReport(kernel.tick)[0]?.shortage).toBe(0);
+    incidents.open({ id: 'incident-at-post', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 2, causeFactors: [] }, 0);
+
+    for (let tick = 0; tick < 50 && response.getMetrics().respondersDispatched < 1; tick += 1) kernel.step();
+    expect(response.getMetrics().respondersDispatched).toBe(1);
+    expect(guards.getSectorId(guardId)).toBeUndefined(); // no phantom post coverage while answering
+    expect(deployment.getCoverageReport(kernel.tick)[0]?.shortage).toBe(1);
+    for (let tick = 0; tick < 500 && response.getMetrics().incidentsResolved < 1; tick += 1) kernel.step();
+    expect(incidents.get('incident-at-post')?.state).toBe('resolved');
+    expect(guards.getDeploymentPhase(guardId)).toBe('unassigned');
+  });
+
+  it('keeps the sector post staffed when a free guard can answer the incident', () => {
+    const { cellBlock, guards, incidents, response, kernel } = buildHarness();
+    const postedId = guards.hire('staff-role.guard', cellBlock.cellTiles[OPEN_CELL_INDEX]!);
+    const freeId = guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    guards.assignToSector(postedId, 'block-a');
+    guards.setDeploymentPhase(postedId, 'on-post');
+    incidents.open({ id: 'incident-with-spare', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 2, causeFactors: [] }, 0);
+
+    for (let tick = 0; tick < 50 && response.getMetrics().respondersDispatched < 1; tick += 1) kernel.step();
+
+    expect(response.getMetrics().respondersDispatched).toBe(1);
+    expect(guards.getDeploymentPhase(postedId)).toBe('on-post');
+    expect(guards.getDeploymentPhase(freeId)).toBe('on-search');
+  });
   it('dispatches guards, walks them through navigation, and resolves the incident', () => {
     const { cellBlock, guards, incidents, response, kernel } = buildHarness();
     guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
