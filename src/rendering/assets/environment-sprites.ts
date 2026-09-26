@@ -360,7 +360,7 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     renderedArtId: 'furniture.medical.cabinet',
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
-    note: 'Locking infirmary cabinet with pale enamel top and teal medical cross. Drawn on object.medicine-cabinet.',
+    note: 'Locking infirmary cabinet with an open enamel lid and large teal medical cross. Drawn on object.medicine-cabinet.',
   },
   'env.object.stove': {
     kind: 'rendered-art',

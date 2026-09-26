@@ -495,6 +495,13 @@ scene now shapes these as low, rounded cloth folds under the same glazing, as
 in the accepted overhead reference. The furnished Full HD Laundry capture
 compares the same machine before and after; its footprint and rules do not change.
 
+**2026-09-26 medicine cabinet revision:** the buildable 1×1 infirmary cabinet
+keeps its open lid, supplies and locking doors. A larger teal cross and lid edge
+carry the room's medical colour into the default-zoom view, where the former
+small red mark was difficult to read beside the medical bed. The before and
+after Full HD WorldScene captures use the same built room and camera. Object
+identity, footprint and building rules are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
