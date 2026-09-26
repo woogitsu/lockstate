@@ -384,7 +384,7 @@ def build_detailed_actor(root, asset_id):
         elif search:
             if side == -1:
                 cube("Search inspection torch", (side * 0.445, -0.025, 1.59),
-                     (0.075, 0.075, 0.21), dark_seam, arm, 0.015)
+                     (0.085, 0.085, 0.24), badge, arm, 0.015)
                 cube("Search torch lens", (side * 0.445, -0.025, 1.37),
                      (0.07, 0.07, 0.015), badge, arm, 0.006)
                 animate_search_arm(arm, 1)

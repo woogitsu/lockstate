@@ -34,7 +34,8 @@ eight-frame 2080×3104 sheet, limiting decoded texture growth at startup.
 
 `actor.guard.search` is the matching inspection variant for a guard claimed by
 `SearchSystem`. Its four-frame `search` clip extends and sweeps a compact
-inspection torch while the other arm stays at rest. The wider pose remains
+inspection torch while the other arm stays at rest. The silver torch body
+separates from the navy sleeve without drawing a mechanical vision cone. The wider pose remains
 visible at default game zoom. The guard keeps the same uniform silhouette, camera, pivot and eight
 facings as the base model. The worker marks the actual search claimant in
 render-actors layout 6; the renderer selects this atlas only while that claim
