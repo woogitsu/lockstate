@@ -1136,6 +1136,8 @@ export interface HudHandle {
   update(viewModel: HudViewModel): void;
   /** Paints a read-only projection supplied by the world renderer. */
   updateMinimap(view: MinimapView | undefined): void;
+  /** Makes the empty-session minimap a truthful, inert instruction. */
+  setMinimapSessionActive(active: boolean): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2048,14 +2050,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [minimapCanvas, minimapViewport, minimapPlaceholder],
   });
   let lastMinimapPixels: Uint8Array | undefined;
+  let currentMinimapView: MinimapView | undefined;
+  // Harnesses without a session controller keep their established navigable
+  // surface; the assembled app sets this to false before persistence boots.
+  let hasActivePrison = true;
   const minimapPalette = ['#16232b', '#607569', '#89a76b', '#b89468', '#3c7990', '#34424d'] as const;
   function updateMinimap(view: MinimapView | undefined): void {
-    const visible = view !== undefined;
+    currentMinimapView = view;
+    const visible = view !== undefined && hasActivePrison;
     minimapCanvas.hidden = !visible;
     minimapViewport.hidden = !visible;
-    minimapPlaceholder.textContent = t(visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
+    minimapPlaceholder.textContent = t(!hasActivePrison
+      ? HUD_MESSAGE_KEY.minimapNoPrison
+      : visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
     minimapPlaceholder.classList.toggle('hud-minimap__placeholder--sr-only', visible);
-    if (view === undefined) {
+    if (view === undefined || !hasActivePrison) {
       lastMinimapPixels = undefined;
       return;
     }
@@ -2084,7 +2093,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     minimapViewport.style.width = `${String(Math.max(0, right - left) * 100)}%`;
     minimapViewport.style.height = `${String(Math.max(0, bottom - top) * 100)}%`;
   }
+  function setMinimapSessionActive(active: boolean): void {
+    hasActivePrison = active;
+    minimapSurface.disabled = !active;
+    updateMinimap(currentMinimapView);
+  }
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
+    if (!hasActivePrison) return;
     const rect = minimapSurface.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
     /*
@@ -2108,10 +2123,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         ? { fx: 0.5, fy: 0.5 }
         : { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
     const navigated = options.onMinimapNavigate?.(point) ?? false;
-    // Only ever moves *toward* "navigable" -- a press that fails today still
-    // leaves the accurate `minimapPlaceholder` sentence standing, and a
-    // session's loaded world never disappears once one exists (see the
-    // message key's own comment), so this never has to move back.
+    // A failed press in an active session leaves the accurate placeholder.
+    // Losing that session resets the separate empty-prison state above.
     if (navigated && lastMinimapPixels === undefined) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
   });
 
@@ -3431,6 +3444,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     preferencesSlot: layout.preferencesSlot,
     update,
     updateMinimap,
+    setMinimapSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
