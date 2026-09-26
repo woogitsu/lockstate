@@ -1198,8 +1198,11 @@ def furniture(collection, root, asset_id):
                       0.58, 0.817, 0.013, "medical_fabric")
         box(collection, root, "Foot blanket contrast band", (0, 0.405, 0.820), (0.68, 0.055, 0.012), "medical_teal", 0.007)
         box(collection, root, "Foot blanket turned hem", (0, 0.77, 0.816), (0.67, 0.045, 0.010), "light", 0.005)
-        box(collection, root, "Foot medical cross horizontal", (0, 0.60, 0.839), (0.16, 0.048, 0.012), "medical_red", 0.004)
-        box(collection, root, "Foot medical cross vertical", (0, 0.60, 0.847), (0.050, 0.16, 0.012), "medical_red", 0.004)
+        # An enamel badge keeps the teal medical mark distinct from the dark
+        # blanket at normal game zoom and matches the infirmary cabinet.
+        box(collection, root, "Foot medical enamel badge", (0, 0.60, 0.841), (0.27, 0.27, 0.020), "porcelain", 0.012)
+        box(collection, root, "Foot medical cross horizontal", (0, 0.60, 0.855), (0.19, 0.052, 0.012), "medical_teal", 0.004)
+        box(collection, root, "Foot medical cross vertical", (0, 0.60, 0.863), (0.052, 0.19, 0.012), "medical_teal", 0.004)
         # Pair of short safety rails on each side, with a visible break.
         for x in (-0.44, 0.44):
             for y in (-0.27, 0.35):

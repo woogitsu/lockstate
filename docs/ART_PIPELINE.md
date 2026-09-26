@@ -502,6 +502,13 @@ small red mark was difficult to read beside the medical bed. The before and
 after Full HD WorldScene captures use the same built room and camera. Object
 identity, footprint and building rules are unchanged.
 
+**2026-09-26 medical bed revision:** the buildable infirmary bed now carries a
+pale enamel badge with a teal cross on its foot blanket. The former small red
+cross blended into the dark teal cover and disagreed with the cabinet's mark.
+The new badge remains recognizable in the 1920×1080 WorldScene at default zoom;
+closer captures show its material and silhouette. The bed, cover, rails,
+footprint and treatment rules are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
