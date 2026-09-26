@@ -216,12 +216,17 @@ export async function validateRenderedArtCatalog(options = {}) {
   const sidecarById = new Map((sidecar.entries ?? []).map((entry) => [entry.assetId, entry]));
 
   const seen = new Set();
+  const seenImages = new Set();
   for (const entry of catalog.entries) {
     if (typeof entry.assetId !== 'string' || seen.has(entry.assetId)) {
       report(`${catalogPath} has a missing or duplicate assetId ("${entry.assetId}")`);
       continue;
     }
     seen.add(entry.assetId);
+    if (typeof entry.image !== 'string' || seenImages.has(entry.image)) {
+      report(`${catalogPath} has a missing or duplicate published image path ("${entry.image}")`);
+    }
+    seenImages.add(entry.image);
 
     const sidecarEntry = sidecarById.get(entry.assetId);
     if (sidecarEntry === undefined) {
