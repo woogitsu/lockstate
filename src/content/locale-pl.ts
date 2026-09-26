@@ -1222,7 +1222,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security.hire-unassigned': 'Nowy strażnik zaczyna bez przydziału.',
   'hud.security.held': 'Na służbie',
   // Reshaped, same rule as `hud.build.queue-count`.
-  'hud.security.held-summary': 'Na służbie: {held} · Bez przydziału: {unassigned}',
+  // The header already says "Na służbie". Repeating it made this summary
+  // overflow the 340px Manage rail at 1920x1080; the first number belongs to
+  // that header, while the second retains its own explicit label.
+  'hud.security.held-summary': '{held} · Bez przydziału: {unassigned}',
   'hud.security.held-empty': 'Nikt nie ma teraz przydziału.',
   'hud.security.held-row': '{name} · {claim}',
   'hud.security.held-row-unnamed': 'Strażnik {id} · {claim}',
