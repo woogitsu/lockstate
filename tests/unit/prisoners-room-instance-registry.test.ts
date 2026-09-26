@@ -935,6 +935,16 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.totalOccupancy).toBe(2);
     });
 
+    it('offers one payable place when the same prisoner appears in two saved rooms', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+
+      registry.loadSnapshot([['cell-1', [7]], ['cell-2', [7]]]);
+
+      expect(registry.residentIdsWithExistingPlace()).toEqual([7]);
+    });
+
     it('keeps the two counts equal for an ordinary payload, so the case above is about the duplicate and not about restoring at all', () => {
       const registry = new RoomInstanceRegistry();
       registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
