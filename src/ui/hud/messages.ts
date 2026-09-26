@@ -741,6 +741,7 @@ export const HUD_MESSAGE_KEY = {
   buildQueueCount: 'hud.build.queue-count',
   buildQueueOrder: 'hud.build.queue-order',
   buildQueueCancel: 'hud.build.queue-cancel',
+  buildQueueCancelOrder: 'hud.build.queue-cancel-order',
   buildQueueUnnamed: 'hud.build.queue-unnamed',
   buildQueueMore: 'hud.build.queue-more',
   buildQueueShortfall: 'hud.build.queue-shortfall',
@@ -785,6 +786,7 @@ export const HUD_MESSAGE_KEY = {
   buildDeliveriesCount: 'hud.build.deliveries-count',
   buildDelivery: 'hud.build.delivery',
   buildDeliveryCancel: 'hud.build.delivery-cancel',
+  buildDeliveryCancelItem: 'hud.build.delivery-cancel-item',
   buildDeliveryUnnamed: 'hud.build.delivery-unnamed',
   buildDeliveriesMore: 'hud.build.deliveries-more',
 

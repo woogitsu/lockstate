@@ -2462,7 +2462,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // either refunds the same figure and leaves the same list.
       row.cancel.element.setAttribute(
         'aria-label',
-        `${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`,
+        t(HUD_MESSAGE_KEY.buildDeliveryCancelItem, { delivery: row.label.textContent ?? '' }),
       );
     }
 
@@ -2979,7 +2979,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // Three buttons reading "Cancel" are one control repeated, to a screen
       // reader and to anything that queries by accessible name. The visible
       // word stays short because the row is narrow at 375px.
-      row.cancel.element.setAttribute('aria-label', `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`);
+      row.cancel.element.setAttribute('aria-label', t(HUD_MESSAGE_KEY.buildQueueCancelOrder, { order: row.label.textContent ?? '' }));
     }
 
     /*
