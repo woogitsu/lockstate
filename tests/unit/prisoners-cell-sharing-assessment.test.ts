@@ -45,4 +45,15 @@ describe('CellSharingAssessmentLedger', () => {
     ledger.retainRooms(new Set());
     expect(ledger.forPrisoner(1)).toBeUndefined();
   });
+
+  it('keeps only the final room index for repeated saved prisoner records', () => {
+    const first = new CellSharingAssessmentLedger();
+    first.reconcile('old-cell', [{ entityId: 1, riskTier: 3 }], 10);
+    const second = new CellSharingAssessmentLedger();
+    second.reconcile('new-cell', [{ entityId: 1, riskTier: 3 }], 20);
+    const restored = new CellSharingAssessmentLedger();
+    restored.loadSnapshot([...first.getSnapshot(), ...second.getSnapshot()]);
+    restored.retainRooms(new Set(['new-cell']));
+    expect(restored.forPrisoner(1)?.roomInstanceId).toBe('new-cell');
+  });
 });

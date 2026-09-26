@@ -31,6 +31,22 @@ function orderedOccupants(occupants: readonly CellSharingView[]): CellSharingVie
  */
 export class CellSharingAssessmentLedger {
   private readonly byPrisoner = new Map<EntityId, CellSharingAssessment>();
+  private readonly byRoom = new Map<string, Set<EntityId>>();
+
+  private link(roomInstanceId: string, entityId: EntityId): void {
+    let residents = this.byRoom.get(roomInstanceId);
+    if (residents === undefined) {
+      residents = new Set<EntityId>();
+      this.byRoom.set(roomInstanceId, residents);
+    }
+    residents.add(entityId);
+  }
+
+  private unlink(roomInstanceId: string, entityId: EntityId): void {
+    const residents = this.byRoom.get(roomInstanceId);
+    residents?.delete(entityId);
+    if (residents?.size === 0) this.byRoom.delete(roomInstanceId);
+  }
 
   public forPrisoner(entityId: EntityId): CellSharingAssessment | undefined {
     return this.byPrisoner.get(entityId);
@@ -39,14 +55,17 @@ export class CellSharingAssessmentLedger {
   public reconcile(roomInstanceId: string, occupants: readonly CellSharingView[], atTick: number, source: 'placement' | 'restored' = 'placement'): void {
     const ordered = orderedOccupants(occupants);
     const present = new Set(ordered.map(({ entityId }) => entityId));
-    for (const [entityId, record] of [...this.byPrisoner.entries()].sort(([a], [b]) => a - b)) {
-      if (record.roomInstanceId === roomInstanceId && !present.has(entityId)) this.byPrisoner.delete(entityId);
+    for (const entityId of [...(this.byRoom.get(roomInstanceId) ?? [])].sort((a, b) => a - b)) {
+      if (!present.has(entityId)) this.forget(entityId);
     }
     const inputs = ordered.map(({ entityId, riskTier }) => `${entityId}:${riskTier}`).join(',');
     for (const occupant of ordered) {
       const previous = this.byPrisoner.get(occupant.entityId);
       if (previous?.roomInstanceId === roomInstanceId && previous.inputs === inputs) continue;
       const currentRating = rateCellSharing(occupant, ordered);
+      if (previous !== undefined && previous.roomInstanceId !== roomInstanceId) {
+        this.unlink(previous.roomInstanceId, occupant.entityId);
+      }
       this.byPrisoner.set(occupant.entityId, previous?.roomInstanceId === roomInstanceId
         ? { ...previous, currentRating, reassessedAtTick: atTick, inputs }
         : {
@@ -59,6 +78,7 @@ export class CellSharingAssessmentLedger {
             source,
             inputs,
           });
+      this.link(roomInstanceId, occupant.entityId);
     }
   }
 
@@ -70,16 +90,25 @@ export class CellSharingAssessmentLedger {
 
   public loadSnapshot(snapshot: readonly CellSharingAssessment[]): void {
     this.byPrisoner.clear();
-    for (const record of snapshot) this.byPrisoner.set(record.entityId, { ...record });
+    this.byRoom.clear();
+    for (const record of snapshot) {
+      const previous = this.byPrisoner.get(record.entityId);
+      if (previous !== undefined) this.unlink(previous.roomInstanceId, record.entityId);
+      this.byPrisoner.set(record.entityId, { ...record });
+      this.link(record.roomInstanceId, record.entityId);
+    }
   }
 
   public forget(entityId: EntityId): void {
+    const previous = this.byPrisoner.get(entityId);
+    if (previous !== undefined) this.unlink(previous.roomInstanceId, entityId);
     this.byPrisoner.delete(entityId);
   }
 
   public retainRooms(existingRoomIds: ReadonlySet<string>): void {
-    for (const [entityId, record] of [...this.byPrisoner.entries()].sort(([a], [b]) => a - b)) {
-      if (!existingRoomIds.has(record.roomInstanceId)) this.byPrisoner.delete(entityId);
+    for (const roomId of [...this.byRoom.keys()].sort()) {
+      if (existingRoomIds.has(roomId)) continue;
+      for (const entityId of [...this.byRoom.get(roomId)!].sort((a, b) => a - b)) this.forget(entityId);
     }
   }
 }
