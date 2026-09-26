@@ -51,6 +51,7 @@ const CANVAS_PARENT_ID = 'environment-art-harness-root';
 const guardResponseVisual = new URLSearchParams(window.location.search).has('guardResponseVisual');
 const guardSearchVisual = new URLSearchParams(window.location.search).has('guardSearchVisual');
 const prisonerRiotVisual = new URLSearchParams(window.location.search).has('prisonerRiotVisual');
+const prisonerAssaultVisual = new URLSearchParams(window.location.search).has('prisonerAssaultVisual');
 
 const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
@@ -614,7 +615,11 @@ function buildFrame(): RenderFrame {
     revision: 1,
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
-    actors: prisonerRiotVisual ? [
+    actors: prisonerAssaultVisual ? [
+      { id: 70, assetId: 'actor.prisoner.assault', tileX: 4, tileY: 4, deltaX: 0, deltaY: 0, facing: 'southWest' as const, openAssault: true },
+      { id: 71, assetId: 'actor.prisoner.assault', tileX: 5, tileY: 4, deltaX: 0, deltaY: 0, facing: 'southEast' as const, openAssault: true },
+      { id: 72, assetId: 'actor.prisoner.base', tileX: 4, tileY: 5, deltaX: 0, deltaY: 0 },
+    ] : prisonerRiotVisual ? [
       { id: 70, assetId: 'actor.prisoner.riot', tileX: 4, tileY: 4, deltaX: 0, deltaY: 0, openRiot: true },
       { id: 71, assetId: 'actor.prisoner.base', tileX: 5, tileY: 4, deltaX: 0, deltaY: 0 },
     ] : guardResponseVisual || guardSearchVisual ? [{
@@ -652,7 +657,7 @@ const scene = new WorldScene({
       return room === undefined ? undefined : localizer.format(room.nameKey);
     },
   } : {}),
-  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual ? {} : {
+  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual || prisonerAssaultVisual ? {} : {
     loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   }),
   onError: (error) => {

@@ -50,6 +50,8 @@ export interface LockstateActorMotionHarness {
   publishGuard(tick: number, tile: { readonly x: number; readonly y: number }): void;
   /** Publishes the same guard with the incident-response bit set. */
   publishGuardResponse(tick: number, tile: { readonly x: number; readonly y: number }): void;
+  /** Publishes both assault participants, then the same pair after closure. */
+  publishAssaultPair(tick: number, active: boolean): void;
   /**
    * Publishes several records of either population in **one** keyframe, in the
    * order given -- which is what `publishActor` and `publishGuard` cannot do

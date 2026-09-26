@@ -195,9 +195,9 @@ def animate_riot_arm(item, side):
 
 
 def animate_assault_arm(item, side):
-    """Alternating forward reach, with no invented weapon or fixed aggressor."""
-    poses = (-95, -115, -35, -45, -95) if side == -1 else (-35, -45, -95, -115, -35)
-    item.rotation_euler.y = math.radians(-20 * side)
+    """Wide alternating strikes keep both participants legible at game zoom."""
+    poses = (-115, -135, -65, -75, -115) if side == -1 else (-65, -75, -115, -135, -65)
+    item.rotation_euler.y = math.radians(-55 * side)
     for frame, degrees in enumerate(poses, start=1):
         item.rotation_euler.x = math.radians(degrees)
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
