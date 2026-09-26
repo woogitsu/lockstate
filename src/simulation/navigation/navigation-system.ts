@@ -264,7 +264,7 @@ export class NavigationSystem implements SystemRegistration {
    */
   public getInFlightSnapshot(): NavigationInFlightSnapshot {
     return {
-      pending: this.queue.getSnapshot().pending,
+      pending: this.queue.getSnapshot().pending.map(({ request, enqueuedAtTick }) => ({ ...request, enqueuedAtTick })),
       results: [...this.results.values()]
         .map((outcome) => ({ id: outcome.id, result: copyResult(outcome.result) }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
@@ -273,7 +273,7 @@ export class NavigationSystem implements SystemRegistration {
 
   /** Replaces the waiting set and the uncollected results with a snapshot's. For a restore, before any owner's `loadSnapshot` asks `knowsRequest`. */
   public loadInFlightSnapshot(snapshot: NavigationInFlightSnapshot): void {
-    this.queue.loadSnapshot({ pending: snapshot.pending });
+    this.queue.loadSnapshot({ pending: snapshot.pending.map(({ enqueuedAtTick, ...request }) => ({ request, enqueuedAtTick })) });
     this.results.clear();
     for (const outcome of snapshot.results) {
       if (this.results.has(outcome.id) || this.queue.has(outcome.id)) {
