@@ -14,5 +14,8 @@ test('draws the buildable medicine cabinet in the real WorldScene at Full HD gam
     .toBe(true);
   if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
     await page.screenshot({ path: 'assets/rendered/evidence/medicine-cabinet-after-1920x1080.png' });
+    await page.evaluate(async () =>
+      window.lockstateEnvironmentArtHarness!.centreCameraOn(19 * 64, 19 * 64, 3));
+    await page.screenshot({ path: 'assets/rendered/evidence/medicine-cabinet-after-zoom3-1920x1080.png' });
   }
 });
