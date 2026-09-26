@@ -225,9 +225,9 @@ const SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40 = 240;
 /** And what the four of them have spent by the time the first day settles. */
 const SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED = 320;
 /** What the scenario holds at tick 40, with one wall still to pay for itself. */
-const BALANCE_AT_TICK_40 = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
+const BALANCE_AT_TICK_40 = 100_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
 /** What the scenario holds once every wall has paid for itself. */
-const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
+const OPENING_BALANCE = 100_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
 /** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
 const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
 
