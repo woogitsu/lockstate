@@ -56,6 +56,22 @@ test.describe('the renderer draws a guard', () => {
     expect(guardSprites).toHaveLength(1);
   });
 
+  test('changes the visible guard to the Blender radio response while claimed, then restores the base atlas', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.evaluate(() => window.lockstateActorMotionHarness!.publishGuardResponse(1, { x: 9, y: 4 }));
+    await page.waitForFunction(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.guard.response').length === 1);
+    expect(await page.evaluate(() => window.lockstateActorMotionHarness!.unresolvedActorCount())).toBe(0);
+    const firstFrame = await page.evaluate(() => window.lockstateActorMotionHarness!.framesWithAsset('actor.guard.response')[0]);
+    await page.waitForFunction(
+      (before) => window.lockstateActorMotionHarness!.framesWithAsset('actor.guard.response')[0] !== before,
+      firstFrame,
+    );
+
+    await page.evaluate(() => window.lockstateActorMotionHarness!.publishGuard(2, { x: 9, y: 4 }));
+    await page.waitForFunction(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.guard.base').length === 1);
+    expect(await page.evaluate(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.guard.response'))).toHaveLength(0);
+  });
+
   test('draws a guard beside a prisoner, each from its own atlas, on the same frame', async ({ page }) => {
     await page.evaluate(() => {
       window.lockstateActorMotionHarness!.publishGuard(1, { x: 9, y: 4 });
@@ -94,4 +110,21 @@ test.describe('the renderer draws a guard', () => {
     expect(guardSprites).toHaveLength(0);
     expect(prisonerSprites[0]).toMatchObject({ x: expect.any(Number), y: expect.any(Number) });
   });
+});
+
+test('shows the radio response over the rendered prison room at 1920×1080', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/environment-art-harness.html?guardResponseVisual=1');
+  await page.evaluate(async () => {
+    await window.lockstateEnvironmentArtHarness!.ready;
+    await window.lockstateEnvironmentArtHarness!.artLoaded;
+  });
+  await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 3));
+  await page.waitForFunction(() => window.lockstateEnvironmentArtHarness!.actorFrames('actor.guard.response').length === 1);
+  expect(await page.evaluate(() => window.lockstateEnvironmentArtHarness!.errors())).toEqual([]);
+  if (process.env['LOCKSTATE_CAPTURE_ART_EVIDENCE'] === '1') {
+    await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-1920x1080.png' });
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 4.5 * 64, 1));
+    await page.screenshot({ path: 'assets/rendered/evidence/guard-incident-response-default-zoom-1920x1080.png' });
+  }
 });

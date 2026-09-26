@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
+import { decodeRenderActorsPayload } from '../../src/simulation/protocol/render-actors-payload';
+import { encodeRenderActorsKeyframe } from '../../src/simulation/worker/render-actors-keyframe';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { DEFAULT_INCIDENT_RESPONSE_POLICY } from '../../src/simulation/incidents/response-system';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -340,6 +343,26 @@ const RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS = [
 const LAPSE_TICK = 611;
 
 describe('a save taken during an incident response releases what the response claimed', () => {
+  it('publishes the radio gesture only for the guards the live riot actually claimed', () => {
+    const runtime = buildRespondingPrison();
+    const renderGuards = (): string[] => {
+      const buffer = encodeRenderActorsKeyframe(
+        runtime.prisoners, 20, runtime.world.drawnWorldRevision, runtime.securityGuards,
+        undefined, runtime.incidentResponseSystem.claimedGuardIds(),
+      );
+      return actorsFromDelta(decodeRenderActorsPayload(buffer))
+        .filter((actor) => actor.assetId.startsWith('actor.guard.'))
+        .map((actor) => actor.assetId);
+    };
+    expect(runtime.incidentResponseSystem.claimedGuardIds()).toHaveLength(REQUIRED_RESPONDERS);
+    expect(renderGuards()).toEqual([
+      'actor.guard.response', 'actor.guard.response', 'actor.guard.response', 'actor.guard.response',
+      'actor.guard.base', 'actor.guard.base',
+    ]);
+    expect(tickOfRelease(runtime, RELEASE_BUDGET_TICKS)).toBeDefined();
+    expect(renderGuards()).toEqual(Array(GUARDS_HIRED).fill('actor.guard.base'));
+  });
+
   it('is set up on the policy this file assumes, so REQUIRED_RESPONDERS stays a description of it', () => {
     // The half a derived constant used to hide (#416). `REQUIRED_RESPONDERS` is
     // now the literal 4, so the inputs it was read from have to be pinned

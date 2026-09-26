@@ -40,6 +40,7 @@ describe('runtime atlas frame index', () => {
     expect(index.assetIds()).toEqual([
       'actor.cook.base',
       'actor.guard.base',
+      'actor.guard.response',
       'actor.medic.base',
       'actor.prisoner.base',
       'actor.staff.base',
@@ -47,16 +48,17 @@ describe('runtime atlas frame index', () => {
 
     for (const assetId of index.assetIds()) {
       const idle = index.clip(assetId, 'idle');
-      const walk = index.clip(assetId, 'walk');
+      const motionClipId = assetId === 'actor.guard.response' ? 'respond' : 'walk';
+      const walk = index.clip(assetId, motionClipId);
       expect(idle, `${assetId} idle`).toBeDefined();
       expect(walk, `${assetId} walk`).toBeDefined();
       expect(idle?.frameCount).toBe(1);
-      expect(walk?.frameCount).toBe(8);
-      expect(walk?.fps).toBe(10);
+      expect(walk?.frameCount).toBe(assetId === 'actor.guard.response' ? 4 : 8);
+      expect(walk?.fps).toBe(assetId === 'actor.guard.response' ? 6 : 10);
       expect(walk?.loop).toBe(true);
 
       for (const direction of ATLAS_DIRECTIONS) {
-        expect(walk?.byDirection.get(direction)?.length, `${assetId} walk ${direction}`).toBe(8);
+        expect(walk?.byDirection.get(direction)?.length, `${assetId} walk ${direction}`).toBe(assetId === 'actor.guard.response' ? 4 : 8);
         expect(idle?.byDirection.get(direction)?.length, `${assetId} idle ${direction}`).toBe(1);
       }
     }
@@ -112,7 +114,7 @@ describe('runtime atlas frame index', () => {
   it('anchors every role on the same foot pivot, so no role needs an offset', async () => {
     const index = await loadPublishedIndex();
     for (const assetId of index.assetIds()) {
-      for (const clipId of ['idle', 'walk']) {
+      for (const clipId of ['idle', assetId === 'actor.guard.response' ? 'respond' : 'walk']) {
         const frame = index.frame(assetId, clipId, 'south', 0);
         expect(frame?.footPivotPx, `${assetId} ${clipId}`).toEqual({ x: 128, y: 352 });
       }

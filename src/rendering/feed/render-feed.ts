@@ -24,6 +24,8 @@ export interface RenderActor {
   readonly deltaY: number;
   /** Facing to hold while standing still. */
   readonly facing?: AtlasDirection;
+  /** A live incident has claimed this guard for response duty. */
+  readonly incidentResponse?: boolean;
 }
 
 /**

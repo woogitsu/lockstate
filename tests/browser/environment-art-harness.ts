@@ -41,13 +41,14 @@ import type {
  * way the worker does, rather than hand-written as a projection: a fixture that
  * invented the projection could agree with a renderer that read it wrongly.
  *
- * No actor atlases are loaded. They are 16.9 MB that nothing here asserts, and
- * the scene's contract is that a failed art load leaves a playable world -- so
- * the harness rejects that batch deliberately and records what the scene did
- * with the rejection.
+ * Normally no actor atlases are loaded. The `guardResponseVisual` fixture is
+ * the one exception: it draws the authored incident-response actor over a
+ * real world fixture for Full HD visual review. All other cases keep the
+ * original rejected-atlas path and its playable-world assertion.
  */
 
 const CANVAS_PARENT_ID = 'environment-art-harness-root';
+const guardResponseVisual = new URLSearchParams(window.location.search).has('guardResponseVisual');
 
 const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
@@ -611,7 +612,18 @@ function buildFrame(): RenderFrame {
     revision: 1,
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
-    actors: [],
+    actors: guardResponseVisual ? [{
+      id: 2 ** 32 + 70,
+      assetId: 'actor.guard.response',
+      tileX: 4, tileY: 4,
+      deltaX: 0, deltaY: 0,
+      incidentResponse: true,
+    }, {
+      id: 2 ** 32 + 71,
+      assetId: 'actor.guard.base',
+      tileX: 5, tileY: 4,
+      deltaX: 0, deltaY: 0,
+    }] : [],
     rooms: [],
     roomConditions: [],
   };
@@ -640,7 +652,9 @@ const scene = new WorldScene({
       return room === undefined ? undefined : localizer.format(room.nameKey);
     },
   } : {}),
-  loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
+  ...(guardResponseVisual ? {} : {
+    loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
+  }),
   onError: (error) => {
     errors.push(error.message);
   },
@@ -771,6 +785,12 @@ const harness: LockstateEnvironmentArtHarness = {
   },
   atlasPixel,
   tileSprites,
+  actorFrames: (assetId) => (scene.children?.list ?? [])
+    .filter((child) => {
+      const image = child as Phaser.GameObjects.Image;
+      return image.visible && typeof image.texture?.key === 'string' && image.texture.key.includes(assetId);
+    })
+    .map((child) => String((child as Phaser.GameObjects.Image).frame.name)),
   roomLabels: () => internals.roomLabels?.drawn ?? [],
   centreCameraOn: async (worldX, worldY, zoom = 1) => {
     scene.cameras.main.setZoom(zoom);
