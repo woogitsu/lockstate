@@ -60,6 +60,8 @@ export interface LockstateActorMotionHarness {
   publishYardPair(tick: number, active: boolean): void;
   /** Publishes a classroom student beside a calm prisoner. */
   publishClassroomPair(tick: number, active: boolean): void;
+  /** Publishes a laundry worker beside a calm prisoner. */
+  publishLaundryPair(tick: number, active: boolean): void;
   /**
    * Publishes several records of either population in **one** keyframe, in the
    * order given -- which is what `publishActor` and `publishGuard` cannot do

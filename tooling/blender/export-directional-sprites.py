@@ -32,6 +32,7 @@ TREATMENT_CLIPS = {"idle": (1, 1), "recover": (4, 6)}
 SHOWER_CLIPS = {"idle": (1, 1), "wash": (4, 6)}
 YARD_CLIPS = {"idle": (1, 1), "exercise": (4, 6)}
 CLASSROOM_CLIPS = {"idle": (1, 1), "study": (4, 6)}
+LAUNDRY_CLIPS = {"idle": (1, 1), "fold": (4, 6)}
 FRAME_SIZE = (256, 384)
 FOOT_PIVOT = (128, 352)
 
@@ -55,7 +56,7 @@ def main():
     if not args.asset_id.replace(".", "").replace("-", "").isalnum() or not args.asset_id[0].islower():
         raise ValueError("asset-id must be lower-case dot/dash-separated identifier")
     scene = bpy.context.scene
-    clips = RESPONSE_CLIPS if args.asset_id == "actor.guard.response" else SEARCH_CLIPS if args.asset_id == "actor.guard.search" else RIOT_CLIPS if args.asset_id == "actor.prisoner.riot" else ASSAULT_CLIPS if args.asset_id == "actor.prisoner.assault" else TREATMENT_CLIPS if args.asset_id == "actor.prisoner.treatment" else SHOWER_CLIPS if args.asset_id == "actor.prisoner.shower" else YARD_CLIPS if args.asset_id == "actor.prisoner.yard" else CLASSROOM_CLIPS if args.asset_id == "actor.prisoner.classroom" else CLIPS
+    clips = RESPONSE_CLIPS if args.asset_id == "actor.guard.response" else SEARCH_CLIPS if args.asset_id == "actor.guard.search" else RIOT_CLIPS if args.asset_id == "actor.prisoner.riot" else ASSAULT_CLIPS if args.asset_id == "actor.prisoner.assault" else TREATMENT_CLIPS if args.asset_id == "actor.prisoner.treatment" else SHOWER_CLIPS if args.asset_id == "actor.prisoner.shower" else YARD_CLIPS if args.asset_id == "actor.prisoner.yard" else CLASSROOM_CLIPS if args.asset_id == "actor.prisoner.classroom" else LAUNDRY_CLIPS if args.asset_id == "actor.prisoner.laundry" else CLIPS
     target = bpy.data.objects.get(args.target)
     if target is None:
         raise ValueError(f"target '{args.target}' was not found")

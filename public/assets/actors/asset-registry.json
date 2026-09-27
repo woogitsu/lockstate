@@ -66,6 +66,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.laundry",
+      "manifest": "actor.prisoner.laundry.atlas-manifests.json",
+      "clips": [
+        "fold",
+        "idle"
+      ]
+    },
+    {
       "assetId": "actor.prisoner.riot",
       "manifest": "actor.prisoner.riot.atlas-manifests.json",
       "clips": [

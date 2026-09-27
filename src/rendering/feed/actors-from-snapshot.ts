@@ -118,6 +118,7 @@ const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
 const SHOWER_ACTION_INDEX = actionIndexOf('action.shower');
 const YARD_ACTION_INDEX = actionIndexOf('action.yard-recreation');
 const CLASSROOM_ACTION_INDEX = actionIndexOf('action.classroom-education');
+const LAUNDRY_ACTION_INDEX = actionIndexOf('action.laundry-work');
 const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 export function actorsFromSnapshot(
@@ -151,7 +152,9 @@ export function actorsFromSnapshot(
           : components.actionIndex[index] === YARD_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
             ? 'actor.prisoner.yard'
             : components.actionIndex[index] === CLASSROOM_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
-              ? 'actor.prisoner.classroom' : PRISONER_ACTOR_ASSET_ID,
+              ? 'actor.prisoner.classroom'
+              : components.actionIndex[index] === LAUNDRY_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+                ? 'actor.prisoner.laundry' : PRISONER_ACTOR_ASSET_ID,
       tileX: components.tileX[index]!,
       tileY: components.tileY[index]!,
       // Defaults, not simulation state -- see the note above.
@@ -165,6 +168,8 @@ export function actorsFromSnapshot(
         ? { exercising: true } : {}),
       ...(components.actionIndex[index] === CLASSROOM_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
         ? { studying: true } : {}),
+      ...(components.actionIndex[index] === LAUNDRY_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+        ? { laundryWork: true } : {}),
     });
   }
 

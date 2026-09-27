@@ -13,6 +13,7 @@ import {
   renderActorShower,
   renderActorYard,
   renderActorClassroom,
+  renderActorLaundry,
   renderActorPopulation,
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
@@ -100,6 +101,8 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
         ? 'actor.prisoner.yard'
       : population === RENDER_ACTOR_POPULATION_PRISONER && renderActorClassroom(packedFields)
         ? 'actor.prisoner.classroom'
+      : population === RENDER_ACTOR_POPULATION_PRISONER && renderActorLaundry(packedFields)
+        ? 'actor.prisoner.laundry'
       : population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
       ? 'actor.guard.response'
       : population === RENDER_ACTOR_POPULATION_GUARD && renderActorContrabandSearch(packedFields)
@@ -127,6 +130,7 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && renderActorShower(packedFields) ? { showering: true } : {}),
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && !renderActorShower(packedFields) && renderActorYard(packedFields) ? { exercising: true } : {}),
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && !renderActorShower(packedFields) && !renderActorYard(packedFields) && renderActorClassroom(packedFields) ? { studying: true } : {}),
+      ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && !renderActorShower(packedFields) && !renderActorYard(packedFields) && !renderActorClassroom(packedFields) && renderActorLaundry(packedFields) ? { laundryWork: true } : {}),
       // `exactOptionalPropertyTypes` is on, so "no facing" has to be an absent
       // key rather than an explicit `undefined`.
       ...(headingX === 0 && headingY === 0 ? {} : { facing: directionFromMovement(headingX, headingY, DEFAULT_FACING) }),

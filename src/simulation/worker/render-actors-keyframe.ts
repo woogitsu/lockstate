@@ -14,6 +14,7 @@ const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
 const SHOWER_ACTION_INDEX = actionIndexOf('action.shower');
 const YARD_ACTION_INDEX = actionIndexOf('action.yard-recreation');
 const CLASSROOM_ACTION_INDEX = actionIndexOf('action.classroom-education');
+const LAUNDRY_ACTION_INDEX = actionIndexOf('action.laundry-work');
 const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 /** Project the existing open-incident ledger once per delta, never per prisoner. */
@@ -234,7 +235,8 @@ export function encodeRenderActorsKeyframe(
         source.currentAction?.actionIndex[index] === TREATMENT_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE,
         source.currentAction?.actionIndex[index] === SHOWER_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE,
         source.currentAction?.actionIndex[index] === YARD_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE,
-        source.currentAction?.actionIndex[index] === CLASSROOM_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE),
+        source.currentAction?.actionIndex[index] === CLASSROOM_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE,
+        source.currentAction?.actionIndex[index] === LAUNDRY_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE),
       reading.subX,
       reading.subY,
       // Sub-tile units a *tick* become sub-tile units a wall-clock second

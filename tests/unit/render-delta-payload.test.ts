@@ -56,6 +56,7 @@ function sourceOf(
     readonly showerPhase?: 'travelling' | 'performing';
     readonly yardPhase?: 'travelling' | 'performing';
     readonly classroomPhase?: 'travelling' | 'performing';
+    readonly laundryPhase?: 'travelling' | 'performing';
   }[],
   alive?: readonly boolean[],
 ) {
@@ -81,6 +82,10 @@ function sourceOf(
     if (actor.classroomPhase !== undefined) {
       actionIndex[index] = actionIndexOf('action.classroom-education');
       phase[index] = ACTION_PHASES.indexOf(actor.classroomPhase);
+    }
+    if (actor.laundryPhase !== undefined) {
+      actionIndex[index] = actionIndexOf('action.laundry-work');
+      phase[index] = ACTION_PHASES.indexOf(actor.laundryPhase);
     }
   });
   const byKey = new Map(actors.map((actor, index) => [index, actor]));
@@ -581,6 +586,20 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     )));
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.classroom', 'actor.prisoner.base']);
     expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'study' });
+    source.currentAction.phase[0] = ACTION_PHASES.indexOf('idle');
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
+  });
+
+  it('shows folding only while laundry work is performing and restores calm art', () => {
+    const source = sourceOf([
+      { id: 10, x: 2, y: 3, laundryPhase: 'performing' },
+      { id: 11, x: 4, y: 5, laundryPhase: 'travelling' },
+    ]);
+    const render = () => actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      source, TICKS_PER_SECOND, NO_WORLD_CHANGE,
+    )));
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.laundry', 'actor.prisoner.base']);
+    expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'fold' });
     source.currentAction.phase[0] = ACTION_PHASES.indexOf('idle');
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
   });

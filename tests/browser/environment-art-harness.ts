@@ -56,6 +56,7 @@ const prisonerTreatmentVisual = new URLSearchParams(window.location.search).has(
 const prisonerShowerVisual = new URLSearchParams(window.location.search).has('prisonerShowerVisual');
 const prisonerYardVisual = new URLSearchParams(window.location.search).has('prisonerYardVisual');
 const prisonerClassroomVisual = new URLSearchParams(window.location.search).has('prisonerClassroomVisual');
+const prisonerLaundryVisual = new URLSearchParams(window.location.search).has('prisonerLaundryVisual');
 
 const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
@@ -619,7 +620,10 @@ function buildFrame(): RenderFrame {
     revision: 1,
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
-    actors: prisonerClassroomVisual ? [
+    actors: prisonerLaundryVisual ? [
+      { id: 81, assetId: 'actor.prisoner.laundry', tileX: 18.5, tileY: 13, deltaX: 0, deltaY: 0, facing: 'south' as const, laundryWork: true },
+      { id: 82, assetId: 'actor.prisoner.base', tileX: 20.5, tileY: 13, deltaX: 0, deltaY: 0 },
+    ] : prisonerClassroomVisual ? [
       { id: 79, assetId: 'actor.prisoner.classroom', tileX: 18.5, tileY: 26, deltaX: 0, deltaY: 0, facing: 'south' as const, studying: true },
       { id: 80, assetId: 'actor.prisoner.base', tileX: 20.5, tileY: 26, deltaX: 0, deltaY: 0 },
     ] : prisonerYardVisual ? [
@@ -681,7 +685,7 @@ const scene = new WorldScene({
       return room === undefined ? undefined : localizer.format(room.nameKey);
     },
   } : {}),
-  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual || prisonerAssaultVisual || prisonerTreatmentVisual || prisonerShowerVisual || prisonerYardVisual || prisonerClassroomVisual ? {} : {
+  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual || prisonerAssaultVisual || prisonerTreatmentVisual || prisonerShowerVisual || prisonerYardVisual || prisonerClassroomVisual || prisonerLaundryVisual ? {} : {
     loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   }),
   onError: (error) => {

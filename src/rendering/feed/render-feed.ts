@@ -40,6 +40,8 @@ export interface RenderActor {
   readonly exercising?: boolean;
   /** This prisoner is performing classroom education. */
   readonly studying?: boolean;
+  /** This prisoner is performing laundry work. */
+  readonly laundryWork?: boolean;
 }
 
 /**
