@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "source": "wall.interior.cutaway.blend",
+  "entries": [
+    {
+      "assetId": "wall.interior.module.full",
+      "image": "wall.interior.module.full.png",
+      "footprintTiles": [
+        1,
+        0.25
+      ],
+      "heightTiles": 2.5,
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.module.cutaway",
+      "image": "wall.interior.module.cutaway.png",
+      "footprintTiles": [
+        1,
+        0.25
+      ],
+      "heightTiles": 0.52,
+      "camera": "orthographic-oblique-preview"
+    }
+  ]
+}
