@@ -244,9 +244,10 @@ describe('the owner\'s amendment of 2026-09-02: the need wins when it is urgent'
     }
     runtime.roomCapacity.resolveAll();
     expect(runtime.prisoners.wasteDisposalAvailable()).toBe(true);
-    expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(withoutDisposal + STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS);
+    expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(withoutDisposal);
     while (runtime.kernel.tick < 2_400) runtime.kernel.step();
     expect(runtime.roomFilth.filthOf(kitchen.instanceId), 'the serviced day boundary clears the accumulated filth').toBe(0);
+    expect(runtime.roomFilth.hasDirtyRoomUse(entityId)).toBe(false);
   });
   it('is measured inside a work block that offers both an errand and a shift, or nothing below means anything', () => {
     const block = resolveActiveRegimeBlock(GENERAL_POPULATION_REGIME, DECIDE_AT);

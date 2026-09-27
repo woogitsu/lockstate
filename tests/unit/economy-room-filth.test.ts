@@ -23,7 +23,7 @@ describe('room filth', () => {
     const source = { roomInstances: { residentIdsWithExistingPlace: () => [id] }, entityStore: store, needs, roomFilth: ledger };
     const clean = stateIncomeForOccupiedPlaces({ ...source, roomFilth: undefined }, [id]);
     expect(stateIncomeForOccupiedPlaces(source, [id])).toBe(clean - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS);
-    expect(stateIncomeForOccupiedPlaces({ ...source, wasteDisposalAvailable: () => true }, [id])).toBe(clean);
+    // A bin clears the ledger at the day boundary; it does not erase today's use early.
   });
 
   it('keeps filth without disposal, clears it with a bin, and forgets deleted rooms', () => {

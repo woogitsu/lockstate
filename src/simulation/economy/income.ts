@@ -268,7 +268,6 @@ export interface PrisonerDayGrantSource {
   readonly entityStore: { getIndex(entityId: EntityId): number };
   readonly needs: NeedsComponent;
   readonly roomFilth?: RoomFilthLedger | undefined;
-  readonly wasteDisposalAvailable?: () => boolean;
 }
 
 /**
@@ -719,10 +718,9 @@ export function stateIncomeForOccupiedPlaces(
   occupiedPlaceIds: readonly EntityId[],
 ): number {
   let total = 0;
-  const wasteDisposalAvailable = source.wasteDisposalAvailable?.() === true;
   for (const entityId of occupiedPlaceIds) {
     const unmet = unmetNeedCount(source.needs, source.entityStore.getIndex(entityId));
-    const filthyUse = !wasteDisposalAvailable && source.roomFilth?.hasDirtyRoomUse(entityId);
+    const filthyUse = source.roomFilth?.hasDirtyRoomUse(entityId);
     total += stateIncomeForPrisonerDay(unmet) - (filthyUse ? STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS : 0);
   }
   return total;
