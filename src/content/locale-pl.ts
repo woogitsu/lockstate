@@ -674,6 +674,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.layout.resize-inspector': 'Zmień rozmiar paneli',
 
   'hud.zoom.title': 'Powiększenie',
+  'hud.camera.controls': 'Sterowanie kamerą',
   'hud.zoom.in': 'Przybliż',
   'hud.zoom.out': 'Oddal',
 
