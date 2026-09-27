@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "source": "interior-cell-angle-study.blend",
+  "wallSource": "wall.interior.cutaway.blend",
+  "wallSourceSha256": "52f07baf44d18c19796b8c95d42690e421a8e49ef78481d6fc94ad96c4e1a9ef",
+  "lighting": {
+    "type": "one area light",
+    "location": [
+      -4,
+      -5,
+      9
+    ],
+    "energy": 900,
+    "size": 5,
+    "worldAmbientStrength": 0.6
+  },
+  "resolution": [
+    1280,
+    720
+  ],
+  "projection": "orthographic",
+  "orthoScale": 16.5,
+  "target": [
+    0.0,
+    1.0,
+    1.0
+  ],
+  "sourceSceneCamera": {
+    "yawDegrees": 0,
+    "elevationDegrees": 45
+  },
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "instances": [
+    {
+      "name": "north wall -1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -1,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north wall 0",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        0,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        1,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "west wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        1
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        1
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "west wall 2",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        2
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 2",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        2
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "west wall 3",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        3
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 3",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        3
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "south wall left low",
+      "assetId": "wall.interior.module.cutaway",
+      "tile": [
+        -1,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south door frame",
+      "assetId": "wall.interior.doorframe.full",
+      "tile": [
+        0,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south wall right low",
+      "assetId": "wall.interior.module.cutaway",
+      "tile": [
+        1,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north-west corner",
+      "assetId": "wall.interior.corner.inner.full",
+      "tile": [
+        -2,
+        4
+      ],
+      "rotationDegrees": -90
+    },
+    {
+      "name": "north-east corner",
+      "assetId": "wall.interior.corner.outer.full",
+      "tile": [
+        2,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south-west low corner",
+      "assetId": "wall.interior.corner.inner.cutaway",
+      "tile": [
+        -2,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south-east low corner",
+      "assetId": "wall.interior.corner.inner.cutaway",
+      "tile": [
+        2,
+        0
+      ],
+      "rotationDegrees": 90
+    }
+  ],
+  "entries": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "cell-yaw-45-elev25.png",
+      "sha256": "2b066215ecbde69d066979ea267faf6e04783e1c301744fa789e0fccc03ec0c6",
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "cell-yaw-45-elev45.png",
+      "sha256": "d5d0bb1f98f489182dd56d1520dfd3cb847500fb826965fc65ecadfb26279716",
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "cell-yaw-45-elev65.png",
+      "sha256": "3fc869b8f0a427a6c6df9741ab89866eaa71ad1f2721a68a1063cc29747b98ca",
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "cell-yaw+00-elev25.png",
+      "sha256": "7ec70cf57435888cd7190a283010c444f58e88496164facb4c03ffb3a8a623f5",
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "cell-yaw+00-elev45.png",
+      "sha256": "e9199b9a383d09de675c6018e2a3791cf2058b4f46f00991fb1e91e0df2cca23",
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "cell-yaw+00-elev65.png",
+      "sha256": "f5f7faf41f8fbcc0200d0a7725251a6824a19a910f688400a1eebfc76cee30a9",
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "cell-yaw+45-elev25.png",
+      "sha256": "b0c6f05988c8fd9b695757bffade33e5cd34033221f1cab8f2917d0f255e6797",
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "cell-yaw+45-elev45.png",
+      "sha256": "57536c23d3440186254b63ce9e375b71307f43f4d315057bb02cd6acfccf6e8e",
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "cell-yaw+45-elev65.png",
+      "sha256": "e3e74c74727fa3dfb3519d4d96042ffb193b07ceec1a2b15f67413e123936149",
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        26.734083
+      ]
+    }
+  ]
+}
