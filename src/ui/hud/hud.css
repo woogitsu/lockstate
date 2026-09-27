@@ -2624,6 +2624,15 @@
   color: var(--text-subtle);
 }
 
+@media (min-width: 1920px) {
+  .hud-build__deliveries-count {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}
+
 .hud-build__delivery-list:not([hidden]) {
   display: flex;
   flex-direction: column;
