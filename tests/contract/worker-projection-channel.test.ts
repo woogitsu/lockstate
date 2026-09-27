@@ -145,6 +145,8 @@ function targetFor(projectionId: ProjectionId, harness: Harness): ProjectionTarg
       // asked with the same shape and answers "no such incident", which is a
       // legal, declared reply and is asserted as such below.
       return { kind: 'id', id: 'cell-1' };
+    case 'room-template':
+      return { kind: 'room-template', templateId: 'cell-basic', origin: { x: 5, y: 5 } };
   }
 }
 
