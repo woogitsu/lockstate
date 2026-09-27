@@ -10,15 +10,20 @@ describe('interior wall cutaway source module', () => {
   it('exports a common-footprint pair with distinct heights and verified transparent images', () => {
     const manifest = JSON.parse(readFileSync(join(directory, 'wall.interior.modules.manifest.json'), 'utf8')) as {
       source: string;
-      entries: { assetId: string; image: string; footprintTiles: number[]; heightTiles: number; sha256: string }[];
+      entries: { assetId: string; image: string; footprintTiles: number[]; pivotTile: number[]; heightTiles: number; sha256: string }[];
     };
     expect(readFileSync(join(root, 'assets/source/blender', manifest.source)).length).toBeGreaterThan(1000);
     expect(manifest.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.cutaway',
+      'wall.interior.corner.inner.full', 'wall.interior.corner.inner.cutaway',
+      'wall.interior.corner.outer.full', 'wall.interior.corner.outer.cutaway',
+      'wall.interior.end.full', 'wall.interior.end.cutaway',
+      'wall.interior.doorframe.full', 'wall.interior.doorframe.cutaway',
     ]);
-    expect(manifest.entries.map((entry) => entry.heightTiles)).toEqual([2.5, 0.52]);
+    expect(manifest.entries.map((entry) => entry.heightTiles)).toEqual([2.5, 0.52, 2.5, 0.52, 2.5, 0.52, 2.5, 0.52, 2.5, 0.52]);
     for (const entry of manifest.entries) {
-      expect(entry.footprintTiles).toEqual([1, 0.25]);
+      expect(entry.footprintTiles).toEqual([1, 1]);
+      expect(entry.pivotTile).toEqual([0.5, 0.5]);
       expect(entry.image).toBe(`${entry.assetId}.png`);
       const png = readFileSync(join(directory, entry.image));
       expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');

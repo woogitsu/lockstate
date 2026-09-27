@@ -7,10 +7,14 @@
       "image": "wall.interior.module.full.png",
       "footprintTiles": [
         1,
-        0.25
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "c263b1e53e6984f5dd94a84a563d89fdece6fdb73b7b09b427c47ba0503c3d74",
+      "sha256": "e2174cc35aa3e94aa68521e32548fa8d4e7c9fb418b375a9e3e858c32ad1507c",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -18,10 +22,134 @@
       "image": "wall.interior.module.cutaway.png",
       "footprintTiles": [
         1,
-        0.25
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "e4b16df1324191faaafec3a0829f84878cd7a1b1d1dd3233284df59299f42c0c",
+      "sha256": "5c4555040d478c8f965da5497df9b98526a4411363f5e02eb083ec1e00a8f1f4",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.full",
+      "image": "wall.interior.corner.inner.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "effcb7e0da017d280b3095f30465d912dfc167ba3ddd68bb65d19a349b82e6a6",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.cutaway",
+      "image": "wall.interior.corner.inner.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "723941c792f51915936a7e4c2a2923c0e2f8f739ca9c703f2b9ab31f50ee6cea",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.corner.outer.full",
+      "image": "wall.interior.corner.outer.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "eb92c118da7220b3bdd73bafaf67e0f6941d5c0391a739f69668de6579d4ac51",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.corner.outer.cutaway",
+      "image": "wall.interior.corner.outer.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "76bc50c394403c4a1d49e0587993d9c4544bd5198396c0756f14594ce6f38e3d",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.end.full",
+      "image": "wall.interior.end.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "8adcb5b6e607870a5b73e7028a89a504b9adf197ce2b84b67e9923a44a235600",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.end.cutaway",
+      "image": "wall.interior.end.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "3c3b2d5cd8f8002f5420512ce1653ce71c0ce9b33f9daa9134452cfa00e3c4a9",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.doorframe.full",
+      "image": "wall.interior.doorframe.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "fcff831eb9b0fd1ea5211415e4fa9ad9d75f76160d7d6334571cd05fb158b2c1",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.doorframe.cutaway",
+      "image": "wall.interior.doorframe.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "d4aa0c2440627cac0b30f70306fa03aa61aa68dd78e079b95c87375fda56a359",
       "camera": "orthographic-oblique-preview"
     }
   ]

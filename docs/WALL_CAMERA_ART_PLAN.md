@@ -2,14 +2,14 @@
 
 ## First authored module
 
-`tooling/blender/build-interior-wall-module.py` generates a one-tile warm
-plaster wall in Blender 5.2 and two transparent 256 × 256 renders:
-`wall.interior.module.full` (2.50 tiles high) and
-`wall.interior.module.cutaway` (0.52 tiles high). The colors follow the current
-interior wall's warm plaster, blue-grey coping and dark skirting. Both variants
-share the same footprint, model origin and orthographic oblique camera, so a
-renderer can swap them without changing the simulation wall. The `.blend`
-source and output manifest are committed alongside the PNGs.
+`tooling/blender/build-interior-wall-module.py` generates a warm plaster wall
+kit in Blender 5.2: straight run, inner and outer corners, finished end and
+door frame. Each has full (2.50 tiles high) and cutaway (0.52 tiles high)
+variants, for ten transparent 256 × 256 renders. The colors follow the current
+interior wall's warm plaster, blue-grey coping and dark skirting. Every module
+has a full 1 × 1 tile footprint and pivot at tile center `(0.5, 0.5)`, even
+though its wall core is thinner. This keeps rotations and height swaps aligned.
+The `.blend` source and output manifest are committed alongside the PNGs.
 
 Generate with Blender 5.2:
 
@@ -33,14 +33,16 @@ replacement would make high walls obscure cells without a way to inspect them.
 3. Switch to the low cutaway where the camera would otherwise hide the selected
    room or a character. Confirm the full/cutaway transition is legible at
    default zoom and does not change collision or room ownership.
-4. Add door frames, corners and wall junctions as separate Blender modules
-   before enabling arbitrary camera rotation. The current pair is a straight
-   wall proof, not a complete architecture set.
+4. Inspect the authored door frame and corner orientations against the
+   selected room boundary, then add T-junctions and crossings before enabling
+   arbitrary camera rotation. The ten modules cover straight runs, two corner
+   directions, an end and a doorway, but not every wall topology.
 
 The source script requires the pinned Blender 5.2 version. The local run on
 2026-09-28 used Blender 5.2.1 LTS and rendered both variants successfully.
 The script removes Blender's changing PNG metadata; two consecutive runs on
-this machine produced identical SHA-256 values for the rendered full wall.
-The contract test checks both committed images against their manifest hashes,
-size, alpha format and common footprint. Mutating the cutaway height from
-0.52 to 0.53 made it fail, then the restored manifest passed.
+this machine produced identical SHA-256 values for all ten rendered modules.
+The contract test checks all ten committed images against their manifest
+hashes, size, alpha format, common footprint and center pivot. Mutating the
+inner corner pivot from `(0.5, 0.5)` to `(0.4, 0.5)` made it fail, then the
+restored manifest passed.
