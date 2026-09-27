@@ -245,7 +245,7 @@ moving.
 **One caveat, and it is a trap for the next person to measure this.**
 `RemoveWall` resolves a press to *the completed build order claiming that edge*
 (`ConstructionSystem.completedOrderClaimingEdge`,
-`src/simulation/construction/system.ts:1496`). A wall written straight into the
+`src/simulation/construction/system.ts:1544`, `completedOrderClaimingEdge`). A wall written straight into the
 edge layer by a test fixture has no order behind it, so `RemoveWall` refuses it
 `remove-wall.nothing-to-remove` — which is exactly what happened on the first
 run of this probe and is a property of the fixture, not of the game. Every

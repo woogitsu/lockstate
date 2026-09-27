@@ -156,7 +156,7 @@ today, so a panel put there competes with nothing.
 
 ### The consumer is finished, four systems are waiting on it, and nothing in the application can reach it
 
-`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`; the anchor
+`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`, `public hire`; the anchor
 read `:75`) is complete.
 It spawns an entity in the roster's own `EntityStore`, mints an actor name
 through the ADR 0015 seam when the session supplied one, and writes a
