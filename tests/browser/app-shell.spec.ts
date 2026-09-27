@@ -13,6 +13,8 @@ import {
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
 import { staffHireCostMinorUnits } from '../../src/simulation/staff';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../src/simulation/runtime/restore-session';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
@@ -665,23 +667,41 @@ async function pressOnWorld(page: Page): Promise<boolean> {
  * which is half of "exactly one message". Subclassing the real `Worker` rather
  * than replacing it, so the page still gets a working simulation.
  */
-async function installCommandTee(page: Page): Promise<void> {
-  await page.addInitScript(() => {
+async function installCommandTee(page: Page, initialSnapshot?: unknown): Promise<void> {
+  await page.addInitScript((seedSnapshot) => {
     const RealWorker = Worker;
     const sent: unknown[] = [];
 
     class CommandTeeWorker extends RealWorker {
       public override postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions): void {
-        sent.push(message);
-        if (transfer === undefined) super.postMessage(message);
-        else if (Array.isArray(transfer)) super.postMessage(message, transfer);
-        else super.postMessage(message, transfer);
+        const candidate = message as { kind?: string; payload?: { source?: { kind?: string } } };
+        const outbound = seedSnapshot !== undefined && candidate.kind === 'simulation/initialize' && candidate.payload?.source?.kind === 'new'
+          ? { ...candidate, payload: { ...candidate.payload, source: { kind: 'snapshot', snapshot: seedSnapshot } } }
+          : message;
+        sent.push(outbound);
+        if (transfer === undefined) super.postMessage(outbound);
+        else if (Array.isArray(transfer)) super.postMessage(outbound, transfer);
+        else super.postMessage(outbound, transfer);
       }
     }
 
     Object.defineProperty(window, 'Worker', { configurable: true, value: CommandTeeWorker });
     (window as unknown as CommandTeeWindow).lockstateSentToWorker = sent;
-  });
+  }, initialSnapshot);
+}
+
+const STARTER_RUNG_BROWSER_BALANCE = 25_000;
+
+/** A real save payload gives the browser a spent grant without bypassing the worker. */
+function spentGrantSnapshot(balanceMinorUnits = STARTER_RUNG_BROWSER_BALANCE): unknown {
+  const runtime = createNewSimulationRuntime(0x771ba7);
+  runtime.treasury.restore({ balanceMinorUnits });
+  return {
+    transport: 'structured-clone',
+    schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
+    schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
+    data: captureSessionSnapshot(runtime),
+  };
 }
 
 /** Every `PurchaseMaterials` the page has posted to the worker, in the order it posted them. */
@@ -9970,7 +9990,8 @@ test.describe('the assembled application', () => {
   test('a second purchase inside one pause is refused before it is sent, and the list stays empty (#89, #261, #220)', async ({
     page,
   }) => {
-    await installCommandTee(page);
+    const balance = 20_000;
+    await installCommandTee(page, spentGrantSnapshot(balance));
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
 
@@ -9987,7 +10008,7 @@ test.describe('the assembled application', () => {
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
     // Published once on `simulation/ready`, before any tick runs -- so the
     // pre-flight has a real figure to compare against from the first press.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(funds).toHaveText(fundsText(balance));
 
     const unitPrice = unitPriceOf('item.brick');
     // **What a prison can spend is no longer what it holds** (#703 ruling A):
@@ -10003,8 +10024,7 @@ test.describe('the assembled application', () => {
     // TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` until then, and the sentence above
     // it is kept because that is still what a *prison* can spend -- it is only
     // no longer what a *delivery* may.
-    const spendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS);
+    const spendable = balance - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const quantity = Math.floor(spendable / unitPrice / 2) + 1;
     // The arithmetic this test rests on, asserted rather than left to a
     // reader: one is affordable against what the prison can spend and two are
@@ -10046,7 +10066,7 @@ test.describe('the assembled application', () => {
         message: 'the purchase given during the pause was never dispatched, so the balance never moved',
         timeout: 20_000,
       })
-      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice));
+      .toBe(fundsText(balance - quantity * unitPrice));
     // With the clock still stopped, which is what makes the line above a
     // statement about the paused dispatch rather than about time passing.
     await expect(progress).toHaveText('0%');
@@ -10077,7 +10097,7 @@ test.describe('the assembled application', () => {
     // worker has nothing it *could* report about this press.
     expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity }]);
     // And the balance did not move again: nothing was spent twice.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice));
+    await expect(funds).toHaveText(fundsText(balance - quantity * unitPrice));
 
     // ---- exactly one surface, and the other stays quiet --------------------
     // The alerts list is empty because the channel carried no refusal, not
@@ -10134,6 +10154,7 @@ test.describe('the assembled application', () => {
   test('spends into the standing overdraft and shows the minus, with nothing else said (#703)', async ({
     page,
   }) => {
+    await installCommandTee(page, spentGrantSnapshot());
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
 
@@ -10141,7 +10162,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(funds).toHaveText(fundsText(STARTER_RUNG_BROWSER_BALANCE));
 
     // The largest whole purchase a delivery may make, derived so it moves with
     // the constants.
@@ -10171,10 +10192,10 @@ test.describe('the assembled application', () => {
     // hit capacity first and cease testing the money verdict.
     const unitPrice = unitPriceOf('item.wood-plank');
     const spendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      STARTER_RUNG_BROWSER_BALANCE -
       rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const quantity = Math.floor(spendable / unitPrice);
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
+    const settled = STARTER_RUNG_BROWSER_BALANCE - quantity * unitPrice;
     // The state this test is about, asserted rather than assumed: the purchase
     // is affordable and the balance it leaves is below zero.
     expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
@@ -10434,7 +10455,7 @@ test.describe('the assembled application', () => {
   test('a fresh, unfurnished prison is refused one plank past the starter rung that a furnished one would be sold (#771, #1257)', async ({
     page,
   }) => {
-    await installCommandTee(page);
+    await installCommandTee(page, spentGrantSnapshot());
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
 
@@ -10444,17 +10465,17 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(funds).toHaveText(fundsText(STARTER_RUNG_BROWSER_BALANCE));
 
     const unitPrice = unitPriceOf('item.wood-plank');
     // The two rungs, composed from the same function the host and the worker
     // both compose theirs from, so this moves with the constants rather than
     // restating them.
     const starterSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      STARTER_RUNG_BROWSER_BALANCE -
       rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const matureSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
+      STARTER_RUNG_BROWSER_BALANCE -
       rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
     // The starter rung is the *shallower* one, so being fresh makes the host
     // stricter and not more generous. Stated as an assertion because the
@@ -10506,10 +10527,10 @@ test.describe('the assembled application', () => {
     // mature rung accepts 26,200 and this press becomes a command.
     expect(await purchasesSent(page)).toEqual([]);
     // And no money moved on the strip either.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(funds).toHaveText(fundsText(STARTER_RUNG_BROWSER_BALANCE));
 
     // ---- one brick fewer: accepted, spent, and the rung is on the badge ----
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - acceptedQuantity * unitPrice;
+    const settled = STARTER_RUNG_BROWSER_BALANCE - acceptedQuantity * unitPrice;
     expect(settled).toBeLessThan(0);
     await setBuyQuantity(page, acceptedQuantity);
     expect(
@@ -10562,7 +10583,7 @@ test.describe('the assembled application', () => {
   test('a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)', async ({
     page,
   }) => {
-    await installCommandTee(page);
+    await installCommandTee(page, spentGrantSnapshot());
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
 
@@ -10572,15 +10593,15 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(funds).toHaveText(fundsText(STARTER_RUNG_BROWSER_BALANCE));
 
     const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
     const unitPrice = unitPriceOf('item.wood-plank');
     // The largest purchase the starter rung allows, which is also the balance
     // that puts the cheapest hire inside the gap between the two rungs.
-    const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
+    const quantity = Math.floor((STARTER_RUNG_BROWSER_BALANCE - starterFloor) / unitPrice);
+    const settled = STARTER_RUNG_BROWSER_BALANCE - quantity * unitPrice;
 
     /*
      * **The role is `staff-role.guard` because it is the only one the HUD can
