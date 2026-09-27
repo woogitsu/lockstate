@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './network-changed-fixture';
 
 for (const viewport of [{ width: 1920, height: 1080 }, { width: 2560, height: 1440 }]) {
   test(`Polish held guard totals remain readable at ${viewport.width}×${viewport.height}`, async ({ page }) => {
