@@ -52,7 +52,7 @@ export interface SerializedChunkState {
   readonly terrain?: TerrainRle;
   readonly topEdge?: TerrainRle; // Reusing TerrainRle format (RLE of Uint8) for simplicity
   readonly leftEdge?: TerrainRle;
-  /** New whole-tile wall (1) or door (2); absent on historical edge-wall saves. */
+  /** New whole-tile wall (1), north-south door (2), or east-west door (3). */
   readonly squareStructure?: TerrainRle;
   readonly zoning?: TerrainRle;
 }
@@ -565,9 +565,9 @@ export class SparseWorld {
     return this.getMapValue(this.chunkSquareStructure, tile);
   }
 
-  public setSquareStructure(tile: TilePosition, value: 0 | 1 | 2): void {
-    if (value !== 0 && value !== 1 && value !== 2) {
-      throw new RangeError('Square structure value must be empty (0), wall (1), or door (2).');
+  public setSquareStructure(tile: TilePosition, value: 0 | 1 | 2 | 3): void {
+    if (value !== 0 && value !== 1 && value !== 2 && value !== 3) {
+      throw new RangeError('Square structure value must be empty (0), wall (1), north-south door (2), or east-west door (3).');
     }
     this.setMapValue(this.chunkSquareStructure, tile, value);
     const { chunk } = tileToChunk(tile, this.tileChunkSize);
@@ -847,7 +847,7 @@ export class SparseWorld {
         if (chunk.leftEdge !== undefined) world.chunkLeftEdge.set(key, decodeTerrainRle(chunk.leftEdge, size * size));
         if (chunk.squareStructure !== undefined) {
           const structures = decodeTerrainRle(chunk.squareStructure, size * size);
-          if (structures.some((value) => value > 2)) throw new WorldSnapshotError('Chunk squareStructure has an unknown value.');
+          if (structures.some((value) => value > 3)) throw new WorldSnapshotError('Chunk squareStructure has an unknown value.');
           world.chunkSquareStructure.set(key, structures);
         }
         if (chunk.zoning !== undefined) world.chunkZoning.set(key, decodeTerrainRle(chunk.zoning, size * size));

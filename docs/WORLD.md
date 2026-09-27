@@ -30,8 +30,9 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 
 This section describes the **historical** wall and door format. The 2026-09-27
 whole-square construction redesign (#1585) adds an optional `squareStructure`
-plane to each chunk: `0` is empty, `1` is a wall square, and `2` is a door
-square. An older snapshot has no such plane and restores it as all zeroes.
+plane to each chunk: `0` is empty, `1` is a wall square, `2` is a door with
+north-south passage, and `3` is a door with east-west passage. An older
+snapshot has no such plane and restores it as all zeroes.
 Existing `topEdge` and `leftEdge` values retain their original meanings, so
 loading an old prison never moves its walls. The new plane has its own accessor
 and RLE snapshot field; the player-facing Build tool must not use it until
