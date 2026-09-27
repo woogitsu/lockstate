@@ -151,6 +151,7 @@ const POPULATED: HudCountsViewModel = {
 /** The same prison, with every badge the strip can draw drawn at once. */
 const EVERY_BADGE: HudCountsViewModel = {
   ...POPULATED,
+  stateIncomeWithheldTodayMinorUnits: 96_400,
   occupiedPlaces: 142,
   prisonersCovered: 100,
   prisonersUnderstaffed: 42,
@@ -282,7 +283,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
 
       // The premise again, and it is the stronger one: four badges, each the
       // widest word its namespace authors.
-      expect(badged.badges.length, `the four-badge state drew ${badged.badges.length} badges at ${at}`).toBe(4);
+      expect(badged.badges.length, `the five-badge state drew ${badged.badges.length} badges at ${at}`).toBe(5);
       expect(badged.badges.map((text) => text.trim()), `the badges drawn at ${at}`).toEqual([
         '36 not housed',
         // Ruling 21: the worst rung, in one word. `EVERY_BADGE` has 36
@@ -291,6 +292,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
         'Unguarded',
         'Gang Retaliation',
         'Currency',
+        'Withheld 96,400',
       ]);
 
       /*

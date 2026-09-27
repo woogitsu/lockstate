@@ -1278,27 +1278,26 @@ describe('refusalMessageKey: what a refused control says', () => {
  *
  * #890 measured the state withholding 40% of a prison's grant at steady state
  * with no minor-unit figure for it anywhere a player could read. The
- * projection now publishes the figure and the chip carries it as a
- * description -- the tooltip and screen-reader shape the owner's ruling of
- * 2026-09-01 already chose for `funds`, because it costs no chip width on a
- * row whose overflow is measured.
+ * projection publishes the figure. The chip carries both the approved visible
+ * badge and a causal description for hover and screen readers.
  *
- * **Three states, and only one of them draws a sentence**, which is what
+ * **Three states, and only one of them draws the shortfall**, which is what
  * these cases pin: absent (a payload written before the field existed), `0`
  * (a prison meeting every need) and a positive figure.
  */
 describe('the EARNED TODAY chip says what unmet needs withheld (issue #890)', () => {
-  it('carries the withheld figure as a description, and never as a badge or a tone', () => {
+  it('carries the withheld figure in the visible badge and causal description', () => {
     const chip = metric(counts({ stateIncomeAccruedTodayMinorUnits: 1_760, stateIncomeWithheldTodayMinorUnits: 640 }), 'earned-today');
 
     expect(chip.description).toEqual({
       textKey: 'hud.status.earned-withheld',
       numberParameters: { withheld: 640 },
     });
-    // The two lines beside it are unchanged: no threshold has been set and no
-    // colour is painted, which is the half of this readout that is still the
-    // owner's (#890's re-measurement names loudness as their judgement).
-    expect(chip.badge).toBeUndefined();
+    expect(chip.badge).toEqual({
+      tone: 'warning',
+      textKey: 'hud.status.earned-withheld-badge',
+      numberParameters: { withheld: 640 },
+    });
     expect(chip.tone).toBeUndefined();
   });
 

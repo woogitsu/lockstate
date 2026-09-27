@@ -24,8 +24,7 @@ import './ui-harness-api';
  * a grep cannot answer reachability. `.hud-strip__metrics` is `overflow-x:
  * auto` with its scrollbar suppressed, so a chip that does not fit is in the
  * DOM and visible to nobody -- which #629 says does not count. This asserts
- * the chip is still inside the row's own visible box with the sentence on it,
- * which is the property a description was chosen for over a badge.
+ * the chip and its new badge stay inside the row at the Full HD design size.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -102,10 +101,8 @@ async function show(page: Page, next: HudCountsViewModel): Promise<ChipReading> 
 }
 
 test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () => {
-  // The binding viewport, as every layout decision in this repository is
-  // argued against -- and the one where the row is tightest, so `onScreen`
-  // below is asserted where it is hardest to keep.
-  test.use({ viewport: { width: 900, height: 600 } });
+  // The owner's minimum design viewport for the HUD overhaul.
+  test.use({ viewport: { width: 1920, height: 1080 } });
 
   test.beforeEach(async ({ page }) => {
     await page.goto(HARNESS_URL);
@@ -127,25 +124,19 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     // A hover reaches one player and not the other, so the same sentence is in
     // the DOM as screen-reader text.
     expect(withholding.screenReaderText).toBe(withholding.title);
-    // No threshold was set and no colour is painted: the judgement #890 leaves
-    // with the owner is loudness, and this is the quiet half.
-    expect(withholding.badgeText).toBeNull();
+    // The approved badge makes the measured shortfall visible without hover.
+    expect(withholding.badgeText).toBe('Withheld 96,400');
     expect(withholding.tone).toBeNull();
-    // **And the sentence costs the row nothing, which is what a description
-    // buys over a badge.** Asserted against the same chip with no sentence on
-    // it rather than against a pinned number, so it holds at any wording:
-    // `.ui-sr-only` is out of flow and `title` is an attribute, so neither the
-    // chip nor the row it sits in may move by a hundredth of a pixel.
+    expect(withholding.onScreen).toBe(true);
     const unpublished = await show(page, counts());
-    expect(withholding.width).toBe(unpublished.width);
-    expect(withholding.rowScrollWidth).toBe(unpublished.rowScrollWidth);
-    expect(withholding.onScreen).toBe(unpublished.onScreen);
+    expect(withholding.width).toBeGreaterThan(unpublished.width);
 
     // A prison meeting every need carries no sentence at all -- the tooltip is
     // removed rather than blanked, so a hover opens nothing.
     const clear = await show(page, counts({ stateIncomeWithheldTodayMinorUnits: 0 }));
     expect(clear.title).toBeNull();
     expect(clear.screenReaderText).toBe('');
+    expect(clear.badgeText).toBeNull();
     expect(clear.value).toBe(withholding.value);
   });
 
@@ -156,5 +147,6 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     const unpublished = await show(page, counts());
     expect(unpublished.title).toBeNull();
     expect(unpublished.screenReaderText).toBe('');
+    expect(unpublished.badgeText).toBeNull();
   });
 });
