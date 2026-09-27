@@ -88,6 +88,14 @@ export const zoneRoomSchema = z.object({
   transactionId: z.string().optional(),
 }).strict();
 
+/** One atomic authored template gesture; the worker expands its complete footprint. */
+export const placeRoomTemplateSchema = z.object({
+  type: z.literal('PlaceRoomTemplate'),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean().optional(),
+}).strict();
+
 /**
  * Clear the room designations a rectangle touches (#261's removal half).
  *
@@ -778,6 +786,7 @@ export const editRegimeBlockSchema = z.object({
 
 export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
+  placeRoomTemplateSchema,
   cancelBuildOrderSchema,
   zoneRoomSchema,
   unzoneRoomSchema,
@@ -801,6 +810,13 @@ export type SimulationCommand = z.infer<typeof simulationCommandSchema>;
 
 function commandJson(command: SimulationCommand): JsonValue {
   switch (command.type) {
+    case 'PlaceRoomTemplate':
+      return {
+        type: command.type,
+        templateId: command.templateId,
+        origin: { x: command.origin.x, y: command.origin.y },
+        ...(command.mirrorX === undefined ? {} : { mirrorX: command.mirrorX }),
+      };
     case 'PlaceBuildOrder':
       return {
         type: command.type,

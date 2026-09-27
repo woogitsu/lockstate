@@ -21,7 +21,7 @@ export function validateRoomTemplatePlacement(
     for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
       const tile = { x: tileCoordinate(x), y: tileCoordinate(y) };
       if (!world.isTileOwned(tile)) return { ok: false, reason: 'unowned-land', tile };
-      if (world.getSquareStructure(tile) !== 0 || structureIsClaimed(tile)) {
+      if (world.getSquareStructure(tile) !== 0 || world.getZoning(tile) !== 0 || structureIsClaimed(tile)) {
         return { ok: false, reason: 'structure-occupied', tile };
       }
       if (objectOccupies(tile)) return { ok: false, reason: 'object-occupied', tile };
