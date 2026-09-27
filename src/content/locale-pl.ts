@@ -1411,6 +1411,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // =====================================================================
   'save.panel.region': 'Zapisy więzień',
   'save.panel.title': 'Więzienia',
+  'save.manage.title': 'Zapisane więzienia',
+  'save.manage.local': 'Na tym urządzeniu',
+  'save.manage.cloud-unavailable': 'Zapisy w chmurze są niedostępne w tej wersji, ponieważ gra nie ma połączenia z chmurą.',
   'save.action.create': 'Nowe więzienie',
   'save.empty-world.title': 'Rozpocznij grę',
   'save.empty-world.description': 'Utwórz nowe więzienie albo wróć do zapisu w tej przeglądarce.',
