@@ -1879,6 +1879,11 @@
 
 .hud-staff__held-summary { color: var(--text-heading); }
 
+/* The translated count can be wider than the Staff rail. Keep the whole
+   readout inside the panel instead of clipping its final number. */
+.hud-staff__held-header { flex-wrap: wrap; }
+.hud-staff__held-summary { white-space: normal; overflow-wrap: anywhere; }
+
 .hud-staff__held-list:not([hidden]) {
   display: flex;
   flex-direction: column;
