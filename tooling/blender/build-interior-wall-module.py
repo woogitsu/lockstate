@@ -7,8 +7,11 @@ existing renderer's projection and wall occlusion rules are still 2D.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
+import struct
 import sys
+import zlib
 from pathlib import Path
 
 import bpy
@@ -20,6 +23,24 @@ import pipeline_common
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "assets/source/blender/wall.interior.cutaway.blend"
 OUTPUT = ROOT / "public/assets/environment/modules"
+
+
+def strip_png_metadata(path: Path) -> None:
+    """Remove Blender's per-render EXIF/text chunks from an otherwise stable PNG."""
+    source = path.read_bytes()
+    if source[:8] != b"\x89PNG\r\n\x1a\n":
+        raise RuntimeError(f"{path} is not a PNG")
+    result = bytearray(source[:8])
+    offset = 8
+    while offset < len(source):
+        size = struct.unpack(">I", source[offset:offset + 4])[0]
+        kind = source[offset + 4:offset + 8]
+        data = source[offset + 8:offset + 8 + size]
+        if kind in (b"IHDR", b"sRGB", b"gAMA", b"cHRM", b"IDAT", b"IEND"):
+            result += struct.pack(">I", size) + kind + data
+            result += struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+        offset += 12 + size
+    path.write_bytes(result)
 
 
 def material(name: str, color: tuple[float, float, float, float], roughness: float):
@@ -55,8 +76,9 @@ def main():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     scene = bpy.context.scene
-    scene.render.engine = "CYCLES"
-    scene.cycles.samples = 48
+    scene.render.engine = "BLENDER_EEVEE"
+    scene.eevee.taa_render_samples = 1
+    scene.eevee.use_raytracing = False
     scene.render.resolution_x = 256
     scene.render.resolution_y = 256
     scene.render.resolution_percentage = 100
@@ -112,6 +134,7 @@ def main():
 
     SOURCE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    bpy.context.preferences.filepaths.save_version = 0
     bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE))
     entries = []
     for variant in ("full", "cutaway"):
@@ -121,8 +144,10 @@ def main():
                 collection.hide_render = collection.name != selected
         scene.render.filepath = str(OUTPUT / f"{selected}.png")
         bpy.ops.render.render(write_still=True)
+        strip_png_metadata(Path(scene.render.filepath))
         entries.append({"assetId": selected, "image": f"{selected}.png", "footprintTiles": [1, 0.25],
                         "heightTiles": 2.5 if variant == "full" else 0.52,
+                        "sha256": hashlib.sha256(Path(scene.render.filepath).read_bytes()).hexdigest(),
                         "camera": "orthographic-oblique-preview"})
     pipeline_common.write_text(OUTPUT / "wall.interior.modules.manifest.json",
                                json.dumps({"schemaVersion": 1, "source": SOURCE.name, "entries": entries}, indent=2) + "\n")

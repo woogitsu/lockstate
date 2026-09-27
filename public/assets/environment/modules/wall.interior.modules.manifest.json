@@ -10,6 +10,7 @@
         0.25
       ],
       "heightTiles": 2.5,
+      "sha256": "c263b1e53e6984f5dd94a84a563d89fdece6fdb73b7b09b427c47ba0503c3d74",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -20,6 +21,7 @@
         0.25
       ],
       "heightTiles": 0.52,
+      "sha256": "e4b16df1324191faaafec3a0829f84878cd7a1b1d1dd3233284df59299f42c0c",
       "camera": "orthographic-oblique-preview"
     }
   ]

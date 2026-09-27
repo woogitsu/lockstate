@@ -39,3 +39,8 @@ replacement would make high walls obscure cells without a way to inspect them.
 
 The source script requires the pinned Blender 5.2 version. The local run on
 2026-09-28 used Blender 5.2.1 LTS and rendered both variants successfully.
+The script removes Blender's changing PNG metadata; two consecutive runs on
+this machine produced identical SHA-256 values for the rendered full wall.
+The contract test checks both committed images against their manifest hashes,
+size, alpha format and common footprint. Mutating the cutaway height from
+0.52 to 0.53 made it fail, then the restored manifest passed.
