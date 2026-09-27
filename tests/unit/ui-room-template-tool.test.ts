@@ -12,7 +12,7 @@ describe('room-template HUD tool contract', () => {
     expect(plan.height).toBe(7);
     expect(plan.doorSquares).toContainEqual({ x: 13, y: 26 });
     expect(plan.objects).toHaveLength(3);
-    expect(preflight).toHaveBeenCalledWith(plan);
+    expect(preflight).toHaveBeenCalledWith({ templateId: 'cell-large', origin: { x: 10, y: 20 }, mirrorX: true });
   });
 
   it('refuses before submission if any square is blocked, then submits one template request when clear', async () => {

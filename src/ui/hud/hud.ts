@@ -1,5 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
+import type { RoomTemplateTool } from '../room-template-tool';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -864,6 +865,7 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  readonly roomTemplateTool?: RoomTemplateTool;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -2290,6 +2292,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // -- the wall appears when a snapshot says it was built.
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(options.roomTemplateTool === undefined ? {} : { roomTemplateTool: options.roomTemplateTool }),
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       /*
