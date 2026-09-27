@@ -474,7 +474,7 @@ The fix from correction 1, stated as a decision because it changes a rule
 **Ownership.** `submitOrder` approves an edge-geometry order when the order's
 tile *or* the tile across the named edge is owned. Non-edge buildables are
 unaffected: an object is addressed by a tile and has no far side.
-`occupiesTileEdge` (`src/simulation/construction/definition.ts:1005`) is the
+`occupiesTileEdge` (`src/simulation/construction/definition.ts:1001`) is the
 predicate that already distinguishes the two.
 
 **Bounds.** The same widening is needed on the out-of-bounds check

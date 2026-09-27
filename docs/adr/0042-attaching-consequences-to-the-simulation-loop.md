@@ -288,7 +288,7 @@ docblock quoting a design note).
 (`src/simulation/security/default-sector.ts:113`; the anchor read `:99`).
 `contrabandPressure` is read
 from `intelligence.forTarget('sector', sectorId)`
-(`src/simulation/runtime/new-session.ts:1428`; the anchor read `:622`), and the
+(`src/simulation/runtime/new-session.ts:1432`; the anchor read `:622`), and the
 only writer of that
 ledger is `IntelligenceLedger.report`, whose one caller in `src/` is
 `reportInformantTip` (`src/simulation/contraband/informants.ts:87`), which has

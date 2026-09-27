@@ -302,7 +302,7 @@ were re-opened against the 2026-09-26 V7 save branch:
 
 | subject | the table's column | 2026-09-26 |
 | --- | --- | --- |
-| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1346` |
+| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1350` |
 | V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1691` |
 | V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1721` |
 | `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1153` |
