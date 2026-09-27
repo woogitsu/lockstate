@@ -2111,7 +2111,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const total = sellBackPreviewMinorUnits(material.unitPriceMinorUnits, quantity);
     sellSubmit.setLabel(
       t(HUD_MESSAGE_KEY.buildSellSubmit, {
-        count: quantity,
+        count: localizer.formatNumber(quantity),
         material: t(material.labelKey),
         total: localizer.formatNumber(total),
       }),
@@ -2129,7 +2129,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     const total = purchasePreviewMinorUnits(material.unitPriceMinorUnits, quantity);
     buySubmit.setLabel(
       t(HUD_MESSAGE_KEY.buildBuySubmit, {
-        count: quantity,
+        count: localizer.formatNumber(quantity),
         material: t(material.labelKey),
         // Minor units, formatted like every other figure the HUD shows and
         // divided by nothing: #96 named no currency, and the prices in
