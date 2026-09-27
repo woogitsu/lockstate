@@ -436,6 +436,7 @@ asserts both reach `'resolved'` with equal outcomes, the restored one closing at
 tick 81 against the continuous run's 71. `docs/DETERMINISM.md` has carried that
 reading since the change.
 
+
 **This paragraph used to say the incident "lapses at its deadline ... which is
 precisely the consistent-failure outcome issue #28 demands", and cited
 `tests/unit/incident-response.test.ts` as proving it directly.** That became
@@ -656,3 +657,4 @@ layer (#37); traits/relationships for richer social outcomes (#39 — the
 base model here functions without it); final balance of any threshold or
 weight in this module (every default is directional, per the issue's own
 scope).
+

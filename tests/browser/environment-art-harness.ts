@@ -52,6 +52,7 @@ const guardResponseVisual = new URLSearchParams(window.location.search).has('gua
 const guardSearchVisual = new URLSearchParams(window.location.search).has('guardSearchVisual');
 const prisonerRiotVisual = new URLSearchParams(window.location.search).has('prisonerRiotVisual');
 const prisonerAssaultVisual = new URLSearchParams(window.location.search).has('prisonerAssaultVisual');
+const prisonerTreatmentVisual = new URLSearchParams(window.location.search).has('prisonerTreatmentVisual');
 
 const CHUNK_SIZE_TILES = 8;
 const FIXTURE: HarnessWorldFixture = {
@@ -615,7 +616,10 @@ function buildFrame(): RenderFrame {
     revision: 1,
     world: WorldRenderView.fromSnapshot(world.snapshot()),
     structures,
-    actors: prisonerAssaultVisual ? [
+    actors: prisonerTreatmentVisual ? [
+      { id: 73, assetId: 'actor.prisoner.treatment', tileX: 18.5, tileY: 18.5, deltaX: 0, deltaY: 0, facing: 'south' as const, infirmaryTreatment: true },
+      { id: 74, assetId: 'actor.prisoner.base', tileX: 19.5, tileY: 19.5, deltaX: 0, deltaY: 0 },
+    ] : prisonerAssaultVisual ? [
       { id: 70, assetId: 'actor.prisoner.assault', tileX: 4, tileY: 4, deltaX: 0, deltaY: 0, facing: 'southWest' as const, openAssault: true },
       { id: 71, assetId: 'actor.prisoner.assault', tileX: 5, tileY: 4, deltaX: 0, deltaY: 0, facing: 'southEast' as const, openAssault: true },
       { id: 72, assetId: 'actor.prisoner.base', tileX: 4, tileY: 5, deltaX: 0, deltaY: 0 },
@@ -665,7 +669,7 @@ const scene = new WorldScene({
       return room === undefined ? undefined : localizer.format(room.nameKey);
     },
   } : {}),
-  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual || prisonerAssaultVisual ? {} : {
+  ...(guardResponseVisual || guardSearchVisual || prisonerRiotVisual || prisonerAssaultVisual || prisonerTreatmentVisual ? {} : {
     loadAtlasLibrary: () => Promise.reject(new Error('the environment-art harness loads no actor atlases')),
   }),
   onError: (error) => {

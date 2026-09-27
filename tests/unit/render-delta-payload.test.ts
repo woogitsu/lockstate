@@ -10,6 +10,8 @@ import {
 } from '../../src/simulation/protocol/render-actors-payload';
 import { encodeRenderActorsKeyframe, openAssaultParticipantIds, type RenderGuardSource } from '../../src/simulation/worker/render-actors-keyframe';
 import { IncidentLog } from '../../src/simulation/incidents/incident';
+import { ACTION_PHASES, actionIndexOf } from '../../src/simulation/prisoners/components';
+import { INFIRMARY_TREATMENT_ACTION_ID } from '../../src/simulation/prisoners/injury';
 import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
 import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
@@ -50,14 +52,21 @@ function sourceOf(
     readonly x: number;
     readonly y: number;
     readonly walk?: { readonly offsetX?: number; readonly offsetY?: number; readonly velocityX?: number; readonly velocityY?: number; readonly headingX?: number; readonly headingY?: number };
+    readonly treatmentPhase?: 'travelling' | 'performing';
   }[],
   alive?: readonly boolean[],
 ) {
   const tileX = new Int32Array(actors.length);
   const tileY = new Int32Array(actors.length);
+  const actionIndex = new Int16Array(actors.length).fill(-1);
+  const phase = new Uint8Array(actors.length);
   actors.forEach((actor, index) => {
     tileX[index] = actor.x;
     tileY[index] = actor.y;
+    if (actor.treatmentPhase !== undefined) {
+      actionIndex[index] = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+      phase[index] = ACTION_PHASES.indexOf(actor.treatmentPhase);
+    }
   });
   const byKey = new Map(actors.map((actor, index) => [index, actor]));
   return {
@@ -67,6 +76,7 @@ function sourceOf(
       getIdByIndex: (index: number) => actors[index]!.id,
     },
     position: { tileX, tileY },
+    currentAction: { actionIndex, phase },
     locomotion: {
       read(key: number, atX: number, atY: number, out: WalkReading): WalkReading {
         const walk = byKey.get(key)?.walk;
@@ -502,6 +512,20 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'struggle' });
     incidents.transition('assault-1', 'lapsed', 20);
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base', 'actor.prisoner.base']);
+  });
+
+  it('shows treatment only while a prisoner performs the existing action, then returns to calm art', () => {
+    const source = sourceOf([
+      { id: 10, x: 2, y: 3, treatmentPhase: 'performing' },
+      { id: 11, x: 4, y: 5, treatmentPhase: 'travelling' },
+    ]);
+    const render = () => actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      source, TICKS_PER_SECOND, NO_WORLD_CHANGE,
+    )));
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.treatment', 'actor.prisoner.base']);
+    expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'recover' });
+    source.currentAction.phase[0] = ACTION_PHASES.indexOf('idle');
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
   });
 
   it('does not apply a guard-only response bit to a prisoner record', () => {
