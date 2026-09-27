@@ -372,8 +372,10 @@ const TREATMENT_SHIFT = 16;
 const SHOWER_SHIFT = 17;
 /** Bit 18: this prisoner is performing yard recreation. */
 const YARD_SHIFT = 18;
+/** Bit 19: this prisoner is performing classroom education. */
+const CLASSROOM_SHIFT = 19;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false, treatment = false, shower = false, yard = false): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false, treatment = false, shower = false, yard = false, classroom = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
@@ -384,7 +386,8 @@ export function packRenderActorFields(population: number, headingX = 0, headingY
     (openAssault ? 1 << OPEN_ASSAULT_SHIFT : 0) |
     (treatment ? 1 << TREATMENT_SHIFT : 0) |
     (shower ? 1 << SHOWER_SHIFT : 0) |
-    (yard ? 1 << YARD_SHIFT : 0)
+    (yard ? 1 << YARD_SHIFT : 0) |
+    (classroom ? 1 << CLASSROOM_SHIFT : 0)
   );
 }
 
@@ -414,6 +417,10 @@ export function renderActorShower(packedFields: number): boolean {
 
 export function renderActorYard(packedFields: number): boolean {
   return ((packedFields >>> YARD_SHIFT) & 1) === 1;
+}
+
+export function renderActorClassroom(packedFields: number): boolean {
+  return ((packedFields >>> CLASSROOM_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {

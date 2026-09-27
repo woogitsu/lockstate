@@ -18,6 +18,7 @@ ACTOR_IDS = (
     "actor.prisoner.base",
     "actor.prisoner.shower",
     "actor.prisoner.yard",
+    "actor.prisoner.classroom",
     "actor.guard.base",
     "actor.guard.response",
     "actor.guard.search",
@@ -237,6 +238,15 @@ def animate_yard_leg(item, side):
         item.keyframe_insert(data_path="rotation_euler", index=1, frame=frame)
 
 
+def animate_classroom_arm(item, side):
+    """Hold a workbook while one hand moves across the open page."""
+    item.rotation_euler.y = math.radians(56 * side)
+    poses = (-64, -68, -74, -68, -64) if side == 1 else (-64, -64, -64, -64, -64)
+    for frame, degrees in enumerate(poses, start=1):
+        item.rotation_euler.x = math.radians(degrees)
+        item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
+
+
 def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
@@ -251,6 +261,7 @@ def build_detailed_actor(root, asset_id):
     treatment = asset_id == "actor.prisoner.treatment"
     shower = asset_id == "actor.prisoner.shower"
     yard = asset_id == "actor.prisoner.yard"
+    classroom = asset_id == "actor.prisoner.classroom"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
     staff = asset_id == "actor.staff.base"
@@ -275,6 +286,9 @@ def build_detailed_actor(root, asset_id):
     undershirt = mat("Pale undershirt", (0.76, 0.72, 0.65), 0.91)
     bandage = mat("Pale patient bandage", (0.84, 0.82, 0.73), 0.92) if treatment else None
     button = mat("Dull steel buttons", (0.20, 0.22, 0.22), 0.52)
+    book_cover = mat("Classroom workbook teal", (0.025, 0.30, 0.32), 0.76) if classroom else None
+    book_page = mat("Classroom cream pages", (0.82, 0.80, 0.67), 0.92) if classroom else None
+    book_ink = mat("Classroom ruled ink", (0.18, 0.28, 0.31), 0.88) if classroom else None
     badge = mat("Guard badge and patches", (0.49, 0.55, 0.57), 0.46) if guard else None
     belt = mat("Guard duty belt", (0.017, 0.020, 0.023), 0.82) if guard else None
     epaulette = mat("Guard slate epaulettes", (0.24, 0.35, 0.45), 0.85) if guard else None
@@ -380,7 +394,7 @@ def build_detailed_actor(root, asset_id):
              (0.017, 0.16, 0.045), staff_canvas, root, 0.004)
         cube("Staff folded work cloth", (0.405, -0.08, 1.50),
              (0.038, 0.075, 0.20), undershirt, root, 0.008)
-    if asset_id in ("actor.prisoner.base", "actor.prisoner.riot", "actor.prisoner.assault", "actor.prisoner.shower", "actor.prisoner.yard"):
+    if asset_id in ("actor.prisoner.base", "actor.prisoner.riot", "actor.prisoner.assault", "actor.prisoner.shower", "actor.prisoner.yard", "actor.prisoner.classroom"):
         # The existing pocket/button detail disappears at the 64 px game scale.
         # A pale ID patch carries the identity at game scale without changing
         # the shared actor rig or relying on tiny button details.
@@ -423,6 +437,22 @@ def build_detailed_actor(root, asset_id):
              (0.19, 0.16, 0.009), apron, root, 0.012)
     cube("Neck", (0, 0, 2.79), (0.115, 0.112, 0.16), skin, root, 0.05)
 
+    if classroom:
+        # A broad open book reads in the normal 64 px top-down view. It is
+        # attached to the actor, not to a desk the action does not reserve.
+        book = pivot("Held classroom workbook", (0, -0.47, 2.05), root)
+        cube("Workbook teal cover", (0, -0.47, 2.05), (0.37, 0.25, 0.025), book_cover, book, 0.012)
+        for side in (-1, 1):
+            cube(f"Open cream page.{side}", (side * 0.18, -0.47, 2.085),
+                 (0.165, 0.215, 0.009), book_page, book, 0.005)
+            for row in range(3):
+                cube(f"Workbook ink line.{side}.{row}", (side * 0.18, -0.57 + row * 0.09, 2.098),
+                     (0.095, 0.007, 0.003), book_ink, book, 0.001)
+        cube("Workbook dark spine", (0, -0.47, 2.104), (0.012, 0.225, 0.006), book_ink, book, 0.002)
+        for frame, degrees in enumerate((0, 2, 3, 2, 0), start=1):
+            book.rotation_euler.x = math.radians(degrees)
+            book.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
+
     for side in (-1, 1):
         arm = pivot(f"Arm.{side}", (side * 0.445, 0, 2.54), root)
         sphere(f"Sleeve.{side}", (side * 0.445, 0, 2.30), (0.148, 0.16, 0.30), fabric, arm)
@@ -464,6 +494,8 @@ def build_detailed_actor(root, asset_id):
             animate_shower_arm(arm, side)
         elif yard:
             animate_yard_arm(arm, side)
+        elif classroom:
+            animate_classroom_arm(arm, side)
         else:
             animate(arm, 1 if side == -1 else -1)
 
@@ -475,7 +507,7 @@ def build_detailed_actor(root, asset_id):
         cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
         if yard:
             animate_yard_leg(leg, side)
-        elif not response and not search and not riot and not assault and not treatment and not shower:
+        elif not response and not search and not riot and not assault and not treatment and not shower and not classroom:
             animate(leg, -1 if side == -1 else 1)
 
 
