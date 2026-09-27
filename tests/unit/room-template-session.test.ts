@@ -10,6 +10,16 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 describe('room template session command', () => {
+  it('reports the first unowned square through the existing construction refusal channel', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-unowned', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 29, y: 5 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unowned-land', tile: tile(32, 5) });
+    expect(runtime.construction.allOrders()).toEqual([]);
+  });
+
   it('refuses an occupied footprint atomically before any shell order enters the queue', () => {
     const runtime = createNewSimulationRuntime(72);
     runtime.world.setSquareStructure(tile(7, 7), 1);
@@ -19,6 +29,7 @@ describe('room template session command', () => {
     runtime.kernel.step();
     expect(runtime.construction.allOrders()).toEqual([]);
     expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable', tile: tile(7, 7) });
   });
 
   it('rejects an overlapping second template while the first shell is still queued', () => {
@@ -32,6 +43,7 @@ describe('room template session command', () => {
     runtime.kernel.step();
     expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
     expect(runtime.construction.allOrders()).toHaveLength(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).shellOrderIds.length);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable' });
   });
 
   it('accepts one complete shell and preserves its pending zoning obligation over save/reload', () => {
