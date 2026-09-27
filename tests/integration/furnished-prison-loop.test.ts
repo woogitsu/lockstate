@@ -563,6 +563,7 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
      */
     expect(performingTicks['action.eat-in-cell']).toBeUndefined();
     expect(performingTicks['action.eat-meal'] ?? 0, 'the canteen meal is what it ate instead').toBeGreaterThan(0);
+    expect(runtime.roomFilth.filthOf(CANTEEN_ID), 'completed canteen meals leave filth on the real room instance').toBeGreaterThan(0);
   });
 
   it('eats in its cell when the canteen has no table, which is what makes the absence above a preference', () => {
