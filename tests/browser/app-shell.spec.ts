@@ -10167,8 +10167,9 @@ test.describe('the assembled application', () => {
     // 656 bricks is 26,240, which is 55 past the shallower starter floor's
     // 26,185 of room, so the press this test used to make would now be
     // refused outright rather than landing in the overdraft this test is
-    // about.
-    const unitPrice = unitPriceOf('item.brick');
+    // about. Planks now reach the rung below the 600-unit gate; bricks would
+    // hit capacity first and cease testing the money verdict.
+    const unitPrice = unitPriceOf('item.wood-plank');
     const spendable =
       TREASURY_STARTING_BALANCE_MINOR_UNITS -
       rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
@@ -10180,6 +10181,7 @@ test.describe('the assembled application', () => {
     expect(settled).toBeLessThan(0);
 
     await openBuyRow(page);
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
     await setBuyQuantity(page, quantity);
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await page.locator('.hud-build__buy-submit').click();
@@ -10198,7 +10200,8 @@ test.describe('the assembled application', () => {
      * #703 ruling 18, on 2026-08-31 -- so the absence becomes a presence and
      * the sentence above is kept as the record of what it used to pin.
      *
-     * `-2,480` of 2,500 leaves 20, which is `warning` and not `danger`: room
+     * The current plank purchase settles at -1,130, leaving 55 before the
+     * starter delivery rung; this is `warning` and not `danger`: room
      * left, however little. The badge states the remainder in words, so colour
      * is never the only signal.
      */
@@ -10225,11 +10228,12 @@ test.describe('the assembled application', () => {
      * ruling later that day moved both halves of the pair together.** This
      * session is fresh and unfurnished for its whole life (see `spendable`
      * above), so the rung the badge counts room to is the starter one,
-     * -1,185: the purchase now settles at -1,160, which is twenty-five short
+     * -1,185: the purchase then settled at -1,160, which was twenty-five short
      * of that floor rather than ten short of the mature one, and the badge
-     * says twenty-five. The pin is re-aimed at the same starter rung
+     * said twenty-five. The pin is re-aimed at the same starter rung
      * `spendable` is composed from, so the chip and the press this test just
-     * made stay one number.
+     * made stay one number. With planks chosen to stay inside the delivery
+     * gate, the current purchase settles at -1,130 and the badge says 55.
      */
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
       `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
@@ -10399,21 +10403,21 @@ test.describe('the assembled application', () => {
    * them comes. Every one of them is therefore refused, or accepted, by both
    * rungs alike.
    *
-   * ## Why 655 bricks, and why one brick fewer
+   * ## Why 403 planks, and why one plank fewer
    *
    * The two rungs are 65 minor units apart — one plank, which is
    * `STARTER_RUNG_MARGIN_MINOR_UNITS`'s own derivation — so a press is
-   * mutation-sensitive only if its total lands **inside that gap**. At 40 a
-   * brick, 655 bricks is 26,200 against 26,185 of starter room and 26,250 of
-   * mature room: the starter rung refuses it by 15 and the mature rung would
-   * accept it by 50. Both bounds are asserted below rather than left to the
+   * mutation-sensitive only if its total lands **inside that gap**. At 65 a
+   * plank, 403 planks is 26,195 against 26,185 of starter room and 26,250 of
+   * mature room: the starter rung refuses it by 10 and the mature rung would
+   * accept it by 55. Both bounds are asserted below rather than left to the
    * reader, so a later move of either constant that closes the gap fails on
    * the arithmetic instead of quietly returning this test to the
    * insensitivity it was written to end.
    *
-   * 654 bricks is then pressed and **accepted**, which is what makes the
+   * 402 planks is then pressed and **accepted**, which is what makes the
    * refusal above a statement about the boundary rather than about a control
-   * that had latched: one brick either side of one threshold, in one session,
+   * that had latched: one plank either side of one threshold, in one session,
    * with nothing else changed.
    *
    * ## "Fresh, unfurnished" is the worker's answer, not a re-derived one
@@ -10424,10 +10428,10 @@ test.describe('the assembled application', () => {
    * `freshUnfurnishedPrison` reads straight through. That is asserted from the
    * page rather than assumed: the FUNDS badge counts room to the same rung
    * (`overdraftRemaining`, `src/ui/hud/projection.ts`), so after the accepted
-   * press it reads `25 left` — the distance from -1,160 to **-1,185**, and a
+   * press it reads `55 left` — the distance from -1,130 to **-1,185**, and a
    * figure the mature rung cannot produce.
    */
-  test('a fresh, unfurnished prison is refused one brick past the starter rung that a furnished one would be sold (#771, #1257)', async ({
+  test('a fresh, unfurnished prison is refused one plank past the starter rung that a furnished one would be sold (#771, #1257)', async ({
     page,
   }) => {
     await installCommandTee(page);
@@ -10442,7 +10446,7 @@ test.describe('the assembled application', () => {
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
     await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
 
-    const unitPrice = unitPriceOf('item.brick');
+    const unitPrice = unitPriceOf('item.wood-plank');
     // The two rungs, composed from the same function the host and the worker
     // both compose theirs from, so this moves with the constants rather than
     // restating them.
@@ -10472,13 +10476,14 @@ test.describe('the assembled application', () => {
     await expect(refusal).toBeHidden();
 
     await openBuyRow(page);
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
     const buy = page.locator('.hud-build__buy-submit');
 
-    // ---- one brick past the starter rung: refused, and never sent ----------
+    // ---- one plank past the starter rung: refused, and never sent ----------
     await setBuyQuantity(page, refusedQuantity);
     // `hud.build.buy-submit` interpolates the count raw and formats only the
     // total -- the same shape the sibling tests above assert literally.
-    await expect(buy).toHaveText(`Buy ${refusedQuantity} × Brick · ${fundsText(refusedQuantity * unitPrice)}`);
+    await expect(buy).toHaveText(`Buy ${refusedQuantity} × Wood Plank · ${fundsText(refusedQuantity * unitPrice)}`);
     await pressBuyExpectingRefusal(page);
 
     await expect(refusal).toBeVisible();
@@ -10520,11 +10525,11 @@ test.describe('the assembled application', () => {
         timeout: 20_000,
       })
       .toBe(fundsText(settled));
-    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: acceptedQuantity }]);
+    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.wood-plank', quantity: acceptedQuantity }]);
 
     // The badge counts room to the rung the press was judged against, so this
     // is the worker's own `isFreshUnfurnishedPrison` read back off the page:
-    // 25 to the starter floor, where the mature one would say 90.
+    // 55 to the starter floor, where the mature one would say 120.
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
       `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
     );
@@ -10536,12 +10541,12 @@ test.describe('the assembled application', () => {
    * `src/main.ts` has two pre-flights that read the starter rung, and the test
    * above only presses one of them. This presses the other, and it is not a
    * copy — a hire has no quantity field, so the boundary cannot be dialled in
-   * on the control. The prison is walked to the balance instead: 654 bricks
-   * settles it at **-1,160**, twenty-five short of the starter rung, and the
-   * cheapest role in `src/content/staff-role-catalog.ts` charges **60** — one
-   * day of `wageBand.minPerDay`, which is what `staffHireCostMinorUnits`
-   * returns. -1,220 is past -1,185 and inside -1,250, so the starter rung
-   * refuses the hire and the mature rung would sell it.
+   * on the control. The prison is walked to the balance instead: 402 planks
+   * settles it at **-1,130**, fifty-five short of the starter rung, and the
+   * guard role charges **80** — one day of `wageBand.minPerDay`, which is what
+   * `staffHireCostMinorUnits` returns. -1,210 is past -1,185 and inside
+   * -1,250, so the starter rung refuses the hire and the mature rung would
+   * sell it.
    *
    * Both bounds are asserted from the constants rather than written out, and
    * the role is chosen by price rather than by name for the same reason: a
@@ -10571,7 +10576,7 @@ test.describe('the assembled application', () => {
 
     const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
     const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
-    const unitPrice = unitPriceOf('item.brick');
+    const unitPrice = unitPriceOf('item.wood-plank');
     // The largest purchase the starter rung allows, which is also the balance
     // that puts the cheapest hire inside the gap between the two rungs.
     const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
@@ -10599,8 +10604,9 @@ test.describe('the assembled application', () => {
     expect(settled - hireCharge!).toBeLessThan(starterFloor);
     expect(settled - hireCharge!).toBeGreaterThanOrEqual(matureFloor);
 
-    // ---- walk the prison to -1,160 ----------------------------------------
+    // ---- walk the prison to -1,130 ----------------------------------------
     await openBuyRow(page);
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
     await setBuyQuantity(page, quantity);
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
     await page.locator('.hud-build__buy-submit').click();
