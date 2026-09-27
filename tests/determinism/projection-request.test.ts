@@ -90,6 +90,8 @@ function targetFor(projectionId: ProjectionId, firstPrisoner: number): Projectio
       return { kind: 'entity', entityId: firstPrisoner };
     case 'id':
       return { kind: 'id', id: 'cell-1' };
+    case 'room-template':
+      return { kind: 'room-template', templateId: 'cell-basic', origin: { x: 5, y: 5 } };
   }
 }
 
