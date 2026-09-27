@@ -232,6 +232,22 @@ export class SanctionSystem implements SystemRegistration {
         continue;
       }
 
+      // A high-risk prisoner's ordinary classification may itself prefer the
+      // solitary cell they already occupy. Their residency is valid; asking
+      // findBestAvailable for a *second* place in that full cell would leave
+      // the expired sanction pending forever.
+      if (
+        currentInstance !== undefined
+        && currentInstance.roomCatalogId === releaseTarget.roomCatalogId
+        && currentInstance.residentCapacity > 0
+        && (releaseTarget.requiredObjectCapability === undefined
+          || currentInstance.objectCapabilities.includes(releaseTarget.requiredObjectCapability))
+        && this.roomInstances.occupantsOf(currentInstance.instanceId).includes(entityId)
+      ) {
+        this.records.solitarySanctionEndTick[index] = 0;
+        continue;
+      }
+
       const arrival = this.sharingViewOf(entityId, index);
       const instance = this.roomInstances.findBestAvailable(
         releaseTarget.roomCatalogId,
