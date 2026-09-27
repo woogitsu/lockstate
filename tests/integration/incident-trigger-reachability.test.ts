@@ -42,6 +42,7 @@ const DAY = 2_400;
 const RUN_TICKS = 30_000;
 
 const SHOWER = { x: 26, y: 1, width: 3, height: 3 } as const;
+const UTILITY = { x: 1, y: 20, width: 2, height: 2 } as const;
 const CANTEEN = { x: 19, y: 6, width: 6, height: 6 } as const;
 const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
 const ARRIVAL = { x: 16, y: 16 } as const;
@@ -131,18 +132,20 @@ function buildPrison(plan: PrisonPlan, seed: number = SEED): SimulationRuntime {
   // One plank per bed; one brick per toilet; the canteen's 3x2 tables and 2x1
   // benches at three and two planks each; one brick per shower head.
   const planks = plan.cells + tables * 3 + benches * 2;
-  const bricks = (plan.toilets ? plan.cells : 0) + showerHeads;
+  const bricks = (plan.toilets ? plan.cells : 0) + showerHeads + (plan.amenities ? 1 : 0);
   submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: planks }));
   if (bricks > 0) submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: bricks }));
 
   for (const rect of cells) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
-  if (plan.amenities) for (const rect of [SHOWER, CANTEEN, YARD]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
+  if (plan.amenities) for (const rect of [SHOWER, CANTEEN, YARD, UTILITY]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
 
   cells.forEach((rect, index) => submit(runtime, `zone-c${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect })));
   if (plan.amenities) {
     submit(runtime, 'zone-shower', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER }));
     submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN }));
     submit(runtime, 'zone-yard', packCommand({ type: 'ZoneRoom', roomId: 'room.yard', ...YARD }));
+    submit(runtime, 'zone-utility', packCommand({ type: 'ZoneRoom', roomId: 'room.utility-room', ...UTILITY }));
+    submit(runtime, 'utility-panel', packCommand({ type: 'PlaceObject', orderId: 'utility-panel', definitionId: 'utility-panel-brick', x: UTILITY.x, y: UTILITY.y }));
   }
 
   cells.forEach((rect, index) => {
@@ -1196,7 +1199,7 @@ describe('and the population boundary that bounded it, which crowding (#586) has
     expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeLessThan(
       crowded.sectorRisk.getScore('security-sector.prison'),
     );
-    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.7746, 3);
+    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.7700, 3);
     expect(crowded.sectorRisk.getScore('security-sector.prison')).toBeCloseTo(0.8036, 3);
 
     // Non-vacuous: both prisons are the same eight beds and the same

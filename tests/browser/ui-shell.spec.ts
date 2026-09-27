@@ -3809,6 +3809,33 @@ test.describe('the Rooms panel', () => {
     await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
   });
 
+  test('shows live utility limits without clipping the Rooms panel at Full HD (#595)', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.evaluate(() => window.lockstateUiHarness.reportRoomNeeds({
+      unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [], atCapacity: [], utilityLimitedRooms: 1,
+    }));
+    const notice = page.locator('.hud-rooms__power-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toHaveAttribute('data-limited', '1');
+    await expect(notice).toContainText('half rate');
+    const geometry = await page.evaluate(() => {
+      const note = document.querySelector<HTMLElement>('.hud-rooms__power-notice')!;
+      const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body')!;
+      return {
+        noteBottom: note.getBoundingClientRect().bottom,
+        bodyBottom: body.getBoundingClientRect().bottom,
+        noteOverflow: note.scrollWidth - note.clientWidth,
+      };
+    });
+    expect(geometry.noteBottom).toBeLessThanOrEqual(geometry.bodyBottom);
+    expect(geometry.noteOverflow).toBeLessThanOrEqual(0);
+
+    await page.evaluate(() => window.lockstateUiHarness.reportRoomNeeds({
+      unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [], atCapacity: [], utilityLimitedRooms: 0,
+    }));
+    await expect(notice).toBeHidden();
+  });
+
   /**
    * Only the intents that ask the simulation for something.
    *

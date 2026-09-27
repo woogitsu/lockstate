@@ -1476,6 +1476,8 @@ export const HUD_MESSAGE_KEY = {
    * 7.9px.
    */
   roomsNeeds: 'hud.rooms.needs',
+  roomsUtilityLimited: 'hud.rooms.utility-limited',
+  roomsUtilityHelp: 'hud.rooms.utility-help',
   roomsNeedsCount: 'hud.rooms.needs-count',
   roomsNeedsRoom: 'hud.rooms.needs-room',
   roomsNeedsObject: 'hud.rooms.needs-object',

@@ -624,7 +624,7 @@ open one.
 
 **`LocomotionStore` does, on both legs, and `setPositionTile` is retired.**
 A carry begins exactly as a room action begins: `beginNextAction`
-(`src/simulation/prisoners/action-system.ts:1010`) requests a route from the
+(`src/simulation/prisoners/action-system.ts:1834-1836`) requests a route from the
 prisoner's tile to `job.sourceTile`, sets `travelling`, and
 `continueTravelling` hands the resolved route to `beginWalk`
 (`src/simulation/locomotion/locomotion.ts:253`). `prisoners.locomotion` (order

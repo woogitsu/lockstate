@@ -9,6 +9,7 @@ import type { EntityId } from '../entity/entity-store';
 import type { PlacedObject } from '../objects/placed-object';
 import { roomBoundsOf, roomContains } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
+import { utilityProvisionFactors } from '../prisoners/utility-power';
 import type { RoomDoorReader, RoomEdgeReader, TileRectangle } from '../rooms/enclosure';
 import {
   roomAccess,
@@ -434,6 +435,8 @@ export interface RoomListViewModel {
     readonly instances: number;
     readonly occupants: number;
     readonly capacity: number;
+    /** Present only when placed objects were supplied; counts every room, not just the requested page. */
+    readonly utilityLimitedRooms?: number;
   };
 }
 
@@ -821,6 +824,9 @@ export function projectRoomList(
   const allRows = instances.map((instance) =>
     projectRow(source, instance, rooms, objects, grades, options, contents?.get(instance.instanceId), reachability),
   );
+  const utilityLimitedRooms = options.placedObjects === undefined
+    ? undefined
+    : [...utilityProvisionFactors(source.roomInstances, options.placedObjects).values()].filter((factor) => factor < 1).length;
 
   let occupants = 0;
   let capacity = 0;
@@ -849,7 +855,10 @@ export function projectRoomList(
         capacity: typeCapacity,
       };
     }),
-    totals: { instances: allRows.length, occupants, capacity },
+    totals: {
+      instances: allRows.length, occupants, capacity,
+      ...(utilityLimitedRooms === undefined ? {} : { utilityLimitedRooms }),
+    },
   };
 }
 

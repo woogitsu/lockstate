@@ -136,13 +136,14 @@ const TOILET_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y + 2 },
 const CANTEEN = { x: 16, y: 0, width: 8, height: 8 } as const;
 /** `room.shower-room`'s authored 3x3 minimum, clear of both. */
 const SHOWER = { x: 0, y: 10, width: 3, height: 3 } as const;
+const UTILITY = { x: 5, y: 10, width: 2, height: 2 } as const;
 const SHOWER_ID = 'room.shower-room:0:10';
 
 /**
  * The bill, and it is the phase-4 cost rule doing the arithmetic:
  * `materialsRequired[0].quantity = footprint.width`. 24 `1x1` beds at one plank,
  * two `3x2` dining tables at three, four `2x1` benches at two; 24 `1x1` toilets
- * and **eight** `1x1` shower heads at one brick each.
+ * **eight** `1x1` shower heads and one utility panel at one brick each.
  *
  * Eight heads' worth of brick in **both** runs, so the control differs from the
  * contended run by six `PlaceObject` commands and by nothing else -- not by a
@@ -150,7 +151,7 @@ const SHOWER_ID = 'room.shower-room:0:10';
  * simply leaves six bricks in the container.
  */
 const PLANKS = 24 + 2 * 3 + 4 * 2;
-const BRICKS = 24 + 8;
+const BRICKS = 24 + 8 + 1;
 
 /** Every order is complete well before this; the timeline is asserted, not assumed. */
 const BUILT_BY = 6_000;
@@ -187,6 +188,7 @@ function prison(showerHeads: 2 | 8): SimulationRuntime {
   for (const [id, rect, roomId] of [
     ['canteen', CANTEEN, 'room.canteen'],
     ['shower', SHOWER, 'room.shower-room'],
+    ['utility', UTILITY, 'room.utility-room'],
   ] as const) {
     wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
     submit(runtime, `zone-${id}`, packCommand({ type: 'ZoneRoom', roomId, ...rect }));
@@ -208,6 +210,7 @@ function prison(showerHeads: 2 | 8): SimulationRuntime {
     const y = SHOWER.y + Math.floor(head / 3);
     submit(runtime, `head-${head}`, packCommand({ type: 'PlaceObject', orderId: `o-head-${head}`, definitionId: 'shower-head-brick', x, y }));
   }
+  submit(runtime, 'utility-panel', packCommand({ type: 'PlaceObject', orderId: 'o-utility-panel', definitionId: 'utility-panel-brick', x: UTILITY.x, y: UTILITY.y }));
   return runtime;
 }
 
@@ -494,9 +497,9 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     stepTo(contended, BUILT_BY);
     stepTo(control, BUILT_BY);
 
-    // 38 planks at 65 and 32 bricks at 40, from `src/content/procurement-catalog.ts`.
+    // 38 planks at 65 and 33 bricks at 40, from `src/content/procurement-catalog.ts`.
     const spent = PLANKS * 65 + BRICKS * 40;
-    expect(spent).toBe(3_750);
+    expect(spent).toBe(3_790);
     expect(contended.treasury.balanceMinorUnits).toBe(25_000 - spent);
     expect(control.treasury.balanceMinorUnits).toBe(contended.treasury.balanceMinorUnits);
 
@@ -504,8 +507,8 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // count above a statement about construction rather than about contention.
     expect(contended.construction.allOrders().filter((order) => order.state !== 'completed')).toEqual([]);
     expect(control.construction.allOrders().filter((order) => order.state !== 'completed')).toEqual([]);
-    expect(contended.placedObjects.size).toBe(PRISONERS * 2 + 6 + 2);
-    expect(control.placedObjects.size).toBe(PRISONERS * 2 + 6 + 8);
+    expect(contended.placedObjects.size).toBe(PRISONERS * 2 + 6 + 2 + 1);
+    expect(control.placedObjects.size).toBe(PRISONERS * 2 + 6 + 8 + 1);
   });
 
   it('produces the identical contended run twice from the same seed, so the reordering added no nondeterminism', () => {

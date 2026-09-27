@@ -1381,6 +1381,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.rooms.step-down': 'Zmniejsz: {field}',
   'hud.rooms.step-up': 'Zwiększ: {field}',
   'hud.rooms.needs': 'Niegotowe',
+  'hud.rooms.utility-limited': 'Zasilanie: część urządzeń działa z połową wydajności.',
+  'hud.rooms.utility-help': 'Panel techniczny w pomieszczeniu technicznym zasila do 8 takich urządzeń.',
   'hud.rooms.needs-count': '{unfinished} z {total}',
   // Reshaped. "Celi w 4, 7 brakuje" needs the genitive of the room's own name,
   // which arrives as a nominative label; a heading plus a colon does not.

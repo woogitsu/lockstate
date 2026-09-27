@@ -4841,6 +4841,20 @@
   border-top: var(--hairline) solid var(--border-hairline);
 }
 
+.hud-rooms__power-notice:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  padding: var(--hud-rooms-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+  color: var(--status-warning);
+}
+
+.hud-rooms__power-notice .ui-eyebrow {
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
 /* Label left, figure right: the shape `.hud-rooms__enclosure` uses, because it
    is the same kind of line -- a readout of what the simulation found. */
 .hud-rooms__needs-header {

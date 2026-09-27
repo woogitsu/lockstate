@@ -3697,6 +3697,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // the map and it counts in the status strip -- what it cannot yet do is the
   // job it was designated for.
   'hud.rooms.needs': 'Not ready',
+  'hud.rooms.utility-limited': 'Power: some devices run at half rate.',
+  'hud.rooms.utility-help': 'A Utility Panel inside a Utility Room powers up to 8 such devices.',
   'hud.rooms.needs-count': '{unfinished} of {total}',
   // Which room the lines under it are about. "is missing" and not "needs",
   // which is `hud.rooms.requires-object`'s word for the room *type*: this is a

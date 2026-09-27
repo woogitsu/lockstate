@@ -1560,6 +1560,8 @@ export interface HudRoomNeedsViewModel {
   readonly totalRooms: number;
   /** How many unmet requirements those rooms have between them. */
   readonly totalNeeds: number;
+  /** Rooms with at least one provisioner operating at half rate; absent when placed objects were not counted. */
+  readonly utilityLimitedRooms?: number;
   /** The ones there is room to name, in the projection's canonical order. */
   readonly needs: readonly HudRoomNeedViewModel[];
   /**
