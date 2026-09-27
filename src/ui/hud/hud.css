@@ -3226,6 +3226,21 @@
   overflow-y: auto;
 }
 
+/* The locked toggle's reason is a sentence. Eyebrow nowrap made its Polish
+   text 644px wide inside the 313px Full HD rail, hiding the explanation. */
+.hud-regime__editor .ui-toggles__reason {
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Full HD has room for the wrapped explanation without hiding its final line
+   behind the editor's three-row scroll ceiling. Smaller rail budgets retain
+   that ceiling and their scrollable editor. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-regime__editor-list { --hud-regime-editor-ceiling: calc(4 * var(--tap-target)); }
+}
+
 /* Name left, share right: the shape every readout line in this HUD uses. */
 .hud-regime__block-header {
   display: flex;
