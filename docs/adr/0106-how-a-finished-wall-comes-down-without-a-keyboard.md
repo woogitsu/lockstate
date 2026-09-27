@@ -1,4 +1,4 @@
-﻿# ADR 0106: How a finished wall comes down without a keyboard
+# ADR 0106: How a finished wall comes down without a keyboard
 
 > **The number was assigned from `docs/adr/README.md`'s own "Next free number"
 > line, and this document pre-commits to renumbering.** `AGENTS.md`'s rule is
