@@ -102,6 +102,13 @@ the code made all six pass. **This foundation is not wired into `WorldScene`**:
 no player can turn the view yet, and the sprite depth/cutaway rules are still
 required before exposing the control.
 
+`src/rendering/camera/oblique-geometry.ts` additionally projects a whole
+1 × 1 tile and the full/cutaway wall prism from the **same unchanged base
+quad**. Its view-direction depth helper replaces the fixed south-row order in
+the eventual renderer. Four focused tests check the actual 64-unit footprint,
+both wall heights and yaw-dependent sorting. This geometry is likewise a
+renderer foundation, not yet a loaded game layer.
+
 ## Reusable concept prompt set
 
 These are **normalized prompts for new exploration**, not a claim that each
