@@ -1,4 +1,4 @@
-/** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
+﻿/** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
 export interface TemplateSquare {
   readonly x: number;
   readonly y: number;
@@ -15,7 +15,12 @@ export interface RoomTemplatePlan {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
+<<<<<<< HEAD
 export type RoomTemplateId = 'cell-basic' | 'cell-large' | 'shower-room';
+=======
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as const;
+export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
+>>>>>>> 821da97026 (feat(ui): preview authored room templates in Build)
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick';
 
 interface TemplateDefinition {
@@ -84,3 +89,4 @@ export function instantiateRoomTemplate(
     objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x, object.y) })),
   };
 }
+
