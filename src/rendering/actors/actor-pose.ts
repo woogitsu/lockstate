@@ -21,6 +21,7 @@ export const SEARCH_CLIP_ID = 'search';
 export const AGITATE_CLIP_ID = 'agitate';
 export const STRUGGLE_CLIP_ID = 'struggle';
 export const RECOVER_CLIP_ID = 'recover';
+export const WASH_CLIP_ID = 'wash';
 
 /**
  * Speed below which an actor is drawn idle rather than walking, in world
@@ -44,6 +45,7 @@ export interface ActorMotion {
   readonly openRiot?: boolean;
   readonly openAssault?: boolean;
   readonly infirmaryTreatment?: boolean;
+  readonly showering?: boolean;
 }
 
 /**
@@ -89,6 +91,11 @@ export function selectActorPose(motion: ActorMotion, out: ActorPose = createActo
   }
   if (motion.infirmaryTreatment) {
     out.clipId = RECOVER_CLIP_ID;
+    out.direction = facing;
+    return out;
+  }
+  if (motion.showering) {
+    out.clipId = WASH_CLIP_ID;
     out.direction = facing;
     return out;
   }
