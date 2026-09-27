@@ -107,7 +107,7 @@ commands whose sequence order and tick order disagree. The kernel then applies
 the later one first.
 
 This is not a determinism defect and is not reported as one: both keys are
-persisted (`src/persistence/save-schema.ts:88-95`; the anchor read `:75-82`, was
+persisted (`src/persistence/save-schema.ts:89-96`; the anchor read `:75-82`, was
 re-aimed to `:79-87` by this branch, and had drifted **a second time** by the
 time `origin/main` was merged on 2026-09-16 — `:79-87` is now a docblock about a
 schema-version tally), the comparator is total, and
@@ -243,7 +243,7 @@ Flagged, not corrected — nothing below is wrong on this tree.
   (`kernel.ts:392`), `restoreState` assigns the queue directly (`:373`), and
   the save schema validates `tick` and each `executeAtTick` as independent
   non-negative integers and never their relation
-  (`src/persistence/save-schema.ts:88-95` and `:97-104`; those four anchors read
+  (`src/persistence/save-schema.ts:89-96` and `:97-104`; those four anchors read
   `:315-316`, `:296`, `:75-82` and `:84-91` until 2026-09-15, were re-aimed to
   `:392`, `:373`, `:79-87` and `:88-95` then, and **the two save-schema ones went
   stale a second time** before this branch merged `origin/main` on 2026-09-16.

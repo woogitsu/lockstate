@@ -42,6 +42,7 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
                     watchedSectorIds, trigger, response },
       economy?:   { treasury, procurement },                  // #96 / #249
       objects?:   { placedObjects },                          // V5, ADR 0028
+      inFlight?:  { navigation, prisoners, guards, search },   // V6, #1373
     },
     identity?: {                                              // V3, issue #75 / ADR 0015
       version: 1, poolId,
@@ -98,11 +99,41 @@ Nine payload fields have been added since their section was first written --
 ([ADR 0082](./adr/0082-what-order-build-orders-are-carried-out-in.md), #722)
 `simulation.alerts`
 ([ADR 0084](./adr/0084-what-the-alerts-channel-owes-a-player.md), the owner's
-decision of 2026-09-01) and `simulation.prisoners.components.injured` (issue
-#589, the owner's ruling of 2026-09-17)
+decision of 2026-09-01), `simulation.prisoners.components.injured` (issue
+#589, the owner's ruling of 2026-09-17) and `simulation.inFlight` (issue
+#1373, the owner's ruling of 2026-09-23 on ADR 0059 open question 3)
 -- and none of them bumped the schema version. **This sentence read "Six" until
-2026-08-31, "Seven" until 2026-09-01 and "Eight" until 2026-09-17, and the
-count is the part of it that rots**; the list is what to read.
+2026-08-31, "Seven" until 2026-09-01, "Eight" until 2026-09-17 and "Nine"
+until 2026-09-23, and the count is the part of it that rots**; the list is what
+to read.
+
+**`simulation.inFlight` is the tenth, and the first that is V6-only.** It is
+declared on `sessionSystemsV6Schema` rather than in the shared
+`sessionSystemsShapeFor`, because no V3-V5 build could write it and those
+shapes are frozen. The three conditions below hold: the section is optional;
+absent means exactly what every earlier build did on load -- walks cleared,
+`'travelling'` prisoners dropped to `idle`, `'travelling'` guards settled,
+search jobs restarting their leg, the navigation queue empty -- and that reset
+is kept verbatim as the restore path for such a save; and no existing field
+changes shape or meaning. Absence is unambiguous as a fact about the corpus, on
+`masterSeed`'s terms: a live capture writes the section unconditionally, empty
+lists and all. ADR 0038 §4's cost applies unchanged: an older V6 build refuses
+a save carrying it as `invalid-shape`. `tests/determinism/restore-mid-walk-exactness.test.ts`
+proves the new path through the real envelope; the tests that pinned the old
+reset (`job-performing-restart-bound`, `snapshot-restore-fidelity`,
+`carry-restore-resumes-the-errand`, `security-returning-after-restore`) now run
+their original assertions against a bundle with the section removed, which is
+the older-save proof.
+
+**V7 correction, 2026-09-26 (#1459).** V6 also accepted travel fields under
+`navigation`, `prisoners`, `security` and `contraband.search`, while the runtime
+captured and restored the atomic `simulation.inFlight` section. V7 removes
+those legacy paths from newly written saves. Its V6→V7 migration moves their
+values into `inFlight` when that section is absent; when both copies exist,
+`inFlight` wins because it is the copy V6 restore actually read. Historical V6
+validation remains frozen, and an older save with no travel data still has no
+`inFlight` section after migration. This is a local save-envelope migration;
+`supabase/migrations/` is unchanged.
 
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
@@ -480,6 +511,53 @@ work are not.**
   alternative — persisting request ids into a queue that never received them —
   leaves actors stuck forever.
 
+  **CORRECTED 2026-09-23, AND THE PENDING QUEUE IS NO LONGER EXCLUDED (issue
+  #1373).** The paragraph above is kept as written because it is still the
+  exact description of how a save written *before* that date is restored.
+  Two of its claims were wrong, and each wrong part is named:
+
+  - **"A bounded delay, not lost progress" was true of one journey and false
+    of the prison.** Measured on `main` at `ceb6865e` on #1373's fixture:
+    **41 of the 41 saves taken while somebody was walking** restored to a
+    prison that had not reconverged by day 6, and 0 of the 24 taken with
+    nobody walking diverged. The first difference was on the restore tick
+    itself. The delay was bounded; the divergence it started was not, because
+    timing and shared-object use drifted apart and compounded.
+  - **The alternative was not "a queue that never received them".** Persisting
+    the queue *with* the ids is what the owner ruled for (ADR 0059 open
+    question 3, option 5, *"Zapisuj marsz (zalecane)"*, an option label and so
+    the weaker provenance). A save now carries it in `simulation.inFlight`,
+    next to the walks and ids that name it. See ADR 0059's amendment under
+    "Determinism" for why the queue is persisted rather than re-queued by its
+    owners.
+
+  **What is still excluded:** the caches (`RouteCache`, flow fields, the region
+  graph), unchanged. Also a carried result's `expansions`, `usedFlowField` and
+  `waitedTicks`: they are functions of cache warmth, nothing reads them, and
+  carrying them measurably put cache state into the save.
+
+  **Per subsystem:**
+
+  - `JobBoard`: its reset is a legacy-save path only, since no build after ADR
+    0093 writes a `'travelling'` job.
+  - `IncidentResponseSystem`: it still carries no records (ADR 0033). The
+    requests it had in flight come back with the queue, and its owed
+    first-update reconciliation gives them back before re-dispatching
+    (`abandonOrphanedRequests`).
+
+  **The remaining inexactness, stated rather than discovered:** a restored
+  route cache is cold. A restored session's searches therefore spend more of
+  `workBudgetPerTick` than the continuous one's cache hits did. When the budget
+  binds, that can move a request's service by a tick. It did not bind on any
+  save the exactness test takes.
+
+  **CORRECTED 2026-09-23, THE SAME DAY: THIS IS REAL, AND IT IS OPEN.** At 24
+  and 36 prisoners the budget binds at block changes, and a save taken before
+  one served a different set of requests. The measurements, the fix built and
+  withdrawn, and the three options are under ADR 0059's amendment,
+  "Determinism". `tests/determinism/restore-mid-walk-exactness.test.ts` pins
+  the case as a known divergence.
+
   **`IncidentResponseSystem` was listed here as a fifth and does not belong,
   which was measured rather than reasoned (#352).** It cannot re-request: the
   incident lifecycle is forward-only, so `advanceResponse`'s no-record path can
@@ -559,6 +637,14 @@ work are not.**
   reference an old name, a restored counter and a reset one are
   indistinguishable. `IncidentTriggerSystem.sequence` is the exception and
   *is* persisted, because it names incident records that outlive the tick.
+
+  **No longer excluded since issue #1373, for the four systems named.** The
+  premise ("no restored state can reference an old name") stopped holding when
+  the queue and the ids were carried, and a reset counter would mint names the
+  saved session never minted, so the next capture would disagree with it. The
+  four counters travel in `simulation.inFlight`, and `DeploymentSystem`'s is
+  one of them. `IncidentResponseSystem.requestSequence` is the one that stays
+  excluded, on the old reasoning, because its records are not carried either.
 - **`JobSystem.performingSince` — GONE, and this entry is kept because the
   measurement it carried is the reason it could go.**
   [ADR 0093](./adr/0093-a-carry-is-an-action.md) decision 5 retired both the
@@ -574,7 +660,9 @@ work are not.**
     back with the prisoner, so `continuePerforming`'s
     `elapsed >= action.minDurationTicks` test resumes where it was.
   - **A save taken mid-walk costs at most two `ActionSystem` reconsideration
-    cycles — 40 ticks.** `PrisonerOperationsRuntime.loadSnapshot` drops every
+    cycles — 40 ticks.** *(True since #1373 of a save written before the walk
+    was saved and of no other: a current save costs nothing mid-walk, measured
+    at every walking tick of that test's scenario.)* `PrisonerOperationsRuntime.loadSnapshot` drops every
     traveller to `idle`, so up to 20 ticks pass before the carrier re-selects,
     and re-selecting re-does the request-then-collect handshake for up to
     another 20. **ADR 0093 decision 5 predicted one cycle; the measurement is
@@ -1109,7 +1197,7 @@ checked-in V1 fixture, so a loss is both caught and attributed to a link. The
 rule it stands for: a migration assertion must name a value the migration did
 not produce.
 
-### Adding a V6 later
+### Adding a later save version
 
 The steps below are what V4 (#259) and V5 (ADR 0028) both did, and are the
 pattern to follow.
@@ -1124,11 +1212,11 @@ pattern to follow.
    and the two shapes cannot drift apart in any other respect. Make the
    factory *generic* in a schema it takes, so the inferred payload type keeps
    the real shape instead of widening to `any`.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(6, v6Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 5, toVersion: 6, migrate })`,
+2. Register the new version's schema once; retain every historical schema.
+3. Register exactly one migration from the preceding version to the new one,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `6`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` by one. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
    longer sweeps a rename through the repository the way V2 did — but a test
    that hand-writes an envelope with a *literal* version does not benefit, so

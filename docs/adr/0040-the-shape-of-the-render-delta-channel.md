@@ -87,7 +87,7 @@ and adding no new message kind, no envelope field and no envelope-version bump.*
 >   definition of the bytes.
 > - *"The simulation has no motion to publish"* — it has. Prisoners and guards
 >   both walk through a `LocomotionStore`
->   (`src/simulation/prisoners/prisoner-operations-runtime.ts:336`,
+>   (`src/simulation/prisoners/prisoner-operations-runtime.ts:354`,
 >   `src/simulation/security/guard-roster.ts:61`), the guard half landing with
 >   #740 and ADR 0059 answering the prisoner half.
 >
@@ -144,7 +144,7 @@ corrected.** `src/simulation/prisoners/components.ts:151-157`: *"Movement here i
 abstracted: an entity's position updates only on arrival at a resolved route's
 destination."* `src/simulation/prisoners/action-system.ts:279-284` teleports the
 prisoner onto the destination anchor tile in one tick, saying so in its own
-comment; `src/simulation/security/patrol-system.ts:131-134` cites the same
+comment; `src/simulation/security/patrol-system.ts:147-150` cites the same
 convention for guards; `action-system.ts:248` discards the route's waypoints
 immediately. `src/rendering/phaser/actor-layer.ts:125-130` draws at the frame's
 coordinate with no interpolation. **An actor's authoritative position changes
@@ -155,7 +155,7 @@ real motion vectors and `ActorLayer` draws them — so what is missing is simula
 state, not transport.
 
 **Guards do not need this channel at all.**
-`src/simulation/runtime/session-systems.ts:216-219` already carries
+`src/simulation/runtime/session-systems.ts:219-222` already carries
 `guards.records` with `tileX`/`tileY` in every bundle;
 `src/rendering/feed/actors-from-snapshot.ts:49-52` states that it deliberately does
 not decode them. That is a renderer-side omission with a fix in one file.

@@ -41,7 +41,7 @@ Three facts, each opened before it was cited:
    `IncidentResponseSystem` transitions the record to `'resolved'` or
    `'lapsed'` and `isPastDeadline` forces the second at
    `responseDeadlineTicks` past the start
-   (`src/simulation/incidents/response-system.ts:436`), so no riot can outlive
+   (`src/simulation/incidents/response-system.ts:439`), so no riot can outlive
    600 ticks unanswered.
 
 ### What that cost, measured

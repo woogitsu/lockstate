@@ -722,6 +722,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.minimap.title': 'Minimapa',
   'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',
+  'hud.minimap.no-prison': 'Utwórz lub wczytaj więzienie, aby zobaczyć mapę',
   'hud.minimap.navigable': 'Nie ma tu jeszcze mapy — naciśnij, aby przenieść tam kamerę',
   'hud.minimap.map-ready': 'Mapa więzienia — naciśnij, aby przesunąć kamerę',
 
@@ -1413,7 +1414,15 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // =====================================================================
   'save.panel.region': 'Zapisy więzień',
   'save.panel.title': 'Więzienia',
+  'save.manage.title': 'Zapisane więzienia',
+  'save.manage.local': 'Na tym urządzeniu',
+  'save.manage.cloud-unavailable': 'Zapisy w chmurze są niedostępne w tej wersji, ponieważ gra nie ma połączenia z chmurą.',
   'save.action.create': 'Nowe więzienie',
+  'save.empty-world.title': 'Rozpocznij grę',
+  'save.empty-world.description': 'Utwórz nowe więzienie albo wróć do zapisu w tej przeglądarce.',
+  'save.empty-world.create': 'Utwórz więzienie',
+  'save.empty-world.choose': 'Wczytaj zapisane więzienie',
+  'save.empty-world.restore': 'Przywróć usunięte więzienie',
   'save.default-prison-name': 'Nowe więzienie',
   'save.action.save': 'Zapisz teraz',
   'save.action.export': 'Eksportuj',
