@@ -57,4 +57,16 @@ describe('whole-room placement preflight', () => {
     )).toEqual({ ok: false, reason: 'structure-occupied', tile: tile(12, 20) });
     expect(world.snapshot()).toEqual(before);
   });
+
+  it('rejects an existing legacy edge wall inside the template footprint', () => {
+    const world = new SparseWorld(32);
+    world.load(originChunk);
+    world.setOwned(originChunk, true);
+    world.setTopEdge(tile(11, 21), 1);
+    const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 20 });
+
+    expect(validateRoomTemplatePlacement(world, plan)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 21),
+    });
+  });
 });
