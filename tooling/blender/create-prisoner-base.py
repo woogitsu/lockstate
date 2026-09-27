@@ -216,8 +216,8 @@ def animate_treatment_arm(item, side):
 
 def animate_shower_arm(item, side):
     """Bring both hands up to the head with a small alternating washing motion."""
-    item.rotation_euler.y = math.radians(32 * side)
-    for frame, degrees in enumerate((-142, -155, -148, -135, -142), start=1):
+    item.rotation_euler.y = math.radians(160 * side)
+    for frame, degrees in enumerate((-12, -24, -18, -6, -12), start=1):
         item.rotation_euler.x = math.radians(degrees)
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
 
