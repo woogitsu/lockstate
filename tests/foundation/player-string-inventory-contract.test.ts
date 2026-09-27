@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -85,6 +86,15 @@ describe('docs/PLAYER_STRINGS.md: the record reservation 4 owes the owner', () =
       committed,
       `${INVENTORY_PATH} disagrees with ${LOCALE_SOURCE_PATH}. Run \`pnpm content:player-strings\` and commit the result -- do not edit ${INVENTORY_PATH} by hand, and do not edit this test to make it pass, because a stale record is the entire defect this file exists to prevent`,
     ).toBe(`${buildInventory(localeSource)}\n`);
+  });
+
+  it('runs the documented generator when invoked as a CLI from a Windows path with spaces', () => {
+    const run = spawnSync(process.execPath, [join(REPOSITORY_ROOT, 'tooling/player-string-inventory.mjs')], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    });
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toMatch(/Wrote docs\/PLAYER_STRINGS\.md: \d+ authored sentences/);
   });
 
   it('every authored key the running game loads appears in the record, with the value the game loads', () => {
