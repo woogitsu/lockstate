@@ -977,6 +977,16 @@ records with a named entry apiece.
 > for the refusal to leave standing. The sentence under the table that calls
 > the undo pair *"a key chord and nothing else"* is history in the same way.
 
+> **AMENDED 2026-09-28 BY #1586.** The Room plans modal now sends
+> `PlaceRoomTemplate` through `RoomTemplateTool.placeAt`. Its one simulation
+> refusal surface brings the live enumeration to **35 triples**: **19**
+> simulation and **16** host, **33** pointer triples, **24** presses. The
+> Full HD browser race proves the refusal and absence of a partial cell: the
+> competing square alone remains in the queue. Thus **4** triples are now
+> discharged, **31** owed overall and **29** on the pointer-only reading.
+> The modal is checked at its class
+> method seam because the callback reachability walk does not cross it.
+
 **Eight triples are driven and only three are discharged, and the gap is the
 useful part of this pass.** Five specs reach a real refusal through a real
 press and assert the sentence, the band, the alerts row, the marked control —
