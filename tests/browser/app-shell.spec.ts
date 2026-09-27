@@ -5051,11 +5051,6 @@ test.describe('the assembled application', () => {
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
       ...NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION,
       NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
-      // This sweep deliberately starts a playable session. The central
-      // empty-session routes are verified separately in
-      // empty-world-prompt-1534.spec.ts and are hidden in this state.
-      'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Create a prison"',
-      'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Load a saved prison"',
     ];
     const neverLaidOut = inventory.controls.filter(
       (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
