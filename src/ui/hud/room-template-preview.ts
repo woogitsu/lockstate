@@ -2,6 +2,7 @@ import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, type RoomTemplateId } from 
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
 import type { HudLocalizer } from './view-model';
+import type { RoomTemplateTool } from '../room-template-tool';
 
 const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': 'hud.build.template-cell-basic',
@@ -10,7 +11,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
-export function createRoomTemplatePreview(localizer: HudLocalizer): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
+export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
   const t = (key: LocalizationKey): string => localizer.format(key);
   const openButton = element('button', {
     className: 'hud-build__template-open',
@@ -37,7 +38,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer): { readonly o
     className: 'hud-template',
     children: [
       element('div', { className: 'hud-template__header', children: [title, closeButton] }),
-      element('p', { text: t('hud.build.template-preview-only') }),
+      element('p', { text: t(tool === undefined ? 'hud.build.template-preview-only' : 'hud.build.template-position-hint') }),
       choices,
       dimensions,
       diagram,
@@ -49,8 +50,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer): { readonly o
   dialog.setAttribute('aria-labelledby', title.id);
 
   const buttons = new Map<RoomTemplateId, HTMLButtonElement>();
+  let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
+  let mirrorX = false;
   function select(id: RoomTemplateId): void {
-    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
+    selectedId = id;
+    tool?.select(id, mirrorX);
+    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = `${plan.width} × ${plan.height}`;
     const counts = new Map<string, number>();
@@ -74,6 +79,74 @@ export function createRoomTemplatePreview(localizer: HudLocalizer): { readonly o
         diagram.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }));
       }
     }
+    if (dialog.open) void refreshPlacement();
+  }
+
+  // This form is absent in the shipped app until both worker preflight and
+  // atomic placement are supplied. A selectable preview must never masquerade
+  // as a working build action while that backend is missing.
+  let refreshPlacement = async (): Promise<void> => {};
+  if (tool !== undefined) {
+    const x = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t('hud.build.template-x') } });
+    const y = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t('hud.build.template-y') } });
+    const mirror = element('input', { attributes: { type: 'checkbox' } });
+    const place = element('button', { text: t('hud.build.template-place'), attributes: { type: 'button' } });
+    const status = element('p', { className: 'hud-template__status', attributes: { role: 'status' } });
+    place.disabled = true;
+    const origin = (): { x: number; y: number } | undefined => {
+      if (x.value.trim() === '' || y.value.trim() === '') return undefined;
+      const next = { x: Number(x.value), y: Number(y.value) };
+      return Number.isSafeInteger(next.x) && Number.isSafeInteger(next.y) ? next : undefined;
+    };
+    let revision = 0;
+    refreshPlacement = async (): Promise<void> => {
+      const current = ++revision;
+      place.disabled = true;
+      const tile = origin();
+      if (tile === undefined) {
+        status.textContent = t('hud.build.template-invalid-position');
+        return;
+      }
+      try {
+        const { plan, verdict } = await tool.inspectAt(tile);
+        if (current !== revision) return;
+        place.disabled = !verdict.ok;
+        for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
+        if (!verdict.ok) {
+          const localX = verdict.tile.x - plan.origin.x;
+          const localY = verdict.tile.y - plan.origin.y;
+          diagram.children[localY * plan.width + localX]?.classList.add('hud-template__tile--blocked');
+        }
+        status.textContent = verdict.ok ? t('hud.build.template-ready') : `${t('hud.build.template-blocked')} (${verdict.tile.x}, ${verdict.tile.y})`;
+      } catch {
+        if (current === revision) status.textContent = t('hud.build.template-unavailable');
+      }
+    };
+    x.addEventListener('input', () => void refreshPlacement());
+    y.addEventListener('input', () => void refreshPlacement());
+    mirror.addEventListener('change', () => {
+      mirrorX = mirror.checked;
+      tool.select(selectedId, mirrorX);
+      select(selectedId);
+    });
+    place.addEventListener('click', async () => {
+      const tile = origin();
+      if (tile === undefined || place.disabled) return;
+      place.disabled = true;
+      try {
+        const result = await tool.placeAt(tile);
+        status.textContent = result.ok ? t('hud.build.template-submitted') : t('hud.build.template-blocked');
+      } catch {
+        status.textContent = t('hud.build.template-unavailable');
+      }
+      // Keep this origin locked after queuing. The worker may not have run the
+      // command yet, so an immediate read can still say "clear" and allow a
+      // second press. Editing the origin or choice asks for a fresh verdict.
+    });
+    dialog.append(element('div', {
+      className: 'hud-template__placement',
+      children: [x, y, element('label', { children: [mirror, element('span', { text: t('hud.build.template-mirror') })] }), place, status],
+    }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {
     const button = element('button', { text: t(NAME_KEYS[id]), attributes: { type: 'button' } });
@@ -82,7 +155,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer): { readonly o
     choices.append(button);
   }
   select(ROOM_TEMPLATE_IDS[0]);
-  openButton.addEventListener('click', () => dialog.showModal());
+  openButton.addEventListener('click', () => { dialog.showModal(); void refreshPlacement(); });
   closeButton.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => openButton.focus());
   return { openButton, dialog };

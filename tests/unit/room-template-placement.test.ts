@@ -41,4 +41,32 @@ describe('whole-room placement preflight', () => {
       ok: false, reason: 'object-occupied', tile: tile(11, 21),
     });
   });
+
+  it('refuses a claimed but not yet built square before creating any template order', () => {
+    const world = new SparseWorld(32);
+    world.load(originChunk);
+    world.setOwned(originChunk, true);
+    const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 20 });
+    const before = world.snapshot();
+
+    expect(validateRoomTemplatePlacement(
+      world,
+      plan,
+      () => false,
+      ({ x, y }) => x === 12 && y === 20,
+    )).toEqual({ ok: false, reason: 'structure-occupied', tile: tile(12, 20) });
+    expect(world.snapshot()).toEqual(before);
+  });
+
+  it('rejects an existing legacy edge wall inside the template footprint', () => {
+    const world = new SparseWorld(32);
+    world.load(originChunk);
+    world.setOwned(originChunk, true);
+    world.setTopEdge(tile(11, 21), 1);
+    const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 20 });
+
+    expect(validateRoomTemplatePlacement(world, plan)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 21),
+    });
+  });
 });
