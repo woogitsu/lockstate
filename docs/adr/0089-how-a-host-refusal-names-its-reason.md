@@ -46,7 +46,7 @@
 > not the `Record` Option 2
 > recommends. So: H4 is no longer a miss (the "genuinely player-actionable...
 > **No**" cells below are false), the sentence is shipped
-> (`src/content/default-locale-en.ts:2369`, key `hud.refusal.admit-prisoner-no-room`,
+> (`src/content/default-locale-en.ts:3564`, key `hud.refusal.admit-prisoner-no-room`,
 > "Nobody was admitted — this prison has no room to hold anybody."), and the
 > "What it costs to implement" table's H4/`messages.ts`/`default-locale-en.ts`
 > rows describe work already done, differently named and NOT compiler-checked.
