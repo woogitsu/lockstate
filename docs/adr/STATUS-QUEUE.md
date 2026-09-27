@@ -792,7 +792,15 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `42fc9649` (**v0.0.784**) by the delta method,
+Re-anchored at `main` @ `c8d25355` (**v0.0.795**) by the delta method,
+from `dbd24ea3`, the last tree whose window the dated §3 reading actually
+describes. That reading's header was later moved to `42fc9649` without moving
+its `9e6361c9..dbd24ea3` window or its nine-landing count. The new §3 entry
+records the larger re-reading, including that mismatch; neither staleness
+budget changes.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`42fc9649` (**v0.0.784**) by the delta method,"* and continued:
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -21802,6 +21810,60 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-09-26 pass: the previous anchor outran its own reading
+
+Read at `c8d25355` (**v0.0.795**). The previous live header named
+`42fc9649`, but the entry it certified explicitly measured
+`9e6361c9..dbd24ea3`: nine non-release first-parent landings. The actual
+`9e6361c9..42fc9649` window has twenty-two such landings. Moving the header
+without re-reading that intervening history made its stated window false on
+the day it was written. This pass therefore reads from `dbd24ea3`, not from
+the misleading header: **24 non-release first-parent landings, 269 commits,
+436 changed paths**, including 43 in `src/` and 40 under `docs/adr/`.
+The current `main` CI failed one of 5,726 tests on the resulting stale-anchor
+gate (run 36269080607); the automatic staging deploy then reported that it
+did not publish (run 36269260231). Those are consequences of the red gate,
+not evidence that the in-flight save change itself failed a simulation test.
+
+**The decision census did not flip.** The ADR index still has 117 numbered
+rows, 42 `Proposed` and 75 `Accepted`, with **Next free number: 0124**.
+The one changed index row rewrites description, not status. §2 still has nine
+live entries. This is a count of the current index and the named entries,
+not an inference from which PRs merged or from the new save format.
+
+**§4's deployment constraint remains unenforced in this repository.**
+`docs/DEPLOYMENT.md` and `.github/workflows/migrate-database.yml` are
+unchanged across the real review window. The latter still exposes only
+`workflow_dispatch`, with typed project-ref confirmation and an environment
+gate for applying migrations to production. The former still records the
+hosted staging integration as a dashboard configuration with no gate on
+every merge. The window *does* add
+`supabase/migrations/20260826090000_close_prison_id_existence_oracles.sql`
+(#355), so the previous entry's "migrations unchanged" observation cannot
+be carried forward. A repository diff cannot establish whether that SQL has
+already been applied to the hosted project or whether the integration's
+production-project constraint is enforced outside this repository.
+
+**§5's two stale-writer discrepancies still stand, at new coordinates.**
+`docs/PERSISTENCE.md:2857-2858` says the manual stale refusal is reached only
+after one retry, but `src/persistence/session/session-controller.ts:1032`
+returns another tab's conflict immediately. The document's departed-writer
+bullet at `:2862-2864` says there is no report, while `saveNow` at
+`session-controller.ts:1081-1086` returns a failed result for a manual save
+whose session changed. The new V6/V7 `simulation.inFlight` explanation moved
+the prose coordinates; it did not change either stale-writer rule. The source
+file's only edit in this window is the default-name argument of
+`createPrison`, above these branches. Historical coordinates below this
+entry remain dated records, not current evidence.
+
+**§6's status-reference gate remains in place.** Its test file is unchanged
+in this window; it still checks the corpus walk, parsed status claims and
+numbered ADR floor. The current index and ADR status census above agree, but
+the gate's known blind spots remain: claims without an ADR number, negations,
+dated research, and applied migrations as history. The re-reading above is
+targeted to the live claims and paths the window could falsify. It does not
+certify every historical `file:line` in this long archive.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 
