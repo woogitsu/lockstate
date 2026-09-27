@@ -57,6 +57,7 @@ export const placeBuildOrderSchema = z.object({
   x: z.number().int(),
   y: z.number().int(),
   edge: z.enum(BUILD_EDGES).optional(),
+  footprint: z.literal('square').optional(),
   transactionId: z.string().optional(),
 }).strict();
 
@@ -808,6 +809,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         x: command.x,
         y: command.y,
         ...(command.edge === undefined ? {} : { edge: command.edge }),
+        ...(command.footprint === undefined ? {} : { footprint: command.footprint }),
         ...(command.transactionId === undefined
           ? {}
           : { transactionId: command.transactionId }),
