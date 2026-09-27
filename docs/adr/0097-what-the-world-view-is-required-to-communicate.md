@@ -155,11 +155,11 @@ seventh field, and no room-instance identity: `zoning` is the room *catalog*
 numeric id, so two adjacent cells are indistinguishable to the painter.
 
 Everything the tile layer draws from those six is in one method,
-`TileLayer.paintChunk` (`src/rendering/phaser/tile-layer.ts:298-416`), and it
+`TileLayer.paintChunk` (`src/rendering/phaser/tile-layer.ts:303-421`), and it
 paints from three inputs and no more:
 
 1. **The floor sprite**, chosen per tile at
-   `src/rendering/phaser/tile-layer.ts:333`. At `430906af` (v0.0.757) the
+   `src/rendering/phaser/tile-layer.ts:338`. At `430906af` (v0.0.757) the
    selector had five lines and ended with a literal:
 
    `return 'env.floor.institutional';`
@@ -171,7 +171,7 @@ paints from three inputs and no more:
    branched on nothing except whether the zoning id named a known room. Its
    docblock said so at `:152-154` — *"One floor for every category today."*
 
-2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at the
+2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:363-368`, at the
    time this was written one of two alphas depending only on whether art is
    under it:
 
@@ -234,7 +234,7 @@ that changed a value the painter reads.
 
 ### 3. The one state indicator the world view does have, and its scope
 
-VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:622-631`) draws
+VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:642-651`) draws
 an unfinished build order translucent, from two constants:
 
 `export const PLANNED_ALPHA = 0.35;` `export const BUILDING_ALPHA = 0.65;`
@@ -310,7 +310,7 @@ in prose.
 > written:** ADR 0099's world-revision marker, read off a delta, at
 > `src/rendering/feed/simulation-snapshot-feed.ts:563`. It makes a *geometry*
 > change prompt rather than 30 seconds stale, because `SparseWorld.setZoning`
-> moves that marker (`src/simulation/world/sparse-world.ts:908`).
+> moves that marker (`src/simulation/world/sparse-world.ts:913`).
 >
 > **And the last clause above — that `docs/RENDERING.md` states the same set in
 > prose — is the half worth reading, because the two documents have since moved
@@ -529,7 +529,7 @@ What is left, and what this document recommends be priced first: a mark at the
 room's *boundary* rather than over its floor — the room rectangle is on the
 instance (`src/simulation/prisoners/room-instance-registry.ts:75-82`) and the
 painter already draws a boundary of exactly this kind for owned land, edge by
-edge, at `src/rendering/phaser/tile-layer.ts:374-386`. A boundary uses a
+edge, at `src/rendering/phaser/tile-layer.ts:379-391`. A boundary uses a
 different visual channel from a floor wash, so identity and condition stop
 competing.
 
@@ -668,13 +668,13 @@ machinery" actually reduces to, and because someone will propose it.
   the two multiply — identity × condition, up to 36 sheets, tens of megabytes on
   first load. ARITHMETIC from that one constant, not measured.
 - **It rides the wrong channel and cannot be moved off it.** The floor sprite is
-  chosen inside the chunk paint (`src/rendering/phaser/tile-layer.ts:333`) and
+  chosen inside the chunk paint (`src/rendering/phaser/tile-layer.ts:338`) and
   cached per chunk until the revision moves, so it is the 30-second net by
   construction. Making it live means repainting chunks on the delta cadence,
   which is precisely the cost ADR 0040 slice 1 removed.
 - **It invalidates a run optimisation.** `mergeFloorRects` collapses a zoned
   room into greedy rectangles — *"a zoned room is one sprite, not one per
-  tile"* (`src/rendering/phaser/tile-layer.ts:64-66`). A per-condition sprite
+  tile"* (`src/rendering/phaser/tile-layer.ts:65-67`). A per-condition sprite
   choice fragments those runs as conditions change.
 - It also lands in `src/rendering/world/environment-art.ts`, which is #1020's
   surface this week.
