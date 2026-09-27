@@ -46,7 +46,6 @@ function text(key: string): string {
 /** Loads the real application and waits for the same things `ui-language-picker.spec.ts` waits for. */
 async function openApp(page: Page): Promise<void> {
   await page.goto(APP_URL);
-  await page.waitForSelector('#game-root canvas');
   await page.waitForSelector('.hud');
   await page.waitForSelector('.save-panel');
   await page.waitForSelector(LANGUAGE_CYCLE, { state: 'attached' });
@@ -74,7 +73,10 @@ async function cycleLanguage(page: Page, expected: string): Promise<void> {
   await expect(page.locator(LANGUAGE_CYCLE)).toBeVisible();
   await page.locator(LANGUAGE_CYCLE).click();
   await expect(page.locator(LANGUAGE_CYCLE)).toHaveAttribute('data-preference', expected);
-  await page.waitForSelector('#game-root canvas');
+  // A browser with no prison now settles on the empty-world prompt after a
+  // language reload. Waiting for a canvas here asserted a world exists when
+  // the test deliberately created none, and blocked the actual two-tab check.
+  await page.waitForSelector('.hud');
   await page.waitForSelector('.save-panel');
 }
 
