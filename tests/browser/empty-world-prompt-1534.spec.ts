@@ -49,6 +49,20 @@ for (const viewport of [{ width: 1920, height: 1080 }, { width: 2560, height: 14
   });
 }
 
+test('the start card leaves the map clickable and yields compact viewports to the save rail (#1534)', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  const prompt = page.locator('.empty-world-prompt');
+  await expect(prompt).toBeVisible();
+  expect(await page.evaluate(() => document.elementFromPoint(960, 540)?.tagName)).toBe('CANVAS');
+  await expect(prompt.getByRole('button', { name: 'Create a prison' })).toBeVisible();
+
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(prompt).toBeHidden();
+  await expect(page.locator('.save-panel').getByRole('button', { name: 'New prison' })).toBeVisible();
+  expect(await page.evaluate(() => document.elementFromPoint(640, 360)?.tagName)).toBe('CANVAS');
+});
+
 test('the central route reaches a restorable deleted prison before offering Load (#1534)', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/index.html');
