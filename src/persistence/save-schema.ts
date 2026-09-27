@@ -1651,6 +1651,18 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   navigation: navigationSectionSchema.omit({ work: true }),
   security: securitySectionV7Schema,
   contraband: contrabandSectionV7Schema,
+  // Optional V7 extension: saves from before authored template gestures have
+  // no pending template to resume. The embedded version allows a future
+  // planner to migrate its own queue contract without changing that meaning.
+  roomTemplates: z.object({
+    version: z.literal(1),
+    pending: z.array(z.object({
+      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
+      origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+      mirrorX: z.boolean(),
+      sequence: z.number().int().nonnegative(),
+    }).strict()),
+  }).strict().optional(),
 }).strict();
 
 // --- Envelope ---
