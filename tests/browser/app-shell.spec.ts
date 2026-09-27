@@ -2070,7 +2070,11 @@ interface WallSquare {
  * `tests/helpers/room-walls.ts`, and nothing that stubbed one would be proving
  * what this file exists to prove.
  *
- * `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
+ * Current route: place a one-square-thick ring outside each zone rectangle.
+ * The square boundary reader treats each wall square as a closed face against
+ * the adjacent room square; shared ring squares are ordered only once.
+ *
+ * Historical route, kept to explain older save geometry: `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
  * rectangle's south boundary is the north edge of the row *below* it and its
  * east boundary is the west edge of the column to its *right* -- tiles outside
  * the rectangle. That is what made a room flush against the edge of owned land
@@ -2099,8 +2103,7 @@ interface WallSquare {
  * The claim is corrected rather than deleted because the *reason* to dedupe is
  * unchanged: nothing here may assume the drags stay clear of each other.
  *
- * North first, then west, so the edge chooser is pressed twice for a whole
- * prison rather than once per segment.
+ * The new route has no edge chooser for wall squares.
  */
 function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSquare[] {
   const seen = new Set<string>();

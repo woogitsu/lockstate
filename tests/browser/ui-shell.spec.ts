@@ -2742,7 +2742,7 @@ test.describe('HUD shell', () => {
       expect(probe.armLabel).toBe('Place on map');
       expect(probe.removeLabel).toBe('Remove');
       expect(probe.buyToggleVisible).toBe(true);
-      expect(probe.hint).toContain('Click a tile edge');
+      expect(probe.hint).toContain('Click a whole tile');
 
       /*
        * And the world tool is told, which the DOM above cannot show.
