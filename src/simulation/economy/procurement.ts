@@ -384,6 +384,13 @@ export class ProcurementSystem implements SystemRegistration {
     const material = procurableMaterial(itemId);
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
+    const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
+    // Preserve the existing affordability refusal when both money and space
+    // are lacking; the storage guard still runs before any treasury mutation.
+    if (!this.treasury.canAfford(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
+      return { ok: false, reason: 'insufficient-funds' };
+    }
+
     if (this.deliverySpace !== undefined) {
       const space = this.deliverySpace();
       const pendingUnits = this.pending.reduce((sum, delivery) => sum + delivery.quantity, 0);
@@ -392,7 +399,6 @@ export class ProcurementSystem implements SystemRegistration {
       }
     }
 
-    const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
       return { ok: false, reason: 'insufficient-funds' };
     }

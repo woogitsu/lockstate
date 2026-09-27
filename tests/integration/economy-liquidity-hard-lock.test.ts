@@ -261,6 +261,17 @@ function send(runtime: SimulationRuntime, id: string, command: SimulationCommand
   runtime.kernel.step();
 }
 
+/** Legacy treasury boundary probes need a stocked warehouse to isolate money from #587's gate limit. */
+function equipWarehouseForTreasuryProbe(runtime: SimulationRuntime): void {
+  runtime.prisoners.roomInstances.register({
+    instanceId: 'treasury-probe-warehouse', roomCatalogId: 'room.storage-room',
+    anchorTile: { x: tileCoordinate(1), y: tileCoordinate(1) },
+    residentCapacity: 0, concurrentUseCapacity: 20,
+    concurrentUseCapacityByCapability: [['item-storage', 20]],
+    objectCapabilities: ['item-storage'],
+  });
+}
+
 function stepTo(runtime: SimulationRuntime, tick: number): void {
   while (runtime.kernel.tick < tick) runtime.kernel.step();
 }
@@ -482,6 +493,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      */
     const runtime = createNewSimulationRuntime(SEED);
     expect(runtime.treasury.balanceMinorUnits).toBe(25_000);
+    equipWarehouseForTreasuryProbe(runtime);
     expect(runtime.treasury.overdraftFloorMinorUnits, 'the facility is standing, unpressed').toBe(-OVERDRAFT_ROOM);
 
     // The exact press that used to reach ECON-002 (quoted above) is refused
@@ -702,6 +714,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * rulings later.
      */
     const runtime = createNewSimulationRuntime(SEED);
+    equipWarehouseForTreasuryProbe(runtime);
     send(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG });
     expect(runtime.treasury.balanceMinorUnits).toBe(STARTER_BALANCE_AT_THE_RUNG);
     stepTo(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
@@ -717,6 +730,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     // bricks leaves -1,120, which is exactly 65 of press room, and the plank
     // goes through by a direct press -- no construction order needed here.
     const escaped = createNewSimulationRuntime(SEED);
+    equipWarehouseForTreasuryProbe(escaped);
     send(escaped, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: STARTER_BRICKS_TO_THE_RUNG - 1 });
     expect(escaped.treasury.balanceMinorUnits).toBe(-1_120);
     send(escaped, 'buy-plank', { type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 });
@@ -807,6 +821,7 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    */
   it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    equipWarehouseForTreasuryProbe(runtime);
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
     // and it never presses a purchase again.

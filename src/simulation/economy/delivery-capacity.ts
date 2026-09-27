@@ -9,9 +9,9 @@ import type { JobBoard } from '../operations/job';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 
 /** #587: a small gate pile, enlarged by a working delivery bay and storage racks. */
-export const BARE_GATE_CAPACITY = 20;
-export const FURNISHED_BAY_CAPACITY = 80;
-export const STORAGE_RACK_CAPACITY = 40;
+export const BARE_GATE_CAPACITY = 600;
+export const FURNISHED_BAY_CAPACITY = 100;
+export const STORAGE_RACK_CAPACITY = 200;
 
 /** Physical stock includes goods in a carrier's hands during a drop-off leg. */
 export function occupiedDeliveryUnits(containers: ContainerRegistry, jobs: JobBoard): number {
