@@ -3245,6 +3245,11 @@
   overflow-y: auto;
 }
 
+.hud-regime__editor-list .ui-toggles__reason {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* Name left, share right: the shape every readout line in this HUD uses. */
 .hud-regime__block-header {
   display: flex;
