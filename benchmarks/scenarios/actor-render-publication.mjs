@@ -406,8 +406,11 @@ const SMOKE_BOUNDS = Object.freeze({
    * `src/simulation/protocol/render-actors-payload.ts`, read rather than
    * assumed, and a byte count that moved without the version moving with it is
    * the failure this pair exists to catch.
+   *
+   * 4 -> 5 with #1507's actor action word. The record and header widths stay
+   * unchanged, so the byte bounds above still apply while the version advances.
    */
-  decodedLayoutVersion: { equals: 4 },
+  decodedLayoutVersion: { equals: 5 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 500 },
 });
@@ -443,7 +446,7 @@ const FULL_BOUNDS = Object.freeze({
   decodedRemovedCount: { equals: 0 },
   /* Zero for the smoke profile's reason: this fixture zones no rooms either. */
   decodedRoomConditionCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 4 },
+  decodedLayoutVersion: { equals: 5 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
 });

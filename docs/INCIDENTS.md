@@ -430,10 +430,11 @@ obstacle this paragraph claimed it was, because re-dispatch mounts a new
 response rather than returning the incident to `'active'`.
 
 The outcome is the **same terminal state, later by at most one scheduling
-interval**: `tests/integration/incident-response-restore.test.ts:443-456` runs a
-restored session against a continuous one and asserts both reach `'resolved'`
-with equal outcomes, the restored one closing at tick 81 against the continuous
-run's 71. `docs/DETERMINISM.md` has carried that reading since the change.
+interval**: `tests/integration/incident-response-restore.test.ts:461-470` uses
+`tickOfIncidentClose` to run a restored session against a continuous one and
+asserts both reach `'resolved'` with equal outcomes, the restored one closing at
+tick 81 against the continuous run's 71. `docs/DETERMINISM.md` has carried that
+reading since the change.
 
 **This paragraph used to say the incident "lapses at its deadline ... which is
 precisely the consistent-failure outcome issue #28 demands", and cited
