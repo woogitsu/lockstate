@@ -15,6 +15,7 @@ import {
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { buildQueueFromProjection } from '../../src/ui/simulation-build-queue';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 
 /**
  * **A build order buys what it needs** — [ADR 0017](../../docs/adr/0017-money-primary-resource-model.md)
@@ -644,6 +645,7 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * holds bricks a bed cannot use either way, which is the property the
      * fixture was chosen for.
      */
+    addBulkPurchaseStorage(runtime);
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 654 });
     expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches while fresh and unfurnished').toBe(-1_160);
     expect(runtime.treasury.spend(70, 'wages'), 'and the rest, the way a payday would').toBe(true);

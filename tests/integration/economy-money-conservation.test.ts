@@ -14,6 +14,7 @@ import {
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 
 /**
  * **Money is conserved across every build order a player can place and take
@@ -754,13 +755,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     const session = createSession();
     // This treasury boundary fixture needs enough pre-existing storage to
     // isolate exact affordability from the independent #587 gate limit.
-    session.runtime.prisoners.roomInstances.register({
-      instanceId: 'exact-balance-warehouse', roomCatalogId: 'room.storage-room',
-      anchorTile: { x: tileCoordinate(1), y: tileCoordinate(1) },
-      residentCapacity: 0, concurrentUseCapacity: 20,
-      concurrentUseCapacityByCapability: [['item-storage', 20]],
-      objectCapabilities: ['item-storage'],
-    });
+    addBulkPurchaseStorage(session.runtime);
     session.buy('order-buy-everything', WALL_REQUIREMENT.itemId, wholeBalance, 'a purchase for the exact balance');
 
     expect(

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { placedObjectAt } from '../../src/simulation/objects';
 import { tileCoordinate } from '../../src/simulation/world';
@@ -90,6 +91,7 @@ function send(runtime: SimulationRuntime, command: SimulationCommand): void {
  */
 function prisonRestoredWithAnOffCatalogueRoom(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  addBulkPurchaseStorage(runtime);
   runtime.prisoners.roomInstances.register({
     instanceId: 'restored-1',
     roomCatalogId: OFF_CATALOGUE_ROOM_ID,
