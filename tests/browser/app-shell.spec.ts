@@ -2050,11 +2050,10 @@ interface TileRectangle {
   readonly height: number;
 }
 
-/** One `wall-brick` order: the tile it is anchored to, and which of that tile's two edges it fills. */
-interface WallSegment {
+/** One whole-square `wall-brick` order outside a zoned rectangle. */
+interface WallSquare {
   readonly x: number;
   readonly y: number;
-  readonly edge: 'north' | 'west';
 }
 
 /**
@@ -2103,27 +2102,23 @@ interface WallSegment {
  * North first, then west, so the edge chooser is pressed twice for a whole
  * prison rather than once per segment.
  */
-function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSegment[] {
+function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSquare[] {
   const seen = new Set<string>();
-  const segments: WallSegment[] = [];
-  const add = (segment: WallSegment): void => {
-    const key = `${segment.x},${segment.y},${segment.edge}`;
+  const segments: WallSquare[] = [];
+  const add = (segment: WallSquare): void => {
+    const key = `${segment.x},${segment.y}`;
     if (seen.has(key)) return;
     seen.add(key);
     segments.push(segment);
   };
-  for (const edge of ['north', 'west'] as const) {
-    for (const rectangle of rectangles) {
-      if (edge === 'north') {
-        for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-          add({ x, y: rectangle.y, edge });
-          add({ x, y: rectangle.y + rectangle.height, edge });
-        }
-      } else {
-        for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
-          for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) add({ x, y, edge });
-        }
-      }
+  for (const rectangle of rectangles) {
+    for (let x = rectangle.x - 1; x <= rectangle.x + rectangle.width; x += 1) {
+      add({ x, y: rectangle.y - 1 });
+      add({ x, y: rectangle.y + rectangle.height });
+    }
+    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) {
+      add({ x: rectangle.x - 1, y });
+      add({ x: rectangle.x + rectangle.width, y });
     }
   }
   return segments;
@@ -2272,7 +2267,7 @@ async function wallRectanglesFromTheKeyboard(
   page: Page,
   rectangles: readonly TileRectangle[],
   options: WallOrderOptions = {},
-): Promise<readonly WallSegment[]> {
+): Promise<readonly WallSquare[]> {
   const orderAt = options.orderAt;
   if (orderAt === undefined) return orderWallRectangles(page, rectangles);
   const entered = page.viewportSize();
@@ -2290,7 +2285,7 @@ async function wallRectanglesFromTheKeyboard(
 async function orderWallRectangles(
   page: Page,
   rectangles: readonly TileRectangle[],
-): Promise<readonly WallSegment[]> {
+): Promise<readonly WallSquare[]> {
   const segments = perimeterSegments(rectangles);
 
   await tabTo(page, 'the Build tab', { selector: '.ui-tab[data-tab="build"]' });
@@ -2451,7 +2446,6 @@ async function orderWallRectangles(
     strides.set(name, await walkFocus(page, key, name, target));
   };
 
-  let chosenEdge: WallSegment['edge'] | undefined;
   let chosenColumn: number | undefined;
   let entered = false;
   for (const segment of segments) {
@@ -2482,22 +2476,11 @@ async function orderWallRectangles(
     }
     await page.keyboard.press('Control+a');
     await page.keyboard.type(String(segment.y));
-    if (chosenEdge !== segment.edge) {
-      await tabTo(page, `the ${segment.edge} edge option`, {
-        selector: `.hud-build__coordinates [data-choice="${segment.edge}"]`,
-      });
-      await page.keyboard.press('Enter');
-      chosenEdge = segment.edge;
-      // From the chooser rather than from the field: a different distance, so
-      // a different hop.
-      await tabTo(page, 'the Place order control', { selector: '.hud-build__coordinates .ui-action' });
-    } else {
-      // This hop is also what commits the Tile Y field, which reports on
-      // `change`, and `change` fires when focus leaves the input.
-      await hopTo('the Place order control, from the Tile Y field', 'Tab', {
-        selector: '.hud-build__coordinates .ui-action',
-      });
-    }
+    // Whole-square walls have no edge chooser. Leaving Tile Y commits its
+    // change before submitting the order.
+    await hopTo('the Place order control, from the Tile Y field', 'Tab', {
+      selector: '.hud-build__coordinates .ui-action',
+    });
     await page.keyboard.press('Enter');
   }
 
