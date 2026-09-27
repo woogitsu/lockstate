@@ -2,7 +2,7 @@ import type { TilePosition } from './coordinates';
 import type { SparseWorld } from './sparse-world';
 
 /** The physical face between neighboring ground squares in the new construction model. */
-export type SquareBoundary = 'open' | 'wall' | 'door';
+type SquareBoundary = 'open' | 'wall' | 'door';
 
 function face(value: number, axis: 'horizontal' | 'vertical'): SquareBoundary {
   if (value === 1) return 'wall';
