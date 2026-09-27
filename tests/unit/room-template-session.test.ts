@@ -21,6 +21,19 @@ describe('room template session command', () => {
     expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
   });
 
+  it('rejects an overlapping second template while the first shell is still queued', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.submitCommand('template-1', 1, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 6, y: 5 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
+    expect(runtime.construction.allOrders()).toHaveLength(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).shellOrderIds.length);
+  });
+
   it('accepts one complete shell and preserves its pending zoning obligation over save/reload', () => {
     const runtime = createNewSimulationRuntime(72);
     runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
@@ -36,6 +49,7 @@ describe('room template session command', () => {
     const envelope = createSaveEnvelope({
       gameVersion: 'lockstate-0.0.0', prisonId: 'room-template-test', revision: 1,
       createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
       kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
       ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
       ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
@@ -47,6 +61,16 @@ describe('room template session command', () => {
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle);
     expect(restored.runtime.roomTemplates.snapshot()).toEqual(before);
     expect(restored.runtime.construction.allOrders()).toEqual(runtime.construction.allOrders());
+    for (let tick = 0; tick < 4000; tick += 1) {
+      runtime.kernel.step();
+      restored.runtime.kernel.step();
+      if (runtime.roomTemplates.snapshot().pending.length === 0 &&
+          runtime.construction.allOrders().every((order) => order.state === 'completed')) break;
+    }
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(restored.runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(restored.runtime.construction.allOrders()).toEqual(runtime.construction.allOrders());
+    expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
   });
 
   it('builds, zones and furnishes a real Cell through scheduled construction', () => {
