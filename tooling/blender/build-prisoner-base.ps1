@@ -24,7 +24,7 @@ if (-not (Test-Path -LiteralPath $Blender -PathType Leaf)) {
 # of the render. Without it the output depends on whoever's machine ran it.
 $blenderFlags = @('--background', '--factory-startup', '--python-exit-code', '1')
 
-$actorIds = @('actor.prisoner.base', 'actor.prisoner.riot', 'actor.prisoner.assault', 'actor.prisoner.treatment', 'actor.prisoner.shower', 'actor.prisoner.yard', 'actor.guard.base', 'actor.guard.response', 'actor.guard.search', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
+$actorIds = @('actor.prisoner.base', 'actor.prisoner.riot', 'actor.prisoner.assault', 'actor.prisoner.treatment', 'actor.prisoner.shower', 'actor.prisoner.yard', 'actor.prisoner.classroom', 'actor.guard.base', 'actor.guard.response', 'actor.guard.search', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
 foreach ($actorId in $actorIds) {
     $actorContract = if ($actorId -eq 'actor.guard.response') {
         Join-Path $repositoryRoot 'assets\contracts\guard-response-8-direction.contract.json'
@@ -38,6 +38,8 @@ foreach ($actorId in $actorIds) {
         Join-Path $repositoryRoot 'assets\contracts\prisoner-shower-8-direction.contract.json'
     } elseif ($actorId -eq 'actor.prisoner.yard') {
         Join-Path $repositoryRoot 'assets\contracts\prisoner-yard-8-direction.contract.json'
+    } elseif ($actorId -eq 'actor.prisoner.classroom') {
+        Join-Path $repositoryRoot 'assets\contracts\prisoner-classroom-8-direction.contract.json'
     } elseif ($actorId -eq 'actor.prisoner.treatment') {
         Join-Path $repositoryRoot 'assets\contracts\prisoner-treatment-8-direction.contract.json'
     } else { $contract }

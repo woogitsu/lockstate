@@ -58,6 +58,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.classroom",
+      "manifest": "actor.prisoner.classroom.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "study"
+      ]
+    },
+    {
       "assetId": "actor.prisoner.riot",
       "manifest": "actor.prisoner.riot.atlas-manifests.json",
       "clips": [
