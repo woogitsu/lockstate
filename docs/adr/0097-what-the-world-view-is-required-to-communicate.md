@@ -145,7 +145,7 @@ than a bug report.
 VERIFIED, read. The renderer's whole per-tile vocabulary is six fields, and the
 constructor for one of them enumerates them in a single line:
 
-`return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, zoning: 0, owned: false };`
+`return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, squareStructure: 0, zoning: 0, owned: false };`
 (verbatim in `src/rendering/world/world-view.ts`)
 
 `TileSample` is declared immediately above it at
