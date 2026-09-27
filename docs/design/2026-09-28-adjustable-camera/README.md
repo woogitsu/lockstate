@@ -111,6 +111,8 @@ hide interiors, no HUD or text, 16:9 1920 × 1080, no copied game art.” Add:
 
 ## Related work
 
+- [#1592](https://github.com/woogitsu/lockstate/issues/1592) tracks the adjustable
+  camera and its real-game acceptance gates.
 - Build square footprint and basic room catalog: #1587, then additional room
   patterns in #1589 (stacked).
 - Wall/cutaway Blender kit: `codex/wall-cutaway-art-2026-09-28`.
