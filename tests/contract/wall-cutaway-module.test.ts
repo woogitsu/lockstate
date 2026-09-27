@@ -19,8 +19,13 @@ describe('interior wall cutaway source module', () => {
       'wall.interior.corner.outer.full', 'wall.interior.corner.outer.cutaway',
       'wall.interior.end.full', 'wall.interior.end.cutaway',
       'wall.interior.doorframe.full', 'wall.interior.doorframe.cutaway',
+      'wall.interior.junction.t.full', 'wall.interior.junction.t.cutaway',
+      'wall.interior.junction.cross.full', 'wall.interior.junction.cross.cutaway',
     ]);
-    expect(manifest.entries.map((entry) => entry.heightTiles)).toEqual([2.5, 0.52, 2.5, 0.52, 2.5, 0.52, 2.5, 0.52, 2.5, 0.52]);
+    expect(manifest.entries.map((entry) => entry.heightTiles)).toEqual(
+      Array.from({ length: 7 }, () => [2.5, 0.52]).flat(),
+    );
+    expect(new Set(manifest.entries.map((entry) => entry.sha256)).size).toBe(14);
     for (const entry of manifest.entries) {
       expect(entry.footprintTiles).toEqual([1, 1]);
       expect(entry.pivotTile).toEqual([0.5, 0.5]);

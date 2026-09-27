@@ -14,7 +14,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "e2174cc35aa3e94aa68521e32548fa8d4e7c9fb418b375a9e3e858c32ad1507c",
+      "sha256": "4f8ca479cdec404b8ebe1573081b504eabb6aba4cf287b9815971a73f7690e7d",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -29,7 +29,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "5c4555040d478c8f965da5497df9b98526a4411363f5e02eb083ec1e00a8f1f4",
+      "sha256": "d0ac49a00d1301dde912372360af60c335fddbb2b7a47a43a211709a901cc77b",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -44,7 +44,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "effcb7e0da017d280b3095f30465d912dfc167ba3ddd68bb65d19a349b82e6a6",
+      "sha256": "143c26d5dce3764d3eeec07cc440d54fdf399882cf19f8cde5e313c2c0d7645c",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -59,7 +59,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "723941c792f51915936a7e4c2a2923c0e2f8f739ca9c703f2b9ab31f50ee6cea",
+      "sha256": "c5f94c8dc1116e9b91ed1d921c83a903414f38d7fda37e10117665f0903ce786",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -74,7 +74,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "eb92c118da7220b3bdd73bafaf67e0f6941d5c0391a739f69668de6579d4ac51",
+      "sha256": "9ea953e21fb0f94628fc85c76e96bad88c721512145d243b90cba992ff7a8b27",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -89,7 +89,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "76bc50c394403c4a1d49e0587993d9c4544bd5198396c0756f14594ce6f38e3d",
+      "sha256": "ebeb48098424aacb6f2edff55cf2de46324b585f51efd49e1b527b1cbd28c296",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -104,7 +104,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "8adcb5b6e607870a5b73e7028a89a504b9adf197ce2b84b67e9923a44a235600",
+      "sha256": "64dd218b3ba0e223bdcd11177a2ebe399b2f0b2509afc386e997c0464e651516",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -119,7 +119,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "3c3b2d5cd8f8002f5420512ce1653ce71c0ce9b33f9daa9134452cfa00e3c4a9",
+      "sha256": "394637b251e76e01a72f0c7c0fab48dfa63dccff74c84d621adc38f1ce5b3d81",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -134,7 +134,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "fcff831eb9b0fd1ea5211415e4fa9ad9d75f76160d7d6334571cd05fb158b2c1",
+      "sha256": "2009c4c20d9f1fea6537e74ea615a5e0b298b12056f6834b5259d9ff990971e0",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -149,7 +149,67 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "d4aa0c2440627cac0b30f70306fa03aa61aa68dd78e079b95c87375fda56a359",
+      "sha256": "9a7d758bac8b49c9c55546be50e04b8b2071f3e99b2bf3bd8cfa899528adb92c",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.junction.t.full",
+      "image": "wall.interior.junction.t.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "41938400f619b37d6e9718890b38f5659a2d4a8fa1fa6921687580f8b774de54",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.junction.t.cutaway",
+      "image": "wall.interior.junction.t.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "3924c860e6ba4a157d604c20bf529dcbc5d64ef250c9d492498cc390589f1a9e",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.junction.cross.full",
+      "image": "wall.interior.junction.cross.full.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 2.5,
+      "sha256": "618a0b2183b9974c2ab443aef12385d2f1f692327752a39b1df0d3409c5dc5c4",
+      "camera": "orthographic-oblique-preview"
+    },
+    {
+      "assetId": "wall.interior.junction.cross.cutaway",
+      "image": "wall.interior.junction.cross.cutaway.png",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "pivotTile": [
+        0.5,
+        0.5
+      ],
+      "heightTiles": 0.52,
+      "sha256": "6a0c74b84f59efc89d5e0f375299d810156f038717925c908fb2ad6f4ef844ad",
       "camera": "orthographic-oblique-preview"
     }
   ]

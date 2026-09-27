@@ -70,6 +70,22 @@ def box(collection, name, location, scale, surface, bevel=0.0):
     return obj
 
 
+def polygon_prism(collection, name, outline, low, high, surface):
+    """Extrude a concave wall junction as one mesh, with no coincident faces."""
+    count = len(outline)
+    vertices = [(x, y, low) for x, y in outline] + [(x, y, high) for x, y in outline]
+    faces = [tuple(range(count - 1, -1, -1)), tuple(range(count, count * 2))]
+    faces += [(index, (index + 1) % count, (index + 1) % count + count, index + count)
+              for index in range(count)]
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    collection.objects.link(obj)
+    obj.data.materials.append(surface)
+    return obj
+
+
 def wall_run(collection, label, center, length, axis, height, plaster, coping, skirting, highlight):
     """Build one straight run through a full tile without moving its pivot."""
     x, y = center
@@ -118,6 +134,23 @@ def build_shape(collection, shape, height, surfaces):
             (0.16, 0.30, height), coping, 0.015)
         box(collection, "end post enamel cap", (0.31, 0, height + 0.05),
             (0.18, 0.32, 0.10), highlight, 0.01)
+    elif shape == "junction.t":
+        wall_run(collection, "T crossbar", (0, 0), 1.0, "x", height,
+                 plaster, coping, skirting, highlight)
+        wall_run(collection, "T positive-y stem", (0, 0.25), 0.5, "y", height,
+                 plaster, coping, skirting, highlight)
+        box(collection, "T joint continuous plaster", (0, 0, height / 2),
+            (0.29, 0.29, height), plaster)
+        box(collection, "T joint coping", (0, 0, height + 0.04),
+            (0.31, 0.31, 0.08), coping)
+    elif shape == "junction.cross":
+        outline = [(-0.5, -0.125), (-0.125, -0.125), (-0.125, -0.5),
+                   (0.125, -0.5), (0.125, -0.125), (0.5, -0.125),
+                   (0.5, 0.125), (0.125, 0.125), (0.125, 0.5),
+                   (-0.125, 0.5), (-0.125, 0.125), (-0.5, 0.125)]
+        polygon_prism(collection, "cross dark skirting", outline, 0, 0.24, skirting)
+        polygon_prism(collection, "cross continuous plaster", outline, 0.24, height, plaster)
+        polygon_prism(collection, "cross coping", outline, height, height + 0.08, coping)
     elif shape == "doorframe":
         # The central clear opening remains transparent even in the cutaway.
         for side in (-1, 1):
@@ -145,7 +178,7 @@ def main():
     bpy.ops.object.delete(use_global=False)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE"
-    scene.eevee.taa_render_samples = 1
+    scene.eevee.taa_render_samples = 32
     scene.eevee.use_raytracing = False
     scene.render.resolution_x = 256
     scene.render.resolution_y = 256
@@ -162,7 +195,8 @@ def main():
 
     # All assets have the same full-square pivot. Their physical wall core is
     # thinner, but this footprint guarantees identical rotation and swapping.
-    shapes = ("straight", "corner.inner", "corner.outer", "end", "doorframe")
+    shapes = ("straight", "corner.inner", "corner.outer", "end", "doorframe",
+              "junction.t", "junction.cross")
     variants = (("full", 2.50), ("cutaway", 0.52))
     for shape in shapes:
         for variant, height in variants:
