@@ -116,6 +116,7 @@ export const PRISONER_ACTOR_ASSET_ID = 'actor.prisoner.base';
 export const GUARD_ACTOR_ASSET_ID = 'actor.guard.base';
 const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
 const SHOWER_ACTION_INDEX = actionIndexOf('action.shower');
+const YARD_ACTION_INDEX = actionIndexOf('action.yard-recreation');
 const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 export function actorsFromSnapshot(
@@ -145,7 +146,9 @@ export function actorsFromSnapshot(
       assetId: components.actionIndex[index] === TREATMENT_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
         ? 'actor.prisoner.treatment'
         : components.actionIndex[index] === SHOWER_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
-          ? 'actor.prisoner.shower' : PRISONER_ACTOR_ASSET_ID,
+          ? 'actor.prisoner.shower'
+          : components.actionIndex[index] === YARD_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+            ? 'actor.prisoner.yard' : PRISONER_ACTOR_ASSET_ID,
       tileX: components.tileX[index]!,
       tileY: components.tileY[index]!,
       // Defaults, not simulation state -- see the note above.
@@ -155,6 +158,8 @@ export function actorsFromSnapshot(
         ? { infirmaryTreatment: true } : {}),
       ...(components.actionIndex[index] === SHOWER_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
         ? { showering: true } : {}),
+      ...(components.actionIndex[index] === YARD_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+        ? { exercising: true } : {}),
     });
   }
 

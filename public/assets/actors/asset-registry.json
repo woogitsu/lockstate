@@ -82,6 +82,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.yard",
+      "manifest": "actor.prisoner.yard.atlas-manifests.json",
+      "clips": [
+        "exercise",
+        "idle"
+      ]
+    },
+    {
       "assetId": "actor.staff.base",
       "manifest": "actor.staff.base.atlas-manifests.json",
       "clips": [
